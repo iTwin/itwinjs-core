@@ -211,10 +211,6 @@ export class FrontstageDef {
     }
 
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this.defaultLayout!, contentGroup: this.contentGroup });
-
-    this.zoneDefs.map((zoneDef: ZoneDef) => {
-      zoneDef.clearDefaultOpenUsed();
-    });
   }
 
   /** Returns once the contained widgets and content controls are ready to use */

@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "../../_geometry";
-@import "../../_z-index";
+@import "@bentley/ui-core/lib/_z-index";
 
 .nz-popup-popover-popover {
   position: absolute;
 
-  @include nz-z-index(tooltip);
+  @include uicore-z-index(tooltip);
 
   &.nz-direction-left {
     top: 0;

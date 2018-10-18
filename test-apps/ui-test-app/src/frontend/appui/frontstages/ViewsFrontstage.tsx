@@ -201,7 +201,7 @@ export class ViewsFrontstage extends FrontstageDef {
           },
           {
             classId: HorizontalPropertyGridWidgetControl,
-            defaultState: WidgetState.Off,
+            defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:widgets.HorizontalPropertyGrid",
           },
@@ -232,9 +232,7 @@ class FrontstageToolWidget extends React.Component<{}> {
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
       if (widgetDef) {
-        const widgetControl = widgetDef.widgetControl;
-        if (widgetControl)
-          widgetControl.setWidgetState(WidgetState.Off);
+        widgetDef.setWidgetState(WidgetState.Off);
       }
     }
   }

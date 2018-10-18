@@ -2,8 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/index.scss";
- @import "@bentley/ui-ninezone/lib/_z-index.scss";
+ @import "@bentley/bwc/lib/mixins";
+ @import "@bentley/ui-core/lib/_z-index";
 
  .modal-frontstage {
   height: 100%;
@@ -21,7 +21,7 @@
   flex-direction: column;
   align-items: stretch;
 
-  @include nz-z-index(backstage);
+  @include uicore-z-index(backstage);
 }
 
 .modal-frontstage-overlay {
@@ -33,7 +33,7 @@
   opacity: 0.85;
   background: #111111;
 
-  @include nz-z-index(backstage-overlay);
+  @include uicore-z-index(backstage-overlay);
 }
 
 .modal-frontstage.open {

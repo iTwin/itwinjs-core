@@ -15,6 +15,7 @@ import { ZoneDef } from "./ZoneDef";
 import { FrontstageManager, WidgetStateChangedEventArgs } from "./FrontstageManager";
 
 import { ZoneProps as NZ_ZoneState, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
+import { WidgetProps as NZ_WidgetProps } from "@bentley/ui-ninezone/lib/zones/state/Widget";
 import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
 import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
 import GhostOutline from "@bentley/ui-ninezone/lib/zones/GhostOutline";
@@ -25,7 +26,7 @@ import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
 // Zone React Components
 // -----------------------------------------------------------------------------
 
-/** Properties for the [[FrameworkZone]] Component.
+/** Properties for the [[FrameworkZone]] component.
  */
 export interface FrameworkZoneProps {
   horizontalAnchor: HorizontalAnchor;
@@ -45,7 +46,13 @@ interface FrameworkZoneState {
   updatedWidgetDef?: WidgetDef;
 }
 
-/** ConfigurableUi Zone React Component.
+interface WidgetStateChange {
+  widgetId: number;
+  tabIndex: number;
+  isOpening: boolean;
+}
+
+/** ConfigurableUi Zone React component.
  */
 export class FrameworkZone extends React.Component<FrameworkZoneProps, FrameworkZoneState> {
   constructor(props: FrameworkZoneProps) {
@@ -108,15 +115,18 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
       const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneState.widgets[0].id);
       if (!zoneDef)
         return null;
-      if (zoneDef.widgetCount === 1 && zoneDef.widgetDefs[0].widgetType !== WidgetType.Rectangular)
-        return zoneDef.widgetDefs[0].reactElement;
+      if (zoneDef.widgetCount === 1 && zoneDef.widgetDefs[0].widgetType !== WidgetType.Rectangular) {
+        const widgetDef = zoneDef.widgetDefs[0];
+        return (widgetDef.canShow()) ? widgetDef.reactElement : null;
+      }
     }
 
     let activeZoneDef: ZoneDef | undefined;
     let activeWidgetDef: WidgetDef | undefined;
     const widgets: EachWidgetProps[] = new Array<EachWidgetProps>();
+    let widgetStateChange: WidgetStateChange | undefined;
 
-    this.props.zoneState.widgets.forEach((widget) => {
+    this.props.zoneState.widgets.forEach((widget: NZ_WidgetProps) => {
       const zoneDef = this.props.zoneDefProvider.getZoneDef(widget.id);
       if (!zoneDef)
         return;
@@ -124,32 +134,45 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
       widgets.push({
         id: widget.id,
         isStatusBar: zoneDef.isStatusBar,
-        tabs: zoneDef.widgetDefs.map((widgetDef, tabIndex) => {
-          let isActive = false;
-          if (!activeWidgetDef) {
-            if (!widgetDef.defaultOpenUsed) {
-              if ((zoneDef.isDefaultOpen || widgetDef === this.state.updatedWidgetDef) && widgetDef.isDefaultOpen) {
+        tabs: zoneDef.widgetDefs
+          .filter((widgetDef: WidgetDef) => {
+            return widgetDef.canShow();
+          })
+          .map((widgetDef: WidgetDef, tabIndex: number) => {
+            let isActive = false;
+            if (!activeWidgetDef) {
+              if (widgetDef === this.state.updatedWidgetDef && widgetDef.stateChanged) {
+                if (widgetDef.canOpen()) {
+                  isActive = true;
+                  widgetStateChange = {
+                    widgetId: widget.id,
+                    tabIndex,
+                    isOpening: true,
+                  };
+                }
+                widgetDef.stateChanged = false;
+              } else if (widget.tabIndex === tabIndex) {
                 isActive = true;
               }
-              widgetDef.defaultOpenUsed = true;
-            } else if (widget.tabIndex === tabIndex) {
-              isActive = true;
+
+              if (isActive) {
+                activeWidgetDef = widgetDef;
+                activeZoneDef = zoneDef;
+              }
             }
 
-            if (isActive) {
-              activeWidgetDef = widgetDef;
-              activeZoneDef = zoneDef;
-            }
-          }
-
-          return {
-            isActive,
-            iconInfo: widgetDef.iconInfo,
-            title: widgetDef.label,
-          };
-        }),
+            return {
+              isActive,
+              iconInfo: widgetDef.iconInfo,
+              title: widgetDef.label,
+            };
+          }),
       });
     });
+
+    if (widgetStateChange) {
+      this.props.widgetChangeHandler.handleWidgetStateChange(widgetStateChange.widgetId, widgetStateChange.tabIndex, widgetStateChange.isOpening);
+    }
 
     let content: React.ReactNode;
     if (activeWidgetDef && activeZoneDef) {

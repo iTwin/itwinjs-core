@@ -37,16 +37,8 @@ export * from "./utils";
  * Classes for working with the Application UI Configuration
  */
 /**
- * @docs-group-description ContentGroup
- * Classes for working with a ContentGroup
- */
-/**
- * @docs-group-description ContentLayout
- * Classes for working with a ContentLayout
- */
-/**
  * @docs-group-description ContentView
- * Classes for working with a Content View
+ * Classes for working with a Content View, Group, Layout or Control
  */
 /**
  * @docs-group-description Dialog
@@ -73,10 +65,6 @@ export * from "./utils";
  * Classes for working with Keyboard Shortcuts
  */
 /**
- * @docs-group-description MessageBox
- * Classes for working with a MessageBox
- */
-/**
  * @docs-group-description NavigationAids
  * Classes for working with Navigation Aids
  */
@@ -101,8 +89,8 @@ export * from "./utils";
  * Classes for working a StatusBar
  */
 /**
- * @docs-group-description Task
- * Classes for working a Task
+ * @docs-group-description WorkflowTask
+ * Classes for working a Workflow or Task
  */
 /**
  * @docs-group-description ToolSettings
@@ -115,10 +103,6 @@ export * from "./utils";
 /**
  * @docs-group-description Widget
  * Classes for working a Widget
- */
-/**
- * @docs-group-description Workflow
- * Classes for working a Workflow
  */
 /**
  * @docs-group-description Zone

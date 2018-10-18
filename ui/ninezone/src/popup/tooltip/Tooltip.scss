@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/colors";
 @import "../../_geometry";
-@import "../../_z-index";
+@import "@bentley/ui-core/lib/_z-index";
 
 .nz-popup-tooltip-tooltip {
   position: absolute;
@@ -13,5 +13,5 @@
   background-color: rgba(#333, 0.9);
   color: $text-light;
 
-  @include nz-z-index(tooltip);
+  @include uicore-z-index(tooltip);
 }

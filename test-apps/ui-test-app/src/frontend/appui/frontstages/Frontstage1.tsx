@@ -197,7 +197,7 @@ export class Frontstage1 extends FrontstageDef {
 
     return (
       <NavigationWidget
-        navigationAidId="StandardNavigationNavigationAid"
+        navigationAidId="StandardRotationNavigationAid"
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
       />

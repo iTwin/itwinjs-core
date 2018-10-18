@@ -25,7 +25,7 @@ export interface ActiveContentChangedEventArgs {
   activeContent?: React.ReactNode;
 }
 
-/** ActiveContentChanged Event class.
+/** Active Content Changed Event class.
  */
 export class ActiveContentChangedEvent extends UiEvent<ActiveContentChangedEventArgs> { }
 
@@ -37,17 +37,21 @@ export class ContentViewManager {
   private static _activeContent?: React.ReactNode;
   private static _activeContentChangedEvent: ActiveContentChangedEvent = new ActiveContentChangedEvent();
 
+  /** Gets the [[MouseDownChangedEvent]] */
   public static get onMouseDownChangedEvent(): MouseDownChangedEvent { return this._mouseDownChangedEvent; }
 
+  /** Determines if the mouse is down in a content view */
   public static get isMouseDown(): boolean {
     return this._mouseDown;
   }
 
+  /** Sets the mouse down status for a content view */
   public static setMouseDown(mouseDown: boolean): void {
     this._mouseDown = mouseDown;
     this.onMouseDownChangedEvent.emit({ mouseDown });
   }
 
+  /** Gets the [[ActiveContentChangedEvent]] */
   public static get onActiveContentChangedEvent(): ActiveContentChangedEvent { return this._activeContentChangedEvent; }
 
   public static getActiveContent(): React.ReactNode | undefined {
@@ -69,6 +73,7 @@ export class ContentViewManager {
     return undefined;
   }
 
+  /** Sets the active [[ContentControl]] */
   public static setActiveContent(activeContent?: React.ReactNode): void {
     if (this._activeContent !== activeContent) {
       const oldContent = this._activeContent;

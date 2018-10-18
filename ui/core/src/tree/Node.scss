@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/bwc/lib/index.scss";
+@import "@bentley/bwc/lib/mixins";
 @import "../colors.scss";
 
 /* FIXME: Without this, the loader animation is broken...

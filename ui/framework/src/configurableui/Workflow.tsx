@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Workflow */
+/** @module WorkflowTask */
 
 import { UiEvent } from "@bentley/ui-core";
 
@@ -15,7 +15,7 @@ import { Task, TaskManager } from "./Task";
 //  WorkflowDef and WorkflowsDef
 // -----------------------------------------------------------------------------
 
-/** Properties for a Workflow.
+/** Properties for a [[Workflow]].
  */
 export interface WorkflowProps extends ItemProps {
   id: string;
