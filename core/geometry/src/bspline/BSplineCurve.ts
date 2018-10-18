@@ -8,7 +8,7 @@
 // import { Point2d } from "../Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range3d } from "../geometry3d/Range";
+import { Range3d, Range1d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
@@ -17,7 +17,7 @@ import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 
 import { StrokeOptions } from "../curve/StrokeOptions";
-import { Geometry } from "../Geometry";
+import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { KnotVector } from "./KnotVector";
@@ -27,6 +27,9 @@ import { BezierCurveBase } from "./BezierCurveBase";
 import { BezierCurve3dH } from "./BezierCurve3dH";
 import { BezierCurve3d } from "./BezierCurve3d";
 import { BSpline1dNd } from "./BSpline1dNd";
+import { UnivariateBezier } from "../numerics/BezierPolynomials";
+import { Bezier1dNd } from "./Bezier1dNd";
+import { Point4d } from "../geometry4d/Point4d";
 
 /**
  * Base class for BSplineCurve3d and BSplineCurve3dH.
@@ -119,6 +122,20 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     * @param result optional reusable curve.  This will only be reused if it is a BezierCurve3d with matching order.
     */
   public abstract getSaturatedBezierSpan3dOr3dH(spanIndex: number, prefer3dH: boolean, result?: BezierCurveBase): BezierCurveBase | undefined;
+  public abstract getPolePoint4d(poleIndex: number, result?: Point4d): Point4d | undefined;
+  /**
+   * Return a pole as Point3d.   If this is a weighted curve, normalize the pole to w=1
+   * @param poleIndex
+   * @param result optional result
+   */
+  public abstract getPolePoint3d(poleIndex: number, result?: Point3d): Point3d | undefined;
+
+  /** Given a pole index, return the starting index for the contiguous array. */
+  public poleIndexToDataIndex(poleIndex: number): number | undefined {
+    if (poleIndex >= 0 && poleIndex < this.numPoles)
+      return poleIndex * this._bcurve.poleLength;
+    return undefined;
+  }
 
   /** Search for the curve point that is closest to the spacePoint.
    *
@@ -150,6 +167,46 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     }
     return result;
   }
+  public appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
+    const numPole = this.numPoles;
+    const order = this.order;
+    const allCoffs = new Float64Array(numPole);
+    const numSpan = this.numSpan;
+    const point4d = Point4d.create();
+    // compute all pole altitudes from the plane
+    const minMax = Range1d.createNull();
+    // Put the altitudes of all the bspline poles
+    for (let i = 0; i < numPole; i++) {
+      allCoffs[i] = plane.weightedAltitude(this.getPolePoint4d(i, point4d)!);
+      minMax.extendX(allCoffs[i]);
+    }
+    let univariateBezier: UnivariateBezier | undefined;
+    let numFound = 0;
+    let previousFraction = -1000.0;
+    if (minMax.containsX(0.0)) {
+      for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
+        minMax.setNull();
+        minMax.extendArraySubset(allCoffs, spanIndex, order);
+        if (minMax.containsX(0.0)) {
+          univariateBezier = UnivariateBezier.createArraySubset(allCoffs, spanIndex, order, univariateBezier)!;
+          Bezier1dNd.saturate1dInPlace(univariateBezier.coffs, this._bcurve.knots, spanIndex);
+          const roots = univariateBezier.roots(0.0, true);
+          if (roots) {
+            for (const spanFraction of roots) {
+              numFound++;
+              const fraction = this._bcurve.knots.spanFractionToFraction(spanIndex, spanFraction);
+              if (!Geometry.isAlmostEqualNumber(fraction, previousFraction)) {
+                const detail = CurveLocationDetail.createCurveEvaluatedFraction (this, fraction);
+                result.push(detail);
+                previousFraction = fraction;
+              }
+            }
+          }
+        }
+      }
+    }
+    return numFound;
+  }
 
 }
 
@@ -165,7 +222,23 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   public isSameGeometryClass(other: any): boolean { return other instanceof BSplineCurve3d; }
   public tryTransformInPlace(transform: Transform): boolean { Point3dArray.multiplyInPlace(transform, this._bcurve.packedData); return true; }
 
-  public getPole(i: number, result?: Point3d): Point3d | undefined { return this._bcurve.getPoint3dPole(i, result); }
+  public getPolePoint3d(poleIndex: number, result?: Point3d): Point3d | undefined {
+    const k = this.poleIndexToDataIndex(poleIndex);
+    if (k !== undefined) {
+      const data = this._bcurve.packedData;
+      return Point3d.create(data[k], data[k + 1], data[k + 2], result);
+    }
+    return undefined;
+  }
+  public getPolePoint4d(poleIndex: number, result?: Point4d): Point4d | undefined {
+    const k = this.poleIndexToDataIndex(poleIndex);
+    if (k !== undefined) {
+      const data = this._bcurve.packedData;
+      return Point4d.create(data[k], data[k + 1], data[k + 2], 1.0, result);
+    }
+    return undefined;
+  }
+
   public spanFractionToKnot(span: number, localFraction: number): number {
     return this._bcurve.spanFractionToKnot(span, localFraction);
   }
@@ -310,7 +383,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
 
   public quickLength(): number { return Point3dArray.sumLengths(this._bcurve.packedData); }
   public emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void {
-    const needBeziers = (handler as any).announceBezierCurve;
+    const needBeziers = handler.announceBezierCurve !== undefined;
     const workBezier = this.initializeWorkBezier();
     const numSpan = this.numSpan;
     let numStrokes;
@@ -319,7 +392,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       if (bezier) {
         numStrokes = bezier.strokeCount(options);
         if (needBeziers) {
-          (handler as any).announceBezierCurve(bezier, numStrokes, this,
+          handler.announceBezierCurve!(bezier, numStrokes, this,
             spanIndex,
             this._bcurve.knots.spanFractionToFraction(spanIndex, 0.0),
             this._bcurve.knots.spanFractionToFraction(spanIndex, 1.0));
@@ -364,7 +437,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     const poleIndexDelta = this.numPoles - this.degree;
     for (let p0 = 0; p0 + 1 < degree; p0++) {
       const p1 = p0 + poleIndexDelta;
-      if (!Geometry.isSamePoint3d(this.getPole(p0) as Point3d, this.getPole(p1) as Point3d))
+      if (!Geometry.isSamePoint3d(this.getPolePoint3d(p0) as Point3d, this.getPolePoint3d(p1) as Point3d))
         return false;
     }
     return true;
@@ -437,4 +510,5 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
         rangeToExtend.extendXYZ(buffer[i0], buffer[i0 + 1], buffer[i0 + 2]);
     }
   }
+
 }

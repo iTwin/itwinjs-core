@@ -38,7 +38,24 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
   public isSameGeometryClass(other: any): boolean { return other instanceof BSplineCurve3dH; }
   public tryTransformInPlace(transform: Transform): boolean { Point4dArray.multiplyInPlace(transform, this._bcurve.packedData); return true; }
 
-  public getPole(i: number, result?: Point3d): Point3d | undefined { return this._bcurve.getPoint3dPole(i, result); }
+  public getPolePoint3d(poleIndex: number, result?: Point3d): Point3d | undefined {
+    const k = this.poleIndexToDataIndex(poleIndex);
+    if (k !== undefined) {
+      const data = this._bcurve.packedData;
+      const divw = Geometry.conditionalDivideFraction(1.0, data[k + 3]);
+      if (divw !== undefined)
+        return Point3d.create(data[k] * divw, data[k + 1] * divw, data[k + 2] * divw, result);
+    }
+    return undefined;
+  }
+  public getPolePoint4d(poleIndex: number, result?: Point4d): Point4d | undefined {
+    const k = this.poleIndexToDataIndex(poleIndex);
+    if (k !== undefined) {
+      const data = this._bcurve.packedData;
+      return Point4d.create(data[k], data[k + 1], data[k + 2], data[k + 3], result);
+    }
+    return undefined;
+  }
   public spanFractionToKnot(span: number, localFraction: number): number {
     return this._bcurve.spanFractionToKnot(span, localFraction);
   }
@@ -224,7 +241,7 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     const poleIndexDelta = this.numPoles - this.degree;
     for (let p0 = 0; p0 + 1 < degree; p0++) {
       const p1 = p0 + poleIndexDelta;
-      if (!Geometry.isSamePoint3d(this.getPole(p0) as Point3d, this.getPole(p1) as Point3d))
+      if (!Geometry.isSamePoint3d(this.getPolePoint3d(p0) as Point3d, this.getPolePoint3d(p1) as Point3d))
         return false;
     }
     return true;

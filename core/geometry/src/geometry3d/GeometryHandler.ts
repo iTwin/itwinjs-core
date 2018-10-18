@@ -155,16 +155,10 @@ export interface IStrokeHandler {
     fraction1: number): void;
   endCurvePrimitive(cp: CurvePrimitive): void;
   endParentCurvePrimitive(cp: CurvePrimitive): void;
-}
-/** Extension of IStrokeHandler, with support for bezier spans.
- *
- */
-export interface IStrokeHandlerWithBeziers {
   /**
    * Announce a bezier curve fragment.
    * * this is usually a section of BsplineCurve
-   * * this will NOT be called unless the original StrokeOptions requested them with `needBezierSpans`
-   * * If not requested, the same bezier section limits will be passed (without the bezier itself) to announceIntervalForUniformStepStrokes.
+   * * If this function is missing, the same interval will be passed to announceIntervalForUniformSteps.
    * @param bezier bezier fragment
    * @param numStrokes suggested number of strokes (uniform in bezier interval 0..1)
    * @param parent parent curve
@@ -172,14 +166,13 @@ export interface IStrokeHandlerWithBeziers {
    * @param fraction0 start fraction on parent curve
    * @param fraction1 end fraction on parent curve
    */
-  announceBezierCurve(
+  announceBezierCurve?(
     bezier: BezierCurveBase,
     numStrokes: number,
     parent: CurvePrimitive,
     spandex: number,
     fraction0: number,
     fraction1: number): void;
-
 }
 
 /**

@@ -157,7 +157,7 @@ export class FrameBuilder {
       } else if (data instanceof BSplineCurve3d) {
         const point = Point3d.create();
         for (let i = 0; this.savedVectorCount() < 2; i++) {
-          if (data.getPole(i, point) instanceof Point3d)
+          if (data.getPolePoint3d(i, point) instanceof Point3d)
             this.announcePoint(point);
           else break;
         }

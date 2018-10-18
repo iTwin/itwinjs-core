@@ -212,6 +212,10 @@ export class Point4d implements BeJSONFunctions {
   public altitude(point: Point3d): number {
     return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3];
   }
+  /** dotProduct with (point.x, point.y, point.z, 1) Used in PlaneAltitudeEvaluator interface */
+  public weightedAltitude(point: Point4d): number {
+    return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3] * point.w;
+  }
   /** dotProduct with (vector.x, vector.y, vector.z, 0).  Used in PlaneAltitudeEvaluator interface */
   public velocity(vector: Vector3d): number {
     return this.xyzw[0] * vector.x + this.xyzw[1] * vector.y + this.xyzw[2] * vector.z;

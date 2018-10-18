@@ -82,7 +82,11 @@ export interface PlaneAltitudeEvaluator {
    * @param point point for evaluation
    */
   velocityXYZ(x: number, y: number, z: number): number;
-
+  /**
+   * Return the weighted altitude
+   * @param point xyzw data.
+   */
+  weightedAltitude(point: Point4d): number;
 }
 export interface BeJSONFunctions {
   /**

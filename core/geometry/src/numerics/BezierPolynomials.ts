@@ -40,6 +40,18 @@ export abstract class BezierCoffs {
       this.coffs = new Float64Array(data);
     }
   }
+  /**
+   * * Ensure the coefficient array size matches order.  (Reallocate as needed)
+   * * fill with zeros.
+   * @param order required order
+   */
+  protected allocateToOrder(order: number) {
+    if (this.coffs.length !== order) {
+      this.coffs = new Float64Array(order);
+    } else {
+      this.coffs.fill(0);
+    }
+  }
   /** evaluate the basis fucntions at specified u.
    * @param u bezier parameter for evaluation.
    * @param buffer optional destination for values.   ASSUMED large enough for order.
@@ -322,6 +334,14 @@ export class UnivariateBezier extends BezierCoffs {
     super(order);
     this._order = order;
   }
+
+  /** (Re) initialize with given order (and all coffs zero) */
+  public allocateOrder(order: number) {
+    if (this._order !== order) {
+      super.allocateToOrder(order);
+      this._order = order;
+    }
+  }
   /** Return a copy, optionally with coffs array length reduced to actual order. */
   public clone(compressToMinimalAllocation: boolean = false): UnivariateBezier {
     if (compressToMinimalAllocation) {
@@ -352,6 +372,26 @@ export class UnivariateBezier extends BezierCoffs {
     for (let i = 0; i < coffs.length; i++)result.coffs[i] = coffs[i];
     return result;
   }
+  /**
+   * copy coefficients into a new bezier.
+   * * if result is omitted, a new UnivariateBezier is allocated and returned.
+   * * if result is present but has other order, its coefficients are reallocated
+   * * if result is present and has matching order, the values are replace.
+   * @param coffs coefficients for bezier
+   * @param index0 first index to access
+   * @param order number of coefficients, i.e. order for the result
+   * @param result optional result.
+   *
+   */
+  public static createArraySubset(coffs: number[] | Float64Array, index0: number, order: number, result?: UnivariateBezier): UnivariateBezier {
+    if (!result)
+      result = new UnivariateBezier(order);
+    else if (result.order !== order)
+      result.allocateToOrder (order);
+    for (let i = 0; i < order; i++)result.coffs[i] = coffs[index0 + i];
+    return result;
+  }
+
   /**
    * Create a product of 2 bezier polynomials.
    * @param bezierA

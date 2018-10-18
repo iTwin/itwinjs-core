@@ -220,6 +220,53 @@ export class Bezier1dNd {
     }
     return true;
   }
+  /**
+   * Saturate a univaraite bspline coefficient array in place
+   * * On input, the array is the coefficients one span of a bspline, packed in an array of `(knots.order)` values.
+   * * These are modified in place, and on return are a bezier for the same knot interval.
+   * @param coffs input as bspline coefficients, returned as bezier coefficients
+   * @param knots knot vector
+   * @param spanIndex index of span whose (unsaturated) poles are in the coefficients.
+   * @param optional function for `setInterval (knotA, knotB)` call to announce knot limits.
+   */
+  public static saturate1dInPlace(coffs: Float64Array, knots: KnotVector, spanIndex: number): boolean {
+    const degree = knots.degree;
+    const kA = spanIndex + degree - 1; // left knot index of the active span
+    const kB = kA + 1;
+    if (spanIndex < 0 || spanIndex >= knots.numSpans)
+      return false;
+    const knotArray = knots.knots;
+    const knotA = knotArray[kA];
+    const knotB = knotArray[kB];
+    for (let numInsert = degree - 1; numInsert > 0; numInsert--) {
+      //  left numInsert poles are pulled forward
+      let k0 = kA - numInsert;
+      if (knotArray[k0] < knotA) {
+        let k1 = kB;
+        for (let i = 0; i < numInsert; i++ , k0++ , k1++) {
+          const knot0 = knotArray[k0];
+          const knot1 = knotArray[k1];
+          const fraction = (knotA - knot0) / (knot1 - knot0);
+          coffs[i] = coffs[i] + fraction * (coffs[i + 1] - coffs[i]);
+        }
+      }
+    }
+    for (let numInsert = degree - 1; numInsert > 0; numInsert--) {
+      let k2 = kB + numInsert;
+      let k;
+      if (knotArray[k2] > knotB) {
+        for (let i = 0; i < numInsert; i++ , k2--) {
+          const knot2 = knotArray[k2]; // right side of moving window
+          // left side of window ia always the (previously saturated) knotA
+          const fraction = (knotB - knot2) / (knotA - knot2);
+          k = degree - i;
+          coffs[k] += fraction * (coffs[k - 1] - coffs[k]);
+        }
+      }
+    }
+    return true;
+  }
+
   /** optional interval for mapping to a parent object */
   public interval?: Segment1d;
   /** create or update the mapping to parent curve. */

@@ -22,6 +22,10 @@ import { Sample } from "../serialization/GeometrySamples";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { Path } from "../curve/Path";
 import { prettyPrint } from "./testFunctions";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { LineSegment3d } from "../curve/LineSegment3d";
 
 function translateAndPush(allGeometry: GeometryQuery[], g: GeometryQuery | undefined, dx: number, dy: number) {
   if (g) {
@@ -29,6 +33,37 @@ function translateAndPush(allGeometry: GeometryQuery[], g: GeometryQuery | undef
     allGeometry.push(g);
   }
 }
+function showPlane(allGeometry: GeometryQuery[], plane: Plane3dByOriginAndUnitNormal, a: number, dx: number, dy: number) {
+  const origin = plane.getOriginRef();
+  const normal = plane.getNormalRef();
+  const frame = Transform.createOriginAndMatrix(origin,
+    Matrix3d.createRigidViewAxesZTowardsEye(normal.x, normal.y, normal.z));
+  const g = LineString3d.create(
+    frame.multiplyXYZ(-0.5 * a, 0, 0),
+    frame.multiplyXYZ(a, 0, 0),
+    frame.multiplyXYZ(a, a, 0),
+    frame.multiplyXYZ(0, a, 0),
+    origin,
+    frame.multiplyXYZ(0, 0, 2 * a));
+  if (g) {
+    g.tryTranslateInPlace(dx, dy, 0);
+    allGeometry.push(g);
+  }
+}
+
+function showPoint(allGeometry: GeometryQuery[], point: Point3d, a: number, dx: number, dy: number) {
+  const g = LineString3d.create(
+    point,
+    Point3d.create(point.x - a, point.y, point.z),
+    Point3d.create(point.x + a, point.y, point.z),
+    Point3d.create(point.x, point.y + a, point.z),
+    Point3d.create(point.x, point.y, point.z));
+  if (g) {
+    g.tryTranslateInPlace(dx, dy, 0);
+    allGeometry.push(g);
+  }
+}
+
 function ellipsePoints(a: number, b: number, sweep: AngleSweep, numStep: number): Point3d[] {
   const points = [];
   for (let f = 0.0; f <= 1.00001; f += 1.0 / numStep) {
@@ -300,6 +335,39 @@ describe("BsplineCurve", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BezierCurve3d", "BsplineSaturation");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("IntersectPlane", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const bcurves = Sample.createMixedBsplineCurves();
+    const markerSize = 0.1;
+    const planeSize = 0.5;
+    let xShift = 0.0;
+    const yShift = 0.0;
+    for (const curve of bcurves) {
+      translateAndPush(allGeometry, curve.clone (), xShift, yShift);
+      for (const fraction of [0.2, 0.5, 0.73]) {
+        const tangentRay = curve.fractionToPointAndDerivative(fraction);
+        // Alter the ray z so it is not perpendicular ..
+        // tangentRay.direction.z += 0.02;
+        const intersections: CurveLocationDetail[] = [];
+        const plane = Plane3dByOriginAndUnitNormal.create(tangentRay.origin, tangentRay.direction)!;  // This renormalizes.
+        curve.appendPlaneIntersectionPoints(plane, intersections);
+        if (intersections.length > 1)
+          curve.appendPlaneIntersectionPoints(plane, intersections);
+        showPlane(allGeometry, plane, planeSize, xShift, yShift);
+        for (const detail of intersections) {
+          if (detail.point.isAlmostEqual(tangentRay.origin))
+            showPoint(allGeometry, detail.point, markerSize, xShift, yShift);
+          else
+            translateAndPush(allGeometry, LineSegment3d.create(tangentRay.origin, detail.point), xShift, yShift);
+        }
+      }
+      xShift += 10.0;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "IntersectPlane");
     expect(ck.getNumErrors()).equals(0);
   });
 

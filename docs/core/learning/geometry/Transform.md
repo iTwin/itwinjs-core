@@ -107,7 +107,8 @@ These methods return individual vectors with special perpendicular conditions re
 |---|---|---|---|
 | extract axis of rotation | Rigit axis matrix | rigidMatrix->getAxisAndAngleOfRotation () : {axis: Vector3d, angle: Angle, ok: boolean} | |
 
-# Multiplication
+# Multiplying points and vectors
+
 
 | method | remarks |
 |---|---|
