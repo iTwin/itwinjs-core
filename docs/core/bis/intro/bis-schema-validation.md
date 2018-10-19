@@ -52,6 +52,7 @@ The rules are broken into the different parts of the Schema they are validated a
   - **bis:DocumentListModel**
   - **bis:LinkModel**
 - Property overrides cannot change the persistence unit.
+- Subclasses of **bis:Model** cannot have additional properties defined outside of **BisCore**.
 
 ### Relationship Classes
 
