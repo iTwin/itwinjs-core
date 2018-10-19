@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Wed, 17 Oct 2018 18:18:38 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Oct 2018 13:04:14 GMT and should not be manually modified.
+
+## 0.161.0
+Fri, 19 Oct 2018 13:04:14 GMT
+
+### Updates
+
+- Allow case-insensitive lookup of keys from Config.App
 
 ## 0.160.0
 Wed, 17 Oct 2018 18:18:38 GMT

@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 17 Oct 2018 18:18:38 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Oct 2018 13:04:14 GMT and should not be manually modified.
+
+## 0.161.0
+Fri, 19 Oct 2018 13:04:14 GMT
+
+### Updates
+
+- Update native-platform version to 0.64.2, which now includes a new package to handle electron for linux.
+- Update iModel.js native platform to version 0.64.3
 
 ## 0.160.0
 Wed, 17 Oct 2018 18:18:38 GMT
