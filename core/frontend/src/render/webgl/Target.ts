@@ -982,7 +982,7 @@ export class OnScreenTarget extends Target {
   public set animationFraction(fraction: number) { this._animationFraction = fraction; }
 
   public get viewRect(): ViewRect {
-    this.renderRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
+    assert(0 < this.renderRect.width && 0 < this.renderRect.height, "Zero-size view rect");
     assert(Math.floor(this.renderRect.width) === this.renderRect.width && Math.floor(this.renderRect.height) === this.renderRect.height, "fractional view rect dimensions");
     return this.renderRect;
   }
@@ -1026,7 +1026,8 @@ export class OnScreenTarget extends Target {
   }
 
   public updateViewRect(): boolean {
-    const viewRect = this.viewRect;
+    this.renderRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
+    const viewRect = this.renderRect;
 
     if (this._prevViewRect.width !== viewRect.width || this._prevViewRect.height !== viewRect.height) {
       // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance

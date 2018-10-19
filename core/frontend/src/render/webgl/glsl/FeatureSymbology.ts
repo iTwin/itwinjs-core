@@ -252,7 +252,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
         if (ovr!.isNonUniform)
           ovr!.lut!.bindSampler(uniform, TextureUnit.FeatureSymbology);
         else
-          System.instance.lineCodeTexture!.bindSampler(uniform, TextureUnit.FeatureSymbology); // Bind *something* to suppress 'no texture assigned to texture unit x' warnings
+          System.instance.ensureSamplerBound(uniform, TextureUnit.FeatureSymbology);
       });
     });
     vert.addUniform("u_featureParams", VariableType.Vec2, (prog) => {
@@ -586,10 +586,8 @@ export function addElementId(builder: ProgramBuilder, alwaysUniform: boolean = f
         const table = params.target.currentPickTable!;
         if (undefined !== table.nonUniform)
           table.nonUniform.bindSampler(uniform, TextureUnit.ElementId);
-        else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
-          // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
-          System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.ElementId);
-        }
+        else
+          System.instance.ensureSamplerBound(uniform, TextureUnit.ElementId);
       });
     });
     vert.addUniform("u_elementIdParams", VariableType.Vec2, (prog) => {

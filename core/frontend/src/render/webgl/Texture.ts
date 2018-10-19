@@ -28,8 +28,7 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
   // Bind the texture object; make sure we do not interfere with other active textures
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(gl.TEXTURE_2D, tex);
+  System.instance.bindTexture2d(TextureUnit.Zero, tex);
 
   // send the texture data
   if (undefined !== element) {
@@ -51,7 +50,7 @@ function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreatePa
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_S, params.wrapMode);
   gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_WRAP_T, params.wrapMode);
 
-  gl.bindTexture(gl.TEXTURE_2D, null);
+  System.instance.bindTexture2d(TextureUnit.Zero, undefined);
 }
 
 function loadTextureFromBytes(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Uint8Array): void { loadTexture2DImageData(handle, params, bytes); }
@@ -65,8 +64,7 @@ function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCrea
   gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
 
   // Bind the texture object; make sure we do not interfere with other active textures
-  gl.activeTexture(gl.TEXTURE0);
-  gl.bindTexture(GL.Texture.Target.CubeMap, tex);
+  System.instance.bindTextureCubeMap(TextureUnit.Zero, tex);
 
   const cubeTargets: number[] = [GL.Texture.Target.CubeMapPositiveX, GL.Texture.Target.CubeMapNegativeX, GL.Texture.Target.CubeMapPositiveY, GL.Texture.Target.CubeMapNegativeY, GL.Texture.Target.CubeMapPositiveZ, GL.Texture.Target.CubeMapNegativeZ];
 
@@ -80,7 +78,7 @@ function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCrea
   gl.texParameteri(GL.Texture.Target.CubeMap, gl.TEXTURE_WRAP_T, params.wrapMode);
   // gl.texParameteri(GL.Texture.Target.CubeMap, gl.TEXTURE_WRAP_R, params.wrapMode); // Unavailable in GLES2
 
-  gl.bindTexture(GL.Texture.Target.CubeMap, null);
+  System.instance.bindTextureCubeMap(TextureUnit.Zero, undefined);
 }
 
 type TextureFlag = true | undefined;
@@ -251,7 +249,7 @@ export abstract class TextureHandle implements IDisposable {
       if (undefined !== TextureHandle._monitor)
         TextureHandle._monitor.onTextureDisposed(this);
 
-      System.instance.context.deleteTexture(this._glTexture!);
+      System.instance.disposeTexture(this._glTexture!);
       this._glTexture = undefined;
     }
   }
@@ -311,9 +309,7 @@ export class Texture2DHandle extends TextureHandle {
   /** Bind specified texture handle to specified texture unit. */
   public static bindTexture(texUnit: TextureUnit, glTex: WebGLTexture | undefined) {
     assert(!(glTex instanceof TextureHandle));
-    const gl: WebGLRenderingContext = System.instance.context;
-    gl.activeTexture(texUnit);
-    gl.bindTexture(gl.TEXTURE_2D, glTex !== undefined ? glTex : null);
+    System.instance.bindTexture2d(texUnit, glTex);
     if (this.wantDebugIds)
       debugPrint("Texture Unit " + (texUnit - TextureUnit.Zero) + " = " + (glTex ? (glTex as any)._debugId : "null"));
   }
@@ -416,9 +412,7 @@ export class TextureCubeHandle extends TextureHandle {
   /** Bind specified cubemap texture handle to specified texture unit. */
   public static bindTexture(texUnit: TextureUnit, glTex: WebGLTexture | undefined) {
     assert(!(glTex instanceof TextureHandle));
-    const gl: WebGLRenderingContext = System.instance.context;
-    gl.activeTexture(texUnit);
-    gl.bindTexture(GL.Texture.Target.CubeMap, glTex !== undefined ? glTex : null);
+    System.instance.bindTextureCubeMap(texUnit, glTex);
     if (this.wantDebugIds)
       debugPrint("Texture Unit " + (texUnit - TextureUnit.Zero) + " = " + (glTex ? (glTex as any)._debugId : "null"));
   }
