@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "SettingsClient now accepts AccessToken (from SAML and OIDC) rather than (SAML-only) AuthorizationToken.",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Krischan.Eberle@bentley.com"
+}
