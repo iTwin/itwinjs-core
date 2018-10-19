@@ -33,8 +33,47 @@ import { Point4d } from "../geometry4d/Point4d";
 
 /**
  * Base class for BSplineCurve3d and BSplineCurve3dH.
+ * * A bspline curve consists of a set of knots and a set of poles.
+ * * The bspline curve is a function of the independent "knot axis" variable
+ * * The curve "follows" the poles loosely.
+ * * The is a set of polynomial spans.
+ * * The polynomial spans all have same `degree`.
+ * * Within each span, the polynomial of that `degree` is controlled by `order = degree + 1` contiguous points called poles.
+ * * The is a strict relationship between knot and poles counts:  `numPoles + order = numKnots + 2'
+ * * The number of spans is `numSpan = numPoles - degree`
+ * * For a given `spanIndex`:
+ * * * The `order` poles begin at index `spanIndex`.
+ * * * The `2*order` knots begin as span index
+ * * * The knot interval for this span is from `knot[degree+span-1] to knot[degree+span]`
+ * * The active part of the knot axis is `knot[degree-1] < knot < knot[degree-1 + numSpan]` i.e. `knot[degree-1] < knot < knot[numPoles]
+ *
+ * Nearly all bsplines are "clamped ".
+ * * Clamping make the curve pass through its first and last poles, with tangents directed along the first and last edges of the control polygon.
+ * * The knots for a clampled bspline have `degree` copies of the lowest knot value and `degree` copies of the highest knot value.
+ * * For instance, the knot vector `[0,0,0,1,2,3,3,3]
+ * * * can be evaluated from `0<=knot<=3`
+ * * * has 3 spans: 0 to 1, 1 to 2, 2 to 3
+ * * * has 6 poles
+ * * * passes through its first and last poles.
+ * * `create` methods may allow classic convention that has an extra knot at the beginning and end of the knot vector.
+ * * * The extra knots (first and last) were never referenced by the bspline recurrance relations.
+ * * * When the `ceate` methods recognize the classic setup (`numPoles + order = numKnots`), the extra knot is not saved with the BSplineCurve3dBase knots.
+ *
  * * The weighted variant has the problem that CurvePrimitive 3d typing does not allow undefined result where Point4d has zero weight.
  * * The convention for these is to return 000 in such places.
+ *
+ * * Note the class relationships:
+ * * * BSpline1dNd knows the bspline reucurrance relations for control points (poles) with no physical meaning.
+ * * * BsplineCurve3dBase owns a protected BSpline1dNd
+ * * * BsplineCurve3dBase is derived from CurvePrimitive, which creates obligation to act as a 3D curve, such as
+ * * * * evaluate fraction to point and derivatives wrt fraction
+ * * * * compute intersection with plane
+ * * * BSplineCurve3d and BSplineCurve3dH have variant logic driven by whether or not there are "weights" on the poles.
+ * * * * For `BSplineCurve3d`, the xyz value of pole calculations are "final" values for 3d evaluation
+ * * * * For `BSplineCurve3dH`, various `BSpline1dNd` results with xyzw have to be normalized back to xyz.
+ *
+ * * These classes do not support "periodic" variants.
+ * * * Periodic curves need to have certain leading knots and poles replicated at the end
  */
 export abstract class BSplineCurve3dBase extends CurvePrimitive {
   protected _bcurve: BSpline1dNd;
@@ -97,8 +136,18 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     result.vectorV.scaleInPlace(a * a);
     return result;
   }
+  /**
+   * Return the start point of hte curve.
+   */
   public startPoint(): Point3d { return this.evaluatePointInSpan(0, 0.0); }
+  /**
+   * Return the end point of the curve
+   */
   public endPoint(): Point3d { return this.evaluatePointInSpan(this.numSpan - 1, 1.0); }
+  /** Reverse the curve in place.
+   * * Poles are reversed
+   * * knot values are mirrored around the middle of the
+   */
   public reverseInPlace(): void { this._bcurve.reverseInPlace(); }
   /**
    * Return an array with this curve's bezier fragments.
@@ -122,9 +171,14 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     * @param result optional reusable curve.  This will only be reused if it is a BezierCurve3d with matching order.
     */
   public abstract getSaturatedBezierSpan3dOr3dH(spanIndex: number, prefer3dH: boolean, result?: BezierCurveBase): BezierCurveBase | undefined;
+  /** Return a specified pole as a Point4d.
+   * * BSplineCurve3d appends weight 1 to its xyz
+   * * BSplineCurve3dH with pole whose "normalized" point is (x,y,z) but has weight w returns its weighted (wx,wy,wz,w)
+   */
   public abstract getPolePoint4d(poleIndex: number, result?: Point4d): Point4d | undefined;
-  /**
-   * Return a pole as Point3d.   If this is a weighted curve, normalize the pole to w=1
+  /** Return a specified pole as a Point3d
+   * * BSplineCurve3d returns its simple xyz
+   * * BSplineCurve3dH attempts to normalize its (wx,wy,wz,w) back to (x,y,z), and returns undefined if weight is zero.
    * @param poleIndex
    * @param result optional result
    */
@@ -167,6 +221,11 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     }
     return result;
   }
+  /** Implement `CurvePrimitive.appendPlaneIntersections`
+   * @param plane A plane (e.g. specific type Plane3dByOriginAndUnitNormal or Point4d)
+   * @param result growing array of plane intersections
+   * @return number of intersections appended to the array.
+  */
   public appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
     const numPole = this.numPoles;
     const order = this.order;
@@ -175,30 +234,41 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     const point4d = Point4d.create();
     // compute all pole altitudes from the plane
     const minMax = Range1d.createNull();
-    // Put the altitudes of all the bspline poles
+    // Put the altitudes of all the bspline poles in one array.
     for (let i = 0; i < numPole; i++) {
       allCoffs[i] = plane.weightedAltitude(this.getPolePoint4d(i, point4d)!);
       minMax.extendX(allCoffs[i]);
     }
+    // A univaraite bspline throught the altitude poles gives altitude as function of the bspline knot.
+    // The (bspline) altitude function for each span is `order` consecutive altitudes.
+    // If those altitutdes bracket zero, the span may potentially have a crossing.
+    // When that occurs,
     let univariateBezier: UnivariateBezier | undefined;
     let numFound = 0;
     let previousFraction = -1000.0;
     if (minMax.containsX(0.0)) {
       for (let spanIndex = 0; spanIndex < numSpan; spanIndex++) {
-        minMax.setNull();
-        minMax.extendArraySubset(allCoffs, spanIndex, order);
-        if (minMax.containsX(0.0)) {
-          univariateBezier = UnivariateBezier.createArraySubset(allCoffs, spanIndex, order, univariateBezier)!;
-          Bezier1dNd.saturate1dInPlace(univariateBezier.coffs, this._bcurve.knots, spanIndex);
-          const roots = univariateBezier.roots(0.0, true);
-          if (roots) {
-            for (const spanFraction of roots) {
-              numFound++;
-              const fraction = this._bcurve.knots.spanFractionToFraction(spanIndex, spanFraction);
-              if (!Geometry.isAlmostEqualNumber(fraction, previousFraction)) {
-                const detail = CurveLocationDetail.createCurveEvaluatedFraction (this, fraction);
-                result.push(detail);
-                previousFraction = fraction;
+        if (this._bcurve.knots.isIndexOfRealSpan(spanIndex)) {  // ignore trivial knot intervals.
+          // outer range test ...
+          minMax.setNull();
+          minMax.extendArraySubset(allCoffs, spanIndex, order);
+          if (minMax.containsX(0.0)) {
+            // pack the bspline support into a univariate bezier ...
+            univariateBezier = UnivariateBezier.createArraySubset(allCoffs, spanIndex, order, univariateBezier)!;
+            // saturate and solve the bezier
+            Bezier1dNd.saturate1dInPlace(univariateBezier.coffs, this._bcurve.knots, spanIndex);
+            const roots = univariateBezier.roots(0.0, true);
+            if (roots) {
+              for (const spanFraction of roots) {
+                // promote each local bezier fraction to global fraction.
+                // savet the curve evaluation at that fraction.
+                numFound++;
+                const fraction = this._bcurve.knots.spanFractionToFraction(spanIndex, spanFraction);
+                if (!Geometry.isAlmostEqualNumber(fraction, previousFraction)) {
+                  const detail = CurveLocationDetail.createCurveEvaluatedFraction(this, fraction);
+                  result.push(detail);
+                  previousFraction = fraction;
+                }
               }
             }
           }
@@ -209,7 +279,10 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
   }
 
 }
-
+/**
+ * A BSplineCurve3d is a bspline curve whose poles are Point3d.
+ * See BSplineCurve3dBase for description of knots, order, degree.
+ */
 export class BSplineCurve3d extends BSplineCurve3dBase {
 
   private _workBezier?: BezierCurve3dH;

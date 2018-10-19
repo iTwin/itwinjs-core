@@ -261,14 +261,22 @@ export class AngleSweep implements BeJSONFunctions {
         // return { degrees: [this.startDegrees, this.endDegrees] };
         return [this.startDegrees, this.endDegrees];
     }
-    /** test if start and end angles match, with no test for 360-degree shifts. */
+    /** test if start and end angles match, with explicit name to clarify that there is no test for 360-degree shifts. */
     public isAlmostEqualAllowPeriodShift(other: AngleSweep): boolean {
         return Angle.isAlmostEqualRadiansAllowPeriodShift(this._radians0, other._radians0)
             && Angle.isAlmostEqualRadiansNoPeriodShift(this._radians1 - this._radians0, other._radians1 - other._radians0);
     }
-    /** test if start and end angles match, allowing for 360-degree shifts. */
+    /** test if start and end angles match, explicit name to clarify that 360-degree shifts are allowed. */
     public isAlmostEqualNoPeriodShift(other: AngleSweep): boolean {
         return Angle.isAlmostEqualRadiansNoPeriodShift(this._radians0, other._radians0)
             && Angle.isAlmostEqualRadiansNoPeriodShift(this._radians1 - this._radians0, other._radians1 - other._radians0);
     }
+    /** test if start and end angles match with radians tolerance.
+     * * This is equivalent to isAlmostEqualNoPeriodShift.
+     * * it is present for consistency with other classes
+     * * It is recommended that all callers use one of he longer names to be clear of their intentions:
+     * * * isAlmostEqualAllowPeriodShift
+     * * * isAlmostEqualRadiansNoPeriodShift
+     */
+    public isAlmostEqual(other: AngleSweep): boolean { return this.isAlmostEqualNoPeriodShift(other); }
 }

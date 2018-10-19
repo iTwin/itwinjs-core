@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "fromJSON tests.    Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance.",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

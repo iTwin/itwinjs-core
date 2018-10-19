@@ -209,8 +209,8 @@ export class Geometry {
   public static isSmallRelative(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
   public static isSmallAngleRadians(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
   public static isAlmostEqualNumber(a: number, b: number) {
-    const sumAbs = Math.abs(a) + Math.abs(b);
-    return Math.abs(a - b) < Geometry.smallAngleRadians * sumAbs;
+    const sumAbs = 1.0 + Math.abs(a) + Math.abs(b);
+    return Math.abs(a - b) <= Geometry.smallAngleRadians * sumAbs;
   }
   public static isDistanceWithinTol(distance: number, tol: number) {
     return Math.abs(distance) <= Math.abs(tol);
