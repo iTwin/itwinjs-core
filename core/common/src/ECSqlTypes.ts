@@ -43,38 +43,13 @@ export interface NavigationValue {
   relClassName?: string;
 }
 
-/** An ECSqlTypedString is used to decorate a string value with type information.
- *  This is necessary, when binding parameters to an ECSQL statement so that
- *  iModel.js can figure out the right EC type from the string value.
- *
- *  See also [iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes).
- */
-export interface ECSqlTypedString {
-  type: ECSqlStringType;
-  value: string;
-}
-
-/** Type of an [ECSqlTypedString]($common) */
-export enum ECSqlStringType {
-  /** The string represents a BLOB value, formatted as Base64 string. */
-  Blob,
-  /** The string represents a DateTime value, formatted as ISO8601 string. */
-  DateTime,
-  /** The string represents a GUID value, formatted as GUID string (see [Guid]($bentleyjs-core)). */
-  Guid,
-  /** The string represents an Id value, formatted as hexadecimal string (see [Id64]($bentleyjs-core)). */
-  Id,
-  /** The string is not specifically typed. */
-  String,
-}
-
 /** An ECSQL Navigation value which can be bound to a navigation property ECSQL parameter
  *
  * See also [ECSQL]($docs/learning/ECSQL).
  */
 export interface NavigationBindingValue {
   /** ECInstanceId of the related instance */
-  id: ECSqlTypedString | Id64String;
+  id: Id64String;
   /** Fully qualified class name of the relationship backing the Navigation property */
   relClassName?: string;
   /** Table space where the relationship's schema is persisted. This is only required

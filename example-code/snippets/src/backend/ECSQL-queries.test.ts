@@ -39,8 +39,8 @@ describe("Useful ECSQL queries", () => {
       where
         partition.codevalue=:partitionName and partition.parent.id = parent.ecinstanceid;
     `, (stmt: ECSqlStatement) => {
-        stmt.bindString("parentName", "Subject1");
-        stmt.bindString("partitionName", "Physical");
+        stmt.bindValue("parentName", "Subject1");
+        stmt.bindValue("partitionName", "Physical");
         const ids: Id64Set = new Set<string>();
         while (stmt.step() === DbResult.BE_SQLITE_ROW)
           ids.add(stmt.getValue(0).getId());

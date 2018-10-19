@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { ECSqlStatement, ECSqlInsertResult } from "../../ECSqlStatement";
-import { ECSqlStringType, ECSqlTypedString, NavigationValue } from "@bentley/imodeljs-common";
+import { NavigationValue } from "@bentley/imodeljs-common";
 import { ECDb } from "../../ECDb";
 import { IModelDb } from "../../IModelDb";
 import { DbResult, Id64, using } from "@bentley/bentleyjs-core";
@@ -203,11 +203,6 @@ describe("ECSqlStatement", () => {
           stmt.clearBindings();
 
           stmt.getBinder(1).bind(dtStr);
-          assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-          stmt.reset();
-          stmt.clearBindings();
-
-          stmt.bindValues([{ type: ECSqlStringType.DateTime, value: dtStr }]);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
           stmt.reset();
           stmt.clearBindings();
@@ -745,7 +740,7 @@ describe("ECSqlStatement", () => {
 
         const boolVal = true;
         const doubleVal = 3.5;
-        const dtVal: ECSqlTypedString = { type: ECSqlStringType.DateTime, value: "2018-01-23T12:24:00.000" };
+        const dtVal: string = "2018-01-23T12:24:00.000";
         const intVal = 3;
         const p2dVal = new Point2d(1, 2);
         const p3dVal = new Point3d(1, 2, 3);
@@ -762,7 +757,7 @@ describe("ECSqlStatement", () => {
             assert.deepEqual(r2, testRange);
             assert.equal(row.bo, boolVal);
             assert.equal(row.d, doubleVal);
-            assert.equal(row.dt, dtVal.value);
+            assert.equal(row.dt, dtVal);
             assert.equal(row.i, intVal);
             assert.equal(row.p2d.x, p2dVal.x);
             assert.equal(row.p2d.y, p2dVal.y);
@@ -774,7 +769,7 @@ describe("ECSqlStatement", () => {
             assert.deepEqual(row.s_bl, blobVal);
             assert.equal(row.s_bo, boolVal);
             assert.equal(row.s_d, doubleVal);
-            assert.equal(row.s_dt, dtVal.value);
+            assert.equal(row.s_dt, dtVal);
             assert.equal(row.s_i, intVal);
             assert.equal(row.s_p2d.x, p2dVal.x);
             assert.equal(row.s_p2d.y, p2dVal.y);
@@ -790,7 +785,7 @@ describe("ECSqlStatement", () => {
           stmt.bindBlob(1, blobVal);
           stmt.bindBoolean(2, boolVal);
           stmt.bindDouble(3, doubleVal);
-          stmt.bindDateTime(4, dtVal.value);
+          stmt.bindDateTime(4, dtVal);
           stmt.bindInteger(5, intVal);
           stmt.bindPoint2d(6, p2dVal);
           stmt.bindPoint3d(7, p3dVal);
@@ -798,7 +793,7 @@ describe("ECSqlStatement", () => {
           stmt.bindBlob(9, blobVal);
           stmt.bindBoolean(10, boolVal);
           stmt.bindDouble(11, doubleVal);
-          stmt.bindDateTime(12, dtVal.value);
+          stmt.bindDateTime(12, dtVal);
           stmt.bindInteger(13, intVal);
           stmt.bindPoint2d(14, p2dVal);
           stmt.bindPoint3d(15, p3dVal);
@@ -820,7 +815,7 @@ describe("ECSqlStatement", () => {
           stmt.bindBlob("bl", blobVal);
           stmt.bindBoolean("bo", boolVal);
           stmt.bindDouble("d", doubleVal);
-          stmt.bindDateTime("dt", dtVal.value);
+          stmt.bindDateTime("dt", dtVal);
           stmt.bindInteger("i", intVal);
           stmt.bindPoint2d("p2d", p2dVal);
           stmt.bindPoint3d("p3d", p3dVal);
@@ -829,7 +824,7 @@ describe("ECSqlStatement", () => {
           stmt.bindBlob("s_bl", blobVal);
           stmt.bindBoolean("s_bo", boolVal);
           stmt.bindDouble("s_d", doubleVal);
-          stmt.bindDateTime("s_dt", dtVal.value);
+          stmt.bindDateTime("s_dt", dtVal);
           stmt.bindInteger("s_i", intVal);
           stmt.bindPoint2d("s_p2d", p2dVal);
           stmt.bindPoint3d("s_p3d", p3dVal);
@@ -881,7 +876,7 @@ describe("ECSqlStatement", () => {
 
         const structVal = {
           bl: { blobVal }, bo: true, d: 3.5,
-          dt: { type: ECSqlStringType.DateTime, value: "2018-01-23T12:24:00.000" },
+          dt: "2018-01-23T12:24:00.000",
           i: 3, p2d: new Point2d(1, 2), p3d: new Point3d(1, 2, 3), s: "Hello World",
         };
 
@@ -893,7 +888,7 @@ describe("ECSqlStatement", () => {
             assert.equal(row.struct.bl, structVal.bl);
             assert.equal(row.struct.bo, structVal.bo);
             assert.equal(row.struct.d, structVal.d);
-            assert.equal(row.struct.dt, structVal.dt.value);
+            assert.equal(row.struct.dt, structVal.dt);
             assert.equal(row.struct.i, structVal.i);
             assert.equal(row.struct.p2d.x, structVal.p2d.x);
             assert.equal(row.struct.p2d.y, structVal.p2d.y);
@@ -954,7 +949,7 @@ describe("ECSqlStatement", () => {
         assert.isTrue(ecdb.isOpen);
 
         const intArray = [1, 2, 3];
-        const dtArray = [{ type: ECSqlStringType.DateTime, value: "2018-01-23T00:00:00.000" }, { type: ECSqlStringType.DateTime, value: "2018-01-23T16:39:00.000" }];
+        const dtArray = ["2018-01-23T00:00:00.000", "2018-01-23T16:39:00.000"];
         const addressArray = [{ city: "London", zip: 10000 }, { city: "Manchester", zip: 20000 }, { city: "Edinburgh", zip: 30000 }];
 
         const verify = (expectedId: Id64) => {
@@ -971,7 +966,7 @@ describe("ECSqlStatement", () => {
 
             assert.equal(row.dt_Array.length, dtArray.length);
             for (let i = 0; i < dtArray.length; i++) {
-              assert.equal(row.dt_Array[i], dtArray[i].value);
+              assert.equal(row.dt_Array[i], dtArray[i]);
             }
 
             assert.equal(row.addresses.length, addressArray.length);
@@ -1466,7 +1461,7 @@ describe("ECSqlStatement", () => {
         const stringVal: string = "Hello World";
 
         const id: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Foo(Struct) VALUES(?)", (stmt: ECSqlStatement) => {
-          stmt.bindStruct(1, { bl: blobVal, bo: boolVal, d: doubleVal, dt: { type: ECSqlStringType.DateTime, value: dtVal }, i: intVal, p2d: p2dVal, p3d: p3dVal, s: stringVal });
+          stmt.bindStruct(1, { bl: blobVal, bo: boolVal, d: doubleVal, dt: dtVal, i: intVal, p2d: p2dVal, p3d: p3dVal, s: stringVal });
           const res: ECSqlInsertResult = stmt.stepForInsert();
           assert.equal(res.status, DbResult.BE_SQLITE_DONE);
           assert.isDefined(res.id);
@@ -1554,7 +1549,7 @@ describe("ECSqlStatement", () => {
         const id: Id64 = ecdb.withPreparedStatement("INSERT INTO test.Foo(Bl,Bo,D,Dt,I,L,P2d,P3d,S) VALUES(:bl,:bo,:d,:dt,:i,:l,:p2d,:p3d,:s)", (stmt: ECSqlStatement) => {
           stmt.bindValues({
             bl: blobVal, bo: expectedRow.bo, d: expectedRow.d,
-            dt: { type: ECSqlStringType.DateTime, value: expectedRow.dt }, i: expectedRow.i, l: expectedRow.l, p2d: expectedRow.p2d, p3d: expectedRow.p3d, s: expectedRow.s,
+            dt: expectedRow.dt, i: expectedRow.i, l: expectedRow.l, p2d: expectedRow.p2d, p3d: expectedRow.p3d, s: expectedRow.s,
           });
           const res: ECSqlInsertResult = stmt.stepForInsert();
           assert.equal(res.status, DbResult.BE_SQLITE_DONE);
