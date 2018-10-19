@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Correctly parse RPC interface versions with zero major component.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}

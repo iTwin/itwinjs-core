@@ -21,6 +21,8 @@ export abstract class RpcInterface {
     const difference = semver.diff(backend, frontend);
     if (semver.prerelease(backend) || semver.prerelease(frontend)) {
       return difference === null;
+    } else if (semver.major(backend) === 0 || semver.major(frontend) === 0) {
+      return difference === null || (difference === "patch" && semver.patch(frontend) < semver.patch(backend));
     } else {
       return difference === null || difference === "patch" || (difference === "minor" && semver.minor(frontend) < semver.minor(backend));
     }

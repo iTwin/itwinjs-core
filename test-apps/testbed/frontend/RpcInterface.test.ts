@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { RpcRequest, RpcManager, RpcOperation, RpcRequestEvent, RpcInterface, RpcInterfaceDefinition, RpcConfiguration, IModelReadRpcInterface, IModelToken } from "@bentley/imodeljs-common";
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestNotFoundResponse, TestNotFoundResponseCode } from "../common/TestRpcInterface";
+import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestNotFoundResponse, TestNotFoundResponseCode, ZeroMajorRpcInterface } from "../common/TestRpcInterface";
 import { assert } from "chai";
 import { BentleyError, Id64 } from "@bentley/bentleyjs-core";
 import { TestbedConfig } from "../common/TestbedConfig";
@@ -327,17 +327,20 @@ describe("RpcInterface", () => {
 
   it("should reject a mismatched RPC interface request", async () => {
     const realVersion = TestRpcInterface.version;
+    const realVersionZ = ZeroMajorRpcInterface.version;
 
-    const test = (code: string | null, expectValid: boolean) => {
+    const test = (code: string | null, expectValid: boolean, c: TestRpcInterface | ZeroMajorRpcInterface) => {
       return new Promise(async (resolve, reject) => {
         if (code === null) {
           reject();
         }
 
         TestRpcInterface.version = code as string;
+        ZeroMajorRpcInterface.version = code as string;
         try {
-          await TestRpcInterface.getClient().op1(new TestOp1Params(0, 0));
+          await c.op1(new TestOp1Params(0, 0));
           TestRpcInterface.version = realVersion;
+          ZeroMajorRpcInterface.version = realVersionZ;
           if (expectValid) {
             resolve();
           } else {
@@ -345,6 +348,7 @@ describe("RpcInterface", () => {
           }
         } catch (err) {
           TestRpcInterface.version = realVersion;
+          ZeroMajorRpcInterface.version = realVersionZ;
           if (expectValid) {
             reject();
           } else {
@@ -354,37 +358,79 @@ describe("RpcInterface", () => {
       });
     };
 
-    await test("", false);
+    const client = TestRpcInterface.getClient();
+    const clientZ = ZeroMajorRpcInterface.getClient();
+
+    await test("", false, client);
+    await test("", false, clientZ);
 
     const current = semver.parse(realVersion)!;
-    await test(current.format(), true);
+    const currentZ = semver.parse(realVersionZ)!;
+
+    await test(current.format(), true, client);
+    await test(currentZ.format(), true, clientZ);
 
     const incMajor = semver.parse(realVersion)!;
     incMajor.inc("major");
-    await (test(incMajor.format(), false));
+
+    const incMajorZ = semver.parse(realVersionZ)!;
+    incMajorZ.inc("major");
+
+    await (test(incMajor.format(), false, client));
+    await (test(incMajorZ.format(), false, clientZ));
 
     const incMinor = semver.parse(realVersion)!;
     incMinor.inc("minor");
-    await (test(incMinor.format(), true));
+
+    const incMinorZ = semver.parse(realVersionZ)!;
+    incMinorZ.inc("minor");
+
+    await (test(incMinor.format(), true, client));
+    await (test(incMinorZ.format(), false, clientZ));
 
     const incPatch = semver.parse(realVersion)!;
     incPatch.inc("patch");
-    await (test(incPatch.format(), true));
+
+    const incPatchZ = semver.parse(realVersionZ)!;
+    incPatchZ.inc("patch");
+
+    await (test(incPatch.format(), true, client));
+    await (test(incPatchZ.format(), true, clientZ));
 
     const incPre = semver.parse(realVersion)!;
     incPre.inc("prerelease");
-    await (test(incPre.format(), false));
+
+    const incPreZ = semver.parse(realVersionZ)!;
+    incPreZ.inc("prerelease");
+
+    await (test(incPre.format(), false, client));
+    await (test(incPreZ.format(), false, clientZ));
 
     const decMajor = semver.parse(realVersion)!;
     --decMajor.major;
-    await (test(decMajor.format(), false));
+
+    const decMajorZ = semver.parse(realVersionZ)!;
+    --decMajorZ.major;
+
+    await (test(decMajor.format(), false, client));
+    await (test(decMajorZ.format(), false, clientZ));
 
     const decMinor = semver.parse(realVersion)!;
     --decMinor.minor;
-    await (test(decMinor.format(), false));
+
+    const decMinorZ = semver.parse(realVersionZ)!;
+    --decMinorZ.minor;
+
+    await (test(decMinor.format(), false, client));
+    await (test(decMinorZ.format(), false, clientZ));
 
     const decPatch = semver.parse(realVersion)!;
     --decPatch.patch;
-    await (test(decPatch.format(), true));
+
+    const decPatchZ = semver.parse(realVersionZ)!;
+    --decPatchZ.patch;
+
+    await (test(decPatch.format(), true, client));
+    await (test(decPatchZ.format(), false, clientZ));
   });
 });
