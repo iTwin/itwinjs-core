@@ -1,6 +1,18 @@
 # Change Log - @bentley/config-loader
 
-This log was last generated on Tue, 16 Oct 2018 14:09:09 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Oct 2018 13:04:14 GMT and should not be manually modified.
+
+## 0.161.0
+Fri, 19 Oct 2018 13:04:14 GMT
+
+### Updates
+
+- Clean up package dependencies and scripts
+
+## 0.160.0
+Wed, 17 Oct 2018 18:18:38 GMT
+
+*Version update only*
 
 ## 0.159.0
 Tue, 16 Oct 2018 14:09:09 GMT

@@ -1,4 +1,4 @@
-﻿# @bentley/presentation-frontend
+# @bentley/presentation-frontend
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

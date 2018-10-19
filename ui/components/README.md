@@ -1,4 +1,4 @@
-﻿# @bentley/ui-components
+# @bentley/ui-components
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

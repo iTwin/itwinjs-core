@@ -1,4 +1,4 @@
-﻿# @bentley/config-loader
+# @bentley/config-loader
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 
