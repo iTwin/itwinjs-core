@@ -1,5 +1,7 @@
 # RpcInterface
+
 Table of Contents:
+
 * [Overview](#Overview)
 * Implementing RpcInterfaces
   * [RpcInterfaces are Typescript Classes](#rpcinterfaces-are-typescript-classes)
@@ -15,6 +17,7 @@ Table of Contents:
 * [Logging and ActivityIds](#logging-and-activityids)
 
 ## Overview
+
 As described in the [software architecture overview](./SoftwareArchitecture.md), the functionality of an iModel.js app is typically implemented in separate components that run in different threads, processes, and/or machines. These components communicate through interfaces, which are called *RpcInterfaces* because they use remote procedure calls, or [RPC](../learning/Glossary.md#RPC).
 
 ![SoftwareArchitecture-Rpc](./SoftwareArchitecture-RPC1.png)
@@ -72,6 +75,7 @@ To define an interface, write a TypeScript class that extends [RpcInterface]($co
 The interface definition class should define a method for each operation that is to be exposed by the server. Each method signature should include the names and types of the input parameters. Each method must return a `Promise` of the appropriate type. These methods and their signatures define the interface.
 
 The definition class must also define two static properties as interface metadata:
+
 * `types`. Specifies any non-primitive types used in the methods of interface.
 * `version`. The interface version number. See [below](#rpcinterface-version) for more on interface versioning.
 
@@ -105,7 +109,7 @@ The impl method must obtain the ActivityLoggingContext by calling [ActivityLoggi
 
 As noted above, the methods in the impl may have to transform certain argument types, such as IModelTokens, before they can be used.
 
-A best practice is that an impl should be a thin layer on top of normal classes in the server. Ideally, each method of an impl should be a one-line forwarding call that uses the public backend API of the server. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferrably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcInterfaces).
+A best practice is that an impl should be a thin layer on top of normal classes in the server. Ideally, each method of an impl should be a one-line forwarding call that uses the public backend API of the server. The impl wrapper should be concerned only with transforming types, not with functionality, while backend operation methods should be concerned only with functionality. Backend operation methods should be static, since a server should be stateless. Preferably, backend operation methods should be [synchronous if possible](#asynchronous-nature-of-rpcInterfaces).
 
 *Example:*
 
@@ -119,17 +123,17 @@ Impls must be registered at runtime, as explained next.
 
 The [architecture comparison](./SoftwareArchitecture.md#comparison) diagram shows the role of RpcInterfaces in supporting portable, resuable app components. A different *transport mechanism* is used in each configuration. RpcManager is used by clients and servers to apply configurations to RpcInterfaces.
 
-### Web RPC configuration
+## Web RPC configuration
 
 The Web RPC configuration transforms client calls on an RpcInterface into HTTP requests. Provides endpoint-processing and call dispatching in the server process. The iModel.js cloud RPC configuration is highly parameterized and can be adapted for use in many environments. This configuration is designed to cooperate with routing and authentication infrastructure. See [Web architecture](./SoftwareArchitecture.md#web).
 
 iModel.js comes with an implementation of a Web RPC configuration that works with the Bentley Cloud infrastructure. It is relatively straightforward for developers to write custom Web RPC configurations that works with other infrastructures.
 
-### Desktop RPC configuration
+## Desktop RPC configuration
 
-The iModel.js desktop RPC configuration is specific to the Electron framework. It marshalls calls on an RpcInterface through high-bandwidth, low-latency pipes between cooperating processes on the same computer. It provides endpoint-processing and call dispatching in thebackend process. See [Desktop architecture](./SoftwareArchitecture.md#desktop).
+The iModel.js desktop RPC configuration is specific to the Electron framework. It marshalls calls on an RpcInterface through high-bandwidth, low-latency pipes between cooperating processes on the same computer. It provides endpoint-processing and call dispatching in the backend process. See [Desktop architecture](./SoftwareArchitecture.md#desktop).
 
-### In-process RPC configuration
+## In-process RPC configuration
 
 The in-process RPC configuration marshalls calls on an RpcInterface across threads within a single process. It also provides call dispatching in the backend thread. See [Mobile architecture](./SoftwareArchitecture.md#mobile).
 
@@ -138,6 +142,7 @@ The in-process RPC configuration marshalls calls on an RpcInterface across threa
 A server must expose the RpcInterfaces that it implements or imports, so that clients can use them. To do that, the server must: register its impls, choose the interfaces that it wants to expose, configure those interfaces, and finally serve those interfaces.
 
 ### Register Impls
+
 The server must call [RpcManager.registerImpl]($common) to register the impl classes for the interfaces that it implements, if any.
 
 *Example:*
@@ -147,6 +152,7 @@ The server must call [RpcManager.registerImpl]($common) to register the impl cla
 ```
 
 ### Choose Interfaces
+
 The server must decide which interfaces it wants to expose. A server can expose multiple interfaces. A server can expose both its own implementations, if any, and imported implementations. The server can decide at run time which interfaces to expose, perhaps based on deployment parameters.
 
 *Example:*
@@ -156,17 +162,20 @@ The server must decide which interfaces it wants to expose. A server can expose 
 ```
 
 ### Configure Interfaces
+
 The server must choose the appropriate RPC configuration for the interfaces that it exposes to clients.
 If the server is an app backend, the RPC configuration must correspond to the app configuration.
 If the server is a [service](./App.md#imodel-services), it must always use a [Web RPC configuration](#web-rpc-configuration) for its interfaces.
 A backend should configure its RpcInterfaces in its [configuration-specific main](./AppTailoring.md#configuration-specific-main).
 
 *Desktop Example:*
+
 ``` ts
 [[include:RpcInterface.initializeImplDesktop]]
 ```
 
 *Web Example:*
+
 ``` ts
 [[include:RpcInterface.initializeImplBentleyCloud]]
 ```
@@ -174,6 +183,7 @@ A backend should configure its RpcInterfaces in its [configuration-specific main
 ### Serve the Interfaces
 
 When a backend is configured as a Web app, it must implement a Web server to serve out its interfaces, so that in-coming client requests are forwarded to the implementations. This is always true of all [services](./App.md#imodel-services). Any Web server technology can be used. Normally, a single function call is all that is required to integrate all configured interfaces with the Web server. For example, if a Web server uses express, it would serve its RpcInterfaces like this:
+
 ```ts
 const webServer = express();
 ...
@@ -181,6 +191,7 @@ webServer.post("*", async (request, response) => {
   rpcConfiguration.protocol.handleOperationPostRequest(request, response);
 });
 ```
+
 It is this simple because the server should be concerned *only* with serving its RpcInterfaces and not with static resources or any other kind of API.
 
 ## Client-side Configuration
@@ -194,6 +205,7 @@ A frontend should configure its RpcInterfaces in its [configuration-specific mai
 A desktop app must use a desktop configuration.
 
 *Desktop Example:*
+
 ``` ts
 [[include:RpcInterface.initializeClientDesktop]]
 ```
@@ -202,20 +214,22 @@ A desktop app must use a desktop configuration.
 
 The configuration of RpcInterfaces in a Web app depends on the relative locations of the frontend and backend(s). There are two basic options:
 
-1. Same Server
+#### Same Server
 
 If the app has its own backend, and if its backend serves both its RpcInterfaces and its frontend Web resources, then configuration is simple. Just pass the array of interfaces to [BentleyCloudRpcManager]($common). The URI of the backend defaults to the origin of the Web page.
 
 *Web example (simple app):*
+
 ``` ts
 [[include:RpcInterface.initializeClientBentleyCloudApp]]
 ```
 
-2. Different Servers
+#### Different Servers
 
 If the origin of the frontend is different from the server that runs the backend that provides a given set of RpcInterfaces, then the frontend must specify the URI of the backend server in the `uriPrefix` property when configuring BentleyCloudRpcManager.
 
 *Web example (separate backend):*
+
 ``` ts
 [[include:RpcInterface.initializeClientBentleyCloudRemote]]
 ```
@@ -237,8 +251,9 @@ Frontend methods that invoke imodeljs-clients methods directly are responsible f
 A backend method that turns around an invokes another backend's method via RpcInterfaces will propagate the current ActivityId to it.
 
 Briefly, here is how it works:
+
 * Frontend/client
-  * iModel.js on the frontend assigns a unique ActivityId value to an RpcIntereface call.
+  * iModel.js on the frontend assigns a unique ActivityId value to an RpcInterface call.
   * It puts this value in the [X-Correlation-ID](https://en.wikipedia.org/wiki/List_of_HTTP_header_fields) HTTP header field, to ensure that it stays with the request as it passes through communication layers.
 * Backend
   * iModel.js on the backend gets the ActivityId from the HTTP header.
@@ -253,11 +268,28 @@ See [managing the ActivityLoggingContext](../learning/backend/ManagingActivityLo
 
 Each RpcInterface has a version. This should not to be confused with the version of the package that implements the interface. The version of an RpcInterface refers to the shape of the interface itself.
 
-You should change the version of an RpcInterface if you change its shape. Follow the rules of [semantic versioning](https://semver.org).
+You should change the version of an RpcInterface if you change its shape.
+Follow the rules of [semantic versioning](https://semver.org) to indicate the type of change made to the RpcInterface.
 
-Interface version incompatibility is a possibility when a client makes requests on a remote server. iModelJs checks that the RcpInterface requested by the client is fulfilled by the implementation provided by the server. An interface is not fulfilled if it is missing or is incompatible. If the interface is missing, then the client's method call will throw an error. If the versions are incompatible, then the client's method call will throw an [IModelError]($common) with an errorNumber of [RpcInterfaceStatus.IncompatibleVersion]($bentley).
+## Non-Zero Major Versions (released)
+
+* Change in major version indicates a breaking change
+* Change in minor version indicates a method was added
+* Change in patch indicates a fix not affecting compatibility was made
+
+## Zero Major Versions (prerelease)
+
+* Major version locked at zero
+* Change in minor version indicates a potentially breaking change
+* Change in patch indicates that a method was added or a fix was made
+
+Interface version incompatibility is a possibility when a client makes requests on a remote server. The [RpcManager]($common) checks that the RcpInterface requested by the client is fulfilled by the implementation provided by the server. An interface is not fulfilled if it is missing or is incompatible. If the interface is missing, then the client's method call will throw an error. If the versions are incompatible, then the client's method call will throw an [IModelError]($common) with an errorNumber of [RpcInterfaceStatus.IncompatibleVersion]($bentley).
 
 The rules of [semantic versioning](https://semver.org) define compatibility. In brief, an interface is incompatible if:
-* The server implements a newer (major) version of the interface, and the newer version may have removed a method or changed the signature of a method that the client is requesting.
-* The server implements an older (major or minor) version of the interface, and the older version may not have the method that the client is requesting, or the signature of the method may be different.
-* The server and client versions are different, and either the server or the client version is an unstable pre-release version where the normal compatibility rules may not apply.
+There are different types of incompatibilities:
+
+* Complete mismatch
+  * Different major versions
+  * Different minor versions in prerelease when major version is zero
+* Client too new
+  * Client version has the same major version but is greater than the server's version when considering minor and patch

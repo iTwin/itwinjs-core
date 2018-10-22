@@ -15,6 +15,7 @@ import {
   RpcManager,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
+import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
 import { TestRpcInterface, TestRpcInterface2, TestRpcInterface3, ZeroMajorRpcInterface } from "./TestRpcInterface";
 import { OpenMode } from "@bentley/bentleyjs-core";
 
@@ -59,7 +60,17 @@ export class TestbedConfig {
 
   public static useIPC = false;
   public static useDirect = false;
-  public static rpcInterfaces = [IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelUnitTestRpcInterface, TestRpcInterface, TestRpcInterface2, ZeroMajorRpcInterface];
+  public static rpcInterfaces = [
+    IModelReadRpcInterface,
+    IModelTileRpcInterface,
+    IModelWriteRpcInterface,
+    StandaloneIModelRpcInterface,
+    IModelUnitTestRpcInterface,
+    WipRpcInterface,
+    TestRpcInterface,
+    TestRpcInterface2,
+    ZeroMajorRpcInterface,
+  ];
 
   public static initializeRpcFrontend() {
     if (TestbedConfig.useDirect) {
