@@ -19,6 +19,8 @@ import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 import { ViewportContentControl } from "./ViewportContentControl";
 import { WidgetControl } from "./WidgetControl";
 import { ToolInformation } from "./ToolInformation";
+import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
+import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 // -----------------------------------------------------------------------------
 // FrontstageProps and associated enums
@@ -193,6 +195,7 @@ export class FrontstageDef {
         this._toolInformationMap.set(toolId, new ToolInformation(toolId));
 
       FrontstageManager.onToolActivatedEvent.emit({ toolId });
+      SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ToolActivated);
     }
   }
 
@@ -211,6 +214,7 @@ export class FrontstageDef {
     }
 
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this.defaultLayout!, contentGroup: this.contentGroup });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ContentLayoutActivated);
   }
 
   /** Returns once the contained widgets and content controls are ready to use */
@@ -233,6 +237,7 @@ export class FrontstageDef {
       oldContent.onDeactivated();
     newContent.onActivated();
     FrontstageManager.onContentControlActivatedEvent.emit({ activeContentControl: newContent, oldContentControl: oldContent });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ContentControlActivated);
   }
 
   /** Gets a [[ZoneDef]] based on a given zone id */

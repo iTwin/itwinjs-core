@@ -8,6 +8,7 @@ export * from "./overallcontent/OverallContent";
 export * from "./overallcontent/state";
 export * from "./FrameworkState";
 export * from "./UiFramework";
+export * from "./SyncUiEventDispatcher";
 export * from "./clientservices/LoginServices";
 export * from "./clientservices/ProjectServices";
 export * from "./clientservices/IModelServices";

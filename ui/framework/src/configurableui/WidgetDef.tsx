@@ -7,10 +7,11 @@
 import * as React from "react";
 
 import { IconLabelProps, IconLabelSupport, IconInfo } from "./IconLabelSupport";
-import { ConfigurableUiManager } from "./ConfigurableUiManager";
+import { ConfigurableUiManager, ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
+import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
 
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
@@ -200,6 +201,7 @@ export class WidgetDef {
     this.widgetState = state;
     this.stateChanged = true;
     FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, oldWidgetState, newWidgetState: state });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.WidgetStateChanged);
   }
 
   public canShow(): boolean {

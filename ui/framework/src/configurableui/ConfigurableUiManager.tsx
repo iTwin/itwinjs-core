@@ -19,6 +19,28 @@ import { StandardRotationNavigationAidControl } from "./navigationaids/StandardR
 import { SheetNavigationAidControl } from "./navigationaids/SheetNavigationAid";
 import { CubeNavigationAidControl } from "./navigationaids/CubeNavigationAid";
 
+/** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control. */
+export const enum ConfigurableSyncUiEventId {
+  ActiveContentChanged = "ActiveContentChanged",
+  ActivityMessageUpdated = "ActivityMessageUpdated",
+  ActivityMessageCancelled = "ActivityMessageCancelled",
+  BackstageCloseEvent = "BackstageCloseEvent",
+  ContentLayoutActivated = "ContentLayoutActivated",
+  ContentControlActivated = "ContentControlActivated",
+  ElementTooltipChanged = "ElementTooltipChanged",
+  FrontstageActivated = "FrontstageActivated",
+  InputFieldMessageAdded = "InputFieldMessageAdded",
+  InputFieldMessageRemoved = "InputFieldMessageRemoved",
+  ModalFrontstageChanged = "ModalFrontstageChanged",
+  ModalDialogChanged = "ModalDialogChanged",
+  NavigationAidActivated = "NavigationAidActivated",
+  NotificationMessageAdded = "NotificationMessageAdded",
+  ToolActivated = "ToolActivated",
+  TaskActivated = "TaskActivated",
+  WidgetStateChanged = "WidgetStateChanged",
+  WorkflowActivated = "WorkflowActivated",
+}
+
 // -----------------------------------------------------------------------------
 // Configurable Ui Manager
 // -----------------------------------------------------------------------------

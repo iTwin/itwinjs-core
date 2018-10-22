@@ -57,10 +57,13 @@ export class ToolItemDef extends ItemDefBase {
 
   public toolbarReactNode(index?: number): React.ReactNode {
     const key = (index !== undefined) ? index.toString() : this.id;
+    let myClassNames: string = "";
+    if (!this.isVisible) myClassNames += "item-hidden";
+    if (!this.isEnabled) myClassNames += "nz-is-disabled";
 
     return (
       <ToolbarIcon
-        className={!this.isVisible ? "item-hidden" : undefined}
+        className={myClassNames.length ? myClassNames : undefined}
         isActive={FrontstageManager.activeToolId === this.toolId}
         isDisabled={!this.isEnabled}
         title={this.label}
@@ -98,11 +101,13 @@ export class CommandItemDef extends ItemDefBase {
 
   public toolbarReactNode(index?: number): React.ReactNode {
     const key = (index !== undefined) ? index.toString() : this.id;
+    let myClassNames: string = "";
+    if (!this.isVisible) myClassNames += "item-hidden";
+    if (!this.isEnabled) myClassNames += "nz-is-disabled";
 
     return (
       <ToolbarIcon
-        className={!this.isVisible ? "item-hidden" : undefined}
-        isDisabled={!this.isEnabled}
+        className={myClassNames.length ? myClassNames : undefined} isDisabled={!this.isEnabled}
         title={this.label}
         key={key}
         onClick={this.execute}

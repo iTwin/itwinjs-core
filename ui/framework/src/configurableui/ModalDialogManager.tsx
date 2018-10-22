@@ -7,6 +7,8 @@
 import * as React from "react";
 
 import { UiEvent } from "@bentley/ui-core";
+import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
+import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 /** Modal Dialog Stack Changed Event Args class.
  */
@@ -49,6 +51,7 @@ export class ModalDialogManager {
 
   private static emitModalDialogChangedEvent(): void {
     this.onModalDialogChangedEvent.emit({ modalDialogCount: this.modalDialogCount, activeModalDialog: this.activeModalDialog });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ModalDialogChanged);
   }
 
   public static updateModalDialog(): void {

@@ -12,6 +12,8 @@ import { ContentLayoutDef } from "./ContentLayout";
 import { ContentGroup } from "./ContentGroup";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 import { ContentViewManager } from "./ContentViewManager";
+import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
+import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
 import { IModelConnection, IModelApp, Tool, StartOrResume } from "@bentley/imodeljs-frontend";
@@ -230,6 +232,7 @@ export class FrontstageManager {
       this.onFrontstageActivatedEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
       await frontstageDef.waitUntilReady();
       this._isLoading = false;
+      SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.FrontstageActivated);
       if (frontstageDef.contentControls.length >= 0) {
         // TODO: get content control to activate from state info
         const contentControl = frontstageDef.contentControls[0];
@@ -284,6 +287,7 @@ export class FrontstageManager {
   private static pushModalFrontstage(modalFrontstage: ModalFrontstageInfo): void {
     this._modalFrontstages.push(modalFrontstage);
     this.emitModalFrontstageChangedEvent();
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ModalFrontstageChanged);
   }
 
   /** Closes the top-most modal Frontstage.
@@ -295,16 +299,19 @@ export class FrontstageManager {
   private static popModalFrontstage(): void {
     this._modalFrontstages.pop();
     this.emitModalFrontstageChangedEvent();
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ModalFrontstageChanged);
   }
 
   private static emitModalFrontstageChangedEvent(): void {
     this.onModalFrontstageChangedEvent.emit({ modalFrontstageCount: this.modalFrontstageCount });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ModalFrontstageChanged);
   }
 
   /** Updates the top-most modal Frontstage.
    */
   public static updateModalFrontstage(): void {
     this.emitModalFrontstageChangedEvent();
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ModalFrontstageChanged);
   }
 
   /** Gets the top-most modal Frontstage.
@@ -330,5 +337,6 @@ export class FrontstageManager {
    */
   public static setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection) {
     this.onNavigationAidActivatedEvent.emit({ navigationAidId, iModelConnection });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.NavigationAidActivated);
   }
 }

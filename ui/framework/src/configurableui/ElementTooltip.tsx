@@ -13,6 +13,8 @@ import { ToolTipOptions } from "@bentley/imodeljs-frontend";
 
 import ToolSettingsTooltip from "@bentley/ui-ninezone/lib/widget/tool-settings/Tooltip";
 import Tooltip, { offsetAndContainInContainer } from "@bentley/ui-ninezone/lib/popup/tooltip/Tooltip";
+import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
+import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 /** [[ElementTooltip]] Props. */
 export interface ElementTooltipProps {
@@ -58,11 +60,13 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
   public static showTooltip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void {
     ElementTooltip._isTooltipVisible = true;
     ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: true, el, message, pt, options });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ElementTooltipChanged);
   }
 
   public static hideTooltip(): void {
     ElementTooltip._isTooltipVisible = false;
     ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: false, message: "" });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ElementTooltipChanged);
   }
 
   /** hidden */
