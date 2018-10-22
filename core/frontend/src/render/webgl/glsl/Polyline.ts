@@ -141,7 +141,7 @@ export function addLineCode(prog: ProgramBuilder, args: string) {
 
   vert.addUniform("u_lineCode", VariableType.Float, (shaderProg) => {
     shaderProg.addGraphicUniform("u_lineCode", (uniform, params) => {
-      uniform.setUniform1f(params.geometry.getLineCode(params));
+      uniform.setUniform1f(params.geometry.getLineCode(params.programParams));
     });
   });
 
@@ -214,7 +214,7 @@ function addCommon(prog: ProgramBuilder) {
   });
   vert.addUniform("u_lineWeight", VariableType.Float, (shaderProg) => {
     shaderProg.addGraphicUniform("u_lineWeight", (attr, params) => {
-      attr.setUniform1f(params.geometry.getLineWeight(params));
+      attr.setUniform1f(params.geometry.getLineWeight(params.programParams));
     });
   });
 

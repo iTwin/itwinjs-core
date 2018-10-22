@@ -7,7 +7,7 @@
 import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { Target } from "./Target";
-import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry } from "./CachedGeometry";
+import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry, CachedGeometry } from "./CachedGeometry";
 import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
@@ -15,10 +15,24 @@ import { Pixel, GraphicList } from "../System";
 import { ViewRect } from "../../Viewport";
 import { assert, Id64, Id64String, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
-import { RenderCommands, DrawParams, DrawCommands, BatchPrimitiveCommand } from "./DrawCommand";
+import { RenderCommands, ShaderProgramParams, DrawParams, DrawCommands, BatchPrimitiveCommand } from "./DrawCommand";
 import { RenderState } from "./RenderState";
 import { CompositeFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { FloatRgba } from "./FloatRGBA";
+
+let progParams: ShaderProgramParams | undefined;
+let drawParams: DrawParams | undefined;
+
+function getDrawParams(target: Target, geometry: CachedGeometry): DrawParams {
+  if (undefined === progParams) {
+    progParams = new ShaderProgramParams();
+    drawParams = new DrawParams();
+  }
+
+  progParams.init(target);
+  drawParams!.init(progParams, geometry);
+  return drawParams!;
+}
 
 // Maintains the textures used by a SceneCompositor. The textures are reallocated when the dimensions of the viewport change.
 class Textures implements IDisposable {
@@ -712,7 +726,7 @@ abstract class Compositor extends SceneCompositor {
         this._classifyColorRenderState.blend.color = [1.0, 1.0, 1.0, 0.2];
         this._classifyColorRenderState.blend.setBlendFunc(GL.BlendFactor.ConstAlpha, GL.BlendFactor.OneMinusConstAlpha); // Mix with select/hilite color
         System.instance.applyRenderState(this._classifyColorRenderState);
-        const params = new DrawParams(this._target, this._geom.stencilCopy!);
+        const params = getDrawParams(this._target, this._geom.stencilCopy!);
         this._target.techniques.draw(params);
         this._target.popBranch();
       });
@@ -758,7 +772,7 @@ abstract class Compositor extends SceneCompositor {
       System.instance.applyRenderState(this._classifyColorRenderState);
       this._classifyColorRenderState.stencil.frontFunction.function = GL.StencilFunction.NotEqual;
       this._classifyColorRenderState.stencil.backFunction.function = GL.StencilFunction.NotEqual;
-      const params = new DrawParams(this._target, this._geom.stencilCopy!);
+      const params = getDrawParams(this._target, this._geom.stencilCopy!);
       this._target.techniques.draw(params);
       this._target.popBranch();
     });
@@ -795,7 +809,7 @@ abstract class Compositor extends SceneCompositor {
 
   private composite() {
     System.instance.applyRenderState(RenderState.defaults);
-    const params = new DrawParams(this._target, this._geom.composite!);
+    const params = getDrawParams(this._target, this._geom.composite!);
     this._target.techniques.draw(params);
   }
 
@@ -941,7 +955,7 @@ class MRTCompositor extends Compositor {
       // (0,0,0,0) in elementID0 and ElementID1 buffers indicates invalid element id
       // (0,0,0,0) in DepthAndOrder buffer indicates render order 0 and encoded depth of 0 (= far plane)
       system.applyRenderState(this._noDepthMaskRenderState);
-      const params = new DrawParams(this._target, this._geometry.clearPickAndColor!);
+      const params = getDrawParams(this._target, this._geometry.clearPickAndColor!);
       this._target.techniques.draw(params);
 
       // Clear depth buffer
@@ -988,7 +1002,7 @@ class MRTCompositor extends Compositor {
   protected clearTranslucent() {
     System.instance.applyRenderState(this._noDepthMaskRenderState);
     System.instance.frameBufferStack.execute(this._fbos.clearTranslucent!, true, () => {
-      const params = new DrawParams(this._target, this._geometry.clearTranslucent!);
+      const params = getDrawParams(this._target, this._geometry.clearTranslucent!);
       this._target.techniques.draw(params);
     });
   }
@@ -1002,7 +1016,7 @@ class MRTCompositor extends Compositor {
   protected pingPong() {
     System.instance.applyRenderState(this._noDepthMaskRenderState);
     System.instance.frameBufferStack.execute(this._fbos.pingPong!, true, () => {
-      const params = new DrawParams(this._target, this._geometry.copyPickBuffers!);
+      const params = getDrawParams(this._target, this._geometry.copyPickBuffers!);
       this._target.techniques.draw(params);
     });
   }
@@ -1179,7 +1193,7 @@ class MPCompositor extends Compositor {
     const geom = this._geometry.copyColor!;
     geom.texture = src.getHandle()!;
     System.instance.frameBufferStack.execute(dst, true, () => {
-      const params = new DrawParams(this._target, geom);
+      const params = getDrawParams(this._target, geom);
       this._target.techniques.draw(params);
     });
   }

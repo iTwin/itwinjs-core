@@ -248,7 +248,7 @@ function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean)
     prog.addGraphicUniform("u_surfaceFlags", (uniform, params) => {
       assert(params.geometry instanceof SurfaceGeometry);
       const mesh = params.geometry as SurfaceGeometry;
-      const surfFlags = mesh.computeSurfaceFlags(params);
+      const surfFlags = mesh.computeSurfaceFlags(params.programParams);
       uniform.setUniform1f(surfFlags);
     });
   });
@@ -268,7 +268,7 @@ function addTexture(builder: ProgramBuilder, animated: boolean) {
   builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
       const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
-      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params.programParams);
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         const uvQParams = surfGeom.lut.uvQParams;
         if (undefined !== uvQParams) {
@@ -283,7 +283,7 @@ function addTexture(builder: ProgramBuilder, animated: boolean) {
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;
-      const surfFlags = surfGeom.computeSurfaceFlags(params);
+      const surfFlags = surfGeom.computeSurfaceFlags(params.programParams);
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         assert(undefined !== surfGeom.texture);
         const texture = surfGeom.texture! as Texture;
@@ -319,7 +319,7 @@ export function createSurfaceBuilder(feat: FeatureMode, animated: boolean): Prog
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;
-      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params.programParams);
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         uniform.setUniform1i(surfGeom.isGlyph ? 1 : 0);
       }

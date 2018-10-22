@@ -1057,6 +1057,20 @@ export class OnScreenTarget extends Target {
     assert(system.context.drawingBufferWidth === viewRect.width, "offscreen context dimensions don't match onscreen");
     assert(system.context.drawingBufferHeight === viewRect.height, "offscreen context dimensions don't match onscreen");
   }
+
+  private static _progParams?: ShaderProgramParams;
+  private static _drawParams?: DrawParams;
+  private static getDrawParams(target: OnScreenTarget, geom: SingleTexturedViewportQuadGeometry) {
+    if (undefined === this._progParams) {
+      this._progParams = new ShaderProgramParams();
+      this._drawParams = new DrawParams();
+    }
+
+    this._progParams.init(target);
+    this._drawParams!.init(this._progParams, geom);
+    return this._drawParams!;
+  }
+
   protected _endPaint(): void {
     const onscreenContext = this._canvas.getContext("2d");
     assert(null !== onscreenContext);
@@ -1070,8 +1084,8 @@ export class OnScreenTarget extends Target {
 
     // Copy framebuffer contents to off-screen canvas
     system.applyRenderState(RenderState.defaults);
-    const params = new DrawParams(this, this._blitGeom);
-    system.techniques.draw(params);
+    const drawParams = OnScreenTarget.getDrawParams(this, this._blitGeom);
+    system.techniques.draw(drawParams);
 
     // Copy off-screen canvas contents to on-screen canvas
     // ###TODO: Determine if clearRect() actually required...seems to leave some leftovers from prev image if not...

@@ -23,52 +23,73 @@ import { SurfaceType } from "../primitives/VertexTable";
 import { MeshGraphic } from "./Mesh";
 
 export class ShaderProgramParams {
-  public readonly target: Target;
-  public readonly renderPass: RenderPass;
-  public readonly projectionMatrix: Matrix4;
+  private _target?: Target;
+  private _renderPass: RenderPass = RenderPass.None;
+  private readonly _projectionMatrix: Matrix4 = new Matrix4();
 
-  public constructor(target: Target, pass: RenderPass) {
-    this.target = target;
-    this.renderPass = pass;
-    if (this.isViewCoords) {
-      const rect = target.viewRect;
-      this.projectionMatrix = Matrix4.fromOrtho(0.0, rect.width, rect.height, 0.0, -1.0, 1.0);
-    } else {
-      this.projectionMatrix = Matrix4.fromMatrix4d(target.projectionMatrix);
-    }
-  }
+  public get target(): Target { assert(undefined !== this._target); return this._target!; }
+  public get renderPass() { return this._renderPass; }
+  public get projectionMatrix() { return this._projectionMatrix; }
 
   public get isViewCoords() { return RenderPass.ViewOverlay === this.renderPass || RenderPass.Background === this.renderPass; }
   public get isOverlayPass() { return RenderPass.WorldOverlay === this.renderPass || RenderPass.ViewOverlay === this.renderPass; }
   public get context() { return System.instance.context; }
+
+  public init(target: Target, pass: RenderPass = RenderPass.OpaqueGeneral) {
+    this._renderPass = pass;
+    this._target = target;
+    if (this.isViewCoords) {
+      const rect = target.viewRect;
+      Matrix4.fromOrtho(0.0, rect.width, rect.height, 0.0, -1.0, 1.0, this._projectionMatrix);
+    } else {
+      Matrix4.fromMatrix4d(target.projectionMatrix, this._projectionMatrix);
+    }
+  }
 }
 
-/** Supplies the context for drawing a graphic primitive via ShaderProgram.draw() */
-export class DrawParams extends ShaderProgramParams {
-  public readonly geometry: CachedGeometry;
-  public readonly modelViewMatrix: Matrix4;
-  public readonly modelMatrix: Matrix4;
-  public readonly viewMatrix: Matrix4;
+const _scratchTransform = Transform.createIdentity();
 
-  private static readonly _scratchTransform = Transform.createIdentity();
-  public constructor(target: Target, geometry: CachedGeometry, modelMatrix: Transform = Transform.identity, pass: RenderPass = RenderPass.OpaqueGeneral) {
-    super(target, pass);
-    this.geometry = geometry;
-    this.modelMatrix = Matrix4.fromTransform(modelMatrix);
-    let mvMat: Matrix4;
+export class DrawParams {
+  private _programParams?: ShaderProgramParams;
+  private _geometry?: CachedGeometry;
+  private readonly _modelViewMatrix = new Matrix4();
+  private readonly _modelMatrix = new Matrix4();
+  private readonly _viewMatrix = new Matrix4();
+
+  public get geometry(): CachedGeometry { assert(undefined !== this._geometry); return this._geometry!; }
+  public get programParams(): ShaderProgramParams { assert(undefined !== this._programParams); return this._programParams!; }
+  public get modelViewMatrix() { return this._modelViewMatrix; }
+  public get modelMatrix() { return this._modelMatrix; }
+  public get viewMatrix() { return this._viewMatrix; }
+
+  public get target() { return this.programParams.target; }
+  public get renderPass() { return this.programParams.renderPass; }
+  public get projectionMatrix() { return this.programParams.projectionMatrix; }
+  public get isViewCoords() { return this.programParams.isViewCoords; }
+  public get isOverlayPass() { return this.programParams.isOverlayPass; }
+  public get context() { return this.programParams.context; }
+
+  public init(programParams: ShaderProgramParams, geometry: CachedGeometry, modelMatrix: Transform = Transform.identity, pass?: RenderPass) {
+    this._programParams = programParams;
+    if (undefined === pass)
+      pass = programParams.renderPass;
+    else
+      assert(pass === this.programParams.renderPass); // ###TODO remove this once confirmed it's redundant...
+
+    this._geometry = geometry;
+    Matrix4.fromTransform(modelMatrix, this._modelMatrix);
     if (this.isViewCoords) {
-      // TFS#811077: Zero out Z...see clipping tools in ClipViewTools.cpp...
-      const tf = modelMatrix.clone(DrawParams._scratchTransform);
+      // Zero out Z for silly clipping tools...
+      const tf = modelMatrix.clone(_scratchTransform);
       tf.matrix.coffs[2] = tf.matrix.coffs[5] = tf.matrix.coffs[8] = 0.0;
-      mvMat = Matrix4.fromTransform(tf);
+      Matrix4.fromTransform(tf, this._modelViewMatrix);
     } else {
-      let modelViewMatrix = target.viewMatrix.clone(DrawParams._scratchTransform);
+      let modelViewMatrix = this.target.viewMatrix.clone(_scratchTransform);
       modelViewMatrix = modelViewMatrix.multiplyTransformTransform(modelMatrix, modelViewMatrix);
-      mvMat = Matrix4.fromTransform(modelViewMatrix);
+      Matrix4.fromTransform(modelViewMatrix, this._modelViewMatrix);
     }
 
-    this.viewMatrix = Matrix4.fromTransform(target.viewMatrix);
-    this.modelViewMatrix = mvMat;
+    Matrix4.fromTransform(this.target.viewMatrix, this._viewMatrix);
   }
 }
 

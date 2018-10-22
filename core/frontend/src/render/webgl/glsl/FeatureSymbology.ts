@@ -484,7 +484,7 @@ function addEdgeWidth(builder: ShaderBuilder) {
   builder.addUniform("u_lineWeight", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_lineWeight", (uniform, params) => {
       const mesh = params.geometry as SurfaceGeometry;
-      const width = params.target.getEdgeWeight(params, mesh.edgeWidth);
+      const width = params.target.getEdgeWeight(params.programParams, mesh.edgeWidth);
       uniform.setUniform1f(width < 1.0 ? 1.0 : width);
     });
   });

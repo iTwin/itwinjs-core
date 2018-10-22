@@ -244,10 +244,11 @@ export class UniformHandle {
     assert(DataType.Undefined !== type && DataType.Int !== type && DataType.Float !== type);
 
     let updated = this._type !== type;
-
-    // NB: Yes, calling data.length without actually changing the length shows up as a significant performance bottleneck...
-    if (updated && this._data.length !== data.length)
-      this._data.length = data.length;
+    if (updated) {
+      this._type = type;
+      if (this._data.length !== data.length)
+        this._data.length = data.length;
+    }
 
     for (let i = 0; i < data.length; i++) {
       const datum = data[i];
