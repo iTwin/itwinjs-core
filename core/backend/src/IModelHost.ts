@@ -13,6 +13,7 @@ import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { IModelUnitTestRpcImpl } from "./rpc-impl/IModelUnitTestRpcImpl";
+import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { KnownLocations } from "./Platform";
 import { BisCore } from "./BisCore";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
@@ -81,6 +82,7 @@ export class IModelHost {
     IModelWriteRpcImpl.register();
     StandaloneIModelRpcImpl.register();
     IModelUnitTestRpcImpl.register();
+    WipRpcImpl.register();
 
     BisCore.registerSchema();
 

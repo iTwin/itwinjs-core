@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { RpcRequest, RpcManager, RpcOperation, RpcRequestEvent, RpcInterface, RpcInterfaceDefinition, RpcConfiguration, IModelReadRpcInterface, IModelToken } from "@bentley/imodeljs-common";
+import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestNotFoundResponse, TestNotFoundResponseCode, ZeroMajorRpcInterface } from "../common/TestRpcInterface";
 import { assert } from "chai";
@@ -432,5 +433,10 @@ describe("RpcInterface", () => {
 
     await (test(decPatch.format(), true, client));
     await (test(decPatchZ.format(), false, clientZ));
+  });
+
+  it("should successfully call WipRpcInterface.placeholder", async () => {
+    const s: string = await WipRpcInterface.getClient().placeholder(new IModelToken());
+    assert.equal(s, "placeholder");
   });
 });
