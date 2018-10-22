@@ -10,15 +10,22 @@ import { Checker } from "./Checker";
 import { expect } from "chai";
 import { KnotVector } from "../bspline/KnotVector";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { BezierCurve3d, BezierCurveBase } from "../bspline/BezierCurve";
+import { BezierCurveBase } from "../bspline/BezierCurveBase";
+import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { LineString3d } from "../curve/LineString3d";
 import { Transform } from "../geometry3d/Transform";
 import { StrokeOptions } from "../curve/StrokeOptions";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
+import { Sample } from "../serialization/GeometrySamples";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { Path } from "../curve/Path";
 import { prettyPrint } from "./testFunctions";
+import { CurveLocationDetail } from "../curve/CurveLocationDetail";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { LineSegment3d } from "../curve/LineSegment3d";
 
 function translateAndPush(allGeometry: GeometryQuery[], g: GeometryQuery | undefined, dx: number, dy: number) {
   if (g) {
@@ -26,6 +33,37 @@ function translateAndPush(allGeometry: GeometryQuery[], g: GeometryQuery | undef
     allGeometry.push(g);
   }
 }
+function showPlane(allGeometry: GeometryQuery[], plane: Plane3dByOriginAndUnitNormal, a: number, dx: number, dy: number) {
+  const origin = plane.getOriginRef();
+  const normal = plane.getNormalRef();
+  const frame = Transform.createOriginAndMatrix(origin,
+    Matrix3d.createRigidViewAxesZTowardsEye(normal.x, normal.y, normal.z));
+  const g = LineString3d.create(
+    frame.multiplyXYZ(-0.5 * a, 0, 0),
+    frame.multiplyXYZ(a, 0, 0),
+    frame.multiplyXYZ(a, a, 0),
+    frame.multiplyXYZ(0, a, 0),
+    origin,
+    frame.multiplyXYZ(0, 0, 2 * a));
+  if (g) {
+    g.tryTranslateInPlace(dx, dy, 0);
+    allGeometry.push(g);
+  }
+}
+
+function showPoint(allGeometry: GeometryQuery[], point: Point3d, a: number, dx: number, dy: number) {
+  const g = LineString3d.create(
+    point,
+    Point3d.create(point.x - a, point.y, point.z),
+    Point3d.create(point.x + a, point.y, point.z),
+    Point3d.create(point.x, point.y + a, point.z),
+    Point3d.create(point.x, point.y, point.z));
+  if (g) {
+    g.tryTranslateInPlace(dx, dy, 0);
+    allGeometry.push(g);
+  }
+}
+
 function ellipsePoints(a: number, b: number, sweep: AngleSweep, numStep: number): Point3d[] {
   const points = [];
   for (let f = 0.0; f <= 1.00001; f += 1.0 / numStep) {
@@ -35,6 +73,34 @@ function ellipsePoints(a: number, b: number, sweep: AngleSweep, numStep: number)
     points.push(Point3d.create(a * c, b * s, 0.0));
   }
   return points;
+}
+/** Check if the linestring edgelengths and angle meet stroke options demands
+ * @param edgeLengthFactor factor to apply to edgeLength conditions
+ * @param angleFactor factor to apply to angle conditions
+ */
+function checkStrokeProperties(ck: Checker, curve: CurvePrimitive, linestring: LineString3d, options: StrokeOptions,
+  angleFactor: number = 1.1, edgeLengthFactor: number = 1.1): boolean {
+  const numPoints = linestring.numPoints();
+  let ok = true;
+  if (ck.testLE(3, numPoints, "Expect 3 or more strokes")) {
+    let maxRadians = 0;
+    const vector0 = linestring.vectorBetween(0, 1)!;
+    let vector1;
+    let maxEdgeLength = vector0.magnitude();
+    for (let i = 1; i + 1 < numPoints; i++) {
+      vector1 = linestring.vectorBetween(i, i + 1)!;
+      maxEdgeLength = Geometry.maxXY(maxEdgeLength, vector1.magnitude());
+      maxRadians = Geometry.maxXY(maxRadians, vector0.angleTo(vector1).radians);
+      vector0.setFromVector3d(vector1);
+    }
+    if (options.maxEdgeLength)
+      if (!ck.testLE(maxRadians, edgeLengthFactor * options.maxEdgeLength, "strokeProperties edge length", curve))
+        ok = false;
+    if (options.angleTol)
+      if (!ck.testLE(maxRadians, angleFactor * options.angleTol.radians, "stroke properties angle", curve))
+        ok = false;
+  }
+  return ok;
 }
 /* tslint:disable:no-console */
 describe("BsplineCurve", () => {
@@ -95,6 +161,41 @@ describe("BsplineCurve", () => {
       }
     }
     ck.checkpoint("End BsplineCurve.HelloWorld");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("strokes", () => {
+    const ck = new Checker();
+    const bcurves = Sample.createMixedBsplineCurves();
+    const defaultOption = StrokeOptions.createForCurves();
+    const angleOptions = StrokeOptions.createForCurves();
+    angleOptions.angleTol = Angle.createDegrees(5.0);
+    const edgeLengthOptions = StrokeOptions.createForCurves();
+    edgeLengthOptions.maxEdgeLength = 0.5;
+    const allOptions = [defaultOption, angleOptions, edgeLengthOptions];
+    const allGeometry: GeometryQuery[] = [];
+    let xShift = 0.0;
+    const dxShift = 10.0;
+    const dyShift = 10.0;
+    for (const curve of bcurves) {
+      translateAndPush(allGeometry, curve.clone(), xShift, 0.0);
+      let yShift = dyShift;
+      for (const options of allOptions) {
+        const linestring = LineString3d.create();
+        curve.emitStrokes(linestring, options);
+        const angleFactor = curve.order <= 2 ? 1000 : 1.6;  // suppress angle test on linear case.  Be fluffy on others.
+        translateAndPush(allGeometry, linestring, xShift, yShift);
+        if (!checkStrokeProperties(ck, curve, linestring, options, angleFactor, 1.1)) {
+          linestring.clear();
+          curve.emitStrokes(linestring, options);
+        }
+        yShift += dyShift;
+      }
+      xShift += dxShift;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "strokes");
+
+    ck.checkpoint("End BsplineCurve.strokes");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -234,6 +335,39 @@ describe("BsplineCurve", () => {
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "BezierCurve3d", "BsplineSaturation");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("IntersectPlane", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const bcurves = Sample.createMixedBsplineCurves();
+    const markerSize = 0.1;
+    const planeSize = 0.5;
+    let xShift = 0.0;
+    const yShift = 0.0;
+    for (const curve of bcurves) {
+      translateAndPush(allGeometry, curve.clone (), xShift, yShift);
+      for (const fraction of [0.2, 0.5, 0.73]) {
+        const tangentRay = curve.fractionToPointAndDerivative(fraction);
+        // Alter the ray z so it is not perpendicular ..
+        // tangentRay.direction.z += 0.02;
+        const intersections: CurveLocationDetail[] = [];
+        const plane = Plane3dByOriginAndUnitNormal.create(tangentRay.origin, tangentRay.direction)!;  // This renormalizes.
+        curve.appendPlaneIntersectionPoints(plane, intersections);
+        if (intersections.length > 1)
+          curve.appendPlaneIntersectionPoints(plane, intersections);
+        showPlane(allGeometry, plane, planeSize, xShift, yShift);
+        for (const detail of intersections) {
+          if (detail.point.isAlmostEqual(tangentRay.origin))
+            showPoint(allGeometry, detail.point, markerSize, xShift, yShift);
+          else
+            translateAndPush(allGeometry, LineSegment3d.create(tangentRay.origin, detail.point), xShift, yShift);
+        }
+      }
+      xShift += 10.0;
+    }
+
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "IntersectPlane");
     expect(ck.getNumErrors()).equals(0);
   });
 

@@ -16,7 +16,7 @@ import { DropTargetArguments, DragSourceArguments, DragSourceProps, DropTargetPr
 export type SelectedNodePredicate = (node: TreeNodeItem) => boolean;
 
 /**
- * Props for DataTree React component
+ * Properties for [[DataTree]] React component
  */
 export interface DataTreeProps {
   dataProvider: TreeDataProvider;

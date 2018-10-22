@@ -46,12 +46,12 @@ function testIntersectionsXY(
   ck: Checker,
   worldToLocal: Matrix4d | undefined,
   intersections: CurveLocationDetailArrayPair, minExpected: number, maxExpected: number,
-  testCoordinates: boolean = false) {
+  testCoordinates: boolean = false): boolean {
+  const baseErrorCount = ck.getNumErrors();
   if (ck.testExactNumber(intersections.dataA.length, intersections.dataB.length, "intersections A B match")) {
     const n = intersections.dataA.length;
     if (n < minExpected || n > maxExpected) {
       ck.announceError("intersction count out of range", n, minExpected, maxExpected);
-      return;
     }
     if (testCoordinates) {
       for (let i = 0; i < n; i++) {
@@ -74,6 +74,7 @@ function testIntersectionsXY(
       }
     }
   }
+  return ck.getNumErrors() === baseErrorCount;
 }
 
 describe("CurveCurve", () => {
@@ -226,7 +227,7 @@ describe("CurveCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("BsplineBsplineMapped", () => {
+  it("BsplineBsplineIntersection", () => {
     const ck = new Checker();
     let dx = 0.0;
     let dy = 0.0;
@@ -272,8 +273,9 @@ describe("CurveCurve", () => {
             const point1 = bspline1.fractionToPoint(fraction1);
             bspline1.tryTranslateInPlace(point0.x - point1.x, point0.y - point1.y);
             GeometryCoreTestIO.captureGeometry(allGeometry, bspline1.clone(), dx, dy);
-            const intersectionsAB = CurveCurve.IntersectionProjectedXY(worldToLocal, bspline0, false, bspline1, false);
-            testIntersectionsXY(ck, worldToLocal, intersectionsAB, 1, 1);
+            let intersectionsAB = CurveCurve.IntersectionProjectedXY(worldToLocal, bspline0, false, bspline1, false);
+            if (!testIntersectionsXY(ck, worldToLocal, intersectionsAB, 1, 1))
+              intersectionsAB = CurveCurve.IntersectionProjectedXY(worldToLocal, bspline0, false, bspline1, false);
             for (let i = 0; i < intersectionsAB.dataA.length; i++) {
               GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createXY(intersectionsAB.dataA[i].point, rA), dx, dy);
               GeometryCoreTestIO.captureGeometry(allGeometry, Arc3d.createXY(intersectionsAB.dataB[i].point, rB), dx, dy);

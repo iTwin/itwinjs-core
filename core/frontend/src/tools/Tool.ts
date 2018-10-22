@@ -200,7 +200,8 @@ export class BeWheelEvent extends BeButtonEvent {
 }
 
 /**
- * Base Tool class for handling user input events from Viewports.
+ * Base Tool class for writing an immediate tool that executes it's assigned task immediately without further input.
+ * @see [[InteractiveTool]] for a base Tool class to handle user input events from a Viewport.
  * @see [Tools]($docs/learning/frontend/tools.md)
  */
 export class Tool {
@@ -431,10 +432,10 @@ export abstract class InteractiveTool extends Tool {
   /**
    * Invoked before the locate tooltip is displayed to retrieve the information about the located element. Allows the tool to override the toolTip.
    * @param hit The HitDetail whose info is needed.
-   * @return A Promise for the string to describe the hit.
+   * @return A Promise for the HTMLElement or string to describe the hit.
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
    */
-  public async getToolTip(_hit: HitDetail): Promise<string> { return _hit.getToolTip(); }
+  public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string> { return _hit.getToolTip(); }
 
   /** Fill the supplied button event from the current cursor location.   */
   public getCurrentButtonEvent(ev: BeButtonEvent): void { IModelApp.toolAdmin.fillEventFromCursorLocation(ev); }
@@ -452,7 +453,9 @@ export abstract class InteractiveTool extends Tool {
   public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { }
 }
 
-/** @hidden */
+/**
+ * The InputCollector class can be used to implement a command for gathering input (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.
+ */
 export abstract class InputCollector extends InteractiveTool {
   public run(): boolean {
     const toolAdmin = IModelApp.toolAdmin;

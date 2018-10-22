@@ -109,7 +109,7 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
   }
 }
 
-/** Props for the Tool Widget React component.
+/** Properties for the Tool Widget React component.
  */
 interface Props {
   toolWidgetDef: ToolWidgetDef;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { Id64, GuidProps, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, GuidProps, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, XYZProps, Range3dProps, YawPitchRollProps, YawPitchRollAngles, Transform, XYAndZ } from "@bentley/geometry-core";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { ThumbnailProps } from "./Thumbnail";
@@ -95,11 +95,11 @@ export interface FilePropertyProps {
 /** Represents an iModel in JavaScript. */
 export abstract class IModel implements IModelProps {
   /** The Id of the repository model. */
-  public static readonly repositoryModelId = new Id64("0x1");
+  public static readonly repositoryModelId: Id64String = "0x1";
   /** The Id of the root subject element. */
-  public static readonly rootSubjectId = new Id64("0x1");
+  public static readonly rootSubjectId: Id64String = "0x1";
   /** The Id of the dictionary model. */
-  public static readonly dictionaryId = new Id64("0x10");
+  public static readonly dictionaryId: Id64String = "0x10";
   /** Name of the iModel */
   public name!: string;
   /** The name and description of the root subject of this iModel */
@@ -166,7 +166,9 @@ export abstract class IModel implements IModelProps {
   }
 
   /** Get the default subCategoryId for the supplied categoryId */
-  public static getDefaultSubCategoryId(categoryId: Id64): Id64 { return categoryId.isValid ? new Id64([categoryId.getLow() + 1, categoryId.getHigh()]) : new Id64(); }
+  public static getDefaultSubCategoryId(categoryId: Id64String): Id64String {
+    return Id64.isValid(categoryId) ? Id64.fromLocalAndBriefcaseIds(Id64.getLocalId(categoryId) + 1, Id64.getBriefcaseId(categoryId)) : Id64.invalid;
+  }
 
   /** True if this iModel has an [EcefLocation]($docs/learning/glossary#ecefLocation). */
   public get isGeoLocated() { return undefined !== this._ecefLocation; }

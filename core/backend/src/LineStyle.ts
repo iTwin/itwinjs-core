@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Symbology */
 
-import { Id64String, DbResult, Id64, IModelStatus } from "@bentley/bentleyjs-core";
+import { Id64String, DbResult, IModelStatus } from "@bentley/bentleyjs-core";
 import { FilePropertyProps, LineStyleProps, LinePixels, IModelError } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import { LineStyle } from "./Element";
@@ -357,14 +357,14 @@ export namespace LineStyleDefinition {
     }
 
     /** Query for an existing line style with the supplied name. */
-    public static queryStyle(imodel: IModelDb, scopeModelId: Id64String, name: string): Id64 | undefined {
+    public static queryStyle(imodel: IModelDb, scopeModelId: Id64String, name: string): Id64String | undefined {
       return imodel.elements.queryElementIdByCode(LineStyle.createCode(imodel, scopeModelId, name));
     }
 
     /** Insert a new line style with the supplied name.
      * @throws [[IModelError]] if unable to insert the line style definition element.
      */
-    public static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64 {
+    public static createStyle(imodel: IModelDb, scopeModelId: Id64String, name: string, props: StyleProps): Id64String {
       if (undefined === props.flags)
         props.flags = StyleFlags.NoSnap; // If flags weren't supplied, default to not snapping to stroke geometry.
 
@@ -388,7 +388,7 @@ export namespace LineStyleDefinition {
      *
      * @throws [[IModelError]] if unable to insert the line style definition element.
      */
-    public static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64, width?: number): Id64 {
+    public static getOrCreateContinuousStyle(imodel: IModelDb, scopeModelId: Id64String, width?: number): Id64String {
       if (width === undefined) {
         const name0 = "Continuous";
         const lsId0 = this.queryStyle(imodel, scopeModelId, name0);
@@ -412,7 +412,7 @@ export namespace LineStyleDefinition {
      * Unlike other components, [[LineStyleDefinition.ComponentType.Internal]] uses the line code as the compId instead of a file property id.
      * @throws [[IModelError]] if supplied an invalid [[LinePixels]] value or if unable to insert the line style definition element.
      */
-    public static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64, linePixels: LinePixels): Id64 {
+    public static getOrCreateLinePixelsStyle(imodel: IModelDb, scopeModelId: Id64String, linePixels: LinePixels): Id64String {
       let lineCode;
       switch (linePixels) {
         case LinePixels.Code1:

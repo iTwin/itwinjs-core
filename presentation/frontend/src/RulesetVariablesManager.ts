@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { Id64, BeEvent } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, BeEvent } from "@bentley/bentleyjs-core";
 import { RulesetVariablesState } from "@bentley/presentation-common";
 import { VariableValueTypes, VariableValue } from "@bentley/presentation-common/lib/RulesetVariables";
 import { IClientStateHolder } from "@bentley/presentation-common/lib/RpcRequestsHandler";
@@ -35,29 +35,29 @@ export default class RulesetVariablesManager implements IClientStateHolder<Rules
       case VariableValueTypes.Bool:
         switch (fromType) {
           case VariableValueTypes.Int: return (0 !== actualValue);
-          case VariableValueTypes.Id64: return (actualValue as Id64).isValid;
+          case VariableValueTypes.Id64: return Id64.isValidId64(actualValue as string);
           default: return undefined;
         }
       case VariableValueTypes.Int:
         switch (fromType) {
           case VariableValueTypes.Bool: return actualValue ? 1 : 0;
-          case VariableValueTypes.Id64: return (actualValue as Id64).getHighUint32();
+          case VariableValueTypes.Id64: return Id64.getUpperUint32(actualValue as string);
           default: return undefined;
         }
       case VariableValueTypes.IntArray:
         switch (fromType) {
-          case VariableValueTypes.Id64Array: return (actualValue as Id64[]).map((id) => id.getHighUint32());
+          case VariableValueTypes.Id64Array: return (actualValue as string[]).map((id) => Id64.getUpperUint32(id));
           default: return undefined;
         }
       case VariableValueTypes.Id64:
         switch (fromType) {
-          case VariableValueTypes.Bool: return new Id64([actualValue ? 1 : 0, 0]);
-          case VariableValueTypes.Int: return new Id64([actualValue as number, 0]);
+          case VariableValueTypes.Bool: return Id64.fromLocalAndBriefcaseIds(actualValue ? 1 : 0, 0);
+          case VariableValueTypes.Int: return Id64.fromLocalAndBriefcaseIds(actualValue as number, 0);
           default: return undefined;
         }
       case VariableValueTypes.Id64Array:
         switch (fromType) {
-          case VariableValueTypes.IntArray: return (actualValue as number[]).map((int) => new Id64([int, 0]));
+          case VariableValueTypes.IntArray: return (actualValue as number[]).map((int) => Id64.fromLocalAndBriefcaseIds(int, 0));
           default: return undefined;
         }
     }
@@ -140,32 +140,32 @@ export default class RulesetVariablesManager implements IClientStateHolder<Rules
   }
 
   /**
-   * Retrieves `Id64` variable value.
-   * Returns invalid Id64 if variable does not exist or does not convert to Id64.
+   * Retrieves `Id64String` variable value.
+   * Returns invalid Id64String if variable does not exist or does not convert to Id64String.
    */
-  public async getId64(variableId: string): Promise<Id64> {
-    return (await this.getValue(variableId, VariableValueTypes.Id64) as Id64) || new Id64();
+  public async getId64(variableId: string): Promise<Id64String> {
+    return (await this.getValue(variableId, VariableValueTypes.Id64) as Id64String) || Id64.invalid;
   }
 
   /**
-   * Sets `Id64` variable value
+   * Sets `Id64String` variable value
    */
-  public async setId64(variableId: string, value: Id64): Promise<void> {
+  public async setId64(variableId: string, value: Id64String): Promise<void> {
     await this.setValue(variableId, VariableValueTypes.Id64, value);
   }
 
   /**
-   * Retrieves `Id64[]` variable value.
-   * Returns empty array if variable does not exist or does not convert to Id64 array.
+   * Retrieves `Id64String[]` variable value.
+   * Returns empty array if variable does not exist or does not convert to Id64String array.
    */
-  public async getId64s(variableId: string): Promise<Id64[]> {
-    return (await this.getValue(variableId, VariableValueTypes.Id64Array) as Id64[]) || [];
+  public async getId64s(variableId: string): Promise<Id64String[]> {
+    return (await this.getValue(variableId, VariableValueTypes.Id64Array) as Id64String[]) || [];
   }
 
   /**
-   * Sets `Id64[]` variable value
+   * Sets `Id64String[]` variable value
    */
-  public async setId64s(variableId: string, value: Id64[]): Promise<void> {
+  public async setId64s(variableId: string, value: Id64String[]): Promise<void> {
     await this.setValue(variableId, VariableValueTypes.Id64Array, value);
   }
 }

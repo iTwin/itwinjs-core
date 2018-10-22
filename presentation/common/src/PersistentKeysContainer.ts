@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { NodeKey } from "./hierarchy";
 
 /**
@@ -12,7 +12,7 @@ import { NodeKey } from "./hierarchy";
  * for models, elements and nodes.
  */
 export default interface PersistentKeysContainer {
-  models: Id64[];
-  elements: Id64[];
+  models: Id64String[];
+  elements: Id64String[];
   nodes: NodeKey[];
 }

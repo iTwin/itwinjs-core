@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated how default values are set. They are now all set within the constructor.",
+      "packageName": "@bentley/ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Caleb.Shafer@bentley.com"
+}

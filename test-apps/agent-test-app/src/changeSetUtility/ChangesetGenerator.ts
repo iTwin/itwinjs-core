@@ -6,7 +6,7 @@ import { ChangeSetUtilityConfig } from "./ChangeSetUtilityConfig";
 import { HubUtility } from "./HubUtility";
 import { IModelDbHandler } from "./IModelDbHandler";
 import { TestChangesetSequence } from "./TestChangesetSequence";
-import { Id64, Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { Id64String, Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 import { IModelDb } from "@bentley/imodeljs-backend/lib/backend";
 import { GeometricElement3dProps, Code } from "@bentley/imodeljs-common/lib/common";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
@@ -30,7 +30,7 @@ export class ChangesetGenerator {
     private _iModelDb?: IModelDb;
     // Only writes to and updates iModelDb. Not responsible for opening or deleting it
     public constructor(private _accessToken: AccessToken, private _hubUtility: HubUtility,
-        private _physicalModelId: Id64, private _categoryId: Id64, private _codeSpecId: Id64,
+        private _physicalModelId: Id64String, private _categoryId: Id64String, private _codeSpecId: Id64String,
         private _iModelDbHandler: IModelDbHandler = new IModelDbHandler()) {
         Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, "Initialized Changeset Generator");
         Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, "--------------------------------------------------------------------------------------------");

@@ -210,9 +210,23 @@ export class AttributeHandle {
   }
 }
 
+const enum DataType {
+  Undefined,
+  Mat3,
+  Mat4,
+  Float,
+  FloatArray,
+  Vec2,
+  Vec3,
+  Vec4,
+  Int,
+}
+
 /** A handle to the location of a uniform within a shader program */
 export class UniformHandle {
   private readonly _location: WebGLUniformLocation;
+  private _type: DataType = DataType.Undefined;
+  private readonly _data: number[] = [];
 
   private constructor(location: WebGLUniformLocation) { this._location = location; }
 
@@ -226,15 +240,75 @@ export class UniformHandle {
     return new UniformHandle(location);
   }
 
-  private setUniformMatrix4fv(transpose: boolean, data: Float32Array): void { System.instance.context.uniformMatrix4fv(this._location, transpose, data); }
-  private setUniformMatrix3fv(transpose: boolean, data: Float32Array): void { System.instance.context.uniformMatrix3fv(this._location, transpose, data); }
+  private updateData(type: DataType, data: Float32Array | number[]): boolean {
+    assert(DataType.Undefined !== type && DataType.Int !== type && DataType.Float !== type);
 
-  public setMatrix3(mat: Matrix3) { this.setUniformMatrix3fv(false, mat.data); }
-  public setMatrix4(mat: Matrix4) { this.setUniformMatrix4fv(false, mat.data); }
-  public setUniform1fv(data: Float32Array | number[]): void { System.instance.context.uniform1fv(this._location, data); }
-  public setUniform2fv(data: Float32Array | number[]): void { System.instance.context.uniform2fv(this._location, data); }
-  public setUniform3fv(data: Float32Array | number[]): void { System.instance.context.uniform3fv(this._location, data); }
-  public setUniform4fv(data: Float32Array | number[]): void { System.instance.context.uniform4fv(this._location, data); }
-  public setUniform1i(data: number): void { System.instance.context.uniform1i(this._location, data); }
-  public setUniform1f(data: number): void { System.instance.context.uniform1f(this._location, data); }
+    let updated = this._type !== type;
+
+    // NB: Yes, calling data.length without actually changing the length shows up as a significant performance bottleneck...
+    if (updated && this._data.length !== data.length)
+      this._data.length = data.length;
+
+    for (let i = 0; i < data.length; i++) {
+      const datum = data[i];
+      updated = updated || this._data[i] !== datum;
+      this._data[i] = datum;
+    }
+
+    return updated;
+  }
+
+  private updateDatum(type: DataType, datum: number): boolean {
+    assert(DataType.Int === type || DataType.Float === type);
+
+    // NB: Yes, calling data.length without actually changing the length shows up as a significant performance bottleneck...
+    if (this._data.length !== 1)
+      this._data.length = 1;
+
+    const updated = this._type !== type || this._data[0] !== datum;
+    this._type = type;
+    this._data[0] = datum;
+
+    return updated;
+  }
+
+  public setMatrix3(mat: Matrix3) {
+    if (this.updateData(DataType.Mat3, mat.data))
+      System.instance.context.uniformMatrix3fv(this._location, false, mat.data);
+  }
+
+  public setMatrix4(mat: Matrix4) {
+    if (this.updateData(DataType.Mat4, mat.data))
+      System.instance.context.uniformMatrix4fv(this._location, false, mat.data);
+  }
+
+  public setUniform1fv(data: Float32Array | number[]) {
+    if (this.updateData(DataType.FloatArray, data))
+      System.instance.context.uniform1fv(this._location, data);
+  }
+
+  public setUniform2fv(data: Float32Array | number[]) {
+    if (this.updateData(DataType.Vec2, data))
+      System.instance.context.uniform2fv(this._location, data);
+  }
+
+  public setUniform3fv(data: Float32Array | number[]) {
+    if (this.updateData(DataType.Vec3, data))
+      System.instance.context.uniform3fv(this._location, data);
+  }
+
+  public setUniform4fv(data: Float32Array | number[]) {
+    if (this.updateData(DataType.Vec4, data))
+      System.instance.context.uniform4fv(this._location, data);
+  }
+
+  public setUniform1i(data: number) {
+    if (this.updateDatum(DataType.Int, data))
+      System.instance.context.uniform1i(this._location, data);
+  }
+
+  public setUniform1f(data: number) {
+    if (this.updateDatum(DataType.Float, data))
+      System.instance.context.uniform1f(this._location, data);
+  }
 }

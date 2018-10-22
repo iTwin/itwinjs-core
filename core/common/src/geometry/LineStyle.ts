@@ -5,7 +5,7 @@
 /** @module Symbology */
 
 import { Vector3d, XYZProps, YawPitchRollProps, YawPitchRollAngles, Transform } from "@bentley/geometry-core";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 
 export namespace LineStyle {
 
@@ -161,11 +161,11 @@ export namespace LineStyle {
 
   /** Line style id and optional modifiers to override line style definition */
   export class Info {
-    public styleId: Id64;
+    public styleId: Id64String;
     public styleMod?: Modifier; // Optional modifiers to override line style definition
 
     /** Creates a LineStyle.Info object */
-    constructor(styleId: Id64, styleMod?: Modifier) {
+    constructor(styleId: Id64String, styleMod?: Modifier) {
       this.styleId = styleId;
       this.styleMod = styleMod;
     }
@@ -178,7 +178,7 @@ export namespace LineStyle {
     public equals(other: Info): boolean {
       if (this === other)
         return true;
-      if (!this.styleId.equals(other.styleId))
+      if (this.styleId !== other.styleId)
         return false;
       if ((this.styleMod === undefined) !== (other.styleMod === undefined))
         return false;

@@ -38,7 +38,7 @@ async function executeECSql_Binding(iModel: IModelConnection): Promise<void> {
 
   {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_NavigationId
-  const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", [new Id64("0x132")]);
+  const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", [Id64.fromString("0x132")]);
   // ...
   // __PUBLISH_EXTRACT_END__
   console.log(rows);
@@ -72,7 +72,7 @@ async function executeECSql_Binding(iModel: IModelConnection): Promise<void> {
 async function executeECSql_QueryResult(iModel: IModelConnection) {
   {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_IllustrateRowFormat
-  const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", [new Id64("0x113")]);
+  const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", [Id64.fromString("0x113")]);
   for (const row of rows) {
     console.log(JSON.stringify(row));
   }
@@ -81,7 +81,7 @@ async function executeECSql_QueryResult(iModel: IModelConnection) {
 
   {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_WorkingWithRowFormat
-  const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", [new Id64("0x113")]);
+  const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", [Id64.fromString("0x113")]);
   console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");
   for (const row of rows) {
     const id: string = row.id;

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64, DbResult, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, DbResult, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, ECSqlStatement, AccessMode, ChangeSummary } from "../../backend";
@@ -55,7 +55,7 @@ describe("PushRetry", () => {
       stmt.bindString(1, changeSetId);
       const result: DbResult = stmt.step();
       assert(result === DbResult.BE_SQLITE_ROW);
-      return ChangeSummaryManager.queryChangeSummary(testIModel, new Id64(stmt.getRow().changeSummaryId));
+      return ChangeSummaryManager.queryChangeSummary(testIModel, Id64.fromJSON(stmt.getRow().changeSummaryId));
     });
 
     // Dump contents of the change summary
@@ -66,7 +66,7 @@ describe("PushRetry", () => {
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         const row = stmt.getRow();
 
-        const instanceChange: any = ChangeSummaryManager.queryInstanceChange(testIModel, new Id64(row.id));
+        const instanceChange: any = ChangeSummaryManager.queryInstanceChange(testIModel, Id64.fromJSON(row.id));
         switch (instanceChange.opCode) {
           case ChangeOpCode.Insert: {
             const rows: any[] = testIModel.executeQuery(ChangeSummaryManager.buildPropertyValueChangesECSql(testIModel, instanceChange, ChangedValueState.AfterInsert));
@@ -103,7 +103,7 @@ describe("PushRetry", () => {
     const outDir = path.join(KnownTestLocations.outputDir, `imodelid_${testIModelId.toString().substr(0, 5)}`);
     if (!IModelJsFs.existsSync(outDir))
       IModelJsFs.mkdirSync(outDir);
-    const filePath = path.join(outDir, `${changeSummary.id.value}.json`);
+    const filePath = path.join(outDir, `${changeSummary.id}.json`);
     if (IModelJsFs.existsSync(filePath))
       IModelJsFs.unlinkSync(filePath);
 
@@ -163,7 +163,7 @@ describe("PushRetry", () => {
 
     pushRetryIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
-    const r: { modelId: Id64, spatialCategoryId: Id64 } = await createNewModelAndCategory(pushRetryIModel, accessToken);
+    const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(pushRetryIModel, accessToken);
 
     pushRetryIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(pushRetryIModel, r.modelId, r.spatialCategoryId));
     pushRetryIModel.saveChanges("User created model, category, and two elements");
@@ -202,7 +202,7 @@ describe("PushRetry", () => {
     const pushRetryIModelId = pushRetryIModel.iModelToken.iModelId;
     assert.isNotEmpty(pushRetryIModelId);
 
-    const r: { modelId: Id64, spatialCategoryId: Id64 } = await createNewModelAndCategory(pushRetryIModel, accessToken);
+    const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(pushRetryIModel, accessToken);
 
     pushRetryIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(pushRetryIModel, r.modelId, r.spatialCategoryId));
     pushRetryIModel.saveChanges("User created model, category, and two elements");

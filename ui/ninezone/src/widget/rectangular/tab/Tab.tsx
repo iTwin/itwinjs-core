@@ -27,6 +27,8 @@ export interface TabProps extends CommonProps {
   mode: TabMode;
   /** Function called when the tab is clicked. */
   onClick?: () => void;
+  /** Title for the tab. */
+  title?: string;
 }
 
 /**
@@ -44,6 +46,7 @@ export default class Tab extends React.Component<TabProps> {
 
     return (
       <div
+        title={this.props.title}
         className={className}
         style={this.props.style}
         onClick={this._handleOnClick}

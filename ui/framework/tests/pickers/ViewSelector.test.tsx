@@ -9,6 +9,7 @@ import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
 import ViewSelector from "../../src/pickers/ViewSelector";
 import { ListItem } from "../../src/pickers/ListPicker";
+import { ViewUtilities } from "../../src/utils";
 
 describe("ViewSelector", () => {
   before(async () => {
@@ -29,20 +30,20 @@ describe("ViewSelector", () => {
     ).should.matchSnapshot();
   });
 
-  it("should recongize spatial view", () => {
-    expect(ViewSelector.isSpatial("SpatialViewDefinition")).to.be.true;
-    expect(ViewSelector.isSpatial("OrthographicViewDefinition")).to.be.true;
-    expect(ViewSelector.isSpatial("")).to.be.false;
+  it("should recognize spatial view", () => {
+    expect(ViewUtilities.isSpatial("SpatialViewDefinition")).to.be.true;
+    expect(ViewUtilities.isSpatial("OrthographicViewDefinition")).to.be.true;
+    expect(ViewUtilities.isSpatial("")).to.be.false;
   });
 
   it("should recognize drawing view", () => {
-    expect(ViewSelector.isDrawing("DrawingViewDefinition")).to.be.true;
-    expect(ViewSelector.isDrawing("")).to.be.false;
+    expect(ViewUtilities.isDrawing("DrawingViewDefinition")).to.be.true;
+    expect(ViewUtilities.isDrawing("")).to.be.false;
   });
 
   it("should recognize sheet view", () => {
-    expect(ViewSelector.isSheet("SheetViewDefinition")).to.be.true;
-    expect(ViewSelector.isSheet("")).to.be.false;
+    expect(ViewUtilities.isSheet("SheetViewDefinition")).to.be.true;
+    expect(ViewUtilities.isSheet("")).to.be.false;
   });
 
 });

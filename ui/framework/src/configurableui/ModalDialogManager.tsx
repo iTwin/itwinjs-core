@@ -68,7 +68,7 @@ export class ModalDialogManager {
 
 }
 
-/** Props for the ModalDialogRenderer component.
+/** Properties for the [[ModalDialogRenderer]] component.
  */
 export interface ModalDialogRendererProps {
   className?: string;

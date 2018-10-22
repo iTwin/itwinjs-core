@@ -4,59 +4,91 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Ids */
 
+import { assert } from "./Assert";
+
 /**
- * An [[Id64]] or its string representation.
- * If a value of this type is a string, the string is expected to contain a valid representation of
- * an Id64 - specifically, "0" for an invalid ID, or a hexadecimal-formatted 64-bit integer with
- * an "0x" prefix.
+ * A string containing a well-formed string representation of an [[Id64]].
+ *
+ * See [Working with IDs]($docs/learning/common/Id64.md).
  */
-export type Id64String = Id64 | string;
+export type Id64String = string;
 
 /** The properties of a GUID. When serialized, will always be a string. */
 export type GuidProps = Guid | string;
 
-/** A set of Id64 string values. Note that the set is **not** of Id64 objects, since JavaScript does not support non-primitive keys. */
-export type Id64Set = Set<string>;
+/** A set of [[Id64String]]s. */
+export type Id64Set = Set<Id64String>;
 
-/** An array of Id64 string values. */
-export type Id64Array = string[];
+/** An array of [[Id64String]]s. */
+export type Id64Array = Id64String[];
 
-/** Used for arguments to functions that can accept one or more Id64 values. */
-export type Id64Arg = Id64[] | Id64 | Id64Set | Id64Array | string;
+/** Used as an argument to a function that can accept one or more Id64 values. */
+export type Id64Arg = Id64String | Id64Set | Id64Array;
+
+function toHex(str: string): number {
+  const v = parseInt(str, 16);
+  return Number.isNaN(v) ? 0 : v;
+}
+
+function isLowerCaseNonZeroHexDigit(str: string, index: number) {
+  return isLowerCaseHexDigit(str, index, false);
+}
+
+function isLowerCaseHexDigit(str: string, index: number, allowZero: boolean = true): boolean {
+  const charCode = str.charCodeAt(index);
+  const minDecimalDigit = allowZero ? 0x30 : 0x31; // '0' or '1'...
+  if (charCode >= minDecimalDigit && charCode <= 0x39) // ...to '9'
+    return true;
+  else
+    return charCode >= 0x61 && charCode <= 0x66; // 'a' to 'f'
+}
+
+function isValidHexString(id: string, startIndex: number, len: number) {
+  if (len === 0)
+    return false;
+
+  // No leading zeroes...
+  if (!isLowerCaseNonZeroHexDigit(id, startIndex))
+    return false;
+
+  // ...followed by len-1 lowercase hexadecimal digits.
+  for (let i = 1; i < len; i++)
+    if (!isLowerCaseHexDigit(id, startIndex + i))
+      return false;
+
+  return true;
+}
 
 /**
- * A 64 bit Id, stored as a hex string. This is necessary since JavaScript does not intrinsically support 64-bit integers.
- * @note If invalid, value will be "0".
+ * A 64 bit ID, stored as a hex string. This is necessary since JavaScript does not intrinsically support 64-bit integers.
+ *
+ * See [Working with IDs]($docs/learning/common/Id64.md).
+ * @note It is rarely useful to instantiate an instance of the Id64 class. Prefer to use [[Id64String]].
  * @note Id64 is an immutable class. Its value cannot be changed.
+ * @see [[Id64String]]
  */
 export class Id64 {
-  public readonly value: string;
-  private static toHex(str: string): number { const v = parseInt(str, 16); return Number.isNaN(v) ? 0 : v; }
+  /** The well-formed string representation of the 64-bit ID. */
+  public readonly value: Id64String;
+
   protected toJSON(): string { return this.value; }
 
-  /** Get the "low" part of this Id64. This is the "local id", and is the lower 40 bits of the 64 bit value. */
-  public getLow(): number { return Id64.getLow(this); }
-
-  /** Get the "low" part of an Id64 string. This is the "local id", and is the lower 40 bits of the 64 bit value. */
-  public static getLow(id: Id64String): number {
-    if (this.isInvalidId(id))
+  /** Extract the "local" ID portion of an Id64 string, contained in the lower 40 bits of the 64-bit value. */
+  public static getLocalId(id: Id64String): number {
+    if (this.isInvalid(id))
       return 0;
 
-    const str = id.toString();
     let start = 2;
-    const len = str.length;
+    const len = id.length;
     if (len > 12)
       start = (len - 10);
 
-    return this.toHex(str.slice(start));
+    return toHex(id.slice(start));
   }
 
-  /** Get the "high" part of this Id64. This is the "briefcase id", and is the high 24 bits of the 64 bit value. */
-  public getHigh(): number { return Id64.getHigh(this); }
-
-  /** Get the "high" part of an Id64 string. This is the "briefcase id", and is the high 24 bits of the 64 bit value. */
-  public static getHigh(id: Id64String): number {
-    if (this.isInvalidId(id))
+  /** Extract the briefcase ID portion of an Id64 string, contained in the upper 24 bits of the 64-bit value. */
+  public static getBriefcaseId(id: Id64String): number {
+    if (this.isInvalid(id))
       return 0;
 
     const str = id.toString();
@@ -66,122 +98,117 @@ export class Id64 {
       return 0;
 
     start = (len - 10);
-    return this.toHex(str.slice(2, start));
+    return toHex(str.slice(2, start));
   }
 
-  /**
-   * Constructor for Id64
-   * @param prop either a string with a hex number, another Id64, or an array of two numbers with [low,high]. Otherwise result will be invalid.
-   * @note If valid, the value will be *normalized* to always be in the form "0x123abc". That is, it will
-   * only have lowercase letters, with no leading zeros after the "0x"
-   */
-  constructor(prop?: Id64String | number[]) {
-    if (!prop) {
-      this.value = "0";
-      return;
-    }
-
-    let low = 0;
-    let high = 0;
-
-    if (typeof prop === "string") {
-      prop = prop.toLowerCase().trim();
-      if (prop[0] !== "0" || !(prop[1] === "x")) {
-        this.value = "0";
-        return;
-      }
-
-      let start = 2;
-      const len = prop.length;
-      if (len > 12) {
-        start = (len - 10);
-        high = Id64.toHex(prop.slice(2, start));
-      }
-
-      low = Id64.toHex(prop.slice(start));
-    } else if (prop instanceof Id64) {
-      this.value = prop.value;
-      return;
-    }
-
-    if (Array.isArray(prop) && prop.length >= 2 && "number" === typeof prop[0] && "number" === typeof prop[1]) {
-      low = Math.floor(prop[0]);
-      high = Math.floor(prop[1]);
-    }
-
-    if (low === 0) { // it is illegal to have a low value of 0
-      this.value = "0";
-      return;
-    }
-
-    const lowStr = low.toString(16).toLowerCase();
-    this.value = "0x" + ((high === 0) ? lowStr : (high.toString(16).toLowerCase() + ("0000000000" + lowStr).substr(-10)));
+  /** Wrap an Id64String in an instance of an Id64 object. This is useful only in rare scenarios in which type-switching on `instanceof Id64` is desired. */
+  public static wrap(id: Id64String): Id64 {
+    return new Id64(id);
   }
 
-  /** Convert this Id64 to a string */
+  private constructor(value: string) {
+    assert(Id64.isId64(value));
+    this.value = value;
+  }
+
+  /** Returns the underlying string representation of this ID. */
   public toString(): string { return this.value; }
 
   /** Determine whether this Id64 is valid.
    * @note The value of an invalid Id64 is "0".
    */
-  public get isValid(): boolean { return this.value !== "0"; }
+  public get isValid(): boolean { return this.value !== Id64.invalid; }
 
   /** Test whether two Id64s are the same
    * @param other the other Id64 to compare
    */
-  public equals(other: Id64): boolean { return this.value === other.value; }
+  public equals(other: Id64): boolean { return this.value === other.toString(); }
 
-  /** Compare two (potentially undefined) Id64 strings.
-   * @param a The first value, may be undefined
-   * @param b The second value, may be undefined
+  /** Create an Id64 from its JSON representation.
+   * @param prop The JSON representation of an ID.
+   * @returns A well-formed ID string.
+   * @note if the input is undefined, the result is "0", indicating an invalid ID.
+   * @note if the input is not undefined, the result is the same as that of [[Id64.fromString]].
    */
-  public static areEqual(a?: Id64String, b?: Id64String): boolean {
-    if (undefined === a)
-      return undefined === b;
-    else if (undefined === b)
-      return false;
-    else
-      return a.toString() === b.toString();
+  public static fromJSON(prop?: string): Id64String {
+    return typeof prop === "string" ? Id64.fromString(prop) : Id64.invalid;
   }
 
-  /** Create an Id64 from a json object. If val is already an Id64, just return it since Id64s are immutable.
-   * @param val the json object containing Id64String. If val does not contain valid values, result will be an invalid Id64.
+  /** Given a string value, attempt to normalize it into a well-formed ID string.
+   * If the input is already a well-formed ID string, it is returned unmodified.
+   * Otherwise, the input is trimmed of leading and trailing whitespace, converted to lowercase, and an attempt is made to parse it as a 64-bit hexadecimal integer.
+   * If parsing succeeds the normalized result is returned; otherwise the result is "0", indicating an invalid ID.
+   *
+   * For a description of "well-formed", see [Working with IDs]($docs/learning/common/Id64.md).
    */
-  public static fromJSON(val?: Id64String): Id64 {
-    if (undefined === val)
-      return this.invalidId;
-    else if (val instanceof Id64)
+  public static fromString(val: string): Id64String {
+    // NB: Yes, we must check the run-time type...
+    if (typeof val !== "string")
+      return this.invalid;
+
+    // Skip the common case in which the input is already a well-formed ID string
+    if (Id64.isId64(val))
       return val;
-    else
-      return new Id64(val);
+
+    // Attempt to normalize the input into a well-formed ID string
+    val = val.toLowerCase().trim();
+    const len = val.length;
+    if (len < 2 || val[0] !== "0" || val[1] !== "x")
+      return this.invalid;
+
+    let low = 0;
+    let high = 0;
+    let start = 2;
+    if (len > 12) {
+      start = (len - 10);
+      high = toHex(val.slice(2, start));
+    }
+
+    low = toHex(val.slice(start));
+    return this.fromLocalAndBriefcaseIds(low, high);
+  }
+
+  /** Produce an ID string from a local and briefcase ID.
+   * @param localId The non-zero local ID as an unsigned 40-bit integer.
+   * @param briefcaseId The briefcase ID as an unsigned 24-bit integer.
+   * @returns an Id64String containing the hexadecimal string representation of the unsigned 64-bit integer which would result from the
+   * operation `localId | (briefcaseId << 40)`, or an invalid ID "0" if the inputs are invalid.
+   */
+  public static fromLocalAndBriefcaseIds(localId: number, briefcaseId: number): Id64String {
+    // NB: Yes, we must check the run-time type...
+    if (typeof localId !== "number" || typeof briefcaseId !== "number")
+      return this.invalid;
+
+    localId = Math.floor(localId);
+    if (0 === localId)
+      return this.invalid;
+
+    briefcaseId = Math.floor(briefcaseId);
+    const lowStr = localId.toString(16);
+    return "0x" + ((briefcaseId === 0) ? lowStr : (briefcaseId.toString(16) + ("0000000000" + lowStr).substr(-10)));
   }
 
   /** Create an Id64 from a pair of unsigned 32-bit integers.
    * @param lowBytes The lower 4 bytes of the ID
    * @param highBytes The upper 4 bytes of the ID
-   * @returns an Id64 containing the hexadecimal string representation of the unsigned 64-bit integer which would result from the
-   * operation lowBytes | (highBytes << 32).
+   * @returns an Id64String containing the hexadecimal string representation of the unsigned 64-bit integer which would result from the
+   * operation `lowBytes | (highBytes << 32)`.
    */
-  public static fromUint32Pair(lowBytes: number, highBytes: number): Id64 {
+  public static fromUint32Pair(lowBytes: number, highBytes: number): Id64String {
     const localIdLow = lowBytes >>> 0;
     const localIdHigh = (highBytes & 0x000000ff) * (0xffffffff + 1); // aka (highBytes & 0xff) << 32
     const localId = localIdLow + localIdHigh; // aka localIdLow | localIdHigh
 
     const briefcaseId = (highBytes & 0xffffff00) >>> 8;
 
-    return new Id64([localId, briefcaseId]);
+    return Id64.fromLocalAndBriefcaseIds(localId, briefcaseId);
   }
 
-  /** Extract an unsigned 32-bit integer from the low 4 bytes of an Id64's value.
+  /** Extract an unsigned 32-bit integer from the lower 4 bytes of an Id64 string.
    * @returns the unsigned 32-bit integer value stored in the id's lower 4 bytes
    */
-  public getLowUint32(): number { return Id64.getLowUint32(this); }
-
-  /** Extract an unsigned 32-bit integer from the low 4 bytes of an Id64 string.
-   * @returns the unsigned 32-bit integer value stored in the id's lower 4 bytes
-   */
-  public static getLowUint32(id: Id64String): number {
-    if (this.isInvalidId(id))
+  public static getLowerUint32(id: Id64String): number {
+    if (this.isInvalid(id))
       return 0;
 
     const str = id.toString();
@@ -190,34 +217,27 @@ export class Id64 {
     if (len > 10)
       start = len - 8;
 
-    return this.toHex(str.slice(start));
+    return toHex(str.slice(start));
   }
 
-  /** Extract an unsigned 32-bit integer from the high 4 bytes of an Id64's value.
+  /** Extract an unsigned 32-bit integer from the upper 4 bytes of an Id64 string.
    * @returns the unsigned 32-bit integer value stored in the id's upper 4 bytes
    */
-  public getHighUint32(): number { return Id64.getHighUint32(this); }
-
-  /** Extract an unsigned 32-bit integer from the high 4 bytes of an Id64 string.
-   * @returns the unsigned 32-bit integer value stored in the id's upper 4 bytes
-   */
-  public static getHighUint32(id: Id64String): number {
-    if (this.isInvalidId(id))
+  public static getUpperUint32(id: Id64String): number {
+    if (this.isInvalid(id))
       return 0;
 
-    const str = id.toString();
-    const len = str.length;
+    const len = id.length;
     if (len <= 10)
       return 0;
 
     const start = len - 8;
-    return this.toHex(str.slice(2, start));
+    return toHex(id.slice(2, start));
   }
 
-  /** Convert an Id64Arg into an Id64Set.
-   * This method can be used by functions that accept an Id64Arg to conveniently process the value(s).
+  /** Convert an [[Id64Arg]] into an [[Id64Set]].
    *
-   * For example:
+   * This method can be used by functions that accept an Id64Arg to conveniently process the value(s). For example:
    * ```ts
    *   public addCategories(arg: Id64Arg) { Id64.toIdSet(arg).forEach((id) => this.categories.add(id)); }
    * ```
@@ -225,46 +245,128 @@ export class Id64 {
   public static toIdSet(arg: Id64Arg): Id64Set {
     if (arg instanceof Set)
       return arg;
+
     const ids = new Set<string>();
     if (typeof arg === "string")
       ids.add(arg);
-    else if (arg instanceof Id64)
-      ids.add(arg.value);
     else if (Array.isArray(arg)) {
-      if (arg.length > 0) {
-        (typeof arg[0] === "string") ? (arg as string[]).forEach((id) => ids.add(id)) : (arg as Id64[]).forEach((id) => ids.add(id.value));
-      }
+      arg.forEach((id) => {
+        if (typeof id === "string")
+          ids.add(id);
+      });
     }
+
     return ids;
   }
 
-  /** Obtain an Id64 instance with an invalid value. */
-  public static invalidId: Id64 = new Id64();
+  /** The string representation of an invalid ID. */
+  public static invalid = "0";
 
-  /** Return whether this is a transient Id64. A transient ID is used to identify non-element entities like pickable decorations. */
-  public get isTransient(): boolean { return Id64.isTransientId(this); }
+  /** An Id64 instance representing an invalid ID. */
+  public static invalidId64: Id64 = new Id64(Id64.invalid);
 
-  /** Return whether the supplied id string is a transient Id64. A transient ID is used to identify non-element entities like pickable decorations. */
-  public static isTransientId(id: Id64String): boolean {
+  /** Determine if the supplied id string represents a transient ID.
+   * @param id A well-formed ID string.
+   * @returns true if the ID represents a transient ID.
+   * @note This method assumes the input is a well-formed ID string.
+   * @see [[isTransientId64]]
+   * @see [[TransientIdSequence]]
+   */
+  public static isTransient(id: Id64String): boolean {
     // A transient ID is of the format "0xffffffxxxxxxxxxx" where the leading 6 digits indicate an invalid briefcase ID.
     const str = id.toString();
     return 18 === str.length && str.startsWith("0xffffff");
   }
 
-  /** Return true if the supplied id string represents an invalid ID. */
-  public static isInvalidId(id: Id64String): boolean { return "0" === id; }
+  /** Determine if the input is a well-formed [[Id64String]] and represents a transient ID.
+   * @see [[isTransient]]
+   * @see [[isId64]]
+   * @see [[TransientIdSequence]]
+   */
+  public static isTransientId64(id: string): boolean {
+    return this.isValidId64(id) && this.isTransient(id);
+  }
+
+  /** Determine if the input is a well-formed [[Id64String]].
+   *
+   * For a description of "well-formed", see [Working with IDs]($docs/learning/common/Id64.md).
+   * @see [[isValidId64]]
+   */
+  public static isId64(id: string): boolean {
+    const len = id.length;
+    if (0 === len)
+      return false;
+
+    if ("0" !== id[0])
+      return false;
+
+    // Well-formed invalid ID: "0"
+    if (1 === len)
+      return true;
+
+    // Valid IDs begin with "0x" followed by at least one lower-case hexadecimal digit.
+    if (2 === len || "x" !== id[1])
+      return false;
+
+    // If briefcase ID is present, it occupies at least one digit, followed by 10 digits for local ID
+    let localIdStart = 2;
+    if (len > 12) {
+      localIdStart = len - 10;
+
+      // Verify briefcase ID
+      if (!isValidHexString(id, 2, localIdStart - 2))
+        return false;
+
+      // Skip leading zeroes in local ID
+      for (let i = localIdStart; i < len; i++) {
+        if (0x30 !== id.charCodeAt(i)) // '0'
+          break;
+        else
+          localIdStart++;
+      }
+
+      if (localIdStart >= len)
+        return false;
+    }
+
+    return isValidHexString(id, localIdStart, len - localIdStart);
+  }
+
+  /** Returns true if the input is not equal to the representation of an invalid ID.
+   * @note This method assumes the input is a well-formed ID string.
+   * @see [[isInvalid]]
+   * @see [[isValidId64]]
+   */
+  public static isValid(id: Id64String): boolean {
+    return Id64.invalid !== id;
+  }
+
+  /** Returns true if the input is a well-formed [[Id64String]] representing a valid ID.
+   * @see [[isValid]]
+   * @see [[isId64]]
+   */
+  public static isValidId64(id: string): boolean {
+    return Id64.invalid !== id && Id64.isId64(id);
+  }
+
+  /** Returns true if the input is a well-formed [[Id64String]] representing an invalid ID.
+   * @see [[isValid]]
+   */
+  public static isInvalid(id: Id64String): boolean {
+    return Id64.invalid === id;
+  }
 }
 
 /**
- * Generates unique Id64 values in sequence, which are guaranteed not to conflict with Id64s associated with persistent elements or models.
- * This is useful for associating stable, non-persistent identifiers with things like view decorations.
+ * Generates unique [[Id64String]] values in sequence, which are guaranteed not to conflict with IDs associated with persistent elements or models.
+ * This is useful for associating stable, non-persistent identifiers with things like [Decorator]($frontend)s.
  * A TransientIdSequence can generate a maximum of (2^40)-2 unique IDs.
  */
 export class TransientIdSequence {
   private _localId: number = 0;
 
   /** Generate and return the next transient Id64 in the sequence. */
-  public get next(): Id64 { return new Id64([++this._localId, 0xffffff]); }
+  public get next(): Id64String { return Id64.fromLocalAndBriefcaseIds(++this._localId, 0xffffff); }
 }
 
 /** A string in the "8-4-4-4-12" pattern. Does not enforce that the Guid is a valid v4 format uuid.

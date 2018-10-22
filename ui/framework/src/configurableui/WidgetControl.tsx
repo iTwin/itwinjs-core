@@ -11,9 +11,9 @@ import { WidgetDef, WidgetState } from "./WidgetDef";
 // Configurable Ui Widget Control
 // -----------------------------------------------------------------------------
 
-/** Props for a WidgetControl.
+/** Properties for a Widget React component.
  */
-export interface WidgetControlProps {
+export interface WidgetComponentProps {
   widgetControl: WidgetControl;
 }
 
@@ -27,15 +27,20 @@ export class WidgetControl extends ConfigurableUiControl {
     super(info, options);
   }
 
+  /** Gets the React element associated with this control */
   public get reactElement(): React.ReactNode { return this._reactElement; }
+  /** Sets the React element associated with this control */
   public set reactElement(r: React.ReactNode) { this._reactElement = r; }
 
-  public get widgetDef() { return this._widgetDef; }
+  /** Gets the [[WidgetDef]] associated with this control */
+  public get widgetDef(): WidgetDef { return this._widgetDef; }
+  /** Sets the [[WidgetDef]] associated with this control */
   public set widgetDef(w: WidgetDef) { this._widgetDef = w; }
 
   /** Gets the type of ConfigurableUiControl, which is 'Widget' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.Widget; }
 
+  /** Sets the [[WidgetState]] for this control */
   public setWidgetState(state: WidgetState): void {
     this.widgetDef.setWidgetState(state);
   }

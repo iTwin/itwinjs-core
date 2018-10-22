@@ -39,14 +39,14 @@ export interface ElementProps extends EntityProps {
 /** The Id and relationship class of an Element that is somehow related to another Element */
 export class RelatedElement implements RelatedElementProps {
   /** The Id of the element to which this element is related. */
-  public readonly id: Id64;
+  public readonly id: Id64String;
   /** The full className of the relationship class. */
   public readonly relClassName?: string;
   constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
   public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined { return json ? new RelatedElement(json) : undefined; }
 
   /** Accept the value of a navigation property that might be in the shortened format of just an id or might be in the full RelatedElement format. */
-  public static idFromJson(json: any): Id64 {
+  public static idFromJson(json: any): Id64String {
     if ((typeof json === "object") && ("id" in json)) {
       const r = RelatedElement.fromJSON(json);
       if (r === undefined)

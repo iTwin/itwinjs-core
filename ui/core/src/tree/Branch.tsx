@@ -9,7 +9,7 @@ import * as React from "react";
 
 import "./Branch.scss";
 
-/** Props for TreeBranch React component */
+/** Properties for [[TreeBranch]] React component */
 export interface TreeBranchProps {
   children?: React.ReactNode;
   className?: string;

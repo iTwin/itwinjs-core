@@ -288,9 +288,8 @@ function addTexture(builder: ProgramBuilder, animated: boolean) {
         assert(undefined !== surfGeom.texture);
         const texture = surfGeom.texture! as Texture;
         texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
-      } else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
-        // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
-        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.SurfaceTexture);
+      } else {
+        System.instance.ensureSamplerBound(uniform, TextureUnit.SurfaceTexture);
       }
     });
   });

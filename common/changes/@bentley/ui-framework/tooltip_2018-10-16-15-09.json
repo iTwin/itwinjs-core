@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added NotificationManager.isToolTipSupported so that we can avoid asking for tooltip message when _showToolTip isn't implemented by application.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Brien.Bastings@Bentley.com"
+}

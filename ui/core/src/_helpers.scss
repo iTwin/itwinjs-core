@@ -13,9 +13,9 @@
     $counter: $counter + $step !global;
     @return $counter;
   }
-  nz-map-from-array($array, step, 1000);
+  uicore-map-from-array($array, step, 1000);
 */
-@function nz-map-from-array($array, $fn, $args...) {
+@function uicore-map-from-array($array, $fn, $args...) {
   $map: ();
   @each $item in $array {
     $kvp: (
@@ -36,9 +36,9 @@
   @function step($counter) {
     @return $counter + 1000;
   }
-  nz-map-from-array-with-result-arg($array, step, 0);
+  uicore-map-from-array-with-result-arg($array, step, 0);
 */
-@function nz-map-from-array-with-result-arg($array, $fn, $initialArg) {
+@function uicore-map-from-array-with-result-arg($array, $fn, $initialArg) {
   $map: ();
   $result: $initialArg;
   @each $item in $array {

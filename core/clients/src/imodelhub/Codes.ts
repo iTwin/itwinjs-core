@@ -11,7 +11,7 @@ import { ResponseError } from "./../Request";
 import { WsgRequestOptions } from "./../WsgClient";
 
 import { AccessToken } from "../Token";
-import { Logger, IModelHubStatus, ActivityLoggingContext, Id64, Guid } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus, ActivityLoggingContext, Id64String, Guid } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "./Errors";
 import { Query } from "./Query";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -37,7 +37,7 @@ export enum CodeState {
 export class CodeBase extends WsgInstance {
   /** Code specification Id. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeSpecId", new Id64Serializer())
-  public codeSpecId?: Id64;
+  public codeSpecId?: Id64String;
 
   /** Code scope. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeScope")
@@ -228,7 +228,7 @@ export class CodeQuery extends Query {
    * @returns This query.
    * @throws [[IModelHubError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if codeSpecId is undefined or empty.
    */
-  public byCodeSpecId(codeSpecId: Id64) {
+  public byCodeSpecId(codeSpecId: Id64String) {
     ArgumentCheck.defined("codeSpecId", codeSpecId);
     this.addFilter(`CodeSpecId+eq+'${codeSpecId}'`);
     return this;
@@ -314,7 +314,7 @@ export enum CodeSequenceType {
 export class CodeSequence extends WsgInstance {
   /** Code specification Id (hexadecimal ("0XA") or decimal ("10") string)). */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeSpecId")
-  public codeSpecId?: Id64;
+  public codeSpecId?: Id64String;
 
   /** Code scope. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeScope")

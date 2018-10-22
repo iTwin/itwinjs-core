@@ -19,13 +19,15 @@ export default class Constant extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Constant; // tslint:disable-line
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _definition: string;
-  protected _numerator = 1.0;
-  protected _denominator = 1.0;
+  protected _numerator: number;
+  protected _denominator: number;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
-    this._definition = "";
     this.schemaItemType = SchemaItemType.Constant;
+    this._definition = "";
+    this._denominator = 1.0;
+    this._numerator = 1.0;
   }
 
   get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }

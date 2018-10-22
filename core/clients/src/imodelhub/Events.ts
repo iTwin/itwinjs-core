@@ -8,7 +8,7 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, Response } from "./../Request";
 import { CodeState } from "./Codes";
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext, Id64, Guid } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, Id64, Id64String, Guid } from "@bentley/bentleyjs-core";
 import { EventBaseHandler, BaseEventSAS, IModelHubBaseEvent, EventListener, ListenerSubscription, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
@@ -78,7 +78,7 @@ export class LockEvent extends BriefcaseEvent {
   /** [[LockLevel]] of the updated Locks. */
   public lockLevel?: LockLevel;
   /** Id's of the updated Locks. */
-  public objectIds?: Id64[];
+  public objectIds?: Id64String[];
   /** Id of the [[ChangeSet]] Locks were released with. */
   public releasedWithChangeSet?: string;
 
@@ -91,7 +91,7 @@ export class LockEvent extends BriefcaseEvent {
     super.fromJson(obj);
     this.lockType = parseInt(obj.LockType, 10) as LockType;
     this.lockLevel = parseInt(obj.LockLevel, 10) as LockLevel;
-    this.objectIds = (obj.ObjectIds as string[]).map((value: string) => new Id64(value));
+    this.objectIds = (obj.ObjectIds as string[]).map((value: string) => Id64.fromJSON(value));
     this.releasedWithChangeSet = obj.ReleasedWithChangeSet;
   }
 }
@@ -130,7 +130,7 @@ export class ChangeSetPrePushEvent extends IModelHubEvent {
  */
 export class CodeEvent extends BriefcaseEvent {
   /** Id of the [CodeSpec]($common) for the updated Codes. */
-  public codeSpecId?: Id64;
+  public codeSpecId?: Id64String;
   /** Scope of the updated Codes. */
   public codeScope?: string;
   /** Array of the updated Code values. */
@@ -145,7 +145,7 @@ export class CodeEvent extends BriefcaseEvent {
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
-    this.codeSpecId = new Id64(obj.CodeSpecId);
+    this.codeSpecId = Id64.fromJSON(obj.CodeSpecId);
     this.codeScope = obj.CodeScope;
     this.values = obj.Values;
     this.state = obj.State;

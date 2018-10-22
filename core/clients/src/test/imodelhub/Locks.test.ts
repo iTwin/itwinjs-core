@@ -14,7 +14,7 @@ import {
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { Guid, IModelHubStatus, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, IModelHubStatus, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
 
 chai.should();
 
@@ -33,7 +33,7 @@ describe("iModelHubClient LockHandler", () => {
   const imodelName = "imodeljs-clients Locks test";
   let briefcases: Briefcase[];
   let changeSet: ChangeSet;
-  let lastObjectId: Id64;
+  let lastObjectId: Id64String;
   const conflictStrategyOption = { CustomOptions: { ConflictStrategy: "Continue" } };
   const alctx = new ActivityLoggingContext("");
 
@@ -135,7 +135,7 @@ describe("iModelHubClient LockHandler", () => {
   });
 
   it("should get lock by objectId", async () => {
-    const objectId = new Id64("0x1");
+    const objectId = Id64.fromString("0x1");
     utils.mockGetLocks(imodelId, undefined, utils.generateLock(undefined, objectId));
 
     const query = new LockQuery().byObjectId(objectId);

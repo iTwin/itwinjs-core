@@ -55,10 +55,10 @@ describe("NodesPaths", () => {
           [BisCore:LinkPartition] 0xe
     */
     await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
-      const key1: InstanceKey = { id: new Id64("0x1"), className: "BisCore:RepositoryModel" };
-      const key2: InstanceKey = { id: new Id64("0x1"), className: "BisCore:Subject" };
-      const key3: InstanceKey = { id: new Id64("0x10"), className: "BisCore:DefinitionPartition" };
-      const key4: InstanceKey = { id: new Id64("0xe"), className: "BisCore:LinkPartition" };
+      const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:RepositoryModel" };
+      const key2: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
+      const key3: InstanceKey = { id: Id64.fromString("0x10"), className: "BisCore:DefinitionPartition" };
+      const key4: InstanceKey = { id: Id64.fromString("0xe"), className: "BisCore:LinkPartition" };
       const keys: InstanceKey[][] = [[key1, key2, key3], [key1, key2, key4]];
 
       const result = await Presentation.presentation.getNodePaths({ imodel, rulesetId: ruleset.id }, keys, 1);

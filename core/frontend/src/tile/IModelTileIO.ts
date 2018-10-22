@@ -25,7 +25,7 @@ import {
   AuxParam,
 } from "../render/primitives/VertexTable";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
+import { Id64String, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic, PackedFeatureTable } from "../render/System";
 import { ImageUtil } from "../ImageUtil";
 import {
@@ -126,7 +126,7 @@ export namespace IModelTileIO {
     private readonly _sizeMultiplier?: number;
 
     /** Attempt to initialize a Reader to deserialize iModel tile data beginning at the stream's current position. */
-    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
@@ -372,7 +372,7 @@ export namespace IModelTileIO {
       return new PackedFeatureTable(packedFeatureArray, this._modelId, header.count, header.maxFeatures, this._type);
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, type: BatchType, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number) {
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType, isCanceled?: GltfTileIO.IsCanceled, sizeMultiplier?: number) {
       super(props, iModel, modelId, is3d, system, type, isCanceled);
       this._sizeMultiplier = sizeMultiplier;
     }

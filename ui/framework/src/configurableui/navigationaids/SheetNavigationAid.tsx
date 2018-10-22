@@ -6,11 +6,18 @@
 
 import * as React from "react";
 import { UiFramework } from "../../UiFramework";
+import { ViewUtilities } from "../../utils/ViewUtilities";
 import { NavigationAidControl } from "../NavigationAidControl";
 import { ConfigurableCreateInfo } from "../ConfigurableUiControl";
 import { FrontstageManager, ModalFrontstageInfo } from "../FrontstageManager";
 import { SheetsModalFrontstage, CardContainer, CardSelectedEventArgs } from "./SheetsModalFrontstage";
-import { IModelConnection, IModelApp } from "@bentley/imodeljs-frontend/lib/frontend";
+import {
+  IModelConnection,
+  IModelApp,
+  ScreenViewport,
+  SelectedViewportChangedArgs,
+} from "@bentley/imodeljs-frontend/lib/frontend";
+import { SmallLoader } from "@bentley/bwc/lib";
 
 import "./SheetNavigationAid.scss";
 
@@ -20,6 +27,7 @@ export class SheetNavigationAidControl extends NavigationAidControl {
     super(info, options);
     this.reactElement = <SheetNavigationAid iModelConnection={options.imodel} />;
   }
+  public getSize(): string | undefined { return "96px"; }
 }
 
 /** Data displayed about sheet */
@@ -37,48 +45,70 @@ export interface SheetNavigationProps {
 export interface SheetNavigationState {
   index: number;
   sheetData: SheetData[];
-  activeSheet: SheetData;
 }
 
 /** A Sheet Navigation Aid. */
 export class SheetNavigationAid extends React.Component<SheetNavigationProps, SheetNavigationState> {
 
-  public readonly state: Readonly<SheetNavigationState>;
-  private _sheetData: SheetData[] = [];
-  private _viewport: any;
+  /** @hidden */
+  public readonly state: Readonly<SheetNavigationState> = {
+    index: 0,
+    sheetData: [],
+  };
 
-  constructor(props: any) {
+  private _viewport: ScreenViewport | undefined;
+
+  constructor(props: SheetNavigationProps) {
     super(props);
-    if (IModelApp && IModelApp.viewManager)
+
+    if (IModelApp && IModelApp.viewManager) {
       this._viewport = IModelApp.viewManager.selectedView;
-    this.state = {
-      index: 0,
-      sheetData: [],
-      activeSheet: { name: "", viewId: "" },
-    };
-    this._setupSheets();
+    }
   }
 
   /** Adds listeners when components mounts */
-  public componentDidMount() {
-    CardContainer.onCardSelectedEvent.addListener(this._handleCardSelected, this);
+  public async componentDidMount() {
+    CardContainer.onCardSelectedEvent.addListener(this._handleCardSelected);
+
+    if (IModelApp && IModelApp.viewManager)
+      IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
+
+    const stateData = await this._setupSheets();
+
+    this.setState(stateData);
   }
 
   /** Removes listeners when component will unmount */
   public componentWillUnmount() {
-    CardContainer.onCardSelectedEvent.removeListener(this._handleCardSelected, this);
+    CardContainer.onCardSelectedEvent.removeListener(this._handleCardSelected);
+
+    if (IModelApp && IModelApp.viewManager)
+      IModelApp.viewManager.onSelectedViewportChanged.removeListener(this._handleSelectedViewportChanged);
   }
 
-  /** Querys for sheet info and sets as sheetData */
-  private async _setupSheets() {
+  /** Queries for sheet info and sets as sheetData */
+  private async _setupSheets(): Promise<SheetNavigationState> {
+    const stateData: SheetNavigationState = {
+      index: 0,
+      sheetData: [],
+    };
+
+    if (!this.props.iModelConnection || !this.props.iModelConnection.views.getViewList)
+      return stateData;
+
+    let viewId = "";
+    if (this._viewport) {
+      viewId = this._viewport.view.id.toString();
+    }
+
     const sheets = await this.props.iModelConnection.views.getViewList({ from: "BisCore.SheetViewDefinition" });
-    sheets.forEach((element: any) => {
-      this._sheetData.push({ name: element.name, viewId: element.id });
+    sheets.forEach((viewSpec: IModelConnection.ViewSpec, index: number) => {
+      stateData.sheetData.push({ name: viewSpec.name, viewId: viewSpec.id });
+      if (viewSpec.id === viewId)
+        stateData.index = index;
     });
 
-    this.setState({
-      sheetData: this._sheetData,
-    });
+    return stateData;
   }
 
   /** @hidden */
@@ -87,16 +117,27 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     const sheet = UiFramework.i18n.translate("UiFramework:general.sheet");
     const ofStr = UiFramework.i18n.translate("UiFramework:general.of");
 
+    let content: React.ReactNode;
+    if (this.state.sheetData.length > 0) {
+      content = (
+        <>
+          <div className="sheet-title">{sheet}</div>
+          <div className="sheet-name" title={name} onClick={this._handleOnClickSheetName}>{name}</div>
+          <div className="sheet-container">
+            <div className="sheet-caret icon icon-caret-left" onClick={this._handleOnClickLeftArrow} />
+            <div>{this.state.index + 1} {ofStr} {this.state.sheetData.length}</div>
+            <div className="sheet-caret icon icon-caret-right" onClick={this._handleOnClickRightArrow} />
+          </div>
+        </>
+      );
+    } else {
+      content = <SmallLoader />;
+    }
+
     return (
-      <div className={"sheet-navigation"}>
-        <div className={"gradient"}></div>
-        <div className={"sheet-title"}>{sheet}</div>
-        <div className={"sheet-name"} onClick={() => this._handleOnClickSheetName()}>{name}</div>
-        <div className={"sheet-container"}>
-          <div className={"sheet-caret icon icon-caret-left"} onClick={() => this._handleOnClickLeftArrow()} />
-          <div>{this.state.index + 1} {ofStr} {this.state.sheetData.length}</div>
-          <div className={"sheet-caret icon icon-caret-right"} onClick={() => this._handleOnClickRightArrow()} />
-        </div>
+      <div className="sheet-navigation">
+        <div className="gradient"></div>
+        {content}
       </div>
     );
   }
@@ -111,18 +152,34 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
 
   /** Updates view to the next lowest index in sheetData */
   private _handleOnClickLeftArrow = () => {
-    this.setState((_prevState) => (
-      { index: this.state.index <= 0 ? this.state.sheetData.length - 1 : this.state.index - 1 }
-    ));
-    this._updateView();
+    this.setState({ index: this.state.index <= 0 ? this.state.sheetData.length - 1 : this.state.index - 1 }, () => this._updateView());
   }
 
   /** Updates view to next highest index in sheetData */
-  private async _handleOnClickRightArrow() {
-    this.setState((_prevState) => (
-      { index: (this.state.index + 1) % this.state.sheetData.length }
-    ));
-    this._updateView();
+  private _handleOnClickRightArrow = () => {
+    this.setState({ index: (this.state.index + 1) % this.state.sheetData.length }, () => this._updateView());
+  }
+
+  /** Handles a Viewport change & synchs the index */
+  private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
+    if (args.current && args.current.view) {
+      const className = ViewUtilities.getBisBaseClass(args.current!.view.classFullName);
+
+      if (ViewUtilities.isSheet(className)) {
+        this._viewport = args.current;
+
+        if (this._viewport) {
+          const viewId = this._viewport.view.id.toString();
+
+          const index = this.state.sheetData.findIndex((sheetData: SheetData) => {
+            return (viewId === sheetData.viewId);
+          });
+
+          if (index >= 0)
+            this.setState({ index });
+        }
+      }
+    }
   }
 
   /** Updates view to currently set sheet */
@@ -134,7 +191,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
 
   /** Creates a new SheetsModalFrontstage */
   private modalFrontstage(): ModalFrontstageInfo {
-    return new SheetsModalFrontstage(this.state.sheetData, this.props.iModelConnection);
+    return new SheetsModalFrontstage(this.state.sheetData, this.props.iModelConnection, this.state.index);
   }
 
   /** Opens a new SheetsModelFrontstage on sheetName click */

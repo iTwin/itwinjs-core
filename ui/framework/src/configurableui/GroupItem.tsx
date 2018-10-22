@@ -227,6 +227,7 @@ class GroupItem extends React.Component<Props, State> {
         history={this.getHistoryTray()}
       >
         <ToolbarIcon
+          title={this.state.groupItemDef.label}
           onClick={() => this._toggleIsToolGroupOpen()}
           icon={
             <Icon iconInfo={this.state.groupItemDef.iconInfo} />

@@ -8,8 +8,8 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 
 // This file defines the Login service interface that applications can provide if they want to override the default behavior.
 
-// Login services. Will be revised
+/** Interface for Login services. */
 export interface LoginServices {
-  // Login to the system that controls access to Projects, and retrieve an AccessToken that is used for further queries.
+  /** Login to the system that controls access to Projects, and retrieve an AccessToken that is used for further queries.  */
   imsLogin(userName: string, password: string): Promise<AccessToken>;
 }

@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel, DbResult, assert, Id64, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { Logger, LogLevel, DbResult, assert, Id64String, Id64, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 import { AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients/lib";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common/lib/common";
 import { IModelHost, IModelHostConfiguration, IModelDb, OpenParams, ChangeSummaryManager, ECSqlStatement, ChangeSummary, AccessMode } from "@bentley/imodeljs-backend/lib/backend";
@@ -113,7 +113,7 @@ export class QueryAgent {
         }
 
         // Extract summary information about the current version of the briefcase/iModel into the change cache
-        const changeSummaryIds: Id64[] = await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, this._iModelDb!, { currentVersionOnly: true });
+        const changeSummaryIds: Id64String[] = await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, this._iModelDb!, { currentVersionOnly: true });
         Logger.logTrace(QueryAgentConfig.loggingCategory, `Extracted summary information from change set "${changeSetId}"`);
 
         // Attach a change cache file to the iModel to enable querying the change summary
@@ -138,7 +138,7 @@ export class QueryAgent {
             while (stmt.step() === DbResult.BE_SQLITE_ROW) {
                 const row = stmt.getRow();
 
-                const instanceChange: any = ChangeSummaryManager.queryInstanceChange(this._iModelDb!, new Id64(row.id));
+                const instanceChange: any = ChangeSummaryManager.queryInstanceChange(this._iModelDb!, Id64.fromJSON(row.id));
                 switch (instanceChange.opCode) {
                     case ChangeOpCode.Insert: {
                         // Get the instance after the insert

@@ -39,9 +39,9 @@ export class SubCategoryAppearance {
   /** @hidden */
   public readonly dontLocate: boolean;
   /** The element ID of the line style used to draw curves, or an invalid ID if no line style is specified. */
-  public readonly styleId: Id64;
+  public readonly styleId: Id64String;
   /** The element ID of the material applied to surfaces, or an invalid ID if no material is specified. */
-  public readonly materialId: Id64;
+  public readonly materialId: Id64String;
 
   constructor(props?: SubCategoryAppearance.Props) {
     if (!props) {
@@ -50,8 +50,8 @@ export class SubCategoryAppearance {
       this.priority = 0;
       this.transparency = 0;
       this.invisible = this.dontPlot = this.dontSnap = this.dontLocate = false;
-      this.styleId = new Id64();
-      this.materialId = new Id64();
+      this.styleId = Id64.invalid;
+      this.materialId = Id64.invalid;
       return;
     }
 
@@ -75,8 +75,8 @@ export class SubCategoryAppearance {
       this.color.equals(other.color) &&
       this.weight === other.weight &&
       this.priority === other.priority &&
-      this.styleId.equals(other.styleId) &&
-      this.materialId.equals(other.materialId) &&
+      this.styleId === other.styleId &&
+      this.materialId === other.materialId &&
       this.transparency === other.transparency;
   }
 
@@ -87,9 +87,14 @@ export class SubCategoryAppearance {
     if (this.dontSnap) val.dontSnap = true;
     if (this.dontLocate) val.dontLocate = true;
     if (0 !== this.weight) val.weight = this.weight;
-    if (this.styleId.isValid) val.style = this.styleId;
     if (0 !== this.priority) val.priority = this.priority;
-    if (this.materialId.isValid) val.material = this.materialId;
+
+    if (Id64.isValid(this.styleId))
+      val.style = this.styleId;
+
+    if (Id64.isValid(this.materialId))
+      val.material = this.materialId;
+
     if (0.0 !== this.transparency) val.transp = this.transparency;
     return val;
   }
@@ -143,11 +148,11 @@ export class SubCategoryOverride {
   /** @see [[SubCategoryAppearance.weight]] */
   public readonly weight?: number;
   /** @hidden Overriding with arbitrary custom line style is not supported - overriding with LinePixels enum could be. */
-  public readonly style?: Id64;
+  public readonly style?: Id64String;
   /** @see [[SubCategoryAppearance.priority]] */
   public readonly priority?: number;
   /** @see [[SubCategoryAppearance.materialId]] */
-  public readonly material?: Id64;
+  public readonly material?: Id64String;
   /** @see [[SubCategoryAppearance.transparency]] */
   public readonly transparency?: number;
 

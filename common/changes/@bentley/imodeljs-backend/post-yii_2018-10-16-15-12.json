@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove unused createAndInsert methods from IModelWriteRpcInterface",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "shaun.sewall@bentley.com"
+}

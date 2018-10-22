@@ -32,7 +32,7 @@ export enum TableSelectionTarget {
   Cell,
 }
 
-/** Props for the Table React component */
+/** Properties for the [[Table]] React component */
 export interface TableProps {
   /** Data provider for the Table */
   dataProvider: TableDataProvider;
@@ -282,7 +282,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
       const result = uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
-      if (result.status === UiSettingsStatus.Sucess) {
+      if (result.status === UiSettingsStatus.Success) {
         const setting = result.setting as string[];
         // map columns according to the keys in columns, in the order of the loaded array of keys
         columns = setting.map((key) => columns.filter((col) => col.key === key)[0]);
@@ -803,7 +803,7 @@ export class Table extends React.Component<TableProps, TableState> {
     document.addEventListener("mouseup", this._onMouseUp, { capture: true, once: true });
   }
   private _onHeaderDrop = (source: string, target: string) => {
-    const cols = [ ...this.state.columns ];
+    const cols = [...this.state.columns];
     const columnSourceIndex = this.state.columns.findIndex((i) => i.key === source);
     const columnTargetIndex = this.state.columns.findIndex((i) => i.key === target);
 

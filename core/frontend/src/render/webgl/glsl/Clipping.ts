@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ProgramBuilder, VariableType, FragmentShaderComponent } from "../ShaderBuilder";
+import { ProgramBuilder, VariableType, VariablePrecision, FragmentShaderComponent } from "../ShaderBuilder";
 import { addModelViewMatrix } from "./Vertex";
 import { addWindowToTexCoords } from "./Fragment";
 import { TextureUnit } from "../RenderFlags";
@@ -154,7 +154,7 @@ function addClippingPlanes(prog: ProgramBuilder, maxClipPlanes: number) {
       if (texture !== undefined)
         texture.bindSampler(uniform, TextureUnit.ClipVolume);
     });
-  });
+  }, VariablePrecision.High);
   frag.set(FragmentShaderComponent.ApplyClipping, applyClipPlanes);
 }
 
@@ -166,7 +166,7 @@ function addClippingMask(prog: ProgramBuilder) {
       if (texture !== undefined)
         texture.bindSampler(uniform, TextureUnit.ClipVolume);
     });
-  });
+  }, VariablePrecision.High);
 
   addWindowToTexCoords(prog.frag);
   prog.frag.set(FragmentShaderComponent.ApplyClipping, applyClipMask);

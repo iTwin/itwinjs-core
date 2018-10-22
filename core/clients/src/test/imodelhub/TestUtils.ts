@@ -5,7 +5,7 @@
 import * as fs from "fs";
 import * as path from "path";
 import * as chai from "chai";
-import { Guid, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
 
 import {
   ECJsonTypeMap, AccessToken, UserProfile, Project,
@@ -340,7 +340,7 @@ export function randomCode(briefcase: number): HubCode {
   const code = new HubCode();
   code.briefcaseId = briefcase;
   code.codeScope = "TestScope";
-  code.codeSpecId = new Id64("0XA");
+  code.codeSpecId = Id64.fromString("0XA");
   code.state = CodeState.Reserved;
   code.value = randomCodeValue("TestCode");
   return code;
@@ -422,9 +422,9 @@ export function mockDeleteAllCodes(imodelId: Guid, briefcaseId: number) {
 }
 
 /** Locks */
-export function incrementLockObjectId(objectId: Id64): Id64 {
-  let low = objectId.getLowUint32() + 1;
-  let high = objectId.getHighUint32();
+export function incrementLockObjectId(objectId: Id64String): Id64String {
+  let low = Id64.getLowerUint32(objectId) + 1;
+  let high = Id64.getUpperUint32(objectId);
   if (low === 0xFFFFFFFF) {
     low = 0;
     high = high + 1;
@@ -432,25 +432,25 @@ export function incrementLockObjectId(objectId: Id64): Id64 {
   return Id64.fromUint32Pair(low, high);
 }
 
-export async function getLastLockObjectId(accessToken: AccessToken, imodelId: Guid): Promise<Id64> {
+export async function getLastLockObjectId(accessToken: AccessToken, imodelId: Guid): Promise<Id64String> {
   if (TestConfig.enableMocks)
-    return new Id64("0x0");
+    return Id64.fromString("0x0");
 
   const client = getDefaultClient();
   const locks = await client.Locks().get(actx, accessToken, imodelId);
 
   locks.sort((lock1, lock2) => (parseInt(lock1.objectId!.toString(), 16) > parseInt(lock2.objectId!.toString(), 16) ? -1 : 1));
 
-  return (locks.length === 0 || locks[0].objectId === undefined) ? new Id64("0x0") : locks[0].objectId!;
+  return (locks.length === 0 || locks[0].objectId === undefined) ? Id64.fromString("0x0") : locks[0].objectId!;
 }
 
-export function generateLock(briefcaseId?: number, objectId?: Id64,
+export function generateLock(briefcaseId?: number, objectId?: Id64String,
   lockType?: LockType, lockLevel?: LockLevel, seedFileId?: Guid,
   releasedWithChangeSet?: string, releasedWithChangeSetIndex?: string): Lock {
   const result = new Lock();
   result.briefcaseId = briefcaseId || 1;
   result.seedFileId = seedFileId;
-  result.objectId = new Id64(objectId || "0x0");
+  result.objectId = Id64.fromJSON(objectId || "0x0");
   result.lockLevel = lockLevel || 1;
   result.lockType = lockType || 1;
   result.releasedWithChangeSet = releasedWithChangeSet;
@@ -699,7 +699,7 @@ export async function createLocks(accessToken: AccessToken, imodelId: Guid, brie
     return;
 
   const client = getDefaultClient();
-  let lastObjectId: Id64 = await getLastLockObjectId(accessToken, imodelId);
+  let lastObjectId: Id64String = await getLastLockObjectId(accessToken, imodelId);
   const generatedLocks: Lock[] = [];
 
   for (let i = 0; i < count; i++) {

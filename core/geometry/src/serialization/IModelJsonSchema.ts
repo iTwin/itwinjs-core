@@ -43,6 +43,8 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Point4d } from "../geometry4d/Point4d";
 import { CurveCollection } from "../curve/CurveCollection";
+import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
+import { BezierCurve3d } from "../bspline/BezierCurve3d";
 /* tslint:disable: object-literal-key-quotes no-console*/
 
 export namespace IModelJson {
@@ -1510,6 +1512,21 @@ export namespace IModelJson {
       }
     }
 
+    public handleBezierCurve3d(curve: BezierCurve3d): any {
+      const knots = [];
+      const order = curve.order;
+      for (let i = 0; i < order; i++) knots.push(0.0);
+      for (let i = 0; i < order; i++) knots.push(1.0);
+      return {
+        "bcurve": {
+          "points": curve.copyPolesAsJsonArray(),
+          "knots": knots,
+          "closed": false,
+          "order": curve.order,
+        },
+      };
+    }
+
     public handleBSplineCurve3dH(curve: BSplineCurve3dH): any {
       // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
       // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
@@ -1561,6 +1578,21 @@ export namespace IModelJson {
           },
         };
       }
+    }
+
+    public handleBezierCurve3dH(curve: BezierCurve3dH): any {
+      const knots = [];
+      const order = curve.order;
+      for (let i = 0; i < order; i++) knots.push(0.0);
+      for (let i = 0; i < order; i++) knots.push(1.0);
+      return {
+        "bcurve": {
+          "points": curve.copyPolesAsJsonArray(),
+          "knots": knots,
+          "closed": false,
+          "order": curve.order,
+        },
+      };
     }
 
     public handleBSplineSurface3dH(surface: BSplineSurface3dH): any {

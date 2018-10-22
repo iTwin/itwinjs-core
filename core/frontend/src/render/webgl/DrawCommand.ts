@@ -7,7 +7,7 @@
 import { Matrix4 } from "./Matrix";
 import { CachedGeometry } from "./CachedGeometry";
 import { Transform } from "@bentley/geometry-core";
-import { assert, Id64 } from "@bentley/bentleyjs-core";
+import { assert, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { FeatureIndexType, RenderMode, ViewFlags, Frustum, FrustumPlanes, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { Batch, Branch, Graphic, GraphicsArray } from "./Graphic";
@@ -167,7 +167,7 @@ export class BatchPrimitiveCommand extends PrimitiveCommand {
     exec.target.currentPickTable = undefined;
   }
 
-  public computeIsFlashed(flashedId: Id64): boolean {
+  public computeIsFlashed(flashedId: Id64String): boolean {
     if (this.primitive instanceof SurfacePrimitive) {
       const sp = this.primitive as SurfacePrimitive;
       if (undefined !== sp.meshData.features && sp.meshData.features.isUniform) {
@@ -178,7 +178,8 @@ export class BatchPrimitiveCommand extends PrimitiveCommand {
         }
       }
     }
-    return !flashedId.isValid;
+
+    return Id64.isInvalid(flashedId);
   }
 }
 

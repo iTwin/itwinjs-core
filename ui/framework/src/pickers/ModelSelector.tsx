@@ -13,13 +13,17 @@ import { UiFramework } from "../UiFramework";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { WidgetControl } from "../configurableui/WidgetControl";
-import { CheckListBox, CheckListBoxItem } from "@bentley/ui-core";
-import { SearchBox } from "@bentley/ui-core";
+import {
+  CheckListBox,
+  CheckListBoxItem,
+  SearchBox,
+  Popup,
+  Position,
+} from "@bentley/ui-core";
 import "./ModelSelector.scss";
-import { Group } from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Group";
-import { Popup, Position } from "@bentley/ui-core";
 
-export interface Group {
+/** Model Group used by [[ModelSelectorWidget]] */
+export interface ModelGroup {
   id: string;
   label: string;
   items: ListItem[];
@@ -28,12 +32,14 @@ export interface Group {
   setEnabled: (item: ListItem, enabled: boolean) => void;
 }
 
+/** State for the [[ModelSelectorWidget]] component */
 export interface ModelSelectorWidgetState {
   expand: boolean;
-  activeGroup: Group;
+  activeGroup: ModelGroup;
   showOptions: boolean;
 }
 
+/** Model Selector [[WidgetControl]] */
 export class ModelSelectorWidgetControl extends WidgetControl {
   /** Creates a ModelSelectorDemoWidget */
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -44,9 +50,10 @@ export class ModelSelectorWidgetControl extends WidgetControl {
   }
 }
 
+/** Model Selector Widget React component */
 export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidgetState> {
   private _removeSelectedViewportChanged?: () => void;
-  private _groups: Group[] = [];
+  private _groups: ModelGroup[] = [];
 
   /** Creates a ModelSelectorWidget */
   constructor(props: any) {
@@ -97,11 +104,11 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
   }
 
   private _handleSearchValueChanged = (value: string): void => {
-    alert("search " + value);    alert("search " + value);
+    alert("search " + value); alert("search " + value);
   }
 
   /** expand the selected group */
-  private _onExpand = (group: Group) => {
+  private _onExpand = (group: ModelGroup) => {
     this.setState({ activeGroup: group, expand: true });
   }
 
@@ -233,7 +240,7 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
 
   /** Update state for each group */
   public async updateState() {
-    this._groups.forEach((group: Group) => {
+    this._groups.forEach((group: ModelGroup) => {
       if (!group.initialized) {
         group.updateState();
         group.initialized = true;
@@ -248,7 +255,7 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
     return (
       <div className="widget-picker">
         <div className={groupsClassName}>
-          {this._groups.map((group: Group) => (
+          {this._groups.map((group: ModelGroup) => (
             <div key={group.id} className="widget-picker-group" onClick={this._onExpand.bind(this, group)}>
               {group.label}
               <span className="group-count">{group.items.length}</span>

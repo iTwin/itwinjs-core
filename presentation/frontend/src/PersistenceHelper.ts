@@ -6,7 +6,7 @@
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PersistentKeysContainer, KeySet } from "@bentley/presentation-common";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 
 /**
  * Static class which can be used to convert between
@@ -37,8 +37,8 @@ export default class PersistenceHelper {
              AND s.Alias || '.' || c.Name IN (${instanceClassNameBindings})
     `, instanceClassNames);
     const modelClassNames = new Set(modelClassNameObjs.map((o: any) => (o.fullClassName as string)));
-    let modelIds = new Array<Id64>();
-    let elementIds = new Array<Id64>();
+    let modelIds = new Array<Id64String>();
+    let elementIds = new Array<Id64String>();
     for (const entry of keyset.instanceKeys.entries()) {
       const className = entry[0];
       const ids = entry[1];

@@ -27,7 +27,7 @@ interface FormatOverride {
  */
 export default class KindOfQuantity extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.KindOfQuantity; // tslint:disable-line
-  protected _relativeError: number = 1.0;
+  protected _relativeError: number;
   protected _presentationUnits: Array<Format | OverrideFormat>;
   protected _persistenceUnit?: LazyLoadedUnit | LazyLoadedInvertedUnit;
 
@@ -43,6 +43,7 @@ export default class KindOfQuantity extends SchemaItem {
     super(schema, name);
     this.schemaItemType = SchemaItemType.KindOfQuantity;
     this._presentationUnits = [];
+    this._relativeError = 1.0;
   }
 
   public get defaultPresentationFormat(): undefined | Format | OverrideFormat {

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Models */
 
-import { Id64, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
 import { AxisAlignedBox3d, GeometricModel2dProps, IModelError, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
 import { Entity } from "./Entity";
@@ -18,7 +18,7 @@ import { IModelDb } from "./IModelDb";
 export class Model extends Entity implements ModelProps {
   public readonly modeledElement: RelatedElement;
   public readonly name: string;
-  public readonly parentModel: Id64;
+  public readonly parentModel: Id64String;
   public readonly jsonProperties: any;
   public isPrivate: boolean;
   public isTemplate: boolean;

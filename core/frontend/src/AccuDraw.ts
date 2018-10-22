@@ -1900,7 +1900,7 @@ export class AccuDraw {
     if (context.viewport.viewFlags.acsTriad) {
       context.viewport.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
       if (undefined === this._acsPickId)
-        this._acsPickId = context.viewport.iModel.transientIds.next.value;
+        this._acsPickId = context.viewport.iModel.transientIds.next;
       const acsPickBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._acsPickId);
       const color = ColorDef.blue.adjustForContrast(context.viewport.view.backgroundColor, 50);
       acsPickBuilder.setSymbology(color, color, 6);

@@ -23,14 +23,17 @@ export default class Unit extends SchemaItem {
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _unitSystem?: LazyLoadedUnitSystem;
   protected _definition: string;
-  protected _numerator = 1.0;
-  protected _denominator = 1.0;
-  protected _offset = 0.0;
+  protected _numerator: number;
+  protected _denominator: number;
+  protected _offset: number;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this.schemaItemType = SchemaItemType.Unit;
     this._definition = "";
+    this._numerator = 1.0;
+    this._denominator = 1.0;
+    this._offset = 0.0;
   }
 
   get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }

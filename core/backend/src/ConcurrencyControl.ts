@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { Id64, DbOpcode, RepositoryStatus, assert, ActivityLoggingContext, Guid, Logger } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, DbOpcode, RepositoryStatus, assert, ActivityLoggingContext, Guid, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType } from "@bentley/imodeljs-clients";
 import { NativeBriefcaseManagerResourcesRequest } from "./imodeljs-native-platform-api";
 import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
@@ -171,7 +171,7 @@ export class ConcurrencyControl {
       return Promise.reject(err);
   }
 
-  private buildHubCodes(briefcaseEntry: BriefcaseEntry, codeSpecId: Id64, codeScope: string, value?: string): HubCode {
+  private buildHubCodes(briefcaseEntry: BriefcaseEntry, codeSpecId: Id64String, codeScope: string, value?: string): HubCode {
     const requestCode = new HubCode();
     requestCode.briefcaseId = briefcaseEntry.briefcaseId;
     requestCode.state = CodeState.Reserved;
@@ -190,7 +190,7 @@ export class ConcurrencyControl {
     if (!reqAny.hasOwnProperty("Codes") || reqAny.Codes.length === 0)
       return undefined;
 
-    return reqAny.Codes.map((cReq: any) => this.buildHubCodes(briefcaseEntry, new Id64(cReq.Id), cReq.Scope, cReq.Name));
+    return reqAny.Codes.map((cReq: any) => this.buildHubCodes(briefcaseEntry, cReq.Id, cReq.Scope, cReq.Name));
   }
 
   private buildHubCodesFromCodes(briefcaseEntry: BriefcaseEntry, codes: Code[]): HubCode[] | undefined {
@@ -206,7 +206,7 @@ export class ConcurrencyControl {
         ecId: "and-what-is-this",
         lockLevel: LockLevel.Exclusive,
         lockType: LockType.Schemas,
-        objectId: new Id64("0x1"),
+        objectId: Id64.fromString("0x1"),
         briefcaseId: this._iModel.briefcase.briefcaseId,
         seedFileId: new Guid(this._iModel.briefcase.fileId),
         releasedWithChangeSet: this._iModel.briefcase.changeSetId,
@@ -277,7 +277,7 @@ export class ConcurrencyControl {
   }
 
   // Query the state of the Codes for the specified CodeSpec and scope.
-  public async queryCodeStates(actx: ActivityLoggingContext, accessToken: AccessToken, specId: Id64, scopeId: string, _value?: string): Promise<HubCode[]> {
+  public async queryCodeStates(actx: ActivityLoggingContext, accessToken: AccessToken, specId: Id64String, scopeId: string, _value?: string): Promise<HubCode[]> {
     actx.enter();
     if (this._iModel.briefcase === undefined)
       return Promise.reject(this._iModel.newNotOpenError());
@@ -525,7 +525,7 @@ export namespace ConcurrencyControl {
      * @param scopeId The scope to query
      * @param value Optional. The Code value to query.
      */
-    public async query(actx: ActivityLoggingContext, accessToken: AccessToken, specId: Id64, scopeId: string, value?: string): Promise<HubCode[]> {
+    public async query(actx: ActivityLoggingContext, accessToken: AccessToken, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]> {
       return this._iModel.concurrencyControl.queryCodeStates(actx, accessToken, specId, scopeId, value);
     }
   }

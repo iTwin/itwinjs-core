@@ -9,7 +9,7 @@ import * as React from "react";
 
 import "./Tree.scss";
 
-/** Props for the Tree presentational React component */
+/** Properties for the [[Tree]] presentational React component */
 export interface TreeProps {
   children?: React.ReactNode;
   className?: string;

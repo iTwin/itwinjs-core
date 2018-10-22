@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Guid, Id64 } from "@bentley/bentleyjs-core";
+import { Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { CategoryProps, Code, GeometricElement3dProps, ElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
 import { Generic, GroupInformationPartition, Group, GroupModel, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory } from "../../backend";
@@ -41,8 +41,8 @@ describe("Generic Domain", () => {
       code: SpatialCategory.createCode(iModelDb, IModel.dictionaryId, "Test Spatial Category"),
       isPrivate: false,
     };
-    const spatialCategoryId: Id64 = iModelDb.elements.insertElement(spatialCategoryProps);
-    assert.isTrue(spatialCategoryId.isValid);
+    const spatialCategoryId: Id64String = iModelDb.elements.insertElement(spatialCategoryProps);
+    assert.isTrue(Id64.isValidId64(spatialCategoryId));
 
     // Create and populate a PhysicalModel
     const physicalPartitionProps: InformationPartitionElementProps = {
@@ -54,14 +54,14 @@ describe("Generic Domain", () => {
       },
       code: PhysicalPartition.createCode(iModelDb, IModel.rootSubjectId, "Test Physical Model"),
     };
-    const physicalPartitionId: Id64 = iModelDb.elements.insertElement(physicalPartitionProps);
-    assert.isTrue(physicalPartitionId.isValid);
+    const physicalPartitionId: Id64String = iModelDb.elements.insertElement(physicalPartitionProps);
+    assert.isTrue(Id64.isValidId64(physicalPartitionId));
     const physicalModel: PhysicalModel = iModelDb.models.createModel({
       classFullName: PhysicalModel.classFullName,
       modeledElement: { id: physicalPartitionId },
     }) as PhysicalModel;
-    const physicalModelId: Id64 = iModelDb.models.insertModel(physicalModel);
-    assert.isTrue(physicalModelId.isValid);
+    const physicalModelId: Id64String = iModelDb.models.insertModel(physicalModel);
+    assert.isTrue(Id64.isValidId64(physicalModelId));
 
     for (let i = 0; i < 3; i++) {
       const physicalObjectProps: GeometricElement3dProps = {
@@ -71,8 +71,8 @@ describe("Generic Domain", () => {
         code: Code.createEmpty(),
         userLabel: `${PhysicalObject.name}${i}`,
       };
-      const physicalObjectId: Id64 = iModelDb.elements.insertElement(physicalObjectProps);
-      assert.isTrue(physicalObjectId.isValid);
+      const physicalObjectId: Id64String = iModelDb.elements.insertElement(physicalObjectProps);
+      assert.isTrue(Id64.isValidId64(physicalObjectId));
     }
 
     // Create and populate a Generic:GroupModel
@@ -85,14 +85,14 @@ describe("Generic Domain", () => {
       },
       code: GroupInformationPartition.createCode(iModelDb, IModel.rootSubjectId, "Test Group Model"),
     };
-    const groupPartitionId: Id64 = iModelDb.elements.insertElement(groupPartitionProps);
-    assert.isTrue(groupPartitionId.isValid);
+    const groupPartitionId: Id64String = iModelDb.elements.insertElement(groupPartitionProps);
+    assert.isTrue(Id64.isValidId64(groupPartitionId));
     const groupModel: GroupModel = iModelDb.models.createModel({
       classFullName: GroupModel.classFullName,
       modeledElement: { id: groupPartitionId },
     }) as GroupModel;
-    const groupModelId: Id64 = iModelDb.models.insertModel(groupModel);
-    assert.isTrue(groupModelId.isValid);
+    const groupModelId: Id64String = iModelDb.models.insertModel(groupModel);
+    assert.isTrue(Id64.isValidId64(groupModelId));
 
     for (let i = 0; i < 3; i++) {
       const groupProps: ElementProps = {
@@ -101,8 +101,8 @@ describe("Generic Domain", () => {
         code: Code.createEmpty(),
         userLabel: `${Group.name}${i}`,
       };
-      const groupId: Id64 = iModelDb.elements.insertElement(groupProps);
-      assert.isTrue(groupId.isValid);
+      const groupId: Id64String = iModelDb.elements.insertElement(groupProps);
+      assert.isTrue(Id64.isValidId64(groupId));
     }
 
     iModelDb.saveChanges("Insert Generic elements");

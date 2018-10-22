@@ -6,6 +6,7 @@ import { Geometry } from "../Geometry";
 import { Angle } from "./Angle";
 import { Ray3d } from "./Ray3d";
 import { XYAndZ, XAndY, HasZ, XYZProps } from "./XYZProps";
+import { Point4d } from "../geometry4d/Point4d";
 /** Minimal object containing x,y,z and operations that are meaningful without change in both point and vector. */
 export class XYZ implements XYAndZ {
   public x: number;
@@ -56,6 +57,16 @@ export class XYZ implements XYAndZ {
     this.y = other.y;
     this.z = other.z;
   }
+  /**
+   * Set the x,y,z parts from a Vector3d
+   * This is the same effect as `setFrom(other)` with no pretesting of variant input type
+   */
+  public setFromVector3d(other: Vector3d) {
+    this.x = other.x;
+    this.y = other.y;
+    this.z = other.z;
+  }
+
   /** Returns true if this and other have equal x,y,z parts within Geometry.smallMetricDistance.
    * @param other The other XYAndZ to compare
    * @param tol The tolerance for the comparison. If undefined, use [[Geometry.smallMetricDistance]]
@@ -798,6 +809,15 @@ export class Vector3d extends XYZ {
       + this.y * (pointB.y - pointA.y)
       + this.z * (pointB.z - pointA.z);
   }
+
+  /** Dot product with vector (pointB - pointA * pointB.w) */
+  public dotProductStart3dEnd4d(pointA: Point3d, pointB: Point4d): number {
+    const w = pointB.w;
+    return this.x * (pointB.x - pointA.x * w)
+      + this.y * (pointB.y - pointA.y * w)
+      + this.z * (pointB.z - pointA.z * w);
+  }
+
   /** Cross product with vector from pointA to pointB */
   public crossProductStartEnd(pointA: Point3d, pointB: Point3d, result?: Vector3d): Vector3d {
     return Vector3d.createCrossProduct(this.x, this.y, this.z, pointB.x - pointA.x, pointB.y - pointA.y, pointB.z - pointA.z, result);

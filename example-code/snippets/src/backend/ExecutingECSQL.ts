@@ -55,28 +55,28 @@ function executeECSql_Binding(iModel: IModelDb) {
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Navigation_ByParameter
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", (stmt: ECSqlStatement) => {
-    stmt.bindNavigation(1, { id: new Id64("0x132") });
+    stmt.bindNavigation(1, { id: Id64.fromString("0x132") });
     // ...
   });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Navigation
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", (stmt: ECSqlStatement) => {
-    stmt.bindValues([{ id: new Id64("0x132") }]);
+    stmt.bindValues([{ id: Id64.fromString("0x132") }]);
     // ...
   });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_NavigationId_ByParameter
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", (stmt: ECSqlStatement) => {
-    stmt.bindId(1, new Id64("0x132"));
+    stmt.bindId(1, "0x132");
     // ...
   });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_NavigationId
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", (stmt: ECSqlStatement) => {
-    stmt.bindValues([new Id64("0x132")]);
+    stmt.bindValues([Id64.fromString("0x132")]);
     // ...
   });
   // __PUBLISH_EXTRACT_END__
@@ -129,7 +129,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetRow_IllustrateRowFormat
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
 
-    stmt.bindId(1, new Id64("0x113"));
+    stmt.bindId(1, "0x113");
 
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       const row: any = stmt.getRow();
@@ -141,7 +141,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetRow
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
 
-    stmt.bindId(1, new Id64("0x113"));
+    stmt.bindId(1, "0x113");
 
     console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");
 
@@ -159,7 +159,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetValue
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
-    stmt.bindId(1, new Id64("0x113"));
+    stmt.bindId(1, "0x113");
 
     console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");
 
@@ -181,7 +181,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetValue_PreserveClassIds
   iModel.withPreparedStatement("SELECT ECClassId,Parent.RelECClassId FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
-    stmt.bindId(1, new Id64("0x113"));
+    stmt.bindId(1, "0x113");
 
     console.log("ECClassId | Parent RelECClassId");
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {

@@ -5,7 +5,6 @@
 /** @module ToolSettings */
 
 import { ConfigurableBase, ConfigurableCreateInfo, ConfigurableUiControlType } from "./ConfigurableUiControl";
-import { ToolItemDef } from "./Item";
 
 // -----------------------------------------------------------------------------
 // Configurable Ui ToolUiProvider
@@ -17,10 +16,11 @@ export interface ToolUiProviderProps {
   toolUiProvider: ToolUiProvider;
 }
 
-/** ToolUiProvider base class for ConfigurableUi.
+/**
+ * ToolUiProvider provides the Tool Settings and/or Tool Assistance UI for a tool.
+ * The ToolUiProvider is registered for the tool id via ConfigurableUiManager.registerControl.
  */
 export class ToolUiProvider extends ConfigurableBase {
-  private _toolItem!: ToolItemDef;
   private _toolSettingsNode: React.ReactNode;
   private _toolAssistanceNode: React.ReactNode;
 
@@ -28,14 +28,15 @@ export class ToolUiProvider extends ConfigurableBase {
     super(info, options);
   }
 
+  /** Gets the Tool Settings React node */
   public get toolSettingsNode(): React.ReactNode { return this._toolSettingsNode; }
+  /** Sets the Tool Settings React node */
   public set toolSettingsNode(r: React.ReactNode) { this._toolSettingsNode = r; }
 
+  /** Gets the Tool Assistance React node */
   public get toolAssistanceNode(): React.ReactNode { return this._toolAssistanceNode; }
+  /** Sets the Tool Assistance React node */
   public set toolAssistanceNode(r: React.ReactNode) { this._toolAssistanceNode = r; }
-
-  public get toolItem(): ToolItemDef { return this._toolItem; }
-  public set toolItem(v: ToolItemDef) { this._toolItem = v; }
 
   /** Gets the type of ConfigurableUiControl, which is 'ToolUiProvider' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.ToolUiProvider; }

@@ -12,7 +12,7 @@ import { PropertyDataProvider, PropertyCategory, PropertyData } from "../Propert
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
 import "./PropertyGrid.scss";
 
-/** Props for PropertyGrid React component */
+/** Properties for [[PropertyGrid]] React component */
 export interface PropertyGridProps {
   /** Property data provider */
   dataProvider: PropertyDataProvider;

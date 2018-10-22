@@ -35,6 +35,8 @@ import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeom
 import { SkyBoxPrimitive, SkySpherePrimitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "@bentley/geometry-core/lib/topology/Graph";
+import { TextureUnit } from "./RenderFlags";
+import { UniformHandle } from "./Handle";
 
 function debugPrint(_str: string): void {
   // console.log(_str); // tslint:disable-line:no-console
@@ -414,6 +416,8 @@ class TextureStats implements TextureMonitor {
   }
 }
 
+export type TextureBinding = WebGLTexture | undefined;
+
 export class System extends RenderSystem {
   public readonly canvas: HTMLCanvasElement;
   public readonly currentRenderState = new RenderState();
@@ -423,6 +427,7 @@ export class System extends RenderSystem {
   public readonly resourceCache: Map<IModelConnection, IdMap>;
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _textureStats?: TextureStats;
+  private readonly _textureBindings: TextureBinding[] = [];
 
   // The following are initialized immediately after the System is constructed.
   private _lineCodeTexture?: TextureHandle;
@@ -751,5 +756,37 @@ export class System extends RenderSystem {
     }
 
     return sheetTileGraphics;
+  }
+
+  private bindTexture(unit: TextureUnit, target: GL.Texture.Target, texture: TextureBinding): void {
+    const index = unit - TextureUnit.Zero;
+    if (this._textureBindings[index] === texture)
+      return;
+
+    this._textureBindings[index] = texture;
+    this.context.activeTexture(unit);
+    this.context.bindTexture(target, undefined !== texture ? texture : null);
+  }
+
+  public bindTexture2d(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.TwoDee, texture); }
+  public bindTextureCubeMap(unit: TextureUnit, texture: TextureBinding) { this.bindTexture(unit, GL.Texture.Target.CubeMap, texture); }
+
+  // Ensure *something* is bound to suppress 'no texture assigned to unit x' warnings.
+  public ensureSamplerBound(uniform: UniformHandle, unit: TextureUnit): void {
+    const index = unit - TextureUnit.Zero;
+    if (undefined === this._textureBindings[index])
+      this.lineCodeTexture!.bindSampler(uniform, unit);
+    else
+      uniform.setUniform1i(index); // use whatever's already bound - it won't actually be sampled.
+  }
+
+  public disposeTexture(texture: WebGLTexture) {
+    System.instance.context.deleteTexture(texture);
+    for (let i = 0; i < this._textureBindings.length; i++) {
+      if (this._textureBindings[i] === texture) {
+        this._textureBindings[i] = undefined;
+        break;
+      }
+    }
   }
 }

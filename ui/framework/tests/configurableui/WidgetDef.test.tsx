@@ -40,7 +40,7 @@ describe("WidgetDef", () => {
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
-    expect(widgetDef.defaultState).to.eq(WidgetState.Open);
+    expect(widgetDef.widgetState).to.eq(WidgetState.Open);
     expect(widgetDef.priority).to.eq(100);
     expect(widgetDef.featureId).to.eq("FeatureId");
     expect(widgetDef.isFreeform).to.eq(true);
@@ -85,8 +85,7 @@ describe("WidgetDef", () => {
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
     widgetDef.setWidgetState(WidgetState.Open);
 
-    expect(widgetDef.isDefaultOpen).to.be.true;
-    expect(widgetDef.defaultOpenUsed).to.be.false;
+    expect(widgetDef.widgetState).to.eq(WidgetState.Open);
   });
 
   it("getWidgetControl throws an Error when type is incorrect", () => {

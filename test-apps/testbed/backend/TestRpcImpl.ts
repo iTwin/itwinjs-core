@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { TestRpcInterface, ZeroMajorRpcInterface, TestOp1Params, TestRpcInterface2, TestRpcInterface3, TestNotFoundResponse, TestNotFoundResponseCode } from "../common/TestRpcInterface";
 import { RpcInterface, RpcManager, RpcRequest, RpcOperationsProfile, RpcPendingResponse, IModelToken, RpcInvocation } from "@bentley/imodeljs-common";
-import { BentleyError, BentleyStatus, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { BriefcaseManager, ChangeSummaryManager, ChangeSummaryExtractOptions, IModelDb, IModelJsFs } from "@bentley/imodeljs-backend";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { testInterfaceResource } from "../common/TestbedConfig";
@@ -38,7 +38,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return sum;
   }
 
-  public async op2(id: Id64): Promise<Id64> {
+  public async op2(id: Id64String): Promise<Id64String> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
     const val = id;
     return val;

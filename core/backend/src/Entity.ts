@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
 
-import { Id64, DbOpcode } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, DbOpcode } from "@bentley/bentleyjs-core";
 import { EntityProps, PropertyMetaData, PropertyCallback } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 import { Schema } from "./Schema";
@@ -20,7 +20,7 @@ export class Entity implements EntityProps {
   public iModel: IModelDb;
 
   /** The Id of this Entity. May be invalid if the Entity has not yet been saved in the database. */
-  public id: Id64;
+  public id: Id64String;
 
   /** @hidden */
   constructor(props: EntityProps, iModel: IModelDb) {

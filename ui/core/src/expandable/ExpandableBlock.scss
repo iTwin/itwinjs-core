@@ -2,23 +2,29 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
-@import "@bentley/bwc/lib/mixins";
+@import "../colors.scss";
 
 .core-property-block {
-  @include bwc-expandable-blocks-block;
 
-  .header {
+  background-color: $background-1;
+
+  > .header {
     padding: 4px;
 
     .icon-container {
       line-height: 23px;
       width: 23px;
+      font-size: 12px;
     }
 
     .title {
       font-size: 0.95em;
       line-height: 23px;
     }
+  }
+
+  &.is-expanded > .content {
+    padding-top: 5px;
+    padding-bottom: 5px;
   }
 }

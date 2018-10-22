@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module SQLite */
 
-import { Id64, Guid, DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, Guid, DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECJsNames } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeSqliteStatement, NativeECDb, NativeDgnDb } from "./imodeljs-native-platform-api";
@@ -90,6 +90,13 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
       return;
     this._stmt!.dispose(); // Tell the peer JS object to free its native resources immediately
     this._stmt = undefined; // discard the peer JS object as garbage
+  }
+
+  public bindId(parameter: number | string, value: Id64String | Id64): void {
+    if (typeof value === "string")
+      value = Id64.wrap(value);
+
+    this.bindValue(parameter, value);
   }
 
   /** Binds a value to the specified SQL parameter.
@@ -359,7 +366,7 @@ export class SqliteValue {
   /** Get the value as a string value */
   public getString(): string { return this._stmt.getValueString(this._colIndex); }
   /** Get the value as an Id value */
-  public getId(): Id64 { return new Id64(this._stmt.getValueId(this._colIndex)); }
+  public getId(): Id64String { return Id64.fromJSON(this._stmt.getValueId(this._colIndex)); }
   /** Get the value as a Guid value */
   public getGuid(): Guid { return new Guid(this._stmt.getValueGuid(this._colIndex)); }
 }

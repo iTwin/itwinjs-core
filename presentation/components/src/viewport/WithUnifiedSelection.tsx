@@ -5,7 +5,7 @@
 /** @module UnifiedSelection */
 
 import * as React from "react";
-import { Id64Set, Id64, IDisposable } from "@bentley/bentleyjs-core";
+import { Id64Set, Id64String, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectEventType } from "@bentley/imodeljs-frontend";
 import { SelectionInfo, DefaultContentDisplayTypes, KeySet } from "@bentley/presentation-common";
 import { SelectionHandler, Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
@@ -202,7 +202,7 @@ class SelectedElementsProvider extends ContentDataProvider {
   public constructor(imodel: IModelConnection, rulesetId: string) {
     super(imodel, rulesetId, DefaultContentDisplayTypes.VIEWPORT);
   }
-  public async getElementIds(keys: Readonly<KeySet>, info: SelectionInfo): Promise<Id64[]> {
+  public async getElementIds(keys: Readonly<KeySet>, info: SelectionInfo): Promise<Id64String[]> {
     this.keys = keys;
     this.selectionInfo = info;
 
@@ -210,7 +210,7 @@ class SelectedElementsProvider extends ContentDataProvider {
     if (!content)
       return [];
 
-    const ids = new Array<Id64>();
+    const ids = new Array<Id64String>();
     content.contentSet.forEach((r) => r.primaryKeys.forEach((pk) => ids.push(pk.id)));
     return ids;
   }

@@ -56,7 +56,7 @@ describe("FeatureOverrides tests", () => {
     vp.target.setHiliteSet(new Set<string>());
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
     const features = new FeatureTable(1);
-    features.insertWithIndex(new Feature(new Id64("0x1")), 0);
+    features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
 
     const table = PackedFeatureTable.pack(features);
     ovr.initFromMap(table);
@@ -83,8 +83,8 @@ describe("FeatureOverrides tests", () => {
     vp.target.setHiliteSet(new Set<string>());
     const ovr = FeatureOverrides.createFromTarget(vp.target as Target);
     const features = new FeatureTable(2);
-    features.insertWithIndex(new Feature(new Id64("0x1")), 0);
-    features.insertWithIndex(new Feature(new Id64("0x2")), 1);
+    features.insertWithIndex(new Feature(Id64.fromString("0x1")), 0);
+    features.insertWithIndex(new Feature(Id64.fromString("0x2")), 1);
 
     const table = PackedFeatureTable.pack(features);
     ovr.initFromMap(table);
@@ -116,12 +116,12 @@ describe("FeatureTable tests", () => {
       new Feature("0x1", "0x1", GeometryClass.Construction),
     ];
 
-    const table = new FeatureTable(100, new Id64("0x1234"));
+    const table = new FeatureTable(100, Id64.fromString("0x1234"));
     for (const feature of features) {
-      let testId = new Id64(feature.elementId);
-      expect(testId.isValid).to.be.true;
-      testId = new Id64(feature.subCategoryId);
-      expect(testId.isValid).to.be.true;
+      let testId = Id64.fromString(feature.elementId);
+      expect(Id64.isValid(testId)).to.be.true;
+      testId = Id64.fromString(feature.subCategoryId);
+      expect(Id64.isValid(testId)).to.be.true;
 
       table.insert(feature);
     }

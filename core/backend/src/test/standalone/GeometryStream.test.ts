@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d, YawPitchRollAngles, Arc3d, LineSegment3d, LineString3d, Loop, Transform, Angle, Point2d, Geometry } from "@bentley/geometry-core";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import {
   Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeometryStreamIterator, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName, BRepEntity,
 } from "@bentley/imodeljs-common";
@@ -24,7 +24,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using line codes 1-7", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -32,22 +32,22 @@ describe("GeometryStream", () => {
     const lsCodes: LinePixels[] = [LinePixels.Solid, LinePixels.Code1, LinePixels.Code2, LinePixels.Code3, LinePixels.Code4, LinePixels.Code5, LinePixels.Code6, LinePixels.Code7];
 
     // create new line style definitions for line codes 1-7
-    const lsStyles: Id64[] = [];
+    const lsStyles: Id64String[] = [];
     lsCodes.forEach((linePixels) => {
-      lsStyles.push(LinePixels.Solid === linePixels ? new Id64() : LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, linePixels));
+      lsStyles.push(LinePixels.Solid === linePixels ? Id64.invalid : LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, linePixels));
     });
 
     // get existing line style definitions for line codes 1-7
-    const lsStylesExist: Id64[] = [];
+    const lsStylesExist: Id64String[] = [];
     lsCodes.forEach((linePixels) => {
-      lsStylesExist.push(LinePixels.Solid === linePixels ? new Id64() : LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, linePixels));
+      lsStylesExist.push(LinePixels.Solid === linePixels ? Id64.invalid : LineStyleDefinition.Utils.getOrCreateLinePixelsStyle(imodel, IModel.dictionaryId, linePixels));
     });
 
     // make sure we found existing styles and didn't create a second set
     assert.isTrue(8 === lsStyles.length && lsStyles.length === lsStylesExist.length);
     for (let iStyle = 0; iStyle < lsStyles.length; ++iStyle) {
-      assert.isTrue(0 === iStyle || lsStyles[iStyle].isValid);
-      assert.isTrue(lsStylesExist[iStyle].equals(lsStyles[iStyle]));
+      assert.isTrue(0 === iStyle || Id64.isValidId64(lsStyles[iStyle]));
+      assert.isTrue(lsStylesExist[iStyle] === (lsStyles[iStyle]));
     }
 
     const builder = new GeometryStreamBuilder();
@@ -57,7 +57,7 @@ describe("GeometryStream", () => {
     const pointE = Point3d.create(5, 0, 0);
 
     lsStyles.forEach((styleId) => {
-      params.styleInfo = styleId.isValid ? new LineStyle.Info(styleId) : undefined;
+      params.styleInfo = Id64.isValidId64(styleId) ? new LineStyle.Info(styleId) : undefined;
       builder.appendGeometryParamsChange(params);
       builder.appendGeometry(LineSegment3d.create(pointS, pointE));
       pointS.y += 0.5; pointE.y += 0.5;
@@ -74,7 +74,7 @@ describe("GeometryStream", () => {
     };
 
     const newId = imodel.elements.insertElement(elementProps);
-    assert.isTrue(newId.isValid);
+    assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
     // Extract and test value returned...
@@ -92,46 +92,46 @@ describe("GeometryStream", () => {
     assert.isFalse(itNextCheck.next().done);
     assert.isTrue(itNextCheck.next().done);
 
-    const lsStylesUsed: Id64[] = [];
+    const lsStylesUsed: Id64String[] = [];
     const it = new GeometryStreamIterator(value.geom, value.category);
     for (const entry of it) {
       assert.isDefined(entry.geometryQuery);
-      lsStylesUsed.push(entry.geomParams.styleInfo ? entry.geomParams.styleInfo.styleId : new Id64());
+      lsStylesUsed.push(entry.geomParams.styleInfo ? entry.geomParams.styleInfo.styleId : Id64.invalid);
     }
 
     // Make sure we extracted same style information after round trip...
     assert.isTrue(lsStyles.length === lsStylesUsed.length);
     for (let iStyle = 0; iStyle < lsStyles.length; ++iStyle) {
-      assert.isTrue(lsStylesUsed[iStyle].equals(lsStyles[iStyle]));
+      assert.isTrue(lsStylesUsed[iStyle] === (lsStyles[iStyle]));
     }
   });
 
   it("create GeometricElement3d using continuous style", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     // create special "internal default" continuous style for drawing curves using width overrides
     const styleId = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId);
-    assert.isTrue(styleId.isValid);
+    assert.isTrue(Id64.isValidId64(styleId));
 
     // make sure we found existing style and didn't create a new one
     const styleIdExists = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId);
-    assert.isTrue(styleIdExists.isValid && styleIdExists.equals(styleId));
+    assert.isTrue(Id64.isValidId64(styleIdExists) && styleIdExists === (styleId));
 
     // create continuous style with pre-defined constant width
     const styleIdWidth = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, 0.05);
-    assert.isTrue(styleIdWidth.isValid);
+    assert.isTrue(Id64.isValidId64(styleIdWidth));
 
     // make sure we found existing style and didn't create a new one
     const styleIdWidthExists = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId, 0.05);
-    assert.isTrue(styleIdWidthExists.isValid && styleIdWidthExists.equals(styleIdWidth));
+    assert.isTrue(Id64.isValidId64(styleIdWidthExists) && styleIdWidthExists === (styleIdWidth));
 
     const builder = new GeometryStreamBuilder();
     const params = new GeometryParams(seedElement.category);
 
-    const styles: Id64[] = [styleId, styleId, styleIdWidth, styleIdWidth];
+    const styles: Id64String[] = [styleId, styleId, styleIdWidth, styleIdWidth];
     const widths: number[] = [0.0, 0.025, 0.0, 0.075];
 
     // add line using 0 width continuous style
@@ -165,14 +165,14 @@ describe("GeometryStream", () => {
     };
 
     const newId = imodel.elements.insertElement(elementProps);
-    assert.isTrue(newId.isValid);
+    assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
     // Extract and test value returned...
     const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
     assert.isDefined(value.geom);
 
-    const stylesUsed: Id64[] = [];
+    const stylesUsed: Id64String[] = [];
     const widthsUsed: number[] = [];
     const it = new GeometryStreamIterator(value.geom, value.category);
     for (const entry of it) {
@@ -185,19 +185,19 @@ describe("GeometryStream", () => {
     // Make sure we extracted same style information after round trip...
     assert.isTrue(styles.length === stylesUsed.length);
     for (let iStyle = 0; iStyle < styles.length; ++iStyle) {
-      assert.isTrue(stylesUsed[iStyle].equals(styles[iStyle]));
+      assert.isTrue(stylesUsed[iStyle] === (styles[iStyle]));
       assert.isTrue(Geometry.isSameCoordinate(widthsUsed[iStyle], widths[iStyle]));
     }
   });
 
   it("create GeometricElement3d using arrow head style w/o using stroke pattern", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const partBuilder = new GeometryStreamBuilder();
-    const partParams = new GeometryParams(new Id64()); // category won't be used
+    const partParams = new GeometryParams(Id64.invalid); // category won't be used
 
     partParams.fillDisplay = FillDisplay.Always;
     partBuilder.appendGeometryParamsChange(partParams);
@@ -212,7 +212,7 @@ describe("GeometryStream", () => {
     };
 
     const partId = imodel.elements.insertElement(partProps);
-    assert.isTrue(partId.isValid);
+    assert.isTrue(Id64.isValidId64(partId));
 
     const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId }); // base and size will be set automatically...
     assert.isTrue(undefined !== pointSymbolData);
@@ -225,7 +225,7 @@ describe("GeometryStream", () => {
     assert.isTrue(undefined !== compoundData);
 
     const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestArrowStyle", compoundData!);
-    assert.isTrue(styleId.isValid);
+    assert.isTrue(Id64.isValidId64(styleId));
 
     const builder = new GeometryStreamBuilder();
     const params = new GeometryParams(seedElement.category);
@@ -245,13 +245,13 @@ describe("GeometryStream", () => {
     };
 
     const newId = imodel.elements.insertElement(elementProps);
-    assert.isTrue(newId.isValid);
+    assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
   });
 
   it("create GeometricElement3d using compound style with dash widths and symbol", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -278,7 +278,7 @@ describe("GeometryStream", () => {
     };
 
     const partId = imodel.elements.insertElement(partProps);
-    assert.isTrue(partId.isValid);
+    assert.isTrue(Id64.isValidId64(partId));
 
     const pointSymbolData = LineStyleDefinition.Utils.createPointSymbolComponent(imodel, { geomPartId: partId }); // base and size will be set automatically...
     assert.isTrue(undefined !== pointSymbolData);
@@ -298,7 +298,7 @@ describe("GeometryStream", () => {
     assert.isTrue(undefined !== compoundData);
 
     const styleId = LineStyleDefinition.Utils.createStyle(imodel, IModel.dictionaryId, "TestDashCircleDotCircleDashStyle", compoundData!);
-    assert.isTrue(styleId.isValid);
+    assert.isTrue(Id64.isValidId64(styleId));
 
     const builder = new GeometryStreamBuilder();
     const params = new GeometryParams(seedElement.category);
@@ -318,13 +318,13 @@ describe("GeometryStream", () => {
     };
 
     const newId = imodel.elements.insertElement(elementProps);
-    assert.isTrue(newId.isValid);
+    assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
   });
 
   it("create GeometricElement3d using shapes with fill/gradient", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -403,7 +403,7 @@ describe("GeometryStream", () => {
     };
 
     const newId = imodel.elements.insertElement(elementProps);
-    assert.isTrue(newId.isValid);
+    assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
     // Extract and test value returned...
@@ -455,7 +455,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d using shapes with patterns", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -497,7 +497,7 @@ describe("GeometryStream", () => {
     };
 
     const partId = imodel.elements.insertElement(partProps);
-    assert.isTrue(partId.isValid);
+    assert.isTrue(Id64.isValidId64(partId));
 
     // Area pattern w/o overrides
     params.pattern = new AreaPattern.Params();
@@ -548,7 +548,7 @@ describe("GeometryStream", () => {
     };
 
     const newId = imodel.elements.insertElement(elementProps);
-    assert.isTrue(newId.isValid);
+    assert.isTrue(Id64.isValidId64(newId));
     imodel.saveChanges();
 
     // Extract and test value returned...
@@ -586,7 +586,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d from world coordinate text using a newly embedded font", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     assert.isTrue(0 === imodel.getFontMap().fonts.size); // file currently contains no fonts...
@@ -668,7 +668,7 @@ describe("GeometryStream", () => {
 
   it("create GeometryPart from arcs", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -715,7 +715,7 @@ describe("GeometryStream", () => {
 
   it("create GeometricElement3d from arcs", async () => {
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
@@ -768,7 +768,7 @@ describe("GeometryStream", () => {
       return;
 
     // Set up element to be placed in iModel
-    const seedElement = imodel.elements.getElement(new Id64("0x1d"));
+    const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
     assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 

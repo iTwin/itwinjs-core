@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/colors";
-@import "../_z-index";
+@import "@bentley/ui-core/lib/_z-index";
 @import "_variables";
 
 .nz-widget-stacked {
@@ -127,7 +127,7 @@
   }
 
   &.nz-is-dragged {
-    @include nz-z-index(dragged-widget);
+    @include uicore-z-index(dragged-widget);
   }
 
   &.nz-is-closed {

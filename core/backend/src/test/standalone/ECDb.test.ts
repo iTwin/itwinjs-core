@@ -75,8 +75,8 @@ describe("ECDb", () => {
           const res: ECSqlInsertResult = stmt.stepForInsert();
           assert.equal(res.status, DbResult.BE_SQLITE_DONE);
           assert.isDefined(res.id);
-          assert.isTrue(res.id!.isValid);
-          return res.id!;
+          assert.isTrue(Id64.isValidId64(res.id!));
+          return Id64.wrap(res.id!);
         });
       });
 

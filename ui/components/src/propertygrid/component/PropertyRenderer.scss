@@ -3,13 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+$text-font-size: 14px;
+$text-font-color: #000000;
+
 .components-property-record--horizontal {
   display: table-row;
 
   .components-property-record-label {
     display: table-cell;
     border: 1px solid #ccc;
-    font-size: 0.85em;
+    font-size: $text-font-size;
+    color: $text-font-color;
     padding-right: 1em;
     width: 25%;
   }
@@ -17,24 +21,37 @@
   .components-property-record-value {
     display: table-cell;
     border: 1px solid #ccc;
-    font-size: 0.85em;
+    font-size: $text-font-size;
+    color: $text-font-color;
   }
 }
 
 .components-property-record--vertical {
 
-  margin-bottom: 5px;
-
   .components-property-record-label {
     border-top: 1px solid #ccc;
     font-weight: bold;
-    font-size: 0.9em;
+    font-size: $text-font-size;
+    color: $text-font-color;
+    margin-top: 0px;
+    padding-top: 6px;
+    margin-bottom: 0px;
+    padding-bottom: 1px;
+  }
+
+  &:first-child .components-property-record-label {
+    border-top: 0px;
+    margin-top: 0px;
   }
 
   .components-property-record-value {
-    margin-top: -1px;
-    min-height: 0.85em;
-    font-size: 0.85em;
+    min-height: $text-font-size;
+    font-size: $text-font-size;
+    color: $text-font-color;
+    margin-top: 0px;
+    padding-top: 1px;
+    margin-bottom: 0px;
+    padding-bottom: 6px;
   }
 
   &:last-child .components-property-record-value {

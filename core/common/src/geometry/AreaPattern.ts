@@ -84,7 +84,7 @@ export namespace AreaPattern {
     public weight?: number;
     public invisibleBoundary?: boolean;
     public snappable?: boolean;
-    public symbolId?: Id64;
+    public symbolId?: Id64String;
     public defLines?: HatchDefLine[];
 
     /** create an AreaPattern.Params from a json object. */
@@ -103,7 +103,7 @@ export namespace AreaPattern {
       result.weight = json.weight;
       result.invisibleBoundary = json.invisibleBoundary;
       result.snappable = json.snappable;
-      result.symbolId = json.symbolId ? new Id64(json.symbolId) : undefined;
+      result.symbolId = json.symbolId ? Id64.fromJSON(json.symbolId) : undefined;
       if (!json.defLines)
         return result;
       const defLines: HatchDefLine[] = [];
@@ -155,7 +155,7 @@ export namespace AreaPattern {
 
       if ((this.symbolId === undefined) !== (other.symbolId === undefined))
         return false;
-      if (this.symbolId && !this.symbolId.equals(other.symbolId!))
+      if (this.symbolId && !(this.symbolId === other.symbolId!))
         return false;
 
       if ((this.defLines === undefined) !== (other.defLines === undefined))

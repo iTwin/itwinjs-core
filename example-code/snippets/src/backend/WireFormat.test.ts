@@ -53,8 +53,8 @@ describe("Wire Format Snippets", () => {
   });
 
   it("GeometricElement3d", () => {
-    const modelId = new Id64();
-    const categoryId = new Id64();
+    const modelId = Id64.invalid;
+    const categoryId = Id64.invalid;
     // __PUBLISH_EXTRACT_START__ WireFormat_GeometricElement3d.code
     // Construct an Arc3d (local coordinates)
     const center = new Point3d(0, 0, 0);

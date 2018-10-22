@@ -2,7 +2,7 @@
 
 An instance of [IModelApp]($frontend) provides the services needed by the [frontend](../../learning/App.md#app-frontend) in an [interactive](../WriteAnInteractiveApp.md) iModel.js app. Services include:
 * Management of graphical views using [ViewManager](./Views.md)
-* [Tools and Drawing Aids](./Tools.md)
+* [Tools](./Tools.md) and [Drawing aids](./DrawingAids.md)
 * Access to Connect and iModelHub using [IModelClient]($clients)
 * [Notifications]($frontend:Notifications)
 * [Localization support](./Localization.md)

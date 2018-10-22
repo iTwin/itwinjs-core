@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Settings */
 
-import { AuthorizationToken } from "./Token";
+import { AccessToken } from "./Token";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Possible values for SettingsResults.status  */
@@ -48,65 +48,65 @@ export interface SettingsAdmin {
    * @param settings The object to be saved. It is saved as a JSON string.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
-   * @param authToken The authorization token return from logging in.
+   * @param accessToken The access token returned from authorization.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the save operation. The setting member is undefined for save operations.
    */
-  saveUserSetting(alctx: ActivityLoggingContext, settings: any, namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  saveUserSetting(alctx: ActivityLoggingContext, settings: any, namespace: string, name: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
   /** Retrieves a user-specific settings object from the settings service.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
-   * @param authToken The authorization token return from logging in.
+   * @param accessToken The access token returned from authorization.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the retrieval operation. The setting member contains the setting if the operation succeeds.
    */
-  getUserSetting(alctx: ActivityLoggingContext, namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  getUserSetting(alctx: ActivityLoggingContext, namespace: string, name: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
   /** Deletes a user-specific settings object from the settings service.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
-   * @param authToken The authorization token return from logging in.
+   * @param accessToken The access token returned from authorization.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the save operation. The setting member is undefined for delete operations. If the setting specified for deletion
    * does not exists, the SettingsResult.status is SettingsStatus.SettingNotFound.
    */
-  deleteUserSetting(alctx: ActivityLoggingContext, namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  deleteUserSetting(alctx: ActivityLoggingContext, namespace: string, name: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
   /** Saves a non-user-specific settings object to the settings service.
    * @param settings The object to be saved. It is saved as a JSON string.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
-   * @param authToken The authorization token return from logging in.
+   * @param accessToken The access token returned from authorization.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the save operation. The setting member is undefined for save operations.
    * @note The logged in user must have the appropriate permissions to save a non-user-specific setting.
    */
-  saveSetting(alctx: ActivityLoggingContext, settings: any, namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  saveSetting(alctx: ActivityLoggingContext, settings: any, namespace: string, name: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
   /** Retrieves a non-user-specific settings object from the settings service.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
-   * @param authToken The authorization token return from logging in.
+   * @param accessToken The access token returned from authorization.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
    * @return The result of the retrieval operation. The setting member contains the setting if the operation succeeds.
    */
-  getSetting(alctx: ActivityLoggingContext, namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  getSetting(alctx: ActivityLoggingContext, namespace: string, name: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 
   /** Deletes a non-user-specific settings object from the settings service.
    * @param namespace A program-supplied namespace that is used to organize settings and prevent name collisions.
    * @param name The name of the setting. Acceptable characters are alphanumeric and the period character.
-   * @param authToken The authorization token return from logging in.
+   * @param accessToken The access token returned from authorization.
    * @param applicationSpecific Specifies whether the setting is specific to the current application, or used by all applications.
    * @param projectId The wsgId of the Project, if the settings is specific to a project, otherwise undefined.
    * @param iModelId The wsgId of the iModel, if the setting is specific to an iModel, otherwise undefined. The projectId must be specified if iModelId is specified.
@@ -114,5 +114,5 @@ export interface SettingsAdmin {
    * does not exists, the SettingsResult.status is SettingsStatus.SettingNotFound.
    * @note The logged in user must have the appropriate permissions to delete a non-user-specific setting.
    */
-  deleteSetting(alctx: ActivityLoggingContext, namespace: string, name: string, authToken: AuthorizationToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
+  deleteSetting(alctx: ActivityLoggingContext, namespace: string, name: string, accessToken: AccessToken, applicationSpecific: boolean, projectId?: string, iModelId?: string): Promise<SettingsResult>;
 }

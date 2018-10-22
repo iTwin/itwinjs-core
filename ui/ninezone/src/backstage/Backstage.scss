@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "../_z-index";
+@import "@bentley/ui-core/lib/_z-index";
 @import "_variables";
 
 .nz-backstage-backstage {
@@ -16,7 +16,7 @@
   color: rgba($nz-backstage-item-color, 0.85);
   background-color: $nz-backstage-background;
   transform: translateX(-100%);
-  @include nz-z-index(backstage);
+  @include uicore-z-index(backstage);
   -moz-transition: transform .25s ease;
   -webkit-transition: transform .25s ease;
   transition: transform .25s ease;
@@ -56,7 +56,7 @@
   opacity: 0;
   visibility: hidden;
   background: transparent;
-  @include nz-z-index(backstage);
+  @include uicore-z-index(backstage);
   -moz-transition: .25s ease;
   -webkit-transition: .25s ease;
   transition: .25s ease;

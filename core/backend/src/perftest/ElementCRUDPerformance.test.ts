@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { DictionaryModel, SpatialCategory, Element, IModelDb } from "../backend";
 import { ECSqlStatement } from "../ECSqlStatement";
 import { IModelTestUtils } from "../test/IModelTestUtils";
@@ -30,7 +30,7 @@ describe("PerformanceElementsTests", () => {
   };
   const csvPath = path.join(KnownTestLocations.outputDir, "PerformanceResults.csv");
 
-  function createElemProps(className: string, iModelName: IModelDb, modId: Id64, catId: Id64): GeometricElementProps {
+  function createElemProps(className: string, iModelName: IModelDb, modId: Id64String, catId: Id64String): GeometricElementProps {
     // add Geometry
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -134,7 +134,7 @@ describe("PerformanceElementsTests", () => {
             const elementProps = createElemProps(className, seedIModel, newModelId, spatialCategoryId);
             const geomElement = seedIModel.elements.createElement(elementProps);
             const id = seedIModel.elements.insertElement(geomElement);
-            assert.isTrue(id.isValid, "insert worked");
+            assert.isTrue(Id64.isValidId64(id), "insert worked");
           }
 
           seedIModel.saveChanges();
@@ -154,7 +154,7 @@ describe("PerformanceElementsTests", () => {
           const testFileName = "ImodelPerformance_Insert_" + className + "_" + opCount + ".bim";
           const perfimodel = IModelTestUtils.openIModelFromOut(baseSeed, { copyFilename: testFileName, enableTransactions: true });
           const dictionary: DictionaryModel = perfimodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-          let newModelId: Id64;
+          let newModelId: Id64String;
           [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(perfimodel, Code.createEmpty(), true);
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
           if (undefined === spatialCategoryId) {
@@ -166,7 +166,7 @@ describe("PerformanceElementsTests", () => {
             const geomElement = perfimodel.elements.createElement(elementProps);
             const startTime = new Date().getTime();
             const id = perfimodel.elements.insertElement(geomElement);
-            assert.isTrue(id.isValid, "insert worked");
+            assert.isTrue(Id64.isValidId64(id), "insert worked");
             const endTime = new Date().getTime();
             const elapsedTime = (endTime - startTime) / 1000.0;
             totalTime = totalTime + elapsedTime;
@@ -199,7 +199,7 @@ describe("PerformanceElementsTests", () => {
           for (let i = 0; i < opCount; ++i) {
             try {
               const elId = stat.minId + elementIdIncrement * i;
-              perfimodel.elements.deleteElement(new Id64([elId, 0]));
+              perfimodel.elements.deleteElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             } catch (err) {
               assert.isTrue(false);
             }
@@ -233,7 +233,7 @@ describe("PerformanceElementsTests", () => {
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             const elId = stat.minId + elementIdIncrement * i;
-            const elemFound: Element = perfimodel.elements.getElement(new Id64([elId, 0]));
+            const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             assert.isTrue(verifyProps(elemFound));
           }
           const endTime = new Date().getTime();
@@ -273,7 +273,7 @@ describe("PerformanceElementsTests", () => {
           const startTime = new Date().getTime();
           for (let i = 0; i < opCount; ++i) {
             const elId = stat.minId + elementIdIncrement * i;
-            const editElem: Element = perfimodel.elements.getElement(new Id64([elId, 0]));
+            const editElem: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             editElem.baseStr = "PerfElement - UpdatedValue";
             editElem.setUserProperties("geom", geometryStream);
             try {
@@ -287,7 +287,7 @@ describe("PerformanceElementsTests", () => {
           // verify value is updated
           for (let i = 0; i < opCount; ++i) {
             const elId = stat.minId + elementIdIncrement * i;
-            const elemFound: Element = perfimodel.elements.getElement(new Id64([elId, 0]));
+            const elemFound: Element = perfimodel.elements.getElement(Id64.fromLocalAndBriefcaseIds(elId, 0));
             assert.equal(elemFound.baseStr, "PerfElement - UpdatedValue");
           }
           const elapsedTime = (endTime - startTime) / 1000.0;

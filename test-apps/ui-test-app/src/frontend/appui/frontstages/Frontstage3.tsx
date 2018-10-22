@@ -21,6 +21,11 @@ import {
   FrontstageDef,
 } from "@bentley/ui-framework";
 
+import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
+import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
+import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
+
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
@@ -111,7 +116,7 @@ export class Frontstage3 extends FrontstageDef {
         allowsMerging: true,
         widgetProps: [
           {
-            classId: "NavigationTreeWidget",
+            classId: NavigationTreeWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
@@ -123,7 +128,7 @@ export class Frontstage3 extends FrontstageDef {
         allowsMerging: true,
         widgetProps: [
           {
-            classId: "TableDemoWidget",
+            classId: TableDemoWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
@@ -136,7 +141,7 @@ export class Frontstage3 extends FrontstageDef {
         allowsMerging: false,
         widgetProps: [
           {
-            classId: "AppStatusBar",
+            classId: AppStatusBarWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
@@ -150,19 +155,13 @@ export class Frontstage3 extends FrontstageDef {
         allowsMerging: true,
         widgetProps: [
           {
-            classId: "NavigationTreeWidget",
+            classId: VerticalPropertyGridWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
           {
-            classId: "VerticalPropertyGridDemoWidget",
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-          {
-            classId: "HorizontalPropertyGridDemoWidget",
+            classId: HorizontalPropertyGridWidgetControl,
             defaultState: WidgetState.Open,
             iconClass: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
@@ -287,7 +286,7 @@ export class Frontstage3 extends FrontstageDef {
 
     return (
       <NavigationWidget
-        navigationAidId="SheetNavigationAid"
+        navigationAidId="CubeNavigationAid"
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
       />

@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module ConfigurableUi */
+/** @module Notification */
 
 import * as React from "react";
 import * as classnames from "classnames";
@@ -24,7 +24,7 @@ export interface ElementTooltipProps {
  */
 export interface ElementTooltipState {
   isTooltipVisible: boolean;
-  message: string;
+  message: HTMLElement | string;
   el?: HTMLElement;
   pt?: XAndY;
   options?: ToolTipOptions;
@@ -34,7 +34,7 @@ export interface ElementTooltipState {
  */
 export interface ElementTooltipChangedEventArgs {
   isTooltipVisible: boolean;
-  message: string;
+  message: HTMLElement | string;
   el?: HTMLElement;
   pt?: XAndY;
   options?: ToolTipOptions;
@@ -55,7 +55,7 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
   public static get onElementTooltipChangedEvent(): ElementTooltipChangedEvent { return ElementTooltip._elementTooltipChangedEvent; }
   public static get isTooltipVisible(): boolean { return ElementTooltip._isTooltipVisible; }
 
-  public static showTooltip(el: HTMLElement, message: string, pt?: XAndY, options?: ToolTipOptions): void {
+  public static showTooltip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void {
     ElementTooltip._isTooltipVisible = true;
     ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: true, el, message, pt, options });
   }
@@ -79,6 +79,12 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
       "element-tooltip",
       this.props.className);
 
+    let message: React.ReactNode;
+    if (typeof this.state.message === "string")
+      message = <div dangerouslySetInnerHTML={{ __html: this.state.message }} />;
+    else
+      message = <div dangerouslySetInnerHTML={{ __html: this.state.message.outerHTML }} />;
+
     return (
       <ToolSettingsTooltip
         className={className}
@@ -87,9 +93,7 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
         adjustPosition={adjustPosition}
         containIn={this._handleContainIn}
       >
-        {this.state.message &&
-          <div dangerouslySetInnerHTML={{ __html: this.state.message }} />
-        }
+        {message}
       </ToolSettingsTooltip>
     );
   }

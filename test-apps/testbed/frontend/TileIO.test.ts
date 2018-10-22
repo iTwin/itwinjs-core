@@ -30,7 +30,7 @@ export class FakeModelProps implements ModelProps {
 
 export class FakeREProps implements RelatedElementProps {
   public id: Id64String;
-  public constructor() { this.id = Id64.invalidId; }
+  public constructor() { this.id = Id64.invalid; }
 }
 
 function delta(a: number, b: number): number { return Math.abs(a - b); }

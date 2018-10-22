@@ -2,6 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import "./index.scss";      // Should be the first import in index.tsx to bring in BWC in the correct place
+
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { CSSProperties } from "react";
@@ -26,16 +28,14 @@ import {
     AppNotificationManager,
     IModelInfo,
     FrontstageManager,
+    createAction, ActionsUnion, DeepReadonly,
 } from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
 
 import { AppUi } from "./appui/AppUi";
 import AppBackstage, { BackstageShow, BackstageHide, BackstageToggle } from "./appui/AppBackstage";
-import "./index.scss";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { MeasurePointsTool } from "./tools/MeasurePoints";
-
-import { createAction, ActionsUnion, DeepReadonly } from "./utils/redux-ts";
 
 // Initialize my application gateway configuration for the frontend
 let rpcConfiguration: RpcConfiguration;

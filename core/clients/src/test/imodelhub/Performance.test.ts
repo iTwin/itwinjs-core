@@ -44,7 +44,7 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
       code.briefcaseId = briefcase.briefcaseId;
       code.changeState = "new";
       code.codeScope = codeScope;
-      code.codeSpecId = new Id64("0XA");
+      code.codeSpecId = Id64.fromString("0XA");
       code.state = CodeState.Reserved;
       code.value = `${j++}`;
       return code;
@@ -175,7 +175,7 @@ describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbac
       lock.briefcaseId = briefcase.briefcaseId!;
       lock.lockLevel = LockLevel.Shared;
       lock.lockType = LockType.Element;
-      lock.objectId = new Id64(j.toString());
+      lock.objectId = Id64.fromString(j.toString());
       lock.seedFileId = briefcase.fileId;
       j++;
       return lock;

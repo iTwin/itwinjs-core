@@ -3,12 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
  @import "@bentley/bwc/lib/mixins";
+ @import "../_z-index";
 
 .dialog {
   @include bwc-font-family;
   display: none;
   position: fixed;
-  z-index: 8000;
+  @include uicore-z-index(dialog);
   left: 0px;
   top: 0px;
   width: 100%;

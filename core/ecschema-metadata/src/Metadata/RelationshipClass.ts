@@ -26,14 +26,16 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
 export default class RelationshipClass extends ECClass {
   public readonly schema!: Schema; // tslint:disable-line
   public readonly schemaItemType!: SchemaItemType.RelationshipClass; // tslint:disable-line
-  protected _strength: StrengthType = StrengthType.Referencing;
-  protected _strengthDirection: StrengthDirection = StrengthDirection.Forward;
+  protected _strength: StrengthType;
+  protected _strengthDirection: StrengthDirection;
   protected _source: RelationshipConstraint;
   protected _target: RelationshipConstraint;
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
     this.schemaItemType = SchemaItemType.RelationshipClass;
+    this._strengthDirection = StrengthDirection.Forward;
+    this._strength = StrengthType.Referencing;
     this._source = new RelationshipConstraint(this, RelationshipEnd.Source);
     this._target = new RelationshipConstraint(this, RelationshipEnd.Target);
   }

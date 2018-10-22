@@ -282,6 +282,15 @@ export abstract class CurveChain extends CurveCollection {
     for (const curve of this._curves)
       curve.extendRange(range, transform);
   }
+  /**
+   * Reverse each child curve (in place)
+   * Reverse the order of the children in the CurveChain array.
+   */
+  public reverseChildrenInPlace() {
+    for (const curve of this._curves)
+      curve.reverseInPlace();
+    this._curves.reverse();
+  }
 }
 
 /**

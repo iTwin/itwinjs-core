@@ -27,10 +27,13 @@ import { expect } from "chai";
 import { prettyPrint } from "./testFunctions";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
-import { BezierCurve3dH, BezierCurve3d } from "../bspline/BezierCurve";
+import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
+import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { Point4d } from "../geometry4d/Point4d";
 import { CurveLocationDetail, CurveIntervalRole } from "../curve/CurveLocationDetail";
 import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { Path } from "../curve/Path";
+import { CurveChainWithDistanceIndex } from "../curve/PathWithDistanceIndex";
 /* tslint:disable:no-console */
 
 class ExerciseCurve {
@@ -608,5 +611,54 @@ describe("CoordinateXYZ", () => {
 
     ck.checkpoint("CoordinateXYZ.Hello");
     expect(ck.getNumErrors()).equals(0);
+  });
+});
+function compareIsomorphicCurves(ck: Checker, curveA: CurvePrimitive, curveB: CurvePrimitive) {
+  const fractions = [0.0, 0.125, 0.55, 0.882, 1.0];
+  for (const fraction of fractions) {
+    const pointA = curveA.fractionToPoint(fraction);
+    const pointB = curveB.fractionToPoint(fraction);
+    if (!ck.testPoint3d(pointA, pointB, " compare at fraction " + fraction))
+      curveB.fractionToPoint(fraction);
+  }
+  const intervalFractions = [0.0, 0.4, 0.2, 0.9, 1.0, 0.3];
+  for (let i = 0; i + 1 < intervalFractions.length; i++) {
+    const f0 = intervalFractions[i];
+    const f1 = intervalFractions[i + 1];
+    const lengthA = curveA.curveLengthBetweenFractions(f0, f1);
+    const lengthB = curveB.curveLengthBetweenFractions(f0, f1);
+    if (!ck.testCoordinate(lengthA, lengthB, "curveLengthBetweenFractions (" + f0 + ", " + f1)) {
+      curveA.curveLengthBetweenFractions(f0, f1);
+      curveB.curveLengthBetweenFractions(f0, f1);
+    }
+  }
+}
+describe("IsomorphicCurves", () => {
+  it("Hello", () => {
+    const ck = new Checker();
+    const options1 = StrokeOptions.createForCurves();
+    options1.maxEdgeLength = 0.5;
+    for (const options of [undefined, options1]) {
+      const allPoints = [
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(2, 0, 0),
+        Point3d.create(2, 1, 0)];
+      for (let numPoints = 2; numPoints <= allPoints.length; numPoints++) {
+        // console.log("Isomorphic LineString (" + numPoints + ")");
+        // assemble leading numPoints part of allPoints ...
+        const currentPoints = [allPoints[0]];
+        for (let i = 1; i < numPoints; i++)
+          currentPoints.push(allPoints[i]);
+        const linestring = LineString3d.create(currentPoints);
+        const path = Path.create();
+        // console.log(prettyPrint(currentPoints));
+        for (let i = 0; i + 1 < currentPoints.length; i++) {
+          path.tryAddChild(LineSegment3d.create(currentPoints[i], currentPoints[i + 1]));
+        }
+        const chain = CurveChainWithDistanceIndex.createCapture(path, options);
+        compareIsomorphicCurves(ck, linestring, chain);
+      }
+    }
   });
 });

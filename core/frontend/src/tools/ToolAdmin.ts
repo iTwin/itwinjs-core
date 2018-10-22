@@ -308,9 +308,13 @@ export class ToolAdmin {
   private _inputCollector?: InputCollector;
   private _saveCursor?: string;
   private _saveLocateCircle = false;
-  private _defaultTool = "Select";
   private _modifierKeyWentDown = false;
   private _modifierKey = BeModifierKeys.None;
+  /** Return the name of the [[PrimitiveTool]] to use as the default tool, if any.
+   * @see [[startDefaultTool]]
+   * @hidden
+   */
+  public get defaultToolId(): string { return "Select"; }
   /** Apply operations such as transform, copy or delete to all members of an assembly. */
   public assemblyLock = false;
   /** If Grid Lock is on, project data points to grid. */
@@ -658,11 +662,11 @@ export class ToolAdmin {
   /** The current tool. May be ViewTool, InputCollector, PrimitiveTool, or IdleTool - in that priority order. */
   public get currentTool(): InteractiveTool { return this.activeTool ? this.activeTool : this.idleTool; }
 
-  /** Ask the current tool to provide a tooltip message for the supplied HitDetail. */
-  public async getToolTip(hit: HitDetail): Promise<string> { return this.currentTool.getToolTip(hit); }
+  /** Ask the current tool to provide tooltip contents for the supplied HitDetail. */
+  public async getToolTip(hit: HitDetail): Promise<HTMLElement | string> { return this.currentTool.getToolTip(hit); }
 
   /**
-   * Event raised whenever the active tool changes. This includes PrimitiveTool, ViewTool, andInputCollector.
+   * Event raised whenever the active tool changes. This includes PrimitiveTool, ViewTool, and InputCollector.
    * @param newTool The newly activated tool
    */
   public readonly activeToolChanged = new BeEvent<(tool: Tool, start: StartOrResume) => void>();
@@ -732,8 +736,7 @@ export class ToolAdmin {
 
         if (undefined !== touchEv && numTouches > 0 && numTaps > 0) {
           touchEv.tapCount = numTaps;
-          if ((undefined !== tool && EventHandled.Yes === await tool.onTouchTap(touchEv)) ||
-            EventHandled.Yes === await this.idleTool.onTouchTap(touchEv))
+          if ((undefined !== tool && EventHandled.Yes === await tool.onTouchTap(touchEv)) || EventHandled.Yes === await this.idleTool.onTouchTap(touchEv))
             return;
         }
       }
@@ -956,7 +959,8 @@ export class ToolAdmin {
     if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(ev))
       return;
 
-    let tool = this.activeTool;
+    const activeTool = this.activeTool;
+    let tool = activeTool;
 
     if (undefined !== tool) {
       if (!tool.isValidLocation(ev, true))
@@ -974,8 +978,11 @@ export class ToolAdmin {
 
     switch (ev.button) {
       case BeButton.Data: {
-        if (undefined === tool)
-          break;
+        if (undefined === tool) {
+          if (undefined !== activeTool)
+            break;
+          tool = this.idleTool; // Pass data button event to idle tool when no active tool present
+        }
 
         if (ev.isDown) {
           await tool.onDataButtonDown(ev);
@@ -994,8 +1001,11 @@ export class ToolAdmin {
       }
 
       case BeButton.Reset: {
-        if (undefined === tool)
-          break;
+        if (undefined === tool) {
+          if (undefined !== activeTool)
+            break;
+          tool = this.idleTool; // Pass reset button event to idle tool when no active tool present
+        }
 
         if (ev.isDown)
           await tool.onResetButtonDown(ev);
@@ -1005,7 +1015,7 @@ export class ToolAdmin {
       }
 
       case BeButton.Middle: {
-        // Pass middle button event to idle tool if active tool doesn't explicitly handle it
+        // Pass middle button event to idle tool when active tool doesn't explicitly handle it
         if (ev.isDown) {
           if (undefined === tool || EventHandled.Yes !== await tool.onMiddleButtonDown(ev))
             await this.idleTool.onMiddleButtonDown(ev);
@@ -1218,7 +1228,7 @@ export class ToolAdmin {
   }
 
   /** @hidden */
-  public startPrimitiveTool(newTool: PrimitiveTool) {
+  public startPrimitiveTool(newTool?: PrimitiveTool) {
     this.exitViewTool();
 
     if (undefined !== this._primitiveTool)
@@ -1228,7 +1238,7 @@ export class ToolAdmin {
     this.exitInputCollector();
 
     IModelApp.viewManager.endDynamicsMode();
-    this.activeToolChanged.raiseEvent(newTool, StartOrResume.Start);
+    this.activeToolChanged.raiseEvent(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
     this.setIncompatibleViewportCursor(true); // Don't restore this
 
     this.toolState.coordLockOvr = CoordinateLockOverrides.None;
@@ -1237,17 +1247,23 @@ export class ToolAdmin {
     IModelApp.accuDraw.onPrimitiveToolInstall();
     IModelApp.accuSnap.onStartTool();
 
+    if (undefined === newTool)
+      return;
+
     this.setCursor(newTool.getCursor());
     this.setPrimitiveTool(newTool);
   }
 
   /**
    * Starts the default tool, if any. Generally invoked automatically when other tools exit, so shouldn't be called directly.
+   * @note The default tool is expected to be a subclass of [[PrimitiveTool]]. A call to startDefaultTool is required to terminate
+   * an active [[ViewTool]] or [[InputCollector]] and replace or clear the current [[PrimitiveTool]].
    * @hidden
    */
-  public startDefaultTool() { IModelApp.tools.run(this._defaultTool); }
-
-  public isDefaultTool(tool?: Tool) { return (undefined !== tool && tool.toolId === this._defaultTool); }
+  public startDefaultTool() {
+    if (!IModelApp.tools.run(this.defaultToolId))
+      this.startPrimitiveTool(undefined);
+  }
 
   public setCursor(cursor: string | undefined): void {
     if (undefined === this._saveCursor)

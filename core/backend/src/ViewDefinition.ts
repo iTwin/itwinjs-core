@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ViewDefinitions */
 
-import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d, Point3d, Point2d, YawPitchRollAngles, Angle } from "@bentley/geometry-core";
 import {
   BisCodeSpec,
@@ -183,9 +183,9 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
  */
 export abstract class ViewDefinition extends DefinitionElement implements ViewDefinitionProps {
   /** The element Id of the [[CategorySelector]] for this ViewDefinition */
-  public categorySelectorId: Id64;
+  public categorySelectorId: Id64String;
   /** The element Id of the [[DisplayStyle]] for this ViewDefinition */
-  public displayStyleId: Id64;
+  public displayStyleId: Id64String;
 
   /** @hidden */
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
@@ -280,7 +280,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
  */
 export class SpatialViewDefinition extends ViewDefinition3d implements SpatialViewDefinitionProps {
   /** The element Id of the [[ModelSelector]] for this SpatialViewDefinition. */
-  public modelSelectorId: Id64;
+  public modelSelectorId: Id64String;
   /** @hidden */
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); this.modelSelectorId = Id64.fromJSON(props.modelSelectorId); }
   /** @hidden */
@@ -304,7 +304,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
 /** Defines a view of a single 2d model. Each 2d model has its own coordinate system, so only one may appear per view. */
 export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2dProps {
   /** The Id of the Model displayed by this view. */
-  public baseModelId: Id64;
+  public baseModelId: Id64String;
   /** The lower-left corner of this view in Model coordinates. */
   public origin: Point2d;
   /** The delta (size) of this view, in meters, aligned with view x,y. */

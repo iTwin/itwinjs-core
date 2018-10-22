@@ -243,13 +243,13 @@ describe("SqliteStatement", () => {
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(id,guid) VALUES(?,?)", (stmt: SqliteStatement) => {
         assert.isFalse(stmt.isReadonly);
-        stmt.bindValue(1, new Id64("0x11"));
+        stmt.bindId(1, Id64.fromString("0x11"));
         stmt.bindValue(2, new Guid("370cea34-8415-4f81-b54c-85040eb3111e"));
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
         stmt.reset();
         stmt.clearBindings();
 
-        stmt.bindValues([new Id64("0x12"), new Guid("f9f1eb6e-1171-4f45-ba90-55c856056341")]);
+        stmt.bindValues([Id64.wrap(Id64.fromString("0x12")), new Guid("f9f1eb6e-1171-4f45-ba90-55c856056341")]);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
         stmt.reset();
         stmt.clearBindings();
@@ -257,13 +257,13 @@ describe("SqliteStatement", () => {
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(id,guid) VALUES(:id,:guid)", (stmt: SqliteStatement) => {
         assert.isFalse(stmt.isReadonly);
-        stmt.bindValue(":id", new Id64("0x13"));
+        stmt.bindId(":id", Id64.fromString("0x13"));
         stmt.bindValue(":guid", new Guid("370cea34-8415-4f81-b54c-85040eb3111e"));
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
         stmt.reset();
         stmt.clearBindings();
 
-        stmt.bindValues({ ":id": new Id64("0x14"), ":guid": new Guid("f9f1eb6e-1171-4f45-ba90-55c856056341") });
+        stmt.bindValues({ ":id": Id64.wrap(Id64.fromString("0x14")), ":guid": new Guid("f9f1eb6e-1171-4f45-ba90-55c856056341") });
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
         stmt.reset();
         stmt.clearBindings();

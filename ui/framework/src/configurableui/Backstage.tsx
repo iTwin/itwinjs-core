@@ -282,7 +282,7 @@ function closeBackStage() {
   Backstage.onBackstageCloseEventEvent.emit({ isVisible: false });
 }
 
-/** Props for the [[Backstage]] React component.
+/** Properties for the [[Backstage]] React component.
  */
 export interface BackstageProps {
   accessToken?: AccessToken;

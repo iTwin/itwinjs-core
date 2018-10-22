@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Vertical PropertyGrid layout improvements. PropertyGrid background color. Setting the widget state.",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}

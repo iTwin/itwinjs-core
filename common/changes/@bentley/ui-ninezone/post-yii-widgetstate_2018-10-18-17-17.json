@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Vertical PropertyGrid layout improvements. PropertyGrid background color. Setting the widget state.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}
