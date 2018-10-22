@@ -114,7 +114,7 @@
                       Must be over HTTPS unless registered as a localhost.</em></label>
                 </td>
                 <td>
-                  <textarea id="AdditionalRedirectURIs" name="AdditionalRedirectURIs" rows="5" cols="40" placeholder="Example: http://localhost:3000/signin-callback"></textarea>
+                  <textarea id="AdditionalRedirectURIs" name="AdditionalRedirectURIs" rows="5" cols="40">http://localhost:3000/signin-callback</textarea>
                 </td>
               </tr>
               <tr>
@@ -132,7 +132,7 @@
                       Must be over HTTPS unless registered as a localhost.</em></label>
                 </td>
                 <td>
-                  <textarea id="NewPostLogoutURI" name="NewPostLogoutURI" rows="5" cols="40" placeholder="Example: http://localhost:3000/signout-callback"></textarea>
+                  <textarea id="NewPostLogoutURI" name="NewPostLogoutURI" rows="5" cols="40">http://localhost:3000/signout-callback</textarea>
                 </td>
               </tr>
             </table>
@@ -152,6 +152,6 @@
   </div>
 </div>
 
-<script data-cfasync="false" type="text/javascript" src="{{site.siteRoot}}getting-started/scripts/form-submission-handler.js"></script>
+{{>registration_scripts}}
 
 {{>footer}}
