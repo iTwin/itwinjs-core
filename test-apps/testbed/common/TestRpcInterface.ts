@@ -34,6 +34,19 @@ export class TestNotFoundResponse extends RpcNotFoundResponse {
   }
 }
 
+export abstract class ZeroMajorRpcInterface extends RpcInterface {
+  public static version = "0.1.1";
+  public static types = () => [TestOp1Params];
+
+  public static getClient(): ZeroMajorRpcInterface {
+    return RpcManager.getClientForInterface(ZeroMajorRpcInterface);
+  }
+
+  public async op1(_params: TestOp1Params): Promise<number> {
+    return this.forward.apply(this, arguments);
+  }
+}
+
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly OP8_INITIALIZER = 5;
   public static readonly OP8_PENDING_MESSAGE = "Initializing op8";

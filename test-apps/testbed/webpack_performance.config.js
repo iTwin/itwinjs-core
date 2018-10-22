@@ -7,7 +7,7 @@ const path = require("path");
 const glob = require("glob");
 const webpack = require("webpack");
 const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const raw = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig.init(true /*suppress error*/);
+const raw = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig.init(true /*suppress error*/, true /* suppress message */);
 module.exports = {
   entry: glob.sync(path.resolve(__dirname, "lib/frontend/performance/*.test.js")),
   output: {

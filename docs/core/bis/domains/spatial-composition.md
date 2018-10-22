@@ -20,7 +20,7 @@ This schema describes the breakdown of `SpatialLocationElement`. It is intended 
 
 ## Classes
 
-### CompositeElement (is a [SpatialLocationElement]())
+### CompositeElement (is a [SpatialLocationElement](./BisCore.ecschema.md#spatiallocationelement))
 
 A spatial element that may be Composite of other CompositeElements
 
@@ -82,7 +82,7 @@ Naming :
 
 ### CompositeComposesSubComposites
 
-*TODO derive from `BIS` equivalent of `IElementOwnsChildElements`.*
+<!-- TODO derive from `BIS` equivalent of `IElementOwnsChildElements`. -->
 
 Naming :
 1 - Equivalent of : `IfcRelAggregates`.

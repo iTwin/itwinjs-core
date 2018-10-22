@@ -1,0 +1,103 @@
+{{>header}}
+
+<div id='main-wrapper'>
+  <div id='table-of-contents'>
+    {{>table_of_contents}}
+  </div>
+  <div class='documentation-main'>
+    <article id="main" class='main-content'>
+      {{{editLink this}}}
+
+      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycbws2Y0kXmCoM6vHR2w3ezx92FS4wdrLt8-Mo7YRlz0sZ69pgiPI/exec">
+        <div class="form-elements">
+          <h2>Create New Sample Project</h2>
+          <h4>Provisions a new project for use testing your application</h4>
+          <hr />
+          <h4 style="margin-top:0px;">Developer Contact Information
+            <br />
+            <em>The name of the developer who will own this project. This is the only individual who will be
+              able to request updates to the client registrations.</em>
+          </h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="DeveloperName">Developer Name: <br />
+                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
+                        profile.</a></em></label>
+                </td>
+                <td>
+                  <input id="DeveloperName" name="DeveloperName" required size="30" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="DeveloperEmail">Developer Email: <br />
+                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
+                        profile.</a></em></label>
+                </td>
+                <td>
+                  <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required size="30" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                  <span class="email-invalid" style="display:none">
+                    Must be a valid email address</span>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+
+          <hr />
+          <h4>Project Information </h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="ProjectName">Project Name: <br />
+                    <em>The name of the CONNECT Project.</em></label>
+                </td>
+                <td>
+                  <input id="ProjectName" name="ProjectName" size="30" required />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="ProjectParticipants">Project Participants: <br />
+                    <em>The email of other developers who should have access to the Project / Sample iModel.<br />
+                      They will be required to have a valid Bentley profile before they can sign-in.</em></label>
+                </td>
+                <td>
+                  <textarea id="ProjectParticipants" name="ProjectParticipants" cols="40" rows="5"></textarea>
+                </td>
+              </tr>
+              <tr>
+                <td><label for="SampleiModel">Sample iModel
+                    <br />
+                    <em>Choose the sample iModel you would like to use.
+                      <br />
+                      Other iModel samples coming soon!</em>
+                  </label>
+                </td>
+                <td>
+                  <select id="SampleiModel" name="SampleiModel" disabled="true">
+                    <option value="RetailBuildingSample">Retail Building Sample</option>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+          <button class="button-success pure-button button-xlarge">Submit</button>
+        </div>
+
+        {{>thank_you_message email='iModeljs.Sample.Request@bentley.com'}}
+
+      </form>
+
+      {{>loaderScript}}
+    </article>
+  </div>
+  <div id='inner-table-of-contents'>
+    <!-- {{>inner_table_of_contents}} -->
+  </div>
+</div>
+
+<script data-cfasync="false" type="text/javascript" src="{{site.siteRoot}}getting-started/scripts/form-submission-handler.js"></script>
+
+{{>footer}}

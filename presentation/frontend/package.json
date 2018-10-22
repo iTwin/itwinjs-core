@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-frontend",
-  "version": "0.155.0",
+  "version": "0.161.0",
   "description": "Frontend of iModel.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -25,7 +25,7 @@
     "clean": "rimraf lib package-deps.json",
     "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
-    "docs:changelog": "cpx ./CHANGELOG.md ../../generated-docs/presentation/presentation-frontend",
+    "docs:changelog": "cpx \"./CHANGELOG.md\" ../../generated-docs/presentation/presentation-frontend",
     "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-frontend/json/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
     "lint": "echo Disabled until https://github.com/palantir/tslint/issues/4148 is fixed",
@@ -34,19 +34,19 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.155.0",
-    "@bentley/imodeljs-i18n": "0.155.0",
-    "@bentley/imodeljs-common": "0.155.0",
-    "@bentley/imodeljs-frontend": "0.155.0",
-    "@bentley/presentation-common": "0.155.0"
+    "@bentley/bentleyjs-core": "0.161.0",
+    "@bentley/imodeljs-i18n": "0.161.0",
+    "@bentley/imodeljs-common": "0.161.0",
+    "@bentley/imodeljs-frontend": "0.161.0",
+    "@bentley/presentation-common": "0.161.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.155.0",
-    "@bentley/build-tools": "0.155.0",
-    "@bentley/imodeljs-i18n": "0.155.0",
-    "@bentley/imodeljs-common": "0.155.0",
-    "@bentley/imodeljs-frontend": "0.155.0",
-    "@bentley/presentation-common": "0.155.0",
+    "@bentley/bentleyjs-core": "0.161.0",
+    "@bentley/build-tools": "0.161.0",
+    "@bentley/imodeljs-i18n": "0.161.0",
+    "@bentley/imodeljs-common": "0.161.0",
+    "@bentley/imodeljs-frontend": "0.161.0",
+    "@bentley/presentation-common": "0.161.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",

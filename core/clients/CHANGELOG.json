@@ -2,532 +2,70 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
-      "version": "0.155.0",
-      "tag": "@bentley/imodeljs-clients_v0.155.0",
-      "date": "Tue, 09 Oct 2018 18:21:41 GMT",
+      "version": "0.161.0",
+      "tag": "@bentley/imodeljs-clients_v0.161.0",
+      "date": "Fri, 19 Oct 2018 13:04:14 GMT",
       "comments": {
         "none": [
           {
-            "comment": "Updating copyrights"
+            "comment": "Allow case-insensitive lookup of keys from Config.App"
           }
         ]
       }
     },
     {
-      "version": "0.154.0",
-      "tag": "@bentley/imodeljs-clients_v0.154.0",
-      "date": "Tue, 09 Oct 2018 16:09:16 GMT",
+      "version": "0.160.0",
+      "tag": "@bentley/imodeljs-clients_v0.160.0",
+      "date": "Wed, 17 Oct 2018 18:18:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.159.0",
+      "tag": "@bentley/imodeljs-clients_v0.159.0",
+      "date": "Tue, 16 Oct 2018 14:09:09 GMT",
       "comments": {
         "none": [
           {
-            "comment": "Increase timeouts for iModelHub file based requests"
-          },
-          {
-            "comment": "Fix for the iModelHub integration tests"
-          },
-          {
-            "comment": "Removed UlasClient as it cannot be open-sourced."
+            "comment": "Removed KnownRegions Enum"
           }
         ]
       }
     },
     {
-      "version": "0.153.0",
-      "tag": "@bentley/imodeljs-clients_v0.153.0",
-      "date": "Tue, 09 Oct 2018 12:08:40 GMT",
+      "version": "0.158.0",
+      "tag": "@bentley/imodeljs-clients_v0.158.0",
+      "date": "Mon, 15 Oct 2018 19:36:09 GMT",
       "comments": {
         "none": [
           {
-            "comment": "Setup logout, and cleaned up the OIDC API a little. "
+            "comment": "Cleaned up frontend configuration. "
           },
           {
-            "comment": "Reenabling iModelHub unit tests"
+            "comment": "add default Buddi URL and region and a added docs for region id"
           }
         ]
       }
     },
     {
-      "version": "0.152.0",
-      "tag": "@bentley/imodeljs-clients_v0.152.0",
-      "date": "Fri, 05 Oct 2018 21:52:26 GMT",
+      "version": "0.157.0",
+      "tag": "@bentley/imodeljs-clients_v0.157.0",
+      "date": "Sun, 14 Oct 2018 17:20:06 GMT",
       "comments": {
         "none": [
           {
-            "comment": "imodel-bank local-orchestrator changes"
-          },
-          {
-            "comment": "OidcClient split into different classes for various use case"
+            "comment": "Fixing scripts for linux"
           }
         ]
       }
     },
     {
-      "version": "0.151.0",
-      "tag": "@bentley/imodeljs-clients_v0.151.0",
-      "date": "Thu, 04 Oct 2018 21:10:57 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.150.0",
-      "tag": "@bentley/imodeljs-clients_v0.150.0",
-      "date": "Thu, 04 Oct 2018 21:06:01 GMT",
+      "version": "0.156.0",
+      "tag": "@bentley/imodeljs-clients_v0.156.0",
+      "date": "Fri, 12 Oct 2018 23:00:10 GMT",
       "comments": {
         "none": [
           {
-            "comment": "Added UlasClient to index.ts"
-          },
-          {
-            "comment": "Added missing URL to the whitelist"
-          },
-          {
-            "comment": "use imodel-bank local-orchestrator for tests"
-          },
-          {
-            "comment": "further simplification"
-          },
-          {
-            "comment": "Marking some tests as integration"
-          },
-          {
-            "comment": "Better OIDC support for agents."
-          },
-          {
-            "comment": "Add README.md"
-          },
-          {
-            "comment": "imodel-bank mode"
-          },
-          {
-            "comment": "Updating copyrights"
-          },
-          {
-            "comment": "Added configuration system to imodeljs and removed urls/credentials"
-          },
-          {
-            "comment": "Rename config var to what they do."
-          },
-          {
-            "comment": "Mark test as integeration that were not marked but access imodelhub"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.146.0",
-      "tag": "@bentley/imodeljs-clients_v0.146.0",
-      "date": "Tue, 02 Oct 2018 14:51:50 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Added GetIModel method"
-          },
-          {
-            "comment": "Replaced GetIModel with IModelQuery property primary()"
-          },
-          {
-            "comment": "use imodel-bank local-orchestrator for tests"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.145.0",
-      "tag": "@bentley/imodeljs-clients_v0.145.0",
-      "date": "Tue, 02 Oct 2018 01:02:27 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "More fixes to invalid imports"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.144.0",
-      "tag": "@bentley/imodeljs-clients_v0.144.0",
-      "date": "Mon, 01 Oct 2018 22:10:58 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Fix imports that directly reference the node_modules folder"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.143.0",
-      "tag": "@bentley/imodeljs-clients_v0.143.0",
-      "date": "Mon, 01 Oct 2018 19:10:45 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Changed some iModelHub types to be stricter"
-          },
-          {
-            "comment": "Added strict types for iModelHub events"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.142.0",
-      "tag": "@bentley/imodeljs-clients_v0.142.0",
-      "date": "Mon, 01 Oct 2018 10:28:46 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.141.0",
-      "tag": "@bentley/imodeljs-clients_v0.141.0",
-      "date": "Fri, 28 Sep 2018 22:27:44 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "0.140.0"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.140.0",
-      "tag": "@bentley/imodeljs-clients_v0.140.0",
-      "date": "Fri, 28 Sep 2018 21:04:21 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Version 0.139.0"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.139.0",
-      "tag": "@bentley/imodeljs-clients_v0.139.0",
-      "date": "Fri, 28 Sep 2018 19:37:10 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.138.0",
-      "tag": "@bentley/imodeljs-clients_v0.138.0",
-      "date": "Fri, 28 Sep 2018 17:15:55 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.137.0",
-      "tag": "@bentley/imodeljs-clients_v0.137.0",
-      "date": "Fri, 28 Sep 2018 00:57:48 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.136.0",
-      "tag": "@bentley/imodeljs-clients_v0.136.0",
-      "date": "Thu, 27 Sep 2018 15:02:44 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.135.0",
-      "tag": "@bentley/imodeljs-clients_v0.135.0",
-      "date": "Wed, 26 Sep 2018 19:16:30 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Some fixes for iModelHub docs"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.134.0",
-      "tag": "@bentley/imodeljs-clients_v0.134.0",
-      "date": "Wed, 26 Sep 2018 00:50:11 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Added iModelHub learning pages"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.133.0",
-      "tag": "@bentley/imodeljs-clients_v0.133.0",
-      "date": "Tue, 25 Sep 2018 16:41:00 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Fixed and enabled iModel update test"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.132.0",
-      "tag": "@bentley/imodeljs-clients_v0.132.0",
-      "date": "Mon, 24 Sep 2018 18:55:46 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "documentation"
-          },
-          {
-            "comment": "Renamed X-CorrelationId to X-Correlation-Id in HTTP headers to comply with stand"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.131.0",
-      "tag": "@bentley/imodeljs-clients_v0.131.0",
-      "date": "Sun, 23 Sep 2018 17:07:30 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.130.0",
-      "tag": "@bentley/imodeljs-clients_v0.130.0",
-      "date": "Sun, 23 Sep 2018 01:19:16 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.129.0",
-      "tag": "@bentley/imodeljs-clients_v0.129.0",
-      "date": "Fri, 21 Sep 2018 23:16:13 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.128.0",
-      "tag": "@bentley/imodeljs-clients_v0.128.0",
-      "date": "Fri, 14 Sep 2018 17:08:05 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.127.0",
-      "tag": "@bentley/imodeljs-clients_v0.127.0",
-      "date": "Thu, 13 Sep 2018 17:07:11 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.126.0",
-      "tag": "@bentley/imodeljs-clients_v0.126.0",
-      "date": "Wed, 12 Sep 2018 19:12:10 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.125.0",
-      "tag": "@bentley/imodeljs-clients_v0.125.0",
-      "date": "Wed, 12 Sep 2018 13:35:50 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "fixed typo in Codes test"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.124.0",
-      "tag": "@bentley/imodeljs-clients_v0.124.0",
-      "date": "Tue, 11 Sep 2018 13:52:59 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Added new client to the imodeljs-clients library for the Form Data Management Service. This change includes the client, the client's test, and necessary changes to the ECJsonTypeMap class to support adding properties directly to the relationshipInstance"
-          },
-          {
-            "comment": "Set UrlDiscoveryClient (BUDDI) to use the PROD version by default. This is the recommendation made by the service team. "
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.123.0",
-      "tag": "@bentley/imodeljs-clients_v0.123.0",
-      "date": "Wed, 05 Sep 2018 17:14:50 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.122.0",
-      "tag": "@bentley/imodeljs-clients_v0.122.0",
-      "date": "Tue, 28 Aug 2018 12:25:19 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.121.0",
-      "tag": "@bentley/imodeljs-clients_v0.121.0",
-      "date": "Fri, 24 Aug 2018 12:49:09 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.120.0",
-      "tag": "@bentley/imodeljs-clients_v0.120.0",
-      "date": "Thu, 23 Aug 2018 20:51:32 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.119.0",
-      "tag": "@bentley/imodeljs-clients_v0.119.0",
-      "date": "Thu, 23 Aug 2018 15:25:49 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.118.0",
-      "tag": "@bentley/imodeljs-clients_v0.118.0",
-      "date": "Tue, 21 Aug 2018 17:20:41 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "TSLint New Rule Enforcements"
-          },
-          {
-            "comment": "Updated to use TypeScript 3.0"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.117.0",
-      "tag": "@bentley/imodeljs-clients_v0.117.0",
-      "date": "Wed, 15 Aug 2018 17:08:54 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "ImsFederatedAuthentiationClient spelling corrected to ImsFederatedAuthenticationClient."
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.116.0",
-      "tag": "@bentley/imodeljs-clients_v0.116.0",
-      "date": "Wed, 15 Aug 2018 15:13:19 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.115.0",
-      "tag": "@bentley/imodeljs-clients_v0.115.0",
-      "date": "Tue, 14 Aug 2018 15:21:27 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.114.0",
-      "tag": "@bentley/imodeljs-clients_v0.114.0",
-      "date": "Tue, 14 Aug 2018 12:04:18 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.113.0",
-      "tag": "@bentley/imodeljs-clients_v0.113.0",
-      "date": "Fri, 10 Aug 2018 05:06:20 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.112.0",
-      "tag": "@bentley/imodeljs-clients_v0.112.0",
-      "date": "Tue, 07 Aug 2018 12:19:22 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.111.0",
-      "tag": "@bentley/imodeljs-clients_v0.111.0",
-      "date": "Mon, 06 Aug 2018 19:25:38 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.110.0",
-      "tag": "@bentley/imodeljs-clients_v0.110.0",
-      "date": "Thu, 02 Aug 2018 14:48:42 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.109.0",
-      "tag": "@bentley/imodeljs-clients_v0.109.0",
-      "date": "Thu, 02 Aug 2018 09:07:03 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Added support in UlasClient to log usage entries (in addition to features)."
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.108.0",
-      "tag": "@bentley/imodeljs-clients_v0.108.0",
-      "date": "Wed, 01 Aug 2018 14:24:06 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Updated to use TypeScript 2.9"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.107.0",
-      "tag": "@bentley/imodeljs-clients_v0.107.0",
-      "date": "Tue, 31 Jul 2018 16:29:14 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.106.0",
-      "tag": "@bentley/imodeljs-clients_v0.106.0",
-      "date": "Tue, 31 Jul 2018 13:01:51 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.105.0",
-      "tag": "@bentley/imodeljs-clients_v0.105.0",
-      "date": "Tue, 31 Jul 2018 11:36:14 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Split tile loading into property and tile loading so that"
-          },
-          {
-            "comment": "imodeljs-clients is now safe for browser-specific code to import - hide file handler dependencies"
-          },
-          {
-            "comment": "Added Client for Bentley Usage Logging & Analytics Services"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.104.1",
-      "tag": "@bentley/imodeljs-clients_v0.104.1",
-      "date": "Thu, 26 Jul 2018 21:35:07 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.104.0",
-      "tag": "@bentley/imodeljs-clients_v0.104.0",
-      "date": "Thu, 26 Jul 2018 18:25:15 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.103.0",
-      "tag": "@bentley/imodeljs-clients_v0.103.0",
-      "date": "Tue, 24 Jul 2018 15:52:30 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.102.0",
-      "tag": "@bentley/imodeljs-clients_v0.102.0",
-      "date": "Tue, 24 Jul 2018 14:13:01 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.101.0",
-      "tag": "@bentley/imodeljs-clients_v0.101.0",
-      "date": "Mon, 23 Jul 2018 22:00:01 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Add support for Reality Model tileset display"
-          },
-          {
-            "comment": "iModelBank support"
-          },
-          {
-            "comment": "Add missing `fs-extra` dependency"
+            "comment": "Initial release"
           }
         ]
       }

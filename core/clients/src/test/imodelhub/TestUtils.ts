@@ -26,7 +26,6 @@ import { IModelBankClient } from "../../IModelBank";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelBankFileSystemContextClient } from "../../IModelBank/IModelBankFileSystemContextClient";
 import { Config } from "../../Config";
-import { KnownRegions } from "../../Client";
 import { IModelBaseHandler } from "../../imodelhub";
 
 const bankProjects: string[] = [];
@@ -37,7 +36,7 @@ function configMockSettings() {
 
   Config.App.set("imjs_imodelhub_url", "https://mockimodelhub.com");
   Config.App.set("imjs_buddi_url", "https://mockbuddi.com");
-  Config.App.set("imjs_buddi_resolve_url_using_region", KnownRegions.DEV);
+  Config.App.set("imjs_buddi_resolve_url_using_region", 0);
   Config.App.set("imjs_test_serviceAccount1_user_name", "test");
   Config.App.set("imjs_test_serviceAccount1_user_password", "test");
   Config.App.set("imjs_test_manager_user_name", "test");

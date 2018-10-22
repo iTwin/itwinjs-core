@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Config */
-import { KnownRegions } from "./Client";
 
 type ValueType = string | boolean | number;
 
@@ -14,17 +13,24 @@ export class Config {
     private _expanded: any = {};
     private constructor() { }
 
+    /** append system vars */
     private appendSystemVars() {
-        this.set("imjs_env_dev", Number(KnownRegions.DEV));
-        this.set("imjs_env_qa", Number(KnownRegions.QA));
-        this.set("imjs_env_perf", Number(KnownRegions.PERF));
-        this.set("imjs_env_prod", Number(KnownRegions.PROD));
         this.set("imjs_env_is_browser", Boolean(typeof window !== undefined));
         if (typeof process.env !== "undefined") {
             this.merge(process.env);
         }
     }
-
+    /** Translate a external var name to a local one if it already exist */
+    private translateVar(name: string): string {
+        const foundVar = Object.keys(this._container).find((key) => {
+            if (key.toLowerCase() === name.toLowerCase()) {
+                return true;
+            } else {
+                return false;
+            }
+        });
+        return foundVar ? foundVar : name;
+    }
     /**
      * Expand var containing other vars as values.
      * This is strict function that will fail if recursion is detected or var name is not found.
@@ -39,12 +45,12 @@ export class Config {
         }
 
         const vars: any = {};
-        const matches = value.match(/\${[\w]+}/g);
+        const matches = value.match(/\${[\w]+}/gi);
         if (matches === null)
             return value;
 
         matches.forEach((element: string) => {
-            const varName: string = element.match(/\${([\w]+)}/)![1];
+            const varName: string = element.match(/\${([\w]+)}/i)![1];
             if (!vars.hasOwnProperty(varName))
                 vars[varName] = element;
         });
@@ -58,7 +64,7 @@ export class Config {
                     throw new Error(`Found recursive definition of var ${element}`);
                 }
                 value = value.replace(toReplace, subDescriptor.value);
-            } else if (this._container.hasOwnProperty(element)) {
+            } else if (this.has(element)) {
                 value = value.replace(toReplace, this.get(element));
             } else {
                 throw new Error(`Failed to expand var ${element}`);
@@ -67,9 +73,9 @@ export class Config {
 
         return value;
     }
-
     /** Get a property value. Throws exception if property name is not found */
-    public get(name: string, defaultVal?: ValueType): any {
+    public get(varName: string, defaultVal?: ValueType): any {
+        const name = this.translateVar(varName);
         const descriptor = Object.getOwnPropertyDescriptor(this._container, name);
         if (descriptor === undefined) {
             if (defaultVal !== undefined)
@@ -84,40 +90,37 @@ export class Config {
         return descriptor.value;
     }
     /** Checks if a property exists or not */
-    public has(name: string): boolean {
+    public has(varName: string): boolean {
+        const name = this.translateVar(varName);
         return this._container.hasOwnProperty(name);
     }
-
     /** Get number type property */
     public getNumber(name: string, defaultVal?: number): number {
         return Number(this.get(name, defaultVal));
     }
-
     /** Get boolean type property */
     public getBoolean(name: string, defaultVal?: boolean): boolean {
         return Boolean(this.get(name, defaultVal));
     }
-
     /** Get string type property */
     public getString(name: string, defaultVal?: string): string {
         return String(this.get(name, defaultVal));
     }
-
     /** Remove a property from config */
-    public remove(name: string) {
+    public remove(varName: string) {
+        const name = this.translateVar(varName);
         if (!this.has(name)) {
             throw new Error(`Property ${name} does not exists.`);
         }
         this._expanded = {};
         delete this._container[name];
     }
-
     /** Set define a new property if it does not exist or update a writable property to new value */
-    public set(name: string, value: ValueType) {
+    public set(varName: string, value: ValueType) {
+        const name = this.translateVar(varName);
         this._container[name] = value;
         this._expanded = {};
     }
-
     /**
      *  Return list of property names present in config
      */
@@ -132,7 +135,8 @@ export class Config {
             throw new Error("source should be a object");
         }
 
-        Object.keys(source).forEach((name) => {
+        Object.keys(source).forEach((varName) => {
+            const name = this.translateVar(varName);
             const val = source[name];
             if (typeof val === "object" || typeof val === "undefined" || val === null)
                 return;
@@ -146,14 +150,15 @@ export class Config {
             this.set(name, val);
         });
     }
-
     /**
      * Return clone of the internal property container object.
      */
     public getContainer(): any {
         return JSON.parse(JSON.stringify(this._container));
     }
-
+    /**
+     * Provide singleton object for application
+     */
     public static get App(): Config {
         if (!Config._appConfig) {
             Config._appConfig = new Config();

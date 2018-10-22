@@ -134,10 +134,7 @@ export default abstract class SchemaFileLocater {
    * @param format The type of file that the schema key refers to. json or xml
    */
   private addCandidateNoExtSchemaKey(foundFiles: FileSchemaKey[], schemaPath: string, schemaName: string, desiredKey: SchemaKey, matchType: SchemaMatchType, format: string) {
-
-    let fullPath = path.join();
-
-    fullPath = path.join(schemaPath, schemaName + ".ecschema." + format);
+    const fullPath = path.join(schemaPath, schemaName + ".ecschema." + format);
 
     // If the file does not exist, end
     if (!fs.existsSync(fullPath)) return;

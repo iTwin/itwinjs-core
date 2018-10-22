@@ -3,13 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
+import { ConnectClient } from "../ConnectClients";
 import { ConnectSettingsClient } from "../SettingsClient";
 import { SettingsStatus, SettingsResult } from "../SettingsAdmin";
-import { AccessToken } from "../Token";
+import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig, TestUsers } from "./TestConfig";
-import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { KnownRegions } from "../Client";
-import { Config } from "../Config";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 // compare simple arrays
 function arraysEqual(array1: any, array2: any) {
@@ -36,8 +35,7 @@ describe.only("ConnectSettingsClient-User", () => {
   const actx = new ActivityLoggingContext(Guid.createValue());
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV))
-      this.skip();
+    connectClient = new ConnectClient();
     settingsClient = new ConnectSettingsClient("1001");
     const authToken = await TestConfig.login();
     accessToken = await settingsClient.getAccessToken(actx, authToken);
@@ -251,9 +249,6 @@ describe.only("ConnectSettingsClient-Administrator", () => {
   const actx = new ActivityLoggingContext(Guid.createValue());
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV))
-      this.skip();
-
     if (TestConfig.enableMocks)
       return;
 
@@ -470,9 +465,7 @@ describe.only("Reading non-user settings from ordinary user", () => {
   const actx = new ActivityLoggingContext(Guid.createValue());
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV))
-      this.skip();
-
+    connectClient = new ConnectClient();
     settingsClient = new ConnectSettingsClient("1001");
     const authToken = await TestConfig.login();
     accessToken = await settingsClient.getAccessToken(actx, authToken);

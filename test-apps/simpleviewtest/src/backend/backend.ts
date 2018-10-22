@@ -13,7 +13,7 @@ import { UrlFileHandler } from "@bentley/imodeljs-clients/lib/UrlFileHandler";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import { Config } from "@bentley/imodeljs-clients";
 
-IModelJsConfig.init(false /* suppress exception */, false /* suppress error message */, Config.App);
+IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
 export function getRpcInterfaces() {

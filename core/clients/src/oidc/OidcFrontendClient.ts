@@ -6,7 +6,7 @@ import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { UserProfile } from "../UserProfile";
 import { AccessToken } from "../Token";
 import { OidcClient } from "./OidcClient";
-import { UserManagerSettings, User, WebStorageStateStore } from "oidc-client";
+import { UserManagerSettings, User } from "oidc-client";
 
 /** Client configuration to generate OIDC/OAuth tokens for frontend or browser applications */
 export interface OidcFrontendClientConfiguration {
@@ -14,20 +14,6 @@ export interface OidcFrontendClientConfiguration {
   clientId: string;
   /** Upon login, the client application receives a response from the Bentley IMS OIDC/OAuth2 provider at this URI */
   redirectUri: string;
-  /**
-   * Optional storage object used to persist User for currently authenticated user.
-   * e.g. userStore: new WebStorageStateStore({ store: window.localStorage })
-   * Defaults to session storage if unspecified.
-   * @hidden
-   */
-  userStore?: WebStorageStateStore;
-  /**
-   * Optional storage object used to persist State for currently authenticated user.
-   * e.g. userStore: new WebStorageStateStore({ store: window.localStorage })
-   * Defaults to session storage if unspecified.
-   * @hidden
-   */
-  stateStore?: WebStorageStateStore;
 }
 
 /** Utility to generate OIDC/OAuth tokens for backend applications */
@@ -36,7 +22,7 @@ export class OidcFrontendClient extends OidcClient {
     super();
   }
 
-  public async getUserManagerSettings(actx: ActivityLoggingContext): Promise<UserManagerSettings> {
+  public async getUserManagerSettings(actx: ActivityLoggingContext, scope?: string): Promise<UserManagerSettings> {
     const userManagerSettings: UserManagerSettings = {
       authority: await this.getUrl(actx),
       client_id: this._configuration.clientId,
@@ -44,9 +30,7 @@ export class OidcFrontendClient extends OidcClient {
       silent_redirect_uri: this._configuration.redirectUri,
       automaticSilentRenew: true,
       response_type: "id_token token",
-      scope: "openid email profile organization feature_tracking imodelhub context-registry-service",
-      userStore: this._configuration.userStore,
-      stateStore: this._configuration.stateStore,
+      scope: scope || "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router",
     };
     return userManagerSettings;
   }

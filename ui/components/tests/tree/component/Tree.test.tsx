@@ -11,7 +11,7 @@ import Tree, { Props, OnNodesSelectedCallback, OnNodesDeselectedCallback } from 
 import { InspireTreeNode } from "../../../src/tree/component/BeInspireTree";
 import { SelectionMode } from "../../../src/common";
 import { ExpansionToggle } from "@bentley/ui-core/lib/tree";
-import { waitForSpy } from "../../test-helpers/Misc";
+import { waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 
 describe("Tree", () => {

@@ -1,8 +1,3 @@
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
-
 'use strict';
 
 const fs = require('fs');
@@ -82,7 +77,7 @@ function createWindow() {
     // not very useful anyway
     if (args.debug && !args.noDevTools) {
         // Open the DevTools.
-        mainWindow.webContents.openDevTools('bottom');
+        mainWindow.webContents.openDevTools({ mode: 'bottom' });
     }
 
     mainWindow.webContents.on('did-finish-load', function () {

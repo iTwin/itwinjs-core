@@ -1,44 +1,40 @@
 # Change Log - @bentley/config-loader
 
-This log was last generated on Tue, 09 Oct 2018 18:21:41 GMT and should not be manually modified.
+This log was last generated on Fri, 19 Oct 2018 13:04:14 GMT and should not be manually modified.
 
-## 0.155.0
-Tue, 09 Oct 2018 18:21:41 GMT
-
-*Version update only*
-
-## 0.154.0
-Tue, 09 Oct 2018 16:09:16 GMT
-
-*Version update only*
-
-## 0.153.0
-Tue, 09 Oct 2018 12:08:40 GMT
+## 0.161.0
+Fri, 19 Oct 2018 13:04:14 GMT
 
 ### Updates
 
-- Output package did not included the require file
-- Fix issue which cause ui-test app to fail because it is unable to find config file
+- Clean up package dependencies and scripts
 
-## 0.152.0
-Fri, 05 Oct 2018 21:52:26 GMT
-
-### Updates
-
-- config-loader cannot locate imodeljs-config folder automatically in some cases
-
-## 0.151.0
-Thu, 04 Oct 2018 21:10:57 GMT
+## 0.160.0
+Wed, 17 Oct 2018 18:18:38 GMT
 
 *Version update only*
 
-## 0.150.0
-Thu, 04 Oct 2018 21:06:01 GMT
+## 0.159.0
+Tue, 16 Oct 2018 14:09:09 GMT
+
+*Version update only*
+
+## 0.158.0
+Mon, 15 Oct 2018 19:36:09 GMT
+
+*Version update only*
+
+## 0.157.0
+Sun, 14 Oct 2018 17:20:06 GMT
 
 ### Updates
 
-- Added configuration system to imodeljs and removed urls/credentials
-- Removed lib folder
-- Ignore lib folder. Updated ReadMe. Use standard tslint and tsconfig.
-- Made the config-loader not throw error if a optional parameter is specified. This is to get the build going.
+- Update README to contain a better description of the package and link to iModel.js documentation.
+
+## 0.156.0
+Fri, 12 Oct 2018 23:00:10 GMT
+
+### Updates
+
+- Initial release
 

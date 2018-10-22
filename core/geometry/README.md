@@ -1,4 +1,4 @@
-﻿# @bentley/geometry-core
+# @bentley/geometry-core
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

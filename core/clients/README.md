@@ -1,4 +1,4 @@
-﻿# @bentley/imodeljs-clients
+# @bentley/imodeljs-clients
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

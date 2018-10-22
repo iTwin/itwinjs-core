@@ -1,4 +1,4 @@
-﻿# @bentley/imodeljs-quantity
+# @bentley/imodeljs-quantity
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

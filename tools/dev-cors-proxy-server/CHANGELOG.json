@@ -2,22 +2,16 @@
   "name": "@bentley/dev-cors-proxy-server",
   "entries": [
     {
-      "version": "0.0.8",
-      "tag": "@bentley/dev-cors-proxy-server_v0.0.8",
-      "date": "Thu, 04 Oct 2018 21:06:01 GMT",
+      "version": "0.0.9",
+      "tag": "@bentley/dev-cors-proxy-server_v0.0.9",
+      "date": "Fri, 12 Oct 2018 23:00:10 GMT",
       "comments": {
         "patch": [
           {
-            "comment": "Removing unused dockerfile"
+            "comment": "Initial release"
           }
         ]
       }
-    },
-    {
-      "version": "0.0.6",
-      "tag": "@bentley/dev-cors-proxy-server_v0.0.6",
-      "date": "Mon, 01 Oct 2018 22:10:58 GMT",
-      "comments": {}
     }
   ]
 }

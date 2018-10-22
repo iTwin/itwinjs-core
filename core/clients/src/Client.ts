@@ -9,14 +9,6 @@ import { Config } from "./Config";
 import { request, RequestOptions, Response, ResponseError } from "./Request";
 import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
-/** The deployment environment of the services - this also identifies the URL location of the service */
-export enum KnownRegions {
-  DEV = 103,
-  QA = 102,
-  PROD = 0,
-  PERF = 294,
-}
-
 const loggingCategory = "imodeljs-clients.Clients";
 
 /** Provider for default RequestOptions, used by Client to set defaults.
@@ -166,10 +158,7 @@ export class UrlDiscoveryClient extends Client {
    * @returns Default URL for the service.
    */
   protected getDefaultUrl(): string {
-    if (Config.App.has(UrlDiscoveryClient.configURL))
-      return Config.App.get(UrlDiscoveryClient.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key ${UrlDiscoveryClient.configURL}`);
+    return Config.App.getString(UrlDiscoveryClient.configURL, "https://buddi.bentley.com/WebService");
   }
 
   /**
@@ -180,7 +169,7 @@ export class UrlDiscoveryClient extends Client {
     if (Config.App.has(UrlDiscoveryClient.configRegion))
       return Config.App.get(UrlDiscoveryClient.configRegion);
 
-    return KnownRegions.PROD; // return production
+    return 0;
   }
   /**
    * Gets the URL for the discovery service
@@ -193,12 +182,13 @@ export class UrlDiscoveryClient extends Client {
   /**
    * Discovers a URL given the search key.
    * @param searchKey Search key registered for the service.
+   * @param regionId Override region to use for URL discovery.
    * @returns Registered URL for the service.
    */
   public async discoverUrl(alctx: ActivityLoggingContext, searchKey: string, regionId: number | undefined): Promise<string> {
     alctx.enter();
     const url: string = this.getDefaultUrl().replace(/\/$/, "") + "/GetUrl/";
-    const resolvedRegion = regionId ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion);
+    const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     const options: RequestOptions = {
       method: "GET",
       qs: {

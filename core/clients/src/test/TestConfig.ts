@@ -2,7 +2,6 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { KnownRegions } from "../Client";
 import { ImsActiveSecureTokenClient } from "../ImsClients";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { Version, HubIModel, VersionQuery, IModelQuery } from "../imodelhub";
@@ -60,21 +59,9 @@ export class TestConfig {
   public static readonly projectName: string = "NodeJsTestProject";
   public static readonly enableMocks: boolean = isOfflineSet();
 
-  public static get isDev() {
-    return Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV);
-  }
-  public static get isPerf() {
-    return Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.PERF);
-  }
-  public static get isQA() {
-    return Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.QA);
-  }
-  public static get isProd() {
-    return Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.PROD);
-  }
   /** Login the specified user and return the AuthorizationToken */
   public static async login(user: UserCredentials = TestUsers.regular): Promise<AuthorizationToken> {
-    if (TestConfig.isDev || TestConfig.isPerf)
+    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== 0)
       process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // Dev requires that SSL certificate checks be bypassed
 
     const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient()).getToken(actx, user.email, user.password);

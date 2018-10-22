@@ -2,172 +2,52 @@
   "name": "@bentley/build-tools",
   "entries": [
     {
-      "version": "0.155.0",
-      "tag": "@bentley/build-tools_v0.155.0",
-      "date": "Tue, 09 Oct 2018 18:21:41 GMT",
+      "version": "0.161.0",
+      "tag": "@bentley/build-tools_v0.161.0",
+      "date": "Fri, 19 Oct 2018 13:04:14 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.160.0",
+      "tag": "@bentley/build-tools_v0.160.0",
+      "date": "Wed, 17 Oct 2018 18:18:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.159.0",
+      "tag": "@bentley/build-tools_v0.159.0",
+      "date": "Tue, 16 Oct 2018 14:09:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.158.0",
+      "tag": "@bentley/build-tools_v0.158.0",
+      "date": "Mon, 15 Oct 2018 19:36:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.157.0",
+      "tag": "@bentley/build-tools_v0.157.0",
+      "date": "Sun, 14 Oct 2018 17:20:06 GMT",
       "comments": {
         "none": [
           {
-            "comment": "Updating copyrights"
+            "comment": "Fixing scripts for linux"
           }
         ]
       }
     },
     {
-      "version": "0.154.0",
-      "tag": "@bentley/build-tools_v0.154.0",
-      "date": "Tue, 09 Oct 2018 16:09:16 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.153.0",
-      "tag": "@bentley/build-tools_v0.153.0",
-      "date": "Tue, 09 Oct 2018 12:08:40 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.152.0",
-      "tag": "@bentley/build-tools_v0.152.0",
-      "date": "Fri, 05 Oct 2018 21:52:26 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.151.0",
-      "tag": "@bentley/build-tools_v0.151.0",
-      "date": "Thu, 04 Oct 2018 21:10:57 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.150.0",
-      "tag": "@bentley/build-tools_v0.150.0",
-      "date": "Thu, 04 Oct 2018 21:06:01 GMT",
+      "version": "0.156.0",
+      "tag": "@bentley/build-tools_v0.156.0",
+      "date": "Fri, 12 Oct 2018 23:00:10 GMT",
       "comments": {
         "none": [
           {
-            "comment": "Clean up the scripts and remove some that are no longer used."
-          },
-          {
-            "comment": "Added valid tags"
-          },
-          {
-            "comment": "Updating copyrights"
+            "comment": "Initial release"
           }
         ]
       }
-    },
-    {
-      "version": "0.148.0",
-      "tag": "@bentley/build-tools_v0.148.0",
-      "date": "Wed, 03 Oct 2018 17:00:37 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Added valid tags"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.147.0",
-      "tag": "@bentley/build-tools_v0.147.0",
-      "date": "Tue, 02 Oct 2018 19:41:32 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.146.0",
-      "tag": "@bentley/build-tools_v0.146.0",
-      "date": "Tue, 02 Oct 2018 14:51:50 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.145.0",
-      "tag": "@bentley/build-tools_v0.145.0",
-      "date": "Tue, 02 Oct 2018 01:02:27 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.144.0",
-      "tag": "@bentley/build-tools_v0.144.0",
-      "date": "Mon, 01 Oct 2018 22:10:58 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.143.0",
-      "tag": "@bentley/build-tools_v0.143.0",
-      "date": "Mon, 01 Oct 2018 19:10:45 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.142.0",
-      "tag": "@bentley/build-tools_v0.142.0",
-      "date": "Mon, 01 Oct 2018 10:28:46 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.141.0",
-      "tag": "@bentley/build-tools_v0.141.0",
-      "date": "Fri, 28 Sep 2018 22:27:44 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "0.140.0"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.140.0",
-      "tag": "@bentley/build-tools_v0.140.0",
-      "date": "Fri, 28 Sep 2018 21:04:21 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Version 0.139.0"
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.139.0",
-      "tag": "@bentley/build-tools_v0.139.0",
-      "date": "Fri, 28 Sep 2018 19:37:09 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.138.0",
-      "tag": "@bentley/build-tools_v0.138.0",
-      "date": "Fri, 28 Sep 2018 17:15:55 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.137.0",
-      "tag": "@bentley/build-tools_v0.137.0",
-      "date": "Fri, 28 Sep 2018 00:57:48 GMT",
-      "comments": {
-        "none": [
-          {
-            "comment": "Remove unused ui test script."
-          }
-        ]
-      }
-    },
-    {
-      "version": "0.136.0",
-      "tag": "@bentley/build-tools_v0.136.0",
-      "date": "Thu, 27 Sep 2018 15:02:44 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.135.0",
-      "tag": "@bentley/build-tools_v0.135.0",
-      "date": "Wed, 26 Sep 2018 19:16:30 GMT",
-      "comments": {}
-    },
-    {
-      "version": "0.134.0",
-      "tag": "@bentley/build-tools_v0.134.0",
-      "date": "Wed, 26 Sep 2018 00:50:11 GMT",
-      "comments": {}
     }
   ]
 }

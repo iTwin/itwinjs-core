@@ -1,4 +1,4 @@
-﻿# @bentley/imodeljs-backend
+# @bentley/imodeljs-backend
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients",
-  "version": "0.155.0",
+  "version": "0.161.0",
   "description": "Clients for various Bentley Services used by iModel.js",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -11,9 +11,9 @@
   "scripts": {
     "build": "npm run copy:assets && tsc 1>&2",
     "clean": "rimraf lib package-deps.json",
-    "copy:assets": "cpx ./src/assets/**/* ./lib/assets",
+    "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "cover": "npm run copy:test-assets && rimraf ./.nyc_output && npm run cover:unit & npm run cover:integration & cpx ./.nyc_output/unit/*.json ./.nyc_output & cpx ./.nyc_output/integration/*.json ./.nyc_output & nyc report --report-dir ./lib/test/coverage",
+    "cover": "npm run copy:test-assets && rimraf ./.nyc_output && npm run cover:unit & npm run cover:integration & cpx \"./.nyc_output/unit/*.json\" ./.nyc_output & cpx \"./.nyc_output/integration/*.json\" ./.nyc_output & nyc report --report-dir ./lib/test/coverage",
     "cover:unit": "nyc --temp-directory ./.nyc_output/unit --report-dir ./lib/test/coverage/unit mocha --timeout 60000 -r ts-node/register -r source-map-support/register ./src/test/**/*.test.ts --offline \"mock\"",
     "cover:integration": "nyc --temp-directory ./.nyc_output/integration --report-dir ./lib/test/coverage/integration mocha --timeout 60000 -r ts-node/register -r source-map-support/register ./src/test/**/*.test.ts",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
@@ -41,16 +41,16 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.155.0"
+    "@bentley/bentleyjs-core": "0.161.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.155.0",
-    "@bentley/bentleyjs-core": "0.155.0",
-    "@bentley/build-tools": "0.155.0",
+    "@bentley/config-loader": "0.161.0",
+    "@bentley/bentleyjs-core": "0.161.0",
+    "@bentley/build-tools": "0.161.0",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",

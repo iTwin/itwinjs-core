@@ -31,9 +31,6 @@ export class IModelNotFoundResponse extends RpcNotFoundResponse {
  * This interface is not normally used directly. See IModelConnection for higher-level and more convenient API for accessing iModels from a frontend.
  */
 export abstract class IModelReadRpcInterface extends RpcInterface {
-  /** The version of the interface. */
-  public static version = "1.0.0";
-
   /** The types that can be marshaled by the interface. */
   public static types = () => [
     AccessToken,
@@ -51,6 +48,13 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   /** Returns the IModelReadRpcInterface instance for the frontend. */
   public static getClient(): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface); }
 
+  /** The semantic version of the interface. */
+  public static version = "1.0.0";
+
+  /*===========================================================================================
+    NOTE: Any add/remove/change to the methods below requires an update of the interface version.
+    NOTE: Please consult the README in this folder for the semantic versioning rules.
+  ===========================================================================================*/
   public openForRead(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> { return this.forward.apply(this, arguments); }
   public close(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<boolean> { return this.forward.apply(this, arguments); }
   public executeQuery(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<any[]> { return this.forward.apply(this, arguments); }

@@ -25,7 +25,7 @@ As you can see, there is **no syntactical difference** between ECSQL and SQL in 
 
 > **Try it yourself**
 >
-> *Goal:* Find out how many [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element)s there are in the iModel.
+> *Goal:* Find out how many [Element](../../bis/domains/BisCore.ecschema.md#Element)s there are in the iModel.
 >
 > *ECSQL*
 > ```sql

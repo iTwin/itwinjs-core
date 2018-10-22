@@ -1,0 +1,92 @@
+{{>header}}
+
+<div id='main-wrapper'>
+  <div id='table-of-contents'>
+    {{>table_of_contents}}
+  </div>
+  <div class='documentation-main'>
+    <article id="main" class='main-content'>
+      {{{editLink this}}}
+
+      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycbwl7ZBBWJLAs_9_x1MgJQ5q8WsmVmBaF37lx9rTpLamDwwjuUc/exec">
+        <div class="form-elements">
+          <h2>Register Agent Application</h2>
+          <h4>Such as iModel Query Agent</h4>
+          <h4 style="margin-top:0px;">Machine to Machine communication with no human interaction</h4>
+          <hr />
+
+          <h4 style="margin-top:0px;">Developer Contact Information
+            <br />
+            <em>The name of the developer who will own this application. This is the only individual who will be
+              able to request updates to the client registrations.</em>
+          </h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="DeveloperName">Developer Name: <br />
+                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
+                        profile.</a></em></label>
+                </td>
+                <td>
+                  <input id="DeveloperName" name="DeveloperName" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="DeveloperEmail">Developer Email: <br />
+                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
+                        profile.</a></em></label>
+                </td>
+                <td>
+                  <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                  <span class="email-invalid" style="display:none">
+                    Must be a valid email address</span>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+
+          <hr />
+          <h4>Application Information </h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="ClientName">Client Name: <br /><em>Something users will recognize and trust</em> </label>
+                </td>
+                <td>
+                  <input id="ClientName" name="ClientName" size="28" required />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="DescOfApplication">Description of Application: <br /><em>This may be displayed to
+                      potential
+                      users of your application</em> </label>
+                </td>
+                <td>
+                  <textarea id="DescOfApplication" name="DescOfApplication" rows="3" cols="30" placeholder="Optional"></textarea>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+
+          <button class="button-success pure-button button-xlarge">Submit</button>
+        </div>
+
+        {{>thank_you_message email='iModeljs.App.Registration@bentley.com'}}
+
+      </form>
+
+      {{>loaderScript}}
+    </article>
+  </div>
+  <div id='inner-table-of-contents'>
+    <!-- {{>inner_table_of_contents}} -->
+  </div>
+</div>
+
+<script data-cfasync="false" type="text/javascript" src="{{site.siteRoot}}getting-started/scripts/form-submission-handler.js"></script>
+
+{{>footer}}

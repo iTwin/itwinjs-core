@@ -36,7 +36,7 @@ _BIS naming convention is deliberately more restrictive than EC naming: All BIS 
 
 |   | Description | Note |
 |---|-------------|------|
-| Rule | All EcSchema/BIS Domain Names must be registered with BIS workgroup to avoid conflicts.<br>This includes the aliases. |E.g. `BisCore` (schema name) and `bis`<br><br>_See [list of BIS Schemas](list-of-bis-schemas)_ |
+| Rule | All EcSchema/BIS Domain Names must be registered with BIS workgroup to avoid conflicts.<br>This includes the aliases. |E.g. `BisCore` (schema name) and `bis`<br><br>See [list of BIS Schemas](../domains/index.md) |
 | Rule | BIS Schema aliases must be in lowercase | |
 | Rule | BIS Schema aliases must be less than 7 characters long | |
 
@@ -45,7 +45,7 @@ _BIS naming convention is deliberately more restrictive than EC naming: All BIS 
 |   | Description | Note |
 |---|-------------|------|
 | Rule | Use singular form | E.g. `File` not `Files`|
-| Rule | When combining terms, arrange them in increasing order of significance|E.g. `CableCar`, `AnalogWaterMeter`<br><br>**Exceptions:** `2d` and `3d` due to syntax constraints <br><br>_See: [names can't start with numerals](#names-cant-start-with-numerals)_ |
+| Rule | When combining terms, arrange them in increasing order of significance|E.g. `CableCar`, `AnalogWaterMeter`<br><br>**Exceptions:** `2d` and `3d` because names can't start with numerals |
 | Rec. | Do not use prepositions such as `Of`, `With`, `On`, `An`, `In`, `From`, etc... | |
 
 ## Property (including “Navigation” Properties)
@@ -69,4 +69,4 @@ _BIS naming convention is deliberately more restrictive than EC naming: All BIS 
 | Rule | (Picking up on the previous rule)<br>_Don't use conjunctions.  Do not use a singular noun or verb, even if it clearly defines a relationship.<br>Always use noun-verb-noun | E.g. Don't use `Marriage` or `ManAndWoman`; use `PersonIsMarriedToPerson` |
 | Rule | The relationship name should indicate the cardinality. |The source is always singular and the target indicates multiplicity.<br><br>E.g. `ElementOwnsChildElement` (1:N), `ElementHasLinks` (N:N), `PhysicalElementIsOfType` (N:1) |
 | Rec. | Use the full class names for source. For the target, use the 'role' within the relationship. | E.g. `PhysicalElementIsOfType` |
-| Rec. | Use verbs that imply relationship "strength" with care | Especially with regard to EC where:<br>- `Owns` or `Contains` implies embedding<br>- `Shares` implies holding<br><br>_See [list of relationship strengths](#list-of-relationship-strengths)_ |
+| Rec. | Use verbs that imply relationship "strength" with care | Especially with regard to EC where:<br>- `Owns` or `Contains` implies embedding<br>- `Shares` implies holding<br><br>_See [list of relationship strengths](./standard-relationship-strengths-names.md)_ |

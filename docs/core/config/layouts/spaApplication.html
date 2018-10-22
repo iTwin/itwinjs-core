@@ -1,0 +1,165 @@
+{{>header}}
+
+<div id='main-wrapper'>
+  <div id='table-of-contents'>
+    {{>table_of_contents}}
+  </div>
+  <div class='documentation-main'>
+    <article id="main" class='main-content'>
+      {{{editLink this}}}
+
+      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycbwsBbQlK6RBphfKaHo-XrgU6URzqpihoT00pxvOIUWfOS29O2Sc/exec">
+        <div class="form-elements">
+          <h2>Register Browser Application</h2>
+          <h4>A browser application, such as the sample Simple Viewer App.</h4>
+          <hr />
+
+          <h4 style="margin-top:0px;">Developer Contact Information
+            <br />
+            <em>The name of the developer who will own this application. This is the only individual who will be
+              able to request updates to the client registrations.</em>
+          </h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="DeveloperName">Developer Name: <br />
+                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
+                        profile.</a></em></label>
+                </td>
+                <td>
+                  <input id="DeveloperName" name="DeveloperName" required />
+                  <!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                </td>
+              <tr>
+                <td>
+                  <label for="DeveloperEmail">Developer Email: <br />
+                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
+                        profile.</a></em></label>
+                </td>
+                <td>
+                  <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required />
+                  <!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                  <span class="email-invalid" style="display:none">
+                    Must be a valid email address</span>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+
+          <hr />
+          <h4>Application Information </h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="ClientName">Client Name: <br />
+                    <em>Something users will recognize and trust</em></label>
+                </td>
+                <td>
+                  <input id="ClientName" name="ClientName" size="35" required />
+                </td>
+
+              <tr>
+                <td>
+                  <label for="DescOfApplication">Description of Application: <br /><em>This may be displayed to
+                      potential
+                      users of your application</em> </label>
+                </td>
+                <td>
+                  <textarea id="DescOfApplication" name="DescOfApplication" rows="3" cols="37" placeholder="Optional"></textarea>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <label for="AppHomepageURL">Application Homepage URL: <br /><em>This may be displayed to potential
+                      users of your application</em> </label>
+                </td>
+                <td>
+                  <textarea id="AppHomepageURL" name="AppHomepageURL" rows="3" cols="37" placeholder="Optional"></textarea>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <label for="ClientLogoURL">Client Logo URL: <br /><em>Will be shown on consent screen</em> </label>
+                </td>
+                <td>
+                  <textarea id="ClientLogoURL" name="ClientLogoURL" rows="3" cols="37" placeholder="Optional"></textarea>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <label for="LinkToAppPrivacyPolicy">Link To Application Privacy Policy: <br /><em>Will be shown on
+                      consent
+                      screen</em> </label>
+                </td>
+                <td>
+                  <textarea id="LinkToAppPrivacyPolicy" name="LinkToAppPrivacyPolicy" rows="3" cols="37" placeholder="Optional"></textarea>
+                </td>
+              </tr>
+
+              <tr>
+                <td>
+                  <label for="LinkToAppTOS">Link To Application Terms of Service: <br /><em>Will be shown on consent
+                      screen</em>
+                  </label>
+                </td>
+                <td>
+                  <textarea id="LinkToAppTOS" name="LinkToAppTOS" rows="3" cols="37" placeholder="Optional"></textarea>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+
+          <hr />
+          <h4>Register URIs</h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="RedirectURIs">Redirect URIs: <br /><em>Your applications callback URI which specifies<br />
+                      where we redirect users after they have chosen <br />
+                      whether or not to authenticate your application.<br />
+                      Enter as many as you would like. <br />
+                      Must be over HTTPS unless registered as a localhost. </em> </label>
+                </td>
+                <td>
+                  <textarea id="RedirectURIs" name="RedirectURIs" cols="40" rows="5" required placeholder="Example: http://localhost:3000/signin-callback"></textarea>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="PostLogoutURI">Post Logout URIs: <br /><em>Where users can be returned to after logging
+                      out.<br />
+                      Must be over HTTPS unless registered as a localhost.</em></label>
+                </td>
+                <td>
+                  <textarea id="PostLogoutURI" name="PostLogoutURI" placeholder="Example: http://localhost:3000/signout-callback"
+                    cols="40" rows="5"></textarea>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+          <button class="
+                    button-success pure-button button-xlarge">Submit</button>
+        </div>
+
+        {{>thank_you_message email='iModeljs.App.Registration@bentley.com'}}
+
+      </form>
+
+      {{>loaderScript}}
+    </article>
+  </div>
+  <div id='inner-table-of-contents'>
+    <!-- {{>inner_table_of_contents}} -->
+  </div>
+</div>
+
+
+<script data-cfasync="false" type="text/javascript" src="{{site.siteRoot}}getting-started/scripts/form-submission-handler.js"></script>
+
+{{>footer}}

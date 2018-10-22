@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
+import * as path from "path";
 
 import SchemaJsonFileLocater from "./../../src/Deserialization/SchemaJsonFileLocater";
 import { FileSchemaKey } from "./../../src/Deserialization/SchemaFileLocater";
@@ -19,7 +20,7 @@ describe("SchemaJsonFileLocater tests: ", () => {
   beforeEach(() => {
     locater = new SchemaJsonFileLocater();
 
-    locater.addSchemaSearchPath(__dirname + "\\..\\assets\\");
+    locater.addSchemaSearchPath(path.join(__dirname, "..", "Assets"));
     context = new SchemaContext();
     context.addLocater(locater);
   });
@@ -27,6 +28,8 @@ describe("SchemaJsonFileLocater tests: ", () => {
   it("locate valid schema with multiple references", async () => {
     // Arrange
     const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
+
+    console.log(schemaKey.toString());
 
     // Act
     const schema = await context.getSchema(schemaKey, SchemaMatchType.Exact);

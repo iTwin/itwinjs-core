@@ -1,6 +1,6 @@
 # Base Infrastructure Schemas (BIS)
 
-The **Base Infrastructure Schemas** (BIS) are a family of schemas covering all lifecycle phases and all disciplines relevant to physical infrastructure. BIS defines the semantics, data structures, and business concepts used by for software for modeling infrastructure. Importantly, BIS is used in [iModels](..\learning\iModels.md), but can also be used to define the semantics and structure for infrastructure data in REST APIs, messages, and various serialized data formats.
+The **Base Infrastructure Schemas** (BIS) are a family of schemas covering all lifecycle phases and all disciplines relevant to physical infrastructure. BIS defines the semantics, data structures, and business concepts used by software for modeling infrastructure. Importantly, BIS is used in [iModels](../learning/iModels.md), but can also be used to define the semantics and structure for infrastructure data in REST APIs, messages, and various serialized data formats.
 
 BIS covers:
 
@@ -30,7 +30,7 @@ BIS supports the full lifecycle of infrastructure. Two phrases to keep in mind a
 
 - *All projects are brownfield projects.*
 
-*Begin with the end in mind* tells us that for most of the infrastructure’s lifetime, BIS will be used to represent a structure that is being operated and maintained. The data that is required for efficient operation and maintenance must be represented in BIS, and – as much as practical - that data must naturally be developed during the previous phases (design and construction). Developers working on on “upstream” design and construction workflows must be cognizant of how the data they capture will flow downstream.
+*Begin with the end in mind* tells us that for most of the infrastructure’s lifetime, BIS will be used to represent a structure that is being operated and maintained. The data that is required for efficient operation and maintenance must be represented in BIS, and – as much as practical - that data must naturally be developed during the previous phases (design and construction). Developers working on “upstream” design and construction workflows must be cognizant of how the data they capture will flow downstream.
 
 *All projects are brownfield projects* tells us that projects occur in an existing context, either a brownfield of existing infrastructure or a natural context that must be taken into account. One should be able to use existing BIS data (for operations) as the starting point for new design/construction modeling.
 

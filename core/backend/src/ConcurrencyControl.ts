@@ -190,7 +190,7 @@ export class ConcurrencyControl {
     if (!reqAny.hasOwnProperty("Codes") || reqAny.Codes.length === 0)
       return undefined;
 
-    return reqAny.Codes.map((cReq: any) => this.buildHubCodes(briefcaseEntry, cReq.Id, cReq.Scope, cReq.Name));
+    return reqAny.Codes.map((cReq: any) => this.buildHubCodes(briefcaseEntry, new Id64(cReq.Id), cReq.Scope, cReq.Name));
   }
 
   private buildHubCodesFromCodes(briefcaseEntry: BriefcaseEntry, codes: Code[]): HubCode[] | undefined {

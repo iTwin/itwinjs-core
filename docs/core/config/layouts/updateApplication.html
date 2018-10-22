@@ -1,0 +1,157 @@
+{{>header}}
+
+<div id='main-wrapper'>
+  <div id='table-of-contents'>
+    {{>table_of_contents}}
+  </div>
+  <div class='documentation-main'>
+    <article id="main" class='main-content'>
+      {{{editLink this}}}
+
+      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycby4TvSEAREx01P9anh-iTBOnQT4a660Yg4Frm5O7xxELknYSi0/exec">
+        <div class="form-elements">
+          <h2>Update an application you have already registered with Bentley</h2>
+
+          <h4 style="margin-top:0px;">Developer Contact Information</h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="DeveloperName">Developer Name: <br />
+                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
+                        profile.</a></em></label>
+                </td>
+                <td>
+                  <input id="DeveloperName" name="DeveloperName" required size="30" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="DeveloperEmail">Developer Email: <br />
+                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
+                        profile.</a></em></label>
+                </td>
+                <td>
+                  <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required size="30" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                  <span class="email-invalid" style="display:none">
+                    Must be a valid email address</span>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+
+          <h4 style="margin-top:0px;">Application Information</h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="ClientID">ClientID:<br />
+                    <em>Previously provided by Bentley for your application</em> </label>
+                </td>
+                <td>
+                  <input id="ClientID" name="ClientID" required size="40" />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="DescOfApplication">Description Of Application:<br />
+                    <em>This may be displayed to potential users of your application</em> </label>
+                </td>
+                <td>
+                  <input id="DescOfApplication" name="DescOfApplication" size="40" placeholder="Optional" />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="AppHomepageURL">App Homepage URL:<br />
+                    <em>This may be displayed to potential users of your application. <br />(SPA clients only)</em>
+                  </label>
+                </td>
+                <td>
+                  <input id="AppHomepageURL" name="AppHomepageURL" size="40" placeholder="Optional" />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="ClientLogoURL">Client Logo URL:<br />
+                    <em>Will be shown on consent screen. <br /> (SPA clients only)</em> </label>
+                </td>
+                <td>
+                  <input id="ClientLogoURL" name="ClientLogoURL" size="40" placeholder="Optional" />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="LinkToAppPrivacyPolicy">Link To Application Privacy Policy:<br />
+                    <em>Will be shown on consent screen. <br /> (SPA clients only)</em> </label>
+                </td>
+                <td>
+                  <input id="LinkToAppPrivacyPolicy" name="LinkToAppPrivacyPolicy" size="40" placeholder="Optional" />
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="LinkToAppTOS">Link To Application Terms Of Service:<br />
+                    <em>Will be shown on consent screen. <br /> (SPA clients only)</em> </label>
+                </td>
+                <td>
+                  <input id="LinkToAppTOS" name="LinkToAppTOS" size="40" placeholder="Optional" />
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+
+          <hr />
+          <h4>Redirect URIs</h4>
+          <fieldset class="pure-group">
+            <table>
+              <tr>
+                <td>
+                  <label for="AdditionalRedirectURIs">Additional Redirect URIs: <br />
+                    <em>Your applications callback URI which specifies where we redirect<br />
+                      users after they have chosen whether or not to authenticate your application.<br />
+                      Enter as many as you like. <br />
+                      Must be over HTTPS unless registered as a localhost.</em></label>
+                </td>
+                <td>
+                  <textarea id="AdditionalRedirectURIs" name="AdditionalRedirectURIs" rows="5" cols="40" placeholder="Example: http://localhost:3000/signin-callback"></textarea>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="RemoveRedirectURIs">Redirect URIs to Remove: <br />
+                </td>
+                <td>
+                  <textarea id="RemoveRedirectURIs" name="RemoveRedirectURIs" rows="5" cols="40"></textarea>
+                </td>
+              </tr>
+              <tr>
+                <td>
+                  <label for="NewPostLogoutURI">New Post Logout URIs: <br /><em>Where users can be returned to after
+                      logging out.<br />
+                      Must be over HTTPS unless registered as a localhost.</em></label>
+                </td>
+                <td>
+                  <textarea id="NewPostLogoutURI" name="NewPostLogoutURI" rows="5" cols="40" placeholder="Example: http://localhost:3000/signout-callback"></textarea>
+                </td>
+              </tr>
+            </table>
+          </fieldset>
+          <button class="button-success pure-button button-xlarge">Submit</button>
+        </div>
+
+        {{>thank_you_message email='iModeljs.App.Registration@bentley.com'}}
+
+      </form>
+
+      {{>loaderScript}}
+    </article>
+  </div>
+  <div id='inner-table-of-contents'>
+    <!-- {{>inner_table_of_contents}} -->
+  </div>
+</div>
+
+<script data-cfasync="false" type="text/javascript" src="{{site.siteRoot}}getting-started/scripts/form-submission-handler.js"></script>
+
+{{>footer}}

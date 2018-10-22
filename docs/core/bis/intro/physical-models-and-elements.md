@@ -46,13 +46,13 @@ See [Element Fundamentals](./element-fundamentals.md) for more information on El
 
 When many PhysicalElements are conceptually identical (such as pumps of the same model) except for a few details (such as location), PhysicalTypes are often used to provide simpler and more efficient modeling.
 
-PhysicalTypes can provide geometry and properties to the PhysicalElements to which they are related. Each PhysicalElement can be related to a maximum of one PhysicalType.
-
-See [Types Instances and Catalogs](./types-instances-and-catalogs.md) for more information on TypeElements and their usage.
+PhysicalTypes are often used when a particular PhysicalElement can be ordered from a catalog.
+PhysicalTypes can provide geometry and properties to the PhysicalElements to which they are related.
+Each PhysicalElement can be related to a maximum of one PhysicalType.
 
 ## PhysicalModels
 
-Each PhysicalElement is contained in exactly one PhysicalModel. A PhysicalModel is a container of PhysicalElements (and often other Elements of other classes) that together model some real-world physical entity. For example, a PhysicalModel might model a campus, a building, a sewer system or a pipe rack.
+Each PhysicalElement is contained in exactly one PhysicalModel. A PhysicalModel is a container of PhysicalElements (and potentially related Elements of other classes) that together model some real-world physical entity. For example, a PhysicalModel might model a campus, a building, a sewer system or a pipe rack.
 
 See [Model Fundamentals](./model-fundamentals.md) for more information on Models.
 
