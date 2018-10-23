@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed reduced test coverage",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "haroldas.vitunskas@bentley.com"
+}
