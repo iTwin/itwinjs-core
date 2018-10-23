@@ -7,27 +7,25 @@ $text-font-size: 14px;
 $text-font-color: #000000;
 
 .components-property-record--horizontal {
-  display: table-row;
+  display: grid;
+  margin-top: -1px;
 
   .components-property-record-label {
-    display: table-cell;
     border: 1px solid #ccc;
     font-size: $text-font-size;
     color: $text-font-color;
     padding-right: 1em;
-    width: 25%;
   }
 
   .components-property-record-value {
-    display: table-cell;
     border: 1px solid #ccc;
     font-size: $text-font-size;
     color: $text-font-color;
+    margin-left: -2px;
   }
 }
 
 .components-property-record--vertical {
-
   .components-property-record-label {
     border-top: 1px solid #ccc;
     font-weight: bold;

@@ -145,7 +145,8 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
         <div className="components-property-grid">
           {
             this.state.categories.map((gridCategory: PropertyGridCategory) => (
-              <SelectablePropertyBlock key={gridCategory.propertyCategory.name}
+              <SelectablePropertyBlock
+                key={gridCategory.propertyCategory.name}
                 category={gridCategory.propertyCategory}
                 properties={gridCategory.properties}
                 orientation={this.props.orientation}

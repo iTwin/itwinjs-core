@@ -1,0 +1,12 @@
+.core-element-separator {
+  touch-action: none;
+  display: inline-block;
+  background: transparent;
+  border-style: none;
+  padding: 0px;
+  z-index: 1000;
+}
+
+.core-element-separator:focus {
+  outline: none;
+}

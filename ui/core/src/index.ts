@@ -11,6 +11,7 @@ export * from "./base";
 export * from "./contextmenu";
 export * from "./cube";
 export * from "./dialog";
+export * from "./elementseparator";
 export * from "./hocs";
 export * from "./messagebox";
 export * from "./popup";

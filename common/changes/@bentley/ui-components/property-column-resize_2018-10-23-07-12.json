@@ -1,0 +1,31 @@
+{
+  "changes": [
+    {
+      "comment": "Changed Horizontal PropertyGrid css to use grid instead of table display and modified subcomponents accordingly.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    },
+    {
+      "comment": "Fixed property selection.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    },
+    {
+      "comment": "Added an ability to resize label/value in PropertyRenderer.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    },
+    {
+      "comment": "SelectablePropertyBlock now controls label/value ratio for every property in a category.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    },
+    {
+      "comment": "Fixed PropertyList to use the right key.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "elonas.seviakovas@bentley.com"
+}

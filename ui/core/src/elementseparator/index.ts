@@ -3,22 +3,4 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-.treewidget {
-  display: flex;
-  flex-direction: column;
-  min-width: 0;
-}
-
-.treewidget h3 {
-  margin: 0;
-}
-
-.treewidget-header {
-  box-shadow: 0px 2px 5px rgba(0, 0, 0, 0.25);
-  padding: 5px 5px 1px 5px;
-  margin-bottom: 5px;
-}
-.treewidget .filteredTree {
-  flex: 1;
-  min-height: 50px;
-}
+export * from "./ElementSeparator";

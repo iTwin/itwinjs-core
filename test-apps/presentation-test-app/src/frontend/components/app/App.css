@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 .app {
-  display: flex;
-  flex-flow: column;
+  display: grid;
+  grid-template-rows: 80px 40px 40px calc(100vh - 80px - 40px - 40px);
   height: 100vh;
   position: relative;
   overflow: hidden;
@@ -19,31 +19,32 @@
 
 .app-content {
   display: grid;
-  min-height: 300px;
   grid-template-columns: calc(100% - 540px) 540px;
-  flex: 1;
 }
 
-.app .content-left {
+.app-content-left {
   grid-column: 1;
-  display: flex;
-  flex-direction: column;
+  display: grid;
+  grid-template-rows: calc(100% - 300px) 300px;
 }
 
-.app .content-right {
-  overflow: auto;
-  height: 100%;
+.app-content-right {
   grid-column: 2;
   display: grid;
-  grid-template-rows: 500px 1px; /* Second column is 1px as a workaround for too much flex-growth*/
+  min-height: 0px;
+  /* grid-template-rows: 50% 1px 50%; */
 }
 
-.app .content-left-top {
+.app-content-right-separator {
+  z-index: 999;
+  height: 30px; /* Because ElementSeperator is 30 */
+}
+
+.app-content-right-separator hr{
+  margin-top: 15px;
+  margin-bottom: 0px;
+}
+
+.app-content-left-top {
   position: relative; /* Because viewport component is absolute */
-  min-height: 200px;
-  flex: 1;
-}
-
-.app .content-left-bottom {
-  height: 300px;
 }
