@@ -24,7 +24,6 @@ The following samples showcase the iModel.js API in action:
   - Construct a 'Change Summary' of useful information.
 
 ## Developer Registration
-Before registering [click here](https://imsoidc.bentley.com) to prepare your Bentley profile.
 
 ### Register a New Application
 - [Agent Application](./agent-application.md) - Such as iModel Query Agent

@@ -24,22 +24,16 @@
               <tr>
                 <td>
                   <label for="DeveloperName">Developer Name: <br />
-                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
-                        profile.</a></em></label>
                 </td>
                 <td>
-                  <input id="DeveloperName" name="DeveloperName" required />
-                  <!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                  <input id="DeveloperName" name="DeveloperName" required disabled="disabled" />
                 </td>
               <tr>
                 <td>
                   <label for="DeveloperEmail">Developer Email: <br />
-                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
-                        profile.</a></em></label>
                 </td>
                 <td>
-                  <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required />
-                  <!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                  <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required disabled="disabled" />
                   <span class="email-invalid" style="display:none">
                     Must be a valid email address</span>
                 </td>
@@ -142,6 +136,11 @@
               </tr>
             </table>
           </fieldset>
+
+          <div class="hidden">
+            <input id="Environment" name="Environment" style="display:none;" value="{{site.siteRoot}}" />
+          </div>
+
           <button class="
                     button-success pure-button button-xlarge">Submit</button>
         </div>
