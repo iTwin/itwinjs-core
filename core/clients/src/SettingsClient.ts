@@ -25,9 +25,9 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
   public constructor(public applicationId: string) { super(); }
 
   /** Convenience method to get access token from a SAML authorization token.
-   * @params alctx Activity logging context
-   * @params authSamlToken Authorization SAML token (e.g. as obtained from ImsFederatedAuthenticationClient)
-   * @return SAML access token
+   * @param alctx Activity logging context
+   * @param authSamlToken Authorization SAML token (e.g. as obtained from ImsFederatedAuthenticationClient)
+   * @returns SAML access token
    */
   public async getAccessToken(alctx: ActivityLoggingContext, authSamlToken: AuthorizationToken): Promise<AccessToken> {
     const baseUrl: string = await this.getUrl(alctx);

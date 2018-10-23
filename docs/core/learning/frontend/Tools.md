@@ -63,7 +63,7 @@ For touch devices, the Idle tool associates the following touch events with view
 * Double tap to fit the view
 * Pinch to zoom the view in and out
 
-## Select Tool
+## Selection Tool
 
-iModel.js also provides [SelectTool]($frontend). SelectTool is a subclass of [PrimitiveTool]($frontend) for creating and managing a [SelectionSet]($frontend) from existing elements. A SelectionSet identifies elements of particular interest for examining properties and other interactions.
+iModel.js also provides [SelectionTool]($frontend). SelectionTool is a subclass of [PrimitiveTool]($frontend) for creating and managing a [SelectionSet]($frontend) from existing elements. A SelectionSet identifies elements of particular interest for examining properties and other interactions.
 
