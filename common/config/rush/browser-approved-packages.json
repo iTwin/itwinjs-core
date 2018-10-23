@@ -283,6 +283,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "find-root",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "fork-ts-checker-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },
@@ -345,6 +349,14 @@
     {
       "name": "istanbul-instrumenter-loader",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "istanbul-lib-hook",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "istanbul-lib-instrument",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "js-base64",

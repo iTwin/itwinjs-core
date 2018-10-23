@@ -17,8 +17,7 @@ program
   .option('-f, --fgrep <string>', 'only run tests containing <string>')
   .option('-i, --invert', 'inverts --grep and --fgrep matches')
   .option('-t, --timeout <ms>', 'set test-case timeout in milliseconds [2000]')
-  .option('-c, --coveragePattern <pattern>', 'Generate json coverage report')
-  .option('--coverageSourceMaps', 'Remap json report using sourcemaps')
+  .option('-c, --coverage', 'Generate json coverage report')
   .parse(process.argv);
 
 const perfServer = (program.usePerfWriterServer) ? PerformanceWriterServer.run() : undefined;
@@ -32,8 +31,7 @@ floss(
     grep: program.grep,
     fgrep: program.fgrep,
     invert: program.invert,
-    coveragePattern: program.coveragePattern,
-    coverageSourceMaps: program.coverageSourceMaps,
+    coverage: program.coverage,
     checkLeaks: true
   },
   function (returnCode) {

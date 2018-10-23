@@ -10,7 +10,7 @@
     "clean": "rimraf lib backend/lib frontend/lib package-deps.json",
     "copy:frontendpublic": "cpx \"../../core/frontend/src/public/**/*\" ./lib/backend/public",
     "copy:testpublic": "cpx \"./public/**/*\" ./lib/backend/public",
-    "cover": "node bin/testbed.js --coveragePattern ../core/frontend/lib/**/*.js",
+    "cover": "node bin/testbed.js --grep \"#integration|#WebGLPerformance\" --invert --coverage && nyc report --reporter=html",
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "webpack:frontend:perf": "webpack --config ./webpack_performance.config.js 1>&2",
@@ -73,6 +73,10 @@
     "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "typescript": "~3.0.0",
-    "webpack": "^4.16.4"
+    "webpack": "^4.16.4",
+    "find-root": "1.1.0",
+    "nyc": "^13.0.1",
+    "istanbul-lib-instrument": "^2.3.2",
+    "istanbul-lib-hook": "^1.2.2"
   }
 }
