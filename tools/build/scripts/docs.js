@@ -85,6 +85,6 @@ spawn(path.resolve(process.cwd(), "node_modules/.bin/typedoc"), args).then((code
             code = 5;
         }
     }
-    process.exit(0)
+    process.exit(code)
 });
 handleInterrupts();
