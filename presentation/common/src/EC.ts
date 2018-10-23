@@ -16,13 +16,21 @@ export interface InstanceKey {
   id: InstanceId;
 }
 
-/** A serialized version of [[InstanceKey]] */
+/**
+ * A serialized version of [[InstanceKey]]
+ *
+ * @hidden
+ */
 export interface InstanceKeyJSON {
   className: string;
   id: string;
 }
 
-/** Deserializes [[InstanceKey]] from [[InstanceKeyJSON]] */
+/**
+ * Deserializes [[InstanceKey]] from [[InstanceKeyJSON]]
+ *
+ * @hidden
+ */
 export const instanceKeyFromJSON = (json: InstanceKeyJSON): InstanceKey => {
   return { ...json, id: Id64.fromJSON(json.id) };
 };
@@ -37,14 +45,22 @@ export interface ClassInfo {
   label: string;
 }
 
-/** A serialized version of [[ClassInfo]] */
+/**
+ * A serialized version of [[ClassInfo]]
+ *
+ * @hidden
+ */
 export interface ClassInfoJSON {
   id: string;
   name: string;
   label: string;
 }
 
-/** Deserializes [[ClassInfo]] from [[ClassInfoJSON]] */
+/**
+ * Deserializes [[ClassInfo]] from [[ClassInfoJSON]]
+ *
+ * @hidden
+ */
 export const classInfoFromJSON = (json: ClassInfoJSON): ClassInfo => {
   return { ...json, id: Id64.fromJSON(json.id) };
 };
@@ -78,7 +94,11 @@ export interface PropertyInfo {
   kindOfQuantity?: KindOfQuantityInfo;
 }
 
-/** A serialized version of [[PropertyInfo]] */
+/**
+ * A serialized version of [[PropertyInfo]]
+ *
+ * @hidden
+ */
 export interface PropertyInfoJSON {
   classInfo: ClassInfoJSON;
   name: string;
@@ -87,7 +107,11 @@ export interface PropertyInfoJSON {
   kindOfQuantity?: KindOfQuantityInfo;
 }
 
-/** Deserializes [[PropertyInfo]] from [[PropertyInfoJSON]] */
+/**
+ * Deserializes [[PropertyInfo]] from [[PropertyInfoJSON]]
+ *
+ * @hidden
+ */
 export const propertyInfoFromJSON = (json: PropertyInfoJSON): PropertyInfo => {
   return { ...json, classInfo: classInfoFromJSON(json.classInfo) };
 };
@@ -110,7 +134,11 @@ export interface RelatedClassInfo {
   isPolymorphicRelationship: boolean;
 }
 
-/** A serialized version of [[RelatedClassInfo]] */
+/**
+ * A serialized version of [[RelatedClassInfo]]
+ *
+ * @hidden
+ */
 export interface RelatedClassInfoJSON {
   sourceClassInfo: ClassInfoJSON;
   targetClassInfo: ClassInfoJSON;
@@ -119,7 +147,11 @@ export interface RelatedClassInfoJSON {
   isPolymorphicRelationship: boolean;
 }
 
-/** Deserializes [[RelatedClassInfo]] from [[RelatedClassInfoJSON]] */
+/**
+ * Deserializes [[RelatedClassInfo]] from [[RelatedClassInfoJSON]]
+ *
+ * @hidden
+ */
 export const relatedClassInfoFromJSON = (json: RelatedClassInfoJSON): RelatedClassInfo => {
   return {
     ...json,
@@ -132,5 +164,9 @@ export const relatedClassInfoFromJSON = (json: RelatedClassInfoJSON): RelatedCla
 /** A structure that describes a related class path. */
 export type RelationshipPathInfo = RelatedClassInfo[];
 
-/** Serialized [[RelationshipPathInfo]] */
+/**
+ * Serialized [[RelationshipPathInfo]]
+ *
+ * @hidden
+ */
 export type RelationshipPathInfoJSON = RelatedClassInfoJSON[];

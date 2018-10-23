@@ -7,34 +7,12 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { ValuesDictionary, PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import * as content from "@bentley/presentation-common/lib/content";
+import { isArray, isMap, isNestedContentValue, isPrimitive } from "@bentley/presentation-common/lib/content/Value";
 import {
   PropertyDescription, PropertyRecord,
   PropertyValueFormat, PropertyEditorInfo, EnumerationChoicesInfo,
   PropertyValue, PrimitiveValue, ArrayValue, StructValue,
 } from "@bentley/ui-components/lib/properties";
-
-const isNestedContent = (v: content.Value): v is content.NestedContent[] => {
-  // note: we don't guarantee by 100% that v is NestedContent[], but merely make compiler happy.
-  // we have other means to determine the type of value.
-  if (!v)
-    return false;
-  return Array.isArray(v);
-};
-const isArray = (v: content.Value | content.DisplayValue): v is content.ValuesArray | content.DisplayValuesArray => {
-  // note: we don't guarantee by 100% that v is ValuesArray | DisplayValuesArray, but merely make compiler happy.
-  // we have other means to determine the type of value.
-  if (!v)
-    return false;
-  return Array.isArray(v);
-};
-const isMap = (v: content.Value | content.DisplayValue): v is content.ValuesMap | content.DisplayValuesMap => {
-  if (!v)
-    return false;
-  return typeof v === "object";
-};
-const isPrimitive = (v: content.Value | content.DisplayValue): v is string | number | boolean | undefined => {
-  return !isArray(v) && !isMap(v);
-};
 
 const createArrayValue = (propertyDescription: PropertyDescription, arrayDescription: content.ArrayTypeDescription, values: content.Value[], displayValues: content.DisplayValue[]): ArrayValue => {
   const records = new Array<PropertyRecord>();
@@ -82,6 +60,13 @@ const createPrimitiveValue = (value: content.Value, displayValue: content.Displa
 };
 
 const createValue = (propertyDescription: PropertyDescription, typeDescription: content.TypeDescription, isMerged: boolean, value: content.Value, displayValue: content.DisplayValue): PropertyValue => {
+  if (undefined === value && undefined === displayValue) {
+    return {
+      valueFormat: PropertyValueFormat.Primitive,
+      value,
+      displayValue: "",
+    };
+  }
   if (!isMerged) {
     if (typeDescription.valueFormat === content.PropertyValueFormat.Array) {
       if (!isArray(value) || !isArray(displayValue))
@@ -102,7 +87,7 @@ const createRecordDescription = (typeDescription: content.TypeDescription, displ
     return undefined;
   if (content.PropertyValueFormat.Primitive !== typeDescription.valueFormat || !isPrimitive(displayValue))
     throw new PresentationError(PresentationStatus.InvalidArgument, "displayValue is of wrong type");
-  return displayValue;
+  return (undefined !== displayValue) ? displayValue.toString() : undefined;
 };
 
 const createRecord = (propertyDescription: PropertyDescription, typeDescription: content.TypeDescription,
@@ -115,7 +100,7 @@ const createRecord = (propertyDescription: PropertyDescription, typeDescription:
   return record;
 };
 
-const createNestedStructRecord = (field: content.NestedContentField, nestedContent: content.NestedContent, path?: content.Field[]): PropertyRecord => {
+const createNestedStructRecord = (field: content.NestedContentField, nestedContent: content.NestedContentValue, path?: content.Field[]): PropertyRecord => {
   path = path ? [...path] : undefined;
   let pathField: content.Field | undefined;
   if (path && 0 !== path.length) {
@@ -153,14 +138,14 @@ const createNestedContentRecord = (field: content.NestedContentField, item: cont
     value = {
       valueFormat: PropertyValueFormat.Primitive,
       value: undefined,
-      displayValue: displayValue || "",
+      displayValue: (undefined !== displayValue) ? displayValue.toString() : "",
     };
   } else {
     const dictionaryValue = item.values[field.name];
-    if (!isNestedContent(dictionaryValue))
+    if (!isNestedContentValue(dictionaryValue))
       throw new PresentationError(PresentationStatus.Error, "value should be nested content");
     // nested content value is in NestedContent[] format
-    const nestedContentArray: content.NestedContent[] = dictionaryValue;
+    const nestedContentArray: content.NestedContentValue[] = dictionaryValue;
     value = {
       valueFormat: PropertyValueFormat.Array,
       items: nestedContentArray.map((r) => createNestedStructRecord(field, r, path)),

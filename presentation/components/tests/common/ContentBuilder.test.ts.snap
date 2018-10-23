@@ -462,3 +462,57 @@ PropertyRecord {
   },
 }
 `;
+
+exports[`ContentBuilder createPropertyRecord creates record with undefined array value 1`] = `
+PropertyRecord {
+  "description": undefined,
+  "isMerged": false,
+  "isReadonly": false,
+  "property": Object {
+    "displayLabel": "backing up driver e-markets",
+    "name": "optimize",
+    "typename": "Assistant",
+  },
+  "value": Object {
+    "displayValue": "",
+    "value": undefined,
+    "valueFormat": 0,
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with undefined primitive value 1`] = `
+PropertyRecord {
+  "description": undefined,
+  "isMerged": false,
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "discrete Fundamental non-volatile",
+    "name": "Integration",
+    "typename": "timestamp",
+  },
+  "value": Object {
+    "displayValue": "",
+    "value": undefined,
+    "valueFormat": 0,
+  },
+}
+`;
+
+exports[`ContentBuilder createPropertyRecord creates record with undefined struct value 1`] = `
+PropertyRecord {
+  "description": undefined,
+  "isMerged": false,
+  "isReadonly": true,
+  "property": Object {
+    "displayLabel": "Tools",
+    "name": "white",
+    "typename": "aggregate",
+  },
+  "value": Object {
+    "displayValue": "",
+    "value": undefined,
+    "valueFormat": 0,
+  },
+}
+`;

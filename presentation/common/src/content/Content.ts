@@ -9,6 +9,8 @@ import Item, { ItemJSON } from "./Item";
 
 /**
  * Serialized [[Content]] JSON representation.
+ *
+ * @hidden
  */
 export interface ContentJSON {
   descriptor: DescriptorJSON;
@@ -42,6 +44,8 @@ export default class Content {
    * Deserialize Content from JSON
    * @param json JSON or JSON serialized to string to deserialize from
    * @returns Deserialized content or undefined if deserialization failed
+   *
+   * @hidden
    */
   public static fromJSON(json: ContentJSON | string | undefined): Content | undefined {
     if (!json)
@@ -58,6 +62,8 @@ export default class Content {
   /**
    * Reviver function that can be used as a second argument for
    * `JSON.parse` method when parsing Content objects.
+   *
+   * @hidden
    */
   public static reviver(key: string, value: any): any {
     return key === "" ? Content.fromJSON(value) : value;

@@ -85,7 +85,7 @@ describe("ContentBuilder", () => {
       expect(record).to.matchSnapshot();
     });
 
-    it("throws on invalid primitive value", () => {
+    it("creates record with undefined primitive value", () => {
       const property: content.Property = {
         property: {
           classInfo: createRandomECClassInfo(),
@@ -97,15 +97,12 @@ describe("ContentBuilder", () => {
       const field = new content.PropertiesField(createRandomCategory(), faker.random.word(),
         faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
         faker.random.number(), [property]);
-      const values = {
-        [field.name]: ["some value"],
-      };
-      const displayValues = {
-        [field.name]: ["some display value"],
-      };
+      const values = {};
+      const displayValues = {};
       const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
         faker.random.uuid(), undefined, values, displayValues, []);
-      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(PresentationError);
+      const record = ContentBuilder.createPropertyRecord(field, item);
+      expect(record).to.matchSnapshot();
     });
 
     it("creates record with merged primitive value", () => {
@@ -130,6 +127,29 @@ describe("ContentBuilder", () => {
         faker.random.uuid(), undefined, values, displayValues, [field.name]);
       const record = ContentBuilder.createPropertyRecord(field, item);
       expect(record).to.matchSnapshot();
+    });
+
+    it("throws on invalid primitive value", () => {
+      const property: content.Property = {
+        property: {
+          classInfo: createRandomECClassInfo(),
+          name: faker.random.word(),
+          type: faker.database.type(),
+        },
+        relatedClassPath: [],
+      };
+      const field = new content.PropertiesField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), createRandomPrimitiveTypeDescription(), faker.random.boolean(),
+        faker.random.number(), [property]);
+      const values = {
+        [field.name]: ["some value"],
+      };
+      const displayValues = {
+        [field.name]: ["some display value"],
+      };
+      const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        faker.random.uuid(), undefined, values, displayValues, []);
+      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(PresentationError);
     });
 
     it("creates record with array value", () => {
@@ -161,7 +181,7 @@ describe("ContentBuilder", () => {
       expect(record).to.matchSnapshot();
     });
 
-    it("throws on invalid array value", () => {
+    it("creates record with undefined array value", () => {
       const property: content.Property = {
         property: {
           classInfo: createRandomECClassInfo(),
@@ -178,15 +198,12 @@ describe("ContentBuilder", () => {
       const field = new content.PropertiesField(createRandomCategory(), faker.random.word(),
         faker.random.words(), typeDescription, faker.random.boolean(),
         faker.random.number(), [property]);
-      const values = {
-        [field.name]: undefined,
-      };
-      const displayValues = {
-        [field.name]: undefined,
-      };
+      const values = {};
+      const displayValues = {};
       const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
         faker.random.uuid(), undefined, values, displayValues, []);
-      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(PresentationError);
+      const record = ContentBuilder.createPropertyRecord(field, item);
+      expect(record).to.matchSnapshot();
     });
 
     it("creates record with merged array value", () => {
@@ -216,6 +233,34 @@ describe("ContentBuilder", () => {
         faker.random.uuid(), undefined, values, displayValues, [field.name]);
       const record = ContentBuilder.createPropertyRecord(field, item);
       expect(record).to.matchSnapshot();
+    });
+
+    it("throws on invalid array value", () => {
+      const property: content.Property = {
+        property: {
+          classInfo: createRandomECClassInfo(),
+          name: faker.random.word(),
+          type: faker.database.type(),
+        },
+        relatedClassPath: [],
+      };
+      const typeDescription: content.ArrayTypeDescription = {
+        valueFormat: content.PropertyValueFormat.Array,
+        typeName: faker.random.word(),
+        memberType: createRandomPrimitiveTypeDescription(),
+      };
+      const field = new content.PropertiesField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), typeDescription, faker.random.boolean(),
+        faker.random.number(), [property]);
+      const values = {
+        [field.name]: "not an array",
+      };
+      const displayValues = {
+        [field.name]: "not an array",
+      };
+      const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        faker.random.uuid(), undefined, values, displayValues, []);
+      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw(PresentationError);
     });
 
     it("creates record with struct value", () => {
@@ -255,7 +300,7 @@ describe("ContentBuilder", () => {
       expect(record).to.matchSnapshot();
     });
 
-    it("throws on invalid struct value", () => {
+    it("creates record with undefined struct value", () => {
       const property: content.Property = {
         property: {
           classInfo: createRandomECClassInfo(),
@@ -276,15 +321,12 @@ describe("ContentBuilder", () => {
       const field = new content.PropertiesField(createRandomCategory(), faker.random.word(),
         faker.random.words(), typeDescription, faker.random.boolean(),
         faker.random.number(), [property]);
-      const values = {
-        [field.name]: undefined,
-      };
-      const displayValues = {
-        [field.name]: undefined,
-      };
+      const values = {};
+      const displayValues = {};
       const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
         faker.random.uuid(), undefined, values, displayValues, []);
-      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw();
+      const record = ContentBuilder.createPropertyRecord(field, item);
+      expect(record).to.matchSnapshot();
     });
 
     it("creates record with merged struct value", () => {
@@ -320,6 +362,38 @@ describe("ContentBuilder", () => {
       expect(record).to.matchSnapshot();
     });
 
+    it("throws on invalid struct value", () => {
+      const property: content.Property = {
+        property: {
+          classInfo: createRandomECClassInfo(),
+          name: faker.random.word(),
+          type: faker.database.type(),
+        },
+        relatedClassPath: [],
+      };
+      const typeDescription: content.StructTypeDescription = {
+        valueFormat: content.PropertyValueFormat.Struct,
+        typeName: faker.random.word(),
+        members: [{
+          name: faker.random.word(),
+          label: faker.random.words(),
+          type: createRandomPrimitiveTypeDescription(),
+        }],
+      };
+      const field = new content.PropertiesField(createRandomCategory(), faker.random.word(),
+        faker.random.words(), typeDescription, faker.random.boolean(),
+        faker.random.number(), [property]);
+      const values = {
+        [field.name]: "not a struct",
+      };
+      const displayValues = {
+        [field.name]: "not a struct",
+      };
+      const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
+        faker.random.uuid(), undefined, values, displayValues, []);
+      expect(() => ContentBuilder.createPropertyRecord(field, item)).to.throw();
+    });
+
     it("creates record with single nested content value", () => {
       const nestedField = createRandomPrimitiveField();
       const field = new content.NestedContentField(createRandomCategory(), faker.random.word(),
@@ -335,7 +409,7 @@ describe("ContentBuilder", () => {
             [nestedField.name]: "some display value",
           },
           mergedFieldNames: [],
-        }] as content.NestedContent[],
+        }] as content.NestedContentValue[],
       };
       const displayValues = {
         [field.name]: undefined,
@@ -386,7 +460,7 @@ describe("ContentBuilder", () => {
             [nestedField.name]: "some display value 2",
           },
           mergedFieldNames: [],
-        }] as content.NestedContent[],
+        }] as content.NestedContentValue[],
       };
       const displayValues = {
         [field.name]: undefined,
@@ -462,7 +536,7 @@ describe("ContentBuilder", () => {
             [nestedField.name]: "merged",
           },
           mergedFieldNames: [nestedField.name],
-        }] as content.NestedContent[],
+        }] as content.NestedContentValue[],
       };
       const displayValues = {
         [field.name]: undefined,
@@ -508,13 +582,13 @@ describe("ContentBuilder", () => {
                 [field12.name]: "some display value 2.2",
               },
               mergedFieldNames: [],
-            }] as content.NestedContent[],
+            }] as content.NestedContentValue[],
           },
           displayValues: {
             [field2.name]: undefined,
           },
           mergedFieldNames: [],
-        }] as content.NestedContent[],
+        }] as content.NestedContentValue[],
       };
       const displayValues = {
         [field3.name]: undefined,

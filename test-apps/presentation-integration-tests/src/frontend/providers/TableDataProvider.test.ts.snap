@@ -158,7 +158,7 @@ Array [
           },
           "value": Object {
             "displayValue": "Ñót spêçìfíêd",
-            "value": null,
+            "value": undefined,
             "valueFormat": 0,
           },
         },
@@ -286,7 +286,7 @@ Array [
           },
           "value": Object {
             "displayValue": "Ñót spêçìfíêd",
-            "value": null,
+            "value": undefined,
             "valueFormat": 0,
           },
         },

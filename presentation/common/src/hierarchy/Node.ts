@@ -40,7 +40,11 @@ export default interface Node {
   isCheckboxEnabled?: boolean;
 }
 
-/** Serialized [[Node]] JSON representation. */
+/**
+ * Serialized [[Node]] JSON representation.
+ *
+ * @hidden
+ */
 export interface NodeJSON {
   key: NodeKeyJSON;
   label: string;
@@ -62,6 +66,8 @@ export interface NodeJSON {
  * Deserialize node from JSON
  * @param json JSON or JSON serialized to string to deserialize from
  * @returns Deserialized node
+ *
+ * @hidden
  */
 export const fromJSON = (json: NodeJSON | string): Node => {
   if (typeof json === "string")
@@ -74,6 +80,8 @@ export const fromJSON = (json: NodeJSON | string): Node => {
 /**
  * Reviver function that can be used as a second argument for
  * `JSON.parse` method when parsing [[Node]] objects.
+ *
+ * @hidden
  */
 export const reviver = (key: string, value: any): any => {
   return key === "" ? fromJSON(value) : value;
@@ -83,6 +91,8 @@ export const reviver = (key: string, value: any): any => {
  * Deserialize nodes list from JSON
  * @param json JSON or JSON serialized to string to deserialize from
  * @returns Deserialized nodes list
+ *
+ * @hidden
  */
 export const listFromJSON = (json: NodeJSON[] | string): Node[] => {
   if (typeof json === "string")
@@ -93,6 +103,8 @@ export const listFromJSON = (json: NodeJSON[] | string): Node[] => {
 /**
  * Reviver function that can be used as a second argument for
  * `JSON.parse` method when parsing [[Node]][] objects.
+ *
+ * @hidden
  */
 export const listReviver = (key: string, value: any): any => {
   return key === "" ? listFromJSON(value) : value;

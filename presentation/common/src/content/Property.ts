@@ -36,13 +36,21 @@ export default interface Property {
   relatedClassPath: Readonly<ec.RelationshipPathInfo>;
 }
 
-/** Serialized [[Property]] */
+/**
+ * Serialized [[Property]]
+ *
+ * @hidden
+ */
 export interface PropertyJSON {
   property: ec.PropertyInfoJSON;
   relatedClassPath: ec.RelationshipPathInfoJSON;
 }
 
-/** Deserializes [[Property]] from [[PropertyJSON]] */
+/**
+ * Deserializes [[Property]] from [[PropertyJSON]]
+ *
+ * @hidden
+ */
 export const propertyFromJSON = (json: PropertyJSON): Property => {
   return {
     property: ec.propertyInfoFromJSON(json.property),

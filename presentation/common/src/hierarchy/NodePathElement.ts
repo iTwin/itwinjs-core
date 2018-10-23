@@ -25,7 +25,11 @@ export default interface NodePathElement {
   filteringData?: NodePathFilteringData;
 }
 
-/** Serialized [[NodePathElement]] JSON representation. */
+/**
+ * Serialized [[NodePathElement]] JSON representation.
+ *
+ * @hidden
+ */
 export interface NodePathElementJSON {
   node: NodeJSON;
   index: number;
@@ -38,6 +42,8 @@ export interface NodePathElementJSON {
  * Deserialize [[NodePathElement]] from JSON
  * @param json JSON or JSON serialized to string to deserialize from
  * @returns Deserialized [[NodePathElement]]
+ *
+ * @hidden
  */
 export const fromJSON = (json: NodePathElementJSON | string): NodePathElement => {
   if (typeof json === "string")
@@ -51,6 +57,8 @@ export const fromJSON = (json: NodePathElementJSON | string): NodePathElement =>
 /**
  * Reviver function that can be used as a second argument for
  * `JSON.parse` method when parsing [[NodePathElement]] objects.
+ *
+ * @hidden
  */
 export const reviver = (key: string, value: any): any => {
   return key === "" ? fromJSON(value) : value;
@@ -60,6 +68,8 @@ export const reviver = (key: string, value: any): any => {
  * Deserialize [[NodePathElement]] list from JSON
  * @param json JSON or JSON serialized to string to deserialize from
  * @returns Deserialized [[NodePathElement]] list
+ *
+ * @hidden
  */
 export const listFromJSON = (json: NodePathElementJSON[] | string): NodePathElement[] => {
   if (typeof json === "string")
@@ -70,6 +80,8 @@ export const listFromJSON = (json: NodePathElementJSON[] | string): NodePathElem
 /**
  * Reviver function that can be used as a second argument for
  * `JSON.parse` method when parsing [[NodePathElement]][] objects.
+ *
+ * @hidden
  */
 export const listReviver = (key: string, value: any): any => {
   return key === "" ? listFromJSON(value) : value;

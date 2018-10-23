@@ -18,6 +18,8 @@ export type Keys = ReadonlyArray<Key> | Readonly<KeySetJSON> | Readonly<KeySet>;
 
 /**
  * A data structure of serialized [[KeySet]]
+ *
+ * @hidden
  */
 export interface KeySetJSON {
   instanceKeys: Array<[string, string[]]>;
@@ -46,6 +48,8 @@ export default class KeySet {
 
   /**
    * Serializes this KeySet to JSON
+   *
+   * @hidden
    */
   public toJSON(): KeySetJSON {
     const instanceKeys = new Array();
