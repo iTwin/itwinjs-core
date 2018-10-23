@@ -9,7 +9,7 @@ import * as Fuse from "fuse.js";
 export class FuzzySearch<T> {
 
   /** Override to provide non-standard FuseOptions for searches where the a single word pattern is used */
-  public onGetSingleWordSearchOptions(): Fuse.FuseOptions {
+  public onGetSingleWordSearchOptions(): Fuse.FuseOptions<T> {
     return {
       shouldSort: true,
       threshold: 0.40,
@@ -23,7 +23,7 @@ export class FuzzySearch<T> {
   }
 
   /** Override to provide non-standard FuseOptions for searches where the a multiple word pattern is used */
-  public onGetMultiWordSearchOptions(): Fuse.FuseOptions {
+  public onGetMultiWordSearchOptions(): Fuse.FuseOptions<T> {
     return {
       shouldSort: true,
       threshold: 0.40,
@@ -42,14 +42,14 @@ export class FuzzySearch<T> {
    * @param pattern The pattern for which each searchedObject is searched.
    * @return FuzzySearchResults.
    */
-  public search(searchedObjects: T[], keys: string[], pattern: string): FuzzySearchResults<T> {
+  public search(searchedObjects: T[], keys: Array<keyof T>, pattern: string): FuzzySearchResults<T> {
     if (!pattern || pattern.length < 2)
       return new FuzzySearchResults<T>(undefined);
 
     // it is a multi-word pattern if there's a space other than at the end of the pattern.
     const spaceIndex: number = pattern.indexOf(" ");
     const multiWord: boolean = (-1 !== spaceIndex) && (spaceIndex !== (pattern.length - 1));
-    const options: Fuse.FuseOptions = multiWord ? this.onGetMultiWordSearchOptions() : this.onGetSingleWordSearchOptions();
+    const options: Fuse.FuseOptions<T> = multiWord ? this.onGetMultiWordSearchOptions() : this.onGetSingleWordSearchOptions();
     options.keys = keys;
     const fuse = new Fuse(searchedObjects, options);
     let results: any[] = fuse.search(pattern);
