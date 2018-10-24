@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelDb, ECSqlStatement, ECSqlValue } from "@bentley/imodeljs-backend";
-import { ECSqlStringType, NavigationValue } from "@bentley/imodeljs-common";
-import { DbResult, Id64 } from "@bentley/bentleyjs-core";
+import { NavigationValue } from "@bentley/imodeljs-common";
+import { DbResult } from "@bentley/bentleyjs-core";
 
 // tslint:disable:no-console
 
@@ -23,7 +23,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_ByParameter_Named
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod", (stmt: ECSqlStatement) => {
     stmt.bindString("code", "MyCode");
-    stmt.bindDateTime("lastmod", "2018-01-01T12:00:00");
+    stmt.bindDateTime("lastmod", "2018-01-01T12:00:00Z");
 
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       // do something with the query result
@@ -34,7 +34,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Positional
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?",
     (stmt: ECSqlStatement) => {
-      stmt.bindValues(["MyCode", { type: ECSqlStringType.DateTime, value: "2018-01-01T12:00:00" }]);
+      stmt.bindValues(["MyCode", "2018-01-01T12:00:00Z"]);
 
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         // do something with the query result
@@ -45,7 +45,7 @@ function executeECSql_Binding(iModel: IModelDb) {
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Named
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=:code AND LastMod>=:lastmod",
     (stmt: ECSqlStatement) => {
-      stmt.bindValues({ code: "MyCode", lastmod: { type: ECSqlStringType.DateTime, value: "2018-01-01T12:00:00" } });
+      stmt.bindValues({ code: "MyCode", lastmod: "2018-01-01T12:00:00Z" });
 
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         // do something with the query result
@@ -55,14 +55,14 @@ function executeECSql_Binding(iModel: IModelDb) {
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Navigation_ByParameter
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", (stmt: ECSqlStatement) => {
-    stmt.bindNavigation(1, { id: Id64.fromString("0x132") });
+    stmt.bindNavigation(1, { id: "0x132" });
     // ...
   });
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_Navigation
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent=?", (stmt: ECSqlStatement) => {
-    stmt.bindValues([{ id: Id64.fromString("0x132") }]);
+    stmt.bindValues([{ id: "0x132" }]);
     // ...
   });
   // __PUBLISH_EXTRACT_END__
@@ -76,7 +76,7 @@ function executeECSql_Binding(iModel: IModelDb) {
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_BindValues_NavigationId
   iModel.withPreparedStatement("SELECT ECInstanceId FROM bis.Element WHERE Parent.Id=?", (stmt: ECSqlStatement) => {
-    stmt.bindValues([Id64.fromString("0x132")]);
+    stmt.bindValues(["0x132"]);
     // ...
   });
   // __PUBLISH_EXTRACT_END__
