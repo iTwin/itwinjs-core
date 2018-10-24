@@ -77,15 +77,22 @@
       // xhr.withCredentials = true;
       xhr.setRequestHeader("Content-Type", "application/x-www-form-urlencoded");
       xhr.onreadystatechange = function () {
-        console.log(xhr.status, xhr.statusText);
+        console.log(xhr.readyState, xhr.status, xhr.statusText);
         console.log(xhr.responseText);
         var formElements = form.querySelector(".form-elements")
         if (formElements) {
           formElements.style.display = "none"; // hide form
         }
-        var thankYouMessage = form.querySelector(".thankyou_message");
-        if (thankYouMessage) {
-          thankYouMessage.style.display = "block";
+        if (xhr.readyState === 4 && xhr.status === 200) {
+          var thankYouMessage = form.querySelector(".thankyou_message");
+          if (thankYouMessage) {
+            thankYouMessage.style.display = "block";
+          }
+        } else { //There was an error
+          var errorMessage = form.querySelector(".error_message");
+          if (errorMessage) {
+            errorMessage.style.display = "block";
+          }
         }
         return;
       };
