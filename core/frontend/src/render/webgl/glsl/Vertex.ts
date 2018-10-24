@@ -12,7 +12,6 @@ import { TextureUnit, RenderPass } from "../RenderFlags";
 import { GLSLDecode } from "./Decode";
 import { addLookupTable } from "./LookupTable";
 import { octDecodeNormal } from "./Surface";
-import { Range1d } from "@bentley/geometry-core";
 import { Gradient } from "@bentley/imodeljs-common";
 
 const initializeVertLUTCoords = `
@@ -163,7 +162,6 @@ function computeAnimParams(params: Float32Array, inputs: number[], indices: numb
 }
 export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean, includeNormal: boolean): void {
   scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = -1.0;
-
   vert.addFunction(computeAnimationFrameDisplacement);
   vert.addFunction(computeAnimationDisplacement);
   if (includeNormal) {
@@ -180,28 +178,37 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
     prog.addGraphicUniform("u_animDispParams", (uniform, params) => {
       scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = .0;
       const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-      if (lutGeom.lut.auxDisplacements !== undefined) {
-        const auxDisplacement = lutGeom.lut.auxDisplacements[0];  // TBD - allow channel selection.
-        computeAnimParams(scratchAnimDisplacementParams, auxDisplacement.inputs, auxDisplacement.indices, params.target.animationFraction);
-      }
+      const analysisStyle = params.target.analysisStyle;
+      let channel: any;
+      if (lutGeom.lut.auxDisplacements && analysisStyle && analysisStyle.displacementChannelName && undefined !== (channel = lutGeom.lut.auxDisplacements.get(analysisStyle.displacementChannelName)))
+        computeAnimParams(scratchAnimDisplacementParams, channel.inputs, channel.indices, params.target.animationFraction);
+
       uniform.setUniform3fv(scratchAnimDisplacementParams);
     });
   });
   vert.addUniform("u_qAnimDispScale", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_qAnimDispScale", (uniform, params) => {
       const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-      if (lutGeom.lut.auxDisplacements !== undefined) {
-        const auxDisplacement = lutGeom.lut.auxDisplacements[0];  // TBD - allow channel selection.
-        uniform.setUniform3fv(auxDisplacement.qScale);
+      const analysisStyle = params.target.analysisStyle;
+      let channel: any;
+      if (lutGeom.lut.auxDisplacements && analysisStyle && analysisStyle.displacementChannelName && undefined !== (channel = lutGeom.lut.auxDisplacements.get(analysisStyle.displacementChannelName)))
+        uniform.setUniform3fv(channel.qScale);
+      else {
+        scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = .0;
+        uniform.setUniform3fv(scratchAnimDisplacementParams);
       }
     });
   });
   vert.addUniform("u_qAnimDispOrigin", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_qAnimDispOrigin", (uniform, params) => {
       const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-      if (lutGeom.lut.auxDisplacements !== undefined) {
-        const auxDisplacement = lutGeom.lut.auxDisplacements[0];  // TBD - allow channel selection.
-        uniform.setUniform3fv(auxDisplacement.qOrigin);
+      const analysisStyle = params.target.analysisStyle;
+      let channel: any;
+      if (lutGeom.lut.auxDisplacements && analysisStyle && analysisStyle.displacementChannelName && undefined !== (channel = lutGeom.lut.auxDisplacements.get(analysisStyle.displacementChannelName)))
+        uniform.setUniform3fv(channel.qOrigin);
+      else {
+        scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = .0;
+        uniform.setUniform3fv(scratchAnimDisplacementParams);
       }
     });
   });
@@ -210,10 +217,10 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
       prog.addGraphicUniform("u_animNormalParams", (uniform, params) => {
         scratchAnimNormalParams[0] = scratchAnimNormalParams[1] = scratchAnimNormalParams[2] = -1.0;
         const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
-        if (lutGeom.lut.auxNormals !== undefined) {
-          const auxNormal = lutGeom.lut.auxNormals[0];  // TBD - allow channel selection.
-          computeAnimParams(scratchAnimNormalParams, auxNormal.inputs, auxNormal.indices, params.target.animationFraction);
-        }
+        const analysisStyle = params.target.analysisStyle;
+        let channel: any;
+        if (lutGeom.lut.auxNormals && analysisStyle && analysisStyle.normalChannelName && undefined !== (channel = lutGeom.lut.auxNormals.get(analysisStyle.normalChannelName)))
+          computeAnimParams(scratchAnimNormalParams, channel.inputs, channel.indices, params.target.animationFraction);
         uniform.setUniform3fv(scratchAnimNormalParams);
       });
     });
@@ -223,32 +230,30 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
     vert.addUniform("u_animScalarParams", VariableType.Vec3, (prog) => {
       prog.addGraphicUniform("u_animScalarParams", (uniform, params) => {
         const meshGeom: MeshGeometry = params.geometry as MeshGeometry;
+        const analysisStyle = params.target.analysisStyle;
         scratchAnimScalarParams[0] = scratchAnimScalarParams[1] = scratchAnimScalarParams[2] = -1.0;
-        if (meshGeom.lut.auxParams !== undefined) {
-          const auxParam = meshGeom.lut.auxParams[0];  // TBD - allow channel selection.
-          computeAnimParams(scratchAnimScalarParams, auxParam.inputs, auxParam.indices, params.target.animationFraction);
-        }
+        let channel: any;
+        if (meshGeom.lut.auxParams !== undefined &&
+          analysisStyle !== undefined &&
+          analysisStyle.scalarChannelName !== undefined &&
+          (channel = meshGeom.lut.auxParams.get(analysisStyle.scalarChannelName)) !== undefined)
+          computeAnimParams(scratchAnimScalarParams, channel.inputs, channel.indices, params.target.animationFraction);
         uniform.setUniform3fv(scratchAnimScalarParams);
       });
     });
     vert.addUniform("u_animScalarQParams", VariableType.Vec2, (prog) => {
       prog.addGraphicUniform("u_animScalarQParams", (uniform, params) => {
         const meshGeom: MeshGeometry = params.geometry as MeshGeometry;
+        const analysisStyle = params.target.analysisStyle;
         scratchAnimScalarQParams[0] = scratchAnimScalarQParams[1] = -1.0;
-
-        if (meshGeom.lut.auxParams !== undefined) {
-          const auxParam = meshGeom.lut.auxParams[0];  // TBD - allow channel selection.
-          const thematicRange = meshGeom.thematicRange as Range1d;
-          if (undefined !== thematicRange) {
-            const rangeScale = thematicRange.high - thematicRange.low;
-            scratchAnimScalarQParams[0] = Gradient.ThematicSettings.margin + (auxParam.qOrigin - thematicRange.low) / rangeScale;
-            scratchAnimScalarQParams[1] = Gradient.ThematicSettings.contentRange * auxParam.qScale / rangeScale;
-          } else {
-            scratchAnimScalarQParams[0] = Gradient.ThematicSettings.margin;
-            scratchAnimScalarQParams[1] = Gradient.ThematicSettings.contentRange / 0xffff;
-          }
-          uniform.setUniform2fv(scratchAnimScalarQParams);
+        let channel: any;
+        if (meshGeom.lut.auxParams && analysisStyle && analysisStyle.scalarChannelName && analysisStyle.scalarRange &&
+          (channel = meshGeom.lut.auxParams.get(analysisStyle.scalarChannelName)) !== undefined) {
+          const rangeScale = analysisStyle.scalarRange.high - analysisStyle.scalarRange.low;
+          scratchAnimScalarQParams[0] = Gradient.ThematicSettings.margin + (channel.qOrigin - analysisStyle.scalarRange.low) / rangeScale;
+          scratchAnimScalarQParams[1] = Gradient.ThematicSettings.contentRange * channel.qScale / rangeScale;
         }
+        uniform.setUniform2fv(scratchAnimScalarQParams);
       });
     });
   }

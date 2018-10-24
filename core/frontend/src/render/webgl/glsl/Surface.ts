@@ -263,7 +263,6 @@ function addNormal(builder: ProgramBuilder, animated: boolean) {
 
 function addTexture(builder: ProgramBuilder, animated: boolean) {
   builder.vert.addFunction(GLSLDecode.unquantize2d);
-  // ###TODO: Animation.addTextureParam(builder.vert);
   builder.addFunctionComputedVarying("v_texCoord", VariableType.Vec2, "computeTexCoord", animated ? computeAnimatedTexCoord : computeTexCoord);
   builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
@@ -285,8 +284,8 @@ function addTexture(builder: ProgramBuilder, animated: boolean) {
       const surfGeom = params.geometry as SurfaceGeometry;
       const surfFlags = surfGeom.computeSurfaceFlags(params.programParams);
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
-        assert(undefined !== surfGeom.texture);
-        const texture = surfGeom.texture! as Texture;
+        const texture = (params.target.analysisTexture ? params.target.analysisTexture : surfGeom.texture) as Texture;
+        assert(undefined !== texture);
         texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
       } else {
         System.instance.ensureSamplerBound(uniform, TextureUnit.SurfaceTexture);

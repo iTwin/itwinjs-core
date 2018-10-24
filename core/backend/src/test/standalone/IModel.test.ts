@@ -1378,6 +1378,11 @@ describe("iModel", () => {
       }
       assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
     });
+
+    imodel1.withPreparedSqliteStatement("SELECT 1 FROM ec_CustomAttribute WHERE ContainerId=? AND Instance LIKE '<IsMixin%' COLLATE NOCASE", (stmt: SqliteStatement) => {
+      stmt.bindValue(1, "0x1f");
+      assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
+    });
   });
 
   it("Run plain SQL against readonly connection", () => {

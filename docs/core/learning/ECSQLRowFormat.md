@@ -41,8 +41,8 @@ Blob       | -             | ArrayBuffer
 Blob       | BeGuid        | GUID string (see [Guid]($bentleyjs-core))
 ClassId system properties | - | fully qualified class name
 Double     | -             | number
-DateTime   | -             | ISO8601 string
-Id system properties | -   | hexadecimal string
+DateTime   | -             | ISO 8601 date time string
+Id system properties | -   | hexadecimal string (see [Id64]($bentleyjs-core)))
 Integer    | -             | number
 Int64      | -             | number
 Int64      | Id            | hexadecimal string
