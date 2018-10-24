@@ -8,7 +8,7 @@
     <article id="main" class='main-content'>
       {{{editLink this}}}
 
-      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycbws2Y0kXmCoM6vHR2w3ezx92FS4wdrLt8-Mo7YRlz0sZ69pgiPI/exec">
+      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycbzJdhCJyHUC7yDkJ3aXrlmtRZjGZOPNL6ip7_cmW_oRZHw2m2KW/exec">
         <div class="form-elements">
           <h2>Create New Sample Project</h2>
           <h4>Provisions a new project for use testing your application</h4>
@@ -23,21 +23,17 @@
               <tr>
                 <td>
                   <label for="DeveloperName">Developer Name: <br />
-                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
-                        profile.</a></em></label>
                 </td>
                 <td>
-                  <input id="DeveloperName" name="DeveloperName" required size="30" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                  <input id="DeveloperName" name="DeveloperName" required size="30" disabled="disabled" />
                 </td>
               </tr>
               <tr>
                 <td>
                   <label for="DeveloperEmail">Developer Email: <br />
-                    <em>Note: Must match a valid <a href="https://imsoidc.bentley.com" target="_blank">Bentley
-                        profile.</a></em></label>
                 </td>
                 <td>
-                  <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required size="30" /><!-- TODO: Get from IMS. Prepopulate. Disable.-->
+                  <input id="DeveloperEmail" name="DeveloperEmail" type="email" value="" required size="30" disabled="disabled" />
                   <span class="email-invalid" style="display:none">
                     Must be a valid email address</span>
                 </td>
@@ -83,10 +79,18 @@
               </tr>
             </table>
           </fieldset>
+
+          <div class="hidden">
+            <input id="Environment" name="Environment" style="display:none;" value="{{site.siteRoot}}" />
+            <input id="formGoogleSheetName" name="formGoogleSheetName" style="display:none;" value="SampleProject" />
+            <input id="honeypot" type="text" name="honeypot" value="" style="display:none;" />
+          </div>
+
           <button class="button-success pure-button button-xlarge">Submit</button>
         </div>
 
         {{>thank_you_message email='iModeljs.Sample.Request@bentley.com'}}
+        {{>error_message email='iModeljs.Sample.Request@bentley.com'}}
 
       </form>
 
