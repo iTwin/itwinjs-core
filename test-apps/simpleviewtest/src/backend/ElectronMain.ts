@@ -8,12 +8,9 @@ import * as url from "url";
 import { ElectronRpcManager } from "@bentley/imodeljs-common/lib/common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { IModelJsElectronAppManager } from "@bentley/imodeljs-backend";
 
-// we 'require' rather than the import, because there's a bug in the .d.ts files for electron 1.16.1
-// (WebviewTag incorrectly implement HTMLElement) that prevents us from compiling with the import.
-// import { app, protocol, BrowserWindow } from "electron";
-// tslint:disable-next-line:no-var-requires
-const electron = require("electron");
+import * as electron from "electron";
 
 // --------------------------------------------------------------------------------------
 // ------- Initialization and setup of host and tools before starting app ---------------
@@ -32,11 +29,16 @@ const isDevBuild = (process.env.NODE_ENV === "development");
 const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
 const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
 
-let winRef: any;
+(async () => {
+  const manager = new IModelJsElectronAppManager(electron);
+  if (!isDevBuild)
+    manager.frontendURL = url.format({
+      pathname: path.join(__dirname, "public/index.html"),
+      protocol: "file:",
+      slashes: true,
+    });
 
-function createWindow() {
-
-  const windowOptions = {
+  await manager.initialize({
     width: 1280,
     height: 800,
     webPreferences: {
@@ -45,73 +47,40 @@ function createWindow() {
     },
     autoHideMenuBar: true,
     show: !maximizeWindow,
-  };
-
-  const win = new electron.BrowserWindow(windowOptions);
-  if (maximizeWindow) {
-    win.maximize(); // maximize before showing to avoid resize event on startup
-    win.show();
-  }
-
-  winRef = win;
-  if (autoOpenDevTools)
-    winRef.toggleDevTools();
-
-  if (isDevBuild) {
-    win.loadURL(url.format({
-      pathname: "localhost:3000",
-      protocol: "http:",
-      slashes: true,
-    }));
-  } else {
-    win.loadURL(url.format({
-      pathname: path.join(__dirname, "public/index.html"),
-      protocol: "file:",
-      slashes: true,
-    }));
-  }
-
-  win.on("closed", () => {
-    winRef = null;
   });
-}
 
-electron.app.on("ready", () => {
   // Initialize application gateway configuration for the backend
   ElectronRpcManager.initializeImpl({}, getRpcInterfaces());
 
-  createWindow();
-});
-
-// tslint:disable-next-line:no-var-requires
-const configuration = require(path.join(__dirname, "public", "configuration.json"));
-if (configuration.useIModelBank) {
-  electron.app.on("certificate-error", (event: any, _webContents: any, _url: string, _error: any, _certificate: any, callback: any) => {
-    // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
-    event.preventDefault();
-    callback(true);
-  });
-}
-
-electron.app.on("window-all-closed", () => {
-  if (process.platform !== "darwin")
-    electron.app.quit();
-});
-
-// Handle custom keyboard shortcuts
-electron.app.on("web-contents-created", (_e: any, wc: any) => {
-  wc.on("before-input-event", (event: any, input: any) => {
-    // CTRL + SHIFT + I  ==> Toggle DevTools
-    if (input.key === "I" && input.control && !input.alt && !input.meta && input.shift) {
-      if (winRef)
-        winRef.toggleDevTools();
-
-      event.preventDefault();
+  if (manager.mainWindow) {
+    if (maximizeWindow) {
+      manager.mainWindow.maximize(); // maximize before showing to avoid resize event on startup
+      manager.mainWindow.show();
     }
-  });
-});
+    if (autoOpenDevTools)
+      manager.mainWindow.webContents.toggleDevTools();
+  }
 
-electron.app.on("activate", () => {
-  if (winRef === null)
-    createWindow();
-});
+  // tslint:disable-next-line:no-var-requires
+  const configuration = require(path.join(__dirname, "public", "configuration.json"));
+  if (configuration.useIModelBank) {
+    electron.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
+      // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
+      event.preventDefault();
+      callback(true);
+    });
+  }
+
+  // Handle custom keyboard shortcuts
+  electron.app.on("web-contents-created", (_e, wc) => {
+    wc.on("before-input-event", (event, input) => {
+      // CTRL + SHIFT + I  ==> Toggle DevTools
+      if (input.key === "I" && input.control && !input.alt && !input.meta && input.shift) {
+        if (manager.mainWindow)
+          manager.mainWindow.webContents.toggleDevTools();
+
+        event.preventDefault();
+      }
+    });
+  });
+})();
