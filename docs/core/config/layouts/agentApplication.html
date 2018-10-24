@@ -8,7 +8,7 @@
     <article id="main" class='main-content'>
       {{{editLink this}}}
 
-      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycbwl7ZBBWJLAs_9_x1MgJQ5q8WsmVmBaF37lx9rTpLamDwwjuUc/exec">
+      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycbzJdhCJyHUC7yDkJ3aXrlmtRZjGZOPNL6ip7_cmW_oRZHw2m2KW/exec">
         <div class="form-elements">
           <h2>Register Agent Application</h2>
           <h4>Such as iModel Query Agent</h4>
@@ -68,8 +68,10 @@
             </table>
           </fieldset>
 
-          <div class="hidden">
+          <div class="hidden" style="display:none;">
             <input id="Environment" name="Environment" style="display:none;" value="{{site.siteRoot}}" />
+            <input id="formGoogleSheetName" name="formGoogleSheetName" style="display:none;" value="AgentApplication" />
+            <input id="honeypot" type="text" name="honeypot" value="" style="display:none;" />
           </div>
 
           <button class="button-success pure-button button-xlarge">Submit</button>

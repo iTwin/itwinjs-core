@@ -8,7 +8,7 @@
     <article id="main" class='main-content'>
       {{{editLink this}}}
 
-      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycby4TvSEAREx01P9anh-iTBOnQT4a660Yg4Frm5O7xxELknYSi0/exec">
+      <form class="gform pure-form pure-form-stacked" method="POST" action="https://script.google.com/macros/s/AKfycbzJdhCJyHUC7yDkJ3aXrlmtRZjGZOPNL6ip7_cmW_oRZHw2m2KW/exec">
         <div class="form-elements">
           <h2>Update an application you have already registered with Bentley</h2>
 
@@ -60,7 +60,7 @@
               <tr>
                 <td>
                   <label for="AppHomepageURL">App Homepage URL:<br />
-                    <em>This may be displayed to potential users of your application. <br />(SPA clients only)</em>
+                    <em>This may be displayed to potential users of your application. <br />(Browser clients only)</em>
                   </label>
                 </td>
                 <td>
@@ -70,7 +70,7 @@
               <tr>
                 <td>
                   <label for="ClientLogoURL">Client Logo URL:<br />
-                    <em>Will be shown on consent screen. <br /> (SPA clients only)</em> </label>
+                    <em>Will be shown on consent screen. <br /> (Browser clients only)</em> </label>
                 </td>
                 <td>
                   <input id="ClientLogoURL" name="ClientLogoURL" size="40" placeholder="Optional" />
@@ -79,7 +79,7 @@
               <tr>
                 <td>
                   <label for="LinkToAppPrivacyPolicy">Link To Application Privacy Policy:<br />
-                    <em>Will be shown on consent screen. <br /> (SPA clients only)</em> </label>
+                    <em>Will be shown on consent screen. <br /> (Browser clients only)</em> </label>
                 </td>
                 <td>
                   <input id="LinkToAppPrivacyPolicy" name="LinkToAppPrivacyPolicy" size="40" placeholder="Optional" />
@@ -88,7 +88,7 @@
               <tr>
                 <td>
                   <label for="LinkToAppTOS">Link To Application Terms Of Service:<br />
-                    <em>Will be shown on consent screen. <br /> (SPA clients only)</em> </label>
+                    <em>Will be shown on consent screen. <br /> (Browser clients only)</em> </label>
                 </td>
                 <td>
                   <input id="LinkToAppTOS" name="LinkToAppTOS" size="40" placeholder="Optional" />
@@ -136,6 +136,8 @@
 
           <div class="hidden">
             <input id="Environment" name="Environment" style="display:none;" value="{{site.siteRoot}}" />
+            <input id="formGoogleSheetName" name="formGoogleSheetName" style="display:none;" value="UpdateApplication" />
+            <input id="honeypot" type="text" name="honeypot" value="" style="display:none;" />
           </div>
 
           <button class="button-success pure-button button-xlarge">Submit</button>
