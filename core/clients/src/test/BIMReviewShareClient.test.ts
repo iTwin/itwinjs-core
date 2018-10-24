@@ -41,7 +41,7 @@ describe("BIMReviewShareClient", () => {
     }
   });
 
-  it.only("should be able to post, retrieve, update and delete Content instance and data (#integration)", async function (this: Mocha.ITestCallbackContext) {
+  it("should be able to post, retrieve, update and delete Content instance and data (#integration)", async function (this: Mocha.ITestCallbackContext) {
     // Test with fabricated "User ID"
     const userGuidTest = Guid.createValue();
     const userGuidTest2 = Guid.createValue();

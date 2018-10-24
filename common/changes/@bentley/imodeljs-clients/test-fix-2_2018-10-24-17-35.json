@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "it.only fix for BIM review share",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Diego.Pinate@bentley.com"
+}
