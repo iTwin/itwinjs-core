@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "BIM Review Share WsgClient and tests",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Diego.Pinate@bentley.com"
+}

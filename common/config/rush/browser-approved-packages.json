@@ -112,7 +112,7 @@
     },
     {
       "name": "body-parser",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "bunyan",
@@ -228,7 +228,7 @@
     },
     {
       "name": "electron",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "electron-chromedriver",

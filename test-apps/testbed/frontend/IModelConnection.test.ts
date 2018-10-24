@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { Id64, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { XYAndZ, Range3d, Transform } from "@bentley/geometry-core";
-import { BisCodeSpec, CodeSpec, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement, IModelVersion } from "@bentley/imodeljs-common";
+import { BisCodeSpec, CodeSpec, NavigationValue, RelatedElement, IModelVersion } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
@@ -182,8 +182,8 @@ describe("IModelConnection (#integration)", () => {
     assert.isTrue(Id64.isValid(expectedId));
     const expectedModel: NavigationValue = expectedRow.model;
     assert.isTrue(Id64.isValidId64(expectedModel.id));
-    const expectedLastMod: ECSqlTypedString = { type: ECSqlStringType.DateTime, value: expectedRow.lastMod };
-    const expectedFedGuid: ECSqlTypedString | undefined = expectedRow.federationGuid !== undefined ? { type: ECSqlStringType.Guid, value: expectedRow.federationGuid } : undefined;
+    const expectedLastMod: string = expectedRow.lastMod;
+    const expectedFedGuid: string | undefined = !!expectedRow.federationGuid ? expectedRow.federationGuid : undefined;
     const expectedOrigin: XYAndZ = expectedRow.origin;
 
     let actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? OR (LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?)",
@@ -214,7 +214,7 @@ describe("IModelConnection (#integration)", () => {
     assert.equal(actualRows.length, 1);
 
     actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=:id AND Origin=:origin",
-      { id: { type: ECSqlStringType.Id, value: expectedRow.id }, origin: expectedRow.origin });
+      { id: expectedRow.id, origin: expectedRow.origin });
     assert.equal(actualRows.length, 1);
   }).timeout(99999);
 
