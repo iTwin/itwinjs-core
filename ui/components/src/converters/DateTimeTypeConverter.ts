@@ -7,66 +7,65 @@
 import { TimeFormat } from "@bentley/ui-core";
 import { TypeConverter, LessGreaterOperatorProcessor } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { Primitives } from "./valuetypes";
 
 /**
  * Short Date Type Converter.
  */
 export class ShortDateTypeConverter extends TypeConverter implements LessGreaterOperatorProcessor {
-  public async convertToString(value: any): Promise<string> {
-    if (null === value || undefined === value)
+  public async convertToString(value?: Primitives.ShortDate): Promise<string> {
+    if (value === undefined)
       return "";
 
-    // let isoString = value;
-
-    // if (typeof value !== "string" && value.toISOString)     // Is this a Date?
-    //   isoString = value.toISOString();
-
-    // let stringValue = UiContext.GetContext().FormatLocalizedDate(isoString, DateFormat.Short, this.GetTimeFormat());
-    // if (stringValue === "" && value.toDateString)    // If empty & this is truly a Date
-    //   stringValue = value.toDateString();
-
-    let stringValue = value;
     if (typeof value !== "string" && value.toDateString)     // Is this a Date?
-      stringValue = value.toDateString();
-
-    return stringValue;
+      return value.toDateString();
+    else
+      return value.toString();
   }
 
-  public async convertFromString(value: string): Promise<any> {
-    if (null === value || undefined === value)
+  private isDateValid(date: Date) {
+    return date instanceof Date && !isNaN(+date);
+  }
+
+  public async convertFromString(value: string): Promise<Date | undefined> {
+    if (!value)
       return undefined;
 
     const dateValue = new Date(value);
+
+    if (!this.isDateValid(dateValue))
+      return undefined;
+
     return dateValue;
   }
 
   public get isLessGreaterType(): boolean { return true; }
 
-  public sortCompare(valueA: any, valueB: any, _ignoreCase?: boolean): number {
+  public sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number {
     return valueA.valueOf() - valueB.valueOf();
   }
 
-  public isEqualTo(valueA: any, valueB: any): boolean {
+  public isEqualTo(valueA: Date, valueB: Date): boolean {
     return valueA.valueOf() === valueB.valueOf();
   }
 
-  public isNotEqualTo(valueA: any, valueB: any): boolean {
+  public isNotEqualTo(valueA: Date, valueB: Date): boolean {
     return valueA.valueOf() !== valueB.valueOf();
   }
 
-  public isLessThan(a: any, b: any): boolean {
+  public isLessThan(a: Date, b: Date): boolean {
     return a.valueOf() < b.valueOf();
   }
 
-  public isLessThanOrEqualTo(a: any, b: any): boolean {
+  public isLessThanOrEqualTo(a: Date, b: Date): boolean {
     return a.valueOf() <= b.valueOf();
   }
 
-  public isGreaterThan(a: any, b: any): boolean {
+  public isGreaterThan(a: Date, b: Date): boolean {
     return a.valueOf() > b.valueOf();
   }
 
-  public isGreaterThanOrEqualTo(a: any, b: any): boolean {
+  public isGreaterThanOrEqualTo(a: Date, b: Date): boolean {
     return a.valueOf() >= b.valueOf();
   }
 

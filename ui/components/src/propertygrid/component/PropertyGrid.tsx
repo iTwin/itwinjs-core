@@ -11,6 +11,7 @@ import { PropertyRecord } from "../../properties";
 import { PropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
 import "./PropertyGrid.scss";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 
 /** Properties for [[PropertyGrid]] React component */
 export interface PropertyGridProps {
@@ -22,6 +23,8 @@ export interface PropertyGridProps {
   isPropertySelectionEnabled?: boolean;
   /** Callback to property selection */
   onPropertySelectionChanged?: (property: PropertyRecord) => void;
+  /** Custom property value renderer manager */
+  propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
 /** Property Category in the [[PropertyGrid]] state */
@@ -153,6 +156,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
                 selectedPropertyKey={this.state.selectedPropertyKey}
                 onExpansionToggled={this._onExpansionToggled}
                 onPropertyClicked={this.props.isPropertySelectionEnabled ? this._onPropertyClicked : undefined}
+                propertyValueRendererManager={this.props.propertyValueRendererManager}
               />
             ))
           }

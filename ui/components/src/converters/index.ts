@@ -11,3 +11,4 @@ export * from "./HexadecimalTypeConverter";
 export * from "./NumericTypeConverter";
 export * from "./PointTypeConverter";
 export * from "./StringTypeConverter";
+export * from "./valuetypes";

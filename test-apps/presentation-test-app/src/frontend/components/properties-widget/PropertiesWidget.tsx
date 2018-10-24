@@ -28,10 +28,10 @@ export default class PropertiesWidget extends React.Component<Props, State> {
       dataProvider: createDataProvider(this.props.imodel, this.props.rulesetId),
     };
   }
-  public static getDerivedStateFromProps(props: Props, state: State): State | undefined {
+  public static getDerivedStateFromProps(props: Props, state: State) {
     if (props.imodel !== state.dataProvider.connection || props.rulesetId !== state.dataProvider.rulesetId)
       return { ...state, dataProvider: createDataProvider(props.imodel, props.rulesetId) };
-    return undefined;
+    return null;
   }
   public render() {
     const togglePropertyPane = () => {

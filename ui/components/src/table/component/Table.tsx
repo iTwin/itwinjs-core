@@ -23,6 +23,9 @@ import {
 
 import "./Grid.scss";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { PropertyValueRendererManager, IPropertyValueRendererContext, PropertyContainerType } from "../../properties/ValueRendererManager";
+import { PropertyValueFormat, PrimitiveValue } from "../../properties";
+import { TypeConverterManager } from "../../converters/TypeConverterManager";
 
 /**
  * Specifies table selection target.
@@ -72,6 +75,8 @@ export interface TableProps {
   uiSettings?: UiSettings;
   /** Identifying string used for persistent state. */
   settingsIdentifier?: string;
+  /** Custom property value renderer manager */
+  propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
 /** Properties for the Table's DropTarget. */
@@ -591,14 +596,31 @@ export class Table extends React.Component<TableProps, TableState> {
       return () => undefined;
     if (column.icon)
       return () => <IconCell value={displayValue} />;
-    return () => displayValue;
+
+    const rendererContext: IPropertyValueRendererContext = { containerType: PropertyContainerType.Table };
+    let renderedElement: React.ReactNode;
+
+    if (this.props.propertyValueRendererManager)
+      renderedElement = await this.props.propertyValueRendererManager.render(cellItem.record!, rendererContext);
+    else
+      renderedElement = await PropertyValueRendererManager.defaultManager.render(cellItem.record!, rendererContext);
+    return () => renderedElement;
   }
 
   private async getCellDisplayValue(cellItem: CellItem): Promise<string> {
-    if (!cellItem.record)
+    if (!cellItem.record || cellItem.record!.value.valueFormat !== PropertyValueFormat.Primitive)
       return "";
-    const displayValue = await cellItem.record.getDisplayValue();
-    return displayValue;
+
+    const value = (cellItem.record!.value as PrimitiveValue).value;
+
+    if (value === undefined)
+      return "";
+
+    const displayValue = await TypeConverterManager
+      .getConverter(cellItem.record!.property.typename)
+      .convertPropertyToString(cellItem.record!.property, value);
+
+    return displayValue ? displayValue : "";
   }
 
   private async createPropsForRowItem(item: RowItem, index: number): Promise<RowProps> {

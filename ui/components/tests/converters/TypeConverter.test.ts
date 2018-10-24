@@ -3,11 +3,18 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as moq from "typemoq";
 import { TypeConverter } from "../../src/index";
-import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord, PrimitiveValue } from "../../src/properties";
+import { PropertyDescription, PrimitiveValue } from "../../src/properties";
 import TestUtils from "../TestUtils";
 
 describe("TypeConverter", () => {
+
+  class TestTypeConverter extends TypeConverter {
+    public sortCompare({ }, { }, _ignoreCase?: boolean | undefined): number {
+      throw new Error("Method not implemented.");
+    }
+  }
 
   before(async () => {
     await TestUtils.initializeUiComponents();
@@ -16,31 +23,23 @@ describe("TypeConverter", () => {
   let converter: TypeConverter;
 
   beforeEach(() => {
-    converter = new TypeConverter();
+    converter = new TestTypeConverter();
   });
 
-  it("convertToString", async () => {
-    expect(await converter.convertToString("abc")).to.equal("abc");
-    expect(await converter.convertToString(100)).to.equal("100");
-  });
+  describe("convertToString", () => {
+    it("returns correct value", async () => {
+      expect(await converter.convertToString("abc")).to.equal("abc");
+      expect(await converter.convertToString(100)).to.equal("100");
+    });
 
-  it("convertToString passed invalid values", async () => {
-    expect(await converter.convertToString(null)).to.equal("");
-    expect(await converter.convertToString(undefined)).to.equal("");
+    it("returns empty string if value is undefined", async () => {
+      expect(await converter.convertToString(undefined)).to.equal("");
+    });
   });
 
   it("Base convertFromString returns undefined", async () => {
     expect(await converter.convertFromString("abc")).to.be.undefined;
   });
-
-  const createPropertyValue = (value?: string): PropertyValue => {
-    const v: PropertyValue = {
-      valueFormat: PropertyValueFormat.Primitive,
-      displayValue: value ? value : "",
-      value,
-    };
-    return v;
-  };
 
   const createPropertyDescription = (): PropertyDescription => {
     const pd: PropertyDescription = {
@@ -51,22 +50,29 @@ describe("TypeConverter", () => {
     return pd;
   };
 
-  const createPropertyRecord = (value?: string): PropertyRecord => {
-    const v = createPropertyValue(value);
-    const pd = createPropertyDescription();
-    return new PropertyRecord(v, pd);
-  };
-
   it("convertPropertyToString", async () => {
     const stringValue = await converter.convertPropertyToString(createPropertyDescription(), "abc");
     expect(stringValue).to.equal("abc");
-    expect(await converter.convertPropertyToString(createPropertyDescription(), null)).to.equal("");
-    expect(await converter.convertPropertyToString(createPropertyDescription(), undefined)).to.equal("");
   });
 
-  it("Base convertFromStringToPropertyValue returns undefined value", async () => {
-    const propertyValue = await converter.convertFromStringToPropertyValue("def", createPropertyRecord("abc"));
-    expect((propertyValue as PrimitiveValue).value).to.be.undefined;
+  describe("convertFromStringToPropertyValue", async () => {
+    it("returns property with empty value when convertFromString returns undefined", async () => {
+      const converterMock = moq.Mock.ofType(TestTypeConverter, moq.MockBehavior.Loose);
+      converterMock.callBase = true;
+      converterMock.setup((mock) => mock.convertFromString(moq.It.isAny())).returns(async () => undefined);
+
+      const propertyValue = await converterMock.object.convertFromStringToPropertyValue("def", TestUtils.createPrimitiveStringProperty("abc", "abc"));
+      expect((propertyValue as PrimitiveValue).value).to.be.empty;
+    });
+
+    it("returns property with correct value when convertFromString also returns a correct value", async () => {
+      const converterMock = moq.Mock.ofType(TestTypeConverter, moq.MockBehavior.Loose);
+      converterMock.callBase = true;
+      converterMock.setup((mock) => mock.convertFromString(moq.It.isAny())).returns(async (value: string) => value);
+
+      const propertyValue = await converterMock.object.convertFromStringToPropertyValue("def", TestUtils.createPrimitiveStringProperty("abc", "abc"));
+      expect((propertyValue as PrimitiveValue).value).to.be.eq("def");
+    });
   });
 
   it("isEqualTo", () => {

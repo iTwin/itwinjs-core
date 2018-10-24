@@ -18,25 +18,41 @@ describe("ShortDateTypeConverter", () => {
     converter = new ShortDateTypeConverter();
   });
 
-  it("convertToString", async () => {
-    // NEEDSWORK - for locales
-    expect(await converter.convertToString(new Date(2018, 0, 1))).to.have.length.greaterThan(0);
+  describe("convertToString", () => {
+    it("returns correct string", async () => {
+      // NEEDSWORK - for locales
+      const date = new Date(2018, 0, 1);
+      const dateString = await converter.convertToString(date);
+      expect(dateString).to.have.length.greaterThan(0);
+      expect(new Date(dateString).toDateString()).to.be.eq(date.toDateString());
+    });
+
+    it("returns empty string if date is undefined", async () => {
+      expect(await converter.convertToString(undefined)).to.be.eq("");
+    });
+
+    it("returns the same string if date is a string", async () => {
+      expect(await converter.convertToString("2015 - 06 - 11")).to.be.eq("2015 - 06 - 11");
+    });
   });
 
-  it("convertToString passed invalid values", async () => {
-    expect(await converter.convertToString(null)).to.equal("");
-    expect(await converter.convertToString(undefined)).to.equal("");
-  });
+  describe("convertFromString", () => {
+    it("returns correct string when proper date string is provided", async () => {
+      const testDate = new Date(2018, 0, 1);
+      const convertedDate = await converter.convertFromString("1/1/2018");
+      expect(convertedDate).to.not.be.undefined;
+      expect(convertedDate!.valueOf()).to.eq(testDate.valueOf());
+    });
 
-  it("convertFromString", async () => {
-    const testDate = new Date(2018, 0, 1);
-    const convertedDate = await converter.convertFromString("1/1/2018");
-    expect(convertedDate.valueOf()).to.eq(testDate.valueOf());
-  });
+    it("returns undefined when empty date string is provided", async () => {
+      const convertedDate = await converter.convertFromString("");
+      expect(convertedDate).to.be.undefined;
+    });
 
-  it("convertFromString passed invalid values", async () => {
-    expect(await converter.convertFromString((null as any))).to.be.undefined;
-    expect(await converter.convertFromString((undefined as any))).to.be.undefined;
+    it("returns undefined when wrong date string is provided", async () => {
+      const convertedDate = await converter.convertFromString("MayFifteenthTwoThousandAndTwo");
+      expect(convertedDate).to.be.undefined;
+    });
   });
 
   it("sortCompare", () => {
@@ -84,7 +100,6 @@ describe("ShortDateTypeConverter", () => {
   it("isLessGreaterType returns true", () => {
     expect(converter.isLessGreaterType).to.be.true;
   });
-
 });
 
 describe("DateTimeTypeConverter", () => {
@@ -97,7 +112,8 @@ describe("DateTimeTypeConverter", () => {
   it("convertFromString", async () => {
     const testDate = new Date(2018, 0, 1, 1, 15, 30);
     const convertedDate = await converter.convertFromString("1/1/2018 1:15:30 AM");
-    expect(convertedDate.valueOf()).to.eq(testDate.valueOf());
+    expect(convertedDate).to.not.be.undefined;
+    expect(convertedDate!.valueOf()).to.eq(testDate.valueOf());
   });
 
 });

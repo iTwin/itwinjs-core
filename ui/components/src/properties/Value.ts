@@ -5,6 +5,7 @@
 /** @module Properties */
 
 import { PropertyRecord } from "./Record";
+import { Primitives } from "../converters/valuetypes";
 
 /**
  * Enumeration for Format of the property value.
@@ -23,7 +24,7 @@ export interface BasePropertyValue {
 /** Primitive property value */
 export interface PrimitiveValue extends BasePropertyValue {
   valueFormat: PropertyValueFormat.Primitive;
-  value: any;
+  value?: Primitives.Value;
   displayValue: string;
 }
 

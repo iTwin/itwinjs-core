@@ -10,6 +10,7 @@ import { Orientation } from "@bentley/ui-core";
 import { SamplePropertyRecord } from "../PropertyTestHelpers";
 import { PropertyRenderer } from "../../../src/propertygrid/component/PropertyRenderer";
 import TestUtils from "../../TestUtils";
+import { PropertyValueRendererManager } from "../../../src/properties/ValueRendererManager";
 
 describe("PropertyRenderer", () => {
   let propertyRecord: SamplePropertyRecord;
@@ -77,7 +78,9 @@ describe("PropertyRenderer", () => {
 
     await TestUtils.flushAsyncOperations();
 
-    expect(propertyRenderer.state("displayValue")).to.be.eq(recordvalue);
+    const displayValueWrapper = mount(<div>{propertyRenderer.state("displayValue")}</div>);
+
+    expect(displayValueWrapper.html().indexOf(recordvalue)).to.be.greaterThan(-1);
   });
 
   it("renders as selected when isSelected prop is true", () => {
@@ -100,5 +103,25 @@ describe("PropertyRenderer", () => {
       />);
 
     expect(propertyRenderer.find(".components--clickable").first().exists()).to.be.true;
+  });
+
+  it("renders value differently if provided with custom propertyValueRendererManager", async () => {
+    class RendererManager extends PropertyValueRendererManager {
+      public async render({ }) {
+        return (<span>Test</span>);
+      }
+    }
+
+    const propertyRenderer = mount(
+      <PropertyRenderer
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        onClick={() => { }}
+        propertyValueRendererManager={new RendererManager()}
+      />);
+
+    await TestUtils.flushAsyncOperations();
+
+    expect(propertyRenderer.find(".components-property-record-value").text()).to.be.eq("Test");
   });
 });

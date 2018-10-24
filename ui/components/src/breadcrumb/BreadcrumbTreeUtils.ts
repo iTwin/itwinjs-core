@@ -179,7 +179,7 @@ export class BreadcrumbTreeUtils {
             key: "icon", record:
               new PropertyRecord(
                 {
-                  value: n.hasChildren ? "icon-folder" : n.iconPath,
+                  value: n.hasChildren ? "icon-folder" : n.iconPath!,
                   valueFormat: PropertyValueFormat.Primitive,
                   displayValue: n.hasChildren ? "icon-folder" : n.iconPath!,
                 },

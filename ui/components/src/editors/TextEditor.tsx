@@ -6,12 +6,11 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { PropertyRecord } from "../properties/Record";
 
 /** Properties for [[TextEditor]] component */
 export interface TextEditorProps {
   onBlur?: (event: any) => void;
-  value?: PropertyRecord;
+  text?: string;
 }
 
 interface TextEditorState {
@@ -46,10 +45,8 @@ export class TextEditor extends React.Component<TextEditorProps, TextEditorState
   }
 
   private async getInitialValue() {
-    const propertyRecord = this.props.value;
-    const initialValue = propertyRecord ? await propertyRecord.getDisplayValue() : "";
     this.setState(
-      () => ({ inputValue: initialValue }),
+      () => ({ inputValue: this.props.text ? this.props.text : "" }),
       () => {
         if (this._input) {
           this._input.focus();

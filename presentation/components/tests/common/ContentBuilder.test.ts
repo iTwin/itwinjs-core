@@ -11,6 +11,7 @@ import {
 import { PresentationError } from "@bentley/presentation-common";
 import * as content from "@bentley/presentation-common/lib/content";
 import ContentBuilder from "../../lib/common/ContentBuilder";
+import { PrimitiveValue } from "@bentley/ui-components";
 
 describe("ContentBuilder", () => {
 
@@ -502,7 +503,7 @@ describe("ContentBuilder", () => {
       const item = new content.Item([createRandomECInstanceKey()], faker.random.words(),
         faker.random.uuid(), undefined, values, displayValues, [field.name]);
       const record = ContentBuilder.createPropertyRecord(field, item);
-      expect(await record.getDisplayValue()).to.eq("");
+      expect(await (record.value as PrimitiveValue).displayValue).to.eq("");
     });
 
     it("throws when display value of merged nested content is not primitive", () => {

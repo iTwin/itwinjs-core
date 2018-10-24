@@ -78,6 +78,7 @@ export class SelectablePropertyBlock extends React.Component<SelectablePropertyB
           onPropertyClicked={this.props.onPropertyClicked}
           columnRatio={this.state.columnRatio}
           onColumnChanged={this._onRatioChanged}
+          propertyValueRendererManager={this.props.propertyValueRendererManager}
         />
       </PropertyCategoryBlock>
     );

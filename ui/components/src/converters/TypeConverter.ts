@@ -8,6 +8,7 @@ import { PropertyDescription } from "../properties/Description";
 import { PropertyRecord } from "../properties/Record";
 import { PropertyValue, PropertyValueFormat, PrimitiveValue } from "../properties/Value";
 import { OutputMessagePriority, OutputMessageType, OutputMessageAlert } from "@bentley/imodeljs-frontend";
+import { Primitives, ConvertedPrimitives } from "./valuetypes";
 
 /**
  * StandardTypeConverterTypeNames.
@@ -27,27 +28,27 @@ export const enum StandardTypeConverterTypeNames {
 
 /** Sort compare method for types that support sorting */
 export interface SortComparer {
-  sortCompare(valueA: any, valueB: any, ignoreCase?: boolean): number;
+  sortCompare(valueA: Primitives.Value, valueB: Primitives.Value, ignoreCase?: boolean): number;
 }
 
 /** Operators for all filterable types */
 export interface OperatorProcessor {
-  isEqualTo(a: any, b: any): boolean;
-  isNotEqualTo(a: any, b: any): boolean;
+  isEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
+  isNotEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
 
 /** Operators for Numeric types, DateTime, TimeSpan, or  any type that supports these comparisons */
 export interface LessGreaterOperatorProcessor {
-  isLessThan(a: any, b: any): boolean;
-  isLessThanOrEqualTo(a: any, b: any): boolean;
-  isGreaterThan(a: any, b: any): boolean;
-  isGreaterThanOrEqualTo(a: any, b: any): boolean;
+  isLessThan(a: Primitives.Value, b: Primitives.Value): boolean;
+  isLessThanOrEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
+  isGreaterThan(a: Primitives.Value, b: Primitives.Value): boolean;
+  isGreaterThanOrEqualTo(a: Primitives.Value, b: Primitives.Value): boolean;
 }
 
 /** Operators for all filterable null-able types */
 export interface NullableOperatorProcessor {
-  isNull(value: any): boolean;
-  isNotNull(value: any): boolean;
+  isNull(value: Primitives.Value): boolean;
+  isNotNull(value: Primitives.Value): boolean;
 }
 
 /** Asynchronous Error Message returned as part of [[AsyncValueProcessingResult]] */
@@ -71,41 +72,38 @@ export interface AsyncValueProcessingResult {
 /**
  * Type Converter base class.
  */
-export class TypeConverter implements SortComparer, OperatorProcessor {
-  public async convertToString(value: any): Promise<string> {
-    if (null === value || undefined === value)
+export abstract class TypeConverter implements SortComparer, OperatorProcessor {
+  public async convertToString(value?: Primitives.Value): Promise<string> {
+    if (value === undefined)
       return "";
     return value.toString();
   }
 
-  public async convertFromString(_value: string): Promise<any> {
+  public async convertFromString(_value: string): Promise<ConvertedPrimitives.Value | undefined> {
     return undefined;
   }
 
-  public async convertPropertyToString(_propertyDescription: PropertyDescription, value: any): Promise<string> {
-    if (null === value || undefined === value)
-      return "";
+  public async convertPropertyToString(_propertyDescription: PropertyDescription, value?: Primitives.Value): Promise<string> {
     return this.convertToString(value);
   }
 
   public async convertFromStringToPropertyValue(value: string, _propertyRecord?: PropertyRecord): Promise<PropertyValue> {
+    const stringValue = await this.convertFromString(value);
     const propertyValue: PrimitiveValue = {
       valueFormat: PropertyValueFormat.Primitive,
-      value: await this.convertFromString(value),
+      value: stringValue ? stringValue : "",
       displayValue: "",
     };
     return propertyValue;
   }
 
-  public sortCompare(valueA: any, valueB: any, _ignoreCase?: boolean): number {
-    return valueA - valueB;
-  }
+  public abstract sortCompare(valueA: Primitives.Value, valueB: Primitives.Value, _ignoreCase?: boolean): number;
 
-  public isEqualTo(valueA: any, valueB: any): boolean {
+  public isEqualTo(valueA: Primitives.Value, valueB: Primitives.Value): boolean {
     return valueA === valueB;
   }
 
-  public isNotEqualTo(valueA: any, valueB: any): boolean {
+  public isNotEqualTo(valueA: Primitives.Value, valueB: Primitives.Value): boolean {
     return valueA !== valueB;
   }
 
