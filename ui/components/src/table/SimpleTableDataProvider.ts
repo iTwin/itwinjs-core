@@ -9,6 +9,7 @@ import { MutableTableDataProvider, ColumnDescription, RowItem, TableDataChangeEv
 import { PropertyRecord } from "../properties/Record";
 import { PropertyValueFormat } from "../properties/Value";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
+import { Primitives } from "../converters/valuetypes";
 
 /**
  * A Table Data Provider using an array of items.
@@ -118,8 +119,8 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     return result;
   }
 
-  private getPrimitiveValue(record: PropertyRecord): any {
-    let primitiveValue: any;
+  private getPrimitiveValue(record: PropertyRecord) {
+    let primitiveValue: Primitives.Value | undefined;
     const recordValue = record.value;
     if (recordValue.valueFormat === PropertyValueFormat.Primitive)
       primitiveValue = recordValue.value;

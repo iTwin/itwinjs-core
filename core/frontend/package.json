@@ -63,7 +63,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "fuse.js": "^3.2.0",
+    "fuse.js": "^3.3.0",
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
     "i18next-xhr-backend": "^1.5.1",

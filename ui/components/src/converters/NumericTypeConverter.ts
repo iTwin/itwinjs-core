@@ -6,6 +6,7 @@
 
 import { TypeConverter, LessGreaterOperatorProcessor } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { Primitives } from "./valuetypes";
 
 /**
  * Base Numeric Type Converter.
@@ -13,20 +14,24 @@ import { TypeConverterManager } from "./TypeConverterManager";
 export abstract class NumericTypeConverterBase extends TypeConverter implements LessGreaterOperatorProcessor {
   public get isLessGreaterType(): boolean { return true; }
 
-  public isLessThan(a: any, b: any): boolean {
+  public isLessThan(a: Primitives.Numeric, b: Primitives.Numeric): boolean {
     return a < b;
   }
 
-  public isLessThanOrEqualTo(a: any, b: any): boolean {
+  public isLessThanOrEqualTo(a: Primitives.Numeric, b: Primitives.Numeric): boolean {
     return a <= b;
   }
 
-  public isGreaterThan(a: any, b: any): boolean {
+  public isGreaterThan(a: Primitives.Numeric, b: Primitives.Numeric): boolean {
     return a > b;
   }
 
-  public isGreaterThanOrEqualTo(a: any, b: any): boolean {
+  public isGreaterThanOrEqualTo(a: Primitives.Numeric, b: Primitives.Numeric): boolean {
     return a >= b;
+  }
+
+  public sortCompare(a: Primitives.Numeric, b: Primitives.Numeric, _ignoreCase?: boolean): number {
+    return (+a) - (+b);
   }
 }
 
@@ -34,22 +39,20 @@ export abstract class NumericTypeConverterBase extends TypeConverter implements 
  * Float Type Converter.
  */
 export class FloatTypeConverter extends NumericTypeConverterBase {
-  public async convertToString(value: any): Promise<string> {
-    if (null === value || undefined === value)
+  public async convertToString(value?: Primitives.Float): Promise<string> {
+    if (value === undefined)
       return "";
 
-    value = value.toString();
-    if (value === "-" || value === "" || value === "-0.0" || value === "-0")
-      value = "0.0";
-    if (value.indexOf(".") === -1)
-      value = value + ".0";
-    return value;
+    let stringValue = value.toString();
+
+    if (stringValue === "-" || stringValue === "" || stringValue === "-0.0" || stringValue === "-0")
+      stringValue = "0.0";
+    if (stringValue.indexOf(".") === -1)
+      stringValue = stringValue + ".0";
+    return stringValue;
   }
 
-  public async convertFromString(value: string): Promise<any> {
-    if (null === value || undefined === value)
-      return undefined;
-
+  public async convertFromString(value: string): Promise<number> {
     return parseFloat(value);
   }
 }
@@ -60,22 +63,19 @@ TypeConverterManager.registerConverter("double", FloatTypeConverter);
  * Int Type Converter.
  */
 export class IntTypeConverter extends NumericTypeConverterBase {
-  public async convertToString(value: any): Promise<string> {
-    if (null === value || undefined === value)
+  public async convertToString(value?: Primitives.Int): Promise<string> {
+    if (value === undefined)
       return "";
 
-    value = value.toString();
-    if (value === "-" || value === "" || value === "-0")
-      value = "0";
-    return value;
+    let stringValue = value.toString();
+
+    if (stringValue === "-" || stringValue === "" || stringValue === "-0")
+      stringValue = "0";
+    return stringValue;
   }
 
-  public async convertFromString(value: string): Promise<any> {
-    if (null === value || undefined === value)
-      return undefined;
-
-    // tslint:disable-next-line:radix
-    return parseInt(value);
+  public async convertFromString(value: string): Promise<number> {
+    return parseInt(value, 10);
   }
 }
 TypeConverterManager.registerConverter("int", IntTypeConverter);

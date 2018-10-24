@@ -7,9 +7,8 @@
 import * as React from "react";
 import { Orientation, ElementSeparator } from "@bentley/ui-core";
 import UiComponents from "../../UiComponents";
-import { PropertyRecord, PropertyValueFormat, PrimitiveValue, StructValue, ArrayValue, PropertyValue } from "../../properties";
-import { PropertyList } from "./PropertyList";
-
+import { PropertyRecord } from "../../properties";
+import { PropertyValueRendererManager, IPropertyValueRendererContext, PropertyContainerType } from "../../properties/ValueRendererManager";
 import "./PropertyRenderer.scss";
 
 /**
@@ -30,12 +29,14 @@ export interface PropertyRendererProps {
   columnRatio?: number;
   /** Callback to ratio change event */
   onColumnRatioChanged?: (ratio: number) => void;
+  /** Custom value renderer */
+  propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
 /** State of [[PropertyRenderer]] React component */
 export interface PropertyRendererState {
   /** Currently loaded property value */
-  displayValue: string;
+  displayValue?: React.ReactNode;
   /** Current width of this component in pixels */
   width?: number;
 }
@@ -57,10 +58,15 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
   }
 
   private async updateDisplayValue(props: PropertyRendererProps) {
-    const displayValue = await props.propertyRecord.getDisplayValue();
+    const rendererContext: IPropertyValueRendererContext = { orientation: this.props.orientation, containerType: PropertyContainerType.PropertyPane };
+    let displayValue: React.ReactNode | undefined;
 
-    if (this.state.displayValue !== displayValue)
-      this.setState({ displayValue });
+    if (this.props.propertyValueRendererManager)
+      displayValue = await this.props.propertyValueRendererManager.render(props.propertyRecord, rendererContext);
+    else
+      displayValue = await PropertyValueRendererManager.defaultManager.render(props.propertyRecord, rendererContext);
+
+    this.setState({ displayValue });
   }
 
   private afterRender() {
@@ -129,42 +135,14 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
             ratio={ratio}
             orientation={this.props.orientation}
           /> : undefined}
-        <div className="components-property-record-value"><PropertyValueRenderer orientation={this.props.orientation} value={this.props.propertyRecord.value} /></div>
+        <div className="components-property-record-value">{this.state.displayValue}</div>
       </div>
     );
   }
 }
 
-class PropertyValueRenderer extends React.PureComponent<{ orientation: Orientation, value: PropertyValue }> {
-  public render() {
-    switch (this.props.value.valueFormat) {
-      case PropertyValueFormat.Primitive: return <PrimitivePropertyValueRenderer value={this.props.value} />;
-      case PropertyValueFormat.Struct: return <StructPropertyValueRenderer orientation={this.props.orientation} value={this.props.value} />;
-      case PropertyValueFormat.Array: return <ArrayPropertyValueRenderer orientation={this.props.orientation} value={this.props.value} />;
-    }
-    return undefined;
-  }
-}
-
-class PrimitivePropertyValueRenderer extends React.PureComponent<{ value: PrimitiveValue }> {
-  public render() {
-    return this.props.value.displayValue;
-  }
-}
-
-class StructPropertyValueRenderer extends React.PureComponent<{ orientation: Orientation, value: StructValue }> {
-  public render() {
-    const members = new Array<PropertyRecord>();
-    for (const key in this.props.value.members) {
-      if (this.props.value.members.hasOwnProperty(key))
-        members.push(this.props.value.members[key]);
-    }
-    return <PropertyList orientation={this.props.orientation} properties={members} />;
-  }
-}
-
-class ArrayPropertyValueRenderer extends React.PureComponent<{ orientation: Orientation, value: ArrayValue }> {
-  public render() {
-    return <PropertyList orientation={this.props.orientation} properties={this.props.value.items} />;
-  }
-}
+// class ArrayPropertyValueRenderer extends React.PureComponent<{ orientation: Orientation, value: ArrayValue }> {
+//   public render() {
+//     return <PropertyList orientation={this.props.orientation} properties={this.props.value.items} />;
+//   }
+// }

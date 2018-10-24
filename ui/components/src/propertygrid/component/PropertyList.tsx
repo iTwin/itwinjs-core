@@ -9,6 +9,7 @@ import { Orientation } from "@bentley/ui-core";
 import { PropertyRecord } from "../../properties";
 import { PropertyRenderer } from "./PropertyRenderer";
 import { PropertyCategory } from "../PropertyDataProvider";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 
 export interface PropertyListProps {
   orientation: Orientation;
@@ -18,6 +19,7 @@ export interface PropertyListProps {
   onPropertyClicked?: (property: PropertyRecord, key?: string) => void;
   columnRatio?: number;
   onColumnChanged?: (ratio: number) => void;
+  propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
 /**
@@ -49,6 +51,7 @@ export class PropertyList extends React.Component<PropertyListProps> {
               onClick={this.props.onPropertyClicked}
               columnRatio={this.props.columnRatio}
               onColumnRatioChanged={this.props.onColumnChanged}
+              propertyValueRendererManager={this.props.propertyValueRendererManager}
             />);
         })}
       </div>

@@ -18,22 +18,36 @@ describe("StringTypeConverter", () => {
     converter = new StringTypeConverter();
   });
 
-  it("covertToString", async () => {
-    expect(await converter.convertToString("ABCdefGhIjK!@#$%^&*")).to.equal("ABCdefGhIjK!@#$%^&*");
-    expect(await converter.convertToString(null)).to.equal("");
+  describe("convertToString", () => {
+    it("returns same string", async () => {
+      expect(await converter.convertToString("ABCdefGhIjK!@#$%^&*")).to.equal("ABCdefGhIjK!@#$%^&*");
+    });
+
+    it("returns empty string if given string is undefined", async () => {
+      expect(await converter.convertToString(undefined)).to.equal("");
+    });
   });
 
-  it("convertFromString", async () => {
-    expect(await converter.convertFromString("ABCdefGhIjK!@#$%^&*")).to.equal("ABCdefGhIjK!@#$%^&*");
+  describe("convertFromString", () => {
+    it("returns same string", async () => {
+      expect(await converter.convertFromString("ABCdefGhIjK!@#$%^&*")).to.equal("ABCdefGhIjK!@#$%^&*");
+    });
   });
 
-  it("sortCompare", () => {
-    expect(converter.sortCompare("ABCDEFG", "abcdefg")).to.be.greaterThan(0);
-    expect(converter.sortCompare("abcdefg", "ABCDEFG")).to.be.lessThan(0);
-    expect(converter.sortCompare("ABCDEFG", "ABCDEFG")).to.equal(0);
-    expect(converter.sortCompare("abcdefg", "ABCDEFG", true)).to.equal(0);
-    expect(converter.sortCompare("ABCDEFG", "abcdefg", true)).to.equal(0);
-    expect(converter.sortCompare(null, "abcdefg", true)).to.equal(0);
+  describe("sortCompare", () => {
+    it("returns 0 if strings are equal", () => {
+      expect(converter.sortCompare("ABCDEFG", "ABCDEFG")).to.equal(0);
+    });
+
+    it("returns non 0 number if strings are equal but letter case is different", () => {
+      expect(converter.sortCompare("ABCDEFG", "abcdefg", false)).to.greaterThan(0);
+      expect(converter.sortCompare("abcdefg", "ABCDEFG", false)).to.lessThan(0);
+    });
+
+    it("returns 0 if strings are equal when ignoring lower case", () => {
+      expect(converter.sortCompare("abcdefg", "ABCDEFG", true)).to.equal(0);
+      expect(converter.sortCompare("ABCDEFG", "abcdefg", true)).to.equal(0);
+    });
   });
 
   it("isStringType", () => {

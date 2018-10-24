@@ -13,7 +13,7 @@ export class TypeConverterManager {
   private static _converters: { [index: string]: (TypeConverter) } = {};
   private static _defaultTypeConverter: TypeConverter;
 
-  public static registerConverter(typename: string, converter: typeof TypeConverter): void {
+  public static registerConverter(typename: string, converter: new () => TypeConverter): void {
     if (TypeConverterManager._converters.hasOwnProperty(typename)) {
       const nameOfConverter = TypeConverterManager._converters[typename].constructor.name;
       throw Error("TypeConverterManager.registerConverter error: type '" + typename + "' already registered to '" + nameOfConverter + "'");

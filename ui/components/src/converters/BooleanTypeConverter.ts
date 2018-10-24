@@ -7,6 +7,7 @@
 import UiComponents from "../UiComponents";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { Primitives } from "./valuetypes";
 
 let sl10nTrue: string = "";
 let sl10nFalse: string = "";
@@ -21,29 +22,32 @@ export class BooleanTypeConverter extends TypeConverter {
       sl10nFalse = UiComponents.i18n.translate("UiComponents:general.false");
   }
 
-  public async convertToString(value: any): Promise<string> {
-    this.getLocalizedTrueFalse();
-
-    if (null === value || undefined === value)
+  public async convertToString(value?: Primitives.Boolean): Promise<string> {
+    if (value === undefined)
       return "";
 
-    if (value === sl10nTrue || value === sl10nFalse)
-      return value;
-
-    const booleanValue = value as boolean;
-    const stringValue = booleanValue ? sl10nTrue : sl10nFalse;
-    return stringValue;
-  }
-
-  public convertFromString(value: string): any {
     this.getLocalizedTrueFalse();
 
-    if (null === value || undefined === value)
-      return undefined;
+    if (value === sl10nTrue || value === sl10nFalse)
+      return value as string;
+
+    return value ? sl10nTrue : sl10nFalse;
+  }
+
+  public async convertFromString(value: string): Promise<boolean> {
+    this.getLocalizedTrueFalse();
 
     let booleanValue: boolean;
     booleanValue = (0 === value.toLocaleLowerCase().localeCompare(sl10nTrue.toLocaleLowerCase()));
     return booleanValue;
+  }
+
+  public sortCompare(a: Primitives.Boolean, b: Primitives.Boolean, _ignoreCase?: boolean): number {
+    if (!!a === !!b)
+      return 0;
+    if (!!a && !b)
+      return 1;
+    return -1;
   }
 
   public get isBooleanType(): boolean { return true; }
