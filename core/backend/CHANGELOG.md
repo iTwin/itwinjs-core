@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Fri, 19 Oct 2018 13:04:14 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Oct 2018 19:20:06 GMT and should not be manually modified.
+
+## 0.162.0
+Wed, 24 Oct 2018 19:20:06 GMT
+
+### Updates
+
+- Removed uncessary comments
+- Breaking changes to optimize usage of 64-bit IDs.
+- Ids and date times can now be directly bound as hex strings or date time ISO strings respectively in ECSQL statements.
+- Remove unused createAndInsert methods from IModelWriteRpcInterface
+- Added classes to reduce electron and express boilerplate in sample apps.
 
 ## 0.161.0
 Fri, 19 Oct 2018 13:04:14 GMT

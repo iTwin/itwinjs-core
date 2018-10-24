@@ -2,6 +2,33 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.162.0",
+      "tag": "@bentley/imodeljs-frontend_v0.162.0",
+      "date": "Wed, 24 Oct 2018 19:20:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added view decoration examples to docs."
+          },
+          {
+            "comment": "Make ToolAdmin.defaultTool. public. Allow getToolTip to return HTMLElement | string."
+          },
+          {
+            "comment": "Fix clipping planes with large floating point values for iOS."
+          },
+          {
+            "comment": "Breaking changes to optimize usage of 64-bit IDs."
+          },
+          {
+            "comment": "Avoid small allocations within render loop."
+          },
+          {
+            "comment": "Added NotificationManager.isToolTipSupported so that we can avoid asking for tooltip message when _showToolTip isn't implemented by application."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.161.0",
       "tag": "@bentley/imodeljs-frontend_v0.161.0",
       "date": "Fri, 19 Oct 2018 13:04:14 GMT",

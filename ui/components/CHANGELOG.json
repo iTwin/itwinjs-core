@@ -2,6 +2,57 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.162.0",
+      "tag": "@bentley/ui-components_v0.162.0",
+      "date": "Wed, 24 Oct 2018 19:20:07 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Tooltips, ToolAdmin.activeToolChanged support, SheetNavigationAid/SheetsModalFrontstage improvements."
+          },
+          {
+            "comment": "Ui Documentation"
+          },
+          {
+            "comment": "Vertical PropertyGrid layout improvements. PropertyGrid background color. Setting the widget state."
+          },
+          {
+            "comment": "Changed Horizontal PropertyGrid css to use grid instead of table display and modified subcomponents accordingly."
+          },
+          {
+            "comment": "Fixed property selection."
+          },
+          {
+            "comment": "Added an ability to resize label/value in PropertyRenderer."
+          },
+          {
+            "comment": "SelectablePropertyBlock now controls label/value ratio for every property in a category."
+          },
+          {
+            "comment": "Fixed PropertyList to use the right key."
+          },
+          {
+            "comment": "Updated types from any to more specific one in TypeConverters."
+          },
+          {
+            "comment": "Primitive property record value now can not be undefined."
+          },
+          {
+            "comment": "TextEditor now accepts property defined as string instead of PropertyRecord."
+          },
+          {
+            "comment": "Added a manager that allows registering custom property value renderers."
+          },
+          {
+            "comment": "Added default renderers for Primitive, Array and Struct properties."
+          },
+          {
+            "comment": "Custom property value renderer manager can now be provided to Table and Pane. Without it they use default property renderers."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.161.0",
       "tag": "@bentley/ui-components_v0.161.0",
       "date": "Fri, 19 Oct 2018 13:04:14 GMT",

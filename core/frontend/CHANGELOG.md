@@ -1,6 +1,18 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 19 Oct 2018 13:04:14 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Oct 2018 19:20:06 GMT and should not be manually modified.
+
+## 0.162.0
+Wed, 24 Oct 2018 19:20:06 GMT
+
+### Updates
+
+- Added view decoration examples to docs.
+- Make ToolAdmin.defaultTool. public. Allow getToolTip to return HTMLElement | string.
+- Fix clipping planes with large floating point values for iOS.
+- Breaking changes to optimize usage of 64-bit IDs.
+- Avoid small allocations within render loop.
+- Added NotificationManager.isToolTipSupported so that we can avoid asking for tooltip message when _showToolTip isn't implemented by application.
 
 ## 0.161.0
 Fri, 19 Oct 2018 13:04:14 GMT

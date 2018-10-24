@@ -2,6 +2,24 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "0.162.0",
+      "tag": "@bentley/geometry-core_v0.162.0",
+      "date": "Wed, 24 Oct 2018 19:20:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Merge"
+          },
+          {
+            "comment": "fromJSON tests.    Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance."
+          },
+          {
+            "comment": "rename PNG files as png"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.161.0",
       "tag": "@bentley/geometry-core_v0.161.0",
       "date": "Fri, 19 Oct 2018 13:04:14 GMT",

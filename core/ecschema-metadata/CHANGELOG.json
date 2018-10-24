@@ -2,6 +2,21 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "0.162.0",
+      "tag": "@bentley/ecschema-metadata_v0.162.0",
+      "date": "Wed, 24 Oct 2018 19:20:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Test added, exports are imported from Index and tested against explicitly imported modules to ensure equality."
+          },
+          {
+            "comment": "Updated how default values are set. They are now all set within the constructor."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.161.0",
       "tag": "@bentley/ecschema-metadata_v0.161.0",
       "date": "Fri, 19 Oct 2018 13:04:14 GMT",
