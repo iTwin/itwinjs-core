@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fail rush docs on invalid tags",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "will.bentley@bentley.com"
+}
