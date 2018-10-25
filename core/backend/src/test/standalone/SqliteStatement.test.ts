@@ -7,7 +7,7 @@ import * as path from "path";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
-import { DbResult, using, Id64, Guid } from "@bentley/bentleyjs-core";
+import { DbResult, using } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 
 describe("SqliteStatement", () => {
@@ -243,13 +243,13 @@ describe("SqliteStatement", () => {
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(id,guid) VALUES(?,?)", (stmt: SqliteStatement) => {
         assert.isFalse(stmt.isReadonly);
-        stmt.bindId(1, Id64.fromString("0x11"));
-        stmt.bindValue(2, new Guid("370cea34-8415-4f81-b54c-85040eb3111e"));
+        stmt.bindValue(1, { id: "0x11" });
+        stmt.bindValue(2, { guid: "370cea34-8415-4f81-b54c-85040eb3111e" });
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
         stmt.reset();
         stmt.clearBindings();
 
-        stmt.bindValues([Id64.wrap(Id64.fromString("0x12")), new Guid("f9f1eb6e-1171-4f45-ba90-55c856056341")]);
+        stmt.bindValues([{ id: "0x12" }, { guid: "f9f1eb6e-1171-4f45-ba90-55c856056341" }]);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
         stmt.reset();
         stmt.clearBindings();
@@ -257,13 +257,13 @@ describe("SqliteStatement", () => {
 
       ecdb.withPreparedSqliteStatement("INSERT INTO MyTable(id,guid) VALUES(:id,:guid)", (stmt: SqliteStatement) => {
         assert.isFalse(stmt.isReadonly);
-        stmt.bindId(":id", Id64.fromString("0x13"));
-        stmt.bindValue(":guid", new Guid("370cea34-8415-4f81-b54c-85040eb3111e"));
+        stmt.bindValue(":id", { id: "0x13" });
+        stmt.bindValue(":guid", { guid: "370cea34-8415-4f81-b54c-85040eb3111e" });
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
         stmt.reset();
         stmt.clearBindings();
 
-        stmt.bindValues({ ":id": Id64.wrap(Id64.fromString("0x14")), ":guid": new Guid("f9f1eb6e-1171-4f45-ba90-55c856056341") });
+        stmt.bindValues({ ":id": { id: "0x14" }, ":guid": { guid: "f9f1eb6e-1171-4f45-ba90-55c856056341" } });
         assert.equal(stmt.step(), DbResult.BE_SQLITE_DONE);
         stmt.reset();
         stmt.clearBindings();
@@ -279,15 +279,15 @@ describe("SqliteStatement", () => {
           assert.equal(expectedId, idVal.getInteger());
           assert.equal(typeof (idVal.value), "number");
           assert.equal(expectedId, idVal.value);
-          assert.equal(expectedId, Number.parseInt(idVal.getId().toString(), 16));
+          assert.equal(expectedId, Number.parseInt(idVal.getId(), 16));
 
           const guidVal: SqliteValue = stmt.getValue(1);
           assert.instanceOf(guidVal.value, ArrayBuffer);
 
           if (rowCount % 2 !== 0)
-            assert.equal("370cea34-8415-4f81-b54c-85040eb3111e", guidVal.getGuid().toString());
+            assert.equal("370cea34-8415-4f81-b54c-85040eb3111e", guidVal.getGuid());
           else
-            assert.equal("f9f1eb6e-1171-4f45-ba90-55c856056341", guidVal.getGuid().toString());
+            assert.equal("f9f1eb6e-1171-4f45-ba90-55c856056341", guidVal.getGuid());
 
           const row = stmt.getRow();
           assert.isDefined(row.id);

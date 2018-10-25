@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NavigationValue } from "@bentley/imodeljs-common";
-
+import { Id64String } from "@bentley/bentleyjs-core";
 // tslint:disable:no-console
 
 async function executeECSql_Binding(iModel: IModelConnection): Promise<void> {
@@ -83,7 +83,7 @@ async function executeECSql_QueryResult(iModel: IModelConnection) {
     const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", ["0x113"]);
     console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");
     for (const row of rows) {
-      const id: string = row.id;
+      const id: Id64String = row.id;
       const className: string = row.className;
       const parent: NavigationValue = row.parent;
       const lastMod: string = row.lastMod;

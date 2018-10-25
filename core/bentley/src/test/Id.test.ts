@@ -8,10 +8,10 @@ import { Id64, Guid } from "../bentleyjs-core";
 
 class Uint64Id {
   public constructor(public readonly high: number,
-                     public readonly low: number,
-                     public readonly localId: number,
-                     public readonly briefcaseId: number,
-                     public readonly str: string) { }
+    public readonly low: number,
+    public readonly localId: number,
+    public readonly briefcaseId: number,
+    public readonly str: string) { }
 }
 
 describe("Ids", () => {
@@ -163,8 +163,8 @@ describe("Ids", () => {
   });
 
   it("Guid should construct properly", () => {
-    const v1 = "274e25dc-8407-11e7-bb31-be2e44b06b34"; // a valid v1 id
-    const v4 = "3d04156c-4faa-4eac-b20e-353a9e6c0183"; // a valid v4 id
+    const v1: string = "274e25dc-8407-11e7-bb31-be2e44b06b34"; // a valid v1 id
+    const v4: string = "3d04156c-4faa-4eac-b20e-353a9e6c0183"; // a valid v4 id
     const id1 = new Guid(v1);
     assert.isTrue(id1.isValid);
     assert.isFalse(Guid.isV4Guid(v1));
@@ -192,6 +192,30 @@ describe("Ids", () => {
     assert.isTrue(Guid.isGuid(id6.value));
     assert.isTrue(Guid.isV4Guid(id6.value));
     assert.notEqual(id6.toString(), id7.toString());
+
+    // validateGuidString = false
+    let id = new Guid(v1, false);
+    assert.isTrue(id.isValid);
+    assert.isTrue(Guid.isGuid(id.value));
+
+    id = Guid.wrap(v1);
+    assert.isTrue(id.isValid);
+    assert.isTrue(Guid.isGuid(id.value));
+
+    id = new Guid("invalid guid string", false);
+    assert.isTrue(id.isValid, "isValid just tests whether the Guid value is empty or not");
+    assert.isFalse(Guid.isGuid(id.value));
+
+    try {
+      id = Guid.wrap("invalid guid string");
+    } catch (e) {
+      // Guid.wrap asserts on the validity of the string. This is therefore an expected error
+      assert.isDefined(e.message);
+      assert.isTrue(e.message.toLowerCase().startsWith("assert:"));
+    }
+
+    assert.isTrue(id.isValid, "isValid just tests whether the Guid value is empty or not");
+    assert.isFalse(Guid.isGuid(id.value));
   });
 
 });

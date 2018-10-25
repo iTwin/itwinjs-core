@@ -6,7 +6,7 @@
 
 import { AccessToken, ChangeSet, UserInfo, UserInfoQuery, ChangeSetQuery } from "@bentley/imodeljs-clients";
 import { ErrorStatusOrResult } from "./imodeljs-native-platform-api";
-import { Id64String, Id64, using, assert, Logger, PerfLogger, DbResult, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Id64String, using, assert, Logger, PerfLogger, DbResult, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelDb } from "./IModelDb";
 import { ECDb, ECDbOpenMode } from "./ECDb";
 import { ECSqlStatement } from "./ECSqlStatement";
@@ -214,14 +214,14 @@ export class ChangeSummaryManager {
         Logger.logTrace(loggingCategory, `Actual Change summary extraction done for changeset #${i + 1}.`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Add ChangeSet info to ChangeSummary");
-        const changeSummaryId = Id64.fromString(stat.result!);
+        const changeSummaryId: Id64String = stat.result!;
         summaries.push(changeSummaryId);
         let userEmail: string | undefined; // undefined means that no user information is stored along with changeset
         if (currentChangeSetInfo.userCreated) {
           const userId: string = currentChangeSetInfo.userCreated;
           const foundUserEmail: string | undefined = userInfoCache.get(userId);
           if (foundUserEmail === undefined) {
-            const userInfos: UserInfo[] = await BriefcaseManager.imodelClient.Users().get(actx, ctx.accessToken, new Guid(ctx.iModelId), new UserInfoQuery().byId(userId));
+            const userInfos: UserInfo[] = await BriefcaseManager.imodelClient.Users().get(actx, ctx.accessToken, Guid.wrap(ctx.iModelId), new UserInfoQuery().byId(userId));
             actx.enter();
             assert(userInfos.length !== 0);
             if (userInfos.length !== 0) {
@@ -267,7 +267,7 @@ export class ChangeSummaryManager {
       const query = new ChangeSetQuery();
       query.byId(startChangeSetId);
 
-      const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, ctx.accessToken, new Guid(ctx.iModelId), query);
+      const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, ctx.accessToken, Guid.wrap(ctx.iModelId), query);
       actx.enter();
       if (changeSets.length === 0)
         throw new Error(`Unable to find change set ${startChangeSetId} for iModel ${ctx.iModelId}`);
@@ -345,7 +345,7 @@ export class ChangeSummaryManager {
       (stmt: ECSqlStatement) => {
         stmt.bindString(1, changeSetId);
         if (DbResult.BE_SQLITE_ROW === stmt.step())
-          return Id64.fromString(stmt.getValue(0).getId());
+          return stmt.getValue(0).getId();
 
         return undefined;
       });
@@ -424,12 +424,12 @@ export class ChangeSummaryManager {
           throw new IModelError(IModelStatus.BadArg, `No InstanceChange found for id ${instanceChangeId}.`);
 
         const row = stmt.getRow();
-        const changedInstanceId = Id64.fromJSON(row.changedInstanceId);
+        const changedInstanceId: Id64String = row.changedInstanceId;
         const changedInstanceClassName: string = "[" + row.changedInstanceSchemaName + "].[" + row.changedInstanceClassName + "]";
         const op: ChangeOpCode = row.opCode as ChangeOpCode;
 
         return {
-          id: instanceChangeId, summaryId: Id64.fromJSON(row.summaryId), changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
+          id: instanceChangeId, summaryId: row.summaryId, changedInstance: { id: changedInstanceId, className: changedInstanceClassName },
           opCode: op, isIndirect: row.isIndirect,
         };
       });

@@ -1139,7 +1139,7 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public queryChildren(elementId: Id64String): Id64String[] {
-      const rows: any[] = this._iModel.executeQuery(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=?`, [Id64.wrap(elementId)]);
+      const rows: any[] = this._iModel.executeQuery(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=?`, [elementId]);
       const childIds: Id64String[] = [];
       for (const row of rows) {
         childIds.push(Id64.fromJSON(row.id));
@@ -1154,7 +1154,7 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     private _queryAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
-      const rows: any[] = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE Element.Id=?`, [Id64.wrap(elementId)]);
+      const rows: any[] = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE Element.Id=?`, [elementId]);
       if (rows.length === 0)
         throw new IModelError(IModelStatus.NotFound, "ElementAspect class not found", Logger.logWarning, loggingCategory, () => ({ aspectClassName }));
 
@@ -1275,7 +1275,7 @@ export namespace IModelDb {
         viewStateData.sheetProps = elements.getElementProps(viewDefinitionElement.baseModelId) as SheetProps;
         viewStateData.sheetAttachments = Array.from(this._iModel.queryEntityIds({
           from: "BisCore.ViewAttachment",
-          where: "Model.Id=" + Id64.wrap(viewDefinitionElement.baseModelId),
+          where: "Model.Id=" + viewDefinitionElement.baseModelId,
         }));
       }
       return viewStateData;

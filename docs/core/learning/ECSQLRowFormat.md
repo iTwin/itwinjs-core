@@ -38,11 +38,11 @@ ECSQL type | Extended Type | JavaScript Typ
 ---------- | ------------- | ---------------
 Boolean    | -             | boolean
 Blob       | -             | ArrayBuffer
-Blob       | BeGuid        | GUID string (see [Guid]($bentleyjs-core))
+Blob       | BeGuid        | GUID string (see [GuidString]($bentleyjs-core))
 ClassId system properties | - | fully qualified class name
 Double     | -             | number
 DateTime   | -             | ISO 8601 date time string
-Id system properties | -   | hexadecimal string (see [Id64]($bentleyjs-core)))
+Id system properties | -   | hexadecimal string (see [Id64String]($bentleyjs-core)))
 Integer    | -             | number
 Int64      | -             | number
 Int64      | Id            | hexadecimal string
