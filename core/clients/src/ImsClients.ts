@@ -2,7 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Authentication */
+/*
+ * @module Authentication */
 
 import * as xpath from "xpath";
 import { DOMParser } from "xmldom";
@@ -16,8 +17,6 @@ import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 /** Client API for the IMS Federated Authentication Service. */
 export class ImsFederatedAuthenticationClient extends Client {
   public static readonly searchKey: string = "IMS.FederatedAuth.Url";
-  public static readonly configURL = "imjs_ims_federated_auth_url";
-  public static readonly configRegion = "imjs_ims_federated_auth_region";
   /**
    * Creates an instance of ImsFederatedAuthenticationClient.
    */
@@ -33,27 +32,6 @@ export class ImsFederatedAuthenticationClient extends Client {
     return ImsFederatedAuthenticationClient.searchKey;
   }
 
-  /**
-   * Gets the default URL for the service.
-   * @returns Default URL for the service.
-   */
-  protected getDefaultUrl(): string {
-    if (Config.App.has(ImsFederatedAuthenticationClient.configURL))
-      return Config.App.get(ImsFederatedAuthenticationClient.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key ${ImsFederatedAuthenticationClient.configURL}`);
-  }
-
-  /**
-   * Override default region for this service
-   * @returns region id or undefined
-   */
-  protected getRegion(): number | undefined {
-    if (Config.App.has(ImsFederatedAuthenticationClient.configRegion))
-      return Config.App.get(ImsFederatedAuthenticationClient.configRegion);
-
-    return undefined;
-  }
   /**
    * Parses the response from the token request to obtain the token and the user profile.
    * @param authTokenResponse Response for the token request.
@@ -74,8 +52,6 @@ export class ImsFederatedAuthenticationClient extends Client {
 /** Client API for the IMS Active Secure Token Service. */
 export class ImsActiveSecureTokenClient extends Client {
   public static readonly searchKey: string = "Mobile.ImsStsAuth";
-  public static readonly configURL = "imjs_ims_active_secure_token_url";
-  public static readonly configRegion = "imjs_ims_active_secure_token_region";
   /**
    * Creates an instance of ImsActiveSecureTokenClient.
    */
@@ -89,28 +65,6 @@ export class ImsActiveSecureTokenClient extends Client {
    */
   protected getUrlSearchKey(): string {
     return ImsActiveSecureTokenClient.searchKey;
-  }
-
-  /**
-   * Gets the default URL for the service.
-   * @returns Default URL for the service.
-   */
-  protected getDefaultUrl(): string {
-    if (Config.App.has(ImsActiveSecureTokenClient.configURL))
-      return Config.App.get(ImsActiveSecureTokenClient.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key ${ImsActiveSecureTokenClient.configURL}`);
-  }
-
-  /**
-   * Override default region for this service
-   * @returns region id or undefined
-   */
-  protected getRegion(): number | undefined {
-    if (Config.App.has(ImsActiveSecureTokenClient.configRegion))
-      return Config.App.get(ImsActiveSecureTokenClient.configRegion);
-
-    return undefined;
   }
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
@@ -160,8 +114,6 @@ export class ImsActiveSecureTokenClient extends Client {
 /** Client API for the IMS Delegation Secure Token Service. */
 export class ImsDelegationSecureTokenClient extends Client {
   public static readonly searchKey: string = "ActiveSTSDelegationServiceUrl";
-  public static readonly configURL = "imjs_sts_delegation_service_url";
-  public static readonly configRegion = "imjs_sts_delegation_service_region";
   /**
    * Creates an instance of ImsDelegationSecureTokenClient.
    */
@@ -181,22 +133,6 @@ export class ImsDelegationSecureTokenClient extends Client {
    * Gets the default URL for the service.
    * @returns Default URL for the service.
    */
-  protected getDefaultUrl(): string {
-    if (Config.App.has(ImsDelegationSecureTokenClient.configURL))
-      return Config.App.get(ImsDelegationSecureTokenClient.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key ${ImsDelegationSecureTokenClient.configURL}`);
-  }
-  /**
-   * Override default region for this service
-   * @returns region id or undefined
-   */
-  protected getRegion(): number | undefined {
-    if (Config.App.has(ImsDelegationSecureTokenClient.configRegion))
-      return Config.App.get(ImsDelegationSecureTokenClient.configRegion);
-
-    return undefined;
-  }
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);

@@ -4,10 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { Version } from "../imodelhub";
-import { TilesGeneratorClient, Job } from "../TilesGeneratorClient";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
-import { RequestQueryOptions } from "../Request";
 import { RealityDataServicesClient, RealityData } from "../RealityDataServicesClient";
 import { IModelHubClient } from "..";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
@@ -17,12 +15,11 @@ describe.skip("RealityDataServicesClient", () => {
 
   let accessToken: AccessToken;
   const imodelHubClient: IModelHubClient = new IModelHubClient();
-  const tilesGeneratorClient: TilesGeneratorClient = new TilesGeneratorClient();
   const realityDataServiceClient: RealityDataServicesClient = new RealityDataServicesClient();
   const projectId: string = "b2101b1a-0c1f-451e-97f2-6599bf900d36";
   const iModelId: string = "0c315eb1-d10c-4449-9c09-f36d54ad37f2";
   let versionId: string;
-  let tilesId: string;
+  const tilesId: any = null;
   const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
@@ -37,19 +34,13 @@ describe.skip("RealityDataServicesClient", () => {
     versionId = versions[0].wsgId;
     chai.expect(versionId);
 
-    // Update access token to that for TilesGeneratorClient
-    const tilesGeneratorToken = await tilesGeneratorClient.getAccessToken(actx, authToken);
-    const instanceId: string = `${projectId}--${iModelId}--${versionId}`;
-    const queryOptions: RequestQueryOptions = {
-      $select: "*",
-      $filter: `$id+eq+'${instanceId}'`,
-    };
+    // const instanceId: string = `${projectId}--${iModelId}--${versionId}`;
+    // const queryOptions: RequestQueryOptions = {
+    //   $select: "*",
+    //   $filter: `$id+eq+'${instanceId}'`,
+    // };
 
-    const job: Job = await tilesGeneratorClient.getJob(actx, tilesGeneratorToken, queryOptions);
-    chai.expect(job);
-
-    chai.expect(job.tilesId);
-    tilesId = job.tilesId!;
+    chai.expect(tilesId);
   });
 
   it("should be able to retrieve reality data properties  (#integration)", async function (this: Mocha.ITestCallbackContext) {

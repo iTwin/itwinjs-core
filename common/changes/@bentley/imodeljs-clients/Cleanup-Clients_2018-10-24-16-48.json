@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Cleanup clients. Removed unused clients and methods.",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "khanaffan@gmail.com"
+}

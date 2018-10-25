@@ -11,13 +11,10 @@ import { SettingsAdmin, SettingsStatus, SettingsResult } from "./SettingsAdmin";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { Config } from "./Config";
 
 /** Client API for the CONNECT ProductSettingsService - implements the SettingsAdmin interface when settings are stored by CONNECT. */
 export class ConnectSettingsClient extends Client implements SettingsAdmin {
   public static readonly searchKey: string = "ProductSettingsService.RP";
-  public static readonly configURL = "IMGS_PRODUCT_SETTING_SERVICE_URL";
-  public static readonly configRegion = "IMGS_PRODUCT_SETTING_SERVICE_REGION";
   /**
    * Creates an instance of ConnectSettingsClient.
    * @param deploymentEnv Deployment environment.
@@ -42,27 +39,6 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
    */
   protected getUrlSearchKey(): string { return ConnectSettingsClient.searchKey; }
 
-  /**
-   * Gets the default URL for the service.
-   * @returns Default URL for the service.
-   */
-  protected getDefaultUrl(): string {
-    if (Config.App.has(ConnectSettingsClient.configURL))
-      return Config.App.get(ConnectSettingsClient.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key ${ConnectSettingsClient.configURL}`);
-  }
-
-  /**
-   * Override default region for this service
-   * @returns region id or undefined
-   */
-  protected getRegion(): number | undefined {
-    if (Config.App.has(ConnectSettingsClient.configRegion))
-      return Config.App.get(ConnectSettingsClient.configRegion);
-
-    return undefined;
-  }
   // gets the portion of the Url that encapsulates the type of setting requested.
   private getUrlOptions(settingNamespace: string, settingName: string, userSpecific: boolean, applicationSpecific: boolean, projectId?: string, iModelId?: string) {
     // The types of settings are:

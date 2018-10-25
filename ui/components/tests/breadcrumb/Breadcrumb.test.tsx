@@ -19,8 +19,8 @@ describe("Breadcrumb", () => {
     });
     it("should have one child in parent element", () => {
       const path = new BreadcrumbPath(mockTreeDataProvider);
-      const { queryByTestId } = render(<Breadcrumb dataProvider={mockTreeDataProvider} path={path} />);
-      const dropdownInputParent = queryByTestId("breadcrumb-dropdown-input-parent");
+      const { getByTestId } = render(<Breadcrumb dataProvider={mockTreeDataProvider} path={path} />);
+      const dropdownInputParent = getByTestId("breadcrumb-dropdown-input-parent");
       expect(dropdownInputParent).to.exist;
       // should only every have input or dropdown
       expect(dropdownInputParent!.children).to.have.lengthOf(1);

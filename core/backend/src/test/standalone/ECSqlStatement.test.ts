@@ -64,14 +64,14 @@ describe("ECSqlStatement", () => {
 
       expectedId = Id64.fromLocalAndBriefcaseIds(4446, 0);
       r = ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(?,?)", (stmt: ECSqlStatement) => {
-        stmt.bindValues([Id64.wrap(expectedId), "4446.txt"]);
+        stmt.bindValues([expectedId, "4446.txt"]);
         return stmt.stepForInsert();
       });
       verify(ecdb, r, expectedId);
 
       expectedId = Id64.fromLocalAndBriefcaseIds(4447, 0);
       r = ecdb.withPreparedStatement("INSERT INTO ecdbf.ExternalFileInfo(ECInstanceId,Name) VALUES(:id,:name)", (stmt: ECSqlStatement) => {
-        stmt.bindValues({ id: Id64.wrap(expectedId), name: "4447.txt" });
+        stmt.bindValues({ id: expectedId, name: "4447.txt" });
         return stmt.stepForInsert();
       });
       verify(ecdb, r, expectedId);

@@ -376,7 +376,7 @@ describe("iModel", () => {
 
       // get the subcategories
       const queryString: string = `SELECT ECInstanceId FROM ${SubCategory.classFullName} WHERE Parent.Id=?`;
-      const subCategoryRows: any[] = imodel1.executeQuery(queryString, [Id64.wrap(categoryId)]);
+      const subCategoryRows: any[] = imodel1.executeQuery(queryString, [categoryId]);
       assert.exists(subCategoryRows, "Should have at least one SubCategory");
       for (const subCategoryRow of subCategoryRows) {
         const subCategoryId = Id64.fromJSON(subCategoryRow.id);

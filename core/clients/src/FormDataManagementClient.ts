@@ -92,9 +92,7 @@ export class FormInstanceData extends WsgInstance {
  */
 export class FormDataManagementClient extends WsgClient {
   public static readonly searchKey: string = "Forms.WSGService";
-  public static readonly configURL = "imjs_form_data_management_url";
   public static readonly configRelyingPartyUri = "imjs_form_data_management_relying_party_uri";
-  public static readonly configRegion = "imjs_form_data_management_region";
   /**
    * Creates an instance of RealityDataServicesClient.
    */
@@ -108,28 +106,6 @@ export class FormDataManagementClient extends WsgClient {
    */
   protected getUrlSearchKey(): string {
     return FormDataManagementClient.searchKey;
-  }
-
-  /**
-   * Gets the default URL for the service.
-   * @returns Default URL for the service.
-   */
-  protected getDefaultUrl(): string {
-    if (Config.App.has(FormDataManagementClient.configURL))
-      return Config.App.get(FormDataManagementClient.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key ${FormDataManagementClient.configURL}`);
-  }
-
-  /**
-   * Override default region for this service
-   * @returns region id or undefined
-   */
-  protected getRegion(): number | undefined {
-    if (Config.App.has(FormDataManagementClient.configRegion))
-      return Config.App.get(FormDataManagementClient.configRegion);
-
-    return undefined;
   }
 
   /**
