@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Task */
+/** @module WorkflowTask */
 
 import ItemDefBase from "./ItemDefBase";
 import { ItemProps } from "./ItemProps";
@@ -13,7 +13,7 @@ import { FrontstageManager } from "./FrontstageManager";
 // TaskDef, TasksDef, WorkflowDef and WorkflowsDef
 // -----------------------------------------------------------------------------
 
-/** Properties for a Task */
+/** Properties for a [[Task]] */
 export interface TaskProps extends ItemProps {
   id: string;
   primaryStageId: string;

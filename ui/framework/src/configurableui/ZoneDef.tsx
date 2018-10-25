@@ -42,14 +42,12 @@ export interface ZoneProps {
  * A ZoneDef represents each zone within a Frontstage.
  */
 export class ZoneDef {
-  /** Default Zone state. Controls how the Zone is initially displayed. */
-  public defaultState: ZoneState;
+  /** Zone state. */
+  public zoneState: ZoneState = ZoneState.Open;
   /** Indicates if other Zones may be merged with this Zone.  */
   public allowsMerging: boolean;
   /** Any application data to attach to this Zone. */
   public applicationData?: any;
-  /** Indicates if this Zone is open by default, based on defaultState.  */
-  public isDefaultOpen: boolean = false;
 
   private _widgetDefs: WidgetDef[] = new Array<WidgetDef>();
 
@@ -57,7 +55,7 @@ export class ZoneDef {
    * @param zoneProps Properties for the Zone
    */
   constructor(zoneProps: ZoneProps) {
-    this.defaultState = zoneProps.defaultState;
+    this.zoneState = zoneProps.defaultState;
     this.allowsMerging = zoneProps.allowsMerging;
 
     if (zoneProps.applicationData !== undefined)
@@ -68,11 +66,6 @@ export class ZoneDef {
         const widgetDef = WidgetDefFactory.create(widgetProps);
         if (widgetDef) {
           this.addWidgetDef(widgetDef);
-
-          if (!this.isDefaultOpen && this.defaultState === ZoneState.Open) {
-            if (widgetDef.isDefaultOpen)
-              this.isDefaultOpen = true;
-          }
         }
       });
     }
@@ -125,13 +118,6 @@ export class ZoneDef {
     if (this.widgetCount === 1)
       return this._widgetDefs[0].isStatusBar;
     return false;
-  }
-
-  /** @hidden */
-  public clearDefaultOpenUsed(): void {
-    this.widgetDefs.map((widgetDef: WidgetDef) => {
-      widgetDef.defaultOpenUsed = false;
-    });
   }
 }
 

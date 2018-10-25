@@ -129,7 +129,7 @@ describe("TableDataProvider", async () => {
       expect(await provider.getRowsCount()).to.eq(1);
       const row = await provider.getRow(0);
       const rowKey = instanceKeyFromJSON(JSON.parse(row!.key));
-      expect(rowKey.id.value).to.eq(new Id64(instances.physicalModel.id).value);
+      expect(rowKey.id).to.eq(Id64.fromString(instances.physicalModel.id!));
     });
 
   });

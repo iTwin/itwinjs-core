@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ElementState */
 
-import { Id64, Guid } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, Guid } from "@bentley/bentleyjs-core";
 import { EntityProps, Code, ElementProps, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 
 /** The "state" of an Entity as represented in a web browser. */
 export class EntityState implements EntityProps {
-  public readonly id: Id64;
+  public readonly id: Id64String;
   public readonly iModel: IModelConnection;
   public readonly classFullName: string;
   public readonly jsonProperties: any;
@@ -32,7 +32,7 @@ export class EntityState implements EntityProps {
   public toJSON(): EntityProps {
     const val: any = {};
     val.classFullName = this.classFullName;
-    if (this.id.isValid)
+    if (Id64.isValid(this.id))
       val.id = this.id;
     if (this.jsonProperties && Object.keys(this.jsonProperties).length > 0)
       val.jsonProperties = this.jsonProperties;
@@ -62,7 +62,7 @@ export class EntityState implements EntityProps {
 
 /** The "state" of an Element as represented in a web browser. */
 export class ElementState extends EntityState implements ElementProps {
-  public readonly model: Id64;
+  public readonly model: Id64String;
   public readonly code: Code;
   public readonly parent?: RelatedElement;
   public readonly federationGuid?: Guid;
@@ -79,7 +79,7 @@ export class ElementState extends EntityState implements ElementProps {
 
   public toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
-    if (this.code.spec.isValid)
+    if (Id64.isValid(this.code.spec))
       val.code = this.code;
     val.model = this.model;
     val.parent = this.parent;

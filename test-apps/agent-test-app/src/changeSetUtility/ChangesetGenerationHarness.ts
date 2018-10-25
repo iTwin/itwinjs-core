@@ -7,7 +7,7 @@ import { HubUtility } from "./HubUtility";
 import { IModelDbHandler } from "./IModelDbHandler";
 import { ChangesetGenerator } from "./ChangesetGenerator";
 import { TestChangesetSequence } from "./TestChangesetSequence";
-import { Id64, Logger, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { Id64String, Logger, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 import { IModelDb, IModelHost, IModelHostConfiguration, KeepBriefcase } from "@bentley/imodeljs-backend/lib/backend";
 import { IModel, CodeScopeSpec, ColorDef, AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/common";
 import { Point3d } from "@bentley/geometry-core";
@@ -27,9 +27,9 @@ export class ChangesetGenerationHarness {
     private _accessToken?: AccessToken;
     private _iModelName: string;
     private _projectId?: string;
-    private _physicalModelId?: Id64;
-    private _codeSpecId?: Id64;
-    private _categoryId?: Id64;
+    private _physicalModelId?: Id64String;
+    private _codeSpecId?: Id64String;
+    private _categoryId?: Id64String;
     private _isInitialized: boolean = false;
     public constructor(hubUtility?: HubUtility, iModelDbHandler?: IModelDbHandler, localIModelDbPath?: string) {
         this._iModelDbHandler = iModelDbHandler ? iModelDbHandler : new IModelDbHandler();
@@ -70,15 +70,15 @@ export class ChangesetGenerationHarness {
 
         this._iModelDb = IModelDb.createStandalone(pathname, { rootSubject: { name: this._iModelName! } });
 
-        const definitionModelId: Id64 = IModel.dictionaryId;
+        const definitionModelId: Id64String = IModel.dictionaryId;
         this._physicalModelId = IModelDbHandler.insertPhysicalModel(this._iModelDb!, "TestModel");
         this._codeSpecId = IModelDbHandler.insertCodeSpec(this._iModelDb!, "TestCodeSpec", CodeScopeSpec.Type.Model);
         this._categoryId = IModelDbHandler.insertSpatialCategory(this._iModelDb!, definitionModelId, "TestCategory", new ColorDef("blanchedAlmond"));
 
         // Insert a ViewDefinition for the PhysicalModel
-        const modelSelectorId: Id64 = IModelDbHandler.insertModelSelector(this._iModelDb!, definitionModelId, [this._physicalModelId!.toString()]);
-        const categorySelectorId: Id64 = IModelDbHandler.insertCategorySelector(this._iModelDb!, definitionModelId, [this._categoryId!.toString()]);
-        const displayStyleId: Id64 = IModelDbHandler.insertDisplayStyle3d(this._iModelDb!, definitionModelId);
+        const modelSelectorId: Id64String = IModelDbHandler.insertModelSelector(this._iModelDb!, definitionModelId, [this._physicalModelId!.toString()]);
+        const categorySelectorId: Id64String = IModelDbHandler.insertCategorySelector(this._iModelDb!, definitionModelId, [this._categoryId!.toString()]);
+        const displayStyleId: Id64String = IModelDbHandler.insertDisplayStyle3d(this._iModelDb!, definitionModelId);
         const physicalViewOrigin = new Point3d(0, 0, 0);
         const physicalViewExtents = new Point3d(50, 50, 50);
         IModelDbHandler.insertOrthographicViewDefinition(this._iModelDb!, definitionModelId, "Physical View", modelSelectorId, categorySelectorId, displayStyleId, physicalViewOrigin, physicalViewExtents);

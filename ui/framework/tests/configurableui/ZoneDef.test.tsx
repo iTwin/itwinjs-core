@@ -25,7 +25,6 @@ describe("ZoneDef", () => {
       },
     );
 
-    expect(zoneDef.isDefaultOpen).to.be.false;
     expect(zoneDef.applicationData).to.be.undefined;
     expect(zoneDef.widgetDefs).to.have.lengthOf(1);
     expect(zoneDef.widgetCount).to.eq(1);
@@ -64,7 +63,6 @@ describe("ZoneDef", () => {
         ],
       },
     );
-    expect(zoneDef.isDefaultOpen).to.be.true;
 
     zoneDef.addWidgetDef(new WidgetDef({
       classId: "Test2",
@@ -111,13 +109,7 @@ describe("ZoneDef", () => {
 
     const widgetDef = zoneDef.findWidgetDef("IdTest");
     expect(widgetDef).to.not.be.undefined;
-    if (widgetDef)
-      widgetDef.defaultOpenUsed = true;
 
-    zoneDef.clearDefaultOpenUsed();
-    zoneDef.widgetDefs.map((wd: WidgetDef) => {
-      expect(wd.defaultOpenUsed).to.be.false;
-    });
   });
 
 });

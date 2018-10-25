@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-@import "../_z-index";
+@import "@bentley/ui-core/lib/_z-index";
 @import "_variables";
 
 .nz-toolbar-toolbar {
@@ -13,7 +13,7 @@
   > .nz-panels {
     pointer-events: none;
 
-    @include nz-z-index(toolbarPanel);
+    @include uicore-z-index(toolbarPanel);
 
     > .nz-item {
       > * {
@@ -25,7 +25,7 @@
   > .nz-history {
     pointer-events: none;
 
-    @include nz-z-index(toolbarHistory);
+    @include uicore-z-index(toolbarHistory);
 
     > .nz-item > div {
       > * {

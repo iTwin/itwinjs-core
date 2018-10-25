@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/ui-core/lib/colors";
-@import "../_z-index";
+@import "@bentley/ui-core/lib/_z-index";
 @import "_variables";
 
 .nz-footer-footer {
@@ -21,7 +21,7 @@
     left: 50%;
     transform: translateX(-50%) translateY(-100%);
 
-    @include nz-z-index(message);
+    @include uicore-z-index(message);
   }
 
   > .nz-indicators {

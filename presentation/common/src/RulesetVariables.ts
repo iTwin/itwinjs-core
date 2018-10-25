@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 
 /**
  * Possible variable value types
@@ -23,10 +23,10 @@ export const enum VariableValueTypes {
   /** String value */
   String = "string",
 
-  /** Id64 value */
+  /** Id64String value */
   Id64 = "id64",
 
-  /** Array of Id64 values */
+  /** Array of Id64String values */
   Id64Array = "id64[]",
 
 }
@@ -35,7 +35,7 @@ export const enum VariableValueTypes {
  * Union of all supported variable value types
  * @hidden
  */
-export type VariableValue = boolean | string | number | number[] | Id64 | Id64[];
+export type VariableValue = boolean | string | number | number[] | Id64String[];
 /** @hidden */
 export type VariableValueJSON = boolean | string | string[] | number | number[];
 

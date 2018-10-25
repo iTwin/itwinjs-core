@@ -35,9 +35,7 @@ export class IModelBaseHandler extends WsgClient {
   protected _url?: string;
   private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
   public static readonly searchKey: string = "iModelHubApi";
-  public static readonly configURL = "imjs_imodelhub_url";
   public static readonly configRelyingPartyUri = "imjs_imodelhub_relying_party_uri";
-  public static readonly configRegion = "imjs_imodelhub_region";
   protected _agent: https.Agent;
   protected _fileHandler: FileHandler | undefined;
   private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
@@ -78,17 +76,6 @@ export class IModelBaseHandler extends WsgClient {
   }
 
   /**
-   * Get the default URL for the service.
-   * @returns Default URL for the service.
-   */
-  protected getDefaultUrl(): string {
-    if (Config.App.has(IModelBaseHandler.configURL))
-      return Config.App.get(IModelBaseHandler.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key ${IModelBaseHandler.configURL}`);
-  }
-
-  /**
    * Gets theRelyingPartyUrl for the service.
    * @returns RelyingPartyUrl for the service.
    */
@@ -104,16 +91,6 @@ export class IModelBaseHandler extends WsgClient {
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${IModelBaseHandler.configRelyingPartyUri}`);
   }
 
-  /**
-   * Override default region for this service
-   * @returns region id or undefined
-   */
-  protected getRegion(): number | undefined {
-    if (Config.App.has(IModelBaseHandler.configRegion))
-      return Config.App.get(IModelBaseHandler.configRegion);
-
-    return undefined;
-  }
   /**
    * Get the agent used for imodelhub connection pooling.
    * @returns The agent used for imodelhub connection pooling.

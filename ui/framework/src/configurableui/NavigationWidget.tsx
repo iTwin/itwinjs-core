@@ -12,11 +12,11 @@ import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
 
 import { NavigationAidControl } from "./NavigationAidControl";
-import { FrontstageManager, ToolActivatedEventArgs, NavigationAidActivatedEventArgs } from "./FrontstageManager";
+import { FrontstageManager, ToolActivatedEventArgs, NavigationAidActivatedEventArgs, ContentControlActivatedEventArgs } from "./FrontstageManager";
 import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import ToolsWidget from "@bentley/ui-ninezone/lib/widget/Tools";
-import { IModelApp, SelectedViewportChangedArgs, IModelConnection } from "@bentley/imodeljs-frontend";
+import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 /** A Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
  */
@@ -41,7 +41,10 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     return this._reactElement;
   }
 
-  public renderCornerItem(): React.ReactNode | undefined {
+  public renderCornerItem(): React.ReactNode {
+    if (FrontstageManager.isLoading)
+      return null;
+
     if (!this._navigationAidControl && this._navigationAidId) {
       this._navigationAidControl = ConfigurableUiManager.createControl(this._navigationAidId, this._navigationAidId, { imodel: this._imodel }) as NavigationAidControl;
       if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
@@ -63,7 +66,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
       );
     }
 
-    return undefined;
+    return null;
   }
 
   public updateNavigationAid(navigationAidId: string, imodel?: IModelConnection): void {
@@ -73,7 +76,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
   }
 }
 
-/** Props for the Navigation Widget React component.
+/** Properties for the [[NavigationWidget]] React component.
  */
 export interface NavigationWidgetPropsEx extends NavigationWidgetProps {
   iModelConnection?: IModelConnection;
@@ -103,48 +106,19 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 
   /** Adds listeners */
   public componentDidMount() {
-    if (IModelApp && IModelApp.viewManager)
-      IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
+    FrontstageManager.onContentControlActivatedEvent.addListener(this._handleContentControlActivated);
   }
 
   /** Removes listeners */
   public componentWillUnmount() {
-    if (IModelApp && IModelApp.viewManager)
-      IModelApp.viewManager.onSelectedViewportChanged.removeListener(this._handleSelectedViewportChanged);
+    FrontstageManager.onContentControlActivatedEvent.removeListener(this._handleContentControlActivated);
   }
 
-  /**
-   * Sets NavigationAid based on current viewport type.
-   * @param args  Contains both current and previous viewports.
-   */
-  private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
-    if (args.current && args.current.view) {
-      const navigationAidId = this._getNavigationAid(args.current!.view.classFullName);
+  private _handleContentControlActivated = (args: ContentControlActivatedEventArgs): void => {
+    const navigationAidId = args.activeContentControl.navigationAidControl;
+    setImmediate(() => {
       FrontstageManager.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);
-    }
-  }
-
-  /**
-   * Fetches appropriate NavigationAid based on the class of the current viewport.
-   * @param classFullName The full name of the current viewport class.
-   * @returns The ID of the navigation aid to be displayed.
-   */
-  private _getNavigationAid = (classFullName: string) => {
-    const className = classFullName.substring(classFullName.indexOf(":") + 1);
-    let navigationAidId = "";
-    switch (className) {
-      case "SheetViewDefinition":
-        navigationAidId = "SheetNavigationAid";
-        break;
-      case "DrawingViewDefinition":
-        navigationAidId = "DrawingNavigationAid"; // TODO
-        break;
-      case "SpatialViewDefinition":
-      case "OrthographicViewDefinition":
-        navigationAidId = "CubeNavigationAid";
-        break;
-    }
-    return navigationAidId;
+    });
   }
 
   public static getDerivedStateFromProps(newProps: NavigationWidgetPropsEx, state: NavigationWidgetState): NavigationWidgetState | null {
@@ -168,7 +142,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
   }
 }
 
-/** Props for the NavigationWidgetWithDef.
+/** Properties for the [[NavigationWidgetWithDef]] component.
  */
 interface Props {
   navigationWidgetDef: NavigationWidgetDef;

@@ -27,7 +27,7 @@ import {
   RenderTexture,
   BatchType,
 } from "@bentley/imodeljs-common";
-import { Id64, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
+import { Id64String, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
 import { RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
@@ -283,7 +283,7 @@ export namespace GltfTileIO {
     /** @hidden */
     protected readonly _is3d: boolean;
     /** @hidden */
-    protected readonly _modelId: Id64;
+    protected readonly _modelId: Id64String;
     /** @hidden */
     protected readonly _system: RenderSystem;
     /** @hidden */
@@ -395,7 +395,7 @@ export namespace GltfTileIO {
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
     /** @hidden */
-    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Classifier, isCanceled?: IsCanceled) {
+    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Classifier, isCanceled?: IsCanceled) {
       this._buffer = props.buffer;
       this._binaryData = props.binaryData;
       this._accessors = props.accessors;

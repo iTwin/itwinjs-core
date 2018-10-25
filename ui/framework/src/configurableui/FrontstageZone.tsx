@@ -20,7 +20,7 @@ import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
 // Zone React Components
 // -----------------------------------------------------------------------------
 
-/** Props for the Frontstage Zone Component.
+/** Properties for the [[FrontstageZone]] component.
  */
 export interface FrontstageZoneProps {
   zoneState: NZ_ZoneState;

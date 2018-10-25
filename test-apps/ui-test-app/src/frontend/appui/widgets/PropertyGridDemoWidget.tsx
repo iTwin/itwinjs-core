@@ -5,7 +5,7 @@
 import * as React from "react";
 
 import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { WidgetControl, WidgetControlProps } from "@bentley/ui-framework";
+import { WidgetControl, WidgetComponentProps } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { ContentControl } from "@bentley/ui-framework";
 
@@ -101,10 +101,10 @@ export class VerticalPropertyGridWidgetControl extends WidgetControl {
   }
 }
 
-class VerticalPropertyGridWidget extends React.Component<WidgetControlProps> {
+class VerticalPropertyGridWidget extends React.Component<WidgetComponentProps> {
   private _dataProvider: PropertyDataProvider;
 
-  constructor(props: WidgetControlProps) {
+  constructor(props: WidgetComponentProps) {
     super(props);
 
     this._dataProvider = new SamplePropertyDataProvider();
@@ -127,10 +127,10 @@ export class HorizontalPropertyGridWidgetControl extends WidgetControl {
   }
 }
 
-class HorizontalPropertyGridWidget extends React.Component<WidgetControlProps> {
+class HorizontalPropertyGridWidget extends React.Component<WidgetComponentProps> {
   private _dataProvider: PropertyDataProvider;
 
-  constructor(props: WidgetControlProps) {
+  constructor(props: WidgetComponentProps) {
     super(props);
 
     this._dataProvider = new SamplePropertyDataProvider();

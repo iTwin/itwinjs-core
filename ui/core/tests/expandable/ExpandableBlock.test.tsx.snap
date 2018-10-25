@@ -1,0 +1,27 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ExpandableBlock <ExpandableBlock /> renders correctly collapsed 1`] = `
+<ExpandableBlock
+  className="core-property-block"
+  isExpanded={false}
+  onClick={[Function]}
+  title="Test"
+>
+  <div>
+    Hello
+  </div>
+</ExpandableBlock>
+`;
+
+exports[`ExpandableBlock <ExpandableBlock /> renders correctly expanded 1`] = `
+<ExpandableBlock
+  className="core-property-block"
+  isExpanded={true}
+  onClick={[Function]}
+  title="Test"
+>
+  <div>
+    Hello
+  </div>
+</ExpandableBlock>
+`;

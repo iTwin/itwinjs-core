@@ -103,6 +103,20 @@ export abstract class CurvePrimitive extends GeometryQuery {
     return context.getSum();
   }
   /**
+   *
+   * * Curve length is always positive.
+   * @returns Returns a (high accuracy) length of the curve between fractional positions
+   * @returns Returns the length of the curve.
+   */
+  public curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
+    if (fraction0 === fraction1)
+      return 0.0;
+    const context = new CurveLengthContext(fraction0, fraction1);
+    this.emitStrokableParts(context);
+    return context.getSum();
+  }
+
+  /**
    * Compute a length which may be an fast approximation to the true length.
    * This is expected to be either (a) exact or (b) larger than the actual length, but by no more than
    * a small multiple, perhaps up to PI/2, but commonly much closer to 1.
@@ -145,6 +159,20 @@ export abstract class CurvePrimitive extends GeometryQuery {
   public clonePartialCurve(_fractionA: number, _fractionB: number): CurvePrimitive | undefined {
     return undefined;
   }
+  /**
+   * * If the curve primitive has distance-along-curve strictly proportional to curve fraction, return true
+   * * If distance-along-the-curve is not proportional, return undefined.
+   * * When defined, the scale factor is alwyas the length of the curve.
+   * * This scale factor is typically available for these curve types:
+   * * * All `LineSegment3d`
+   * * * Arc3d which is a true circular arc (axes perpendicular and of equal length).
+   * * * CurveChainWithDistanceIndex
+   * * This scale factor is undefined for these curve types:
+   * * * Arc3d which is a true ellipse, i.e. unequal lengths of defining vectors or non-perpendicular defining vectors.
+   * * * bspline and bezier curves
+   * @returns scale factor or undefined
+   */
+  public getFractionToDistanceScale(): number | undefined { return undefined; }
 
   /** Reverse the curve's data so that its fractional stroking moves in the opposite direction. */
   public abstract reverseInPlace(): void;
@@ -329,6 +357,8 @@ class CurveLengthContext implements IStrokeHandler {
   private _curve: CurvePrimitive | undefined;
   private _summedLength: number;
   private _ray: Ray3d;
+  private _fraction0: number;
+  private _fraction1: number;
   private _gaussX: Float64Array;
   private _gaussW: Float64Array;
   private _gaussMapper: (xA: number, xB: number, xx: Float64Array, ww: Float64Array) => number;
@@ -339,10 +369,17 @@ class CurveLengthContext implements IStrokeHandler {
   }
   public getSum() { return this._summedLength; }
 
-  public constructor() {
+  public constructor(fraction0: number = 0.0, fraction1: number = 1.0) {
     this.startCurvePrimitive(undefined);
     this._summedLength = 0.0;
     this._ray = Ray3d.createZero();
+    if (fraction0 < fraction1) {
+      this._fraction0 = fraction0;
+      this._fraction1 = fraction1;
+    } else {
+      this._fraction0 = fraction1;
+      this._fraction1 = fraction0;
+    }
 
     const maxGauss = 7;
     this._gaussX = new Float64Array(maxGauss);
@@ -361,15 +398,19 @@ class CurveLengthContext implements IStrokeHandler {
     numStrokes: number,
     fraction0: number,
     fraction1: number): void {
-    this.startCurvePrimitive(cp);
-    if (numStrokes < 1) numStrokes = 1;
-    const df = 1.0 / numStrokes;
-    for (let i = 1; i <= numStrokes; i++) {
-      const fractionA = Geometry.interpolate(fraction0, (i - 1) * df, fraction1);
-      const fractionB = i === numStrokes ? fraction1 : Geometry.interpolate(fraction0, (i) * df, fraction1);
-      const numGauss = this._gaussMapper(fractionA, fractionB, this._gaussX, this._gaussW);
-      for (let k = 0; k < numGauss; k++) {
-        this._summedLength += this._gaussW[k] * this.tangentMagnitude(this._gaussX[k]);
+    if (fraction0 < this._fraction0) fraction0 = this._fraction0;
+    if (fraction1 > this._fraction1) fraction1 = this._fraction1;
+    if (fraction1 > fraction0) {
+      this.startCurvePrimitive(cp);
+      if (numStrokes < 1) numStrokes = 1;
+      const df = 1.0 / numStrokes;
+      for (let i = 1; i <= numStrokes; i++) {
+        const fractionA = Geometry.interpolate(fraction0, (i - 1) * df, fraction1);
+        const fractionB = i === numStrokes ? fraction1 : Geometry.interpolate(fraction0, (i) * df, fraction1);
+        const numGauss = this._gaussMapper(fractionA, fractionB, this._gaussX, this._gaussW);
+        for (let k = 0; k < numGauss; k++) {
+          this._summedLength += this._gaussW[k] * this.tangentMagnitude(this._gaussX[k]);
+        }
       }
     }
   }
@@ -378,9 +419,20 @@ class CurveLengthContext implements IStrokeHandler {
     point0: Point3d,
     point1: Point3d,
     _numStrokes: number,
-    _fraction0: number,
-    _fraction1: number): void {
-    this._summedLength += point0.distance(point1);
+    fraction0: number,
+    fraction1: number): void {
+    const segmentLength = point0.distance(point1);
+    if (this._fraction0 <= fraction0 && fraction1 <= this._fraction1)
+      this._summedLength += segmentLength;
+    else {
+      let g0 = fraction0;
+      let g1 = fraction1;
+      if (g0 < this._fraction0) g0 = this._fraction0;
+      if (g1 > this._fraction1) g1 = this._fraction1;
+      if (g1 > g0) {
+        this._summedLength += segmentLength * (g1 - g0) / (fraction1 - fraction0);
+      }
+    }
   }
   public announcePointTangent(_xyz: Point3d, _fraction: number, _tangent: Vector3d): void {
     // uh oh -- need to retain point for next interval

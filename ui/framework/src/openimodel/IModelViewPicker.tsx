@@ -2,6 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module OpenIModel */
+
 import * as React from "react";
 import * as classnames from "classnames";
 import { UiFramework } from "../UiFramework";
@@ -57,7 +59,8 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
   }
 }
 
-interface ViewsProps {
+/** Properties for the [[IModelViewPicker]] component */
+export interface ViewsProps {
   accessToken: AccessToken;
   iModel: IModelInfo;
   OnViewsSelected?: (views: ViewDefinitionProps[]) => void;

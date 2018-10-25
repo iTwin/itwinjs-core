@@ -8,7 +8,8 @@
   "general": {
     "sheet": "Sheet",
     "of": "of",
-    "alert": "Alert"
+    "alert": "Alert",
+    "toolSetings": "Tool Settings"
   },
   "rotations": {
     "top": "Top",
@@ -63,7 +64,7 @@
     "all": "All",
     "none": "None",
     "invert": "Invert",
-    "seperator": "Seperator"
+    "separator": "Separator"
   },
   "categoriesModels": {
     "categories": "Categories",
@@ -86,6 +87,6 @@
     "no": "No"
   },
   "navigationAid": {
-    "sheetsModalFrontstage": "Sheets Modal Frontstage"
+    "sheetsModalFrontstage": "Sheet Views"
   }
 }

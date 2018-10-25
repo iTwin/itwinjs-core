@@ -19,7 +19,7 @@ export interface CardInfo {
   index: number;
   label: string;
   iconClass: string;
-  isActive?: boolean;
+  isActive: boolean;
   viewId: any;
 }
 
@@ -37,6 +37,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
   public title: string = UiFramework.i18n.translate("UiFramework:navigationAid.sheetsModalFrontstage");
   private _cards: CardInfo[] = [];
   private _connection: IModelConnection;
+  private _currentIndex: number;
   private _searchValue: string = "";
 
   /**
@@ -44,8 +45,9 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
    * @param sheets Collection of sheets available in SheetNavigationAid
    * @param connection IModelConnection to query for sheet ViewState
    */
-  constructor(sheets: SheetData[], connection: IModelConnection) {
+  constructor(sheets: SheetData[], connection: IModelConnection, currentIndex: number) {
     this._connection = connection;
+    this._currentIndex = currentIndex;
     this._storeSheetsAsCards(sheets);
   }
 
@@ -54,9 +56,8 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
    * @param sheets SheetData from available sheets
    */
   private _storeSheetsAsCards(sheets: SheetData[]) {
-    let index = 0;
-    sheets.forEach((sheet) => {
-      this._cards.push({ index: index++, label: sheet.name, iconClass: "icon-document", viewId: sheet.viewId });
+    sheets.forEach((sheet: SheetData, index: number) => {
+      this._cards.push({ index, label: sheet.name, iconClass: "icon-document", viewId: sheet.viewId, isActive: index === this._currentIndex });
     });
   }
 
@@ -79,8 +80,8 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
   }
 }
 
-/** Props for CardContainer */
-interface CardContainerProps {
+/** Properties for [[CardContainer]] */
+export interface CardContainerProps {
   cards: CardInfo[];
   searchValue: string;
   connection: IModelConnection;
@@ -89,6 +90,8 @@ interface CardContainerProps {
 /** Displays cards in SheetModalFrontstage */
 export class CardContainer extends React.Component<CardContainerProps> {
   private static _cardSelectedEvent: CardSelectedEvent = new CardSelectedEvent();
+
+  /** Get CardSelectedEvent event */
   public static get onCardSelectedEvent(): CardSelectedEvent { return CardContainer._cardSelectedEvent; }
 
   /** @hidden */
@@ -106,7 +109,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
 
               if (includeCard) {
                 return (
-                  <SheetCard key={card.label} label={card.label} iconClass={card.iconClass} isActive={card.isActive} onClick={() => this._handleCardSelected(card)} />
+                  <SheetCard key={card.label} label={card.label} index={card.index} iconClass={card.iconClass} isActive={card.isActive} onClick={() => this._handleCardSelected(card)} />
                 );
               }
 
@@ -155,33 +158,59 @@ export class CardContainer extends React.Component<CardContainerProps> {
   }
 }
 
-/** Props for SheetCard */
-interface SheetCardProps {
+/** Properties for [[SheetCard]] */
+export interface SheetCardProps {
   label: string;
+  index: number;
   iconClass: string;
-  isActive?: boolean;
-  onClick?: () => void;
+  isActive: boolean;
+  onClick: () => void;
+}
+
+/** State for [[SheetCard]] */
+export interface SheetCardState {
+  isActive: boolean;
+  isHover: boolean;
 }
 
 /** Displays information about an individual sheet */
-export class SheetCard extends React.Component<SheetCardProps> {
+export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
+  constructor(props: SheetCardProps) {
+    super(props);
+    this.state = { isActive: this.props.isActive, isHover: false };
+  }
+
+  private _onClick = () => {
+    this.setState({ isActive: true, isHover: false }, () => this.props.onClick());
+  }
+
+  private _onMouseEnter = () => {
+    this.setState({ isHover: !this.state.isActive });
+  }
+
+  private _onMouseLeave = () => {
+    this.setState({ isHover: false });
+  }
+
   /** @hidden */
   public render() {
-    const { label, iconClass, isActive, onClick } = this.props;
+    const { label, index, iconClass } = this.props;
 
     const className = classnames(
       "sheet-card",
-      isActive && "is-active",
+      this.state.isActive && "is-active",
+      this.state.isHover && "is-hover",
     );
 
     const iconClassName = "icon " + iconClass;
 
     return (
-      <div className={className} onClick={onClick}>
+      <div className={className} onClick={this._onClick} onMouseEnter={this._onMouseEnter} onMouseLeave={this._onMouseLeave}>
         {label}
         <div className="sheet-image-container">
           <div className={iconClassName} />
-        </div>
+        </div >
+        <div className="sheet-index">{index + 1}</div>
       </div >
     );
   }

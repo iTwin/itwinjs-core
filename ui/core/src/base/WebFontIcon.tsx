@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import "./WebFontIcon.scss";
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
-/** Props for the WebFontIcon React component */
+/** Properties for the [[WebFontIcon] React component */
 export interface WebFontIconProps {
   /** Bentley Web Font icon name */
   iconName: string;

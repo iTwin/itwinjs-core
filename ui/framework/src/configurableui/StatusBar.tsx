@@ -133,7 +133,6 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
       case OutputMessageType.Alert:
         statusbarMessageType = StatusBarMessageType.Modal;
         break;
-      // TODO - Pointer
     }
 
     this.setVisibleMessage(statusbarMessageType, args.message);

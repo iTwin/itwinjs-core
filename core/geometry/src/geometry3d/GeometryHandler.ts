@@ -15,6 +15,9 @@ import { Path } from "../curve/Path";
 import { CurveCollection } from "../curve/CurveCollection";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
+import { BezierCurve3d } from "../bspline/BezierCurve3d";
+import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
 import { IndexedPolyface } from "../polyface/Polyface";
 import { Sphere } from "../solid/Sphere";
@@ -31,7 +34,7 @@ import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
 import { PointString3d } from "../curve/PointString3d";
 import { Plane3dByOriginAndVectors } from "./Plane3dByOriginAndVectors";
-import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
+import { BezierCurveBase } from "../bspline/BezierCurveBase";
 
 export abstract class GeometryHandler {
   // Currently will include functionality on "how to handle" (note: Subclasses of CurveCollection are linked to one method)
@@ -62,6 +65,9 @@ export abstract class GeometryHandler {
   public abstract handleRotationalSweep(g: RotationalSweep): any;
   public abstract handleRuledSweep(g: RuledSweep): any;
   public abstract handlePointString3d(g: PointString3d): any;
+
+  public abstract handleBezierCurve3d(g: BezierCurve3d): any;
+  public abstract handleBezierCurve3dH(g: BezierCurve3dH): any;
 }
 /**
  * `NullGeometryHandler` is a base class for dispatching various geometry types to
@@ -102,6 +108,8 @@ export class NullGeometryHandler extends GeometryHandler {
   public handleRotationalSweep(_g: RotationalSweep): any { return undefined; }
   public handleRuledSweep(_g: RuledSweep): any { return undefined; }
   public handlePointString3d(_g: PointString3d): any { return undefined; }
+  public handleBezierCurve3d(_g: BezierCurve3d): any { return undefined; }
+  public handleBezierCurve3dH(_g: BezierCurve3dH): any { return undefined; }
 }
 /** IStrokeHandler is an interface with methods to receive data about curves being stroked.
  * CurvePrimitives emitStrokes () methods emit calls to a handler object with these methods.
@@ -147,7 +155,26 @@ export interface IStrokeHandler {
     fraction1: number): void;
   endCurvePrimitive(cp: CurvePrimitive): void;
   endParentCurvePrimitive(cp: CurvePrimitive): void;
+  /**
+   * Announce a bezier curve fragment.
+   * * this is usually a section of BsplineCurve
+   * * If this function is missing, the same interval will be passed to announceIntervalForUniformSteps.
+   * @param bezier bezier fragment
+   * @param numStrokes suggested number of strokes (uniform in bezier interval 0..1)
+   * @param parent parent curve
+   * @param spanIndex spanIndex within parent
+   * @param fraction0 start fraction on parent curve
+   * @param fraction1 end fraction on parent curve
+   */
+  announceBezierCurve?(
+    bezier: BezierCurveBase,
+    numStrokes: number,
+    parent: CurvePrimitive,
+    spandex: number,
+    fraction0: number,
+    fraction1: number): void;
 }
+
 /**
  * Interface with methods for mapping (u,v) fractional coordinates to surface xyz and derivatives.
  */

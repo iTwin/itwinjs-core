@@ -9,11 +9,11 @@ import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyRecord } from "../../properties";
 import { PropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
-
-import "./PropertyGrid.scss";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
+import "./PropertyGrid.scss";
+import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 
-/** Props for PropertyGrid React component */
+/** Properties for [[PropertyGrid]] React component */
 export interface PropertyGridProps {
   /** Property data provider */
   dataProvider: PropertyDataProvider;
@@ -23,6 +23,8 @@ export interface PropertyGridProps {
   isPropertySelectionEnabled?: boolean;
   /** Callback to property selection */
   onPropertySelectionChanged?: (property: PropertyRecord) => void;
+  /** Custom property value renderer manager */
+  propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
 /** Property Category in the [[PropertyGrid]] state */
@@ -146,13 +148,15 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
         <div className="components-property-grid">
           {
             this.state.categories.map((gridCategory: PropertyGridCategory) => (
-              <SelectablePropertyBlock key={gridCategory.propertyCategory.name}
+              <SelectablePropertyBlock
+                key={gridCategory.propertyCategory.name}
                 category={gridCategory.propertyCategory}
                 properties={gridCategory.properties}
                 orientation={this.props.orientation}
                 selectedPropertyKey={this.state.selectedPropertyKey}
                 onExpansionToggled={this._onExpansionToggled}
-                onPropertyClicked={this._onPropertyClicked}
+                onPropertyClicked={this.props.isPropertySelectionEnabled ? this._onPropertyClicked : undefined}
+                propertyValueRendererManager={this.props.propertyValueRendererManager}
               />
             ))
           }

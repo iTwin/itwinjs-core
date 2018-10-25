@@ -8,7 +8,7 @@
 .nz-toolbar-item-icon {
   border-width: 0;
 
-  > .nz-icon {
+  >.nz-icon {
     width: 100%;
     height: 100%;
     display: grid;
@@ -29,14 +29,14 @@
   }
 
   &:hover {
-    > .nz-icon {
+    >.nz-icon {
       color: $hovered-icon-color;
       transition-duration: 150ms;
     }
   }
 
   &:active {
-    > .nz-icon {
+    >.nz-icon {
       color: $pressed-icon-color;
       filter: $no-shadow;
 
@@ -48,7 +48,7 @@
 
   &.nz-is-active {
     &:not(:active):not(.nz-is-disabled) {
-      > .nz-icon {
+      >.nz-icon {
         color: $primary-base;
         filter: $no-shadow;
         transition-duration: 150ms;
@@ -62,8 +62,10 @@
   }
 
   &.nz-is-disabled {
-    > .nz-icon {
+    >.nz-icon {
       color: $disabled-icon-color;
     }
+
+    pointer-events: none;
   }
 }

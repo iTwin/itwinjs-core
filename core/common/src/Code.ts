@@ -20,23 +20,23 @@ export interface CodeProps {
 /** A three-part structure containing information about the [Code]($docs/bis/intro/codes) of an Element */
 export class Code implements CodeProps {
   /** The id of the [CodeSpec]($docs/bis/intro/codes.md#codespec) of the Element */
-  public spec: Id64;
+  public spec: Id64String;
   /** the [CodeScope]($docs/bis/intro/codes.md#codescope-property) of the Element */
   public scope: string;
   /** the [CodeValue]($docs/bis/intro/codes.md#codevalue-property) of the Element */
   public value?: string;
 
   constructor(val: CodeProps) {
-    this.spec = new Id64(val.spec);
+    this.spec = Id64.fromJSON(val.spec);
     this.scope = JsonUtils.asString(val.scope, "");
     this.value = JsonUtils.asString(val.value);
   }
 
   /** Create an empty, non-unique code with no special meaning. */
-  public static createEmpty(): Code { const id: Id64 = new Id64([1, 0]); return new Code({ spec: id, scope: id.value }); }
+  public static createEmpty(): Code { const id: Id64String = Id64.fromLocalAndBriefcaseIds(1, 0); return new Code({ spec: id, scope: id }); }
   public static fromJSON(json?: any): Code { return json ? new Code(json) : Code.createEmpty(); }
   public getValue(): string { return this.value ? this.value : ""; }
-  public equals(other: Code): boolean { return this.spec.equals(other.spec) && this.scope === other.scope && this.value === other.value; }
+  public equals(other: Code): boolean { return this.spec === other.spec && this.scope === other.scope && this.value === other.value; }
 }
 
 /**
@@ -111,13 +111,13 @@ export class CodeSpec {
   /** The iModel holding this CodeSpec. */
   public iModel: IModel;
   /** The id of this CodeSpec. */
-  public id: Id64;
+  public id: Id64String;
   public name: string;
   public specScopeType: CodeScopeSpec.Type;
   public scopeReq: CodeScopeSpec.ScopeRequirement;
   public properties: any; // TODO: CodeSpec handlers and custom properties
 
-  public constructor(iModel: IModel, id: Id64, name: string, specScopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any) {
+  public constructor(iModel: IModel, id: Id64String, name: string, specScopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any) {
     this.iModel = iModel;
     this.id = id;
     this.name = name;
@@ -126,5 +126,5 @@ export class CodeSpec {
     this.properties = properties;
   }
 
-  public get isValid(): boolean { return this.id.isValid; }
+  public get isValid(): boolean { return Id64.isValid(this.id); }
 }

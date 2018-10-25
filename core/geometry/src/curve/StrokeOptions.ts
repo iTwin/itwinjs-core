@@ -44,7 +44,6 @@ export class StrokeOptions {
   public minStrokesPerPrimitive?: number;
   /** whether or not to triangulate each added facet */
   public shouldTriangulate: boolean = false;
-
   private _needNormals?: boolean;
   private _needParams?: boolean;
   public get needParams(): boolean { return this._needParams !== undefined ? this._needParams : false; }

@@ -9,8 +9,12 @@ export { default as Content } from "./Content";
 export { default as Descriptor, SelectClassInfo, SelectionInfo, SortDirection, ContentFlags } from "./Descriptor";
 export { default as DefaultContentDisplayTypes } from "./DisplayTypes";
 export { default as EditorDescription } from "./Editor";
-export { Field, PropertiesField, NestedContentField, NestedContent } from "./Fields";
+export { Field, PropertiesField, NestedContentField } from "./Fields";
 export { default as Item } from "./Item";
 export { default as Property } from "./Property";
 export { PropertyValueFormat, TypeDescription, PrimitiveTypeDescription, ArrayTypeDescription, StructTypeDescription } from "./TypeDescription";
-export * from "./Value";
+export {
+  Value, ValuesArray, ValuesMap,
+  DisplayValue, DisplayValuesArray, DisplayValuesMap,
+  NestedContentValue,
+} from "./Value";

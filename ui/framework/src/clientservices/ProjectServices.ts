@@ -34,7 +34,9 @@ export interface ProjectInfo {
 /** Interface for Project services */
 export interface ProjectServices {
 
-  // Retrieve the Projects for the specified ProjectScope to which the logged in user has access.
-  // the top and skip arguments are used for paging when there are large numbers of projects.
+  /**
+   * Retrieve the Projects for the specified ProjectScope to which the logged in user has access.
+   * The top and skip arguments are used for paging when there are large numbers of projects.
+   */
   getProjects(accessToken: AccessToken, projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]>;
 }

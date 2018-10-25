@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { ActivityLoggingContext, Guid, Id64 } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Code, CodeSpec, CodeScopeSpec, FunctionalElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
 import { BriefcaseManager, Functional, FunctionalModel, FunctionalPartition, IModelDb } from "../../backend";
@@ -42,9 +42,9 @@ describe("Functional Domain", () => {
     await iModelDb.importSchema(activityLoggingContext, path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
     iModelDb.saveChanges("Import TestFunctional schema");
 
-    const codeSpec = new CodeSpec(iModelDb, new Id64(), "Test Functional Elements", CodeScopeSpec.Type.Model);
+    const codeSpec = new CodeSpec(iModelDb, Id64.invalid, "Test Functional Elements", CodeScopeSpec.Type.Model);
     iModelDb.codeSpecs.insert(codeSpec);
-    assert.isTrue(codeSpec.id.isValid);
+    assert.isTrue(Id64.isValidId64(codeSpec.id));
 
     // Create and populate a FunctionalModel
     const partitionProps: InformationPartitionElementProps = {
@@ -56,30 +56,30 @@ describe("Functional Domain", () => {
       },
       code: FunctionalPartition.createCode(iModelDb, IModel.rootSubjectId, "Test Functional Model"),
     };
-    const partitionId: Id64 = iModelDb.elements.insertElement(partitionProps);
-    assert.isTrue(partitionId.isValid);
+    const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);
+    assert.isTrue(Id64.isValidId64(partitionId));
     const model: FunctionalModel = iModelDb.models.createModel({
       classFullName: FunctionalModel.classFullName,
       modeledElement: { id: partitionId },
     }) as FunctionalModel;
-    const modelId: Id64 = iModelDb.models.insertModel(model);
-    assert.isTrue(modelId.isValid);
+    const modelId: Id64String = iModelDb.models.insertModel(model);
+    assert.isTrue(Id64.isValidId64(modelId));
 
     const breakdownProps: FunctionalElementProps = {
       classFullName: "TestFunctional:Breakdown",
       model: modelId,
       code: new Code({ spec: codeSpec.id, scope: modelId, value: "Breakdown1" }),
     };
-    const breakdownId: Id64 = iModelDb.elements.insertElement(breakdownProps);
-    assert.isTrue(breakdownId.isValid);
+    const breakdownId: Id64String = iModelDb.elements.insertElement(breakdownProps);
+    assert.isTrue(Id64.isValidId64(breakdownId));
 
     const componentProps: FunctionalElementProps = {
       classFullName: "TestFunctional:Component",
       model: modelId,
       code: new Code({ spec: codeSpec.id, scope: modelId, value: "Component1" }),
     };
-    const componentId: Id64 = iModelDb.elements.insertElement(componentProps);
-    assert.isTrue(componentId.isValid);
+    const componentId: Id64String = iModelDb.elements.insertElement(componentProps);
+    assert.isTrue(Id64.isValidId64(componentId));
 
     iModelDb.saveChanges("Insert Functional elements");
     iModelDb.closeStandalone();

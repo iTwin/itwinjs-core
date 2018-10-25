@@ -1,0 +1,19 @@
+.gform form label {
+  vertical-align: top;
+}
+
+.gform ::-webkit-input-placeholder {
+  font-style: italic;
+}
+
+.gform :-moz-placeholder {
+  font-style: italic;
+}
+
+.gform ::-moz-placeholder {
+  font-style: italic;
+}
+
+.gform :-ms-input-placeholder {
+  font-style: italic;
+}

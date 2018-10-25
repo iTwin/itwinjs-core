@@ -4,10 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module SQLite */
 
-import { Id64, Guid, DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, GuidString, DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECJsNames } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeSqliteStatement, NativeECDb, NativeDgnDb } from "./imodeljs-native-platform-api";
+
+/** Marks a string as either an [Id64String]($bentleyjs-core) or [GuidString]($bentleyjs-core), so
+ *  that it can be passed to [SqliteStatement's]($backend) [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
+ *  methods.
+ */
+export interface StringParam {
+  id?: Id64String;
+  guid?: GuidString;
+}
 
 /** Executes SQLite SQL statements.
  *
@@ -101,8 +110,8 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  number | INTEGER if number is integral or REAL if number is not integral
    *  string | TEXT
    *  ArrayBuffer | BLOB
-   *  [Id64]($bentley) | INTEGER
-   *  [Guid]($bentley) | BLOB
+   *  [StringParam]($backend) where member **id** is set | INTEGER
+   *  [StringParam]($backend) where member **guid** is set | BLOB
    *
    *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
    *  @param value Value to bind.
@@ -122,10 +131,10 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
       stat = this._stmt!.bindInteger(parameter, value ? 1 : 0);
     } else if (typeof (value) === "string") {
       stat = this._stmt!.bindString(parameter, value);
-    } else if (value instanceof Id64) {
-      stat = this._stmt!.bindId(parameter, value.toString());
-    } else if (value instanceof Guid) {
-      stat = this._stmt!.bindGuid(parameter, value.toString());
+    } else if (!!value.id) {
+      stat = this._stmt!.bindId(parameter, value.id);
+    } else if (!!value.guid) {
+      stat = this._stmt!.bindGuid(parameter, value.guid);
     } else if (value instanceof ArrayBuffer) {
       stat = this._stmt!.bindBlob(parameter, value);
     } else
@@ -359,9 +368,9 @@ export class SqliteValue {
   /** Get the value as a string value */
   public getString(): string { return this._stmt.getValueString(this._colIndex); }
   /** Get the value as an Id value */
-  public getId(): Id64 { return new Id64(this._stmt.getValueId(this._colIndex)); }
+  public getId(): Id64String { return Id64.fromJSON(this._stmt.getValueId(this._colIndex)); }
   /** Get the value as a Guid value */
-  public getGuid(): Guid { return new Guid(this._stmt.getValueGuid(this._colIndex)); }
+  public getGuid(): GuidString { return this._stmt.getValueGuid(this._colIndex); }
 }
 
 /** A cached SqliteStatement.

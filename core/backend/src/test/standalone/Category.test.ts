@@ -68,8 +68,8 @@ describe("Category tests", () => {
       weight: 13,
       transp: 133,
       invisible: true,
-      material: new Id64("0x222"),
-      style: new Id64("0x2"),
+      material: Id64.fromString("0x222"),
+      style: Id64.fromString("0x2"),
     });
 
     const a4 = o2.override(a2);
@@ -80,8 +80,8 @@ describe("Category tests", () => {
     assert.equal(a4.weight, 13);
     assert.equal(a4.transparency, 133);
     assert.equal(a4.priority, 33);
-    assert.isTrue(a4.styleId.equals(new Id64("0x2")));
-    assert.isTrue(a4.materialId.equals(new Id64("0x222")));
+    assert.equal(a4.styleId, "0x2");
+    assert.equal(a4.materialId, "0x222");
     assert.equal(a4.color.tbgr, ColorByName.darkBlue);
 
     json = JSON.stringify(o2);

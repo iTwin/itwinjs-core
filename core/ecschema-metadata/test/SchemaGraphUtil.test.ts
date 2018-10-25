@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+import * as path from "path";
 import { assert } from "chai";
 
 import SchemaXmlFileLocater from "./../src/Deserialization/SchemaXmlFileLocater";
@@ -13,9 +14,8 @@ import Schema from "./../src/Metadata/Schema";
 import SchemaGraphUtil from "./../src/Deserialization/SchemaGraphUtil";
 
 describe("SchemaGraphUtil tests:", () => {
-  const path = __dirname + "\\assets";
   const locator = new SchemaXmlFileLocater();
-  locator.addSchemaSearchPath(path);
+  locator.addSchemaSearchPath(path.join(__dirname, "Assets"));
   const context = new SchemaContext();
   context.addLocater(locator);
 

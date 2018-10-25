@@ -12,7 +12,7 @@ import { FrontstageComposer } from "./FrontstageComposer";
 import { ElementTooltip } from "./ElementTooltip";
 import PointerMessage from "../messages/Pointer";
 
-/** Props for [[ConfigurableUiContent]] */
+/** Properties for [[ConfigurableUiContent]] */
 export interface ConfigurableUiContentProps {
   placeholder: string;
   appBackstage?: React.ReactNode;

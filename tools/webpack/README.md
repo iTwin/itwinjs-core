@@ -1,4 +1,4 @@
-﻿# @bentley/webpack-tools
+# @bentley/webpack-tools
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

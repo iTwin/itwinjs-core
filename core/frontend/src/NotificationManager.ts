@@ -148,6 +148,8 @@ export class ActivityMessageDetails {
  * non-interactive sessions, these messages may be saved to a log file or simply discarded.
  */
 export class NotificationManager {
+  public readonly toolTipLocation = new Point2d();
+
   /** Output a prompt, given an i18n key. */
   public outputPromptByKey(key: string) { this.outputPrompt(IModelApp.i18n.translate(key)); }
 
@@ -189,33 +191,29 @@ export class NotificationManager {
    */
   public endActivityMessage(_reason: ActivityMessageEndReason) { return true; }
 
-  /** Return true if the ToolTip is current open. */
-  public get isToolTipOpen(): boolean { return this.toolTipIsOpen(); }
+  /** Return true if _showTooltip has an implemention and will display a tooltip. */
+  public get isToolTipSupported(): boolean { return false; }
 
-  /** @hidden - Logic for checking if tool tip is open. Can be overwritten by subclasses. */
-  protected toolTipIsOpen(): boolean { return false; }
+  /** Return true if the tooltip is currently open. */
+  public get isToolTipOpen(): boolean { return false; }
 
-  /** Clear the ToolTip if it is current open. If not open, does nothing. */
-  public clearToolTip(): void { }
+  /** Implement to display a tooltip message at the specified location. */
+  protected _showToolTip(_htmlElement: HTMLElement, _message: HTMLElement | string, _location?: XAndY, _options?: ToolTipOptions): void { }
 
-  public readonly toolTipLocation = new Point2d();
-  /** Show a ToolTip window.
+  /** Show a tooltip window. Saves tooltip location for AccuSnap to test if cursor has moved far enough away to close tooltip.
    * @param htmlElement The HTMLElement that that anchors the toolTip.
-   * @param message The message to display inside the ToolTip. May include HTML.
+   * @param message What to display inside the ToolTip. String may include HTML.
    * @param location An optional location, relative to the origin of _htmlElement, for the ToolTip. If undefined, center of _htmlElement
    * @param options Options that supply additional information about how the ToolTip should function.
    */
-  public openToolTip(_htmlElement: HTMLElement, message: string, location?: XAndY, options?: ToolTipOptions): void {
+  public openToolTip(_htmlElement: HTMLElement, message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions): void {
     this.toolTipLocation.setFrom(location);
     this._showToolTip(_htmlElement, message, location, options);
   }
 
-  protected _showToolTip(_htmlElement: HTMLElement, _message: string, _location?: XAndY, _options?: ToolTipOptions): void { }
+  /** Clear the tooltip if it is currently open. */
+  public clearToolTip(): void { }
 
-  /** Hides the Pointer message. */
-  public closePointerMessage(): void {
-    this._hidePointerMessage();
-  }
-
-  protected _hidePointerMessage(): void { }
+  /** Close message created with [[OutputMessageType.Pointer]]. */
+  public closePointerMessage(): void { }
 }

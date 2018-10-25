@@ -338,7 +338,7 @@ function createTestSequence(type: CodeSequenceType) {
   const sequence = new CodeSequence();
   sequence.valuePattern = formatSequenceValue("###");
   sequence.codeScope = "TestScope";
-  sequence.codeSpecId = new Id64("0XA");
+  sequence.codeSpecId = Id64.fromString("0XA");
   sequence.startIndex = 1;
   sequence.incrementBy = 2;
   sequence.type = type;

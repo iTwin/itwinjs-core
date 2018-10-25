@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { BisCore, ConcurrencyControl, Element, ElementAspect, InformationPartitionElement, IModelDb, PhysicalModel, PhysicalPartition } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementAspectProps, ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel, RelatedElement } from "@bentley/imodeljs-common";
-import { Id64, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
@@ -26,7 +26,7 @@ describe("Example Code", () => {
   });
 
   // __PUBLISH_EXTRACT_START__ IModelDb.Models.createModel.example-code
-  function createNewModel(parentSubject: Element, modelName: string, isModelPrivate: boolean): Id64 {
+  function createNewModel(parentSubject: Element, modelName: string, isModelPrivate: boolean): Id64String {
 
     const outputImodel = parentSubject.iModel;
 
@@ -42,14 +42,14 @@ describe("Example Code", () => {
       code: modelCode,
     };
     const modeledElement: Element = outputImodel.elements.createElement(modeledElementProps);
-    const modeledElementId: Id64 = outputImodel.elements.insertElement(modeledElement);
+    const modeledElementId: Id64String = outputImodel.elements.insertElement(modeledElement);
 
     const modeledElementRef = new RelatedElement({ id: modeledElementId });
 
     // The model
     const newModel = outputImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: isModelPrivate });
     const newModelId = outputImodel.models.insertModel(newModel);
-    assert.isTrue(newModelId.isValid);
+    assert.isTrue(Id64.isValid(newModelId));
 
     return modeledElementId;
   }
@@ -198,13 +198,13 @@ describe("Example Code", () => {
 
     // __PUBLISH_EXTRACT_START__ CodeSpecs.insert
     // Create and insert a new CodeSpec with the name "CodeSpec1". In this example, we choose to make a model-scoped CodeSpec.
-    const codeSpec: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeScopeSpec.Type.Model);
-    const codeSpecId: Id64 = testImodel.codeSpecs.insert(codeSpec);
+    const codeSpec: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec1", CodeScopeSpec.Type.Model);
+    const codeSpecId: Id64String = testImodel.codeSpecs.insert(codeSpec);
     assert.deepEqual(codeSpecId, codeSpec.id);
 
     // Should not be able to insert a duplicate.
     try {
-      const codeSpecDup: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec1", CodeScopeSpec.Type.Model);
+      const codeSpecDup: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec1", CodeScopeSpec.Type.Model);
       testImodel.codeSpecs.insert(codeSpecDup); // throws in case of error
       assert.fail();
     } catch (err) {
@@ -212,8 +212,8 @@ describe("Example Code", () => {
     }
 
     // We should be able to insert another CodeSpec with a different name.
-    const codeSpec2: CodeSpec = new CodeSpec(testImodel, new Id64(), "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
-    const codeSpec2Id: Id64 = testImodel.codeSpecs.insert(codeSpec2);
+    const codeSpec2: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec2", CodeScopeSpec.Type.Model, CodeScopeSpec.ScopeRequirement.FederationGuid);
+    const codeSpec2Id: Id64String = testImodel.codeSpecs.insert(codeSpec2);
     assert.deepEqual(codeSpec2Id, codeSpec2.id);
     assert.notDeepEqual(codeSpec2Id, codeSpecId);
     // __PUBLISH_EXTRACT_END__
@@ -221,7 +221,7 @@ describe("Example Code", () => {
   });
 
   it.skip("ElementAspects", () => { // WIP: code example compiles, but doesn't actually work
-    const elementId = new Id64();
+    const elementId = Id64.invalid;
     const elementAspectClassFullName = "SomeDomain:SomeAspectClass";
     // __PUBLISH_EXTRACT_START__ Elements.getAspects
     const elementAspects: ElementAspect[] = iModel.elements.getAspects(elementId, elementAspectClassFullName);

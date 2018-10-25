@@ -126,6 +126,20 @@ export class CurveLocationDetail {
 
   /** create with CurvePrimitive pointer, fraction, and point coordinates.
    */
+  public static createCurveEvaluatedFraction(
+    curve: CurvePrimitive,
+    fraction: number,
+    result?: CurveLocationDetail): CurveLocationDetail {
+    result = result ? result : new CurveLocationDetail();
+    result.curve = curve;
+    result.fraction = fraction;
+    result.point = curve.fractionToPoint (fraction);
+    result.vector.set(0, 0, 0);
+    result.a = 0.0;
+    return result;
+  }
+  /** create with CurvePrimitive pointer, fraction, and point coordinates.
+   */
   public static createCurveFractionPointDistance(
     curve: CurvePrimitive,
     fraction: number,

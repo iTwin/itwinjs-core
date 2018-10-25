@@ -97,6 +97,25 @@ export class Box extends SolidPrimitive {
       baseX, baseY, topX, topY, capped);
   }
 
+  /**
+   * @param range range corners Origin of base rectangle
+   * @param capped true to define top and bottom closure caps
+   */
+  public static createRange(range: Range3d, capped: boolean): Box | undefined {
+    if (!range.isNull) {
+      const lowPoint = range.low;
+      const xSize = range.xLength();
+      const ySize = range.yLength();
+      const zPoint = range.low.clone ();
+      zPoint.z = zPoint.z + range.zLength();
+      return Box.createDgnBox(
+        lowPoint,
+        Vector3d.unitX(), Vector3d.unitY(),
+        zPoint,
+        xSize, ySize, xSize, ySize, capped);
+    }
+    return undefined;
+  }
   public getBaseX(): number { return this._baseX; }
   public getBaseY(): number { return this._baseY; }
   public getTopX(): number { return this._topX; }

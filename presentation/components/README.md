@@ -1,4 +1,4 @@
-﻿# @bentley/presentation-components
+# @bentley/presentation-components
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

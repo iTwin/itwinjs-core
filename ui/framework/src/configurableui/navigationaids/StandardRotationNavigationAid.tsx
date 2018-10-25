@@ -40,11 +40,13 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
   }
 }
 
+/** Rotation data used in the [[StandardRotationNavigationAid]] component */
 export interface RotationData {
   label: string;
   iconClass: string;
 }
 
+/** State for the [[StandardRotationNavigationAid]] component */
 export interface StandardRotationNavigationAidState {
   list: RotationData[];
   selected: StandardViewId;

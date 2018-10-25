@@ -4,11 +4,13 @@ A View Decoration shows application-generated graphics in a [ScreenViewport]($fr
 
 ## View Decorators
 
-The process of creating View Decorations starts by adding an object that implements the [Decorator]($frontend) interface to the `ViewManager ` via the [ViewManager.addDecorator]($frontend) method. The most important part of the `Decorate` interface is the [Decorator.decorate]($frontend) method, which is called every time iModel.js renders a frame *for any ScreenViewport*. The argument to the `decorate` method is a [DecorateContext]($frontend) that supplies information about the ScreenViewport being rendered, as well as methods to create and save decoration graphics. The [DecorateContext.viewport]($frontend) member holds the target viewport. If you wish to decorate only a single viewport, you must test this member against your intended viewport.
+The process of creating View Decorations starts by adding an object that implements the [Decorator]($frontend) interface to the `ViewManager` via the [ViewManager.addDecorator]($frontend) method. The most important part of the `Decorate` interface is the [Decorator.decorate]($frontend) method, which is called every time iModel.js renders a frame *for any ScreenViewport*. The argument to the `decorate` method is a [DecorateContext]($frontend) that supplies information about the ScreenViewport being rendered, as well as methods to create and save decoration graphics. The [DecorateContext.viewport]($frontend) member holds the target viewport. If you wish to decorate only a single viewport, you must test this member against your intended viewport.
 
 The job of the `decorate` method is to supply the graphics (the *Decorations*) for a single frame of a single ScreenViewport.
 
 A `Decorator` remains active until you call [ViewManager.dropDecorator]($frontend) (Note: ViewManager.addDecorator returns a method that calls this for you if you wish to use it.)
+
+A [InteractiveTool]($frontend) can also show decorations and does *not* need to call the [ViewManager.addDecorator]($frontend) method to add itself. [InteractiveTool.decorate]($frontend) is called for the *active* tool to add it's decorations, [InteractiveTool.decorate]($frontend) is not called when the tool is paused by another tool such as a [ViewTool]($frontend). To show decorations while paused, a tool can implement [InteractiveTool.decorateSuspended]($frontend).
 
 ## Categories of View Decorations
 
@@ -35,6 +37,12 @@ View Graphic Decorations are drawn using the iModel.js rendering system through 
 You create View Graphic Decorations by calling [DecorateContext.createGraphicBuilder]($frontend) on the context supplied to `decorate`, supplying the appropriate `GraphicType`.
 You then add one or more graphics to the [GraphicBuilder]($frontend) using its methods. Finally, you add the completed graphics to the frame by calling [DecorateContext.addDecorationFromBuilder]($frontend).
 
+The following example illustrates creating a view graphic decoration to show the [IModel.projectExtents]($common) in spatial views:
+
+```ts
+[[include:View_Graphic_Decoration]]
+```
+
 #### Pickable View Graphic Decorations
 
 View Graphic Decorations are drawn into or atop the scene. To make your View Graphic Decorations *pickable* (i.e. allow the user to click on them to perform an action, or to give feedback when the cursor hovers over them), you must:
@@ -44,6 +52,12 @@ View Graphic Decorations are drawn into or atop the scene. To make your View Gra
 - Implement [Decorator.testDecorationHit]($frontend) to return `true` when the supplied Id matches your decoration's Id.
 - Implement [Decorator.getDecorationToolTip]($frontend) and/or   [Decorator.onDecorationButtonEvent]($frontend) to supply a tooltip and perform an action when your decoration is clicked.
 
+The following example illustrates creating a pickable view graphic decoration in order to supply a tooltip message when under the cursor:
+
+```ts
+[[include:Pickable_View_Graphic_Decoration]]
+```
+
 ### Canvas Decorations
 
 A [CanvasDecoration]($frontend) is drawn atop the scene using [CanvasRenderingContext2D](https://developer.mozilla.org/en-US/docs/Web/API/CanvasRenderingContext2D).
@@ -52,6 +66,12 @@ To add a CanvasDecoration, call [DecorateContext.addCanvasDecoration]($frontend)
 CanvasDecorators must implement [CanvasDecoration.drawDecoration]($frontend) to supply visible graphics, by calling methods on CanvasRenderingContext2D.
 
 CanvasDecorators may optionally include the member [CanvasDecoration.position]($frontend), that becomes the 0,0 point for your CanvasRenderingContext2D calls.
+
+The following example illustrates creating a canvas decoration to show a plus symbol at the center of the view:
+
+```ts
+[[include:Canvas_Decoration]]
+```
 
 > [Markers](./Markers) are a type of Canvas Decoration
 

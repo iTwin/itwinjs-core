@@ -23,7 +23,7 @@ import {
   WorkflowPropsList,
 } from "../../src/index";
 
-describe("ConfigurableuIManager", () => {
+describe("ConfigurableUiManager", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -208,7 +208,7 @@ describe("ConfigurableuIManager", () => {
     const workflowPropsList: WorkflowPropsList = {
       defaultWorkflowId: "default-workflow",
       taskPicker: {
-        classid: "taskpicker-class",
+        classId: "taskpicker-class",
         iconClass: "taskpicker-icon",
         labelKey: "taskpicker-label",
       },

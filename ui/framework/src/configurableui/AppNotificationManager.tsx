@@ -94,9 +94,11 @@ export class AppNotificationManager extends NotificationManager {
     return false;
   }
 
-  protected toolTipIsOpen(): boolean {
-    return ElementTooltip.isTooltipVisible;
-  }
+  /** Hides the Pointer message. */
+  public closePointerMessage(): void { this._hidePointerMessage(); }
+
+  public get isToolTipSupported(): boolean { return true; }
+  public get isToolTipOpen(): boolean { return ElementTooltip.isTooltipVisible; }
 
   /** Clear the ToolTip if it is currently open. If not open, does nothing. */
   public clearToolTip(): void {
@@ -110,7 +112,7 @@ export class AppNotificationManager extends NotificationManager {
    * @param pt       An optional location, relative to the origin of el, for the ToolTip. If undefined, center of el.
    * @param options  Options that supply additional information about how the ToolTip should function.
    */
-  protected _showToolTip(el: HTMLElement, message: string, pt?: XAndY, options?: ToolTipOptions): void {
+  protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void {
     ElementTooltip.showTooltip(el, message, pt, options);
   }
 

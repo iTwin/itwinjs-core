@@ -373,7 +373,7 @@ describe("PropertyDataProvider", () => {
               [field1.nestedFields[0].name]: faker.random.words(),
             },
             mergedFieldNames: [],
-          }] as content.NestedContent[],
+          }] as content.NestedContentValue[],
           [field2.name]: faker.random.word(),
         };
         const displayValues = {
@@ -411,7 +411,7 @@ describe("PropertyDataProvider", () => {
               [field1.nestedFields[0].name]: faker.random.words(),
             },
             mergedFieldNames: [],
-          }] as content.NestedContent[],
+          }] as content.NestedContentValue[],
           [field2.name]: faker.random.word(),
         };
         const displayValues = {
@@ -439,7 +439,7 @@ describe("PropertyDataProvider", () => {
               [field1.nestedFields[0].name]: faker.random.words(),
             },
             mergedFieldNames: [],
-          }] as content.NestedContent[],
+          }] as content.NestedContentValue[],
           [field2.name]: faker.random.word(),
         };
         const displayValues = {
@@ -468,7 +468,7 @@ describe("PropertyDataProvider", () => {
               [field1.nestedFields[0].name]: faker.random.words(),
             },
             mergedFieldNames: [],
-          }] as content.NestedContent[],
+          }] as content.NestedContentValue[],
         };
         const displayValues = {
           [field1.name]: undefined,
@@ -495,7 +495,7 @@ describe("PropertyDataProvider", () => {
               [field1.nestedFields[0].name]: faker.random.words(),
             },
             mergedFieldNames: [],
-          }] as content.NestedContent[],
+          }] as content.NestedContentValue[],
         };
         const displayValues = {
           [field1.name]: undefined,
@@ -512,7 +512,7 @@ describe("PropertyDataProvider", () => {
 
       it("returns empty nested content for nested content with no values", async () => {
         const values = {
-          [field1.name]: [] as content.NestedContent[],
+          [field1.name]: [] as content.NestedContentValue[],
           [field2.name]: faker.random.word(),
         };
         const displayValues = {
@@ -532,7 +532,7 @@ describe("PropertyDataProvider", () => {
       it("returns nothing for nested content with no values when there's only one record in category", async () => {
         descriptor.fields = [field1];
         const values = {
-          [field1.name]: [] as content.NestedContent[],
+          [field1.name]: [] as content.NestedContentValue[],
         };
         const displayValues = {
           [field1.name]: undefined,
@@ -579,7 +579,7 @@ describe("PropertyDataProvider", () => {
                   [field111.name]: faker.random.words(),
                   [field112.name]: faker.random.words(),
                 },
-              }] as content.NestedContent[],
+              }] as content.NestedContentValue[],
               [field12.name]: faker.random.word(),
             },
             displayValues: {
@@ -601,7 +601,7 @@ describe("PropertyDataProvider", () => {
                   [field111.name]: faker.random.words(),
                   [field112.name]: faker.random.words(),
                 },
-              }] as content.NestedContent[],
+              }] as content.NestedContentValue[],
               [field12.name]: faker.random.word(),
             },
             displayValues: {
@@ -609,7 +609,7 @@ describe("PropertyDataProvider", () => {
               [field12.name]: faker.random.words(),
             },
             mergedFieldNames: [],
-          }] as content.NestedContent[],
+          }] as content.NestedContentValue[],
           [field2.name]: faker.random.word(),
         };
         const displayValues = {

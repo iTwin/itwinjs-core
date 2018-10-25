@@ -28,7 +28,7 @@ Every iModel includes the [ECDbMeta](../ECDbMeta.ecschema.md) ECSchema. It expos
 
 > **Try it yourself**
 >
-> *Goal:* Return the properties and their types for the [Element](../../bis/domains/biscore/BisCore.ecschema.md#Element) class
+> *Goal:* Return the properties and their types for the [Element](../../bis/domains/BisCore.ecschema.md#Element) class
 >
 > *ECSQL*
 > ```sql
@@ -55,7 +55,7 @@ Another advantage of accessing the schemas via ECSQL is that you can combine tha
 
 > **Try it yourself**
 >
-> *Goal:* Return only [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s in the iModel which are of the subclass [Building](./MyDomain.ecschema.md#Building) or [Story](./MyDomain.ecschema.md#Story).
+> *Goal:* Return only [SpatialElement](../../bis/domains/BisCore.ecschema.md#SpatialElement)s in the iModel which are of the subclass [Building](./MyDomain.ecschema.md#Building) or [Story](./MyDomain.ecschema.md#Story).
 >
 > *ECSQL*
 > ```sql
@@ -76,7 +76,7 @@ were a `Building` subclass in another schema, those instances would also be retu
 
 > **Try it yourself**
 >
-> *Goal:* Return only [SpatialElement](../../bis/domains/biscore/BisCore.ecschema.md#SpatialElement)s in the iModel which are of the subclass [Building](./MyDomain.ecschema.md#Building) or [Story](./MyDomain.ecschema.md#Story) from the schema [MyDomain](./MyDomain.ecschema.md).
+> *Goal:* Return only [SpatialElement](../../bis/domains/BisCore.ecschema.md#SpatialElement)s in the iModel which are of the subclass [Building](./MyDomain.ecschema.md#Building) or [Story](./MyDomain.ecschema.md#Story) from the schema [MyDomain](./MyDomain.ecschema.md).
 >
 > *ECSQL*
 > ```sql

@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
-import { BeTimePoint, assert, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
+import { BeTimePoint, assert, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
@@ -175,7 +175,7 @@ export abstract class Target extends RenderTarget {
   private _overridesUpdateTime = BeTimePoint.now();
   private _hilite?: Set<string>;
   private _hiliteUpdateTime = BeTimePoint.now();
-  private _flashedElemId = Id64.invalidId;
+  private _flashedElemId = Id64.invalid;
   private _flashedUpdateTime = BeTimePoint.now();
   private _flashIntensity: number = 0;
   private _transparencyThreshold: number = 0;
@@ -238,7 +238,7 @@ export abstract class Target extends RenderTarget {
   public get hilite(): Set<string> { return this._hilite!; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
 
-  public get flashedElemId(): Id64 { return this._flashedElemId; }
+  public get flashedElemId(): Id64String { return this._flashedElemId; }
   public get flashedUpdateTime(): BeTimePoint { return this._flashedUpdateTime; }
   public get flashIntensity(): number { return this._flashIntensity; }
 
@@ -385,8 +385,8 @@ export abstract class Target extends RenderTarget {
     this._hilite = hilite;
     this._hiliteUpdateTime = BeTimePoint.now();
   }
-  public setFlashed(id: Id64, intensity: number) {
-    if (!id.equals(this._flashedElemId)) {
+  public setFlashed(id: Id64String, intensity: number) {
+    if (id !== this._flashedElemId) {
       this._flashedElemId = id;
       this._flashedUpdateTime = BeTimePoint.now();
     }
@@ -989,7 +989,7 @@ export class OnScreenTarget extends Target {
   public set animationFraction(fraction: number) { this._animationFraction = fraction; }
 
   public get viewRect(): ViewRect {
-    this.renderRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
+    assert(0 < this.renderRect.width && 0 < this.renderRect.height, "Zero-size view rect");
     assert(Math.floor(this.renderRect.width) === this.renderRect.width && Math.floor(this.renderRect.height) === this.renderRect.height, "fractional view rect dimensions");
     return this.renderRect;
   }
@@ -1033,7 +1033,8 @@ export class OnScreenTarget extends Target {
   }
 
   public updateViewRect(): boolean {
-    const viewRect = this.viewRect;
+    this.renderRect.init(0, 0, this._canvas.clientWidth, this._canvas.clientHeight);
+    const viewRect = this.renderRect;
 
     if (this._prevViewRect.width !== viewRect.width || this._prevViewRect.height !== viewRect.height) {
       // Must ensure internal bitmap grid dimensions of on-screen canvas match its own on-screen appearance
@@ -1063,6 +1064,20 @@ export class OnScreenTarget extends Target {
     assert(system.context.drawingBufferWidth === viewRect.width, "offscreen context dimensions don't match onscreen");
     assert(system.context.drawingBufferHeight === viewRect.height, "offscreen context dimensions don't match onscreen");
   }
+
+  private static _progParams?: ShaderProgramParams;
+  private static _drawParams?: DrawParams;
+  private static getDrawParams(target: OnScreenTarget, geom: SingleTexturedViewportQuadGeometry) {
+    if (undefined === this._progParams) {
+      this._progParams = new ShaderProgramParams();
+      this._drawParams = new DrawParams();
+    }
+
+    this._progParams.init(target);
+    this._drawParams!.init(this._progParams, geom);
+    return this._drawParams!;
+  }
+
   protected _endPaint(): void {
     const onscreenContext = this._canvas.getContext("2d");
     assert(null !== onscreenContext);
@@ -1076,8 +1091,8 @@ export class OnScreenTarget extends Target {
 
     // Copy framebuffer contents to off-screen canvas
     system.applyRenderState(RenderState.defaults);
-    const params = new DrawParams(this, this._blitGeom);
-    system.techniques.draw(params);
+    const drawParams = OnScreenTarget.getDrawParams(this, this._blitGeom);
+    system.techniques.draw(drawParams);
 
     // Copy off-screen canvas contents to on-screen canvas
     // ###TODO: Determine if clearRect() actually required...seems to leave some leftovers from prev image if not...

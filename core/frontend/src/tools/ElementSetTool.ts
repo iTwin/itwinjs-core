@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
 
-import { Id64, Id64Arg } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ModifyElementSource } from "./PrimitiveTool";
 import { IModelConnection } from "../IModelConnection";
 
@@ -157,7 +157,7 @@ export class ElementAgenda {
   public has(id: string) { return this.elements.some((entry) => id === entry); }
 
   /** Return true if elementId is already in this ElementAgenda. */
-  public find(id: Id64) { return this.has(id.value); }
+  public find(id: Id64String) { return this.has(id); }
 
   /** Add elements to this ElementAgenda. */
   public add(arg: Id64Arg) {

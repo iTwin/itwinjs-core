@@ -15,13 +15,13 @@ In the course of the tutorial you will notice how similar ECSQL and SQL are. To 
 
 The tutorial makes reference to the **iModelConsole** application to try out the ECSQL examples in the tutorial yourself and to experiment with your own ECSQL statements.
 
-> We are working to make the iModelConsole publicly available, but it is not ready yet.
-
-In the iModelConsole run the `.help` command to see all available commands.
+[!alert text="<img src="./media/wip.svg" style="width:2%;height:2%;">  We are working to make the iModelConsole publicly available, but it is not ready yet." kind="warning"]
 
 ### Sample iModel
 
-> The ECSQL examples in the tutorial work with a sample iModel. We are working to make the iModelConsole publicly available, but it is not ready yet.
+The ECSQL examples in the tutorial work with a sample iModel.
+
+[!alert text="<img src="./media/wip.svg" style="width:2%;height:2%;">  We are working to make the sample iModel publicly available, but it is not ready yet." kind="warning"]
 
 ### BIS
 

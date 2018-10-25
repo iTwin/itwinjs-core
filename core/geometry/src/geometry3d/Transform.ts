@@ -232,6 +232,19 @@ export class Transform implements BeJSONFunctions {
   public multiplyXYZ(x: number, y: number, z: number, result?: Point3d): Point3d {
     return Matrix3d.XYZPlusMatrixTimesCoordinates(this._origin, this._matrix, x, y, z, result);
   }
+  /** Multiply a specific row of the transform times xyz. Return the (number). */
+  public multiplyComponentXYZ(componentIndex: number, x: number, y: number, z: number): number {
+    const coffs = this._matrix.coffs;
+    const i0 = 3 * componentIndex;
+    return this.origin.at(componentIndex) + coffs[i0] * x + coffs[i0 + 1] * y + coffs[i0 + 2] * z;
+  }
+  /** Multiply a specific row of the transform times (weighted!) xyzw. Return the (number). */
+  public multiplyComponentXYZW(componentIndex: number, x: number, y: number, z: number, w: number): number {
+    const coffs = this._matrix.coffs;
+    const i0 = 3 * componentIndex;
+    return this.origin.at(componentIndex) * w +
+      coffs[i0] * x + coffs[i0 + 1] * y + coffs[i0 + 2] * z;
+  }
 
   /** Transform the input homogeneous point.  Return as a new point or in the pre-allocated result (if result is given) */
   public multiplyXYZW(x: number, y: number, z: number, w: number, result?: Point4d): Point4d {

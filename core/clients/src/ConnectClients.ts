@@ -118,8 +118,6 @@ export enum IModelHubPermissions {
 /** Client API to access the connect services. */
 export class RbacClient extends WsgClient {
   public static readonly searchKey: string = "RBAC.URL";
-  public static readonly configURL = "imjs_rbac_url";
-  public static readonly configRegion = "imjs_rbac_region";
   public static readonly configRelyingPartyUri = "imjs_rbac_relying_party_uri";
 
   public constructor() {
@@ -132,17 +130,6 @@ export class RbacClient extends WsgClient {
    */
   protected getUrlSearchKey(): string {
     return RbacClient.searchKey;
-  }
-
-  /**
-   * Gets the default URL for the service.
-   * @returns Default URL for the service.
-   */
-  protected getDefaultUrl(): string {
-    if (Config.App.has(RbacClient.configURL))
-      return Config.App.get(RbacClient.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key ${RbacClient.configURL}`);
   }
 
   /**
@@ -159,17 +146,6 @@ export class RbacClient extends WsgClient {
     }
 
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${RbacClient.configRelyingPartyUri}`);
-  }
-
-  /**
-   * Override default region for this service
-   * @returns region id or undefined
-   */
-  protected getRegion(): number | undefined {
-    if (Config.App.has(RbacClient.configRegion))
-      return Config.App.get(RbacClient.configRegion);
-
-    return undefined;
   }
 
   /**
@@ -267,8 +243,6 @@ export class RbacClient extends WsgClient {
 /** Client API to access the connect services. */
 export class ConnectClient extends WsgClient {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";
-  public static readonly configURL = "imjs_connected_context_service_url";
-  public static readonly configRegion = "imjs_connected_context_service_region";
   public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
   private readonly _rbacClient: RbacClient = new RbacClient();
 
@@ -282,28 +256,6 @@ export class ConnectClient extends WsgClient {
    */
   protected getUrlSearchKey(): string {
     return ConnectClient.searchKey;
-  }
-
-  /**
-   * Gets the default URL for the service.
-   * @returns Default URL for the service.
-   */
-  protected getDefaultUrl(): string {
-    if (Config.App.has(ConnectClient.configURL))
-      return Config.App.get(ConnectClient.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key  ${ConnectClient.configURL}`);
-  }
-
-  /**
-   * Override default region for this service
-   * @returns region id or undefined
-   */
-  protected getRegion(): number | undefined {
-    if (Config.App.has(ConnectClient.configRegion))
-      return Config.App.get(ConnectClient.configRegion);
-
-    return undefined;
   }
 
   /**

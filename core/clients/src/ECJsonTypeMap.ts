@@ -594,13 +594,15 @@ export class Id64Serializer implements PropertySerializer {
   public serialize(value: any): any {
     if (value instanceof Id64)
       return value.toString();
+    else if (typeof value === "string")
+      return value;
     return undefined;
   }
 
   public deserialize(value: any): any {
     if (typeof value !== "string")
       return undefined;
-    return new Id64(value);
+    return Id64.fromString(value);
   }
 }
 

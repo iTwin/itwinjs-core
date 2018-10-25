@@ -27,8 +27,8 @@ describe("DistinctValues", async () => {
   it("gets distinct content values", async () => {
     const ruleset: Ruleset = require("../../test-rulesets/DistinctValues/getRelatedDistinctValues");
     await using(await Presentation.presentation.rulesets().add(ruleset), async () => {
-      const key1: InstanceKey = { id: new Id64("0x1"), className: "BisCore:Subject" };
-      const key2: InstanceKey = { id: new Id64("0x17"), className: "BisCore:SpatialCategory" };
+      const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
+      const key2: InstanceKey = { id: Id64.fromString("0x17"), className: "BisCore:SpatialCategory" };
       const keys = new KeySet([key1, key2]);
       const descriptor = await Presentation.presentation.getContentDescriptor({ imodel, rulesetId: ruleset.id }, "Grid", keys, undefined);
       expect(descriptor).to.not.be.undefined;

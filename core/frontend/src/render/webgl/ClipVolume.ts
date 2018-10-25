@@ -18,7 +18,6 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { RenderState } from "./RenderState";
 import { DrawParams } from "./DrawCommand";
-import { RenderPass } from "./RenderFlags";
 
 abstract class PlanesWriter {
   protected readonly _view: DataView;
@@ -298,6 +297,8 @@ export class ClipMaskVolume implements RenderClipVolume {
     return this._texture;
   }
 
+  private static _drawParams?: DrawParams;
+
   public render(exec: ShaderProgramExecutor) {
     if (this._fbo === undefined)
       return;
@@ -317,7 +318,11 @@ export class ClipMaskVolume implements RenderClipVolume {
       context.clearColor(0, 0, 0, 0);
       context.clear(context.COLOR_BUFFER_BIT);
 
-      const params = new DrawParams(target, this.geometry, target.currentTransform, RenderPass.OpaqueGeneral);
+      if (undefined === ClipMaskVolume._drawParams)
+        ClipMaskVolume._drawParams = new DrawParams();
+
+      const params = ClipMaskVolume._drawParams!;
+      params.init(exec.params, this.geometry, target.currentTransform);
       exec.drawInterrupt(params);
 
       // Restore previous render state

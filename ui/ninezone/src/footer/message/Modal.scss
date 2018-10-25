@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "../../_z-index";
+@import "@bentley/ui-core/lib/_z-index";
 @import "../../_prefix";
 
 .nz-footer-message-modal {
@@ -16,7 +16,7 @@
   align-items: center;
   justify-content: center;
 
-  @include nz-z-index(dialog);
+  @include uicore-z-index(dialog);
 
   > .nz-dialog {
     max-height: 50%;

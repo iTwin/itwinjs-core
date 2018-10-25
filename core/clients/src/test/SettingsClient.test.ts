@@ -9,8 +9,6 @@ import { SettingsStatus, SettingsResult } from "../SettingsAdmin";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig, TestUsers } from "./TestConfig";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { KnownRegions } from "../Client";
-import { Config } from "../Config";
 
 // compare simple arrays
 function arraysEqual(array1: any, array2: any) {
@@ -39,8 +37,6 @@ describe.skip("ConnectSettingsClient-User", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV))
-      this.skip();
     connectClient = new ConnectClient();
     settingsClient = new ConnectSettingsClient("1001");
     authToken = await TestConfig.login();
@@ -257,9 +253,6 @@ describe.skip("ConnectSettingsClient-Administrator", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV))
-      this.skip();
-
     if (TestConfig.enableMocks)
       return;
 
@@ -479,9 +472,6 @@ describe("Reading non-user settings from ordinary user", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    if (Config.App.getNumber("imjs_buddi_resolve_url_using_region") !== Number(KnownRegions.DEV))
-      this.skip();
-
     connectClient = new ConnectClient();
     settingsClient = new ConnectSettingsClient("1001");
     authToken = await TestConfig.login();

@@ -56,7 +56,7 @@ export class IconLabelSupport {
   }
 }
 
-/** Props for the Icon React component */
+/** Properties for the [[Icon]] React component */
 export interface IconProps {
   iconInfo: IconInfo;
 }

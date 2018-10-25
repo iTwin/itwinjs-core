@@ -44,9 +44,11 @@ export class ViewRotationCube {
       return;
 
     this._removeListener = IModelApp.viewManager.onSelectedViewportChanged.addListener((args) => {
-      if (args.current) {
-        ViewRotationCube.setViewMatrix(args.current);
-      }
+      setImmediate(() => {
+        if (args.current) {
+          ViewRotationCube.setViewMatrix(args.current);
+        }
+      });
     });
   }
 

@@ -9,14 +9,14 @@ import * as express from "express";
 import * as bodyParser from "body-parser";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
-import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3, resetOp8Initializer } from "./TestRpcImpl";
+import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3, resetOp8Initializer, TestZeroMajorRpcImpl } from "./TestRpcImpl";
 import { CONSTANTS } from "../common/Testbed";
 import { RpcConfiguration, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { HttpServerRequest, HttpServerResponse } from "../../../core/common/lib/rpc/web/WebAppRpcProtocol";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { Config } from "@bentley/imodeljs-clients";
-IModelJsConfig.init(true, false, Config.App);
+IModelJsConfig.init(true, true, Config.App);
 const compatibleVersion = IModelReadRpcInterface.version;
 
 let pendingsSent = 0;
@@ -33,6 +33,7 @@ IModelHost.startup();
 
 TestRpcImpl.register();
 TestRpcImpl3.register();
+TestZeroMajorRpcImpl.register();
 TestbedConfig.initializeRpcBackend();
 
 Logger.initializeToConsole();

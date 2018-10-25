@@ -1,4 +1,4 @@
-﻿# @bentley/ui-framework
+# @bentley/ui-framework
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

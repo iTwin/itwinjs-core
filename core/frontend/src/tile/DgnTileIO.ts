@@ -8,7 +8,7 @@ import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { ColorMap } from "../render/primitives/ColorMap";
-import { Id64, JsonUtils, assert } from "@bentley/bentleyjs-core";
+import { Id64String, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
 import { ImageUtil } from "../ImageUtil";
 import {
@@ -82,7 +82,7 @@ export namespace DgnTileIO {
    * @hidden
    */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
@@ -132,7 +132,7 @@ export namespace DgnTileIO {
         return Promise.resolve(this.readGltfAndCreateGraphics(isLeaf, isCurved, isComplete, featureTable, header.contentRange, sizeMultiplier));
     }
 
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: GltfTileIO.IsCanceled) {
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Primary, isCanceled?: GltfTileIO.IsCanceled) {
       super(props, iModel, modelId, is3d, system, type, isCanceled);
     }
 

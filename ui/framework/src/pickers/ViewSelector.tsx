@@ -5,12 +5,14 @@
 /** @module Picker */
 
 import * as React from "react";
+import { ViewUtilities } from "../utils/ViewUtilities";
 import ListPicker, { ListItem, ListItemType } from "./ListPicker";
 import { IModelApp, Viewport, ViewState, IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
 import { ViewQueryParams } from "@bentley/imodeljs-common/lib/ViewProps";
 import { UiFramework } from "../UiFramework";
 import { ViewDefinitionProps, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 
+/** View Selector React component */
 export class ViewSelector extends React.Component<any, any> {
   /** Creates a ViewSelector */
   constructor(props: any) {
@@ -76,30 +78,6 @@ export class ViewSelector extends React.Component<any, any> {
   }
 
   /**
-   * Determines if given class is a spatial view.
-   * @param classname Name of class to check
-   */
-  public static isSpatial(classname: string): boolean {
-    return classname === "SpatialViewDefinition" || classname === "OrthographicViewDefinition";
-  }
-
-  /**
-   * Determines if given class is a drawing view.
-   * @param classname Name of class to check
-   */
-  public static isDrawing(classname: string): boolean {
-    return classname === "DrawingViewDefinition";
-  }
-
-  /**
-   * Determines if given class is a sheet view.
-   * @param classname Name of class to check
-   */
-  public static isSheet(classname: string): boolean {
-    return classname === "SheetViewDefinition";
-  }
-
-  /**
    * Fetches ViewDefinitionProps for a model.
    * @param imodel Model to query from props
    */
@@ -116,7 +94,7 @@ export class ViewSelector extends React.Component<any, any> {
    * @param imodel Model to query for props
    * @param params Parameters for view query
    */
-  private async _getViewProps(imodel: IModelConnection, params: ViewQueryParams) {
+  private async _getViewProps(imodel: IModelConnection, params: ViewQueryParams): Promise<ViewDefinitionProps[]> {
     try {
       const viewProps = await IModelReadRpcInterface.getClient().queryElementProps(imodel.iModelToken, params);
       return viewProps as ViewDefinitionProps[];
@@ -128,7 +106,7 @@ export class ViewSelector extends React.Component<any, any> {
   /**
    * Query the views and set the initial state with the iModel's views.
    */
-  public async loadViews() {
+  public async loadViews(): Promise<void> {
     // Query views and add them to state
     const views3d: ListItem[] = [];
     const views2d: ListItem[] = [];
@@ -142,11 +120,11 @@ export class ViewSelector extends React.Component<any, any> {
         enabled: false,
         type: ListItemType.Item,
       };
-      if (ViewSelector.isSpatial(viewProp.bisBaseClass!))
+      if (ViewUtilities.isSpatial(viewProp.bisBaseClass!))
         views3d.push(viewItem);
-      else if (ViewSelector.isDrawing(viewProp.bisBaseClass!))
+      else if (ViewUtilities.isDrawing(viewProp.bisBaseClass!))
         views2d.push(viewItem);
-      else if (ViewSelector.isSheet(viewProp.bisBaseClass!))
+      else if (ViewUtilities.isSheet(viewProp.bisBaseClass!))
         sheets.push(viewItem);
       else
         unknown.push(viewItem);
@@ -159,7 +137,7 @@ export class ViewSelector extends React.Component<any, any> {
    * Update state of the entries in the widget.
    * @param viewId Identifier for the relevant view
    */
-  public async updateState(viewId?: any) {
+  public async updateState(viewId?: any): Promise<void> {
     // Wait for initialization finished
     if (!this.state.initialized)
       return;

@@ -18,6 +18,7 @@ import NZ_FooterZone from "@bentley/ui-ninezone/lib/zones/Footer";
 import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
 import GhostOutline from "@bentley/ui-ninezone/lib/zones/GhostOutline";
 
+/** Properties for the [[StatusBarZone]] component */
 export interface StatusBarZoneProps {
   zoneDef?: ZoneDef;
   zoneState: NZ_ZoneState;

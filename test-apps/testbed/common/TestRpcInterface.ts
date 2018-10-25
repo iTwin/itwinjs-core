@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { RpcInterface, RpcManager, RpcOperationsProfile, IModelToken, RpcNotFoundResponse } from "@bentley/imodeljs-common";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 
 export class TestOp1Params {
@@ -34,6 +34,19 @@ export class TestNotFoundResponse extends RpcNotFoundResponse {
   }
 }
 
+export abstract class ZeroMajorRpcInterface extends RpcInterface {
+  public static version = "0.1.1";
+  public static types = () => [TestOp1Params];
+
+  public static getClient(): ZeroMajorRpcInterface {
+    return RpcManager.getClientForInterface(ZeroMajorRpcInterface);
+  }
+
+  public async op1(_params: TestOp1Params): Promise<number> {
+    return this.forward.apply(this, arguments);
+  }
+}
+
 export abstract class TestRpcInterface extends RpcInterface {
   public static readonly OP8_INITIALIZER = 5;
   public static readonly OP8_PENDING_MESSAGE = "Initializing op8";
@@ -42,7 +55,6 @@ export abstract class TestRpcInterface extends RpcInterface {
 
   public static types = () => [
     TestOp1Params,
-    Id64,
     Date,
     Map,
     Set,
@@ -59,7 +71,7 @@ export abstract class TestRpcInterface extends RpcInterface {
     return this.forward.apply(this, arguments);
   }
 
-  public async op2(_id: Id64): Promise<Id64> {
+  public async op2(_id: Id64String): Promise<Id64String> {
     return this.forward.apply(this, arguments);
   }
 

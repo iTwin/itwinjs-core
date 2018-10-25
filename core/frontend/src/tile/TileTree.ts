@@ -617,7 +617,7 @@ export class TileTree implements IDisposable {
   public readonly is3d: boolean;
   public readonly location: Transform;
   public readonly id: string;
-  public readonly modelId: Id64;
+  public readonly modelId: Id64String;
   public readonly viewFlagOverrides: ViewFlag.Overrides;
   public readonly maxTilesToSkip: number;
   public expirationTime: BeDuration;

@@ -6,7 +6,6 @@
 .treewidget {
   display: flex;
   flex-direction: column;
-  max-height: 60vh;
   min-width: 0;
 }
 
@@ -21,5 +20,5 @@
 }
 .treewidget .filteredTree {
   flex: 1;
-  min-height: 200px;
+  min-height: 50px;
 }

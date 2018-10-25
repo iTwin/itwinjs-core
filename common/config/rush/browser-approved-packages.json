@@ -112,7 +112,7 @@
     },
     {
       "name": "body-parser",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "bunyan",
@@ -228,7 +228,7 @@
     },
     {
       "name": "electron",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "electron-chromedriver",
@@ -281,6 +281,10 @@
     {
       "name": "file-loader",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "find-root",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "fork-ts-checker-webpack-plugin",
@@ -345,6 +349,14 @@
     {
       "name": "istanbul-instrumenter-loader",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "istanbul-lib-hook",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "istanbul-lib-instrument",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "js-base64",
@@ -561,6 +573,10 @@
     {
       "name": "redux-oidc",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "resolve",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "rimraf",

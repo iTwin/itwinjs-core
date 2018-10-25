@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { createRandomECClassInfoJSON } from "../_helpers/random";
+import { createRandomECClassInfoJSON, createRandomECInstanceKeyJSON } from "../_helpers/random";
 import Item, { ItemJSON } from "../../lib/content/Item";
+import { NestedContentValueJSON } from "../../lib/content/Value";
 
 describe("Item", () => {
 
@@ -42,6 +43,32 @@ describe("Item", () => {
 
     it("creates valid Item from valid JSON without classInfo", () => {
       const item = Item.fromJSON({ ...testItemJSON, classInfo: undefined });
+      expect(item).to.matchSnapshot();
+    });
+
+    it("creates valid Item with null values", () => {
+      const item = Item.fromJSON({
+        ...testItemJSON,
+        values: { key1: null },
+        displayValues: { key1: null },
+      });
+      expect(item).to.matchSnapshot();
+    });
+
+    it("creates valid Item with nested content values", () => {
+      const nestedContentValueJSON: NestedContentValueJSON = {
+        primaryKeys: [createRandomECInstanceKeyJSON()],
+        values: { nested: null },
+        displayValues: { nested: "" },
+        mergedFieldNames: [faker.random.word()],
+      };
+      const item = Item.fromJSON({
+        ...testItemJSON,
+        displayValues: { key1: null },
+        values: {
+          key1: [nestedContentValueJSON],
+        },
+      });
       expect(item).to.matchSnapshot();
     });
 

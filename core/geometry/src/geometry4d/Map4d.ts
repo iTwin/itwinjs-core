@@ -29,10 +29,16 @@ export class Map4d implements BeJSONFunctions {
   /** Create a Map4d with given transform pair.
    * @returns undefined if the transforms are not inverses of each other.
    */
-  public static createTransform(transform0: Transform, transform1: Transform): Map4d | undefined {
-    const product = transform0.multiplyTransformTransform(transform1);
-    if (!product.isIdentity)
-      return undefined;
+  public static createTransform(transform0: Transform, transform1?: Transform): Map4d | undefined {
+    if (transform1 === undefined) {
+      transform1 = transform0.inverse();
+      if (transform1 === undefined)
+        return undefined;
+    } else {
+      const product = transform0.multiplyTransformTransform(transform1);
+      if (!product.isIdentity)
+        return undefined;
+    }
     return new Map4d(Matrix4d.createTransform(transform0), Matrix4d.createTransform(transform1));
   }
   /**

@@ -7,6 +7,7 @@
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 import { BeJSONFunctions, Geometry } from "../Geometry";
+import { Point4d } from "../geometry4d/Point4d";
 /**
  * A plane defined by
  *
@@ -126,6 +127,11 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions {
   }
   /** @returns Return the altitude of spacePoint above or below the plane.  (Below is negative) */
   public altitude(spacePoint: Point3d): number { return this._normal.dotProductStartEnd(this._origin, spacePoint); }
+
+  /** @returns Return the altitude of weighted spacePoint above or below the plane.  (Below is negative) */
+  public weightedAltitude(spacePoint: Point4d): number {
+    return this._normal.dotProductStart3dEnd4d(this._origin, spacePoint); }
+
   /** @returns return a point at specified (signed) altitude */
   public altitudeToPoint(altitude: number, result?: Point3d): Point3d {
     return this._origin.plusScaled(this._normal, altitude, result);

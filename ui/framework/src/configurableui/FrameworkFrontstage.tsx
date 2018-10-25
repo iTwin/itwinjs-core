@@ -20,7 +20,7 @@ import NineZone, { NineZoneProps, WidgetZoneIndex } from "@bentley/ui-ninezone/l
 // Frontstage React component
 // -----------------------------------------------------------------------------
 
-/** Props for the FrameworkFrontstage component.
+/** Properties for the [[FrameworkFrontstage]] component.
  */
 export interface FrameworkFrontstageProps {
   frontstageDef: FrontstageDef;
@@ -59,9 +59,6 @@ export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProp
 
   // This uses ConfigurableUi to render the content
   private doContentLayoutRender(): any {
-    // if (ProtogistApp.store.getState().contentState!.layoutDef)
-    //   return undefined;
-
     return (
       <ContentLayout
         contentLayout={this.props.frontstageDef.defaultLayout!}

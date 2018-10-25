@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect } from "chai";
+import { expect, spy } from "chai";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
 import { RegisteredRuleset } from "@bentley/presentation-common";
@@ -85,6 +85,33 @@ describe("RulesetManager", () => {
       addonMock.verifyAll();
     });
 
+  });
+
+  describe("dispose", () => {
+
+    it("disposes registered ruleset for get result", async () => {
+      const ruleset = { id: faker.random.uuid(), rules: [] };
+      const hash = faker.random.uuid();
+      addonMock.setup((x) => x.getRulesets(ruleset.id)).returns(() => JSON.stringify([{ ruleset, hash }])).verifiable();
+      const result = await manager.get(ruleset.id);
+      const eventSpy = spy.on(manager, manager.remove.name);
+
+      expect(result).to.not.be.undefined;
+      (result as RegisteredRuleset).dispose();
+      expect(eventSpy).to.have.been.called();
+    });
+
+    it("disposes registered ruleset for add result", async () => {
+      const ruleset = { id: faker.random.uuid(), rules: [] };
+      const hash = faker.random.uuid();
+      addonMock.setup((x) => x.addRuleset(JSON.stringify(ruleset))).returns(() => hash).verifiable();
+      const result = manager.add(ruleset);
+      const eventSpy = spy.on(manager, manager.remove.name);
+
+      expect(result).to.not.be.undefined;
+      result.dispose();
+      expect(eventSpy).to.have.been.called();
+    });
   });
 
 });

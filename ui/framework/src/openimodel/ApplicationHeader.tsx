@@ -8,7 +8,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 import "./ApplicationHeader.scss";
 
-/** Props for the ApplicationHeader React component */
+/** Properties for the [[ApplicationHeader]] React component */
 export interface ApplicationHeaderProps {
   icon: React.ReactNode;
   message: string;

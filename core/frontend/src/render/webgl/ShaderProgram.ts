@@ -310,10 +310,10 @@ export class ShaderProgram implements IDisposable {
 // This class must *only* be used inside a using() function!
 export class ShaderProgramExecutor {
   private _program?: ShaderProgram;
-  private _params: ShaderProgramParams;
+  private static _params?: ShaderProgramParams;
 
   public constructor(target: Target, pass: RenderPass, program?: ShaderProgram) {
-    this._params = new ShaderProgramParams(target, pass);
+    this.params.init(target, pass);
     this.changeProgram(program);
   }
 
@@ -322,8 +322,14 @@ export class ShaderProgramExecutor {
 
   public setProgram(program: ShaderProgram): boolean { return this.changeProgram(program); }
   public get isValid() { return undefined !== this._program; }
-  public get target() { return this._params.target; }
-  public get renderPass() { return this._params.renderPass; }
+  public get target() { return this.params.target; }
+  public get renderPass() { return this.params.renderPass; }
+  public get params() {
+    if (undefined === ShaderProgramExecutor._params)
+      ShaderProgramExecutor._params = new ShaderProgramParams();
+
+    return ShaderProgramExecutor._params;
+  }
 
   public draw(params: DrawParams) {
     assert(this.isValid);
@@ -332,7 +338,7 @@ export class ShaderProgramExecutor {
     }
   }
   public drawInterrupt(params: DrawParams) {
-    assert(params.target === this._params.target);
+    assert(params.target === this.params.target);
 
     const tech = params.target.techniques.getTechnique(params.geometry.getTechniqueId(params.target));
     const program = tech.getShader(TechniqueFlags.defaults);
@@ -352,7 +358,7 @@ export class ShaderProgramExecutor {
     }
 
     this._program = program;
-    if (undefined !== program && !program.use(this._params)) {
+    if (undefined !== program && !program.use(this.params)) {
       this._program = undefined;
       return false;
     }

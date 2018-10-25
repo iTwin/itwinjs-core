@@ -132,6 +132,7 @@ export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
   subRange?: LowAndHighXYZ;
 }
 
+/** A [[GeometricElement]]'s GeometryStream is represented by an array of [[GeometryStreamEntryProps]]. */
 export type GeometryStreamProps = GeometryStreamEntryProps[];
 
 /** GeometryStreamBuilder is a helper class for populating the [[GeometryStreamProps]] array needed to create a [[GeometricElement]] or [[GeometryPart]]. */
@@ -175,7 +176,7 @@ export class GeometryStreamBuilder {
    *  An invalid sub-category id can be supplied to force a reset to the current [[SubCategoryAppearance]].
    *  It is not valid to change the sub-category when defining a [[GeometryPart]]. A [[GeometryPart]] inherit the symbology of their instance for anything not explicitly overridden.
    */
-  public appendSubCategoryChange(subCategoryId: Id64): boolean {
+  public appendSubCategoryChange(subCategoryId: Id64String): boolean {
     this.geometryStream.push({ appearance: { subCategory: subCategoryId } });
     return true;
   }
@@ -232,7 +233,7 @@ export class GeometryStreamBuilder {
   /** Append a [[GeometryPart]] instance with relative position, orientation, and scale to a [[GeometryStreamProps]] array for creating a [[GeometricElement3d]].
    *  Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
    */
-  public appendGeometryPart3d(partId: Id64, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean {
+  public appendGeometryPart3d(partId: Id64String, instanceOrigin?: Point3d, instanceRotation?: YawPitchRollAngles, instanceScale?: number): boolean {
     if (undefined === this._worldToLocal) {
       this.geometryStream.push({ geomPart: { part: partId, origin: instanceOrigin, rotation: instanceRotation, scale: instanceScale } });
       return true;
@@ -254,7 +255,7 @@ export class GeometryStreamBuilder {
   /** Append a [[GeometryPart]] instance with relative position, orientation, and scale to a [[GeometryStreamProps]] array for creating a [[GeometricElement2d]].
    *  Not valid when defining a [[GeometryPart]] as nesting of parts is not supported.
    */
-  public appendGeometryPart2d(partId: Id64, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean {
+  public appendGeometryPart2d(partId: Id64String, instanceOrigin?: Point2d, instanceRotation?: Angle, instanceScale?: number): boolean {
     return this.appendGeometryPart3d(partId, instanceOrigin ? Point3d.createFrom(instanceOrigin) : undefined, instanceRotation ? new YawPitchRollAngles(instanceRotation) : undefined, instanceScale);
   }
 
@@ -320,7 +321,7 @@ export class GeometryStreamIteratorEntry {
   /** Optional [[GeometryPart]] instance transform when current entry is for a [[GeometryPart]] */
   public partToLocal?: Transform;
   /** Current iterator entry is a [[GeometryPart]] instance when partId is not undefined */
-  public partId?: Id64;
+  public partId?: Id64String;
   /** Current iterator entry is a [[GeometryQuery]] when geometryQuery is not undefined */
   public geometryQuery?: GeometryQuery;
   /** Current iterator entry is a [[TextString]] when textString is not undefined */
@@ -329,7 +330,7 @@ export class GeometryStreamIteratorEntry {
   public brep?: BRepEntity.DataProps;
 
   public constructor(category?: Id64String) {
-    this.geomParams = new GeometryParams(category !== undefined ? new Id64(category) : Id64.invalidId);
+    this.geomParams = new GeometryParams(category !== undefined ? category : Id64.invalid);
   }
 }
 
@@ -349,7 +350,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
    */
   public constructor(geometryStream: GeometryStreamProps, category?: Id64String) {
     this.geometryStream = geometryStream;
-    this.entry = new GeometryStreamIteratorEntry(category !== undefined ? new Id64(category) : Id64.invalidId);
+    this.entry = new GeometryStreamIteratorEntry(category !== undefined ? category : Id64.invalid);
   }
 
   /** Supply optional local to world transform. Used to transform entries that are stored relative to the element placement and return them in world coordinates. */
@@ -432,13 +433,13 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
       if (entry.appearance) {
         this.entry.geomParams.resetAppearance();
         if (entry.appearance.subCategory)
-          this.entry.geomParams.subCategoryId = new Id64(entry.appearance.subCategory);
+          this.entry.geomParams.subCategoryId = Id64.fromJSON(entry.appearance.subCategory);
         if (entry.appearance.color)
           this.entry.geomParams.lineColor = new ColorDef(entry.appearance.color);
         if (entry.appearance.weight)
           this.entry.geomParams.weight = entry.appearance.weight;
         if (entry.appearance.style)
-          this.entry.geomParams.styleInfo = new LineStyle.Info(new Id64(entry.appearance.style));
+          this.entry.geomParams.styleInfo = new LineStyle.Info(Id64.fromJSON(entry.appearance.style));
         if (entry.appearance.transparency)
           this.entry.geomParams.elmTransparency = entry.appearance.transparency;
         if (entry.appearance.displayPriority)
@@ -470,11 +471,11 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
         this.entry.geomParams.pattern = params;
       } else if (entry.material) {
         if (entry.material.materialId)
-          this.entry.geomParams.materialId = new Id64(entry.material.materialId);
+          this.entry.geomParams.materialId = Id64.fromJSON(entry.material.materialId);
       } else if (entry.subRange) {
         this.entry.localRange = Range3d.fromJSON(entry.subRange);
       } else if (entry.geomPart) {
-        this.entry.partId = new Id64(entry.geomPart.part);
+        this.entry.partId = Id64.fromJSON(entry.geomPart.part);
         if (entry.geomPart.origin !== undefined || entry.geomPart.rotation !== undefined || entry.geomPart.scale !== undefined) {
           const origin = entry.geomPart.origin ? Point3d.fromJSON(entry.geomPart.origin) : Point3d.createZero();
           const rotation = entry.geomPart.rotation ? YawPitchRollAngles.fromJSON(entry.geomPart.rotation).toMatrix3d() : Matrix3d.createIdentity();

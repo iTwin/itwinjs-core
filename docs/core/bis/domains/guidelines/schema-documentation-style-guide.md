@@ -1,11 +1,10 @@
 # Schema Documentation Style Guide
 
 Goal of the schema doc is to clarify :
+
 - What is the goal of the schema
 - How should the schema be used
 - Why is the schema done this way ?
--
-
 
 ## General Guidelines:
 

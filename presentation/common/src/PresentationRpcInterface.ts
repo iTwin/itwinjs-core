@@ -27,9 +27,6 @@ export default class PresentationRpcInterface extends RpcInterface {
   // developer note: It's called an interface but actually it's a real implemented
   // frontend-specific class. It's setup that way to keep consistency with imodeljs-core.
 
-  /** The version of the interface. */
-  public static version = "1.0.0";
-
   /** The types that can be marshaled by the interface. */
   /* istanbul ignore next */
   public static types = () => [
@@ -41,6 +38,14 @@ export default class PresentationRpcInterface extends RpcInterface {
     Item,
     Id64,
   ]
+
+  /** The semantic version of the interface. */
+  public static version = "1.0.0";
+
+  /*===========================================================================================
+    NOTE: Any add/remove/change to the methods below requires an update of the interface version.
+    NOTE: Please consult the README in core/common/src/rpc for the semantic versioning rules.
+  ===========================================================================================*/
 
   /** See [[PresentationManager.getRootNodes]] */
   public getRootNodes(_token: IModelToken, _options: Paged<HierarchyRpcRequestOptions>): Promise<Node[]> { return this.forward.apply(this, arguments); }

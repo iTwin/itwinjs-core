@@ -71,7 +71,7 @@ describe("ListPicker", () => {
 
       expect(
         listPickerInstance.isSpecialItem({
-          key: ListPicker.Key_Seperator,
+          key: ListPicker.Key_Separator,
         } as ListItem),
       ).to.be.true;
     });

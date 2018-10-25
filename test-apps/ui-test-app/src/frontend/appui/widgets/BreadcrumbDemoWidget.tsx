@@ -8,7 +8,7 @@ import { SampleAppIModelApp } from "../..";
 
 import {
   ConfigurableUiManager, ConfigurableCreateInfo,
-  WidgetControl, WidgetControlProps,
+  WidgetControl, WidgetComponentProps,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
 import {
@@ -27,7 +27,7 @@ export class BreadcrumbDemoWidgetControl extends WidgetControl {
   }
 }
 
-interface Props extends WidgetControlProps {
+interface Props extends WidgetComponentProps {
   iModelConnection?: IModelConnection;
 }
 
@@ -65,8 +65,8 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
 
     return (
       <div>
-        <label htmlFor="recieves_row">Can accept rows: </label>
-        <input id="recieves_row" type="checkbox" onChange={(event: React.ChangeEvent) => {
+        <label htmlFor="receives_row">Can accept rows: </label>
+        <input id="receives_row" type="checkbox" onChange={(event: React.ChangeEvent) => {
           this.setState({ checked: (event.target as HTMLInputElement).checked });
         }} />
         <Breadcrumb path={path} dataProvider={demoMutableTreeDataProvider} delimiter={"\\"}

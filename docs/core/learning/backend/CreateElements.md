@@ -7,7 +7,7 @@ const elementProps: SomeBisClassProps = {
   classFullName: bisFullClassName
   ... other required props ...
 };
-const newElementId: Id64 = iModel.elements.insertElement(elementProps);
+const newElementId: Id64String = iModel.elements.insertElement(elementProps);
 ```
 
 The type of the "props" object is chosen as appropriate for the particular Element subclass that is to be instanced. There are [InformationPartitionElementProps]($common), [SubjectProps]($common), [GeometricElement3dProps]($common), and many more. See [Wire Formats]($common:WireFormats) for the complete list of props interfaces defined in iModel.js. Domains may define their own "props" subclasses.

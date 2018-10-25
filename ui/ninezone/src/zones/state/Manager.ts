@@ -27,9 +27,19 @@ export class StateManager {
     const model = this._nineZoneFactory(state);
 
     const widget = model.getWidget(widgetId);
-    const zone = widget.zone;
 
     const isClosing = tabIndex === widget.props.tabIndex;
+
+    return this.handleWidgetStateChange(widgetId, tabIndex, !isClosing, state);
+  }
+
+  public handleWidgetStateChange(widgetId: number, tabIndex: number, isOpening: boolean, state: NineZoneProps): NineZoneProps {
+    const model = this._nineZoneFactory(state);
+
+    const widget = model.getWidget(widgetId);
+    const zone = widget.zone;
+
+    const isClosing = !isOpening;
 
     if (isClosing && zone.isFloating())
       return { ...model.props };

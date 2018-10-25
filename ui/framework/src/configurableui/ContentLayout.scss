@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/bwc/lib/mixins";
-@import "@bentley/ui-ninezone/lib/footer/_variables.scss";
+@import "@bentley/ui-ninezone/lib/footer/_variables";
 
- .ContentViewPane {
+.ContentViewPane {
   height: 100%;
   width: 100%;
   background: rgb(102, 100, 100);

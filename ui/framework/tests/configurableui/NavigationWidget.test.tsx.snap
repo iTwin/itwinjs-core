@@ -31,15 +31,12 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "_navigationAidId": "",
       "_verticalIds": Array [],
       "classId": undefined,
-      "defaultOpenUsed": false,
-      "defaultState": 1,
       "featureId": "",
       "horizontalDirection": 3,
       "horizontalItems": ItemList {
         "_items": Array [],
       },
       "id": "Widget-4",
-      "isDefaultOpen": true,
       "isFloatingStateSupported": false,
       "isFloatingStateWindowResizable": true,
       "isFreeform": false,
@@ -48,10 +45,12 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "priority": 0,
       "renderHorizontalToolbar": [Function],
       "renderVerticalToolbar": [Function],
+      "stateChanged": false,
       "verticalDirection": 2,
       "verticalItems": ItemList {
         "_items": Array [],
       },
+      "widgetState": 1,
       "widgetType": 1,
     }
   }

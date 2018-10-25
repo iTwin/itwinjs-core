@@ -3,14 +3,20 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-// import { mount } from "enzyme";
-// import * as React from "react";
+import { mount } from "enzyme";
+import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { SamplePropertyRecord } from "../PropertyTestHelpers";
 import { SelectablePropertyBlock, SelectablePropertyBlockProps, SelectablePropertyBlockState } from "../../../src/propertygrid/component/SelectablePropertyBlock";
+import TestUtils from "../../TestUtils";
+import { getPropertyKey } from "../../../src/propertygrid/component/PropertyList";
 
 describe("SelectablePropertyBlock", () => {
   let props: SelectablePropertyBlockProps;
+
+  before(() => {
+    TestUtils.initializeUiComponents();
+  });
 
   beforeEach(() => {
     props = {
@@ -57,7 +63,7 @@ describe("SelectablePropertyBlock", () => {
         new SamplePropertyRecord("model", 0, "0000 0005 00E0 02D8"),
       ];
 
-      const key = SelectablePropertyBlock.getPropertyKey(props.category, props.properties[1]);
+      const key = getPropertyKey(props.category, props.properties[1]);
 
       const matches = SelectablePropertyBlock.doesKeyMatchAnyProperty(props, key);
       expect(matches).to.be.true;
@@ -96,7 +102,7 @@ describe("SelectablePropertyBlock", () => {
       const component = new SelectablePropertyBlock(props);
       const nextProps = Object.assign({}, props);
       nextProps.selectedPropertyKey = "randomKey";
-      const nextState: SelectablePropertyBlockState = { keyMatched: false };
+      const nextState: SelectablePropertyBlockState = { keyMatched: false, columnRatio: 0.25 };
 
       expect(component.shouldComponentUpdate(nextProps, nextState)).to.be.false;
     });
@@ -105,8 +111,8 @@ describe("SelectablePropertyBlock", () => {
       const component = new SelectablePropertyBlock(props);
       const nextProps = Object.assign({}, props);
       nextProps.selectedPropertyKey = "randomKey";
-      component.state = { keyMatched: true };
-      const nextState: SelectablePropertyBlockState = { keyMatched: false };
+      component.state = { keyMatched: true, columnRatio: 0.25 };
+      const nextState: SelectablePropertyBlockState = { keyMatched: false, columnRatio: 0.25 };
 
       expect(component.shouldComponentUpdate(nextProps, nextState)).to.be.true;
     });
@@ -115,10 +121,78 @@ describe("SelectablePropertyBlock", () => {
       const component = new SelectablePropertyBlock(props);
       const nextProps = Object.assign({}, props);
       nextProps.selectedPropertyKey = "randomKey";
-      component.state = { keyMatched: true };
-      const nextState: SelectablePropertyBlockState = { keyMatched: true };
+      component.state = { keyMatched: true, columnRatio: 0.25 };
+      const nextState: SelectablePropertyBlockState = { keyMatched: true, columnRatio: 0.25 };
 
       expect(component.shouldComponentUpdate(nextProps, nextState)).to.be.true;
     });
   });
+
+  describe("ratio between label and value", () => {
+    const getBoundingClientRect = Element.prototype.getBoundingClientRect;
+
+    before(() => {
+      Element.prototype.getBoundingClientRect = () => ({
+        bottom: 0,
+        height: 0,
+        left: 0,
+        right: 0,
+        toJSON: () => { },
+        top: 0,
+        width: 100,
+        x: 0,
+        y: 0,
+      });
+    });
+
+    after(() => {
+      Element.prototype.getBoundingClientRect = getBoundingClientRect;
+    });
+
+    it("changes label-value ratio when it's modified within bounds", () => {
+      props.category.expand = true;
+
+      const propertyBlockMount = mount(<SelectablePropertyBlock {...props} />);
+
+      expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
+
+      const elementSeparator = propertyBlockMount.find(".core-element-separator").first();
+      elementSeparator.simulate("pointerdown", { clientX: 10 });
+      document.dispatchEvent(new MouseEvent("pointermove", { clientX: 40 }));
+      document.dispatchEvent(new MouseEvent("pointerup"));
+
+      expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.55);
+    });
+
+    it("changes label-value ratio to 0.15 when it's modified lower than allowed", () => {
+      props.category.expand = true;
+
+      const propertyBlockMount = mount(<SelectablePropertyBlock {...props} />);
+
+      expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
+
+      const elementSeparator = propertyBlockMount.find(".core-element-separator").first();
+      elementSeparator.simulate("pointerdown", { clientX: 30 });
+      document.dispatchEvent(new MouseEvent("pointermove", { clientX: 0 }));
+      document.dispatchEvent(new MouseEvent("pointerup"));
+
+      expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.15);
+    });
+
+    it("changes label-value ratio to 0.6 when it's modified higher than allowed", () => {
+      props.category.expand = true;
+
+      const propertyBlockMount = mount(<SelectablePropertyBlock {...props} />);
+
+      expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.25);
+
+      const elementSeparator = propertyBlockMount.find(".core-element-separator").first();
+      elementSeparator.simulate("pointerdown", { clientX: 25 });
+      document.dispatchEvent(new MouseEvent("pointermove", { clientX: 90 }));
+      document.dispatchEvent(new MouseEvent("pointerup"));
+
+      expect((propertyBlockMount.state("columnRatio") as number)).to.be.eq(0.6);
+    });
+  });
+
 });

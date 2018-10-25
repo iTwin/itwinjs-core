@@ -140,7 +140,7 @@ function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder 
 
   vert.addUniform("u_lineWeight", VariableType.Float, (shaderProg) => {
     shaderProg.addGraphicUniform("u_lineWeight", (attr, params) => {
-      attr.setUniform1f(params.geometry.getLineWeight(params));
+      attr.setUniform1f(params.geometry.getLineWeight(params.programParams));
     });
   });
 

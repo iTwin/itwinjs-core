@@ -1,8 +1,3 @@
-/*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
-
 'use strict';
 
 const Mocha = require('mocha');
@@ -13,7 +8,6 @@ const pathNode = require('path');
 const fs = require('fs');
 const resolve = require('resolve');
 const { ipcRenderer, remote } = require('electron');
-//const Coverage = require('./coverage');
 const querystring = require('querystring');
 
 require('mocha/mocha');
@@ -37,26 +31,8 @@ class Renderer {
             const {
                 path,
                 debug,
-                quiet,
-                coveragePattern,
-                coverageSourceMaps,
-                coverageHtmlReporter
+                quiet
             } = this.options;
-
-            if (coveragePattern) {
-                const findRoot = require('find-root');
-                const root = findRoot(pathNode.join(
-                    process.cwd(),
-                    path
-                ));
-                this.coverage = new Coverage(
-                    root,
-                    coveragePattern,
-                    coverageSourceMaps,
-                    coverageHtmlReporter,
-                    debug
-                );
-            }
 
             // Do this before to catch any errors outside mocha running
             // for instance errors on the page like test's requires
@@ -110,11 +86,6 @@ class Renderer {
                 require(pathToAdd);
             }
         });
-        mocha.run(() => {
-            if (this.coverage) {
-                this.coverage.report(() => { });
-            }
-        });
     }
 
     headless(testPath) {
@@ -149,13 +120,7 @@ class Renderer {
                 try {
                     if (errorCount > 0) {
                         ipcRenderer.send('mocha-error', 'ping');
-                    }
-                    else if (this.coverage) {
-                        this.coverage.report(() => {
-                            ipcRenderer.send('mocha-done', 'ping');
-                        });
-                    }
-                    else {
+                    } else {
                         ipcRenderer.send('mocha-done', 'ping');
                     }
                 } catch (e) {

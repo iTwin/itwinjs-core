@@ -23,8 +23,8 @@ export interface LinkTableRelationshipProps extends EntityProps {
 
 /** Base class for all link table ECRelationships */
 export class LinkTableRelationship extends Entity implements LinkTableRelationshipProps {
-  public readonly sourceId: Id64; // Warning: Do not change these property names. They must match the internal names that EC/ECSQL assigns to source and target.
-  public readonly targetId: Id64;
+  public readonly sourceId: Id64String; // Warning: Do not change these property names. They must match the internal names that EC/ECSQL assigns to source and target.
+  public readonly targetId: Id64String;
   public readonly sourceClassName?: string;
   public readonly targetClassName?: string;
 
@@ -69,7 +69,7 @@ export class ElementRefersToElements extends LinkTableRelationship {
    * @param classFullName The full name of the ElementRefersToElements class. Must be specified to create an instance of a derived class. May be omitted to create an instance of the ElementRefersToElements base class.
    * @return an instance of the specified class.
    */
-  public static create(iModel: IModelDb, sourceId: Id64, targetId: Id64, classFullName: string = ElementRefersToElements.classFullName): ElementRefersToElements {
+  public static create(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, classFullName: string = ElementRefersToElements.classFullName): ElementRefersToElements {
     return iModel.linkTableRelationships.createInstance({ sourceId, targetId, classFullName }) as ElementRefersToElements;
   }
 }
@@ -95,7 +95,7 @@ export class ElementGroupsMembers extends ElementRefersToElements {
    * @param classFullName The full name of the ElementGroupsMembers class. Must be specified to create an instance of a derived class. May be omitted to create an instance of the ElementGroupsMembers base class.
    * @return an instance of the specified class.
    */
-  public static create(iModel: IModelDb, sourceId: Id64, targetId: Id64, classFullName: string = ElementGroupsMembers.classFullName, memberPriority: number = 0): ElementGroupsMembers {
+  public static create(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, classFullName: string = ElementGroupsMembers.classFullName, memberPriority: number = 0): ElementGroupsMembers {
     return iModel.linkTableRelationships.createInstance({ sourceId, targetId, memberPriority, classFullName }) as ElementGroupsMembers;
   }
 }
@@ -123,15 +123,15 @@ export class ElementDrivesElement extends LinkTableRelationship implements Eleme
    * @param classFullName The full name of the ElementDrivesElement class. Must be specified to create an instance of a derived class. May be omitted to create an instance of the ElementDrivesElement base class.
    * @return an instance of the specified class.
    */
-  public static create(iModel: IModelDb, sourceId: Id64, targetId: Id64, priority: number = 0, classFullName: string = ElementDrivesElement.classFullName): ElementDrivesElement {
+  public static create(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority: number = 0, classFullName: string = ElementDrivesElement.classFullName): ElementDrivesElement {
     return iModel.linkTableRelationships.createInstance({ sourceId, targetId, priority, classFullName }) as ElementDrivesElement;
   }
 }
 
 /** Specifies the source and target elements of a [[IModelDbLinkTableRelationships]] instance. */
 export interface SourceAndTarget {
-  sourceId: Id64;
-  targetId: Id64;
+  sourceId: Id64String;
+  targetId: Id64String;
 }
 
 /** Manages [[LinkTableRelationship]]s. */
@@ -155,7 +155,7 @@ export class IModelDbLinkTableRelationships {
    * @note The id property of the props object is set as a side effect of this function.
    * @throws [[IModelError]] if unable to insert the relationship instance.
    */
-  public insertInstance(props: LinkTableRelationshipProps): Id64 {
+  public insertInstance(props: LinkTableRelationshipProps): Id64String {
     if (!this._iModel.briefcase)
       throw this._iModel.newNotOpenError();
 
@@ -163,7 +163,7 @@ export class IModelDbLinkTableRelationships {
     if (error)
       throw new IModelError(error.status, "Problem inserting relationship instance", Logger.logWarning, loggingCategory);
 
-    props.id = new Id64(result);
+    props.id = Id64.fromJSON(result);
     return props.id;
   }
 
@@ -196,8 +196,8 @@ export class IModelDbLinkTableRelationships {
   }
 
   /** get the props of a relationship instance */
-  private getInstanceProps(relClassSqlName: string, criteria: Id64 | SourceAndTarget): LinkTableRelationshipProps {
-    if (criteria instanceof Id64) {
+  private getInstanceProps(relClassSqlName: string, criteria: Id64String | SourceAndTarget): LinkTableRelationshipProps {
+    if (typeof criteria === "string") {
       return this._iModel.withPreparedStatement(`SELECT * FROM ${relClassSqlName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
@@ -216,7 +216,7 @@ export class IModelDbLinkTableRelationships {
   }
 
   /** get a relationship instance */
-  public getInstance(relClassSqlName: string, criteria: Id64 | SourceAndTarget): LinkTableRelationship {
+  public getInstance(relClassSqlName: string, criteria: Id64String | SourceAndTarget): LinkTableRelationship {
     const props = this.getInstanceProps(relClassSqlName, criteria);
     props.classFullName = props.className.replace(".", ":");
     if (props.sourceClassName !== undefined)

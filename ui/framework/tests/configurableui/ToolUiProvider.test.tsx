@@ -63,13 +63,15 @@ describe("ToolUiProvider", () => {
     }
   }
 
+  const testToolId = "ToolUiProvider-TestTool";
+
   before(async () => {
     await TestUtils.initializeUiFramework();
 
     const commonItemsList: ItemPropsList = {
       items: [
         {
-          toolId: "ToolUiProvider-TestTool",
+          toolId: testToolId,
           iconClass: "icon-home",
           execute: testCallback,
         },
@@ -101,7 +103,7 @@ describe("ToolUiProvider", () => {
     };
 
     ConfigurableUiManager.loadCommonItems(commonItemsList);
-    ConfigurableUiManager.registerControl("ToolUiProvider-TestTool", Tool2UiProvider);
+    ConfigurableUiManager.registerControl(testToolId, Tool2UiProvider);
     ConfigurableUiManager.loadFrontstage(frontstageProps);
   });
 
@@ -112,26 +114,35 @@ describe("ToolUiProvider", () => {
     if (frontstageDef) {
       FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-      const toolItemDef = ConfigurableUiManager.findItem("ToolUiProvider-TestTool");
-      expect(toolItemDef).to.not.be.undefined;
-      expect(toolItemDef).to.be.instanceof(ToolItemDef);
+      frontstageDef.setActiveToolId(testToolId);
+      expect(FrontstageManager.activeToolId).to.eq(testToolId);
 
-      if (toolItemDef) {
-        const toolUiProvider = (toolItemDef as ToolItemDef).toolUiProvider;
+      const itemDef = ConfigurableUiManager.findItem(testToolId);
+      expect(itemDef).to.not.be.undefined;
+      expect(itemDef).to.be.instanceof(ToolItemDef);
+      if (itemDef) {
+        const toolItemDef = itemDef as ToolItemDef;
+        expect(toolItemDef.toolId).to.eq(testToolId);
+        expect(toolItemDef.isActive).to.be.true;
+      }
+
+      const toolInformation = frontstageDef.activeToolInformation;
+      expect(toolInformation).to.not.be.undefined;
+
+      if (toolInformation) {
+        const toolUiProvider = toolInformation.toolUiProvider;
         expect(toolUiProvider).to.not.be.undefined;
 
         if (toolUiProvider) {
-          expect(toolUiProvider.toolItem).to.eq(toolItemDef);
-
-          frontstageDef.setActiveToolItem(toolItemDef as ToolItemDef);
-          expect(FrontstageManager.activeToolId).to.eq("ToolUiProvider-TestTool");
-
-          const toolSettingsNode = FrontstageManager.activeToolSettingsNode;
-          expect(toolSettingsNode).to.not.be.undefined;
-
+          expect(toolUiProvider.toolSettingsNode).to.not.be.undefined;
           expect(toolUiProvider.toolAssistanceNode).to.not.be.undefined;
         }
       }
+
+      const toolSettingsNode = FrontstageManager.activeToolSettingsNode;
+      expect(toolSettingsNode).to.not.be.undefined;
+      const toolAssistanceNode = FrontstageManager.activeToolAssistanceNode;
+      expect(toolAssistanceNode).to.not.be.undefined;
     }
   });
 

@@ -2,6 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module OpenIModel */
+
 import * as React from "react";
 import * as classnames from "classnames";
 import { IModelList } from "./IModelList";
@@ -16,6 +18,7 @@ import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import "./IModelOpen.scss";
 import "./Common.scss";
 
+/** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
   accessToken: AccessToken;
   onOpenIModel?: (iModelInfo: IModelInfo, views: ViewDefinitionProps[]) => void;
@@ -32,7 +35,7 @@ interface IModelOpenState {
 }
 
 /**
- * Open component showing projects and imodels
+ * Open component showing projects and iModels
  */
 export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState> {
 

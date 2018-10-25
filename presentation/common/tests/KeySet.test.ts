@@ -55,8 +55,8 @@ describe("KeySet", () => {
       const nodeKey = createRandomECInstanceNodeKey();
       const serialized = {
         instanceKeys: [
-          [instanceKey11.className, [instanceKey11.id.value, instanceKey12.id.value]],
-          [instanceKey2.className, [instanceKey2.id.value]],
+          [instanceKey11.className, [instanceKey11.id, instanceKey12.id]],
+          [instanceKey2.className, [instanceKey2.id]],
         ],
         nodeKeys: [nodeKey],
       } as KeySetJSON;
@@ -263,7 +263,7 @@ describe("KeySet", () => {
       const nodeKey2 = createRandomECInstanceNodeKey();
       const serialized = {
         instanceKeys: [
-          [instanceKey2.className, [instanceKey2.id.value]],
+          [instanceKey2.className, [instanceKey2.id]],
         ],
         nodeKeys: [nodeKey2],
       } as KeySetJSON;
@@ -382,7 +382,7 @@ describe("KeySet", () => {
 
       const serialized = {
         instanceKeys: [
-          [instanceKeys[1].className, [instanceKeys[1].id.value]],
+          [instanceKeys[1].className, [instanceKeys[1].id]],
         ],
         nodeKeys: [nodeKeys[0]],
       } as KeySetJSON;

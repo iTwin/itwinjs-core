@@ -1,0 +1,26 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "_helpers";
+
+// Order matters, last is top-most on screen.
+$uicore-internal-z-index-layers: content, zones, dragged-widget, zone-target, zone-outline, backstage-overlay, backstage, expandable, toolbarHistory, toolbarPanel, message, dialog, tooltip;
+
+$uicore-z-index-step: 1000;
+
+@function uicore-internal-get-next-z-index-step($counter) {
+  @return $counter + $uicore-z-index-step;
+}
+
+$uicore-internal-z-index-layer-map: uicore-map-from-array-with-result-arg($uicore-internal-z-index-layers, get-function(uicore-internal-get-next-z-index-step), 0);
+
+// Use this to get z-index value
+@function uicore-get-z-index($layer) {
+  @return map-get($uicore-internal-z-index-layer-map, $layer);
+}
+
+// Use this to add z-index property
+@mixin uicore-z-index($layer) {
+  z-index: uicore-get-z-index($layer);
+}

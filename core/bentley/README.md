@@ -1,4 +1,4 @@
-﻿# @bentley/bentleyjs-core
+# @bentley/bentleyjs-core
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 

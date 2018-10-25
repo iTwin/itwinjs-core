@@ -64,13 +64,15 @@ describe("ToolSettingsZone", () => {
     }
   }
 
+  const testToolId = "ToolSettingsZone-TestTool";
+
   before(async () => {
     await TestUtils.initializeUiFramework();
 
     const commonItemsList: ItemPropsList = {
       items: [
         {
-          toolId: "ToolSettingsZone-TestTool",
+          toolId: testToolId,
           iconClass: "icon-home",
         },
       ],
@@ -99,7 +101,7 @@ describe("ToolSettingsZone", () => {
     };
 
     ConfigurableUiManager.loadCommonItems(commonItemsList);
-    ConfigurableUiManager.registerControl("ToolSettingsZone-TestTool", Tool2UiProvider);
+    ConfigurableUiManager.registerControl(testToolId, Tool2UiProvider);
     ConfigurableUiManager.loadFrontstage(frontstageProps);
   });
 
@@ -110,13 +112,13 @@ describe("ToolSettingsZone", () => {
     if (frontstageDef) {
       FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-      const toolItemDef = ConfigurableUiManager.findItem("ToolSettingsZone-TestTool");
+      const toolItemDef = ConfigurableUiManager.findItem(testToolId);
       expect(toolItemDef).to.not.be.undefined;
       expect(toolItemDef).to.be.instanceof(ToolItemDef);
 
       if (toolItemDef) {
-        frontstageDef.setActiveToolItem(toolItemDef as ToolItemDef);
-        expect(FrontstageManager.activeToolId).to.eq("ToolSettingsZone-TestTool");
+        frontstageDef.setActiveToolId(testToolId);
+        expect(FrontstageManager.activeToolId).to.eq(testToolId);
 
         const wrapper = mount(<ToolSettingsZone bounds={bounds} />);
 

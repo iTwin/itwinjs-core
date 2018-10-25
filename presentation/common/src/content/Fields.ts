@@ -5,15 +5,15 @@
 /** @module Content */
 
 import * as ec from "../EC";
-import { ValuesDictionary } from "../Utils";
 import CategoryDescription from "./Category";
 import EditorDescription from "./Editor";
 import Property, { PropertyJSON, propertyFromJSON } from "./Property";
 import { TypeDescription } from "./TypeDescription";
-import { Value, DisplayValue } from "./Value";
 
 /**
  * Data structure for a [[Field]] serialized to JSON.
+ *
+ * @hidden
  */
 export interface BaseFieldJSON {
   category: CategoryDescription;
@@ -27,6 +27,8 @@ export interface BaseFieldJSON {
 
 /**
  * Data structure for a [[PropertiesField]] serialized to JSON.
+ *
+ * @hidden
  */
 export interface PropertiesFieldJSON extends BaseFieldJSON {
   properties: PropertyJSON[];
@@ -34,6 +36,8 @@ export interface PropertiesFieldJSON extends BaseFieldJSON {
 
 /**
  * Data structure for a [[NestedContentField]] serialized to JSON.
+ *
+ * @hidden
  */
 export interface NestedContentFieldJSON extends BaseFieldJSON {
   contentClassInfo: ec.ClassInfoJSON;
@@ -41,14 +45,23 @@ export interface NestedContentFieldJSON extends BaseFieldJSON {
   nestedFields: FieldJSON[];
 }
 
+/** @hidden */
 export type FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON;
 
-/** Is supplied field a properties field. */
+/**
+ * Is supplied field a properties field.
+ *
+ * @hidden
+ */
 const isPropertiesField = (field: BaseFieldJSON | Field): field is PropertiesFieldJSON | PropertiesField => {
   return (field as any).properties;
 };
 
-/** Is supplied field a nested content field. */
+/**
+ * Is supplied field a nested content field.
+ *
+ * @hidden
+ */
 const isNestedContentField = (field: BaseFieldJSON | Field): field is NestedContentFieldJSON | NestedContentField => {
   return (field as any).nestedFields;
 };
@@ -127,6 +140,8 @@ export class Field {
    * Deserialize Field from JSON
    * @param json JSON or JSON serialized to string to deserialize from
    * @returns Deserialized field or undefined if deserialization failed
+   *
+   * @hidden
    */
   public static fromJSON(json: FieldJSON | string | undefined): Field | undefined {
     if (!json)
@@ -144,6 +159,8 @@ export class Field {
   /**
    * Reviver function that can be used as a second argument for
    * `JSON.parse` method when parsing Field objects.
+   *
+   * @hidden
    */
   public static reviver(key: string, value: any): any {
     return key === "" ? Field.fromJSON(value) : value;
@@ -196,6 +213,8 @@ export class PropertiesField extends Field {
    * Deserialize PropertiesField from JSON
    * @param json JSON or JSON serialized to string to deserialize from
    * @returns Deserialized properties field or undefined if deserialization failed
+   *
+   * @hidden
    */
   public static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined {
     if (!json)
@@ -255,6 +274,8 @@ export class NestedContentField extends Field {
    * Deserialize NestedContentField from JSON
    * @param json JSON or JSON serialized to string to deserialize from
    * @returns Deserialized nested content field or undefined if deserialization failed
+   *
+   * @hidden
    */
   public static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined {
     if (!json)
@@ -282,12 +303,4 @@ export class NestedContentField extends Field {
     for (const nestedField of this.nestedFields)
       nestedField.rebuildParentship(this);
   }
-}
-
-/** Data structure that describes nested content value */
-export interface NestedContent {
-  primaryKeys: ec.InstanceKey[];
-  values: ValuesDictionary<Value>;
-  displayValues: ValuesDictionary<DisplayValue>;
-  mergedFieldNames: string[];
 }

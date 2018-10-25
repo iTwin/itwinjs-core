@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module ValidationTextbox */
+/** @module Notification */
 
 import * as React from "react";
 import * as classnames from "classnames";
@@ -10,6 +10,7 @@ import { MessageManager } from "../configurableui";
 
 import "./ValidationTextbox.scss";
 
+/** Enum for Input Status used in [[ValidationTextbox]] */
 export enum InputStatus {
   Valid = 0,
   Invalid = 1,

@@ -5,7 +5,8 @@
 /** @module PropertyGrid */
 
 import * as _ from "lodash";
-import { PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/ui-components/lib/properties";
+import { PropertyRecord } from "@bentley/ui-components/lib/properties/Record";
+import { PropertyValue, PropertyValueFormat } from "@bentley/ui-components/lib/properties/Value";
 import {
   PropertyDataProvider as IPropertyDataProvider,
   PropertyData, PropertyDataChangeEvent, PropertyCategory,

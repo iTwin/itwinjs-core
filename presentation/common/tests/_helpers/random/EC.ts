@@ -3,12 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import { Id64 } from "@bentley/bentleyjs-core";
 import * as ec from "../../../lib/EC";
 import { createRandomId } from "./Misc";
 
 export const createRandomECInstanceId = (): ec.InstanceId => {
-  return createRandomId() as Id64;
+  return createRandomId();
 };
 
 export const createRandomECInstanceKey = (): ec.InstanceKey => {
@@ -21,7 +20,7 @@ export const createRandomECInstanceKey = (): ec.InstanceKey => {
 export const createRandomECInstanceKeyJSON = (): ec.InstanceKeyJSON => {
   return {
     className: faker.random.word(),
-    id: createRandomECInstanceId().toString(),
+    id: createRandomECInstanceId(),
   };
 };
 
@@ -35,7 +34,7 @@ export const createRandomECClassInfo = (): ec.ClassInfo => {
 
 export const createRandomECClassInfoJSON = (): ec.ClassInfoJSON => {
   return {
-    id: createRandomId().toString(),
+    id: createRandomId(),
     name: faker.random.word(),
     label: faker.random.words(),
   };

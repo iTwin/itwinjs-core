@@ -43,6 +43,8 @@ export interface ECInstanceNodeKey extends BaseNodeKey {
 
 /**
  * Serialized [[ECInstanceNodeKey]] JSON representation.
+ *
+ * @hidden
  */
 export interface ECInstanceNodeKeyJSON extends BaseNodeKey {
   type: StandardNodeTypes.ECInstanceNode;
@@ -80,13 +82,19 @@ export interface LabelGroupingNodeKey extends BaseNodeKey {
   label: string;
 }
 
-/** One of the serialized node key types */
+/**
+ * One of the serialized node key types
+ *
+ * @hidden
+ */
 export type NodeKeyJSON = BaseNodeKey | ECInstanceNodeKeyJSON | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
 
 /**
  * Deserialize node key from JSON
  * @param json JSON or JSON serialized to string to deserialize from
  * @returns Deserialized node key
+ *
+ * @hidden
  */
 export const fromJSON = (json: NodeKeyJSON): NodeKey => {
   switch (json.type) {

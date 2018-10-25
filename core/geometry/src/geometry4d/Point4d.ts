@@ -30,6 +30,8 @@ export function quotientDerivative2(ddg: number, dh: number, ddh: number,
  * * the coordinates are stored in a Float64Array of length 4.
  * * properties `x`, `y`, `z`, `w` access array members.
  * *
+ * * The coordinates are physically stored as a single FLoat64Array with 4 entries. (w last)
+ * *
  */
 export class Point4d implements BeJSONFunctions {
   public xyzw: Float64Array;
@@ -137,7 +139,7 @@ export class Point4d implements BeJSONFunctions {
   public minus(other: Point4d, result?: Point4d): Point4d {
     return Point4d.create(this.xyzw[0] - other.xyzw[0], this.xyzw[1] - other.xyzw[1], this.xyzw[2] - other.xyzw[2], this.xyzw[3] - other.xyzw[3], result);
   }
-  /** @returns Return ((other.w \* this) -  (this.w \* other)) */
+  /** @returns Return `((other.w * this) -  (this.w * other))` */
   public crossWeightedMinus(other: Point4d, result?: Vector3d): Vector3d {
     const wa = this.xyzw[3];
     const wb = other.xyzw[3];
@@ -170,7 +172,7 @@ export class Point4d implements BeJSONFunctions {
   public static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d {
     return new Point4d(xyz.x, xyz.y, xyz.z, w);
   }
-  /** Return point + vector \* scalar */
+  /** Return `point + vector * scalar` */
   public plusScaled(vector: Point4d, scaleFactor: number, result?: Point4d): Point4d {
     return Point4d.create(this.xyzw[0] + vector.xyzw[0] * scaleFactor, this.xyzw[1] + vector.xyzw[1] * scaleFactor, this.xyzw[2] + vector.xyzw[2] * scaleFactor, this.xyzw[3] + vector.xyzw[3] * scaleFactor, result);
   }
@@ -180,37 +182,44 @@ export class Point4d implements BeJSONFunctions {
     const v = 1.0 - fraction;
     return Point4d.create(this.xyzw[0] * v + pointB.xyzw[0] * fraction, this.xyzw[1] * v + pointB.xyzw[1] * fraction, this.xyzw[2] * v + pointB.xyzw[2] * fraction, this.xyzw[3] * v + pointB.xyzw[3] * fraction, result);
   }
-  /** Return point + vectorA \* scalarA + vectorB \* scalarB */
+  /** Return `point + vectorA * scalarA + vectorB * scalarB` */
   public plus2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d {
     return Point4d.create(this.xyzw[0] + vectorA.xyzw[0] * scalarA + vectorB.xyzw[0] * scalarB, this.xyzw[1] + vectorA.xyzw[1] * scalarA + vectorB.xyzw[1] * scalarB, this.xyzw[2] + vectorA.xyzw[2] * scalarA + vectorB.xyzw[2] * scalarB, this.xyzw[3] + vectorA.xyzw[3] * scalarA + vectorB.xyzw[3] * scalarB, result);
   }
-  /** Return point + vectorA \* scalarA + vectorB \* scalarB + vectorC \* scalarC */
+  /** Return `point + vectorA * scalarA + vectorB * scalarB + vectorC * scalarC` */
   public plus3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d {
     return Point4d.create(this.xyzw[0] + vectorA.xyzw[0] * scalarA + vectorB.xyzw[0] * scalarB + vectorC.xyzw[0] * scalarC, this.xyzw[1] + vectorA.xyzw[1] * scalarA + vectorB.xyzw[1] * scalarB + vectorC.xyzw[1] * scalarC, this.xyzw[2] + vectorA.xyzw[2] * scalarA + vectorB.xyzw[2] * scalarB + vectorC.xyzw[2] * scalarC, this.xyzw[3] + vectorA.xyzw[3] * scalarA + vectorB.xyzw[3] * scalarB + vectorC.xyzw[3] * scalarC, result);
   }
-  /** Return point + vectorA \* scalarA + vectorB \* scalarB */
+  /** Return `point + vectorA * scalarA + vectorB * scalarB` */
   public static createAdd2Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, result?: Point4d): Point4d {
     return Point4d.create(vectorA.xyzw[0] * scalarA + vectorB.xyzw[0] * scalarB, vectorA.xyzw[1] * scalarA + vectorB.xyzw[1] * scalarB, vectorA.xyzw[2] * scalarA + vectorB.xyzw[2] * scalarB, vectorA.xyzw[3] * scalarA + vectorB.xyzw[3] * scalarB, result);
   }
-  /** Return point + vectorA \* scalarA + vectorB \* scalarB + vectorC \* scalarC */
+  /** Return `point + vectorA \ scalarA + vectorB * scalarB + vectorC * scalarC` */
   public static createAdd3Scaled(vectorA: Point4d, scalarA: number, vectorB: Point4d, scalarB: number, vectorC: Point4d, scalarC: number, result?: Point4d): Point4d {
     return Point4d.create(vectorA.xyzw[0] * scalarA + vectorB.xyzw[0] * scalarB + vectorC.xyzw[0] * scalarC, vectorA.xyzw[1] * scalarA + vectorB.xyzw[1] * scalarB + vectorC.xyzw[1] * scalarC, vectorA.xyzw[2] * scalarA + vectorB.xyzw[2] * scalarB + vectorC.xyzw[2] * scalarC, vectorA.xyzw[3] * scalarA + vectorB.xyzw[3] * scalarB + vectorC.xyzw[3] * scalarC, result);
   }
+  /** Return dot produt of (4d) vectors from the instance to targetA and targetB */
   public dotVectorsToTargets(targetA: Point4d, targetB: Point4d): number {
     return (targetA.xyzw[0] - this.xyzw[0]) * (targetB.xyzw[0] - this.xyzw[0]) +
       (targetA.xyzw[1] - this.xyzw[1]) * (targetB.xyzw[1] - this.xyzw[1]) +
       (targetA.xyzw[2] - this.xyzw[2]) * (targetB.xyzw[2] - this.xyzw[2]) +
       (targetA.xyzw[3] - this.xyzw[3]) * (targetB.xyzw[3] - this.xyzw[3]);
   }
+  /** return (4d) dot product of the instance and other point. */
   public dotProduct(other: Point4d): number {
     return this.xyzw[0] * other.xyzw[0] + this.xyzw[1] * other.xyzw[1] + this.xyzw[2] * other.xyzw[2] + this.xyzw[3] * other.xyzw[3];
   }
+  /** return (4d) dot product of the instance with xyzw */
   public dotProductXYZW(x: number, y: number, z: number, w: number): number {
     return this.xyzw[0] * x + this.xyzw[1] * y + this.xyzw[2] * z + this.xyzw[3] * w;
   }
   /** dotProduct with (point.x, point.y, point.z, 1) Used in PlaneAltitudeEvaluator interface */
   public altitude(point: Point3d): number {
     return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3];
+  }
+  /** dotProduct with (point.x, point.y, point.z, 1) Used in PlaneAltitudeEvaluator interface */
+  public weightedAltitude(point: Point4d): number {
+    return this.xyzw[0] * point.x + this.xyzw[1] * point.y + this.xyzw[2] * point.z + this.xyzw[3] * point.w;
   }
   /** dotProduct with (vector.x, vector.y, vector.z, 0).  Used in PlaneAltitudeEvaluator interface */
   public velocity(vector: Vector3d): number {

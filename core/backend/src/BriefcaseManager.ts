@@ -1259,7 +1259,7 @@ export class BriefcaseManager {
       if (!Number.isNaN(Number.parseInt(key, 10))) {
         const code = new HubCode();
         Object.assign(code, value);
-        code.codeSpecId = new Id64(value.codeSpecId);
+        code.codeSpecId = Id64.fromJSON(value.codeSpecId);
         code.briefcaseId = briefcase.briefcaseId;
         return code;
       }

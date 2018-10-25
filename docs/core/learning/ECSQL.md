@@ -27,7 +27,7 @@ This is not a comprehensive documentation of the SQL subset of ECSQL. This docum
 to standard SQL and the cases where less known features of the standard are used.
 Standard SQL refers to SQL-92 (aka SQL 2), and to SQL-99 (aka SQL 3) whenever SQL-92 is not sufficient.
 
-> All ECSQL examples in the following sections refer to classes and relationships from the [BisCore](../bis/domains/biscore/BisCore.ecschema.md) ECSchema (unless mentioned otherwise).
+> All ECSQL examples in the following sections refer to classes and relationships from the [BisCore](../bis/domains/BisCore.ecschema.md) ECSchema (unless mentioned otherwise).
 
 ## Fully qualifying ECClasses in ECSQL
 

@@ -7,7 +7,7 @@ import { TileIO } from "./TileIO";
 import { GltfTileIO } from "./GltfTileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { ElementAlignedBox3d, ColorDef, LinePixels, FillFlags, FeatureTable, Feature, TextureMapping, BatchType } from "@bentley/imodeljs-common";
-import { Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
@@ -48,7 +48,7 @@ export namespace B3dmTileIO {
    * @hidden
    */
   export class Reader extends GltfTileIO.Reader {
-    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
+    public static create(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean, isLeaf: boolean, isCanceled?: GltfTileIO.IsCanceled): Reader | undefined {
       const header = new Header(stream);
       if (!header.isValid)
         return undefined;
@@ -56,7 +56,7 @@ export namespace B3dmTileIO {
       const props = GltfTileIO.ReaderProps.create(stream, yAxisUp);
       return undefined !== props ? new Reader(props, iModel, modelId, is3d, system, range, isLeaf, isCanceled) : undefined;
     }
-    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d, private _isLeaf: boolean, isCanceled?: GltfTileIO.IsCanceled) {
+    private constructor(props: GltfTileIO.ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, private _range: ElementAlignedBox3d, private _isLeaf: boolean, isCanceled?: GltfTileIO.IsCanceled) {
       super(props, iModel, modelId, is3d, system, BatchType.Primary, isCanceled);
     }
     public async read(): Promise<GltfTileIO.ReaderResult> {

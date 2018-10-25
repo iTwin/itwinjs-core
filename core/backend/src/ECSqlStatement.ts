@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ECSQL */
 
-import { DbResult, Id64, Id64String, Guid, GuidProps, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { DbResult, Id64, Id64String, Guid, GuidString, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECSqlValueType, NavigationValue, NavigationBindingValue, ECJsNames } from "@bentley/imodeljs-common";
 import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-core";
 import { ECDb } from "./ECDb";
@@ -24,7 +24,7 @@ const loggingCategory = "imodeljs-backend.ECSqlStatement";
  * > Insert statements can be used with ECDb only, not with IModelDb.
  */
 export class ECSqlInsertResult {
-  public constructor(public status: DbResult, public id?: Id64) { }
+  public constructor(public status: DbResult, public id?: Id64String) { }
 }
 
 /** Executes ECSQL statements.
@@ -141,13 +141,13 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param val GUID value
    */
-  public bindGuid(parameter: number | string, val: GuidProps): void { this.getBinder(parameter).bindGuid(val); }
+  public bindGuid(parameter: number | string, val: GuidString | Guid): void { this.getBinder(parameter).bindGuid(val); }
 
   /** Binds an Id value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
    * @param val Id value
    */
-  public bindId(parameter: number | string, val: Id64String): void { this.getBinder(parameter).bindId(val); }
+  public bindId(parameter: number | string, val: Id64String | Id64): void { this.getBinder(parameter).bindId(val); }
 
   /** Binds an integer value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
@@ -277,7 +277,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
   public stepForInsert(): ECSqlInsertResult {
     const r: { status: DbResult, id: string } = this._stmt!.stepForInsert();
     if (r.status === DbResult.BE_SQLITE_DONE)
-      return new ECSqlInsertResult(r.status, new Id64(r.id));
+      return new ECSqlInsertResult(r.status, r.id);
 
     return new ECSqlInsertResult(r.status);
   }
@@ -422,7 +422,7 @@ export class ECSqlBinder {
   /** Binds an GUID value to the ECSQL parameter.
    * @param val GUID value. If passed as string, it must be formatted as described in [Guid]($bentleyjs-core).
    */
-  public bindGuid(val: GuidProps): void {
+  public bindGuid(val: GuidString | Guid): void {
     const stat: DbResult = this._binder.bindGuid(ECSqlTypeHelper.toGuidString(val));
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error binding GUID", Logger.logWarning, loggingCategory);
@@ -551,9 +551,9 @@ export class ECSqlValue {
   /** Get the value as a GUID (formatted as GUID string).
    *  See [Guid]($bentleyjs-core)
    */
-  public getGuid(): string { return this._val.getGuid(); }
+  public getGuid(): GuidString { return this._val.getGuid(); }
   /** Get the value as a Id (formatted as hexadecimal string). */
-  public getId(): string { return this._val.getId(); }
+  public getId(): Id64String { return this._val.getId(); }
   /** Get the ClassId value formatted as fully qualified class name. */
   public getClassNameForClassId(): string { return this._val.getClassNameForClassId(); }
   /** Get the value as a integer value */
@@ -676,8 +676,8 @@ class ECSqlBindingHelper {
 
   /** Binds the specified primitive value to the specified binder
    * @param binder Parameter Binder to bind to
-   * @param val Primitive value to be bound. Must be of one of these types:
-   *  null | undefined, boolean, number, string, DateTime, Blob, Id64, XY, XYZ, NavigationValue
+   * @param val Primitive value to be bound. Must be of one of these types described here:
+   * [ECSQL Binding types]($docs/learning/ECSQLParameterTypes)
    * @throws IModelError in case of errors
    */
   public static bindPrimitive(binder: ECSqlBinder, val: any): void {
@@ -881,7 +881,7 @@ class ECSqlValueHelper {
     }
   }
 
-  public static queryClassName(ecdb: ECDb, classId: Id64, tableSpace?: string): string {
+  public static queryClassName(ecdb: ECDb, classId: Id64String, tableSpace?: string): string {
     if (!tableSpace)
       tableSpace = "main";
 
@@ -890,7 +890,7 @@ class ECSqlValueHelper {
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, classId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
-          throw new IModelError(DbResult.BE_SQLITE_ERROR, "No class found with ECClassId " + classId.value + " in table space " + tableSpace + ".");
+          throw new IModelError(DbResult.BE_SQLITE_ERROR, "No class found with ECClassId " + classId + " in table space " + tableSpace + ".");
 
         return stmt.getValue(0).getString() + "." + stmt.getValue(1).getString();
       });
@@ -900,7 +900,7 @@ class ECSqlValueHelper {
 class ECSqlTypeHelper {
   public static isBlob(val: any): val is ArrayBuffer { return val instanceof ArrayBuffer; }
 
-  public static toGuidString(val: GuidProps): string {
+  public static toGuidString(val: GuidString | Guid): string {
     if (typeof (val) === "string")
       return val;
 

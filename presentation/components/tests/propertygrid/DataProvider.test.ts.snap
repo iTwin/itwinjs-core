@@ -27,7 +27,7 @@ Object {
           "typename": "timestamp",
         },
         "value": Object {
-          "displayValue": undefined,
+          "displayValue": "",
           "value": undefined,
           "valueFormat": 0,
         },
@@ -473,7 +473,7 @@ Object {
                       "typename": "time",
                     },
                     "value": Object {
-                      "displayValue": undefined,
+                      "displayValue": "",
                       "value": undefined,
                       "valueFormat": 0,
                     },
@@ -521,7 +521,7 @@ Object {
                       "typename": "time",
                     },
                     "value": Object {
-                      "displayValue": undefined,
+                      "displayValue": "",
                       "value": undefined,
                       "valueFormat": 0,
                     },
@@ -616,7 +616,7 @@ Object {
                       "typename": "text",
                     },
                     "value": Object {
-                      "displayValue": undefined,
+                      "displayValue": "",
                       "value": undefined,
                       "valueFormat": 0,
                     },
@@ -664,7 +664,7 @@ Object {
                       "typename": "text",
                     },
                     "value": Object {
-                      "displayValue": undefined,
+                      "displayValue": "",
                       "value": undefined,
                       "valueFormat": 0,
                     },
@@ -753,7 +753,7 @@ Object {
                 "typename": "tinyint",
               },
               "value": Object {
-                "displayValue": undefined,
+                "displayValue": "",
                 "value": undefined,
                 "valueFormat": 0,
               },
@@ -809,7 +809,7 @@ Object {
           "typename": "decimal",
         },
         "value": Object {
-          "displayValue": undefined,
+          "displayValue": "",
           "value": undefined,
           "valueFormat": 0,
         },
@@ -861,7 +861,7 @@ Object {
           "typename": "datetime",
         },
         "value": Object {
-          "displayValue": undefined,
+          "displayValue": "",
           "value": undefined,
           "valueFormat": 0,
         },

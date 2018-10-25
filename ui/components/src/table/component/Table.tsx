@@ -23,6 +23,9 @@ import {
 
 import "./Grid.scss";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { PropertyValueRendererManager, IPropertyValueRendererContext, PropertyContainerType } from "../../properties/ValueRendererManager";
+import { PropertyValueFormat, PrimitiveValue } from "../../properties";
+import { TypeConverterManager } from "../../converters/TypeConverterManager";
 
 /**
  * Specifies table selection target.
@@ -32,7 +35,7 @@ export enum TableSelectionTarget {
   Cell,
 }
 
-/** Props for the Table React component */
+/** Properties for the [[Table]] React component */
 export interface TableProps {
   /** Data provider for the Table */
   dataProvider: TableDataProvider;
@@ -72,6 +75,8 @@ export interface TableProps {
   uiSettings?: UiSettings;
   /** Identifying string used for persistent state. */
   settingsIdentifier?: string;
+  /** Custom property value renderer manager */
+  propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
 /** Properties for the Table's DropTarget. */
@@ -282,7 +287,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
       const result = uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
-      if (result.status === UiSettingsStatus.Sucess) {
+      if (result.status === UiSettingsStatus.Success) {
         const setting = result.setting as string[];
         // map columns according to the keys in columns, in the order of the loaded array of keys
         columns = setting.map((key) => columns.filter((col) => col.key === key)[0]);
@@ -591,14 +596,31 @@ export class Table extends React.Component<TableProps, TableState> {
       return () => undefined;
     if (column.icon)
       return () => <IconCell value={displayValue} />;
-    return () => displayValue;
+
+    const rendererContext: IPropertyValueRendererContext = { containerType: PropertyContainerType.Table };
+    let renderedElement: React.ReactNode;
+
+    if (this.props.propertyValueRendererManager)
+      renderedElement = await this.props.propertyValueRendererManager.render(cellItem.record!, rendererContext);
+    else
+      renderedElement = await PropertyValueRendererManager.defaultManager.render(cellItem.record!, rendererContext);
+    return () => renderedElement;
   }
 
   private async getCellDisplayValue(cellItem: CellItem): Promise<string> {
-    if (!cellItem.record)
+    if (!cellItem.record || cellItem.record!.value.valueFormat !== PropertyValueFormat.Primitive)
       return "";
-    const displayValue = await cellItem.record.getDisplayValue();
-    return displayValue;
+
+    const value = (cellItem.record!.value as PrimitiveValue).value;
+
+    if (value === undefined)
+      return "";
+
+    const displayValue = await TypeConverterManager
+      .getConverter(cellItem.record!.property.typename)
+      .convertPropertyToString(cellItem.record!.property, value);
+
+    return displayValue ? displayValue : "";
   }
 
   private async createPropsForRowItem(item: RowItem, index: number): Promise<RowProps> {
@@ -803,7 +825,7 @@ export class Table extends React.Component<TableProps, TableState> {
     document.addEventListener("mouseup", this._onMouseUp, { capture: true, once: true });
   }
   private _onHeaderDrop = (source: string, target: string) => {
-    const cols = [ ...this.state.columns ];
+    const cols = [...this.state.columns];
     const columnSourceIndex = this.state.columns.findIndex((i) => i.key === source);
     const columnTargetIndex = this.state.columns.findIndex((i) => i.key === target);
 

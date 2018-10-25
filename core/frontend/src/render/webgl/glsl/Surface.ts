@@ -248,7 +248,7 @@ function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: boolean)
     prog.addGraphicUniform("u_surfaceFlags", (uniform, params) => {
       assert(params.geometry instanceof SurfaceGeometry);
       const mesh = params.geometry as SurfaceGeometry;
-      const surfFlags = mesh.computeSurfaceFlags(params);
+      const surfFlags = mesh.computeSurfaceFlags(params.programParams);
       uniform.setUniform1f(surfFlags);
     });
   });
@@ -267,7 +267,7 @@ function addTexture(builder: ProgramBuilder, animated: boolean) {
   builder.vert.addUniform("u_qTexCoordParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_qTexCoordParams", (uniform, params) => {
       const surfGeom: SurfaceGeometry = params.geometry as SurfaceGeometry;
-      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params.programParams);
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         const uvQParams = surfGeom.lut.uvQParams;
         if (undefined !== uvQParams) {
@@ -282,14 +282,13 @@ function addTexture(builder: ProgramBuilder, animated: boolean) {
   builder.frag.addUniform("s_texture", VariableType.Sampler2D, (prog) => {
     prog.addGraphicUniform("s_texture", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;
-      const surfFlags = surfGeom.computeSurfaceFlags(params);
+      const surfFlags = surfGeom.computeSurfaceFlags(params.programParams);
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         const texture = (params.target.analysisTexture ? params.target.analysisTexture : surfGeom.texture) as Texture;
         assert(undefined !== texture);
         texture.texture.bindSampler(uniform, TextureUnit.SurfaceTexture);
-      } else if (undefined !== System.instance && undefined !== System.instance.lineCodeTexture) {
-        // Bind the linecode texture just so that we have something bound to this texture unit for the shader.
-        System.instance.lineCodeTexture.bindSampler(uniform, TextureUnit.SurfaceTexture);
+      } else {
+        System.instance.ensureSamplerBound(uniform, TextureUnit.SurfaceTexture);
       }
     });
   });
@@ -319,7 +318,7 @@ export function createSurfaceBuilder(feat: FeatureMode, animated: boolean): Prog
   builder.frag.addUniform("u_applyGlyphTex", VariableType.Int, (prog) => {
     prog.addGraphicUniform("u_applyGlyphTex", (uniform, params) => {
       const surfGeom = params.geometry as SurfaceGeometry;
-      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params);
+      const surfFlags: SurfaceFlags = surfGeom.computeSurfaceFlags(params.programParams);
       if (SurfaceFlags.None !== (SurfaceFlags.HasTexture & surfFlags)) {
         uniform.setUniform1i(surfGeom.isGlyph ? 1 : 0);
       }

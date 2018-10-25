@@ -7,10 +7,11 @@
 import * as React from "react";
 
 import { IconLabelProps, IconLabelSupport, IconInfo } from "./IconLabelSupport";
-import { ConfigurableUiManager } from "./ConfigurableUiManager";
+import { ConfigurableUiManager, ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
+import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
 
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
@@ -96,7 +97,7 @@ export class WidgetDef {
 
   public id: string;
   public classId: string | ConfigurableUiControlConstructor | undefined = undefined;
-  public defaultState: WidgetState = WidgetState.Open;
+  public widgetState: WidgetState = WidgetState.Open;
   public priority: number = 0;
 
   public featureId: string = "";
@@ -105,8 +106,7 @@ export class WidgetDef {
   public isFloatingStateWindowResizable: boolean = true;
   public isToolSettings: boolean = false;
   public isStatusBar: boolean = false;
-  public isDefaultOpen: boolean = false;
-  public defaultOpenUsed: boolean = false;
+  public stateChanged: boolean = false;
 
   public widgetType: WidgetType;
 
@@ -127,7 +127,7 @@ export class WidgetDef {
     if (widgetProps.classId !== undefined)
       this.classId = widgetProps.classId;
     if (widgetProps.defaultState !== undefined)
-      this.defaultState = widgetProps.defaultState;
+      this.widgetState = widgetProps.defaultState;
     if (widgetProps.priority !== undefined)
       this.priority = widgetProps.priority;
 
@@ -153,9 +153,6 @@ export class WidgetDef {
 
     if (widgetProps.reactElement !== undefined)
       this._widgetReactNode = widgetProps.reactElement;
-
-    if (this.defaultState === WidgetState.Open)
-      this.isDefaultOpen = true;
   }
 
   public get label(): string { return this._iconLabelSupport.label; }
@@ -200,9 +197,18 @@ export class WidgetDef {
   }
 
   public setWidgetState(state: WidgetState): void {
-    this.isDefaultOpen = (state === WidgetState.Open);
-    this.defaultOpenUsed = false;
+    const oldWidgetState = this.widgetState;
+    this.widgetState = state;
+    this.stateChanged = true;
+    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, oldWidgetState, newWidgetState: state });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.WidgetStateChanged);
+  }
 
-    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: state });
+  public canShow(): boolean {
+    return (this.widgetState !== WidgetState.Off && this.widgetState !== WidgetState.Hidden);
+  }
+
+  public canOpen(): boolean {
+    return (this.widgetState === WidgetState.Open || this.widgetState === WidgetState.Floating || this.widgetState === WidgetState.Footer);
   }
 }

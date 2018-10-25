@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Code, EntityMetaData } from "@bentley/imodeljs-common";
 import { DefinitionElement, IModelDb, RepositoryLink, SpatialViewDefinition, ViewDefinition3d, UrlLink } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -47,7 +47,7 @@ describe("Class Registry", () => {
       assert.equal(p.extendedType, "BeGuid");
       assert.equal(p.customAttributes![1].ecclass, "CoreCustomAttributes:HiddenProperty");
     }
-    const el2 = imodel.elements.getElement(new Id64("0x34"));
+    const el2 = imodel.elements.getElement("0x34");
     assert.exists(el2);
     if (el2) {
       const metaData = el2.getClassMetaData();

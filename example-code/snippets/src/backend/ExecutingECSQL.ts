@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelDb, ECSqlStatement, ECSqlValue } from "@bentley/imodeljs-backend";
 import { NavigationValue } from "@bentley/imodeljs-common";
-import { DbResult, Id64 } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String } from "@bentley/bentleyjs-core";
 
 // tslint:disable:no-console
 
@@ -147,7 +147,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
 
     while (stmt.step() === DbResult.BE_SQLITE_ROW) {
       const row: any = stmt.getRow();
-      const id: string = row.id;
+      const id: Id64String = row.id;
       const className: string = row.className;
       const parent: NavigationValue = row.parent;
       const lastMod: string = row.lastMod;
@@ -159,7 +159,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
 
   // __PUBLISH_EXTRACT_START__ ExecuteECSql_GetValue
   iModel.withPreparedStatement("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", (stmt: ECSqlStatement) => {
-    stmt.bindId(1, new Id64("0x113"));
+    stmt.bindId(1, "0x113");
 
     console.log("ECInstanceId | ClassName | Parent Id | Parent RelClassName | LastMod");
 
@@ -169,7 +169,7 @@ function executeECSql_QueryResult(iModel: IModelDb) {
       const parentValue: ECSqlValue = stmt.getValue(2);
       const lastModValue: ECSqlValue = stmt.getValue(3);
 
-      const id: string = idValue.getId();
+      const id: Id64String = idValue.getId();
       const className: string = classIdValue.getClassNameForClassId();
       const parent: NavigationValue = parentValue.getNavigation();
       const lastMod: string = lastModValue.getDateTime();
