@@ -13,10 +13,21 @@ import {
   IModelWriteRpcInterface,
   StandaloneIModelRpcInterface,
   RpcManager,
+  MobileRpcManager,
 } from "@bentley/imodeljs-common";
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
-import { TestRpcInterface, TestRpcInterface2, TestRpcInterface3, ZeroMajorRpcInterface } from "./TestRpcInterface";
+import {
+  TestRpcInterface,
+  TestRpcInterface2,
+  TestRpcInterface3,
+  ZeroMajorRpcInterface,
+  RpcElectronTransportTest,
+  RpcDirectTransportTest,
+  RpcTransportTestImpl,
+  RpcWebTransportTest,
+  RpcMobileTransportTest,
+} from "./TestRpcInterface";
 import { OpenMode } from "@bentley/bentleyjs-core";
 
 declare var ___TESTBED_IPC_RENDERER___: any;
@@ -47,6 +58,7 @@ class TestRpcImplDirect extends TestRpcInterface {
 export class TestbedConfig {
   public static cloudRpcParams = { info: { title: "imodeljs-core-testbed", version: "v1.0" } };
   public static serverPort = process.env.PORT || 3000;
+  public static mobilePort = process.env.MOBILE_PORT ? parseInt(process.env.MOBILE_PORT, 10) : 4000;
   public static swaggerURI = "/v3/swagger.json";
   public static cloudRpc: BentleyCloudRpcConfiguration;
   public static get ipc(): any { return ___TESTBED_IPC_RENDERER___; }
@@ -84,6 +96,20 @@ export class TestbedConfig {
     }
 
     ElectronRpcManager.initializeClient({}, [TestRpcInterface3]);
+
+    // RPC transport testing
+    window.location.hash = TestbedConfig.mobilePort.toString();
+
+    const webClient = BentleyCloudRpcManager.initializeClient(TestbedConfig.cloudRpcParams, [RpcWebTransportTest]);
+    webClient.protocol.pathPrefix = TestbedConfig.localServerUrlPrefix;
+    RpcOperation.forEach(RpcWebTransportTest, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test", OpenMode.Readonly));
+
+    ElectronRpcManager.initializeClient({}, [RpcElectronTransportTest]);
+
+    RpcManager.initializeInterface(RpcDirectTransportTest);
+    RpcManager.registerImpl(RpcDirectTransportTest, RpcTransportTestImpl);
+
+    MobileRpcManager.initializeClient([RpcMobileTransportTest]);
   }
 
   public static initializeRpcBackend() {
@@ -97,6 +123,15 @@ export class TestbedConfig {
     }
 
     ElectronRpcManager.initializeImpl({}, [TestRpcInterface3]);
+
+    // RPC transport testing
+    RpcManager.registerImpl(RpcWebTransportTest, RpcTransportTestImpl);
+    RpcManager.registerImpl(RpcElectronTransportTest, RpcTransportTestImpl);
+    RpcManager.registerImpl(RpcMobileTransportTest, RpcTransportTestImpl);
+
+    BentleyCloudRpcManager.initializeImpl(TestbedConfig.cloudRpcParams, [RpcWebTransportTest]);
+    ElectronRpcManager.initializeImpl({}, [RpcElectronTransportTest]);
+    MobileRpcManager.initializeImpl([RpcMobileTransportTest]);
   }
 
   public static sendToMainSync(msg: TestbedIpcMessage) {

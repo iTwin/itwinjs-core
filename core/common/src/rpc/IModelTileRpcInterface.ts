@@ -8,6 +8,7 @@ import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
 import { IModelToken } from "../IModel";
 import { TileTreeProps } from "../TileProps";
+import { RpcOperation } from "./core/RpcOperation";
 
 export abstract class IModelTileRpcInterface extends RpcInterface {
   public static types = () => [
@@ -24,5 +25,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
   public getTileTreeProps(_iModelToken: IModelToken, _id: string): Promise<TileTreeProps> { return this.forward.apply(this, arguments); }
+
+  @RpcOperation.allowResponseCaching()
   public getTileContent(_iModelToken: IModelToken, _treeId: string, _contentId: string): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
 }

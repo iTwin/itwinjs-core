@@ -155,7 +155,7 @@ export class RpcOpenAPIDescription {
 
     const description: OpenAPIPathItem = {};
 
-    description[this.protocol.supplyMethodForOperation(operation)] = {
+    description.head = {
       requestBody: { content: requestContent, required: true },
       responses: {
         200: { description: "Success", content: responseContent },

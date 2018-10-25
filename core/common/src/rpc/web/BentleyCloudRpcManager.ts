@@ -7,9 +7,10 @@
 import { RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
 import { RpcConfiguration } from "../core/RpcConfiguration";
-import { RpcRequest, RpcRequestEventHandler, RpcRequestEvent } from "../core/RpcRequest";
+import { RpcRequest, RpcRequestEventHandler } from "../core/RpcRequest";
 import { OpenAPIInfo } from "./OpenAPI";
 import { BentleyCloudRpcProtocol } from "./BentleyCloudRpcProtocol";
+import { RpcRequestEvent } from "../core/RpcConstants";
 
 /** Initialization parameters for BentleyCloudRpcConfiguration. */
 export interface BentleyCloudRpcParams {

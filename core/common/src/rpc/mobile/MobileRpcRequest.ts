@@ -3,56 +3,49 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { RpcRequestFulfillment } from "../core/RpcProtocol";
-import { RpcRequest, RpcResponseType } from "../core/RpcRequest";
+import { RpcRequest } from "../core/RpcRequest";
 import { MobileRpcProtocol } from "./MobileRpcProtocol";
+import { RpcSerializedValue } from "../core/RpcMarshaling";
 
 export class MobileRpcRequest extends RpcRequest {
-  protected initializeChannel(): void { }
-  protected setHeader(_name: string, _value: string): void { }
+  private _response: (value: number) => void = () => undefined;
+  private _fulfillment: RpcRequestFulfillment | undefined = undefined;
 
   /** Convenience access to the protocol of this request. */
   public readonly protocol: MobileRpcProtocol = this.client.configuration.protocol as any;
 
-  /** The fulfillment of this request. */
-  public fulfillment: RpcRequestFulfillment = { result: "", status: 0, id: "", interfaceName: "", type: RpcResponseType.Unknown };
-
   /** Sends the request. */
-  protected send(): void {
-    this.protocol.map.set(this.id, this);
-    const serialized = JSON.stringify(this.protocol.serialize(this));
-    if (this.protocol.socket.readyState === WebSocket.OPEN)
-      this.protocol.socket.send(serialized);
-    else
-      this.protocol.pending.push(serialized);
-  }
+  protected send(): Promise<number> {
+    this.protocol.requests.set(this.id, this);
+    const parts = new Blob(MobileRpcProtocol.encodeRequest(this), { type: "application/octet-stream" });
 
-  /** Supplies response status code. */
-  public getResponseStatusCode(): number {
-    return this.fulfillment.status;
-  }
-
-  /** Supplies response text. */
-  public getResponseText(): string {
-    const result = this.fulfillment.result;
-    if (typeof (result) === "string") {
-      return result;
+    if (this.protocol.socket.readyState === WebSocket.OPEN) {
+      this.protocol.socket.send(parts);
     } else {
-      return super.getResponseText();
+      this.protocol.pending.push(parts);
     }
+
+    return new Promise<number>((resolve) => { this._response = resolve; });
   }
 
-  /** Supplies response bytes. */
-  public getResponseBytes(): Uint8Array {
-    const result = this.fulfillment.result;
-    if (typeof (result) !== "string") {
-      return result;
-    } else {
-      return super.getResponseBytes();
+  /** Loads the request. */
+  protected load(): Promise<RpcSerializedValue> {
+    const fulfillment = this._fulfillment;
+    if (!fulfillment) {
+      return Promise.reject("No request fulfillment available.");
     }
+
+    return Promise.resolve(fulfillment.result);
   }
 
-  /** Supplies response type. */
-  public getResponseType(): RpcResponseType {
-    return this.fulfillment.type;
+  /** Sets request header values. */
+  protected setHeader(_name: string, _value: string): void {
+    // No implementation
+  }
+
+  /** @hidden */
+  public notifyResponse(fulfillment: RpcRequestFulfillment) {
+    this._fulfillment = fulfillment;
+    this._response(fulfillment.status);
   }
 }

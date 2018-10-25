@@ -10,7 +10,7 @@ import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 import { RpcControlChannel } from "./RpcControl";
 import { IModelError, ServerError } from "../../IModelError";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { RpcConfiguration } from "../../common";
+import { RpcConfiguration, RpcPendingQueue, initializeRpcRequest } from "../../common";
 
 // tslint:disable:ban-types
 
@@ -126,6 +126,7 @@ export class RpcRegistry {
     if (this.definitionClasses.has(definition.name))
       return;
 
+    this.notifyInitialize();
     this.definitionClasses.set(definition.name, definition);
     this.configureOperations(definition);
     this.registerTypes(definition);
@@ -256,5 +257,10 @@ export class RpcRegistry {
         this.types.delete(key);
       }
     }
+  }
+
+  private notifyInitialize() {
+    initializeRpcRequest();
+    RpcPendingQueue.initialize();
   }
 }

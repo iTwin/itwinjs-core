@@ -291,6 +291,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "form-data",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "fs-extra",
       "allowedCategories": [ "backend", "common", "internal", "tools" ]
     },
@@ -413,6 +417,10 @@
     {
       "name": "mocha-webpack",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "multiparty",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "nock",
@@ -749,6 +757,10 @@
     {
       "name": "whatwg-fetch",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "ws",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "xmldom",

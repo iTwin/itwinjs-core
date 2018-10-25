@@ -9,8 +9,15 @@ import { IModelToken } from "../../IModel";
 import { BentleyStatus, Guid } from "@bentley/bentleyjs-core";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcRegistry, OPERATION, POLICY, builtins } from "./RpcRegistry";
-import { RpcRequestTokenSupplier_T, RpcRequestIdSupplier_T, RpcRequestInitialRetryIntervalSupplier_T, RpcRequestCallback_T } from "./RpcRequest";
+import {
+  RpcRequestTokenSupplier_T,
+  RpcRequestIdSupplier_T,
+  RpcRequestInitialRetryIntervalSupplier_T,
+  RpcRequestCallback_T,
+  RpcResponseCachingCallback_T,
+} from "./RpcRequest";
 import { RpcInvocationCallback_T } from "./RpcInvocation";
+import { RpcResponseCacheControl } from "./RpcConstants";
 
 /** The policy for an RPC operation. */
 export class RpcOperationPolicy {
@@ -23,9 +30,6 @@ export class RpcOperationPolicy {
   /** Supplies the initial retry interval for an operation request. */
   public retryInterval: RpcRequestInitialRetryIntervalSupplier_T = (configuration) => configuration.pendingOperationRetryInterval;
 
-  /** Whether an operation request must be acknowledged. */
-  public requiresAcknowledgement: boolean = false;
-
   /** Called before every operation request on the frontend is sent. */
   public requestCallback: RpcRequestCallback_T = (_request) => { };
 
@@ -34,6 +38,12 @@ export class RpcOperationPolicy {
 
   /** Called for every operation invocation on the backend. */
   public invocationCallback: RpcInvocationCallback_T = (_invocation) => { };
+
+  /**
+   * Determines if caching is permitted for an operation response.
+   * @note Not all RPC protocols support caching.
+   */
+  public allowResponseCaching: RpcResponseCachingCallback_T = (_request) => RpcResponseCacheControl.None;
 }
 
 /** An RPC operation descriptor. */
@@ -111,6 +121,15 @@ export namespace RpcOperation {
   export function setPolicy(policy: RpcOperationPolicy) {
     return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
       descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, policy);
+    };
+  }
+
+  /** Convenience decorator for setting an RPC operation policy that allows response caching. */
+  export function allowResponseCaching(control: RpcResponseCacheControl = RpcResponseCacheControl.Immutable) {
+    return <T extends RpcInterface>(target: T, propertyKey: string, descriptor: PropertyDescriptor) => {
+      descriptor.value[OPERATION] = new RpcOperation(target.constructor as any, propertyKey, new class extends RpcOperationPolicy {
+        public allowResponseCaching = () => control;
+      }());
     };
   }
 

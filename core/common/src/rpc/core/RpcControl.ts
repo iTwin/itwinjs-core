@@ -7,8 +7,6 @@
 import { RpcInterface } from "../../RpcInterface";
 import { RpcManager, RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcRequest, RpcRequestEvent, RpcRequestStatus } from "./RpcRequest";
-import { RpcProtocol, RpcProtocolEvent } from "./RpcProtocol";
 import { RpcInvocation } from "./RpcInvocation";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry } from "./RpcRegistry";
@@ -17,10 +15,6 @@ import { IModelError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 
 // tslint:disable:space-before-function-paren
-let obtainLock = 0;
-
-/** @hidden */
-export const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
 /** An RPC operation control response. */
 export abstract class RpcControlResponse {
@@ -46,21 +40,14 @@ export class RpcNotFoundResponse extends RpcControlResponse {
 export class RpcControlChannel {
   /** @hidden */
   public static channels: RpcControlChannel[] = [];
+  private static _obtainLock = 0;
   private _configuration: RpcConfiguration;
-  private _pendingInterval: any = undefined;
-  private _disposeInterval: any = undefined;
-  private _pending: RpcRequest[] = [];
-  /** @hidden */
-  public requests: Map<string, RpcRequest> = new Map();
-  private _pendingLock: number = 0;
   private _initialized = false;
   private _clientActive = false;
   private _describeEndpoints: () => Promise<RpcInterfaceEndpoints[]> = undefined as any;
 
   private constructor(configuration: RpcConfiguration) {
     this._configuration = configuration;
-    RpcRequest.events.addListener(this.requestEventHandler, this);
-    RpcProtocol.events.addListener(this.protocolEventHandler, this);
     RpcControlChannel.channels.push(this);
   }
 
@@ -72,175 +59,14 @@ export class RpcControlChannel {
 
   /** @hidden */
   public static obtain(configuration: RpcConfiguration): RpcControlChannel {
-    if (obtainLock)
+    if (RpcControlChannel._obtainLock)
       return undefined as any;
 
-    ++obtainLock;
+    ++RpcControlChannel._obtainLock;
     const channel = new RpcControlChannel(configuration);
-    --obtainLock;
+    --RpcControlChannel._obtainLock;
 
     return channel;
-  }
-
-  private protocolEventHandler(type: RpcProtocolEvent, object: RpcRequest | RpcInvocation): void {
-    if (type === RpcProtocolEvent.ReleaseResources) {
-      this._disposeIntervalHandler();
-      return;
-    }
-
-    if (object.protocol.configuration !== this._configuration)
-      return;
-
-    const now = new Date().getTime();
-
-    switch (type) {
-      case RpcProtocolEvent.RequestReceived: {
-        aggregateLoad.lastRequest = now;
-        break;
-      }
-
-      case RpcProtocolEvent.BackendReportedPending:
-      case RpcProtocolEvent.BackendErrorOccurred:
-      case RpcProtocolEvent.BackendResponseCreated: {
-        aggregateLoad.lastResponse = now;
-        break;
-      }
-    }
-  }
-
-  private requestEventHandler(type: RpcRequestEvent, request: RpcRequest): void {
-    if (request.protocol.configuration !== this._configuration)
-      return;
-
-    if (type !== RpcRequestEvent.StatusChanged)
-      return;
-
-    switch (request.status) {
-      case RpcRequestStatus.Created: {
-        this.requests.set(request.id, request);
-        this.setDisposeInterval();
-        break;
-      }
-
-      case RpcRequestStatus.Submitted: {
-        aggregateLoad.lastRequest = request.lastSubmitted;
-        break;
-      }
-
-      case RpcRequestStatus.Provisioning:
-      case RpcRequestStatus.Pending:
-      case RpcRequestStatus.Resolved:
-      case RpcRequestStatus.Rejected: {
-        aggregateLoad.lastResponse = request.lastUpdated;
-        break;
-      }
-    }
-
-    if (request.client.configuration.controlChannel !== this)
-      return;
-
-    switch (request.status) {
-      case RpcRequestStatus.Submitted: {
-        this.enqueuePending(request);
-        break;
-      }
-
-      case RpcRequestStatus.Resolved: {
-        this.dequeuePending(request);
-        break;
-      }
-
-      case RpcRequestStatus.Rejected: {
-        this.dequeuePending(request);
-        break;
-      }
-
-      case RpcRequestStatus.NotFound: {
-        this.dequeuePending(request);
-        break;
-      }
-    }
-  }
-
-  private enqueuePending(request: RpcRequest) {
-    this._pending.push(request);
-    this.setPendingInterval();
-  }
-
-  private dequeuePending(request: RpcRequest) {
-    if (this._pendingLock)
-      return;
-
-    const i = this._pending.indexOf(request);
-    this._pending.splice(i, 1);
-    this.clearPendingInterval();
-  }
-
-  private _pendingIntervalHandler = function (this: RpcControlChannel) {
-    const now = new Date().getTime();
-
-    ++this._pendingLock;
-
-    for (const request of this._pending) {
-      if (request.connecting || (request.lastSubmitted + request.retryInterval) > now) {
-        continue;
-      }
-
-      request.submit();
-    }
-
-    --this._pendingLock;
-
-    this.cleanupPendingQueue();
-  }.bind(this);
-
-  private cleanupPendingQueue() {
-    if (this._pendingLock)
-      return;
-
-    let i = this._pending.length;
-    while (i--) {
-      if (!this._pending[i].pending) {
-        this._pending.splice(i, 1);
-      }
-    }
-
-    this.clearPendingInterval();
-  }
-
-  private setPendingInterval() {
-    if (this._pendingInterval)
-      return;
-
-    this._pendingInterval = setInterval(this._pendingIntervalHandler, 0);
-  }
-
-  private clearPendingInterval() {
-    if (!this._pending.length) {
-      clearInterval(this._pendingInterval);
-      this._pendingInterval = undefined;
-    }
-  }
-
-  private _disposeIntervalHandler = function (this: RpcControlChannel) {
-    this.requests.forEach((value, key, _map) => {
-      if (value.status === RpcRequestStatus.Finalized) {
-        value.dispose();
-        this.requests.delete(key);
-      }
-    });
-
-    if (!this.requests.size) {
-      clearInterval(this._disposeInterval);
-      this._disposeInterval = undefined;
-    }
-  }.bind(this);
-
-  private setDisposeInterval() {
-    if (this._disposeInterval)
-      return;
-
-    this._disposeInterval = setInterval(this._disposeIntervalHandler, 1000);
   }
 
   private _channelInterface = class extends RpcInterface {
@@ -287,7 +113,7 @@ export class RpcControlChannel {
       if (this._configuration.interfaces().length)
         throw new IModelError(BentleyStatus.ERROR, `Invalid state.`);
 
-      this.initialize(); // WIP...handshakes will eliminate this scenario
+      this.initialize();
     }
 
     this._clientActive = true;

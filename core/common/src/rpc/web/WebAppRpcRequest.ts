@@ -4,29 +4,32 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { IModelError } from "../../IModelError";
+import { IModelError, ServerError } from "../../IModelError";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
-import { RpcProtocolEvent, SerializedRpcRequest } from "../core/RpcProtocol";
-import { RpcRequest, RpcResponseType } from "../core/RpcRequest";
-import { WebAppRpcProtocol, HttpServerRequest, WEB_RPC_CONSTANTS } from "./WebAppRpcProtocol";
-
-const emptyBuffer = new Uint8Array(0);
+import { SerializedRpcRequest, RpcRequestFulfillment, SerializedRpcOperation } from "../core/RpcProtocol";
+import { RpcRequest } from "../core/RpcRequest";
+import { WebAppRpcProtocol, HttpServerRequest, HttpServerResponse } from "./WebAppRpcProtocol";
+import { RpcSerializedValue, MarshalingBinaryMarker } from "../core/RpcMarshaling";
+import { RpcMultipart } from "./RpcMultipart";
+import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
+import { RpcResponseCacheControl, RpcContentType, RpcProtocolEvent, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
+/** A web application RPC request. */
 export class WebAppRpcRequest extends RpcRequest {
   private _loading: boolean = false;
   private _request: RequestInit = {};
-  private _responseText: string = "";
-  private _responseBytes: Uint8Array = emptyBuffer;
-  private _connectionResponse: Response | undefined;
+  private _response: Response | undefined = undefined;
+  private _pathSuffix: string = "";
+  private get _headers() { return this._request.headers as { [key: string]: string }; }
 
-  /** The underlying HTTP connection object. */
-  public connection: Promise<Response> | undefined;
-
-  /** The URI path component for this request. */
-  public path: string;
+  /**
+   * The maximum size permitted for an encoded component in a URL.
+   * @note This is used for features like encoding the payload of a cacheable request in the URL.
+   */
+  public static maxUrlComponentSize = 1024;
 
   /** The HTTP method for this request. */
   public method: HttpMethod_T;
@@ -34,19 +37,16 @@ export class WebAppRpcRequest extends RpcRequest {
   /** Convenience access to the protocol of this request. */
   public readonly protocol: WebAppRpcProtocol = this.client.configuration.protocol as any;
 
-  /** Deserializes a request. */
-  public static deserialize(protocol: WebAppRpcProtocol, req: HttpServerRequest): SerializedRpcRequest {
+  /** Standardized access to metadata about the request (useful for purposes such as logging). */
+  public metadata = { status: 0, message: "" };
+
+  /** Parses a request. */
+  public static async parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest> {
     const operation = protocol.getOperationFromPath(req.path);
 
-    const id = req.header(protocol.requestIdHeaderName);
-    if (!id)
-      throw new IModelError(BentleyStatus.ERROR, `Invalid request.`);
-
-    const authorization = req.header(protocol.authorizationHeaderName) || "";
-
-    return {
-      id,
-      authorization,
+    const request = {
+      id: req.header(protocol.requestIdHeaderName) || "",
+      authorization: req.header(protocol.authorizationHeaderName) || "",
       operation: {
         interfaceDefinition: operation.interfaceDefinition,
         operationName: operation.operationName,
@@ -54,97 +54,237 @@ export class WebAppRpcRequest extends RpcRequest {
       },
       method: req.method,
       path: req.path,
-      parameters: req.body,
+      parameters: operation.encodedRequest ? WebAppRpcRequest.parseFromPath(operation) : await WebAppRpcRequest.parseFromBody(req),
+      caching: operation.encodedRequest ? RpcResponseCacheControl.Immutable : RpcResponseCacheControl.None,
     };
+
+    if (!request.id) {
+      throw new IModelError(BentleyStatus.ERROR, `Invalid request.`);
+    }
+
+    return request;
+  }
+
+  /** Sends the response for a web request. */
+  public static sendResponse(_protocol: WebAppRpcProtocol, request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+    const transportType = WebAppRpcRequest.computeTransportType(fulfillment.result, fulfillment.rawResult);
+    if (transportType === RpcContentType.Text) {
+      WebAppRpcRequest.sendText(request, fulfillment, res);
+    } else if (transportType === RpcContentType.Binary) {
+      WebAppRpcRequest.sendBinary(request, fulfillment, res);
+    } else if (transportType === RpcContentType.Multipart) {
+      WebAppRpcRequest.sendMultipart(request, fulfillment, res);
+    } else {
+      throw new IModelError(BentleyStatus.ERROR, "Unknown response type.");
+    }
+  }
+
+  /** Determines the most efficient transport type for an RPC value. */
+  protected static computeTransportType(value: RpcSerializedValue, source: any): RpcContentType {
+    if (source instanceof Uint8Array || (Array.isArray(source) && source[0] instanceof Uint8Array)) {
+      return RpcContentType.Binary;
+    } else if (value.data.length > 0) {
+      return RpcContentType.Multipart;
+    } else {
+      return RpcContentType.Text;
+    }
   }
 
   /** Constructs a web application request. */
   public constructor(client: RpcInterface, operation: string, parameters: any[]) {
     super(client, operation, parameters);
     this.path = this.protocol.supplyPathForOperation(this.operation, this);
-    this.method = this.protocol.supplyMethodForOperation(this.operation);
-  }
-
-  /** Initializes the request communication channel. */
-  protected initializeChannel(): void {
-    if (this._loading)
-      throw new IModelError(BentleyStatus.ERROR, `Loading in progress.`);
-
-    this._request.method = this.method;
+    this.method = "head";
     this._request.headers = {};
   }
 
   /** Sets request header values. */
   protected setHeader(name: string, value: string): void {
-    const headers = this._request.headers as { [key: string]: string };
-    headers[name] = value;
+    this._headers[name] = value;
   }
 
   /** Sends the request. */
-  protected send(): void {
+  protected send(): Promise<number> {
     this._loading = true;
-    this._request.body = this.protocol.serialize(this).parameters;
-    this.setHeader(WEB_RPC_CONSTANTS.CONTENT, typeof (this._request.body) === "string" ? WEB_RPC_CONSTANTS.TEXT : WEB_RPC_CONSTANTS.BINARY);
-    this.connection = fetch(new Request(this.path, this._request));
+    this.setupTransport();
 
-    this.connection.then(async (response) => {
-      if (!this._loading)
-        return;
-
-      this._connectionResponse = response;
-      this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoading, this);
-
-      if (this.getResponseType() === RpcResponseType.Text) {
-        this._responseText = await response.text();
-      } else if (this.getResponseType() === RpcResponseType.Binary) {
-        this._responseBytes = new Uint8Array(await response.arrayBuffer());
-      } else {
-        throw new IModelError(BentleyStatus.ERROR, "Unknown response type");
+    return new Promise(async (resolve, reject) => {
+      try {
+        resolve(await this.performFetch());
+      } catch (reason) {
+        reject(new ServerError(-1, reason || "Server connection error."));
       }
-
-      this._loading = false;
-      this.setLastUpdatedTime();
-      this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
-    }, (reason) => {
-      if (!this._loading)
-        return;
-
-      this._loading = false;
-      // this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionAborted, this), reason;
-      this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this, reason);
     });
   }
 
-  /** Supplies response status code. */
-  public getResponseStatusCode(): number {
-    return this._connectionResponse ? this._connectionResponse.status : 0;
+  protected load(): Promise<RpcSerializedValue> {
+    return new Promise(async (resolve, reject) => {
+      try {
+        if (!this._loading)
+          return;
+
+        const response = this._response;
+        if (!response) {
+          reject(new IModelError(BentleyStatus.ERROR, "Invalid state."));
+          return;
+        }
+
+        const contentType = response.headers.get(WEB_RPC_CONSTANTS.CONTENT);
+        const responseType = WebAppRpcProtocol.computeContentType(contentType);
+
+        if (responseType === RpcContentType.Text) {
+          resolve(await this.loadText(response));
+        } else if (responseType === RpcContentType.Binary) {
+          resolve(await this.loadBinary(response));
+        } else if (responseType === RpcContentType.Multipart) {
+          resolve(await this.loadMultipart(response, contentType!));
+        } else {
+          reject(new IModelError(BentleyStatus.ERROR, "Unknown response type"));
+        }
+
+        this._loading = false;
+        this.setLastUpdatedTime();
+        this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
+      } catch (reason) {
+        if (!this._loading)
+          return;
+
+        this._loading = false;
+        reject(new ServerError(this.metadata.status, reason || "Unknown server response error."));
+      }
+    });
   }
 
-  /** Supplies response text. */
-  public getResponseText(): string {
-    return this._responseText;
-  }
-
-  /** Supplies response bytes. */
-  public getResponseBytes(): Uint8Array {
-    return this._responseBytes;
-  }
-
-  /** Supplies response type. */
-  public getResponseType(): RpcResponseType {
-    if (!this._connectionResponse)
-      return RpcResponseType.Unknown;
-
-    const type = this._connectionResponse.headers.get(WEB_RPC_CONSTANTS.CONTENT);
-    if (!type)
-      return RpcResponseType.Unknown;
-
-    if (type.indexOf(WEB_RPC_CONSTANTS.ANY_TEXT) === 0) {
-      return RpcResponseType.Text;
-    } else if (type.indexOf(WEB_RPC_CONSTANTS.BINARY) === 0) {
-      return RpcResponseType.Binary;
-    } else {
-      return RpcResponseType.Unknown;
+  private static configureResponse(request: SerializedRpcRequest, _fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+    if (request.caching === RpcResponseCacheControl.Immutable) {
+      res.set("Cache-Control", "private, max-age=31536000, immutable");
     }
+  }
+
+  private static sendText(request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+    const response = fulfillment.result.objects;
+    res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
+    WebAppRpcRequest.configureResponse(request, fulfillment, res);
+    res.status(fulfillment.status).send(response);
+  }
+
+  private static sendBinary(request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+    const data = fulfillment.result.data[0];
+    const response = Buffer.isBuffer(data) ? data : Buffer.from(data);
+
+    res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.BINARY);
+    WebAppRpcRequest.configureResponse(request, fulfillment, res);
+    res.status(fulfillment.status).send(response);
+  }
+
+  private static sendMultipart(request: SerializedRpcRequest, fulfillment: RpcRequestFulfillment, res: HttpServerResponse) {
+    const response = RpcMultipart.createStream(fulfillment.result);
+    const headers = response.getHeaders();
+    for (const header in headers) {
+      if (headers.hasOwnProperty(header)) {
+        res.set(header, headers[header]);
+      }
+    }
+
+    WebAppRpcRequest.configureResponse(request, fulfillment, res);
+    res.status(fulfillment.status);
+    response.pipe(res);
+  }
+
+  private static parseFromPath(operation: SerializedRpcOperation): RpcSerializedValue {
+    const decoded = operation.encodedRequest ? Buffer.from(operation.encodedRequest, "base64").toString("binary") : "";
+    return RpcSerializedValue.create(decoded);
+  }
+
+  private static async parseFromBody(req: HttpServerRequest) {
+    const contentType = WebAppRpcProtocol.computeContentType(req.header(WEB_RPC_CONSTANTS.CONTENT));
+    if (contentType === RpcContentType.Text) {
+      return RpcSerializedValue.create(req.body as string);
+    } else if (contentType === RpcContentType.Binary) {
+      const objects = JSON.stringify([MarshalingBinaryMarker.createDefault()]);
+      const data = [req.body as Buffer];
+      return RpcSerializedValue.create(objects, data);
+    } else if (contentType === RpcContentType.Multipart) {
+      return await RpcMultipart.parseRequest(req);
+    } else {
+      throw new IModelError(BentleyStatus.ERROR, `Unknown content type.`);
+    }
+  }
+
+  private async performFetch(): Promise<number> {
+    let path = this.path;
+    if (this._pathSuffix) {
+      path += `/${this._pathSuffix}`;
+    }
+
+    const request = new Request(path, this._request);
+    const response = await fetch(request);
+    this._response = response;
+    this.metadata.status = response.status;
+    return response.status;
+  }
+
+  private async loadText(response: Response) {
+    const value = await response.text();
+    this.metadata.message = value;
+    return RpcSerializedValue.create(value);
+  }
+
+  private async loadBinary(response: Response) {
+    const value = new Uint8Array(await response.arrayBuffer());
+    const objects = JSON.stringify(MarshalingBinaryMarker.createDefault());
+    return RpcSerializedValue.create(objects, [value]);
+  }
+
+  private async loadMultipart(response: Response, contentType: string) {
+    const data = await response.arrayBuffer();
+    const value = new RpcMultipartParser(contentType!, Buffer.from(data)).parse();
+    return value;
+  }
+
+  private setupTransport(): void {
+    const parameters = this.protocol.serialize(this).parameters;
+    const transportType = WebAppRpcRequest.computeTransportType(parameters, this.parameters);
+
+    if (transportType === RpcContentType.Binary) {
+      this.setupBinaryTransport(parameters);
+    } else if (transportType === RpcContentType.Multipart) {
+      this.setupMultipartTransport(parameters);
+    } else if (transportType === RpcContentType.Text) {
+      this.setupTextTransport(parameters);
+    } else {
+      throw new IModelError(BentleyStatus.ERROR, "Unknown request type.");
+    }
+  }
+
+  private setupBinaryTransport(parameters: RpcSerializedValue) {
+    this._headers[WEB_RPC_CONSTANTS.CONTENT] = WEB_RPC_CONSTANTS.BINARY;
+    this._request.method = "post";
+    this._request.body = parameters.data[0];
+  }
+
+  private setupMultipartTransport(parameters: RpcSerializedValue) {
+    // IMPORTANT: do not set a multipart Content-Type header value. The browser does this automatically!
+    delete this._headers[WEB_RPC_CONSTANTS.CONTENT];
+    this._request.method = "post";
+    this._request.body = RpcMultipart.createForm(parameters);
+  }
+
+  private setupTextTransport(parameters: RpcSerializedValue) {
+    if (this.operation.policy.allowResponseCaching(this)) {
+      const encodedBody = btoa(parameters.objects);
+      if (encodedBody.length <= WebAppRpcRequest.maxUrlComponentSize) {
+        this._request.method = "get";
+        this._request.body = undefined;
+        delete this._headers[WEB_RPC_CONSTANTS.CONTENT];
+        this._pathSuffix = encodedBody;
+        return;
+      }
+    }
+
+    this._pathSuffix = "";
+    this._headers[WEB_RPC_CONSTANTS.CONTENT] = WEB_RPC_CONSTANTS.TEXT;
+    this._request.method = "post";
+    this._request.body = parameters.objects;
   }
 }

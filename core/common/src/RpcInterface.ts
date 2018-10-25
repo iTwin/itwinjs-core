@@ -33,7 +33,7 @@ export abstract class RpcInterface {
 
   /** Obtains the implementation result for an RPC operation. */
   public forward<T>(operation: string, ...parameters: any[]): Promise<T> {
-    const request = new (this.configuration.protocol.requestType)<T>(this, operation, parameters);
+    const request = new (this.configuration.protocol.requestType as any)(this, operation, parameters);
     request.submit();
     (this as any)[CURRENT_REQUEST] = request;
     return request.response;

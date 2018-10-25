@@ -146,6 +146,10 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
       throw new Error();
     }
   }
+
+  public op14(x: number, y: number): Promise<number> {
+    return Promise.resolve(x + y);
+  }
 }
 
 export class TestRpcImpl2 extends RpcInterface implements TestRpcInterface2 {

@@ -39,6 +39,7 @@ export class IModelJsExpressServer {
   protected _configureRoutes() {
     this._app.get("/v3/swagger.json", (req, res) => this._protocol.handleOpenApiDescriptionRequest(req, res));
     this._app.post("*", async (req, res) => this._protocol.handleOperationPostRequest(req, res));
+    this._app.get(/\/imodel\//, (req, res) => this._protocol.handleOperationGetRequest(req, res));
   }
 
   /**

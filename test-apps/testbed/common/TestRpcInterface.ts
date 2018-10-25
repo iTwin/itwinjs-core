@@ -126,6 +126,10 @@ export abstract class TestRpcInterface extends RpcInterface {
   public op13(_data: Uint8Array): Promise<void> {
     return this.forward.apply(this, arguments);
   }
+
+  public op14(_x: number, _y: number): Promise<number> {
+    return this.forward.apply(this, arguments);
+  }
 }
 
 export abstract class TestRpcInterface2 extends RpcInterface {
@@ -151,5 +155,86 @@ export abstract class TestRpcInterface3 extends RpcInterface {
 
   public async op1(_input: number): Promise<number> {
     return this.forward.apply(this, arguments);
+  }
+}
+
+export abstract class RpcTransportTest extends RpcInterface {
+  public static version = "1.0.0";
+  public static types = () => [];
+
+  public abstract primitive(_value: string): Promise<string>;
+  public abstract binary(_value: Uint8Array): Promise<Uint8Array>;
+  public abstract mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }>;
+  public abstract nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }>;
+}
+
+export abstract class RpcWebTransportTest extends RpcTransportTest {
+  public static getClient(): RpcWebTransportTest { return RpcManager.getClientForInterface(RpcWebTransportTest); }
+  public primitive(_value: string): Promise<string> { return this.forward.apply(this, arguments); }
+  public binary(_value: Uint8Array): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
+  public mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> { return this.forward.apply(this, arguments); }
+  public nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> { return this.forward.apply(this, arguments); }
+}
+
+export abstract class RpcElectronTransportTest extends RpcTransportTest {
+  public static getClient(): RpcElectronTransportTest { return RpcManager.getClientForInterface(RpcElectronTransportTest); }
+  public primitive(_value: string): Promise<string> { return this.forward.apply(this, arguments); }
+  public binary(_value: Uint8Array): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
+  public mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> { return this.forward.apply(this, arguments); }
+  public nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> { return this.forward.apply(this, arguments); }
+}
+
+export abstract class RpcMobileTransportTest extends RpcTransportTest {
+  public static getClient(): RpcMobileTransportTest { return RpcManager.getClientForInterface(RpcMobileTransportTest); }
+  public primitive(_value: string): Promise<string> { return this.forward.apply(this, arguments); }
+  public binary(_value: Uint8Array): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
+  public mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> { return this.forward.apply(this, arguments); }
+  public nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> { return this.forward.apply(this, arguments); }
+}
+
+export abstract class RpcDirectTransportTest extends RpcTransportTest {
+  public static getClient(): RpcDirectTransportTest { return RpcManager.getClientForInterface(RpcDirectTransportTest); }
+  public primitive(_value: string): Promise<string> { return this.forward.apply(this, arguments); }
+  public binary(_value: Uint8Array): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
+  public mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> { return this.forward.apply(this, arguments); }
+  public nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> { return this.forward.apply(this, arguments); }
+}
+
+export class RpcTransportTestImpl extends RpcInterface implements RpcTransportTest {
+  public static mutateString(value: string): string {
+    return value.toUpperCase();
+  }
+
+  public static mutateNumber(value: number): number {
+    return value * -1;
+  }
+
+  public static mutateBits(value: Uint8Array): Uint8Array {
+    const mutated = new Uint8Array(value.byteLength);
+    value.forEach((v, i) => mutated[i] = ~v);
+    return mutated;
+  }
+
+  public primitive(value: string): Promise<string> {
+    return Promise.resolve(RpcTransportTestImpl.mutateString(value));
+  }
+
+  public binary(value: Uint8Array): Promise<Uint8Array> {
+    return Promise.resolve(RpcTransportTestImpl.mutateBits(value));
+  }
+
+  public mixed(value1: string, value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> {
+    return Promise.resolve({ 0: RpcTransportTestImpl.mutateString(value1), 1: RpcTransportTestImpl.mutateBits(value2) });
+  }
+
+  public nested(value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> {
+    return Promise.resolve({
+      a: {
+        x: RpcTransportTestImpl.mutateBits(value.a.x),
+        y: RpcTransportTestImpl.mutateNumber(value.a.y),
+      },
+      b: RpcTransportTestImpl.mutateString(value.b),
+      c: RpcTransportTestImpl.mutateBits(value.c),
+    });
   }
 }

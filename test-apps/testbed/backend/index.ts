@@ -7,6 +7,11 @@ import * as fs from "fs";
 import * as path from "path";
 import * as express from "express";
 import * as bodyParser from "body-parser";
+import * as WebSocket from "ws";
+
+const mobilePort = process.env.MOBILE_PORT ? parseInt(process.env.MOBILE_PORT, 10) : 4000;
+setupMobileMock();
+
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { TestbedConfig, TestbedIpcMessage } from "../common/TestbedConfig";
 import { TestRpcImpl, TestRpcImpl2, TestRpcImpl3, resetOp8Initializer, TestZeroMajorRpcImpl } from "./TestRpcImpl";
@@ -23,6 +28,7 @@ let pendingsSent = 0;
 let pendingResponseQuota = 0;
 
 RpcConfiguration.developmentMode = true;
+TestbedConfig.mobilePort = mobilePort;
 
 // tslint:disable-next-line:no-var-requires
 const { ipcMain } = require("electron");
@@ -66,6 +72,10 @@ if (TestbedConfig.cloudRpc) {
       TestbedConfig.cloudRpc.protocol.handleOperationPostRequest(req, res);
     });
 
+    app.get(/\/imodel\//, (req, res) => {
+      TestbedConfig.cloudRpc.protocol.handleOperationGetRequest(req, res);
+    });
+
     app.listen(TestbedConfig.serverPort);
   }
 }
@@ -75,6 +85,8 @@ function handleHttp2Get(req2: http2.Http2ServerRequest, res2: http2.Http2ServerR
 
   if (req2.url.indexOf("/v3/swagger.json") === 0) {
     TestbedConfig.cloudRpc.protocol.handleOpenApiDescriptionRequest(req, res);
+  } else if (req2.url.match(/\/imodel\//)) {
+    TestbedConfig.cloudRpc.protocol.handleOperationGetRequest(req, res);
   } else {
     // serve static assets...
     const p = path.join(__dirname, "/public", req2.url); // FYI: path.join(...req.url) is NOT safe for a production server
@@ -188,4 +200,36 @@ function handleTestbedCommand(event: any, arg: any) {
     resetOp8Initializer();
     event.returnValue = true;
   }
+}
+
+function setupMobileMock() {
+  const server = new WebSocket.Server({ port: mobilePort });
+  let connection: WebSocket;
+
+  const mobilegateway = {
+    handler: (_payload: ArrayBuffer) => { throw new Error("Not implemented."); },
+
+    send: (message: Uint8Array[]) => {
+      connection.send(Buffer.concat(message), (err) => {
+        if (err) {
+          throw err;
+        }
+      });
+    },
+
+    port: mobilePort,
+  };
+
+  server.on("connection", (con) => {
+    connection = con;
+    con.on("message", (msg) => {
+      const buf = msg as Buffer;
+      const copy = new Buffer(buf.length);
+      buf.copy(copy);
+      mobilegateway.handler(copy.buffer as ArrayBuffer);
+    });
+  });
+
+  (global as any).self = global;
+  (global as any).bentley = { imodeljs: { servicesTier: { require: () => mobilegateway } } };
 }

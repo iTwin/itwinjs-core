@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fully support mixed binary and JSON content in both directions in RPC la",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "steve.wilson@bentley.com"
+}

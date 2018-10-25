@@ -7,7 +7,7 @@
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
-import { RpcProtocol, SerializedRpcRequest, RpcProtocolEvent, RpcRequestFulfillment } from "../core/RpcProtocol";
+import { RpcProtocol, SerializedRpcRequest, RpcRequestFulfillment } from "../core/RpcProtocol";
 import { RpcRegistry } from "../core/RpcRegistry";
 import { ElectronRpcConfiguration } from "./ElectronRpcManager";
 import { ElectronRpcRequest } from "./ElectronRpcRequest";
@@ -56,9 +56,9 @@ if (interop) {
   } else if (interop.ipcRenderer) {
     interop.ipcRenderer.on(CHANNEL, (_evt: any, fulfillment: RpcRequestFulfillment) => {
       const protocol = instances.get(fulfillment.interfaceName) as ElectronRpcProtocol;
-      const request = protocol.configuration.controlChannel.requests.get(fulfillment.id) as ElectronRpcRequest;
-      request.fulfillment = fulfillment;
-      protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, request);
+      const request = protocol.requests.get(fulfillment.id) as ElectronRpcRequest;
+      protocol.requests.delete(fulfillment.id);
+      request.notifyResponse(fulfillment);
     });
   }
 }
@@ -67,6 +67,9 @@ if (interop) {
 export class ElectronRpcProtocol extends RpcProtocol {
   /** The RPC request class for this protocol. */
   public readonly requestType = ElectronRpcRequest;
+
+  /** @hidden */
+  public requests: Map<string, ElectronRpcRequest> = new Map();
 
   /** Constructs an Electron protocol. */
   public constructor(configuration: ElectronRpcConfiguration) {

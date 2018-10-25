@@ -18,6 +18,7 @@ import { KnownLocations } from "./Platform";
 import { BisCore } from "./BisCore";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { BriefcaseManager } from "./BriefcaseManager";
+import { initializeRpcBackend } from "./RpcBackend";
 
 /**
  * Configuration of imodeljs-backend.
@@ -66,6 +67,8 @@ export class IModelHost {
   public static startup(configuration: IModelHostConfiguration = new IModelHostConfiguration()) {
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
+
+    initializeRpcBackend();
 
     if (!NativePlatformRegistry.isNativePlatformLoaded) {
       if (configuration.nativePlatform !== undefined)

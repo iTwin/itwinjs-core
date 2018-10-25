@@ -2,10 +2,35 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { RpcRequest, RpcManager, RpcOperation, RpcRequestEvent, RpcInterface, RpcInterfaceDefinition, RpcConfiguration, IModelReadRpcInterface, IModelToken } from "@bentley/imodeljs-common";
+import {
+  RpcRequest,
+  RpcManager,
+  RpcOperation,
+  RpcRequestEvent,
+  RpcInterface,
+  RpcInterfaceDefinition,
+  RpcConfiguration,
+  IModelReadRpcInterface,
+  IModelToken,
+  RpcResponseCacheControl,
+} from "@bentley/imodeljs-common";
 import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestNotFoundResponse, TestNotFoundResponseCode, ZeroMajorRpcInterface } from "../common/TestRpcInterface";
+import {
+  TestRpcInterface,
+  TestOp1Params,
+  TestRpcInterface2,
+  TestNotFoundResponse,
+  TestNotFoundResponseCode,
+  RpcDirectTransportTest,
+  RpcTransportTestImpl,
+  RpcTransportTest,
+  RpcWebTransportTest,
+  RpcElectronTransportTest,
+  RpcMobileTransportTest,
+  ZeroMajorRpcInterface,
+} from "../common/TestRpcInterface";
+
 import { assert } from "chai";
 import { BentleyError, Id64 } from "@bentley/bentleyjs-core";
 import { TestbedConfig } from "../common/TestbedConfig";
@@ -433,6 +458,57 @@ describe("RpcInterface", () => {
 
     await (test(decPatch.format(), true, client));
     await (test(decPatchZ.format(), false, clientZ));
+  });
+
+  it("should validate all transport methods", async () => {
+    function compareBytes(x: Uint8Array, y: Uint8Array) {
+      if (x.byteLength !== y.byteLength) {
+        return false;
+      }
+
+      for (let i = 0; i !== x.byteLength; ++i) {
+        if (x[i] !== y[i]) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    const abc = "abc";
+    const one = 1;
+    const oneZero = new Uint8Array([1, 0, 1, 0]);
+    const zeroOne = new Uint8Array([0, 1, 0, 1]);
+
+    function exercise(client: RpcTransportTest) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          assert.equal(await client.primitive(abc), RpcTransportTestImpl.mutateString(abc));
+          assert(compareBytes(await client.binary(oneZero), RpcTransportTestImpl.mutateBits(oneZero)));
+          const mixed = await client.mixed(abc, zeroOne);
+          assert.equal(mixed[0], RpcTransportTestImpl.mutateString(abc));
+          assert(compareBytes(mixed[1], RpcTransportTestImpl.mutateBits(zeroOne)));
+          const nested = await client.nested({ a: { x: oneZero, y: one }, b: abc, c: zeroOne });
+          assert(compareBytes(nested.a.x, RpcTransportTestImpl.mutateBits(oneZero)));
+          assert.equal(nested.a.y, RpcTransportTestImpl.mutateNumber(one));
+          assert.equal(nested.b, RpcTransportTestImpl.mutateString(abc));
+          assert(compareBytes(nested.c, RpcTransportTestImpl.mutateBits(zeroOne)));
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }
+
+    await exercise(RpcDirectTransportTest.getClient());
+    await exercise(RpcWebTransportTest.getClient());
+    await exercise(RpcElectronTransportTest.getClient());
+    await exercise(RpcMobileTransportTest.getClient());
+  });
+
+  it("should support cachable responses", async () => {
+    RpcOperation.lookup(TestRpcInterface, "op14").policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
+    assert.equal(2, await TestRpcInterface.getClient().op14(1, 1));
   });
 
   it("should successfully call WipRpcInterface.placeholder", async () => {
