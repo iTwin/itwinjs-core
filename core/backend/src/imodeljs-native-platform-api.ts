@@ -642,7 +642,7 @@ export declare class NativeECSqlBinder {
   /** Binds a BLOB, formatted as Base64 string, to the parameter represented by this binder
    * @return non-zero error status in case of failure.
    */
-  public bindBlob(base64String: string | ArrayBuffer | SharedArrayBuffer): DbResult;
+  public bindBlob(base64String: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): DbResult;
 
   /** Binds a Boolean to the parameter represented by this binder
    * @return non-zero error status in case of failure.
@@ -773,7 +773,7 @@ export declare class NativeECSqlValue {
 
   public isNull(): boolean;
   /** Get value as a BLOB. */
-  public getBlob(): ArrayBuffer;
+  public getBlob(): Uint8Array;
   /** Get value as boolean. */
   public getBoolean(): boolean;
   /** Get value as date time, formatted as ISO8601 string. */
@@ -865,7 +865,7 @@ export declare class NativeSqliteStatement implements IDisposable {
    * @param val BLOB value
    * @return non-zero error status in case of failure.
    */
-  public bindBlob(param: number | string, val: ArrayBuffer | SharedArrayBuffer): DbResult;
+  public bindBlob(param: number | string, val: ArrayBuffer | SharedArrayBuffer | Uint8Array): DbResult;
 
   /** Binds a double to the specified SQL parameter.
    * @param param Index (1-based) or name (without leading colon) of the parameter.
@@ -943,7 +943,7 @@ export declare class NativeSqliteStatement implements IDisposable {
    * Get value as a BLOB of the specified column for the current row.
    * @param columnIndex Index (0-based) of the column in the SQL SELECT clause for which the value is to be retrieved.
    */
-  public getValueBlob(columnIndex: number): ArrayBuffer;
+  public getValueBlob(columnIndex: number): Uint8Array;
   /** Get value as boolean of the specified column for the current row.
    * @param columnIndex Index (0-based) of the column in the SQL SELECT clause for which the value is to be retrieved.
    */
