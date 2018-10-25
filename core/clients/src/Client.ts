@@ -143,7 +143,7 @@ export class UrlDiscoveryClient extends Client {
    * @returns URL of the discovery service.
    */
   public async getUrl(): Promise<string> {
-    return Promise.resolve(Config.App.getString(UrlDiscoveryClient.configURL, "https://buddi.bentley.com/WebService/GetUrl/"));
+    return Promise.resolve(Config.App.getString(UrlDiscoveryClient.configURL, "https://buddi.bentley.com/WebService"));
   }
 
   /**
@@ -154,7 +154,7 @@ export class UrlDiscoveryClient extends Client {
    */
   public async discoverUrl(alctx: ActivityLoggingContext, searchKey: string, regionId: number | undefined): Promise<string> {
     alctx.enter();
-    const url: string = await this.getUrl();
+    const url: string = await this.getUrl() + "/GetUrl/";
     const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     const options: RequestOptions = {
       method: "GET",

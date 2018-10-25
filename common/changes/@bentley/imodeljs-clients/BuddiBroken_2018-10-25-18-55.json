@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix issue where buddi require full url from config instead of just the base without /GetUrl",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "khanaffan@gmail.com"
+}
