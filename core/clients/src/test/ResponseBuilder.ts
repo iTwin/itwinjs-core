@@ -276,6 +276,6 @@ export class UrlDiscoveryMock {
     if (!TestConfig.enableMocks)
       return;
     ResponseBuilder.mockResponse(Config.App.get("imjs_buddi_url"), RequestType.Get,
-      `/GetUrl/?url=${searchKey}&region=${env}`, { result: { url: returnedUrl } });
+      `/?url=${searchKey}&region=${env}`, { result: { url: returnedUrl } });
   }
 }

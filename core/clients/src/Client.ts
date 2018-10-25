@@ -65,25 +65,12 @@ export abstract class Client {
   }
 
   /**
-   * Implemented by clients to specify the default URL for the service.
-   * @protected
-   * @returns Default URL for the service.
-   */
-  protected abstract getDefaultUrl(): string;
-
-  /**
    * Implemented by clients to specify the name/key to query the service URLs from
    * the URL Discovery Service ("Buddi")
    * @returns Search key for the URL.
    */
   protected abstract getUrlSearchKey(): string; // same as the URL Discovery Service ("Buddi") name
 
-  /**
-   * Implemented by clients to specify the region for the service.
-   * @protected
-   * @returns region id for the service to be used with url discovery.
-   */
-  protected abstract getRegion(): number | undefined;
   /**
    * Gets the URL of the service. Attempts to discover and cache the URL from the URL Discovery Service. If not
    * found uses the default URL provided by client implementations. Note that for consistency
@@ -97,14 +84,13 @@ export abstract class Client {
 
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
     const searchKey: string = this.getUrlSearchKey();
-    return urlDiscoveryClient.discoverUrl(alctx, searchKey, this.getRegion())
+    return urlDiscoveryClient.discoverUrl(alctx, searchKey, undefined)
       .then((url: string): Promise<string> => {
         this._url = url;
         return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
       })
-      .catch((error: string): Promise<string> => {
-        console.log(`WARNING: Could not determine URL for ${searchKey} service. Error = ${error}`); // tslint:disable-line:no-console
-        return Promise.resolve(this.getDefaultUrl().replace(/\/$/, "")); // strip trailing "/" for consistency
+      .catch((): Promise<string> => {
+        return Promise.reject(`Failed to discover URL for service identified by "${searchKey}"`);
       });
   }
 
@@ -137,7 +123,6 @@ export class AuthenticationError extends ResponseError {
 export class UrlDiscoveryClient extends Client {
   public static readonly configURL = "imjs_buddi_url";
   public static readonly configResolveUrlUsingRegion = "imjs_buddi_resolve_url_using_region";
-  public static readonly configRegion = "imjs_buddi_region";
   /**
    * Creates an instance of UrlDiscoveryClient.
    */
@@ -154,29 +139,11 @@ export class UrlDiscoveryClient extends Client {
   }
 
   /**
-   * Gets the default URL for the service.
-   * @returns Default URL for the service.
-   */
-  protected getDefaultUrl(): string {
-    return Config.App.getString(UrlDiscoveryClient.configURL, "https://buddi.bentley.com/WebService");
-  }
-
-  /**
-   * Override default region for this service
-   * @returns region id or undefined
-   */
-  protected getRegion(): number | undefined {
-    if (Config.App.has(UrlDiscoveryClient.configRegion))
-      return Config.App.get(UrlDiscoveryClient.configRegion);
-
-    return 0;
-  }
-  /**
    * Gets the URL for the discovery service
    * @returns URL of the discovery service.
    */
   public async getUrl(): Promise<string> {
-    return Promise.resolve(this.getDefaultUrl().replace(/\/$/, "")); // strip trailing "/" for consistency
+    return Promise.resolve(Config.App.getString(UrlDiscoveryClient.configURL, "https://buddi.bentley.com/WebService/GetUrl/"));
   }
 
   /**
@@ -187,7 +154,7 @@ export class UrlDiscoveryClient extends Client {
    */
   public async discoverUrl(alctx: ActivityLoggingContext, searchKey: string, regionId: number | undefined): Promise<string> {
     alctx.enter();
-    const url: string = this.getDefaultUrl().replace(/\/$/, "") + "/GetUrl/";
+    const url: string = await this.getUrl();
     const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     const options: RequestOptions = {
       method: "GET",
@@ -198,10 +165,8 @@ export class UrlDiscoveryClient extends Client {
     };
     await this.setupOptionDefaults(options);
     alctx.enter();
-
     const response: Response = await request(alctx, url, options);
     const discoveredUrl: string = response.body.result.url.replace(/\/$/, ""); // strip trailing "/" for consistency
-
     return Promise.resolve(discoveredUrl);
   }
 }

@@ -119,9 +119,8 @@ export class FileAccessKey extends WsgInstance {
  */
 export class RealityDataServicesClient extends WsgClient {
   public static readonly searchKey: string = "RealityDataServices";
-  public static readonly configURL = "imjs_reality_data_service_url";
   public static readonly configRelyingPartyUri = "imjs_reality_data_service_relying_party_uri";
-  public static readonly configRegion = "imjs_reality_data_service_region";
+
   private _blobUrl: any;
   private _blobRoot: undefined | string;
 
@@ -159,17 +158,6 @@ export class RealityDataServicesClient extends WsgClient {
   }
 
   /**
-   * Gets the default URL for the service.
-   * @returns Default URL for the service.
-   */
-  protected getDefaultUrl(): string {
-    if (Config.App.has(RealityDataServicesClient.configURL))
-      return Config.App.get(RealityDataServicesClient.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key ${RealityDataServicesClient.configURL}`);
-  }
-
-  /**
    * Gets theRelyingPartyUrl for the service.
    * @returns RelyingPartyUrl for the service.
    */
@@ -183,16 +171,6 @@ export class RealityDataServicesClient extends WsgClient {
     }
 
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${RealityDataServicesClient.configRelyingPartyUri}`);
-  }
-  /**
-   * Override default region for this service
-   * @returns region id or undefined
-   */
-  protected getRegion(): number | undefined {
-    if (Config.App.has(RealityDataServicesClient.configRegion))
-      return Config.App.get(RealityDataServicesClient.configRegion);
-
-    return undefined;
   }
 
   /**
