@@ -2,6 +2,27 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.162.0",
+      "tag": "@bentley/imodeljs-clients_v0.162.0",
+      "date": "Wed, 24 Oct 2018 19:20:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "BIM Review Share WsgClient and tests"
+          },
+          {
+            "comment": "Updated docs to change URL that were used as example but pointed to actuall internal server"
+          },
+          {
+            "comment": "SettingsClient now accepts AccessToken (from SAML and OIDC) rather than (SAML-only) AuthorizationToken."
+          },
+          {
+            "comment": "it.only fix for BIM review share"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.161.0",
       "tag": "@bentley/imodeljs-clients_v0.161.0",
       "date": "Fri, 19 Oct 2018 13:04:14 GMT",

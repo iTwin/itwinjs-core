@@ -2,6 +2,33 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.162.0",
+      "tag": "@bentley/ui-framework_v0.162.0",
+      "date": "Wed, 24 Oct 2018 19:20:07 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Merge and fix framework test warning"
+          },
+          {
+            "comment": "Tooltips, ToolAdmin.activeToolChanged support, SheetNavigationAid/SheetsModalFrontstage improvements."
+          },
+          {
+            "comment": "Ui Documentation"
+          },
+          {
+            "comment": "Vertical PropertyGrid layout improvements. PropertyGrid background color. Setting the widget state."
+          },
+          {
+            "comment": "Added NotificationManager.isToolTipSupported so that we can avoid asking for tooltip message when _showToolTip isn't implemented by application."
+          },
+          {
+            "comment": "Adding SyncUiEventDispatcher"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.161.0",
       "tag": "@bentley/ui-framework_v0.161.0",
       "date": "Fri, 19 Oct 2018 13:04:14 GMT",

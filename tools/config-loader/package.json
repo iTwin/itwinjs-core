@@ -1,6 +1,6 @@
 {
   "name": "@bentley/config-loader",
-  "version": "0.161.0",
+  "version": "0.162.0",
   "description": "Configuration loader",
   "license": "MIT",
   "repository": {
@@ -28,7 +28,7 @@
     "json5": "^2.1.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "0.161.0",
+    "@bentley/build-tools": "0.162.0",
     "@types/json5": "0.0.30",
     "@types/node": "10.10.3",
     "rimraf": "^2.6.2",

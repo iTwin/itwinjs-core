@@ -1,6 +1,13 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Fri, 19 Oct 2018 13:04:14 GMT and should not be manually modified.
+This log was last generated on Wed, 24 Oct 2018 19:20:07 GMT and should not be manually modified.
+
+## 0.162.0
+Wed, 24 Oct 2018 19:20:07 GMT
+
+### Updates
+
+- Handle undefined structs and arrays
 
 ## 0.161.0
 Fri, 19 Oct 2018 13:04:14 GMT
