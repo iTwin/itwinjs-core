@@ -115,9 +115,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
 
   /** Binds a BLOB value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
-   * @param BLOB value as either an ArrayBuffer or a Base64 string
+   * @param BLOB value as either a Uint8Array, ArrayBuffer or a Base64 string
    */
-  public bindBlob(parameter: number | string, blob: string | ArrayBuffer | SharedArrayBuffer): void { this.getBinder(parameter).bindBlob(blob); }
+  public bindBlob(parameter: number | string, blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void { this.getBinder(parameter).bindBlob(blob); }
 
   /** Binds a boolean value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
@@ -384,9 +384,9 @@ export class ECSqlBinder {
   }
 
   /** Binds a BLOB value to the ECSQL parameter.
-   * @param BLOB value as either an ArrayBuffer or a Base64 string
+   * @param BLOB value as either a UInt8Array, ArrayBuffer or a Base64 string
    */
-  public bindBlob(blob: string | ArrayBuffer | SharedArrayBuffer): void {
+  public bindBlob(blob: string | Uint8Array | ArrayBuffer | SharedArrayBuffer): void {
     const stat: DbResult = this._binder.bindBlob(blob);
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error binding blob", Logger.logWarning, loggingCategory);
@@ -539,7 +539,7 @@ export class ECSqlValue {
   /** Indicates whether the value is NULL or not. */
   public get isNull(): boolean { return this._val.isNull(); }
   /** Get the value as BLOB */
-  public getBlob(): ArrayBuffer { return this._val.getBlob(); }
+  public getBlob(): Uint8Array { return this._val.getBlob(); }
   /** Get the value as a boolean value */
   public getBoolean(): boolean { return this._val.getBoolean(); }
   /** Get the value as a DateTime value (formatted as ISO8601 string) */
@@ -898,7 +898,7 @@ class ECSqlValueHelper {
 }
 
 class ECSqlTypeHelper {
-  public static isBlob(val: any): val is ArrayBuffer { return val instanceof ArrayBuffer; }
+  public static isBlob(val: any): val is Uint8Array { return val instanceof Uint8Array; }
 
   public static toGuidString(val: GuidString | Guid): string {
     if (typeof (val) === "string")

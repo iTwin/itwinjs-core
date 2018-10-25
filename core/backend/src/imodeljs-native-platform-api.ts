@@ -865,7 +865,7 @@ export declare class NativeSqliteStatement implements IDisposable {
    * @param val BLOB value
    * @return non-zero error status in case of failure.
    */
-  public bindBlob(param: number | string, val: ArrayBuffer | SharedArrayBuffer | Uint8Array): DbResult;
+  public bindBlob(param: number | string, val: Uint8Array | ArrayBuffer | SharedArrayBuffer): DbResult;
 
   /** Binds a double to the specified SQL parameter.
    * @param param Index (1-based) or name (without leading colon) of the parameter.

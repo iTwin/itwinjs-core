@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module SQLite */
 
-import { Id64String, Id64, GuidString, DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { Id64String, GuidString, DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECJsNames } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeSqliteStatement, NativeECDb, NativeDgnDb } from "./imodeljs-native-platform-api";
@@ -109,7 +109,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  boolean | INTEGER with true being bound as 1 and false as 0
    *  number | INTEGER if number is integral or REAL if number is not integral
    *  string | TEXT
-   *  ArrayBuffer | BLOB
+   *  Uint8Array or ArrayBuffer | BLOB
    *  [StringParam]($backend) where member **id** is set | INTEGER
    *  [StringParam]($backend) where member **guid** is set | BLOB
    *
@@ -135,7 +135,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
       stat = this._stmt!.bindId(parameter, value.id);
     } else if (!!value.guid) {
       stat = this._stmt!.bindGuid(parameter, value.guid);
-    } else if (value instanceof ArrayBuffer) {
+    } else if (value instanceof Uint8Array) {
       stat = this._stmt!.bindBlob(parameter, value);
     } else
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Parameter value ${value} is of an unsupported data type.`);
@@ -149,7 +149,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * Pass an *array* of values if the parameters are *positional*.
    * Pass an *object of the values keyed on the parameter name* for *named parameters*.
    * The values in either the array or object must match the respective types of the parameter.
-   * See [SqliteStatement.bindValue]($backend) for details on the supported types.
+   * See [[SqliteStatement.bindValue]] for details on the supported types.
    */
   public bindValues(values: any[] | object): void {
     if (Array.isArray(values)) {
@@ -215,7 +215,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * [SqliteValueType.Integer]($backend) | number
    * [SqliteValueType.Double]($backend) | number
    * [SqliteValueType.String]($backend) | string
-   * [SqliteValueType.Blob]($backend) | ArrayBuffer
+   * [SqliteValueType.Blob]($backend) | Uint8Array
    */
   public getRow(): any {
     const colCount: number = this.getColumnCount();
@@ -337,7 +337,7 @@ export class SqliteValue {
    * [SqliteValueType.Integer]($backend) | number
    * [SqliteValueType.Double]($backend) | number
    * [SqliteValueType.String]($backend) | string
-   * [SqliteValueType.Blob]($backend) | ArrayBuffer
+   * [SqliteValueType.Blob]($backend) | Uint8Array
    *
    * Note: You cannot retrieve [Id64]($bentley)s or [Guid](bentley)s with this property
    * directly. Use [SqliteValue.getId]($backend) or [SqliteValue.getGuid]($backend) respectively instead.
@@ -360,7 +360,7 @@ export class SqliteValue {
   }
 
   /** Get the value as BLOB */
-  public getBlob(): ArrayBuffer { return this._stmt.getValueBlob(this._colIndex); }
+  public getBlob(): Uint8Array { return this._stmt.getValueBlob(this._colIndex); }
   /** Get the value as a double value */
   public getDouble(): number { return this._stmt.getValueDouble(this._colIndex); }
   /** Get the value as a integer value */
@@ -368,7 +368,7 @@ export class SqliteValue {
   /** Get the value as a string value */
   public getString(): string { return this._stmt.getValueString(this._colIndex); }
   /** Get the value as an Id value */
-  public getId(): Id64String { return Id64.fromJSON(this._stmt.getValueId(this._colIndex)); }
+  public getId(): Id64String { return this._stmt.getValueId(this._colIndex); }
   /** Get the value as a Guid value */
   public getGuid(): GuidString { return this._stmt.getValueGuid(this._colIndex); }
 }
