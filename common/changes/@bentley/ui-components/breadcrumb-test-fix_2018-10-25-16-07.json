@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed breadcrumb component test",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}
