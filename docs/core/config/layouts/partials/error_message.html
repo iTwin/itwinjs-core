@@ -1,5 +1,14 @@
 <div class="error_message" style="display:none;">
-  <h2>There was an error processing the request. Please retry or contact {{this.email}} directly regarding your
-    request.</h2>
+  <h2>There was an error processing the request. Please retry or contact <a id="emailLink" href="#">{{this.email}}</a>
+    directly regarding your request.</h2>
   <button onclick="location.href='{{site.siteRoot}}getting-started'" type="button">Back</button>
 </div>
+
+<script>
+  $(function () {
+    $("#emailLink").click(function (e) {
+      e.preventDefault();
+      generateEmail('gform', '{{this.email}}', '{{this.subject}}');
+    });
+  });
+</script>

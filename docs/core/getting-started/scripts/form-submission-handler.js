@@ -9,48 +9,7 @@
       return true;
   }
 
-  // get all data in form and return object
-  function getFormData(form) {
-    var elements = form.elements;
 
-    var fields = Object.keys(elements).filter(function (k) {
-      return (elements[k].name !== "honeypot");
-    }).map(function (k) {
-      if (elements[k].name !== undefined) {
-        return elements[k].name;
-        // special case for Edge's html collection
-      } else if (elements[k].length > 0) {
-        return elements[k].item(0).name;
-      }
-    }).filter(function (item, pos, self) {
-      return self.indexOf(item) == pos && item;
-    });
-
-    var formData = {};
-    fields.forEach(function (name) {
-      var element = elements[name];
-
-      // singular form elements just have one value
-      formData[name] = element.value;
-
-      // when our element has multiple items, get their values
-      if (element.length) {
-        var data = [];
-        for (var i = 0; i < element.length; i++) {
-          var item = element.item(i);
-          if (item.checked || item.selected) {
-            data.push(item.value);
-          }
-        }
-        formData[name] = data.join(', ');
-      }
-    });
-
-    // add form-specific values into the data
-    formData.formDataNameOrder = JSON.stringify(fields);
-
-    return formData;
-  }
 
   function handleFormSubmit(event) {  // handles form submit without any jquery
     event.preventDefault();           // we are submitting via xhr below
@@ -124,3 +83,61 @@
     }
   }
 })();
+
+//Generate email to be sent from user's email client as a backup
+function generateEmail(callingForm, emailTo, emailSubject) {
+  var emailBody = '';
+  var form = $('.gform')[0];
+
+  var formData = getFormData(form);
+  emailBody = Object.keys(formData).map(function (k) {
+    return "<h4 style='text-transform: capitalize; margin-bottom: 0'>" + k + "</h4><div> " + formData[k] + "</div>";
+  });
+
+  location.href = "mailto:" + emailTo + "?" +
+    (emailSubject ? "&subject=" + emailSubject : "") +
+    (emailBody ? "&body=" + emailBody : "");
+}
+
+// get all data in form and return object
+function getFormData(form) {
+  var elements = form.elements;
+
+  var fields = Object.keys(elements).filter(function (k) {
+    return (elements[k].name !== "honeypot");
+  }).map(function (k) {
+    if (elements[k].name !== undefined) {
+      return elements[k].name;
+      // special case for Edge's html collection
+    } else if (elements[k].length > 0) {
+      return elements[k].item(0).name;
+    }
+  }).filter(function (item, pos, self) {
+    return self.indexOf(item) == pos && item;
+  });
+
+  var formData = {};
+  fields.forEach(function (name) {
+    var element = elements[name];
+
+    // singular form elements just have one value
+    formData[name] = element.value;
+
+    // when our element has multiple items, get their values
+    if (element.length) {
+      var data = [];
+      for (var i = 0; i < element.length; i++) {
+        var item = element.item(i);
+        if (item.checked || item.selected) {
+          data.push(item.value);
+        }
+      }
+      formData[name] = data.join(', ');
+    }
+  });
+
+  // add form-specific values into the data
+  formData.formDataNameOrder = JSON.stringify(fields);
+
+  return formData;
+}
