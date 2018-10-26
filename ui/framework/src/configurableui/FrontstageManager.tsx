@@ -237,7 +237,7 @@ export class FrontstageManager {
         // TODO: get content control to activate from state info
         const contentControl = frontstageDef.contentControls[0];
         if (contentControl)
-          ContentViewManager.setActiveContent(contentControl.reactElement);
+          ContentViewManager.setActiveContent(contentControl.reactElement, true);
       }
     }
     this._isLoading = false;

@@ -76,8 +76,8 @@ export class ContentViewManager {
   }
 
   /** Sets the active [[ContentControl]] */
-  public static setActiveContent(activeContent?: React.ReactNode): void {
-    if (this._activeContent !== activeContent) {
+  public static setActiveContent(activeContent?: React.ReactNode, forceEventProcessing = false): void {
+    if (this._activeContent !== activeContent || forceEventProcessing) {
       const oldContent = this._activeContent;
       this._activeContent = activeContent;
       this.onActiveContentChangedEvent.emit({ oldContent, activeContent });

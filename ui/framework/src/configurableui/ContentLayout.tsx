@@ -195,10 +195,6 @@ interface SingleContentProps {
  */
 class SingleContentContainer extends React.Component<SingleContentProps> {
 
-  public componentDidMount() {
-    ContentViewManager.setActiveContent(this.props.content);
-  }
-
   public render(): React.ReactNode {
     const style: CSSProperties = {
       width: "100%",
