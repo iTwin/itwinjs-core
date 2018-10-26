@@ -76,15 +76,8 @@ export class SelectionTool extends PrimitiveTool {
     this.isSelectByPoints = false;
     this.points.length = 0;
 
-    IModelApp.toolAdmin.setCursor(enableLocate ? "default" : "crosshair");
-    IModelApp.toolAdmin.setLocateCircleOn(enableLocate);
-
-    IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
-    IModelApp.locateManager.initToolLocate();
+    this.initLocateElements(enableLocate, false, enableLocate ? "default" : "crosshair", CoordinateLockOverrides.All);
     IModelApp.locateManager.options.allowDecorations = true; // Always locate to display tool tip even if we reject for adding to selection set...
-
-    IModelApp.accuSnap.enableLocate(enableLocate);
-    IModelApp.accuSnap.enableSnap(false);
 
     switch (mode) {
       case SelectionMode.Replace:

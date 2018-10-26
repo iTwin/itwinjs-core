@@ -21,7 +21,7 @@ There are three interactive Tool classifications, each of which is implemented b
   * The frontend package includes several [AccuDrawShortcuts]($frontend) implementations.
 * [PrimitiveTool]($frontend) is used for graphical interactions with an iModel.
   * When invoked, they become the active tool, reacting to user input such as data points, mouse movements, touch, keystrokes, and resets.
-  * Primitive tools are the most common type of tool implemented by iModel.js applications.
+  * Primitive tools are the most common type of tool implemented by iModel.js applications. Refer [here](./PrimitiveTools) for guidelines on writing Primitive tools.
   * The frontend package includes a [Select Tool](#select-tool) to fill the role of a *default* Primitive tool.
 
 iModel.js provides some specializations of [InteractiveTool]($frontend) to make it easier to implement certain types of interactions, ex. creating new elements vs. modifying existing elements.

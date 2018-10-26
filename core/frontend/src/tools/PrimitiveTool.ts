@@ -143,8 +143,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return false;
   }
 
-  public getCursor(): string { return "default"; }
-
   /** Called on data button down event to lock the tool to its current target model. */
   public autoLockTarget(): void { if (undefined !== this.targetView) return; this.targetIsLocked = true; }
 

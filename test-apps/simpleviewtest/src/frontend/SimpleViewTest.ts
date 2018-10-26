@@ -893,10 +893,8 @@ export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
 
   protected init(): void {
     this.receivedDownEvent = true;
-    IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
-    IModelApp.accuSnap.enableLocate(false);
-    IModelApp.accuSnap.enableSnap(false);
-    IModelApp.accuDraw.deactivate();
+    this.initLocateElements(false, false, undefined, CoordinateLockOverrides.All); // Disable locate/snap/locks for control modification; overrides state inherited from suspended primitive...
+    IModelApp.accuDraw.deactivate(); // Disable activate of compass from beginDynamics...
     this.beginDynamics();
   }
 

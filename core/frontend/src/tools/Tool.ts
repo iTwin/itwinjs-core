@@ -12,6 +12,7 @@ import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "../IModelApp";
 import { IModelError, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
+import { CoordinateLockOverrides } from "./ToolAdmin";
 
 export type ToolType = typeof Tool;
 export type ToolList = ToolType[];
@@ -451,6 +452,49 @@ export abstract class InteractiveTool extends Tool {
 
   /** Called to allow Tool to display dynamic elements. */
   public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { }
+
+  /** Helper method to keep the view cursor, display of locate circle, and coordinate lock overrides consistent with [[AccuSnap.isLocateEnabled]] and [[AccuSnap.isSnapEnabled]].
+   * @param enableLocate Value to pass to [[IModelApp.accuSnap.enableLocate]]. Tools that locate elements should always pass true to give the user feedback regarding the element at the current cursor location.
+   * @param enableSnap Optional value to pass to [[IModelApp.accuSnap.enableSnap]]. Tools that don't care about the element pick location should not pass true. Default is false.
+   * @note User must also have snapping enabled [[AccuSnap.isSnapEnabledByUser]], otherwise [[TentativePoint]] is used to snap.
+   * @param cursor Optional tool specific cursor override. Default is either cross or dynamics cursor depending on whether dynamics are currently active.
+   * @param coordLockOvr Optional tool specific coordinate lock overrides. A tool that only identifies elements and does not use [[BeButtonEvent.point]] can set [[ToolState.coordLockOvr]] to CoordinateLockOverrides.ACS
+   * or CoordinateLockOverrides.ACS, otherwise locate is affected by the input point being first projected to the ACS plane. A tool that will use [[BeButtonEvent.point]], especially those that call [[AccuSnap.enableSnap]]
+   * should honor all locks and leave [[ToolState.coordLockOvr]] set to CoordinateLockOverrides.None, the default for ViewTool and PrimitiveTool.
+   */
+  public changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void {
+    if (undefined !== cursor) {
+      IModelApp.toolAdmin.setCursor(cursor);
+      IModelApp.toolAdmin.setLocateCircleOn(enableLocate);
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+    } else {
+      IModelApp.toolAdmin.setLocateCursor(enableLocate);
+    }
+
+    IModelApp.accuSnap.enableLocate(enableLocate);
+    if (undefined !== enableSnap)
+      IModelApp.accuSnap.enableSnap(enableSnap);
+    else
+      IModelApp.accuSnap.enableSnap(false);
+
+    if (undefined !== coordLockOvr) {
+      IModelApp.toolAdmin.toolState.coordLockOvr = coordLockOvr;
+    } else {
+      if (enableLocate && !IModelApp.accuSnap.isSnapEnabled)
+        IModelApp.toolAdmin.toolState.coordLockOvr |= CoordinateLockOverrides.ACS;
+      else
+        IModelApp.toolAdmin.toolState.coordLockOvr &= ~CoordinateLockOverrides.ACS;
+    }
+  }
+
+  /** Helper method for tools that need to locate existing elements.
+   * Initializes [[ElementLocateManager]], changes the view cursor to locate, enables display of the locate circle, and sets the appropriate coordinate lock overrides.
+   * @see [[changeLocateState]]
+   */
+  public initLocateElements(enableLocate: boolean = true, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void {
+    IModelApp.locateManager.initToolLocate();
+    this.changeLocateState(enableLocate, enableSnap, cursor, coordLockOvr);
+  }
 }
 
 /**

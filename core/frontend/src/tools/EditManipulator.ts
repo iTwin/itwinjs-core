@@ -33,9 +33,7 @@ export namespace EditManipulator {
      */
     protected init(): void {
       this.receivedDownEvent = true;
-      IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.None;
-      IModelApp.accuSnap.enableLocate(false);
-      IModelApp.accuSnap.enableSnap(true);
+      this.initLocateElements(false, true, undefined, CoordinateLockOverrides.None); // InputCollector inherits state of suspended primitive, set everything...
     }
 
     protected cancel(_ev: BeButtonEvent): boolean { return true; }

@@ -1250,7 +1250,7 @@ export class ToolAdmin {
     if (undefined === newTool)
       return;
 
-    this.setCursor(newTool.getCursor());
+    this.setCursor("crosshair");
     this.setPrimitiveTool(newTool);
   }
 

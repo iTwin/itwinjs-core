@@ -987,7 +987,7 @@ class AccuDrawShortcutsTool extends InputCollector {
   private _shortcut: AccuDrawTool;
 
   public constructor(shortcut: AccuDrawTool) { super(); this._shortcut = shortcut; this._cancel = true; }
-  public onPostInstall(): void { super.onPostInstall(); this._shortcut.doManipulationStart(); }
+  public onPostInstall(): void { super.onPostInstall(); this.initLocateElements(false, true, undefined, CoordinateLockOverrides.None); this._shortcut.doManipulationStart(); } // NOTE: InputCollector inherits suspended primitive's state, set everything...
   public onCleanup(): void { this._shortcut.doManipulationStop(this._cancel); }
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (await this._shortcut.doManipulation(ev, false)) { this._cancel = false; this.exitTool(); } return EventHandled.No; }
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> { this._shortcut.doManipulation(ev, true); }
@@ -997,16 +997,6 @@ class AccuDrawShortcutsTool extends InputCollector {
 
 export abstract class AccuDrawTool {
   public doManipulationStart() {
-    const toolAdmin = IModelApp.toolAdmin;
-
-    // NOTE: Unlike starting a viewing tool, the input collector inherits the suspended primitive's state and must set everything...
-    toolAdmin.setLocateCursor(false);
-    toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.None;
-
-    const accuSnap = IModelApp.accuSnap;
-    accuSnap.enableLocate(false);
-    accuSnap.enableSnap(true);
-
     if (this.activateAccuDrawOnStart())
       IModelApp.accuDraw.activate();
 
