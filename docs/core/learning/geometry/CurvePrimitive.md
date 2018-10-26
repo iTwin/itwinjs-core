@@ -1,7 +1,25 @@
 
 # Curve Primitives
 
-A CurvePrimitive is a bounded continuous curve.
+* A CurvePrimitive is a bounded continuous curve.
+* Each curve primitive type (LineSegment3d, LineString3d, Arc3d, bsplines, etc) has a _fraction parameterization_ determined by its particular equations.
+* The fraction parameterization must have
+  * `fraction=0` is the startof the primitive
+  * `fraction=1` is the end of the primitive
+  * increasing fractions always move forward along the primitive.
+* The "forward" _distance_ movement for increasing fraction is _not_ required to be proportional to fraction.
+* Fractional and distance-along position are proportional only in very special cases:
+  * LineSegment
+  * circular arc
+  * transition spiral curves.
+* Other curve types that have more complicated (non-proportional) fraction-to-distance relations are
+  * elliptic arcs
+  * bspline curves
+  * linestrings
+* When movement "by distance" is required, it can be done by
+  * Using method calls that explicitly take distance as ain input.
+  * Wrap a curve primitive (or chain of curve primitives) in a CurvePrimitiveWithDistanceIndex.
+    * The CurvePrimitiveWithDistanceIndex has cached distance data to facilitate repeated queries by distance, and to make "fractional position along" the composite curve act like proportional distance.
 
 ## lineSegment
 
@@ -23,10 +41,24 @@ A CurvePrimitive is a bounded continuous curve.
 ```
 
 ## lineString
+* A LineString is an array of points that are to be connected by straignt lines.
+* Json Fragment:
+![>](./figs/CurvePrimitives/LineString.png)
 * Typescript object:
 ```
         const myLineString = LineString.create ([point0, point1, point2 ....]);
 ```
+* Fractional Parameterization
+
+Having both individual line segments and the composite linestring complicates parameterization.
+
+* * As with all CurvePrimitives, the fractional parameterization for the complete linestring must have `fraction=0` at the start and `fraction=1` at the end.
+  * The fractional positions of each inerior vertex are then defined at _equal intervals in the fraction space_.
+  * ![>](./figs/CurvePrimitives/LineStringFractions.png)
+  * Hence in the example, with 4 segments the vertex fractions increment by one quarter.
+  * Within each segment, the fraction interval is mapped as if it were a line segment.
+  * Note that having uniform vertex-to-vertex fraction means that the distance-along-the-linestring is _not proportional to fraction-along-entire-linestring_.   Fraction and distance changes are only proportional within individual segments.
+
 ## arcs (circular and elliptic)
 
 An arc primitive is a portion of a circular or ellipticla arc.   The equations for a complete elliptic arc require a center point and two vectors.   The start and end of a partial arc are controlled by two angles.

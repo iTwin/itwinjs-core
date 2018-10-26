@@ -215,7 +215,11 @@ abstract class NewtonRotRStrokeHandler extends NewtonEvaluatorRtoR {
     super();
     this._parentCurvePrimitive = undefined;
   }
-  /** retain the parentCurvePrimitive */
+  /** retain the parentCurvePrimitive.
+   * * Calling this method tells the handler that the parent curve is to be used for detail searches.
+   * * Example: Transition spiral search is based on linestring first, then the exact spiral.
+   * * Example: CurveChainWithDistanceIndex does NOT do this announcement -- the constituents act independently.
+   */
   public startParentCurvePrimitive(curve: CurvePrimitive | undefined) { this._parentCurvePrimitive = curve; }
   /** Forget the parentCurvePrimitive */
   public endParentCurvePrimitive(_curve: CurvePrimitive | undefined) { this._parentCurvePrimitive = undefined; }
@@ -298,9 +302,10 @@ class AppendPlaneIntersectionStrokeHandler extends NewtonRotRStrokeHandler imple
     }
   }
   private announceSolutionFraction(fraction: number) {
-    if (this._curve) {
-      this._ray = this._curve.fractionToPointAndDerivative(fraction, this._ray);
-      this._intersections.push(CurveLocationDetail.createCurveFractionPoint(this._curve, fraction, this._ray.origin));
+    const curve = this.effectiveCurve();
+    if (curve) {
+      this._ray = curve.fractionToPointAndDerivative(fraction, this._ray);
+      this._intersections.push(CurveLocationDetail.createCurveFractionPoint(curve, fraction, this._ray.origin));
     }
   }
   public evaluate(fraction: number): boolean {

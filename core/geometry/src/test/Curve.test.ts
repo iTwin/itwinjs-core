@@ -90,15 +90,18 @@ class ExerciseCurve {
   public static exerciseCurvePlaneIntersections(ck: Checker, curve: CurvePrimitive) {
     if (curve instanceof BSplineCurve3d) return;  // TODO
     // if (curve instanceof TransitionSpiral3d) return;  // TODO
-    for (const fractionA of [0.1, 0.45]) {
+    for (const fractionA of [0.421, 0.421, 0.45, 0.45]) {
       const frameA = curve.fractionToFrenetFrame(fractionA)!; // just point and tangent needed, but exercise this . .
       if (ck.testPointer(frameA) && frameA) {
-        const plane = Plane3dByOriginAndUnitNormal.create(frameA.getOrigin(), frameA.matrix.columnX());
+        const plane = Plane3dByOriginAndUnitNormal.create(frameA.getOrigin(), frameA.matrix.columnX())!;
         const intersections: CurveLocationDetail[] = [];
         curve.appendPlaneIntersectionPoints(plane!, intersections);
         const foundAt = intersections.filter(
           (detail: CurveLocationDetail, _index: number, _data: CurveLocationDetail[]) => {
-            return Geometry.isAlmostEqualNumber(detail.fraction, fractionA);
+            if (detail.curve === curve)
+              return Geometry.isAlmostEqualNumber(detail.fraction, fractionA);
+            // Different curve -- maybe a constituent?  accept based on points
+            return plane.getOriginRef().isAlmostEqual(detail.point);
           });
         ck.testTrue(foundAt.length >= 1, "planeCurveIntersections", curve, plane, fractionA);
       }
@@ -118,13 +121,15 @@ class ExerciseCurve {
     let newPoint = point0.clone();
     const length01 = curve.curveLength();
     let previousDistance = 0;
-    for (const fraction of [0, 1 / 7.0, 2 / 7.0, 3 / 7.0, 4 / 7.0]) {
+    const fractions = [0, 1 / 7.0, 2 / 7.0, 3 / 7.0, 4 / 7.0];
+    let length0F;
+    for (const fraction of fractions) {
       // equal steps but stay away from possible interior vertices of linestrings !!!
       newPoint = curve.fractionToPoint(fraction, newPoint);
       const distance = previousPoint.distance(newPoint);
 
       if (expectProportionalDistance) {
-        const length0F = point0.distance(newPoint);
+        length0F = curve.curveLengthBetweenFractions(0.0, fraction);
         ck.testCoordinate(fraction * length01, length0F, "interpolated points at expected distance");
       }
       if (expectEqualChordLength && previousDistance !== 0.0)
@@ -185,9 +190,17 @@ class ExerciseCurve {
     const pointA = curve.fractionToPoint(fractionA);
     let detail = curve.closestPoint(pointA, false);
     if (ck.testPointer(detail) && detail) {
-      if (!ck.testCoordinate(fractionA, detail.fraction, "fraction round trip")
-        || !ck.testPoint3d(pointA, detail.point, "round trip point")) {
-        detail = curve.closestPoint(pointA, false);
+      if (detail.curve === curve) {
+        if (!ck.testCoordinate(fractionA, detail.fraction, "fraction round trip")
+          || !ck.testPoint3d(pointA, detail.point, "round trip point")) {
+          detail = curve.closestPoint(pointA, false);
+        } else {
+          // The search tunneled into a contained curve.   Only verify the point.
+          if (!ck.testPoint3d(pointA, detail.point, "round trip point")
+            || !ck.testPoint3d(pointA, detail.curve.fractionToPoint(detail.fraction))) {
+            detail = curve.closestPoint(pointA, false);
+          }
+        }
       }
     }
     return true;
@@ -334,6 +347,27 @@ describe("CurvePrimitive.Evaluations", () => {
     ck.checkpoint("End CurvePrimitive.Evaluations");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("Create and exercise distanceIndex", () => {
+    const ck = new Checker();
+    const paths = Sample.createCurveChainWithDistanceIndex();
+    const dx = 10.0;
+    const allGeoemtry = [];
+    for (const p of paths) {
+      const q = p.clone()!;
+      q.tryTranslateInPlace(dx, 0, 0);
+      allGeoemtry.push(p.clone());
+      ExerciseCurve.exerciseFractionToPoint(ck, p, true, false);
+      ExerciseCurve.exerciseStroke(ck, p);
+      ExerciseCurve.exerciseClosestPoint(ck, p, 0.1);
+      ExerciseCurve.exerciseCloneAndTransform(ck, p);
+    }
+
+    ck.checkpoint("CurvePrimitive.Create and exercise distanceIndex");
+    GeometryCoreTestIO.saveGeometry(allGeoemtry, undefined, "CurvePrimitive.CurveChainWithDistanceIndex");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
 
 class NewtonEvaluatorClosestPointOnCurve extends NewtonEvaluatorRtoR {
@@ -613,6 +647,9 @@ describe("CoordinateXYZ", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 });
+
+// compare fractionToPoint and curveLengthBetweenFractions for curves that are supposed to have identical parameterizations.
+// EXAMPLE:   (a) LineString3d with equal length segments (b) CurveChainWithDistanceIndex with each of those segments as an independent LineSegment3d.
 function compareIsomorphicCurves(ck: Checker, curveA: CurvePrimitive, curveB: CurvePrimitive) {
   const fractions = [0.0, 0.125, 0.55, 0.882, 1.0];
   for (const fraction of fractions) {
@@ -660,5 +697,8 @@ describe("IsomorphicCurves", () => {
         compareIsomorphicCurves(ck, linestring, chain);
       }
     }
+    ck.checkpoint("IsomorphicCurves.Hello");
+    expect(ck.getNumErrors()).equals(0);
+
   });
 });

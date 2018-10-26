@@ -50,6 +50,7 @@ import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSe
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
+import { CurveChainWithDistanceIndex } from "../curve/PathWithDistanceIndex";
 
 /* tslint:disable:no-console */
 
@@ -1363,4 +1364,36 @@ export class Sample {
     }
     return undefined;
   }
+  /**
+   * Create various curve chains with distance indexing.
+   * * LineSegment
+   * * CircularArc
+   * * LineString
+   * * order 3 bspline
+   * * order 4 bspline
+   * * alternating lines and arcs
+   */
+  public static createCurveChainWithDistanceIndex(): CurveChainWithDistanceIndex[] {
+    const pointsA = [Point3d.create(0, 0, 0), Point3d.create(1, 3, 0), Point3d.create(2, 4, 0), Point3d.create(3, 3, 0), Point3d.create(4, 0, 0)];
+    const result = [];
+    // one singleton per basic curve type ...
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create(LineSegment3d.create(Point3d.create(0, 0, 0), Point3d.create(5, 0, 0)))));
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create(Arc3d.createCircularStartMiddleEnd(
+        Point3d.create(0, 0, 0), Point3d.create(3, 3, 0), Point3d.create(6, 0, 0))!)));
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create(LineString3d.create(pointsA))));
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create(BSplineCurve3d.createUniformKnots(pointsA, 3)!)));
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create(BSplineCurve3d.createUniformKnots(pointsA, 4)!)));
+    result.push(CurveChainWithDistanceIndex.createCapture(
+      Path.create(
+        LineSegment3d.create(pointsA[0], pointsA[1]),
+        Arc3d.createCircularStartMiddleEnd(pointsA[1], pointsA[2], pointsA[3])!,
+        LineSegment3d.create(pointsA[3], pointsA[4]))));
+    return result;
+  }
+
 }

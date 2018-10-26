@@ -58,10 +58,14 @@ class PathFragment {
     return globalDistance * (this.fraction1 - this.fraction0) / (this.distance1 - this.distance0);
   }
   public reverseFractionsAndDistances(totalDistance: number) {
-    this.fraction0 = 1.0 - this.fraction0;
-    this.fraction1 = 1.0 - this.fraction1;
-    this.distance0 = totalDistance - this.distance0;
-    this.distance1 = totalDistance - this.distance0;
+    const f0 = this.fraction0;
+    const f1 = this.fraction1;
+    const d0 = this.distance0;
+    const d1 = this.distance1;
+    this.fraction0 = 1.0 - f1;
+    this.fraction1 = 1.0 - f0;
+    this.distance0 = totalDistance - d1;
+    this.distance1 = totalDistance - d0;
   }
 }
 /** Non-instantiable class to build a distance index for a path. */
@@ -96,7 +100,7 @@ class PathIndexConstructionContext implements IStrokeHandler {
       for (let i = 1, f0 = 0.0; i <= numStrokes; i++ , f0 = f1) {
         f1 = Geometry.interpolate(fraction0, i / numStrokes, fraction1);
         d0 = this._accumulatedDistance;
-        this._accumulatedDistance += point0.distance(point1);
+        this._accumulatedDistance += (Math.abs(f1 - f0) * point0.distance(point1));
         this._fragments.push(new PathFragment(f0, f1, d0, this._accumulatedDistance, cp));
       }
     }
@@ -107,7 +111,7 @@ class PathIndexConstructionContext implements IStrokeHandler {
     fraction0: number,
     fraction1: number): void {
     let f1, d, d0;
-    for (let i = 1, f0 = 0.0; i <= numStrokes; i++ , f0 = f1) {
+    for (let i = 1, f0 = fraction0; i <= numStrokes; i++ , f0 = f1) {
       f1 = Geometry.interpolate(fraction0, i / numStrokes, fraction1);
       d = cp.curveLengthBetweenFractions(f0, f1);
       d0 = this._accumulatedDistance;
@@ -204,14 +208,17 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   /** Extend (increase) `rangeToExtend` as needed to include these curves (optionally transformed)
    */
   public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    const children = this.children;
-    if (children) {
-      for (const c of children) {
-        c.extendRange(rangeToExtend, transform);
-      }
-    }
+    this._path.extendRange(rangeToExtend, transform);
   }
-
+  /**
+   *
+   * * Curve length is always positive.
+   * @returns Returns a (high accuracy) length of the curve between fractional positions
+   * @returns Returns the length of the curve.
+   */
+  public curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
+    return Math.abs(fraction1 - fraction0) * this._totalLength;
+  }
   /**
    *
    * @param primitives primitive array to be CAPTURED (not cloned)
@@ -232,7 +239,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     if (numFragments > 0) {
       if (distance < 0.0)
         return allowExtrapolation ? fragments[0] : undefined;
-      if (distance >= numFragments)
+      if (distance >= this._totalLength)
         return allowExtrapolation ? fragments[numFragments - 1] : undefined;
       // humbug, linear search
       for (const fragment of fragments) {
@@ -260,9 +267,14 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
    */
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
     const distanceAlongPath = fraction * this._totalLength;
-    const fragment = this.distanceToFragment(distanceAlongPath, true)!;
-    const curveFraction = fragment.distanceToCurveFraction(distanceAlongPath);
-    return fragment.curve.fractionToPoint(curveFraction, result);
+    let fragment = this.distanceToFragment(distanceAlongPath, true);
+    if (fragment) {
+      const curveFraction = fragment.distanceToCurveFraction(distanceAlongPath);
+      return fragment.curve.fractionToPoint(curveFraction, result);
+    } else {
+      fragment = this.distanceToFragment(distanceAlongPath, true);
+      return this._fragments[0].curve.fractionToPoint(0.0);
+    }
   }
 
   /** Return the point (x,y,z) and derivative on the curve at fractional position.
@@ -329,6 +341,23 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
     const totalLength = this._totalLength;
     for (const fragment of this._fragments)
       fragment.reverseFractionsAndDistances(totalLength);
+    for (let i = 0, j = this._fragments.length - 1; i < j; i++ , j--) {
+      const fragment = this._fragments[i];
+      this._fragments[i] = this._fragments[j];
+      this._fragments[j] = fragment;
+    }
   }
-
+  /**
+   * Test for equality conditions:
+   * * Mismatched totalLength is a quick exit condition
+   * * If totalLength matches, recurse to the path for matching primitives.
+   * @param other
+   */
+  public isAlmostEqual(other: GeometryQuery): boolean {
+    if (other instanceof CurveChainWithDistanceIndex) {
+      return Geometry.isSameCoordinate(this._totalLength, other._totalLength)
+        && this._path.isAlmostEqual(other._path);
+    }
+    return false;
+  }
 }
