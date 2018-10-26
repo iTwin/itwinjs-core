@@ -16,7 +16,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 describe("ECSqlStatement", () => {
   const _outDir = KnownTestLocations.outputDir;
   const testRange = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7);
-  const blobVal = testRange.toFloat64Array().buffer;
+  const blobVal = new Uint8Array(testRange.toFloat64Array().buffer);
 
   it("Bind Ids", () => {
     using(ECDbTestHelper.createECDb(_outDir, "bindids.ecdb"), (ecdb: ECDb) => {
@@ -752,7 +752,7 @@ describe("ECSqlStatement", () => {
             assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
             const row = stmt.getRow();
             assert.deepEqual(row.bl, blobVal);
-            const f64 = new Float64Array(row.bl);
+            const f64 = new Float64Array(row.bl.buffer);
             const r2 = new Range3d(...f64);
             assert.deepEqual(r2, testRange);
             assert.equal(row.bo, boolVal);
@@ -1137,8 +1137,8 @@ describe("ECSqlStatement", () => {
         ecdb.withPreparedStatement("SELECT Range FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
           stmt.bindId(1, id);
           assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
-          const rangeBlob: ArrayBuffer = stmt.getValue(0).getBlob();
-          const rangeFloatArray = new Float64Array(rangeBlob);
+          const rangeBlob: Uint8Array = stmt.getValue(0).getBlob();
+          const rangeFloatArray = new Float64Array(rangeBlob.buffer);
           assert.equal(rangeFloatArray.length, 6);
           const actualRange = new Range3d(...rangeFloatArray);
           assert.isTrue(actualRange.isAlmostEqual(testRange));

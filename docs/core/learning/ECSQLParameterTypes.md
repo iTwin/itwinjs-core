@@ -5,11 +5,11 @@ The following table list which iModel.js type you can use for binding values to 
 ECSQL Parameter Type | iModel.js Type
 ------------- | ----------
 Boolean       | boolean
-Blob          | ArrayBuffer
+Blob          | Uint8Array
 DateTime      | ISO 8601 date time string
 Double        | number
-GUID          | [Guid]($bentleyjs-core)
-Id            | [Id64]($bentleyjs-core) or hexadecimal string representation of an [Id64]($bentleyjs-core)
+GUID          | [GuidString]($bentleyjs-core)
+Id            | [Id64String]($bentleyjs-core)
 Integer       | number. Use a decimal string, if the value is greater than the JavaScript limitation for big integers.
 Navigation Value | [NavigationBindingValue]($common)
 Point2d       | [XAndY]($geometry-core)

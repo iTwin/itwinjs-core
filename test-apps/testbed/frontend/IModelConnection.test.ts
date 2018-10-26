@@ -173,6 +173,22 @@ describe("IModelConnection (#integration)", () => {
     assert.isDefined(sprite);
   });
 
+  it("ECSQL with BLOB", async () => {
+    assert.exists(iModel);
+    let rows = await iModel.executeQuery("SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
+    assert.equal(rows.length, 1);
+    const row: any = rows[0];
+
+    assert.isTrue(Id64.isValidId64(row.id));
+
+    assert.isDefined(row.geometryStream);
+    const geomStream: Uint8Array = row.geometryStream;
+    assert.isAtLeast(geomStream.byteLength, 1);
+
+    rows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
+    assert.equal(rows.length, 1);
+  });
+
   it("Parameterized ECSQL", async () => {
     assert.exists(iModel);
     let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
