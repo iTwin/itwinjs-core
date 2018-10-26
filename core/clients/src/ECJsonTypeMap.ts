@@ -592,9 +592,7 @@ export class GuidSerializer implements PropertySerializer {
 
 export class Id64Serializer implements PropertySerializer {
   public serialize(value: any): any {
-    if (value instanceof Id64)
-      return value.toString();
-    else if (typeof value === "string")
+    if (typeof value === "string")
       return value;
     return undefined;
   }

@@ -91,8 +91,6 @@ describe("RpcInterface", () => {
     map2.forEach((v, k) => {
       if (v instanceof Date)
         assert.strictEqual(v.getTime(), map1.get(k).getTime());
-      else if (v instanceof Id64)
-        assert.isTrue(v.equals(map1.get(k)));
       else if (v instanceof TestOp1Params)
         assert.strictEqual(v.sum(), map1.get(k).sum());
       else if (typeof (v) === "object")
@@ -123,8 +121,6 @@ describe("RpcInterface", () => {
 
       if (v instanceof Date)
         assert.strictEqual(v.getTime(), set1Items[i].getTime());
-      else if (v instanceof Id64)
-        assert.isTrue(v.equals(set1Items[i]));
       else if (v instanceof TestOp1Params)
         assert.strictEqual(v.sum(), set1Items[i].sum());
       else if (typeof (v) === "object")

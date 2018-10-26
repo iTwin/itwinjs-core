@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RPC */
 
-import { Id64 } from "@bentley/bentleyjs-core";
 import { RpcInterface, IModelToken } from "@bentley/imodeljs-common";
 import { NodeKey, Node, NodePathElement } from "./hierarchy";
 import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, NestedContentField } from "./content";
@@ -36,7 +35,6 @@ export default class PresentationRpcInterface extends RpcInterface {
     PropertiesField,
     NestedContentField,
     Item,
-    Id64,
   ]
 
   /** The semantic version of the interface. */

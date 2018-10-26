@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ECSQL */
 
-import { DbResult, Id64, Id64String, Guid, GuidString, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String, Guid, GuidString, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECSqlValueType, NavigationValue, NavigationBindingValue, ECJsNames } from "@bentley/imodeljs-common";
 import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-core";
 import { ECDb } from "./ECDb";
@@ -147,7 +147,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param val Id value
    */
-  public bindId(parameter: number | string, val: Id64String | Id64): void { this.getBinder(parameter).bindId(val); }
+  public bindId(parameter: number | string, val: Id64String): void { this.getBinder(parameter).bindId(val); }
 
   /** Binds an integer value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
@@ -431,8 +431,8 @@ export class ECSqlBinder {
   /** Binds an Id value to the ECSQL parameter.
    * @param val Id value. If passed as string it must be the hexadecimal representation of the Id.
    */
-  public bindId(val: Id64String | Id64): void {
-    const stat: DbResult = this._binder.bindId(ECSqlTypeHelper.toIdString(val));
+  public bindId(val: Id64String): void {
+    const stat: DbResult = this._binder.bindId(val);
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error binding Id", Logger.logWarning, loggingCategory);
   }
@@ -486,7 +486,7 @@ export class ECSqlBinder {
    * @param val Navigation property value
    */
   public bindNavigation(val: NavigationBindingValue): void {
-    const stat: DbResult = this._binder.bindNavigation(ECSqlTypeHelper.toIdString(val.id), val.relClassName, val.relClassTableSpace);
+    const stat: DbResult = this._binder.bindNavigation(val.id, val.relClassName, val.relClassTableSpace);
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error binding navigation property", Logger.logWarning, loggingCategory);
   }
@@ -752,11 +752,6 @@ class ECSqlBindingHelper {
       return true;
     }
 
-    if (val instanceof Id64) {
-      binder.bindId(val);
-      return true;
-    }
-
     if (val instanceof Guid) {
       binder.bindGuid(val);
       return true;
@@ -907,18 +902,11 @@ class ECSqlTypeHelper {
     return val.value;
   }
 
-  public static toIdString(val: Id64String | Id64): string {
-    if (typeof (val) === "string")
-      return val;
-
-    return val.value;
-  }
-
   public static isXAndY(val: any): val is XAndY { return XYZ.isXAndY(val); }
   public static isXYAndZ(val: any): val is XYAndZ { return XYZ.isXYAndZ(val); }
   public static isLowAndHighXYZ(arg: any): arg is LowAndHighXYZ { return arg.low !== undefined && ECSqlTypeHelper.isXYAndZ(arg.low) && arg.high !== undefined && ECSqlTypeHelper.isXYAndZ(arg.high); }
 
-  public static isNavigationBindingValue(val: any): val is NavigationBindingValue { return val.id !== undefined && (typeof (val.id) === "string" || val.id instanceof Id64); }
+  public static isNavigationBindingValue(val: any): val is NavigationBindingValue { return val.id !== undefined && typeof (val.id) === "string"; }
 }
 
 /** A cached ECSqlStatement.
