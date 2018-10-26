@@ -15,7 +15,7 @@ describe("SqliteStatement", () => {
   const stringVal: string = "Hello world";
   const intVal: number = 12345;
   const doubleVal: number = -2.5;
-  const blobVal = new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7).toFloat64Array().buffer;
+  const blobVal = new Uint8Array(new Range3d(1.2, 2.3, 3.4, 4.5, 5.6, 6.7).toFloat64Array().buffer);
 
   it("Create Table, Insert, Select with ECDb", () => {
     using(ECDbTestHelper.createECDb(_outDir, "sqlitestatement.ecdb"), (ecdb: ECDb) => {
@@ -282,7 +282,7 @@ describe("SqliteStatement", () => {
           assert.equal(expectedId, Number.parseInt(idVal.getId(), 16));
 
           const guidVal: SqliteValue = stmt.getValue(1);
-          assert.instanceOf(guidVal.value, ArrayBuffer);
+          assert.instanceOf(guidVal.value, Uint8Array);
 
           if (rowCount % 2 !== 0)
             assert.equal("370cea34-8415-4f81-b54c-85040eb3111e", guidVal.getGuid());
@@ -295,7 +295,7 @@ describe("SqliteStatement", () => {
           assert.equal(expectedId, row.id);
 
           assert.isDefined(row.guid);
-          assert.instanceOf(row.guid, ArrayBuffer);
+          assert.instanceOf(row.guid, Uint8Array);
         }
         assert.equal(4, rowCount);
       });
