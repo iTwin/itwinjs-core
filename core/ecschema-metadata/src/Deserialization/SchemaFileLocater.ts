@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import Schema from "./../Metadata/Schema";
 import { SchemaMatchType } from "./../ECObjects";
+import Schema from "./../Metadata/Schema";
 import SchemaKey from "./../SchemaKey";
 import * as fs from "fs";
-import * as path from "path";
 import * as glob from "glob";
+import * as path from "path";
 
 // Temporary work around - need to add format method to string here for now....
 declare global {

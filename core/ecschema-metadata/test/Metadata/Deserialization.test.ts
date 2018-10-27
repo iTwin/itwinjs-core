@@ -14,6 +14,7 @@ import SchemaReadHelper from "./../../src/Deserialization/Helper";
 import { AnyClass } from "./../../src/Interfaces";
 import { SchemaItemType } from "./../../src/ECObjects";
 import { NavigationProperty } from "./../../src/Metadata/Property";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("Full Schema Deserialization", () => {
   describe("basic (empty) schemas", () => {
@@ -179,15 +180,15 @@ describe("Full Schema Deserialization", () => {
 
     it("should throw for invalid items attribute", async () => {
       let json: any = { ...baseJson, items: 0 };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' property. It should be of type 'object'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' attribute. It should be of type 'object'.`);
 
       json = { ...baseJson, items: [{}] };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' property. It should be of type 'object'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'items' attribute. It should be of type 'object'.`);
     });
 
     it("should throw for item with invalid name", async () => {
       const json = { ...baseJson, items: { "": {} } };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `A SchemaItem in TestSchema has an invalid name.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `A SchemaItem in TestSchema has an invalid 'name' attribute. '' is not a valid ECName.`);
     });
 
     it("should throw for item with missing schemaItemType", async () => {
@@ -195,7 +196,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         items: { BadItem: {} },
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem BadItem is missing the required schemaItemType property.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem TestSchema.BadItem is missing the required 'schemaItemType' attribute.`);
     });
 
     it("should throw for item with invalid schemaItemType", async () => {
@@ -203,7 +204,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         items: { BadItem: { schemaItemType: 0 } },
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem BadItem has an invalid 'schemaItemType' property. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem TestSchema.BadItem has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
     });
   });
 
@@ -229,13 +230,22 @@ describe("Full Schema Deserialization", () => {
 
     it("should call all visit methods", async () => {
       const schemaJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        name: "TestSchema",
-        version: "1.2.3",
+        ...baseJson,
         items: {
-          TestEnum: { schemaItemType: "Enumeration", type: "int" },
-          TestCategory: { schemaItemType: "PropertyCategory" },
           TestClass: { schemaItemType: "EntityClass" },
+          TestEnum: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            enumerators: [
+              {
+                name: "TestEnumeration",
+                value: 2,
+              },
+            ],
+          },
+          TestCategory: {
+            schemaItemType: "PropertyCategory",
+          },
           Length: {
             schemaItemType: "Phenomenon",
             definition: "LENGTH(1)",
@@ -257,7 +267,7 @@ describe("Full Schema Deserialization", () => {
         },
       };
       let testSchema = new Schema();
-      const reader = new SchemaReadHelper(undefined, mockVisitor);
+      const reader = new SchemaReadHelper(new JsonParser(), undefined, mockVisitor);
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
       expect(mockVisitor!.visitEmptySchema!.calledOnce).to.be.true;
@@ -323,7 +333,7 @@ describe("Full Schema Deserialization", () => {
       };
 
       let testSchema = new Schema();
-      const reader = new SchemaReadHelper(undefined, mockVisitor);
+      const reader = new SchemaReadHelper(new JsonParser(), undefined, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
@@ -373,7 +383,7 @@ describe("Full Schema Deserialization", () => {
       };
 
       let testSchema = new Schema();
-      const reader = new SchemaReadHelper(undefined, mockVisitor);
+      const reader = new SchemaReadHelper(new JsonParser(), undefined, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
@@ -414,10 +424,18 @@ describe("Full Schema Deserialization", () => {
           BRelationshipClass: {
             schemaItemType: "RelationshipClass",
             description: "Description for BRelationshipClass",
+            strength: "Embedding",
+            strengthDirection: "Forward",
             source: {
+              multiplicity: "(0..1)",
+              roleLabel: "Source roleLabel",
+              polymorphic: false,
               constraintClasses: ["TestSchema.AEntityClass"],
             },
             target: {
+              multiplicity: "(0..*)",
+              roleLabel: "Target roleLabel",
+              polymorphic: false,
               constraintClasses: ["TestSchema.AEntityClass"],
             },
           },
@@ -437,7 +455,7 @@ describe("Full Schema Deserialization", () => {
       };
 
       let testSchema = new Schema();
-      const reader = new SchemaReadHelper(undefined, mockVisitor);
+      const reader = new SchemaReadHelper(new JsonParser(), undefined, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
@@ -466,10 +484,18 @@ describe("Full Schema Deserialization", () => {
           ARelationshipClass: {
             schemaItemType: "RelationshipClass",
             description: "Description for ARelationshipClass",
+            strength: "referencing",
+            strengthDirection: "Forward",
             source: {
+              multiplicity: "(0..*)",
+              roleLabel: "Source roleLabel",
+              polymorphic: true,
               constraintClasses: ["TestSchema.BEntityClass"],
             },
             target: {
+              multiplicity: "(1..*)",
+              roleLabel: "Target roleLabel",
+              polymorphic: true,
               constraintClasses: ["TestSchema.BEntityClass"],
             },
           },
@@ -501,7 +527,7 @@ describe("Full Schema Deserialization", () => {
       };
 
       let testSchema = new Schema();
-      const reader = new SchemaReadHelper(undefined, mockVisitor);
+      const reader = new SchemaReadHelper(new JsonParser(), undefined, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;

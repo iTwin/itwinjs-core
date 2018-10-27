@@ -3,11 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaItemType, parseSchemaItemType, schemaItemTypeToString } from "./../ECObjects";
-import { SchemaItemKey } from "./../SchemaKey";
-import { SchemaItemVisitor } from "./../Interfaces";
 import Schema from "./Schema";
+import { SchemaItemProps } from "./../Deserialization/JsonProps";
+import { parseSchemaItemType, SchemaItemType, schemaItemTypeToString } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { SchemaItemVisitor } from "./../Interfaces";
+import { SchemaItemKey } from "./../SchemaKey";
 
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem";
 
@@ -53,59 +54,46 @@ export default abstract class SchemaItem {
     return itemJson;
   }
 
-  private itemFromJson(jsonObj: any) {
-    if (undefined === jsonObj.schemaItemType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} is missing the required schemaItemType property.`);
+  public deserializeSync(schemaItemProps: SchemaItemProps) {
+    if (parseSchemaItemType(schemaItemProps.schemaItemType) !== this.schemaItemType)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an incompatible schemaItemType. It must be "${schemaItemTypeToString(this.schemaItemType)}", not "${schemaItemProps.schemaItemType}".`);
 
-    if (typeof (jsonObj.schemaItemType) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
+    if (undefined !== schemaItemProps.label) {
+      this._label = schemaItemProps.label;
+    }
 
-    if (parseSchemaItemType(jsonObj.schemaItemType) !== this.schemaItemType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an incompatible schemaItemType. It must be "${schemaItemTypeToString(this.schemaItemType)}", not "${jsonObj.schemaItemType}".`);
+    this._description = schemaItemProps.description;
 
-    if (undefined !== jsonObj.name) {
-      if (typeof (jsonObj.name) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
-
-      if (jsonObj.name.toLowerCase() !== this.name.toLowerCase())
+    if (undefined !== schemaItemProps.schema) {
+      if (schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
 
-    if (undefined !== jsonObj.description) {
-      if (typeof (jsonObj.description) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
-      this._description = jsonObj.description;
-    }
-
-    if (undefined !== jsonObj.label) {
-      if (typeof (jsonObj.label) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'label' attribute. It should be of type 'string'.`);
-      this._label = jsonObj.label;
-    }
-
-    if (undefined !== jsonObj.schema) {
-      if (typeof (jsonObj.schema) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'schema' attribute. It should be of type 'string'.`);
-
-      if (jsonObj.schema.toLowerCase() !== this.schema.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    }
-
-    if (undefined !== jsonObj.schemaVersion) {
-      if (typeof (jsonObj.schemaVersion) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an invalid 'schemaVersion' attribute. It should be of type 'string'.`);
-
-      if (jsonObj.schemaVersion !== this.key.schemaKey.version.toString())
+    if (undefined !== schemaItemProps.schemaVersion) {
+      if (schemaItemProps.schemaVersion !== this.key.schemaKey.version.toString())
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
   }
 
-  public async fromJson(jsonObj: any): Promise<void> {
-    this.itemFromJson(jsonObj);
-  }
+  public async deserialize(schemaItemProps: SchemaItemProps) {
+    if (parseSchemaItemType(schemaItemProps.schemaItemType) !== this.schemaItemType)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an incompatible schemaItemType. It must be "${schemaItemTypeToString(this.schemaItemType)}", not "${schemaItemProps.schemaItemType}".`);
 
-  public fromJsonSync(jsonObj: any): void {
-    this.itemFromJson(jsonObj);
+    if (undefined !== schemaItemProps.label) {
+      this._label = schemaItemProps.label;
+    }
+
+    this._description = schemaItemProps.description;
+
+    if (undefined !== schemaItemProps.schema) {
+      if (schemaItemProps.schema.toLowerCase() !== this.schema.name.toLowerCase())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+    }
+
+    if (undefined !== schemaItemProps.schemaVersion) {
+      if (schemaItemProps.schemaVersion !== this.key.schemaKey.version.toString())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+    }
   }
 
   /**

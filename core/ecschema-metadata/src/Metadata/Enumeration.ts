@@ -3,12 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { PrimitiveType, SchemaItemType } from "./../ECObjects";
-import { ECName } from "./../SchemaKey";
-import { SchemaItemVisitor } from "./../Interfaces";
 import Schema from "./Schema";
+import SchemaItem from "./SchemaItem";
+import { EnumerationProps, EnumeratorProps } from "./../Deserialization/JsonProps";
+import { PrimitiveType, SchemaItemType } from "./../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { SchemaItemVisitor } from "./../Interfaces";
+import { ECName } from "./../SchemaKey";
 
 export interface Enumerator<T> {
   readonly name: string;
@@ -99,7 +100,7 @@ export default class Enumeration extends SchemaItem {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has a backing type 'string' and an enumerator with value of type 'integer'.`);
     this.findDuplicateEnumerators(name, value); // check for duplicates; throw if there are any
     if (!ECName.validate(name))
-      throw new ECObjectsError(ECObjectsStatus.InvalidECName);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECName, `The Enumeration ${this.name} has an enumerator with an invalid 'name' attribute. ${name} is not a valid ECName.`);
     return { name, value, label, description };
   }
 
@@ -129,78 +130,33 @@ export default class Enumeration extends SchemaItem {
     return schemaJson;
   }
 
-  /**
-   * Populates this Enumeration with the values from the provided.
-   */
-  public async fromJson(jsonObj: any): Promise<void> {
-    this.fromJsonSync(jsonObj);
-  }
-
-  /**
-   * Populates this Enumeration with the values from the provided.
-   */
-  public fromJsonSync(jsonObj: any): void {
-    super.fromJsonSync(jsonObj);
+  public deserializeSync(enumerationProps: EnumerationProps) {
+    super.deserializeSync(enumerationProps);
     if (undefined === this._type) {
-      if (undefined === jsonObj.type)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} is missing the required 'type' attribute.`);
-      if (typeof (jsonObj.type) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'type' attribute. It should be of type 'string'.`);
-
-      if (/int/i.test(jsonObj.type))
+      if (/int/i.test(enumerationProps.type))
         this._type = PrimitiveType.Integer;
-      else if (/string/i.test(jsonObj.type))
+      else if (/string/i.test(enumerationProps.type))
         this._type = PrimitiveType.String;
       else
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'type' attribute. It should be either "int" or "string".`);
     } else {
-      if (undefined !== jsonObj.type) {
-        if (typeof (jsonObj.type) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'type' attribute. It should be of type 'string'.`);
-
-        const primitiveTypePattern = (this.isInt) ? /int/i : /string/i;
-        if (!primitiveTypePattern.test(jsonObj.type))
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an incompatible type. It must be "${(this.isInt) ? "int" : "string"}", not "${(this.isInt) ? "string" : "int"}".`);
-      }
+      const primitiveTypePattern = (this.isInt) ? /int/i : /string/i;
+      if (!primitiveTypePattern.test(enumerationProps.type))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an incompatible type. It must be "${(this.isInt) ? "int" : "string"}", not "${(this.isInt) ? "string" : "int"}".`);
     }
+    this._isStrict = enumerationProps.isStrict;
 
-    if (undefined !== jsonObj.isStrict) {
-      if (typeof (jsonObj.isStrict) !== "boolean")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
-      this._isStrict = jsonObj.isStrict;
-    }
-
-    if (undefined !== jsonObj.enumerators) {
-      if (!Array.isArray(jsonObj.enumerators))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
-
-      jsonObj.enumerators.forEach((enumerator: any) => {
-        if (typeof (enumerator) !== "object")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
-
-        if (undefined === enumerator.value)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'value'.`);
-
-        if (undefined === enumerator.name)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator that is missing the required attribute 'name'.`);
-
-        if (typeof (enumerator.name) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'name' attribute. It should be of type 'string'.`);
-
-        if (undefined !== enumerator.label) {
-          if (typeof (enumerator.label) !== "string")
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'label' attribute. It should be of type 'string'.`);
-        }
-
-        if (undefined !== enumerator.description) {
-          if (typeof (enumerator.description) !== "string")
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Enumeration ${this.name} has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
-        }
+    if (undefined !== enumerationProps.enumerators) {
+      enumerationProps.enumerators.forEach((enumerator: EnumeratorProps) => {
         // Creates a new enumerator (with the specified name, value, label and description- label and description are optional) and adds to the list of enumerators.
         // Throws ECObjectsError if there are duplicate names or values present in the enumeration
         this.addEnumerator(this.createEnumerator(enumerator.name, enumerator.value, enumerator.label, enumerator.description));
       });
     }
+  }
+
+  public async deserialize(enumerationProps: EnumerationProps) {
+    this.deserializeSync(enumerationProps);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

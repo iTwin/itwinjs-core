@@ -3,24 +3,24 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import SchemaKey, { SchemaItemKey } from "./SchemaKey";
 import { DelayedPromise } from "./DelayedPromise";
+import ECClass, { StructClass } from "./Metadata/Class";
+import Constant from "./Metadata/Constant";
+import CustomAttributeClass from "./Metadata/CustomAttributeClass";
+import EntityClass from "./Metadata/EntityClass";
+import Enumeration from "./Metadata/Enumeration";
+import InvertedUnit from "./Metadata/InvertedUnit";
+import KindOfQuantity from "./Metadata/KindOfQuantity";
+import Mixin from "./Metadata/Mixin";
+import Phenomenon from "./Metadata/Phenomenon";
+import PropertyCategory from "./Metadata/PropertyCategory";
+import RelationshipClass from "./Metadata/RelationshipClass";
 import Schema from "./Metadata/Schema";
 import SchemaItem from "./Metadata/SchemaItem";
-import ECClass, { StructClass } from "./Metadata/Class";
-import EntityClass from "./Metadata/EntityClass";
-import Mixin from "./Metadata/Mixin";
-import RelationshipClass from "./Metadata/RelationshipClass";
-import CustomAttributeClass from "./Metadata/CustomAttributeClass";
-import Enumeration from "./Metadata/Enumeration";
-import KindOfQuantity from "./Metadata/KindOfQuantity";
-import PropertyCategory from "./Metadata/PropertyCategory";
 import Unit from "./Metadata/Unit";
-import InvertedUnit from "./Metadata/InvertedUnit";
-import Constant from "./Metadata/Constant";
-import Phenomenon from "./Metadata/Phenomenon";
 import UnitSystem from "./Metadata/UnitSystem";
 import Format from "./Metadata/Format";
+import SchemaKey, { SchemaItemKey } from "./SchemaKey";
 
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema>;
 

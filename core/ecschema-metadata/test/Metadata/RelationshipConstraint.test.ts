@@ -9,8 +9,41 @@ import Schema from "../../src/Metadata/Schema";
 import { ECObjectsError } from "../../src/Exception";
 import RelationshipClass, { RelationshipConstraint } from "../../src/Metadata/RelationshipClass";
 import { RelationshipEnd } from "../../src/ECObjects";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
+
+function createSchemaJson(sourceConst: any, targetConst: any) {
+  return createSchemaJsonWithItems({
+    TestRelationship: {
+      schemaItemType: "RelationshipClass",
+      strength: "referencing",
+      strengthDirection: "forward",
+      source: {
+        ...sourceConst,
+      },
+      target: {
+        ...targetConst,
+      },
+    },
+    SourceBaseEntity: {
+      schemaItemType: "EntityClass",
+    },
+    TargetBaseEntity: {
+      schemaItemType: "EntityClass",
+    },
+    TestSourceEntity: {
+      schemaItemType: "EntityClass",
+      baseClass: "TestSchema.SourceBaseEntity",
+    },
+    TestTargetEntity: {
+      schemaItemType: "EntityClass",
+      baseClass: "TestSchema.TargetBaseEntity",
+    },
+  });
+}
 
 describe("RelationshipConstraint", () => {
+  let parser = new JsonParser();
   describe("fromJson", () => {
     let testConstraint: RelationshipConstraint;
 
@@ -20,44 +53,93 @@ describe("RelationshipConstraint", () => {
       testConstraint = new RelationshipConstraint(relClass, RelationshipEnd.Source);
     });
 
-    async function testInvalidAttribute(attributeName: string, expectedType: string, value: any, anyRelationshipConstraint?: boolean) {
-      expect(testConstraint).to.exist;
-      const json: any = { [attributeName]: value };
-      if (anyRelationshipConstraint !== undefined)
-        await expect(testConstraint.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The AnyRelationshipConstraint TestRelationship.source has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
-      else
-        await expect(testConstraint.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipConstraint TestRelationship.source has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
-    }
-
-    it("should throw for invalid roleLabel", async () => testInvalidAttribute("roleLabel", "string", 0));
-    it("should throw for invalid polymorphic", async () => testInvalidAttribute("polymorphic", "boolean", 0));
+    it("should throw for invalid roleLabel", async () => {
+      const json: any = {
+        polymorphic: true,
+        multiplicity: "(1..1)",
+        roleLabel: 0,
+        constraintClasses: [
+          "TestSchema.TestTargetEntity",
+        ],
+      };
+      assert.throws(() => parser.parseRelationshipConstraintProps(testConstraint.relationshipClass.name, json), ECObjectsError, `The RelationshipConstraint TestRelationship has an invalid 'roleLabel' attribute. It should be of type 'string'.`);
+    });
+    it("should throw for invalid polymorphic", async () => {
+      const json: any = {
+        polymorphic: "0",
+        multiplicity: "(0..1)",
+        roleLabel: "test roleLabel",
+        constraintClasses: [
+          "TestSchema.TestTargetEntity",
+        ],
+      };
+      assert.throws(() => parser.parseRelationshipConstraintProps(testConstraint.relationshipClass.name, json), ECObjectsError, `The RelationshipConstraint TestRelationship has an invalid 'polymorhpic' attribute. It should be of type 'boolean'.`);
+    });
 
     it("should throw for invalid multiplicity", async () => {
-      await testInvalidAttribute("multiplicity", "string", 0);
-      const badMultiplicityJson = { multiplicity: "bAd" };
-      expect(testConstraint.fromJson(badMultiplicityJson)).to.be.rejectedWith(ECObjectsError);
+      const badMultiplicityJson = {
+        polymorphic: true,
+        multiplicity: 0,
+        roleLabel: "test roleLabel",
+        constraintClasses: [
+          "TestSchema.TestTargetEntity",
+        ],
+      };
+      assert.throws(() => parser.parseRelationshipConstraintProps(testConstraint.relationshipClass.name, badMultiplicityJson), ECObjectsError, `The RelationshipConstraint TestRelationship has an invalid 'multiplicity' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid abstractConstraint", async () => {
-      await testInvalidAttribute("abstractConstraint", "string", 0);
-      const unloadedAbstractConstraintJson = { abstractConstraint: "ThisClassDoesNotExist" };
-      expect(testConstraint.fromJson(unloadedAbstractConstraintJson)).to.be.rejectedWith(ECObjectsError);
+      const unloadedAbstractConstraintJson = {
+        polymorphic: true,
+        multiplicity: 0,
+        roleLabel: "test roleLabel",
+        abstractConstraint: 0,
+        constraintClasses: [
+          "TestSchema.TestTargetEntity",
+        ],
+      };
+      assert.throws(() => parser.parseRelationshipConstraintProps(testConstraint.relationshipClass.name, unloadedAbstractConstraintJson), ECObjectsError);
     });
     it("should throw for invalid constraintClasses", async () => {
-      await testInvalidAttribute("constraintClasses", "string[]", 0);
-      await testInvalidAttribute("constraintClasses", "string[]", [0]);
-      const unloadedConstraintClassesJson = { constraintClasses: ["ThisClassDoesNotExist"] };
-      expect(testConstraint.fromJson(unloadedConstraintClassesJson)).to.be.rejectedWith(ECObjectsError);
+      const json: any = {
+        polymorphic: true,
+        multiplicity: "(0..1)",
+        roleLabel: "test roleLabel",
+      };
+      assert.throws(() => parser.parseRelationshipConstraintProps(testConstraint.relationshipClass.name, { ...json, constraintClass: 0 }), ECObjectsError);
+      assert.throws(() => parser.parseRelationshipConstraintProps(testConstraint.relationshipClass.name, { ...json, constraintClass: [0] }), ECObjectsError);
+      const unloadedConstraintClassesJson = { ...json, constraintClasses: ["ThisClassDoesNotExist"] };
+      await expect(testConstraint.deserialize(parser.parseRelationshipConstraintProps(testConstraint.relationshipClass.name, unloadedConstraintClassesJson))).to.be.rejectedWith(ECObjectsError);
     });
     it("should throw for invalid customAttributes", async () => {
-      const json: any = { ["customAttributes"]: "array" };
-      await expect(testConstraint.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The AnyRelationshipConstraint TestRelationship.source has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
-      const unloadedConstraintClassesJson = { constraintClasses: ["ThisClassDoesNotExist"] };
-      expect(testConstraint.fromJson(unloadedConstraintClassesJson)).to.be.rejectedWith(ECObjectsError, ``);
+      const json: any = {
+        polymorphic: true,
+        multiplicity: "(0..1)",
+        roleLabel: "test roleLabel",
+        constraintClasses: [
+          "TestSchema.TestTargetEntity",
+        ],
+        customAttributes: "array",
+      };
+      assert.throws(() => parser.parseRelationshipConstraintProps(testConstraint.relationshipClass.name, json), ECObjectsError, `The RelationshipConstraint TestRelationship has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
+
+    const targetStubJson = {
+      polymorphic: false,
+      multiplicity: "(0..*)",
+      roleLabel: "Test Target roleLabel",
+      constraintClasses: [
+        "TestSchema.TestTargetEntity",
+      ],
+    };
+
     const oneCustomAttributeJson = {
-      $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-      name: "ValidSchema",
+      polymorphic: true,
+      multiplicity: "(0..1)",
+      roleLabel: "Test Source roleLabel",
+      constraintClasses: [
+        "TestSchema.TestSourceEntity",
+      ],
       customAttributes: [
         {
           className: "CoreCustomAttributes.HiddenSchema",
@@ -66,18 +148,28 @@ describe("RelationshipConstraint", () => {
       ],
     };
     it("async - Deserialize One Custom Attribute", async () => {
-      await testConstraint.fromJson(oneCustomAttributeJson);
+      const schema = await Schema.fromJson(createSchemaJson(oneCustomAttributeJson, targetStubJson));
+      testConstraint = (await schema.getItem<RelationshipClass>("TestRelationship"))!.source;
+      expect(testConstraint).to.exist;
       expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
       assert(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
     });
     it("sync - Deserialize One Custom Attribute", () => {
-      testConstraint.fromJsonSync(oneCustomAttributeJson);
+      const schema = Schema.fromJsonSync(createSchemaJson(oneCustomAttributeJson, targetStubJson));
+      testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
+      expect(testConstraint).to.exist;
       expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
       assert(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
     });
     const twoCustomAttributesJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       name: "ValidSchema",
+      polymorphic: true,
+      multiplicity: "(0..1)",
+      roleLabel: "Test Source roleLabel",
+      constraintClasses: [
+        "TestSchema.TestTargetEntity",
+      ],
       customAttributes: [
         {
           className: "CoreCustomAttributes.HiddenSchema",
@@ -88,19 +180,27 @@ describe("RelationshipConstraint", () => {
       ],
     };
     it("async - Deserialize Two Custom Attributes", async () => {
-      await testConstraint.fromJson(twoCustomAttributesJson);
-      expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-      expect(testConstraint.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
+      const schema = await Schema.fromJson(createSchemaJson(twoCustomAttributesJson, targetStubJson));
+      testConstraint = (await schema.getItem<RelationshipClass>("TestRelationship"))!.source;
+      expect(testConstraint).to.exist;
+      expect(testConstraint!.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
+      expect(testConstraint!.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
     });
     it("sync - Deserialize Two Custom Attributes", () => {
-      testConstraint.fromJsonSync(twoCustomAttributesJson);
+      const schema = Schema.fromJsonSync(createSchemaJson(twoCustomAttributesJson, targetStubJson));
+      testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
+      expect(testConstraint).to.exist;
       expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
       expect(testConstraint.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
     });
     it("sync - Deserialize Two Custom Attributes with additional properties", () => {
       const relConstraintJson = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        name: "ValidSchema",
+        polymorphic: true,
+        multiplicity: "(0..1)",
+        roleLabel: "test roleLabel",
+        constraintClasses: [
+          "TestSchema.TestTargetEntity",
+        ],
         customAttributes: [
           {
             className: "CoreCustomAttributes.HiddenSchema",
@@ -112,21 +212,25 @@ describe("RelationshipConstraint", () => {
           },
         ],
       };
-      testConstraint.fromJsonSync(relConstraintJson);
+      const schema = Schema.fromJsonSync(createSchemaJson(relConstraintJson, targetStubJson));
+      testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
+      expect(testConstraint).to.exist;
       assert(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === false);
       assert(testConstraint.customAttributes!["ExampleCustomAttributes.ExampleSchema"].ShowClasses === true);
     });
     const mustBeAnArrayJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       name: "InvalidSchema",
+      polymorphic: true,
+      multiplicity: "(0..1)",
+      roleLabel: "test roleLabel",
+      constraintClasses: [
+        "TestSchema.TestTargetEntity",
+      ],
       customAttributes: "CoreCustomAttributes.HiddenSchema",
     };
-    it("async - Custom Attributes must be an array", async () => {
-      await expect(testConstraint.fromJson(mustBeAnArrayJson)).to.be.rejectedWith(ECObjectsError, `The AnyRelationshipConstraint TestRelationship.source has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
-
-    });
-    it("sync - Custom Attributes must be an array", () => {
-      assert.throws(() => testConstraint.fromJsonSync(mustBeAnArrayJson), ECObjectsError, `The AnyRelationshipConstraint TestRelationship.source has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+    it("Custom Attributes must be an array", () => {
+      assert.throws(() => parser.parseRelationshipConstraintProps(testConstraint.relationshipClass.name, mustBeAnArrayJson, true), ECObjectsError, `The Source Constraint of TestRelationship has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
   });
 });

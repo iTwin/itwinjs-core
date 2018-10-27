@@ -8,6 +8,7 @@ import Schema from "../../src/Metadata/Schema";
 import { ECObjectsError } from "../../src/Exception";
 import PropertyCategory from "../../src/Metadata/PropertyCategory";
 import * as sinon from "sinon";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("PropertyCategory", () => {
   describe("deserialization", () => {
@@ -16,9 +17,12 @@ describe("PropertyCategory", () => {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "TestSchema",
         version: "1.2.3",
+        alias: "TestSchema",
         items: {
-          testPropCategory: {
+          TestPropertyCategory: {
             schemaItemType: "PropertyCategory",
+            type: "string",
+            typeName: "test",
             priority: 5,
           },
         },
@@ -27,7 +31,7 @@ describe("PropertyCategory", () => {
       const ecSchema = await Schema.fromJson(testSchema);
       assert.isDefined(ecSchema);
 
-      const item = await ecSchema.getItem("testPropCategory");
+      const item = await ecSchema.getItem<PropertyCategory>("TestPropertyCategory");
       assert.isDefined(item);
       assert.isTrue(item instanceof PropertyCategory);
 
@@ -39,6 +43,7 @@ describe("PropertyCategory", () => {
 
   describe("fromJson", () => {
     let testCategory: PropertyCategory;
+    let parser = new JsonParser();
 
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
@@ -51,7 +56,7 @@ describe("PropertyCategory", () => {
         schemaItemType: "PropertyCategory",
         priority: "1",
       };
-      await expect(testCategory.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The PropertyCategory TestCategory has an invalid 'priority' attribute. It should be of type 'number'.`);
+      assert.throws(() => parser.parsePropertyCategoryProps(json, testCategory.name), ECObjectsError, `The PropertyCategory TestCategory has an invalid 'priority' attribute. It should be of type 'number'.`);
     });
   });
   describe("toJson", () => {
@@ -61,8 +66,10 @@ describe("PropertyCategory", () => {
         name: "TestSchema",
         version: "1.2.3",
         items: {
-          testPropCategory: {
+          TestPropertyCategory: {
             schemaItemType: "PropertyCategory",
+            type: "string",
+            typeName: "test",
             priority: 5,
           },
         },
@@ -71,7 +78,7 @@ describe("PropertyCategory", () => {
       const ecSchema = await Schema.fromJson(testSchema);
       assert.isDefined(ecSchema);
 
-      const item = await ecSchema.getItem("testPropCategory");
+      const item = await ecSchema.getItem("TestPropertyCategory");
       assert.isDefined(item);
       assert.isTrue(item instanceof PropertyCategory);
 

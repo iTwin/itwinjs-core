@@ -3,11 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { SchemaItemType } from "./../ECObjects";
-import { SchemaItemVisitor } from "./../Interfaces";
 import Schema from "./Schema";
+import SchemaItem from "./SchemaItem";
+import { PhenomenonProps } from "./../Deserialization/JsonProps";
+import { SchemaItemType } from "./../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { SchemaItemVisitor } from "./../Interfaces";
 
 export default class Phenomenon extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Phenomenon; // tslint:disable-line
@@ -27,35 +28,19 @@ export default class Phenomenon extends SchemaItem {
     return schemaJson;
   }
 
-  private phenomenonFromJson(jsonObj: any) {
-    if (undefined === jsonObj.definition)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${jsonObj.name} does not have the required 'definition' attribute.`);
-    else if (typeof (jsonObj.definition) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${jsonObj.name} has an invalid 'definition' attribute. It should be of type 'string'.`);
-    else if (this._definition !== "" && jsonObj.definition.toLowerCase() !== this._definition.toLowerCase())
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${jsonObj.name} has an invalid 'definition' attribute.`);
-    else if (this._definition === "") // this is the default value for the definition, which we assigned in the constructor
-      this._definition = jsonObj.definition; // so, if we have yet to define the definition variable, assign it the json definition
-  }
-
-  /**
-   * Populates this Phenomenon with the values from the provided.
-   */
-  public async fromJson(jsonObj: any): Promise<void> {
-    await super.fromJson(jsonObj);
-    await this.phenomenonFromJson(jsonObj);
-  }
-
-  /**
-   * Populates this Phenomenon with the values from the provided.
-   */
-  public fromJsonSync(jsonObj: any): void {
-    super.fromJsonSync(jsonObj);
-    this.phenomenonFromJson(jsonObj);
-  }
-
   public async accept(visitor: SchemaItemVisitor) {
     if (visitor.visitPhenomenon)
       await visitor.visitPhenomenon(this);
+  }
+
+  public deserializeSync(phenomenonProps: PhenomenonProps) {
+    super.deserializeSync(phenomenonProps);
+    if (this._definition !== "" && phenomenonProps.definition.toLowerCase() !== this._definition.toLowerCase())
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Phenomenon ${this.name} has an invalid 'definition' attribute.`);
+    else if (this._definition === "")
+      this._definition = phenomenonProps.definition;
+  }
+  public async deserialize(phenomenonProps: PhenomenonProps) {
+    this.deserializeSync(phenomenonProps);
   }
 }

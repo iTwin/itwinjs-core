@@ -12,9 +12,11 @@ import { ECObjectsError } from "../../src/Exception";
 import UnitSystem from "../../src/Metadata/UnitSystem";
 import Unit from "../../src/Metadata/Unit";
 import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("Inverted Unit tests", () => {
   let testUnit: InvertedUnit;
+  let parser = new JsonParser();
   describe("accept", () => {
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
@@ -127,7 +129,7 @@ describe("Inverted Unit tests", () => {
       assert(testInvertedUnit.unitSystem, "TestSchema.INTERNATIONAL");
       assert(testInvertedUnit.invertsUnit, "TestSchema.VERTICAL_PER_HORIZONTAL");
     });
-    it("Label must be string", async () => {
+    it("Label must be string", () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
         schemaItemType: "InvertedUnit",
@@ -137,7 +139,7 @@ describe("Inverted Unit tests", () => {
         unitSystem: "ExampleSchema.INTERNATIONAL",
         invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
       };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem HORIZONTAL_PER_VERTICAL has an invalid 'label' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseSchemaItemProps(json, testUnit.schema.name, testUnit.name), ECObjectsError, `The SchemaItem TestSchema.HORIZONTAL_PER_VERTICAL has an invalid 'label' attribute. It should be of type 'string'.`);
     });
     it("Description must be string", async () => {
       const json = {
@@ -149,7 +151,7 @@ describe("Inverted Unit tests", () => {
         unitSystem: "ExampleSchema.INTERNATIONAL",
         invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
       };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem HORIZONTAL_PER_VERTICAL has an invalid 'description' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseSchemaItemProps(json, testUnit.schema.name, testUnit.name), ECObjectsError, `The SchemaItem TestSchema.HORIZONTAL_PER_VERTICAL has an invalid 'description' attribute. It should be of type 'string'.`);
     });
     it("invertsUnit is required", async () => {
       const json = {
@@ -160,7 +162,7 @@ describe("Inverted Unit tests", () => {
         description: "A unit representing run over rise",
         unitSystem: "ExampleSchema.INTERNATIONAL",
       };
-      await expect(testUnit.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'invertsUnit' attribute.`);
+      assert.throws(() => parser.parseInvertedUnitProps(json, testUnit.name), ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'invertsUnit' attribute.`);
     });
     it("unitSystem is required", async () => {
       const json = {
@@ -337,7 +339,7 @@ describe("Inverted Unit tests", () => {
         unitSystem: "ExampleSchema.INTERNATIONAL",
         invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
       };
-      assert.throws(() => testUnit.fromJsonSync(json), ECObjectsError, `The SchemaItem HORIZONTAL_PER_VERTICAL has an invalid 'label' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseSchemaItemProps(json, testUnit.schema.name, testUnit.name), ECObjectsError, `The SchemaItem TestSchema.HORIZONTAL_PER_VERTICAL has an invalid 'label' attribute. It should be of type 'string'.`);
     });
     it("Description must be string", () => {
       const json = {
@@ -349,7 +351,7 @@ describe("Inverted Unit tests", () => {
         unitSystem: "ExampleSchema.INTERNATIONAL",
         invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
       };
-      assert.throws(() => testUnit.fromJsonSync(json), ECObjectsError, `The SchemaItem HORIZONTAL_PER_VERTICAL has an invalid 'description' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseSchemaItemProps(json, testUnit.schema.name, testUnit.name), ECObjectsError, `The SchemaItem TestSchema.HORIZONTAL_PER_VERTICAL has an invalid 'description' attribute. It should be of type 'string'.`);
     });
     it("invertsUnit is required", () => {
       const json = {
@@ -360,7 +362,7 @@ describe("Inverted Unit tests", () => {
         description: "A unit representing run over rise",
         unitSystem: "ExampleSchema.INTERNATIONAL",
       };
-      assert.throws(() => testUnit.fromJsonSync(json), ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'invertsUnit' attribute.`);
+      assert.throws(() => parser.parseInvertedUnitProps(json, testUnit.name), ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'invertsUnit' attribute.`);
     });
     it("unitSystem is required", () => {
       const json = {

@@ -10,8 +10,10 @@ import Schema from "../../src/Metadata/Schema";
 import Enumeration, { MutableEnumeration } from "./../../src/Metadata/Enumeration";
 import { ECObjectsError } from "./../../src/Exception";
 import { PrimitiveType } from "./../../src/ECObjects";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("Enumeration", () => {
+  let parser = new JsonParser();
   describe("accept", () => {
     let testEnum: Enumeration;
 
@@ -83,6 +85,12 @@ describe("Enumeration", () => {
             description: "Test description",
             label: "Test Enumeration",
             isStrict: true,
+            enumerators: [
+              {
+                name: "testEnumerator",
+                value: "test",
+              },
+            ],
           },
         },
       };
@@ -107,7 +115,7 @@ describe("Enumeration", () => {
         items: {
           testEnum: {
             schemaItemType: "Enumeration",
-            type: "integer",
+            type: "int",
             enumerators: [
               {
                 name: "ZeroValue",
@@ -177,7 +185,7 @@ describe("Enumeration", () => {
             { name: "EightValue", value: 8, label: "An enumerator label" },
           ],
         };
-        await testEnumSansPrimType.fromJson(json);
+        await testEnumSansPrimType.deserialize(parser.parseEnumerationProps(json, testEnumSansPrimType.name));
         assertValidEnumeration(testEnumSansPrimType);
       });
 
@@ -193,25 +201,9 @@ describe("Enumeration", () => {
             { name: "EightValue", value: 8, label: "An enumerator label" },
           ],
         };
-        await testEnum.fromJson(json);
+        await testEnum.deserialize(parser.parseEnumerationProps(json, testEnum.name));
         assertValidEnumeration(testEnum);
       });
-
-      it("with type omitted in JSON", async () => {
-        const json = {
-          ...baseJson,
-          isStrict: false,
-          label: "SomeDisplayLabel",
-          description: "A really long description...",
-          enumerators: [
-            { name: "SixValue", value: 6 },
-            { name: "EightValue", value: 8, label: "An enumerator label" },
-          ],
-        };
-        await testEnum.fromJson(json);
-        assertValidEnumeration(testEnum);
-      });
-
       it(`with type="string"`, async () => {
         const json = {
           ...baseJson,
@@ -224,7 +216,7 @@ describe("Enumeration", () => {
             { name: "EightValue", value: "8", label: "An enumerator label" },
           ],
         };
-        await testEnumSansPrimType.fromJson(json);
+        await testEnumSansPrimType.deserialize(parser.parseEnumerationProps(json, testEnumSansPrimType.name));
         assertValidEnumeration(testEnumSansPrimType);
       });
     });
@@ -232,46 +224,65 @@ describe("Enumeration", () => {
     it("should throw for missing type", async () => {
       expect(testEnumSansPrimType).to.exist;
       const json: any = { ...baseJson };
-      await expect(testEnumSansPrimType.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration is missing the required 'type' attribute.`);
+      assert.throws(() => parser.parseEnumerationProps(json, testEnumSansPrimType.name), ECObjectsError, `The Enumeration TestEnumeration is missing the required 'type' attribute.`);
     });
 
     it("should throw for invalid type", async () => {
       expect(testEnum).to.exist;
-      expect(testEnumSansPrimType).to.exist;
-      let json: any = { ...baseJson, type: 0 };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'type' attribute. It should be of type 'string'.`);
-      await expect(testEnumSansPrimType.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'type' attribute. It should be of type 'string'.`);
+      const json: any = { ...baseJson, type: 0 };
+      assert.throws(() => parser.parseEnumerationProps(json, testEnum.name), ECObjectsError, `The Enumeration TestEnumeration has an invalid 'type' attribute. It should be of type 'string'.`);
+    });
 
-      json = { ...baseJson, type: "ThisIsNotRight" };
-      await expect(testEnumSansPrimType.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'type' attribute. It should be either "int" or "string".`);
+    it("should throw for type not int or string", async () => {
+      expect(testEnumSansPrimType).to.exist;
+      const json = { ...baseJson, type: "ThisIsNotRight" };
+      assert.throws(() => parser.parseEnumerationProps(json, testEnumSansPrimType.name), ECObjectsError, `The Enumeration TestEnumeration has an invalid 'type' attribute. It should be either "int" or "string".`);
     });
 
     it("should throw for invalid isStrict", async () => {
       expect(testEnum).to.exist;
-      const json: any = { ...baseJson, isStrict: 0 };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
+      const json: any = { ...baseJson, type: "int", isStrict: 0 };
+      assert.throws(() => parser.parseEnumerationProps(json, testEnum.name), ECObjectsError, `The Enumeration TestEnumeration has an invalid 'isStrict' attribute. It should be of type 'boolean'.`);
     });
 
     it("should throw for mismatched type", async () => {
       expect(testEnum).to.exist;
-      let json: any = { ...baseJson, type: "string" };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an incompatible type. It must be "int", not "string".`);
+      let json: any = {
+        ...baseJson,
+        type: "string",
+        enumerators: [
+          {
+            name: "testEnumerator",
+            value: 0, // should throw as typeof(value) !== string
+          },
+        ],
+      };
+      assert.throws(() => parser.parseEnumerationProps(json, testEnum.name), ECObjectsError, `The Enumeration TestEnumeration has an incompatible type. It must be "string", not "int".`);
 
       expect(testStringEnum).to.exist;
-      json = { ...baseJson, type: "int" };
-      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an incompatible type. It must be "string", not "int".`);
+      json = {
+        ...baseJson,
+        type: "int",
+        enumerators: [
+          {
+            name: "testEnumerator",
+            value: "test", // should throw as typeof(value) !== int
+          },
+        ],
+      };
+      assert.throws(() => parser.parseEnumerationProps(json, testStringEnum.name), ECObjectsError, `The Enumeration TestEnumeration has an incompatible type. It must be "int", not "string".`);
     });
 
     it("should throw for enumerators not an array", async () => {
       expect(testEnum).to.exist;
-      const json: any = { ...baseJson, enumerators: 0 };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
+      const json: any = { ...baseJson, type: "int", enumerators: 0 };
+      assert.throws(() => parser.parseEnumerationProps(json, testEnum.name), ECObjectsError, `The Enumeration TestEnumeration has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
     });
 
     it("should throw for enumerators not an array of objects", async () => {
       expect(testEnum).to.exist;
-      const json: any = { ...baseJson, enumerators: [0] };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
+      const json: any = { ...baseJson, type: "int", enumerators: [0] };
+      assert.throws(() => parser.parseEnumerationProps(json, testEnum.name), ECObjectsError, `The Enumeration TestEnumeration has an invalid 'enumerators' attribute. It should be of type 'object[]'.`);
     });
     it("Duplicate name", async () => {
       const json = {
@@ -285,7 +296,7 @@ describe("Enumeration", () => {
           { name: "SixValue", value: 8, label: "An enumerator label" },
         ],
       };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'SixValue'.`);
+      await expect(testEnum.deserialize(parser.parseEnumerationProps(json, testEnum.name))).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'SixValue'.`);
     });
     it("Duplicate value", async () => {
       const json = {
@@ -299,7 +310,7 @@ describe("Enumeration", () => {
           { name: "EightValue", value: 6 },
         ],
       };
-      await expect(testEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with value '6'.`);
+      await expect(testEnum.deserialize(parser.parseEnumerationProps(json, testEnum.name))).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with value '6'.`);
     });
     it("Basic test with number values", async () => {
       const json = {
@@ -316,7 +327,7 @@ describe("Enumeration", () => {
           { name: "FiveValue", value: 5, label: "Label for the fifth value", description: "description for the fifth value" },
         ],
       };
-      await testEnum.fromJson(json);
+      await testEnum.deserialize(parser.parseEnumerationProps(json, testEnum.name));
       assertValidEnumerator(testEnum, 1, "Label for the first value", "description for the first value");
       assertValidEnumerator(testEnum, 2, "Label for the second value", "description for the second value");
       assertValidEnumerator(testEnum, 3, "Label for the third value", "description for the third value");
@@ -338,7 +349,7 @@ describe("Enumeration", () => {
           { name: "FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
         ],
       };
-      await testStringEnum.fromJson(json);
+      await testStringEnum.deserialize(parser.parseEnumerationProps(json, testStringEnum.name));
       assertValidEnumerator(testStringEnum, "one", "Label for the first value", "description for the first value");
       assertValidEnumerator(testStringEnum, "two", "Label for the second value", "description for the second value");
       assertValidEnumerator(testStringEnum, "three", "Label for the third value", "description for the third value");
@@ -357,7 +368,7 @@ describe("Enumeration", () => {
           { name: "onevalue", value: "two", label: "Label for the second value", description: "description for the second value" },
         ],
       };
-      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'onevalue'.`);
+      await expect(testStringEnum.deserialize(parser.parseEnumerationProps(json, testStringEnum.name))).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has a duplicate Enumerator with name 'onevalue'.`);
     });
     it("Description is not a string", async () => {
       const json = {
@@ -370,7 +381,7 @@ describe("Enumeration", () => {
           { name: "ONEVALUE", value: "one", label: "Label for the first value", description: 1 },
         ],
       };
-      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseEnumerationProps(json, testStringEnum.name), ECObjectsError, `The Enumeration TestEnumeration has an enumerator with an invalid 'description' attribute. It should be of type 'string'.`);
     });
     it("Get enumerator by name", async () => {
       const json = {
@@ -387,7 +398,7 @@ describe("Enumeration", () => {
           { name: "FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
         ],
       };
-      await testStringEnum.fromJson(json);
+      await testStringEnum.deserialize(parser.parseEnumerationProps(json, testStringEnum.name));
       expect(testStringEnum.getEnumeratorByName("OneValue")).to.exist;
       expect(testStringEnum.getEnumeratorByName("onevalue")!.description).to.eql("description for the first value");
       expect(testStringEnum.getEnumeratorByName("fourVALUE")!.label).to.eql("Label for the fourth value");
@@ -403,7 +414,7 @@ describe("Enumeration", () => {
           { value: "one", label: "Label for the first value", description: "Description for the first value" },
         ],
       };
-      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator that is missing the required attribute 'name'.`);
+      assert.throws(() => parser.parseEnumerationProps(json, testStringEnum.name), ECObjectsError, `The Enumeration TestEnumeration has an enumerator that is missing the required attribute 'name'.`);
     });
     it("Value is required", async () => {
       const json = {
@@ -416,7 +427,7 @@ describe("Enumeration", () => {
           { name: "one", label: "Label for the first value", description: "Description for the first value" },
         ],
       };
-      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Enumeration TestEnumeration has an enumerator that is missing the required attribute 'value'.`);
+      assert.throws(() => parser.parseEnumerationProps(json, testStringEnum.name), ECObjectsError, `The Enumeration TestEnumeration has an enumerator that is missing the required attribute 'value'.`);
     });
     it("Invalid ECName", async () => {
       const json = {
@@ -429,7 +440,7 @@ describe("Enumeration", () => {
           { name: "5FiveValue", value: "five", label: "Label for the fifth value", description: "description for the fifth value" },
         ],
       };
-      await expect(testStringEnum.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
+      await expect(testStringEnum.deserialize(parser.parseEnumerationProps(json, testStringEnum.name))).to.be.rejectedWith(ECObjectsError, ``);
     });
   });
   describe("toJson", () => {
@@ -459,7 +470,7 @@ describe("Enumeration", () => {
             { name: "EightValue", value: 8, label: "An enumerator label" },
           ],
         };
-        await testEnumSansPrimType.fromJson(json);
+        await testEnumSansPrimType.deserialize(parser.parseEnumerationProps(json, testEnumSansPrimType.name));
         const serialization = testEnumSansPrimType.toJson(true, true);
         assert.isDefined(serialization);
         expect(serialization.type).eql("int");
@@ -483,7 +494,7 @@ describe("Enumeration", () => {
             { name: "EightValue", value: "eight", label: "Eight label", description: "EightValue enumerator description" },
           ],
         };
-        await testEnumSansPrimType.fromJson(json);
+        await testEnumSansPrimType.deserialize(parser.parseEnumerationProps(json, testEnumSansPrimType.name));
         const serialization = testEnumSansPrimType.toJson(true, true);
         assert.isDefined(serialization);
         expect(serialization.type).eql("string");
@@ -510,7 +521,7 @@ describe("Enumeration", () => {
             { name: "BValue", value: "B" },
           ],
         };
-        await testEnumSansPrimType.fromJson(json);
+        await testEnumSansPrimType.deserialize(parser.parseEnumerationProps(json, testEnumSansPrimType.name));
         const serialization = testEnumSansPrimType.toJson(true, true);
         assert.isDefined(serialization);
         expect(serialization.enumerators[0].value).eql("A");
@@ -530,7 +541,7 @@ describe("Enumeration", () => {
             { name: "FourValue", value: 4 },
           ],
         };
-        await testEnumSansPrimType.fromJson(json);
+        await testEnumSansPrimType.deserialize(parser.parseEnumerationProps(json, testEnumSansPrimType.name));
         const serialization = testEnumSansPrimType.toJson(true, true);
         assert.isDefined(serialization);
         expect(serialization.enumerators[0].value).eql(2);

@@ -160,10 +160,10 @@ describe("Constant", () => {
       phenomenon: "TestSchema.BadPhenomenonName",
     };
     it("async - should throw for phenomenon not found", async () => {
-      await expect(Schema.fromJson(createSchemaJson(nonexistentPhenomenon))).to.be.rejectedWith(ECObjectsError, `The SchemaItem BadPhenomenonName does not exist.`);
+      await expect(Schema.fromJson(createSchemaJson(nonexistentPhenomenon))).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaItem TestSchema.BadPhenomenonName.`);
     });
     it("sync - should throw for phenomenon not found", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(nonexistentPhenomenon)), ECObjectsError, `The SchemaItem BadPhenomenonName does not exist.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(nonexistentPhenomenon)), ECObjectsError, `Unable to locate SchemaItem TestSchema.BadPhenomenonName.`);
     });
 
     // Missing definition

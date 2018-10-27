@@ -10,7 +10,7 @@ import EntityClass from "../../src/Metadata/EntityClass";
 import { ECObjectsError } from "../../src/Exception";
 import {
   Property, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty,
-  StructArrayProperty, EnumerationArrayProperty, NavigationProperty
+  StructArrayProperty, EnumerationArrayProperty, NavigationProperty,
 } from "../../src/Metadata/Property";
 import { PropertyType } from "../../src/PropertyTypes";
 import Enumeration from "../../src/Metadata/Enumeration";
@@ -20,17 +20,10 @@ import KindOfQuantity from "../../src/Metadata/KindOfQuantity";
 import RelationshipClass from "../../src/Metadata/RelationshipClass";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import { PrimitiveType } from "../../src/ECObjects";
-
-async function testInvalidAttribute(prop: Property, attributeName: string, expectedType: string, value: any) {
-  expect(prop).to.exist;
-  const json: any = {
-    name: prop.name,
-    [attributeName]: value,
-  };
-  await expect(prop.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Property ${prop.name} has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
-}
+import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("Property", () => {
+  let parser = new JsonParser();
   let testClass: EntityClass;
   let testCategory: PropertyCategory;
   let testKindOfQuantity: KindOfQuantity;
@@ -66,11 +59,11 @@ describe("Property", () => {
 
     beforeEach(() => {
       primitiveProperty = new PrimitiveProperty(testClass, "A");
-      enumProperty = new EnumerationProperty(testClass, "B", testEnumeration);
+      enumProperty = new EnumerationProperty(testClass, "B", new DelayedPromiseWithProps(testEnumeration.key, async () => testEnumeration));
       structProperty = new StructProperty(testClass, "C", testStruct);
       navProperty = new NavigationProperty(testClass, "D", new DelayedPromiseWithProps(testRelationship.key, async () => testRelationship));
       primitiveArrayProperty = new PrimitiveArrayProperty(testClass, "E");
-      enumArrayProperty = new EnumerationArrayProperty(testClass, "F", testEnumeration);
+      enumArrayProperty = new EnumerationArrayProperty(testClass, "F", new DelayedPromiseWithProps(testEnumeration.key, async () => testEnumeration));
       structArrayProperty = new StructArrayProperty(testClass, "G", testStruct);
     });
 
@@ -128,19 +121,19 @@ describe("Property", () => {
   describe("fromJson", () => {
     it("should successfully deserialize valid JSON", async () => {
       const propertyJson = {
-        name: "BadProp",
+        name: "TestProp",
         label: "SomeDisplayLabel",
         description: "A really long description...",
+        type: "PrimitiveProperty",
         priority: 1000,
         isReadOnly: false,
         category: "TestSchema.TestCategory",
-        kindOfQuantity: "TestSchema.TestKoQ",        // FIXME: kindOfQuantity: "TestSchema.1.0.0.TestKoQ",
+        kindOfQuantity: "TestSchema.TestKoQ",
       };
-      const testProp = new MockProperty("BadProp");
+      const testProp = new MockProperty("TestProp");
       expect(testProp).to.exist;
-      await testProp.fromJson(propertyJson);
-
-      expect(testProp.name).to.eql("BadProp");
+      await testProp.deserialize(parser.parsePropertyProps(propertyJson, testClass.name, testProp.name));
+      expect(testProp.name).to.eql("TestProp");
       expect(testProp.label).to.eql("SomeDisplayLabel");
       expect(testProp.description).to.eql("A really long description...");
       expect(testProp.priority).to.eql(1000);
@@ -149,7 +142,8 @@ describe("Property", () => {
       expect(await testProp.kindOfQuantity).to.eql(testKindOfQuantity);
     });
     const oneCustomAttributeJson = {
-      name: "BadProp",
+      name: "TestProp",
+      type: "PrimitiveProperty",
       customAttributes: [
         {
           className: "CoreCustomAttributes.HiddenSchema",
@@ -159,25 +153,24 @@ describe("Property", () => {
     };
     it("async - Deserialize One Custom Attribute", async () => {
 
-      const testProp = new MockProperty("BadProp");
+      const testProp = new MockProperty("TestProp");
       expect(testProp).to.exist;
-      await testProp.fromJson(oneCustomAttributeJson);
-
-      expect(testProp.name).to.eql("BadProp");
+      await testProp.deserialize(parser.parsePropertyProps(oneCustomAttributeJson, testClass.name, testProp.name));
+      expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
       assert(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"].ExampleAttribute === 1234);
     });
     it("sync - Deserialize One Custom Attribute", () => {
-      const testProp = new MockProperty("BadProp");
+      const testProp = new MockProperty("TestProp");
       expect(testProp).to.exist;
-      testProp.fromJsonSync(oneCustomAttributeJson);
-
-      expect(testProp.name).to.eql("BadProp");
+      testProp.deserializeSync(parser.parsePropertyProps(oneCustomAttributeJson, testClass.name, testProp.name));
+      expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
       assert(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"].ExampleAttribute === 1234);
     });
     const twoCustomAttributesJson = {
-      name: "BadProp",
+      name: "TestProp",
+      type: "PrimitiveProperty",
       customAttributes: [
         {
           className: "CoreCustomAttributes.HiddenSchema",
@@ -189,42 +182,42 @@ describe("Property", () => {
     };
     it("async - Deserialize Two Custom Attributes", async () => {
 
-      const testProp = new MockProperty("BadProp");
+      const testProp = new MockProperty("TestProp");
       expect(testProp).to.exist;
-      await testProp.fromJson(twoCustomAttributesJson);
-
-      expect(testProp.name).to.eql("BadProp");
+      await testProp.deserialize(parser.parsePropertyProps(twoCustomAttributesJson, testClass.name, testProp.name));
+      expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
       expect(testProp.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
     });
     it("sync - Deserialize Two Custom Attributes", () => {
-      const testProp = new MockProperty("BadProp");
+      const testProp = new MockProperty("TestProp");
       expect(testProp).to.exist;
-      testProp.fromJsonSync(twoCustomAttributesJson);
-
-      expect(testProp.name).to.eql("BadProp");
+      testProp.deserializeSync(parser.parsePropertyProps(twoCustomAttributesJson, testClass.name, testProp.name));
+      expect(testProp.name).to.eql("TestProp");
       expect(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
       expect(testProp.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
     });
     const mustBeArrayJson = {
       name: "BadProp",
       label: "SomeDisplayLabel",
+      type: "PrimitiveArrayProperty",
       description: "A really long description...",
       customAttributes: "CoreCustomAttributes.HiddenSchema",
     };
     it("async - Custom Attributes must be an array", async () => {
       const testProp = new MockProperty("BadProp");
       expect(testProp).to.exist;
-      await expect(testProp.fromJson(mustBeArrayJson)).to.be.rejectedWith(ECObjectsError, "The AnyProperty BadProp has an invalid 'customAttributes' attribute. It should be of type 'array'.");
+      assert.throws(() => parser.parsePropertyProps(mustBeArrayJson, testClass.schema.name, testClass.name), ECObjectsError, "The ECProperty TestSchema.TestClass.BadProp has an invalid 'customAttributes' attribute. It should be of type 'array'.");
     });
     it("sync - Custom Attributes must be an array", async () => {
       const testProp = new MockProperty("BadProp");
       expect(testProp).to.exist;
-      assert.throws(() => testProp.fromJsonSync(mustBeArrayJson), ECObjectsError, "The AnyProperty BadProp has an invalid 'customAttributes' attribute. It should be of type 'array'.");
+      assert.throws(() => parser.parsePropertyProps(mustBeArrayJson, testClass.schema.name, testClass.name), ECObjectsError, "The ECProperty TestSchema.TestClass.BadProp has an invalid 'customAttributes' attribute. It should be of type 'array'.");
     });
     it("sync - Deserialize Multiple Custom Attributes with additional properties", () => {
       const propertyJson = {
         name: "Prop",
+        type: "PrimitiveProperty",
         customAttributes: [
           {
             className: "CoreCustomAttributes.HiddenSchema",
@@ -242,42 +235,63 @@ describe("Property", () => {
       };
       const testProp = new MockProperty("Prop");
       expect(testProp).to.exist;
-      testProp.fromJsonSync(propertyJson);
+      testProp.deserializeSync(parser.parsePropertyProps(propertyJson, testClass.schema.name, testClass.name));
       assert(testProp.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === 1.2);
       assert(testProp.customAttributes!["ExampleCustomAttributes.ExampleSchema"].ExampleAttribute === true);
       assert(testProp.customAttributes!["AnotherCustomAttributes.ExampleSchema1"].Example2Attribute === "example");
     });
 
-    it("should throw for mismatched name", async () => {
-      const propertyJson = { name: "ThisDoesNotMatch" };
+    async function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
+      const json: any = {
+        name: "TestProp",
+        type: "PrimitiveProperty",
+        label: "Some display label",
+        description: "Some really long description...",
+        priority: 0,
+        isReadOnly: true,
+        category: "TestCategory",
+        kindOfQuantity: "TestKindOfQuantity",
+        inherited: false,
+        customAttributes: [],
+        [attributeName]: value, // overwrites previously defined objects
+      }
+      let err = (typeof (json.name) !== "string") ? `An ECProperty in TestSchema.TestClass ` : `The ECProperty TestSchema.TestClass.TestProp `;
+      err += `has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`;
+      assert.throws(() => parser.parsePropertyProps(json, testClass.schema.name, testClass.name), ECObjectsError, err);
+    }
+
+    it("should throw for invalid name", () => { testInvalidAttribute("name", "string", false); });
+    it("should throw for invalid type", () => { testInvalidAttribute("type", "string", false); });
+    it("should throw for invalid label", () => { testInvalidAttribute("label", "string", false); });
+    it("should throw for invalid description", () => { testInvalidAttribute("description", "string", false); });
+    it("should throw for invalid priority", () => { testInvalidAttribute("priority", "number", false); });
+    it("should throw for invalid isReadOnly", () => { testInvalidAttribute("isReadOnly", "boolean", 1.234); });
+    it("should throw for invalid category", () => { testInvalidAttribute("category", "string", false); });
+    it("should throw for invalid kindOfQuantity", () => { testInvalidAttribute("kindOfQuantity", "string", false); });
+    it("should throw for invalid inherited", () => { testInvalidAttribute("inherited", "boolean", 1.234); });
+    it("should throw for invalid customAttributes", () => { testInvalidAttribute("category", "string", false); });
+
+    it("should throw for non-existent category", async () => {
       const testProp = new MockProperty("BadProp");
-      expect(testProp).to.exist;
-      await expect(testProp.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
-    });
-
-    it("should throw for invalid name", async () => testInvalidAttribute(new MockProperty("BadProp"), "name", "string", 0));
-    it("should throw for invalid label", async () => testInvalidAttribute(new MockProperty("BadProp"), "label", "string", 0));
-    it("should throw for invalid description", async () => testInvalidAttribute(new MockProperty("BadProp"), "description", "string", 0));
-    it("should throw for invalid priority", async () => testInvalidAttribute(new MockProperty("BadProp"), "priority", "number", "0"));
-    it("should throw for invalid isReadOnly", async () => testInvalidAttribute(new MockProperty("BadProp"), "isReadOnly", "boolean", 0));
-    it("should throw for invalid category", async () => {
-      await testInvalidAttribute(new MockProperty("BadProp"), "category", "string", 0);
-
       // Also test for a PropertyCategory that doesn't exist
-      const propertyJson = { category: "TestSchema.NonExistentPropertyCategory" };
-      const testProp = new MockProperty("BadProp");
-      await testProp.fromJson(propertyJson);
+      const propertyJson = {
+        name: "BadProp",
+        type: "PrimitiveProperty",
+        category: "TestSchema.NonExistentPropertyCategory"
+      };
+      await testProp.deserialize(parser.parsePropertyProps(propertyJson, testClass.name, testProp.name));
       await expect(testProp.category).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'category' ("TestSchema.NonExistentPropertyCategory") that cannot be found.`);
 
     });
 
-    it("should throw for invalid kindOfQuantity", async () => {
-      await testInvalidAttribute(new MockProperty("BadProp"), "kindOfQuantity", "string", 0);
-
-      // Also test for a KindOfQuantity that doesn't exist
-      const propertyJson = { kindOfQuantity: "TestSchema.NonExistentKindOfQuantity" };
+    it("should throw for non-existent kindOfQuantity", async () => {
       const testProp = new MockProperty("BadProp");
-      await testProp.fromJson(propertyJson);
+      const propertyJson = {
+        name: "BadProp",
+        type: "PrimitiveProperty",
+        kindOfQuantity: "TestSchema.NonExistentKindOfQuantity"
+      };
+      await testProp.deserialize(parser.parsePropertyProps(propertyJson, testClass.name, testProp.name));
       await expect(testProp.kindOfQuantity).to.be.rejectedWith(ECObjectsError, `The Property BadProp has a 'kindOfQuantity' ("TestSchema.NonExistentKindOfQuantity") that cannot be found.`);
     });
   });
@@ -294,7 +308,7 @@ describe("Property", () => {
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
-      testProp.fromJson(propertyJson);
+      await testProp.deserialize(parser.parsePropertyProps(propertyJson, testClass.name, testProp.name));
       const serialized = testProp.toJson();
       assert(serialized.name, "ValidProp");
       assert(serialized.description, "A really long description...");
@@ -307,6 +321,7 @@ describe("Property", () => {
       const propertyJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
         name: "ValidProp",
+        type: "PrimitiveProperty",
         customAttributes: [
           {
             className: "CoreCustomAttributes.HiddenSchema",
@@ -315,7 +330,7 @@ describe("Property", () => {
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
-      testProp.fromJson(propertyJson);
+      await testProp.deserialize(parser.parsePropertyProps(propertyJson, testClass.name, testProp.name));
       const serialized = testProp.toJson();
       assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
     });
@@ -323,6 +338,7 @@ describe("Property", () => {
       const propertyJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
         name: "ValidProp",
+        type: "PrimitiveProperty",
         customAttributes: [
           {
             className: "CoreCustomAttributes.HiddenSchema",
@@ -332,7 +348,7 @@ describe("Property", () => {
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
-      testProp.fromJson(propertyJson);
+      testProp.deserializeSync(parser.parsePropertyProps(propertyJson, testClass.name, testProp.name));
       const serialized = testProp.toJson();
       assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
       assert(serialized.customAttributes[0].ShowClasses === true);
@@ -341,6 +357,7 @@ describe("Property", () => {
       const propertyJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
         name: "ValidProp",
+        type: "PrimitiveProperty",
         customAttributes: [
           {
             className: "CoreCustomAttributes.HiddenSchema",
@@ -355,7 +372,7 @@ describe("Property", () => {
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
-      testProp.fromJson(propertyJson);
+      await testProp.deserialize(parser.parsePropertyProps(propertyJson, testClass.name, testProp.name));
       const serialized = testProp.toJson();
       assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
       assert(serialized.customAttributes[1].className === "CoreAttributes.HiddenSchema");
@@ -365,6 +382,7 @@ describe("Property", () => {
       const propertyJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem",
         name: "ValidProp",
+        type: "PrimitiveProperty",
         customAttributes: [
           {
             className: "CoreCustomAttributes.HiddenSchema",
@@ -382,7 +400,7 @@ describe("Property", () => {
       };
       const testProp = new MockProperty("ValidProp");
       expect(testProp).to.exist;
-      testProp.fromJson(propertyJson);
+      await testProp.deserialize(parser.parsePropertyProps(propertyJson, testClass.name, testProp.name));
       const serialized = testProp.toJson();
       assert(serialized.customAttributes[0].ShowClasses === true);
       assert(serialized.customAttributes[1].FloatValue === 1.2);
@@ -392,6 +410,7 @@ describe("Property", () => {
 });
 
 describe("PrimitiveProperty", () => {
+  let parser = new JsonParser();
   describe("fromJson", () => {
     let testProperty: PrimitiveProperty;
 
@@ -403,6 +422,8 @@ describe("PrimitiveProperty", () => {
 
     it("should successfully deserialize valid JSON", async () => {
       const propertyJson = {
+        name: "TestProperty",
+        type: "PrimitiveProperty",
         typeName: "double",
         minLength: 2,
         maxLength: 4,
@@ -411,7 +432,7 @@ describe("PrimitiveProperty", () => {
         extendedTypeName: "SomeExtendedType",
       };
       expect(testProperty).to.exist;
-      await testProperty.fromJson(propertyJson);
+      await testProperty.deserialize(parser.parsePrimitivePropertyProps(propertyJson, testProperty.class.name, testProperty.name));
 
       expect(testProperty.minLength).to.eql(2);
       expect(testProperty.maxLength).to.eql(4);
@@ -421,21 +442,68 @@ describe("PrimitiveProperty", () => {
     });
 
     it("should throw for mismatched typeName", async () => {
-      const propertyJson = { typeName: "string" };
+      const propertyJson = {
+        name: "TestProperty",
+        type: "PrimitiveProperty",
+        typeName: "string"
+      };
       expect(testProperty).to.exist;
-      await expect(testProperty.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProperty.deserialize(parser.parsePrimitivePropertyProps(propertyJson, testProperty.class.name, testProperty.name))).to.be.rejectedWith(ECObjectsError);
     });
 
-    it("should throw for invalid typeName", async () => testInvalidAttribute(testProperty, "typeName", "string", 0));
-    it("should throw for invalid minLength", async () => testInvalidAttribute(testProperty, "minLength", "number", "0"));
-    it("should throw for invalid maxLength", async () => testInvalidAttribute(testProperty, "maxLength", "number", "0"));
-    it("should throw for invalid minValue", async () => testInvalidAttribute(testProperty, "minValue", "number", "0"));
-    it("should throw for invalid maxValue", async () => testInvalidAttribute(testProperty, "maxValue", "number", "0"));
-    it("should throw for invalid extendedTypeName", async () => testInvalidAttribute(testProperty, "extendedTypeName", "string", 0));
+    it("should throw for invalid typeName", () => {
+      const json: any = {
+        name: 0,
+        type: "PrimitiveProperty",
+        typeName: 0,
+      };
+      assert.throws(() => parser.parsePrimitivePropertyProps(json, testProperty.class.name, testProperty.name), ECObjectsError);
+    });
+    it("should throw for invalid minLength", () => {
+      const json: any = {
+        name: 0,
+        type: "PrimitiveProperty",
+        minLength: "0",
+      };
+      assert.throws(() => parser.parsePrimitiveOrEnumPropertyBaseProps(json, testProperty.class.name, testProperty.name), ECObjectsError);
+    });
+    it("should throw for invalid maxLength", () => {
+      const json: any = {
+        name: 0,
+        type: "PrimitiveProperty",
+        maxLength: "0",
+      };
+      assert.throws(() => parser.parsePrimitiveOrEnumPropertyBaseProps(json, testProperty.class.name, testProperty.name), ECObjectsError);
+    });
+    it("should throw for invalid minValue", () => {
+      const json: any = {
+        name: 0,
+        type: "PrimitiveProperty",
+        minValue: "0",
+      };
+      assert.throws(() => parser.parsePrimitiveOrEnumPropertyBaseProps(json, testProperty.class.name, testProperty.name), ECObjectsError);
+    });
+    it("should throw for invalid maxValue", () => {
+      const json: any = {
+        name: 0,
+        type: "PrimitiveProperty",
+        maxValue: "0",
+      };
+      assert.throws(() => parser.parsePrimitiveOrEnumPropertyBaseProps(json, testProperty.class.name, testProperty.name), ECObjectsError);
+    });
+    it("should throw for invalid extendedTypeName", () => {
+      const json: any = {
+        name: 0,
+        type: "PrimitiveProperty",
+        extendedTypeName: 0,
+      };
+      assert.throws(() => parser.parsePrimitiveOrEnumPropertyBaseProps(json, testProperty.class.name, testProperty.name), ECObjectsError);
+    });
   });
 
   describe("KindOfQuantity in referenced schema", () => {
     let testProperty: PrimitiveProperty;
+    let parser = new JsonParser();
     beforeEach(() => {
       const referencedSchema = new Schema("Reference", 1, 0, 0) as MutableSchema;
       referencedSchema.createKindOfQuantitySync("MyKindOfQuantity");
@@ -455,14 +523,14 @@ describe("PrimitiveProperty", () => {
     };
 
     it("Should load KindOfQuantity synchronously", () => {
-      testProperty.fromJsonSync(propertyJson);
+      testProperty.deserializeSync(parser.parsePrimitivePropertyProps(propertyJson, testProperty.class.name, testProperty.name));
       const koq = testProperty.getKindOfQuantitySync();
       assert(koq !== undefined);
       assert(koq!.name === "MyKindOfQuantity");
     });
 
     it("Should load KindOfQuantity", async () => {
-      await testProperty.fromJson(propertyJson);
+      await testProperty.deserialize(parser.parsePrimitivePropertyProps(propertyJson, testProperty.class.name, testProperty.name));
       const koq = await testProperty.kindOfQuantity;
       assert(koq !== undefined);
       assert(koq!.name === "MyKindOfQuantity");
@@ -490,14 +558,14 @@ describe("PrimitiveProperty", () => {
     };
 
     it("Should load PropertyCategory synchronously", () => {
-      testProperty.fromJsonSync(propertyJson);
+      testProperty.deserializeSync(parser.parsePrimitivePropertyProps(propertyJson, testProperty.class.name, testProperty.name));
       const cat = testProperty.getCategorySync();
       assert(cat !== undefined);
       assert(cat!.name === "MyCategory");
     });
 
     it("Should load PropertyCategory", async () => {
-      await testProperty.fromJson(propertyJson);
+      await testProperty.deserialize(parser.parsePrimitivePropertyProps(propertyJson, testProperty.class.name, testProperty.name));
       const cat = await testProperty.category;
       assert(cat !== undefined);
       assert(cat!.name === "MyCategory");
@@ -514,6 +582,8 @@ describe("PrimitiveProperty", () => {
 
     it("should successfully serialize valid JSON", async () => {
       const propertyJson = {
+        name: "TestProperty",
+        type: "PrimitiveProperty",
         typeName: "double",
         minLength: 2,
         maxLength: 4,
@@ -522,7 +592,7 @@ describe("PrimitiveProperty", () => {
         extendedTypeName: "SomeExtendedType",
       };
       expect(testProperty).to.exist;
-      await testProperty.fromJson(propertyJson);
+      await testProperty.deserialize(parser.parsePrimitivePropertyProps(propertyJson, testProperty.class.name, testProperty.name));
       const testPropSerialization = testProperty.toJson();
       expect(testPropSerialization.minLength).to.eql(2);
       expect(testPropSerialization.maxLength).to.eql(4);
@@ -534,6 +604,7 @@ describe("PrimitiveProperty", () => {
 });
 
 describe("EnumerationProperty", () => {
+  let parser = new JsonParser();
   describe("fromJson", () => {
     let testProperty: EnumerationProperty;
     let testEnum: Enumeration;
@@ -542,27 +613,43 @@ describe("EnumerationProperty", () => {
       const schema = new Schema("TestSchema", 1, 0, 0);
       const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
       testEnum = await (schema as MutableSchema).createEnumeration("TestEnum");
-      testProperty = new EnumerationProperty(testClass, "TestProperty", testEnum);
+      testProperty = new EnumerationProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
     });
 
     it("should successfully deserialize valid JSON", async () => {
       const propertyJson = {
-        typeName: "TestSchema.1.0.0.TestEnum",
+        name: "TestProperty",
+        type: "PrimitiveProperty",
+        typeName: "TestSchema.TestEnum",
       };
       expect(testProperty).to.exist;
-      await testProperty.fromJson(propertyJson);
+      await testProperty.deserialize(parser.parseEnumerationPropertyProps(propertyJson, testProperty.class.name, testProperty.name));
       expect(await testProperty.enumeration).to.eql(testEnum);
 
       // Should also work if typeName is not specified
-      await testProperty.fromJson({});
+      await testProperty.deserialize(parser.parseEnumerationPropertyProps({
+        name: "TestProperty",
+        type: "PrimitiveProperty",
+      }, testProperty.class.name, testProperty.name));
       expect(await testProperty.enumeration).to.eql(testEnum);
     });
 
-    it("should throw for invalid typeName", async () => testInvalidAttribute(testProperty, "typeName", "string", 0));
+    it("should throw for invalid typeName", () => {
+      const json: any = {
+        name: 0,
+        type: "PrimitiveProperty",
+        typeName: 0,
+      };
+      assert.throws(() => parser.parseEnumerationPropertyProps(json, testProperty.class.name, testProperty.name), ECObjectsError);
+    });
     it("should throw for mismatched typeName", async () => {
-      const propertyJson = { typeName: "ThisDoesNotMatch" };
+      const propertyJson = {
+        name: "TestProperty",
+        type: "PrimitiveProperty",
+        typeName: "ThisDoesNotMatch"
+      };
       expect(testProperty).to.exist;
-      await expect(testProperty.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProperty.deserialize(parser.parseEnumerationPropertyProps(propertyJson, testProperty.class.name, testProperty.name))).to.be.rejectedWith(ECObjectsError);
     });
   });
   describe("toJson", () => {
@@ -573,22 +660,25 @@ describe("EnumerationProperty", () => {
       const schema = new Schema("TestSchema", 1, 0, 0);
       const testClass = await (schema as MutableSchema).createEntityClass("TestClass");
       testEnum = await (schema as MutableSchema).createEnumeration("TestEnum");
-      testProperty = new EnumerationProperty(testClass, "TestProperty", testEnum);
+      testProperty = new EnumerationProperty(testClass, "TestProperty", new DelayedPromiseWithProps(testEnum.key, async () => testEnum));
     });
 
     it("should successfully serialize valid JSON", async () => {
       const propertyJson = {
-        typeName: "TestSchema.1.0.0.TestEnum",
+        name: "TestProperty",
+        type: "PrimitiveProperty",
+        typeName: "TestSchema.TestEnum",
       };
       expect(testProperty).to.exist;
-      await testProperty.fromJson(propertyJson);
+      await testProperty.deserialize(parser.parseEnumerationPropertyProps(propertyJson, testProperty.class.name, testProperty.name));
       const testPropSerialization = testProperty.toJson();
-      assert(testPropSerialization.typeName, "TestEnum");
+      assert(testPropSerialization.typeName, "TestSchema.TestEnum");
     });
   });
 });
 
 describe("StructProperty", () => {
+  let parser = new JsonParser();
   describe("fromJson", () => {
     let testProperty: StructProperty;
     let testStruct: StructClass;
@@ -602,22 +692,38 @@ describe("StructProperty", () => {
 
     it("should successfully deserialize valid JSON", async () => {
       const propertyJson = {
-        typeName: "TestSchema.1.0.0.TestStruct",
+        name: "TestProperty",
+        type: "StructProperty",
+        typeName: "TestSchema.TestStruct",
       };
       expect(testProperty).to.exist;
-      await testProperty.fromJson(propertyJson);
+      await testProperty.deserialize(parser.parseStructPropertyProps(propertyJson, testProperty.class.name, testProperty.name));
       expect(await testProperty.structClass).to.eql(testStruct);
 
       // Should also work if typeName is not specified
-      await testProperty.fromJson({});
+      await testProperty.deserialize(parser.parseStructPropertyProps({
+        name: "TestProperty",
+        type: "StructProperty",
+      }, testProperty.class.name, testProperty.name));
       expect(await testProperty.structClass).to.eql(testStruct);
     });
 
-    it("should throw for invalid typeName", async () => testInvalidAttribute(testProperty, "typeName", "string", 0));
+    it("should throw for invalid typeName", () => {
+      const json: any = {
+        name: 0,
+        type: "StructProperty",
+        typeName: 0,
+      };
+      assert.throws(() => parser.parseStructPropertyProps(json, testProperty.class.name, testProperty.name), ECObjectsError);
+    });
     it("should throw for mismatched typeName", async () => {
-      const propertyJson = { typeName: "ThisDoesNotMatch" };
+      const propertyJson = {
+        name: "TestProperty",
+        type: "StructProperty",
+        typeName: "ThisDoesNotMatch"
+      };
       expect(testProperty).to.exist;
-      await expect(testProperty.fromJson(propertyJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testProperty.deserialize(parser.parseStructPropertyProps(propertyJson, testProperty.class.name, testProperty.name))).to.be.rejectedWith(ECObjectsError);
     });
   });
   describe("toJson", () => {
@@ -633,10 +739,12 @@ describe("StructProperty", () => {
 
     it("should successfully serialize valid JSON", async () => {
       const propertyJson = {
-        typeName: "TestSchema.1.0.0.TestStruct",
+        name: "TestProperty",
+        type: "StructProperty",
+        typeName: "TestSchema.TestStruct",
       };
       expect(testProperty).to.exist;
-      await testProperty.fromJson(propertyJson);
+      await testProperty.deserialize(parser.parseStructPropertyProps(propertyJson, testProperty.class.name, testProperty.name));
       const testPropSerialization = testProperty.toJson();
       assert(testPropSerialization.typeName, "TestStruct");
     });
@@ -644,6 +752,7 @@ describe("StructProperty", () => {
 });
 
 describe("PrimitiveArrayProperty", () => {
+  let parser = new JsonParser();
   describe("fromJson", () => {
     let testProperty: PrimitiveArrayProperty;
 
@@ -655,18 +764,34 @@ describe("PrimitiveArrayProperty", () => {
 
     it("should successfully deserialize valid JSON", async () => {
       const propertyJson = {
+        name: "TestProperty",
+        type: "PrimitiveArrayProperty",
         minOccurs: 2,
         maxOccurs: 4,
       };
       expect(testProperty).to.exist;
-      await testProperty.fromJson(propertyJson);
+      await testProperty.deserialize(parser.parsePrimitiveArrayPropertyProps(propertyJson, testProperty.class.name, testProperty.name));
 
       expect(testProperty.minOccurs).to.eql(2);
       expect(testProperty.maxOccurs).to.eql(4);
     });
 
-    it("should throw for invalid minOccurs", async () => testInvalidAttribute(testProperty, "minOccurs", "number", "0"));
-    it("should throw for invalid maxOccurs", async () => testInvalidAttribute(testProperty, "maxOccurs", "number", "0"));
+    it("should throw for invalid minOccurs", () => {
+      const json: any = {
+        name: 0,
+        type: "PrimitiveProperty",
+        minOccurs: "0",
+      };
+      assert.throws(() => parser.parsePrimitiveArrayPropertyProps(json, testProperty.class.name, testProperty.name), ECObjectsError);
+    });
+    it("should throw for invalid maxOccurs", () => {
+      const json: any = {
+        name: 0,
+        type: "PrimitiveProperty",
+        maxOccurs: "0",
+      };
+      assert.throws(() => parser.parsePrimitiveArrayPropertyProps(json, testProperty.class.name, testProperty.name), ECObjectsError);
+    });
   });
   describe("toJson", () => {
     let testProperty: PrimitiveArrayProperty;
@@ -679,11 +804,13 @@ describe("PrimitiveArrayProperty", () => {
 
     it("should successfully serialize valid JSON", async () => {
       const propertyJson = {
+        name: "TestProperty",
+        type: "PrimitiveArrayProperty",
         minOccurs: 2,
         maxOccurs: 4,
       };
       expect(testProperty).to.exist;
-      await testProperty.fromJson(propertyJson);
+      await testProperty.deserialize(parser.parsePrimitiveArrayPropertyProps(propertyJson, testProperty.class.name, testProperty.name));
       const testPropSerialization = testProperty.toJson();
       expect(testPropSerialization.minOccurs).to.eql(2);
       expect(testPropSerialization.maxOccurs).to.eql(4);

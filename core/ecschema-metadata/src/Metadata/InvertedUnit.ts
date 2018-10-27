@@ -3,15 +3,16 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { SchemaItemType } from "./../ECObjects";
-import { SchemaItemKey } from "./../SchemaKey";
-import { SchemaItemVisitor, LazyLoadedUnitSystem, LazyLoadedUnit } from "./../Interfaces";
 import Schema from "./Schema";
-import UnitSystem from "./UnitSystem";
+import SchemaItem from "./SchemaItem";
 import Unit from "./Unit";
+import UnitSystem from "./UnitSystem";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
+import { SchemaItemType } from "./../ECObjects";
+import { InvertedUnitProps } from "./../Deserialization/JsonProps";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { LazyLoadedUnit, LazyLoadedUnitSystem, SchemaItemVisitor } from "./../Interfaces";
+import { SchemaItemKey } from "./../SchemaKey";
 
 /**
  * An InvertedUnit is a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.
@@ -36,47 +37,31 @@ export default class InvertedUnit extends SchemaItem {
     return schemaJson;
   }
 
-  /**
-   * Populates this Inverted Unit with the values from the provided.
-   */
-  public async fromJson(jsonObj: any): Promise<void> {
-    this.fromJsonSync(jsonObj);
-  }
-
-  /**
-   * Populates this Inverted Unit with the values from the provided.
-   */
-  public fromJsonSync(jsonObj: any): void {
-    super.fromJsonSync(jsonObj);
-    if (undefined === jsonObj.invertsUnit)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this.name} does not have the required 'invertsUnit' attribute.`);
-    if (typeof (jsonObj.invertsUnit) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this.name} has an invalid 'invertsUnit' attribute. It should be of type 'string'.`);
-    const unitSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.invertsUnit);
-    if (!unitSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the invertsUnit ${jsonObj.invertsUnit}.`);
+  public deserializeSync(invertedUnitProps: InvertedUnitProps) {
+    super.deserializeSync(invertedUnitProps);
+    const unitSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.invertsUnit);
     this._invertsUnit = new DelayedPromiseWithProps<SchemaItemKey, Unit>(unitSchemaItemKey,
       async () => {
         const invertsUnit = await this.schema.lookupItem<Unit>(unitSchemaItemKey);
         if (undefined === invertsUnit)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the invertsUnit ${jsonObj.invertsUnit}.`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the invertsUnit ${invertedUnitProps.invertsUnit}.`);
         return invertsUnit;
       });
 
-    if (undefined === jsonObj.unitSystem)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this.name} does not have the required 'unitSystem' attribute.`);
-    if (typeof (jsonObj.unitSystem) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The InvertedUnit ${this.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
-    const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.unitSystem);
+    const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(invertedUnitProps.unitSystem);
     if (!unitSystemSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${jsonObj.unitSystem}.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
     this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
       async () => {
         const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
         if (undefined === unitSystem)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${jsonObj.unitSystem}.`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${invertedUnitProps.unitSystem}.`);
         return unitSystem;
       });
+  }
+
+  public async deserialize(invertedUnitProps: InvertedUnitProps) {
+    this.deserializeSync(invertedUnitProps);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

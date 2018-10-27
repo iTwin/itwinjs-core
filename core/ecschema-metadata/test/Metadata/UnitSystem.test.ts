@@ -9,9 +9,11 @@ import Schema from "../../src/Metadata/Schema";
 import UnitSystem from "../../src/Metadata/UnitSystem";
 import { ECObjectsError } from "../../src/Exception";
 import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("UnitSystem tests", () => {
   let testUnitSystem: UnitSystem;
+  const parser = new JsonParser();
   describe("accept", () => {
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
@@ -53,7 +55,7 @@ describe("UnitSystem tests", () => {
         name: "IMPERIAL",
         label: "Imperial",
       };
-      await testUnitSystem.fromJson(json);
+      await testUnitSystem.deserialize(parser.parseSchemaItemProps(json, testUnitSystem.schema.name, json.name));
       assert(testUnitSystem.label, "Imperial");
       assert(testUnitSystem.description === undefined);
     });
@@ -65,9 +67,9 @@ describe("UnitSystem tests", () => {
         label: "Imperial",
         description: "Units of measure from the british imperial empire",
       };
-      await expect(testUnitSystem.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
+      assert.throws(() => parser.parseSchemaItemProps(json, testUnitSystem.schema.name, json.name), ECObjectsError, `A SchemaItem in ExampleSchema has an invalid 'name' attribute. '12IMPERIAL' is not a valid ECName.`);
     });
-    it("Label must be a string", async () => {
+    it("Label must be a string", () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
         schemaItemType: "UnitSystem",
@@ -75,8 +77,7 @@ describe("UnitSystem tests", () => {
         label: 1,
         description: "Units of measure from the british imperial empire",
       };
-      await expect(testUnitSystem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem IMPERIAL has an invalid 'label' attribute. It should be of type 'string'.`);
-
+      assert.throws(() => parser.parseSchemaItemProps(json, testUnitSystem.schema.name, json.name), ECObjectsError, `The SchemaItem ExampleSchema.IMPERIAL has an invalid 'label' attribute. It should be of type 'string'.`);
     });
     it("Description must be a string", async () => {
       const json = {
@@ -86,7 +87,7 @@ describe("UnitSystem tests", () => {
         label: "Imperial",
         description: 1,
       };
-      await expect(testUnitSystem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem IMPERIAL has an invalid 'description' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseSchemaItemProps(json, testUnitSystem.schema.name, json.name), ECObjectsError, `The SchemaItem ExampleSchema.IMPERIAL has an invalid 'description' attribute. It should be of type 'string'.`);
     });
   });
   describe("Sync fromJson", () => {
@@ -101,7 +102,7 @@ describe("UnitSystem tests", () => {
         name: "IMPERIAL",
         label: "Imperial",
       };
-      testUnitSystem.fromJsonSync(json);
+      testUnitSystem.deserializeSync(parser.parseSchemaItemProps(json, testUnitSystem.schema.name, json.name));
       assert(testUnitSystem.label, "Imperial");
       assert(testUnitSystem.description === undefined);
     });
@@ -113,7 +114,7 @@ describe("UnitSystem tests", () => {
         label: "Imperial",
         description: "Units of measure from the british imperial empire",
       };
-      assert.throws(() => testUnitSystem.fromJsonSync(json), ECObjectsError, ``);
+      assert.throws(() => testUnitSystem.deserializeSync(parser.parseSchemaItemProps(json, testUnitSystem.schema.name, json.name)), ECObjectsError, ``);
     });
     it("Label must be a string", () => {
       const json = {
@@ -123,7 +124,7 @@ describe("UnitSystem tests", () => {
         label: 1,
         description: "Units of measure from the british imperial empire",
       };
-      assert.throws(() => testUnitSystem.fromJsonSync(json), ECObjectsError, `The SchemaItem IMPERIAL has an invalid 'label' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseSchemaItemProps(json, testUnitSystem.schema.name, json.name), ECObjectsError, `The SchemaItem ExampleSchema.IMPERIAL has an invalid 'label' attribute. It should be of type 'string'.`);
 
     });
     it("Description must be a string", () => {
@@ -134,7 +135,7 @@ describe("UnitSystem tests", () => {
         label: "Imperial",
         description: 1,
       };
-      assert.throws(() => testUnitSystem.fromJsonSync(json), ECObjectsError, `The SchemaItem IMPERIAL has an invalid 'description' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseSchemaItemProps(json, testUnitSystem.schema.name, json.name), ECObjectsError, `The SchemaItem ExampleSchema.IMPERIAL has an invalid 'description' attribute. It should be of type 'string'.`);
     });
   });
 });

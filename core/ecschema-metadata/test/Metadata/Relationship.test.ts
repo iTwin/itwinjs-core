@@ -9,6 +9,7 @@ import EntityClass from "../../src/Metadata/EntityClass";
 import RelationshipClass, { RelationshipMultiplicity } from "../../src/Metadata/RelationshipClass";
 import { StrengthType, StrengthDirection } from "../../src/ECObjects";
 import { ECObjectsError } from "../../src/Exception";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("RelationshipMultiplicity", () => {
   describe("fromString", () => {
@@ -49,6 +50,8 @@ describe("RelationshipMultiplicity", () => {
 });
 
 describe("RelationshipClass", () => {
+  let parser = new JsonParser();
+
   describe("deserialization", () => {
 
     function createSchemaJson(relClassJson: any): any {
@@ -144,8 +147,26 @@ describe("RelationshipClass", () => {
 
     it("should succeed with navigation property", async () => {
       const json = createSchemaJson({
-        source: {},
-        target: {},
+        strength: "embedding",
+        strengthDirection: "backward",
+        source: {
+          polymorphic: true,
+          multiplicity: "(0..*)",
+          roleLabel: "Source RoleLabel",
+          abstractConstraint: "TestSchema.SourceBaseEntity",
+          constraintClasses: [
+            "TestSchema.TestSourceEntity",
+          ],
+        },
+        target: {
+          polymorphic: true,
+          multiplicity: "(0..*)",
+          roleLabel: "Target RoleLabel",
+          abstractConstraint: "TestSchema.TargetBaseEntity",
+          constraintClasses: [
+            "TestSchema.TestTargetEntity",
+          ],
+        },
         properties: [
           {
             type: "NavigationProperty",
@@ -172,8 +193,26 @@ describe("RelationshipClass", () => {
 
     it("should succeed with navigation property synchronously", () => {
       const json = createSchemaJson({
-        source: {},
-        target: {},
+        strength: "referencing",
+        strengthDirection: "forward",
+        source: {
+          polymorphic: true,
+          multiplicity: "(0..*)",
+          roleLabel: "Source RoleLabel",
+          abstractConstraint: "TestSchema.SourceBaseEntity",
+          constraintClasses: [
+            "TestSchema.TestSourceEntity",
+          ],
+        },
+        target: {
+          polymorphic: true,
+          multiplicity: "(0..*)",
+          roleLabel: "Target RoleLabel",
+          abstractConstraint: "TestSchema.TargetBaseEntity",
+          constraintClasses: [
+            "TestSchema.TestTargetEntity",
+          ],
+        },
         properties: [
           {
             type: "NavigationProperty",
@@ -200,6 +239,8 @@ describe("RelationshipClass", () => {
 
     it("should throw for missing source constraint", async () => {
       const json = createSchemaJson({
+        strength: "holding",
+        strengthDirection: "backward",
         target: {},
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestRelationship is missing the required source constraint.`);
@@ -207,6 +248,8 @@ describe("RelationshipClass", () => {
 
     it("should throw for missing target constraint", async () => {
       const json = createSchemaJson({
+        strength: "embedding",
+        strengthDirection: "forward",
         source: {},
       });
       await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestRelationship is missing the required target constraint.`);
@@ -214,6 +257,8 @@ describe("RelationshipClass", () => {
 
     it("should throw for invalid source constraint", async () => {
       const json = createSchemaJson({
+        strength: "holding",
+        strengthDirection: "forward",
         source: 0,
         target: {},
       });
@@ -222,6 +267,8 @@ describe("RelationshipClass", () => {
 
     it("should throw for invalid target constraint", async () => {
       const json = createSchemaJson({
+        strength: "referencing",
+        strengthDirection: "forward",
         source: {},
         target: 0,
       });
@@ -230,18 +277,35 @@ describe("RelationshipClass", () => {
 
     it("should throw for invalid abstractConstraint", async () => {
       const json = createSchemaJson({
-        source: { abstractConstraint: 0 },
+        strength: "embedding",
+        strengthDirection: "forward",
+        source: {
+          polymorphic: true,
+          multiplicity: "(0..1)",
+          roleLabel: "Source roleLabel",
+          abstractConstraint: 0,
+          constraintClasses: [
+            "TestSchema.TestTargetEntity",
+          ],
+        },
         target: {},
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Source Constraint of TestRelationship has an invalid 'abstractConstraint' property. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Source Constraint of TestRelationship has an invalid 'abstractConstraint' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid constraintClasses", async () => {
       const json = createSchemaJson({
-        source: { constraintClasses: 0 },
+        strength: "embedding",
+        strengthDirection: "forward",
+        source: {
+          polymorphic: true,
+          multiplicity: "(0..1)",
+          roleLabel: "Source roleLabel",
+          constraintClasses: 0,
+        },
         target: {},
       });
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Source Constraint of TestRelationship has an invalid 'constraintClasses' property. It should be of type 'array'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Source Constraint of TestRelationship has an invalid 'constraintClasses' attribute. It should be of type 'string[]'.`);
     });
   });
 
@@ -256,14 +320,22 @@ describe("RelationshipClass", () => {
 
     it("should throw for invalid strength", async () => {
       expect(testRelationship).to.exist;
-      const json = { ...baseJson, strength: 0 };
-      await expect(testRelationship.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestRelationship has an invalid 'strength' attribute. It should be of type 'string'.`);
+      const json = {
+        ...baseJson,
+        strength: 0,
+        strengthDirection: "backward",
+      };
+      assert.throws(() => parser.parseRelationshipClassProps(json, testRelationship.name), ECObjectsError, `The RelationshipClass TestRelationship has an invalid 'strength' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid strengthDirection", async () => {
       expect(testRelationship).to.exist;
-      const json = { ...baseJson, strengthDirection: 0 };
-      await expect(testRelationship.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The RelationshipClass TestRelationship has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
+      const json = {
+        ...baseJson,
+        strength: "holding",
+        strengthDirection: 0,
+      };
+      assert.throws(() => parser.parseRelationshipClassProps(json, testRelationship.name), ECObjectsError, `The RelationshipClass TestRelationship has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
     });
   });
   describe("toJson", () => {

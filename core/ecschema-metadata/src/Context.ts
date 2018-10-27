@@ -3,11 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { SchemaMatchType } from "./ECObjects";
-import SchemaKey, { SchemaItemKey } from "./SchemaKey";
+import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import Schema, { MutableSchema } from "./Metadata/Schema";
 import SchemaItem from "./Metadata/SchemaItem";
+import SchemaKey, { SchemaItemKey } from "./SchemaKey";
 
 export class SchemaMap extends Array<Schema> { }
 

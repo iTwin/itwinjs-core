@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import Format, { IFormat } from "./Format";
-import Unit from "./Unit";
 import InvertedUnit from "./InvertedUnit";
-import { DecimalPrecision, FractionalPrecision, ScientificType, ShowSignOption, FormatTraits, FormatType } from "./../utils/FormatEnums";
+import Unit from "./Unit";
+import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./../utils/FormatEnums";
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.

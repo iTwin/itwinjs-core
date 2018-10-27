@@ -11,8 +11,10 @@ import SchemaItem from "./../../src/Metadata/SchemaItem";
 import { SchemaItemType } from "./../../src/ECObjects";
 import SchemaKey, { SchemaItemKey } from "./../../src/SchemaKey";
 import EntityClass from "./../../src/Metadata/EntityClass";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("SchemaItem", () => {
+  const parser = new JsonParser();
   describe("fromJson", () => {
     let testItem: SchemaItem;
 
@@ -30,18 +32,35 @@ describe("SchemaItem", () => {
     });
     it("should throw for missing schemaItemType", async () => {
       expect(testItem).to.exist;
-      await expect(testItem.fromJson({})).to.be.rejectedWith(ECObjectsError, `The SchemaItem BadSchemaItem is missing the required schemaItemType property.`);
+      assert.throws(() => parser.parseSchemaItemProps({}, testItem.schema.name, testItem.name), ECObjectsError, `The SchemaItem TestSchema.BadSchemaItem is missing the required 'schemaItemType' attribute.`);
     });
     it("should throw for invalid schemaItemType", async () => {
       expect(testItem).to.exist;
-      const json: any = { schemaItemType: 0 };
-      await expect(testItem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem BadSchemaItem has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
+      const json: any = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "BadSchemaItem",
+        schemaItemType: 0,
+      };
+      assert.throws(() => parser.parseSchemaItemProps(json, testItem.schema.name, testItem.name), ECObjectsError, `The SchemaItem TestSchema.BadSchemaItem has an invalid 'schemaItemType' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for mismatched schemaItemType", async () => {
       expect(testItem).to.exist;
-      const json = { schemaItemType: "Mixin" };
-      await expect(testItem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem BadSchemaItem has an incompatible schemaItemType. It must be "EntityClass", not "Mixin".`);
+      const json = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: "BadSchemaItem",
+        schemaItemType: "Mixin",
+      };
+      await expect(testItem.deserialize(parser.parseSchemaItemProps(json, testItem.schema.name, testItem.name))).to.be.rejectedWith(ECObjectsError, `The SchemaItem BadSchemaItem has an incompatible schemaItemType. It must be "EntityClass", not "Mixin".`);
+    });
+
+    it("should throw for invalid name", async () => {
+      expect(testItem).to.exist;
+      const json: any = {
+        schemaItemType: "EntityClass",
+        name: 0,
+      }
+      assert.throws(() => parser.parseSchemaItemProps(json, testItem.schema.name, json.name), ECObjectsError, `A SchemaItem in TestSchema has an invalid 'name' attribute. '0' is not a valid ECName.`);
     });
 
     async function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
@@ -50,10 +69,9 @@ describe("SchemaItem", () => {
         schemaItemType: "EntityClass",
         [attributeName]: value,
       };
-      await expect(testItem.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem BadSchemaItem has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
+      assert.throws(() => parser.parseSchemaItemProps(json, testItem.schema.name, "BadSchemaItem"), ECObjectsError, `The SchemaItem TestSchema.BadSchemaItem has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
     }
 
-    it("should throw for invalid name", async () => testInvalidAttribute("name", "string", 0));
     it("should throw for invalid description", async () => testInvalidAttribute("description", "string", 0));
     it("should throw for invalid label", async () => testInvalidAttribute("label", "string", 0));
     it("should throw for invalid schema", async () => testInvalidAttribute("schema", "string", 0));
@@ -76,7 +94,7 @@ describe("SchemaItem", () => {
         label: "ExampleEntity",
         description: "An example entity class.",
       };
-      await (baseClass as EntityClass).fromJson(propertyJson);
+      await (baseClass as EntityClass).deserialize(parser.parseSchemaItemProps(propertyJson, propertyJson.schema, propertyJson.name));
       const testClass = await (baseClass as EntityClass).toJson(true, true);
       expect(testClass).to.exist;
       assert(testClass.$schema, "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem");
