@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Hide WIP ChangeCache methods on IModelConnection",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "shaun.sewall@bentley.com"
+}

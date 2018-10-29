@@ -49,7 +49,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public static getClient(): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface); }
 
   /** The semantic version of the interface. */
-  public static version = "1.0.0";
+  public static version = "0.1.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -64,14 +64,10 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ElementProps[]> { return this.forward.apply(this, arguments); }
   public queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set> { return this.forward.apply(this, arguments); }
   public formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
-  public loadMetaDataForClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<any[]> { return this.forward.apply(this, arguments); }
   public getClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<string[]> { return this.forward.apply(this, arguments); }
   public getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]> { return this.forward.apply(this, arguments); }
   public getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<ViewStateData> { return this.forward.apply(this, arguments); }
   public readFontJson(_iModelToken: IModelToken): Promise<any> { return this.forward.apply(this, arguments); }
-  public isChangeCacheAttached(_iModelToken: IModelToken): Promise<boolean> { return this.forward.apply(this, arguments); }
-  public attachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward.apply(this, arguments); }
-  public detachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward.apply(this, arguments); }
   public requestSnap(_iModelToken: IModelToken, _connectionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward.apply(this, arguments); }
   public cancelSnap(_iModelToken: IModelToken, _connectionId: string): Promise<void> { return this.forward.apply(this, arguments); }
   public loadNativeAsset(_iModelToken: IModelToken, _assetName: string): Promise<Uint8Array> { return this.forward.apply(this, arguments); }

@@ -3,9 +3,9 @@
  * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
  *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
-import { Id64String, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { AxisAlignedBox3d, RpcInterface, RpcManager, IModel, IModelToken, IModelWriteRpcInterface, ThumbnailProps, ImageSourceFormat, ElementProps } from "@bentley/imodeljs-common";
+import { AxisAlignedBox3d, RpcInterface, RpcManager, IModel, IModelToken, IModelWriteRpcInterface, ThumbnailProps, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, ExclusiveAccessOption } from "../IModelDb";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
 
@@ -43,8 +43,5 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
       return Promise.reject(new Error("failed to save thumbnail"));
 
     return Promise.resolve();
-  }
-  public async insertElement(iModelToken: IModelToken, elementProps: ElementProps): Promise<Id64String> {
-    return IModelDb.find(iModelToken).elements.insertElement(elementProps);
   }
 }

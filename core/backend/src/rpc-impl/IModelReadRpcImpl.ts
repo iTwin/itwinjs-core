@@ -8,10 +8,9 @@ import { Logger, Id64String, Id64Set, Id64, assert, ActivityLoggingContext } fro
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   EntityQueryParams, RpcInterface, RpcManager, IModel, IModelReadRpcInterface, IModelToken,
-  ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, EntityMetaDataProps, ViewStateData, ImageSourceFormat,
+  ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, ViewStateData, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams } from "../IModelDb";
-import { ChangeSummaryManager } from "../ChangeSummaryManager";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
 import { SpatialCategory } from "../Category";
 import { DictionaryModel } from "../Model";
@@ -124,22 +123,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return classArray;
   }
 
-  public async loadMetaDataForClassHierarchy(iModelToken: IModelToken, startClassName: string): Promise<EntityMetaDataProps[]> {
-    const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    const iModelDb: IModelDb = IModelDb.find(iModelToken);
-    let classFullName: string = startClassName;
-    const classArray: any[] = [];
-    while (true) {
-      const classMetaData: EntityMetaData = iModelDb.getMetaData(classFullName);
-      classArray.push({ className: classFullName, metaData: classMetaData });
-      if (!classMetaData.baseClasses || classMetaData.baseClasses.length === 0)
-        break;
-
-      classFullName = classMetaData.baseClasses[0];
-    }
-    return classArray;
-  }
-
   public async getAllCodeSpecs(iModelToken: IModelToken): Promise<any[]> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
     const codeSpecs: any[] = [];
@@ -160,24 +143,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const activityContext = ActivityLoggingContext.current;
     activityContext.enter();
     return IModelDb.find(iModelToken).readFontJson();
-  }
-
-  public async isChangeCacheAttached(iModelToken: IModelToken): Promise<boolean> {
-    const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    return ChangeSummaryManager.isChangeCacheAttached(IModelDb.find(iModelToken));
-  }
-
-  public async attachChangeCache(iModelToken: IModelToken): Promise<void> {
-    const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    ChangeSummaryManager.attachChangeCache(IModelDb.find(iModelToken));
-  }
-
-  public async detachChangeCache(iModelToken: IModelToken): Promise<void> {
-    const activityContext = ActivityLoggingContext.current;
-    activityContext.enter();
-    const iModel: IModelDb = IModelDb.find(iModelToken);
-    if (ChangeSummaryManager.isChangeCacheAttached(iModel))
-      ChangeSummaryManager.detachChangeCache(iModel);
   }
 
   public async requestSnap(iModelToken: IModelToken, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {

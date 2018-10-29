@@ -12,6 +12,7 @@ import {
   IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
   TileTreeProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse, SnapRequestProps, SnapResponseProps, ThumbnailProps, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
+import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
 import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
@@ -305,31 +306,30 @@ export class IModelConnection extends IModel {
   }
 
   /**
-   * Determines whether the *Change Cache file* is attached to this iModel or not.
-   *
+   * WIP - Determines whether the *Change Cache file* is attached to this iModel or not.
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
+   * @hidden
    */
-  public async changeCacheAttached(): Promise<boolean> { return await IModelReadRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
+  public async changeCacheAttached(): Promise<boolean> { return await WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
 
   /**
-   * Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
-   *
+   * WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
    * A new *Change Cache file* will be created for the iModel if it hasn't existed before.
-   *
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @throws [IModelError]($common) if a Change Cache file has already been attached before.
+   * @hidden
    */
-  public async attachChangeCache(): Promise<void> { await IModelReadRpcInterface.getClient().attachChangeCache(this.iModelToken); }
+  public async attachChangeCache(): Promise<void> { await WipRpcInterface.getClient().attachChangeCache(this.iModelToken); }
 
   /**
-   * Detaches the *Change Cache file* to this iModel if it had been attached before.
+   * WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
    * > You do not have to check whether a Change Cache file had been attached before. The
    * > method does not do anything, if no Change Cache is attached.
-   *
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
+   * @hidden
    */
-  public async detachChangeCache(): Promise<void> { await IModelReadRpcInterface.getClient().detachChangeCache(this.iModelToken); }
+  public async detachChangeCache(): Promise<void> { await WipRpcInterface.getClient().detachChangeCache(this.iModelToken); }
 
   /**
    * Execute a test by name
