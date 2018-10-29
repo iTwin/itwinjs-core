@@ -273,7 +273,7 @@ export class AccuSnap implements Decorator {
 
     const crossPt = snap.snapPoint;
     const viewport = snap.viewport!;
-    const crossSprite = IconSprites.getSprite(snap.isHot ? "SnapCross" : "SnapUnfocused", viewport.iModel);
+    const crossSprite = IconSprites.getSpriteFromUrl(snap.isHot ? "SnapCross.png" : "SnapUnfocused.png");
 
     this.cross.activate(crossSprite, viewport, crossPt);
 
@@ -294,12 +294,11 @@ export class AccuSnap implements Decorator {
     this.errorIcon.deactivate();
 
     const vp = ev.viewport!;
-    const iModel = vp.iModel;
     let errorSprite: Sprite | undefined;
     switch (status) {
       case SnapStatus.FilteredByUser:
       case SnapStatus.FilteredByApp:
-        errorSprite = IconSprites.getSprite("SnapAppFiltered", iModel);
+        errorSprite = IconSprites.getSpriteFromUrl("SnapAppFiltered.png");
         break;
 
       case SnapStatus.FilteredByAppQuietly:
@@ -307,12 +306,12 @@ export class AccuSnap implements Decorator {
         break;
 
       case SnapStatus.NotSnappable:
-        errorSprite = IconSprites.getSprite("SnapNotSnappable", iModel);
+        errorSprite = IconSprites.getSpriteFromUrl("SnapNotSnappable.png");
         this.errorKey = ElementLocateManager.getFailureMessageKey("NotSnappable");
         break;
 
       case SnapStatus.ModelNotSnappable:
-        errorSprite = IconSprites.getSprite("SnapNotSnappable", iModel);
+        errorSprite = IconSprites.getSpriteFromUrl("SnapNotSnappable.png");
         this.errorKey = ElementLocateManager.getFailureMessageKey("ModelNotAllowed");
         break;
     }

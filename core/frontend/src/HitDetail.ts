@@ -170,7 +170,7 @@ export class SnapDetail extends HitDetail {
     super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction);
     this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
     this.adjustedPoint = this.snapPoint.clone();
-    this.sprite = IconSprites.getSprite(SnapDetail.getSnapSprite(snapMode), from.viewport.iModel);
+    this.sprite = IconSprites.getSpriteFromUrl(SnapDetail.getSnapSpriteUrl(snapMode));
   }
 
   /** Returns `HitDetailType.Snap` */
@@ -282,15 +282,15 @@ export class SnapDetail extends HitDetail {
   }
 
   /**  */
-  private static getSnapSprite(snapType: SnapMode): string {
+  private static getSnapSpriteUrl(snapType: SnapMode): string {
     switch (snapType) {
-      case SnapMode.Nearest: return "SnapPointOn";
-      case SnapMode.NearestKeypoint: return "SnapKeypoint";
-      case SnapMode.MidPoint: return "SnapMidpoint";
-      case SnapMode.Center: return "SnapCenter";
-      case SnapMode.Origin: return "SnapOrigin";
-      case SnapMode.Bisector: return "SnapBisector";
-      case SnapMode.Intersection: return "SnapIntersection";
+      case SnapMode.Nearest: return "SnapPointOn.png";
+      case SnapMode.NearestKeypoint: return "SnapKeypoint.png";
+      case SnapMode.MidPoint: return "SnapMidpoint.png";
+      case SnapMode.Center: return "SnapCenter.png";
+      case SnapMode.Origin: return "SnapOrigin.png";
+      case SnapMode.Bisector: return "SnapBisector.png";
+      case SnapMode.Intersection: return "SnapIntersection.png";
     }
     return "";
   }

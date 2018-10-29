@@ -344,6 +344,11 @@ export class ViewManager {
     return undefined;
   }
 
+  public get crossHairCursor(): string { return "url(crosshair.cur), crosshair"; }
+  public get dynamicsCursor(): string { return "url(dynamics.cur), move"; }
+  public get grabCursor(): string { return "url(openHand.cur), auto"; }
+  public get grabbingCursor(): string { return "url(closedHand.cur), auto"; }
+
   /** Change the cursor shown in all Viewports.
    * @param cursor The new cursor to display. If undefined, the default cursor is used.
    */

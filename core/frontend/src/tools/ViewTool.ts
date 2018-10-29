@@ -715,7 +715,7 @@ class ViewPan extends ViewingToolHandle {
   private _anchorPt: Point3d = new Point3d();
   private _lastPtNpc: Point3d = new Point3d();
   public get handleType() { return ViewHandleType.Pan; }
-  public getHandleCursor() { return this.viewTool.inHandleModify ? "grabbing" : "grab"; }
+  public getHandleCursor() { return this.viewTool.inHandleModify ? IModelApp.viewManager.grabbingCursor : IModelApp.viewManager.grabCursor; }
 
   public doManipulation(ev: BeButtonEvent, _inDynamics: boolean) {
     const vp = ev.viewport!;
@@ -902,7 +902,7 @@ class ViewLook extends ViewingToolHandle {
   private _rotation = new Matrix3d();
   private _frustum = new Frustum();
   public get handleType() { return ViewHandleType.Look; }
-  public getHandleCursor(): string { return "crosshair"; }
+  public getHandleCursor(): string { return IModelApp.viewManager.crossHairCursor; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -970,7 +970,7 @@ class ViewScroll extends ViewingToolHandle {
   private _anchorPtView = new Point3d();
   private _lastPtView = new Point3d();
   public get handleType() { return ViewHandleType.Scroll; }
-  public getHandleCursor(): string { return "crosshair"; }
+  public getHandleCursor(): string { return IModelApp.viewManager.crossHairCursor; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -1088,7 +1088,7 @@ class ViewZoom extends ViewingToolHandle {
   private _lastPtView = new Point3d();
   private _lastZoomRatio = 1.0;
   public get handleType() { return ViewHandleType.Zoom; }
-  public getHandleCursor() { return "crosshair"; }
+  public getHandleCursor() { return IModelApp.viewManager.crossHairCursor; }
 
   public testHandleForHit(_ptScreen: Point3d, out: { distance: number, priority: ViewManipPriority }): boolean {
     out.distance = 0.0;
@@ -1522,7 +1522,7 @@ abstract class ViewNavigate extends ViewingToolHandle {
     return true;
   }
 
-  public getHandleCursor() { return "crosshair"; }
+  public getHandleCursor() { return IModelApp.viewManager.crossHairCursor; }
 
   public drawHandle(context: DecorateContext, _hasFocus: boolean): void {
     if (context.viewport !== this.viewTool.viewport || !this.viewTool.inDynamicUpdate)

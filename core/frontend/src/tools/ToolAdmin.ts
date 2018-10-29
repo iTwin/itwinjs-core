@@ -1214,7 +1214,7 @@ export class ToolAdmin {
 
     IModelApp.accuSnap.onStartTool();
 
-    this.setCursor("crosshair");
+    this.setCursor(IModelApp.viewManager.crossHairCursor);
     this.setViewTool(newTool);
   }
 
@@ -1250,7 +1250,7 @@ export class ToolAdmin {
     if (undefined === newTool)
       return;
 
-    this.setCursor("crosshair");
+    this.setCursor(IModelApp.viewManager.crossHairCursor);
     this.setPrimitiveTool(newTool);
   }
 
@@ -1414,7 +1414,7 @@ export class ToolAdmin {
 
   public setLocateCursor(enableLocate: boolean): void {
     const { viewManager } = IModelApp;
-    this.setCursor(viewManager.inDynamicsMode ? "move" : "crosshair");
+    this.setCursor(viewManager.inDynamicsMode ? IModelApp.viewManager.dynamicsCursor : IModelApp.viewManager.crossHairCursor);
     this.setLocateCircleOn(enableLocate);
     viewManager.invalidateDecorationsAllViews();
   }

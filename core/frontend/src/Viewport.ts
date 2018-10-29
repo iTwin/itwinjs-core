@@ -1922,14 +1922,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /** Change the cursor for this Viewport */
-  public setCursor(cursor: string = "default"): void {
-    if (cursor === "grab")
-      this.canvas.style.cursor = "-webkit-grab";
-    else if (cursor === "grabbing")
-      this.canvas.style.cursor = "-webkit-grabbing";
-    else
-      this.canvas.style.cursor = cursor;
-  }
+  public setCursor(cursor: string = "default"): void { this.canvas.style.cursor = cursor; }
 
   /** @hidden */
   public synchWithView(saveInUndo: boolean): void {

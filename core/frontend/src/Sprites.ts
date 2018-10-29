@@ -4,11 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Logger } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, XYAndZ } from "@bentley/geometry-core";
-import { ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
+import { ImageSource } from "@bentley/imodeljs-common";
 import { ImageUtil } from "./ImageUtil";
-import { IModelConnection } from "./IModelConnection";
 import { CanvasDecoration } from "./render/System";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
@@ -37,18 +35,6 @@ export class Sprite {
   /** Whether this sprite has be successfully loaded. */
   public get isLoaded(): boolean { return undefined !== this.image; }
 
-  /** Initialize this sprite from a .png file located in the imodeljs-native assets directory.
-   * @param filePath The file path of the PNG file holding the sprite (relative to the assets directory.)
-   * @param iModel An IModelConnection used to locate the backend server. Note that this method does not associate this Sprite with the iModel
-   * in any way. It is merely necessary to route the request to the backend.
-   * @note This method loads the .png file asynchronously. The [[image]] member will be undefined until the data is loaded.
-   */
-  public fromNativePng(filePath: string, iModel: IModelConnection): void {
-    iModel.loadNativeAsset(filePath).then((val: Uint8Array) => this.fromImageSource(new ImageSource(val, ImageSourceFormat.Png))).catch(() => {
-      Logger.logError("imodeljs-frontend.Sprites", "can't load sprite from asset file: " + filePath);
-    });
-  }
-
   private onLoaded(image: HTMLImageElement) { this.image = image; this.size.set(image.naturalWidth, image.naturalHeight); }
 
   /** Initialize this Sprite from an ImageSource.
@@ -69,16 +55,15 @@ export class Sprite {
 export class IconSprites {
   private static readonly _sprites = new Map<string, Sprite>();
 
-  /** Look up an IconSprite by name. If not loaded, create and load it.
-   * @param spriteName The base name (without ".png") of a PNG file in the `decorators/dgncore` subdirectory of the `Assets` directory of the imodeljs-native package.
-   * @param iModel The IModelConnection.
+  /** Look up an IconSprite by url. If not loaded, create and load it.
+   * @param spriteUrl The url of an image to load for this Sprite.
    */
-  public static getSprite(spriteName: string, iModel: IModelConnection): Sprite {
-    let sprite = this._sprites.get(spriteName);
+  public static getSpriteFromUrl(spriteUrl: string): Sprite {
+    let sprite = this._sprites.get(spriteUrl);
     if (!sprite) {
       sprite = new Sprite();
-      this._sprites.set(spriteName, sprite);
-      sprite.fromNativePng("decorators/dgncore/" + spriteName + ".png", iModel); // note: asynchronous
+      this._sprites.set(spriteUrl, sprite);
+      sprite.fromUrl(spriteUrl);
     }
     return sprite;
   }
