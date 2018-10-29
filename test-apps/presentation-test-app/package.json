@@ -18,7 +18,8 @@
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts,tsx --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./tsconfig.json 1>&2",
     "start": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js start --configLoader=true",
-    "test": ""
+    "test": "",
+    "cover": ""
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "0.162.0",

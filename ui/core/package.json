@@ -14,7 +14,7 @@
     "build:scss": "cpx \"./src/**/*.scss\" ./lib",
     "copy:public": "cpx \"./public/**/*\" ./lib/public && npm run pseudolocalize",
     "clean": "rimraf ./lib package-deps.json",
-    "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test",
+    "cover": "nyc npm test",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-core/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "pack": "node ../../scripts/pack.js",
@@ -95,6 +95,15 @@
     "react-dom": "^16.4.2"
   },
   "nyc": {
-    "nycrc-path": "../.nycrc"
+    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "require": [
+      "ignore-styles",
+      "jsdom-global/register",
+      "source-map-support/register",
+      "ts-node/register"
+    ],
+    "exclude": [
+      "lib/**/*"
+    ]
   }
 }

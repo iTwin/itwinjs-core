@@ -33,6 +33,7 @@ const options = [
   "--require", "ts-node/register",
   "--watch-extensions", "ts",
   "-u", "tdd",
+  "--no-cache",
   "--timeout", timeout,
   "--colors"
 ];

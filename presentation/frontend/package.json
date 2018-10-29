@@ -74,6 +74,11 @@
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {
-    "nycrc-path": "../.nycrc"
+    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "check-coverage": true,
+    "statements": 100,
+    "functions": 100,
+    "branches": 100,
+    "lines": 100
   }
 }

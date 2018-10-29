@@ -24,6 +24,7 @@
     "start:electron": "electron ./lib/backend/ElectronMain.js",
     "start:web": "node ./lib/backend/WebMain.js",
     "test": "",
+    "cover": "",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2"
   },
   "repository": {},

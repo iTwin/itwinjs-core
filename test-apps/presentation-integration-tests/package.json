@@ -15,7 +15,8 @@
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./",
     "test": "cross-env TS_NODE_PROJECT=./tsconfig.json mocha --opts ./mocha.opts ./src/**/*.ts",
-    "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
+    "test:watch": "npm test -- --reporter min --watch-extensions ts --watch",
+    "cover": ""
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "0.162.0",
@@ -61,5 +62,8 @@
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typescript": "~3.0.0"
+  },
+  "nyc": {
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   }
 }

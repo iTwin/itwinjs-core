@@ -13,15 +13,14 @@
     "clean": "rimraf lib package-deps.json",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
-    "cover": "npm run copy:test-assets && rimraf ./.nyc_output && npm run cover:unit & npm run cover:integration & cpx \"./.nyc_output/unit/*.json\" ./.nyc_output & cpx \"./.nyc_output/integration/*.json\" ./.nyc_output & nyc report --report-dir ./lib/test/coverage",
-    "cover:unit": "nyc --temp-directory ./.nyc_output/unit --report-dir ./lib/test/coverage/unit mocha --timeout 60000 -r ts-node/register -r source-map-support/register ./src/test/**/*.test.ts --offline \"mock\"",
-    "cover:integration": "nyc --temp-directory ./.nyc_output/integration --report-dir ./lib/test/coverage/integration mocha --timeout 60000 -r ts-node/register -r source-map-support/register ./src/test/**/*.test.ts",
+    "cover": "npm run copy:test-assets && nyc npm test",
+    "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test:integration",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
-    "pretest": "rimraf \"./lib/test/iModelClientsTests.log\"",
-    "test": "npm run copy:test-assets && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration|URL Whitelist Validator\" --invert",
-    "test:online": "npm run copy:test-assets && node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"URL Whitelist Validator\" --invert",
-    "test:integration": "npm run pretest && npm run test:online & npm run test:url",
+    "pretest": "rimraf \"./lib/test/iModelClientsTests.log\" && npm run copy:test-assets",
+    "test": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration|URL Whitelist Validator\" --invert",
+    "test:online": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"URL Whitelist Validator\" --invert",
+    "test:integration": "npm run test:online & npm run test:url",
     "test:settings": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --grep Setting",
     "test:url": "node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"URL Whitelist Validator\"",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
@@ -85,25 +84,6 @@
     "oidc-client": "^1.5.2"
   },
   "nyc": {
-    "include": [
-      "src/**"
-    ],
-    "exclude": [
-      "src/test/*",
-      "**/*.d.ts"
-    ],
-    "extension": [
-      ".ts"
-    ],
-    "require": [
-      "source-map-support/register",
-      "ts-node/register"
-    ],
-    "reporter": [
-      "text-summary",
-      "lcov",
-      "cobertura"
-    ],
-    "all": true
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   }
 }

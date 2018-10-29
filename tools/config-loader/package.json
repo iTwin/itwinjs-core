@@ -12,7 +12,8 @@
     "clean": "rimraf lib package-deps.json",
     "docs": "",
     "lint": "tslint --project . 1>&2",
-    "test": ""
+    "test": "",
+    "cover": ""
   },
   "keywords": [
     "Bentley",

@@ -14,7 +14,8 @@
     "clean": "rimraf lib package-deps.json",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-i18n/file.json --tsIndexFile=./i18n.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
-    "test": ""
+    "test": "",
+    "cover": ""
   },
   "keywords": [
     "Bentley",

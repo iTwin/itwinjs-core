@@ -8,7 +8,10 @@
     "lib/**/*"
   ],
   "exclude": [
-    "lib/test/**/*"
+    "src/test/**/*",
+    "lib/test/**/*",
+    "**/*.d.ts",
+    "**/*.d.tsx"
   ],
   "extension": [
     ".ts",
@@ -21,10 +24,5 @@
     "lcov",
     "cobertura"
   ],
-  "cache": false,
-  "check-coverage": true,
-  "statements": 100,
-  "functions": 100,
-  "branches": 100,
-  "lines": 100
+  "cache": false
 }

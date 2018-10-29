@@ -11,11 +11,11 @@
   },
   "scripts": {
     "build": "tsc 1>&2",
-    "clean": "rimraf lib package-deps.json .nyc_output",
+    "clean": "rimraf lib package-deps.json",
     "lint": "tslint --project . 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
-    "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./test/**/*.test.ts",
+    "cover": "nyc npm test",
     "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
   },
   "keywords": [
@@ -53,20 +53,6 @@
     "@bentley/bentleyjs-core": "0.162.0"
   },
   "nyc": {
-    "include": [
-      "src/**/*.ts"
-    ],
-    "extension": [
-      ".ts"
-    ],
-    "require": [
-      "ts-node/register"
-    ],
-    "reporter": [
-      "text-summary",
-      "lcov",
-      "cobertura"
-    ],
-    "report-dir": "./lib/test/coverage"
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   }
 }

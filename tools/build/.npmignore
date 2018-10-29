@@ -8,3 +8,4 @@
 !tsconfig.json
 !tsconfig-base.json
 !tslint.json
+!.nycrc

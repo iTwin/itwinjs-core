@@ -13,7 +13,8 @@
     "clean": "rimraf tslint-rules",
     "docs": "",
     "lint": "",
-    "test": ""
+    "test": "",
+    "cover": ""
   },
   "keywords": [
     "Bentley",
