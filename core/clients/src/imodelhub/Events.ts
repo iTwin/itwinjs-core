@@ -8,7 +8,7 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, Response } from "./../Request";
 import { CodeState } from "./Codes";
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext, Id64, Id64String, Guid } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, Id64, Id64String, GuidString } from "@bentley/bentleyjs-core";
 import { EventBaseHandler, BaseEventSAS, IModelHubBaseEvent, EventListener, ListenerSubscription, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
@@ -40,7 +40,7 @@ export type EventType =
 /** Base type for all iModelHub events. */
 export abstract class IModelHubEvent extends IModelHubBaseEvent {
   /** Id of the iModel where the event occured. */
-  public iModelId?: Guid;
+  public iModelId?: GuidString;
 
   /**
    * Construct this event from object instance.
@@ -49,7 +49,7 @@ export abstract class IModelHubEvent extends IModelHubBaseEvent {
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
-    this.iModelId = new Guid(this.eventTopic);
+    this.iModelId = this.eventTopic;
   }
 }
 
@@ -175,7 +175,7 @@ export class IModelDeletedEvent extends IModelHubEvent {
  */
 export class VersionEvent extends IModelHubEvent {
   /** Id of the created Version. */
-  public versionId?: Guid;
+  public versionId?: GuidString;
   /** Name of the created Version. */
   public versionName?: string;
   /** Id of the [[ChangeSet]] that this Version was created for.  */
@@ -188,7 +188,7 @@ export class VersionEvent extends IModelHubEvent {
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
-    this.versionId = new Guid(obj.VersionId);
+    this.versionId = obj.VersionId;
     this.versionName = obj.VersionName;
     this.changeSetId = obj.ChangeSetId;
   }
@@ -270,7 +270,7 @@ export class EventSubscriptionHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param instanceId Id of the subscription.
    */
-  private getRelativeUrl(imodelId: Guid, instanceId?: string) {
+  private getRelativeUrl(imodelId: GuidString, instanceId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/EventSubscription/${instanceId || ""}`;
   }
 
@@ -282,7 +282,7 @@ export class EventSubscriptionHandler {
    * @return Created EventSubscription instance.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, events: EventType[]) {
+  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, events: EventType[]) {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Creating event subscription on iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -308,7 +308,7 @@ export class EventSubscriptionHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if [[EventSubscription]] does not exist with the specified subscription.wsgId.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, subscription: EventSubscription): Promise<EventSubscription> {
+  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, subscription: EventSubscription): Promise<EventSubscription> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Updating event subscription on iModel ${subscription.wsgId}`);
     ArgumentCheck.defined("token", token);
@@ -333,7 +333,7 @@ export class EventSubscriptionHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionDoesNotExist]($bentley) if EventSubscription does not exist with the specified subscription.wsgId.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async delete(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, eventSubscriptionId: string): Promise<void> {
+  public async delete(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, eventSubscriptionId: string): Promise<void> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Deleting event subscription ${eventSubscriptionId} from iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -378,7 +378,7 @@ export class EventHandler extends EventBaseHandler {
    * @hidden
    * @param imodelId Id of the iModel. See [[HubIModel]].
    */
-  private getEventSASRelativeUrl(imodelId: Guid): string {
+  private getEventSASRelativeUrl(imodelId: GuidString): string {
     return `/Repositories/iModel--${imodelId}/iModelScope/EventSAS/`;
   }
 
@@ -389,7 +389,7 @@ export class EventHandler extends EventBaseHandler {
    * @return SAS Token to connect to the topic.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async getSASToken(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid): Promise<EventSAS> {
+  public async getSASToken(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString): Promise<EventSAS> {
     Logger.logInfo(loggingCategory, `Getting event SAS token from iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
@@ -458,7 +458,7 @@ export class EventHandler extends EventBaseHandler {
    * @returns Function that deletes the created listener.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    */
-  public createListener(alctx: ActivityLoggingContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, imodelId: Guid, listener: (event: IModelHubEvent) => void): () => void {
+  public createListener(alctx: ActivityLoggingContext, authenticationCallback: () => Promise<AccessToken>, subscriptionId: string, imodelId: GuidString, listener: (event: IModelHubEvent) => void): () => void {
     alctx.enter();
     ArgumentCheck.defined("authenticationCallback", authenticationCallback);
     ArgumentCheck.validGuid("subscriptionId", subscriptionId);

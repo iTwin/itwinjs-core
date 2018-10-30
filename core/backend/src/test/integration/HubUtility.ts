@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, UserProfile, IModelHubClient } from "@bentley/imodeljs-clients";
 import { HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType } from "@bentley/imodeljs-clients";
-import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
 
@@ -79,7 +79,7 @@ export class HubUtility {
     return iModels[0];
   }
 
-  private static async queryIModelById(accessToken: AccessToken, projectId: string, iModelId: Guid): Promise<HubIModel | undefined> {
+  private static async queryIModelById(accessToken: AccessToken, projectId: string, iModelId: GuidString): Promise<HubIModel | undefined> {
     const iModels = await getIModelProjectAbstraction().queryIModels(actx, accessToken, projectId, new IModelQuery().byId(iModelId));
     if (iModels.length === 0)
       return undefined;
@@ -106,7 +106,7 @@ export class HubUtility {
    * @param iModelName Name of the iModel
    * @throws If the iModel is not found, or if there is more than one iModel with the supplied name
    */
-  public static async queryIModelIdByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<Guid> {
+  public static async queryIModelIdByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<GuidString> {
     const iModel: HubIModel | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
     if (!iModel || !iModel.id)
       return Promise.reject(`IModel ${iModelName} not found`);
@@ -114,7 +114,7 @@ export class HubUtility {
   }
 
   /** Download all change sets of the specified iModel */
-  private static async downloadChangeSets(accessToken: AccessToken, changeSetsPath: string, _projectId: string, iModelId: Guid): Promise<ChangeSet[]> {
+  private static async downloadChangeSets(accessToken: AccessToken, changeSetsPath: string, _projectId: string, iModelId: GuidString): Promise<ChangeSet[]> {
     const query = new ChangeSetQuery();
     query.selectDownloadUrl();
 
@@ -126,7 +126,7 @@ export class HubUtility {
     return changeSets;
   }
 
-  public static async downloadIModelById(accessToken: AccessToken, projectId: string, iModelId: Guid, downloadDir: string): Promise<void> {
+  public static async downloadIModelById(accessToken: AccessToken, projectId: string, iModelId: GuidString, downloadDir: string): Promise<void> {
     // Recreate the download folder if necessary
     if (IModelJsFs.existsSync(downloadDir))
       HubUtility.deleteDirectoryRecursive(downloadDir);
@@ -171,7 +171,7 @@ export class HubUtility {
    */
   public static async deleteIModel(accessToken: AccessToken, projectName: string, iModelName: string): Promise<void> {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
-    const iModelId: Guid = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    const iModelId: GuidString = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
 
     await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, iModelId);
   }
@@ -188,7 +188,7 @@ export class HubUtility {
   }
 
   /** Push an iModel to the Hub */
-  public static async pushIModel(accessToken: AccessToken, projectId: string, pathname: string): Promise<Guid> {
+  public static async pushIModel(accessToken: AccessToken, projectId: string, pathname: string): Promise<GuidString> {
     // Delete any existing iModels with the same name as the required iModel
     const iModelName = path.basename(pathname, ".bim");
     let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
@@ -204,7 +204,7 @@ export class HubUtility {
   /** Upload an IModel's seed files and change sets to the hub
    *  @hidden
    */
-  public static async pushIModelAndChangeSets(accessToken: AccessToken, projectName: string, uploadDir: string): Promise<Guid> {
+  public static async pushIModelAndChangeSets(accessToken: AccessToken, projectName: string, uploadDir: string): Promise<GuidString> {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(accessToken, projectId, seedPathname);
@@ -246,7 +246,7 @@ export class HubUtility {
    */
   public static async purgeAcquiredBriefcases(accessToken: AccessToken, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
-    const iModelId: Guid = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
+    const iModelId: GuidString = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
 
     const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, iModelId);
     if (briefcases.length > acquireThreshold) {
@@ -349,7 +349,7 @@ class TestIModelHubProject {
     const client = this.iModelHubClient;
     return client.IModels().create(actx, accessToken, projectId, params.name, params.seedFile, params.description, params.tracker);
   }
-  public deleteIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: Guid): Promise<void> {
+  public deleteIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: GuidString): Promise<void> {
     const client = this.iModelHubClient;
     return client.IModels().delete(actx, accessToken, projectId, iModelId);
   }

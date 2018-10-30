@@ -8,7 +8,7 @@ import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { RealityDataServicesClient, RealityData } from "../RealityDataServicesClient";
 import { IModelHubClient } from "..";
-import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 chai.should();
 
 describe.skip("RealityDataServicesClient", () => {
@@ -29,7 +29,7 @@ describe.skip("RealityDataServicesClient", () => {
     accessToken = await realityDataServiceClient.getAccessToken(actx, authToken);
 
     const imodelHubToken = await imodelHubClient.getAccessToken(actx, authToken);
-    const versions: Version[] = await imodelHubClient.Versions().get(actx, imodelHubToken, new Guid(iModelId));
+    const versions: Version[] = await imodelHubClient.Versions().get(actx, imodelHubToken, iModelId);
     chai.expect(versions);
     versionId = versions[0].wsgId;
     chai.expect(versionId);

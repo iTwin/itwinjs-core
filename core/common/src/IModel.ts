@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { Id64String, Id64, GuidProps, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, XYZProps, Range3dProps, YawPitchRollProps, YawPitchRollAngles, Transform, XYAndZ } from "@bentley/geometry-core";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { ThumbnailProps } from "./Thumbnail";
@@ -78,7 +78,7 @@ export interface IModelProps {
 /** The properties that can be supplied when creating a *new* iModel. */
 export interface CreateIModelProps extends IModelProps {
   /** The GUID of new iModel. If not present, a GUID will be generated. */
-  guid?: GuidProps;
+  guid?: GuidString;
   /** Client name for new iModel */
   client?: string;
   /** Thumbnail for new iModel */

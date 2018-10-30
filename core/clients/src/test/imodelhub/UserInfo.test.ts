@@ -11,9 +11,9 @@ import { ResponseBuilder, ScopeType, RequestType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { TestUsers } from "../TestConfig";
 import { UserInfoQuery, UserInfo, UserProfile, IModelHubClientError, IModelClient } from "../..";
-import { IModelHubStatus, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 
-function mockGetUserInfo(imodelId: Guid, userInfo: UserInfo[], query?: string) {
+function mockGetUserInfo(imodelId: GuidString, userInfo: UserInfo[], query?: string) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -43,7 +43,7 @@ function generateUserInfo(userProfiles: UserProfile[]): UserInfo[] {
 
 describe("iModelHubClient UserInfoHandler", () => {
   const accessTokens: AccessToken[] = [];
-  let imodelId: Guid;
+  let imodelId: GuidString;
   const actx = new ActivityLoggingContext("");
 
   const imodelName = "imodeljs-clients UserInfo test";

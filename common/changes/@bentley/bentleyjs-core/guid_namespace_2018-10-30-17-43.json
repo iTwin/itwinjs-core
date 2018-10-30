@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Turn Guid class into a namespace and use GuidString in signatures.",
+      "packageName": "@bentley/bentleyjs-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "Krischan.Eberle@bentley.com"
+}

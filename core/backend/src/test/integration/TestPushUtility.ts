@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Id64String, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
@@ -26,7 +26,7 @@ export class TestPushUtility {
 
   private _accessToken?: AccessToken;
   private _projectId?: string;
-  private _iModelId?: Guid;
+  private _iModelId?: GuidString;
 
   private _currentLevel: number = 0;
 
@@ -38,7 +38,7 @@ export class TestPushUtility {
   }
 
   /** Pushes a new Test IModel to the Hub */
-  public async pushTestIModel(): Promise<Guid> {
+  public async pushTestIModel(): Promise<GuidString> {
     const pathname = this.createStandalone();
     this._iModelId = await HubUtility.pushIModel(this._accessToken!, this._projectId!, pathname);
     return this._iModelId;

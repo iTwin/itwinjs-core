@@ -7,7 +7,7 @@
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { Query } from "./Query";
 import { ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -76,7 +76,7 @@ export class UserStatisticsQuery extends Query {
    * Query single instance by its id.
    * @param id Id of the instance to query.
    * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [Guid]($bentley) value.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [GuidString]($bentley) value.
    */
   public byId(id: string) {
     ArgumentCheck.validGuid("id", id);
@@ -96,7 +96,7 @@ export class UserStatisticsQuery extends Query {
    * Query User Statistics by ids.
    * @param ids Ids of the users.
    * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if ids array is undefined or empty, or it contains invalid [Guid]($bentley) values.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if ids array is undefined or empty, or it contains invalid [GuidString]($bentley) values.
    */
   public byIds(ids: string[]) {
     ArgumentCheck.nonEmptyArray("ids", ids);
@@ -169,7 +169,7 @@ export class UserStatisticsHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param userId Id of the user.
    */
-  private getRelativeUrl(imodelId: Guid, userId?: string) {
+  private getRelativeUrl(imodelId: GuidString, userId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/UserInfo/${userId ? userId : ""}`;
   }
 
@@ -181,7 +181,7 @@ export class UserStatisticsHandler {
    * @returns Array of [[UserStatistics]] for users matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid,
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString,
     query: UserStatisticsQuery = new UserStatisticsQuery()): Promise<UserStatistics[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying user statistics for iModel ${imodelId}`);
@@ -248,7 +248,7 @@ export class UserInfoQuery extends Query {
    * Query single instance by its id.
    * @param id Id of the instance to query.
    * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [Guid]($bentley) value.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [GuidString]($bentley) value.
    */
   public byId(id: string) {
     ArgumentCheck.validGuid("id", id);
@@ -293,7 +293,7 @@ export class UserInfoHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param userId Id of the user.
    */
-  private getRelativeUrl(imodelId: Guid, userId?: string) {
+  private getRelativeUrl(imodelId: GuidString, userId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/UserInfo/${userId || ""}`;
   }
 
@@ -304,7 +304,7 @@ export class UserInfoHandler {
    * @param query Optional query object to filter the queried users or select different data from them.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, query: UserInfoQuery = new UserInfoQuery()): Promise<UserInfo[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query: UserInfoQuery = new UserInfoQuery()): Promise<UserInfo[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying users for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);

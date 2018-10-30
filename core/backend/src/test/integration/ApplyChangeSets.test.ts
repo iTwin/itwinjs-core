@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode, ChangeSetApplyOption, ChangeSetStatus, Logger, LogLevel, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { OpenMode, ChangeSetApplyOption, ChangeSetStatus, Logger, LogLevel, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, ChangeSetToken, OpenParams } from "../../backend";
@@ -24,7 +24,7 @@ describe("ApplyChangeSets (#integration)", () => {
     Logger.setLevel("BeSQLite", LogLevel.Error);
   });
 
-  const testAllChangeSetOperations = async (accessToken: AccessToken, projectId: string, iModelId: Guid) => {
+  const testAllChangeSetOperations = async (accessToken: AccessToken, projectId: string, iModelId: GuidString) => {
     const iModelDir = path.join(iModelRootDir, iModelId.toString());
 
     Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
@@ -68,8 +68,8 @@ describe("ApplyChangeSets (#integration)", () => {
     assert(!!iModelDb);
   };
 
-  const testAllOperations = async (accessToken: AccessToken, projectId: string, iModelId: Guid) => {
-    await testOpen(accessToken, projectId, iModelId.toString());
+  const testAllOperations = async (accessToken: AccessToken, projectId: string, iModelId: GuidString) => {
+    await testOpen(accessToken, projectId, iModelId);
     await testAllChangeSetOperations(accessToken, projectId, iModelId);
   };
 

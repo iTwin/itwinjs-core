@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ElementState */
 
-import { Id64, Id64String, Guid } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, GuidString } from "@bentley/bentleyjs-core";
 import { EntityProps, Code, ElementProps, RelatedElement } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
 
@@ -65,7 +65,7 @@ export class ElementState extends EntityState implements ElementProps {
   public readonly model: Id64String;
   public readonly code: Code;
   public readonly parent?: RelatedElement;
-  public readonly federationGuid?: Guid;
+  public readonly federationGuid?: GuidString;
   public readonly userLabel?: string;
 
   constructor(props: ElementProps, iModel: IModelConnection) {
@@ -73,7 +73,7 @@ export class ElementState extends EntityState implements ElementProps {
     this.code = Code.fromJSON(props.code);
     this.model = RelatedElement.idFromJson(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
-    this.federationGuid = Guid.fromJSON(props.federationGuid);
+    this.federationGuid = props.federationGuid;
     this.userLabel = props.userLabel;
   }
 

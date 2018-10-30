@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel, DbResult, assert, Id64String, Id64, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
+import { Logger, LogLevel, DbResult, assert, Id64String, Id64, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
 import { AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients/lib";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common/lib/common";
 import { IModelHost, IModelHostConfiguration, IModelDb, OpenParams, ChangeSummaryManager, ECSqlStatement, ChangeSummary, AccessMode } from "@bentley/imodeljs-backend/lib/backend";
@@ -47,7 +47,7 @@ export class QueryAgent {
         const accessToken: AccessToken = await this._tokenStore!.getAccessToken();
 
         // Subscribe to change set and named version events
-        const imodelId = new Guid(this._iModelId!);
+        const imodelId: GuidString = this._iModelId!;
         Logger.logTrace(QueryAgentConfig.loggingCategory, "Setting up changeset and named version listeners...");
         const changeSetSubscription = await this._hubUtility!.getHubClient().Events().Subscriptions().create(actx, accessToken, imodelId, ["ChangeSetPostPushEvent"]);
         const deleteChangeSetListener = this._hubUtility!.getHubClient().Events().createListener(actx, async () => accessToken, changeSetSubscription!.wsgId, imodelId,

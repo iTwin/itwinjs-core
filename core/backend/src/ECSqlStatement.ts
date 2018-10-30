@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ECSQL */
 
-import { DbResult, Id64String, Guid, GuidString, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String, GuidString, IDisposable, Logger, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECSqlValueType, NavigationValue, NavigationBindingValue, ECJsNames } from "@bentley/imodeljs-common";
 import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-core";
 import { ECDb } from "./ECDb";
@@ -141,7 +141,7 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @param parameter Index (1-based) or name of the parameter
    * @param val GUID value
    */
-  public bindGuid(parameter: number | string, val: GuidString | Guid): void { this.getBinder(parameter).bindGuid(val); }
+  public bindGuid(parameter: number | string, val: GuidString): void { this.getBinder(parameter).bindGuid(val); }
 
   /** Binds an Id value to the specified ECSQL parameter.
    * @param parameter Index (1-based) or name of the parameter
@@ -420,10 +420,10 @@ export class ECSqlBinder {
   }
 
   /** Binds an GUID value to the ECSQL parameter.
-   * @param val GUID value. If passed as string, it must be formatted as described in [Guid]($bentleyjs-core).
+   * @param val GUID value. If passed as string, it must be formatted as described in [GuidString]($bentleyjs-core).
    */
-  public bindGuid(val: GuidString | Guid): void {
-    const stat: DbResult = this._binder.bindGuid(ECSqlTypeHelper.toGuidString(val));
+  public bindGuid(val: GuidString): void {
+    const stat: DbResult = this._binder.bindGuid(val);
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error binding GUID", Logger.logWarning, loggingCategory);
   }
@@ -549,7 +549,7 @@ export class ECSqlValue {
   /** Get the value as a IGeometry value (as ECJSON IGeometry) */
   public getGeometry(): any { return JSON.parse(this._val.getGeometry()); }
   /** Get the value as a GUID (formatted as GUID string).
-   *  See [Guid]($bentleyjs-core)
+   *  See [GuidString]($bentleyjs-core)
    */
   public getGuid(): GuidString { return this._val.getGuid(); }
   /** Get the value as a Id (formatted as hexadecimal string). */
@@ -752,11 +752,6 @@ class ECSqlBindingHelper {
       return true;
     }
 
-    if (val instanceof Guid) {
-      binder.bindGuid(val);
-      return true;
-    }
-
     if (ECSqlTypeHelper.isXYAndZ(val)) {
       binder.bindPoint3d(val);
       return true;
@@ -894,13 +889,6 @@ class ECSqlValueHelper {
 
 class ECSqlTypeHelper {
   public static isBlob(val: any): val is Uint8Array { return val instanceof Uint8Array; }
-
-  public static toGuidString(val: GuidString | Guid): string {
-    if (typeof (val) === "string")
-      return val;
-
-    return val.value;
-  }
 
   public static isXAndY(val: any): val is XAndY { return XYZ.isXAndY(val); }
   public static isXYAndZ(val: any): val is XYAndZ { return XYZ.isXYAndZ(val); }

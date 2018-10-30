@@ -8,7 +8,7 @@ import {
   ImsActiveSecureTokenClient, IModelHubEvent, EventSAS, AuthorizationToken,
 } from "@bentley/imodeljs-clients";
 
-import { ActivityLoggingContext, Guid, Logger } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, GuidString, Guid, Logger } from "@bentley/bentleyjs-core";
 
 class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
@@ -17,7 +17,7 @@ class MockAccessToken extends AccessToken {
 
 const authorizationClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
 const imodelHubClient: IModelHubClient = new IModelHubClient();
-const imodelId: Guid = new Guid(true);
+const imodelId: GuidString = Guid.createValue();
 const username: string = "";
 const password: string = "";
 

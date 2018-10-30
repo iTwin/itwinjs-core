@@ -4,8 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Ids */
 
-import { assert } from "./Assert";
-
 /**
  * A string containing a well-formed string representation of an [[Id64]].
  *
@@ -17,9 +15,6 @@ export type Id64String = string;
  * A string containing a well-formed string representation of a [[Guid]].
  */
 export type GuidString = string;
-
-/** The properties of a GUID. When serialized, will always be a string. */
-export type GuidProps = Guid | GuidString;
 
 /** A set of [[Id64String]]s. */
 export type Id64Set = Set<Id64String>;
@@ -343,71 +338,25 @@ export class TransientIdSequence {
   public get next(): Id64String { return Id64.fromLocalAndBriefcaseIds(++this._localId, 0xffffff); }
 }
 
-/** A string in the "8-4-4-4-12" pattern. Does not enforce that the Guid is a valid v4 format uuid.
- * @note Guid is an immutable class. Its value cannot be changed.
+/**
+ * The Guid namespace provides facilities for working with GUID strings using the "8-4-4-4-12" pattern.
+ *
+ * The [[GuidString]] type alias is used to indicate function arguments, return types, and variables which are known to
+ * be in the GUID format.
  */
-export class Guid {
-  public readonly value: GuidString;
-  private static readonly _uuidPattern = new RegExp("^[0-9a-f]{8}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{4}-[0-9a-f]{12}$");
-
-  /** Creates a new Guid object
-   * @param input if of type
-   * - [[GuidString]]:
-   *    - *validateGuidString* is true: *input* is verified to have a valid GUID format.
-   *    - *validateGuidString* is false: *input* is used without validation (the string is still normalized to lower-case)
-   * - boolean:
-   *    - true: a new Guid value is generated
-   *    - false: an empty Guid is returned
-   * @param validateGuidString if true, and *input* is of type [[GuidString]], the constructor validates that *input*
-   * has the valid Guid format. if false, and *input* is of type [[GuidString]], *input* is used without validation.
-   */
-  public constructor(input?: GuidString | Guid | boolean, validateGuidString: boolean = true) {
-    if (typeof input === "string") {
-      const normalizedGuid: GuidString = input.toLowerCase();
-      if (!validateGuidString || Guid.isGuid(normalizedGuid)) {
-        this.value = normalizedGuid;
-        return;
-      }
-    }
-
-    if (input instanceof Guid) {
-      this.value = input.value;
-      return;
-    }
-
-    if (typeof input === "boolean" && input) {
-      this.value = Guid.createValue();
-      return;
-    }
-
-    this.value = "";
-  }
-
-  /** Wrap a GUID string in an instance of an Guid object.
-   * This is useful only in rare scenarios in which type-switching on `instanceof Guid` is desired.
-   * > This is equivalent to calling the constructor with *validateGuidString* being false.
-   */
-  public static wrap(guid: GuidString): Guid {
-    assert(Guid.isGuid(guid));
-    return new Guid(guid);
-  }
-
-  public equals(other: Guid): boolean { return this.value === other.value; }
-  public get isValid(): boolean { return this.value !== ""; }
-  public toString(): GuidString { return this.value; }
-  public toJSON(): GuidString { return this.value; }
-  public static fromJSON(val?: GuidProps): Guid | undefined { return val ? new Guid(val) : undefined; }
+export namespace Guid {
+  const uuidPattern = new RegExp("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
   /** determine whether the input string is "guid-like". That is, it follows the 8-4-4-4-12 pattern. This does not enforce
    *  that the string is actually in valid UUID format.
    */
-  public static isGuid(value: string) { return Guid._uuidPattern.test(value); }
+  export function isGuid(value: string): boolean { return uuidPattern.test(value); }
 
   /** Determine whether the input string is a valid V4 Guid string */
-  public static isV4Guid(value: string) { return /^[0-9a-f]{8}-[0-9a-f]{4}-4[0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/.test(value); }
+  export function isV4Guid(value: string): boolean { return /^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-4[0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}$/.test(value); }
 
   /** Create a new V4 Guid value */
-  public static createValue(): GuidString {
+  export function createValue(): GuidString {
     // https://stackoverflow.com/questions/105034/create-guid-uuid-in-javascript
     return "xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx".replace(/[xy]/g, (c) => {
       const r = Math.random() * 16 | 0;

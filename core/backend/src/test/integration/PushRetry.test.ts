@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Id64String, Id64, DbResult, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, DbResult, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, ECSqlStatement, AccessMode, ChangeSummary } from "../../backend";
@@ -22,7 +22,7 @@ import * as path from "path";
 describe("PushRetry", () => {
   let accessToken: AccessToken;
   let testProjectId: string;
-  let testIModelId: Guid;
+  let testIModelId: GuidString;
   let testIModel: IModelDb;
   const testPushUtility: TestPushUtility = new TestPushUtility();
   const iModelName = "PushRetryTest";
@@ -189,7 +189,7 @@ describe("PushRetry", () => {
 
     await pushRetryIModel.pushChanges(actx, accessToken);
     ResponseBuilder.clearMocks();
-    await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, new Guid(pushRetryIModelId!));
+    await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, pushRetryIModelId!);
   });
 
   it.skip("should fail to push and not retry again (#integration)", async () => {
@@ -219,7 +219,7 @@ describe("PushRetry", () => {
       assert.equal(error.name, "UnknownPushError");
     }
     ResponseBuilder.clearMocks();
-    await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, new Guid(pushRetryIModelId!));
+    await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, testProjectId, pushRetryIModelId!);
   });
 
 });

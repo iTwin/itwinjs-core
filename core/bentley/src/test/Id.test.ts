@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { Id64, Guid } from "../bentleyjs-core";
+import { Id64, GuidString, Guid } from "../bentleyjs-core";
 
 class Uint64Id {
   public constructor(public readonly high: number,
@@ -163,59 +163,25 @@ describe("Ids", () => {
   });
 
   it("Guid should construct properly", () => {
-    const v1: string = "274e25dc-8407-11e7-bb31-be2e44b06b34"; // a valid v1 id
-    const v4: string = "3d04156c-4faa-4eac-b20e-353a9e6c0183"; // a valid v4 id
-    const id1 = new Guid(v1);
-    assert.isTrue(id1.isValid);
+    const v1: GuidString = "274e25dc-8407-11e7-bb31-be2e44b06b34"; // a valid v1 id
+    const v4: GuidString = "3d04156c-4faa-4eac-b20e-353a9e6c0183"; // a valid v4 id
+    assert.isTrue(Guid.isGuid(v1));
     assert.isFalse(Guid.isV4Guid(v1));
-
-    const id4 = new Guid(v4);
-    assert.isTrue(id4.isValid);
     assert.isTrue(Guid.isV4Guid(v4));
 
-    const id5 = new Guid(id4);
-    assert.isTrue(id5.isValid);
-    assert.isTrue(id5.equals(id4));
-    assert.equal(JSON.stringify(id4), '"' + v4 + '"');
-    assert.isFalse(new Guid("0x123").isValid);
-    assert.isFalse(new Guid("badstuff").isValid);
-    assert.isFalse(new Guid().isValid);
-    assert.isFalse(new Guid("3d04156c-4faa-4eac-b20e-353a9e6c0183d").isValid); // too long
-    assert.isFalse(new Guid("3d04156c-4faa-4eac-b20e-353a9e6c018r").isValid); // "r" is invalid
-    assert.isTrue(new Guid("3d04156C-4fAa-4eac-b20e-353a9e6c018F").isValid); // should accept uppercase characters
-    assert.isFalse(new Guid(false).isValid);
+    assert.equal(JSON.stringify(v4), '"' + v4 + '"');
+    assert.isFalse(Guid.isGuid("0x123"));
+    assert.isFalse(Guid.isGuid("badstuff"));
+    assert.isFalse(Guid.isGuid("3d04156c-4faa-4eac-b20e-353a9e6c0183d")); // too long
+    assert.isFalse(Guid.isGuid("3d04156c-4faa-4eac-b20e-353a9e6c018r")); // "r" is invalid
+    assert.isTrue(Guid.isGuid("3d04156C-4fAa-4eac-b20e-353a9e6c018F")); // should accept uppercase characters
+    assert.isFalse(Guid.isGuid(""));
 
-    const id6 = new Guid(true);
-    const id7 = new Guid(true);
-    assert.isTrue(id6.isValid);
-    assert.isDefined(id6.value);
-    assert.isTrue(Guid.isGuid(id6.value));
-    assert.isTrue(Guid.isV4Guid(id6.value));
-    assert.notEqual(id6.toString(), id7.toString());
-
-    // validateGuidString = false
-    let id = new Guid(v1, false);
-    assert.isTrue(id.isValid);
-    assert.isTrue(Guid.isGuid(id.value));
-
-    id = Guid.wrap(v1);
-    assert.isTrue(id.isValid);
-    assert.isTrue(Guid.isGuid(id.value));
-
-    id = new Guid("invalid guid string", false);
-    assert.isTrue(id.isValid, "isValid just tests whether the Guid value is empty or not");
-    assert.isFalse(Guid.isGuid(id.value));
-
-    try {
-      id = Guid.wrap("invalid guid string");
-    } catch (e) {
-      // Guid.wrap asserts on the validity of the string. This is therefore an expected error
-      assert.isDefined(e.message);
-      assert.isTrue(e.message.toLowerCase().startsWith("assert:"));
-    }
-
-    assert.isTrue(id.isValid, "isValid just tests whether the Guid value is empty or not");
-    assert.isFalse(Guid.isGuid(id.value));
+    const id1: GuidString = Guid.createValue();
+    const id2: GuidString = Guid.createValue();
+    assert.isTrue(Guid.isGuid(id1));
+    assert.isTrue(Guid.isV4Guid(id2));
+    assert.notEqual(id1, id2);
   });
 
 });

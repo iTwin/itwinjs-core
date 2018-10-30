@@ -186,8 +186,8 @@ describe("iModel", () => {
 
     const a2 = imodel2.elements.getElement("0x1d");
     assert.exists(a2);
-    assert.isTrue(a2.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
-    const el3: Element = imodel2.elements.getElement(new Guid(a2.federationGuid!.value));
+    assert.isTrue(a2.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    const el3: Element = imodel2.elements.getElement(a2.federationGuid!);
     assert.exists(el3);
     assert.notEqual(a2, el3);
     assert.equal(a2.id, el3.id);
@@ -202,7 +202,7 @@ describe("iModel", () => {
   it("should create elements", () => {
     const seedElement = imodel2.elements.getElement("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     for (let i = 0; i < 25; i++) {
       const elementProps: GeometricElementProps = {
@@ -211,7 +211,7 @@ describe("iModel", () => {
         model: seedElement.model,
         category: seedElement.category,
         code: Code.createEmpty(),
-        federationGuid: new Guid(true),
+        federationGuid: Guid.createValue(),
         userLabel: "UserLabel-" + i,
       };
 
@@ -1081,11 +1081,11 @@ describe("iModel", () => {
       client: "ABC Manufacturing",
       globalOrigin: { x: 10, y: 10 },
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
-      guid: new Guid(true),
+      guid: Guid.createValue(),
     };
 
     const iModel: IModelDb = IModelTestUtils.createStandaloneIModel("TestStandalone.bim", args);
-    assert.equal(iModel.getGuid().value, args.guid.value);
+    assert.equal(iModel.getGuid(), args.guid);
     assert.equal(iModel.rootSubject.name, args.rootSubject.name);
     assert.equal(iModel.rootSubject.description, args.rootSubject.description);
     assert.equal(iModel.projectExtents.low.x, args.projectExtents.low.x);

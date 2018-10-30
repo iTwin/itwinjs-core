@@ -26,7 +26,7 @@ describe("GeometryStream", () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     // init line code to line pixels array
     const lsCodes: LinePixels[] = [LinePixels.Solid, LinePixels.Code1, LinePixels.Code2, LinePixels.Code3, LinePixels.Code4, LinePixels.Code5, LinePixels.Code6, LinePixels.Code7];
@@ -110,7 +110,7 @@ describe("GeometryStream", () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     // create special "internal default" continuous style for drawing curves using width overrides
     const styleId = LineStyleDefinition.Utils.getOrCreateContinuousStyle(imodel, IModel.dictionaryId);
@@ -194,7 +194,7 @@ describe("GeometryStream", () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const partBuilder = new GeometryStreamBuilder();
     const partParams = new GeometryParams(Id64.invalid); // category won't be used
@@ -253,7 +253,7 @@ describe("GeometryStream", () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const lsStrokes: LineStyleDefinition.Strokes = [];
     lsStrokes.push({ length: 0.25, orgWidth: 0.0, endWidth: 0.025, strokeMode: LineStyleDefinition.StrokeMode.Dash, widthMode: LineStyleDefinition.StrokeWidth.Left });
@@ -326,7 +326,7 @@ describe("GeometryStream", () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const builder = new GeometryStreamBuilder();
     const params = new GeometryParams(seedElement.category);
@@ -457,7 +457,7 @@ describe("GeometryStream", () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const builder = new GeometryStreamBuilder();
     const params = new GeometryParams(seedElement.category);
@@ -588,7 +588,7 @@ describe("GeometryStream", () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
     assert.isTrue(0 === imodel.getFontMap().fonts.size); // file currently contains no fonts...
 
     let fontProps: FontProps = { id: 0, type: FontType.TrueType, name: "Arial" };
@@ -670,7 +670,7 @@ describe("GeometryStream", () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -717,7 +717,7 @@ describe("GeometryStream", () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const geomArray: Arc3d[] = [
       Arc3d.createXY(Point3d.create(0, 0), 5),
@@ -770,7 +770,7 @@ describe("GeometryStream", () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
-    assert.isTrue(seedElement.federationGuid!.value === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
 
     const testOrigin = Point3d.create(5, 10, 0);
     const testAngles = YawPitchRollAngles.createDegrees(45, 0, 0);

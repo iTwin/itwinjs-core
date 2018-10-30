@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, Guid, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation,
@@ -529,10 +529,10 @@ export class IModelDb extends IModel {
   public clearSqliteStatementCache(): void { this._sqliteStatementCache.clear(); }
 
   /** Get the GUID of this iModel.  */
-  public getGuid(): Guid { return new Guid(this.nativeDb.getDbGuid()); }
+  public getGuid(): GuidString { return this.nativeDb.getDbGuid(); }
 
   /** Set the GUID of this iModel. */
-  public setGuid(guid: Guid): DbResult { return this.nativeDb.setDbGuid(guid.toString()); }
+  public setGuid(guid: GuidString): DbResult { return this.nativeDb.setDbGuid(guid); }
 
   /** Update the project extents for this iModel.
    * <p><em>Example:</em>
@@ -638,12 +638,12 @@ export class IModelDb extends IModel {
   /** Set iModel as Master copy.
    * @param guid Optionally provide db guid. If its not provided the method would generate one.
    */
-  public setAsMaster(guid?: Guid): void {
+  public setAsMaster(guid?: GuidString): void {
     if (guid === undefined) {
       if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster())
         throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
     } else {
-      if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster(guid!.toString()))
+      if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster(guid!))
         throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
     }
   }
@@ -949,7 +949,7 @@ export namespace IModelDb {
      * @param modeledElementId Identifies the modeled element.
      * @throws [[IModelError]]
      */
-    public getSubModel(modeledElementId: Id64String | Guid | Code): Model {
+    public getSubModel(modeledElementId: Id64String | GuidString | Code): Model {
       const modeledElement = this._iModel.elements.getElement(modeledElementId);
       if (modeledElement.id === IModel.rootSubjectId)
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggingCategory);
@@ -1035,10 +1035,15 @@ export namespace IModelDb {
      * Get properties of an Element by Id, FederationGuid, or Code
      * @throws [[IModelError]] if the element is not found.
      */
-    public getElementProps(elementId: Id64String | Guid | Code | ElementLoadProps): ElementProps {
-      if (typeof elementId === "string") elementId = { id: elementId };
-      else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
-      else if (elementId instanceof Code) elementId = { code: elementId };
+    public getElementProps(elementId: Id64String | GuidString | Code | ElementLoadProps): ElementProps {
+      if (typeof elementId === "string") {
+        if (Guid.isGuid(elementId))
+          elementId = { federationGuid: elementId };
+        else
+          elementId = { id: elementId };
+      } else if (elementId instanceof Code)
+        elementId = { code: elementId };
+
       return this._getElementProps(elementId);
     }
 
@@ -1047,10 +1052,15 @@ export namespace IModelDb {
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
      * @throws [[IModelError]] if the element is not found.
      */
-    public getElement(elementId: Id64String | Guid | Code | ElementLoadProps): Element {
-      if (typeof elementId === "string") elementId = { id: elementId };
-      else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
-      else if (elementId instanceof Code) elementId = { code: elementId };
+    public getElement(elementId: Id64String | GuidString | Code | ElementLoadProps): Element {
+      if (typeof elementId === "string") {
+        if (Guid.isGuid(elementId))
+          elementId = { federationGuid: elementId };
+        else
+          elementId = { id: elementId };
+      } else if (elementId instanceof Code)
+        elementId = { code: elementId };
+
       return this._doGetElement(elementId);
     }
 

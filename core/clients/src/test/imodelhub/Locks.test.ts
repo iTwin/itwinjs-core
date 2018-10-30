@@ -14,11 +14,11 @@ import {
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { Guid, IModelHubStatus, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Guid, IModelHubStatus, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
 
 chai.should();
 
-function mockDeleteAllLocks(imodelId: Guid, briefcaseId: number) {
+function mockDeleteAllLocks(imodelId: GuidString, briefcaseId: number) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -28,7 +28,7 @@ function mockDeleteAllLocks(imodelId: Guid, briefcaseId: number) {
 
 describe("iModelHubClient LockHandler", () => {
   let accessToken: AccessToken;
-  let imodelId: Guid;
+  let imodelId: GuidString;
   let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients Locks test";
   let briefcases: Briefcase[];
@@ -190,7 +190,7 @@ describe("iModelHubClient LockHandler", () => {
   });
 
   it("should get locks by instance ids", async () => {
-    const fileId = new Guid(true);
+    const fileId: GuidString = Guid.createValue();
     const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0"),
     utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0")];
     utils.mockGetLocks(imodelId, "?$filter=BriefcaseId+eq+2", ...mockedLocks);

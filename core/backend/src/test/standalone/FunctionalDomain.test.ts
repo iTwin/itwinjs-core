@@ -29,7 +29,7 @@ describe("Functional Domain", () => {
       client: "Functional",
       globalOrigin: { x: 0, y: 0 },
       projectExtents: { low: { x: -500, y: -500, z: -50 }, high: { x: 500, y: 500, z: 50 } },
-      guid: new Guid(true),
+      guid: Guid.createValue(),
     });
 
     // Import the Functional schema

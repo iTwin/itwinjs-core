@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
 
-import { Guid, IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Guid, GuidString, IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 import { AccessToken, WsgError, IModelQuery, IModelClient } from "../../";
 import {
@@ -18,11 +18,11 @@ import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 
-function mockGetIModelByName(projectId: string, name: string, description = "", imodelId?: Guid, initialized = true) {
+function mockGetIModelByName(projectId: string, name: string, description = "", imodelId?: GuidString, initialized = true) {
   if (!TestConfig.enableMocks)
     return;
 
-  imodelId = imodelId || new Guid(true);
+  imodelId = imodelId || Guid.createValue();
   const requestPath = utils.createRequestUrl(ScopeType.Project, projectId,
     "iModel", `?$filter=Name+eq+%27${encodeURIComponent(name)}%27`);
   const requestResponse = ResponseBuilder.generateGetResponse<HubIModel>(ResponseBuilder.generateObject<HubIModel>(HubIModel,
@@ -36,7 +36,7 @@ function mockGetIModelByName(projectId: string, name: string, description = "", 
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-function mockPostiModel(projectId: string, imodelId: Guid, imodelName: string, description: string) {
+function mockPostiModel(projectId: string, imodelId: GuidString, imodelName: string, description: string) {
   const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel");
   const postBody = ResponseBuilder.generatePostBody<HubIModel>(
     ResponseBuilder.generateObject<HubIModel>(HubIModel,
@@ -54,7 +54,7 @@ function mockPostiModel(projectId: string, imodelId: Guid, imodelName: string, d
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-function mockPostNewSeedFile(imodelId: Guid, fileId: string, filePath: string, description?: string) {
+function mockPostNewSeedFile(imodelId: GuidString, fileId: string, filePath: string, description?: string) {
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile");
   const postBody = ResponseBuilder.generatePostBody<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
     new Map<string, any>([
@@ -73,7 +73,7 @@ function mockPostNewSeedFile(imodelId: Guid, fileId: string, filePath: string, d
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-function mockPostUpdatedSeedFile(imodelId: Guid, fileId: string, filePath: string, description?: string) {
+function mockPostUpdatedSeedFile(imodelId: GuidString, fileId: string, filePath: string, description?: string) {
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "SeedFile", fileId);
   const postBody = ResponseBuilder.generatePostBody<SeedFile>(ResponseBuilder.generateObject<SeedFile>(SeedFile,
     new Map<string, any>([
@@ -93,7 +93,7 @@ function mockPostUpdatedSeedFile(imodelId: Guid, fileId: string, filePath: strin
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-function mockGetSeedFile(imodelId: Guid, getFileUrl = false) {
+function mockGetSeedFile(imodelId: GuidString, getFileUrl = false) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -110,7 +110,7 @@ function mockGetSeedFile(imodelId: Guid, getFileUrl = false) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-function mockCreateiModel(projectId: string, imodelId: Guid, imodelName: string, description: string, filePath: string, chunks = 1) {
+function mockCreateiModel(projectId: string, imodelId: GuidString, imodelName: string, description: string, filePath: string, chunks = 1) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -122,7 +122,7 @@ function mockCreateiModel(projectId: string, imodelId: Guid, imodelName: string,
   mockGetSeedFile(imodelId);
 }
 
-function mockDeleteiModel(projectId: string, imodelId: Guid) {
+function mockDeleteiModel(projectId: string, imodelId: GuidString) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -144,7 +144,7 @@ function mockUpdateiModel(projectId: string, imodel: HubIModel) {
 describe("iModelHub iModelHandler", () => {
   let accessToken: AccessToken;
   let projectId: string;
-  let imodelId: Guid;
+  let imodelId: GuidString;
   let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients iModels test";
   const createIModelName = "imodeljs-client iModels Create test";
@@ -217,13 +217,13 @@ describe("iModelHub iModelHandler", () => {
 
     const iModel: HubIModel = (await imodelClient.IModels().get(alctx, accessToken, projectId, new IModelQuery().byId(imodelId)))[0];
 
-    chai.expect(iModel.id!.toString()).to.be.equal(imodelId.toString());
+    chai.expect(iModel.id!).to.be.equal(imodelId);
   });
 
   it("should fail getting an invalid iModel", async () => {
-    const mockGuid = new Guid(true);
+    const mockGuid = Guid.createValue();
     if (TestConfig.enableMocks) {
-      const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel", mockGuid.toString());
+      const requestPath = utils.createRequestUrl(ScopeType.Project, projectId, "iModel", mockGuid);
       ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, ResponseBuilder.generateError("InstanceNotFound"),
         1, undefined, undefined, 404);
     }
@@ -298,7 +298,7 @@ describe("iModelHub iModelHandler", () => {
   it("should create iModel and upload SeedFile", async function (this: Mocha.ITestCallbackContext) {
     const filePath = utils.assetsPath + "LargerSeedFile.bim";
     const description = "Test iModel created by imodeljs-clients tests";
-    mockCreateiModel(projectId, new Guid(true), createIModelName, description, filePath, 2);
+    mockCreateiModel(projectId, Guid.createValue(), createIModelName, description, filePath, 2);
     const progressTracker = new utils.ProgressTracker();
     const iModel = await imodelClient.IModels().create(alctx, accessToken, projectId, createIModelName, filePath, description, progressTracker.track());
 

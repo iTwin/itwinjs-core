@@ -257,9 +257,9 @@ export class ArgumentCheck {
       throw IModelHubClientError.invalidArgument(argumentName);
   }
 
-  public static validGuid(argumentName: string, argument?: string | Guid) {
+  public static validGuid(argumentName: string, argument?: string) {
     this.defined(argumentName, argument);
-    if (!(argument instanceof Guid) && !Guid.isGuid(argument!))
+    if (!Guid.isGuid(argument!))
       throw IModelHubClientError.invalidArgument(argumentName);
   }
 

@@ -7,7 +7,7 @@
 import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
 
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { InstanceIdQuery } from "./Query";
@@ -21,7 +21,7 @@ const loggingCategory = "imodeljs-clients.imodelhub";
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Version", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Version extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "instanceId", new GuidSerializer())
-  public id?: Guid;
+  public id?: GuidString;
 
   /** Description of the named Version. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
@@ -45,11 +45,11 @@ export class Version extends WsgInstance {
 
   /** Id of the [[SmallThumbnail]] of the named Version. */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId", new GuidSerializer())
-  public smallThumbnailId?: Guid;
+  public smallThumbnailId?: GuidString;
 
   /** Id of the [[LargeThumbnail]] of the named Version. */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[LargeThumbnail].instanceId", new GuidSerializer())
-  public largeThumbnailId?: Guid;
+  public largeThumbnailId?: GuidString;
 }
 
 /**
@@ -118,7 +118,7 @@ export class VersionHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param versionId Id of the version.
    */
-  private getRelativeUrl(imodelId: Guid, versionId?: Guid) {
+  private getRelativeUrl(imodelId: GuidString, versionId?: GuidString) {
     return `/Repositories/iModel--${imodelId}/iModelScope/Version/${versionId || ""}`;
   }
 
@@ -131,7 +131,7 @@ export class VersionHandler {
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[Version]] with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, query: VersionQuery = new VersionQuery()): Promise<Version[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query: VersionQuery = new VersionQuery()): Promise<Version[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying named versions for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -158,7 +158,7 @@ export class VersionHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.ChangeSetAlreadyHasVersion]($bentley) if the [[ChangeSet]] with specified changeSetId already has a named [[Version]] associated with it.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, changeSetId: string, name: string, description?: string): Promise<Version> {
+  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, changeSetId: string, name: string, description?: string): Promise<Version> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Creating named version for iModel ${imodelId}, changeSet id: ${changeSetId}`);
     ArgumentCheck.defined("token", token);
@@ -188,7 +188,7 @@ export class VersionHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.VersionAlreadyExists]($bentley) if a named [[Version]] already exists with the specified name.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, version: Version): Promise<Version> {
+  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, version: Version): Promise<Version> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Updating named version for iModel ${imodelId}, changeSet id: ${version.changeSetId}`);
     ArgumentCheck.defined("token", token);

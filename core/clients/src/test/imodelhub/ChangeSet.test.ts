@@ -16,11 +16,11 @@ import {
 
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { IModelHubStatus, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 
 chai.should();
 
-function mockPostNewChangeSet(imodelId: Guid, changeSet: ChangeSet) {
+function mockPostNewChangeSet(imodelId: GuidString, changeSet: ChangeSet) {
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet");
 
   const postBody = ResponseBuilder.generatePostBody(changeSet);
@@ -34,7 +34,7 @@ function mockPostNewChangeSet(imodelId: Guid, changeSet: ChangeSet) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-function mockPostUpdatedChangeSet(imodelId: Guid, changeSet: ChangeSet) {
+function mockPostUpdatedChangeSet(imodelId: GuidString, changeSet: ChangeSet) {
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, "ChangeSet", changeSet.id!);
 
   const cs = new ChangeSet();
@@ -48,7 +48,7 @@ function mockPostUpdatedChangeSet(imodelId: Guid, changeSet: ChangeSet) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
 
-function mockCreateChangeSet(imodelId: Guid, changeSet: ChangeSet) {
+function mockCreateChangeSet(imodelId: GuidString, changeSet: ChangeSet) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -59,7 +59,7 @@ function mockCreateChangeSet(imodelId: Guid, changeSet: ChangeSet) {
 
 describe("iModelHub ChangeSetHandler", () => {
   let accessToken: AccessToken;
-  let imodelId: Guid;
+  let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients ChangeSets test";

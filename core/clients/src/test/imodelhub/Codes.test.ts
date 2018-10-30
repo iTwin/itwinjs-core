@@ -14,7 +14,7 @@ import {
 
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
-import { IModelHubStatus, ActivityLoggingContext, Id64, Guid } from "@bentley/bentleyjs-core";
+import { IModelHubStatus, ActivityLoggingContext, Id64, GuidString } from "@bentley/bentleyjs-core";
 
 chai.should();
 
@@ -32,7 +32,7 @@ function containsCode(codes: HubCode[], wantCode: HubCode) {
 
 describe("iModelHub CodeHandler", () => {
   let accessToken: AccessToken;
-  let imodelId: Guid;
+  let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
   let briefcaseId2: number;
@@ -347,7 +347,7 @@ function createTestSequence(type: CodeSequenceType) {
 
 describe("iModelHub CodeSequenceHandler", () => {
   let accessToken: AccessToken;
-  let imodelId: Guid;
+  let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcaseId: number;
   const imodelName = "imodeljs-clients Codes test";

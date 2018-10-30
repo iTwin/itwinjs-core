@@ -9,11 +9,11 @@ import {
 } from "../../";
 
 import * as utils from "./TestUtils";
-import { Logger, ActivityLoggingContext, Id64, Guid } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, Id64, GuidString } from "@bentley/bentleyjs-core";
 
 describe.skip("iModelHub Performance tests", function (this: Mocha.ISuiteCallbackContext) {
   let accessToken: AccessToken;
-  let imodelId: Guid;
+  let imodelId: GuidString;
   const imodelName = "imodeljs-clients Performance test";
   let briefcase1: Briefcase;
   let briefcase2: Briefcase;

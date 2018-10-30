@@ -8,7 +8,7 @@ import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
 import { IModelHubClientError, IModelHubError, ArgumentCheck } from "./Errors";
 import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
 import { AccessToken } from "../Token";
-import { Logger, IModelHubStatus, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { FileHandler } from "../FileHandler";
 import { ProgressInfo } from "../Request";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -24,7 +24,7 @@ const loggingCategory = "imodeljs-clients.imodelhub";
 export class HubIModel extends WsgInstance {
     /** Id of the iModel. */
     @ECJsonTypeMap.propertyToJson("wsg", "instanceId", new GuidSerializer())
-    public id?: Guid;
+    public id?: GuidString;
 
     /** Description of the iModel. */
     @ECJsonTypeMap.propertyToJson("wsg", "properties.Description")
@@ -75,7 +75,7 @@ export enum InitializationState {
 export class SeedFile extends WsgInstance {
     /** Id of the iModel. */
     @ECJsonTypeMap.propertyToJson("wsg", "instanceId", new GuidSerializer())
-    public id?: Guid;
+    public id?: GuidString;
 
     @ECJsonTypeMap.propertyToJson("wsg", "properties.FileName")
     public fileName?: string;
@@ -87,7 +87,7 @@ export class SeedFile extends WsgInstance {
     public fileSize?: string;
 
     @ECJsonTypeMap.propertyToJson("wsg", "properties.FileId", new GuidSerializer())
-    public fileId?: Guid;
+    public fileId?: GuidString;
 
     @ECJsonTypeMap.propertyToJson("wsg", "properties.Index")
     public index?: number;
@@ -164,7 +164,7 @@ class SeedFileHandler {
      * @param imodelId Id of the iModel. See [[HubIModel]].
      * @param fileId Id of the Seed File.
      */
-    private getRelativeUrl(imodelId: Guid, fileId?: Guid) {
+    private getRelativeUrl(imodelId: GuidString, fileId?: GuidString) {
         return `/Repositories/iModel--${imodelId}/iModelScope/SeedFile/${fileId || ""}`;
     }
 
@@ -176,7 +176,7 @@ class SeedFileHandler {
      * @param query Optional query object to filter the queried SeedFiles or select different data from them.
      * @returns Resolves to the seed file.
      */
-    public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, query: SeedFileQuery = new SeedFileQuery()): Promise<SeedFile[]> {
+    public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query: SeedFileQuery = new SeedFileQuery()): Promise<SeedFile[]> {
         alctx.enter();
         Logger.logInfo(loggingCategory, `Querying seed files for iModel ${imodelId}`);
 
@@ -196,7 +196,7 @@ class SeedFileHandler {
      * @param seedPathname Pathname of the SeedFile to be uploaded.
      * @param progressCallback Callback for tracking progress.
      */
-    public async uploadSeedFile(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, seedPathname: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
+    public async uploadSeedFile(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, seedPathname: string, seedFileDescription?: string, progressCallback?: (progress: ProgressInfo) => void): Promise<SeedFile> {
         alctx.enter();
         Logger.logInfo(loggingCategory, `Uploading seed file to iModel ${imodelId}`);
 
@@ -275,7 +275,7 @@ export class IModelHandler {
      * @param projectId Id of the project.
      * @param imodelId Id of the iModel. See [[HubIModel]].
      */
-    private getRelativeUrl(contextId: string, imodelId?: Guid) {
+    private getRelativeUrl(contextId: string, imodelId?: GuidString) {
         return `/Repositories/Project--${this._handler.formatProjectIdForUrl(contextId)}/ProjectScope/iModel/${imodelId || ""}`;
     }
 
@@ -310,7 +310,7 @@ export class IModelHandler {
      * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async delete(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, imodelId: Guid): Promise<void> {
+    public async delete(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, imodelId: GuidString): Promise<void> {
         alctx.enter();
         Logger.logInfo(loggingCategory, `Deleting iModel with id ${imodelId} from project ${contextId}`);
         ArgumentCheck.defined("token", token);
@@ -393,7 +393,7 @@ export class IModelHandler {
      * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async getInitializationState(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid): Promise<InitializationState> {
+    public async getInitializationState(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString): Promise<InitializationState> {
         const seedFiles: SeedFile[] = await this._seedFileHandler.get(alctx, token, imodelId, new SeedFileQuery().latest());
         alctx.enter();
         if (seedFiles.length < 1)
@@ -508,7 +508,7 @@ export class IModelHandler {
      * @param progressCallback Callback for tracking progress.
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
-    public async download(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+    public async download(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
         alctx.enter();
         Logger.logInfo(loggingCategory, `Downloading seed file for iModel ${imodelId}`);
         ArgumentCheck.defined("token", token);

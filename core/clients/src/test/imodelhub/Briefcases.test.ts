@@ -15,10 +15,10 @@ import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { IModelHubStatus, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { IModelClient } from "../../IModelClient";
 
-function mockGetBriefcaseById(imodelId: Guid, briefcase: Briefcase) {
+function mockGetBriefcaseById(imodelId: GuidString, briefcase: Briefcase) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -27,7 +27,7 @@ function mockGetBriefcaseById(imodelId: Guid, briefcase: Briefcase) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-function mockGetBriefcaseWithDownloadUrl(imodelId: Guid, briefcase: Briefcase) {
+function mockGetBriefcaseWithDownloadUrl(imodelId: GuidString, briefcase: Briefcase) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -40,7 +40,7 @@ function mockGetBriefcaseWithDownloadUrl(imodelId: Guid, briefcase: Briefcase) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-function mockDeleteBriefcase(imodelId: Guid, briefcaseId: number) {
+function mockDeleteBriefcase(imodelId: GuidString, briefcaseId: number) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -50,7 +50,7 @@ function mockDeleteBriefcase(imodelId: Guid, briefcaseId: number) {
 
 describe("iModelHub BriefcaseHandler", () => {
   let accessToken: AccessToken;
-  let imodelId: Guid;
+  let imodelId: GuidString;
   let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients Briefcases test";
   let briefcaseId: number;

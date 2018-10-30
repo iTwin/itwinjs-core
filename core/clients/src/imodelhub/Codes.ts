@@ -11,7 +11,7 @@ import { ResponseError } from "./../Request";
 import { WsgRequestOptions } from "./../WsgClient";
 
 import { AccessToken } from "../Token";
-import { Logger, IModelHubStatus, ActivityLoggingContext, Id64String, Guid } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus, ActivityLoggingContext, Id64String, GuidString } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "./Errors";
 import { Query } from "./Query";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -360,7 +360,7 @@ export class CodeSequenceHandler {
    * Get relative url for Code sequence requests.
    * @param imodelId Id of the iModel. See [[HubIModel]].
    */
-  private getRelativeUrl(imodelId: Guid) {
+  private getRelativeUrl(imodelId: GuidString) {
     return `/Repositories/iModel--${imodelId}/iModelScope/CodeSequence/`;
   }
 
@@ -372,7 +372,7 @@ export class CodeSequenceHandler {
    * @returns Resolves to the suggested index value.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, sequence: CodeSequence): Promise<string> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, sequence: CodeSequence): Promise<string> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying code sequence for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -412,7 +412,7 @@ export class CodeHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param codeId Id of the code.
    */
-  private getRelativeUrl(imodelId: Guid, multiCode = true, codeId?: string) {
+  private getRelativeUrl(imodelId: GuidString, multiCode = true, codeId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/${multiCode ? "MultiCode" : "Code"}/${codeId || ""}`;
   }
 
@@ -469,7 +469,7 @@ export class CodeHandler {
   }
 
   /** Send partial request for code updates */
-  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]> {
+  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]> {
     alctx.enter();
     let requestOptions: WsgRequestOptions | undefined;
     if (updateOptions) {
@@ -506,7 +506,7 @@ export class CodeHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.OperationFailed]($bentley) when including multiple identical Codes in the request.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]> {
+  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, codes: HubCode[], updateOptions?: CodeUpdateOptions): Promise<HubCode[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Requesting codes for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -567,7 +567,7 @@ export class CodeHandler {
    * @returns Resolves to an array of Codes matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, query: CodeQuery = new CodeQuery()): Promise<HubCode[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query: CodeQuery = new CodeQuery()): Promise<HubCode[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying codes for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -597,7 +597,7 @@ export class CodeHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async deleteAll(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, briefcaseId: number): Promise<void> {
+  public async deleteAll(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, briefcaseId: number): Promise<void> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Deleting all codes from briefcase ${briefcaseId} in iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);

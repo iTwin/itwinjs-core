@@ -338,9 +338,6 @@ export class SqliteValue {
    * [SqliteValueType.Double]($backend) | number
    * [SqliteValueType.String]($backend) | string
    * [SqliteValueType.Blob]($backend) | Uint8Array
-   *
-   * Note: You cannot retrieve [Id64]($bentley)s or [Guid](bentley)s with this property
-   * directly. Use [SqliteValue.getId]($backend) or [SqliteValue.getGuid]($backend) respectively instead.
    */
   public get value(): any {
     switch (this.type) {

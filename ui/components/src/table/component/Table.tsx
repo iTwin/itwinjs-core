@@ -8,7 +8,7 @@ import * as _ from "lodash";
 import * as React from "react";
 import ReactDataGrid from "react-data-grid";
 import classnames from "classnames";
-import { DisposableList, Guid } from "@bentley/bentleyjs-core";
+import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { SortDirection } from "@bentley/ui-core";
 import { TableDataProvider, ColumnDescription, RowItem, CellItem } from "../TableDataProvider";
 import { withDropTarget, WithDropTargetProps, DragSourceArguments, DropTargetArguments, DragSourceProps, DropTargetProps } from "../../dragdrop";
@@ -162,7 +162,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _pageAmount = 100;
   private _disposableListeners = new DisposableList();
   private _isMounted = false;
-  private _rowLoadGuid = new Guid(true);
+  private _rowLoadGuid = Guid.createValue();
   private _rowSelectionHandler: SelectionHandler<number>;
   private _cellSelectionHandler: SelectionHandler<CellKey>;
   private _selectedRowIndices: Set<number> = new Set();
@@ -650,8 +650,8 @@ export class Table extends React.Component<TableProps, TableState> {
       selectedRowIndices: [],
       selectedCellKeys: [],
     };
-    this._rowLoadGuid = new Guid(true);
-    const currentSelectedRowGuid = new Guid(this._rowLoadGuid);
+    this._rowLoadGuid = Guid.createValue();
+    const currentSelectedRowGuid: GuidString = this._rowLoadGuid;
 
     const promises = new Array<Promise<RowProps>>();
     for (let i = beginIndex; i < endIndex; ++i) {
@@ -666,7 +666,7 @@ export class Table extends React.Component<TableProps, TableState> {
     } catch { }
 
     // Check if another loadRows got called while this one was still going
-    if (currentSelectedRowGuid.equals(this._rowLoadGuid)) {
+    if (currentSelectedRowGuid === this._rowLoadGuid) {
       for (const rowProps of result.rows) {
         if (this.props.isRowSelected && this.props.isRowSelected(rowProps.item))
           result.selectedRowIndices.push(rowProps.index);

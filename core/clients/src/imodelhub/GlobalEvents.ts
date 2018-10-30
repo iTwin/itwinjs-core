@@ -7,7 +7,7 @@
 import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { request, Response, RequestOptions } from "./../Request";
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { EventBaseHandler, IModelHubBaseEvent, BaseEventSAS, ListenerSubscription, EventListener, GetEventOperationToRequestType } from "./EventsBase";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
@@ -34,7 +34,7 @@ export type GlobalEventType =
  */
 export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   /** Id of the iModel that caused this event. */
-  public iModelId?: Guid;
+  public iModelId?: GuidString;
   /** Id of the [[Project]] that this iModel belongs to. */
   public projectId?: string;
 
@@ -45,7 +45,7 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
-    this.iModelId = new Guid(obj.iModelId);
+    this.iModelId = obj.iModelId;
     this.projectId = obj.ProjectId;
   }
 }
@@ -92,7 +92,7 @@ export class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
  * Sent when a named [[Version]] is created. See [[VersionHandler.create]].
  */
 export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
-  public versionId?: Guid;
+  public versionId?: GuidString;
   public versionName?: string;
   public changeSetId?: string;
 
@@ -102,7 +102,7 @@ export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
    */
   public fromJson(obj: any) {
     super.fromJson(obj);
-    this.versionId = new Guid(obj.VersionId);
+    this.versionId = obj.VersionId;
     this.versionName = obj.VersionName;
     this.changeSetId = obj.ChangeSetId;
   }
@@ -195,7 +195,7 @@ export class GlobalEventSubscriptionHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.EventSubscriptionAlreadyExists]($bentley) if [[GlobalEventSubscription]] already exists with the specified subscriptionId.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(alctx: ActivityLoggingContext, token: AccessToken, subscriptionId: string, globalEvents: GlobalEventType[]) {
+  public async create(alctx: ActivityLoggingContext, token: AccessToken, subscriptionId: GuidString, globalEvents: GlobalEventType[]) {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Creating global event subscription with instance id: ${subscriptionId}`);
     ArgumentCheck.defined("token", token);

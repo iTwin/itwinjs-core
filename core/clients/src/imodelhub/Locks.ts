@@ -10,7 +10,7 @@ import { ECJsonTypeMap, WsgInstance, Id64Serializer, PropertySerializer } from "
 
 import { ResponseError } from "./../Request";
 import { AccessToken } from "../Token";
-import { Logger, IModelHubStatus, ActivityLoggingContext, Id64, Id64String, Guid } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus, ActivityLoggingContext, Id64, Id64String, GuidString } from "@bentley/bentleyjs-core";
 import { AggregateResponseError, Query } from "./index";
 import { IModelHubError, ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -167,7 +167,7 @@ export class LockBase extends WsgInstance {
 
   /** Id of the file, that the Lock belongs to. See [[Briefcase.fileId]]. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.SeedFileId")
-  public seedFileId?: Guid;
+  public seedFileId?: GuidString;
 
   /** Id of the [[ChangeSet]] that the Lock was last used with. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ReleasedWithChangeSet")
@@ -377,7 +377,7 @@ export class LockHandler {
     this._handler = handler;
   }
 
-  private getRelativeUrl(imodelId: Guid, multilock = true, lockId?: string) {
+  private getRelativeUrl(imodelId: GuidString, multilock = true, lockId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/${multilock ? "MultiLock" : "Lock"}/${lockId || ""}`;
   }
 
@@ -436,7 +436,7 @@ export class LockHandler {
   }
 
   /** Send partial request for lock updates */
-  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
+  private async updateInternal(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
     alctx.enter();
     let requestOptions: WsgRequestOptions | undefined;
     if (updateOptions) {
@@ -477,7 +477,7 @@ export class LockHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.OperationFailed]($bentley) when including multiple identical locks in the request.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
+  public async update(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, locks: Lock[], updateOptions?: LockUpdateOptions): Promise<Lock[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Requesting locks for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -537,7 +537,7 @@ export class LockHandler {
    * @returns Resolves to an array of Locks matching the query.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, query: LockQuery = new LockQuery()): Promise<Lock[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query: LockQuery = new LockQuery()): Promise<Lock[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying locks for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -577,7 +577,7 @@ export class LockHandler {
    * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if [[Briefcase]] belongs to another user and user sending the request does not have ManageResources permission.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async deleteAll(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, briefcaseId: number): Promise<void> {
+  public async deleteAll(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, briefcaseId: number): Promise<void> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Deleting all locks from briefcase ${briefcaseId} in iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);

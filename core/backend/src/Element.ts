@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Elements */
 
-import { Id64String, Id64, Guid, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, GuidString, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -40,7 +40,7 @@ export abstract class Element extends Entity implements ElementProps {
   /** The parent element, if present, of this element. */
   public parent?: RelatedElement;
   /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
-  public federationGuid?: Guid;
+  public federationGuid?: GuidString;
   /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
   public userLabel?: string;
   /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this element. */
@@ -54,7 +54,7 @@ export abstract class Element extends Entity implements ElementProps {
     this.code = Code.fromJSON(props.code);
     this.model = RelatedElement.idFromJson(props.model);
     this.parent = RelatedElement.fromJSON(props.parent);
-    this.federationGuid = Guid.fromJSON(props.federationGuid);
+    this.federationGuid = props.federationGuid;
     this.userLabel = props.userLabel;
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
