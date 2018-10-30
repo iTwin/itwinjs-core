@@ -5,15 +5,15 @@
 
 import { assert, expect } from "chai";
 
-import Schema, { MutableSchema } from "./../../src/Metadata/Schema";
-import ECClass from "./../../src/Metadata/Class";
-import EntityClass from "./../../src/Metadata/EntityClass";
-import Mixin from "./../../src/Metadata/Mixin";
-import SchemaContext from "./../../src/Context";
+import { Schema, MutableSchema } from "./../../src/Metadata/Schema";
+import { ECClass } from "./../../src/Metadata/Class";
+import { EntityClass } from "./../../src/Metadata/EntityClass";
+import { Mixin } from "./../../src/Metadata/Mixin";
+import { SchemaContext } from "./../../src/Context";
 import { StructClass } from "./../../src/Metadata/Class";
 import { ECObjectsError } from "./../../src/Exception";
 import { SchemaMatchType } from "./../../src/ECObjects";
-import SchemaKey from "./../../src/SchemaKey";
+import { SchemaKey } from "./../../src/SchemaKey";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("Schema", () => {

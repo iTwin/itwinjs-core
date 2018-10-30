@@ -6,9 +6,9 @@
 import { assert, expect } from "chai";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
-import Schema from "../../src/Metadata/Schema";
+import { Schema } from "../../src/Metadata/Schema";
 import { ECObjectsError } from "../../src/Exception";
-import CustomAttributeClass from "../../src/Metadata/CustomAttributeClass";
+import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
 import { ECClassModifier } from "../../src/ECObjects";
 import { CustomAttributeContainerType } from "../../src";
 import { JsonParser } from "../../src/Deserialization/JsonParser";

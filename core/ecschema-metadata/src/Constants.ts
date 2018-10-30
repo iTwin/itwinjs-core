@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-export default class ECStringConstants {
+export class ECStringConstants {
   // Relationship End
   public static readonly RELATIONSHIP_END_SOURCE: string = "Source";
   public static readonly RELATIONSHIP_END_TARGET: string = "Target";

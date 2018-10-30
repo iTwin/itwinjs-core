@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import ECClass, { StructClass } from "./Class";
-import processCustomAttributes, { CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import Enumeration from "./Enumeration";
-import KindOfQuantity from "./KindOfQuantity";
-import PropertyCategory from "./PropertyCategory";
-import RelationshipClass from "./RelationshipClass";
+import { ECClass, StructClass } from "./Class";
+import { processCustomAttributes, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { Enumeration } from "./Enumeration";
+import { KindOfQuantity } from "./KindOfQuantity";
+import { PropertyCategory } from "./PropertyCategory";
+import { RelationshipClass } from "./RelationshipClass";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import {
   EnumerationPropertyProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps,

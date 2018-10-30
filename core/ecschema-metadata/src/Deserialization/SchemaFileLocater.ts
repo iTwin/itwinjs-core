@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { SchemaMatchType } from "./../ECObjects";
-import Schema from "./../Metadata/Schema";
-import SchemaKey from "./../SchemaKey";
+import { Schema } from "./../Metadata/Schema";
+import { SchemaKey } from "./../SchemaKey";
 import * as fs from "fs";
 import * as glob from "glob";
 import * as path from "path";
@@ -72,7 +72,7 @@ export class FileSchemaKey extends SchemaKey {
 /**
  * Abstract class to hold common/overlapping functionality between SchemaJsonFileLocater and SchemaXmlFileLocater
  */
-export default abstract class SchemaFileLocater {
+export abstract class SchemaFileLocater {
   public searchPaths: string[];
 
   constructor() {

@@ -6,11 +6,11 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 
-import Schema from "./../../src/Metadata/Schema";
-import Format from "./../../src/Metadata/Format";
+import { Schema } from "./../../src/Metadata/Schema";
+import { Format } from "./../../src/Metadata/Format";
 import { ShowSignOption, FormatType, FormatTraits, FractionalPrecision } from "./../../src/utils/FormatEnums";
 import { ECObjectsError } from "./../../src/Exception";
-import Unit from "./../../src/Metadata/Unit";
+import { Unit } from "./../../src/Metadata/Unit";
 import { schemaItemTypeToString, SchemaItemType } from "./../../src/ECObjects";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
 

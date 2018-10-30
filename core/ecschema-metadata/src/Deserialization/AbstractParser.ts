@@ -10,6 +10,7 @@ import {
 } from "./../Deserialization/JsonProps";
 import { AnyClass } from "./../Interfaces";
 
+/** @hidden */
 export abstract class AbstractParser<T> {
   public abstract parseSchemaProps(obj: T): SchemaProps;
   public abstract parseSchemaItemProps(obj: T, schemaName: string, name: string): SchemaItemProps;

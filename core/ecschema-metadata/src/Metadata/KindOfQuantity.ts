@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import Format, { IFormat } from "./Format";
-import InvertedUnit from "./InvertedUnit";
-import OverrideFormat from "./OverrideFormat";
-import Schema from "./Schema";
-import SchemaItem from "./SchemaItem";
-import Unit from "./Unit";
+import { Format, IFormat } from "./Format";
+import { InvertedUnit } from "./InvertedUnit";
+import { OverrideFormat } from "./OverrideFormat";
+import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
+import { Unit } from "./Unit";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { KindOfQuantityProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
@@ -19,7 +19,7 @@ import { formatStringRgx } from "./../utils/FormatEnums";
 /**
  * A Typescript class representation of a KindOfQuantity.
  */
-export default class KindOfQuantity extends SchemaItem {
+export class KindOfQuantity extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.KindOfQuantity; // tslint:disable-line
   protected _relativeError: number;
   protected _presentationUnits: Array<Format | OverrideFormat>;

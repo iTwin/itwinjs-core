@@ -106,7 +106,7 @@ export class ECName {
 /**
  * The SchemaKey contains a Schemas name and version.
  */
-export default class SchemaKey {
+export class SchemaKey {
   private _name: ECName;
   protected _version: ECVersion;
   // public checksum: number;

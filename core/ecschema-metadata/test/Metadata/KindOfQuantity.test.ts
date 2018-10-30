@@ -7,12 +7,12 @@ import { assert, expect } from "chai";
 import * as sinon from "sinon";
 
 import { ECObjectsError } from "../../src/Exception";
-import KindOfQuantity from "../../src/Metadata/KindOfQuantity";
-import OverrideFormat from "../../src/Metadata/OverrideFormat";
-import Schema from "../../src/Metadata/Schema";
+import { KindOfQuantity } from "../../src/Metadata/KindOfQuantity";
+import { OverrideFormat } from "../../src/Metadata/OverrideFormat";
+import { Schema } from "../../src/Metadata/Schema";
 
-import Format from "../../src/Metadata/Format";
-import SchemaContext from "../../src/Context";
+import { Format } from "../../src/Metadata/Format";
+import { SchemaContext } from "../../src/Context";
 import { DecimalPrecision } from "../../src/utils/FormatEnums";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
 import { KindOfQuantityProps } from "../../src/Deserialization/JsonProps";

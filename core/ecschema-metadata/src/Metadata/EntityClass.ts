@@ -3,11 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import ECClass from "./Class";
-import Mixin from "./Mixin";
+import { ECClass } from "./Class";
+import { Mixin } from "./Mixin";
 import { AnyProperty, NavigationProperty, Property } from "./Property";
-import Schema from "./Schema";
-import RelationshipClass from "./RelationshipClass";
+import { Schema } from "./Schema";
+import { RelationshipClass } from "./RelationshipClass";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { EntityClassProps } from "./../Deserialization/JsonProps";
 import { ECClassModifier, parseStrengthDirection, SchemaItemType, StrengthDirection } from "./../ECObjects";
@@ -18,7 +18,7 @@ import { SchemaItemKey } from "./../SchemaKey";
 /**
  * A Typescript class representation of an ECEntityClass.
  */
-export default class EntityClass extends ECClass {
+export class EntityClass extends ECClass {
   public readonly schemaItemType!: SchemaItemType.EntityClass; // tslint:disable-line
   protected _mixins?: LazyLoadedMixin[];
 

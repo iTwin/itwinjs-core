@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import ECClass from "./Class";
-import Schema from "./Schema";
+import { ECClass } from "./Class";
+import { Schema } from "./Schema";
 import { CustomAttributeClassProps } from "./../Deserialization/JsonProps";
 import { containerTypeToString, CustomAttributeContainerType, ECClassModifier, parseCustomAttributeContainerType, SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
@@ -12,7 +12,7 @@ import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 /**
  * A Typescript class representation of an ECCustomAttributeClass.
  */
-export default class CustomAttributeClass extends ECClass {
+export class CustomAttributeClass extends ECClass {
   public readonly schemaItemType!: SchemaItemType.CustomAttributeClass; // tslint:disable-line
   protected _containerType?: CustomAttributeContainerType;
 

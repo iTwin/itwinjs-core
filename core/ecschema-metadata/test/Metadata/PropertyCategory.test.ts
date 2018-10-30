@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema from "../../src/Metadata/Schema";
+import { Schema } from "../../src/Metadata/Schema";
 import { ECObjectsError } from "../../src/Exception";
-import PropertyCategory from "../../src/Metadata/PropertyCategory";
+import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
 import * as sinon from "sinon";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
 

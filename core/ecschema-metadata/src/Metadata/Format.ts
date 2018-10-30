@@ -3,10 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import InvertedUnit from "./InvertedUnit";
-import Schema from "./Schema";
-import SchemaItem from "./SchemaItem";
-import Unit from "./Unit";
+import { InvertedUnit } from "./InvertedUnit";
+import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
+import { Unit } from "./Unit";
 import { FormatProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
@@ -36,7 +36,7 @@ export interface IFormat {
   readonly units?: Array<[Unit | InvertedUnit, string | undefined]>;
 }
 
-export default class Format extends SchemaItem implements IFormat {
+export class Format extends SchemaItem implements IFormat {
   public readonly schemaItemType!: SchemaItemType.Format; // tslint:disable-line
   protected _roundFactor: number;
   protected _type: FormatType; // required; options are decimal, frational, scientific, station

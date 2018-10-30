@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import SchemaFileLocater, { FileSchemaKey } from "./SchemaFileLocater";
-import SchemaContext, { ISchemaLocater } from "./../Context";
+import { SchemaFileLocater, FileSchemaKey } from "./SchemaFileLocater";
+import { SchemaContext, ISchemaLocater } from "./../Context";
 import { SchemaMatchType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import Schema from "./../Metadata/Schema";
-import SchemaKey, { ECVersion } from "./../SchemaKey";
+import { Schema } from "./../Metadata/Schema";
+import { SchemaKey, ECVersion } from "./../SchemaKey";
 import * as path from "path";
 
 /**
@@ -16,7 +16,7 @@ import * as path from "path";
  * from the file system using configurable search paths. Returns only
  * Schemas from XML files with their keys populated.
  */
-export default class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
+export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLocater {
   /**
    * Gets an array of SchemaKeys of the Schemas referenced by the given Schema.
    * @param xmlSchemaKey The SchemaKey of the parent Schema containing the references.

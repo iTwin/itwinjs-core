@@ -3,10 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import Schema from "./Schema";
-import SchemaItem from "./SchemaItem";
-import Unit from "./Unit";
-import UnitSystem from "./UnitSystem";
+import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
+import { Unit } from "./Unit";
+import { UnitSystem } from "./UnitSystem";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { SchemaItemType } from "./../ECObjects";
 import { InvertedUnitProps } from "./../Deserialization/JsonProps";
@@ -17,7 +17,7 @@ import { SchemaItemKey } from "./../SchemaKey";
 /**
  * An InvertedUnit is a specific type of Unit that describes the inverse of a single Unit whose dimensional derivation is unit-less.
  */
-export default class InvertedUnit extends SchemaItem {
+export class InvertedUnit extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.InvertedUnit; // tslint:disable-line
   protected _invertsUnit?: LazyLoadedUnit; // required
   protected _unitSystem?: LazyLoadedUnitSystem; // required

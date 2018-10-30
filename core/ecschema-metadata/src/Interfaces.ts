@@ -4,23 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { DelayedPromise } from "./DelayedPromise";
-import ECClass, { StructClass } from "./Metadata/Class";
-import Constant from "./Metadata/Constant";
-import CustomAttributeClass from "./Metadata/CustomAttributeClass";
-import EntityClass from "./Metadata/EntityClass";
-import Enumeration from "./Metadata/Enumeration";
-import InvertedUnit from "./Metadata/InvertedUnit";
-import KindOfQuantity from "./Metadata/KindOfQuantity";
-import Mixin from "./Metadata/Mixin";
-import Phenomenon from "./Metadata/Phenomenon";
-import PropertyCategory from "./Metadata/PropertyCategory";
-import RelationshipClass from "./Metadata/RelationshipClass";
-import Schema from "./Metadata/Schema";
-import SchemaItem from "./Metadata/SchemaItem";
-import Unit from "./Metadata/Unit";
-import UnitSystem from "./Metadata/UnitSystem";
-import Format from "./Metadata/Format";
-import SchemaKey, { SchemaItemKey } from "./SchemaKey";
+import { ECClass, StructClass } from "./Metadata/Class";
+import { Constant } from "./Metadata/Constant";
+import { CustomAttributeClass } from "./Metadata/CustomAttributeClass";
+import { EntityClass } from "./Metadata/EntityClass";
+import { Enumeration } from "./Metadata/Enumeration";
+import { InvertedUnit } from "./Metadata/InvertedUnit";
+import { KindOfQuantity } from "./Metadata/KindOfQuantity";
+import { Mixin } from "./Metadata/Mixin";
+import { Phenomenon } from "./Metadata/Phenomenon";
+import { PropertyCategory } from "./Metadata/PropertyCategory";
+import { RelationshipClass } from "./Metadata/RelationshipClass";
+import { Schema } from "./Metadata/Schema";
+import { SchemaItem } from "./Metadata/SchemaItem";
+import { Unit } from "./Metadata/Unit";
+import { UnitSystem } from "./Metadata/UnitSystem";
+import { Format } from "./Metadata/Format";
+import { SchemaKey, SchemaItemKey } from "./SchemaKey";
 
 export type LazyLoadedSchema = Readonly<SchemaKey> & DelayedPromise<Schema>;
 

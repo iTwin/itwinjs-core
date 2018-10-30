@@ -5,9 +5,9 @@
 
 import { SchemaMatchType } from "./ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./Exception";
-import Schema, { MutableSchema } from "./Metadata/Schema";
-import SchemaItem from "./Metadata/SchemaItem";
-import SchemaKey, { SchemaItemKey } from "./SchemaKey";
+import { Schema, MutableSchema } from "./Metadata/Schema";
+import { SchemaItem } from "./Metadata/SchemaItem";
+import { SchemaKey, SchemaItemKey } from "./SchemaKey";
 
 export class SchemaMap extends Array<Schema> { }
 
@@ -124,7 +124,7 @@ export class SchemaCache implements ISchemaLocater {
  *
  * The context is made up of a group of Schema Locators.
  */
-export default class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
+export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   private _locaters: ISchemaLocater[];
 
   private _knownSchemas: SchemaCache;

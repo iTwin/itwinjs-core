@@ -5,30 +5,31 @@
 
 import { AbstractParser } from "./AbstractParser";
 import { AnySchemaItemProps, SchemaReferenceProps } from "./JsonProps";
-import SchemaContext from "./../Context";
+import { SchemaContext } from "./../Context";
 import { parsePrimitiveType, parseSchemaItemType, SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { AnyClass, AnySchemaItem, SchemaDeserializationVisitor } from "./../Interfaces";
-import ECClass, { MutableClass } from "./../Metadata/Class";
-import Constant from "./../Metadata/Constant";
+import { ECClass, MutableClass } from "./../Metadata/Class";
+import { Constant } from "./../Metadata/Constant";
 import { CustomAttribute } from "./../Metadata/CustomAttribute";
-import EntityClass, { MutableEntityClass } from "./../Metadata/EntityClass";
-import Format from "./../Metadata/Format";
-import InvertedUnit from "./../Metadata/InvertedUnit";
-import KindOfQuantity from "./../Metadata/KindOfQuantity";
-import Mixin from "./../Metadata/Mixin";
+import { EntityClass, MutableEntityClass } from "./../Metadata/EntityClass";
+import { Format } from "./../Metadata/Format";
+import { InvertedUnit } from "./../Metadata/InvertedUnit";
+import { KindOfQuantity } from "./../Metadata/KindOfQuantity";
+import { Mixin } from "./../Metadata/Mixin";
 import { Property } from "./../Metadata/Property";
-import RelationshipClass, { RelationshipConstraint } from "./../Metadata/RelationshipClass";
-import Schema, { MutableSchema } from "./../Metadata/Schema";
-import SchemaItem from "./../Metadata/SchemaItem";
-import Unit from "./../Metadata/Unit";
-import SchemaKey, { ECVersion, SchemaItemKey } from "./../SchemaKey";
+import { RelationshipClass, RelationshipConstraint } from "./../Metadata/RelationshipClass";
+import { Schema, MutableSchema } from "./../Metadata/Schema";
+import { SchemaItem } from "./../Metadata/SchemaItem";
+import { Unit } from "./../Metadata/Unit";
+import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
 
 /**
+ * @hidden
  * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaItems from the JSON formats.
  * For example, when deserializing an ECClass most times all base class should be de-serialized before the given class.
  */
-export default class SchemaReadHelper {
+export class SchemaReadHelper {
   private _context: SchemaContext;
   private _visitor?: SchemaDeserializationVisitor;
   private _parser: AbstractParser<unknown>;

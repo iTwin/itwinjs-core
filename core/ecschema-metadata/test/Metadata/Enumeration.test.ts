@@ -6,8 +6,8 @@
 import * as sinon from "sinon";
 import { assert, expect } from "chai";
 
-import Schema from "../../src/Metadata/Schema";
-import Enumeration, { MutableEnumeration } from "./../../src/Metadata/Enumeration";
+import { Schema } from "../../src/Metadata/Schema";
+import { Enumeration, MutableEnumeration } from "./../../src/Metadata/Enumeration";
 import { ECObjectsError } from "./../../src/Exception";
 import { PrimitiveType } from "./../../src/ECObjects";
 import { JsonParser } from "../../src/Deserialization/JsonParser";

@@ -6,9 +6,9 @@
 import { assert, expect } from "chai";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
-import Schema, { MutableSchema } from "../../src/Metadata/Schema";
-import EntityClass from "../../src/Metadata/EntityClass";
-import Mixin from "../../src/Metadata/Mixin";
+import { Schema, MutableSchema } from "../../src/Metadata/Schema";
+import { EntityClass } from "../../src/Metadata/EntityClass";
+import { Mixin } from "../../src/Metadata/Mixin";
 import { ECObjectsError } from "../../src/Exception";
 import { NavigationProperty } from "../../src/Metadata/Property";
 import { StrengthDirection } from "../../src/ECObjects";

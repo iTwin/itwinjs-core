@@ -5,9 +5,9 @@
 
 import { assert, expect } from "chai";
 
-import Schema from "../../src/Metadata/Schema";
+import { Schema } from "../../src/Metadata/Schema";
 import { ECObjectsError } from "../../src/Exception";
-import RelationshipClass, { RelationshipConstraint } from "../../src/Metadata/RelationshipClass";
+import { RelationshipClass, RelationshipConstraint } from "../../src/Metadata/RelationshipClass";
 import { RelationshipEnd } from "../../src/ECObjects";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";

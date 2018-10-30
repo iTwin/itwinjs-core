@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import OverrideFormat from "../../src/Metadata/OverrideFormat";
-import Schema from "../../src/Metadata/Schema";
-import Format from "../../src/Metadata/Format";
-import Unit from "../../src/Metadata/Unit";
+import { OverrideFormat } from "../../src/Metadata/OverrideFormat";
+import { Schema } from "../../src/Metadata/Schema";
+import { Format } from "../../src/Metadata/Format";
+import { Unit } from "../../src/Metadata/Unit";
 import { FractionalPrecision, ShowSignOption, FormatTraits } from "../../src/utils/FormatEnums";
 
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import SchemaContext from "../../src/Context";
+import { SchemaContext } from "../../src/Context";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 import { InvertedUnit } from "../../src";
 

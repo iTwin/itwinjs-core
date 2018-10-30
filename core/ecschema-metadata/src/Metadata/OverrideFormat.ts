@@ -3,15 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import Format, { IFormat } from "./Format";
-import InvertedUnit from "./InvertedUnit";
-import Unit from "./Unit";
+import { Format, IFormat } from "./Format";
+import { InvertedUnit } from "./InvertedUnit";
+import { Unit } from "./Unit";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./../utils/FormatEnums";
 
 /**
  * Overrides of a Format, from a Schema, and is SchemaItem that is used specifically on KindOfQuantity.
  */
-export default class OverrideFormat implements IFormat {
+export class OverrideFormat implements IFormat {
   private _precision?: DecimalPrecision | FractionalPrecision;
   private _units?: Array<[Unit | InvertedUnit, string | undefined]>;
 

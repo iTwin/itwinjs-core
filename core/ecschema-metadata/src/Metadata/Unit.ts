@@ -3,10 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import Schema from "./Schema";
-import SchemaItem from "./SchemaItem";
-import Phenomenon from "./Phenomenon";
-import UnitSystem from "./UnitSystem";
+import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
+import { Phenomenon } from "./Phenomenon";
+import { UnitSystem } from "./UnitSystem";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { SchemaItemType } from "./../ECObjects";
 import { UnitProps } from "./../Deserialization/JsonProps";
@@ -18,7 +18,7 @@ import { SchemaItemKey } from "./../SchemaKey";
  * An abstract class that adds the ability to define Units and everything that goes with them, within an ECSchema as a
  * first-class concept is to allow the iModel to not be dependent on any hard-coded Units
  */
-export default class Unit extends SchemaItem {
+export class Unit extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Unit; // tslint:disable-line
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _unitSystem?: LazyLoadedUnitSystem;

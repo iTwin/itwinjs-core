@@ -6,12 +6,12 @@
 import * as path from "path";
 import { assert } from "chai";
 
-import SchemaXmlFileLocater from "./../src/Deserialization/SchemaXmlFileLocater";
+import { SchemaXmlFileLocater } from "./../src/Deserialization/SchemaXmlFileLocater";
 import { SchemaMatchType } from "./../src/ECObjects";
-import SchemaContext from "./../src/Context";
-import SchemaKey from "./../src/SchemaKey";
-import Schema from "./../src/Metadata/Schema";
-import SchemaGraphUtil from "./../src/Deserialization/SchemaGraphUtil";
+import { SchemaContext } from "./../src/Context";
+import { SchemaKey } from "./../src/SchemaKey";
+import { Schema } from "./../src/Metadata/Schema";
+import { SchemaGraphUtil } from "./../src/Deserialization/SchemaGraphUtil";
 
 describe("SchemaGraphUtil tests:", () => {
   const locator = new SchemaXmlFileLocater();

@@ -6,11 +6,11 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 
-import Schema from "../../src/Metadata/Schema";
-import InvertedUnit from "../../src/Metadata/InvertedUnit";
+import { Schema } from "../../src/Metadata/Schema";
+import { InvertedUnit } from "../../src/Metadata/InvertedUnit";
 import { ECObjectsError } from "../../src/Exception";
-import UnitSystem from "../../src/Metadata/UnitSystem";
-import Unit from "../../src/Metadata/Unit";
+import { UnitSystem } from "../../src/Metadata/UnitSystem";
+import { Unit } from "../../src/Metadata/Unit";
 import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
 

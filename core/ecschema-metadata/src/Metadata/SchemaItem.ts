@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import Schema from "./Schema";
+import { Schema } from "./Schema";
 import { SchemaItemProps } from "./../Deserialization/JsonProps";
 import { parseSchemaItemType, SchemaItemType, schemaItemTypeToString } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
@@ -15,7 +15,7 @@ const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/schema
 /**
  * An abstract class that supplies all of the common parts of a SchemaItem.
  */
-export default abstract class SchemaItem {
+export abstract class SchemaItem {
   public readonly schemaItemType!: SchemaItemType; // allow the derived classes to define their own schemaItemType
   public readonly schema: Schema;
   protected _key: SchemaItemKey;

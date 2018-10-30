@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import ECClass from "./Class";
-import processCustomAttributes, { CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import EntityClass, { createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
-import Mixin from "./Mixin";
+import { ECClass } from "./Class";
+import { processCustomAttributes, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { EntityClass, createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
+import { Mixin } from "./Mixin";
 import { NavigationProperty } from "./Property";
-import Schema from "./Schema";
+import { Schema } from "./Schema";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { RelationshipClassProps, RelationshipConstraintProps } from "./../Deserialization/JsonProps";
 import {
@@ -24,7 +24,7 @@ type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
 /**
  * A Typescript class representation of a ECRelationshipClass.
  */
-export default class RelationshipClass extends ECClass {
+export class RelationshipClass extends ECClass {
   public readonly schema!: Schema; // tslint:disable-line
   public readonly schemaItemType!: SchemaItemType.RelationshipClass; // tslint:disable-line
   protected _strength: StrengthType;

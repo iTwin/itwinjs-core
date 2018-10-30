@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema from "../../src/Metadata/Schema";
-import Constant from "../../src/Metadata/Constant";
+import { Schema } from "../../src/Metadata/Schema";
+import { Constant } from "../../src/Metadata/Constant";
 import { ECObjectsError } from "../../src/Exception";
 import * as sinon from "sinon";
-import Phenomenon from "../../src/Metadata/Phenomenon";
+import { Phenomenon } from "../../src/Metadata/Phenomenon";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { SchemaItemType } from "../../src";
 

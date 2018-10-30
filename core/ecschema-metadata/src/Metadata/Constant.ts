@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import Phenomenon from "./Phenomenon";
-import Schema from "./Schema";
-import SchemaItem from "./SchemaItem";
+import { Phenomenon } from "./Phenomenon";
+import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { ConstantProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
@@ -16,7 +16,7 @@ import { SchemaItemKey } from "./../SchemaKey";
 /**
  * A Constant is a specific type of Unit that represents a number.
  */
-export default class Constant extends SchemaItem {
+export class Constant extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Constant; // tslint:disable-line
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _definition: string;

@@ -19,6 +19,7 @@ function isObject(x: unknown): x is { [name: string]: unknown } {
   return typeof (x) === "object";
 }
 
+/** @hidden */
 export class JsonParser extends AbstractParser<object> {
 
   /**

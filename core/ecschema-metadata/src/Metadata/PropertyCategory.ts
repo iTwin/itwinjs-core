@@ -3,13 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import Schema from "./Schema";
-import SchemaItem from "./SchemaItem";
+import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
 import { PropertyCategoryProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
 import { SchemaItemVisitor } from "./../Interfaces";
 
-export default class PropertyCategory extends SchemaItem {
+export class PropertyCategory extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.PropertyCategory; // tslint:disable-line
   protected _priority: number;
 

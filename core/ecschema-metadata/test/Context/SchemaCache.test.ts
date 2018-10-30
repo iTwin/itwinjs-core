@@ -11,9 +11,9 @@ import * as chaiAsPromised from "chai-as-promised";
 chai.use(chaiAsPromised);
 
 import { SchemaCache } from "./../../src/Context";
-import Schema from "./../../src/Metadata/Schema";
+import { Schema } from "./../../src/Metadata/Schema";
 import { ECObjectsError } from "./../../src/Exception";
-import SchemaKey from "./../../src/SchemaKey";
+import { SchemaKey } from "./../../src/SchemaKey";
 
 describe("Schema Cache", () => {
   it("adding should succeed", async () => {

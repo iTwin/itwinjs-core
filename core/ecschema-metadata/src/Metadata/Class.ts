@@ -3,15 +3,15 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import processCustomAttributes, { CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import EntityClass from "./EntityClass";
-import Enumeration from "./Enumeration";
+import { processCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { EntityClass } from "./EntityClass";
+import { Enumeration } from "./Enumeration";
 import {
   EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty,
   PrimitiveProperty, Property, StructArrayProperty, StructProperty,
 } from "./Property";
-import Schema from "./Schema";
-import SchemaItem from "./SchemaItem";
+import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { ClassProps } from "./../Deserialization/JsonProps";
 import {
@@ -25,7 +25,7 @@ import { SchemaItemKey } from "./../SchemaKey";
 /**
  * A common abstract class for all of the ECClass types.
  */
-export default abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
+export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
   protected _properties?: Property[];

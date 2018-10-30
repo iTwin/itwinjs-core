@@ -6,11 +6,11 @@
 import { assert } from "chai";
 import * as path from "path";
 
-import SchemaJsonFileLocater from "./../../src/Deserialization/SchemaJsonFileLocater";
+import { SchemaJsonFileLocater } from "./../../src/Deserialization/SchemaJsonFileLocater";
 import { FileSchemaKey } from "./../../src/Deserialization/SchemaFileLocater";
-import SchemaContext from "./../../src/Context";
+import { SchemaContext } from "./../../src/Context";
 import { SchemaMatchType } from "./../../src/ECObjects";
-import SchemaKey from "./../../src/SchemaKey";
+import { SchemaKey } from "./../../src/SchemaKey";
 import { ECObjectsError, ECObjectsStatus } from "./../../src/Exception";
 
 describe("SchemaJsonFileLocater tests: ", () => {

@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import Schema from "./Schema";
-import SchemaItem from "./SchemaItem";
+import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
 import { EnumerationProps, EnumeratorProps } from "./../Deserialization/JsonProps";
 import { PrimitiveType, SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
@@ -17,22 +17,13 @@ export interface Enumerator<T> {
   readonly label?: string;
   readonly description?: string;
 }
+
 export type AnyEnumerator = Enumerator<string | number>;
-
-export interface StringEnumeration extends Enumeration {
-  primitiveType: PrimitiveType.String;
-  enumerators: Array<Enumerator<string>>;
-}
-
-export interface IntEnumeration extends Enumeration {
-  primitiveType: PrimitiveType.Integer;
-  enumerators: Array<Enumerator<number>>;
-}
 
 /**
  * A Typescript class representation of an ECEnumeration.
  */
-export default class Enumeration extends SchemaItem {
+export class Enumeration extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Enumeration; // tslint:disable-line
   protected _type?: PrimitiveType.Integer | PrimitiveType.String;
   protected _isStrict: boolean;
@@ -164,6 +155,8 @@ export default class Enumeration extends SchemaItem {
       await visitor.visitEnumeration(this);
   }
 }
+
+/** @hidden */
 export abstract class MutableEnumeration extends Enumeration {
   public abstract addEnumerator(enumerator: AnyEnumerator): void;
 }

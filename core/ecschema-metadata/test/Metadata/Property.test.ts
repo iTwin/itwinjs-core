@@ -5,19 +5,19 @@
 
 import { assert, expect } from "chai";
 
-import Schema, { MutableSchema } from "../../src/Metadata/Schema";
-import EntityClass from "../../src/Metadata/EntityClass";
+import { Schema, MutableSchema } from "../../src/Metadata/Schema";
+import { EntityClass } from "../../src/Metadata/EntityClass";
 import { ECObjectsError } from "../../src/Exception";
 import {
   Property, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty,
   StructArrayProperty, EnumerationArrayProperty, NavigationProperty,
 } from "../../src/Metadata/Property";
 import { PropertyType } from "../../src/PropertyTypes";
-import Enumeration from "../../src/Metadata/Enumeration";
-import ECClass, { StructClass, MutableClass } from "../../src/Metadata/Class";
-import PropertyCategory from "../../src/Metadata/PropertyCategory";
-import KindOfQuantity from "../../src/Metadata/KindOfQuantity";
-import RelationshipClass from "../../src/Metadata/RelationshipClass";
+import { Enumeration } from "../../src/Metadata/Enumeration";
+import { ECClass, StructClass, MutableClass } from "../../src/Metadata/Class";
+import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
+import { KindOfQuantity } from "../../src/Metadata/KindOfQuantity";
+import { RelationshipClass } from "../../src/Metadata/RelationshipClass";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import { PrimitiveType } from "../../src/ECObjects";
 import { JsonParser } from "../../src/Deserialization/JsonParser";

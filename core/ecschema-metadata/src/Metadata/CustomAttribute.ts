@@ -19,7 +19,7 @@ export interface CustomAttributeContainerProps {
   customAttributes?: CustomAttributeSet;
 }
 
-export default function processCustomAttributes(customAttributesJson: any, name: string, type: CustomAttributeContainerType): CustomAttributeSet | undefined { // TODO: Check for duplicate class names
+export function processCustomAttributes(customAttributesJson: any, name: string, type: CustomAttributeContainerType): CustomAttributeSet | undefined { // TODO: Check for duplicate class names
   if (undefined !== customAttributesJson) {
     if (!Array.isArray(customAttributesJson)) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${containerTypeToString(type)} ${name} has an invalid 'customAttributes' attribute. It should be of type 'array'.`);

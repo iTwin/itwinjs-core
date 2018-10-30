@@ -3,37 +3,37 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import ECClass, { StructClass } from "./Class";
-import Constant from "./Constant";
-import processCustomAttributes, { CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
-import CustomAttributeClass from "./CustomAttributeClass";
-import EntityClass from "./EntityClass";
-import Enumeration from "./Enumeration";
-import Format from "./Format";
-import InvertedUnit from "./InvertedUnit";
-import KindOfQuantity from "./KindOfQuantity";
-import Mixin from "./Mixin";
-import Phenomenon from "./Phenomenon";
-import PropertyCategory from "./PropertyCategory";
-import RelationshipClass from "./RelationshipClass";
-import SchemaItem from "./SchemaItem";
-import Unit from "./Unit";
-import UnitSystem from "./UnitSystem";
-import SchemaContext from "./../Context";
-import SchemaReadHelper from "./../Deserialization/Helper";
+import { ECClass, StructClass } from "./Class";
+import { Constant } from "./Constant";
+import { processCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { CustomAttributeClass } from "./CustomAttributeClass";
+import { EntityClass } from "./EntityClass";
+import { Enumeration } from "./Enumeration";
+import { Format } from "./Format";
+import { InvertedUnit } from "./InvertedUnit";
+import { KindOfQuantity } from "./KindOfQuantity";
+import { Mixin } from "./Mixin";
+import { Phenomenon } from "./Phenomenon";
+import { PropertyCategory } from "./PropertyCategory";
+import { RelationshipClass } from "./RelationshipClass";
+import { SchemaItem } from "./SchemaItem";
+import { Unit } from "./Unit";
+import { UnitSystem } from "./UnitSystem";
+import { SchemaContext } from "./../Context";
+import { SchemaReadHelper } from "./../Deserialization/Helper";
 import { JsonParser } from "../Deserialization/JsonParser";
 import { SchemaProps } from "./../Deserialization/JsonProps";
 import { CustomAttributeContainerType, ECClassModifier, PrimitiveType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { AnyClass, AnySchemaItem } from "./../Interfaces";
-import SchemaKey, { ECVersion, SchemaItemKey } from "./../SchemaKey";
+import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
 
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema";
 
 /**
  *
  */
-export default class Schema implements CustomAttributeContainerProps {
+export class Schema implements CustomAttributeContainerProps {
   // private _context?: SchemaContext; unused currently, but in the future we may use it for item lookup
   protected _schemaKey?: SchemaKey;
   protected _alias?: string;
