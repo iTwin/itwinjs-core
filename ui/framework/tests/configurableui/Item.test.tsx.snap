@@ -31,7 +31,7 @@ exports[`ToolButton <ToolButton /> renders correctly 1`] = `
       }
     />
   }
-  isActive={false}
+  isActive={true}
   isDisabled={false}
   key="tool1"
   onClick={[Function]}

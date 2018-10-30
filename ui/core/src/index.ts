@@ -52,6 +52,10 @@ export * from "./utils";
  * Classes for working with a Dialog.
  */
 /**
+ * @docs-group-description ElementSeparator
+ * Classes for working with a ElementSeparator.
+ */
+/**
  * @docs-group-description Expandable
  * Classes for working with a ExpandableBlock or ExpandableList.
  */

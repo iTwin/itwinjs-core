@@ -49,6 +49,7 @@ export interface SheetNavigationState {
 
 /** A Sheet Navigation Aid. */
 export class SheetNavigationAid extends React.Component<SheetNavigationProps, SheetNavigationState> {
+  private _isMounted = false;
 
   /** @hidden */
   public readonly state: Readonly<SheetNavigationState> = {
@@ -68,6 +69,8 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
 
   /** Adds listeners when components mounts */
   public async componentDidMount() {
+    this._isMounted = true;
+
     CardContainer.onCardSelectedEvent.addListener(this._handleCardSelected);
 
     if (IModelApp && IModelApp.viewManager)
@@ -75,11 +78,14 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
 
     const stateData = await this._setupSheets();
 
-    this.setState(stateData);
+    if (this._isMounted)
+      this.setState(stateData);
   }
 
   /** Removes listeners when component will unmount */
   public componentWillUnmount() {
+    this._isMounted = false;
+
     CardContainer.onCardSelectedEvent.removeListener(this._handleCardSelected);
 
     if (IModelApp && IModelApp.viewManager)

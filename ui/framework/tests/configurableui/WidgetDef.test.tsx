@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../src/index";
+import { WidgetState, WidgetDefProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../src/index";
 
 describe("WidgetDef", () => {
 
@@ -23,7 +23,7 @@ describe("WidgetDef", () => {
   });
 
   it("optional properties", () => {
-    const widgetProps: WidgetProps = {
+    const widgetProps: WidgetDefProps = {
       defaultState: WidgetState.Open,
       priority: 100,
       isFreeform: true,
@@ -56,7 +56,7 @@ describe("WidgetDef", () => {
   });
 
   it("registerControl & widgetControl using same classId", () => {
-    const widgetProps: WidgetProps = {
+    const widgetProps: WidgetDefProps = {
       classId: "WidgetDefTest",
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
@@ -66,7 +66,7 @@ describe("WidgetDef", () => {
   });
 
   it("widgetControl using constructor classId", () => {
-    const widgetProps: WidgetProps = {
+    const widgetProps: WidgetDefProps = {
       classId: TestWidget,
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
@@ -79,17 +79,18 @@ describe("WidgetDef", () => {
   });
 
   it("setWidgetState", () => {
-    const widgetProps: WidgetProps = {
+    const widgetProps: WidgetDefProps = {
       classId: "WidgetDefTest",
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
     widgetDef.setWidgetState(WidgetState.Open);
 
     expect(widgetDef.widgetState).to.eq(WidgetState.Open);
+    expect(widgetDef.canOpen()).to.be.true;
   });
 
   it("getWidgetControl throws an Error when type is incorrect", () => {
-    const widgetProps: WidgetProps = {
+    const widgetProps: WidgetDefProps = {
       classId: "WidgetDefTest",
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);

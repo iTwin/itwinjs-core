@@ -128,6 +128,8 @@
     "ModelSelector": "Model Selector",
     "StatusBar": "Status Bar",
     "VerticalPropertyGrid": "Vertical PropertyGrid",
-    "HorizontalPropertyGrid": "Horizontal PropertyGrid"
+    "HorizontalPropertyGrid": "Horizontal PropertyGrid",
+    "TableDemo": "Table Demo",
+    "TreeDemo": "Tree Demo"
   }
 }

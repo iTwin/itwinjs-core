@@ -23,10 +23,10 @@ export enum ZoneState {
 
 /** Properties of a Zone
  */
-export interface ZoneProps {
+export interface ZoneDefProps {
   /** Default Zone state. Controls how the Zone is initially displayed. */
   defaultState: ZoneState;
-  /** Indicates if other Zones may be merged with this Zone.  */
+  /** Indicates if other Zones may be merged with this Zone. */
   allowsMerging: boolean;
   /** Properties for the Widgets in this Zone. */
   widgetProps: AnyWidgetProps[];
@@ -45,7 +45,7 @@ export class ZoneDef {
   /** Zone state. */
   public zoneState: ZoneState = ZoneState.Open;
   /** Indicates if other Zones may be merged with this Zone.  */
-  public allowsMerging: boolean;
+  public allowsMerging: boolean = false;
   /** Any application data to attach to this Zone. */
   public applicationData?: any;
 
@@ -54,20 +54,22 @@ export class ZoneDef {
   /** Constructor for ZoneDef.
    * @param zoneProps Properties for the Zone
    */
-  constructor(zoneProps: ZoneProps) {
-    this.zoneState = zoneProps.defaultState;
-    this.allowsMerging = zoneProps.allowsMerging;
+  constructor(zoneProps?: ZoneDefProps) {
+    if (zoneProps) {
+      this.zoneState = zoneProps.defaultState;
+      this.allowsMerging = zoneProps.allowsMerging;
 
-    if (zoneProps.applicationData !== undefined)
-      this.applicationData = zoneProps.applicationData;
+      if (zoneProps.applicationData !== undefined)
+        this.applicationData = zoneProps.applicationData;
 
-    if (zoneProps.widgetProps) {
-      zoneProps.widgetProps.map((widgetProps, _index) => {
-        const widgetDef = WidgetDefFactory.create(widgetProps);
-        if (widgetDef) {
-          this.addWidgetDef(widgetDef);
-        }
-      });
+      if (zoneProps.widgetProps) {
+        zoneProps.widgetProps.map((widgetProps, _index) => {
+          const widgetDef = WidgetDefFactory.create(widgetProps);
+          if (widgetDef) {
+            this.addWidgetDef(widgetDef);
+          }
+        });
+      }
     }
   }
 
@@ -127,7 +129,7 @@ export class ZoneDefFactory {
   /** Creates a ZoneDef based on Zone properties
    * @param zoneProps Properties for the Zone
    */
-  public static Create(zoneProps?: ZoneProps): ZoneDef | undefined {
+  public static Create(zoneProps?: ZoneDefProps): ZoneDef | undefined {
     if (zoneProps) {
       return new ZoneDef(zoneProps);
     }

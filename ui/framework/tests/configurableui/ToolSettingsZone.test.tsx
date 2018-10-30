@@ -12,7 +12,7 @@ import {
   WidgetState,
   ToolSettingsZone,
   ConfigurableUiManager,
-  FrontstageProps,
+  FrontstageDefProps,
   ToolUiProvider,
   ConfigurableCreateInfo,
   FrontstageManager,
@@ -78,7 +78,7 @@ describe("ToolSettingsZone", () => {
       ],
     };
 
-    const frontstageProps: FrontstageProps = {
+    const frontstageProps: FrontstageDefProps = {
       id: "ToolSettingsZone-TestFrontstage",
       defaultToolId: "PlaceLine",
       defaultLayout: "FourQuadrants",
@@ -117,7 +117,7 @@ describe("ToolSettingsZone", () => {
       expect(toolItemDef).to.be.instanceof(ToolItemDef);
 
       if (toolItemDef) {
-        frontstageDef.setActiveToolId(testToolId);
+        FrontstageManager.setActiveToolId(testToolId);
         expect(FrontstageManager.activeToolId).to.eq(testToolId);
 
         const wrapper = mount(<ToolSettingsZone bounds={bounds} />);

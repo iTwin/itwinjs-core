@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
-import { ConfigurableUiManager } from "@bentley/ui-framework";
+import { ConfigurableUiManager, FrontstageManager, WidgetState } from "@bentley/ui-framework";
 import { ContentGroupProps, ViewClass } from "@bentley/ui-framework";
 import { ItemPropsList, GroupItemProps } from "@bentley/ui-framework";
 import { TaskPropsList } from "@bentley/ui-framework";
@@ -35,6 +35,7 @@ import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 
 import { Frontstage1 } from "./frontstages/Frontstage1";
+import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
 
@@ -55,9 +56,31 @@ export class AppUi {
   /** Define Frontstages
    */
   private static defineFrontstages() {
-    ConfigurableUiManager.addFrontstage(new Frontstage1());
-    ConfigurableUiManager.addFrontstage(new Frontstage3());
-    ConfigurableUiManager.addFrontstage(new Frontstage4());
+
+    ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
+    ConfigurableUiManager.addFrontstageProvider(new Frontstage2());
+    ConfigurableUiManager.addFrontstageProvider(new Frontstage3());
+    ConfigurableUiManager.addFrontstageProvider(new Frontstage4());
+  }
+
+  public static tool1 = () => {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef) {
+      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+      if (widgetDef) {
+        widgetDef.setWidgetState(WidgetState.Open);
+      }
+    }
+  }
+
+  public static tool2 = () => {
+    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+    if (activeFrontstageDef) {
+      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+      if (widgetDef) {
+        widgetDef.setWidgetState(WidgetState.Off);
+      }
+    }
   }
 
   /** Define Common Items used in different Frontstages.
@@ -68,6 +91,7 @@ export class AppUi {
       toolId: "tool1",
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.tool1",
+      execute: AppUi.tool1,
       applicationData: { key: "value" },
     });
     ConfigurableUiManager.addCommonItem(myToolItem1);
@@ -86,7 +110,7 @@ export class AppUi {
       groupId: "my-group2",
       labelKey: "SampleApp:buttons.anotherGroup",
       iconClass: "icon-placeholder",
-      items: ["tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8"],
+      items: ["tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8", myGroupItem1],
       direction: Direction.Right,
     };
     ConfigurableUiManager.addCommonItem(new GroupItemDef(myGroupItemProps2));
@@ -97,6 +121,7 @@ export class AppUi {
           toolId: "tool2",
           iconClass: "icon-placeholder",
           labelKey: "SampleApp:buttons.tool2",
+          execute: AppUi.tool2,
         },
         {
           toolId: "SampleApp.BackstageToggle",
@@ -313,7 +338,7 @@ export class AppUi {
   private static getContentLayouts(): ContentLayoutProps[] {
     const fourQuadrants: ContentLayoutProps = {
       id: "FourQuadrants",
-      descriptionKey: "Protogist:ContentLayoutDef.FourQuadrants",
+      descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
       priority: 1000,
       horizontalSplit: {
         id: "FourQuadrants.MainHorizontal",
@@ -325,27 +350,27 @@ export class AppUi {
 
     const twoHalvesVertical: ContentLayoutProps = {
       id: "TwoHalvesVertical",
-      descriptionKey: "Protogist:ContentLayoutDef.TwoHalvesVertical",
+      descriptionKey: "SampleApp:ContentLayoutDef.TwoHalvesVertical",
       priority: 60,
       verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
     };
 
     const twoHalvesHorizontal: ContentLayoutProps = {
       id: "TwoHalvesHorizontal",
-      descriptionKey: "Protogist:ContentLayoutDef.TwoHalvesHorizontal",
+      descriptionKey: "SampleApp:ContentLayoutDef.TwoHalvesHorizontal",
       priority: 50,
       horizontalSplit: { id: "TwoHalvesHorizontal.HorizontalSplit", percentage: 0.50, top: 0, bottom: 1 },
     };
 
     const singleContent: ContentLayoutProps = {
       id: "SingleContent",
-      descriptionKey: "Protogist:ContentLayoutDef.SingleContent",
+      descriptionKey: "SampleApp:ContentLayoutDef.SingleContent",
       priority: 100,
     };
 
     const threeRightStacked: ContentLayoutProps = { // Three Views, one on the left, two stacked on the right.
       id: "ThreeRightStacked",
-      descriptionKey: "Protogist:ContentDef.ThreeRightStacked",
+      descriptionKey: "SampleApp:ContentLayoutDef.ThreeRightStacked",
       priority: 85,
       verticalSplit: {
         id: "ThreeRightStacked.MainVertical",
@@ -402,7 +427,7 @@ export class AppUi {
         {
           id: "ExampleWorkflow",
           iconClass: "icon-placeholder",
-          labelKey: "Protogist:Test.my-label",
+          labelKey: "SampleApp:Test.my-label",
           defaultTaskId: "task1",
           tasks: ["Task1", "Task2"],
         },

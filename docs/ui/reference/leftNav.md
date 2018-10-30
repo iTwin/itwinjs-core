@@ -10,6 +10,7 @@
 - [ContextMenu]($core:ContextMenu)
 - [Cube]($core:Cube)
 - [Dialog]($core:Dialog)
+- [ElementSeparator]($core:ElementSeparator)
 - [Expandable]($core:Expandable)
 - [MessageBox]($core:MessageBox)
 - [Popup]($core:Popup)

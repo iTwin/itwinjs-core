@@ -35,8 +35,7 @@ export class ToolItemDef extends ItemDefBase {
   }
 
   public execute(): void {
-    if (FrontstageManager.activeFrontstageDef)
-      FrontstageManager.activeFrontstageDef.setActiveToolId(this.toolId);
+    FrontstageManager.setActiveToolId(this.toolId);
 
     if (this._execute) {
       this._execute();
@@ -45,7 +44,6 @@ export class ToolItemDef extends ItemDefBase {
       if (thisTool)
         (new thisTool()).run();
     }
-
   }
 
   public onActivated(): void {

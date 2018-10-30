@@ -216,7 +216,7 @@ describe("ConfigurableUiManager", () => {
         {
           id: "ExampleWorkflow",
           iconClass: "icon-placeholder",
-          labelKey: "Protogist:Test.my-label",
+          labelKey: "SampleApp:Test.my-label",
           defaultTaskId: "task1",
           tasks: ["Task1", "Task2"],
         },

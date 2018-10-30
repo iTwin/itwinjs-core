@@ -11,10 +11,11 @@ import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "./Fro
 import { StackedWidget, EachWidgetProps } from "./StackedWidget";
 import ZoneTargets from "./ZoneTargets";
 import { StatusBar } from "./StatusBar";
-import { ZoneDef } from "./ZoneDef";
 import { FrontstageManager, WidgetStateChangedEventArgs } from "./FrontstageManager";
+import { StatusBarWidgetControl } from "./StatusBarWidgetControl";
+import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
-import { ZoneProps as NZ_ZoneState, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
+import { ZoneProps as NZ_ZoneProps, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
 import { WidgetProps as NZ_WidgetProps } from "@bentley/ui-ninezone/lib/zones/state/Widget";
 import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
 import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
@@ -31,7 +32,7 @@ import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
 export interface FrameworkZoneProps {
   horizontalAnchor: HorizontalAnchor;
   verticalAnchor: VerticalAnchor;
-  zoneState: NZ_ZoneState;
+  zoneProps: NZ_ZoneProps;
   targetedBounds?: RectangleProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
@@ -81,12 +82,12 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   public render(): React.ReactNode {
     return (
       <>
-        <NZ_Zone bounds={this.props.zoneState.floating ? this.props.zoneState.floating.bounds : this.props.zoneState.bounds}>
+        <NZ_Zone bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}>
           {this._getWidget()}
         </NZ_Zone>
-        <NZ_Zone bounds={this.props.zoneState.bounds}>
+        <NZ_Zone bounds={this.props.zoneProps.bounds}>
           <ZoneTargets
-            zoneId={this.props.zoneState.id}
+            zoneId={this.props.zoneProps.id}
             dropTarget={this.props.dropTarget}
             targetChangeHandler={this.props.targetChangeHandler}
           />
@@ -101,32 +102,33 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   }
 
   private containsWidgetDef(widgetDef: WidgetDef): boolean {
-    return this.props.zoneState.widgets.some((wProps) => {
+    return this.props.zoneProps.widgets.some((wProps: NZ_WidgetProps) => {
       const zoneDef = this.props.zoneDefProvider.getZoneDef(wProps.id);
       if (!zoneDef)
         return false;
 
-      return zoneDef.widgetDefs.some((wDef) => wDef === widgetDef);
+      return zoneDef.widgetDefs.some((wDef: WidgetDef) => wDef === widgetDef);
     });
   }
 
   private _getWidget = () => {
-    if (this.props.zoneState.widgets.length === 1) {
-      const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneState.widgets[0].id);
+    if (this.props.zoneProps.widgets.length === 1) {
+      const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneProps.widgets[0].id);
       if (!zoneDef)
         return null;
+
+      /** Return free-form widget */
       if (zoneDef.widgetCount === 1 && zoneDef.widgetDefs[0].widgetType !== WidgetType.Rectangular) {
         const widgetDef = zoneDef.widgetDefs[0];
         return (widgetDef.canShow()) ? widgetDef.reactElement : null;
       }
     }
 
-    let activeZoneDef: ZoneDef | undefined;
     let activeWidgetDef: WidgetDef | undefined;
     const widgets: EachWidgetProps[] = new Array<EachWidgetProps>();
     let widgetStateChange: WidgetStateChange | undefined;
 
-    this.props.zoneState.widgets.forEach((widget: NZ_WidgetProps) => {
+    this.props.zoneProps.widgets.forEach((widget: NZ_WidgetProps) => {
       const zoneDef = this.props.zoneDefProvider.getZoneDef(widget.id);
       if (!zoneDef)
         return;
@@ -157,7 +159,6 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
               if (isActive) {
                 activeWidgetDef = widgetDef;
-                activeZoneDef = zoneDef;
               }
             }
 
@@ -175,13 +176,15 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
     }
 
     let content: React.ReactNode;
-    if (activeWidgetDef && activeZoneDef) {
+    if (activeWidgetDef) {
       content = activeWidgetDef.reactElement;
 
       if (activeWidgetDef.isStatusBar) {
+        const widgetControl = activeWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
+
         content = (
           <StatusBar
-            zoneDef={activeZoneDef}
+            widgetControl={widgetControl}
             isInFooterMode={false}
           />
         );
@@ -193,16 +196,16 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
     return (
       <StackedWidget
-        fillZone={this.props.zoneState.isLayoutChanged}
+        fillZone={this.props.zoneProps.isLayoutChanged}
         horizontalAnchor={this.props.horizontalAnchor}
         isDragged={this.props.isDragged}
-        isFloating={this.props.zoneState.floating ? true : false}
+        isFloating={this.props.zoneProps.floating ? true : false}
         isUnmergeDrag={this.props.isUnmergeDrag}
         lastPosition={this.props.lastPosition}
         verticalAnchor={this.props.verticalAnchor}
         widgets={widgets}
         widgetChangeHandler={this.props.widgetChangeHandler}
-        zoneId={this.props.zoneState.id}
+        zoneId={this.props.zoneProps.id}
       >
         {content}
       </StackedWidget>

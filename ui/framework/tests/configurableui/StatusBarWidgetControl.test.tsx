@@ -10,13 +10,12 @@ import {
   StatusBarWidgetControl,
   ConfigurableCreateInfo,
   MessageCenterField,
-  ConfigurableUiManager,
   IStatusBar,
   StatusBarFieldId,
-  ZoneDef,
   WidgetState,
   StatusBar,
-  ZoneState,
+  WidgetDef,
+  ConfigurableUiControlType,
 } from "../../src/index";
 
 describe("StatusBarWidgetControl", () => {
@@ -35,33 +34,23 @@ describe("StatusBarWidgetControl", () => {
     }
   }
 
-  let statusBarZoneDef: ZoneDef;
+  let widgetControl: StatusBarWidgetControl | undefined;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    ConfigurableUiManager.unregisterControl("AppStatusBar");
-    ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
-
-    statusBarZoneDef = new ZoneDef({
-      defaultState: ZoneState.Open,
-      allowsMerging: false,
-      widgetProps: [
-        {
-          classId: "AppStatusBar",
-          defaultState: WidgetState.Open,
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:Test.my-label",
-          isFreeform: false,
-          isStatusBar: true,
-        },
-      ],
+    const statusBarWidgetDef = new WidgetDef({
+      classId: AppStatusBarWidgetControl,
+      defaultState: WidgetState.Open,
+      isFreeform: false,
+      isStatusBar: true,
     });
+    widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
 
   });
 
   it("StatusBarWidgetControl should be instantiated", () => {
-    const wrapper = mount(<StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
     wrapper.unmount();
   });
 

@@ -63,13 +63,15 @@ export interface TableProps {
   tableSelectionTarget?: TableSelectionTarget;
   /** Specifies the selection mode. */
   selectionMode?: SelectionMode;
-
+  /** Drag properties for Drag-and-Drop */
   dragProps?: DragSourceProps;
+  /** Drop properties for Drag-and-Drop */
   dropProps?: TableDropTargetProps;
   /** Callback for when properties are being edited */
   onPropertyEditing?: (args: CellEditorState) => void;
   /** Callback for when properties are updated */
   onPropertyUpdated?: (args: PropertyUpdatedArgs) => Promise<boolean>;
+  /** Indicates whether the Table columns are reorderable */
   reorderableColumns?: boolean;
   /** Optional parameter for persistent UI settings. Used for row reordering and row collapsing persistency. */
   uiSettings?: UiSettings;

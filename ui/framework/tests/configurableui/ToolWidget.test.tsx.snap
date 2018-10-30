@@ -60,7 +60,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       "executeAppButtonClick": [Function],
       "featureId": "",
       "horizontalDirection": 3,
-      "id": "Widget-17",
+      "id": "toolWidget",
       "isFloatingStateSupported": false,
       "isFloatingStateWindowResizable": true,
       "isFreeform": false,

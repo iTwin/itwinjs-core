@@ -36,7 +36,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "horizontalItems": ItemList {
         "_items": Array [],
       },
-      "id": "Widget-4",
+      "id": "navigationWidget",
       "isFloatingStateSupported": false,
       "isFloatingStateWindowResizable": true,
       "isFreeform": false,

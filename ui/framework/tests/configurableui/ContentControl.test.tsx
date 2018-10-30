@@ -11,7 +11,7 @@ import {
   ContentControl,
   ConfigurableCreateInfo,
   ConfigurableUiManager,
-  FrontstageProps,
+  FrontstageDefProps,
   FrontstageManager,
   ContentViewManager,
 } from "../../src/index";
@@ -45,7 +45,7 @@ describe("ContentControl", () => {
     priority: 100,
   });
 
-  const frontstageProps: FrontstageProps = {
+  const frontstageProps: FrontstageDefProps = {
     id: "TestFrontstage1",
     defaultToolId: "PlaceLine",
     defaultLayout: myContentLayout,
@@ -88,12 +88,12 @@ describe("ContentControl", () => {
 
   const contentLayout2: ContentLayoutDef = new ContentLayoutDef({
     id: "TwoHalvesVertical",
-    descriptionKey: "Protogist:ContentLayoutDef.TwoHalvesVertical",
+    descriptionKey: "App:ContentLayoutDef.TwoHalvesVertical",
     priority: 60,
     verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
   });
 
-  const frontstageProps2: FrontstageProps = {
+  const frontstageProps2: FrontstageDefProps = {
     id: "TestFrontstage2",
     defaultToolId: "PlaceLine",
     defaultLayout: contentLayout2,

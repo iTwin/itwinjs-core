@@ -15,11 +15,24 @@ describe("Dialog", () => {
 
   describe("<Dialog />", () => {
     it("should render", () => {
-      mount(<Dialog opened={true} />);
+      const wrapper = mount(<Dialog opened={true} />);
+      wrapper.unmount();
     });
 
     it("renders correctly", () => {
       shallow(<Dialog opened={true} />).should.matchSnapshot();
+    });
+
+    it("movable", () => {
+      const wrapper = mount(<Dialog opened={true} movable={true} />);
+      // TODO: simulate move
+      wrapper.unmount();
+    });
+
+    it("resizable", () => {
+      const wrapper = mount(<Dialog opened={true} resizable={true} />);
+      // TODO: simulate resize
+      wrapper.unmount();
     });
   });
 });

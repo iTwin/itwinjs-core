@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Widget */
 
-import { WidgetDef, WidgetProps } from "./WidgetDef";
+import { WidgetDef, WidgetDefProps } from "./WidgetDef";
 import { ToolWidgetDef } from "./ToolWidget";
 import { NavigationWidgetDef } from "./NavigationWidget";
 
@@ -15,7 +15,7 @@ export class WidgetDefFactory {
    * @param widgetProps  The properties used to create the WidgetDef
    * @returns  The created WidgetDef
    */
-  public static create(widgetProps: WidgetProps): WidgetDef {
+  public static create(widgetProps: WidgetDefProps): WidgetDef {
     if ("appButtonId" in widgetProps) {
       return new ToolWidgetDef(widgetProps);
     } else if ("navigationAidId" in widgetProps) {

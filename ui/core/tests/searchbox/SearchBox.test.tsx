@@ -15,7 +15,8 @@ describe("SearchBox", () => {
 
   describe("<SearchBox />", () => {
     it("should render", () => {
-      mount(<SearchBox onValueChanged={() => { }} />);
+      const wrapper = mount(<SearchBox onValueChanged={() => { }} />);
+      wrapper.unmount();
     });
 
     it("renders correctly", () => {

@@ -170,9 +170,9 @@ export class SampleAppIModelApp extends IModelApp {
         SampleAppIModelApp.store.dispatch({ type: "SampleApp:SETIMODELCONNECTION", payload });
 
         // we create a FrontStage that contains the views that we want.
-        const frontstageDef = new ViewsFrontstage(viewIdsSelected, iModelConnection);
-        FrontstageManager.addFrontstageDef(frontstageDef);
-        FrontstageManager.setActiveFrontstageDef(frontstageDef).then(() => {
+        const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);
+        FrontstageManager.addFrontstageProvider(frontstageProvider);
+        FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => {
             // Frontstage & ScreenViewports are ready
             // tslint:disable-next-line:no-console
             console.log("Frontstage is ready");

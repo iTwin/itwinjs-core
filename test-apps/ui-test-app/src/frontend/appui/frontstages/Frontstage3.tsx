@@ -7,7 +7,6 @@ import * as React from "react";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 
 import {
-  FrontstageProps,
   GroupButton,
   ToolButton,
   ToolItemDef,
@@ -18,7 +17,11 @@ import {
   NavigationWidget,
   ContentLayoutDef,
   ContentGroup,
-  FrontstageDef,
+  Frontstage,
+  Zone,
+  Widget,
+  FrontstageProvider,
+  FrontstageProps,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -29,14 +32,9 @@ import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
-export class Frontstage3 extends FrontstageDef {
+export class Frontstage3 extends FrontstageProvider {
 
-  constructor() {
-    super();
-    this.initializeFromProps(this.defineProps());
-  }
-
-  public defineProps(): FrontstageProps {
+  public get frontstage(): React.ReactElement<FrontstageProps> {
     const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
       { // Three Views, one on the left, two stacked on the right.
         descriptionKey: "SampleApp:ContentDef.ThreeRightStacked",
@@ -68,109 +66,66 @@ export class Frontstage3 extends FrontstageDef {
       },
     );
 
-    const frontstageProps: FrontstageProps = {
-      id: "Test3",
-      defaultToolId: "PlaceLine",
-      defaultLayout: contentLayoutDef,
-      contentGroup: myContentGroup,
-      isInFooterMode: false,
-      applicationData: { key: "value" },
-
-      topLeft: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        applicationData: { key: "value" },
-        widgetProps: [
-          {
-            defaultState: WidgetState.Open,
-            isFreeform: true,
-            applicationData: { key: "value" },
-            reactElement: this.getToolWidget(),
-          },
-        ],
-      },
-      topCenter: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            defaultState: WidgetState.Open,
-            isFreeform: false,
-            isToolSettings: true,
-          },
-        ],
-      },
-      topRight: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            defaultState: WidgetState.Open,
-            isFreeform: true,
-            reactElement: this.getNavigationWidget(),
-          },
-        ],
-      },
-      centerRight: {
-        defaultState: ZoneState.Open,
-        allowsMerging: true,
-        widgetProps: [
-          {
-            classId: NavigationTreeWidgetControl,
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-        ],
-      },
-      bottomLeft: {
-        defaultState: ZoneState.Open,
-        allowsMerging: true,
-        widgetProps: [
-          {
-            classId: TableDemoWidgetControl,
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-            isFreeform: false,
-          },
-        ],
-      },
-      bottomCenter: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            classId: AppStatusBarWidgetControl,
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-            isFreeform: false,
-            isStatusBar: true,
-          },
-        ],
-      },
-      bottomRight: {
-        defaultState: ZoneState.Minimized,
-        allowsMerging: true,
-        widgetProps: [
-          {
-            classId: VerticalPropertyGridWidgetControl,
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-          {
-            classId: HorizontalPropertyGridWidgetControl,
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-        ],
-      },
-    };
-
-    return frontstageProps;
+    return (
+      <Frontstage
+        id="Test3"
+        defaultToolId="Select"
+        defaultLayout={contentLayoutDef}
+        contentGroup={myContentGroup}
+        isInFooterMode={false}
+        applicationData={{ key: "value" }}
+        topLeft={
+          <Zone
+            widgets={[
+              <Widget isFreeform={true} element={this.getToolWidget()} />,
+            ]}
+          />
+        }
+        topCenter={
+          <Zone
+            widgets={[
+              <Widget isToolSettings={true} />,
+            ]}
+          />
+        }
+        topRight={
+          <Zone
+            widgets={[
+              <Widget isFreeform={true} element={this.getNavigationWidget()} />,
+            ]}
+          />
+        }
+        centerRight={
+          <Zone allowsMerging={true}
+            widgets={[
+              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
+            ]}
+          />
+        }
+        bottomLeft={
+          <Zone allowsMerging={true}
+            widgets={[
+              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.TableDemo" control={TableDemoWidgetControl} />,
+            ]}
+          />
+        }
+        bottomCenter={
+          <Zone defaultState={ZoneState.Open}
+            widgets={[
+              <Widget isStatusBar={true} iconClass="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
+            ]}
+          />
+        }
+        bottomRight={
+          <Zone allowsMerging={true}
+            widgets={[
+              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconClass="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+              <Widget defaultState={WidgetState.Open} iconClass="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
+            ]}
+          />
+        }
+      />
+    );
   }
 
   /** Define a ToolWidget with Buttons to display in the TopLeft zone.

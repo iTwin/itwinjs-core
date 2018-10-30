@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
-import { ConfigurableUiManager, ItemPropsList, ZoneState, WidgetState, FrontstageProps, FrontstageManager, ToolItemDef } from "../../src/index";
+import { ConfigurableUiManager, ItemPropsList, ZoneState, WidgetState, FrontstageDefProps, FrontstageManager, ToolItemDef } from "../../src/index";
 import { ConfigurableCreateInfo } from "../../src/index";
 import { ToolUiProvider } from "../../src/index";
 
@@ -78,7 +78,7 @@ describe("ToolUiProvider", () => {
       ],
     };
 
-    const frontstageProps: FrontstageProps = {
+    const frontstageProps: FrontstageDefProps = {
       id: "ToolUiProvider-TestFrontstage",
       defaultToolId: "PlaceLine",
       defaultLayout: "FourQuadrants",
@@ -114,7 +114,7 @@ describe("ToolUiProvider", () => {
     if (frontstageDef) {
       FrontstageManager.setActiveFrontstageDef(frontstageDef);
 
-      frontstageDef.setActiveToolId(testToolId);
+      FrontstageManager.setActiveToolId(testToolId);
       expect(FrontstageManager.activeToolId).to.eq(testToolId);
 
       const itemDef = ConfigurableUiManager.findItem(testToolId);
@@ -126,7 +126,7 @@ describe("ToolUiProvider", () => {
         expect(toolItemDef.isActive).to.be.true;
       }
 
-      const toolInformation = frontstageDef.activeToolInformation;
+      const toolInformation = FrontstageManager.activeToolInformation;
       expect(toolInformation).to.not.be.undefined;
 
       if (toolInformation) {

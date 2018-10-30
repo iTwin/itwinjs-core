@@ -5,7 +5,7 @@
 /** @module ContentView */
 
 import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl } from "./ConfigurableUiControl";
-import { ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
 
 /** The base class for Frontstage content controls.
  */
@@ -22,12 +22,6 @@ export class ContentControl extends ConfigurableUiControl {
 
   /** Called when this ContentControl is activated */
   public onActivated(): void {
-    if (this.isViewport) { // if viewport make sure the selected view in ViewManager is in sync.
-      const me = this;
-      this.isReady.then(() => {
-        IModelApp.viewManager.setSelectedView(me.viewport);
-      });
-    }
   }
 
   /** Called when this ContentControl is deactivated */

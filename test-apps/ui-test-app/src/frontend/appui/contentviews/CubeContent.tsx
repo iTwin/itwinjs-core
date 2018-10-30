@@ -17,6 +17,11 @@ class CubeContentControl extends ContentControl {
 
     this.reactElement = <CubeContent />;
   }
+
+  /** Get the NavigationAidControl associated with this ContentControl */
+  public get navigationAidControl(): string {
+    return "CubeNavigationAid";
+  }
 }
 
 interface CubeContentState {

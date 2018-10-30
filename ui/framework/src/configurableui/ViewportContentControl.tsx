@@ -7,7 +7,7 @@
 import { ConfigurableUiControlType, ConfigurableCreateInfo } from "./ConfigurableUiControl";
 import { ContentControl } from "./ContentControl";
 
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
 import { ViewUtilities } from "../utils";
 
 /** The base class for Frontstage Viewport content controls.
@@ -39,6 +39,12 @@ export class ViewportContentControl extends ContentControl {
   /** Sets the ScreenViewport */
   public set viewport(v: ScreenViewport | undefined) {
     this._viewport = v;
+    this.setIsReady();
+  }
+
+  /** Returns a promise that resolves when the control is ready for usage.
+   */
+  public setIsReady(): void {
     if (this._viewportReadyCallback) {
       this._viewportReadyCallback();
     }
@@ -47,6 +53,18 @@ export class ViewportContentControl extends ContentControl {
   /** Returns a promise that resolves when the control is ready for usage.
    */
   public get isReady(): Promise<void> { return this._isReady; }
+
+  /** Called when this ContentControl is activated */
+  public onActivated(): void {
+    super.onActivated();
+
+    const me = this;
+    this.isReady
+      .then(() => {
+        if (IModelApp.viewManager)
+          IModelApp.viewManager.setSelectedView(me.viewport);
+      });
+  }
 
   /** Get the NavigationAidControl associated with this ContentControl */
   public get navigationAidControl(): string {

@@ -27,9 +27,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 
 import {
-  FrontstageProps,
-  FrontstageManager,
-  FrontstageDef,
+  FrontstageProvider,
   GroupButton,
   ToolButton,
   ToolItemDef,
@@ -45,6 +43,10 @@ import {
   ModalDialogManager,
   ViewSelector,
   ModelSelectorWidgetControl,
+  Frontstage,
+  Zone,
+  Widget,
+  GroupItemDef,
 } from "@bentley/ui-framework";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
@@ -65,16 +67,16 @@ import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 import { MeasureByPointsButton } from "../tooluiproviders/MeasurePoints";
 
 import rotateIcon from "../icons/rotate.svg";
+import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 // import SvgPath from "@bentley/ui-ninezone/lib/base/SvgPath";
 
-export class ViewsFrontstage extends FrontstageDef {
+export class ViewsFrontstage extends FrontstageProvider {
 
   constructor(public viewIds: Id64String[], public iModelConnection: IModelConnection) {
     super();
-    this.initializeFromProps(this.defineProps());
   }
 
-  public defineProps(): FrontstageProps {
+  public get frontstage() {
     // first find an appropriate layout
     const contentLayoutProps: ContentLayoutProps | undefined = AppUi.findLayoutFromContentCount(this.viewIds.length);
     if (!contentLayoutProps) {
@@ -94,148 +96,72 @@ export class ViewsFrontstage extends FrontstageDef {
     }
     const myContentGroup: ContentGroup = new ContentGroup({ contents: contentProps });
 
-    const frontstageProps: FrontstageProps = {
-      id: "ViewsFrontstage",
-      defaultToolId: "PlaceLine",
-      defaultLayout: contentLayoutDef,
-      contentGroup: myContentGroup,
-      isInFooterMode: true,
-      applicationData: { key: "value" },
+    return (
+      <Frontstage id="ViewsFrontstage"
+        defaultToolId="Select" defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
+        isInFooterMode={true} applicationData={{ key: "value" }}
 
-      topLeft: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        applicationData: { key: "value" },
-        widgetProps: [
-          {
-            defaultState: WidgetState.Open,
-            isFreeform: true,
-            applicationData: { key: "value" },
-            reactElement: <FrontstageToolWidget />,
-          },
-        ],
-      },
-      topCenter: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            defaultState: WidgetState.Open,
-            isFreeform: false,
-            isToolSettings: true,
-          },
-        ],
-      },
-      topRight: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            defaultState: WidgetState.Open,
-            isFreeform: true,
-            reactElement: <FrontstageNavigationWidget />,
-          },
-        ],
-      },
-      centerRight: {
-        defaultState: ZoneState.Minimized,
-        allowsMerging: true,
-        widgetProps: [
-          {
-            classId: NavigationTreeWidgetControl,
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:widgets.NavigationTree",
-          },
-          {
-            classId: BreadcrumbDemoWidgetControl,
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:widgets.BreadcrumbDemo",
-          },
-          {
-            classId: ModelSelectorWidgetControl,
-            defaultState: WidgetState.Open,
-            iconClass: "icon-3d-cube",
-            labelKey: "SampleApp:widgets.ModelSelector",
-            applicationData: { iModel: SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection },
-          },
-        ],
-      },
-      bottomLeft: {
-        defaultState: ZoneState.Minimized,
-        allowsMerging: true,
-        widgetProps: [
-          {
-            classId: "FeedbackWidget",
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-        ],
-      },
-      bottomCenter: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            classId: AppStatusBarWidgetControl,
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:widgets.StatusBar",
-            isFreeform: false,
-            isStatusBar: true,
-          },
-        ],
-      },
-      bottomRight: {
-        defaultState: ZoneState.Minimized,
-        allowsMerging: true,
-        widgetProps: [
-          {
-            id: "VerticalPropertyGrid",
-            classId: VerticalPropertyGridWidgetControl,
-            defaultState: WidgetState.Off,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:widgets.VerticalPropertyGrid",
-          },
-          {
-            classId: HorizontalPropertyGridWidgetControl,
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:widgets.HorizontalPropertyGrid",
-          },
-        ],
-      },
-    };
-
-    return frontstageProps;
+        topLeft={
+          <Zone
+            widgets={[
+              <Widget isFreeform={true} element={<FrontstageToolWidget />} />,
+            ]}
+          />
+        }
+        topCenter={
+          <Zone
+            widgets={[
+              <Widget isToolSettings={true} />,
+            ]}
+          />
+        }
+        topRight={
+          <Zone
+            widgets={[
+              <Widget isFreeform={true} element={<FrontstageNavigationWidget />} />,
+            ]}
+          />
+        }
+        centerRight={
+          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+            widgets={[
+              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
+              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
+              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
+                applicationData={{ iModel: SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection }} />,
+            ]}
+          />
+        }
+        bottomLeft={
+          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+            widgets={[
+              <Widget defaultState={WidgetState.Open} iconClass="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={FeedbackDemoWidget} />,
+            ]}
+          />
+        }
+        bottomCenter={
+          <Zone defaultState={ZoneState.Open}
+            widgets={[
+              <Widget isStatusBar={true} iconClass="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
+            ]}
+          />
+        }
+        bottomRight={
+          <Zone allowsMerging={true}
+            widgets={[
+              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconClass="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+              <Widget defaultState={WidgetState.Open} iconClass="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
+            ]}
+          />
+        }
+      />
+    );
   }
 }
 
 /** Define a ToolWidget with Buttons to display in the TopLeft zone.
  */
-class FrontstageToolWidget extends React.Component<{}> {
-
-  private _tool1 = () => {
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-    if (activeFrontstageDef) {
-      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
-      if (widgetDef) {
-        widgetDef.setWidgetState(WidgetState.Open);
-      }
-    }
-  }
-
-  private _tool2 = () => {
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-    if (activeFrontstageDef) {
-      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
-      if (widgetDef) {
-        widgetDef.setWidgetState(WidgetState.Off);
-      }
-    }
-  }
+class FrontstageToolWidget extends React.Component {
 
   /** Tool that will start a sample activity and display ActivityMessage.
    */
@@ -319,7 +245,17 @@ class FrontstageToolWidget extends React.Component<{}> {
     toolId: "tool1",
     iconClass: "icon-placeholder",
     labelKey: "SampleApp:buttons.tool1",
+    execute: AppUi.tool1,
     applicationData: { key: "value" },
+  });
+
+  private _myGroupItem1 = new GroupItemDef({
+    groupId: "my-group1",
+    labelKey: "SampleApp:buttons.toolGroup",
+    iconClass: "icon-placeholder",
+    items: [this._myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"],
+    direction: Direction.Bottom,
+    itemsInColumn: 7,
   });
 
   private _setLengthFormatMetricCommand = new CommandItemDef({
@@ -370,8 +306,8 @@ class FrontstageToolWidget extends React.Component<{}> {
       expandsTo={Direction.Right}
       items={
         <>
-          <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={this._tool1} />
-          <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={this._tool2} />
+          <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={AppUi.tool1} />
+          <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={AppUi.tool2} />
           <ToolButton toolId="tool3" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool3" isEnabled={false} execute={this._tool3} />
           <ToolButton toolId="tool4" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool4" isVisible={false} execute={this._tool4} />
           <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.outputMessage" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
@@ -379,7 +315,7 @@ class FrontstageToolWidget extends React.Component<{}> {
           <GroupButton
             labelKey="SampleApp:buttons.anotherGroup"
             iconClass="icon-placeholder"
-            items={[this._myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+            items={[this._myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8", this._myGroupItem1]}
             direction={Direction.Right}
           />
         </>

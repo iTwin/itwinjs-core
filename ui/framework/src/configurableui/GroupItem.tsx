@@ -13,7 +13,7 @@ import { ItemList, ItemMap } from "./ItemFactory";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
-import HistoryTray, { History, DefaultHistoryManager } from "@bentley/ui-ninezone/lib/toolbar/item/expandable/history/Tray";
+import HistoryTray, { History, DefaultHistoryManager, HistoryEntry } from "@bentley/ui-ninezone/lib/toolbar/item/expandable/history/Tray";
 import HistoryIcon from "@bentley/ui-ninezone/lib/toolbar/item/expandable/history/Icon";
 import ExpandableItem from "@bentley/ui-ninezone/lib/toolbar/item/expandable/Expandable";
 import GroupColumn from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Column";
@@ -297,14 +297,16 @@ class GroupItem extends React.Component<Props, State> {
         direction={this.state.groupItemDef.direction}
         isExtended={this.state.isExtended}
         items={
-          this.state.history.map((entry) => {
+          this.state.history.map((entry: HistoryEntry<HistoryItem>) => {
             const tray = this.state.trays.get(entry.item.trayKey)!;
             const column = tray.columns.get(entry.item.columnIndex)!;
             const item = column.items.get(entry.item.itemKey)!;
+
             return (
               <HistoryIcon
                 key={entry.key}
                 onClick={() => this._handleOnHistoryItemClick(entry.item)}
+                title={item.label}
               >
                 <Icon iconInfo={item.iconInfo} />
               </HistoryIcon>

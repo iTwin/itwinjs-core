@@ -57,7 +57,7 @@ describe("ContentLayout", () => {
 
   const contentLayout2: ContentLayoutDef = new ContentLayoutDef({
     id: "TwoHalvesVertical",
-    descriptionKey: "Protogist:ContentLayoutDef.TwoHalvesVertical",
+    descriptionKey: "SampleApp:ContentLayoutDef.TwoHalvesVertical",
     priority: 60,
     verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
   });
@@ -74,7 +74,7 @@ describe("ContentLayout", () => {
 
   const contentLayout3: ContentLayoutDef = new ContentLayoutDef({
     id: "TwoHalvesHorizontal",
-    descriptionKey: "Protogist:ContentLayoutDef.TwoHalvesHorizontal",
+    descriptionKey: "SampleApp:ContentLayoutDef.TwoHalvesHorizontal",
     priority: 60,
     horizontalSplit: { id: "TwoHalvesHorizontal.HorizontalSplit", percentage: 0.50, top: 0, bottom: 1 },
   });

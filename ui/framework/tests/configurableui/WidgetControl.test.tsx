@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../src/index";
+import { WidgetState, WidgetDefProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../src/index";
 
 describe("WidgetControl", () => {
 
@@ -22,7 +22,7 @@ describe("WidgetControl", () => {
     ConfigurableUiManager.registerControl("WidgetControlTest", TestWidget);
   });
 
-  const widgetProps: WidgetProps = {
+  const widgetProps: WidgetDefProps = {
     classId: "WidgetControlTest",
   };
 
@@ -42,9 +42,6 @@ describe("WidgetControl", () => {
     expect(widgetControl).to.not.be.undefined;
     if (widgetControl)
       widgetControl.setWidgetState(WidgetState.Open);
-
-    // expect(widgetDef.isDefaultOpen).to.be.true;
-    // expect(widgetDef.defaultOpenUsed).to.be.false;
   });
 
 });

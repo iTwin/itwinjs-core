@@ -16,6 +16,7 @@ import {
   ItemPropsList,
   CommandItemDef,
   GroupItemDef,
+  FrontstageManager,
 } from "../../src/index";
 import TestUtils from "../TestUtils";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
@@ -32,6 +33,7 @@ describe("ToolButton", () => {
     });
 
     it("renders correctly", () => {
+      FrontstageManager.setActiveToolId("tool1");
       shallow(<ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="UiFramework:tests.label" />).should.matchSnapshot();
     });
 

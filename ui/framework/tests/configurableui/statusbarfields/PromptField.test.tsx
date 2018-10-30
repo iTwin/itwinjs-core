@@ -14,12 +14,11 @@ import {
   IStatusBar,
   PromptField,
   StatusBarWidgetControl,
-  ZoneDef,
-  ConfigurableUiManager,
-  ZoneState,
   WidgetState,
   ConfigurableCreateInfo,
   UiFramework,
+  ConfigurableUiControlType,
+  WidgetDef,
 } from "../../../src";
 
 describe("PromptField", () => {
@@ -39,35 +38,24 @@ describe("PromptField", () => {
     }
   }
 
-  let statusBarZoneDef: ZoneDef;
+  let widgetControl: StatusBarWidgetControl | undefined;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    ConfigurableUiManager.unregisterControl("AppStatusBar");
-    ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
-
-    statusBarZoneDef = new ZoneDef({
-      defaultState: ZoneState.Open,
-      allowsMerging: false,
-      widgetProps: [
-        {
-          classId: "AppStatusBar",
-          defaultState: WidgetState.Open,
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:Test.my-label",
-          isFreeform: false,
-          isStatusBar: true,
-        },
-      ],
+    const statusBarWidgetDef = new WidgetDef({
+      classId: AppStatusBarWidgetControl,
+      defaultState: WidgetState.Open,
+      isFreeform: false,
+      isStatusBar: true,
     });
-    if (statusBarZoneDef) { }
+    widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
   // cSpell:Ignore TOOLPROMPT
   it("Status Bar with PromptField should mount", () => {
     const wrapper = mount(<Provider store={TestUtils.store}>
-      <StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />
+      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
     </Provider>);
 
     UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: "Hello World!" });

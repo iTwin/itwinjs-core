@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added JSX specification for Frontstage, Zone & Widget",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

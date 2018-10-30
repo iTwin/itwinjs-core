@@ -17,9 +17,12 @@ import { ScreenViewport } from "@bentley/imodeljs-frontend";
 /** iModel Viewport Control
  */
 export class IModelViewportControl extends ViewportContentControl {
+  private _options: any;
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
+
+    this._options = options;
 
     if (options.viewId) {
       this.reactElement = <ViewportComponent viewportRef={(v: ScreenViewport) => { this.viewport = v; }} viewDefinitionId={options.viewId} imodel={options.iModelConnection} />;
@@ -27,6 +30,24 @@ export class IModelViewportControl extends ViewportContentControl {
       this.reactElement = <MockIModelViewport bgColor={options.bgColor} />;
     }
   }
+
+  /** Returns a promise that resolves when the control is ready for usage.
+   */
+  public get isReady(): Promise<void> {
+    if (this._options.viewId)
+      return super.isReady;
+    else
+      return Promise.resolve();
+  }
+
+  /** Get the NavigationAidControl associated with this ContentControl */
+  public get navigationAidControl(): string {
+    if (this._options.viewId)
+      return super.navigationAidControl;
+    else
+      return "StandardRotationNavigationAid";
+  }
+
 }
 
 // This is used for fake viewports (those with no ViewId)

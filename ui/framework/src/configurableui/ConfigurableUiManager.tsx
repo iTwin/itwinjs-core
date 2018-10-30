@@ -6,7 +6,7 @@
 
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemPropsList } from "./ItemProps";
-import { FrontstageDef, FrontstageProps } from "./FrontstageDef";
+import { FrontstageDef, FrontstageDefProps } from "./FrontstageDef";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableCreateInfo, ConfigurableUiElement, ConfigurableUiControlConstructor } from "./ConfigurableUiControl";
 import { ContentGroupManager, ContentGroupProps } from "./ContentGroup";
@@ -14,6 +14,7 @@ import { ContentLayoutManager, ContentLayoutProps } from "./ContentLayout";
 import { TaskManager, TaskPropsList } from "./Task";
 import { WorkflowManager, WorkflowPropsList } from "./Workflow";
 import { ItemMap } from "./ItemFactory";
+import { FrontstageProvider } from "./Frontstage";
 
 import { StandardRotationNavigationAidControl } from "./navigationaids/StandardRotationNavigationAid";
 import { SheetNavigationAidControl } from "./navigationaids/SheetNavigationAid";
@@ -169,14 +170,14 @@ export class ConfigurableUiManager {
   /** Loads one or more Frontstages into the [[FrontstageManager]].
    * @param frontstagePropsList  the list of Frontstages to load
    */
-  public static loadFrontstages(frontstagePropsList: FrontstageProps[]): void {
+  public static loadFrontstages(frontstagePropsList: FrontstageDefProps[]): void {
     FrontstageManager.loadFrontstages(frontstagePropsList);
   }
 
   /** Loads a Frontstage into the [[FrontstageManager]].
    * @param frontstageProps  the properties of the Frontstage to load
    */
-  public static loadFrontstage(frontstageProps: FrontstageProps): void {
+  public static loadFrontstage(frontstageProps: FrontstageDefProps): void {
     FrontstageManager.loadFrontstage(frontstageProps);
   }
 
@@ -185,6 +186,13 @@ export class ConfigurableUiManager {
    */
   public static addFrontstage(frontstageDef: FrontstageDef): void {
     FrontstageManager.addFrontstageDef(frontstageDef);
+  }
+
+  /** Add a Frontstage via a provider into the [[FrontstageManager]].
+   * @param frontstageProvider  Provider of the Frontstage to add
+   */
+  public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
   }
 
   /** Loads one or more ContentGroups into the [[ContentGroupManager]].
