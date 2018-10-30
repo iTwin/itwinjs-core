@@ -38,7 +38,7 @@ export class Bezier1dNd {
   /** return the packed data array.  This is a REFERENCE to the array. */
   public get packedData() { return this._packedData; }
   /** Create a Bezier1dNd, using the structure of `data[0]` to determine the beizer order. */
-  public create(data: Point2d[] | Point3d[] | Point4d[]): Bezier1dNd | undefined {
+  public static create(data: Point2d[] | Point3d[] | Point4d[]): Bezier1dNd | undefined {
     if (data.length < 1)
       return undefined;
     if (data[0] instanceof Point3d) {

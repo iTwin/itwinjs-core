@@ -330,9 +330,9 @@ export class BezierPolynomialAlgebra {
 export class UnivariateBezier extends BezierCoffs {
   private _order: number;
   public get order() { return this._order; }
-  public constructor(order: number) {
-    super(order);
-    this._order = order;
+  public constructor(data: number | Float64Array | number[]) {
+    super(data);
+    this._order = super.order;
   }
 
   /** (Re) initialize with given order (and all coffs zero) */
@@ -367,10 +367,8 @@ export class UnivariateBezier extends BezierCoffs {
    * copy coefficients into a new bezier.
    * @param coffs coefficients for bezier
    */
-  public static createCoffs(coffs: number[]): UnivariateBezier {
-    const result = new UnivariateBezier(coffs.length);
-    for (let i = 0; i < coffs.length; i++)result.coffs[i] = coffs[i];
-    return result;
+  public static createCoffs(data: number | number[] | Float64Array): UnivariateBezier {
+    return new UnivariateBezier(data);
   }
   /**
    * copy coefficients into a new bezier.
@@ -494,7 +492,7 @@ export class UnivariateBezier extends BezierCoffs {
    */
   public sumBasisFunctionDerivatives(u: number, polygon: Float64Array, blockSize: number, result?: Float64Array): Float64Array {
     const order = this._order;
-    if (!result) result = new Float64Array(order);
+    if (!result) result = new Float64Array(blockSize);
     this._basisValues = PascalCoefficients.getBezierBasisDerivatives(this.order, u, this._basisValues);
     UnivariateBezier.sumWeightedBlocks(this._basisValues, order, polygon, blockSize, result);
     return result;
@@ -948,10 +946,10 @@ export class Order4Bezier extends BezierCoffs {
   public sumBasisFunctionDerivatives(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array {
     if (!result) result = new Float64Array(n);
     const v = 1 - u;
-    // QUADRATIC basis functions applied to differences ...
-    const f0 = 6 * (v * v);
-    const f1 = 6 * (2 * u * v);
-    const f2 = 6 * u * u;
+    // QUADRATIC basis functions applied to differences ... (with factor 3 for derivative)
+    const f0 = 3 * (v * v);
+    const f1 = 6 * u * v;
+    const f2 = 3 * u * u;
 
     for (let i = 0; i < n; i++) {
       const q0 = polygon[i];
@@ -1113,10 +1111,10 @@ export class Order5Bezier extends BezierCoffs {
     // CUBIC basis functions applied to differences ...
     const uu = u * u;
     const vv = v * v;
-    const f0 = 12 * v * vv;
-    const f1 = 36 * u * vv;
-    const f2 = 36 * uu * v;
-    const f3 = 12 * u * uu;
+    const f0 = 4 * v * vv;
+    const f1 = 12 * u * vv;
+    const f2 = 12 * uu * v;
+    const f3 = 4 * u * uu;
 
     for (let i = 0; i < n; i++) {
       const q0 = polygon[i];

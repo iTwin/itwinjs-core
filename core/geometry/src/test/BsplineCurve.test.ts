@@ -220,61 +220,6 @@ describe("BsplineCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("SaturateBezier", () => {
-    const ck = new Checker();
-    const geometry: GeometryQuery[] = [];
-    const allPoints: Point3d[] = [
-      Point3d.create(0, 0, 0),
-      Point3d.create(0, 10, 0),
-      Point3d.create(10, 10, 0),
-      Point3d.create(10, 0, 0),
-      Point3d.create(20, 0, 0),
-      Point3d.create(20, 10, 0)];
-    const livePoints = [];
-    const uniformKnots = [0, 1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11];
-    const yShift = 20.0;
-    let currYShift = 0;
-    const xShift1 = 50.0;
-    const xShift2 = 100.0;
-    for (const p of allPoints) {
-      livePoints.push(p);
-      if (livePoints.length > 2) {
-        const bezier = BezierCurve3d.create(livePoints)!;
-        const bezier1 = bezier.clone();
-        const knotVector = KnotVector.create(uniformKnots, livePoints.length - 1, false);
-        geometry.push(bezier.copyPointsAsLineString());
-        geometry[geometry.length - 1].tryTranslateInPlace(0, currYShift, 0);
-        bezier.saturateInPlace(knotVector, 0);
-        bezier1.saturateInPlace(knotVector, 1);
-        // Because the knot vector is uniform, the two saturations are identical.
-        ck.testTrue(bezier.isAlmostEqual(bezier1));
-        geometry.push(bezier.copyPointsAsLineString());
-        geometry[geometry.length - 1].tryTranslateInPlace(0, currYShift, 0);
-        const degree = livePoints.length - 1;
-        const leftSaturated = [];
-        const rightSaturated = [];
-        for (let i = 0; i < degree; i++) leftSaturated.push(0);
-        for (let i = 0; i < degree; i++) leftSaturated.push(i + 1);
-
-        for (let i = 0; i < degree; i++) rightSaturated.push(i);
-        const right = rightSaturated[rightSaturated.length - 1] + 1;
-        for (let i = 0; i < degree; i++) rightSaturated.push(right);
-
-        const bezier2 = BezierCurve3d.create(livePoints)!;
-        const bezier3 = BezierCurve3d.create(livePoints)!;
-        bezier2.saturateInPlace(KnotVector.create(leftSaturated, degree, false), 0);
-        bezier3.saturateInPlace(KnotVector.create(rightSaturated, degree, false), 0);
-        geometry.push(bezier2.copyPointsAsLineString());
-        geometry[geometry.length - 1].tryTranslateInPlace(xShift1, currYShift, 0);
-        geometry.push(bezier3.copyPointsAsLineString());
-        geometry[geometry.length - 1].tryTranslateInPlace(xShift2, currYShift, 0);
-
-        currYShift += yShift;
-      }
-    }
-    GeometryCoreTestIO.saveGeometry(geometry, "BezierCurve3d", "SingleBezierSaturation");
-    expect(ck.getNumErrors()).equals(0);
-  });
   it("DoubleKnots", () => {
     const ck = new Checker();
     const bcurve = BSplineCurve3d.create(
@@ -346,7 +291,7 @@ describe("BsplineCurve", () => {
     let xShift = 0.0;
     const yShift = 0.0;
     for (const curve of bcurves) {
-      translateAndPush(allGeometry, curve.clone (), xShift, yShift);
+      translateAndPush(allGeometry, curve.clone(), xShift, yShift);
       for (const fraction of [0.2, 0.5, 0.73]) {
         const tangentRay = curve.fractionToPointAndDerivative(fraction);
         // Alter the ray z so it is not perpendicular ..

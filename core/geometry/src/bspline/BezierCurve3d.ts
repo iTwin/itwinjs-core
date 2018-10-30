@@ -44,7 +44,7 @@ export class BezierCurve3d extends BezierCurveBase {
   public getPolePoint4d(i: number, result?: Point4d): Point4d | undefined {
     const data = this._polygon.getPolygonPoint(i, this._workData0);
     if (data)
-      return Point4d.create(data[0], data[1], data[2], data[3], result);
+      return Point4d.create(data[0], data[1], data[2], 1.0, result);
     return undefined;
   }
   /**
