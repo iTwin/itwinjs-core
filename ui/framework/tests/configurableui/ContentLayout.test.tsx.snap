@@ -1,18 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ContentLayout <ContentLayout /> renders correctly 1`] = `
-<div
-  className="contentlayout-footer-mode"
-  id="ContentLayoutDiv"
-  onMouseDown={[Function]}
-  onMouseUp={[Function]}
->
-  <SingleContentContainer
-    content={<div />}
-  />
-</div>
-`;
-
 exports[`ContentLayout SingleContent renders correctly 1`] = `
 <div
   className="contentlayout-footer-mode"

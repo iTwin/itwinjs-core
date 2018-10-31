@@ -10,7 +10,6 @@ const chaiAsPromised = require("chai-as-promised");
 const chaiJestSnapshot = require("chai-jest-snapshot");
 const enzyme = require("enzyme/build");
 const spies = require("chai-spies");
-const sms = require("source-map-support");
 
 // setup enzyme (testing utils for React)
 enzyme.configure({ adapter: new (require("enzyme-adapter-react-16/build"))() });
@@ -34,11 +33,7 @@ beforeEach(function () {
 
   // set up snapshot name
   const testFilePath = currentTest.file;
-  const sourceFilePath = sms.mapSourcePosition({
-    source: testFilePath,
-    line: 3,
-    column: 1,
-  }).source;
+  const sourceFilePath = currentTest.file.replace("lib\\tests", "tests").replace(".js", ".tsx");
   const snapPath = sourceFilePath + ".snap";
   chaiJestSnapshot.setFilename(snapPath);
   chaiJestSnapshot.setTestName(currentTest.fullTitle());
