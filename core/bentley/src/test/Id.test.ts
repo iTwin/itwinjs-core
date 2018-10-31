@@ -162,7 +162,7 @@ describe("Ids", () => {
     }
   });
 
-  it("Guid should construct properly", () => {
+  it("Guids", () => {
     const v1: GuidString = "274e25dc-8407-11e7-bb31-be2e44b06b34"; // a valid v1 id
     const v4: GuidString = "3d04156c-4faa-4eac-b20e-353a9e6c0183"; // a valid v4 id
     assert.isTrue(Guid.isGuid(v1));
