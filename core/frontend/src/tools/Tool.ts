@@ -13,6 +13,7 @@ import { IModelApp } from "../IModelApp";
 import { IModelError, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
 import { CoordinateLockOverrides } from "./ToolAdmin";
+import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
 
 export type ToolType = typeof Tool;
 export type ToolList = ToolType[];
@@ -452,6 +453,11 @@ export abstract class InteractiveTool extends Tool {
 
   /** Called to allow Tool to display dynamic elements. */
   public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { }
+
+  /** Invoked to allow tools to filter which elements can be located.
+   * @return Reject if hit is unacceptable for this tool (fill out response with explanation, if it is defined)
+   */
+  public filterHit(_hit: HitDetail, _out?: LocateResponse): LocateFilterStatus { return LocateFilterStatus.Accept; }
 
   /** Helper method to keep the view cursor, display of locate circle, and coordinate lock overrides consistent with [[AccuSnap.isLocateEnabled]] and [[AccuSnap.isSnapEnabled]].
    * @param enableLocate Value to pass to [[IModelApp.accuSnap.enableLocate]]. Tools that locate elements should always pass true to give the user feedback regarding the element at the current cursor location.

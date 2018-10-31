@@ -11,8 +11,6 @@ import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { AccuDrawShortcuts } from "./AccuDrawTool";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
-import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
-import { HitDetail } from "../HitDetail";
 
 export const enum ModifyElementSource {
   /** The source for the element is unknown - not caused by a modification command. */
@@ -151,11 +149,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
   /** Called from isCompatibleViewport to check for a read only iModel, which is not a valid target for tools that create or modify elements. */
   public requireWriteableTarget(): boolean { return true; }
-
-  /** Invoked to allow tools to filter which elements can be located.
-   * @return Reject if hit is unacceptable for this tool (fill out response with explanation, if it is defined)
-   */
-  public filterHit(_hit: HitDetail, _out?: LocateResponse): LocateFilterStatus { return LocateFilterStatus.Accept; }
 
   /**
    * Called when active view changes. Tool may choose to restart or exit based on current view type.

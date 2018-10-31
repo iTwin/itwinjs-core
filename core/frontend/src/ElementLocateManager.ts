@@ -9,8 +9,7 @@ import { Point3d, Point2d } from "@bentley/geometry-core";
 import { Viewport, ViewRect, ScreenViewport } from "./Viewport";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
-import { PrimitiveTool } from "./tools/PrimitiveTool";
-import { InputSource } from "./tools/Tool";
+import { InputSource, InteractiveTool } from "./tools/Tool";
 import { Id64 } from "@bentley/bentleyjs-core";
 
 /** The possible actions for which a locate filter can be called. */
@@ -236,7 +235,7 @@ export class ElementLocateManager {
     }
 
     const tool = IModelApp.toolAdmin.activeTool;
-    if (!(tool && tool instanceof PrimitiveTool))
+    if (!(tool && tool instanceof InteractiveTool))
       return LocateFilterStatus.Accept;
 
     const status = tool.filterHit(hit, out);
