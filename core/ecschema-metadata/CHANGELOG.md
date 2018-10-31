@@ -1,6 +1,15 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Wed, 24 Oct 2018 19:20:06 GMT and should not be manually modified.
+This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+
+## 0.163.0
+Wed, 31 Oct 2018 20:55:37 GMT
+
+### Updates
+
+- rename CustomAttributeInstance to CustomAttribute
+- Refactored parsing of JSON data to happen in a new dedicated class JsonParser instead of fromJson methods. The fromJson methods have been replaced with deserialize methods which work in conjunction with JsonParser to ensure type safety and objects are created with required properties.
+- Update barrel module to include missing types.
 
 ## 0.162.0
 Wed, 24 Oct 2018 19:20:06 GMT

@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.163.0",
+      "tag": "@bentley/imodeljs-clients_v0.163.0",
+      "date": "Wed, 31 Oct 2018 20:55:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix issue where buddi require full url from config instead of just the base without /GetUrl"
+          },
+          {
+            "comment": "Cleanup clients. Removed unused clients and methods."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.162.0",
       "tag": "@bentley/imodeljs-clients_v0.162.0",
       "date": "Wed, 24 Oct 2018 19:20:06 GMT",

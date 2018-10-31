@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 24 Oct 2018 19:20:06 GMT and should not be manually modified.
+This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+
+## 0.163.0
+Wed, 31 Oct 2018 20:55:37 GMT
+
+### Updates
+
+- Get snap sprites and view cursors from a url
+- Move filterHit from PrimitveTool to InteractiveTool. PrimitiveTool docs.
+- Support conversion of ImageBuffer to PNG.
+- PrimitiveTool cursor fixes and wip markdown
+- Hide WIP ChangeCache methods on IModelConnection
 
 ## 0.162.0
 Wed, 24 Oct 2018 19:20:06 GMT
