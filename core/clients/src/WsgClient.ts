@@ -459,7 +459,7 @@ export abstract class WsgClient extends Client {
     alctx.enter();
     const url: string = `${await this.getUrl(alctx)}${relativeUrlPath}$query`;
     alctx.enter();
-    Logger.logInfo(loggingCategory, `Sending GET request to ${url}`);
+    Logger.logInfo(loggingCategory, `Sending POST request to ${url}`);
 
     const options: RequestOptions = {
       method: "POST",
@@ -484,7 +484,7 @@ export abstract class WsgClient extends Client {
       }
     }
 
-    Logger.logTrace(loggingCategory, `Successful GET request to ${url}`);
+    Logger.logTrace(loggingCategory, `Successful POST request to ${url}`);
     return Promise.resolve(typedInstances);
   }
 }
