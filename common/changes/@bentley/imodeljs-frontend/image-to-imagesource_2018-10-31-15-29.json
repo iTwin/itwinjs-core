@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support conversion of ImageBuffer to PNG.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

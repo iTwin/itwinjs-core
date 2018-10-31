@@ -14,7 +14,7 @@ import {
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 import {
   AccuDraw, AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, BeButtonEvent, Cluster, CoordinateLockOverrides, DecorateContext,
-  DynamicsContext, EditManipulator, EventHandled, HitDetail, ImageUtil, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
+  DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
   SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus,
 } from "@bentley/imodeljs-frontend";
@@ -965,7 +965,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     this._boxId = this.iModel.transientIds.next;
     this.updateDecorationListener(true);
 
-    const image = ImageUtil.fromUrl("map_pin.svg");
+    const image = imageElementFromUrl("map_pin.svg");
     const markerDrawFunc = (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.arc(0, 0, 15, 0, 2 * Math.PI);
@@ -1272,15 +1272,15 @@ class IncidentMarkerDemo {
 
   public constructor() {
     const makerIcons = [
-      ImageUtil.fromUrl("Hazard_biological.svg"),
-      ImageUtil.fromUrl("Hazard_electric.svg"),
-      ImageUtil.fromUrl("Hazard_flammable.svg"),
-      ImageUtil.fromUrl("Hazard_toxic.svg"),
-      ImageUtil.fromUrl("Hazard_tripping.svg"),
+      imageElementFromUrl("Hazard_biological.svg"),
+      imageElementFromUrl("Hazard_electric.svg"),
+      imageElementFromUrl("Hazard_flammable.svg"),
+      imageElementFromUrl("Hazard_toxic.svg"),
+      imageElementFromUrl("Hazard_tripping.svg"),
     ];
 
     if (undefined === IncidentMarkerDemo.warningSign)
-      ImageUtil.fromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
+      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
 
     const extents = activeViewState.iModelConnection!.projectExtents;
     const pos = new Point3d();

@@ -32,7 +32,7 @@ import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from 
 import { RenderSystem } from "../render/System";
 import { RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
-import { ImageUtil } from "../ImageUtil";
+import { imageElementFromImageSource, getImageSourceFormatForMimeType } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 
 /** Provides facilities for deserializing tiles in the [glTF tile format](https://www.khronos.org/gltf/). */
@@ -787,7 +787,7 @@ export namespace GltfTileIO {
         const binaryImageJson = JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF);
         const bufferView = this._bufferViews[binaryImageJson.bufferView];
         const mimeType = JsonUtils.asString(binaryImageJson.mimeType);
-        const format = ImageUtil.getImageSourceFormatForMimeType(mimeType);
+        const format = getImageSourceFormatForMimeType(mimeType);
         if (undefined === format)
           return undefined;
 
@@ -800,7 +800,7 @@ export namespace GltfTileIO {
           textureType = RenderTexture.Type.TileSection;
 
         const textureParams = new RenderTexture.Params(undefined, textureType);
-        return ImageUtil.extractImage(imageSource)
+        return imageElementFromImageSource(imageSource)
           .then((image) => this._isCanceled ? undefined : this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, textureParams))
           .catch((_) => undefined);
       } catch (e) {

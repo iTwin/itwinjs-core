@@ -10,7 +10,7 @@ import { DisplayParams } from "../render/primitives/DisplayParams";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64String, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem } from "../render/System";
-import { ImageUtil } from "../ImageUtil";
+import { imageElementFromImageSource } from "../ImageUtil";
 import {
   Feature,
   FeatureTable,
@@ -316,7 +316,7 @@ export namespace DgnTileIO {
       const format = namedTex.format;
       const imageSource = new ImageSource(bytes, format);
 
-      return ImageUtil.extractImage(imageSource).then((image) => {
+      return imageElementFromImageSource(imageSource).then((image) => {
         if (this._isCanceled)
           return undefined;
 
