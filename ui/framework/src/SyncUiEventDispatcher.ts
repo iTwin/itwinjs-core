@@ -2,6 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module Utilities */
+
 import { UiEvent } from "@bentley/ui-core";
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
@@ -52,7 +54,7 @@ export class SyncUiEventDispatcher {
     SyncUiEventDispatcher.onSyncUiEvent.emit({ eventIds });
   }
 
-  // Save eventId in Set for processing.
+  /** Save eventId in Set for processing. */
   public static dispatchSyncUiEvent(eventId: string): void {
     SyncUiEventDispatcher.syncEventIds.add(eventId.toLowerCase());
     SyncUiEventDispatcher._eventIdAdded = true;
@@ -61,7 +63,7 @@ export class SyncUiEventDispatcher {
     }
   }
 
-  // Save multiple eventIds in Set for processing.
+  /** Save multiple eventIds in Set for processing. */
   public static dispatchSyncUiEvents(eventIds: string[]): void {
     eventIds.forEach((id) => SyncUiEventDispatcher.syncEventIds.add(id.toLowerCase()));
     if (!SyncUiEventDispatcher._syncEventTimer) {  // if there is not a timer active, create one
@@ -71,7 +73,7 @@ export class SyncUiEventDispatcher {
     }
   }
 
-  // Trigger registered event processing when timer has expired and no addition eventId are added.
+  /** Trigger registered event processing when timer has expired and no addition eventId are added. */
   private static checkForAdditionalIds() {
     if (!SyncUiEventDispatcher._eventIdAdded && SyncUiEventDispatcher._syncEventTimer) {
       if (SyncUiEventDispatcher._syncEventTimer) clearTimeout(SyncUiEventDispatcher._syncEventTimer);

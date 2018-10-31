@@ -21,6 +21,7 @@ exports[`CommandButton <CommandButton /> renders correctly 1`] = `
 
 exports[`ToolButton <ToolButton /> renders correctly 1`] = `
 <Icon
+  className=""
   icon={
     <Icon
       iconInfo={

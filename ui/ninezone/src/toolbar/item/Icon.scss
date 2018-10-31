@@ -66,6 +66,12 @@
       color: $disabled-icon-color;
     }
 
-    pointer-events: none;
+    &:hover {
+      cursor: auto;
+    }
+
+    &:active {
+      pointer-events: none;
+    }
   }
 }

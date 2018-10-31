@@ -140,28 +140,28 @@ export class Frontstage extends React.Component<FrontstageProps> {
     let zoneElement: React.ReactElement<ZoneProps> | undefined;
 
     switch (zoneId) {
-      case 1:
+      case ZoneLocation.TopLeft:
         zoneElement = props.topLeft;
         break;
-      case 2:
+      case ZoneLocation.TopCenter:
         zoneElement = props.topCenter;
         break;
-      case 3:
+      case ZoneLocation.TopRight:
         zoneElement = props.topRight;
         break;
-      case 4:
+      case ZoneLocation.CenterLeft:
         zoneElement = props.centerLeft;
         break;
-      case 6:
+      case ZoneLocation.CenterRight:
         zoneElement = props.centerRight;
         break;
-      case 7:
+      case ZoneLocation.BottomLeft:
         zoneElement = props.bottomLeft;
         break;
-      case 8:
+      case ZoneLocation.BottomCenter:
         zoneElement = props.bottomCenter;
         break;
-      case 9:
+      case ZoneLocation.BottomRight:
         zoneElement = props.bottomRight;
         break;
       default:

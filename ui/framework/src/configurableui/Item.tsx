@@ -5,6 +5,7 @@
 /** @module Item */
 
 import * as React from "react";
+import * as classnames from "classnames";
 
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 
@@ -55,13 +56,11 @@ export class ToolItemDef extends ItemDefBase {
 
   public toolbarReactNode(index?: number): React.ReactNode {
     const key = (index !== undefined) ? index.toString() : this.id;
-    let myClassNames: string = "";
-    if (!this.isVisible) myClassNames += "item-hidden";
-    if (!this.isEnabled) myClassNames += "nz-is-disabled";
+    const myClassNames = classnames({ "item-hidden": !this.isVisible, "nz-is-disabled": !this.isEnabled });
 
     return (
       <ToolbarIcon
-        className={myClassNames.length ? myClassNames : undefined}
+        className={myClassNames}
         isActive={FrontstageManager.activeToolId === this.toolId}
         isDisabled={!this.isEnabled}
         title={this.label}

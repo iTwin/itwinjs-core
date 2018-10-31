@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed ui-framework unit test",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

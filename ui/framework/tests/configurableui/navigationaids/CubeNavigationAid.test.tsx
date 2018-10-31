@@ -5,6 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import { expect } from "chai";
 import { Face } from "@bentley/ui-core";
 import { Vector3d } from "@bentley/geometry-core";
 import {
@@ -14,7 +15,12 @@ import {
   HitBoxX,
   HitBoxY,
   HitBoxZ,
-  CubeHover ,
+  CubeHover,
+  ConfigurableUiManager,
+  CubeNavigationAidControl,
+  AnyWidgetProps,
+  WidgetDefFactory,
+  NavigationWidgetDef,
 } from "../../../src/index";
 import TestUtils from "../../TestUtils";
 
@@ -22,11 +28,15 @@ describe("CubeNavigationAid", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
+
+    if (!ConfigurableUiManager.isControlRegistered("CubeNavigationAid"))
+      ConfigurableUiManager.registerControl("CubeNavigationAid", CubeNavigationAidControl);
   });
 
   describe("<CubeNavigationAid />", () => {
     it("should render", () => {
-      mount(<CubeNavigationAid />);
+      const wrapper = mount(<CubeNavigationAid />);
+      wrapper.unmount();
     });
     it("renders correctly", () => {
       shallow(<CubeNavigationAid />).should.matchSnapshot();
@@ -102,4 +112,29 @@ describe("CubeNavigationAid", () => {
       });
     });
   });
+
+  describe("CubeNavigationAidControl", () => {
+
+    const widgetProps: AnyWidgetProps = {
+      classId: "NavigationWidget",
+      isFreeform: true,
+      navigationAidId: "CubeNavigationAid",
+    };
+
+    it("CubeNavigationAidControl creates CubeNavigationAid", () => {
+
+      const widgetDef = WidgetDefFactory.create(widgetProps);
+      expect(widgetDef).to.be.instanceof(NavigationWidgetDef);
+
+      const navigationWidgetDef = widgetDef as NavigationWidgetDef;
+
+      const reactElement = navigationWidgetDef.reactElement;
+      expect(reactElement).to.not.be.undefined;
+
+      const reactNode = navigationWidgetDef.renderCornerItem();
+      expect(reactNode).to.not.be.undefined;
+    });
+
+  });
+
 });
