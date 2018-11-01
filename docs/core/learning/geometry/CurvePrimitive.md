@@ -41,7 +41,7 @@
 ```
 
 ## lineString
-* A LineString is an array of points that are to be connected by straignt lines.
+* A LineString is an array of points that are to be connected by straight lines.
 * Json Fragment:
 ![>](./figs/CurvePrimitives/LineString.png)
 * Typescript object:

@@ -237,39 +237,50 @@ export class FacetFaceData {
     return true;
   }
 }
+/** The data types of [[AuxChannel]].  The scalar types are used to produce thematic  vertex colors. */
 export enum AuxChannelDataType {
+  /** General scalar type - no scaling is applied if associated [[Polyface]] is transformed. */
   Scalar = 0,
+  /** Distance (scalar) scaling is applied if associated [[Polyface]] is scaled. 3 Data values (x,y.z) per entry. */
   Distance = 1,
+  /** Displacement added to  vertex position.  Transformed and scaled with associated [[Polyface]]. 3 Data values (x,y.z) per entry.,*/
   Vector = 2,
+  /** Normal -- replaces vertex normal.  Rotated with associated [[Polyface]] transformation. 3 Data values (x,y.z) per entry. */
   Normal = 3,
-  Point = 4,
 }
+/**  Represents the [[AuxChannel]] data at a single input value. */
 export class AuxChannelData {
+  /** The input value for this data. */
   public input: number;
+  /** The vertex values for this data.  A single value per vertex for scalar types and 3 values (x,y,z) for normal or vector channels. */
   public values: number[];
-
+  /** Construct a new [[AuxChannelData]] from input value and vertex values. */
   constructor(input: number, values: number[]) {
     this.input = input;
     this.values = values;
   }
 }
-
+/**  Represents a single [[PolyfaceAuxData]] channel. A channel  may represent a single scalar value such as stress or temperature or may represent displacements from vertex position or replacements for normals. */
 export class AuxChannel {
+  /** An array of [[AuxChannelData]] that represents the vertex data at one or more input values. */
   public data: AuxChannelData[];
   public dataType: AuxChannelDataType;
+  /** The channel name. This is used to present the [[AuxChannel]] to the user and also to select the [[AuxChannel]] for display from [[AnalysisStyle]] */
   public name?: string;
+  /** The input name. */
   public inputName?: string;
-
+  /** create a [[AuxChannel]] */
   public constructor(data: AuxChannelData[], dataType: AuxChannelDataType, name?: string, inputName?: string) {
     this.data = data;
     this.dataType = dataType;
     this.name = name;
     this.inputName = inputName;
   }
+  /** return true if the data for this channel is of scalar type (single data entry per value) */
   get isScalar(): boolean { return this.dataType === AuxChannelDataType.Distance || this.dataType === AuxChannelDataType.Scalar; }
+  /** return the range of the scalar data. (undefined if not scalar) */
   get scalarRange(): Range1d | undefined {
     if (!this.isScalar) return undefined;
-
     const range = Range1d.createNull();
     for (const data of this.data) {
       range.extendArray(data.values);
@@ -277,7 +288,16 @@ export class AuxChannel {
     return range;
   }
 }
+/**  The `PolyfaceAuxData` structure contains one or more analytical data channels for each vertex of a `Polyface`.
+ * Typically a `Polyface` will contain only vertex data required for its basic display,the vertex position, normal
+ * and possibly texture parameter.  The `PolyfaceAuxData` structure contains supplemental data that is generally computed
+ *  in an analysis program or other external data source.  This can be scalar data used to either overide the vertex colors through *Thematic Colorization* or
+ *  XYZ data used to deform the mesh by adjusting the vertex postions or normals.
+ */
 export class PolyfaceAuxData {
+  /** @param channels Array with one or more channels of auxilliary data for the associated polyface.
+   * @param indices The indices (shared by all data in all channels) mapping the data to the mesh facets.
+   */
   public channels: AuxChannel[];
   public indices: number[];
 
