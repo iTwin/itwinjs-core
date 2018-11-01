@@ -3,8 +3,8 @@
   "outputPath": "D:\\output\\performanceData\\",
   "iModelLocation": "D:\\models\\TimingTests\\",
   "view": {
-    "width": 500,
-    "height": 500
+    "width": 1000,
+    "height": 1000
   },
   "testSet": [
     {
@@ -604,7 +604,265 @@
       ]
     },
     {
+      "testName": "Text",
+      "testType": "both",
+      "outputName": "textPerformanceResults.csv",
+      "outputPath": "D:/output/performanceData/text/",
+      "tests": [
+        {
+          "iModelName": "SmallTextTest.ibim",
+          "viewName": "001"
+        },
+        {
+          "iModelName": "SmallTextTest.ibim",
+          "viewName": "002"
+        },
+        {
+          "iModelName": "SmallTextTest.ibim",
+          "viewName": "004"
+        },
+        {
+          "iModelName": "SmallTextTest.ibim",
+          "viewName": "008"
+        },
+        {
+          "iModelName": "SmallTextTest.ibim",
+          "viewName": "016"
+        },
+        {
+          "iModelName": "SmallTextTest.ibim",
+          "viewName": "032"
+        },
+        {
+          "iModelName": "SmallTextTest.ibim",
+          "viewName": "064"
+        },
+        {
+          "iModelName": "SmallTextTest.ibim",
+          "viewName": "096"
+        },
+        {
+          "iModelName": "SmallTextTest.ibim",
+          "viewName": "127"
+        },
+        {
+          "iModelName": "LargeTextTest.ibim",
+          "viewName": "001"
+        },
+        {
+          "iModelName": "LargeTextTest.ibim",
+          "viewName": "005"
+        },
+        {
+          "iModelName": "LargeTextTest.ibim",
+          "viewName": "025"
+        },
+        {
+          "iModelName": "LargeTextTest.ibim",
+          "viewName": "125"
+        },
+        {
+          "iModelName": "LargeTextTest.ibim",
+          "viewName": "625"
+        },
+        {
+          "iModelName": "LargeTextTest.ibim",
+          "viewName": "781"
+        },
+        {
+          "iModelName": "LargeTextTest.ibim",
+          "viewName": "781",
+          "viewFlags": {
+            "renderMode": "Wireframe"
+          }
+        },
+        {
+          "iModelName": "LargeTextTest.ibim",
+          "viewName": "781",
+          "viewFlags": {
+            "renderMode": "HiddenLine"
+          }
+        },
+        {
+          "iModelName": "LargeTextTest.ibim",
+          "viewName": "781",
+          "viewFlags": {
+            "renderMode": "SolidFill"
+          }
+        },
+        {
+          "iModelName": "LargeTextTest.ibim",
+          "viewName": "781",
+          "viewFlags": {
+            "renderMode": "SmoothShade"
+          }
+        }
+      ]
+    },
+    {
+      "testName": "Lines",
+      "testType": "both",
+      "iModelName": "LinesTest.ibim",
+      "outputName": "linesPerformanceResults.csv",
+      "outputPath": "D:/output/performanceData/lines/",
+      "tests": [
+        {
+          "viewName": "001"
+        },
+        {
+          "viewName": "050"
+        },
+        {
+          "viewName": "100"
+        },
+        {
+          "viewName": "200"
+        },
+        {
+          "viewName": "351"
+        },
+        {
+          "viewName": "001",
+          "viewFlags": {
+            "weights": false,
+            "styles": true
+          }
+        },
+        {
+          "viewName": "001",
+          "viewFlags": {
+            "weights": true,
+            "styles": false
+          }
+        },
+        {
+          "viewName": "001",
+          "viewFlags": {
+            "weights": false,
+            "styles": false
+          }
+        },
+        {
+          "viewName": "351",
+          "viewFlags": {
+            "weights": false,
+            "styles": true
+          }
+        },
+        {
+          "viewName": "351",
+          "viewFlags": {
+            "weights": true,
+            "styles": false
+          }
+        },
+        {
+          "viewName": "351",
+          "viewFlags": {
+            "weights": false,
+            "styles": false
+          }
+        }
+      ]
+    },
+    {
+      "testName": "Regression Tests",
+      "outputName": "regressionPerformanceResults.csv",
+      "outputPath": "D:\\output\\performanceData\\regression",
+      "tests": []
+    },
+    {
+      "testName": "Generic Tests",
+      "testType": "both",
+      "outputName": "genericPerformanceResults.csv",
+      "outputPath": "D:\\output\\performanceData\\generic",
+      "tests": [
+        {
+          "iModelName": "LinesTest.ibim",
+          "viewName": "001"
+        },
+        {
+          "iModelName": "LinesTest.ibim",
+          "viewName": "351"
+        },
+        {
+          "iModelName": "SmallTextTest.ibim",
+          "viewName": "001"
+        },
+        {
+          "iModelName": "SmallTextTest.ibim",
+          "viewName": "127"
+        },
+        {
+          "iModelName": "LargeTextTest.ibim",
+          "viewName": "001"
+        },
+        {
+          "iModelName": "LargeTextTest.ibim",
+          "viewName": "781"
+        },
+        {
+          "iModelName": "TimingTest_01.ibim",
+          "viewName": "V0"
+        },
+        {
+          "iModelName": "TimingTest_01.ibim",
+          "viewName": "V1"
+        },
+        {
+          "iModelName": "TimingTest_01.ibim",
+          "viewName": "V2"
+        },
+        {
+          "iModelName": "TimingTest_01.ibim",
+          "viewName": "V3"
+        },
+        {
+          "iModelName": "TimingTest_01.ibim",
+          "viewName": "V4"
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyAll.ibim",
+          "viewName": "W0"
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyAllButOne.ibim",
+          "viewName": "W0"
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyNone.ibim",
+          "viewName": "W0"
+        },
+        {
+          "iModelName": "TimingTest_02_TranslucencyOne.ibim",
+          "viewName": "W0"
+        },
+        {
+          "iModelName": "Wraith.ibim",
+          "viewName": "V0"
+        },
+        {
+          "iModelName": "Wraith.ibim",
+          "viewName": "V1"
+        },
+        {
+          "iModelName": "Wraith.ibim",
+          "viewName": "V2"
+        },
+        {
+          "iModelName": "Wraith.ibim",
+          "viewName": "V3"
+        },
+        {
+          "iModelName": "Wraith.ibim",
+          "viewName": "V4"
+        }
+      ]
+    },
+    {
       "iModelName": "Wraith.ibim",
+      "outputName": "wraithPerformanceResults.csv",
+      "outputPath": "D:\\output\\performanceData\\wraith",
       "tests": [
         {
           "testType": "timing",
@@ -647,6 +905,8 @@
     },
     {
       "iModelName": "Wraith_MultiMulti.ibim",
+      "outputName": "wraithPerformanceResults.csv",
+      "outputPath": "D:\\output\\performanceData\\wraith",
       "tests": [
         {
           "testType": "image",

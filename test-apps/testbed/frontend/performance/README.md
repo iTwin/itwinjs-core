@@ -1,7 +1,7 @@
 # How to Utilize the Performance Tests
 
 ## To run all performance tests (i.e. all files ending in .test.ts):
-1. To specify a json config file that you wish to use, set the 'jsonFilePath' variable to the full file path of the json file you wish to use. For example, "D:/timingTests.json" or "C:\\wireframeTimings.json". If no valid json config file has been specified, the default json config file (DefaultConfig.json) will be used.
+1. To specify a json config file that you wish to use, set the 'jsonFilePath' variable (found in the PerformanceTests.ts file) to the full file path of the json file you wish to use. For example, "D:/timingTests.json" or "C:\\wireframeTimings.json". If no valid json config file has been specified, the default json config file (DefaultConfig.json) will be used.
 2. run the command "npm run test:frontend:performance"
 
 ## Configuration json file
@@ -54,7 +54,7 @@ Below is an example json config file:
     "width": 1000,
     "height": 1000
   },
-  "modelSet": [
+  "testSet": [
     {
       "iModelName": "Wraith.ibim",
       "outputName": "wraithPerformanceResults.csv",

@@ -12,6 +12,7 @@ program
   .version("0.1.0")
   .description("imodeljs-core-testbed")
   .option('-d, --debug', 'Launch electron in debug mode')
+  .option("--testDir [testDir]", "The location of the test directory")
   .option('--no-dev-tools', 'Do not automatically open Chrome Developer Tools in debug mode')
   .option('-g, --grep <pattern>', 'only run tests matching <pattern>')
   .option('-f, --fgrep <string>', 'only run tests containing <string>')

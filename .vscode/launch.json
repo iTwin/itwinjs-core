@@ -5,6 +5,31 @@
   "version": "0.2.0",
   "configurations": [
     {
+      "name": "Run Frontend Tests (performance)",
+      "type": "node",
+      "request": "launch",
+      "program": "${workspaceRoot}/test-apps/testbed/frontend/performance/testbed",
+      "protocol": "inspector",
+      "outputCapture": "std",
+      "args": [
+        "--testDir=${workspaceFolder}/test-apps/testbed/lib/frontend/performance",
+        // "--fgrep",
+        // "#WebGLPerformance",
+        "--debug"
+      ],
+      "outFiles": [
+        "${workspaceRoot}/simplefrontend/lib/{backend}/**/*.js",
+        "${workspaceRoot}/core/{backend,bentley,clients,common,frontend,geometry}/lib/**/*.js",
+        "${workspaceRoot}/test-apps/testbed/lib/{backend,common,frontend}/**/*.js",
+        "${workspaceRoot}/test-apps/testbed/lib/**/*.js",
+        "${workspaceRoot}/test-apps/testbed/lib/frontend/**/*.js",
+        "${workspaceRoot}/test-apps/testbed/lib/frontend/performance/*.js",
+        "${workspaceRoot}/test-apps/testbed/**/*.js",
+        "${workspaceRoot}/test-apps/testbed/node_modules/**/*.js"
+      ],
+      "cwd": "${workspaceFolder}/test-apps/testbed/"
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "LocalOrchestrator",
