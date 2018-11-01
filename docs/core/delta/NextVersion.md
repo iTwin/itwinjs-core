@@ -1,3 +1,8 @@
+---
+ignore: true
+---
+# NextVersion
+
 ## Breaking changes to Id64
 
 The use of [Id64]($bentleyjs-core) objects to represent 64-bit IDs was determined to produce measurable negative impact on both memory consumption and code execution time. This impact was amplified by inconsistencies within the iModel.js library - APIs dealing with 64-bit IDs would variously represent them as plain `string`s, `Id64` objects, or either through use of the type alias `Id64String = Id64 | string`. Frequent conversion from one representation to another would often be required when using these APIs. The naming of some functions was also ambiguous.
