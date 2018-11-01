@@ -33,7 +33,7 @@ import {
 import { Id64String } from "@bentley/bentleyjs-core";
 
 import { AppUi } from "./appui/AppUi";
-import AppBackstage, { BackstageShow, BackstageHide, BackstageToggle } from "./appui/AppBackstage";
+import AppBackstage, { BackstageShow, BackstageHide } from "./appui/AppBackstage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { MeasurePointsTool } from "./tools/MeasurePoints";
 
@@ -153,7 +153,6 @@ export class SampleAppIModelApp extends IModelApp {
         // Register tools.
         BackstageShow.register(this.sampleAppNamespace);
         BackstageHide.register(this.sampleAppNamespace);
-        BackstageToggle.register(this.sampleAppNamespace);
         MeasurePointsTool.register(this.sampleAppNamespace);
     }
 

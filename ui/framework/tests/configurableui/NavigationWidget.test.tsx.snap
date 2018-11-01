@@ -23,19 +23,14 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
   }
   navigationWidgetDef={
     NavigationWidgetDef {
-      "_horizontalIds": Array [],
       "_iconLabelSupport": IconLabelSupport {
         "label": "",
         "tooltip": "",
       },
       "_navigationAidId": "",
-      "_verticalIds": Array [],
       "classId": undefined,
       "featureId": "",
       "horizontalDirection": 3,
-      "horizontalItems": ItemList {
-        "_items": Array [],
-      },
       "id": "navigationWidget",
       "isFloatingStateSupported": false,
       "isFloatingStateWindowResizable": true,
@@ -47,9 +42,6 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "renderVerticalToolbar": [Function],
       "stateChanged": false,
       "verticalDirection": 2,
-      "verticalItems": ItemList {
-        "_items": Array [],
-      },
       "widgetState": 1,
       "widgetType": 1,
     }

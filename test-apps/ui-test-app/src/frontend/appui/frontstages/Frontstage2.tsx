@@ -25,6 +25,7 @@ import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 import { AppUi } from "../AppUi";
+import { AppTools } from "../../tools/ToolSpecifications";
 
 export class Frontstage2 extends FrontstageProvider {
 
@@ -95,7 +96,7 @@ class FrontstageToolWidget extends React.Component {
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconClass="icon-placeholder"
-            items={["tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8", "tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+            items={[AppTools.tool1, AppTools.tool2]}
             direction={Direction.Bottom}
             itemsInColumn={7}
           />
@@ -111,7 +112,8 @@ class FrontstageToolWidget extends React.Component {
           <GroupButton
             labelKey="SampleApp:buttons.anotherGroup"
             iconClass="icon-placeholder"
-            items={["tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+            items={[AppTools.item3, AppTools.item4, AppTools.item5,
+            AppTools.item6, AppTools.item7, AppTools.item8]}
           />
         </>
       }
@@ -120,7 +122,7 @@ class FrontstageToolWidget extends React.Component {
   public render() {
     return (
       <ToolWidget
-        appButtonId="SampleApp.BackstageToggle"
+        appButton={AppTools.backstageToggleCommand}
         horizontalToolbar={this._horizontalToolbar}
         verticalToolbar={this._verticalToolbar}
       />

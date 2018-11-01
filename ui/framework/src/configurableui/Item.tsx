@@ -5,86 +5,28 @@
 /** @module Item */
 
 import * as React from "react";
-import * as classnames from "classnames";
-
-import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
-
 import { Icon } from "./IconLabelSupport";
-import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
-import { ToolItemProps, CommandItemProps, CommandHandler } from "./ItemProps";
+
+import { CommandItemProps, CommandHandler } from "./ItemProps";
 import { ItemDefBase } from "./ItemDefBase";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 
-/** An Item that launches a Tool.
- */
-export class ToolItemDef extends ItemDefBase {
-  public toolId: string;
-  private _execute?: () => any;
-
-  constructor(toolItemProps: ToolItemProps) {
-    super(toolItemProps);
-
-    this.toolId = toolItemProps.toolId;
-
-    if (toolItemProps.execute !== undefined)
-      this._execute = toolItemProps.execute;
-  }
-
-  public get id(): string {
-    return this.toolId;
-  }
-
-  public execute(): void {
-    FrontstageManager.setActiveToolId(this.toolId);
-
-    if (this._execute) {
-      this._execute();
-    } else {
-      const thisTool: typeof Tool | undefined = IModelApp.tools.find(this.toolId);
-      if (thisTool)
-        (new thisTool()).run();
-    }
-  }
-
-  public onActivated(): void {
-  }
-
-  public get isActive(): boolean {
-    return FrontstageManager.activeToolId === this.toolId;
-  }
-
-  public toolbarReactNode(index?: number): React.ReactNode {
-    const key = (index !== undefined) ? index.toString() : this.id;
-    const myClassNames = classnames({ "item-hidden": !this.isVisible, "nz-is-disabled": !this.isEnabled });
-
-    return (
-      <ToolbarIcon
-        className={myClassNames}
-        isActive={FrontstageManager.activeToolId === this.toolId}
-        isDisabled={!this.isEnabled}
-        title={this.label}
-        key={key}
-        onClick={this.execute}
-        icon={
-          <Icon iconInfo={this.iconInfo} />
-        }
-      />
-    );
-  }
-}
-
 /** An Item that executes a Command.
  */
 export class CommandItemDef extends ItemDefBase {
-  public commandId: string;
+  public commandId: string = "";
   private _commandHandler?: CommandHandler;
 
   constructor(commandItemProps: CommandItemProps) {
     super(commandItemProps);
 
-    this.commandId = commandItemProps.commandId;
+    this.commandId = commandItemProps.commandId ? commandItemProps.commandId : commandItemProps.toolId ? commandItemProps.toolId : "";
     this._commandHandler = commandItemProps.commandHandler;
+  }
+
+  public get isToolId(): boolean {
+    return false;
   }
 
   public get id(): string {
@@ -115,84 +57,24 @@ export class CommandItemDef extends ItemDefBase {
     );
   }
 }
-///////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
 
-/** State for the various Toolbar button React components */
-export interface ItemButtonState {
-  itemDef: ItemDefBase;
-}
-
-/** Command Button React Component.
+/** An Item that executes a Tool.
  */
-export class CommandButton extends React.Component<CommandItemProps, ItemButtonState> {
-
-  /** hidden */
-  public readonly state: Readonly<ItemButtonState>;
+export class ToolItemDef extends CommandItemDef {
+  public toolId: string = "";
 
   constructor(commandItemProps: CommandItemProps) {
     super(commandItemProps);
 
-    this.state = { itemDef: new CommandItemDef(commandItemProps) };
+    this.toolId = commandItemProps.toolId ? commandItemProps.toolId : commandItemProps.commandId ? commandItemProps.commandId : "";
   }
 
-  public static getDerivedStateFromProps(newProps: CommandItemProps, state: ItemButtonState): ItemButtonState | null {
-    if (newProps.commandId !== state.itemDef.id) {
-      return { itemDef: new CommandItemDef(newProps) };
-    }
-
-    return null;
+  public get id(): string {
+    return this.toolId;
   }
 
-  public render(): React.ReactNode {
-    return (
-      this.state.itemDef.toolbarReactNode()
-    );
-  }
-}
-
-/** State for the ToolButton React component */
-export interface ToolItemButtonState {
-  itemDef: ToolItemDef;
-  activeTool: boolean;
-}
-
-/** Tool Button React Component.
- */
-export class ToolButton extends React.Component<ToolItemProps, ToolItemButtonState> {
-
-  /** hidden */
-  public readonly state: Readonly<ToolItemButtonState>;
-
-  constructor(props: ToolItemProps) {
-    super(props);
-
-    const itemDef = new ToolItemDef(props);
-    this.state = { itemDef, activeTool: (itemDef.toolId === FrontstageManager.activeToolId) };
+  public get isToolId(): boolean {
+    return true;
   }
 
-  public static getDerivedStateFromProps(newProps: ToolItemProps, state: ToolItemButtonState): ToolItemButtonState | null {
-    if (newProps.toolId !== state.itemDef.id) {
-      return { itemDef: new ToolItemDef(newProps), activeTool: state.activeTool };
-    }
-
-    return null;
-  }
-
-  private _handleToolActivatedEvent = (args: ToolActivatedEventArgs) => {
-    this.setState((_prevState) => ({ activeTool: (this.state.itemDef.toolId === args.toolId) }));
-  }
-
-  public componentDidMount() {
-    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
-  }
-
-  public componentWillUnmount() {
-    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
-  }
-
-  public render(): React.ReactNode {
-    return (
-      this.state.itemDef.toolbarReactNode()
-    );
-  }
 }

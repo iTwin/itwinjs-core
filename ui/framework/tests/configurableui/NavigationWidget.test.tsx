@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
-import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 import TestUtils from "../TestUtils";
 import {
@@ -12,8 +11,6 @@ import {
   WidgetState,
   WidgetDefFactory,
   NavigationWidgetDef,
-  ConfigurableUiManager,
-  ItemPropsList,
   ToolButton,
   NavigationWidget,
 } from "../../src/index";
@@ -22,30 +19,8 @@ import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
 describe("NavigationWidget", () => {
 
-  const testCallback = sinon.stub();
-
   before(async () => {
     await TestUtils.initializeUiFramework();
-
-    const commonItemsList: ItemPropsList = {
-      items: [
-        {
-          toolId: "SampleApp.BackstageToggle",
-          iconClass: "icon-home",
-          execute: testCallback,
-        },
-        {
-          toolId: "tool1",
-          iconClass: "icon-placeholder",
-        },
-        {
-          toolId: "tool2",
-          iconClass: "icon-placeholder",
-        },
-      ],
-    };
-
-    ConfigurableUiManager.loadCommonItems(commonItemsList);
   });
 
   const widgetProps: AnyWidgetProps = {
@@ -55,8 +30,6 @@ describe("NavigationWidget", () => {
     iconClass: "icon-home",
     labelKey: "SampleApp:Test.my-label",
     navigationAidId: "StandardRotationNavigationAid",
-    horizontalIds: ["tool1"],
-    verticalIds: ["tool2"],
     horizontalDirection: Direction.Top,
     verticalDirection: Direction.Left,
   };
@@ -73,17 +46,6 @@ describe("NavigationWidget", () => {
 
     const reactNode = navigationWidgetDef.renderCornerItem();
     expect(reactNode).to.not.be.undefined;
-  });
-
-  it("NavigationWidget should mount with Ids", () => {
-    const wrapper = mount(
-      <NavigationWidget
-        navigationAidId="StandardRotationNavigationAid"
-        horizontalIds={widgetProps.horizontalIds}
-        verticalIds={widgetProps.verticalIds}
-      />,
-    );
-    wrapper.unmount();
   });
 
   const horizontalToolbar =

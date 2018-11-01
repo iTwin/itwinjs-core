@@ -20,7 +20,6 @@ import {
   PanViewTool,
   RotateViewTool,
   ViewToggleCameraTool,
-  WindowAreaTool,
   ZoomViewTool,
   WalkViewTool,
   FlyViewTool,
@@ -30,14 +29,13 @@ import {
   FrontstageProvider,
   GroupButton,
   ToolButton,
-  ToolItemDef,
-  CommandItemDef,
   ToolWidget,
   ZoneState,
   WidgetState,
   NavigationWidget,
   ContentLayoutDef,
   ContentLayoutProps,
+  CommandItemButton,
   ContentGroup,
   ContentProps,
   ModalDialogManager,
@@ -47,6 +45,9 @@ import {
   Zone,
   Widget,
   GroupItemDef,
+  SyncUiEventId,
+  ContentViewManager,
+  BaseItemState,
 } from "@bentley/ui-framework";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
@@ -55,6 +56,7 @@ import SvgSprite from "@bentley/ui-ninezone/lib/base/SvgSprite";
 
 import { AppUi } from "../AppUi";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
+import { AppTools } from "../../tools/ToolSpecifications";
 
 import { SampleAppIModelApp } from "../../../frontend/index";
 
@@ -63,8 +65,6 @@ import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
-
-import { MeasureByPointsButton } from "../tooluiproviders/MeasurePoints";
 
 import rotateIcon from "../icons/rotate.svg";
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
@@ -163,6 +163,18 @@ export class ViewsFrontstage extends FrontstageProvider {
  */
 class FrontstageToolWidget extends React.Component {
 
+  private get _groupItemDef(): GroupItemDef {
+    return new GroupItemDef({
+      groupId: "nested-group",
+      labelKey: "SampleApp:buttons.toolGroup",
+      iconClass: "icon-placeholder",
+      items: [AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
+      AppTools.item6, AppTools.item7, AppTools.item8],
+      direction: Direction.Bottom,
+      itemsInColumn: 7,
+    });
+  }
+
   /** Tool that will start a sample activity and display ActivityMessage.
    */
   private _tool3 = async () => {
@@ -241,46 +253,16 @@ class FrontstageToolWidget extends React.Component {
     );
   }
 
-  private _myToolItem1 = new ToolItemDef({
-    toolId: "tool1",
-    iconClass: "icon-placeholder",
-    labelKey: "SampleApp:buttons.tool1",
-    execute: AppUi.tool1,
-    applicationData: { key: "value" },
-  });
-
-  private _myGroupItem1 = new GroupItemDef({
-    groupId: "my-group1",
-    labelKey: "SampleApp:buttons.toolGroup",
-    iconClass: "icon-placeholder",
-    items: [this._myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"],
-    direction: Direction.Bottom,
-    itemsInColumn: 7,
-  });
-
-  private _setLengthFormatMetricCommand = new CommandItemDef({
-    commandId: "setLengthFormatMetric",
-    iconClass: "icon-info",
-    labelKey: "SampleApp:buttons.setLengthFormatMetric",
-    commandHandler: {
-      execute: () => {
-        IModelApp.quantityFormatter.useImperialFormats = false;
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
-      },
-    },
-  });
-
-  private _setLengthFormatImperialCommand = new CommandItemDef({
-    commandId: "setLengthFormatImperial",
-    iconClass: "icon-info",
-    labelKey: "SampleApp:buttons.setLengthFormatImperial",
-    commandHandler: {
-      execute: () => {
-        IModelApp.quantityFormatter.useImperialFormats = true;
-        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
-      },
-    },
-  });
+  /** example that disables the button if active content is a SheetView */
+  private _measureStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
+    const returnState: BaseItemState = { ...currentState };
+    const activeContentControl = ContentViewManager.getActiveContentControl();
+    if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
+      returnState.isEnabled = true;
+    else
+      returnState.isEnabled = false;
+    return returnState;
+  }
 
   private _horizontalToolbar =
     <Toolbar
@@ -288,11 +270,11 @@ class FrontstageToolWidget extends React.Component {
       items={
         <>
           <ToolButton toolId={SelectionTool.toolId} labelKey="SampleApp:tools.select" iconClass="icon-cursor" />
-          <MeasureByPointsButton />
+          <ToolButton toolId="Measure.Points" iconClass="icon-measure-distance" stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconClass="icon-placeholder"
-            items={[this._setLengthFormatMetricCommand, this._setLengthFormatImperialCommand]}
+            items={[AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand]}
             direction={Direction.Bottom}
             itemsInColumn={4}
           />
@@ -306,8 +288,8 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Right}
       items={
         <>
-          <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={AppUi.tool1} />
-          <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={AppUi.tool2} />
+          <CommandItemButton commandItem={AppTools.verticalPropertyGridOpenCommand} />
+          <CommandItemButton commandItem={AppTools.verticalPropertyGridOffCommand} />
           <ToolButton toolId="tool3" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool3" isEnabled={false} execute={this._tool3} />
           <ToolButton toolId="tool4" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool4" isVisible={false} execute={this._tool4} />
           <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.outputMessage" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
@@ -315,7 +297,7 @@ class FrontstageToolWidget extends React.Component {
           <GroupButton
             labelKey="SampleApp:buttons.anotherGroup"
             iconClass="icon-placeholder"
-            items={[this._myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8", this._myGroupItem1]}
+            items={[AppTools.tool1, AppTools.tool2, this._groupItemDef]}
             direction={Direction.Right}
           />
         </>
@@ -325,7 +307,7 @@ class FrontstageToolWidget extends React.Component {
   public render() {
     return (
       <ToolWidget
-        appButtonId="SampleApp.BackstageToggle"
+        appButton={AppTools.backstageToggleCommand}
         horizontalToolbar={this._horizontalToolbar}
         verticalToolbar={this._verticalToolbar}
       />
@@ -336,38 +318,6 @@ class FrontstageToolWidget extends React.Component {
 /** Define a NavigationWidget with Buttons to display in the TopRight zone.
  */
 class FrontstageNavigationWidget extends React.Component {
-  private _fitToViewTool = () => {
-    IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true);
-  }
-
-  private _windowAreaTool = () => {
-    IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView);
-  }
-
-  private _zoomViewTool = () => {
-    IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView);
-  }
-
-  private _panViewTool = () => {
-    IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView, true);
-  }
-
-  private _toggleCameraTool = () => {
-    IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView);
-  }
-
-  private _walkTool = () => {
-    IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView);
-  }
-
-  private _flyTool = () => {
-    IModelApp.tools.run(FlyViewTool.toolId, IModelApp.viewManager.selectedView);
-  }
-
-  private _rotateTool = () => {
-    IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView);
-  }
-
   private rotateSvgIcon(): React.ReactNode {
     return (
       <SvgSprite src={rotateIcon} />
@@ -392,11 +342,11 @@ class FrontstageNavigationWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId={FitViewTool.toolId} labelKey="SampleApp:tools.fitView" iconClass="icon-fit-to-view" execute={this._fitToViewTool} />
-          <ToolButton toolId={WindowAreaTool.toolId} labelKey="SampleApp:tools.windowArea" iconClass="icon-window-area" execute={this._windowAreaTool} />
-          <ToolButton toolId={ZoomViewTool.toolId} labelKey="SampleApp:tools.zoom" iconClass="icon-zoom" execute={this._zoomViewTool} />
-          <ToolButton toolId={PanViewTool.toolId} labelKey="SampleApp:tools.pan" iconClass="icon-hand-2" execute={this._panViewTool} />
-          <ToolButton toolId={RotateViewTool.toolId} labelKey="SampleApp:tools.rotate" iconElement={this.rotateSvgIcon()} execute={this._rotateTool} />
+          <ToolButton toolId={FitViewTool.toolId} labelKey="SampleApp:tools.fitView" iconClass="icon-fit-to-view" execute={AppTools.fitViewCommand.execute} />
+          <CommandItemButton commandItem={AppTools.windowAreaCommand} />
+          <ToolButton toolId={ZoomViewTool.toolId} labelKey="SampleApp:tools.zoom" iconClass="icon-zoom" execute={AppTools.zoomViewCommand.execute} />
+          <ToolButton toolId={PanViewTool.toolId} labelKey="SampleApp:tools.pan" iconClass="icon-hand-2" execute={AppTools.panViewCommand.execute} />
+          <ToolButton toolId={RotateViewTool.toolId} labelKey="SampleApp:tools.rotate" iconElement={this.rotateSvgIcon()} execute={AppTools.rotateViewCommand.execute} />
         </>
       }
     />;
@@ -406,9 +356,9 @@ class FrontstageNavigationWidget extends React.Component {
       expandsTo={Direction.Left}
       items={
         <>
-          <ToolButton toolId={WalkViewTool.toolId} labelKey="SampleApp:tools.walk" iconClass="icon-walk" execute={this._walkTool} />
-          <ToolButton toolId={FlyViewTool.toolId} labelKey="SampleApp:tools.fly" iconClass="icon-airplane" execute={this._flyTool} />
-          <ToolButton toolId={ViewToggleCameraTool.toolId} labelKey="SampleApp:tools.toggleCamera" iconClass="icon-camera" execute={this._toggleCameraTool} />
+          <ToolButton toolId={WalkViewTool.toolId} labelKey="SampleApp:tools.walk" iconClass="icon-walk" execute={AppTools.walkViewCommand.execute} />
+          <ToolButton toolId={FlyViewTool.toolId} labelKey="SampleApp:tools.fly" iconClass="icon-airplane" execute={AppTools.flyViewCommand.execute} />
+          <ToolButton toolId={ViewToggleCameraTool.toolId} labelKey="SampleApp:tools.toggleCamera" iconClass="icon-camera" execute={AppTools.toggleCameraViewCommand.execute} />
           <ViewSelector imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
         </>
       }

@@ -1,7 +1,8 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`CommandButton <CommandButton /> renders correctly 1`] = `
+exports[`CommandItemButton <CommandItemButton /> renders correctly 1`] = `
 <Icon
+  className=""
   icon={
     <Icon
       iconInfo={
@@ -12,8 +13,8 @@ exports[`CommandButton <CommandButton /> renders correctly 1`] = `
       }
     />
   }
-  isDisabled={false}
-  key="command1"
+  isActive={false}
+  key="command"
   onClick={[Function]}
   title="tests.label"
 />
@@ -32,10 +33,8 @@ exports[`ToolButton <ToolButton /> renders correctly 1`] = `
       }
     />
   }
-  isActive={true}
-  isDisabled={false}
+  isActive={false}
   key="tool1"
   onClick={[Function]}
-  title="tests.label"
 />
 `;

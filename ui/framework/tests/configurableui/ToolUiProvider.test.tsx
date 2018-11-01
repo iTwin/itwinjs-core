@@ -4,18 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
-import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
-import { ConfigurableUiManager, ItemPropsList, ZoneState, WidgetState, FrontstageDefProps, FrontstageManager, ToolItemDef } from "../../src/index";
+import { ConfigurableUiManager, ZoneState, WidgetState, FrontstageDefProps, FrontstageManager } from "../../src/index";
 import { ConfigurableCreateInfo } from "../../src/index";
 import { ToolUiProvider } from "../../src/index";
 
 import AssistanceItem from "@bentley/ui-ninezone/lib/footer/tool-assistance/Item";
 
 describe("ToolUiProvider", () => {
-
-  const testCallback = sinon.stub();
 
   class Tool2UiProvider extends ToolUiProvider {
     constructor(info: ConfigurableCreateInfo, options: any) {
@@ -68,16 +65,6 @@ describe("ToolUiProvider", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    const commonItemsList: ItemPropsList = {
-      items: [
-        {
-          toolId: testToolId,
-          iconClass: "icon-home",
-          execute: testCallback,
-        },
-      ],
-    };
-
     const frontstageProps: FrontstageDefProps = {
       id: "ToolUiProvider-TestFrontstage",
       defaultToolId: "PlaceLine",
@@ -95,14 +82,12 @@ describe("ToolUiProvider", () => {
             isFreeform: true,
             iconClass: "icon-home",
             labelKey: "SampleApp:Test.my-label",
-            appButtonId: "SampleApp.BackstageToggle",
-            horizontalIds: ["ToolUiProvider-test"],
+            appButton: undefined,
           },
         ],
       },
     };
 
-    ConfigurableUiManager.loadCommonItems(commonItemsList);
     ConfigurableUiManager.registerControl(testToolId, Tool2UiProvider);
     ConfigurableUiManager.loadFrontstage(frontstageProps);
   });
@@ -116,15 +101,6 @@ describe("ToolUiProvider", () => {
 
       FrontstageManager.setActiveToolId(testToolId);
       expect(FrontstageManager.activeToolId).to.eq(testToolId);
-
-      const itemDef = ConfigurableUiManager.findItem(testToolId);
-      expect(itemDef).to.not.be.undefined;
-      expect(itemDef).to.be.instanceof(ToolItemDef);
-      if (itemDef) {
-        const toolItemDef = itemDef as ToolItemDef;
-        expect(toolItemDef.toolId).to.eq(testToolId);
-        expect(toolItemDef.isActive).to.be.true;
-      }
 
       const toolInformation = FrontstageManager.activeToolInformation;
       expect(toolInformation).to.not.be.undefined;

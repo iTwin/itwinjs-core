@@ -11,6 +11,13 @@ import { ItemProps } from "./ItemProps";
 // ItemBase and subclasses
 // -----------------------------------------------------------------------------
 
+/** Base state for any 'stateful' React component */
+export interface BaseItemState {
+  isVisible?: boolean;        // Default - true
+  isEnabled?: boolean;        // Default - true
+  isActive?: boolean;         // Default - false
+}
+
 /** The base class for Items.
  */
 export abstract class ItemDefBase {
@@ -22,6 +29,9 @@ export abstract class ItemDefBase {
   public itemSyncMsg: string = "";
   public isPressed: boolean = false;
   public applicationData?: any;
+  public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
+  public stateSyncIds: string[] = [];
+  public getCommandArgs?: () => any[];
 
   private _iconLabelSupport!: IconLabelSupport;
 
@@ -34,8 +44,6 @@ export abstract class ItemDefBase {
 
       if (itemProps.featureId !== undefined)
         this.featureId = itemProps.featureId;
-      if (itemProps.itemSyncMsg !== undefined)
-        this.itemSyncMsg = itemProps.itemSyncMsg;
       if (itemProps.applicationData !== undefined)
         this.applicationData = itemProps.applicationData;
 

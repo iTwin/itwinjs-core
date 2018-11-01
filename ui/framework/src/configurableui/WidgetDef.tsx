@@ -7,11 +7,11 @@
 import * as React from "react";
 
 import { IconLabelProps, IconLabelSupport, IconInfo } from "./IconLabelSupport";
-import { ConfigurableUiManager, ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
+import { ConfigurableUiManager } from "./ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
+import { CommandItemDef } from "../configurableui/Item";
 
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
@@ -64,16 +64,14 @@ export interface WidgetDefProps extends IconLabelProps {
 /** Properties for a Toolbar Widget.
  */
 export interface ToolbarWidgetProps extends WidgetDefProps {
-  horizontalIds?: string[];  // Item Ids
   horizontalDirection?: Direction;
-  verticalIds?: string[];    // Item Ids
   verticalDirection?: Direction;
 }
 
 /** Properties for a Tool Widget.
  */
 export interface ToolWidgetProps extends ToolbarWidgetProps {
-  appButtonId?: string;
+  appButton?: CommandItemDef;
 }
 
 /** Properties for a Navigation Widget.
@@ -213,7 +211,6 @@ export class WidgetDef {
     this.widgetState = state;
     this.stateChanged = true;
     FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, oldWidgetState, newWidgetState: state });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.WidgetStateChanged);
   }
 
   public canShow(): boolean {

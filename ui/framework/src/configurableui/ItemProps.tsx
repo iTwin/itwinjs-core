@@ -7,7 +7,8 @@
 import { IconLabelProps } from "./IconLabelSupport";
 import { Direction } from "@bentley/ui-ninezone/lib/utilities/Direction";
 import { GroupItemDef } from "./GroupItem";
-import { ToolItemDef, CommandItemDef } from "./Item";
+import { CommandItemDef, ToolItemDef } from "./Item";
+import { BaseItemState } from "./ItemDefBase";
 
 // -----------------------------------------------------------------------------
 // ItemProps and sub-interfaces
@@ -17,23 +18,32 @@ import { ToolItemDef, CommandItemDef } from "./Item";
  */
 export interface ItemProps extends IconLabelProps {
   isVisible?: boolean;        // Default - true
-  isVisibleExpr?: string;
   isEnabled?: boolean;        // Default - true
-  isEnabledExpr?: string;
   featureId?: string;
-  itemSyncMsg?: string;
   applicationData?: any;
 }
 
 /** Definition for a Tool item with a tool id.
  */
-export interface ToolItemProps extends ItemProps {
+export interface ToolItemProps {
   toolId: string;
   execute?: () => any;
+  iconClass?: string;
+  iconElement?: React.ReactNode;
+  label?: string;     // this should be an override
+  labelKey?: string;  // remove - label should be coming from tool
+  tooltip?: string;    // this should be an override
+  applicationData?: any;  // probably not needed
+  isVisible?: boolean;        // Default - true
+  isEnabled?: boolean;        // Default - true
+  isActive?: boolean;         // Default - false
+  stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
+  stateSyncIds?: string[];
+  featureId?: string;
 }
 
-/** Union of all Item definitions */
-export type AnyItemDef = string | GroupItemDef | ToolItemDef | CommandItemDef;
+/** Union of all Item definitions that can be specified in a GroupItem */
+export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef;
 
 /** Definition for a Group item that opens a group of items.
  */
@@ -55,8 +65,9 @@ export interface CommandHandler {
 /** Definition for a Command item.
  */
 export interface CommandItemProps extends ItemProps {
-  commandId: string;
-  commandHandler: CommandHandler;
+  commandId?: string;
+  toolId?: string;
+  commandHandler?: CommandHandler;
 }
 
 /** Union of all Item properties.

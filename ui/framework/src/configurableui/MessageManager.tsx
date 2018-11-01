@@ -18,8 +18,6 @@ import { UiEvent, MessageContainer, MessageSeverity } from "@bentley/ui-core";
 import UiFramework from "../UiFramework";
 import { ModalDialogManager } from "./ModalDialogManager";
 import { StandardMessageBox } from "./StandardMessageBox";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
-import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 class MessageBoxCallbacks {
   constructor(
@@ -136,7 +134,6 @@ export class MessageManager {
     }
 
     this.onMessageAddedEvent.emit({ message });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.NotificationMessageAdded);
   }
 
   /**
@@ -169,7 +166,6 @@ export class MessageManager {
       details: this._OngoingActivityMessage.details,
       restored: (restored !== undefined) ? restored : this._OngoingActivityMessage.isRestored,
     });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ActivityMessageUpdated);
 
     this._OngoingActivityMessage.isRestored = false;
 
@@ -184,7 +180,6 @@ export class MessageManager {
   public static endActivityMessage(isCompleted: boolean): boolean {
     this.endActivityProcessing(isCompleted);
     this.onActivityMessageCancelledEvent.emit({});
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ActivityMessageCancelled);
     return true;
   }
 
@@ -210,7 +205,6 @@ export class MessageManager {
       target,
       messageText,
     });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.InputFieldMessageAdded);
   }
 
   /**
@@ -218,7 +212,6 @@ export class MessageManager {
    */
   public static hideInputFieldMessage() {
     this.onInputFieldMessageRemovedEvent.emit({});
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.InputFieldMessageRemoved);
   }
 
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */

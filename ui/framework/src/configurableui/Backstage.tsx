@@ -13,8 +13,6 @@ import { ItemProps, CommandHandler } from "./ItemProps";
 import { FrontstageManager } from "./FrontstageManager";
 import { Icon } from "./IconLabelSupport";
 import { WorkflowManager } from "./Workflow";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
-import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 import { UiEvent } from "@bentley/ui-core";
 
@@ -282,7 +280,6 @@ export class BackstageCloseEventEvent extends UiEvent<BackstageCloseEventArgs> {
 
 function closeBackStage() {
   Backstage.onBackstageCloseEventEvent.emit({ isVisible: false });
-  SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.BackstageCloseEvent);
 }
 
 /** Properties for the [[Backstage]] React component.

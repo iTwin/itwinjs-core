@@ -22,26 +22,48 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
             iconClass="icon-placeholder"
             items={
               Array [
-                "tool1",
-                "tool2",
-                "item3",
-                "item4",
-                "item5",
-                "item6",
-                "item7",
-                "item8",
-                "tool1",
-                "tool2",
-                "item3",
-                "item4",
-                "item5",
-                "item6",
-                "item7",
-                "item8",
+                CommandItemDef {
+                  "_commandHandler": undefined,
+                  "_iconLabelSupport": IconLabelSupport {
+                    "iconClass": "icon-placeholder",
+                    "label": "",
+                    "tooltip": "",
+                  },
+                  "commandId": "tool1",
+                  "execute": [Function],
+                  "featureId": "",
+                  "isEnabled": true,
+                  "isEnabledExpr": "",
+                  "isPressed": false,
+                  "isVisible": true,
+                  "isVisibleExpr": "",
+                  "itemSyncMsg": "",
+                  "stateSyncIds": Array [],
+                },
+                CommandItemDef {
+                  "_commandHandler": undefined,
+                  "_iconLabelSupport": IconLabelSupport {
+                    "iconClass": "icon-placeholder",
+                    "label": "",
+                    "tooltip": "",
+                  },
+                  "applicationData": Object {
+                    "key": "value",
+                  },
+                  "commandId": "tool2",
+                  "execute": [Function],
+                  "featureId": "",
+                  "isEnabled": true,
+                  "isEnabledExpr": "",
+                  "isPressed": false,
+                  "isVisible": true,
+                  "isVisibleExpr": "",
+                  "itemSyncMsg": "",
+                  "stateSyncIds": Array [],
+                },
               ]
             }
             itemsInColumn={7}
-            labelKey="SampleApp:buttons.toolGroup"
           />
         </UNDEFINED>
       }
@@ -49,18 +71,34 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
   }
   toolWidgetDef={
     ToolWidgetDef {
-      "_appButtonId": "SampleApp.BackstageToggle",
-      "_horizontalIds": Array [],
+      "_appButton": CommandItemDef {
+        "_commandHandler": Object {
+          "execute": [Function],
+        },
+        "_iconLabelSupport": IconLabelSupport {
+          "iconClass": "icon-home",
+          "label": "",
+          "tooltip": "",
+        },
+        "commandId": "SampleApp.BackstageToggle",
+        "execute": [Function],
+        "featureId": "",
+        "isEnabled": true,
+        "isEnabledExpr": "",
+        "isPressed": false,
+        "isVisible": true,
+        "isVisibleExpr": "",
+        "itemSyncMsg": "",
+        "stateSyncIds": Array [],
+      },
       "_iconLabelSupport": IconLabelSupport {
         "label": "",
         "tooltip": "",
       },
-      "_verticalIds": Array [],
       "classId": undefined,
-      "executeAppButtonClick": [Function],
       "featureId": "",
       "horizontalDirection": 3,
-      "id": "toolWidget",
+      "id": "Widget-20",
       "isFloatingStateSupported": false,
       "isFloatingStateWindowResizable": true,
       "isFreeform": false,
@@ -94,17 +132,47 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
             iconClass="icon-placeholder"
             items={
               Array [
-                "tool1",
-                "tool2",
-                "item3",
-                "item4",
-                "item5",
-                "item6",
-                "item7",
-                "item8",
+                CommandItemDef {
+                  "_commandHandler": undefined,
+                  "_iconLabelSupport": IconLabelSupport {
+                    "iconClass": "icon-placeholder",
+                    "label": "",
+                    "tooltip": "",
+                  },
+                  "commandId": "tool1",
+                  "execute": [Function],
+                  "featureId": "",
+                  "isEnabled": true,
+                  "isEnabledExpr": "",
+                  "isPressed": false,
+                  "isVisible": true,
+                  "isVisibleExpr": "",
+                  "itemSyncMsg": "",
+                  "stateSyncIds": Array [],
+                },
+                CommandItemDef {
+                  "_commandHandler": undefined,
+                  "_iconLabelSupport": IconLabelSupport {
+                    "iconClass": "icon-placeholder",
+                    "label": "",
+                    "tooltip": "",
+                  },
+                  "applicationData": Object {
+                    "key": "value",
+                  },
+                  "commandId": "tool2",
+                  "execute": [Function],
+                  "featureId": "",
+                  "isEnabled": true,
+                  "isEnabledExpr": "",
+                  "isPressed": false,
+                  "isVisible": true,
+                  "isVisibleExpr": "",
+                  "itemSyncMsg": "",
+                  "stateSyncIds": Array [],
+                },
               ]
             }
-            labelKey="SampleApp:buttons.anotherGroup"
           />
         </UNDEFINED>
       }

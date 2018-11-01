@@ -130,8 +130,6 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
   }
 
   public render(): React.ReactNode {
-    this.state.navigationWidgetDef.resolveItems();
-
     return (
       <NavigationWidgetWithDef
         navigationWidgetDef={this.state.navigationWidgetDef}
@@ -178,8 +176,6 @@ class NavigationWidgetWithDef extends React.Component<Props> {
   }
 
   public render(): React.ReactNode {
-    this.props.navigationWidgetDef.resolveItems();
-
     const navigationAid = this.props.navigationWidgetDef.renderCornerItem();
     const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar();
     const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar();

@@ -8,8 +8,6 @@ import { expect } from "chai";
 import TestUtils from "../TestUtils";
 import {
   ConfigurableUiManager,
-  ItemPropsList,
-  ToolItemDef,
   FrontstageManager,
   WidgetControl,
   ConfigurableCreateInfo,
@@ -28,31 +26,6 @@ describe("ConfigurableUiManager", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
     ConfigurableUiManager.initialize();
-  });
-
-  it("loadCommonItems & commonItems", () => {
-    const commonItemsList: ItemPropsList = {
-      items: [
-        {
-          toolId: "tool1",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.tool1",
-        },
-      ],
-    };
-    ConfigurableUiManager.loadCommonItems(commonItemsList);
-    expect(ConfigurableUiManager.commonItems.get("tool1")).to.not.be.undefined;
-  });
-
-  it("addCommonItem & commonItems", () => {
-    const item = {
-      toolId: "tool2",
-      iconClass: "icon-placeholder",
-      labelKey: "SampleApp:buttons.tool2",
-    };
-    const itemDef = new ToolItemDef(item);
-    ConfigurableUiManager.addCommonItem(itemDef);
-    expect(ConfigurableUiManager.commonItems.get("tool2")).to.not.be.undefined;
   });
 
   it("loadFrontstages & findFrontstageDef", () => {
@@ -74,27 +47,18 @@ describe("ConfigurableUiManager", () => {
     expect(ConfigurableUiManager.findFrontstageDef()).to.be.undefined;
   });
 
-  it("loadFrontstage & findItem", () => {
+  it("loadFrontstage", () => {
     const frontstageProps = {
       id: "TestFrontstage2",
       defaultToolId: "PlaceLine",
       defaultLayout: "TwoHalvesVertical",
       contentGroup: "TestContentGroup2",
       defaultContentId: "TestContent2",
-      items: [
-        {
-          toolId: "frontstageTool",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.frontstageTool",
-        },
-      ],
     };
     ConfigurableUiManager.loadFrontstage(frontstageProps);
     const frontstageDef = ConfigurableUiManager.findFrontstageDef("TestFrontstage2");
     expect(frontstageDef).to.not.be.undefined;
     FrontstageManager.setActiveFrontstageDef(frontstageDef);
-    expect(ConfigurableUiManager.findItem("frontstageTool")).to.not.be.undefined;
-    expect(ConfigurableUiManager.findItem("tool2")).to.not.be.undefined;
   });
 
   class TestWidget extends WidgetControl {

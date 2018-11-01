@@ -4,13 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
-
 import {
   GroupButton,
   ToolButton,
-  ToolItemDef,
-  CommandItemDef,
   ToolWidget,
   ZoneState,
   WidgetState,
@@ -31,6 +27,7 @@ import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { AppTools } from "../../tools/ToolSpecifications";
 
 export class Frontstage3 extends FrontstageProvider {
 
@@ -131,24 +128,19 @@ export class Frontstage3 extends FrontstageProvider {
   /** Define a ToolWidget with Buttons to display in the TopLeft zone.
    */
   private getToolWidget(): React.ReactNode {
-    const myToolItem1 = new ToolItemDef({
-      toolId: "tool1",
-      iconClass: "icon-placeholder",
-      labelKey: "SampleApp:buttons.tool1",
-      applicationData: { key: "value" },
-    });
 
     const horizontalToolbar =
       <Toolbar
         expandsTo={Direction.Bottom}
         items={
           <>
-            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <ToolButton toolId={AppTools.tool1.id} iconClass={AppTools.tool1.iconInfo.iconClass!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
+            <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconInfo.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconClass="icon-placeholder"
-              items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8", "tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+              items={[AppTools.tool1, AppTools.tool2, AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
+              AppTools.item6, AppTools.item7, AppTools.item8]}
               direction={Direction.Bottom}
               itemsInColumn={7}
             />
@@ -161,12 +153,13 @@ export class Frontstage3 extends FrontstageProvider {
         expandsTo={Direction.Right}
         items={
           <>
-            <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-            <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <ToolButton toolId={AppTools.tool1.id} iconClass={AppTools.tool1.iconInfo.iconClass!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
+            <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconInfo.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
             <GroupButton
               labelKey="SampleApp:buttons.anotherGroup"
               iconClass="icon-placeholder"
-              items={[myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+              items={[AppTools.tool1, AppTools.tool2, AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
+              AppTools.item6, AppTools.item7, AppTools.item8]}
             />
           </>
         }
@@ -174,7 +167,7 @@ export class Frontstage3 extends FrontstageProvider {
 
     return (
       <ToolWidget
-        appButtonId="SampleApp.BackstageToggle"
+        appButton={AppTools.backstageToggleCommand}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
       />
@@ -185,42 +178,17 @@ export class Frontstage3 extends FrontstageProvider {
    */
   private getNavigationWidget(): React.ReactNode {
 
-    const infoMessageCommand = new CommandItemDef({
-      commandId: "infoMessage",
-      iconClass: "icon-info",
-      labelKey: "SampleApp:buttons.informationMessageBox",
-      commandHandler: {
-        execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message")),
-      },
-    });
-    const warningMessageCommand = new CommandItemDef({
-      commandId: "warningMessage",
-      iconClass: "icon-status-warning",
-      labelKey: "SampleApp:buttons.warningMessageBox",
-      commandHandler: {
-        execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", undefined, OutputMessageType.Sticky)),
-      },
-    });
-    const errorMessageCommand = new CommandItemDef({
-      commandId: "errorMessage",
-      iconClass: "icon-status-rejected",
-      labelKey: "SampleApp:buttons.errorMessageBox",
-      commandHandler: {
-        execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "This is an error message", undefined, OutputMessageType.Alert)),
-      },
-    });
-
     const horizontalToolbar =
       <Toolbar
         expandsTo={Direction.Bottom}
         items={
           <>
-            <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
-            <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
+            <ToolButton toolId={AppTools.item5.id} iconClass={AppTools.item5.iconInfo.iconClass!} labelKey={AppTools.item5.label} execute={AppTools.item5.execute} />
+            <ToolButton toolId={AppTools.item6.id} iconClass={AppTools.item6.iconInfo.iconClass!} labelKey={AppTools.item6.label} execute={AppTools.item6.execute} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconClass="icon-attach"
-              items={[infoMessageCommand, warningMessageCommand, errorMessageCommand]}
+              items={[AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand]}
               direction={Direction.Bottom}
               itemsInColumn={4}
             />
@@ -233,8 +201,8 @@ export class Frontstage3 extends FrontstageProvider {
         expandsTo={Direction.Right}
         items={
           <>
-            <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
-            <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
+            <ToolButton toolId={AppTools.item7.id} iconClass={AppTools.item7.iconInfo.iconClass!} labelKey={AppTools.item7.label} execute={AppTools.item7.execute} />
+            <ToolButton toolId={AppTools.item8.id} iconClass={AppTools.item8.iconInfo.iconClass!} labelKey={AppTools.item8.label} execute={AppTools.item8.execute} />
           </>
         }
       />;

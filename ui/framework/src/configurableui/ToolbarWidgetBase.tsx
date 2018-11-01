@@ -6,7 +6,6 @@
 
 import * as React from "react";
 
-import ConfigurableUiManager from "./ConfigurableUiManager";
 import { WidgetDef, ToolbarWidgetProps } from "./WidgetDef";
 import { ItemList } from "./ItemFactory";
 
@@ -16,8 +15,6 @@ import { Direction } from "@bentley/ui-ninezone/lib/utilities/Direction";
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
  */
 export class ToolbarWidgetDefBase extends WidgetDef {
-  private _horizontalIds: string[];
-  private _verticalIds: string[];
   public horizontalItems!: ItemList;
   public horizontalDirection: Direction;
   public verticalItems!: ItemList;
@@ -26,30 +23,8 @@ export class ToolbarWidgetDefBase extends WidgetDef {
   constructor(def: ToolbarWidgetProps) {
     super(def);
 
-    this._horizontalIds = (def.horizontalIds !== undefined) ? def.horizontalIds : [];
-    this._verticalIds = (def.verticalIds !== undefined) ? def.verticalIds : [];
     this.horizontalDirection = (def.horizontalDirection !== undefined) ? def.horizontalDirection : Direction.Bottom;
     this.verticalDirection = (def.verticalDirection !== undefined) ? def.verticalDirection : Direction.Right;
-  }
-
-  public resolveItems(): void {
-    if (this.horizontalItems && this.verticalItems)
-      return;
-
-    this.horizontalItems = new ItemList();
-    this.verticalItems = new ItemList();
-
-    this._horizontalIds.map((id, _index) => {
-      const item = ConfigurableUiManager.findItem(id);
-      if (item)
-        this.horizontalItems.addItem(item);
-    });
-
-    this._verticalIds.map((id, _index) => {
-      const item = ConfigurableUiManager.findItem(id);
-      if (item)
-        this.verticalItems.addItem(item);
-    });
   }
 
   private renderToolbarItems(itemList: ItemList): React.ReactNode[] | null {

@@ -10,7 +10,6 @@ import { ItemDefBase } from "./ItemDefBase";
 import { GroupItemProps, AnyItemDef } from "./ItemProps";
 import { Icon, IconInfo } from "./IconLabelSupport";
 import { ItemList, ItemMap } from "./ItemFactory";
-import { ConfigurableUiManager } from "./ConfigurableUiManager";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 import HistoryTray, { History, DefaultHistoryManager, HistoryEntry } from "@bentley/ui-ninezone/lib/toolbar/item/expandable/history/Tray";
@@ -33,18 +32,18 @@ export class GroupItemDef extends ItemDefBase {
   public groupId: string;
   public direction: Direction;
   public itemsInColumn: number;
-  private _items: AnyItemDef[];
+  public items: AnyItemDef[];
   private _itemList!: ItemList;
   private _itemMap!: ItemMap;
 
-  constructor(groupItemDef: GroupItemProps) {
-    super(groupItemDef);
+  constructor(groupItemProps: GroupItemProps) {
+    super(groupItemProps);
 
-    this.groupId = (groupItemDef.groupId !== undefined) ? groupItemDef.groupId : "";
-    this.direction = (groupItemDef.direction !== undefined) ? groupItemDef.direction : Direction.Bottom;
-    this.itemsInColumn = (groupItemDef.itemsInColumn !== undefined) ? groupItemDef.itemsInColumn : 7;
+    this.groupId = (groupItemProps.groupId !== undefined) ? groupItemProps.groupId : "";
+    this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom;
+    this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
 
-    this._items = groupItemDef.items;
+    this.items = groupItemProps.items;
   }
 
   public get id(): string {
@@ -58,17 +57,9 @@ export class GroupItemDef extends ItemDefBase {
     this._itemList = new ItemList();
     this._itemMap = new ItemMap();
 
-    this._items.map((value, _index) => {
-      let id: string;
-      let item: ItemDefBase | undefined;
-
-      if (typeof value === "string") {
-        id = value;
-        item = ConfigurableUiManager.findItem(value);
-      } else {
-        item = value;
-        id = item.id;
-      }
+    this.items.map((value, _index) => {
+      const item: ItemDefBase | undefined = value;
+      const id: string = item ? item.id : "";
 
       if (item) {
         this._itemList.addItem(item);
@@ -416,6 +407,9 @@ export class GroupButton extends React.Component<GroupItemProps, GroupItemState>
   }
 
   public render(): React.ReactNode {
+    if (!this.state.groupItemDef || !this.state.groupItemDef.resolveItems)
+      return null;
+
     this.state.groupItemDef.resolveItems();
 
     return (
@@ -429,7 +423,7 @@ export class GroupButton extends React.Component<GroupItemProps, GroupItemState>
 
   public static getDerivedStateFromProps(newProps: GroupItemProps, state: GroupItemState) {
     if (newProps !== state.groupItemProps) {
-      return { groupItemDef: new GroupItemDef(newProps), groupItemProps: newProps };
+      return { groupItemProps: new GroupItemDef(newProps), groupItemDef: newProps };
     }
 
     return null;

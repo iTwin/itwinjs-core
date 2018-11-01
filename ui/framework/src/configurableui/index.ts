@@ -5,6 +5,7 @@
 
 export * from "./AppNotificationManager";
 export * from "./Backstage";
+export * from "./CommandItemButton";
 export * from "./ConfigurableUiContent";
 export * from "./ConfigurableUiControl";
 export * from "./ConfigurableUiManager";
@@ -25,6 +26,7 @@ export * from "./GroupItem";
 export * from "./IconLabelSupport";
 export * from "./Item";
 export * from "./ItemDefBase";
+export * from "./ToolButton";
 export * from "./ItemFactory";
 export * from "./ItemProps";
 export * from "./KeyboardShortcut";

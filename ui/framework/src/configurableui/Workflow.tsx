@@ -10,8 +10,6 @@ import { IconLabelProps } from "./IconLabelSupport";
 import ItemDefBase from "./ItemDefBase";
 import { ItemProps } from "./ItemProps";
 import { Task, TaskManager } from "./Task";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
-import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 // -----------------------------------------------------------------------------
 //  WorkflowDef and WorkflowsDef
@@ -131,7 +129,6 @@ export class Workflow extends ItemDefBase {
     this.activeTaskId = task.taskId;
     task.onActivated();
     WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.TaskActivated);
   }
 
   /** Gets an array of sorted Tasks in the Workflow. */
@@ -237,7 +234,6 @@ export class WorkflowManager {
   public static setActiveWorkflow(workflow: Workflow): void {
     this._activeWorkflow = workflow;
     WorkflowManager.onWorkflowActivatedEvent.emit({ workflow, workflowId: workflow.id });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.WorkflowActivated);
   }
 
   /** Sets the active Workflow and Task

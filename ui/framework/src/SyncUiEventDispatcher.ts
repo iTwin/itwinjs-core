@@ -5,6 +5,30 @@
 /** @module Utilities */
 
 import { UiEvent } from "@bentley/ui-core";
+import { FrontstageManager } from "./configurableui/FrontstageManager";
+import { Backstage } from "./configurableui/Backstage";
+import { WorkflowManager } from "./configurableui/Workflow";
+import { ContentViewManager } from "./configurableui/ContentViewManager";
+
+// cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, contentlayoutactivated, contentcontrolactivated,
+// cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
+// cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating frontstageready
+/** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control. */
+export const enum SyncUiEventId {
+  ActiveContentChanged = "activecontentchanged",
+  BackstageCloseEvent = "backstagecloseevent",
+  ContentLayoutActivated = "contentlayoutactivated",
+  ContentControlActivated = "contentcontrolactivated",
+  FrontstageActivating = "frontstageactivating",
+  FrontstageReady = "frontstageready",
+  ModalFrontstageChanged = "modalfrontstagechanged",
+  ModalDialogChanged = "modaldialogchanged",
+  NavigationAidActivated = "navigationaidactivated",
+  ToolActivated = "toolactivated",
+  TaskActivated = "taskactivated",
+  WidgetStateChanged = "widgetstatechanged",
+  WorkflowActivated = "workflowactivated",
+}
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
  */
@@ -24,7 +48,7 @@ export class SyncUiEventDispatcher {
   private static _eventIds: Set<string>;
   private static _eventIdAdded: boolean = false;
   private static _syncUiEvent: SyncUiEvent;
-  private static _timeoutPeriod: number = 500;
+  private static _timeoutPeriod: number = 200;
 
   /** @hidden - used for testing only */
   public static setTimeoutPeriod(period: number): void {
@@ -57,9 +81,10 @@ export class SyncUiEventDispatcher {
   /** Save eventId in Set for processing. */
   public static dispatchSyncUiEvent(eventId: string): void {
     SyncUiEventDispatcher.syncEventIds.add(eventId.toLowerCase());
-    SyncUiEventDispatcher._eventIdAdded = true;
     if (!SyncUiEventDispatcher._syncEventTimer) {  // if there is not a timer active, create one
       SyncUiEventDispatcher._syncEventTimer = setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod);
+    } else {
+      SyncUiEventDispatcher._eventIdAdded = true;
     }
   }
 
@@ -80,11 +105,65 @@ export class SyncUiEventDispatcher {
       SyncUiEventDispatcher._syncEventTimer = undefined;
       SyncUiEventDispatcher._eventIdAdded = false;
       SyncUiEventDispatcher.onSyncUiEvent.emit({ eventIds: SyncUiEventDispatcher.syncEventIds });
+      SyncUiEventDispatcher.syncEventIds.clear();
       return;
     }
 
     if (SyncUiEventDispatcher._syncEventTimer) clearTimeout(SyncUiEventDispatcher._syncEventTimer);
     SyncUiEventDispatcher._eventIdAdded = false;
-    SyncUiEventDispatcher._syncEventTimer = setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod);
+    // if events have been added before the initial timer expired wait half that time to see if events are still being added.
+    SyncUiEventDispatcher._syncEventTimer = setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod / 2);
+  }
+
+  /** Initializes the Monitoring of Events that trigger dispatching sync events */
+  public static initialize() {
+    // TODO: add selection change processing event(s)
+    FrontstageManager.onContentControlActivatedEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentControlActivated);
+    });
+
+    FrontstageManager.onContentLayoutActivatedEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentLayoutActivated);
+    });
+
+    FrontstageManager.onFrontstageActivatedEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageActivating);
+    });
+
+    FrontstageManager.onFrontstageReadyEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageReady);
+    });
+
+    FrontstageManager.onModalFrontstageChangedEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ModalFrontstageChanged);
+    });
+
+    FrontstageManager.onNavigationAidActivatedEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.NavigationAidActivated);
+    });
+
+    FrontstageManager.onToolActivatedEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ToolActivated);
+    });
+
+    FrontstageManager.onWidgetStateChangedEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WidgetStateChanged);
+    });
+
+    Backstage.onBackstageCloseEventEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.BackstageCloseEvent);
+    });
+
+    WorkflowManager.onTaskActivatedEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.TaskActivated);
+    });
+
+    WorkflowManager.onWorkflowActivatedEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WorkflowActivated);
+    });
+
+    ContentViewManager.onActiveContentChangedEvent.addListener(() => {
+      SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveContentChanged);
+    });
   }
 }
