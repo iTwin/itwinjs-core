@@ -28,8 +28,8 @@ export const enum ModifyElementSource {
 }
 
 /**
- * The PrimitiveTool class can be used to implement a primitive command. Placement
- * tools that don't need to locate or modify elements are good candidates for a PrimitiveTool.
+ * The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
+ * @see [PrimitiveTool]($docs/learning/frontend/primitivetools.md)
  */
 export abstract class PrimitiveTool extends InteractiveTool {
   public targetView?: Viewport;
