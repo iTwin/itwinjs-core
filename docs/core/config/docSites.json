@@ -19,6 +19,10 @@
     "docSiteId": 5,
     "displayName": "Learning"
   },
+  "delta": {
+    "docSiteId": 6,
+    "displayName": "Change History"
+  },
   "metadata": {
     "home": "landing-page",
     "logo": "landing-page/assets/imodeljs-logo.svg",
@@ -29,7 +33,8 @@
       "getting-started",
       "learning",
       "bis",
-      "reference"
+      "reference",
+      "delta"
     ],
     "headerTabs": {
       "Getting Started": {

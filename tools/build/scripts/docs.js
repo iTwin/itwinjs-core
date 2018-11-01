@@ -71,11 +71,16 @@ console.log("Arguments to TypeDoc: " + JSON.stringify(args, null, 2));
 
 spawn(path.resolve(process.cwd(), "node_modules/.bin/typedoc"), args).then((code) => {
     // Copy index.ts file to json output folder and rename to index.ts if a file is specified. Needed by bemetalsmith for adding descriptions
+    const outputDir = path.parse(json).dir;
     if (argv.tsIndexFile) {
-        const outputDir = path.parse(json).dir;
         cpx.copySync(path.join(source, argv.tsIndexFile), outputDir);
         fs.renameSync(path.join(outputDir, argv.tsIndexFile), path.join(outputDir, 'index.ts'));
     }
+    // Copy CHANGELOG.json to json output folder
+    if (fs.existsSync(path.join(process.cwd(), 'CHANGELOG.json'))) {
+        cpx.copySync(path.join(process.cwd(), 'CHANGELOG.json'), outputDir);
+    }
+
     if (code === 0) {
         let tagErrors = validateTags(json);
         if (tagErrors.toString()) {
