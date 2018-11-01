@@ -90,9 +90,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   /** Supplies the status corresponding to a protocol-specific code value. */
   public getStatus(code: number): RpcRequestStatus {
     switch (code) {
-      case 202: return RpcRequestStatus.Provisioning;
       case 404: return RpcRequestStatus.NotFound;
-      case 409: return RpcRequestStatus.Pending;
+      case 202: return RpcRequestStatus.Pending;
       case 200: return RpcRequestStatus.Resolved;
       case 500: return RpcRequestStatus.Rejected;
       default: return RpcRequestStatus.Unknown;
@@ -102,9 +101,8 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   /** Supplies the protocol-specific code corresponding to a status value. */
   public getCode(status: RpcRequestStatus): number {
     switch (status) {
-      case RpcRequestStatus.Provisioning: return 202;
       case RpcRequestStatus.NotFound: return 404;
-      case RpcRequestStatus.Pending: return 409;
+      case RpcRequestStatus.Pending: return 202;
       case RpcRequestStatus.Resolved: return 200;
       case RpcRequestStatus.Rejected: return 500;
       default: return 501;

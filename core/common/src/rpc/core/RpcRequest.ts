@@ -114,7 +114,6 @@ export abstract class RpcRequest<TResponse = any> {
   public get pending(): boolean {
     switch (this.status) {
       case RpcRequestStatus.Submitted:
-      case RpcRequestStatus.Provisioning:
       case RpcRequestStatus.Pending: {
         return true;
       }
@@ -218,7 +217,6 @@ export abstract class RpcRequest<TResponse = any> {
         return this.handleRejected(value);
       }
 
-      case RpcRequestStatus.Provisioning:
       case RpcRequestStatus.Pending: {
         return this.setPending(status, value.objects);
       }
@@ -304,7 +302,7 @@ export abstract class RpcRequest<TResponse = any> {
     }
   }
 
-  private setPending(status: RpcRequestStatus.Provisioning | RpcRequestStatus.Pending, extendedStatus: string): void {
+  private setPending(status: RpcRequestStatus.Pending, extendedStatus: string): void {
     if (!this._active)
       return;
 
@@ -352,7 +350,6 @@ export const initializeRpcRequest = (() => {
           break;
         }
 
-        case RpcRequestStatus.Provisioning:
         case RpcRequestStatus.Pending:
         case RpcRequestStatus.Resolved:
         case RpcRequestStatus.Rejected: {
