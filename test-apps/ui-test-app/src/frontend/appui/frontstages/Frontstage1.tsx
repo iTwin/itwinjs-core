@@ -93,8 +93,8 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId={AppTools.tool1.id} iconClass={AppTools.tool1.iconInfo.iconClass!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
-          <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconInfo.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+          <ToolButton toolId={AppTools.tool1.id} iconClass={AppTools.tool1.iconClass!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
+          <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconClass="icon-placeholder"
@@ -112,8 +112,8 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Right}
       items={
         <>
-          <ToolButton toolId={AppTools.tool1.id} iconClass={AppTools.tool1.iconInfo.iconClass!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
-          <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconInfo.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+          <ToolButton toolId={AppTools.tool1.id} iconClass={AppTools.tool1.iconClass!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
+          <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
           <GroupButton
             labelKey="SampleApp:buttons.anotherGroup"
             iconClass="icon-placeholder"
@@ -144,8 +144,8 @@ class FrontstageNavigationWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId={AppTools.item5.id} iconClass={AppTools.item5.iconInfo.iconClass!} labelKey={AppTools.item5.label} execute={AppTools.item5.execute} />
-          <ToolButton toolId={AppTools.item6.id} iconClass={AppTools.item6.iconInfo.iconClass!} labelKey={AppTools.item6.label} execute={AppTools.item6.execute} />
+          <ToolButton toolId={AppTools.item5.id} iconClass={AppTools.item5.iconClass!} labelKey={AppTools.item5.label} execute={AppTools.item5.execute} />
+          <ToolButton toolId={AppTools.item6.id} iconClass={AppTools.item6.iconClass!} labelKey={AppTools.item6.label} execute={AppTools.item6.execute} />
         </>
       }
     />;
@@ -155,8 +155,8 @@ class FrontstageNavigationWidget extends React.Component {
       expandsTo={Direction.Right}
       items={
         <>
-          <ToolButton toolId={AppTools.item7.id} iconClass={AppTools.item7.iconInfo.iconClass!} labelKey={AppTools.item7.label} execute={AppTools.item7.execute} />
-          <ToolButton toolId={AppTools.item8.id} iconClass={AppTools.item8.iconInfo.iconClass!} labelKey={AppTools.item8.label} execute={AppTools.item8.execute} />
+          <ToolButton toolId={AppTools.item7.id} iconClass={AppTools.item7.iconClass!} labelKey={AppTools.item7.label} execute={AppTools.item7.execute} />
+          <ToolButton toolId={AppTools.item8.id} iconClass={AppTools.item8.iconClass!} labelKey={AppTools.item8.label} execute={AppTools.item8.execute} />
         </>
       }
     />;

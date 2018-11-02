@@ -11,13 +11,13 @@ import Item, { ItemProps } from "./Item";
 import "./Icon.scss";
 
 /** Properties of [[Icon]] component. */
-export interface IconProps extends OmitChildrenProp<ItemProps>, NoChildrenProps {
+export interface IconComponentProps extends OmitChildrenProp<ItemProps>, NoChildrenProps {
   /** Actual icon of this toolbar item. */
   icon?: React.ReactNode;
 }
 
 /** Toolbar item component that displays icon. Used in [[Toolbar]] */
-export default class Icon extends React.Component<IconProps> {
+export default class Icon extends React.Component<IconComponentProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-icon",

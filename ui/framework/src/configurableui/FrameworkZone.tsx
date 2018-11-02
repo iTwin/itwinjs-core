@@ -164,7 +164,8 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
             return {
               isActive,
-              iconInfo: widgetDef.iconInfo,
+              iconClass: widgetDef.iconClass,
+              iconElement: widgetDef.iconElement,
               title: widgetDef.label,
             };
           }),

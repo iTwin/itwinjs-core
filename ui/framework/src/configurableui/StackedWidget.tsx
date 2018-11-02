@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { WidgetChangeHandler } from "./FrontstageComposer";
-import { Icon, IconInfo } from "./IconLabelSupport";
+import { Icon } from "./IconComponent";
 
 import NZ_StackedWidget, { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone/lib/widget/Stacked";
 import ResizeHandle from "@bentley/ui-ninezone/lib/widget/rectangular/ResizeHandle";
@@ -22,7 +22,8 @@ import { TabMode } from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Tab";
  */
 export interface WidgetTabProps {
   isActive: boolean;
-  iconInfo: IconInfo;
+  iconClass?: string;
+  iconElement?: React.ReactNode;
   title: string;
 }
 
@@ -123,7 +124,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
           onDrag={this._handleWidgetTabDrag}
           onDragEnd={this._handleTabDragEnd}
         >
-          <Icon iconInfo={tab.iconInfo} />
+          <Icon iconClass={tab.iconClass} iconElement={tab.iconElement} />
         </WidgetTab>
       );
     });

@@ -47,10 +47,10 @@ describe("Backstage", () => {
     });
 
     it("with child items", () => {
-      const commandHandler = { execute: () => { } };
+      const commandHandler = () => { };
       shallow(
         <Backstage isVisible={true}>
-          <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" commandHandler={commandHandler} />
+          <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" execute={commandHandler} />
           <SeparatorBackstageItem />
           <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" />
           <SeparatorBackstageItem />
@@ -69,16 +69,15 @@ describe("Backstage", () => {
 
     it("CommandLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
-      const commandHandler = { execute: spyMethod };
-      const wrapper = mount(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" subtitleId="UiFramework:tests.subtitle" iconClass="icon-placeholder" commandHandler={commandHandler} />);
+      const wrapper = mount(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" subtitleId="UiFramework:tests.subtitle" iconClass="icon-placeholder" execute={spyMethod} />);
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       expect(spyMethod.calledOnce).to.be.true;
     });
 
     it("CommandLaunchBackstageItem renders correctly", () => {
-      const commandHandler = { execute: () => { } };
-      shallow(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" commandHandler={commandHandler} />).should.matchSnapshot();
+      const commandHandler = () => { };
+      shallow(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" execute={commandHandler} />).should.matchSnapshot();
     });
 
     it("FrontstageLaunchBackstageItem should render & execute", () => {

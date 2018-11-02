@@ -6,9 +6,10 @@
 
 import * as React from "react";
 
+import { ActionButtonItemDef } from "./Item";
 import { ItemDefBase } from "./ItemDefBase";
 import { GroupItemProps, AnyItemDef } from "./ItemProps";
-import { Icon, IconInfo } from "./IconLabelSupport";
+import { Icon } from "./IconComponent";
 import { ItemList, ItemMap } from "./ItemFactory";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
@@ -28,7 +29,7 @@ import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
 /** An Item that opens a group of items.
  */
-export class GroupItemDef extends ItemDefBase {
+export class GroupItemDef extends ActionButtonItemDef {
   public groupId: string;
   public direction: Direction;
   public itemsInColumn: number;
@@ -108,7 +109,8 @@ interface HistoryItem {
 }
 
 interface ToolGroupItem {
-  iconInfo: IconInfo;
+  iconClass?: string;
+  iconElement?: React.ReactNode;
   label: string;
   trayId?: string;
 }
@@ -209,6 +211,8 @@ class GroupItem extends React.Component<Props, State> {
   }
 
   public render(): React.ReactNode {
+    const icon = <Icon iconClass={this.props.groupItemDef.iconClass} iconElement={this.props.groupItemDef.iconElement} />;
+
     return (
       <ExpandableItem
         {...this.props}
@@ -220,9 +224,7 @@ class GroupItem extends React.Component<Props, State> {
         <ToolbarIcon
           title={this.state.groupItemDef.label}
           onClick={() => this._toggleIsToolGroupOpen()}
-          icon={
-            <Icon iconInfo={this.state.groupItemDef.iconInfo} />
-          }
+          icon={icon}
         />
       </ExpandableItem>
     );
@@ -254,7 +256,7 @@ class GroupItem extends React.Component<Props, State> {
       },
       () => {
         const childItem = this.state.groupItemDef.getItemById(itemKey);
-        if (childItem)
+        if (childItem && childItem instanceof ActionButtonItemDef)
           childItem.execute();
       },
     );
@@ -271,7 +273,7 @@ class GroupItem extends React.Component<Props, State> {
       },
       () => {
         const childItem = this.state.groupItemDef.getItemById(item.itemKey);
-        if (childItem)
+        if (childItem && childItem instanceof ActionButtonItemDef)
           childItem.execute();
       },
     );
@@ -292,6 +294,7 @@ class GroupItem extends React.Component<Props, State> {
             const tray = this.state.trays.get(entry.item.trayKey)!;
             const column = tray.columns.get(entry.item.columnIndex)!;
             const item = column.items.get(entry.item.itemKey)!;
+            const icon = <Icon iconClass={item.iconClass} iconElement={item.iconElement} />;
 
             return (
               <HistoryIcon
@@ -299,7 +302,7 @@ class GroupItem extends React.Component<Props, State> {
                 onClick={() => this._handleOnHistoryItemClick(entry.item)}
                 title={item.label}
               >
-                <Icon iconInfo={item.iconInfo} />
+                {icon}}
               </HistoryIcon>
             );
           })
@@ -320,6 +323,8 @@ class GroupItem extends React.Component<Props, State> {
           <GroupColumn key={columnIndex}>
             {Array.from(column.items.keys()).map((itemKey) => {
               const item = column.items.get(itemKey)!;
+              const icon = <Icon iconClass={item.iconClass} iconElement={item.iconElement} />;
+
               const trayId = item.trayId;
               if (trayId)
                 return (
@@ -327,9 +332,7 @@ class GroupItem extends React.Component<Props, State> {
                     key={itemKey}
                     ref={itemKey}
                     label={item.label}
-                    icon={
-                      <Icon iconInfo={item.iconInfo} />
-                    }
+                    icon={icon}
                     onClick={() => this.setState((prevState) => {
                       return {
                         ...prevState,
@@ -345,9 +348,7 @@ class GroupItem extends React.Component<Props, State> {
                   ref={itemKey}
                   label={item.label}
                   onClick={() => this.handleToolGroupItemClicked(this.state.trayId, columnIndex, itemKey)}
-                  icon={
-                    <Icon iconInfo={item.iconInfo} />
-                  }
+                  icon={icon}
                 />
               );
             })}

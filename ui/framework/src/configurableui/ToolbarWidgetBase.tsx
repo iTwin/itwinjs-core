@@ -8,6 +8,7 @@ import * as React from "react";
 
 import { WidgetDef, ToolbarWidgetProps } from "./WidgetDef";
 import { ItemList } from "./ItemFactory";
+import { ActionButtonItemDef } from "./Item";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import { Direction } from "@bentley/ui-ninezone/lib/utilities/Direction";
@@ -31,7 +32,9 @@ export class ToolbarWidgetDefBase extends WidgetDef {
     if (itemList && itemList.items) {
       return (
         itemList.items.map((item, index) => {
-          return item.toolbarReactNode(index);
+          if (item instanceof ActionButtonItemDef)
+            return item.toolbarReactNode(index);
+          return null;
         })
       );
     }

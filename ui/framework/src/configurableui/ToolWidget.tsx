@@ -9,7 +9,7 @@ import * as React from "react";
 import { ToolWidgetProps, WidgetType } from "./WidgetDef";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { CommandItemDef } from "./Item";
-import { Icon } from "./IconLabelSupport";
+import { Icon } from "./IconComponent";
 import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
 
 import NZ_AppButton from "@bentley/ui-ninezone/lib/toolbar/button/App";
@@ -42,7 +42,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
         <NZ_AppButton
           onClick={this._appButton.execute}
           icon={
-            <Icon iconInfo={this._appButton.iconInfo} />
+            <Icon iconClass={this._appButton.iconClass} iconElement={this._appButton.iconElement} />
           }
         />
       );

@@ -81,9 +81,7 @@ describe("GroupItem", () => {
         commandId: "spytool",
         iconClass: "icon-placeholder",
         labelKey: "SampleApp:buttons.tool1",
-        commandHandler: {
-          execute: executeSpy,
-        },
+        execute: executeSpy,
       });
 
       const wrapper = mount(

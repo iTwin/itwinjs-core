@@ -8,7 +8,7 @@ import * as React from "react";
 
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 
-import { Icon, IconInfo } from "./IconLabelSupport";
+import { Icon } from "./IconComponent";
 import { FrontstageManager } from "./FrontstageManager";
 import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../SyncUiEventDispatcher";
 import { BaseItemState } from "./ItemDefBase";
@@ -76,17 +76,8 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
     }
   }
 
-  public get iconInfo(): IconInfo {
-    return { iconClass: this.props.iconClass, iconElement: this.props.iconElement };
-  }
-
-  private renderIcon(): React.ReactNode {
-    return (
-      <Icon iconInfo={this.iconInfo} />
-    );
-  }
-
   public render(): React.ReactNode {
+    const icon = <Icon iconClass={this.props.iconClass} iconElement={this.props.iconElement} />;
     let myClassNames = "";
     if (!this.state.isVisible)
       myClassNames += "item-hidden";
@@ -100,7 +91,7 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
         title={this.props.label}
         key={this.props.toolId}
         onClick={this._execute}
-        icon={this.renderIcon()}
+        icon={icon}
       />
     );
   }

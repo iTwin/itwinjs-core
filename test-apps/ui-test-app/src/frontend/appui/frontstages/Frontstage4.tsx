@@ -113,7 +113,7 @@ export class Frontstage4 extends FrontstageProvider {
         expandsTo={Direction.Bottom}
         items={
           <>
-            <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconInfo.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+            <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconClass="icon-placeholder"
@@ -131,8 +131,8 @@ export class Frontstage4 extends FrontstageProvider {
         expandsTo={Direction.Right}
         items={
           <>
-            <ToolButton toolId={AppTools.tool1.id} iconClass={AppTools.tool1.iconInfo.iconClass!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
-            <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconInfo.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+            <ToolButton toolId={AppTools.tool1.id} iconClass={AppTools.tool1.iconClass!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
+            <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
             <GroupButton
               labelKey="SampleApp:buttons.anotherGroup"
               iconClass="icon-placeholder"
@@ -140,8 +140,8 @@ export class Frontstage4 extends FrontstageProvider {
               AppTools.item6, AppTools.item7, AppTools.item8]}
               direction={Direction.Right}
             />
-            <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconInfo.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
-            <ToolButton toolId={AppTools.addMessageCommand.commandId} iconClass={AppTools.addMessageCommand.iconInfo.iconClass!} labelKey={AppTools.addMessageCommand.label} execute={AppTools.addMessageCommand.execute} />
+            <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+            <ToolButton toolId={AppTools.addMessageCommand.commandId} iconClass={AppTools.addMessageCommand.iconClass!} labelKey={AppTools.addMessageCommand.label} execute={AppTools.addMessageCommand.execute} />
           </>
         }
       />;
@@ -179,8 +179,8 @@ export class Frontstage4 extends FrontstageProvider {
         expandsTo={Direction.Bottom}
         items={
           <>
-            <ToolButton toolId={AppTools.item6.id} iconClass={AppTools.item6.iconInfo.iconClass!} labelKey={AppTools.item6.label} />
-            <ToolButton toolId={AppTools.item5.id} iconClass={AppTools.item5.iconInfo.iconClass!} labelKey={AppTools.item5.label} />
+            <ToolButton toolId={AppTools.item6.id} iconClass={AppTools.item6.iconClass!} labelKey={AppTools.item6.label} />
+            <ToolButton toolId={AppTools.item5.id} iconClass={AppTools.item5.iconClass!} labelKey={AppTools.item5.label} />
             <ToolButton toolId="openDialog" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.modalDialog())} />
             <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
           </>
@@ -192,8 +192,8 @@ export class Frontstage4 extends FrontstageProvider {
         expandsTo={Direction.Left}
         items={
           <>
-            <ToolButton toolId={AppTools.item8.id} iconClass={AppTools.item8.iconInfo.iconClass!} labelKey={AppTools.item8.label} />
-            <ToolButton toolId={AppTools.item7.id} iconClass={AppTools.item7.iconInfo.iconClass!} labelKey={AppTools.item7.label} />
+            <ToolButton toolId={AppTools.item8.id} iconClass={AppTools.item8.iconClass!} labelKey={AppTools.item8.label} />
+            <ToolButton toolId={AppTools.item7.id} iconClass={AppTools.item7.iconClass!} labelKey={AppTools.item7.label} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconClass="icon-placeholder"

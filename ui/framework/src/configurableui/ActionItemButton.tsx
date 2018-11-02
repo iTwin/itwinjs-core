@@ -6,32 +6,32 @@
 
 import * as React from "react";
 
-import { Icon } from "./IconLabelSupport";
+import { Icon } from "./IconComponent";
 import { FrontstageManager } from "./FrontstageManager";
-import { CommandItemDef } from "./Item";
+import { ActionButtonItemDef } from "./Item";
 import { BaseItemState } from "./ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../SyncUiEventDispatcher";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 
-/** Property that must be specified for a CommandItemButton component */
-export interface CommandItemButtonProps {
-  commandItem: CommandItemDef;
+/** Property that must be specified for a ActionItemButton component */
+export interface ActionItemButtonProps {
+  actionItem: ActionButtonItemDef;
 }
-/** A Toolbar button React Component that executes a command defined by a CommandItemDef.
+/** A Toolbar button React Component that executes an action defined by a CommandItemDef or a ToolItemDef.
  */
-export class CommandItemButton extends React.Component<CommandItemButtonProps, BaseItemState> {
+export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> {
   private _componentUnmounting = false;
 
   /** hidden */
   public readonly state: Readonly<BaseItemState>;
 
-  constructor(props: CommandItemButtonProps) {
+  constructor(props: ActionItemButtonProps) {
     super(props);
 
     this.state = {
-      isVisible: undefined !== props.commandItem.isVisible ? props.commandItem.isVisible : true,
-      isEnabled: undefined !== props.commandItem.isEnabled ? props.commandItem.isEnabled : true,
+      isVisible: undefined !== props.actionItem.isVisible ? props.actionItem.isVisible : true,
+      isEnabled: undefined !== props.actionItem.isEnabled ? props.actionItem.isEnabled : true,
       isActive: false,
     };
   }
@@ -44,15 +44,15 @@ export class CommandItemButton extends React.Component<CommandItemButtonProps, B
 
     // since this is a tool button automatically monitor the activation of tools so the active state of the button is updated.
     if (args.eventIds.has(SyncUiEventId.ToolActivated)) {
-      newState.isActive = this.props.commandItem.isToolId && this.props.commandItem.id === FrontstageManager.activeToolId;
+      newState.isActive = this.props.actionItem.id === FrontstageManager.activeToolId;
       refreshState = true;
     }
 
-    if (!refreshState && this.props.commandItem.stateSyncIds && this.props.commandItem.stateSyncIds.length > 0)
-      refreshState = this.props.commandItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+    if (!refreshState && this.props.actionItem.stateSyncIds && this.props.actionItem.stateSyncIds.length > 0)
+      refreshState = this.props.actionItem.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
     if (refreshState) {
-      if (this.props.commandItem.stateFunc)
-        newState = this.props.commandItem.stateFunc(newState);
+      if (this.props.actionItem.stateFunc)
+        newState = this.props.actionItem.stateFunc(newState);
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
         this.setState((_prevState) => ({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible }));
       }
@@ -69,18 +69,14 @@ export class CommandItemButton extends React.Component<CommandItemButtonProps, B
   }
 
   private _execute = () => {
-    if (this.props.commandItem.execute) {
-      this.props.commandItem.execute();
+    if (this.props.actionItem.execute) {
+      this.props.actionItem.execute();
     }
   }
 
-  private renderIcon(): React.ReactNode {
-    return (
-      <Icon iconInfo={this.props.commandItem.iconInfo} />
-    );
-  }
-
   public render(): React.ReactNode {
+    const icon = <Icon iconClass={this.props.actionItem.iconClass} iconElement={this.props.actionItem.iconElement} />;
+
     let myClassNames = "";
     if (!this.state.isVisible)
       myClassNames += "item-hidden";
@@ -91,10 +87,10 @@ export class CommandItemButton extends React.Component<CommandItemButtonProps, B
       <ToolbarIcon
         className={myClassNames}
         isActive={this.state.isActive}
-        title={this.props.commandItem.label}
-        key={this.props.commandItem.id}
+        title={this.props.actionItem.label}
+        key={this.props.actionItem.id}
         onClick={this._execute}
-        icon={this.renderIcon()}
+        icon={icon}
       />
     );
   }

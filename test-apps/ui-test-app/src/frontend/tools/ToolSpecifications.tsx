@@ -16,16 +16,12 @@ import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 
 export class AppTools {
   public static get tool1() {
-    return new ToolItemDef({
-      toolId: "tool1",
+    return new CommandItemDef({
+      commandId: "tool1",
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.tool1",
       applicationData: { key: "value" },
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(SelectionTool.toolId);
-        },
-      },
+      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
     });
   }
 
@@ -35,117 +31,83 @@ export class AppTools {
       commandId: "SampleApp.BackstageToggle",
       iconClass: "icon-home",
       labelKey: "SampleApp:tools.",
-      commandHandler: {
-        execute: () => {
-          const state: RootState = SampleAppIModelApp.store.getState();
-          const action: string = (state.sampleAppState!.backstageVisible) ? "SampleApp:BACKSTAGEHIDE" : "SampleApp:BACKSTAGESHOW";
-          SampleAppIModelApp.store.dispatch({ type: action });
-        },
+      execute: () => {
+        const state: RootState = SampleAppIModelApp.store.getState();
+        const action: string = (state.sampleAppState!.backstageVisible) ? "SampleApp:BACKSTAGEHIDE" : "SampleApp:BACKSTAGESHOW";
+        SampleAppIModelApp.store.dispatch({ type: action });
       },
     });
   }
 
   public static get fitViewCommand() {
-    return new CommandItemDef({
-      commandId: FitViewTool.toolId,
+    return new ToolItemDef({
+      toolId: FitViewTool.toolId,
       iconClass: "icon-fit-to-view",
       labelKey: "SampleApp:tools.fitView",
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true);
-        },
-      },
+      execute: () => { IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true); },
     });
   }
 
   public static get windowAreaCommand() {
-    return new CommandItemDef({
-      commandId: WindowAreaTool.toolId,
+    return new ToolItemDef({
+      toolId: WindowAreaTool.toolId,
       iconClass: "icon-window-area",
       labelKey: "SampleApp:tools.windowArea",
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView);
-        },
-      },
+      execute: () => { IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
 
   public static get zoomViewCommand() {
-    return new CommandItemDef({
-      commandId: ZoomViewTool.toolId,
+    return new ToolItemDef({
+      toolId: ZoomViewTool.toolId,
       iconClass: "icon-zoom",
       labelKey: "SampleApp:tools.zoom",
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView);
-        },
-      },
+      execute: () => { IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
 
   public static get panViewCommand() {
-    return new CommandItemDef({
-      commandId: PanViewTool.toolId,
+    return new ToolItemDef({
+      toolId: PanViewTool.toolId,
       iconClass: "icon-hand-2",
       labelKey: "SampleApp:tools.pan",
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView);
-        },
-      },
+      execute: () => { IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
 
   public static get rotateViewCommand() {
-    return new CommandItemDef({
-      commandId: RotateViewTool.toolId,
+    return new ToolItemDef({
+      toolId: RotateViewTool.toolId,
       iconClass: "icon-rotate",
       labelKey: "SampleApp:tools.rotate",
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView);
-        },
-      },
+      execute: () => { IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
 
   public static get toggleCameraViewCommand() {
-    return new CommandItemDef({
-      commandId: ViewToggleCameraTool.toolId,
+    return new ToolItemDef({
+      toolId: ViewToggleCameraTool.toolId,
       iconClass: "icon-camera",
       labelKey: "SampleApp:tools.toggleCamera",
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView);
-        },
-      },
+      execute: () => { IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
 
   public static get flyViewCommand() {
-    return new CommandItemDef({
-      commandId: FlyViewTool.toolId,
+    return new ToolItemDef({
+      toolId: FlyViewTool.toolId,
       iconClass: "icon-airplane",
       labelKey: "SampleApp:tools.fly",
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(FlyViewTool.toolId, IModelApp.viewManager.selectedView);
-        },
-      },
+      execute: () => { IModelApp.tools.run(FlyViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
 
   public static get walkViewCommand() {
-    return new CommandItemDef({
-      commandId: WalkViewTool.toolId,
+    return new ToolItemDef({
+      toolId: WalkViewTool.toolId,
       iconClass: "icon-walk",
       labelKey: "SampleApp:tools.walk",
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView);
-        },
-      },
+      execute: () => { IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
 
@@ -155,11 +117,7 @@ export class AppTools {
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.tool2",
       applicationData: { key: "value" },
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(SelectionTool.toolId);
-        },
-      },
+      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
     });
   }
 
@@ -169,11 +127,7 @@ export class AppTools {
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.item1",
       applicationData: { key: "value" },
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(SelectionTool.toolId);
-        },
-      },
+      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
     });
   }
 
@@ -183,11 +137,7 @@ export class AppTools {
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.item2",
       applicationData: { key: "value" },
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(SelectionTool.toolId);
-        },
-      },
+      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
     });
   }
 
@@ -197,11 +147,7 @@ export class AppTools {
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.item3",
       applicationData: { key: "value" },
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(SelectionTool.toolId);
-        },
-      },
+      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
     });
   }
 
@@ -211,11 +157,7 @@ export class AppTools {
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.item4",
       applicationData: { key: "value" },
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(SelectionTool.toolId);
-        },
-      },
+      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
     });
   }
 
@@ -225,11 +167,7 @@ export class AppTools {
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.item5",
       applicationData: { key: "value" },
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(SelectionTool.toolId);
-        },
-      },
+      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
     });
   }
 
@@ -239,11 +177,7 @@ export class AppTools {
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.item6",
       applicationData: { key: "value" },
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(SelectionTool.toolId);
-        },
-      },
+      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
     });
   }
 
@@ -253,11 +187,7 @@ export class AppTools {
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.item7",
       applicationData: { key: "value" },
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(SelectionTool.toolId);
-        },
-      },
+      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
     });
   }
 
@@ -267,11 +197,7 @@ export class AppTools {
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.item8",
       applicationData: { key: "value" },
-      commandHandler: {
-        execute: () => {
-          IModelApp.tools.run(SelectionTool.toolId);
-        },
-      },
+      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
     });
   }
 
@@ -280,11 +206,9 @@ export class AppTools {
       commandId: "setLengthFormatMetric",
       iconClass: "icon-info",
       labelKey: "SampleApp:buttons.setLengthFormatMetric",
-      commandHandler: {
-        execute: () => {
-          IModelApp.quantityFormatter.useImperialFormats = false;
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
-        },
+      execute: () => {
+        IModelApp.quantityFormatter.useImperialFormats = false;
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Metric"));
       },
     });
   }
@@ -294,11 +218,9 @@ export class AppTools {
       commandId: "setLengthFormatImperial",
       iconClass: "icon-info",
       labelKey: "SampleApp:buttons.setLengthFormatImperial",
-      commandHandler: {
-        execute: () => {
-          IModelApp.quantityFormatter.useImperialFormats = true;
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
-        },
+      execute: () => {
+        IModelApp.quantityFormatter.useImperialFormats = true;
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
       },
     });
   }
@@ -308,9 +230,7 @@ export class AppTools {
       commandId: "infoMessage",
       iconClass: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
-      commandHandler: {
-        execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message")),
-      },
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message")),
     });
   }
 
@@ -319,9 +239,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconClass: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      commandHandler: {
-        execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", undefined, OutputMessageType.Sticky)),
-      },
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", undefined, OutputMessageType.Sticky)),
     });
   }
 
@@ -330,9 +248,7 @@ export class AppTools {
       commandId: "errorMessage",
       iconClass: "icon-status-rejected",
       labelKey: "SampleApp:buttons.errorMessageBox",
-      commandHandler: {
-        execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "This is an error message", undefined, OutputMessageType.Alert)),
-      },
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "This is an error message", undefined, OutputMessageType.Alert)),
     });
   }
 
@@ -341,25 +257,23 @@ export class AppTools {
       commandId: "infoMessage",
       iconClass: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
-      commandHandler: {
-        execute: () => {
-          let displayString = "Current Snap Mode(s):";
+      execute: () => {
+        let displayString = "Current Snap Mode(s):";
 
-          if (SampleAppIModelApp.store.getState().frameworkState) {
-            const snapModes = SampleAppIModelApp.accuSnap.getActiveSnapModes();
-            for (const mode of snapModes) {
-              if (mode === SnapMode.Bisector) displayString += " Bisector";
-              if (mode === SnapMode.Center) displayString += " Center";
-              if (mode === SnapMode.Intersection) displayString += " Intersection";
-              if (mode === SnapMode.MidPoint) displayString += " MidPoint";
-              if (mode === SnapMode.Nearest) displayString += " Nearest";
-              if (mode === SnapMode.NearestKeypoint) displayString += " NearestKeypoint";
-              if (mode === SnapMode.Origin) displayString += " Origin";
-            }
+        if (SampleAppIModelApp.store.getState().frameworkState) {
+          const snapModes = SampleAppIModelApp.accuSnap.getActiveSnapModes();
+          for (const mode of snapModes) {
+            if (mode === SnapMode.Bisector) displayString += " Bisector";
+            if (mode === SnapMode.Center) displayString += " Center";
+            if (mode === SnapMode.Intersection) displayString += " Intersection";
+            if (mode === SnapMode.MidPoint) displayString += " MidPoint";
+            if (mode === SnapMode.Nearest) displayString += " Nearest";
+            if (mode === SnapMode.NearestKeypoint) displayString += " NearestKeypoint";
+            if (mode === SnapMode.Origin) displayString += " Origin";
           }
+        }
 
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, displayString));
-        },
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, displayString));
       },
     });
   }
@@ -370,9 +284,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconClass: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      commandHandler: {
-        execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, AppTools._warningStr, AppTools._detailMsg, OutputMessageType.Sticky)),
-      },
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, AppTools._warningStr, AppTools._detailMsg, OutputMessageType.Sticky)),
     });
   }
 
@@ -381,9 +293,7 @@ export class AppTools {
       commandId: "errorMessage",
       iconClass: "icon-status-error",
       labelKey: "SampleApp:buttons.errorMessageBox",
-      commandHandler: {
-        execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, AppTools._errorStr, AppTools._detailMsg, OutputMessageType.Alert)),
-      },
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, AppTools._errorStr, AppTools._detailMsg, OutputMessageType.Alert)),
     });
   }
 
@@ -402,9 +312,7 @@ export class AppTools {
       commandId: "errorMessage",
       iconClass: "icon-status-error",
       labelKey: "SampleApp:buttons.errorMessageBox",
-      commandHandler: {
-        execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.i18n.translate("SampleApp:buttons.errorMessageBox"))),
-      },
+      execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.Error, IModelApp.i18n.translate("SampleApp:buttons.errorMessageBox"))),
     });
   }
 
@@ -413,9 +321,7 @@ export class AppTools {
       commandId: "successMessage",
       iconClass: "icon-status-success",
       labelKey: "SampleApp:buttons.successMessageBox",
-      commandHandler: {
-        execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.i18n.translate("SampleApp:buttons.successMessageBox"))),
-      },
+      execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.None, IModelApp.i18n.translate("SampleApp:buttons.successMessageBox"))),
     });
   }
 
@@ -424,9 +330,7 @@ export class AppTools {
       commandId: "informationMessage",
       iconClass: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
-      commandHandler: {
-        execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.Information, IModelApp.i18n.translate("SampleApp:buttons.informationMessageBox"))),
-      },
+      execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.Information, IModelApp.i18n.translate("SampleApp:buttons.informationMessageBox"))),
     });
   }
 
@@ -435,9 +339,7 @@ export class AppTools {
       commandId: "questionMessage",
       iconClass: "icon-help",
       labelKey: "SampleApp:buttons.questionMessageBox",
-      commandHandler: {
-        execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.Question, IModelApp.i18n.translate("SampleApp:buttons.questionMessageBox"))),
-      },
+      execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.Question, IModelApp.i18n.translate("SampleApp:buttons.questionMessageBox"))),
     });
   }
 
@@ -446,9 +348,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconClass: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      commandHandler: {
-        execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.Warning, IModelApp.i18n.translate("SampleApp:buttons.warningMessageBox"))),
-      },
+      execute: () => ModalDialogManager.openModalDialog(AppTools._messageBox(MessageSeverity.Warning, IModelApp.i18n.translate("SampleApp:buttons.warningMessageBox"))),
     });
   }
 
@@ -457,11 +357,9 @@ export class AppTools {
       commandId: "openMessageBox",
       iconClass: "icon-info",
       labelKey: "SampleApp:buttons.openMessageBox",
-      commandHandler: {
-        execute: () => {
-          IModelApp.notifications.openMessageBox(MessageBoxType.Ok, "This is a box opened using IModelApp.notifications.openMessageBox and using promise/then to process result.", MessageBoxIconType.Information)
-            .then((value: MessageBoxValue) => { window.alert("Closing message box ... value is " + value); });
-        },
+      execute: () => {
+        IModelApp.notifications.openMessageBox(MessageBoxType.Ok, "This is a box opened using IModelApp.notifications.openMessageBox and using promise/then to process result.", MessageBoxIconType.Information)
+          .then((value: MessageBoxValue) => { window.alert("Closing message box ... value is " + value); });
       },
     });
   }
@@ -471,11 +369,9 @@ export class AppTools {
       commandId: "openMessageBox2",
       iconClass: "icon-status-warning",
       labelKey: "SampleApp:buttons.openMessageBox",
-      commandHandler: {
-        execute: async () => {
-          const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo, "This is a box opened using IModelApp.notifications.openMessageBox and using async/await to process result.", MessageBoxIconType.Warning);
-          window.alert("Closing message box ... value is " + value);
-        },
+      execute: async () => {
+        const value: MessageBoxValue = await IModelApp.notifications.openMessageBox(MessageBoxType.YesNo, "This is a box opened using IModelApp.notifications.openMessageBox and using async/await to process result.", MessageBoxIconType.Warning);
+        window.alert("Closing message box ... value is " + value);
       },
     });
   }
@@ -490,13 +386,11 @@ export class AppTools {
       commandId: "addMessage",
       iconClass: "icon-status-warning",
       labelKey: "SampleApp:buttons.openMessageBox",
-      commandHandler: {
-        execute: async () => {
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, AppTools._infoStr));
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, AppTools._warningStr));
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, AppTools._errorStr));
-          IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Fatal, AppTools._fatalStr));
-        },
+      execute: async () => {
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, AppTools._infoStr));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, AppTools._warningStr));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, AppTools._errorStr));
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Fatal, AppTools._fatalStr));
       },
     });
   }
@@ -506,16 +400,14 @@ export class AppTools {
       commandId: "verticalPropertyGridOpen",
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.tool1",
-      commandHandler: {
-        execute: async () => {
-          const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-          if (activeFrontstageDef) {
-            const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
-            if (widgetDef) {
-              widgetDef.setWidgetState(WidgetState.Open);
-            }
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef) {
+          const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+          if (widgetDef) {
+            widgetDef.setWidgetState(WidgetState.Open);
           }
-        },
+        }
       },
     });
   }
@@ -525,18 +417,15 @@ export class AppTools {
       commandId: "verticalPropertyGridOff",
       iconClass: "icon-placeholder",
       labelKey: "SampleApp:buttons.tool1",
-      commandHandler: {
-        execute: async () => {
-          const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-          if (activeFrontstageDef) {
-            const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
-            if (widgetDef) {
-              widgetDef.setWidgetState(WidgetState.Off);
-            }
+      execute: async () => {
+        const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+        if (activeFrontstageDef) {
+          const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+          if (widgetDef) {
+            widgetDef.setWidgetState(WidgetState.Off);
           }
-        },
+        }
       },
     });
   }
-
 }

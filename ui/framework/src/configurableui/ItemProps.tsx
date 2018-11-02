@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
-import { IconLabelProps } from "./IconLabelSupport";
+import { IconProps } from "./IconComponent";
 import { Direction } from "@bentley/ui-ninezone/lib/utilities/Direction";
 import { GroupItemDef } from "./GroupItem";
 import { CommandItemDef, ToolItemDef } from "./Item";
@@ -14,32 +14,42 @@ import { BaseItemState } from "./ItemDefBase";
 // ItemProps and sub-interfaces
 // -----------------------------------------------------------------------------
 
-/** Base class for Item definitions.
- */
-export interface ItemProps extends IconLabelProps {
-  isVisible?: boolean;        // Default - true
-  isEnabled?: boolean;        // Default - true
-  featureId?: string;
-  applicationData?: any;
+export interface SyncUiProps {
+  stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
+  stateSyncIds?: string[];
 }
 
-/** Definition for a Tool item with a tool id.
+/** Base class for Item definitions.
  */
-export interface ToolItemProps {
-  toolId: string;
-  execute?: () => any;
-  iconClass?: string;
-  iconElement?: React.ReactNode;
-  label?: string;     // this should be an override
-  labelKey?: string;  // remove - label should be coming from tool
-  tooltip?: string;    // this should be an override
-  applicationData?: any;  // probably not needed
+export interface ItemProps extends IconProps, SyncUiProps {
   isVisible?: boolean;        // Default - true
   isEnabled?: boolean;        // Default - true
   isActive?: boolean;         // Default - false
-  stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
-  stateSyncIds?: string[];
+  isPressed?: boolean;        // Default - false;
   featureId?: string;
+  label?: string;
+  labelKey?: string;
+  tooltip?: string;
+  tooltipKey?: string;
+  applicationData?: any;
+}
+
+/** Definition for a command handler used by [[CommandItemProps]].
+ */
+export interface CommandHandler {
+  execute?: (args?: any) => any;
+  parameters?: any;
+  getCommandArgs?: () => any[];
+}
+/** Definition for a Tool item with a tool id.
+ */
+export interface ToolItemProps extends ItemProps, CommandHandler {
+  toolId: string;
+}
+
+/** Definition for a Command item. */
+export interface CommandItemProps extends ItemProps, CommandHandler {
+  commandId: string;
 }
 
 /** Union of all Item definitions that can be specified in a GroupItem */
@@ -55,27 +65,10 @@ export interface GroupItemProps extends ItemProps {
   renderPanel?: () => React.ReactNode;
 }
 
-/** Definition for a command handler used by [[CommandItemProps]].
- */
-export interface CommandHandler {
-  execute: (args?: any) => any;
-  parameters?: any;
-}
-
-/** Definition for a Command item.
- */
-export interface CommandItemProps extends ItemProps {
-  commandId?: string;
-  toolId?: string;
-  commandHandler?: CommandHandler;
-}
-
-/** Union of all Item properties.
- */
+/** Union of all Item properties. */
 export type AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps;
 
-/** Definition for a list of AnyItemProps.
- */
+/** Definition for a list of AnyItemProps. */
 export interface ItemPropsList {
   items?: AnyItemProps[];
 }

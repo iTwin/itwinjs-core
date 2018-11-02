@@ -6,8 +6,7 @@
 
 import { UiEvent } from "@bentley/ui-core";
 
-import { IconLabelProps } from "./IconLabelSupport";
-import ItemDefBase from "./ItemDefBase";
+import { ItemDefBase } from "./ItemDefBase";
 import { ItemProps } from "./ItemProps";
 import { Task, TaskManager } from "./Task";
 
@@ -26,7 +25,7 @@ export interface WorkflowProps extends ItemProps {
 
 /** Properties for a TaskPicker.
  */
-export interface TaskPickerProps extends IconLabelProps {
+export interface TaskPickerProps extends ItemProps {
   classId: string;
 }
 

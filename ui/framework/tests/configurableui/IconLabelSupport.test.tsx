@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import TestUtils from "../TestUtils";
 
-describe("IconLabelSupport", () => {
+describe("IconLabelProps", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();

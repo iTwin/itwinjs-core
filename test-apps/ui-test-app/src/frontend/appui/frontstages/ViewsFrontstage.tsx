@@ -35,7 +35,7 @@ import {
   NavigationWidget,
   ContentLayoutDef,
   ContentLayoutProps,
-  CommandItemButton,
+  ActionItemButton,
   ContentGroup,
   ContentProps,
   ModalDialogManager,
@@ -288,8 +288,8 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Right}
       items={
         <>
-          <CommandItemButton commandItem={AppTools.verticalPropertyGridOpenCommand} />
-          <CommandItemButton commandItem={AppTools.verticalPropertyGridOffCommand} />
+          <ActionItemButton actionItem={AppTools.verticalPropertyGridOpenCommand} />
+          <ActionItemButton actionItem={AppTools.verticalPropertyGridOffCommand} />
           <ToolButton toolId="tool3" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool3" isEnabled={false} execute={this._tool3} />
           <ToolButton toolId="tool4" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool4" isVisible={false} execute={this._tool4} />
           <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.outputMessage" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
@@ -343,7 +343,7 @@ class FrontstageNavigationWidget extends React.Component {
       items={
         <>
           <ToolButton toolId={FitViewTool.toolId} labelKey="SampleApp:tools.fitView" iconClass="icon-fit-to-view" execute={AppTools.fitViewCommand.execute} />
-          <CommandItemButton commandItem={AppTools.windowAreaCommand} />
+          <ActionItemButton actionItem={AppTools.windowAreaCommand} />
           <ToolButton toolId={ZoomViewTool.toolId} labelKey="SampleApp:tools.zoom" iconClass="icon-zoom" execute={AppTools.zoomViewCommand.execute} />
           <ToolButton toolId={PanViewTool.toolId} labelKey="SampleApp:tools.pan" iconClass="icon-hand-2" execute={AppTools.panViewCommand.execute} />
           <ToolButton toolId={RotateViewTool.toolId} labelKey="SampleApp:tools.rotate" iconElement={this.rotateSvgIcon()} execute={AppTools.rotateViewCommand.execute} />

@@ -5,7 +5,7 @@
 
 export * from "./AppNotificationManager";
 export * from "./Backstage";
-export * from "./CommandItemButton";
+export * from "./ActionItemButton";
 export * from "./ConfigurableUiContent";
 export * from "./ConfigurableUiControl";
 export * from "./ConfigurableUiManager";
@@ -23,7 +23,7 @@ export * from "./FrontstageDef";
 export * from "./FrontstageManager";
 export * from "./FrontstageZone";
 export * from "./GroupItem";
-export * from "./IconLabelSupport";
+export * from "./IconComponent";
 export * from "./Item";
 export * from "./ItemDefBase";
 export * from "./ToolButton";

@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 
 import {
   ToolButton,
-  CommandItemButton,
+  ActionItemButton,
   CommandItemDef,
   FrontstageManager,
 } from "../../src/index";
@@ -40,26 +40,23 @@ describe("ToolButton", () => {
   });
 });
 
-describe("CommandItemButton", () => {
+describe("ActionItemButton", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
 
-  describe("<CommandItemButton />", () => {
+  describe("<ActionItemButton />", () => {
     it("should render", () => {
       const testCommand =
         new CommandItemDef({
           commandId: "command",
           iconClass: "icon-placeholder",
           labelKey: "UiFramework:tests.label",
-          commandHandler: {
-            execute: () => {
-            },
-          },
+          execute: () => { },
         });
 
-      mount(<CommandItemButton commandItem={testCommand} />);
+      mount(<ActionItemButton actionItem={testCommand} />);
     });
 
     it("renders correctly", () => {
@@ -68,12 +65,9 @@ describe("CommandItemButton", () => {
           commandId: "command",
           iconClass: "icon-placeholder",
           labelKey: "UiFramework:tests.label",
-          commandHandler: {
-            execute: () => {
-            },
-          },
+          execute: () => { },
         });
-      shallow(<CommandItemButton commandItem={testCommand} />).should.matchSnapshot();
+      shallow(<ActionItemButton actionItem={testCommand} />).should.matchSnapshot();
     });
 
     it("should execute a function", () => {
@@ -83,12 +77,10 @@ describe("CommandItemButton", () => {
           commandId: "command",
           iconClass: "icon-placeholder",
           labelKey: "UiFramework:tests.label",
-          commandHandler: {
-            execute: spyMethod,
-          },
+          execute: spyMethod,
         });
 
-      const wrapper = mount(<CommandItemButton commandItem={spyCommand} />);
+      const wrapper = mount(<ActionItemButton actionItem={spyCommand} />);
       wrapper.find(".nz-toolbar-item-item").simulate("click");
       spyMethod.should.have.been.called;
       wrapper.unmount();

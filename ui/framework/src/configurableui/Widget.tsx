@@ -6,13 +6,13 @@
 
 import * as React from "react";
 
-import IconLabelSupport, { IconLabelProps } from "./IconLabelSupport";
+import { ItemProps } from "./ItemProps";
 import { WidgetState, WidgetDef, WidgetType } from "./WidgetDef";
 import { ConfigurableUiControlConstructor } from "./ConfigurableUiControl";
 
 /** Properties for a Widget.
  */
-export interface WidgetProps extends IconLabelProps {
+export interface WidgetProps extends ItemProps {
   id?: string;
   /** Default Widget state. Controls how the Widget is initially displayed. Defaults to WidgetState.Open. */
   defaultState?: WidgetState;
@@ -40,7 +40,7 @@ export class Widget extends React.Component<WidgetProps> {
   constructor(props: WidgetProps) {
     super(props);
 
-    this._widgetDef = new WidgetDef();
+    this._widgetDef = new WidgetDef(props);
     Widget.initializeWidgetDef(this._widgetDef, this.props);
   }
 
@@ -60,8 +60,6 @@ export class Widget extends React.Component<WidgetProps> {
 
     if (props.applicationData !== undefined)
       widgetDef.applicationData = props.applicationData;
-
-    widgetDef.iconLabelSupport = new IconLabelSupport(props);
 
     if (props.control !== undefined)
       widgetDef.classId = props.control;

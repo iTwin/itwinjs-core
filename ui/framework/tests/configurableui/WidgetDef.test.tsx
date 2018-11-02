@@ -52,7 +52,7 @@ describe("WidgetDef", () => {
 
     expect(widgetDef.label).to.eq("Test.my-label");
     expect(widgetDef.tooltip).to.eq("Test.my-tooltip");
-    expect(widgetDef.iconInfo.iconClass).to.eq("icon-home");
+    expect(widgetDef.iconClass).to.eq("icon-home");
   });
 
   it("registerControl & widgetControl using same classId", () => {

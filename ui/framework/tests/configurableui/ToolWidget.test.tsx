@@ -32,9 +32,7 @@ describe("ToolWidget", () => {
     new CommandItemDef({
       commandId: "SampleApp.BackstageToggle",
       iconClass: "icon-home",
-      commandHandler: {
-        execute: testCallback,
-      },
+      execute: testCallback,
     });
 
   const tool1 = new CommandItemDef({
