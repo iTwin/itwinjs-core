@@ -22,8 +22,7 @@ import { TabMode } from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Tab";
  */
 export interface WidgetTabProps {
   isActive: boolean;
-  iconClass?: string;
-  iconElement?: React.ReactNode;
+  iconSpec?: string | React.ReactNode;
   title: string;
 }
 
@@ -124,7 +123,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
           onDrag={this._handleWidgetTabDrag}
           onDragEnd={this._handleTabDragEnd}
         >
-          <Icon iconClass={tab.iconClass} iconElement={tab.iconElement} />
+          <Icon iconSpec={tab.iconSpec} />
         </WidgetTab>
       );
     });

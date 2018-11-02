@@ -4,8 +4,7 @@ exports[`Backstage <Backstage /> CommandLaunchBackstageItem renders correctly 1`
 <BackstageItem
   icon={
     <Icon
-      iconClass="icon-placeholder"
-      iconElement={undefined}
+      iconSpec="icon-placeholder"
     />
   }
   key=""
@@ -18,8 +17,7 @@ exports[`Backstage <Backstage /> FrontstageLaunchBackstageItem renders correctly
 <BackstageItem
   icon={
     <Icon
-      iconClass="icon-placeholder"
-      iconElement={undefined}
+      iconSpec="icon-placeholder"
     />
   }
   isActive={true}
@@ -40,8 +38,7 @@ exports[`Backstage <Backstage /> TaskLaunchBackstageItem renders correctly 1`] =
 <BackstageItem
   icon={
     <Icon
-      iconClass="icon-placeholder"
-      iconElement={undefined}
+      iconSpec="icon-placeholder"
     />
   }
   key="ExampleWorkflow:Task1"
@@ -79,18 +76,18 @@ exports[`Backstage <Backstage /> with child items 1`] = `
         <CommandLaunchBackstageItem
           commandId="my-command-id"
           execute={[Function]}
-          iconClass="icon-placeholder"
+          iconSpec="icon-placeholder"
           labelKey="UiFramework:tests.label"
         />,
         <SeparatorBackstageItem />,
         <FrontstageLaunchBackstageItem
           frontstageId="Test1"
-          iconClass="icon-placeholder"
+          iconSpec="icon-placeholder"
           labelKey="UiFramework:tests.label"
         />,
         <SeparatorBackstageItem />,
         <TaskLaunchBackstageItem
-          iconClass="icon-placeholder"
+          iconSpec="icon-placeholder"
           labelKey="UiFramework:tests.label"
           taskId="Task1"
           workflowId="ExampleWorkflow"

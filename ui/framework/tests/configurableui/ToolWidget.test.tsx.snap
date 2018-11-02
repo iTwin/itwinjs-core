@@ -8,24 +8,24 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       items={
         <UNDEFINED>
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool1"
             toolId="tool1"
           />
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2"
           />
           <GroupButton
             direction={3}
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             items={
               Array [
                 CommandItemDef {
                   "commandId": "tool1",
                   "featureId": "",
-                  "iconClass": "icon-placeholder",
+                  "iconSpec": "icon-placeholder",
                   "isActive": false,
                   "isEnabled": true,
                   "isPressed": false,
@@ -40,7 +40,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   },
                   "commandId": "tool2",
                   "featureId": "",
-                  "iconClass": "icon-placeholder",
+                  "iconSpec": "icon-placeholder",
                   "isActive": false,
                   "isEnabled": true,
                   "isPressed": false,
@@ -67,7 +67,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
         },
         "commandId": "SampleApp.BackstageToggle",
         "featureId": "",
-        "iconClass": "icon-home",
+        "iconSpec": "icon-home",
         "isActive": false,
         "isEnabled": true,
         "isPressed": false,
@@ -79,8 +79,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       "classId": undefined,
       "featureId": "",
       "horizontalDirection": 3,
-      "iconClass": "",
-      "id": "Widget-20",
+      "id": "toolWidget",
       "isEnabled": true,
       "isFloatingStateSupported": false,
       "isFloatingStateWindowResizable": true,
@@ -107,23 +106,23 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       items={
         <UNDEFINED>
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool1"
             toolId="tool1"
           />
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2"
           />
           <GroupButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             items={
               Array [
                 CommandItemDef {
                   "commandId": "tool1",
                   "featureId": "",
-                  "iconClass": "icon-placeholder",
+                  "iconSpec": "icon-placeholder",
                   "isActive": false,
                   "isEnabled": true,
                   "isPressed": false,
@@ -138,7 +137,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   },
                   "commandId": "tool2",
                   "featureId": "",
-                  "iconClass": "icon-placeholder",
+                  "iconSpec": "icon-placeholder",
                   "isActive": false,
                   "isEnabled": true,
                   "isPressed": false,

@@ -10,7 +10,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           CommandItemDef {
             "commandId": "tool1",
             "featureId": "",
-            "iconClass": "icon-placeholder",
+            "iconSpec": "icon-placeholder",
             "isActive": false,
             "isEnabled": true,
             "isPressed": false,
@@ -25,7 +25,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
             },
             "commandId": "tool2",
             "featureId": "",
-            "iconClass": "icon-placeholder",
+            "iconSpec": "icon-placeholder",
             "isActive": false,
             "isEnabled": true,
             "isPressed": false,
@@ -40,7 +40,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "tool1" => CommandItemDef {
           "commandId": "tool1",
           "featureId": "",
-          "iconClass": "icon-placeholder",
+          "iconSpec": "icon-placeholder",
           "isActive": false,
           "isEnabled": true,
           "isPressed": false,
@@ -55,7 +55,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           },
           "commandId": "tool2",
           "featureId": "",
-          "iconClass": "icon-placeholder",
+          "iconSpec": "icon-placeholder",
           "isActive": false,
           "isEnabled": true,
           "isPressed": false,
@@ -68,7 +68,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "direction": 3,
       "featureId": "",
       "groupId": "",
-      "iconClass": "icon-placeholder",
+      "iconSpec": "icon-placeholder",
       "isActive": false,
       "isEnabled": true,
       "isPressed": false,
@@ -77,7 +77,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         CommandItemDef {
           "commandId": "tool1",
           "featureId": "",
-          "iconClass": "icon-placeholder",
+          "iconSpec": "icon-placeholder",
           "isActive": false,
           "isEnabled": true,
           "isPressed": false,
@@ -92,7 +92,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           },
           "commandId": "tool2",
           "featureId": "",
-          "iconClass": "icon-placeholder",
+          "iconSpec": "icon-placeholder",
           "isActive": false,
           "isEnabled": true,
           "isPressed": false,
@@ -108,13 +108,13 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "tooltip": "",
     }
   }
-  iconClass="icon-placeholder"
+  iconSpec="icon-placeholder"
   items={
     Array [
       CommandItemDef {
         "commandId": "tool1",
         "featureId": "",
-        "iconClass": "icon-placeholder",
+        "iconSpec": "icon-placeholder",
         "isActive": false,
         "isEnabled": true,
         "isPressed": false,
@@ -129,7 +129,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         },
         "commandId": "tool2",
         "featureId": "",
-        "iconClass": "icon-placeholder",
+        "iconSpec": "icon-placeholder",
         "isActive": false,
         "isEnabled": true,
         "isPressed": false,

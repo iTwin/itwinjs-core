@@ -195,7 +195,7 @@ export class FrontstageLaunchBackstageItem extends React.Component<FrontstageLau
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconClass={this._backstageItem.iconClass} iconElement={this._backstageItem.iconElement} />;
+    const icon = <Icon iconSpec={this._backstageItem.iconSpec} />;
     return (
       <NZ_BackstageItem key={this._backstageItem.id}
         isActive={this._backstageItem.isActive}
@@ -219,7 +219,7 @@ export class CommandLaunchBackstageItem extends React.Component<CommandLaunchBac
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconClass={this._backstageItem.iconClass} iconElement={this._backstageItem.iconElement} />;
+    const icon = <Icon iconSpec={this._backstageItem.iconSpec} />;
     return (
       <NZ_BackstageItem key={this._backstageItem.id} label={this._backstageItem.label} icon={icon} onClick={this._backstageItem.execute} />
     );
@@ -238,7 +238,7 @@ export class TaskLaunchBackstageItem extends React.Component<TaskLaunchBackstage
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconClass={this._backstageItem.iconClass} iconElement={this._backstageItem.iconElement} />;
+    const icon = <Icon iconSpec={this._backstageItem.iconSpec} />;
     return (
       <NZ_BackstageItem key={this._backstageItem.id} label={this._backstageItem.label} icon={icon} onClick={this._backstageItem.execute} />
     );

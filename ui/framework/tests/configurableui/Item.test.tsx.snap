@@ -5,8 +5,7 @@ exports[`ActionItemButton <ActionItemButton /> renders correctly 1`] = `
   className=""
   icon={
     <Icon
-      iconClass="icon-placeholder"
-      iconElement={undefined}
+      iconSpec="icon-placeholder"
     />
   }
   isActive={false}
@@ -21,8 +20,7 @@ exports[`ToolButton <ToolButton /> renders correctly 1`] = `
   className=""
   icon={
     <Icon
-      iconClass="icon-placeholder"
-      iconElement={undefined}
+      iconSpec="icon-placeholder"
     />
   }
   isActive={false}

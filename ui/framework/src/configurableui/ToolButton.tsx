@@ -77,7 +77,7 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconClass={this.props.iconClass} iconElement={this.props.iconElement} />;
+    const icon = <Icon iconSpec={this.props.iconSpec} />;
     let myClassNames = "";
     if (!this.state.isVisible)
       myClassNames += "item-hidden";

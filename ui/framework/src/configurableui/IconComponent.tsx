@@ -9,27 +9,22 @@ import * as React from "react";
 /** Properties for the [[Icon]] React component */
 export interface IconProps {
   /** CSS class name for icon */
-  iconClass?: string;
-  /** React element for icon */
-  iconElement?: React.ReactNode;
+  iconSpec?: string | React.ReactNode;
 }
 
 /** Icon React component */
 export class Icon extends React.Component<IconProps> {
   public render(): React.ReactNode {
-    if (this.props.iconClass) {
-      const className = "icon " + this.props.iconClass;
-      return (
-        <i className={className} />
-      );
-    } else if (this.props.iconElement) {
-      return (
-        <i className="icon item-svg-icon">
-          {this.props.iconElement}
-        </i>
-      );
-    }
+    if (!this.props.iconSpec) return null;
 
-    return null;
+    if (typeof this.props.iconSpec === "string") {
+      const className = "icon " + this.props.iconSpec;
+      return (<i className={className} />);
+    }
+    return (
+      <i className="icon item-svg-icon">
+        {this.props.iconSpec}
+      </i>
+    );
   }
 }

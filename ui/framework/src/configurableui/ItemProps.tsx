@@ -14,12 +14,13 @@ import { BaseItemState } from "./ItemDefBase";
 // ItemProps and sub-interfaces
 // -----------------------------------------------------------------------------
 
+/** Definition that allows component to register to monitor SyncUi events. */
 export interface SyncUiProps {
   stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
   stateSyncIds?: string[];
 }
 
-/** Base class for Item definitions.
+/** Definition that specify properties shared between many ConfigurableUi components.
  */
 export interface ItemProps extends IconProps, SyncUiProps {
   isVisible?: boolean;        // Default - true

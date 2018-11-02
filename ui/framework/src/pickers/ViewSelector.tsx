@@ -212,7 +212,7 @@ export class ViewSelector extends React.Component<any, any> {
         title={this.state.title}
         setEnabled={setEnabled}
         items={this.state.items}
-        iconClass={"icon-saved-view"}
+        iconSpec={"icon-saved-view"}
         onExpanded={onExpanded}
       />
     );

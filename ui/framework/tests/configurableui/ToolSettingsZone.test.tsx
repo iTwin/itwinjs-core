@@ -67,7 +67,7 @@ describe("ToolSettingsZone", () => {
           {
             defaultState: WidgetState.Open,
             isFreeform: false,
-            iconClass: "icon-home",
+            iconSpec: "icon-home",
             labelKey: "SampleApp:Test.my-label",
             isToolSettings: true,
           },

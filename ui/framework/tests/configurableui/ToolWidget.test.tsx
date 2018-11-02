@@ -31,18 +31,18 @@ describe("ToolWidget", () => {
   const backstageToggleCommand =
     new CommandItemDef({
       commandId: "SampleApp.BackstageToggle",
-      iconClass: "icon-home",
+      iconSpec: "icon-home",
       execute: testCallback,
     });
 
   const tool1 = new CommandItemDef({
     commandId: "tool1",
-    iconClass: "icon-placeholder",
+    iconSpec: "icon-placeholder",
   });
 
   const tool2 = new CommandItemDef({
     commandId: "tool2",
-    iconClass: "icon-placeholder",
+    iconSpec: "icon-placeholder",
     applicationData: { key: "value" },
   });
 
@@ -50,7 +50,7 @@ describe("ToolWidget", () => {
     classId: "ToolWidget",
     defaultState: WidgetState.Open,
     isFreeform: true,
-    iconClass: "icon-home",
+    iconSpec: "icon-home",
     appButton: backstageToggleCommand,
     horizontalDirection: Direction.Top,
     verticalDirection: Direction.Left,
@@ -77,10 +77,10 @@ describe("ToolWidget", () => {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-          <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+          <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+          <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
           <GroupButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             items={[tool1, tool2]}
             direction={Direction.Bottom}
             itemsInColumn={7}
@@ -94,10 +94,10 @@ describe("ToolWidget", () => {
       expandsTo={Direction.Right}
       items={
         <>
-          <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-          <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+          <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+          <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
           <GroupButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             items={[tool1, tool2]}
           />
         </>
@@ -117,7 +117,7 @@ describe("ToolWidget", () => {
 
   it("ToolWidget should render correctly", () => {
     shallow(
-      <ToolWidget
+      <ToolWidget id="toolWidget"
         appButton={backstageToggleCommand}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}

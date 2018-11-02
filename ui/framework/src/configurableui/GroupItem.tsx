@@ -109,8 +109,7 @@ interface HistoryItem {
 }
 
 interface ToolGroupItem {
-  iconClass?: string;
-  iconElement?: React.ReactNode;
+  iconSpec?: string | React.ReactNode;
   label: string;
   trayId?: string;
 }
@@ -211,7 +210,7 @@ class GroupItem extends React.Component<Props, State> {
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconClass={this.props.groupItemDef.iconClass} iconElement={this.props.groupItemDef.iconElement} />;
+    const icon = <Icon iconSpec={this.props.groupItemDef.iconSpec} />;
 
     return (
       <ExpandableItem
@@ -294,7 +293,7 @@ class GroupItem extends React.Component<Props, State> {
             const tray = this.state.trays.get(entry.item.trayKey)!;
             const column = tray.columns.get(entry.item.columnIndex)!;
             const item = column.items.get(entry.item.itemKey)!;
-            const icon = <Icon iconClass={item.iconClass} iconElement={item.iconElement} />;
+            const icon = <Icon iconSpec={item.iconSpec} />;
 
             return (
               <HistoryIcon
@@ -323,7 +322,7 @@ class GroupItem extends React.Component<Props, State> {
           <GroupColumn key={columnIndex}>
             {Array.from(column.items.keys()).map((itemKey) => {
               const item = column.items.get(itemKey)!;
-              const icon = <Icon iconClass={item.iconClass} iconElement={item.iconElement} />;
+              const icon = <Icon iconSpec={item.iconSpec} />;
 
               const trayId = item.trayId;
               if (trayId)

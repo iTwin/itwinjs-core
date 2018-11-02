@@ -104,7 +104,7 @@ describe("Frontstage", () => {
             bottomCenter={
               <Zone defaultState={ZoneState.Open}
                 widgets={[
-                  <Widget id="statusBar" defaultState={WidgetState.Open} isStatusBar={true} iconClass="icon-placeholder" labelKey="App:widgets.StatusBar"
+                  <Widget id="statusBar" defaultState={WidgetState.Open} isStatusBar={true} iconSpec="icon-placeholder" labelKey="App:widgets.StatusBar"
                     control={TestWidget} applicationData={{ key: "value" }} />,
                 ]}
               />

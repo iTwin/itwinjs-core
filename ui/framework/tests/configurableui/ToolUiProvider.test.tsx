@@ -80,7 +80,7 @@ describe("ToolUiProvider", () => {
             classId: "ToolWidget",
             defaultState: WidgetState.Open,
             isFreeform: true,
-            iconClass: "icon-home",
+            iconSpec: "icon-home",
             labelKey: "SampleApp:Test.my-label",
             appButton: undefined,
           },
