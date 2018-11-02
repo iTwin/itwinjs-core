@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelHubClientError, ArgumentCheck } from "./Errors";
 import { AccessToken } from "../Token";
 import { Logger, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
@@ -53,7 +53,7 @@ export class ChangeSet extends WsgInstance {
   public parentId?: string;
 
   /** Id of the file that this ChangeSet belongs to. It has to be set during the push. See [IModelDb.getGuid]($backend). */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.SeedFileId", new GuidSerializer())
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.SeedFileId")
   public seedFileId?: GuidString;
 
   /** Id of the [[Briefcase]] that pushed this ChangeSet. It has to be set during the push. */

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed PropertySerializer used by ECJsonTypeMap.",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Krischan.Eberle@bentley.com"
+}
