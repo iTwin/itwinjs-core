@@ -29,15 +29,11 @@ export class BriefcaseId {
   public static get Illegal(): number { return 0xffffffff; }
   public static get Master(): number { return 0; }
   public static get Standalone(): number { return 1; }
-  constructor(value?: number) {
-    if (value === undefined)
-      this._value = BriefcaseId.Illegal;
-    else this._value = value;
-  }
+  constructor(value?: number) { this._value = value === undefined ? BriefcaseId.Illegal : value; }
   public get isValid(): boolean { return this._value !== BriefcaseId.Illegal; }
   public get isMaster(): boolean { return this._value !== BriefcaseId.Master; }
   public get isStandaloneId(): boolean { return this._value !== BriefcaseId.Standalone; }
-  public getValue(): number { return this._value; }
+  public get value(): number { return this._value; }
   public toString(): string { return this._value.toString(); }
 }
 
@@ -55,18 +51,18 @@ export class ChangeSetToken {
 /** Entry in the briefcase cache */
 export class BriefcaseEntry {
 
-  /** Id of the iModel - set to the DbGuid field in the BIM, it corresponds to the Guid used to track the iModel in iModelHub */
+  /** Id of the iModel - set to the DbGuid field in the briefcase, it corresponds to the Guid used to track the iModel in iModelHub */
   public iModelId!: GuidString;
 
   /** Absolute path where the briefcase is cached/stored */
   public pathname!: string;
 
-  /** Id of the last change set that was applied to the BIM.
+  /** Id of the last change set that was applied to the briefcase.
    * Set to an empty string if it is the initial version, or a standalone briefcase
    */
   public changeSetId!: string;
 
-  /** Index of the last change set that was applied to the BI.
+  /** Index of the last change set that was applied to the briefcase.
    * Only specified if the briefcase was acquired from the Hub.
    * Set to 0 if it is the initial version.
    */
@@ -87,13 +83,13 @@ export class BriefcaseEntry {
   /** Params used to open the briefcase */
   public openParams?: OpenParams;
 
-  /** Id of the last change set that was applied to the BIM after it was reversed.
+  /** Id of the last change set that was applied to the briefcase after it was reversed.
    * Undefined if no change sets have been reversed.
    * Set to empty string if reversed to the first version.
    */
   public reversedChangeSetId?: string;
 
-  /** Index of the last change set that was applied to the BIM after it was reversed.
+  /** Index of the last change set that was applied to the briefcase after it was reversed.
    * Undefined if no change sets have been reversed
    * Set to 0 if the briefcase has been reversed to the first version
    */
@@ -176,9 +172,7 @@ class BriefcaseCache {
   }
 
   /** Delete a briefcase from the cache */
-  public deleteBriefcase(briefcase: BriefcaseEntry) {
-    this.deleteBriefcaseByKey(briefcase.getKey());
-  }
+  public deleteBriefcase(briefcase: BriefcaseEntry) { this.deleteBriefcaseByKey(briefcase.getKey()); }
 
   /** Delete a briefcase from the cache by key */
   public deleteBriefcaseByKey(key: string) {
@@ -225,9 +219,7 @@ export class BriefcaseManager {
     return this._imodelClient;
   }
 
-  public static set imodelClient(cli: IModelClient) {
-    this._imodelClient = cli;
-  }
+  public static set imodelClient(cli: IModelClient) { this._imodelClient = cli; }
 
   private static _connectClient?: ConnectClient;
 
