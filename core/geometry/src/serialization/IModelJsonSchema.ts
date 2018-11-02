@@ -1380,9 +1380,18 @@ export namespace IModelJson {
       return out;
     }
 
-    private handlePolyfaceAuxData(auxData: PolyfaceAuxData): any {
+    private handlePolyfaceAuxData(auxData: PolyfaceAuxData, pf: IndexedPolyface): any {
       const contents: { [k: string]: any } = {};
+      const indices = [];
+      const visitor = pf.createVisitor(0);
+      if (!visitor.auxData) return;
 
+      while (visitor.moveToNextFacet()) {
+        for (let i = 0; i < visitor.indexCount; i++) {
+          indices.push(visitor.auxData.indices[i] + 1);
+        }
+        indices.push(0);  // facet terminator.
+      }
       contents.indices = auxData.indices.slice(0);
       contents.channels = [];
       for (const inChannel of auxData.channels) {
@@ -1461,7 +1470,7 @@ export namespace IModelJson {
       const contents: { [k: string]: any } = {};
 
       if (pf.data.auxData)
-        contents.auxData = this.handlePolyfaceAuxData(pf.data.auxData);
+        contents.auxData = this.handlePolyfaceAuxData(pf.data.auxData, pf);
 
       if (pf.data.color) contents.color = colors;
       if (pf.data.colorIndex) contents.colorIndex = colorIndex;
