@@ -259,6 +259,17 @@ export class AuxChannelData {
     this.input = input;
     this.values = values;
   }
+  public copyValues(other: AuxChannelData, thisIndex: number, otherIndex: number, blockSize: number) {
+    for (let i = 0; i < blockSize; i++)
+      this.values[thisIndex * blockSize + i] = other.values[otherIndex * blockSize + i];
+  }
+  public clone() {
+    return new AuxChannelData(this.input, this.values.slice());
+  }
+  public isAlmostEqual(other: AuxChannelData, tol?: number) {
+    const tolerance = tol ? tol : 1.0E-8;
+    return Math.abs(this.input - other.input) < tolerance && NumberArray.isAlmostEqual(this.values, other.values, tolerance);
+  }
 }
 /**  Represents a single [[PolyfaceAuxData]] channel. A channel  may represent a single scalar value such as stress or temperature or may represent displacements from vertex position or replacements for normals. */
 export class AuxChannel {
@@ -276,8 +287,30 @@ export class AuxChannel {
     this.name = name;
     this.inputName = inputName;
   }
+  public clone() {
+    const clonedData = [];
+    for (const data of this.data) clonedData.push(data.clone());
+    return new AuxChannel(clonedData, this.dataType, this.name, this.inputName);
+  }
+  public isAlmostEqual(other: AuxChannel, tol?: number) {
+    if (this.dataType !== other.dataType ||
+      this.name !== other.name ||
+      this.inputName !== other.inputName ||
+      this.data.length !== other.data.length)
+      return false;
+
+    for (let i = 0; i < this.data.length; i++)
+      if (!this.data[i].isAlmostEqual(other.data[i], tol))
+        return false;
+
+    return true;
+  }
   /** return true if the data for this channel is of scalar type (single data entry per value) */
   get isScalar(): boolean { return this.dataType === AuxChannelDataType.Distance || this.dataType === AuxChannelDataType.Scalar; }
+  /** return the number of data values per entry (1 for scalar, 3 for point or vector */
+  get entriesPerValue(): number { return this.isScalar ? 1 : 3; }
+  /** return value count */
+  get valueCount(): number { return 0 === this.data.length ? 0 : this.data[0].values.length / this.entriesPerValue; }
   /** return the range of the scalar data. (undefined if not scalar) */
   get scalarRange(): Range1d | undefined {
     if (!this.isScalar) return undefined;
@@ -305,6 +338,35 @@ export class PolyfaceAuxData {
     this.channels = channels;
     this.indices = indices;
   }
+  public clone() {
+    const clonedChannels = [];
+    for (const channel of this.channels) clonedChannels.push(channel.clone());
+    return new PolyfaceAuxData(clonedChannels, this.indices.slice());
+  }
+  public isAlmostEqual(other: PolyfaceAuxData, tol?: number) {
+    if (!NumberArray.isExactEqual(this.indices, other.indices) || this.channels.length !== other.channels.length)
+      return false;
+
+    for (let i = 0; i < this.channels.length; i++)
+      if (!this.channels[i].isAlmostEqual(other.channels[i], tol))
+        return false;
+
+    return true;
+  }
+  public createForVisitor() {
+    const visitorChannels: AuxChannel[] = [];
+
+    for (const parentChannel of this.channels) {
+      const visitorChannelData: AuxChannelData[] = [];
+      for (const parentChannelData of parentChannel.data) {
+        visitorChannelData.push(new AuxChannelData(parentChannelData.input, []));
+      }
+      visitorChannels.push(new AuxChannel(visitorChannelData, parentChannel.dataType, parentChannel.name, parentChannel.inputName));
+    }
+
+    return new PolyfaceAuxData(visitorChannels, []);
+  }
+
 }
 /**
  * PolyfaceData carries data arrays for point, normal, param, color and their indices.
@@ -369,6 +431,8 @@ export class PolyfaceData {
       result.paramIndex = this.paramIndex.slice();
     if (this.colorIndex)
       result.colorIndex = this.colorIndex.slice();
+    if (this.auxData)
+      result.auxData = this.auxData.clone();
     return result;
   }
 
@@ -480,6 +544,27 @@ export class PolyfaceData {
       for (let i = 0; i < numWrap; i++)
         this.colorIndex[numEdge + i] = this.colorIndex[i];
     }
+    if (this.auxData && other.auxData && this.auxData.channels.length === other.auxData.channels.length) {
+      for (let iChannel = 0; iChannel < this.auxData.channels.length; iChannel++) {
+        const thisChannel = this.auxData.channels[iChannel];
+        const otherChannel = other.auxData.channels[iChannel];
+        const blockSize = thisChannel.entriesPerValue;
+        if (thisChannel.data.length === otherChannel.data.length) {
+          for (let iData = 0; iData < thisChannel.data.length; iData++) {
+            const thisData = thisChannel.data[iData];
+            const otherData = otherChannel.data[iData];
+            for (let i = 0; i < numEdge; i++)
+              thisData.copyValues(otherData, i, index0 + i, blockSize);
+            for (let i = 0; i < numWrap; i++)
+              thisData.copyValues(thisData, numEdge + i, i, blockSize);
+          }
+        }
+      }
+      for (let i = 0; i < numEdge; i++)
+        this.auxData.indices[i] = other.auxData.indices[index0 + i];
+      for (let i = 0; i < numWrap; i++)
+        this.auxData.indices[numEdge + i] = this.auxData.indices[i];
+    }
   }
   private static trimArray(data: any[] | undefined, length: number) { if (data && length < data.length) data.length = length; }
 
@@ -489,6 +574,13 @@ export class PolyfaceData {
     PolyfaceData.trimArray(this.normalIndex, length);
     PolyfaceData.trimArray(this.colorIndex, length);
     PolyfaceData.trimArray(this.edgeVisible, length);
+    if (this.auxData) {
+      PolyfaceData.trimArray(this.auxData.indices, length);
+      for (const channel of this.auxData.channels) {
+        for (const data of channel.data)
+          PolyfaceData.trimArray(data.values, channel.entriesPerValue * length);
+      }
+    }
   }
 
   public resizeAllDataArrays(length: number): void {
@@ -502,6 +594,13 @@ export class PolyfaceData {
         while (this.param.length < length) this.param.push(Point2d.create());
       if (this.color)
         while (this.color.length < length) this.color.push(0);
+      if (this.auxData) {
+        for (const channel of this.auxData.channels) {
+          for (const channelData of channel.data) {
+            while (channelData.values.length < length * channel.entriesPerValue) channelData.values.push(0);
+          }
+        }
+      }
     } else if (length < this.point.length) {
       this.point.resize(length);
       this.edgeVisible.length = length;
@@ -509,6 +608,13 @@ export class PolyfaceData {
       if (this.normal) this.normal.length = length;
       if (this.param) this.param.length = length;
       if (this.color) this.color.length = length;
+      if (this.auxData) {
+        for (const channel of this.auxData.channels) {
+          for (const channelData of channel.data) {
+            channelData.values.length = length * channel.entriesPerValue;
+          }
+        }
+      }
     }
   }
   public range(result?: Range3d, transform?: Transform): Range3d {
@@ -992,6 +1098,7 @@ export interface PolyfaceVisitor extends PolyfaceData {
   clientParamIndex(i: number): number;
   clientNormalIndex(i: number): number;
   clientColorIndex(i: number): number;
+  clientAuxIndex(i: number): number;
 }
 
 export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisitor {
@@ -1005,10 +1112,14 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
     super(facets.data.normalCount > 0, facets.data.paramCount > 0, facets.data.colorCount > 0);
     this._polyface = facets;
     this._numWrap = numWrap;
+    if (facets.data.auxData)
+      this.auxData = facets.data.auxData.createForVisitor();
+
     this.reset();
     this._numEdges = 0;
     this._nextFacetIndex = 0;
     this._currentFacetIndex = -1;
+
   }
 
   public get numEdgesThisFacet(): number { return this._numEdges; }
@@ -1075,4 +1186,5 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
   public clientParamIndex(i: number): number { return this.paramIndex ? this.paramIndex[i] : -1; }
   public clientNormalIndex(i: number): number { return this.normalIndex ? this.normalIndex[i] : -1; }
   public clientColorIndex(i: number): number { return this.colorIndex ? this.colorIndex[i] : -1; }
+  public clientAuxIndex(i: number): number { return this.auxData ? this.auxData.indices[i] : -1; }
 }
