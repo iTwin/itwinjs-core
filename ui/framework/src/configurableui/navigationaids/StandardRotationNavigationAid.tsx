@@ -40,13 +40,13 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
   }
 }
 
-/** Rotation data used in the [[StandardRotationNavigationAid]] component */
+/** @hidden */
 export interface RotationData {
   label: string;
   iconClass: string;
 }
 
-/** State for the [[StandardRotationNavigationAid]] component */
+/** @hidden */
 export interface StandardRotationNavigationAidState {
   list: RotationData[];
   selected: StandardViewId;
@@ -56,6 +56,7 @@ export interface StandardRotationNavigationAidState {
 /** A 3D orientation Navigation Aid.
  */
 export class StandardRotationNavigationAid extends React.Component<{}, StandardRotationNavigationAidState> {
+  /** @hidden */
   public readonly state: Readonly<StandardRotationNavigationAidState>;
 
   constructor(props: any) {

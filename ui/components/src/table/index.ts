@@ -5,4 +5,5 @@
 export * from "./TableDataProvider";
 export * from "./SimpleTableDataProvider";
 export { Grid, GridProps } from "./component/Grid";
-export { Table, TableProps, TableDropTargetProps, TableSelectionTarget } from "./component/Table";
+export { TableDragDropType, TableDropTargetProps } from "./hocs/withDragDrop";
+export { Table, TableProps, TableSelectionTarget } from "./component/Table";

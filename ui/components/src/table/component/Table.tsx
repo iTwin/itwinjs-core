@@ -11,9 +11,6 @@ import classnames from "classnames";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { SortDirection } from "@bentley/ui-core";
 import { TableDataProvider, ColumnDescription, RowItem, CellItem } from "../TableDataProvider";
-import { withDropTarget, WithDropTargetProps, DragSourceArguments, DropTargetArguments, DragSourceProps, DropTargetProps } from "../../dragdrop";
-import { DragDropRow } from "./DragDropRowRenderer";
-import { DragDropHeaderCell } from "./DragDropHeaderCell";
 import { LocalUiSettings, UiSettings, UiSettingsStatus } from "@bentley/ui-core";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import {
@@ -26,6 +23,7 @@ import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContai
 import { PropertyValueRendererManager, IPropertyValueRendererContext, PropertyContainerType } from "../../properties/ValueRendererManager";
 import { PropertyValueFormat, PrimitiveValue } from "../../properties";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
+import { DragDropHeaderCell } from "./DragDropHeaderCell";
 
 /**
  * Specifies table selection target.
@@ -63,14 +61,12 @@ export interface TableProps {
   tableSelectionTarget?: TableSelectionTarget;
   /** Specifies the selection mode. */
   selectionMode?: SelectionMode;
-  /** Drag properties for Drag-and-Drop */
-  dragProps?: DragSourceProps;
-  /** Drop properties for Drag-and-Drop */
-  dropProps?: TableDropTargetProps;
   /** Callback for when properties are being edited */
   onPropertyEditing?: (args: CellEditorState) => void;
   /** Callback for when properties are updated */
   onPropertyUpdated?: (args: PropertyUpdatedArgs) => Promise<boolean>;
+  /** @hidden */
+  renderRow?: (item: RowItem, props: TableRowProps) => React.ReactNode;
   /** Indicates whether the Table columns are reorderable */
   reorderableColumns?: boolean;
   /** Optional parameter for persistent UI settings. Used for row reordering and row collapsing persistency. */
@@ -79,12 +75,8 @@ export interface TableProps {
   settingsIdentifier?: string;
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
-}
-
-/** Properties for the Table's DropTarget. */
-export interface TableDropTargetProps extends DropTargetProps {
-  /** Used for table components that allow dropping inside. Ie. [[BreadcrumbDetails]]. */
-  canDropOn?: boolean;
+  /** @hidden */
+  onRender?: () => void;
 }
 
 /** Properties for a Table cell */
@@ -261,6 +253,9 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   public componentDidUpdate(previousProps: TableProps) {
+    /* istanbul ignore next */
+    if (this.props.onRender)
+      this.props.onRender();
     if (this.props.dataProvider !== previousProps.dataProvider)
       this.update();
     else if (this.props.isCellSelected !== previousProps.isCellSelected
@@ -272,6 +267,9 @@ export class Table extends React.Component<TableProps, TableState> {
 
   public componentDidMount() {
     this._isMounted = true;
+    /* istanbul ignore next */
+    if (this.props.onRender)
+      this.props.onRender();
     this.update();
   }
 
@@ -776,8 +774,9 @@ export class Table extends React.Component<TableProps, TableState> {
     return cells;
   }
 
-  private _createRowRenderer = (dropProps?: TableDropTargetProps, dragProps?: DragSourceProps) => {
-    return (props: { row: RowProps }) => {
+  private _createRowRenderer = () => {
+    return (props: { row: RowProps, [k: string]: any }) => {
+      const renderRow = this.props.renderRow ? this.props.renderRow : this.renderRow;
       const { row: rowProps, ...reactDataGridRowProps } = props;
       const cells = this.createRowCells(rowProps);
       if (this._tableSelectionTarget === TableSelectionTarget.Row) {
@@ -793,8 +792,7 @@ export class Table extends React.Component<TableProps, TableState> {
             this._rowSelectionHandler.updateDragAction(props.row.index);
         };
         const isSelected = this._selectedRowIndices.has(props.row.index);
-        const row = dropProps || dragProps ? this._createDragAndDropRow(dropProps, dragProps, { ...reactDataGridRowProps, row: cells, isSelected }) :
-          <ReactDataGrid.Row {...reactDataGridRowProps} row={cells} isSelected={isSelected} />;
+        const row = renderRow(rowProps.item, { ...reactDataGridRowProps, cells, isSelected });
         return <div
           className={classnames("row", !isSelected && "is-hover-enabled")}
           onClickCapture={onClick}
@@ -803,17 +801,13 @@ export class Table extends React.Component<TableProps, TableState> {
           {row}
         </div>;
       }
-      return dropProps || dragProps ? this._createDragAndDropRow(dropProps, dragProps, { ...reactDataGridRowProps, row: cells }) :
-        <ReactDataGrid.Row {...reactDataGridRowProps} row={cells} />;
+      return renderRow(rowProps.item, { ...reactDataGridRowProps, cells });
     };
   }
 
-  private _createDragAndDropRow = (dropProps?: TableDropTargetProps, dragProps?: DragSourceProps, props?: any) => {
-    return <DragDropRow
-      dropProps={dropProps}
-      dragProps={dragProps}
-      {...props}
-    />;
+  // tslint:disable-next-line:naming-convention
+  private renderRow = (item: RowItem, props: TableRowProps): React.ReactNode => {
+    return <TableRow key={item.key} {...props} />;
   }
 
   private _onMouseUp = () => {
@@ -907,132 +901,27 @@ export class Table extends React.Component<TableProps, TableState> {
 
   public render() {
     const wrapperName = "react-data-grid-wrapper";
-    const { dragProps: drag, dropProps: drop } = this.props;
-    if ((drag && (drag.onDragSourceBegin || drag.onDragSourceEnd)) ||
-      (drop && (drop.onDropTargetOver || drop.onDropTargetDrop))) {
-      // tslint:disable-next-line:variable-name
-      const DragDropWrapper =
-        withDropTarget(class extends React.Component<React.HTMLAttributes<HTMLDivElement>> {
-          public render(): React.ReactNode {
-            const { isOver, canDrop, item, type, ...props } = this.props as WithDropTargetProps;
-            return (<div className={wrapperName} {...props} />);
-          }
-        });
+    const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
 
-      const dropProps: TableDropTargetProps = {};
-      if (this.props.dropProps) {
-        const { onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes, canDropOn } = this.props.dropProps;
-        dropProps.onDropTargetDrop = (args: DropTargetArguments): DropTargetArguments => {
-          args.dropLocation = this.props.dataProvider;
-          return onDropTargetDrop ? onDropTargetDrop(args) : args;
-        };
-        dropProps.onDropTargetOver = (args: DropTargetArguments) => {
-          args.dropLocation = this.props.dataProvider;
-          onDropTargetOver && onDropTargetOver(args);
-        };
-        dropProps.canDropTargetDrop = (args: DropTargetArguments) => {
-          args.dropLocation = this.props.dataProvider;
-          return canDropTargetDrop ? canDropTargetDrop(args) : true;
-        };
-        dropProps.objectTypes = objectTypes;
-        dropProps.canDropOn = canDropOn;
-      }
-      const dragProps: DragSourceProps = {};
-      if (this.props.dragProps) {
-        const { onDragSourceBegin, onDragSourceEnd, objectType } = this.props.dragProps;
-        dragProps.onDragSourceBegin = (args: DragSourceArguments) => {
-          args.parentObject = this.props.dataProvider;
-          if (args.dataObject !== undefined && args.row !== undefined && this.state.rows) {
-            const { row } = args;
-            if (row < this.state.rowsCount && this.state.rows[row]) {
-              const rowItem = this.state.rows[row];
-              if (rowItem !== undefined && rowItem.item !== undefined) {
-                args.dataObject = rowItem.item.extendedData;
-                args.dataObject.id = rowItem.item.key;
-                args.dataObject.parentId = this.props.dataProvider;
-              }
-            }
-          }
-          if (onDragSourceBegin) return onDragSourceBegin(args);
-          return args;
-        };
-        dragProps.onDragSourceEnd = (args: DragSourceArguments) => {
-          args.parentObject = this.props.dataProvider;
-          if (onDragSourceEnd) onDragSourceEnd(args);
-        };
-        dragProps.objectType = (data?: any) => {
-          if (objectType) {
-            if (typeof objectType === "function") {
-              if (data) {
-                const { row } = data;
-                if (row >= 0 && row < this.state.rows.length) {
-                  const rowItem = this.state.rows[row];
-                  if (rowItem !== undefined && rowItem.item !== undefined) {
-                    const d = rowItem.item.extendedData || {};
-                    d.id = rowItem.item.key;
-                    d.parentId = this.props.dataProvider;
-                    return objectType(d);
-                  }
-                }
-              }
-            } else {
-              return objectType;
-            }
-          }
-          return "";
-        };
-      }
-
-      const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer(dropProps, dragProps)} />;
-
-      return (
-        <DragDropWrapper
-          dropStyle={{
-            height: "100%",
-          }}
-          dropProps={dropProps}
-          onMouseDown={this._onMouseDown}
-        >
-          <ReactDataGrid
-            columns={this.state.columns}
-            rowGetter={this._rowGetter}
-            rowRenderer={rowRenderer}
-            {...(this.props.reorderableColumns ? {
-              draggableHeaderCell: DragDropHeaderCell,
-              onHeaderDrop: this._onHeaderDrop,
-            } as any : {})}
-            rowsCount={this.state.rowsCount}
-            enableCellSelect={true}
-            minHeight={500}
-            headerRowHeight={25}
-            rowHeight={25}
-            onGridSort={this._handleGridSort}
-          />
-        </DragDropWrapper>
-      );
-    } else {
-      const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
-
-      return (
-        <div className={wrapperName} onMouseDown={this._onMouseDown}>
-          <ReactDataGrid
-            columns={this.state.columns}
-            rowGetter={this._rowGetter}
-            rowRenderer={rowRenderer}
-            {...(this.props.reorderableColumns ? {
-              draggableHeaderCell: DragDropHeaderCell,
-              onHeaderDrop: this._onHeaderDrop,
-            } as any : {})}
-            rowsCount={this.state.rowsCount}
-            enableCellSelect={true}
-            minHeight={500}
-            headerRowHeight={25}
-            rowHeight={25}
-            onGridSort={this._handleGridSort}
-          />
-        </div>
-      );
-    }
+    return (
+      <div className={wrapperName} onMouseDown={this._onMouseDown}>
+        <ReactDataGrid
+          columns={this.state.columns}
+          rowGetter={this._rowGetter}
+          rowRenderer={rowRenderer}
+          rowsCount={this.state.rowsCount}
+          {...(this.props.reorderableColumns ? {
+            draggableHeaderCell: DragDropHeaderCell,
+            onHeaderDrop: this._onHeaderDrop,
+          } as any : {})}
+          enableCellSelect={true}
+          minHeight={500}
+          headerRowHeight={25}
+          rowHeight={25}
+          onGridSort={this._handleGridSort}
+        />
+      </div>
+    );
   }
 }
 
@@ -1048,5 +937,25 @@ export interface IconCellProps {
 export class IconCell extends React.Component<IconCellProps> {
   public render() {
     return <div className={`icon ${this.props.value}`} />;
+  }
+}
+
+/**
+ * Props for the [[TableRow]] component
+ */
+export interface TableRowProps {
+  cells: { [key: string]: React.ReactNode };
+  isSelected?: boolean;
+}
+
+/**
+ * Default component for rendering a row for the [[Table]]
+ */
+export class TableRow extends React.Component<TableRowProps> {
+  public render() {
+    const { cells, isSelected, ...props } = this.props;
+    return (
+      <ReactDataGrid.Row {...props} row={cells} isSelected={isSelected} />
+    );
   }
 }

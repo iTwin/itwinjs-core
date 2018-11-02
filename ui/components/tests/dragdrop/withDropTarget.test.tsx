@@ -7,11 +7,11 @@ import { withDropTarget } from "../../src/dragdrop";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import TestBackend from "react-dnd-test-backend";
-import { DragDropContext } from "react-dnd";
+import { DragDropContext, DndComponentClass } from "react-dnd";
 /**
  * Wraps a component into a DragDropContext that uses the TestBackend.
  */
-function wrapInTestContext(DecoratedComponent: React.ComponentType<any>) {// tslint:disable-line:variable-name
+function wrapInTestContext(DecoratedComponent: DndComponentClass<any>) {// tslint:disable-line:variable-name
   class TestContextContainer extends React.Component {
     public render() {
       return <DecoratedComponent {...this.props} />;
@@ -38,7 +38,7 @@ describe("withDropTarget", () => {
   });
   describe("Drop functionality", () => {
     const ContextTestDropTarget = wrapInTestContext(TestDropTarget) as any; // tslint:disable-line:variable-name
-    const wrapper = mount(<ContextTestDropTarget dropProps={{objectTypes: ["test"]}} />);
+    const wrapper = mount(<ContextTestDropTarget dropProps={{ objectTypes: ["test"] }} />);
     const dropcomponent = wrapper.find(TestDropTarget);
     const droptestcomponent = dropcomponent.find(TestComponent) as any;
     it("initializes starting variables correctly", () => {

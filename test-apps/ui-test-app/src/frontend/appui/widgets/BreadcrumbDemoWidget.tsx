@@ -12,12 +12,18 @@ import {
   DragDropLayerManager,
 } from "@bentley/ui-framework";
 import {
-  Breadcrumb, BreadcrumbDetails, BreadcrumbPath,
+  Breadcrumb, BreadcrumbProps, BreadcrumbMode, BreadcrumbDetailsProps, BreadcrumbDetails, BreadcrumbPath,
 } from "@bentley/ui-components";
+import withBreadcrumbDragDrop from "@bentley/ui-components/lib/breadcrumb/hoc/withDragDrop";
+import withBreadcrumbDetailsDragDrop from "@bentley/ui-components/lib/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { demoMutableTreeDataProvider, treeDropTargetDropCallback, treeDragSourceEndCallback, treeCanDropTargetDropCallback } from "./demoTreeDataProvider";
-import { ChildDragLayer } from "./ChildDragLayer";
-import { RootDragLayer } from "./ParentDragLayer";
+import { demoMutableTreeDataProvider, treeDragProps, treeDropProps, TreeDragTypes, DemoTreeDragDropType } from "./demodataproviders/demoTreeDataProvider";
+import { TableDragTypes } from "./demodataproviders/demoTableDataProvider";
+import { ChildDragLayer } from "./draglayers/ChildDragLayer";
+import { ParentDragLayer } from "./draglayers/ParentDragLayer";
+
+const DragDropBreadcrumb = withBreadcrumbDragDrop<BreadcrumbProps, DemoTreeDragDropType>(Breadcrumb); // tslint:disable-line:variable-name
+const DragDropBreadcrumbDetails = withBreadcrumbDetailsDragDrop<BreadcrumbDetailsProps, DemoTreeDragDropType>(BreadcrumbDetails); // tslint:disable-line:variable-name
 
 export class BreadcrumbDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -42,43 +48,42 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
   public render() {
     const path = new BreadcrumbPath(demoMutableTreeDataProvider);
 
-    const objectType = (data: any) => {
-      if (data !== undefined && "type" in data && data.type)
-        return data.type;
-      return "";
-    };
+    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Parent, ParentDragLayer);
+    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Child, ChildDragLayer);
 
-    const objectTypes = ["root", "child", ...(this.state.checked ? ["row"] : [])];
+    let objectTypes: Array<string | symbol> = [];
+    if (treeDropProps.objectTypes) {
+      if (typeof treeDropProps.objectTypes !== "function")
+        objectTypes = treeDropProps.objectTypes;
+      else
+        objectTypes = treeDropProps.objectTypes();
+    }
+    if (this.state.checked)
+      objectTypes.push(TableDragTypes.Row);
 
-    DragDropLayerManager.registerTypeLayer("root", RootDragLayer);
-    DragDropLayerManager.registerTypeLayer("child", ChildDragLayer);
-
-    const dragProps = {
-      onDragSourceEnd: treeDragSourceEndCallback,
-      objectType,
-    };
+    const dragProps = treeDragProps;
     const dropProps = {
-      onDropTargetDrop: treeDropTargetDropCallback,
-      canDropTargetDrop: treeCanDropTargetDropCallback,
+      ...treeDropProps,
       objectTypes,
     };
 
     return (
-      <div>
+      <div style={{ height: "100%" }}>
         <label htmlFor="receives_row">Can accept rows: </label>
-        <input id="receives_row" type="checkbox" onChange={(event: React.ChangeEvent) => {
-          this.setState({ checked: (event.target as HTMLInputElement).checked });
+        <input id="receives_row" type="checkbox" onChange={(event) => {
+          this.setState({ checked: event.target.checked });
         }} />
-        <Breadcrumb path={path} dataProvider={demoMutableTreeDataProvider} delimiter={"\\"}
+        <DragDropBreadcrumb path={path} dataProvider={demoMutableTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} delimiter={"\\"}
           dragProps={dragProps}
           dropProps={dropProps}
         />
-        <BreadcrumbDetails path={path}
+        <DragDropBreadcrumbDetails path={path}
           dragProps={dragProps}
           dropProps={dropProps}
         />
       </div>
     );
+    return null;
   }
 }
 

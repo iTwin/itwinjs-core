@@ -16,6 +16,7 @@ export interface ExpansionToggleProps {
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  ["data-testid"]?: string;
 }
 
 /** ExpansionToggle React component used by the [[TreeNode]] component */
@@ -31,6 +32,7 @@ export default class ExpansionToggle extends React.Component<ExpansionToggleProp
         onClick={this.props.onClick}
         className={className}
         style={this.props.style}
+        data-testid={this.props["data-testid"]}
       >
         <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16" className="toggle">
           <path d="m4.7 0l-1.4 1.4 6.6 6.6-6.6 6.6 1.4 1.4 8-8z" />

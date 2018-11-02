@@ -9,7 +9,7 @@ import { Keys, Subtract } from "@bentley/presentation-common";
 import { StandardNodeTypes, ECInstanceNodeKey } from "@bentley/presentation-common/lib/hierarchy/Key";
 import { Presentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
-import { DataTreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
+import { TreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/Tree";
 import { getDisplayName } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";

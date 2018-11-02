@@ -41,6 +41,7 @@ Array [
     "parentId": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
   },
   Object {
+    "autoExpand": true,
     "checkBoxState": 1,
     "description": "",
     "displayCheckBox": false,
@@ -70,9 +71,70 @@ Array [
 ]
 `;
 
-exports[`FilteredTreeDataProvider getRootNodes return root nodes 1`] = `
+exports[`FilteredTreeDataProvider getNodes returns child nodes 1`] = `
 Array [
   Object {
+    "checkBoxState": 1,
+    "description": "Sint libero laudantium voluptatem magni et voluptas quis.",
+    "displayCheckBox": true,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Minnesota",
+          "id": "0xcfbe0000007bf8",
+        },
+        "pathFromRoot": Array [
+          "dcb68625-021e-40e1-839b-08a0214f5943",
+          "142b23f9-5f0d-4b34-b39f-de2c0a107d9c",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": false,
+    "id": "142b23f9-5f0d-4b34-b39f-de2c0a107d9c/dcb68625-021e-40e1-839b-08a0214f5943",
+    "isCheckBoxEnabled": true,
+    "label": "A-2-1",
+    "labelBackColor": 1531058431,
+    "labelBold": false,
+    "labelForeColor": -1590574337,
+    "labelItalic": false,
+    "parentId": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+  },
+  Object {
+    "autoExpand": true,
+    "checkBoxState": 1,
+    "description": "",
+    "displayCheckBox": false,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Incredible",
+          "id": "0x332b000000c483",
+        },
+        "pathFromRoot": Array [
+          "9451bb8c-be2e-4a06-bb9c-f6fe83e0ae64",
+          "729087ec-e569-4f02-9212-b8007ffd5072",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": true,
+    "id": "729087ec-e569-4f02-9212-b8007ffd5072/9451bb8c-be2e-4a06-bb9c-f6fe83e0ae64",
+    "isCheckBoxEnabled": false,
+    "label": "A-2-2",
+    "labelBackColor": undefined,
+    "labelBold": false,
+    "labelForeColor": undefined,
+    "labelItalic": false,
+    "parentId": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
+  },
+]
+`;
+
+exports[`FilteredTreeDataProvider getNodes returns root nodes 1`] = `
+Array [
+  Object {
+    "autoExpand": true,
     "checkBoxState": 1,
     "description": "Repellendus fugiat velit sit aperiam placeat fuga doloribus.",
     "displayCheckBox": false,
@@ -100,6 +162,7 @@ Array [
     "parentId": undefined,
   },
   Object {
+    "autoExpand": true,
     "checkBoxState": 1,
     "description": "Voluptas enim ex eveniet facere.",
     "displayCheckBox": false,

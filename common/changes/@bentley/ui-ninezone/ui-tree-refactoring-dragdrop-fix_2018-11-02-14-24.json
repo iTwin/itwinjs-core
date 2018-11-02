@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "fixed height issues with widget content",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "Simeon.McGraw@bentley.com"
+}

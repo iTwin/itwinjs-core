@@ -296,8 +296,7 @@
         "../mocha.opts",
         "--no-timeouts",
         "tests/**/*.{ts,tsx}"
-      ],
-      "console": "integratedTerminal"
+      ]
     },
     {
       "type": "node",

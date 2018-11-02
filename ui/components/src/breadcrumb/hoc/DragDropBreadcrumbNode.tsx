@@ -6,10 +6,11 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { withDragSource, withDropTarget } from "../dragdrop";
+import { TreeDragDropType } from "../../tree/hocs/withDragDrop";
+import { withDragSource, withDropTarget, WithDragSourceProps } from "../../dragdrop";
 
 /** @hidden */
-export interface DragDropBreadcrumbButtonProps extends React.AllHTMLAttributes<HTMLSpanElement> {
+export interface DragDropBreadcrumbNodeProps extends React.AllHTMLAttributes<HTMLSpanElement> {
   isOver?: boolean;
   isDragging?: boolean;
   canDrag?: boolean;
@@ -18,9 +19,9 @@ export interface DragDropBreadcrumbButtonProps extends React.AllHTMLAttributes<H
 
 // Used internally in ./Breadcrumb.tsx
 /** @hidden */
-export class DragDropBreadcrumbButtonComponent extends React.Component<DragDropBreadcrumbButtonProps> {
+export class DragDropBreadcrumbNodeComponent extends React.Component<DragDropBreadcrumbNodeProps> {
   public render() {
-    const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropBreadcrumbButtonProps;
+    const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropBreadcrumbNodeProps;
     const classes = classnames(
       "breadcrumb-drop-target",
       {
@@ -34,5 +35,9 @@ export class DragDropBreadcrumbButtonComponent extends React.Component<DragDropB
     );
   }
 }
+
 /** @hidden */
-export const DragDropBreadcrumbButton = withDropTarget(withDragSource(DragDropBreadcrumbButtonComponent)); // tslint:disable-line:variable-name
+export function DragDropBreadcrumbNode<DragDropObject extends TreeDragDropType>() {
+  return withDropTarget<DragDropBreadcrumbNodeProps & WithDragSourceProps<DragDropObject>, DragDropObject>(
+    withDragSource<DragDropBreadcrumbNodeProps, DragDropObject>(DragDropBreadcrumbNodeComponent));
+}

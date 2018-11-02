@@ -6,14 +6,14 @@
 
 import * as React from "react";
 import classnames from "classnames";
-import { TreeNode, NodeProps } from "@bentley/ui-core";
-import { withDragSource, withDropTarget } from "../../dragdrop";
+import { TreeDragDropType } from "./withDragDrop";
+import { withDragSource, withDropTarget, WithDragSourceProps } from "../../dragdrop";
 
-import "./DragDropNodeWrapper.scss";
+import "./DragDropTreeNode.scss";
 
 /** Properties for the [[DragDropTreeNodeComponent]] React component */
 /** @hidden */
-export interface DragDropNodeProps extends NodeProps {
+export interface DragDropNodeProps {
   isOver?: boolean;
   isDragging?: boolean;
   canDrag?: boolean;
@@ -33,13 +33,13 @@ export interface DragDropNodeState {
 
 // Used internally in ./Tree.tsx
 /** @hidden */
-export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps> {
+export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps, DragDropNodeState> {
   private _root: HTMLDivElement | null = null;
   public readonly state: DragDropNodeState = {
     hoverMode: HoverMode.On,
   };
   public render() {
-    const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropNodeProps;
+    const { isOver, isDragging, canDrop } = this.props as DragDropNodeProps;
     const mode = this.state.hoverMode;
     const classes = classnames(
       "node-drop-target",
@@ -52,7 +52,7 @@ export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps
     );
     return (
       <div className={classes} ref={(el) => { this._root = el; }} onDragOver={this._handleDragOver}>
-        <TreeNode {...props} />
+        {this.props.children}
       </div>
     );
   }
@@ -74,5 +74,9 @@ export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps
     }
   }
 }
+
 /** @hidden */
-export const DragDropTreeNode = withDropTarget(withDragSource(DragDropTreeNodeComponent)); // tslint:disable-line:variable-name
+export function DragDropTreeNode<DragDropObject extends TreeDragDropType>() {
+  return withDropTarget<DragDropNodeProps & WithDragSourceProps<DragDropObject>, DragDropObject>(
+    withDragSource<DragDropNodeProps, DragDropObject>(DragDropTreeNodeComponent));
+}

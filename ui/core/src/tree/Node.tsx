@@ -12,7 +12,8 @@ import "./Node.scss";
 
 /** Properties for the [[TreeNode]] React component */
 export interface NodeProps {
-  label?: React.ReactNode;
+  label: React.ReactNode;
+  level: number;
   icon?: React.ReactChild;
   isLeaf?: boolean;
   isLoading?: boolean;
@@ -29,10 +30,12 @@ export interface NodeProps {
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+
+  ["data-testid"]?: string;
 }
 
 /** Presentation React component for a Tree node  */
-export default class TreeNode extends React.Component<NodeProps> {
+export default class TreeNode extends React.PureComponent<NodeProps> {
   public render() {
     const className = classnames(
       "nz-tree-node",
@@ -40,30 +43,34 @@ export default class TreeNode extends React.Component<NodeProps> {
       this.props.isSelected && "is-selected",
       this.props.isHoverDisabled && "is-hover-disabled",
       this.props.className);
-
+    const offset = this.props.level * 20;
     const loader = this.props.isLoading ? (<div className="loader"><i></i><i></i><i></i><i></i><i></i><i></i></div>) : undefined;
     const icon = this.props.icon ? (<div className="icon">{this.props.icon}</div>) : undefined;
     const toggle = (this.props.isLoading || this.props.isLeaf) ? undefined : (
       <ExpansionToggle
         className="expansion-toggle"
+        data-testid={this.createSubComponentTestId("expansion-toggle")}
         onClick={this._onClickExpansionToggle}
         isExpanded={this.props.isExpanded}
       />
     );
+    const style = { ...this.props.style, paddingLeft: offset };
 
     return (
       <div
         className={className}
-        style={this.props.style}
+        style={style}
+        data-testid={this.props["data-testid"]}
       >
         {loader}
         {toggle}
         <div
           className="contents"
+          data-testid={this.createSubComponentTestId("contents")}
           onClick={this._onClick}
-          onMouseDown={this._onMouseDown}
-          onMouseUp={this._onMouseUp}
-          onMouseMove={this._onMouseMove}>
+          onMouseDown={this.props.onMouseDown}
+          onMouseUp={this.props.onMouseUp}
+          onMouseMove={this.props.onMouseMove}>
           {icon}
           {this.props.label}
         </div>
@@ -71,6 +78,12 @@ export default class TreeNode extends React.Component<NodeProps> {
         {this.props.children}
       </div>
     );
+  }
+
+  private createSubComponentTestId(subId: string): string | undefined {
+    if (!this.props["data-testid"])
+      return undefined;
+    return `${this.props["data-testid"]}-${subId}`;
   }
 
   private _onClickExpansionToggle = (e: React.MouseEvent<HTMLDivElement>) => {
@@ -84,20 +97,5 @@ export default class TreeNode extends React.Component<NodeProps> {
     e.stopPropagation();
     if (this.props.onClick)
       this.props.onClick(e);
-  }
-
-  private _onMouseMove = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (this.props.onMouseMove)
-      this.props.onMouseMove(e);
-  }
-
-  private _onMouseDown = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (this.props.onMouseDown)
-      this.props.onMouseDown(e);
-  }
-
-  private _onMouseUp = (e: React.MouseEvent<HTMLDivElement>) => {
-    if (this.props.onMouseUp)
-      this.props.onMouseUp(e);
   }
 }

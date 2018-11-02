@@ -14,10 +14,13 @@ export interface TreeProps {
   children?: React.ReactNode;
   className?: string;
   style?: React.CSSProperties;
+  onMouseDown?: React.MouseEventHandler<HTMLDivElement>;
+  onMouseMove?: React.MouseEventHandler<HTMLDivElement>;
+  onMouseUp?: React.MouseEventHandler<HTMLDivElement>;
 }
 
 /** Presentation React component for a Tree */
-export default class Tree extends React.Component<TreeProps> {
+export default class Tree extends React.PureComponent<TreeProps> {
   private _treeElement: React.RefObject<HTMLDivElement> = React.createRef();
 
   /**
@@ -33,7 +36,10 @@ export default class Tree extends React.Component<TreeProps> {
     this._treeElement.current.scrollTo(
       Math.max(0, relativeX - treeBox.width + elementBoundingBox.width + 30),
       relativeY);
+  }
 
+  public getElementsByClassName(className: string): Element[] {
+    return this._treeElement.current ? [...this._treeElement.current.getElementsByClassName(className)] : [];
   }
 
   public render() {
@@ -45,6 +51,9 @@ export default class Tree extends React.Component<TreeProps> {
       <div ref={this._treeElement}
         className={className}
         style={this.props.style}
+        onMouseDown={this.props.onMouseDown}
+        onMouseMove={this.props.onMouseMove}
+        onMouseUp={this.props.onMouseUp}
       >
         {this.props.children}
       </div>

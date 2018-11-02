@@ -46,8 +46,8 @@ export * from "./utils";
  * Classes for working with a modal dialog
  */
 /**
- * @docs-group-description DragDrop
- * Classes for working with Drag & Drop
+ * @docs-group-description DragDropLayerManager
+ * Classes for managing DragDrop API drag layers
  */
 /**
  * @docs-group-description FrameworkState

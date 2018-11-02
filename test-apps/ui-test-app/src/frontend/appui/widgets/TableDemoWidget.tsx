@@ -11,10 +11,12 @@ import {
   WidgetControl, WidgetComponentProps,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
-import { Table } from "@bentley/ui-components";
+import { Table, TableProps } from "@bentley/ui-components";
+import withTableDragDrop from "@bentley/ui-components/lib/table/hocs/withDragDrop";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { demoMutableTableDataProvider, tableDropTargetDropCallback, tableDragSourceEndCallback, tableCanDropTargetDropCallback } from "./demoTableDataProvider";
-import { RowDragLayer } from "./RowDragLayer";
+import { demoMutableTableDataProvider, tableDragProps, tableDropProps, TableDragTypes, DemoTableDragDropType } from "./demodataproviders/demoTableDataProvider";
+import { TreeDragTypes } from "./demodataproviders/demoTreeDataProvider";
+import { RowDragLayer } from "./draglayers/RowDragLayer";
 
 export class TableDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -23,6 +25,8 @@ export class TableDemoWidgetControl extends WidgetControl {
     this.reactElement = <TableDemoWidget widgetControl={this} iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />;
   }
 }
+
+const DragDropTable = withTableDragDrop<TableProps, DemoTableDragDropType>(Table); // tslint:disable-line:variable-name
 
 interface Props extends WidgetComponentProps {
   iModelConnection?: IModelConnection;
@@ -37,43 +41,38 @@ export class TableDemoWidget extends React.Component<Props, State> {
     checked: false,
   };
   public render() {
-    const objectType = (data: any) => {
-      if (data !== undefined && "type" in data && data.type)
-        return data.type;
-      return "";
-    };
+    DragDropLayerManager.registerTypeLayer(TableDragTypes.Row, RowDragLayer);
 
-    const objectTypes = [...(this.state.checked ? ["root", "child"] : []), "row"];
+    let objectTypes: Array<string | symbol> = [];
+    if (tableDropProps.objectTypes) {
+      if (typeof tableDropProps.objectTypes !== "function")
+        objectTypes = tableDropProps.objectTypes;
+      else
+        objectTypes = tableDropProps.objectTypes();
+    }
+    if (this.state.checked)
+      objectTypes.push(TreeDragTypes.Parent, TreeDragTypes.Child);
 
-    DragDropLayerManager.registerTypeLayer("row", RowDragLayer);
-
-    const dragProps = {
-      onDragSourceEnd: tableDragSourceEndCallback,
-      objectType,
-    };
+    const dragProps = tableDragProps;
     const dropProps = {
-      onDropTargetDrop: tableDropTargetDropCallback,
-      canDropTargetDrop: tableCanDropTargetDropCallback,
+      ...tableDropProps,
       objectTypes,
     };
 
     return (
-      <div>
+      <div style={{ height: "100%" }}>
         <label htmlFor="receives_tree">Can accept tree nodes: </label>
-        <input id="receives_tree" type="checkbox" checked={this.state.checked} onClick={() => {
-          this.setState((prevState) => ({ checked: !prevState.checked }), () => {
-            demoMutableTableDataProvider.onRowsChanged.raiseEvent();
-
-          });
+        <input id="receives_tree" type="checkbox" onChange={(event) => {
+          this.setState({ checked: event.target.checked });
         }} />
-        <Table
+        <DragDropTable
           dataProvider={demoMutableTableDataProvider}
           dragProps={dragProps}
           dropProps={dropProps}
           reorderableColumns={true}
           settingsIdentifier="Test"
         />
-      </div>
+      </div >
     );
   }
 }

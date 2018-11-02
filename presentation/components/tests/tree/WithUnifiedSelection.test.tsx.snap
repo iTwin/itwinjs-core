@@ -1,10 +1,11 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`Tree withUnifiedSelection renders correctly 1`] = `
-<DataTree
+<Tree
   dataProvider={null}
   onNodesDeselected={[Function]}
   onNodesSelected={[Function]}
   selectedNodes={[Function]}
+  selectionMode={1}
 />
 `;

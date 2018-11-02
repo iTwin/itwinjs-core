@@ -1,45 +1,27 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import Tree, { Props, OnNodesSelectedCallback, OnNodesDeselectedCallback } from "../../../src/tree/component/Tree";
-import { InspireTreeNode } from "../../../src/tree/component/BeInspireTree";
-import { SelectionMode } from "../../../src/common";
-import { ExpansionToggle } from "@bentley/ui-core/lib/tree";
-import { waitForSpy } from "../../test-helpers/misc";
+import { RenderResult, render, within, fireEvent } from "react-testing-library";
+import { waitForUpdate } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
+import {
+  Tree, TreeProps,
+  NodesSelectedCallback, NodesDeselectedCallback, TreeNodeProps,
+} from "../../../src/tree/component/Tree";
+import { SelectionMode } from "../../../src/common";
+import { TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "../../../src";
+import { BeInspireTreeNode } from "../../../src/tree/component/BeInspireTree";
+import HighlightingEngine from "../../../src/tree/HighlightingEngine";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 describe("Tree", () => {
-  before(() => {
-    TestUtils.initializeUiComponents();
-  });
 
-  describe("renderTree", () => {
-    it("Expect 'The tree is empty' when tree is empty", () => {
-      const treeComponent = enzyme.mount(<Tree dataProvider={[]} />);
-
-      expect(treeComponent.find(".nz-tree-tree").first().childAt(0).text()).to.be.equal(TestUtils.i18n.translate("Components:general.noData"));
-    });
-
-    it("Expect '0 matches found for x' when tree is empty and highlighting props contain a search word", () => {
-      const searchText = "test";
-
-      const treeComponent = enzyme.mount(<Tree dataProvider={[]} />);
-
-      treeComponent.setProps({ nodeHighlightingProps: { activeResultNode: { id: "", index: 0 }, searchText } });
-      expect(treeComponent.find(".nz-tree-tree").first().childAt(0).text()).to.be.equal(
-        TestUtils.i18n.translate("Components:tree.noResultsForFilter", { searchText }));
-    });
-  });
-
-  const onTreeReloaded = sinon.spy();
-
-  const verifyNodes = (nodes: InspireTreeNode[], ids: string[]) => {
+  const verifyNodes = (nodes: TreeNodeItem[], ids: string[]) => {
     if (nodes.length !== ids.length)
       return false;
 
@@ -50,330 +32,814 @@ describe("Tree", () => {
     return true;
   };
 
-  const dataProvider = async (node: InspireTreeNode) => {
-    if (!node)
-      return [
-        { id: "0", children: true },
-        { id: "1", children: true },
-        { id: "2", children: true },
-        { id: "3", children: true },
-      ];
-
-    return [
-      { id: node.id + "-0", children: false },
-      { id: node.id + "-1", children: false },
-      { id: node.id + "-2", children: false },
-      { id: node.id + "-3", children: false },
-    ];
+  type NodeElement = HTMLElement & { contentArea: HTMLElement, expansionToggle: HTMLElement | undefined };
+  const getNode = (label: string): NodeElement => {
+    const result = renderedTree.getAllByTestId(Tree.TestId.Node as any).reduce<NodeElement[]>((list: NodeElement[], node) => {
+      const nodeContents = within(node).getByTestId(Tree.TestId.NodeContents);
+      if (nodeContents.textContent === label || within(nodeContents).queryByText(label as any)) {
+        list.push(Object.assign(node, {
+          contentArea: nodeContents,
+          expansionToggle: within(node).queryByTestId(Tree.TestId.NodeExpansionToggle as any) || undefined,
+        }));
+      }
+      return list;
+    }, []);
+    if (!result || !result.length)
+      throw new Error(`Node with label "${label}" not found`);
+    return result[0];
   };
 
-  const nodeContentsName = "div.nz-tree-node div.contents";
-  const selectedNodeName = "div.nz-tree-node.is-selected";
-  const onNodesSelectedCallbackMock = moq.Mock.ofType<OnNodesSelectedCallback>();
-  const onNodesDeselectedCallbackMock = moq.Mock.ofType<OnNodesDeselectedCallback>();
-  let tree: enzyme.ReactWrapper<Props, any>;
+  const createDataProvider = (expandedNodes?: string[]): TreeDataProviderMethod => {
+    const isExpanded = (id: string) => (undefined === expandedNodes) || expandedNodes.includes(id);
+    return async (parent?: TreeNodeItem) => {
+      if (!parent)
+        return [
+          { id: "0", label: "0", hasChildren: true, autoExpand: isExpanded("0") },
+          { id: "1", label: "1", hasChildren: true, autoExpand: isExpanded("1") },
+        ];
+      return [
+        { id: parent.id + "-a", label: parent.label + "-a" },
+        { id: parent.id + "-b", label: parent.label + "-b" },
+      ];
+    };
+  };
 
-  describe("Selection", () => {
+  let renderedTree: RenderResult;
+  let renderSpy: sinon.SinonSpy;
+  let defaultProps: Partial<TreeProps>;
+
+  before(() => {
+    TestUtils.initializeUiComponents();
+  });
+
+  beforeEach(() => {
+    sinon.restore();
+    renderSpy = sinon.spy();
+    defaultProps = {
+      onRender: renderSpy,
+    };
+  });
+
+  describe("selection", () => {
+
+    const getSelectedNodes = (): Array<HTMLElement & { label: string }> => {
+      return renderedTree.getAllByTestId(Tree.TestId.Node as any)
+        .filter((node) => node.classList.contains("is-selected"))
+        .map((node) => Object.assign(node, { label: within(node).getByTestId(Tree.TestId.NodeContents).innerHTML }));
+    };
+
+    let defaultSelectionProps: TreeProps;
+    const nodesSelectedCallbackMock = moq.Mock.ofType<NodesSelectedCallback>();
+    const nodesDeselectedCallbackMock = moq.Mock.ofType<NodesDeselectedCallback>();
 
     beforeEach(async () => {
-      onNodesSelectedCallbackMock.reset();
-      onNodesDeselectedCallbackMock.reset();
+      nodesSelectedCallbackMock.reset();
+      nodesDeselectedCallbackMock.reset();
 
-      const onChildrenLoaded = sinon.spy();
-      onTreeReloaded.resetHistory();
-      tree = enzyme.mount(<Tree
-        dataProvider={dataProvider}
-        onNodesSelected={onNodesSelectedCallbackMock.object}
-        onNodesDeselected={onNodesDeselectedCallbackMock.object}
-        onTreeReloaded={onTreeReloaded}
-        onChildrenLoaded={onChildrenLoaded}
-      />);
-      await waitForSpy(tree, onTreeReloaded);
-      await waitForSpy(tree, onChildrenLoaded);
+      defaultSelectionProps = {
+        ...defaultProps,
+        dataProvider: createDataProvider(),
+        onNodesSelected: nodesSelectedCallbackMock.object,
+        onNodesDeselected: nodesDeselectedCallbackMock.object,
+        selectionMode: SelectionMode.SingleAllowDeselect,
+      };
     });
 
-    describe("Single", () => {
+    describe("with Single selection mode", () => {
+
+      beforeEach(async () => {
+        await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps} selectionMode={SelectionMode.Single} />), renderSpy, 2);
+      });
 
       it("selects a node", async () => {
-        const node = tree.find(nodeContentsName).first();
-        node.simulate("click");
+        // select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
 
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
-        onNodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(tree.find(selectedNodeName).length).to.be.equal(1);
+        // verify
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().length).to.eq(1);
       });
 
       it("deselects other nodes when selects a node", async () => {
-        onTreeReloaded.resetHistory();
-        tree.setProps({ selectedNodes: ["0", "1"] });
-        await waitForSpy(tree, onTreeReloaded);
-        expect(tree.find(selectedNodeName).length).to.be.equal(2);
+        // render tree with nodes 0 and 1 selected
+        await waitForUpdate(() => renderedTree.rerender(<Tree {...defaultSelectionProps} selectionMode={SelectionMode.Single} selectedNodes={["0", "1"]} />), renderSpy);
+        expect(getSelectedNodes().length).to.eq(2);
 
-        const node = tree.find(nodeContentsName).first();
-        node.simulate("click");
+        // select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
 
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
-        onNodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(tree.find(selectedNodeName).length).to.be.equal(1);
+        // verify node 0 replaced multi-selection
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().length).to.eq(1);
       });
 
     });
 
-    describe("Extended", () => {
+    describe("with Extended selection mode", () => {
 
       beforeEach(async () => {
-        onTreeReloaded.resetHistory();
-        tree.setProps({ selectionMode: SelectionMode.Extended });
-        await waitForSpy(tree, onTreeReloaded);
+        await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps} selectionMode={SelectionMode.Extended} />), renderSpy, 2);
       });
 
       it("deselects collapsed nodes when selects a node", async () => {
-        const expansionToggle = tree.find(ExpansionToggle).first();
-        expansionToggle.simulate("click");
+        // select node 0a
+        await waitForUpdate(() => fireEvent.click(getNode("0-a").contentArea), renderSpy);
+        expect(getSelectedNodes().length).to.equal(1);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0-a"])), true), moq.Times.once());
 
-        const node0 = tree.find(nodeContentsName).first();
-        const node00 = tree.find(nodeContentsName).at(1);
-        const node01 = tree.find(nodeContentsName).at(2);
+        // ctrl-select node 0b
+        await waitForUpdate(() => fireEvent.click(getNode("0-b").contentArea, { ctrlKey: true }), renderSpy);
+        expect(getSelectedNodes().length).to.equal(2);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0-b"])), false), moq.Times.once());
 
-        node00.simulate("click");
-        node01.simulate("click", { ctrlKey: true });
-        expect(tree.find(selectedNodeName).length).to.be.equal(2);
-        expansionToggle.simulate("click");
+        // select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+        expect(getSelectedNodes().length).to.equal(1);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
 
-        node0.simulate("click");
-        expansionToggle.simulate("click");
-        expect(tree.find(selectedNodeName).length).to.be.equal(1);
-
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0-0"])), true), moq.Times.once());
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0-1"])), false), moq.Times.once());
-        onNodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
       });
 
       it("shift select nodes from top to bottom", async () => {
-        const expansionToggle = tree.find(ExpansionToggle).first();
-        expansionToggle.simulate("click");
+        // select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
 
-        const nodes = tree.find(nodeContentsName);
-        const node0 = nodes.at(0);
-        const node1 = nodes.at(5);
+        // shift-select node 1
+        await waitForUpdate(() => fireEvent.click(getNode("1").contentArea, { shiftKey: true }), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "0-a", "0-b", "1"])), true), moq.Times.once());
 
-        node0.simulate("click");
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
-        node1.simulate("click", { shiftKey: true });
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0", "0-0", "0-1", "0-2", "0-3", "1"])), true), moq.Times.once());
-
-        onNodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(tree.find(selectedNodeName).length).to.be.equal(6);
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().length).to.equal(4);
       });
 
       it("shift select nodes from bottom to top", async () => {
-        const expansionToggle = tree.find(ExpansionToggle).first();
-        expansionToggle.simulate("click");
+        // select node 1
+        await waitForUpdate(() => fireEvent.click(getNode("1").contentArea), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["1"])), true), moq.Times.once());
 
-        const nodes = tree.find(nodeContentsName);
-        const node0 = nodes.at(0);
-        const node1 = nodes.at(5);
-        node1.simulate("click");
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["1"])), true), moq.Times.once());
+        // shift-select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea, { shiftKey: true }), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "0-a", "0-b", "1"])), true), moq.Times.once());
 
-        node0.simulate("click", { shiftKey: true });
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0", "0-0", "0-1", "0-2", "0-3", "1"])), true), moq.Times.once());
-
-        onNodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(tree.find(selectedNodeName).length).to.be.equal(6);
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().length).to.equal(4);
       });
 
       it("shift selecting nodes does not select collapsed nodes", async () => {
-        const expansionToggle = tree.find(ExpansionToggle).first();
-        const nodes = tree.find(nodeContentsName);
-        const nodes0 = nodes.at(0);
-        const nodes2 = nodes.at(2);
+        // collapse node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderSpy);
 
-        expansionToggle.simulate("click");
-        expansionToggle.simulate("click");
+        // select node 1
+        await waitForUpdate(() => fireEvent.click(getNode("1").contentArea), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["1"])), true), moq.Times.once());
 
-        nodes2.simulate("click");
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["2"])), true), moq.Times.once());
+        // shift-select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea, { shiftKey: true }), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "1"])), true), moq.Times.once());
 
-        nodes0.simulate("click", { shiftKey: true });
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0", "1", "2"])), true), moq.Times.once());
-
-        onNodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(tree.find(selectedNodeName).length).to.be.equal(3);
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().length).to.equal(2);
       });
 
       it("ctrl selects nodes", async () => {
-        const nodes = tree.find(nodeContentsName);
-        const node0 = nodes.at(0);
-        const node2 = nodes.at(2);
-        node0.simulate("click", { ctrlKey: true });
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0"])), false), moq.Times.once());
+        // select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea, { ctrlKey: true }), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), false), moq.Times.once());
 
-        node2.simulate("click", { ctrlKey: true });
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["2"])), false), moq.Times.once());
+        // ctrl-select node 1
+        await waitForUpdate(() => fireEvent.click(getNode("1").contentArea, { ctrlKey: true }), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["1"])), false), moq.Times.once());
 
-        onNodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(tree.find(selectedNodeName).length).to.be.equal(2);
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().length).to.equal(2);
       });
 
     });
 
-    describe("Multiple", () => {
+    describe("with Multiple selection mode", () => {
 
       beforeEach(async () => {
-        onTreeReloaded.resetHistory();
-        tree.setProps({ selectionMode: SelectionMode.Multiple });
-        await waitForSpy(tree, onTreeReloaded);
+        await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps} selectionMode={SelectionMode.Multiple} />), renderSpy, 2);
       });
 
       it("drag selects nodes", async () => {
-        const expansionToggle = tree.find(ExpansionToggle).first();
-        expansionToggle.simulate("click");
+        // press
+        fireEvent.mouseDown(getNode("0").contentArea);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().length).to.equal(0);
 
-        const nodes = tree.find(nodeContentsName);
-        const node0 = nodes.at(0);
-        const node1 = nodes.at(5);
-        node0.simulate("mousedown");
-        node1.simulate("mousemove", { buttons: 1 });
-        document.dispatchEvent(new MouseEvent("mouseup"));
+        // drag
+        // note: dragging re-renders to update selection
+        await waitForUpdate(() => fireEvent.mouseMove(getNode("1").contentArea, { buttons: 1 }), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-a", "0-b", "1"]);
 
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0", "0-0", "0-1", "0-2", "0-3", "1"])), false), moq.Times.once());
-        onNodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(tree.find(selectedNodeName).length).to.be.equal(6);
+        // release
+        fireEvent.mouseUp(getNode("1").contentArea);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "0-a", "0-b", "1"])), false), moq.Times.once());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-a", "0-b", "1"]);
+
+        // reset mocks
+        nodesSelectedCallbackMock.reset();
+        nodesDeselectedCallbackMock.reset();
+
+        // press again
+        fireEvent.mouseDown(getNode("1").contentArea);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-a", "0-b", "1"]);
+
+        // drag
+        // note: dragging re-renders to update selection
+        await waitForUpdate(() => fireEvent.mouseMove(getNode("0-b").contentArea, { buttons: 1 }), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-a"]);
+
+        // release
+        fireEvent.mouseUp(getNode("0-b").contentArea);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0-b", "1"]))), moq.Times.once());
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-a"]);
+      });
+
+      it("dragging with multiple buttons pressed doesn't select nodes", async () => {
+        // press
+        fireEvent.mouseDown(getNode("0").contentArea);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().length).to.equal(0);
+
+        // invalid drag with multiple buttons pressed
+        // note: dragging re-renders to update selection
+        fireEvent.mouseMove(getNode("1").contentArea, { buttons: 2 });
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().length).to.equal(0);
+
+        // release
+        fireEvent.mouseUp(getNode("1").contentArea);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().length).to.equal(0);
       });
 
       it("drag selects and deselects nodes", async () => {
-        onTreeReloaded.resetHistory();
-        tree.setProps({ selectedNodes: ["0", "2"] });
-        await waitForSpy(tree, onTreeReloaded);
+        // render with 0 and 0b selected
+        await waitForUpdate(() => {
+          renderedTree.rerender(<Tree {...defaultSelectionProps} selectionMode={SelectionMode.Multiple} selectedNodes={["0", "0-b"]} />);
+        }, renderSpy);
 
-        expect(tree.find(selectedNodeName).length).to.be.equal(2);
-        const nodes = tree.find(nodeContentsName);
-        const node0 = nodes.at(0);
-        const node2 = nodes.at(2);
-        node0.simulate("mousedown");
-        node2.simulate("mousemove", { buttons: 1 });
-        document.dispatchEvent(new MouseEvent("mouseup"));
+        // press
+        fireEvent.mouseDown(getNode("0").contentArea);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-b"]);
 
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["1"])), false), moq.Times.once());
-        onNodesDeselectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0", "2"]))), moq.Times.once());
-        expect(tree.find(selectedNodeName).length).to.be.equal(1);
+        // drag
+        // note: dragging re-renders to update selection
+        await waitForUpdate(() => fireEvent.mouseMove(getNode("1").contentArea, { buttons: 1 }), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0-a", "1"]);
+
+        // release
+        fireEvent.mouseUp(getNode("1").contentArea);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0-a", "1"])), false), moq.Times.once());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "0-b"]))), moq.Times.once());
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0-a", "1"]);
       });
 
       it("drag selecting nodes does not select collapsed nodes", async () => {
-        const expansionToggle = tree.find(ExpansionToggle).first();
-        const nodes = tree.find(nodeContentsName);
-        const nodes0 = nodes.at(0);
-        const nodes2 = nodes.at(2);
+        // collapse node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderSpy);
 
-        expansionToggle.simulate("click");
-        expansionToggle.simulate("click");
+        // press
+        fireEvent.mouseDown(getNode("0").contentArea);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().length).to.equal(0);
 
-        nodes0.simulate("mousedown");
-        nodes2.simulate("mousemove", { buttons: 1 });
-        document.dispatchEvent(new MouseEvent("mouseup"));
+        // drag
+        // note: dragging re-renders to update selection
+        await waitForUpdate(() => fireEvent.mouseMove(getNode("1").contentArea, { buttons: 1 }), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "1"]);
 
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0", "1", "2"])), false), moq.Times.once());
-        onNodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(tree.find(selectedNodeName).length).to.be.equal(3);
+        // release
+        fireEvent.mouseUp(getNode("1").contentArea);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "1"])), false), moq.Times.once());
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "1"]);
       });
 
     });
 
-    describe("SingleAllowDeselect", () => {
+    describe("with SingleAllowDeselect selection mode", () => {
 
       beforeEach(async () => {
-        onTreeReloaded.resetHistory();
-        tree.setProps({ selectionMode: SelectionMode.SingleAllowDeselect });
-        await waitForSpy(tree, onTreeReloaded);
+        await waitForUpdate(() => {
+          renderedTree = render(<Tree {...defaultSelectionProps} selectionMode={SelectionMode.SingleAllowDeselect} />);
+        }, renderSpy, 2);
       });
 
       it("deselects selected row", async () => {
-        const node = tree.find(nodeContentsName).first();
-        node.simulate("click");
-        onNodesSelectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
+        // select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+        nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
 
-        node.simulate("click");
-        onNodesDeselectedCallbackMock.verify((x) => x(moq.It.is<InspireTreeNode[]>((items: InspireTreeNode[]): boolean => verifyNodes(items, ["0"]))), moq.Times.once());
+        // deselect node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+        nodesDeselectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"]))), moq.Times.once());
 
-        expect(tree.find(selectedNodeName).length).to.be.equal(0);
+        expect(getSelectedNodes().length).to.equal(0);
+      });
+
+    });
+
+    describe("general", () => {
+
+      it("selects nodes on mount", async () => {
+        await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps} selectedNodes={["0", "1"]} />), renderSpy, 2);
+
+        expect(getNode("0").classList.contains("is-selected")).to.be.true;
+        expect(getNode("1").classList.contains("is-selected")).to.be.true;
+      });
+
+      it("selects nodes after expanding with delay loading data provider", async () => {
+        // select a node in a collapsed branch
+        await waitForUpdate(() => {
+          renderedTree = render(<Tree {...defaultSelectionProps} dataProvider={createDataProvider([])} selectedNodes={["0-a"]} />);
+        }, renderSpy, 2);
+
+        // expand node 0
+        // note: need to wait for 2 renders:
+        // 1. after click
+        // 2. after children are loaded
+        await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderSpy, 2);
+
+        // expect one of the nodes to be selected
+        expect(getNode("0-a").classList.contains("is-selected")).to.be.true;
+        expect(getSelectedNodes().length).to.eq(1);
+      });
+
+      it("selects nodes after expanding with immediately loading data provider", async () => {
+        const dp: TreeDataProviderRaw = [{
+          id: "0",
+          label: "0",
+          children: [{
+            id: "1",
+            label: "1",
+          }],
+        }];
+
+        // select a node in a collapsed branch
+        await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps} dataProvider={dp} selectedNodes={["1"]} />), renderSpy, 2);
+
+        // expand node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderSpy);
+
+        // expect node 1 to be selected
+        expect(getNode("1").classList.contains("is-selected")).to.be.true;
+        expect(getSelectedNodes().length).to.eq(1);
+      });
+
+      it("node remains selected after collapsing", async () => {
+        await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps} />), renderSpy, 2);
+
+        // select a node
+        const node0a = getNode("0-a");
+        await waitForUpdate(() => fireEvent.click(node0a!.contentArea), renderSpy);
+        expect(getSelectedNodes().length).to.eq(1);
+
+        // collapse its parent
+        const node0 = getNode("0");
+        await waitForUpdate(() => fireEvent.click(node0!.expansionToggle!), renderSpy);
+        expect(getSelectedNodes().length).to.eq(0);
+
+        // expand the parent
+        await waitForUpdate(() => fireEvent.click(node0!.expansionToggle!), renderSpy);
+        expect(getSelectedNodes().length).to.eq(1);
+      });
+
+      it("updates selection if selectedNodes prop changes", async () => {
+        await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps} selectedNodes={["0", "1"]} />), renderSpy, 2);
+        expect(getNode("0").classList.contains("is-selected")).to.be.true;
+        expect(getNode("1").classList.contains("is-selected")).to.be.true;
+      });
+
+      it("does not clear selection if passes undefined `isNodeSelected` callback", async () => {
+        await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps} selectedNodes={["0", "1"]} />), renderSpy, 2);
+        await waitForUpdate(() => renderedTree.rerender(<Tree {...defaultSelectionProps} selectedNodes={undefined} />), renderSpy);
+        expect(getNode("0").classList.contains("is-selected")).to.be.true;
+        expect(getNode("1").classList.contains("is-selected")).to.be.true;
       });
 
       it("handles selection changes if callback not specified", async () => {
-        onTreeReloaded.resetHistory();
-        tree.setProps({
-          onNodesDeselected: undefined,
-          onNodesSelected: undefined,
-        });
-        await waitForSpy(tree, onTreeReloaded);
+        await waitForUpdate(() => renderedTree = render(<Tree
+          {...defaultSelectionProps}
+          selectionMode={SelectionMode.SingleAllowDeselect}
+          onNodesSelected={undefined}
+          onNodesDeselected={undefined}
+        />), renderSpy, 2);
 
-        const node = tree.find(nodeContentsName).first();
-        node.simulate("click");
-        expect(tree.find(selectedNodeName).length).to.be.equal(1);
-        node.simulate("click");
-        expect(tree.find(selectedNodeName).length).to.be.equal(0);
+        const node = getNode("0");
+
+        await waitForUpdate(() => fireEvent.click(node.contentArea), renderSpy);
+        expect(getSelectedNodes().length).to.equal(1);
+
+        await waitForUpdate(() => fireEvent.click(node.contentArea), renderSpy);
+        expect(getSelectedNodes().length).to.equal(0);
       });
 
     });
 
-    it("selects nodes on mount", async () => {
-      onTreeReloaded.resetHistory();
-      tree = enzyme.mount(<Tree dataProvider={dataProvider} selectedNodes={["0", "1"]} onTreeReloaded={onTreeReloaded} />);
-      await waitForSpy(tree, onTreeReloaded);
-      expect(tree.find(selectedNodeName).length).to.be.equal(2);
+  });
+
+  describe("expand & collapse", () => {
+
+    let dataProvider: TreeDataProviderMethod = async (parent?: TreeNodeItem) => {
+      if (!parent)
+        return [
+          { id: "0", label: "0", hasChildren: true },
+          { id: "1", label: "1", hasChildren: true },
+        ];
+      return [
+        { id: parent.id + "-a", label: parent.label + "-a" },
+        { id: parent.id + "-b", label: parent.label + "-b" },
+      ];
+    };
+
+    const getExpandedNodes = () => {
+      return renderedTree.queryAllByTestId(Tree.TestId.Node as any).filter((node) => {
+        const expansionToggle = within(node).queryByTestId(Tree.TestId.NodeExpansionToggle as any);
+        return (expansionToggle && expansionToggle.classList.contains("is-expanded"));
+      });
+    };
+
+    let defaultExpandCollapseProps: TreeProps;
+
+    beforeEach(async () => {
+      defaultExpandCollapseProps = {
+        ...defaultProps,
+        dataProvider,
+        selectionMode: SelectionMode.SingleAllowDeselect,
+      };
     });
 
-    it("selects nodes after expanding", async () => {
-      onTreeReloaded.resetHistory();
-      tree.setProps({ selectedNodes: ["0-0"] });
-      await waitForSpy(tree, onTreeReloaded);
-
-      const expansionToggle = tree.find(ExpansionToggle).first();
-      expansionToggle.simulate("click");
-      expect(tree.find(selectedNodeName).length).to.be.equal(1);
+    it("auto-expands nodes", async () => {
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultExpandCollapseProps} dataProvider={createDataProvider(["0"])} />), renderSpy, 2);
+      expect(getNode("0").expansionToggle!.classList.contains("is-expanded")).to.be.true;
+      expect(getExpandedNodes().length).to.eq(1);
+      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
     });
 
-    it("node remains selected after collapsing", async () => {
-      const expansionToggle = tree.find(ExpansionToggle).first();
-
-      // expand
-      expansionToggle.simulate("click");
-
-      const node00 = tree.find(nodeContentsName).at(1);
-      node00.simulate("click");
-      expect(tree.find(selectedNodeName).length).to.be.equal(1);
-
-      // collapse
-      expansionToggle.simulate("click");
-      expect(tree.find(selectedNodeName).length).to.be.equal(0);
-
-      // expand
-      expansionToggle.simulate("click");
-      expect(tree.find(selectedNodeName).length).to.be.equal(1);
+    afterEach(function () {
+      if (this.currentTest!.state === "failed")
+        renderedTree.debug();
     });
 
-    it("updates selection if selectedNodes prop changes", async () => {
-      onTreeReloaded.resetHistory();
-      tree.setProps({ selectedNodes: ["0", "1"] });
-      await waitForSpy(tree, onTreeReloaded);
+    it("expands and collapses node when clicked on expansion toggle", async () => {
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultExpandCollapseProps} />), renderSpy, 2);
+      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(2);
 
-      tree.update();
-      expect(tree.find(selectedNodeName).length).to.be.equal(2);
+      // expand node 0
+      // note: need to wait for 2 renders:
+      // 1. after click
+      // 2. after children are loaded
+      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderSpy, 2);
+      expect(getExpandedNodes().length).to.eq(1);
+      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+
+      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderSpy);
+      expect(getExpandedNodes().length).to.eq(0);
+      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(2);
     });
 
-    it("does not clear selection if passes isNodeSelected undefined", async () => {
-      onTreeReloaded.resetHistory();
-      tree.setProps({ selectedNodes: ["0", "1"] });
-      await waitForSpy(tree, onTreeReloaded);
-      expect(tree.find(selectedNodeName).length).to.be.equal(2);
+    it("calls onNodeExpanded callback", async () => {
+      const callbackMock = moq.Mock.ofInstance((_item: TreeNodeItem) => { });
+      await waitForUpdate(() => renderedTree = render(<Tree {...defaultExpandCollapseProps} onNodeExpanded={callbackMock.object} />), renderSpy, 2);
 
-      onTreeReloaded.resetHistory();
-      tree.setProps({ selectedNodes: undefined });
-      await waitForSpy(tree, onTreeReloaded);
-      expect(tree.find(selectedNodeName).length).to.be.equal(2);
+      // expand node 0
+      // note: need to wait for 2 renders:
+      // 1. after click
+      // 2. after children are loaded
+      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderSpy, 2);
+
+      const nodeItem = (await dataProvider())[0];
+      callbackMock.verify((x) => x(nodeItem), moq.Times.once());
     });
 
+    it("calls onNodeCollapsed callback", async () => {
+      const callbackMock = moq.Mock.ofInstance((_item: TreeNodeItem) => { });
+      dataProvider = createDataProvider(["0"]);
+      await waitForUpdate(() => renderedTree = render(<Tree
+        {...defaultExpandCollapseProps}
+        dataProvider={dataProvider}
+        selectionMode={SelectionMode.SingleAllowDeselect}
+        onNodeCollapsed={callbackMock.object}
+      />), renderSpy, 2);
+
+      const node = getNode("0");
+      const nodeItem = (await dataProvider())[0];
+
+      await waitForUpdate(() => fireEvent.click(node.expansionToggle!), renderSpy);
+      callbackMock.verify((x) => x(nodeItem), moq.Times.once());
+    });
+
+  });
+
+  describe("rendering", () => {
+
+    it("renders 'The tree is empty' when tree is empty", async () => {
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={[]} />);
+      }, renderSpy, 2);
+      const expectedContent = TestUtils.i18n.translate("Components:general.noData");
+      expect(renderedTree.getByText(expectedContent)).to.not.not.undefined;
+    });
+
+    it("renders '0 matches found for x' when tree is empty and highlighting props contain a search word", async () => {
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={[]}
+          nodeHighlightingProps={{ activeResultNode: { id: "", index: 0 }, searchText: "test" }}
+        />);
+      }, renderSpy, 2);
+      const expectedContent = TestUtils.i18n.translate("Components:tree.noResultsForFilter", { test: "test" });
+      expect(renderedTree.getByText(expectedContent)).to.not.not.undefined;
+    });
+
+    it("rerenders on data provider change", async () => {
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={[{ id: "0", label: "0" }]}
+        />);
+      }, renderSpy, 2);
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree
+          {...defaultProps}
+          dataProvider={[{ id: "1", label: "1" }]}
+        />);
+      }, renderSpy, 2);
+      expect(getNode("1")).to.not.be.undefined;
+    });
+
+    // TODO: The test reveals an issue where data provider is not changed if we don't wait
+    // for initial update. This happens because we skip the update from `shouldComponentUpdate`
+    // because `modelReady = false` and later on we don't detect changed data provider.
+    it.skip("rerenders on data provider change without waiting for initial update", async () => {
+      renderedTree = render(<Tree {...defaultProps} dataProvider={[{ id: "0", label: "0" }]} />);
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={[{ id: "1", label: "1" }]} />);
+      }, renderSpy);
+      expect(getNode("1")).to.not.be.undefined;
+    });
+
+    it("renders with icons", async () => {
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={[{ id: "0", label: "0", icon: "test-icon" }]}
+        />);
+      }, renderSpy, 2);
+      expect(getNode("0").getElementsByClassName("test-icon").length).to.eq(1);
+    });
+
+    it("renders with HighlightingEngine when nodeHighlightingProps set", async () => {
+      const renderLabelSpy = sinon.spy(HighlightingEngine, "renderNodeLabel");
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={[{ id: "0", label: "0", icon: "test-icon" }]}
+          nodeHighlightingProps={{ searchText: "test" }}
+        />);
+      }, renderSpy, 2);
+      expect(renderLabelSpy.calledWith("0", { searchText: "test", activeResultIndex: undefined })).to.be.true;
+    });
+
+    it("rerenders without HighlightingEngine when nodeHighlightingProps are reset to undefined", async () => {
+      const renderLabelSpy = sinon.spy(HighlightingEngine, "renderNodeLabel");
+      const dp = [{ id: "0", label: "0", icon: "test-icon" }];
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={dp}
+          nodeHighlightingProps={{ searchText: "test" }}
+        />);
+      }, renderSpy, 2);
+      expect(renderLabelSpy.calledOnce).to.be.true;
+      renderLabelSpy.resetHistory();
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} />);
+      }, renderSpy, 1);
+      expect(renderLabelSpy.called).to.be.false;
+    });
+
+    it("renders with custom renderer", async () => {
+      const renderMock = moq.Mock.ofInstance((node: BeInspireTreeNode<TreeNodeItem>, _props: TreeNodeProps): React.ReactNode => {
+        return <div key={node.id}>{node.text}</div>;
+      });
+      renderMock.callBase = true;
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={[{ id: "0", label: "0" }, { id: "1", label: "1" }]}
+          renderNode={renderMock.object}
+        />);
+      }, renderSpy, 2);
+      expect(renderedTree.getAllByText("0").length).to.eq(1);
+      expect(renderedTree.getAllByText("1").length).to.eq(1);
+      // note: node renderer called 4 times in total - 2 for each render
+      renderMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(4));
+    });
+
+  });
+
+  describe("listening to `ITreeDataProvider.onTreeNodeChanged` events", () => {
+
+    let methodProvider: TreeDataProviderMethod;
+    let interfaceProvider: ITreeDataProvider;
+    let reverseNodesOrder: boolean;
+
+    beforeEach(() => {
+      reverseNodesOrder = false;
+      methodProvider = createDataProvider(["0"]);
+      const onTreeNodeChangedEvent = new BeEvent<TreeDataChangesListener>();
+      const getNodes = async (parent?: TreeNodeItem) => {
+        const result = methodProvider(parent);
+        return reverseNodesOrder ? (await result).reverse() : result;
+      };
+      interfaceProvider = {
+        getNodes,
+        getNodesCount: async (parent?: TreeNodeItem) => (await methodProvider(parent)).length,
+        onTreeNodeChanged: onTreeNodeChangedEvent,
+      };
+    });
+
+    const setReverseOrder = (reverse: boolean) => {
+      reverseNodesOrder = reverse;
+    };
+
+    it("rerenders when `onTreeNodeChanged` is broadcasted with collapsed node", async () => {
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
+      }, renderSpy, 2);
+      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+
+      const node = (await interfaceProvider.getNodes())[1];
+      await waitForUpdate(() => {
+        node.label = "test";
+        interfaceProvider.onTreeNodeChanged!.raiseEvent([node]);
+      }, renderSpy, 1);
+      expect(renderedTree.getByText("test")).to.not.be.undefined;
+      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+    });
+
+    it("rerenders when `onTreeNodeChanged` is broadcasted with expanded node", async () => {
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
+      }, renderSpy, 2);
+      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+
+      const node = (await interfaceProvider.getNodes())[0];
+      await waitForUpdate(() => {
+        node.label = "test";
+        interfaceProvider.onTreeNodeChanged!.raiseEvent([node]);
+      }, renderSpy, 1);
+      expect(renderedTree.getByText("test")).to.not.be.undefined;
+      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+    });
+
+    it("rerenders when `onTreeNodeChanged` is broadcasted with undefined node", async () => {
+      const getFlatList = () => renderedTree.getAllByTestId(Tree.TestId.Node as any)
+        .map((node) => within(node).getByTestId(Tree.TestId.NodeContents).innerHTML);
+
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
+      }, renderSpy, 2);
+      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+      expect(getFlatList()).to.deep.eq(["0", "0-a", "0-b", "1"]);
+
+      setReverseOrder(true);
+
+      await waitForUpdate(() => {
+        interfaceProvider.onTreeNodeChanged!.raiseEvent([undefined]);
+      }, renderSpy, 1);
+      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+      expect(getFlatList()).to.deep.eq(["1", "0", "0-b", "0-a"]);
+    });
+
+    it("handles case when `onTreeNodeChanged` is broadcasted with invalid node", async () => {
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
+      }, renderSpy, 2);
+      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+
+      const node: TreeNodeItem = {
+        id: "test",
+        label: "test",
+      };
+      interfaceProvider.onTreeNodeChanged!.raiseEvent(node);
+      expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+    });
+
+    it("subscribes to `onTreeNodeChanged` on mount", () => {
+      renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
+      expect(interfaceProvider.onTreeNodeChanged!.numberOfListeners).to.eq(1);
+    });
+
+    it("unsubscribes from `onTreeNodeChanged` on unmount", () => {
+      renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
+      renderedTree.unmount();
+      expect(interfaceProvider.onTreeNodeChanged!.numberOfListeners).to.eq(0);
+    });
+
+    it("subscribes to `onTreeNodeChanged` on provider change", async () => {
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={methodProvider} />);
+      }, renderSpy, 2);
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
+      }, renderSpy);
+      expect(interfaceProvider.onTreeNodeChanged!.numberOfListeners).to.eq(1);
+    });
+
+    it("unsubscribes from `onTreeNodeChanged` on provider change", async () => {
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
+      }, renderSpy, 2);
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={methodProvider} />);
+      }, renderSpy);
+      expect(interfaceProvider.onTreeNodeChanged!.numberOfListeners).to.eq(0);
+    });
+
+  });
+
+  describe("scrolling to highlighted nodes", () => {
+
+    it("scrolls to highlighted node when highlighting props change", async () => {
+      const dp = [{ id: "0", label: "0", icon: "test-icon" }];
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
+      }, renderSpy, 2);
+      const scrollSpy = sinon.spy(HighlightingEngine, "scrollToActiveNode");
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={{ searchText: "text" }} />);
+      }, renderSpy, 1);
+      expect(scrollSpy.calledOnce).to.be.true;
+    });
+
+    it("doesn't scroll to highlighted node when unrelated props change", async () => {
+      const dp = [{ id: "0", label: "0", icon: "test-icon" }];
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={{ searchText: "text" }} />);
+      }, renderSpy, 2);
+      const scrollSpy = sinon.spy(HighlightingEngine, "scrollToActiveNode");
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={{ searchText: "text" }} selectionMode={SelectionMode.Multiple} />);
+      }, renderSpy, 1);
+      expect(scrollSpy.called).to.be.false;
+    });
+
+  });
+
+  it("calls `onRootNodesLoaded` props callback", async () => {
+    const spy = sinon.spy();
+    const data: TreeNodeItem[] = [{ id: "0", label: "0" }];
+    await waitForUpdate(() => {
+      renderedTree = render(<Tree
+        {...defaultProps}
+        dataProvider={data}
+        onRootNodesLoaded={spy}
+      />);
+    }, renderSpy, 2);
+    expect(spy.calledWith(data)).to.be.true;
+  });
+
+  it("calls `onChildrenLoaded` props callback", async () => {
+    const spy = sinon.spy();
+    const rootNode: DelayLoadedTreeNodeItem = { id: "0", label: "0", autoExpand: true, hasChildren: true };
+    const childNode: DelayLoadedTreeNodeItem = { id: "1", label: "1" };
+    const data = async (parent?: TreeNodeItem) => parent ? [childNode] : [rootNode];
+    await waitForUpdate(() => {
+      renderedTree = render(<Tree
+        {...defaultProps}
+        dataProvider={data}
+        onChildrenLoaded={spy}
+      />);
+    }, renderSpy, 2);
+    expect(spy.calledWith(rootNode, [childNode])).to.be.true;
   });
 
 });

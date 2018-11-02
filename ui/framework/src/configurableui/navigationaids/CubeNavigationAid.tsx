@@ -27,35 +27,35 @@ export class CubeNavigationAidControl extends NavigationAidControl {
   public getSize(): string | undefined { return "96px"; }
 }
 
-/** Enum for Cube HitBox X */
+/** @hidden */
 export enum HitBoxX {
   None = 0,
   Right = 1,
   Left = -1,
 }
-/** Enum for Cube HitBox Y */
+
+/** @hidden */
 export enum HitBoxY {
   None = 0,
   Back = 1,
   Front = -1,
 }
-/** Enum for Cube HitBox Z */
+
+/** @hidden */
 export enum HitBoxZ {
   None = 0,
   Top = 1,
   Bottom = -1,
 }
 
-/** Cube Rotation Map */
-export interface RotationMap {
+interface CubeNavigationRotationMap {
   up: Face;
   down: Face;
   left: Face;
   right: Face;
 }
 
-/** Cube Face Locations */
-export const faceLocations: { [key: number]: Vector3d } = {
+const cubeNavigationFaceLocs: { [key: number]: Vector3d } = {
   [Face.Right]: Vector3d.create(HitBoxX.Right, HitBoxY.None, HitBoxZ.None),
   [Face.Left]: Vector3d.create(HitBoxX.Left, HitBoxY.None, HitBoxZ.None),
   [Face.Top]: Vector3d.create(HitBoxX.None, HitBoxY.None, HitBoxZ.Top),
@@ -64,8 +64,8 @@ export const faceLocations: { [key: number]: Vector3d } = {
   [Face.Back]: Vector3d.create(HitBoxX.None, HitBoxY.Back, HitBoxZ.None),
 };
 
-/** Data relating Up/Down/Left/Right directions relative to every cube surface */
-export const routes: { [key: number]: RotationMap } = {
+// data relating Up/Down/Left/Right directions relative to every surface
+const cubeNavigationRoutes: { [key: number]: CubeNavigationRotationMap } = {
   [Face.Front]: { up: Face.Top, down: Face.Bottom, left: Face.Left, right: Face.Right },
   [Face.Back]: { up: Face.Top, down: Face.Bottom, left: Face.Right, right: Face.Left },
   [Face.Top]: { up: Face.Back, down: Face.Front, left: Face.Left, right: Face.Right },
@@ -74,30 +74,14 @@ export const routes: { [key: number]: RotationMap } = {
   [Face.Left]: { up: Face.Top, down: Face.Bottom, left: Face.Back, right: Face.Front },
 };
 
-/**
- * Rotates RotationMap object 90 degrees for every index increment.
- * 0 = 0deg, 1 = 90deg, 2 = 180deg, -1 = -90deg, etc.
- */
-export const rotateRouteByIndex = (route: RotationMap, index: number): RotationMap => {
-  const { up, right, down, left } = route;
-  const a = [up, right, down, left];
-  const l = a.length;
-  return {
-    up: a[Geometry.modulo(0 + index, l)],
-    right: a[Geometry.modulo(1 + index, l)],
-    down: a[Geometry.modulo(2 + index, l)],
-    left: a[Geometry.modulo(3 + index, l)],
-  };
-};
-
-/** Enum for Cube Hover */
+/** @hidden */
 export enum CubeHover {
   None = 0,
   Hover,
   Active,
 }
 
-/** State for the [[CubeNavigationAid]] component */
+/** @hidden */
 export interface CubeNavigationState {
   dragging: boolean;
   startRotMatrix: Matrix3d;
@@ -107,7 +91,7 @@ export interface CubeNavigationState {
   hoverMap: { [key: string]: CubeHover };
 }
 
-/** A Cube Navigation Aid React component */
+/** Cube Navigation Aid Component */
 export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> {
   private _start: Point2d = Point2d.createZero();
   private _then: number = 0;
@@ -120,6 +104,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     hoverMap: {},
   };
 
+  /** @hidden */
   public componentDidMount() {
     ViewRotationCube.viewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
     this._then = Date.now();
@@ -135,6 +120,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     }
   }
 
+  /** @hidden */
   public componentWillUnmount() {
     ViewRotationCube.viewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
   }
@@ -367,7 +353,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
   }
 }
 
-/** Properties for the [[NavCubeFace]] component */
+/** @hidden */
 export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
   face: Face;
   label: string;
@@ -376,7 +362,7 @@ export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement
   onFaceCellHoverChange: (vector: Vector3d, state: CubeHover) => void;
 }
 
-/** Navigation Cube Face React component */
+/** @hidden */
 export class NavCubeFace extends React.Component<NavCubeFaceProps> {
   public render(): React.ReactNode {
     const { face, hoverMap, onFaceCellClick, onFaceCellHoverChange, label } = this.props;
@@ -407,14 +393,14 @@ export class NavCubeFace extends React.Component<NavCubeFaceProps> {
     );
   }
   public static faceCellToPos = (face: Face, x: number, y: number) => {
-    const faceVect = faceLocations[face];
-    const route = routes[face];
+    const faceVect = cubeNavigationFaceLocs[face];
+    const route = cubeNavigationRoutes[face];
 
     const faceX = x < 0 ? route.left : x > 0 ? route.right : Face.None;
-    const xVect = faceX !== Face.None ? faceLocations[faceX] : Vector3d.createZero();
+    const xVect = faceX !== Face.None ? cubeNavigationFaceLocs[faceX] : Vector3d.createZero();
 
     const faceY = y < 0 ? route.up : y > 0 ? route.down : Face.None;
-    const yVect = faceY !== Face.None ? faceLocations[faceY] : Vector3d.createZero();
+    const yVect = faceY !== Face.None ? cubeNavigationFaceLocs[faceY] : Vector3d.createZero();
 
     return faceVect.plus(xVect).plus(yVect);
   }
@@ -431,7 +417,7 @@ class FaceRow extends React.Component<FaceRowProps> {
   }
 }
 
-/** Properties for the [[FaceCell]] component. */
+/** @hidden */
 export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
   center?: boolean;
   onFaceCellClick: (vector: Vector3d, face?: Face) => void;
@@ -441,7 +427,7 @@ export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
   face?: Face;
 }
 
-/** Face Cell React component. */
+/** @hidden */
 export class FaceCell extends React.Component<FaceCellProps> {
   private _startMouse: Point2d | undefined;
   public render(): React.ReactNode {

@@ -5,8 +5,7 @@
 /** @module Tree */
 
 import * as React from "react";
-import { Subtract } from "@bentley/presentation-common";
-import { DataTreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
+import { TreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/Tree";
 import { getDisplayName } from "../common/Utils";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 import FilteredPresentationTreeDataProvider from "./FilteredDataProvider";
@@ -48,9 +47,9 @@ const defaultState: State = {
  * **Note:** it is required for the tree to use [[IPresentationTreeDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function withFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props & Pick<TreeProps, "expandedNodes">> & Props> {
+export default function withFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
 
-  type CombinedProps = Subtract<P, Props & Pick<TreeProps, "expandedNodes">> & Props;
+  type CombinedProps = P & Props;
 
   return class WithFilteringSupport extends React.Component<CombinedProps, State> {
     public static get displayName() { return `WithFilteringSupport(${getDisplayName(TreeComponent)})`; }
@@ -144,7 +143,6 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
         <div className="filteredTree">
           <TreeComponent
             dataProvider={this.state.filteredDataProvider ? this.state.filteredDataProvider : this.props.dataProvider}
-            expandedNodes={this.state.filteredDataProvider ? this.state.filteredDataProvider.getAllNodeIds() : []}
             nodeHighlightingProps={{
               searchText: this.props.filter,
               activeResultNode: this.state.filteredDataProvider && this.props.activeHighlightedIndex ?

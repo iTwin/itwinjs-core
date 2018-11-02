@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Refactored Tree component to improve its performance",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "grigas.petraitis@bentley.com"
+}

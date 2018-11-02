@@ -7,10 +7,6 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
-      "name": "@bentley/bentleyjs-tools",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
-    },
-    {
       "name": "@bentley/build-tools",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
@@ -141,6 +137,10 @@
     {
       "name": "chai-spies",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "chai-string",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "chalk",

@@ -130,6 +130,124 @@ Array [
 ]
 `;
 
+exports[`TreeDataProvider getNodes children returns presentation manager result 1`] = `
+Array [
+  Object {
+    "checkBoxState": 0,
+    "description": "Ratione voluptatem repellendus sint rerum quod.",
+    "displayCheckBox": false,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Agent",
+          "id": "0x39e000000e397",
+        },
+        "pathFromRoot": Array [
+          "a8879663-af4c-4647-a5e6-6399295a54e2",
+          "1ab590b3-34ae-4253-b592-8504ca89d679",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": true,
+    "id": "1ab590b3-34ae-4253-b592-8504ca89d679/a8879663-af4c-4647-a5e6-6399295a54e2",
+    "isCheckBoxEnabled": true,
+    "label": "Executive",
+    "labelBackColor": undefined,
+    "labelBold": false,
+    "labelForeColor": 2050433535,
+    "labelItalic": false,
+    "parentId": "cfa5b4da-3271-4b2d-a97b-279993a4436c",
+  },
+  Object {
+    "checkBoxState": 1,
+    "description": "",
+    "displayCheckBox": true,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "Practical Plastic Fish",
+          "id": "0x17dfb0000004a94",
+        },
+        "pathFromRoot": Array [
+          "53634882-9809-4817-bdb7-62e5377376d7",
+          "efbbdf5e-70a4-4764-860c-82aebaa5384c",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": true,
+    "id": "efbbdf5e-70a4-4764-860c-82aebaa5384c/53634882-9809-4817-bdb7-62e5377376d7",
+    "isCheckBoxEnabled": true,
+    "label": "Cambridgeshire reboot",
+    "labelBackColor": 1592423167,
+    "labelBold": false,
+    "labelForeColor": undefined,
+    "labelItalic": false,
+    "parentId": "cfa5b4da-3271-4b2d-a97b-279993a4436c",
+  },
+]
+`;
+
+exports[`TreeDataProvider getNodes root returns presentation manager result 1`] = `
+Array [
+  Object {
+    "checkBoxState": 1,
+    "description": "",
+    "displayCheckBox": true,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "benchmark",
+          "id": "0xb4930000007f5e",
+        },
+        "pathFromRoot": Array [
+          "4689e684-8ae5-4ef5-8f6e-931fa4685cc1",
+          "4189a138-287e-4887-8294-0a6f4fc635a3",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": true,
+    "id": "4189a138-287e-4887-8294-0a6f4fc635a3/4689e684-8ae5-4ef5-8f6e-931fa4685cc1",
+    "isCheckBoxEnabled": true,
+    "label": "multi-state payment",
+    "labelBackColor": 81687551,
+    "labelBold": false,
+    "labelForeColor": -1776365569,
+    "labelItalic": false,
+    "parentId": undefined,
+  },
+  Object {
+    "checkBoxState": 0,
+    "description": "Eum quidem reiciendis veniam sunt sunt.",
+    "displayCheckBox": true,
+    "extendedData": Object {
+      "key": Object {
+        "instanceKey": Object {
+          "className": "national",
+          "id": "0x37190000000e92",
+        },
+        "pathFromRoot": Array [
+          "c0ad3c15-e225-48d9-9174-cf691c86639b",
+          "762a6c71-77b4-413a-a82a-1d6b76624dbc",
+        ],
+        "type": "ECInstanceNode",
+      },
+    },
+    "hasChildren": true,
+    "id": "762a6c71-77b4-413a-a82a-1d6b76624dbc/c0ad3c15-e225-48d9-9174-cf691c86639b",
+    "isCheckBoxEnabled": true,
+    "label": "Assimilated International Investment Account",
+    "labelBackColor": undefined,
+    "labelBold": false,
+    "labelForeColor": 633948927,
+    "labelItalic": false,
+    "parentId": undefined,
+  },
+]
+`;
+
 exports[`TreeDataProvider getRootNodes returns presentation manager result 1`] = `
 Array [
   Object {

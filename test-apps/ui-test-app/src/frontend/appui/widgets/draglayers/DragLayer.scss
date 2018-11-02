@@ -17,7 +17,7 @@
 .drag-layer-type {
   padding: 0px 7px;
   font-size: $bwc-font-size-leading;
-  &.root {
+  &.parent {
     background: rgba($bwc-red, 0.5);
     color: rgba($bwc-red-highlight, 0.5);
   }
