@@ -27,7 +27,7 @@ export class AppTools {
   // Tool that toggles the backstage
   public static get backstageToggleCommand() {
     return new CommandItemDef({
-      commandId: "SampleApp.BackstageToggle",
+      commandId: "SampleApp.BackstageShow",
       iconSpec: "icon-home",
       labelKey: "SampleApp:tools.",
       execute: () => {

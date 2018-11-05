@@ -9,6 +9,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "_items": Array [
           CommandItemDef {
             "commandId": "tool1",
+            "execute": [Function],
             "featureId": "",
             "iconSpec": "icon-placeholder",
             "isActive": false,
@@ -24,6 +25,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
               "key": "value",
             },
             "commandId": "tool2",
+            "execute": [Function],
             "featureId": "",
             "iconSpec": "icon-placeholder",
             "isActive": false,
@@ -39,6 +41,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "_itemMap": Map {
         "tool1" => CommandItemDef {
           "commandId": "tool1",
+          "execute": [Function],
           "featureId": "",
           "iconSpec": "icon-placeholder",
           "isActive": false,
@@ -54,6 +57,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
             "key": "value",
           },
           "commandId": "tool2",
+          "execute": [Function],
           "featureId": "",
           "iconSpec": "icon-placeholder",
           "isActive": false,
@@ -66,6 +70,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         },
       },
       "direction": 3,
+      "execute": [Function],
       "featureId": "",
       "groupId": "",
       "iconSpec": "icon-placeholder",
@@ -76,6 +81,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "items": Array [
         CommandItemDef {
           "commandId": "tool1",
+          "execute": [Function],
           "featureId": "",
           "iconSpec": "icon-placeholder",
           "isActive": false,
@@ -91,6 +97,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
             "key": "value",
           },
           "commandId": "tool2",
+          "execute": [Function],
           "featureId": "",
           "iconSpec": "icon-placeholder",
           "isActive": false,
@@ -113,6 +120,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
     Array [
       CommandItemDef {
         "commandId": "tool1",
+        "execute": [Function],
         "featureId": "",
         "iconSpec": "icon-placeholder",
         "isActive": false,
@@ -128,6 +136,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "key": "value",
         },
         "commandId": "tool2",
+        "execute": [Function],
         "featureId": "",
         "iconSpec": "icon-placeholder",
         "isActive": false,

@@ -20,9 +20,9 @@ export interface SearchBoxProps {
   onValueChanged: (value: string) => void;
   /** frequency to poll for changes in value */
   valueChangedDelay?: number;
-  /** listens for <Enter> keypresses */
+  /** listens for <Enter> keypress */
   onEnterPressed?: () => void;
-  /** listens for <Esc> keypresses */
+  /** listens for <Esc> keypress */
   onEscPressed?: () => void;
   /** listens for onClick event for Clear (x) icon */
   onClear?: () => void;
@@ -59,19 +59,19 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         <input
           ref={(el) => { this._inputElement = el; }}
           onChange={this._trackChange}
-          onKeyUp={this._trackChange}
+          onKeyDown={this._handleKeyDown}
           onPaste={this._trackChange}
           onCut={this._trackChange}
           placeholder={this.props.placeholder ? this.props.placeholder : UiCore.i18n.translate("UiCore:searchbox.search")}
         ></input>
-        <div onClick={this._handleIconClick}>
+        <div className="searchbox-button" onClick={this._handleIconClick}>
           <span className={iconClassName} />
         </div>
       </div>
     );
   }
 
-  private _trackChange = (event?: any): void => {
+  private _trackChange = (_event?: any): void => {
     let value = "";
 
     if (this._inputElement)
@@ -89,15 +89,16 @@ export class SearchBox extends React.Component<SearchBoxProps, SearchBoxState> {
         this.props.onValueChanged(this.state.value);
       }
     });
-    if (event && event.keyCode) {
-      switch (event.keyCode) {
-        case 27:
-          if (this.props.onEscPressed) this.props.onEscPressed();
-          break;
-        case 13:
-          if (this.props.onEnterPressed) this.props.onEnterPressed();
-          break;
-      }
+  }
+
+  private _handleKeyDown = (e: React.KeyboardEvent) => {
+    switch (e.key) {
+      case "Escape":
+        if (this.props.onEscPressed) this.props.onEscPressed();
+        break;
+      case "Enter":
+        if (this.props.onEnterPressed) this.props.onEnterPressed();
+        break;
     }
   }
 

@@ -24,6 +24,8 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     if (itemProps) {
       this.isActive = (itemProps.isActive !== undefined) ? itemProps.isActive : false;
     }
+
+    this.execute = this.execute.bind(this);
   }
 
   public execute(): void {

@@ -76,12 +76,13 @@ describe("ContextMenu", () => {
   });
   describe("<ContextSubMenu />", () => {
     it("should render", () => {
-      mount(
+      const wrapper = mount(
         <ContextMenu opened={true}>
           <ContextSubMenu label="test">
             <ContextMenuItem> Test </ContextMenuItem>
           </ContextSubMenu>
         </ContextMenu>);
+      wrapper.unmount();
     });
 
     it("renders correctly", () => {
