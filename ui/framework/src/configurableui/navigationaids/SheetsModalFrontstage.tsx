@@ -18,7 +18,7 @@ import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend/lib/fron
 export interface CardInfo {
   index: number;
   label: string;
-  iconClass: string;
+  iconSpec: string;
   isActive: boolean;
   viewId: any;
 }
@@ -57,7 +57,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
    */
   private _storeSheetsAsCards(sheets: SheetData[]) {
     sheets.forEach((sheet: SheetData, index: number) => {
-      this._cards.push({ index, label: sheet.name, iconClass: "icon-document", viewId: sheet.viewId, isActive: index === this._currentIndex });
+      this._cards.push({ index, label: sheet.name, iconSpec: "icon-document", viewId: sheet.viewId, isActive: index === this._currentIndex });
     });
   }
 
@@ -102,6 +102,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
           {
             this.props.cards.map((card: CardInfo, _index: number) => {
               let includeCard = true;
+              const iconClassName = (typeof card.iconSpec === "string") ? card.iconSpec : "icon-placeholder";
 
               if (this.props.searchValue) {
                 includeCard = this.contains(card.label, this.props.searchValue, false);
@@ -109,7 +110,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
 
               if (includeCard) {
                 return (
-                  <SheetCard key={card.label} label={card.label} index={card.index} iconClass={card.iconClass} isActive={card.isActive} onClick={() => this._handleCardSelected(card)} />
+                  <SheetCard key={card.label} label={card.label} index={card.index} iconSpec={iconClassName} isActive={card.isActive} onClick={() => this._handleCardSelected(card)} />
                 );
               }
 
@@ -162,7 +163,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
 export interface SheetCardProps {
   label: string;
   index: number;
-  iconClass: string;
+  iconSpec: string;
   isActive: boolean;
   onClick: () => void;
 }
@@ -194,7 +195,7 @@ export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
 
   /** @hidden */
   public render() {
-    const { label, index, iconClass } = this.props;
+    const { label, index, iconSpec } = this.props;
 
     const className = classnames(
       "sheet-card",
@@ -202,7 +203,7 @@ export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
       this.state.isHover && "is-hover",
     );
 
-    const iconClassName = "icon " + iconClass;
+    const iconClassName = "icon " + (typeof iconSpec === "string") ? iconSpec : "icon-placeholder";
 
     return (
       <div className={className} onClick={this._onClick} onMouseEnter={this._onMouseEnter} onMouseLeave={this._onMouseLeave}>

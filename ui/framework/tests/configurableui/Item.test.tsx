@@ -22,17 +22,17 @@ describe("ToolButton", () => {
 
   describe("<ToolButton />", () => {
     it("should render", () => {
-      mount(<ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="UiFramework:tests.label" />);
+      mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />);
     });
 
     it("renders correctly", () => {
       FrontstageManager.setActiveToolId("tool1");
-      shallow(<ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="UiFramework:tests.label" />).should.matchSnapshot();
+      shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />).should.matchSnapshot();
     });
 
     it("should execute a function", () => {
       const spyMethod = sinon.spy();
-      const wrapper = mount(<ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="UiFramework:tests.label" execute={spyMethod} />);
+      const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" execute={spyMethod} />);
       wrapper.find(".nz-toolbar-item-item").simulate("click");
       spyMethod.should.have.been.called;
       wrapper.unmount();
@@ -51,7 +51,7 @@ describe("ActionItemButton", () => {
       const testCommand =
         new CommandItemDef({
           commandId: "command",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "UiFramework:tests.label",
           execute: () => { },
         });
@@ -63,7 +63,7 @@ describe("ActionItemButton", () => {
       const testCommand =
         new CommandItemDef({
           commandId: "command",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "UiFramework:tests.label",
           execute: () => { },
         });
@@ -75,7 +75,7 @@ describe("ActionItemButton", () => {
       const spyCommand =
         new CommandItemDef({
           commandId: "command",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "UiFramework:tests.label",
           execute: spyMethod,
         });

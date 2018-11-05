@@ -50,11 +50,11 @@ describe("Backstage", () => {
       const commandHandler = () => { };
       shallow(
         <Backstage isVisible={true}>
-          <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" execute={commandHandler} />
+          <CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />
           <SeparatorBackstageItem />
-          <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" />
+          <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
           <SeparatorBackstageItem />
-          <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" />
+          <TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />
         </Backstage>,
       ).should.matchSnapshot();
     });
@@ -69,7 +69,7 @@ describe("Backstage", () => {
 
     it("CommandLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
-      const wrapper = mount(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" subtitleId="UiFramework:tests.subtitle" iconClass="icon-placeholder" execute={spyMethod} />);
+      const wrapper = mount(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" subtitleId="UiFramework:tests.subtitle" iconSpec="icon-placeholder" execute={spyMethod} />);
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       expect(spyMethod.calledOnce).to.be.true;
@@ -77,7 +77,7 @@ describe("Backstage", () => {
 
     it("CommandLaunchBackstageItem renders correctly", () => {
       const commandHandler = () => { };
-      shallow(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" execute={commandHandler} />).should.matchSnapshot();
+      shallow(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" execute={commandHandler} />).should.matchSnapshot();
     });
 
     it("FrontstageLaunchBackstageItem should render & execute", () => {
@@ -91,7 +91,7 @@ describe("Backstage", () => {
       };
       ConfigurableUiManager.loadFrontstage(frontstageProps);
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
-      const wrapper = mount(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" />);
+      const wrapper = mount(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       setImmediate(() => {
@@ -101,7 +101,7 @@ describe("Backstage", () => {
     });
 
     it("FrontstageLaunchBackstageItem renders correctly", () => {
-      shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" />).should.matchSnapshot();
+      shallow(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
     });
 
     it("TaskLaunchBackstageItem should render & execute", () => {
@@ -120,7 +120,7 @@ describe("Backstage", () => {
           {
             id: "Task1",
             primaryStageId: "Test1",
-            iconClass: "icon-placeholder",
+            iconSpec: "icon-placeholder",
             labelKey: "SampleApp:backstage.task1",
           },
         ],
@@ -133,13 +133,13 @@ describe("Backstage", () => {
         defaultWorkflowId: "default-workflow",
         taskPicker: {
           classId: "taskpicker-class",
-          iconClass: "taskpicker-icon",
+          iconSpec: "taskpicker-icon",
           labelKey: "taskpicker-label",
         },
         workflows: [
           {
             id: "ExampleWorkflow",
-            iconClass: "icon-placeholder",
+            iconSpec: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
             defaultTaskId: "task1",
             tasks: ["Task1"],
@@ -151,7 +151,7 @@ describe("Backstage", () => {
 
       const spyMethod = sinon.stub();
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
-      const wrapper = mount(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" />);
+      const wrapper = mount(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       setImmediate(() => {
@@ -161,7 +161,7 @@ describe("Backstage", () => {
     });
 
     it("TaskLaunchBackstageItem renders correctly", () => {
-      shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconClass="icon-placeholder" />).should.matchSnapshot();
+      shallow(<TaskLaunchBackstageItem taskId="Task1" workflowId="ExampleWorkflow" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />).should.matchSnapshot();
     });
 
   });

@@ -7,8 +7,8 @@ import { expect } from "chai";
 import * as enzyme from "enzyme";
 import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
-import PointerMessage from "../../src/messages/Pointer";
-import { AppNotificationManager } from "../../src/configurableui/AppNotificationManager";
+import { PointerMessage } from "../../src/index";
+import { AppNotificationManager } from "../../src/index";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType, RelativePosition } from "@bentley/imodeljs-frontend";
 
 describe("PointerMessage", () => {

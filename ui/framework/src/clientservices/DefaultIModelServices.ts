@@ -37,6 +37,7 @@ class IModelUserInfoImpl implements IModelUserInfo {
 
 /**
  * Provides default [[IModelServices]]
+ * @hidden
  */
 export class DefaultIModelServices implements IModelServices {
   private _hubClient: IModelHubClient;

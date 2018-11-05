@@ -7,7 +7,7 @@ import * as React from "react";
 import { SampleAppIModelApp } from "../..";
 
 import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { WidgetControl, WidgetComponentProps } from "@bentley/ui-framework";
+import { WidgetControl } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -17,14 +17,12 @@ export class NavigationTreeWidgetControl extends WidgetControl {
     super(info, options);
 
     this.reactElement = (
-      <NavigationTreeWidget
-        widgetControl={this}
-      />
+      <NavigationTreeWidget />
     );
   }
 }
 
-interface NavigationTreeProps extends WidgetComponentProps {
+interface NavigationTreeProps {
   iModelConnection?: IModelConnection;
 }
 

@@ -5,28 +5,19 @@
 import * as React from "react";
 import { expect } from "chai";
 import * as enzyme from "enzyme";
-import * as sinon from "sinon";
+
 import TestUtils from "../TestUtils";
-import ViewSelector from "../../src/pickers/ViewSelector";
-import { ListItem } from "../../src/pickers/ListPicker";
-import { ViewUtilities } from "../../src/utils";
+import { ViewSelector } from "../../src/index";
+import { ViewUtilities } from "../../src/index";
 
 describe("ViewSelector", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
 
-  const title = "Test";
-  const listItems = new Array<ListItem>();
-  const setEnabled = sinon.spy();
-
   it("should render correctly", () => {
     enzyme.shallow(
-      <ViewSelector
-        title={title}
-        items={listItems}
-        setEnabled={setEnabled}
-      />,
+      <ViewSelector />,
     ).should.matchSnapshot();
   });
 

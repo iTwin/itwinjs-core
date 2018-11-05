@@ -39,8 +39,7 @@ function isLowerCaseHexDigit(str: string, index: number, allowZero: boolean = tr
   const minDecimalDigit = allowZero ? 0x30 : 0x31; // '0' or '1'...
   if (charCode >= minDecimalDigit && charCode <= 0x39) // ...to '9'
     return true;
-  else
-    return charCode >= 0x61 && charCode <= 0x66; // 'a' to 'f'
+  return charCode >= 0x61 && charCode <= 0x66; // 'a' to 'f'
 }
 
 function isValidHexString(id: string, startIndex: number, len: number) {
@@ -306,24 +305,18 @@ export namespace Id64 {
    * @see [[isInvalid]]
    * @see [[isValidId64]]
    */
-  export function isValid(id: Id64String): boolean {
-    return Id64.invalid !== id;
-  }
+  export function isValid(id: Id64String): boolean { return Id64.invalid !== id; }
 
   /** Returns true if the input is a well-formed [[Id64String]] representing a valid Id.
    * @see [[isValid]]
    * @see [[isId64]]
    */
-  export function isValidId64(id: string): boolean {
-    return Id64.invalid !== id && Id64.isId64(id);
-  }
+  export function isValidId64(id: string): boolean { return Id64.invalid !== id && Id64.isId64(id); }
 
   /** Returns true if the input is a well-formed [[Id64String]] representing an invalid Id.
    * @see [[isValid]]
    */
-  export function isInvalid(id: Id64String): boolean {
-    return Id64.invalid === id;
-  }
+  export function isInvalid(id: Id64String): boolean { return Id64.invalid === id; }
 }
 
 /**
@@ -347,7 +340,7 @@ export class TransientIdSequence {
 export namespace Guid {
   const uuidPattern = new RegExp("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
-  /** determine whether the input string is "guid-like". That is, it follows the 8-4-4-4-12 pattern. This does not enforce
+  /** Determine whether the input string is "guid-like". That is, it follows the 8-4-4-4-12 pattern. This does not enforce
    *  that the string is actually in valid UUID format.
    */
   export function isGuid(value: string): boolean { return uuidPattern.test(value); }

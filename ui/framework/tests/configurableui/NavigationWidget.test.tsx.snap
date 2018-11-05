@@ -8,12 +8,12 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       items={
         <UNDEFINED>
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool1"
             toolId="tool1"
           />
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2"
           />
@@ -27,7 +27,6 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "classId": undefined,
       "featureId": "",
       "horizontalDirection": 3,
-      "iconClass": "",
       "id": "navigationWidget",
       "isEnabled": true,
       "isFloatingStateSupported": false,
@@ -55,12 +54,12 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       items={
         <UNDEFINED>
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool1"
             toolId="tool1"
           />
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2"
           />

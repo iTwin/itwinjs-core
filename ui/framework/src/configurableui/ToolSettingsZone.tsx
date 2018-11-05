@@ -46,7 +46,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
   private _title: string;
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<ToolSettingsZoneState> = {
     toolSettingsZoneContent: ToolSettingsZoneContent.Closed,
     isPopoverOpen: false,

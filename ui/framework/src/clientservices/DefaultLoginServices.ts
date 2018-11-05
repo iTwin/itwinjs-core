@@ -13,6 +13,7 @@ import { LoginServices } from "./LoginServices";
 
 /**
  * Provides default [[LoginServices]] that are needed by the application framework. They are supplied as props.
+ * @hidden
  */
 export class DefaultLoginServices implements LoginServices {
   /** The current open IModelConnection. Will be `undefined` until [[openIModel]] is called. */

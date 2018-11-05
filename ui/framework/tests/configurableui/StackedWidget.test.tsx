@@ -51,13 +51,13 @@ describe("StackedWidget", () => {
           {
             classId: "StackedWidgetTestWidget",
             defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
+            iconSpec: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
           {
             classId: "StackedWidgetTestWidget",
             defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
+            iconSpec: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
         ],

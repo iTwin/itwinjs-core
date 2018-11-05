@@ -152,13 +152,13 @@ describe("ConfigurableUiManager", () => {
         {
           id: "Task1",
           primaryStageId: "Test1",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "SampleApp:backstage.task1",
         },
         {
           id: "Task2",
           primaryStageId: "Test2",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "SampleApp:backstage.task2",
         },
       ],
@@ -173,13 +173,13 @@ describe("ConfigurableUiManager", () => {
       defaultWorkflowId: "default-workflow",
       taskPicker: {
         classId: "taskpicker-class",
-        iconClass: "taskpicker-icon",
+        iconSpec: "taskpicker-icon",
         labelKey: "taskpicker-label",
       },
       workflows: [
         {
           id: "ExampleWorkflow",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "SampleApp:Test.my-label",
           defaultTaskId: "task1",
           tasks: ["Task1", "Task2"],

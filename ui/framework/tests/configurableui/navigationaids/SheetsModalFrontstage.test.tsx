@@ -42,22 +42,22 @@ describe("SheetsModalFrontstage", () => {
   describe("CardContainer", () => {
     it("renders correctly", () => {
       shallow(<CardContainer
-        cards={new Array<CardInfo>({ index: 0, label: "", iconClass: "", viewId: "", isActive: false })}
+        cards={new Array<CardInfo>({ index: 0, label: "", iconSpec: "", viewId: "", isActive: false })}
         searchValue={"Test"}
         connection={connection.object} />);
 
       shallow(<CardContainer
-        cards={new Array<CardInfo>({ index: 0, label: "Test", iconClass: "", viewId: "", isActive: false })}
+        cards={new Array<CardInfo>({ index: 0, label: "Test", iconSpec: "", viewId: "", isActive: false })}
         searchValue={""}
         connection={connection.object} />);
 
       shallow(<CardContainer
-        cards={new Array<CardInfo>({ index: 0, label: "Test", iconClass: "", viewId: "", isActive: false })}
+        cards={new Array<CardInfo>({ index: 0, label: "Test", iconSpec: "", viewId: "", isActive: false })}
         searchValue={"Testing"}
         connection={connection.object} />);
 
       shallow(<CardContainer
-        cards={new Array<CardInfo>({ index: 0, label: "Testing", iconClass: "", viewId: "", isActive: false })}
+        cards={new Array<CardInfo>({ index: 0, label: "Testing", iconSpec: "", viewId: "", isActive: false })}
         searchValue={"Test"}
         connection={connection.object} />);
     });
@@ -66,7 +66,7 @@ describe("SheetsModalFrontstage", () => {
   describe("SheetCard", () => {
     it("handles card selection", () => {
       const onClick = sinon.spy();
-      const card = shallow(<SheetCard label="" iconClass="" onClick={onClick} isActive={false} index={0} />);
+      const card = shallow(<SheetCard label="" iconSpec="" onClick={onClick} isActive={false} index={0} />);
       card.simulate("click");
       expect(onClick.called).to.be.true;
     });

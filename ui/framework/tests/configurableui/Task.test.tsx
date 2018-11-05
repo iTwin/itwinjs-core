@@ -16,7 +16,7 @@ describe("Task", () => {
     const task = new Task({
       id: "Task1",
       primaryStageId: "Test1",
-      iconClass: "icon-placeholder",
+      iconSpec: "icon-placeholder",
       labelKey: "SampleApp:backstage.task1",
     });
 

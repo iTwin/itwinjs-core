@@ -4,5 +4,5 @@
 *--------------------------------------------------------------------------------------------*/
 export * from "./TreeDataProvider";
 export { Tree, TreeProps } from "./component/Tree";
-export { TreeDragDropType } from "./hocs/withDragDrop";
+export { TreeDragDropType, withDragDrop as withTreeDragDrop } from "./hocs/withDragDrop";
 export { default as SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "./SimpleTreeDataProvider";

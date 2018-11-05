@@ -52,7 +52,7 @@ export enum ExclusiveAccessOption {
   TryReuseOpenBriefcase = 2,
 }
 
-/** Parameters to open the iModelDb */
+/** Parameters to open an IModelDb */
 export class OpenParams {
   // Constructor
   public constructor(
@@ -62,7 +62,7 @@ export class OpenParams {
     /** Mode to access the IModelDb */
     public readonly accessMode?: AccessMode,
 
-    /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub */
+    /** Operations allowed when synchronizing changes between the IModelDb and IModelHub */
     public readonly syncMode?: SyncMode,
 
     /** Additional hint for exclusive access to either create a new briefcase or try and reuse a previously opened briefcase */
@@ -72,7 +72,7 @@ export class OpenParams {
     this.validate();
   }
 
-  /** Returns true if the open params are setup to open a standalone Db */
+  /** Returns true if the open params open a standalone Db */
   public get isStandalone(): boolean { return this.accessMode === undefined || this.syncMode === undefined; }
 
   private validate() {
@@ -80,7 +80,7 @@ export class OpenParams {
       throw new IModelError(BentleyStatus.ERROR, "Invalid parameters - only openMode can be defined if opening a standalone Db");
 
     if (this.openMode === OpenMode.Readonly && this.syncMode && this.syncMode !== SyncMode.FixedVersion) {
-      throw new IModelError(BentleyStatus.ERROR, "Cannot pull changes into a ReadOnly IModelDb");
+      throw new IModelError(BentleyStatus.ERROR, "Cannot pull changes into a ReadOnly IModel");
     }
 
     if (this.syncMode === SyncMode.PullAndPush && this.accessMode === AccessMode.Shared) {
@@ -181,11 +181,7 @@ export class IModelDb extends IModel {
   }
 
   private initializeIModelDb() {
-    let props: any;
-    try {
-      props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
-    } catch (error) { }
-
+    const props = JSON.parse(this.nativeDb.getIModelProps()) as IModelProps;
     const name = props.rootSubject ? props.rootSubject.name : path.basename(this.briefcase.pathname);
     super.initialize(name, props);
   }
@@ -1291,8 +1287,8 @@ export namespace IModelDb {
       return viewStateData;
     }
 
-    private getViewThumbnailArg(viewDefinitionId: Id64Arg): string {
-      const viewProps: FilePropertyProps = { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId.toString() };
+    private getViewThumbnailArg(viewDefinitionId: Id64String): string {
+      const viewProps: FilePropertyProps = { namespace: "dgn_View", name: "Thumbnail", id: viewDefinitionId };
       return JSON.stringify(viewProps);
     }
 

@@ -13,6 +13,7 @@ import { ItemProps } from "./ItemProps";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 
+/** Abstract base class that is used by classes the execute a action when pressed. */
 export abstract class ActionButtonItemDef extends ItemDefBase {
   protected _commandHandler?: CommandHandler;
   public parameters?: any;
@@ -39,7 +40,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     let myClassNames: string = "";
     if (!this.isVisible) myClassNames += "item-hidden";
     if (!this.isEnabled) myClassNames += "nz-is-disabled";
-    const icon = <Icon iconClass={this.iconClass} iconElement={this.iconElement} />;
+    const icon = <Icon iconSpec={this.iconSpec} />;
 
     return (
       <ToolbarIcon
@@ -77,7 +78,7 @@ export class CommandItemDef extends ActionButtonItemDef {
   }
 }
 
-/** An Item that executes a Tool.
+/** An Item that starts the execution of a Tool.
  */
 export class ToolItemDef extends ActionButtonItemDef {
   public toolId: string = "";

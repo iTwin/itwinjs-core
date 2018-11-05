@@ -27,29 +27,33 @@ export abstract class ItemDefBase {
 
   public label: string = "";
   public tooltip: string = "";
-  public iconClass?: string = "";
+  public iconSpec?: string | React.ReactNode;
   public iconElement?: React.ReactNode;
+
+  public static initializeDef(me: ItemDefBase, itemProps: ItemProps): void {
+
+    me.isVisible = (itemProps.isVisible !== undefined) ? itemProps.isVisible : true;
+    me.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true;
+    me.isPressed = (itemProps.isPressed !== undefined) ? itemProps.isPressed : false;
+
+    if (itemProps.featureId !== undefined) me.featureId = itemProps.featureId;
+    if (itemProps.applicationData !== undefined) me.applicationData = itemProps.applicationData;
+    if (itemProps.iconSpec) me.iconSpec = itemProps.iconSpec;
+
+    if (itemProps.label)
+      me.label = itemProps.label;
+    else if (itemProps.labelKey)
+      me.label = UiFramework.i18n.translate(itemProps.labelKey);
+
+    if (itemProps.tooltip)
+      me.tooltip = itemProps.tooltip;
+    else if (itemProps.tooltipKey)
+      me.tooltip = UiFramework.i18n.translate(itemProps.tooltipKey);
+  }
 
   constructor(itemProps?: ItemProps) {
     if (itemProps) {
-      this.isVisible = (itemProps.isVisible !== undefined) ? itemProps.isVisible : true;
-      this.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true;
-      this.isPressed = (itemProps.isPressed !== undefined) ? itemProps.isPressed : false;
-
-      if (itemProps.featureId !== undefined) this.featureId = itemProps.featureId;
-      if (itemProps.applicationData !== undefined) this.applicationData = itemProps.applicationData;
-      if (itemProps.iconClass) this.iconClass = itemProps.iconClass;
-      if (itemProps.iconElement) this.iconElement = itemProps.iconElement;
-
-      if (itemProps.label)
-        this.label = itemProps.label;
-      else if (itemProps.labelKey)
-        this.label = UiFramework.i18n.translate(itemProps.labelKey);
-
-      if (itemProps.tooltip)
-        this.tooltip = itemProps.tooltip;
-      else if (itemProps.tooltipKey)
-        this.tooltip = UiFramework.i18n.translate(itemProps.tooltipKey);
+      ItemDefBase.initializeDef(this, itemProps);
     }
   }
 

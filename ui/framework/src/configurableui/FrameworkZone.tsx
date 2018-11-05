@@ -60,7 +60,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
     super(props);
   }
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<FrameworkZoneState> = {
     updatedWidgetDef: undefined,
   };
@@ -164,8 +164,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
             return {
               isActive,
-              iconClass: widgetDef.iconClass,
-              iconElement: widgetDef.iconElement,
+              iconSpec: widgetDef.iconSpec,
               title: widgetDef.label,
             };
           }),

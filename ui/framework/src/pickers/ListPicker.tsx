@@ -42,7 +42,7 @@ export interface ListItem {
 export interface ListPickerProps {
   title: string;
   items: ListItem[];
-  iconClass?: string;
+  iconSpec?: string | React.ReactNode;
   setEnabled: (item: ListItem, enabled: boolean) => any;
   onExpanded?: (expand: boolean) => void;
 }
@@ -181,6 +181,9 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
 
   /** Renders ListPickerBase */
   public render() {
+    const icon = this.props.iconSpec ? (typeof this.props.iconSpec === "string" ? <i className={"icon " + (this.props.iconSpec)} /> :
+      <i className="icon item-svg-icon">{this.props.iconSpec}</i>) : <i className="icon icon-list" />;
+
     return (
       <ExpandableItem
         {...this.props}
@@ -188,9 +191,7 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
         <ToolbarIcon
           title={this.props.title}
           onClick={this._toggleIsExpanded}
-          icon={
-            <i className={"icon " + (this.props.iconClass ? this.props.iconClass : "icon-list")} />
-          }
+          icon={icon}
         />
       </ExpandableItem>
     );
@@ -262,7 +263,7 @@ export interface ListPickerPropsExtended extends ListPickerProps {
  * List Picker that lets the user pick from a list of items to enable/disable
  * It also provides options to enable all, disable all and invert selection
  */
-export default class ListPicker extends React.Component<ListPickerPropsExtended, any> {
+export class ListPicker extends React.Component<ListPickerPropsExtended, any> {
   public static get Key_All() { return -3; }
   public static get Key_None() { return -2; }
   public static get Key_Invert() { return -1; }
@@ -348,8 +349,10 @@ export default class ListPicker extends React.Component<ListPickerPropsExtended,
         setEnabled={setEnabled}
         onExpanded={this.props.onExpanded}
         items={this.createItems(this.props.items)}
-        iconClass={this.props.iconClass}
+        iconSpec={this.props.iconSpec}
       />
     );
   }
 }
+
+export default ListPicker;

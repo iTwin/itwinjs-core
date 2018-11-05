@@ -23,7 +23,7 @@ export interface ActionItemButtonProps {
 export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> {
   private _componentUnmounting = false;
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<BaseItemState>;
 
   constructor(props: ActionItemButtonProps) {
@@ -75,7 +75,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconClass={this.props.actionItem.iconClass} iconElement={this.props.actionItem.iconElement} />;
+    const icon = <Icon iconSpec={this.props.actionItem.iconSpec} />;
 
     let myClassNames = "";
     if (!this.state.isVisible)

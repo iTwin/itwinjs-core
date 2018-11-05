@@ -45,6 +45,7 @@ import {
   Zone,
   Widget,
   GroupItemDef,
+  ZoneLocation,
   SyncUiEventId,
   ContentViewManager,
   BaseItemState,
@@ -125,9 +126,9 @@ export class ViewsFrontstage extends FrontstageProvider {
         centerRight={
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
-              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
-              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
-              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
                 applicationData={{ iModel: SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection }} />,
             ]}
           />
@@ -135,22 +136,22 @@ export class ViewsFrontstage extends FrontstageProvider {
         bottomLeft={
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
-              <Widget defaultState={WidgetState.Open} iconClass="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={FeedbackDemoWidget} />,
+              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={FeedbackDemoWidget} />,
             ]}
           />
         }
         bottomCenter={
-          <Zone defaultState={ZoneState.Open}
+          <Zone
             widgets={[
-              <Widget isStatusBar={true} iconClass="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
+              <Widget isStatusBar={true} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
             ]}
           />
         }
         bottomRight={
-          <Zone allowsMerging={true}
+          <Zone defaultState={ZoneState.Open} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
             widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconClass="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
-              <Widget defaultState={WidgetState.Open} iconClass="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
+              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
             ]}
           />
         }
@@ -167,7 +168,7 @@ class FrontstageToolWidget extends React.Component {
     return new GroupItemDef({
       groupId: "nested-group",
       labelKey: "SampleApp:buttons.toolGroup",
-      iconClass: "icon-placeholder",
+      iconSpec: "icon-placeholder",
       items: [AppTools.item1, AppTools.item2, AppTools.item3, AppTools.item4, AppTools.item5,
       AppTools.item6, AppTools.item7, AppTools.item8],
       direction: Direction.Bottom,
@@ -269,11 +270,11 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId={SelectionTool.toolId} labelKey="SampleApp:tools.select" iconClass="icon-cursor" />
-          <ToolButton toolId="Measure.Points" iconClass="icon-measure-distance" stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
+          <ToolButton toolId={SelectionTool.toolId} labelKey="SampleApp:tools.select" iconSpec="icon-cursor" />
+          <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             items={[AppTools.setLengthFormatMetricCommand, AppTools.setLengthFormatImperialCommand]}
             direction={Direction.Bottom}
             itemsInColumn={4}
@@ -290,13 +291,13 @@ class FrontstageToolWidget extends React.Component {
         <>
           <ActionItemButton actionItem={AppTools.verticalPropertyGridOpenCommand} />
           <ActionItemButton actionItem={AppTools.verticalPropertyGridOffCommand} />
-          <ToolButton toolId="tool3" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool3" isEnabled={false} execute={this._tool3} />
-          <ToolButton toolId="tool4" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool4" isVisible={false} execute={this._tool4} />
-          <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.outputMessage" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
-          <ToolButton toolId="openRadial" iconClass="icon-placeholder" labelKey="SampleApp:buttons.openRadial" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
+          <ToolButton toolId="tool3" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool3" isEnabled={false} execute={this._tool3} />
+          <ToolButton toolId="tool4" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool4" isVisible={false} execute={this._tool4} />
+          <ToolButton toolId="item5" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.outputMessage" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
+          <ToolButton toolId="openRadial" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.openRadial" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
           <GroupButton
             labelKey="SampleApp:buttons.anotherGroup"
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             items={[AppTools.tool1, AppTools.tool2, this._groupItemDef]}
             direction={Direction.Right}
           />
@@ -342,11 +343,11 @@ class FrontstageNavigationWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId={FitViewTool.toolId} labelKey="SampleApp:tools.fitView" iconClass="icon-fit-to-view" execute={AppTools.fitViewCommand.execute} />
+          <ToolButton toolId={FitViewTool.toolId} labelKey="SampleApp:tools.fitView" iconSpec="icon-fit-to-view" execute={AppTools.fitViewCommand.execute} />
           <ActionItemButton actionItem={AppTools.windowAreaCommand} />
-          <ToolButton toolId={ZoomViewTool.toolId} labelKey="SampleApp:tools.zoom" iconClass="icon-zoom" execute={AppTools.zoomViewCommand.execute} />
-          <ToolButton toolId={PanViewTool.toolId} labelKey="SampleApp:tools.pan" iconClass="icon-hand-2" execute={AppTools.panViewCommand.execute} />
-          <ToolButton toolId={RotateViewTool.toolId} labelKey="SampleApp:tools.rotate" iconElement={this.rotateSvgIcon()} execute={AppTools.rotateViewCommand.execute} />
+          <ToolButton toolId={ZoomViewTool.toolId} labelKey="SampleApp:tools.zoom" iconSpec="icon-zoom" execute={AppTools.zoomViewCommand.execute} />
+          <ToolButton toolId={PanViewTool.toolId} labelKey="SampleApp:tools.pan" iconSpec="icon-hand-2" execute={AppTools.panViewCommand.execute} />
+          <ToolButton toolId={RotateViewTool.toolId} labelKey="SampleApp:tools.rotate" iconSpec={this.rotateSvgIcon()} execute={AppTools.rotateViewCommand.execute} />
         </>
       }
     />;
@@ -356,9 +357,9 @@ class FrontstageNavigationWidget extends React.Component {
       expandsTo={Direction.Left}
       items={
         <>
-          <ToolButton toolId={WalkViewTool.toolId} labelKey="SampleApp:tools.walk" iconClass="icon-walk" execute={AppTools.walkViewCommand.execute} />
-          <ToolButton toolId={FlyViewTool.toolId} labelKey="SampleApp:tools.fly" iconClass="icon-airplane" execute={AppTools.flyViewCommand.execute} />
-          <ToolButton toolId={ViewToggleCameraTool.toolId} labelKey="SampleApp:tools.toggleCamera" iconClass="icon-camera" execute={AppTools.toggleCameraViewCommand.execute} />
+          <ToolButton toolId={WalkViewTool.toolId} labelKey="SampleApp:tools.walk" iconSpec="icon-walk" execute={AppTools.walkViewCommand.execute} />
+          <ToolButton toolId={FlyViewTool.toolId} labelKey="SampleApp:tools.fly" iconSpec="icon-airplane" execute={AppTools.flyViewCommand.execute} />
+          <ToolButton toolId={ViewToggleCameraTool.toolId} labelKey="SampleApp:tools.toggleCamera" iconSpec="icon-camera" execute={AppTools.toggleCameraViewCommand.execute} />
           <ViewSelector imodel={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />
         </>
       }

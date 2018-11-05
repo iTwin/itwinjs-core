@@ -6,6 +6,7 @@
 
 import * as React from "react";
 
+import { ItemDefBase } from "./ItemDefBase";
 import { ItemProps } from "./ItemProps";
 import { WidgetState, WidgetDef, WidgetType } from "./WidgetDef";
 import { ConfigurableUiControlConstructor } from "./ConfigurableUiControl";
@@ -35,16 +36,15 @@ export interface WidgetProps extends ItemProps {
 /** ConfigurableUi Widget React component.
  */
 export class Widget extends React.Component<WidgetProps> {
-  private _widgetDef: WidgetDef;
 
   constructor(props: WidgetProps) {
     super(props);
-
-    this._widgetDef = new WidgetDef(props);
-    Widget.initializeWidgetDef(this._widgetDef, this.props);
   }
 
   public static initializeWidgetDef(widgetDef: WidgetDef, props: WidgetProps): void {
+    // set base class properties
+    ItemDefBase.initializeDef(widgetDef, props);
+
     if (props.id !== undefined)
       widgetDef.id = props.id;
     if (props.defaultState !== undefined)

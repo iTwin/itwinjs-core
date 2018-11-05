@@ -21,7 +21,7 @@ import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
   private _componentUnmounting = false;
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<BaseItemState>;
 
   constructor(props: ToolItemProps) {
@@ -77,7 +77,7 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconClass={this.props.iconClass} iconElement={this.props.iconElement} />;
+    const icon = <Icon iconSpec={this.props.iconSpec} />;
     let myClassNames = "";
     if (!this.state.isVisible)
       myClassNames += "item-hidden";

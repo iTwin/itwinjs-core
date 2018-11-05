@@ -78,27 +78,27 @@ export class Frontstage4 extends FrontstageProvider {
           />
         }
         centerRight={
-          <Zone allowsMerging={true}
+          <Zone defaultState={ZoneState.Minimized} allowsMerging={false}
             widgets={[
-              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
-              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
-              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.TreeDemo" control={TreeDemoWidgetControl} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TreeDemo" control={TreeDemoWidgetControl} />,
             ]}
           />
         }
         bottomCenter={
-          <Zone defaultState={ZoneState.Open}
+          <Zone
             widgets={[
-              <Widget isStatusBar={true} iconClass="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
+              <Widget isStatusBar={true} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
             ]}
           />
         }
         bottomRight={
-          <Zone allowsMerging={true}
+          <Zone defaultState={ZoneState.Open} allowsMerging={false}
             widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconClass="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
-              <Widget defaultState={WidgetState.Open} iconClass="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
-              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.TableDemo" control={TableDemoWidgetControl} />,
+              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.TableDemo" control={TableDemoWidgetControl} />,
             ]}
           />
         }
@@ -113,10 +113,10 @@ export class Frontstage4 extends FrontstageProvider {
         expandsTo={Direction.Bottom}
         items={
           <>
-            <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+            <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
-              iconClass="icon-placeholder"
+              iconSpec="icon-placeholder"
               items={[AppTools.tool1, AppTools.tool2, AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand,
               AppTools.item6, AppTools.item7, AppTools.item8]}
               direction={Direction.Bottom}
@@ -131,17 +131,17 @@ export class Frontstage4 extends FrontstageProvider {
         expandsTo={Direction.Right}
         items={
           <>
-            <ToolButton toolId={AppTools.tool1.id} iconClass={AppTools.tool1.iconClass!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
-            <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+            <ToolButton toolId={AppTools.tool1.id} iconSpec={AppTools.tool1.iconSpec!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
+            <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
             <GroupButton
               labelKey="SampleApp:buttons.anotherGroup"
-              iconClass="icon-placeholder"
+              iconSpec="icon-placeholder"
               items={[AppTools.tool1, AppTools.tool2, AppTools.item3, AppTools.item4, AppTools.item5,
               AppTools.item6, AppTools.item7, AppTools.item8]}
               direction={Direction.Right}
             />
-            <ToolButton toolId={AppTools.tool2.id} iconClass={AppTools.tool2.iconClass!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
-            <ToolButton toolId={AppTools.addMessageCommand.commandId} iconClass={AppTools.addMessageCommand.iconClass!} labelKey={AppTools.addMessageCommand.label} execute={AppTools.addMessageCommand.execute} />
+            <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+            <ToolButton toolId={AppTools.addMessageCommand.commandId} iconSpec={AppTools.addMessageCommand.iconSpec!} labelKey={AppTools.addMessageCommand.label} execute={AppTools.addMessageCommand.execute} />
           </>
         }
       />;
@@ -179,10 +179,10 @@ export class Frontstage4 extends FrontstageProvider {
         expandsTo={Direction.Bottom}
         items={
           <>
-            <ToolButton toolId={AppTools.item6.id} iconClass={AppTools.item6.iconClass!} labelKey={AppTools.item6.label} />
-            <ToolButton toolId={AppTools.item5.id} iconClass={AppTools.item5.iconClass!} labelKey={AppTools.item5.label} />
-            <ToolButton toolId="openDialog" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.modalDialog())} />
-            <ToolButton toolId="openRadial" iconClass="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
+            <ToolButton toolId={AppTools.item6.id} iconSpec={AppTools.item6.iconSpec!} labelKey={AppTools.item6.label} />
+            <ToolButton toolId={AppTools.item5.id} iconSpec={AppTools.item5.iconSpec!} labelKey={AppTools.item5.label} />
+            <ToolButton toolId="openDialog" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.modalDialog())} />
+            <ToolButton toolId="openRadial" iconSpec="icon-placeholder" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
           </>
         }
       />;
@@ -192,11 +192,11 @@ export class Frontstage4 extends FrontstageProvider {
         expandsTo={Direction.Left}
         items={
           <>
-            <ToolButton toolId={AppTools.item8.id} iconClass={AppTools.item8.iconClass!} labelKey={AppTools.item8.label} />
-            <ToolButton toolId={AppTools.item7.id} iconClass={AppTools.item7.iconClass!} labelKey={AppTools.item7.label} />
+            <ToolButton toolId={AppTools.item8.id} iconSpec={AppTools.item8.iconSpec!} labelKey={AppTools.item8.label} />
+            <ToolButton toolId={AppTools.item7.id} iconSpec={AppTools.item7.iconSpec!} labelKey={AppTools.item7.label} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
-              iconClass="icon-placeholder"
+              iconSpec="icon-placeholder"
               items={[AppTools.successMessageBoxCommand, AppTools.informationMessageBoxCommand, AppTools.questionMessageBoxCommand,
               AppTools.warningMessageBoxCommand, AppTools.errorMessageBoxCommand, AppTools.openMessageBoxCommand, AppTools.openMessageBoxCommand2]}
               direction={Direction.Left}

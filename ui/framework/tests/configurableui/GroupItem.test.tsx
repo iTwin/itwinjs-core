@@ -13,12 +13,12 @@ import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
 const tool1 = new CommandItemDef({
   commandId: "tool1",
-  iconClass: "icon-placeholder",
+  iconSpec: "icon-placeholder",
 });
 
 const tool2 = new CommandItemDef({
   commandId: "tool2",
-  iconClass: "icon-placeholder",
+  iconSpec: "icon-placeholder",
   applicationData: { key: "value" },
 });
 
@@ -33,7 +33,7 @@ describe("GroupItem", () => {
       mount(
         <GroupButton
           labelKey="UiFramework:tests.label"
-          iconClass="icon-placeholder"
+          iconSpec="icon-placeholder"
           items={[tool1, tool2]}
           direction={Direction.Bottom}
           itemsInColumn={4}
@@ -45,7 +45,7 @@ describe("GroupItem", () => {
       shallow(
         <GroupButton
           labelKey="UiFramework:tests.label"
-          iconClass="icon-placeholder"
+          iconSpec="icon-placeholder"
           items={[tool1, tool2]}
           direction={Direction.Bottom}
           itemsInColumn={4}
@@ -58,7 +58,7 @@ describe("GroupItem", () => {
       const wrapper = mount(
         <GroupButton
           labelKey="SampleApp:buttons.toolGroup"
-          iconClass="icon-placeholder"
+          iconSpec="icon-placeholder"
           items={[tool1, tool2]}
           direction={Direction.Bottom}
           itemsInColumn={7}
@@ -79,7 +79,7 @@ describe("GroupItem", () => {
 
       const testSpyTool = new CommandItemDef({
         commandId: "spytool",
-        iconClass: "icon-placeholder",
+        iconSpec: "icon-placeholder",
         labelKey: "SampleApp:buttons.tool1",
         execute: executeSpy,
       });
@@ -87,7 +87,7 @@ describe("GroupItem", () => {
       const wrapper = mount(
         <GroupButton
           labelKey="SampleApp:buttons.toolGroup"
-          iconClass="icon-placeholder"
+          iconSpec="icon-placeholder"
           items={[testSpyTool, tool1, tool2]}
           direction={Direction.Bottom}
           itemsInColumn={7}
@@ -118,7 +118,7 @@ describe("GroupItem", () => {
       const groupItemDef = new GroupItemDef({
         groupId: "my-group1",
         labelKey: "SampleApp:buttons.toolGroup",
-        iconClass: "icon-placeholder",
+        iconSpec: "icon-placeholder",
         items: [tool1, tool2],
         direction: Direction.Bottom,
         itemsInColumn: 7,

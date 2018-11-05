@@ -24,10 +24,11 @@ describe("NavigationWidget", () => {
   });
 
   const widgetProps: AnyWidgetProps = {
+    id: "navigationWidget",
     classId: "NavigationWidget",
     defaultState: WidgetState.Open,
     isFreeform: true,
-    iconClass: "icon-home",
+    iconSpec: "icon-home",
     labelKey: "SampleApp:Test.my-label",
     navigationAidId: "StandardRotationNavigationAid",
     horizontalDirection: Direction.Top,
@@ -53,8 +54,8 @@ describe("NavigationWidget", () => {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-          <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+          <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+          <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
         </>
       }
     />;
@@ -64,8 +65,8 @@ describe("NavigationWidget", () => {
       expandsTo={Direction.Left}
       items={
         <>
-          <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-          <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+          <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+          <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
         </>
       }
     />;

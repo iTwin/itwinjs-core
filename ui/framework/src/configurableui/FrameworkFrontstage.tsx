@@ -24,7 +24,7 @@ import { WidgetZone } from "@bentley/ui-ninezone/lib/zones/state/Zone";
  */
 export interface FrameworkFrontstageProps {
   frontstageDef: FrontstageDef;
-  nineZone: NineZoneProps;
+  nineZoneProps: NineZoneProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
   zoneDefProvider: ZoneDefProvider;
@@ -59,11 +59,11 @@ export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProp
       pointerEvents: "none",
     };
 
-    const zones = Object.keys(this.props.nineZone.zones)
+    const zones = Object.keys(this.props.nineZoneProps.zones)
       .map((key) => Number(key) as WidgetZoneIndex)
       .sort((id1, id2) => {
-        const z1 = this.props.nineZone.zones[id1];
-        const z2 = this.props.nineZone.zones[id2];
+        const z1 = this.props.nineZoneProps.zones[id1];
+        const z2 = this.props.nineZoneProps.zones[id2];
         if (!z1.floating && !z2.floating)
           return z1.id - z2.id;
 
@@ -75,7 +75,7 @@ export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProp
 
         return z1.floating.stackId - z2.floating.stackId;
       });
-    const nineZone = new NineZone(this.props.nineZone);
+    const nineZone = new NineZone(this.props.nineZoneProps);
     return (
       <div style={divStyle}>
         {this.doContentLayoutRender()}
@@ -84,15 +84,15 @@ export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProp
           {
             zones.map((zoneId) => {
               const zone: WidgetZone = nineZone.getWidgetZone(zoneId);
-              const isDragged = this.props.nineZone.draggingWidget && this.props.nineZone.draggingWidget.id === zoneId;
-              const lastPosition = isDragged ? this.props.nineZone.draggingWidget!.lastPosition : undefined;
-              const isUnmergeDrag = isDragged ? this.props.nineZone.draggingWidget!.isUnmerge : false;
+              const isDragged = this.props.nineZoneProps.draggingWidget && this.props.nineZoneProps.draggingWidget.id === zoneId;
+              const lastPosition = isDragged ? this.props.nineZoneProps.draggingWidget!.lastPosition : undefined;
+              const isUnmergeDrag = isDragged ? this.props.nineZoneProps.draggingWidget!.isUnmerge : false;
               const ghostOutline = zone.getGhostOutlineBounds();
               const dropTarget = zone.getDropTarget();
               return (
                 <FrontstageZone
                   key={zoneId}
-                  zoneProps={this.props.nineZone.zones[zoneId]}
+                  zoneProps={this.props.nineZoneProps.zones[zoneId]}
                   widgetChangeHandler={this.props.widgetChangeHandler}
                   targetChangeHandler={this.props.targetChangeHandler}
                   zoneDefProvider={this.props.zoneDefProvider}

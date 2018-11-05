@@ -43,7 +43,7 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
 /** @hidden */
 export interface RotationData {
   label: string;
-  iconClass: string;
+  iconClassName: string;
 }
 
 /** @hidden */
@@ -67,56 +67,56 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
       list = [
         {
           label: UiFramework.i18n.translate("UiFramework:rotations.top"),
-          iconClass: "icon-cube-faces-top",
+          iconClassName: "icon-cube-faces-top",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.bottom"),
-          iconClass: "icon-cube-faces-bottom",
+          iconClassName: "icon-cube-faces-bottom",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.left"),
-          iconClass: "icon-cube-faces-left",
+          iconClassName: "icon-cube-faces-left",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.right"),
-          iconClass: "icon-cube-faces-right",
+          iconClassName: "icon-cube-faces-right",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.front"),
-          iconClass: "icon-cube-faces-front",
+          iconClassName: "icon-cube-faces-front",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.rear"),
-          iconClass: "icon-cube-faces-rear",
+          iconClassName: "icon-cube-faces-rear",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.isoLeft"),
-          iconClass: "icon-cube-faces-iso-left",
+          iconClassName: "icon-cube-faces-iso-left",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.isoRight"),
-          iconClass: "icon-cube-faces-iso-right",
+          iconClassName: "icon-cube-faces-iso-right",
         },
       ];
     } catch (e) {
       list = [
         {
           label: "Top",
-          iconClass: "icon-cube-faces-top",
+          iconClassName: "icon-cube-faces-top",
         }, {
           label: "Bottom",
-          iconClass: "icon-cube-faces-bottom",
+          iconClassName: "icon-cube-faces-bottom",
         }, {
           label: "Left",
-          iconClass: "icon-cube-faces-left",
+          iconClassName: "icon-cube-faces-left",
         }, {
           label: "Right",
-          iconClass: "icon-cube-faces-right",
+          iconClassName: "icon-cube-faces-right",
         }, {
           label: "Front",
-          iconClass: "icon-cube-faces-front",
+          iconClassName: "icon-cube-faces-front",
         }, {
           label: "Rear",
-          iconClass: "icon-cube-faces-rear",
+          iconClassName: "icon-cube-faces-rear",
         }, {
           label: "Iso Left",
-          iconClass: "icon-cube-faces-iso-left",
+          iconClassName: "icon-cube-faces-iso-left",
         }, {
           label: "Iso Right",
-          iconClass: "icon-cube-faces-iso-right",
+          iconClassName: "icon-cube-faces-iso-right",
         },
       ];
     }
@@ -141,7 +141,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
             <NZ_Icon
               className={"icon-button"}
               icon={
-                <span className={"three-d-icon icon " + this.state.list[this.state.selected].iconClass} />
+                <span className={"three-d-icon icon " + this.state.list[this.state.selected].iconClassName} />
               }
               onClick={this._toggleIsExpanded}
             >
@@ -185,7 +185,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
                   key={itemIndex.toString()}
                   ref={itemIndex.toString()}
                   label={item.label}
-                  icon={<span className={"icon " + item.iconClass} />}
+                  icon={<span className={"icon " + item.iconClassName} />}
                   isActive={this.state.selected === itemIndex}
                   onClick={() => this._handleListItemClicked(itemIndex)}
                 >

@@ -42,7 +42,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
         <NZ_AppButton
           onClick={this._appButton.execute}
           icon={
-            <Icon iconClass={this._appButton.iconClass} iconElement={this._appButton.iconElement} />
+            <Icon iconSpec={this._appButton.iconSpec} />
           }
         />
       );
