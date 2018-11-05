@@ -314,12 +314,12 @@ export class Backstage extends React.Component<BackstageProps> {
     FrontstageManager.openModalFrontstage(new SignOutModalFrontstage(this.props.accessToken));
   }
 
-  private _getUserProfile(): React.ReactNode | undefined {
+  private _getUserInfo(): React.ReactNode | undefined {
     if (this.props.accessToken) {
-      const userProfile = this.props.accessToken.getUserProfile();
-      if (userProfile) {
+      const userInfo = this.props.accessToken.getUserInfo();
+      if (userInfo) {
         return (
-          <NZ_UserProfile firstName={userProfile.firstName} lastName={userProfile.lastName} email={userProfile.email}
+          <NZ_UserProfile firstName={userInfo.profile!.firstName} lastName={userInfo.profile!.lastName} email={userInfo.email!.id}
             onClick={this._onSignOut.bind(this)} />
         );
       }
@@ -335,7 +335,7 @@ export class Backstage extends React.Component<BackstageProps> {
           isOpen={this.props.isVisible}
           showOverlay={this.props.showOverlay}
           onClose={closeBackStage}
-          header={this._getUserProfile()}
+          header={this._getUserInfo()}
           items={this.props.children}
         />
       </>

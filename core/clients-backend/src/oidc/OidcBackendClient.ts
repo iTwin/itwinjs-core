@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { OidcClient, AccessToken, UserProfile, IncludePrefix } from "@bentley/imodeljs-clients";
-import { Issuer, Client as OpenIdClient, ClientConfiguration, GrantParams, TokenSet, UserInfo } from "openid-client";
+import { OidcClient, AccessToken, IncludePrefix, UserInfo } from "@bentley/imodeljs-clients";
+import { Issuer, Client as OpenIdClient, ClientConfiguration, GrantParams, TokenSet, UserInfo as OpenIdUserInfo } from "openid-client";
 import { ActivityLoggingContext, BentleyStatus, BentleyError } from "@bentley/bentleyjs-core";
 
 /** Client configuration to create OIDC/OAuth tokens for backend applications */
@@ -63,15 +63,11 @@ export abstract class OidcBackendClient extends OidcClient {
     return this._client;
   }
 
-  private createUserProfile(userInfo: UserInfo): UserProfile {
-    return new UserProfile(userInfo.given_name, userInfo.family_name, userInfo.email!, userInfo.sub, userInfo.org_name!, userInfo.org!, userInfo.ultimate_site!, userInfo.usage_country_iso!);
-  }
-
-  private createToken(tokenSet: TokenSet, userInfo: UserInfo): AccessToken {
+  private createToken(tokenSet: TokenSet, openIdUserInfo: OpenIdUserInfo): AccessToken {
     const startsAt: Date = new Date(tokenSet.expires_at - tokenSet.expires_in);
     const expiresAt: Date = new Date(tokenSet.expires_at);
-    const userProfile = this.createUserProfile(userInfo);
-    return AccessToken.fromJsonWebTokenString(tokenSet.access_token, userProfile, startsAt, expiresAt);
+    const userInfo = UserInfo.fromJson(openIdUserInfo);
+    return AccessToken.fromJsonWebTokenString(tokenSet.access_token, startsAt, expiresAt, userInfo);
   }
 
   protected async exchangeToken(actx: ActivityLoggingContext, grantParams: GrantParams): Promise<AccessToken> {
@@ -83,7 +79,7 @@ export abstract class OidcBackendClient extends OidcClient {
 
     const client = await this.getClient(actx);
     const tokenSet: TokenSet = await client.grant(grantParams);
-    const userInfo: UserInfo = await client.userinfo(tokenSet.access_token);
+    const userInfo: OpenIdUserInfo = await client.userinfo(tokenSet.access_token);
     return this.createToken(tokenSet, userInfo);
   }
 
@@ -100,7 +96,9 @@ export abstract class OidcBackendClient extends OidcClient {
 
     const client = await this.getClient(actx);
     const tokenSet: TokenSet = await client.refresh(jwt.toTokenString(IncludePrefix.No)!);
-    const userInfo: UserInfo = await client.userinfo(tokenSet.access_token);
+    const userInfo: OpenIdUserInfo = await client.userinfo(tokenSet.access_token);
     return this.createToken(tokenSet, userInfo);
   }
 }
+
+// const userInfo: UserInfo = await client.userinfo(tokenSet.access_token);

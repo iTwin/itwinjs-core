@@ -71,6 +71,7 @@
     "@bentley/ui-components": "0.163.0",
     "@bentley/ui-ninezone": "0.163.0",
     "@bentley/ui-framework": "0.163.0",
+    "@bentley/imodeljs-clients-backend": "0.163.0",
     "body-parser": "^1.18.2",
     "express": "^4.16.3",
     "react": "^16.4.2",

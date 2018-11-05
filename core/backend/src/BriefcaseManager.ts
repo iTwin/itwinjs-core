@@ -568,7 +568,7 @@ export class BriefcaseManager {
 
   /** Finds any existing briefcase for the specified parameters. Pass null for the requiredChangeSet if the first version is to be retrieved */
   private static findCachedBriefcaseToOpen(accessToken: AccessToken, iModelId: GuidString, requiredChangeSetIndex: number, requiredOpenParams: OpenParams): BriefcaseEntry | undefined {
-    const requiredUserId = accessToken.getUserProfile()!.userId;
+    const requiredUserId = accessToken.getUserInfo()!.id;
 
     // Narrow down briefcases by various criteria (except their versions)
     const filterBriefcaseFn = (entry: BriefcaseEntry): boolean => {
@@ -671,7 +671,7 @@ export class BriefcaseManager {
 
     const briefcase = new BriefcaseEntry();
     briefcase.iModelId = iModelId;
-    briefcase.userId = accessToken.getUserProfile()!.userId;
+    briefcase.userId = accessToken.getUserInfo()!.id;
 
     if (openParams.syncMode !== SyncMode.PullAndPush) {
       /* FixedVersion, PullOnly => Create standalone briefcase */
@@ -1032,7 +1032,7 @@ export class BriefcaseManager {
       throw new IModelError(res, briefcase.pathname);
 
     briefcase.openParams = openParams;
-    briefcase.userId = accessToken.getUserProfile()!.userId;
+    briefcase.userId = accessToken.getUserInfo()!.id;
     briefcase.isOpen = true;
   }
 

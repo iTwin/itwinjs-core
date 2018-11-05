@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, UserProfile, IModelHubClient } from "@bentley/imodeljs-clients";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, HubUserInfo, IModelHubClient } from "@bentley/imodeljs-clients";
 import { HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
@@ -327,7 +327,7 @@ export class HubUtility {
 }
 
 class ImsUserMgr {
-  public async authorizeUser(_actx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any): Promise<AccessToken> {
+  public async authorizeUser(_actx: ActivityLoggingContext, _userInfo: HubUserInfo | undefined, userCredentials: any): Promise<AccessToken> {
     return await doImsLogin(userCredentials);
   }
 }

@@ -26,6 +26,7 @@
     "@bentley/geometry-core": "0.163.0",
     "@bentley/imodeljs-backend": "0.163.0",
     "@bentley/imodeljs-clients": "0.163.0",
+    "@bentley/imodeljs-clients-backend": "0.163.0",
     "@bentley/imodeljs-common": "0.163.0",
     "body-parser": "^1.18.2",
     "cookie-parser": "^1.4.3",

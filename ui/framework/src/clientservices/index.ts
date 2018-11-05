@@ -4,5 +4,4 @@
 *--------------------------------------------------------------------------------------------*/
 
 export * from "./IModelServices";
-export * from "./LoginServices";
 export * from "./ProjectServices";
