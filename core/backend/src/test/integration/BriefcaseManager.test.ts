@@ -11,10 +11,9 @@ import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-comm
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../backend";
 import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
-import { HubUtility } from "./HubUtility";
 import { AccessToken, ConnectClient, IModelHubClient, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
 
-describe.skip("BriefcaseManager", () => {
+describe("BriefcaseManager (#integration)", () => {
   const index = process.argv.indexOf("--offline");
   const offline: boolean = process.argv[index + 1] === "mock";
   let testProjectId: string;
@@ -22,6 +21,7 @@ describe.skip("BriefcaseManager", () => {
     new TestIModelInfo("ReadOnlyTest"),
     new TestIModelInfo("ReadWriteTest"),
     new TestIModelInfo("NoVersionsTest"),
+    new TestIModelInfo("ConnectionReadTest"),
   ];
   const testVersionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
   const testElementCounts = [27, 28, 29];
@@ -59,9 +59,6 @@ describe.skip("BriefcaseManager", () => {
       testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
     } else {
       [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
-
-      // Clearing the briefcases for frontend tests here since the frontend is not setup with the CORS proxy.
-      await HubUtility.purgeAcquiredBriefcases(accessToken, "iModelJsTest", "ConnectionReadTest");
     }
 
   });

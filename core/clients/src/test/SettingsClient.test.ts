@@ -462,7 +462,7 @@ describe.skip("ConnectSettingsClient-Administrator", () => {
 
 });
 
-describe("Reading non-user settings from ordinary user", () => {
+describe.skip("Reading non-user settings from ordinary user", () => {
   let accessToken: AccessToken;
   let authToken: AuthorizationToken;
   let projectId: string;

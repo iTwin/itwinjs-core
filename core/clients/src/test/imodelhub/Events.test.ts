@@ -14,7 +14,7 @@ import {
   EventSubscription, EventSAS, EventType, IModelHubEvent,
 } from "../../";
 
-import { TestConfig } from "../TestConfig";
+import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import { LockLevel, LockType } from "../../imodelhub";
 
@@ -102,7 +102,7 @@ describe("iModelHub EventHandler", () => {
 
   before(async function (this: Mocha.IHookCallbackContext) {
     this.enableTimeouts(false);
-    accessToken = await utils.login();
+    accessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
     briefcaseId = (await utils.getBriefcases(accessToken, imodelId, 1))[0].briefcaseId!;

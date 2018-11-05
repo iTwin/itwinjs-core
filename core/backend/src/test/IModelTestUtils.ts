@@ -148,7 +148,8 @@ export class IModelTestUtils {
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
       // Purge briefcases that are close to reaching the acquire limit
-      await HubUtility.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, iModelInfo.name);
+      const superAccessToken: AccessToken = await HubUtility.login(TestUsers.super);
+      await HubUtility.purgeAcquiredBriefcases(superAccessToken, TestConfig.projectName, iModelInfo.name);
     }
 
     return [accessToken, testProjectId, cacheDir];
