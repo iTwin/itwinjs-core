@@ -19,7 +19,7 @@
     "docSiteId": 5,
     "displayName": "Learning"
   },
-  "delta": {
+  "ChangeHistory": {
     "docSiteId": 6,
     "displayName": "Change History"
   },
@@ -34,7 +34,7 @@
       "learning",
       "bis",
       "reference",
-      "delta"
+      "ChangeHistory"
     ],
     "headerTabs": {
       "Getting Started": {
@@ -48,6 +48,9 @@
       },
       "API Reference": {
         "docSite": "reference"
+      },
+      "Change History": {
+        "docSite": "ChangeHistory"
       }
     },
     "packageAliases": {
