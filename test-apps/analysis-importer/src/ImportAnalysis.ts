@@ -5,7 +5,7 @@ import { IModelDb, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs
 import { GeometryStreamBuilder, GeometryStreamProps, Gradient, Code, GeometricElement3dProps, ViewFlags, ColorDef, RenderMode } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { Polyface, IModelJson, AuxChannelDataType, AuxChannel, PolyfaceBuilder, Arc3d, Point3d, Vector3d, LineString3d, StrokeOptions, Transform, AuxChannelData, PolyfaceAuxData } from "@bentley/geometry-core";
+import { Angle, Polyface, IModelJson, AuxChannelDataType, AuxChannel, PolyfaceBuilder, Point3d, StrokeOptions, AuxChannelData, PolyfaceAuxData } from "@bentley/geometry-core";
 import { Utilities, KnownTestLocations, AnalysisStyleProps } from "./Utilities";
 import * as path from "path";
 import { readFileSync } from "fs";
@@ -95,31 +95,87 @@ async function importPolyfaceFromJson(jsonFileName: string) {
     return IModelJson.Reader.parse(json);
 }
 /** Create a polyface representing a cantilever beam with [[PolyfaceAuxData]] representing the stress and deflection. */
-function createCantileverBeamPolyface() {
-    const beamRadius = 10.0;
-    const beamLength = 100.0;
-    const facetSize = 1.0;
-    const builder = PolyfaceBuilder.create();
-    const crossSectionArc = Arc3d.create(Point3d.createZero(), Vector3d.create(0.0, beamRadius, 0.0), Vector3d.create(0.0, 0.0, beamRadius));
-    const strokedCrossSection = LineString3d.create();
-    const strokeOptions = StrokeOptions.createForCurves();
-    strokeOptions.maxEdgeLength = facetSize;
-    crossSectionArc.emitStrokes(strokedCrossSection, strokeOptions);
+function createFlatMeshWithWaves() {
+    const options = StrokeOptions.createForFacets();
+    options.shouldTriangulate = true;
+    const builder = PolyfaceBuilder.create(options);
+    const nDimensions = 100;
+    const spacing = 1.0;
 
-    for (let x = 0.0; x < beamLength; x += facetSize)
-        builder.addBetweenTransformedLineStrings(strokedCrossSection, Transform.createTranslationXYZ(x, 0.0, 0.0), Transform.createTranslationXYZ(x + facetSize, 0.0, 0.0), true);
+    for (let iRow = 0; iRow < nDimensions - 1; iRow++) {
+        for (let iColumn = 0; iColumn < nDimensions - 1; iColumn++) {
+            const quad = [Point3d.create(iRow * spacing, iColumn * spacing, 0.0),
+            Point3d.create((iRow + 1) * spacing, iColumn * spacing, 0.0),
+            Point3d.create((iRow + 1) * spacing, (iColumn + 1) * spacing, 0.0),
+            Point3d.create(iRow * spacing, (iColumn + 1) * spacing)];
+            builder.addQuadFacet(quad);
+        }
+    }
 
     const polyface = builder.claimPolyface();
-    const heightData: number[] = [];
+    const zeroScalarData = [], zeroDisplacementData = [], radialHeightData = [], radialSlopeData = [], radialDisplacementData = [];
+    const radius = nDimensions * spacing / 2.0;
+    const center = new Point3d(radius, radius, 0.0);
+    const maxHeight = radius / 4.0;
+    const auxChannels = [];
 
-    const scratchPoint = Point3d.create();
+    /** Create a radial wave - start and return to zero */
     for (let i = 0; i < polyface.data.point.length; i++) {
-        const point = polyface.data.point.atPoint3dIndex(i, scratchPoint) as Point3d;
-        heightData.push(point.z);
-    }
-    const heightChannel = new AuxChannel([new AuxChannelData(0.0, heightData)], AuxChannelDataType.Distance, "Height", "");
+        const angle = Angle.pi2Radians * polyface.data.point.distanceIndexToPoint(i, center) / radius;
+        const height = maxHeight * Math.sin(angle);
+        const slope = Math.abs(Math.cos(angle));
 
-    if (true) polyface.data.auxData = new PolyfaceAuxData([heightChannel], polyface.data.pointIndex);
+        zeroScalarData.push(0.0);
+        zeroDisplacementData.push(0.0);
+        zeroDisplacementData.push(0.0);
+        zeroDisplacementData.push(0.0);
+
+        radialHeightData.push(height);
+        radialSlopeData.push(slope);
+        radialDisplacementData.push(0.0);
+        radialDisplacementData.push(0.0);
+        radialDisplacementData.push(height);
+    }
+
+    const radialDisplacementDataVector = [new AuxChannelData(0.0, zeroDisplacementData), new AuxChannelData(1.0, radialDisplacementData), new AuxChannelData(2.0, zeroDisplacementData)];
+    const radialHeightDataVector = [new AuxChannelData(0.0, zeroScalarData), new AuxChannelData(1.0, radialHeightData), new AuxChannelData(2.0, zeroScalarData)];
+    const radialSlopeDataVector = [new AuxChannelData(0.0, zeroScalarData), new AuxChannelData(1.0, radialSlopeData), new AuxChannelData(2.0, zeroScalarData)];
+
+    auxChannels.push(new AuxChannel(radialDisplacementDataVector, AuxChannelDataType.Vector, "Radial Displacement", "Radial: Time"));
+    auxChannels.push(new AuxChannel(radialHeightDataVector, AuxChannelDataType.Distance, "Radial Height", "Radial: Time"));
+    auxChannels.push(new AuxChannel(radialSlopeDataVector, AuxChannelDataType.Scalar, "Radial Slope", "Radial: Time"));
+
+    const waveHeight = radius / 20.0;
+    const waveLength = radius / 2.0;
+    const frameCount = 10;
+    const linearDisplacementDataVector = [], linearHeightDataVector = [], linearSlopeDataVector = [];
+
+    for (let i = 0; i < frameCount; i++) {
+        const fraction = i / (frameCount - 1);
+        const waveCenter = waveLength * fraction;
+        const linearHeightData = [], linearSlopeData = [], linearDisplacementData = [];
+
+        for (let j = 0; j < polyface.data.point.length; j++) {
+            const point = polyface.data.point.getPoint3dAt(j);
+            const theta = Angle.pi2Radians * (point.x - waveCenter) / waveLength;
+            const height = waveHeight * Math.sin(theta);
+            const slope = Math.abs(Math.cos(theta));
+
+            linearHeightData.push(height);
+            linearSlopeData.push(slope);
+            linearDisplacementData.push(0.0);
+            linearDisplacementData.push(0.0);
+            linearDisplacementData.push(height);
+        }
+        linearDisplacementDataVector.push(new AuxChannelData(i, linearDisplacementData));
+        linearHeightDataVector.push(new AuxChannelData(i, linearHeightData));
+        linearSlopeDataVector.push(new AuxChannelData(i, linearSlopeData));
+    }
+    auxChannels.push(new AuxChannel(linearDisplacementDataVector, AuxChannelDataType.Vector, "Linear Displacement", "Linear: Time"));
+    auxChannels.push(new AuxChannel(linearHeightDataVector, AuxChannelDataType.Distance, "Linear Height", "Linear: Time"));
+    auxChannels.push(new AuxChannel(linearSlopeDataVector, AuxChannelDataType.Scalar, "Linear Slope", "Linear: Time"));
+
+    polyface.data.auxData = new PolyfaceAuxData(auxChannels, polyface.data.pointIndex);
 
     return polyface;
 }
@@ -135,12 +191,12 @@ async function doAnalysisExamples() {
     const categoryId = await Utilities.createAndInsertSpatialCategory(iModel, "Analysis Category");
     const importedPolyface = await importPolyfaceFromJson("RadialWave.json");
 
-    if (true)
+    if (false)
         await createAnalysisModel(importedPolyface, categoryId, "Imported Data", iModel);
 
-    const beamPolyface = createCantileverBeamPolyface();
+    const flatWaveMesh = createFlatMeshWithWaves();
 
-    await createAnalysisModel(beamPolyface, categoryId, "Cantiliever Beam", iModel);
+    await createAnalysisModel(flatWaveMesh, categoryId, "Cantiliever Beam", iModel);
 
     iModel.saveChanges();
     iModel.closeStandalone();
