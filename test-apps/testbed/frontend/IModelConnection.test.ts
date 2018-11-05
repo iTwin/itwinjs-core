@@ -10,16 +10,17 @@ import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection,
-  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, IModelApp,
+  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState,
 } from "@bentley/imodeljs-frontend";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { CONSTANTS } from "../common/Testbed";
+import { MaybeRenderApp } from "./WebGLTestContext";
 
 describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
+    MaybeRenderApp.startup();
 
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
@@ -31,7 +32,7 @@ describe("IModelConnection (#integration)", () => {
   after(async () => {
     if (iModel)
       await iModel.close(TestData.accessToken);
-    IModelApp.shutdown();
+    MaybeRenderApp.shutdown();
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {
