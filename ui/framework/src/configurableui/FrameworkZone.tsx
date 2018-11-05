@@ -60,7 +60,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
     super(props);
   }
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<FrameworkZoneState> = {
     updatedWidgetDef: undefined,
   };

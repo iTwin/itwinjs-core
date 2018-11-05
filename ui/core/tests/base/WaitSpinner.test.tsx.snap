@@ -1,0 +1,18 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`WaitSpinner renders correctly 1`] = `
+<div
+  className="bui-waitspinner-div"
+>
+  <div
+    className="bui-waitspinner-loader"
+  >
+    <i />
+    <i />
+    <i />
+    <i />
+    <i />
+    <i />
+  </div>
+</div>
+`;

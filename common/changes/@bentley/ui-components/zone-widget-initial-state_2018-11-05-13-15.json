@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Zone & Widget initial state, more ui-core unit tests, cleaned up ui-framework index.ts files.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "dan.east@bentley.com"
+}

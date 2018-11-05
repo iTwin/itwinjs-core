@@ -45,6 +45,7 @@ import {
   Zone,
   Widget,
   GroupItemDef,
+  ZoneLocation,
   SyncUiEventId,
   ContentViewManager,
   BaseItemState,
@@ -140,14 +141,14 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         bottomCenter={
-          <Zone defaultState={ZoneState.Open}
+          <Zone
             widgets={[
               <Widget isStatusBar={true} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
             ]}
           />
         }
         bottomRight={
-          <Zone allowsMerging={true}
+          <Zone defaultState={ZoneState.Open} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
             widgets={[
               <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,

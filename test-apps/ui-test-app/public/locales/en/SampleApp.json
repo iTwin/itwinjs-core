@@ -1,6 +1,6 @@
 {
   "Header": {
-    "welcome": "Welcome to UI Sample Application"
+    "welcome": "Welcome to UI Test App"
   },
   "IModelListHeader": {
     "projects": "Projects"
@@ -8,12 +8,15 @@
   "IModelList": {
     "noIModels": "There are no IModels in Project {{projectName}}"
   },
-  "ContentDef": {
+  "ContentLayoutDef": {
     "OneView": "Single View",
     "TwoAlongside": "Side by Side",
     "TwoStacked": "Stacked",
     "ThreeRightStacked": "Three Right Stacked",
-    "FourQuadranted": "Quadranted"
+    "FourQuadrants": "Four Quadrants",
+    "TwoHalvesHorizontal": "Two Halves Horizontal",
+    "TwoHalvesVertical": "Two Halves Vertical",
+    "SingleContent": "Single Content"
   },
   "Test": {
     "my-label": "My Label"

@@ -12,14 +12,27 @@ import { ViewQueryParams } from "@bentley/imodeljs-common/lib/ViewProps";
 import { UiFramework } from "../UiFramework";
 import { ViewDefinitionProps, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 
+/** Properties for the [[ViewSelector]] component */
+export interface ViewSelectorProps {
+  imodel?: IModelConnection;
+}
+
+/** Properties for the [[ViewSelector]] component */
+export interface ViewSelectorState {
+  items: ListItem[];
+  selectedViewId: string | null;
+  title: string;
+  initialized: boolean;
+}
+
 /** View Selector React component */
-export class ViewSelector extends React.Component<any, any> {
+export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelectorState> {
   /** Creates a ViewSelector */
-  constructor(props: any) {
+  constructor(props: ViewSelectorProps) {
     super(props);
 
     this.state = {
-      items: [],
+      items: new Array<ListItem>(),
       selectedViewId: null,
       title: UiFramework.i18n.translate("UiFramework:savedViews.views"),
       initialized: false,
@@ -143,10 +156,10 @@ export class ViewSelector extends React.Component<any, any> {
       return;
 
     // Query views and add them to state
-    const views3d: ListItem[] = this.state.items[0].children;
-    const views2d: ListItem[] = this.state.items[1].children;
-    const sheets: ListItem[] = this.state.items[2].children;
-    const unknown: ListItem[] = this.state.items.length > 3 ? this.state.items[3].children : [];
+    const views3d: ListItem[] = this.state.items[0].children!;
+    const views2d: ListItem[] = this.state.items[1].children!;
+    const sheets: ListItem[] = this.state.items[2].children!;
+    const unknown: ListItem[] = this.state.items.length > 3 ? this.state.items[3].children! : [];
 
     const updateChildren = (item: ListItem) => {
       if (item.key === viewId)

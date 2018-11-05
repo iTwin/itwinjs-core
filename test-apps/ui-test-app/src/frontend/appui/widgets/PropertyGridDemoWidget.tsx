@@ -5,7 +5,7 @@
 import * as React from "react";
 
 import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { WidgetControl, WidgetComponentProps } from "@bentley/ui-framework";
+import { WidgetControl } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { ContentControl } from "@bentley/ui-framework";
 
@@ -97,14 +97,14 @@ export class VerticalPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    super.reactElement = <VerticalPropertyGridWidget widgetControl={this} />;
+    super.reactElement = <VerticalPropertyGridWidget />;
   }
 }
 
-class VerticalPropertyGridWidget extends React.Component<WidgetComponentProps> {
+class VerticalPropertyGridWidget extends React.Component {
   private _dataProvider: PropertyDataProvider;
 
-  constructor(props: WidgetComponentProps) {
+  constructor(props: any) {
     super(props);
 
     this._dataProvider = new SamplePropertyDataProvider();
@@ -123,14 +123,14 @@ export class HorizontalPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <HorizontalPropertyGridWidget widgetControl={this} />;
+    this.reactElement = <HorizontalPropertyGridWidget />;
   }
 }
 
-class HorizontalPropertyGridWidget extends React.Component<WidgetComponentProps> {
+class HorizontalPropertyGridWidget extends React.Component {
   private _dataProvider: PropertyDataProvider;
 
-  constructor(props: WidgetComponentProps) {
+  constructor(props: any) {
     super(props);
 
     this._dataProvider = new SamplePropertyDataProvider();

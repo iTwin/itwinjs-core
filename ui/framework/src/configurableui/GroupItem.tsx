@@ -143,7 +143,7 @@ interface State {
  */
 class GroupItem extends React.Component<Props, State> {
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<State>;
 
   constructor(props: Props, context?: any) {
@@ -301,7 +301,7 @@ class GroupItem extends React.Component<Props, State> {
                 onClick={() => this._handleOnHistoryItemClick(entry.item)}
                 title={item.label}
               >
-                {icon}}
+                {icon}
               </HistoryIcon>
             );
           })
@@ -396,7 +396,7 @@ export interface GroupItemState {
  */
 export class GroupButton extends React.Component<GroupItemProps, GroupItemState> {
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<GroupItemState>;
 
   constructor(props: GroupItemProps, context?: any) {

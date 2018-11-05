@@ -7,8 +7,8 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { ListItem, ListItemType } from "./ListPicker";
-import { IModelApp, Viewport, ViewState, SpatialViewState, SpatialModelState, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
-import { ModelQueryParams } from "@bentley/imodeljs-common/lib/ModelProps";
+import { IModelApp, Viewport, ViewState, SpatialViewState, SpatialModelState, SelectedViewportChangedArgs, IModelConnection } from "@bentley/imodeljs-frontend";
+import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
 import { UiFramework } from "../UiFramework";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
@@ -32,6 +32,12 @@ export interface ModelGroup {
   setEnabled: (item: ListItem, enabled: boolean) => void;
 }
 
+/** Properties for the [[ModelSelectorWidget]] component */
+export interface ModelSelectorWidgetProps {
+  imodel?: IModelConnection;
+  allViewports?: boolean;
+}
+
 /** State for the [[ModelSelectorWidget]] component */
 export interface ModelSelectorWidgetState {
   expand: boolean;
@@ -46,17 +52,17 @@ export class ModelSelectorWidgetControl extends WidgetControl {
     super(info, options);
 
     const thing = options.iModel;
-    this.reactElement = <ModelSelectorWidget widgetControl={this} imodel={thing} />;
+    this.reactElement = <ModelSelectorWidget imodel={thing} />;
   }
 }
 
 /** Model Selector Widget React component */
-export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidgetState> {
+export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
   private _removeSelectedViewportChanged?: () => void;
   private _groups: ModelGroup[] = [];
 
   /** Creates a ModelSelectorWidget */
-  constructor(props: any) {
+  constructor(props: ModelSelectorWidgetProps) {
     super(props);
 
     this._initGroups();
@@ -66,7 +72,8 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
 
   /** Adds listeners */
   public componentDidMount() {
-    this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
+    if (IModelApp.viewManager)
+      this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
   }
 
   /** Removes listeners */
@@ -144,14 +151,17 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
 
     const spatialView = vp.view as SpatialViewState;
     const modelQueryParams: ModelQueryParams = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
-    const curModelProps = await this.props.imodel.models.queryProps(modelQueryParams);
+    let curModelProps: ModelProps[] = new Array<ModelProps>();
+
+    if (this.props.imodel)
+      curModelProps = await this.props.imodel.models.queryProps(modelQueryParams);
 
     const models: ListItem[] = [];
     for (const modelProps of curModelProps) {
       const model: ListItem = {
-        key: modelProps.id.toString(),
-        name: modelProps.name,
-        enabled: spatialView.modelSelector.has(modelProps.id),
+        key: (modelProps.id) ? modelProps.id.toString() : "",
+        name: (modelProps.name) ? modelProps.name : "",
+        enabled: modelProps.id ? spatialView.modelSelector.has(modelProps.id) : false,
         type: ListItemType.Item,
       };
       models.push(model);
@@ -168,7 +178,10 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
     // Query categories and add them to state
     const view: ViewState = vp.view.clone();
     const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM " + (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory");
-    const rows = await this.props.imodel.executeQuery(ecsql);
+    let rows = [];
+
+    if (this.props.imodel)
+      rows = await this.props.imodel.executeQuery(ecsql);
 
     const categories: ListItem[] = [];
     for (const row of rows) {
@@ -189,6 +202,9 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
   }
 
   private _onModelChecked = (item: ListItem, checked: boolean) => {
+    if (!IModelApp.viewManager)
+      return;
+
     IModelApp.viewManager.forEachViewport((vp: Viewport) => {
       if (!(vp.view instanceof SpatialViewState))
         return;
@@ -202,7 +218,7 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
   }
 
   private _onCategoryChecked = (item: ListItem, checked: boolean) => {
-    if (!IModelApp.viewManager.selectedView)
+    if (!IModelApp.viewManager || !IModelApp.viewManager.selectedView)
       return;
 
     const updateViewport = (vp: Viewport) => {
@@ -226,6 +242,9 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
 
   /** Add models to current viewport */
   public async updateModelsState() {
+    if (!IModelApp.viewManager)
+      return;
+
     const vp = IModelApp.viewManager.getFirstOpenView();
     if (vp)
       this._updateModelsWithViewport(vp);
@@ -233,6 +252,9 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
 
   /** Add categories to current viewport */
   public async updateCategoriesState() {
+    if (!IModelApp.viewManager)
+      return;
+
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
       this._updateCategoriesWithViewport(vp);

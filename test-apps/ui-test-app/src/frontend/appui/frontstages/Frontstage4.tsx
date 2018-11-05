@@ -78,7 +78,7 @@ export class Frontstage4 extends FrontstageProvider {
           />
         }
         centerRight={
-          <Zone allowsMerging={true}
+          <Zone defaultState={ZoneState.Minimized} allowsMerging={false}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
@@ -87,14 +87,14 @@ export class Frontstage4 extends FrontstageProvider {
           />
         }
         bottomCenter={
-          <Zone defaultState={ZoneState.Open}
+          <Zone
             widgets={[
               <Widget isStatusBar={true} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
             ]}
           />
         }
         bottomRight={
-          <Zone allowsMerging={true}
+          <Zone defaultState={ZoneState.Open} allowsMerging={false}
             widgets={[
               <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,

@@ -8,11 +8,14 @@ import { SampleAppIModelApp } from "../..";
 
 import {
   ConfigurableCreateInfo,
-  WidgetControl, WidgetComponentProps,
+  WidgetControl,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
-import { Table, TableProps } from "@bentley/ui-components";
-import withTableDragDrop from "@bentley/ui-components/lib/table/hocs/withDragDrop";
+import {
+  Table,
+  TableProps,
+  withTableDragDrop,
+} from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTableDataProvider, tableDragProps, tableDropProps, TableDragTypes, DemoTableDragDropType } from "./demodataproviders/demoTableDataProvider";
 import { TreeDragTypes } from "./demodataproviders/demoTreeDataProvider";
@@ -22,13 +25,13 @@ export class TableDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <TableDemoWidget widgetControl={this} iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />;
+    this.reactElement = <TableDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />;
   }
 }
 
 const DragDropTable = withTableDragDrop<TableProps, DemoTableDragDropType>(Table); // tslint:disable-line:variable-name
 
-interface Props extends WidgetComponentProps {
+interface Props {
   iModelConnection?: IModelConnection;
 }
 

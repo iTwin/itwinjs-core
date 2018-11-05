@@ -1,6 +1,8 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
+/** @module Utilities */
+
 import * as React from "react";
 
 export const getDisplayName = (component: React.ComponentType<any>): string => {

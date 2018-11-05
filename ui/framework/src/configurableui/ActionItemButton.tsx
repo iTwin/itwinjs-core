@@ -23,7 +23,7 @@ export interface ActionItemButtonProps {
 export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> {
   private _componentUnmounting = false;
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<BaseItemState>;
 
   constructor(props: ActionItemButtonProps) {

@@ -8,7 +8,7 @@ import { SampleAppIModelApp } from "../..";
 
 import {
   ConfigurableCreateInfo,
-  WidgetControl, WidgetComponentProps,
+  WidgetControl,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
 import { Tree, TreeProps } from "@bentley/ui-components";
@@ -26,11 +26,11 @@ export class TreeDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <TreeDemoWidget widgetControl={this} iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />;
+    this.reactElement = <TreeDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />;
   }
 }
 
-interface Props extends WidgetComponentProps {
+interface Props {
   iModelConnection?: IModelConnection;
 }
 

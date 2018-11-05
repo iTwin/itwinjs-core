@@ -24,6 +24,7 @@ describe("NavigationWidget", () => {
   });
 
   const widgetProps: AnyWidgetProps = {
+    id: "navigationWidget",
     classId: "NavigationWidget",
     defaultState: WidgetState.Open,
     isFreeform: true,

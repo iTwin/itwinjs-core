@@ -117,7 +117,8 @@ describe("ToolWidget", () => {
 
   it("ToolWidget should render correctly", () => {
     shallow(
-      <ToolWidget id="toolWidget"
+      <ToolWidget
+        id="toolWidget"
         appButton={backstageToggleCommand}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}

@@ -11,12 +11,6 @@ import { WidgetDef, WidgetState } from "./WidgetDef";
 // Configurable Ui Widget Control
 // -----------------------------------------------------------------------------
 
-/** Properties for a Widget React component.
- */
-export interface WidgetComponentProps {
-  widgetControl: WidgetControl;
-}
-
 /** The base class for Widget controls.
  */
 export class WidgetControl extends ConfigurableUiControl {

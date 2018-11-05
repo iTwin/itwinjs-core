@@ -36,13 +36,9 @@ export interface WidgetProps extends ItemProps {
 /** ConfigurableUi Widget React component.
  */
 export class Widget extends React.Component<WidgetProps> {
-  private _widgetDef: WidgetDef;
 
   constructor(props: WidgetProps) {
     super(props);
-
-    this._widgetDef = new WidgetDef();
-    Widget.initializeWidgetDef(this._widgetDef, this.props);
   }
 
   public static initializeWidgetDef(widgetDef: WidgetDef, props: WidgetProps): void {

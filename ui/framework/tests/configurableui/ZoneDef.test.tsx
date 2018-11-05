@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import TestUtils from "../TestUtils";
-import { ZoneDef, ZoneState, WidgetDef } from "../../src/index";
+import { ZoneDef, ZoneState, WidgetDef, ZoneLocation } from "../../src/index";
 import { expect } from "chai";
 
 describe("ZoneDef", () => {
@@ -31,23 +31,31 @@ describe("ZoneDef", () => {
     expect(zoneDef.getOnlyWidgetDef()).to.not.be.undefined;
     expect(zoneDef.isToolSettings).to.be.false;
     expect(zoneDef.isStatusBar).to.be.false;
+    expect(zoneDef.allowsMerging).to.be.false;
   });
 
-  it("applicationData", () => {
+  it("applicationData, allowsMerging, mergeWithZone", () => {
     const zoneDef = new ZoneDef(
       {
         defaultState: ZoneState.Open,
-        allowsMerging: false,
+        allowsMerging: true,
         applicationData: "AppData",
+        mergeWithZone: ZoneLocation.CenterRight,
         widgetProps: [
           {
             classId: "Test",
+            isToolSettings: true,
+            isStatusBar: true,
           },
         ],
       },
     );
 
     expect(zoneDef.applicationData).to.eq("AppData");
+    expect(zoneDef.mergeWithZone).to.eq(ZoneLocation.CenterRight);
+    expect(zoneDef.isToolSettings).to.be.true;
+    expect(zoneDef.isStatusBar).to.be.true;
+    expect(zoneDef.allowsMerging).to.be.true;
   });
 
   it("addWidgetDef, widgetDefs & getOnlyWidgetDef", () => {
@@ -90,26 +98,6 @@ describe("ZoneDef", () => {
     );
 
     expect(zoneDef.findWidgetDef("IdTest")).to.not.be.undefined;
-  });
-
-  it("clearDefaultOpenUsed", () => {
-    const zoneDef = new ZoneDef(
-      {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        applicationData: "AppData",
-        widgetProps: [
-          {
-            id: "IdTest",
-            classId: "Test",
-          },
-        ],
-      },
-    );
-
-    const widgetDef = zoneDef.findWidgetDef("IdTest");
-    expect(widgetDef).to.not.be.undefined;
-
   });
 
 });

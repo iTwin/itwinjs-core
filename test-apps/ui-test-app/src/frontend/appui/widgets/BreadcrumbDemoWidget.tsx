@@ -8,7 +8,7 @@ import { SampleAppIModelApp } from "../..";
 
 import {
   ConfigurableUiManager, ConfigurableCreateInfo,
-  WidgetControl, WidgetComponentProps,
+  WidgetControl,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
 import {
@@ -29,11 +29,11 @@ export class BreadcrumbDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <BreadcrumbDemoWidget widgetControl={this} iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />;
+    this.reactElement = <BreadcrumbDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />;
   }
 }
 
-interface Props extends WidgetComponentProps {
+interface Props {
   iModelConnection?: IModelConnection;
 }
 

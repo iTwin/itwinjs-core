@@ -6,6 +6,7 @@
 
 import { AnyWidgetProps, WidgetDef } from "./WidgetDef";
 import { WidgetDefFactory } from "./WidgetFactory";
+import { ZoneLocation } from "./Frontstage";
 
 // -----------------------------------------------------------------------------
 // ZoneProps
@@ -32,6 +33,8 @@ export interface ZoneDefProps {
   widgetProps: AnyWidgetProps[];
   /** Any application data to attach to this Zone. */
   applicationData?: any;
+  /** Indicates with which other zone to merge. */
+  mergeWithZone?: ZoneLocation;
 }
 
 // -----------------------------------------------------------------------------
@@ -42,12 +45,14 @@ export interface ZoneDefProps {
  * A ZoneDef represents each zone within a Frontstage.
  */
 export class ZoneDef {
-  /** Zone state. */
+  /** Zone state.  Defaults to ZoneState.Open. */
   public zoneState: ZoneState = ZoneState.Open;
-  /** Indicates if other Zones may be merged with this Zone.  */
-  public allowsMerging: boolean = false;
+  /** Indicates if other Zones may be merged with this Zone. Defaults to true.  */
+  public allowsMerging: boolean = true;
   /** Any application data to attach to this Zone. */
   public applicationData?: any;
+  /** Indicates with which other zone to merge. */
+  public mergeWithZone?: ZoneLocation;
 
   private _widgetDefs: WidgetDef[] = new Array<WidgetDef>();
 
@@ -61,6 +66,8 @@ export class ZoneDef {
 
       if (zoneProps.applicationData !== undefined)
         this.applicationData = zoneProps.applicationData;
+      if (zoneProps.mergeWithZone !== undefined)
+        this.mergeWithZone = zoneProps.mergeWithZone;
 
       if (zoneProps.widgetProps) {
         zoneProps.widgetProps.map((widgetProps, _index) => {

@@ -16,6 +16,8 @@ import { WidgetDef } from "./WidgetDef";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageProvider, Frontstage } from "./Frontstage";
 
+import { NineZoneProps } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
+
 // -----------------------------------------------------------------------------
 // FrontstageProps and associated enums
 // -----------------------------------------------------------------------------
@@ -112,6 +114,8 @@ export class FrontstageDef {
   public contentGroup?: ContentGroup;
 
   public frontstageProvider?: FrontstageProvider;
+
+  public nineZoneProps?: NineZoneProps;
 
   /** Constructs the [[FrontstageDef]] and optionally initializes it based on the given [[FrontstageProps]]  */
   constructor(frontstageProps?: FrontstageDefProps) {

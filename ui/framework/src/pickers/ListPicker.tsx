@@ -263,7 +263,7 @@ export interface ListPickerPropsExtended extends ListPickerProps {
  * List Picker that lets the user pick from a list of items to enable/disable
  * It also provides options to enable all, disable all and invert selection
  */
-export default class ListPicker extends React.Component<ListPickerPropsExtended, any> {
+export class ListPicker extends React.Component<ListPickerPropsExtended, any> {
   public static get Key_All() { return -3; }
   public static get Key_None() { return -2; }
   public static get Key_Invert() { return -1; }
@@ -354,3 +354,5 @@ export default class ListPicker extends React.Component<ListPickerPropsExtended,
     );
   }
 }
+
+export default ListPicker;

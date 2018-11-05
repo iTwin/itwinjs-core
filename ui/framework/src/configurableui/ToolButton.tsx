@@ -21,7 +21,7 @@ import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
   private _componentUnmounting = false;
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<BaseItemState>;
 
   constructor(props: ToolItemProps) {
