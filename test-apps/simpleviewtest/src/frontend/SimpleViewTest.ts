@@ -1269,7 +1269,7 @@ class IncidentMarkerDemo {
   private static _decorator?: IncidentMarkerDemo; // static variable just so we can tell if the demo is active.
 
   public constructor() {
-    const makerIcons = [
+    const markerIcons = [
       imageElementFromUrl("Hazard_biological.svg"),
       imageElementFromUrl("Hazard_electric.svg"),
       imageElementFromUrl("Hazard_flammable.svg"),
@@ -1286,7 +1286,7 @@ class IncidentMarkerDemo {
       pos.x = extents.low.x + (Math.random() * extents.xLength());
       pos.y = extents.low.y + (Math.random() * extents.yLength());
       pos.z = extents.low.z + (Math.random() * extents.zLength());
-      this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, makerIcons[i % makerIcons.length]));
+      this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, markerIcons[i % markerIcons.length]));
     }
   }
 
