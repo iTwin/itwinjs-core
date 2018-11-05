@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient } from "../ImsClients";
-import { UserProfile } from "../UserProfile";
+import { UserInfo } from "../UserInfo";
 import { TestUsers, UserCredentials } from "./TestConfig";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
@@ -38,10 +38,10 @@ describe("ImsFederatedAuthenticationClient", () => {
       chai.expect(tokenStr!.startsWith("X509 access_token="));
       chai.expect(tokenStr!.length > 1000);
 
-      const userProfile: UserProfile | undefined = authToken!.getUserProfile();
-      chai.assert(!!userProfile);
+      const userInfo: UserInfo | undefined = authToken!.getUserInfo();
+      chai.assert(!!userInfo);
 
-      chai.expect(userProfile!.email.toLowerCase() === TestUsers.regular.email.toLowerCase());
+      chai.expect(userInfo!.email!.id.toLowerCase() === TestUsers.regular.email.toLowerCase());
     }
   });
 

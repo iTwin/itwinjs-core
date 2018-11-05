@@ -22,7 +22,7 @@ import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVecto
  * * Annotation of an interval of a curve.
  * * The interval is marked with two pairs of numbers:
  * * * fraction0, fraction1 = fraction parameters along the parent curve
- * * * distance0,distance1 = distances within containing PathWithDistanceIndex
+ * * * distance0,distance1 = distances within containing CurveChainWithDistanceIndex
  */
 class PathFragment {
   public distance0: number;
@@ -139,7 +139,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   private _fragments: PathFragment[];
   private _totalLength: number; // matches final fragment distance1.
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof CurveChainWithDistanceIndex; }
-  // finall assembly of PathWithDistanceIndex -- caller must create valid fragment index.
+  // finall assembly of CurveChainWithDistanceIndex -- caller must create valid fragment index.
   private constructor(path: CurveChain, fragments: PathFragment[]) {
     super();
     this._path = path;

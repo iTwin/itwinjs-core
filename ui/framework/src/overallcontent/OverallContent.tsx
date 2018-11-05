@@ -6,21 +6,18 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
-import { User } from "oidc-client";
-import { OidcProvider } from "redux-oidc";
-import { AccessToken, OidcFrontendClient } from "@bentley/imodeljs-clients";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { OidcClientWrapper } from "../oidc/OidcClientWrapper";
 import { OverallContentPage, OverallContentActions } from "./state";
 import { IModelOpen } from "../openimodel/IModelOpen";
 import { ConfigurableUiContent } from "../configurableui/ConfigurableUiContent";
 import { BeDragDropContext } from "@bentley/ui-components";
 import { DragDropLayerRenderer } from "../configurableui/DragDropLayerManager";
 import { SignIn } from "../oidc/SignIn";
-import { CallbackPage } from "../oidc/Callback";
 import { ApplicationHeader, ApplicationHeaderProps } from "../openimodel/ApplicationHeader";
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelInfo } from "../clientservices/IModelServices";
-import { UiFramework } from "../UiFramework";
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 type IModelViewsSelectedFunc = (iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) => void;
 
@@ -34,7 +31,6 @@ export interface OverallContentProps {
   currentPage: OverallContentPage | number;
   onIModelViewsSelected: IModelViewsSelectedFunc;
   onWorkOffline?: () => void; // Note: this will be removed!
-  user: User;
   accessToken: AccessToken;
   setOverallPage: (page: OverallContentPage | number) => any;
   setAccessToken: (accessToken: AccessToken) => any;
@@ -44,7 +40,6 @@ export interface OverallContentProps {
 function mapStateToProps(state: any) {
   return {
     currentPage: state.frameworkState.overallContentState.currentPage,
-    user: state.frameworkState.oidcState.user,
     accessToken: state.frameworkState.overallContentState.accessToken,
   };
 }
@@ -88,23 +83,22 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
   }
 
   public componentDidMount() {
-    const user = this.props.user;
-    if (user && !user.expired) {
-      const accessToken: AccessToken = OidcFrontendClient.createAccessToken(user);
-      this.props.setAccessToken(accessToken);
-    }
+    OidcClientWrapper.oidcClient.getAccessToken(new ActivityLoggingContext(""))
+      .then(this.setOrClearAccessToken.bind(this));
+    OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this.setOrClearAccessToken.bind(this));
   }
 
-  public componentDidUpdate(oldProps: OverallContentProps) {
-    if ((!this.props.user || this.props.user.expired) && (oldProps.accessToken))
-      this.props.clearAccessToken();
+  public componentWillUnmount() {
+    OidcClientWrapper.oidcClient.onUserStateChanged.removeListener(this.setOrClearAccessToken.bind(this));
+  }
+
+  private setOrClearAccessToken(accessToken: AccessToken | undefined) {
+    accessToken ? this.props.setAccessToken(accessToken) : this.props.clearAccessToken();
   }
 
   public render(): JSX.Element | undefined {
     let element: JSX.Element | undefined;
-    if (window.location.pathname === "/signin-oidc") {
-      element = <CallbackPage />;
-    } else if (!this.props.accessToken && OverallContentPage.OfflinePage !== this.props.currentPage) {
+    if (!this.props.accessToken && OverallContentPage.OfflinePage !== this.props.currentPage) {
       const appHeaderProps: ApplicationHeaderProps = {
         icon: this.props.appHeaderIcon,
         message: this.props.appHeaderMessage,
@@ -114,7 +108,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
       element = (
         <React.Fragment>
           <ApplicationHeader {...appHeaderProps} />
-          <SignIn onSignIn={() => UiFramework.userManager.signinRedirect()} onOffline={this._onOffline.bind(this)} />
+          <SignIn onSignIn={() => OidcClientWrapper.oidcClient.signIn(new ActivityLoggingContext(""))} onOffline={this._onOffline.bind(this)} />
         </React.Fragment>
       );
     } else if (OverallContentPage.SelectIModelPage === this.props.currentPage) {
@@ -129,12 +123,10 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
     }
 
     return (
-      <OidcProvider userManager={UiFramework.userManager} store={UiFramework.store}>
-        <BeDragDropContext>
-          {element}
-          <DragDropLayerRenderer />
-        </BeDragDropContext>
-      </OidcProvider>
+      <BeDragDropContext>
+        {element}
+        <DragDropLayerRenderer />
+      </BeDragDropContext>
     );
   }
 }

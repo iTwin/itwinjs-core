@@ -7,10 +7,13 @@
 // import { Range1d } from "../Range";
 // import { Matrix3d, Transform } from "../geometry3d/Transform";
 
-import { TransitionConditionalProperties } from "../curve/TransitionSpiral";
+import { TransitionConditionalProperties, TransitionSpiral3d } from "../curve/TransitionSpiral";
 import { Angle } from "../geometry3d/Angle";
 import { Checker } from "./Checker";
 import { expect } from "chai";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Transform } from "../geometry3d/Transform";
+import { Segment1d } from "../geometry3d/Segment1d";
 
 describe("TransitionSprialProperties", () => {
   it("HelloWorld", () => {
@@ -43,7 +46,14 @@ describe("TransitionSprialProperties", () => {
     ck.testTrue(dataA.isAlmostEqual(dataC), "dataC");
     ck.testTrue(dataA.isAlmostEqual(dataD), "dataD");
     ck.testTrue(dataA.isAlmostEqual(dataE), "dataE");
-
+  });
+  it("CreateAndPoke", () => {
+    const ck = new Checker();
+    const spiralA = TransitionSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(0, 1000), AngleSweep.createStartEndDegrees(0, 8), Segment1d.create(0, 1), Transform.createIdentity());
+    const spiralB = TransitionSpiral3d.createRadiusRadiusBearingBearing(Segment1d.create(1000, 0), AngleSweep.createStartEndDegrees(10, 3), Segment1d.create(0, 1), Transform.createIdentity());
+    ck.testFalse(spiralB.isAlmostEqual(spiralA));
+    spiralB.setFrom(spiralA);
+    ck.testTrue(spiralA.isAlmostEqual(spiralB));
     expect(ck.getNumErrors()).equals(0);
   });
 });

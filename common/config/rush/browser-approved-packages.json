@@ -39,6 +39,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
+      "name": "@bentley/imodeljs-clients-backend",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "@bentley/imodeljs-common",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
@@ -93,6 +97,10 @@
     {
       "name": "@bentley/webpack-tools",
       "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@openid/appauth",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "app-root-path",

@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 export { default as UiFramework } from "./UiFramework";
 
+export * from "./oidc/OidcBrowserClient";
 export * from "./FrameworkState";
 export * from "./SyncUiEventDispatcher";
 export * from "./UiFramework";
-
+export * from "./CoreToolDefinitions";
 export * from "./clientservices";
 export * from "./configurableui";
 export * from "./feedback";

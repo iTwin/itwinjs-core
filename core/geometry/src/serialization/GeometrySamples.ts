@@ -50,7 +50,7 @@ import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSe
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
-import { CurveChainWithDistanceIndex } from "../curve/PathWithDistanceIndex";
+import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
 
 /* tslint:disable:no-console */
 

@@ -6,7 +6,7 @@
 
 import * as xpath from "xpath";
 import { DOMParser } from "xmldom";
-import { UserProfile } from "./UserProfile";
+import { UserInfo } from "./UserInfo";
 import { Base64 } from "js-base64";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 
@@ -19,7 +19,7 @@ export enum IncludePrefix {
 export abstract class Token {
   protected _samlAssertion: string;
 
-  protected _userProfile?: UserProfile;
+  protected _userInfo?: UserInfo;
   protected _startsAt?: Date;
   protected _expiresAt?: Date;
   protected _x509Certificate?: string;
@@ -32,8 +32,8 @@ export abstract class Token {
     return this._samlAssertion;
   }
 
-  public getUserProfile(): UserProfile | undefined {
-    return this._userProfile;
+  public getUserInfo(): UserInfo | undefined {
+    return this._userInfo;
   }
 
   public getExpiresAt(): Date | undefined {
@@ -65,21 +65,29 @@ export abstract class Token {
       select("/saml:Assertion/saml:AttributeStatement/saml:Attribute[@AttributeName='" +
         attributeName + "']/saml:AttributeValue/text()", dom).toString();
 
-    this._userProfile = {
+    const id = extractAttribute("userid");
+    const email = {
+      id: extractAttribute("emailaddress"),
+    };
+    const profile = {
+      name: extractAttribute("name"),
       firstName: extractAttribute("givenname"),
       lastName: extractAttribute("surname"),
-      email: extractAttribute("emailaddress"),
-      userId: extractAttribute("userid"),
-      organization: extractAttribute("organization"),
-      organizationId: extractAttribute("organizationid"),
+    };
+    const organization = {
+      id: extractAttribute("organizationid"),
+      name: extractAttribute("organization"),
+    };
+    const featureTracking = {
       ultimateSite: extractAttribute("ultimatesite"),
       usageCountryIso: extractAttribute("usagecountryiso"),
     };
 
+    this._userInfo = new UserInfo(id, email, profile, organization, featureTracking);
     this._startsAt = new Date(startsAtStr);
     this._expiresAt = new Date(expiresAtStr);
 
-    return !!this._x509Certificate && !!this._startsAt && !!this._expiresAt && !!this._userProfile;
+    return !!this._x509Certificate && !!this._startsAt && !!this._expiresAt;
   }
 }
 
@@ -129,7 +137,7 @@ export class AccessToken extends Token {
     if (props[this.foreignProjectAccessTokenJsonProperty] === undefined)
       return undefined;
     const tok = new AccessToken(foreignJsonStr);
-    tok._userProfile = props[this.foreignProjectAccessTokenJsonProperty].userProfile;
+    tok._userInfo = props[this.foreignProjectAccessTokenJsonProperty].userInfo;
     return tok;
   }
 
@@ -155,12 +163,12 @@ export class AccessToken extends Token {
   }
 
   /** Create an AccessToken from a JWT token for OIDC workflows */
-  public static fromJsonWebTokenString(jwt: string, userProfile: UserProfile, startsAt: Date, expiresAt: Date): AccessToken {
+  public static fromJsonWebTokenString(jwt: string, startsAt: Date, expiresAt: Date, userInfo: UserInfo): AccessToken {
     const token = new AccessToken("");
     token._jwt = jwt;
-    token._userProfile = userProfile;
     token._startsAt = startsAt;
     token._expiresAt = expiresAt;
+    token._userInfo = userInfo;
     return token;
   }
 
@@ -176,10 +184,8 @@ export class AccessToken extends Token {
   }
 
   public static fromJson(jsonObj: any): AccessToken | undefined {
-    if (jsonObj._jwt) {
-      const userProfile = UserProfile.fromJson(jsonObj._userProfile);
-      return AccessToken.fromJsonWebTokenString(jsonObj._jwt, userProfile, jsonObj._startsAt, jsonObj._expiresAt);
-    }
+    if (jsonObj._jwt)
+      return AccessToken.fromJsonWebTokenString(jsonObj._jwt, jsonObj._startsAt, jsonObj._expiresAt, jsonObj._userInfo);
 
     const foreignTok = AccessToken.fromForeignProjectAccessTokenJson(jsonObj._samlAssertion);
     if (foreignTok !== undefined)

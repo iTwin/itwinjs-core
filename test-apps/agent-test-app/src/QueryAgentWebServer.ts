@@ -6,12 +6,10 @@ import * as bodyParser from "body-parser";
 import * as express from "express";
 import { QueryAgent } from "./QueryAgent";
 import { QueryAgentConfig } from "./QueryAgentConfig";
-import { AccessToken, OidcClient, Config } from "@bentley/imodeljs-clients";
-import { Issuer, Strategy, TokenSet, UserInfo, Client } from "openid-client";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { OpenIdConnectTokenStore } from "./OpenIdConnectTokenStore";
 import * as passport from "passport";
 import * as session from "express-session";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Container class for web server and the iModelJS backend run in the QueryAgent */
 export class QueryAgentWebServer {
@@ -40,8 +38,6 @@ export class QueryAgentWebServer {
     }
 
     public async start(app: express.Express) {
-        this.setupAuthStrategy();
-
         // tslint:disable-next-line:no-console
         this._server = app.listen(app.get("port"), () => console.log("iModel Query Agent listening on http://localhost:" + app.get("port")));
     }
@@ -105,44 +101,6 @@ export class QueryAgentWebServer {
     }
 
     private _tokenStore?: OpenIdConnectTokenStore;
-
-    private async setupAuthStrategy() {
-        const actx = new ActivityLoggingContext("");
-        const url: string = await (new OidcClient()).getUrl(actx);
-
-        const issuer: Issuer = await Issuer.discover(url);
-
-        const oidcClient: Client = new issuer.Client({
-            client_id: Config.App.get("hybrid_test_oidc_client_id"),
-            client_secret: Config.App.get("hybrid_test_oidc_client_secret"),
-        });
-
-        const startParams = {
-            redirect_uri: "http://localhost:3000" + Config.App.get("hybrid_test_oidc_redirect_path"),
-            scope: "openid email profile organization feature_tracking imodelhub rbac-service context-registry-service offline_access",
-            response_type: "code id_token",
-            response_mode: "form_post",
-            response: ["userinfo"],
-        };
-
-        const strategySettings = {
-            client: oidcClient,
-            params: startParams,
-        };
-
-        const oidcStrategy = new Strategy(strategySettings, (tokenSet: TokenSet, userInfo: UserInfo, done: any) => {
-            this._tokenStore = new OpenIdConnectTokenStore(tokenSet, oidcClient);
-
-            // to do anything, we need to return a user.
-            // if you are storing information in your application this would use some middlewhere and a database
-            // the call would typically look like
-            // User.findOrCreate(userInfo.sub, userInfo, (err, user) => { done(err, user); });
-            // we'll just pass along the userInfo object as a simple 'user' object
-            return done(null, userInfo);
-        });
-
-        passport.use("oidc", oidcStrategy);
-    }
 
     private clearSession() {
         this._tokenStore = undefined;

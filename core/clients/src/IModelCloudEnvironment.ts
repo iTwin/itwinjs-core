@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 import { AccessToken } from "./Token";
-import { UserProfile } from "./UserProfile";
+import { UserInfo } from "./UserInfo";
 import { Project } from "./ConnectClients";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
@@ -15,7 +15,7 @@ export interface ContextManagerClient {
 
 /** @hidden User-authorization service. */
 export interface IModelAuthorizationClient {
-  authorizeUser(alctx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any): Promise<AccessToken>;
+  authorizeUser(alctx: ActivityLoggingContext, userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken>;
 }
 
 /** @hidden All of the services that a frontend or other client app needs to find and access iModels. */

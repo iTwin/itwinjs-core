@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, UserProfile, ConnectClient, Project } from "../..";
+import { AccessToken, UserInfo, ConnectClient, Project } from "../..";
 import { IModelHubClient } from "../..";
 import { TestConfig } from "../TestConfig";
 import { ContextManagerClient, IModelAuthorizationClient, IModelCloudEnvironment } from "../../IModelCloudEnvironment";
@@ -21,7 +21,7 @@ class TestConnectClient implements ContextManagerClient {
 }
 
 class TestIModelHubUserMgr implements IModelAuthorizationClient {
-  public async authorizeUser(alctx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any): Promise<AccessToken> {
+  public async authorizeUser(alctx: ActivityLoggingContext, _userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken> {
     const authToken = await TestConfig.login(userCredentials);
     const client = getDefaultClient() as IModelHubClient;
     return client.getAccessToken(alctx, authToken);

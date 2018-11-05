@@ -104,6 +104,7 @@
   "dependencies": {
     "@bentley/bwc": "^7.0.1",
     "@bentley/icons-generic-webfont": "^0.0.5",
+    "@bentley/imodeljs-clients-backend": "0.163.0",
     "classnames": "^2.2.5",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
@@ -112,7 +113,6 @@
     "react-redux": "^5.0.7",
     "react-split-pane": "^0.1.77",
     "redux": "^4.0.0",
-    "redux-oidc": "^3.0.2",
     "oidc-client": "^1.5.2",
     "immutable": "^3.8.2"
   },

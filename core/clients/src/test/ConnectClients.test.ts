@@ -108,7 +108,7 @@ describe("RbacClient (#integration)", () => {
     chai.expect(!!project);
 
     // Get the user ID we are using that should exist in the returned users
-    const currentUserId = accessToken.getUserProfile()!.userId;
+    const currentUserId = accessToken.getUserInfo()!.id;
     // Get users
     const users: RbacUser[] = await rbacClient.getUsers(actx, accessToken!, project.wsgId);
 

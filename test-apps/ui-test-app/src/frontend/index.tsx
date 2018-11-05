@@ -137,18 +137,25 @@ export class SampleAppIModelApp extends IModelApp {
             Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:${process.env.CORS_PROXY_PORT}`); // By default, this will run on port 3001
     }
 
-    private static getOidcConfig(): OidcFrontendClientConfiguration {
-        const clientId = Config.App.get("imjs_test_oidc_client_id");
-        const baseUri = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ``}`;
-        const redirectUri = `${baseUri}${Config.App.get("imjs_test_oidc_redirect_path")}`;
-        return { clientId, redirectUri };
-    }
-
     public static async initialize() {
         UiCore.initialize(SampleAppIModelApp.i18n);
         UiComponents.initialize(SampleAppIModelApp.i18n);
 
-        await UiFramework.initialize(SampleAppIModelApp.store, SampleAppIModelApp.i18n, SampleAppIModelApp.getOidcConfig());
+        let oidcConfiguration: OidcFrontendClientConfiguration;
+        if (ElectronRpcConfiguration.isElectron) {
+            const clientId = Config.App.get("imjs_browser_test_client_id");
+            const redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
+            // TODO: WIP Switch desktop clients to a different OIDC workflow.
+            // const clientId = Config.App.get("imjs_device_test_client_id");
+            // const redirectUri = Config.App.get("imjs_device_test_redirect_uri");
+            oidcConfiguration = { clientId, redirectUri };
+        } else {
+            const clientId = Config.App.get("imjs_browser_test_client_id");
+            const redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
+            oidcConfiguration = { clientId, redirectUri };
+        }
+
+        await UiFramework.initialize(SampleAppIModelApp.store, SampleAppIModelApp.i18n, oidcConfiguration);
 
         // Register tools.
         BackstageShow.register(this.sampleAppNamespace);

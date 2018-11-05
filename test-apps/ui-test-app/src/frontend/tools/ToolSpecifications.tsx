@@ -6,11 +6,10 @@ import * as React from "react";
 
 import {
   IModelApp, NotifyMessageDetails, OutputMessagePriority, MessageBoxValue, SelectionTool,
-  OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType, FitViewTool, WindowAreaTool,
-  PanViewTool, RotateViewTool, ViewToggleCameraTool, WalkViewTool, FlyViewTool, ZoomViewTool,
+  OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType,
 } from "@bentley/imodeljs-frontend";
 import { MessageSeverity } from "@bentley/ui-core";
-import { CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager } from "@bentley/ui-framework";
+import { CommandItemDef, WidgetState, FrontstageManager, ModalDialogManager } from "@bentley/ui-framework";
 import { SampleAppIModelApp, RootState } from "../";
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 
@@ -36,78 +35,6 @@ export class AppTools {
         const action: string = (state.sampleAppState!.backstageVisible) ? "SampleApp:BACKSTAGEHIDE" : "SampleApp:BACKSTAGESHOW";
         SampleAppIModelApp.store.dispatch({ type: action });
       },
-    });
-  }
-
-  public static get fitViewCommand() {
-    return new ToolItemDef({
-      toolId: FitViewTool.toolId,
-      iconSpec: "icon-fit-to-view",
-      labelKey: "SampleApp:tools.fitView",
-      execute: () => { IModelApp.tools.run(FitViewTool.toolId, IModelApp.viewManager.selectedView, true); },
-    });
-  }
-
-  public static get windowAreaCommand() {
-    return new ToolItemDef({
-      toolId: WindowAreaTool.toolId,
-      iconSpec: "icon-window-area",
-      labelKey: "SampleApp:tools.windowArea",
-      execute: () => { IModelApp.tools.run(WindowAreaTool.toolId, IModelApp.viewManager.selectedView); },
-    });
-  }
-
-  public static get zoomViewCommand() {
-    return new ToolItemDef({
-      toolId: ZoomViewTool.toolId,
-      iconSpec: "icon-zoom",
-      labelKey: "SampleApp:tools.zoom",
-      execute: () => { IModelApp.tools.run(ZoomViewTool.toolId, IModelApp.viewManager.selectedView); },
-    });
-  }
-
-  public static get panViewCommand() {
-    return new ToolItemDef({
-      toolId: PanViewTool.toolId,
-      iconSpec: "icon-hand-2",
-      labelKey: "SampleApp:tools.pan",
-      execute: () => { IModelApp.tools.run(PanViewTool.toolId, IModelApp.viewManager.selectedView); },
-    });
-  }
-
-  public static get rotateViewCommand() {
-    return new ToolItemDef({
-      toolId: RotateViewTool.toolId,
-      iconSpec: "icon-rotate",
-      labelKey: "SampleApp:tools.rotate",
-      execute: () => { IModelApp.tools.run(RotateViewTool.toolId, IModelApp.viewManager.selectedView); },
-    });
-  }
-
-  public static get toggleCameraViewCommand() {
-    return new ToolItemDef({
-      toolId: ViewToggleCameraTool.toolId,
-      iconSpec: "icon-camera",
-      labelKey: "SampleApp:tools.toggleCamera",
-      execute: () => { IModelApp.tools.run(ViewToggleCameraTool.toolId, IModelApp.viewManager.selectedView); },
-    });
-  }
-
-  public static get flyViewCommand() {
-    return new ToolItemDef({
-      toolId: FlyViewTool.toolId,
-      iconSpec: "icon-airplane",
-      labelKey: "SampleApp:tools.fly",
-      execute: () => { IModelApp.tools.run(FlyViewTool.toolId, IModelApp.viewManager.selectedView); },
-    });
-  }
-
-  public static get walkViewCommand() {
-    return new ToolItemDef({
-      toolId: WalkViewTool.toolId,
-      iconSpec: "icon-walk",
-      labelKey: "SampleApp:tools.walk",
-      execute: () => { IModelApp.tools.run(WalkViewTool.toolId, IModelApp.viewManager.selectedView); },
     });
   }
 

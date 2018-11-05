@@ -9,6 +9,8 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { LineString3d } from "../curve/LineString3d";
 import { Checker } from "./Checker";
 import { expect } from "chai";
+import { ClipPlane } from "../clipping/ClipPlane";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 
 function exerciseLineString3d(ck: Checker, lsA: LineString3d) {
   const expectValidResults = lsA.numPoints() > 1;
@@ -66,4 +68,42 @@ describe("LineString3d", () => {
     ck.checkpoint("LineString3d.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("RegularPolygon", () => {
+    const ck = new Checker();
+    const center = Point3d.create(3, 2, 1);
+    const radius = 2.0;
+    const poly1 = LineString3d.createRegularPolygonXY(center, 2, radius, true);
+    const poly4 = LineString3d.createRegularPolygonXY(center, 4, radius, true);
+    const poly4F = LineString3d.createRegularPolygonXY(center, 4, radius, false);
+    ck.testUndefined(poly1.getIndexedSegment(5));
+    ck.testFalse(poly4.isAlmostEqual(poly1));
+    for (let i = 0; i < 4; i++) {
+      ck.testCoordinate(radius, center.distance(poly4.pointAt(i)!)); // TRUE poly has points on the radius
+      ck.testLE(radius, center.distance(poly4F.pointAt(i)!)); // FALSE poly has points outside the radius
+      // const segment = poly4.getIndexedSegment(i);
+      const segmentF = poly4F.getIndexedSegment(i)!;
+      const detail = segmentF.closestPoint(center, false);
+      ck.testCoordinate(0.5, detail.fraction);
+      ck.testCoordinate(radius, center.distance(detail.point));
+    }
+    const data64 = new Float64Array([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    const polyF64 = LineString3d.createFloat64Array(data64);
+    ck.testExactNumber(3 * polyF64.numPoints(), data64.length);
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("AnnounceClipIntervals", () => {
+    const ck = new Checker();
+    const ls = LineString3d.create(Point3d.create(1, 1, 0), Point3d.create(4, 1, 0), Point3d.create(4, 2, 0), Point3d.create(0, 2, 0));
+    const clipper = ClipPlane.createEdgeXY(Point3d.create(2, 0, 0), Point3d.create(0, 5, 0))!;
+    // The linestring starts in, goes out, and comes back.  Verify 2 segments announced.
+    let numAnnounce = 0;
+    ls.announceClipIntervals(clipper,
+      (_a0: number, _a1: number, _cp: CurvePrimitive) => {
+        numAnnounce++;
+      });
+    ck.testExactNumber(numAnnounce, 2);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

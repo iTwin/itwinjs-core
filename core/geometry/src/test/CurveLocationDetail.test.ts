@@ -19,11 +19,17 @@ describe("CurveLocationDetail", () => {
     const detailA0 = CurveLocationDetail.createCurveFractionPoint(segmentA, f0, segmentA.fractionToPoint(f0));
     const detailA1 = CurveLocationDetail.createCurveFractionPoint(segmentA, f1, segmentA.fractionToPoint(f1));
     detailA0.setCurve(segmentA);
-    detailA0.setCurve(segmentA);
+    detailA1.setCurve(segmentA);
     ck.testTrue(detailA0.isIsolated);
     const pairA = CurveLocationDetailPair.createDetailRef(detailA0, detailA1);
     const pairAClone = pairA.clone();
     ck.testPointer(pairAClone);
+
+    const detailB0 = detailA0.clone();
+    detailA0.fraction += 0.5;
+    const detailB1 = detailB0.clone(detailB0);    // nothing happens, but a return gets reached.
+    ck.testPointer(detailB0, detailB1);
+
     ck.checkpoint("CurveLocationDetail.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });

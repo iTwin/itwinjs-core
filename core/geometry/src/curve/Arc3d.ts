@@ -20,7 +20,7 @@ import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVecto
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
-import { CurveLocationDetail } from "./CurveLocationDetail";
+import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { StrokeOptions } from "./StrokeOptions";
 import { Clipper } from "../clipping/ClipUtils";
@@ -70,6 +70,11 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public get matrix(): Matrix3d { return this._matrix.clone(); }
   public get sweep(): AngleSweep { return this._sweep; }
   public set sweep(value: AngleSweep) { this._sweep.setFrom(value); }
+  /**
+   * An Arc3d extends along its complete elliptic arc
+   */
+  public get isExtensibleFractionSpace(): boolean { return true; }
+
   // constructor copies the pointers !!!
   private constructor(center: Point3d, matrix: Matrix3d, sweep: AngleSweep) {
     super();
@@ -122,6 +127,19 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
       return result;
     }
     return new Arc3d(center.clone(), matrix, sweep ? sweep.clone() : AngleSweep.create360());
+  }
+  /**
+   * Return a quick estimate of the eccentricity of the ellipse.
+   * * The estimator is the cross magnitude of the product of vectors U and V, divided by square of the larger magnitude
+   * * for typical Arc3d with perpendicular UV, this is exactly the small axis divided by large.
+   * * note that the eccentricity is AT MOST ONE.
+   */
+  public quickEccentricity(): number {
+    const magX = this._matrix.columnXMagnitude();
+    const magY = this._matrix.columnYMagnitude();
+    const jacobian = this._matrix.columnXYCrossProductMagnitude();
+    const largeAxis = Geometry.maxXY(magX, magY);
+    return jacobian / (largeAxis * largeAxis);
   }
   /** Create a circular arc defined by start point, any intermediate point, and end point.
    * If the points are colinear, assemble them into a linestring.
@@ -219,21 +237,46 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    *     Uses quadrature.
    */
   public curveLength(): number {
+    return this.curveLengthBetweenFractions(0, 1);
+  }
+  public static readonly quadratureGuassCount = 5;
+  /** In quadrature for arc length, use this interval (divided by quickEccentricity) */
+  public static readonly quadratureIntervalAngleDegrees = 10.0;
+  /** * If this is a circular arc, return the simple length derived from radius and sweep.
+   * * Otherwise (i.e. if this elliptical) fall through CurvePrimitive integrator.
+   */
+  public curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
     const simpleLength = this.getFractionToDistanceScale();
     if (simpleLength !== undefined)
-      return simpleLength;
-    // fall through for true ellipse . .. stroke and accumulate quadrature ...
-    return super.curveLength();
+      return simpleLength * Math.abs(fraction1 - fraction0);
+    // fall through for true ellipse . .. stroke and accumulate quadrature with typical count .  ..
+    let f0 = fraction0;
+    let f1 = fraction1;
+    if (fraction0 > fraction1) {
+      f0 = fraction1;
+      f1 = fraction0;
+    }
+    const sweepDegrees = (f1 - f0) * this._sweep.sweepDegrees;
+    let eccentricity = this.quickEccentricity();
+    if (eccentricity < 0.00001)
+      eccentricity = 0.00001;
+    let numInterval = Math.ceil(sweepDegrees / (eccentricity * Arc3d.quadratureIntervalAngleDegrees));
+    if (numInterval > 400)
+      numInterval = 400;
+    if (numInterval < 1)
+      numInterval = 1;
+    return super.curveLengthWithFixedIntervalCountQuadrature(f0, f1, numInterval, Arc3d.quadratureGuassCount);
   }
-/**
- * Return an approximate (but easy to compute) arc length.
- * The estimate is:
- * * Form 8 chords on full circle, proportionally fewer for partials.  (But 2 extras if less than half circle.)
- * * sum the chord lengths
- * * For a circle, we know this crude approximation has to be increased by a factor (theta/(2 sin (theta/2)))
- * * Apply that factor.
- * * Experiments confirm that this is within 3 percent for a variety of eccentricities and arc sweeps.
- */
+
+  /**
+   * Return an approximate (but easy to compute) arc length.
+   * The estimate is:
+   * * Form 8 chords on full circle, proportionally fewer for partials.  (But 2 extras if less than half circle.)
+   * * sum the chord lengths
+   * * For a circle, we know this crude approximation has to be increased by a factor (theta/(2 sin (theta/2)))
+   * * Apply that factor.
+   * * Experiments confirm that this is within 3 percent for a variety of eccentricities and arc sweeps.
+   */
   public quickLength(): number {
     const totalSweep = Math.abs(this._sweep.sweepRadians);
     let numInterval = Math.ceil(4 * totalSweep / Math.PI);
@@ -257,6 +300,28 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     const dTheta = totalSweep / numInterval;
     const factor = dTheta / (2.0 * Math.sin(0.5 * dTheta));
     return chordSum * factor;
+  }
+  /**
+   * * See extended comments on `CurvePrimitive.moveSignedDistanceFromFraction`
+   * * A zero length line generates `CurveSearchStatus.error`
+   * * Nonzero length line generates `CurveSearchStatus.success` or `CurveSearchStatus.stoppedAtBoundary`
+   */
+  public moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: false, result?: CurveLocationDetail): CurveLocationDetail {
+    if (!this.isCircular) // suppress extension !!!
+      return super.moveSignedDistanceFromFractionGeneric(startFraction, signedDistance, allowExtension, result);
+    const totalLength = this.curveLength();
+    const signedFractionMove = Geometry.conditionalDivideFraction(signedDistance, totalLength);
+    if (signedFractionMove === undefined) {
+      return CurveLocationDetail.createCurveFractionPointDistanceCurveSearchStatus(
+        this, startFraction, this.fractionToPoint(startFraction), 0.0, CurveSearchStatus.error);
+    }
+    return CurveLocationDetail.createConditionalMoveSignedDistance(
+      allowExtension,
+      this,
+      startFraction,
+      startFraction + signedFractionMove,
+      signedDistance,
+      result);
   }
 
   public allPerpendicularAngles(spacePoint: Point3d, _extend: boolean = false, _endpoints: boolean = false): number[] {

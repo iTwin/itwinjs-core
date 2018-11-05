@@ -7,7 +7,6 @@
 import { OverallContentState, OverallContentReducer } from "./overallcontent/state";
 import { ConfigurableUiState, ConfigurableUiReducer } from "./configurableui/state";
 import { combineReducers } from "./utils/redux-ts";
-import { reducer as OidcReducer } from "redux-oidc";
 
 /** Interface combining all the state Framework state interfaces. */
 export interface FrameworkState {
@@ -19,5 +18,4 @@ export interface FrameworkState {
 export const FrameworkReducer = combineReducers({   // tslint:disable-line:variable-name
   overallContentState: OverallContentReducer,
   configurableUiState: ConfigurableUiReducer,
-  oidcState: OidcReducer,
 });

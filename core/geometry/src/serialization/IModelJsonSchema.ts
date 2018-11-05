@@ -254,6 +254,7 @@ export namespace IModelJson {
     startRadius?: number;
     endRadius?: number;
     curveLength?: number;
+    fractionInterval?: number[];
     /** TransitionSpiral type.   Default is `"clothoid"` */
     type?: string; //   one of:   "clothoid" | "biquadratic" | "bloss" | "cosine" | "sine";
     /** A fractional portion of the spiral may be selected.
@@ -1139,7 +1140,8 @@ export namespace IModelJson {
       Writer.insertOrientationFromMatrix(value, data.localToWorld.matrix, true);
 
       if (!data.activeFractionInterval.isExact01)
-        Object.defineProperty(value, "fractionInterval", [data.activeFractionInterval.x0, data.activeFractionInterval.x1]);
+        value.fractionInterval = [data.activeFractionInterval.x0, data.activeFractionInterval.x1];
+      // Object.defineProperty(value, "fractionInterval", { value: [data.activeFractionInterval.x0, data.activeFractionInterval.x1] });
 
       // if possible, do selective output of defining data (omit exactly one out of the 5, matching original definition)
       if (originalProperties !== undefined && originalProperties.numDefinedProperties() === 4) {

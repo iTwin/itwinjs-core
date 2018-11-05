@@ -11,8 +11,8 @@ import { BriefcaseManager, IModelHost } from "../backend";
 import {
   AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
   Response, ChangeSet, HubIModel, Briefcase, SeedFile, InitializationState,
-  UserProfile, Version, IModelQuery, ChangeSetQuery, IModelHandler, BriefcaseHandler,
-  ChangeSetHandler, VersionHandler, VersionQuery, UserInfoHandler, UserInfoQuery, UserInfo,
+  UserInfo, Version, IModelQuery, ChangeSetQuery, IModelHandler, BriefcaseHandler,
+  ChangeSetHandler, VersionHandler, VersionQuery, UserInfoHandler, UserInfoQuery, HubUserInfo,
   ConnectRequestQueryOptions,
 } from "@bentley/imodeljs-clients";
 import { KnownLocations } from "../Platform";
@@ -40,8 +40,13 @@ const getTypedInstances = <T extends WsgInstance>(typedConstructor: new () => T,
 /** Class to allow mocking of accessToken needed for various client operations */
 export class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
-  public getUserProfile(): UserProfile | undefined {
-    return new UserProfile("test", "user", "testuser001@mailinator.com", "596c0d8b-eac2-46a0-aa4a-b590c3314e7c", "Bentley", "fefac5b-bcad-488b-aed2-df27bffe5786", "1004144426", "US");
+  public getUserInfo(): UserInfo | undefined {
+    const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
+    const email = { id: "testuser001@mailinator.com" };
+    const profile = { firstName: "test", lastName: "user" };
+    const organization = { id: "fefac5b-bcad-488b-aed2-df27bffe5786", name: "Bentley" };
+    const featureTracking = { ultimateSite: "1004144426", usageCountryIso: "US" };
+    return new UserInfo(id, email, profile, organization, featureTracking);
   }
   public toTokenString() { return ""; }
 }
@@ -420,7 +425,7 @@ export class MockAssetUtil {
     userInfoHandlerMock.setup((f: UserInfoHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
       .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _iModelId: GuidString, _query: UserInfoQuery) => {
-        const user = new UserInfo();
+        const user = new HubUserInfo();
         user.firstName = "test";
         user.lastName = "user";
         user.email = "testuser001@mailinator.com";
