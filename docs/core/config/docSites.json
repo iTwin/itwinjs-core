@@ -19,7 +19,7 @@
     "docSiteId": 5,
     "displayName": "Learning"
   },
-  "ChangeHistory": {
+  "changehistory": {
     "docSiteId": 6,
     "displayName": "Change History"
   },
@@ -50,7 +50,7 @@
         "docSite": "reference"
       },
       "Change History": {
-        "docSite": "ChangeHistory"
+        "docSite": "changehistory"
       }
     },
     "packageAliases": {
