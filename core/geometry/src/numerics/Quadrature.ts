@@ -14,6 +14,10 @@
  * The method installs particular x and weight values.
  */
 export class Quadrature {
+
+  public static readonly gaussX1Interval01 = new Float64Array([0.5]);
+  public static readonly gaussW1Interval01 = new Float64Array([1.0]);
+
   public static readonly gaussX2Interval01 = new Float64Array([0.21132486540518708, 0.7886751345948129]);
   public static readonly gaussW2Interval01 = new Float64Array([0.5, 0.5]);
 
@@ -47,6 +51,11 @@ export class Quadrature {
       wMapped[i] = h * wRef[i];
     }
     return n;
+  }
+
+  /* Install 1 (ONE) x and weight values for quadrature from xA to xB. */
+  public static setupGauss1(xA: number, xB: number, xMapped: Float64Array, wMapped: Float64Array): number {
+    return Quadrature.mapWeights(xA, xB - xA, Quadrature.gaussX1Interval01, Quadrature.gaussW1Interval01, xMapped, wMapped);
   }
 
   /* Install 2 (TWO) x and weight values for quadrature from xA to xB. */

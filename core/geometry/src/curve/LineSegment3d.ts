@@ -40,6 +40,16 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   private _point1: Point3d;
   public get point0Ref(): Point3d { return this._point0; }
   public get point1Ref(): Point3d { return this._point1; }
+  /**
+   * A LineSegment3d extends along its infinite line.
+   */
+  public get isExtensibleFractionSpace(): boolean { return true; }
+
+  /**
+   * CAPTURE point references as a `LineSegment3d`
+   * @param point0
+   * @param point1
+   */
   private constructor(point0: Point3d, point1: Point3d) { super(); this._point0 = point0; this._point1 = point1; }
   /** Set the start and endpoints by capturing input references. */
   public setRefs(point0: Point3d, point1: Point3d) { this._point0 = point0; this._point1 = point1; }
@@ -131,7 +141,7 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
   public fractionToPoint(fraction: number, result?: Point3d): Point3d { return this._point0.interpolate(fraction, this._point1, result); }
   public curveLength(): number { return this._point0.distance(this._point1); }
   public curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
-    return Math.abs (fraction1 - fraction0) * this._point0.distance(this._point1);
+    return Math.abs(fraction1 - fraction0) * this._point0.distance(this._point1);
   }
   public quickLength(): number { return this.curveLength(); }
 
@@ -149,12 +159,15 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
         fraction = 0.0;
     }
     result = CurveLocationDetail.create(this, result);
+    // remark: This can be done by result.setFP (fraction, thePoint, undefined, a)
+    //   but that creates a temporary point.
     result.fraction = fraction;
     this._point0.interpolate(fraction, this._point1, result.point);
-    this._point0.vectorTo(this._point1, result.vector);
+    result.vectorInCurveLocationDetail = undefined;
     result.a = result.point.distance(spacePoint);
     return result;
   }
+  /** swap the endpoint references. */
   public reverseInPlace(): void {
     const a = this._point0;
     this._point0 = this._point1;
@@ -218,8 +231,8 @@ export class LineSegment3d extends CurvePrimitive implements BeJSONFunctions {
       this._point1.setFromJSON(json[1]);
     }
   }
-/** A simple line segment's fraction and distance are proportional. */
-  public getFractionToDistanceScale(): number | undefined { return this.curveLength (); }
+  /** A simple line segment's fraction and distance are proportional. */
+  public getFractionToDistanceScale(): number | undefined { return this.curveLength(); }
   /**
    * Place the lineSegment3d start and points in a json object
    * @return {*} [[x,y,z],[x,y,z]]

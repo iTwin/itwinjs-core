@@ -786,6 +786,13 @@ export class Matrix3d implements BeJSONFunctions {
   /** @returns Return the Z column magnitude */
   public columnZMagnitude(): number { return Math.hypot(this.coffs[2], this.coffs[5], this.coffs[8]); }
 
+  /** @returns Return magntiude of columnX cross columnY. */
+  public columnXYCrossProductMagnitude(): number {
+    return Geometry.crossProductMagnitude(
+      this.coffs[0], this.coffs[3], this.coffs[6],
+      this.coffs[1], this.coffs[4], this.coffs[7]);
+  }
+
   /** @returns Return the X row magnitude d */
   public rowXMagnitude(): number { return Math.hypot(this.coffs[0], this.coffs[1], this.coffs[2]); }
   /** @returns Return the Y row magnitude  */

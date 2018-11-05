@@ -21,11 +21,12 @@ import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Sample } from "../serialization/GeometrySamples";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { Path } from "../curve/Path";
-import { prettyPrint } from "./testFunctions";
+// import { prettyPrint } from "./testFunctions";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
+import { Range3d } from "../geometry3d/Range";
 
 function translateAndPush(allGeometry: GeometryQuery[], g: GeometryQuery | undefined, dx: number, dy: number) {
   if (g) {
@@ -221,18 +222,26 @@ describe("BsplineCurve", () => {
   });
 
   it("DoubleKnots", () => {
+    // stroke a bcurve with double knots .. bug was that the double knot intervals generated 0 or undefined stroke coordinates.
+    // Be sure the curve is all in one quadrant so 00 is NOT in the storke range.
     const ck = new Checker();
     const bcurve = BSplineCurve3d.create(
-      [Point3d.create(0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0),
+      [Point3d.create(1, 0),
+      Point3d.create(2, 0, 0),
       Point3d.create(2, 1, 0),
-      Point3d.create(3, 0, 0),
-      Point3d.create(4, 1, 0)],
+      Point3d.create(3, 1, 0),
+      Point3d.create(4, 0, 0),
+      Point3d.create(5, 1, 0)],
       [0, 0, 0.5, 0.5, 0.75, 1, 1], 3)!;
     const path = Path.create(bcurve);
     const strokes = path.getPackedStrokes()!;
-    console.log(prettyPrint(strokes));
+    // console.log(prettyPrint(strokes));
+    const strokeRange = Range3d.create();
+    strokes.extendRange(strokeRange);
+    const curveRange = bcurve.range();
+    curveRange.expandInPlace (0.00001);
+    ck.testTrue(curveRange.containsRange(strokeRange));
+    ck.testFalse(strokeRange.containsXYZ(0, 0, 0));
     expect(ck.getNumErrors()).equals(0);
   });
   it("SaturateBspline", () => {
