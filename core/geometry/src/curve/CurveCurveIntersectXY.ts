@@ -26,7 +26,8 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Arc3d } from "./Arc3d";
 import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
-import { BezierCurve3dH, BezierCurveBase } from "../bspline/BezierCurve";
+import { BezierCurveBase } from "../bspline/BezierCurveBase";
+import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { UnivariateBezier } from "../numerics/BezierPolynomials";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Range3d } from "../geometry3d/Range";
@@ -553,6 +554,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
     bezierA.fractionToPoint4d(0.0, this._xyzwA0);
     let f0 = 0.0;
     let f1 = 1.0;
+    const intervalTolerance = 1.0e-5;
     const df = 1.0 / strokeCountA;
     for (let i = 1; i <= strokeCountA; i++ , f0 = f1, this._xyzwA0.setFrom(this._xyzwA1)) {
       f1 = i * df;
@@ -566,7 +568,7 @@ class CurveCurveIntersectXY extends NullGeometryHandler {
           let bezierBFraction = r;
           bezierB.fractionToPoint4d(bezierBFraction, this._xyzwB);
           const segmentAFraction = SmallSystem.lineSegment3dHXYClosestPointUnbounded(this._xyzwA0, this._xyzwA1, this._xyzwB);
-          if (segmentAFraction && Geometry.isIn01(segmentAFraction)) {
+          if (segmentAFraction && Geometry.isIn01WithTolerance(segmentAFraction, intervalTolerance)) {
             let bezierAFraction = Geometry.interpolate(f0, segmentAFraction, f1);
             const xyMatchingFunction = new BezierBezierIntersectionXYRRToRRD(bezierA, bezierB);
             const newtonSearcher = new Newton2dUnboundedWithDerivative(xyMatchingFunction);

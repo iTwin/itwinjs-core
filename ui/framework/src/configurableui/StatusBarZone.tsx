@@ -7,20 +7,21 @@
 import * as React from "react";
 import { ReactNode } from "react";
 
-import { ZoneDef } from "./ZoneDef";
 import { TargetChangeHandler, WidgetChangeHandler } from "./FrontstageComposer";
 import ZoneTargets from "./ZoneTargets";
 import { StatusBar } from "./StatusBar";
+import { StatusBarWidgetControl } from "./StatusBarWidgetControl";
 
 // import TemporaryMessage from "@bentley/ui-ninezone/messages/Temporary";
-import { StatusZoneProps as NZ_ZoneState, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
+import { StatusZoneProps as NZ_ZoneProps, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
 import NZ_FooterZone from "@bentley/ui-ninezone/lib/zones/Footer";
 import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
 import GhostOutline from "@bentley/ui-ninezone/lib/zones/GhostOutline";
 
+/** Properties for the [[StatusBarZone]] component */
 export interface StatusBarZoneProps {
-  zoneDef?: ZoneDef;
-  zoneState: NZ_ZoneState;
+  widgetControl?: StatusBarWidgetControl;
+  zoneProps: NZ_ZoneProps;
   targetedBounds: RectangleProps | undefined;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
@@ -34,20 +35,20 @@ export class StatusBarZone extends React.Component<StatusBarZoneProps, {}> {
     return (
       <>
         <NZ_FooterZone
-          isInFooterMode={this.props.zoneState.isInFooterMode}
-          bounds={this.props.zoneState.floating ? this.props.zoneState.floating.bounds : this.props.zoneState.bounds}
+          isInFooterMode={this.props.zoneProps.isInFooterMode}
+          bounds={this.props.zoneProps.floating ? this.props.zoneProps.floating.bounds : this.props.zoneProps.bounds}
         >
           {
-            this.props.zoneDef &&
+            this.props.widgetControl &&
             <StatusBar
-              isInFooterMode={this.props.zoneState.isInFooterMode}
-              zoneDef={this.props.zoneDef}
+              isInFooterMode={this.props.zoneProps.isInFooterMode}
+              widgetControl={this.props.widgetControl}
             />
           }
         </NZ_FooterZone>
-        <NZ_FooterZone bounds={this.props.zoneState.bounds}>
+        <NZ_FooterZone bounds={this.props.zoneProps.bounds}>
           <ZoneTargets
-            zoneId={this.props.zoneState.id}
+            zoneId={this.props.zoneProps.id}
             dropTarget={this.props.dropTarget}
             targetChangeHandler={this.props.targetChangeHandler}
           />

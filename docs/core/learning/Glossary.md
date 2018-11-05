@@ -49,6 +49,7 @@ tableRowAnchors: true
 |**GeometryStream**|A collection of geometric primitives that describes the geometric properties of a GeometricElement. Individual members of GeometryStream may be on different SubCategories and may reference GeometryParts.
 |**I18N**|An abbreviation for [Internationalization](https://en.wikipedia.org/wiki/Internationalization_and_localization).
 |**Id64**|A TypeScript class that holds hexadecimal-encoded string for a 64-bit Id.
+|**Id64String**|A TypeScript string which has been normalized using the Id64 API to represent a 64-bit Id.
 |**iModel**|A distributed relational database holding information about an infrastructure asset defined in BIS. Many copies of an iModel may be extant simultaneously, each held in a Briefcase and synchronized via ChangeSets from iModelHub.
 |**IModelApp**|The *administrator* class for frontend applications. By subclassing IModelApp, applications can control the behavior of the frontend services.
 |**IModelConnection**|A TypeScript class in the frontend that represents the connection to the iModel on the backend.

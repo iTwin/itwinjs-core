@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geometry-core",
-  "version": "0.161.0",
+  "version": "0.163.0",
   "license": "MIT",
   "description": "Bentley Core Geometry library",
   "main": "lib/geometry-core.js",
@@ -10,7 +10,7 @@
     "url": "https://github.com/imodeljs/imodeljs"
   },
   "devDependencies": {
-    "@bentley/build-tools": "0.161.0",
+    "@bentley/build-tools": "0.163.0",
     "@types/chai": "^4.1.4",
     "@types/mocha": "^5.2.5",
     "@types/node": "10.10.3",
@@ -34,7 +34,7 @@
     "watch": "tsc --watch",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --tsIndexFile=./geometry-core.ts --json=../../generated-docs/core/geometry-core/file.json --onlyJson %TYPEDOC_THEME%",
-    "cover": "nyc mocha --timeout 30000 --require ts-node/register --require source-map-support/register ./src/test/**/*.test.ts",
+    "cover": "nyc npm test",
     "cover:docs": "node ./node_modules/@bentley/build-tools/scripts/docscoverage.js",
     "lint": "tslint --project . 1>&2"
   },
@@ -48,26 +48,6 @@
   },
   "dependencies": {},
   "nyc": {
-    "include": [
-      "src/**"
-    ],
-    "exclude": [
-      "src/test/*",
-      "**/*.d.ts"
-    ],
-    "extension": [
-      ".ts"
-    ],
-    "require": [
-      "source-map-support/register",
-      "ts-node/register"
-    ],
-    "reporter": [
-      "text-summary",
-      "lcov",
-      "cobertura"
-    ],
-    "report-dir": "./lib/test/coverage",
-    "all": true
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
   }
 }

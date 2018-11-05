@@ -1,0 +1,15 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Popup /> renders correctly 1`] = `
+<div>
+  <Popup
+    hideTime={300}
+    isShown={true}
+    position={5}
+    showArrow={false}
+    showOnHover={false}
+    showShadow={true}
+    showTime={300}
+  />
+</div>
+`;

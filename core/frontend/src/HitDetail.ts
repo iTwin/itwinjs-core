@@ -115,7 +115,7 @@ export class HitDetail {
   /** Determine if this HitPoint is from the same source as another HitDetail. */
   public isSameHit(otherHit?: HitDetail): boolean { return (undefined !== otherHit && this.sourceId === otherHit.sourceId); }
   /** Return whether sourceId is for a persistent element and not a pickable decoration. */
-  public get isElementHit(): boolean { return !Id64.isInvalidId(this.sourceId) && !Id64.isTransientId(this.sourceId); }
+  public get isElementHit(): boolean { return !Id64.isInvalid(this.sourceId) && !Id64.isTransient(this.sourceId); }
   // return whether the sourceId is for a model (reality models etc.)
   public get isModelHit(): boolean { return this.viewport.iModel.models.getLoaded(this.sourceId) !== undefined; }
   /** Create a deep copy of this HitDetail */
@@ -125,10 +125,10 @@ export class HitDetail {
   public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
 
   /**
-   * Get the tooltip string for this HitDetail.
+   * Get the tooltip content for this HitDetail.
    * Calls the backend method [Element.getToolTipMessage]($backend), and replaces all instances of `${localizeTag}` with localized string from IModelApp.i18n.
    */
-  public async getToolTip(): Promise<string> {
+  public async getToolTip(): Promise<HTMLElement | string> {
     if (!this.isElementHit)
       return IModelApp.viewManager.getDecorationToolTip(this);
 
@@ -170,7 +170,7 @@ export class SnapDetail extends HitDetail {
     super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction);
     this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
     this.adjustedPoint = this.snapPoint.clone();
-    this.sprite = IconSprites.getSprite(SnapDetail.getSnapSprite(snapMode), from.viewport.iModel);
+    this.sprite = IconSprites.getSpriteFromUrl(SnapDetail.getSnapSpriteUrl(snapMode));
   }
 
   /** Returns `HitDetailType.Snap` */
@@ -282,15 +282,15 @@ export class SnapDetail extends HitDetail {
   }
 
   /**  */
-  private static getSnapSprite(snapType: SnapMode): string {
+  private static getSnapSpriteUrl(snapType: SnapMode): string {
     switch (snapType) {
-      case SnapMode.Nearest: return "SnapPointOn";
-      case SnapMode.NearestKeypoint: return "SnapKeypoint";
-      case SnapMode.MidPoint: return "SnapMidpoint";
-      case SnapMode.Center: return "SnapCenter";
-      case SnapMode.Origin: return "SnapOrigin";
-      case SnapMode.Bisector: return "SnapBisector";
-      case SnapMode.Intersection: return "SnapIntersection";
+      case SnapMode.Nearest: return "SnapPointOn.png";
+      case SnapMode.NearestKeypoint: return "SnapKeypoint.png";
+      case SnapMode.MidPoint: return "SnapMidpoint.png";
+      case SnapMode.Center: return "SnapCenter.png";
+      case SnapMode.Origin: return "SnapOrigin.png";
+      case SnapMode.Bisector: return "SnapBisector.png";
+      case SnapMode.Intersection: return "SnapIntersection.png";
     }
     return "";
   }

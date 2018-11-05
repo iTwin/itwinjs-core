@@ -5,9 +5,21 @@
 
 import { expect, assert } from "chai";
 import { WebGLTestContext } from "./WebGLTestContext";
-import { IModelApp, ImageUtil } from "@bentley/imodeljs-frontend";
+import {
+  IModelApp,
+  imageElementFromImageSource,
+  extractImageSourceDimensions,
+  imageBufferToPngDataUrl,
+  imageElementFromUrl,
+} from "@bentley/imodeljs-frontend";
 import { TextureHandle, GL } from "@bentley/imodeljs-frontend/lib/webgl";
-import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, RenderTexture } from "@bentley/imodeljs-common";
+import {
+  ImageBuffer,
+  ImageBufferFormat,
+  ImageSource,
+  ImageSourceFormat,
+  RenderTexture,
+} from "@bentley/imodeljs-common";
 
 // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
 // bottom right pixel.  The rest of the square is red.
@@ -91,7 +103,7 @@ describe("Texture tests", () => {
       return;
 
     const imageSource = new ImageSource(pngData, ImageSourceFormat.Png);
-    const image = await ImageUtil.extractImage(imageSource);
+    const image = await imageElementFromImageSource(imageSource);
     assert(undefined !== image);
     const imageTexture = TextureHandle.createForImage(image!, true, RenderTexture.Type.Normal);
     assert(undefined !== imageTexture);
@@ -100,20 +112,96 @@ describe("Texture tests", () => {
   });
 });
 
+// NB: get/putImageData() are weird when alpha is involved...apparently the alpha is premultiplied, but
+// getImageData() is required to return a RGBA value with *un*-premultiplied alpha. That conversion is lossy.
+// e.g. if you put (7f,7f,7f,7f) you will get back (7e,7e,7e,7f).
+// The tests avoid problematic alpha values.
+async function testImageBufferUrl(buffer: ImageBuffer, expectedPixels: number[]) {
+  // Create a URL from the image buffer
+  const url = imageBufferToPngDataUrl(buffer);
+  expect(url).not.to.be.undefined;
+  const urlPrefix = "data:image/png;base64,";
+  expect(url!.startsWith(urlPrefix)).to.be.true;
+
+  // Create an HTML image from the URL
+  const image = await imageElementFromUrl(url!);
+  expect(image).not.to.be.undefined;
+
+  // Draw the image onto a canvas
+  const canvas = document.createElement("canvas")!;
+  assert(null !== canvas);
+  canvas.width = buffer.width;
+  canvas.height = buffer.height;
+
+  const context = canvas.getContext("2d")!;
+  assert(null !== context);
+  context.drawImage(image, 0, 0);
+
+  // Extract the image pixels
+  const imageData = context.getImageData(0, 0, canvas.width, canvas.height);
+
+  // Compare
+  const actualPixels = imageData.data;
+  expect(actualPixels.length).to.equal(expectedPixels.length);
+
+  for (let i = 0; i < actualPixels.length; i++) {
+    expect(actualPixels[i]).to.equal(expectedPixels[i]);
+  }
+}
+
 describe("ImageUtil", () => {
   const imageSource = new ImageSource(pngData, ImageSourceFormat.Png);
 
   it("should extract image dimensions from ImageSource", async () => {
-    const size = await ImageUtil.extractImageDimensions(imageSource);
+    const size = await extractImageSourceDimensions(imageSource);
     assert(undefined !== size);
     expect(size!.x).to.equal(3);
     expect(size!.y).to.equal(3);
   });
 
   it("should extract image from ImageSource", async () => {
-    const image = await ImageUtil.extractImage(imageSource);
+    const image = await imageElementFromImageSource(imageSource);
     assert(undefined !== image);
     expect(image!.naturalWidth).to.equal(3);
     expect(image!.naturalHeight).to.equal(3);
+  });
+
+  it("should produce a data URL from an alpha ImageBuffer", async () => {
+    const alphaBitmap = new Uint8Array([0x00, 0x10, 0x20, 0xdf, 0xef, 0xff]);
+    const alphaBuffer = ImageBuffer.create(alphaBitmap, ImageBufferFormat.Alpha, 3)!;
+
+    const expectedPixels = [
+      0x00, 0x00, 0x00, 0x00, 0x10, 0x10, 0x10, 0x10, 0x20, 0x20, 0x20, 0x20,
+      0xdf, 0xdf, 0xdf, 0xdf, 0xef, 0xef, 0xef, 0xef, 0xff, 0xff, 0xff, 0xff,
+    ];
+    await testImageBufferUrl(alphaBuffer, expectedPixels);
+  });
+
+  it("should produce a data URL from an rgb ImageBuffer", async () => {
+    const rgbBitmap = new Uint8Array([
+      0xff, 0x00, 0x00, 0x00, 0xff, 0x00,
+      0x00, 0x00, 0xff, 0x7f, 0x7f, 0x7f,
+    ]);
+    const rgbBuffer = ImageBuffer.create(rgbBitmap, ImageBufferFormat.Rgb, 2)!;
+
+    const expectedPixels = [
+      0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0xff,
+      0x00, 0x00, 0xff, 0xff, 0x7f, 0x7f, 0x7f, 0xff,
+    ];
+    await testImageBufferUrl(rgbBuffer, expectedPixels);
+  });
+
+  it("should produce a data URL from an rgba ImageBuffer", async () => {
+    const rgbaBitmap = [
+      0xff, 0x00, 0x00, 0xff, 0x00, 0xff, 0x00, 0x00,
+      0x00, 0x00, 0xff, 0xdf, 0xef, 0xef, 0xef, 0xef,
+    ];
+    const rgbaBuffer = ImageBuffer.create(new Uint8Array(rgbaBitmap), ImageBufferFormat.Rgba, 2)!;
+
+    const rgbaResult = [
+      0xff, 0x00, 0x00, 0xff, 0x00, 0x00, 0x00, 0x00, // NB: premultiplied alpha: 0xff*0x00 => 0x00
+      0x00, 0x00, 0xff, 0xdf, 0xef, 0xef, 0xef, 0xef,
+    ];
+    await testImageBufferUrl(rgbaBuffer, rgbaResult);
   });
 });

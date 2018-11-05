@@ -5,7 +5,7 @@
 /** @module Tile */
 import { TileIO } from "./TileIO";
 import { ElementAlignedBox3d, QParams3d, Quantization, Feature, FeatureTable, BatchType } from "@bentley/imodeljs-common";
-import { Id64, assert } from "@bentley/bentleyjs-core";
+import { Id64String, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { utf8ToString } from "@bentley/bentleyjs-core";
 import { PointCloudArgs } from "../render/primitives/PointCloudPrimitive";
@@ -39,7 +39,7 @@ export namespace PntsTileIO {
   /** Deserialize a point cloud tile and return it as a RenderGraphic.
    * @hidden
    */
-  export function readPointCloud(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined {
+  export function readPointCloud(stream: TileIO.StreamBuffer, iModel: IModelConnection, modelId: Id64String, _is3d: boolean, range: ElementAlignedBox3d, system: RenderSystem, yAxisUp: boolean): RenderGraphic | undefined {
     const header: Header = new Header(stream);
 
     if (!header.isValid)

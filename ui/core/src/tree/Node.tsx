@@ -10,7 +10,7 @@ import * as React from "react";
 import ExpansionToggle from "./ExpansionToggle";
 import "./Node.scss";
 
-/** Props for the TreeNode React component */
+/** Properties for the [[TreeNode]] React component */
 export interface NodeProps {
   label?: React.ReactNode;
   icon?: React.ReactChild;

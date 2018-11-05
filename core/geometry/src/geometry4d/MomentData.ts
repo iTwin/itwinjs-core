@@ -13,7 +13,16 @@ import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Matrix4d } from "./Matrix4d";
 import { Point4d } from "./Point4d";
-
+/**
+ * A MomentData structrue carries data used in calculation of moments of inertia.
+ * * origin = local origin used as moments are summed.
+ * * sums = array of summed moments.
+ *   * The [i,j] entry of the sums is a summed or integrated moment for product of axis i and j.
+ *      * axes 0,1,2 are x,y,z
+ *         * e.g. entry [0,1] is summed product xy
+ *      * axis 3 is "w", which is 1 in sums.
+ *         * e.g. entry 03 is summed x
+ */
 export class MomentData {
   public origin: Point3d;
   public sums: Matrix4d;

@@ -46,16 +46,6 @@ export class ConfigurableBase implements ConfigurableUiElement {
   public get name(): string { return this._name; }
 }
 
-/** The base class for all ConfigurableUi elements that belong to a stage.
- */
-export class StageConfigurable extends ConfigurableBase {
-  // private _stage?: FrontstageDef;
-
-  constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
-  }
-}
-
 /** The type of the ConfigurableUiControl.
  */
 export enum ConfigurableUiControlType {
@@ -81,7 +71,7 @@ export type ConfigurableUiControlConstructor = new (info: ConfigurableCreateInfo
  * [[StatusBarWidgetControl]] or
  * [[NavigationAidControl]].
  */
-export abstract class ConfigurableUiControl extends StageConfigurable {
+export abstract class ConfigurableUiControl extends ConfigurableBase {
   private _cid: string;
 
   /** Creates an instance of ConfigurableUiControl.

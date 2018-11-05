@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "../_z-index";
+ @import "@bentley/ui-core/lib/_z-index";
 
 .nz-app-content {
   position: absolute;
@@ -10,5 +10,5 @@
   height: 100%;
   top: 0;
   left: 0;
-  @include nz-z-index(content);
+  @include uicore-z-index(content);
 }

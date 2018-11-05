@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Id64, ChangeSetStatus, ChangeSetApplyOption, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64String, ChangeSetStatus, ChangeSetApplyOption, OpenMode } from "@bentley/bentleyjs-core";
 import { Element, IModelDb, DictionaryModel, ChangeSetToken, IModelJsFs, ConcurrencyControl } from "../../backend";
 import { IModelError, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -71,9 +71,9 @@ describe("ChangeMerging", () => {
     let secondparent: number = -1;
     let neutralparent: number = -1;
 
-    let modelId: Id64;
-    let spatialCategoryId: Id64;
-    let el1: Id64;
+    let modelId: Id64String;
+    let spatialCategoryId: Id64String;
+    let el1: Id64String;
     // first. Create a new model, category, and element.  =>  #0
     if (true) {
       [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(first, IModelTestUtils.getUniqueModelCode(first, "newPhysicalModel"), true);

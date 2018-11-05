@@ -30,13 +30,13 @@ describe("ModelState", () => {
   it("ModelSelectors should hold models", () => {
     const props: ModelSelectorProps = {
       classFullName: ModelSelectorState.getClassFullName(),
-      model: new Id64([1, 1]),
+      model: Id64.fromLocalAndBriefcaseIds(1, 1),
       code: Code.createEmpty(),
       models: ["0x1"],
     };
 
     const selector = new ModelSelectorState(props, imodel);
-    selector.addModels([new Id64([2, 1]), new Id64([2, 1]), new Id64([2, 3])]);
+    selector.addModels([Id64.fromLocalAndBriefcaseIds(2, 1), Id64.fromLocalAndBriefcaseIds(2, 1), Id64.fromLocalAndBriefcaseIds(2, 3)]);
     assert.equal(selector.models.size, 3);
     const out = selector.toJSON();
     assert.isArray(out.models);

@@ -1,4 +1,5 @@
 /*---------------------------------------------------------------------------------------------
+/*---------------------------------------------------------------------------------------------
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
@@ -76,15 +77,8 @@ export class SelectionTool extends PrimitiveTool {
     this.isSelectByPoints = false;
     this.points.length = 0;
 
-    IModelApp.toolAdmin.setCursor(enableLocate ? "default" : "crosshair");
-    IModelApp.toolAdmin.setLocateCircleOn(enableLocate);
-
-    IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
-    IModelApp.locateManager.initToolLocate();
+    this.initLocateElements(enableLocate, false, enableLocate ? "default" : "crosshair", CoordinateLockOverrides.All);
     IModelApp.locateManager.options.allowDecorations = true; // Always locate to display tool tip even if we reject for adding to selection set...
-
-    IModelApp.accuSnap.enableLocate(enableLocate);
-    IModelApp.accuSnap.enableSnap(false);
 
     switch (mode) {
       case SelectionMode.Replace:
@@ -213,7 +207,7 @@ export class SelectionTool extends PrimitiveTool {
       for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
         for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid)
+          if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
             continue; // no geometry at this location...
           if (undefined !== outline && !offset.containsPoint(testPoint))
             outline.add(pixel.elementId.toString());
@@ -231,7 +225,7 @@ export class SelectionTool extends PrimitiveTool {
       for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
         for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
           const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-          if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid)
+          if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
             continue; // no geometry at this location...
           const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
           pts[0].interpolate(fraction, pts[1], closePoint);
@@ -242,7 +236,7 @@ export class SelectionTool extends PrimitiveTool {
     }
 
     if (!this.wantPickableDecorations())
-      contents.forEach((id) => { if (Id64.isTransientId(id)) contents.delete(id); });
+      contents.forEach((id) => { if (Id64.isTransient(id)) contents.delete(id); });
 
     if (0 === contents.size) {
       if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev))

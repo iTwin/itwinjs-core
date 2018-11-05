@@ -5,33 +5,38 @@
 /** @module RpcInterface */
 
 import { RpcOperation } from "../core/RpcOperation";
-import { RpcRequest, RpcRequestStatus, RpcResponseType } from "../core/RpcRequest";
-import { RpcProtocol, RpcProtocolEvent } from "../core/RpcProtocol";
+import { RpcProtocol } from "../core/RpcProtocol";
 import { RpcConfiguration } from "../core/RpcConfiguration";
-import { RpcInvocation } from "../core/RpcInvocation";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
 import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
-import { IModelError, BentleyStatus } from "../../IModelError";
+import { Readable, Writable } from "stream";
+import { RpcContentType, RpcRequestStatus, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
 
-/** @hidden */
-export const WEB_RPC_CONSTANTS = {
-  CONTENT: "Content-Type",
-  TEXT: "text/plain",
-  ANY_TEXT: "text/",
-  BINARY: "application/octet-stream",
-};
-
-/** An http server request object. */
-export interface HttpServerRequest {
+/** An HTTP server request object. */
+export interface HttpServerRequest extends Readable {
+  httpVersion: string;
+  httpVersionMajor: number;
+  httpVersionMinor: number;
+  connection: any;
+  headers: { [header: string]: string | string[] | undefined };
+  rawHeaders: string[];
+  trailers: { [key: string]: string | undefined };
+  rawTrailers: string[];
+  setTimeout(msecs: number, callback: () => void): this;
+  url?: string;
+  statusCode?: number;
+  statusMessage?: string;
+  socket: any;
+  destroy(error?: Error): void;
   body: string | Buffer;
   path: string;
   method: string;
   header: (field: string) => string | undefined;
 }
 
-/** An http server response object. */
-export interface HttpServerResponse {
+/** An HTTP server response object. */
+export interface HttpServerResponse extends Writable {
   send(body?: any): HttpServerResponse;
   status(code: number): HttpServerResponse;
   set(field: string, value: string): void;
@@ -39,28 +44,38 @@ export interface HttpServerResponse {
 
 /** The HTTP application protocol. */
 export abstract class WebAppRpcProtocol extends RpcProtocol {
-  /** Convenience handler for an RPC operation post request for an http server. */
-  public async handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse) {
-    const request = WebAppRpcRequest.deserialize(this, req);
-    const fulfillment = await this.fulfill(request);
-
-    if (fulfillment.type === RpcResponseType.Text) {
-      const response = fulfillment.result as string;
-      res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.TEXT);
-      res.status(fulfillment.status).send(response);
-    } else if (fulfillment.type === RpcResponseType.Binary) {
-      const response = Buffer.from(fulfillment.result as Uint8Array);
-      res.set(WEB_RPC_CONSTANTS.CONTENT, WEB_RPC_CONSTANTS.BINARY);
-      res.status(fulfillment.status).send(response);
-    } else {
-      throw new IModelError(BentleyStatus.ERROR, "Unknown response type.");
-    }
+  /** Convenience handler for an RPC operation get request for an HTTP server. */
+  public async handleOperationGetRequest(req: HttpServerRequest, res: HttpServerResponse) {
+    return this.handleOperationPostRequest(req, res);
   }
 
-  /** Convenience handler for an OpenAPI description request for an http server. */
+  /** Convenience handler for an RPC operation post request for an HTTP server. */
+  public async handleOperationPostRequest(req: HttpServerRequest, res: HttpServerResponse) {
+    const request = await WebAppRpcRequest.parseRequest(this, req);
+    const fulfillment = await this.fulfill(request);
+    WebAppRpcRequest.sendResponse(this, request, fulfillment, res);
+  }
+
+  /** Convenience handler for an OpenAPI description request for an HTTP server. */
   public handleOpenApiDescriptionRequest(_req: HttpServerRequest, res: HttpServerResponse) {
     const description = JSON.stringify(this.openAPIDescription);
     res.send(description);
+  }
+
+  /** Converts an HTTP content type value to an RPC content type value. */
+  public static computeContentType(httpType: string | null | undefined): RpcContentType {
+    if (!httpType)
+      return RpcContentType.Unknown;
+
+    if (httpType.indexOf(WEB_RPC_CONSTANTS.ANY_TEXT) === 0) {
+      return RpcContentType.Text;
+    } else if (httpType.indexOf(WEB_RPC_CONSTANTS.BINARY) === 0) {
+      return RpcContentType.Binary;
+    } else if (httpType.indexOf(WEB_RPC_CONSTANTS.MULTIPART) === 0) {
+      return RpcContentType.Multipart;
+    } else {
+      return RpcContentType.Unknown;
+    }
   }
 
   /** The OpenAPI-compatible info object for this protocol. */
@@ -99,24 +114,10 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   /** An OpenAPI-compatible description of this protocol. */
   public get openAPIDescription() { return new RpcOpenAPIDescription(this); }
 
-  /** Supplies the HTTP verb for an RPC operation. */
-  public supplyMethodForOperation(_operation: RpcOperation): "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace" {
-    return "post";
-  }
-
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation. */
   public abstract supplyPathParametersForOperation(_operation: RpcOperation): OpenAPIParameter[];
 
-  /** Supplies error objects for protocol events. */
-  public supplyErrorForEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): Error {
-    if (object instanceof WebAppRpcRequest) {
-      return WebAppRpcLogging.supplyError(event, object);
-    } else {
-      return super.supplyErrorForEvent(event, object);
-    }
-  }
-
-  /** Constructs an http protocol. */
+  /** Constructs an HTTP protocol. */
   public constructor(configuration: RpcConfiguration) {
     super(configuration);
     this.events.addListener(WebAppRpcLogging.logProtocolEvent);

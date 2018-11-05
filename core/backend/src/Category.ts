@@ -40,11 +40,11 @@ export class SubCategory extends DefinitionElement {
   /** Get the SubCategory's name (its Code value). */
   public getSubCategoryName(): string { return this.code.getValue(); }
   /** Get the Id of the SubCategory. */
-  public getSubCategoryId(): Id64 { return this.id; }
+  public getSubCategoryId(): Id64String { return this.id; }
   /** Get the Id of this SubCategory's parent Category. */
-  public getCategoryId(): Id64 { return this.parent ? this.parent.id : new Id64(); }
+  public getCategoryId(): Id64String { return this.parent ? this.parent.id : Id64.invalid; }
   /** Check if this is the default SubCategory of its parent Category. */
-  public get isDefaultSubCategory(): boolean { return IModelDb.getDefaultSubCategoryId(this.getCategoryId()).equals(this.getSubCategoryId()); }
+  public get isDefaultSubCategory(): boolean { return IModelDb.getDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId(); }
 }
 
 /** A Category element is the target of the `category` member of [[GeometricElement]]. */
@@ -68,7 +68,7 @@ export class Category extends DefinitionElement implements CategoryProps {
   }
 
   /** Get the Id of the default SubCategory for this Category. */
-  public myDefaultSubCategoryId(): Id64 { return IModelDb.getDefaultSubCategoryId(this.id); }
+  public myDefaultSubCategoryId(): Id64String { return IModelDb.getDefaultSubCategoryId(this.id); }
 
   /** Set the appearance of the default SubCategory for this Category */
   public setDefaultAppearance(app: SubCategoryAppearance): void {
@@ -91,7 +91,7 @@ export class DrawingCategory extends Category {
   public static getCodeSpecName(): string { return BisCodeSpec.drawingCategory; }
 
   /** Looks up the CategoryId of a DrawingCategory by model and name */
-  public static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64 | undefined {
+  public static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined {
     const code: Code = DrawingCategory.createCode(iModel, scopeModelId, categoryName);
     return iModel.elements.queryElementIdByCode(code);
   }
@@ -121,7 +121,7 @@ export class SpatialCategory extends Category {
   public static getCodeSpecName(): string { return BisCodeSpec.spatialCategory; }
 
   /** Looks up the CategoryId of a SpatialCategory by model and name */
-  public static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64 | undefined {
+  public static queryCategoryIdByName(iModel: IModelDb, scopeModelId: Id64String, categoryName: string): Id64String | undefined {
     const code: Code = SpatialCategory.createCode(iModel, scopeModelId, categoryName);
     return iModel.elements.queryElementIdByCode(code);
   }

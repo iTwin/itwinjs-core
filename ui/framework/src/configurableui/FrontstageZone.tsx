@@ -11,19 +11,21 @@ import { FrameworkZone } from "./FrameworkZone";
 import { ToolSettingsZone } from "./ToolSettingsZone";
 import { StatusBarZone } from "./StatusBarZone";
 
-import { ZoneProps as NZ_ZoneState, isStatusZone, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
+import { ZoneProps as NZ_ZoneProps, isStatusZone, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
 import { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone/lib/widget/Stacked";
 import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
 import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
+import { StatusBarWidgetControl } from "./StatusBarWidgetControl";
+import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 // -----------------------------------------------------------------------------
 // Zone React Components
 // -----------------------------------------------------------------------------
 
-/** Props for the Frontstage Zone Component.
+/** Properties for the [[FrontstageZone]] component.
  */
 export interface FrontstageZoneProps {
-  zoneState: NZ_ZoneState;
+  zoneProps: NZ_ZoneProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
   zoneDefProvider: ZoneDefProvider;
@@ -40,24 +42,29 @@ export interface FrontstageZoneProps {
  */
 export class FrontstageZone extends React.Component<FrontstageZoneProps> {
   public render(): React.ReactNode {
-    if (this.props.zoneState.widgets.length === 1) {
-      const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneState.widgets[0].id);
+    if (this.props.zoneProps.widgets.length === 1) {
+      const zoneDef = this.props.zoneDefProvider.getZoneDef(this.props.zoneProps.widgets[0].id);
       if (!zoneDef)
         return null;
 
       if (zoneDef.isToolSettings) {
         return (
           <ToolSettingsZone
-            zoneDef={zoneDef}
-            bounds={this.props.zoneState.bounds} />
+            bounds={this.props.zoneProps.bounds} />
         );
       } else if (zoneDef.isStatusBar) {
-        if (!isStatusZone(this.props.zoneState))
+        if (!isStatusZone(this.props.zoneProps))
           throw new TypeError();
+
+        const widgetDef = zoneDef.getOnlyWidgetDef();
+        let widgetControl: StatusBarWidgetControl | undefined;
+        if (widgetDef)
+          widgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
+
         return (
           <StatusBarZone
-            zoneDef={zoneDef}
-            zoneState={this.props.zoneState}
+            widgetControl={widgetControl}
+            zoneProps={this.props.zoneProps}
             widgetChangeHandler={this.props.widgetChangeHandler}
             targetChangeHandler={this.props.targetChangeHandler}
             targetedBounds={this.props.ghostOutline}
@@ -69,7 +76,7 @@ export class FrontstageZone extends React.Component<FrontstageZoneProps> {
 
     return (
       <FrameworkZone
-        zoneState={this.props.zoneState}
+        zoneProps={this.props.zoneProps}
         widgetChangeHandler={this.props.widgetChangeHandler}
         targetedBounds={this.props.ghostOutline}
         targetChangeHandler={this.props.targetChangeHandler}

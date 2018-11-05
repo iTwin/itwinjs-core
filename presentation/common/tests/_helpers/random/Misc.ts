@@ -3,10 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 
-export const createRandomId = (): Id64 => {
-  return new Id64([faker.random.number(), faker.random.number()]);
+export const createRandomId = (): Id64String => {
+  return Id64.fromLocalAndBriefcaseIds(faker.random.number(), faker.random.number());
 };
 
 export const createRandomRgbColor = () => {

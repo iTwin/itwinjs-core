@@ -13,10 +13,12 @@ import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
 import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { StandaloneIModelRpcImpl } from "./rpc-impl/StandaloneIModelRpcImpl";
 import { IModelUnitTestRpcImpl } from "./rpc-impl/IModelUnitTestRpcImpl";
+import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { KnownLocations } from "./Platform";
 import { BisCore } from "./BisCore";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { BriefcaseManager } from "./BriefcaseManager";
+import { initializeRpcBackend } from "./RpcBackend";
 
 /**
  * Configuration of imodeljs-backend.
@@ -66,6 +68,8 @@ export class IModelHost {
     if (IModelHost.configuration)
       throw new IModelError(BentleyStatus.ERROR, "startup may only be called once");
 
+    initializeRpcBackend();
+
     if (!NativePlatformRegistry.isNativePlatformLoaded) {
       if (configuration.nativePlatform !== undefined)
         NativePlatformRegistry.register(configuration.nativePlatform);
@@ -81,6 +85,7 @@ export class IModelHost {
     IModelWriteRpcImpl.register();
     StandaloneIModelRpcImpl.register();
     IModelUnitTestRpcImpl.register();
+    WipRpcImpl.register();
 
     BisCore.registerSchema();
 

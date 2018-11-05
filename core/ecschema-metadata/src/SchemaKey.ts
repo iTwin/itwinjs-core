@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { ECObjectsError, ECObjectsStatus } from "./Exception";
 import { SchemaMatchType } from "./ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "./Exception";
 
 /**
  *
@@ -106,7 +106,7 @@ export class ECName {
 /**
  * The SchemaKey contains a Schemas name and version.
  */
-export default class SchemaKey {
+export class SchemaKey {
   private _name: ECName;
   protected _version: ECVersion;
   // public checksum: number;

@@ -7,7 +7,7 @@
 import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
 import { IModelHubClientError, ArgumentCheck } from "./Errors";
 import { AccessToken } from "../Token";
-import { Logger, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Logger, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { addSelectFileAccessKey, StringIdQuery } from "./Query";
 import { FileHandler } from "../FileHandler";
 import { ProgressInfo } from "../Request";
@@ -54,7 +54,7 @@ export class ChangeSet extends WsgInstance {
 
   /** Id of the file that this ChangeSet belongs to. It has to be set during the push. See [IModelDb.getGuid]($backend). */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.SeedFileId", new GuidSerializer())
-  public seedFileId?: Guid;
+  public seedFileId?: GuidString;
 
   /** Id of the [[Briefcase]] that pushed this ChangeSet. It has to be set during the push. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.BriefcaseId")
@@ -156,7 +156,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * @param versionId Id of the version.
    * @returns This query.
    */
-  public getVersionChangeSets(versionId: Guid) {
+  public getVersionChangeSets(versionId: GuidString) {
     ArgumentCheck.validGuid("versionId", versionId);
     this._query.$filter = `CumulativeChangeSet-backward-Version.Id+eq+'${versionId}'`;
     return this;
@@ -167,7 +167,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * @param versionId Id of the version.
    * @returns This query.
    */
-  public afterVersion(versionId: Guid) {
+  public afterVersion(versionId: GuidString) {
     ArgumentCheck.validGuid("versionId", versionId);
     this._query.$filter = `FollowingChangeSet-backward-Version.Id+eq+'${versionId}'`;
     return this;
@@ -179,7 +179,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * @param destinationVersionId Id of the destination version.
    * @returns This query.
    */
-  public betweenVersions(sourceVersionId: Guid, destinationVersionId: Guid) {
+  public betweenVersions(sourceVersionId: GuidString, destinationVersionId: GuidString) {
     ArgumentCheck.validGuid("sourceVersionId", sourceVersionId);
     ArgumentCheck.validGuid("destinationVersionId", destinationVersionId);
     let query: string;
@@ -198,7 +198,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * @param changeSetId Id of the changeSet.
    * @returns This query.
    */
-  public betweenVersionAndChangeSet(versionId: Guid, changeSetId: string) {
+  public betweenVersionAndChangeSet(versionId: GuidString, changeSetId: string) {
     ArgumentCheck.validGuid("versionId", versionId);
     ArgumentCheck.validChangeSetId("changeSetId", changeSetId);
     let query: string;
@@ -216,7 +216,7 @@ export class ChangeSetQuery extends StringIdQuery {
    * @param seedFileId Id of the seed file.
    * @returns This query.
    */
-  public bySeedFileId(seedFileId: Guid) {
+  public bySeedFileId(seedFileId: GuidString) {
     ArgumentCheck.validGuid("seedFileId", seedFileId);
     this.addFilter(`SeedFileId+eq+'${seedFileId}'`);
     return this;
@@ -247,7 +247,7 @@ export class ChangeSetHandler {
    * @param imodelId Id of the iModel. See [[HubIModel]].
    * @param changeSetId Id of the ChangeSet.
    */
-  private getRelativeUrl(imodelId: Guid, changeSetId?: string) {
+  private getRelativeUrl(imodelId: GuidString, changeSetId?: string) {
     return `/Repositories/iModel--${imodelId}/iModelScope/ChangeSet/${changeSetId || ""}`;
   }
 
@@ -260,7 +260,7 @@ export class ChangeSetHandler {
    * @throws [[WsgError]] with [WSStatus.InstanceNotFound]($bentley) if [[InstanceIdQuery.byId]] is used and a [[ChangeSet]] with the specified id could not be found.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query: ChangeSetQuery = new ChangeSetQuery()): Promise<ChangeSet[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying changesets for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
@@ -340,7 +340,7 @@ export class ChangeSetHandler {
    * @throws [IModelHubStatus.ChangeSetPointsToBadSeed]($bentley) if changeSet.seedFileId is not set to the correct file id. That file id should match to the value written to the Briefcase file. See [IModelDb.setGuid]($backend).
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: Guid, changeSet: ChangeSet, changeSetPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
+  public async create(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, changeSet: ChangeSet, changeSetPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<ChangeSet> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Uploading changeset ${changeSet.id} to iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);

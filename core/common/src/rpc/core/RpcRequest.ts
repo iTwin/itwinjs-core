@@ -7,16 +7,16 @@
 import { BeEvent, BentleyStatus } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
-import { RpcInvocation } from "./RpcInvocation";
-import { RpcProtocol, RpcProtocolEvent } from "./RpcProtocol";
+import { RpcProtocol } from "./RpcProtocol";
 import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcMarshaling } from "./RpcMarshaling";
+import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { CURRENT_REQUEST } from "./RpcRegistry";
-import { aggregateLoad, RpcNotFoundResponse } from "./RpcControl";
+import { RpcNotFoundResponse } from "./RpcControl";
 import { IModelToken } from "../../IModel";
 import { IModelError } from "../../IModelError";
+import { RpcResponseCacheControl, RpcRequestEvent, RpcRequestStatus, RpcProtocolEvent } from "./RpcConstants";
 
-const emptyBuffer = new Uint8Array(0);
+const aggregateLoad = { lastRequest: 0, lastResponse: 0 };
 
 /** Supplies an IModelToken for an RPC request. */
 export type RpcRequestTokenSupplier_T = (request: RpcRequest) => IModelToken | undefined;
@@ -30,39 +30,13 @@ export type RpcRequestInitialRetryIntervalSupplier_T = (configuration: RpcConfig
 /** Notification callback for an RPC request. */
 export type RpcRequestCallback_T = (request: RpcRequest) => void;
 
+/** Determines if caching is permitted for a RPC response. */
+export type RpcResponseCachingCallback_T = (request: RpcRequest) => RpcResponseCacheControl;
+
 /** Runtime information related to the operation load of one or more RPC interfaces. */
 export interface RpcOperationsProfile {
   readonly lastRequest: number;
   readonly lastResponse: number;
-}
-
-/** The status of an RPC operation request. */
-export enum RpcRequestStatus {
-  Unknown,
-  Created,
-  Submitted,
-  Provisioning,
-  Pending,
-  Resolved,
-  Rejected,
-  Enqueued,
-  Acknowledged,
-  Finalized,
-  Disposed,
-  NotFound,
-}
-
-/** RPC request event types. */
-export enum RpcRequestEvent {
-  StatusChanged,
-  PendingUpdateReceived,
-}
-
-/** RPC request response types. */
-export enum RpcResponseType {
-  Unknown,
-  Text,
-  Binary,
 }
 
 /** Handles RPC request events. */
@@ -72,7 +46,7 @@ export type RpcRequestEventHandler = (type: RpcRequestEvent, request: RpcRequest
 export type RpcRequestNotFoundHandler = (request: RpcRequest, response: RpcNotFoundResponse, resubmit: () => void, reject: (reason: any) => void) => void;
 
 /** A RPC operation request. */
-export class RpcRequest<TResponse = any> {
+export abstract class RpcRequest<TResponse = any> {
   private _resolve: (value?: TResponse | PromiseLike<TResponse> | undefined) => void = () => undefined;
   private _reject: (reason?: any) => void = () => undefined;
   private _created: number = 0;
@@ -133,9 +107,6 @@ export class RpcRequest<TResponse = any> {
   /** The target interval (in milliseconds) between submission attempts for this request. */
   public retryInterval: number;
 
-  /** Whether this request is finalized. */
-  public get finalized() { return this.status === RpcRequestStatus.Finalized; }
-
   /** Whether a connection is active for this request. */
   public get connecting() { return this._connecting; }
 
@@ -159,6 +130,12 @@ export class RpcRequest<TResponse = any> {
     return this._lastUpdated - this._created;
   }
 
+  /** A protocol-specific path identifier for this request. */
+  public path: string;
+
+  /** A protocol-specific method identifier for this request. */
+  public method: string;
+
   /** Finds the first parameter of a given type if present. */
   public findParameterOfType<T>(constructor: { new(...args: any[]): T }): T | undefined {
     for (const param of this.parameters) {
@@ -172,47 +149,35 @@ export class RpcRequest<TResponse = any> {
   /** Constructs an RPC request. */
   public constructor(client: RpcInterface, operation: string, parameters: any[]) {
     this._created = new Date().getTime();
+    this.path = "";
+    this.method = "";
     this.client = client;
     this.protocol = client.configuration.protocol;
     this.operation = RpcOperation.lookup(client.constructor as any, operation);
-    this.parameters = this.processParameters(parameters, operation);
+    this.parameters = parameters;
     this.retryInterval = this.operation.policy.retryInterval(client.configuration);
     this.response = new Promise((resolve, reject) => { this._resolve = resolve; this._reject = reject; });
     this.id = this.operation.policy.requestId(this);
-    this.protocol.events.addListener(this.handleProtocolEvent, this);
     this.setStatus(RpcRequestStatus.Created);
     this.operation.policy.requestCallback(this);
   }
 
-  private processParameters(parameters: any[], _operationName: string) {
-    return parameters;
-  }
-
-  /** Override to initialize the request communication channel. */
-  protected initializeChannel(): void { }
-
   /** Override to send the request. */
-  protected send(): void { }
+  protected abstract send(): Promise<number>;
+
+  /** Override to load response value. */
+  protected abstract load(): Promise<RpcSerializedValue>;
 
   /** Override to set request header values. */
-  protected setHeader(_name: string, _value: string): void { }
+  protected abstract setHeader(name: string, value: string): void;
 
-  /** Override to supply response status code. */
-  public getResponseStatusCode(): number { return 0; }
-
-  /** Override to supply response text. */
-  public getResponseText(): string { return ""; }
-
-  /** Override to supply response bytes. */
-  public getResponseBytes(): Uint8Array { return emptyBuffer; }
-
-  /** Override to supply response type. */
-  public getResponseType(): RpcResponseType { return RpcResponseType.Unknown; }
-
-  protected setLastUpdatedTime() { this._lastUpdated = new Date().getTime(); }
+  /** Sets the last updated time for the request. */
+  protected setLastUpdatedTime() {
+    this._lastUpdated = new Date().getTime();
+  }
 
   /* @hidden */
-  public submit(): void {
+  public async submit(): Promise<void> {
     if (!this._active)
       return;
 
@@ -225,105 +190,86 @@ export class RpcRequest<TResponse = any> {
     try {
       this._connecting = true;
       this.protocol.events.raiseEvent(RpcProtocolEvent.RequestCreated, this);
-      this.initializeChannel();
       this.setHeaders();
-      this.send();
+      const sent = this.send();
       this.operation.policy.sentCallback(this);
-    } catch (e) {
+      const response = await sent;
+      this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoading, this);
+      const value = await this.load();
+      this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
       this._connecting = false;
-      this.reject(e);
+      this.handleResponse(response, value);
+    } catch (err) {
+      this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this, err);
+      this._connecting = false;
+      this.reject(err);
     }
   }
 
-  private handleProtocolEvent(event: RpcProtocolEvent, object: RpcRequest | RpcInvocation): void {
-    if (object !== this)
-      return;
-
-    switch (event) {
-      case RpcProtocolEvent.ResponseLoaded: {
-        this._connecting = false;
-        return this.handleResponse();
-      }
-
-      case RpcProtocolEvent.AcknowledgementReceived: {
-        return this.acknowledge();
-      }
-
-      case RpcProtocolEvent.BackendErrorReceived: {
-        this._connecting = false;
-        return;
-      }
-
-      case RpcProtocolEvent.ConnectionAborted:
-      case RpcProtocolEvent.ConnectionErrorReceived:
-      case RpcProtocolEvent.UnknownErrorReceived: {
-        this._connecting = false;
-        return this.reject(this.protocol.supplyErrorForEvent(event, this));
-      }
-    }
-  }
-
-  private handleResponse(): void {
-    const code = this.getResponseStatusCode();
+  private handleResponse(code: number, value: RpcSerializedValue) {
     const status = this.protocol.getStatus(code);
 
     switch (status) {
       case RpcRequestStatus.Resolved: {
-        const type = this.getResponseType();
-        if (type === RpcResponseType.Text) {
-          try {
-            const result: TResponse = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
-            return this.resolve(result);
-          } catch (err) {
-            return this.reject(err);
-          }
-        } else if (type === RpcResponseType.Binary) {
-          const result: TResponse = this.getResponseBytes() as any; // ts bug? why necessary to cast?
-          return this.resolve(result);
-        } else {
-          throw new IModelError(BentleyStatus.ERROR, "Unknown response content type.");
-        }
+        return this.handleResolved(value);
       }
 
       case RpcRequestStatus.Rejected: {
-        this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorReceived, this);
-
-        try {
-          const localError = new Error();
-          const backendError = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
-          localError.name = backendError.name;
-          localError.message = backendError.message;
-
-          const localStack = localError.stack;
-          const remoteStack = backendError.stack;
-          backendError.stack = `${localStack}\n${remoteStack}`;
-
-          return this.reject(backendError);
-        } catch (err) {
-          return this.reject(err);
-        }
+        return this.handleRejected(value);
       }
 
       case RpcRequestStatus.Provisioning:
       case RpcRequestStatus.Pending: {
-        return this.setPending(status, this.getResponseText());
+        return this.setPending(status, value.objects);
       }
 
       case RpcRequestStatus.NotFound: {
-        const response = RpcMarshaling.deserialize(this.operation, this.protocol, this.getResponseText());
-        this.setStatus(status);
-
-        let resubmitted = false;
-        RpcRequest.notFoundHandlers.raiseEvent(this, response, () => {
-          if (resubmitted)
-            throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
-
-          resubmitted = true;
-          this.submit();
-        }, (reason: any) => this.reject(reason));
-        return;
+        return this.handleNotFound(status, value);
       }
     }
+  }
+
+  private handleResolved(value: RpcSerializedValue) {
+    try {
+      const result: TResponse = RpcMarshaling.deserialize(this.operation, this.protocol, value);
+      return this.resolve(result);
+    } catch (err) {
+      return this.reject(err);
+    }
+  }
+
+  private handleRejected(value: RpcSerializedValue) {
+    this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorReceived, this);
+
+    try {
+      const localError = new Error();
+      const backendError = RpcMarshaling.deserialize(this.operation, this.protocol, value);
+      localError.name = backendError.name;
+      localError.message = backendError.message;
+
+      const localStack = localError.stack;
+      const remoteStack = backendError.stack;
+      backendError.stack = `${localStack}\n${remoteStack}`;
+
+      return this.reject(backendError);
+    } catch (err) {
+      return this.reject(err);
+    }
+  }
+
+  private handleNotFound(status: RpcRequestStatus, value: RpcSerializedValue) {
+    const response = RpcMarshaling.deserialize(this.operation, this.protocol, value);
+    this.setStatus(status);
+
+    let resubmitted = false;
+    RpcRequest.notFoundHandlers.raiseEvent(this, response, () => {
+      if (resubmitted)
+        throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
+
+      resubmitted = true;
+      this.submit();
+    }, (reason: any) => this.reject(reason));
+    return;
   }
 
   private resolve(value: TResponse): void {
@@ -334,12 +280,7 @@ export class RpcRequest<TResponse = any> {
     this.setLastUpdatedTime();
     this._resolve(value);
     this.setStatus(RpcRequestStatus.Resolved);
-
-    if (this.operation.policy.requiresAcknowledgement) {
-      this.enqueue();
-    } else {
-      this.finalize();
-    }
+    this.dispose();
   }
 
   private reject(reason: any): void {
@@ -350,26 +291,12 @@ export class RpcRequest<TResponse = any> {
     this.setLastUpdatedTime();
     this._reject(reason);
     this.setStatus(RpcRequestStatus.Rejected);
-    this.finalize();
-  }
-
-  private enqueue(): void {
-    this.setStatus(RpcRequestStatus.Enqueued);
-  }
-
-  private acknowledge(): void {
-    this.setStatus(RpcRequestStatus.Acknowledged);
-    this.finalize();
-  }
-
-  private finalize(): void {
-    this.setStatus(RpcRequestStatus.Finalized);
+    this.dispose();
   }
 
   /** @hidden */
   public dispose(): void {
     this.setStatus(RpcRequestStatus.Disposed);
-    this.protocol.events.removeListener(this.handleProtocolEvent, this);
 
     const client = this.client as any;
     if (client[CURRENT_REQUEST] === this) {
@@ -403,3 +330,54 @@ export class RpcRequest<TResponse = any> {
     RpcRequest.events.raiseEvent(RpcRequestEvent.StatusChanged, this);
   }
 }
+
+/** @hidden */
+export const initializeRpcRequest = (() => {
+  let initialized = false;
+
+  return () => {
+    if (initialized) {
+      return;
+    }
+
+    initialized = true;
+
+    RpcRequest.events.addListener((type, request) => {
+      if (type !== RpcRequestEvent.StatusChanged)
+        return;
+
+      switch (request.status) {
+        case RpcRequestStatus.Submitted: {
+          aggregateLoad.lastRequest = request.lastSubmitted;
+          break;
+        }
+
+        case RpcRequestStatus.Provisioning:
+        case RpcRequestStatus.Pending:
+        case RpcRequestStatus.Resolved:
+        case RpcRequestStatus.Rejected: {
+          aggregateLoad.lastResponse = request.lastUpdated;
+          break;
+        }
+      }
+    });
+
+    RpcProtocol.events.addListener((type) => {
+      const now = new Date().getTime();
+
+      switch (type) {
+        case RpcProtocolEvent.RequestReceived: {
+          aggregateLoad.lastRequest = now;
+          break;
+        }
+
+        case RpcProtocolEvent.BackendReportedPending:
+        case RpcProtocolEvent.BackendErrorOccurred:
+        case RpcProtocolEvent.BackendResponseCreated: {
+          aggregateLoad.lastResponse = now;
+          break;
+        }
+      }
+    });
+  };
+})();

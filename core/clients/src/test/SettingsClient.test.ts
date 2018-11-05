@@ -8,7 +8,7 @@ import { ConnectSettingsClient } from "../SettingsClient";
 import { SettingsStatus, SettingsResult } from "../SettingsAdmin";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig, TestUsers } from "./TestConfig";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 
 // compare simple arrays
 function arraysEqual(array1: any, array2: any) {
@@ -466,7 +466,7 @@ describe("Reading non-user settings from ordinary user", () => {
   let accessToken: AccessToken;
   let authToken: AuthorizationToken;
   let projectId: string;
-  let iModelId: string;
+  let iModelId: GuidString;
   let connectClient: ConnectClient;
   let settingsClient: ConnectSettingsClient;
   const actx = new ActivityLoggingContext("");
@@ -482,9 +482,10 @@ describe("Reading non-user settings from ordinary user", () => {
     projectId = project.wsgId;
     chai.expect(projectId);
 
+    chai.expect(iModel);
+    chai.expect(iModel!.wsgId);
     iModelId = iModel!.wsgId;
     chai.expect(iModelId);
-
   });
 
   // Application Setting

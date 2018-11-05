@@ -133,7 +133,7 @@ describe("FeatureSymbology.Overrides", () => {
 
   it("isSubCategoryVisible works as expected", () => {
     overrides = new FeatureSymbology.Overrides();
-    const subCategoryId = new Id64("0x124");
+    const subCategoryId = Id64.fromString("0x124");
     assert.isFalse(overrides.isSubCategoryVisible(subCategoryId));
 
     overrides.setVisibleSubCategory(subCategoryId);
@@ -142,8 +142,8 @@ describe("FeatureSymbology.Overrides", () => {
 
   it("isFeatureVisible works as expected", () => {
     overrides = new FeatureSymbology.Overrides();
-    const elementId = new Id64("0x123");
-    const subCategoryId = new Id64("0x124");
+    const elementId = Id64.fromString("0x123");
+    const subCategoryId = Id64.fromString("0x124");
     const geometryClass = GeometryClass.Construction;
     const feature = new Feature(elementId, subCategoryId, geometryClass);
 
@@ -178,9 +178,9 @@ describe("FeatureSymbology.Overrides", () => {
 
   it("getAppearance works as expected", () => {
     overrides = new FeatureSymbology.Overrides();
-    const id = new Id64("0x111");
-    const elementId = new Id64("0x128");
-    const subCategoryId = new Id64("0x129");
+    const id = Id64.fromString("0x111");
+    const elementId = Id64.fromString("0x128");
+    const subCategoryId = Id64.fromString("0x129");
     const geometryClass = GeometryClass.Construction;
     const feature = new Feature(elementId, subCategoryId, geometryClass);
     const props = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
@@ -288,7 +288,7 @@ describe("FeatureSymbology.Overrides", () => {
 
   it("overrideModel works as expected", () => {
     overrides = new FeatureSymbology.Overrides();
-    const id = new Id64("0x111");
+    const id = Id64.fromString("0x111");
     const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
     const props2 = { ...props1, transparency: 200 / 255 } as FeatureSymbology.AppearanceProps;
     const modelApp1 = FeatureSymbology.Appearance.fromJSON(props1);
@@ -308,7 +308,7 @@ describe("FeatureSymbology.Overrides", () => {
 
   it("overrideSubCategory works as expected", () => {
     overrides = new FeatureSymbology.Overrides();
-    const id = new Id64("0x111");
+    const id = Id64.fromString("0x111");
     const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
     const props2 = { ...props1, transparency: 200 / 255 } as FeatureSymbology.AppearanceProps;
     const subCatApp1 = FeatureSymbology.Appearance.fromJSON(props1);
@@ -330,7 +330,7 @@ describe("FeatureSymbology.Overrides", () => {
 
   it("overrideElement works as expected", () => {
     overrides = new FeatureSymbology.Overrides();
-    const id = new Id64("0x111");
+    const id = Id64.fromString("0x111");
     const props1 = { rgb: new RgbColor(100, 100, 100), weight: 1, transparency: 100 / 255, linePixels: LinePixels.Solid, ignoresMaterial: true } as FeatureSymbology.AppearanceProps;
     const props2 = { ...props1, transparency: 200 / 255 } as FeatureSymbology.AppearanceProps;
     const elemApp1 = FeatureSymbology.Appearance.fromJSON(props1);

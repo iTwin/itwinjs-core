@@ -5,7 +5,7 @@
 /** @module Views */
 
 import { Point2d, Point3d, XAndY, XYAndZ, Range1d, Range1dProps, Geometry, Matrix4d } from "@bentley/geometry-core";
-import { ImageUtil } from "./ImageUtil";
+import { imageElementFromUrl } from "./ImageUtil";
 import { DecorateContext } from "./ViewContext";
 import { CanvasDecoration } from "./render/System";
 import { ViewRect, Viewport } from "./Viewport";
@@ -178,7 +178,7 @@ export class Marker implements CanvasDecoration {
   }
 
   /** Set the image for this Marker from a URL. */
-  public setImageUrl(url: string) { this.setImage(ImageUtil.fromUrl(url)); }
+  public setImageUrl(url: string) { this.setImage(imageElementFromUrl(url)); }
 
   /** Set the position (in pixels) for this Marker in the supplied Viewport, based on its worldLocation.
    * @return true if the Marker is visible and its new position is inside the Viewport.

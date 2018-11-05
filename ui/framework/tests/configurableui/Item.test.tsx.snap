@@ -13,13 +13,15 @@ exports[`CommandButton <CommandButton /> renders correctly 1`] = `
     />
   }
   isDisabled={false}
-  key="addMessage"
+  key="command1"
   onClick={[Function]}
+  title="tests.label"
 />
 `;
 
 exports[`ToolButton <ToolButton /> renders correctly 1`] = `
 <Icon
+  className=""
   icon={
     <Icon
       iconInfo={
@@ -30,9 +32,10 @@ exports[`ToolButton <ToolButton /> renders correctly 1`] = `
       }
     />
   }
-  isActive={false}
+  isActive={true}
   isDisabled={false}
   key="tool1"
   onClick={[Function]}
+  title="tests.label"
 />
 `;

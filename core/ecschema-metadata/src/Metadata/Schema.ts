@@ -3,34 +3,37 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import ECClass, { StructClass } from "./Class";
-import CustomAttributeClass from "./CustomAttributeClass";
-import Mixin from "./Mixin";
-import EntityClass from "./EntityClass";
-import RelationshipClass from "./RelationshipClass";
-import SchemaItem from "./SchemaItem";
-import Enumeration from "./Enumeration";
-import KindOfQuantity from "./KindOfQuantity";
-import Unit from "./Unit";
-import PropertyCategory from "./PropertyCategory";
-import SchemaReadHelper from "./../Deserialization/Helper";
-import { ECClassModifier, PrimitiveType, CustomAttributeContainerType } from "./../ECObjects";
-import SchemaKey, { ECVersion, SchemaItemKey } from "./../SchemaKey";
+import { ECClass, StructClass } from "./Class";
+import { Constant } from "./Constant";
+import { processCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { CustomAttributeClass } from "./CustomAttributeClass";
+import { EntityClass } from "./EntityClass";
+import { Enumeration } from "./Enumeration";
+import { Format } from "./Format";
+import { InvertedUnit } from "./InvertedUnit";
+import { KindOfQuantity } from "./KindOfQuantity";
+import { Mixin } from "./Mixin";
+import { Phenomenon } from "./Phenomenon";
+import { PropertyCategory } from "./PropertyCategory";
+import { RelationshipClass } from "./RelationshipClass";
+import { SchemaItem } from "./SchemaItem";
+import { Unit } from "./Unit";
+import { UnitSystem } from "./UnitSystem";
+import { SchemaContext } from "./../Context";
+import { SchemaReadHelper } from "./../Deserialization/Helper";
+import { JsonParser } from "../Deserialization/JsonParser";
+import { SchemaProps } from "./../Deserialization/JsonProps";
+import { CustomAttributeContainerType, ECClassModifier, PrimitiveType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import processCustomAttributes, { serializeCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
-import SchemaContext from "./../Context";
-import UnitSystem from "./UnitSystem";
-import Phenomenon from "./Phenomenon";
-import Format from "./Format";
-import Constant from "./Constant";
-import InvertedUnit from "./InvertedUnit";
+import { AnyClass, AnySchemaItem } from "./../Interfaces";
+import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
 
 const SCHEMAURL3_2 = "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema";
 
 /**
  *
  */
-export default class Schema implements CustomAttributeContainerProps {
+export class Schema implements CustomAttributeContainerProps {
   // private _context?: SchemaContext; unused currently, but in the future we may use it for item lookup
   protected _schemaKey?: SchemaKey;
   protected _alias?: string;
@@ -181,7 +184,7 @@ export default class Schema implements CustomAttributeContainerProps {
    * @param name
    */
   protected async createKindOfQuantity(name: string): Promise<KindOfQuantity> {
-    return this.createItem<KindOfQuantity>(KindOfQuantity, name);
+    return this.createKindOfQuantitySync(name);
   }
 
   protected createKindOfQuantitySync(name: string): KindOfQuantity {
@@ -273,14 +276,14 @@ export default class Schema implements CustomAttributeContainerProps {
   }
 
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
-  private createClass<T extends ECClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
+  private createClass<T extends AnyClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
     const item = new type(this, name, modifier);
     this.addItemSync(item);
     return item;
   }
 
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
-  private createItem<T extends SchemaItem>(type: (new (schema: Schema, name: string) => T), name: string): T {
+  private createItem<T extends AnySchemaItem>(type: (new (schema: Schema, name: string) => T), name: string): T {
     const item = new type(this, name);
     this.addItem(item);
     return item;
@@ -371,7 +374,7 @@ export default class Schema implements CustomAttributeContainerProps {
     this._items.push(item);
   }
 
-  public getItems<T extends SchemaItem>(): T[] {
+  public getItems<T extends AnySchemaItem>(): T[] {
     if (!this._items)
       return [];
 
@@ -448,85 +451,43 @@ export default class Schema implements CustomAttributeContainerProps {
     return schemaJson;
   }
 
-  /**
-   *
-   * @param jsonObj
-   */
-  public async fromJson(jsonObj: any): Promise<void> {
-    this.fromJsonSync(jsonObj);
-  }
-
-  /**
-   *
-   * @param jsonObj
-   */
-  public fromJsonSync(jsonObj: any): void {
-    if (SCHEMAURL3_2 !== jsonObj.$schema)
-      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `Schema namespace '${jsonObj.$schema}' is not supported.`);
+  public deserializeSync(schemaProps: SchemaProps) {
+    if (SCHEMAURL3_2 !== schemaProps.$schema)
+      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `Schema namespace '${schemaProps.$schema}' is not supported.`);
 
     if (!this._schemaKey) {
-      if (undefined === jsonObj.name)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema is missing the required 'name' attribute.`);
-
-      if (typeof (jsonObj.name) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
-
-      const schemaName = jsonObj.name;
-
-      if (undefined === jsonObj.version)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${schemaName} is missing the required 'version' attribute.`);
-
-      if (typeof (jsonObj.version) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${schemaName} has an invalid 'version' attribute. It should be of type 'string'.`);
-
-      const version = ECVersion.fromString(jsonObj.version);
+      const schemaName = schemaProps.name;
+      const version = ECVersion.fromString(schemaProps.version);
       this._schemaKey = new SchemaKey(schemaName, version);
     } else {
-      if (undefined !== jsonObj.name) {
-        if (typeof (jsonObj.name) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'name' attribute. It should be of type 'string'.`);
-
-        if (jsonObj.name.toLowerCase() !== this.name.toLowerCase())
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-      }
-
-      if (undefined !== jsonObj.version) {
-        if (typeof (jsonObj.version) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'version' attribute. It should be of type 'string'.`);
-
-        if (jsonObj.version !== this.schemaKey.version.toString())
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-      }
+      if (schemaProps.name.toLowerCase() !== this.name.toLowerCase())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      if (schemaProps.version !== this.schemaKey.version.toString())
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
     }
 
-    if (undefined !== jsonObj.alias) {
-      if (typeof (jsonObj.alias) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'alias' attribute. It should be of type 'string'.`);
-      this._alias = jsonObj.alias;
+    if (undefined !== schemaProps.alias) {
+      this._alias = schemaProps.alias;
     }
 
-    if (undefined !== jsonObj.label) {
-      if (typeof (jsonObj.label) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'label' attribute. It should be of type 'string'.`);
-      this._label = jsonObj.label;
+    if (undefined !== schemaProps.label) {
+      this._label = schemaProps.label;
     }
 
-    if (undefined !== jsonObj.description) {
-      if (typeof (jsonObj.description) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECSchema ${this.name} has an invalid 'description' attribute. It should be of type 'string'.`);
-      this._description = jsonObj.description;
+    if (undefined !== schemaProps.description) {
+      this._description = schemaProps.description;
     }
-    this._customAttributes = processCustomAttributes(jsonObj.customAttributes, this.name, CustomAttributeContainerType.Schema);
+    this._customAttributes = processCustomAttributes(schemaProps.customAttributes, this.name, CustomAttributeContainerType.Schema);
   }
 
-  /////////////////////////
-  //// Static Methods /////
-  /////////////////////////
+  public async deserialize(schemaProps: SchemaProps) {
+    this.deserializeSync(schemaProps);
+  }
 
   public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<Schema> {
     let schema: Schema = new Schema();
 
-    const reader = new SchemaReadHelper(context);
+    const reader = new SchemaReadHelper(new JsonParser(), context);
     schema = await reader.readSchema(schema, jsonObj);
 
     return schema;
@@ -535,11 +496,12 @@ export default class Schema implements CustomAttributeContainerProps {
   public static fromJsonSync(jsonObj: object | string, context?: SchemaContext): Schema {
     let schema: Schema = new Schema();
 
-    const reader = new SchemaReadHelper(context);
+    const reader = new SchemaReadHelper(new JsonParser(), context);
     schema = reader.readSchemaSync(schema, jsonObj);
 
     return schema;
   }
+
 }
 
 /** @hidden

@@ -3,29 +3,29 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+import { containerTypeToString, CustomAttributeContainerType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { CustomAttributeContainerType, containerTypeToString } from "./../ECObjects";
 
-export interface CustomAttributeInstance {
+export interface CustomAttribute {
   className: string;
   [propName: string]: any;
 }
 
 export class CustomAttributeSet {
-  [name: string]: CustomAttributeInstance;
+  [name: string]: CustomAttribute;
 }
 
 export interface CustomAttributeContainerProps {
   customAttributes?: CustomAttributeSet;
 }
 
-export default function processCustomAttributes(customAttributesJson: any, name: string, type: CustomAttributeContainerType): CustomAttributeSet | undefined { // TODO: Check for duplicate class names
-  if (customAttributesJson !== undefined) {
+export function processCustomAttributes(customAttributesJson: any, name: string, type: CustomAttributeContainerType): CustomAttributeSet | undefined { // TODO: Check for duplicate class names
+  if (undefined !== customAttributesJson) {
     if (!Array.isArray(customAttributesJson)) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${containerTypeToString(type)} ${name} has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     }
     const customAttributeSet = new CustomAttributeSet();
-    customAttributesJson.forEach((attribute: CustomAttributeInstance) => {
+    customAttributesJson.forEach((attribute: CustomAttribute) => {
       customAttributeSet![attribute.className] = attribute;
     });
     return customAttributeSet;

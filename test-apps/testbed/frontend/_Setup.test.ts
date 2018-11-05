@@ -20,12 +20,6 @@ TestbedConfig.initializeRpcFrontend();
 if (TestbedConfig.cloudRpc)
   TestbedConfig.cloudRpc.protocol.pathPrefix = TestbedConfig.localServerUrlPrefix;
 
-after(() => {
-  setTimeout(() => {
-    common.RpcProtocol.events.raiseEvent(common.RpcProtocolEvent.ReleaseResources);
-  }, 2000);
-});
-
 describe("Testbed", function () {
   if (TestbedConfig.cloudRpc) {
     it("Server should be accessible", (done) => {

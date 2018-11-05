@@ -10,7 +10,7 @@ import { IModelJson } from "../serialization/IModelJsonSchema";
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
   public static outputRootDirectory = "./src/test/output";
-  public static saveGeometry(geometry: GeometryQuery[], directoryName: string | undefined, fileName: string) {
+  public static saveGeometry(geometry: any, directoryName: string | undefined, fileName: string) {
     let path = GeometryCoreTestIO.outputRootDirectory;
     if (directoryName !== undefined) {
       path += "/" + directoryName;

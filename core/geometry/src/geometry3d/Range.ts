@@ -700,9 +700,8 @@ export class Range1d extends RangeBase {
     if (Array.isArray(json)) {
       let value;
       for (value of json) {
-        const v = value;
-        if (v)
-          this.extendX(v);
+        if (Number.isFinite(value))
+          this.extendX(value);
       }
     } else if (json.low && json.low && json.high && json.high) {
       this.setNull();
@@ -795,21 +794,32 @@ export class Range1d extends RangeBase {
   }
 
   /** Create a range containing all the values in an array.
-   * @param points array of points to be contained in the range.
+   * @param values array of points to be contained in the range.
    * @param result optional result.
    */
-  public static createArray(points: number[], result?: Range1d): Range1d {
+  public static createArray(values: Float64Array | number[], result?: Range1d): Range1d {
     result = result ? result : new Range1d();
     let x;
-    for (x of points)
+    for (x of values)
       result.extendX(x);
     return result;
   }
   /** extend to include an array of values */
-  public extendArray(points: number[]) {
+  public extendArray(values: Float64Array | number[]) {
     let x;
-    for (x of points)
+    for (x of values)
       this.extendX(x);
+  }
+
+  /** extend to include `values` at indices `beginIndex <= i < endIndex]`
+   * @param values array of values
+   * @param beginIndex first index to include
+   * @param numValue nubmer of values to access
+   */
+  public extendArraySubset(values: Float64Array | number[], beginIndex: number, numValue: number) {
+    const endIndex = beginIndex + numValue;
+    for (let i = beginIndex; i < endIndex; i++)
+      this.extendX(values[i]);
   }
 
   /** Test if the box has high<low Note that a range around a single point is NOT null. */

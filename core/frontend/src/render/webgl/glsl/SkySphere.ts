@@ -185,7 +185,7 @@ export function createSkySphereProgram(context: WebGLRenderingContext, isGradien
         if (undefined !== geom.skyTexture)
           (geom.skyTexture! as Texture).texture.bindSampler(uniform, TextureUnit.Zero);
         else
-          System.instance.lineCodeTexture!.bindSampler(uniform, TextureUnit.FeatureSymbology); // Bind *something* to suppress 'no texture assigned to texture unit x' warnings
+          System.instance.ensureSamplerBound(uniform, TextureUnit.FeatureSymbology);
       });
     });
     frag.addUniform("u_zOffset", VariableType.Float, (shader) => {

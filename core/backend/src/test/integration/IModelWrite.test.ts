@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { Id64, DbOpcode, DbResult, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Id64String, DbOpcode, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, Timer } from "../IModelTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
@@ -19,13 +19,13 @@ const actx = new ActivityLoggingContext("");
 
 export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken: AccessToken) {
   // Create a new physical model.
-  let modelId: Id64;
+  let modelId: Id64String;
   [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
 
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-  const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+  const spatialCategoryId: Id64String = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
   // Reserve all of the codes that are required by the new model and category.
   try {
@@ -80,7 +80,7 @@ describe.skip("IModelWriteTest", () => {
     // Note: neutralObserver's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
 
     // firstUser: create model, category, and element el1
-    const r: { modelId: Id64, spatialCategoryId: Id64 } = await createNewModelAndCategory(firstIModel, firstUser);
+    const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(firstIModel, firstUser);
     const el1 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
     // const el2 = firstIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(firstIModel, r.modelId, r.spatialCategoryId));
     firstIModel.saveChanges("firstUser created model, category, and two elements");
@@ -230,11 +230,11 @@ describe.skip("IModelWriteTest", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const initialCodes = await BriefcaseManager.imodelClient.Codes().get(actx, adminAccessToken, new Guid(rwIModelId!));
+    const initialCodes = await BriefcaseManager.imodelClient.Codes().get(actx, adminAccessToken, rwIModelId!);
     timer.end();
 
     timer = new Timer("make local changes");
-    let newModelId: Id64;
+    let newModelId: Id64String;
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
 
@@ -253,7 +253,7 @@ describe.skip("IModelWriteTest", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const codes = await BriefcaseManager.imodelClient.Codes().get(actx, adminAccessToken, new Guid(rwIModelId!));
+    const codes = await BriefcaseManager.imodelClient.Codes().get(actx, adminAccessToken, rwIModelId!);
     timer.end();
     expect(codes.length > initialCodes.length);
   });
@@ -277,21 +277,21 @@ describe.skip("IModelWriteTest", () => {
     timer.end();
 
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    const otherBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(actx, adminAccessToken, new Guid(rwIModelId!));
+    const otherBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(actx, adminAccessToken, rwIModelId!);
     const hubCode = new HubCode();
     hubCode.value = code.value;
     hubCode.codeSpecId = code.spec;
     hubCode.codeScope = code.scope;
     hubCode.briefcaseId = otherBriefcase.briefcaseId;
     hubCode.state = CodeState.Reserved;
-    await BriefcaseManager.imodelClient.Codes().update(actx, adminAccessToken, new Guid(rwIModelId!), [hubCode]);
+    await BriefcaseManager.imodelClient.Codes().update(actx, adminAccessToken, rwIModelId!, [hubCode]);
 
     timer = new Timer("querying codes");
-    const initialCodes = await BriefcaseManager.imodelClient.Codes().get(actx, adminAccessToken, new Guid(rwIModelId!));
+    const initialCodes = await BriefcaseManager.imodelClient.Codes().get(actx, adminAccessToken, rwIModelId!);
     timer.end();
 
     timer = new Timer("make local changes");
-    let newModelId: Id64;
+    let newModelId: Id64String;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
 
     rwIModel.saveChanges("inserted generic objects");
@@ -309,7 +309,7 @@ describe.skip("IModelWriteTest", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const codes = await BriefcaseManager.imodelClient.Codes().get(actx, accessToken, new Guid(rwIModelId!));
+    const codes = await BriefcaseManager.imodelClient.Codes().get(actx, accessToken, rwIModelId!);
     timer.end();
     expect(codes.length === initialCodes.length);
     expect(codes[0].state === CodeState.Reserved);
@@ -351,13 +351,13 @@ describe.skip("IModelWriteTest", () => {
     rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "changed a userLabel" }));  // save it, to show that saveChanges will accumulate local txn descriptions
 
     // Create a new physical model.
-    let newModelId: Id64;
+    let newModelId: Id64String;
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
 
     // Find or create a SpatialCategory.
     const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId) as DictionaryModel;
     const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-    const spatialCategoryId: Id64 = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+    const spatialCategoryId: Id64String = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
 
     timer.end();
 

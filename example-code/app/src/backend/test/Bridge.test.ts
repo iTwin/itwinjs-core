@@ -12,7 +12,7 @@ import { Robot } from "../RobotElement";
 import { Barrier } from "../BarrierElement";
 import { Project, IModelHubClient, IModelQuery } from "@bentley/imodeljs-clients";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
-import { ActivityLoggingContext, Guid, Id64 } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { AccessToken, HubIModel } from "@bentley/imodeljs-clients";
 import { IModelDb, BriefcaseManager, ConcurrencyControl, OpenParams, IModelHost, Subject } from "@bentley/imodeljs-backend";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
@@ -38,7 +38,7 @@ interface RobotWorldProps {
 // In this simple example, the source format is assumed to be JSON. It could be anything that the bridge
 // can read. In this simple example, the conversion does not involve any alignment transformations. In general,
 // the bridge's logic would perform non-trivial alignment of the source data into a BIS industry domain schema.
-function convertToBis(briefcase: IModelDb, modelId: Id64, data: RobotWorldProps) {
+function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorldProps) {
   for (const barrier of data.barriers) {
     RobotWorldEngine.insertBarrier(briefcase, modelId, Point3d.fromJSON(barrier.location), Angle.fromJSON(barrier.angle), barrier.length);
   }

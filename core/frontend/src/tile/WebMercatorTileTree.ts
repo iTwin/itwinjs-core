@@ -11,7 +11,7 @@ import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Ran
 import { TileLoader, TileTree, Tile, TileRequests } from "./TileTree";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
-import { ImageUtil } from "../ImageUtil";
+import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
@@ -199,7 +199,7 @@ class WebMercatorTileLoader extends TileLoader {
     try {
       const isCanceled = false;  // Tbd...
       const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.TileSection);
-      return ImageUtil.extractImage(imageSource)
+      return imageElementFromImageSource(imageSource)
         .then((image) => isCanceled ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
         .catch((_) => undefined);
     } catch (e) {
@@ -211,7 +211,7 @@ class WebMercatorTileLoader extends TileLoader {
 }
 
 // The type of background map
-enum MapType { Street = 0, Aerial = 1, Hybrid = 2 }
+enum MapType { Street = 1, Aerial = 2, Hybrid = 3 }   // These are aligned with BackgroundMapType in MicroStation.
 
 // Represents the service that is providing map tiles for Web Mercator models (background maps).
 abstract class ImageryProvider {
@@ -601,7 +601,7 @@ export class BackgroundMapState {
     this._providerName = JsonUtils.asString(json.providerName, "BingProvider");
     // this.providerData = JsonUtils.asString(json.providerData, "aerial");
     this._groundBias = JsonUtils.asDouble(json.groundBias, 0.0);
-    this._mapType = JsonUtils.asInt(json.mapType, MapType.Hybrid);
+    this._mapType = json.providerData ? JsonUtils.asInt(json.providerData.mapType, MapType.Hybrid) : MapType.Hybrid;
   }
 
   private loadTileTree(): TileTree.LoadStatus {
@@ -620,7 +620,7 @@ export class BackgroundMapState {
     if (this._provider === undefined)
       throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
 
-    const loader = new WebMercatorTileLoader(this._provider, this._iModel, JsonUtils.asDouble(this._groundBias, 0.0));
+    const loader = new WebMercatorTileLoader(this._provider, this._iModel, this._groundBias);
     const tileTreeProps = new WebMercatorTileTreeProps(loader.mercatorToDb);
     this.setTileTree(tileTreeProps, loader);
     return this._loadStatus;

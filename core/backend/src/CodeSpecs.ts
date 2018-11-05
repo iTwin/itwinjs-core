@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Codes */
 
-import { DbResult, Id64, Logger } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String, Id64, Logger } from "@bentley/bentleyjs-core";
 import { IModelError, IModelStatus, CodeSpec } from "@bentley/imodeljs-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
@@ -23,12 +23,12 @@ export class CodeSpecs {
   }
 
   /** Look up the Id of the CodeSpec with the specified name. */
-  public queryId(name: string): Id64 {
+  public queryId(name: string): Id64String {
     return this._imodel.withPreparedStatement("SELECT ECInstanceId as id FROM BisCore.CodeSpec WHERE Name=?", (stmt: ECSqlStatement) => {
       stmt.bindString(1, name);
       if (DbResult.BE_SQLITE_ROW !== stmt.step())
         throw new IModelError(IModelStatus.NotFound, "CodeSpec not found", Logger.logWarning, loggingCategory, () => ({ name }));
-      return new Id64(stmt.getRow().id);
+      return Id64.fromJSON(stmt.getRow().id);
     });
   }
 
@@ -37,8 +37,8 @@ export class CodeSpecs {
    * @returns The CodeSpec with the specified Id
    * @throws [[IModelError]] if the Id is invalid or if no CodeSpec with that Id could be found.
    */
-  public getById(codeSpecId: Id64): CodeSpec {
-    if (!codeSpecId.isValid)
+  public getById(codeSpecId: Id64String): CodeSpec {
+    if (Id64.isInvalid(codeSpecId))
       throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory);
 
     // good chance it is already loaded - check there before running a query
@@ -82,8 +82,8 @@ export class CodeSpecs {
    * @note If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
    * @throws IModelError if the insertion fails
    */
-  public insert(codeSpec: CodeSpec): Id64 {
-    const id: Id64 = this._imodel.insertCodeSpec(codeSpec);
+  public insert(codeSpec: CodeSpec): Id64String {
+    const id: Id64String = this._imodel.insertCodeSpec(codeSpec);
     codeSpec.id = id;
     return id;
   }
@@ -91,8 +91,8 @@ export class CodeSpecs {
   /** Load a CodeSpec from IModel
    * @param id  The persistent Id of the CodeSpec to load
    */
-  public load(id: Id64): CodeSpec {
-    if (!id.isValid) {
+  public load(id: Id64String): CodeSpec {
+    if (Id64.isInvalid(id)) {
       throw new IModelError(IModelStatus.InvalidId, "Invalid codeSpecId", Logger.logWarning, loggingCategory);
     }
 

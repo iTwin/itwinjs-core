@@ -27,12 +27,12 @@ import {
   RenderTexture,
   BatchType,
 } from "@bentley/imodeljs-common";
-import { Id64, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
+import { Id64String, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from "@bentley/geometry-core";
 import { RenderSystem } from "../render/System";
 import { RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
-import { ImageUtil } from "../ImageUtil";
+import { imageElementFromImageSource, getImageSourceFormatForMimeType } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 
 /** Provides facilities for deserializing tiles in the [glTF tile format](https://www.khronos.org/gltf/). */
@@ -283,7 +283,7 @@ export namespace GltfTileIO {
     /** @hidden */
     protected readonly _is3d: boolean;
     /** @hidden */
-    protected readonly _modelId: Id64;
+    protected readonly _modelId: Id64String;
     /** @hidden */
     protected readonly _system: RenderSystem;
     /** @hidden */
@@ -395,7 +395,7 @@ export namespace GltfTileIO {
     public readBufferDataFloat(json: any, accessorName: string): BufferData | undefined { return this.readBufferData(json, accessorName, DataType.Float); }
 
     /** @hidden */
-    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Classifier, isCanceled?: IsCanceled) {
+    protected constructor(props: ReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem, type: BatchType = BatchType.Classifier, isCanceled?: IsCanceled) {
       this._buffer = props.buffer;
       this._binaryData = props.binaryData;
       this._accessors = props.accessors;
@@ -787,7 +787,7 @@ export namespace GltfTileIO {
         const binaryImageJson = JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF);
         const bufferView = this._bufferViews[binaryImageJson.bufferView];
         const mimeType = JsonUtils.asString(binaryImageJson.mimeType);
-        const format = ImageUtil.getImageSourceFormatForMimeType(mimeType);
+        const format = getImageSourceFormatForMimeType(mimeType);
         if (undefined === format)
           return undefined;
 
@@ -800,7 +800,7 @@ export namespace GltfTileIO {
           textureType = RenderTexture.Type.TileSection;
 
         const textureParams = new RenderTexture.Params(undefined, textureType);
-        return ImageUtil.extractImage(imageSource)
+        return imageElementFromImageSource(imageSource)
           .then((image) => this._isCanceled ? undefined : this._system.createTextureFromImage(image, ImageSourceFormat.Png === format, this._iModel, textureParams))
           .catch((_) => undefined);
       } catch (e) {

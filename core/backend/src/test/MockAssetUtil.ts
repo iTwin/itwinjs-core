@@ -16,7 +16,7 @@ import {
   ConnectRequestQueryOptions,
 } from "@bentley/imodeljs-clients";
 import { KnownLocations } from "../Platform";
-import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 
 const actx = new ActivityLoggingContext("");
 
@@ -158,7 +158,7 @@ export class MockAssetUtil {
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
       // getChangeSets
-      iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(actx, accessToken as any, new Guid(iModelInfo.id));
+      iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(actx, accessToken as any, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
       assert.exists(iModelInfo.changeSets);
 
@@ -258,9 +258,8 @@ export class MockAssetUtil {
     // For any call with a specified iModelId, remove the specified iModel from the cache if it currently
     // resides there
     iModelHandlerMock.setup((f: IModelHandler) => f.delete(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
-      TypeMoq.It.isAnyString(),
-      TypeMoq.It.is<Guid>(() => true)))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _projId: string, iModelId: string) => {
+      TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString()))
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _projId: string, iModelId: GuidString) => {
         const testCaseName = this._iModelMap.get(iModelId);
         if (testCaseName) {
           const iModelCacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, iModelId);
@@ -274,9 +273,8 @@ export class MockAssetUtil {
     // For any call with a path containing a specified iModel name, grab the correct .bim asset and copy it
     // into the provided cache location
     iModelHandlerMock.setup((f: IModelHandler) => f.download(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
-      TypeMoq.It.is<Guid>(() => true),
-      TypeMoq.It.isAnyString()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: string, seedPathname: string) => {
+      TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString()))
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString, seedPathname: string) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const testModelPath = path.join(assetDir, iModelName, `${iModelName}.bim`);
@@ -293,8 +291,8 @@ export class MockAssetUtil {
       });
 
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.create(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
-      TypeMoq.It.is<Guid>(() => true)))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: string) => {
+      TypeMoq.It.isAnyString()))
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const sampleBriefcasePath = path.join(assetDir, iModelName, `${iModelName}Briefcase.json`);
@@ -306,8 +304,8 @@ export class MockAssetUtil {
       });
 
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
-      TypeMoq.It.is<Guid>(() => true)))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: string) => {
+      TypeMoq.It.isAnyString()))
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const sampleBriefcasePath = path.join(assetDir, iModelName, `${iModelName}Briefcase.json`);
@@ -341,18 +339,17 @@ export class MockAssetUtil {
 
     // Since the Hub is being mocked away, no action is necessary when deleting a briefacse
     briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.delete(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
-      TypeMoq.It.is<Guid>(() => true),
+      TypeMoq.It.isAnyString(),
       TypeMoq.It.isAnyNumber()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _iModelId: string, _briefcaseId: number) => {
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _iModelId: GuidString, _briefcaseId: number) => {
         return Promise.resolve();
       });
 
     // For any call with a specified iModelId, grab the asset file with the associated changeset json objs
     // and parse them into instances
     changeSetHandlerMock.setup((f: ChangeSetHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
-      TypeMoq.It.is<Guid>(() => true),
-      TypeMoq.It.isAny()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: string, query: ChangeSetQuery) => {
+      TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString, query: ChangeSetQuery) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const csetPath = path.join(assetDir, iModelName, `${iModelName}ChangeSets.json`);
@@ -402,9 +399,9 @@ export class MockAssetUtil {
       });
 
     versionHandlerMock.setup((f: VersionHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
-      TypeMoq.It.is<Guid>(() => true),
+      TypeMoq.It.isAnyString(),
       TypeMoq.It.isAny()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: string, query: VersionQuery) => {
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString, query: VersionQuery) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           for (const versionName of this._versionNames) {
@@ -421,9 +418,8 @@ export class MockAssetUtil {
       });
 
     userInfoHandlerMock.setup((f: UserInfoHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
-      TypeMoq.It.is<Guid>(() => true),
-      TypeMoq.It.isAny()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _iModelId: string, _query: UserInfoQuery) => {
+      TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
+      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _iModelId: GuidString, _query: UserInfoQuery) => {
         const user = new UserInfo();
         user.firstName = "test";
         user.lastName = "user";

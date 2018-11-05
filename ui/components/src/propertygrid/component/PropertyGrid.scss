@@ -40,9 +40,6 @@
 
 .components-property-list--horizontal{
   @include components-property-list;
-
-  display: table;
-  border-collapse: collapse;
 }
 
 .components-property-list--vertical {

@@ -14,11 +14,11 @@ import {
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { Guid, IModelHubStatus, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
+import { GuidString, Guid, IModelHubStatus, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
 
 chai.should();
 
-function mockDeleteAllLocks(imodelId: Guid, briefcaseId: number) {
+function mockDeleteAllLocks(imodelId: GuidString, briefcaseId: number) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -28,12 +28,12 @@ function mockDeleteAllLocks(imodelId: Guid, briefcaseId: number) {
 
 describe("iModelHubClient LockHandler", () => {
   let accessToken: AccessToken;
-  let imodelId: Guid;
+  let imodelId: GuidString;
   let iModelClient: IModelClient;
   const imodelName = "imodeljs-clients Locks test";
   let briefcases: Briefcase[];
   let changeSet: ChangeSet;
-  let lastObjectId: Id64;
+  let lastObjectId: Id64String;
   const conflictStrategyOption = { CustomOptions: { ConflictStrategy: "Continue" } };
   const alctx = new ActivityLoggingContext("");
 
@@ -135,7 +135,7 @@ describe("iModelHubClient LockHandler", () => {
   });
 
   it("should get lock by objectId", async () => {
-    const objectId = new Id64("0x1");
+    const objectId = Id64.fromString("0x1");
     utils.mockGetLocks(imodelId, undefined, utils.generateLock(undefined, objectId));
 
     const query = new LockQuery().byObjectId(objectId);
@@ -190,7 +190,7 @@ describe("iModelHubClient LockHandler", () => {
   });
 
   it("should get locks by instance ids", async () => {
-    const fileId = new Guid(true);
+    const fileId: GuidString = Guid.createValue();
     const mockedLocks = [utils.generateLock(briefcases[0].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0"),
     utils.generateLock(briefcases[1].briefcaseId, undefined, LockType.Model, LockLevel.Shared, fileId, "", "0")];
     utils.mockGetLocks(imodelId, "?$filter=BriefcaseId+eq+2", ...mockedLocks);

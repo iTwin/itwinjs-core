@@ -25,7 +25,7 @@ enum BreadcrumbMode {
 
 /** Property interface for [[Breadcrumb]] component */
 export interface BreadcrumbProps {
-  /** Manager to coordinate state between Breadcrumb element and BreadrcumbDetails element. */
+  /** Manager to coordinate state between Breadcrumb element and BreadcrumbDetails element. */
   path: BreadcrumbPath;
   /** Data provider for tree content  */
   dataProvider: TreeDataProvider;

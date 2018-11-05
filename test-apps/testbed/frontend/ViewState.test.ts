@@ -42,8 +42,8 @@ describe("ViewState", () => {
 
   it("should be able to create ViewState from SpatialViewDefinition", async () => {
     assert.equal(viewState.code.value, "A Views - View 1", "Code value is A Views - View 1");
-    assert.equal(viewState.displayStyle.id.value, "0x36", "Display Style Id is 0x36");
-    assert.equal(viewState.categorySelector.id.value, "0x37", "Category Id is 0x37");
+    assert.equal(viewState.displayStyle.id, "0x36", "Display Style Id is 0x36");
+    assert.equal(viewState.categorySelector.id, "0x37", "Category Id is 0x37");
     assert.isFalse(viewState.isCameraOn, "The camera is not turned on");
     assert.isTrue(viewState.extents.isAlmostEqual(new Vector3d(429.6229727570776, 232.24786876266097, 0.1017680889917761)), "View extents as expected");
     assert.isTrue(viewState.origin.isAlmostEqual(new Point3d(-87.73958171815832, -108.96514044887601, -0.0853709702222105)), "View origin as expected");

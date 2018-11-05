@@ -5,10 +5,11 @@
 /** @module ConnectServices */
 import { WsgClient } from "./WsgClient";
 import { AccessToken } from "./Token";
-import { request, RequestQueryOptions, Response } from "./Request";
+import { request, RequestQueryOptions, Response, RequestOptions } from "./Request";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Config } from "./Config";
+import * as deepAssign from "deep-assign";
 
 /** Connect project */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -118,8 +119,6 @@ export enum IModelHubPermissions {
 /** Client API to access the connect services. */
 export class RbacClient extends WsgClient {
   public static readonly searchKey: string = "RBAC.URL";
-  public static readonly configURL = "imjs_rbac_url";
-  public static readonly configRegion = "imjs_rbac_region";
   public static readonly configRelyingPartyUri = "imjs_rbac_relying_party_uri";
 
   public constructor() {
@@ -132,17 +131,6 @@ export class RbacClient extends WsgClient {
    */
   protected getUrlSearchKey(): string {
     return RbacClient.searchKey;
-  }
-
-  /**
-   * Gets the default URL for the service.
-   * @returns Default URL for the service.
-   */
-  protected getDefaultUrl(): string {
-    if (Config.App.has(RbacClient.configURL))
-      return Config.App.get(RbacClient.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key ${RbacClient.configURL}`);
   }
 
   /**
@@ -159,17 +147,6 @@ export class RbacClient extends WsgClient {
     }
 
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${RbacClient.configRelyingPartyUri}`);
-  }
-
-  /**
-   * Override default region for this service
-   * @returns region id or undefined
-   */
-  protected getRegion(): number | undefined {
-    if (Config.App.has(RbacClient.configRegion))
-      return Config.App.get(RbacClient.configRegion);
-
-    return undefined;
   }
 
   /**
@@ -267,8 +244,6 @@ export class RbacClient extends WsgClient {
 /** Client API to access the connect services. */
 export class ConnectClient extends WsgClient {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";
-  public static readonly configURL = "imjs_connected_context_service_url";
-  public static readonly configRegion = "imjs_connected_context_service_region";
   public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
   private readonly _rbacClient: RbacClient = new RbacClient();
 
@@ -284,26 +259,9 @@ export class ConnectClient extends WsgClient {
     return ConnectClient.searchKey;
   }
 
-  /**
-   * Gets the default URL for the service.
-   * @returns Default URL for the service.
-   */
-  protected getDefaultUrl(): string {
-    if (Config.App.has(ConnectClient.configURL))
-      return Config.App.get(ConnectClient.configURL);
-
-    throw new Error(`Service URL not set. Set it in Config.App using key  ${ConnectClient.configURL}`);
-  }
-
-  /**
-   * Override default region for this service
-   * @returns region id or undefined
-   */
-  protected getRegion(): number | undefined {
-    if (Config.App.has(ConnectClient.configRegion))
-      return Config.App.get(ConnectClient.configRegion);
-
-    return undefined;
+  protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
+    await super.setupOptionDefaults(options);
+    deepAssign(options, { headers: { "content-type": "application/json" } });
   }
 
   /**
@@ -329,7 +287,8 @@ export class ConnectClient extends WsgClient {
    * @returns Resolves to an array of projects.
    */
   public async getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
-    return this.getInstances<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
+    // return this.getInstances<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
+    return this.postQuery<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project/", !queryOptions ? {} : queryOptions);
   }
 
   /**
@@ -339,15 +298,13 @@ export class ConnectClient extends WsgClient {
    * @returns Resolves to the found project. Rejects if no projects, or more than one project is found.
    */
   public async getProject(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project> {
-    return this.getProjects(alctx, token, queryOptions)
-      .then((projects: Project[]) => {
-        if (projects.length === 0) {
-          return Promise.reject(new Error("Could not find a project with the specified criteria"));
-        } else if (projects.length > 1) {
-          return Promise.reject(new Error("More than one project found with the specified criteria"));
-        }
-        return Promise.resolve(projects[0]);
-      });
+    const projects: Project[] = await this.getProjects(alctx, token, queryOptions);
+    if (projects.length === 0)
+      throw new Error("Could not find a project with the specified criteria");
+    else if (projects.length > 1)
+      throw new Error("More than one project found with the specified criteria");
+
+    return projects[0];
   }
 
   /** Get the projects the user has been "invited" to. Note that this involves querying the RBAC and ConnectedContext services.

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WireFormats */
 
-import { Id64, Id64String, GuidProps, Logger } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { CodeProps } from "./Code";
 import { EntityProps } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps, LowAndHighXYZ, LowAndHighXY } from "@bentley/geometry-core";
@@ -29,7 +29,7 @@ export interface ElementProps extends EntityProps {
   /** The Parent of this element, if defined. */
   parent?: RelatedElementProps;
   /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
-  federationGuid?: GuidProps;
+  federationGuid?: GuidString;
   /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
   userLabel?: string;
   /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this element. */
@@ -39,14 +39,14 @@ export interface ElementProps extends EntityProps {
 /** The Id and relationship class of an Element that is somehow related to another Element */
 export class RelatedElement implements RelatedElementProps {
   /** The Id of the element to which this element is related. */
-  public readonly id: Id64;
+  public readonly id: Id64String;
   /** The full className of the relationship class. */
   public readonly relClassName?: string;
   constructor(props: RelatedElementProps) { this.id = Id64.fromJSON(props.id); this.relClassName = props.relClassName; }
   public static fromJSON(json?: RelatedElementProps): RelatedElement | undefined { return json ? new RelatedElement(json) : undefined; }
 
   /** Accept the value of a navigation property that might be in the shortened format of just an id or might be in the full RelatedElement format. */
-  public static idFromJson(json: any): Id64 {
+  public static idFromJson(json: any): Id64String {
     if ((typeof json === "object") && ("id" in json)) {
       const r = RelatedElement.fromJSON(json);
       if (r === undefined)
@@ -153,7 +153,7 @@ export interface InformationPartitionElementProps extends DefinitionElementProps
 export interface ElementLoadProps {
   id?: Id64String;
   code?: CodeProps;
-  federationGuid?: GuidProps;
+  federationGuid?: GuidString;
   /** Whether to include geometry stream in GeometricElementProps and GeometryPartProps, false when undefined */
   wantGeometry?: boolean;
   /** When including a geometry stream containing brep entries, whether to return the raw brep data or proxy geometry, false when undefined */

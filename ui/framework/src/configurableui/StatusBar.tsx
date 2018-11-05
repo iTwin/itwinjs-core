@@ -7,9 +7,7 @@
 import * as React from "react";
 import { ReactNode } from "react";
 
-import { ZoneDef } from "./ZoneDef";
 import { StatusBarFieldId, IStatusBar, StatusBarWidgetControl } from "./StatusBarWidgetControl";
-import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import Footer from "@bentley/ui-ninezone/lib/footer/Footer";
 import ActivityMessage from "@bentley/ui-ninezone/lib/footer/message/Activity";
@@ -60,7 +58,7 @@ export interface StatusBarState {
 
 /** Properties for the [[StatusBar]] React component */
 export interface StatusBarProps {
-  zoneDef: ZoneDef;
+  widgetControl?: StatusBarWidgetControl;
   isInFooterMode: boolean;
 }
 
@@ -91,12 +89,9 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
 
   public render(): ReactNode {
     let footerSections: React.ReactNode = null;
-    const widgetDef = this.props.zoneDef.getOnlyWidgetDef();
-    if (widgetDef) {
-      const widgetControl: StatusBarWidgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
-      if (widgetControl && widgetControl.getReactNode) {
-        footerSections = widgetControl.getReactNode(this, this.props.isInFooterMode, this.state.openWidget);
-      }
+    const widgetControl = this.props.widgetControl;
+    if (widgetControl && widgetControl.getReactNode) {
+      footerSections = widgetControl.getReactNode(this, this.props.isInFooterMode, this.state.openWidget);
     }
 
     return (
@@ -133,7 +128,6 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
       case OutputMessageType.Alert:
         statusbarMessageType = StatusBarMessageType.Modal;
         break;
-      // TODO - Pointer
     }
 
     this.setVisibleMessage(statusbarMessageType, args.message);

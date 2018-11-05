@@ -1,6 +1,6 @@
 {
   "name": "@bentley/config-loader",
-  "version": "0.161.0",
+  "version": "0.163.0",
   "description": "Configuration loader",
   "license": "MIT",
   "repository": {
@@ -12,7 +12,8 @@
     "clean": "rimraf lib package-deps.json",
     "docs": "",
     "lint": "tslint --project . 1>&2",
-    "test": ""
+    "test": "",
+    "cover": ""
   },
   "keywords": [
     "Bentley",
@@ -28,7 +29,7 @@
     "json5": "^2.1.0"
   },
   "devDependencies": {
-    "@bentley/build-tools": "0.161.0",
+    "@bentley/build-tools": "0.163.0",
     "@types/json5": "0.0.30",
     "@types/node": "10.10.3",
     "rimraf": "^2.6.2",

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelDb, SpatialCategory, ModelSelector, CategorySelector, DisplayStyle3d, OrthographicViewDefinition, ViewDefinition, Subject, DefinitionPartition, DefinitionModel } from "@bentley/imodeljs-backend";
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { CodeSpec, CodeScopeSpec, ColorDef, CategoryProps, SubCategoryAppearance, ModelSelectorProps, CategorySelectorProps, DefinitionElementProps, SpatialViewDefinitionProps, GeometryStreamProps, GeometryStreamBuilder, SubjectProps, InformationPartitionElementProps, IModel, Code, BisCodeSpec } from "@bentley/imodeljs-common";
 import { XYZProps, Arc3d, Point3d } from "@bentley/geometry-core";
 
@@ -22,7 +22,7 @@ export function insertSubject(parentElement: Subject, name: string): Subject {
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ insertDefinitionModel.example-code
-export function insertDefinitionModel(parentSubject: Subject, modelName: string): Id64 {
+export function insertDefinitionModel(parentSubject: Subject, modelName: string): Id64String {
   const iModelDb = parentSubject.iModel;
   const partitionProps: InformationPartitionElementProps = {
     classFullName: DefinitionPartition.classFullName,
@@ -33,7 +33,7 @@ export function insertDefinitionModel(parentSubject: Subject, modelName: string)
     },
     code: DefinitionPartition.createCode(iModelDb, parentSubject.id, modelName),
   };
-  const partitionId: Id64 = iModelDb.elements.insertElement(partitionProps);
+  const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);
   const model: DefinitionModel = iModelDb.models.createModel({
     classFullName: DefinitionModel.classFullName,
     modeledElement: { id: partitionId },
@@ -43,8 +43,8 @@ export function insertDefinitionModel(parentSubject: Subject, modelName: string)
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ InsertCodeSpec.example-code
-export function insertCodeSpec(iModelDb: IModelDb, name: string, scopeType: CodeScopeSpec.Type): Id64 {
-  const codeSpec = new CodeSpec(iModelDb, new Id64(), name, scopeType);
+export function insertCodeSpec(iModelDb: IModelDb, name: string, scopeType: CodeScopeSpec.Type): Id64String {
+  const codeSpec = new CodeSpec(iModelDb, Id64.invalid, name, scopeType);
   iModelDb.codeSpecs.insert(codeSpec);
   return codeSpec.id;
 }
@@ -62,14 +62,14 @@ export function generateGeometry(radius: number = 0.1): GeometryStreamProps {
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ InsertSpatialCategory.example-code
-export function insertSpatialCategory(iModelDb: IModelDb, modelId: Id64, name: string, color: ColorDef): Id64 {
+export function insertSpatialCategory(iModelDb: IModelDb, modelId: Id64String, name: string, color: ColorDef): Id64String {
   const categoryProps: CategoryProps = {
     classFullName: SpatialCategory.classFullName,
     model: modelId,
     code: SpatialCategory.createCode(iModelDb, modelId, name),
     isPrivate: false,
   };
-  const categoryId: Id64 = iModelDb.elements.insertElement(categoryProps);
+  const categoryId: Id64String = iModelDb.elements.insertElement(categoryProps);
   const category: SpatialCategory = iModelDb.elements.getElement(categoryId) as SpatialCategory;
   category.setDefaultAppearance(new SubCategoryAppearance({ color }));
   iModelDb.elements.updateElement(category);
@@ -78,7 +78,7 @@ export function insertSpatialCategory(iModelDb: IModelDb, modelId: Id64, name: s
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ InsertModelSelector.example-code
-export function insertModelSelector(iModelDb: IModelDb, modelId: Id64, models: string[]): Id64 {
+export function insertModelSelector(iModelDb: IModelDb, modelId: Id64String, models: string[]): Id64String {
   const modelSelectorProps: ModelSelectorProps = {
     classFullName: ModelSelector.classFullName,
     model: modelId,
@@ -90,7 +90,7 @@ export function insertModelSelector(iModelDb: IModelDb, modelId: Id64, models: s
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ InsertCategorySelector.example-code
-export function insertCategorySelector(iModelDb: IModelDb, modelId: Id64, categories: string[]): Id64 {
+export function insertCategorySelector(iModelDb: IModelDb, modelId: Id64String, categories: string[]): Id64String {
   const categorySelectorProps: CategorySelectorProps = {
     classFullName: CategorySelector.classFullName,
     model: modelId,
@@ -102,7 +102,7 @@ export function insertCategorySelector(iModelDb: IModelDb, modelId: Id64, catego
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ InsertDisplayStyle3d.example-code
-export function insertDisplayStyle3d(iModelDb: IModelDb, modelId: Id64): Id64 {
+export function insertDisplayStyle3d(iModelDb: IModelDb, modelId: Id64String): Id64String {
   const displayStyleProps: DefinitionElementProps = {
     classFullName: DisplayStyle3d.classFullName,
     model: modelId,
@@ -116,14 +116,14 @@ export function insertDisplayStyle3d(iModelDb: IModelDb, modelId: Id64): Id64 {
 // __PUBLISH_EXTRACT_START__ InsertOrthographicViewDefinition.example-code
 export function insertOrthographicViewDefinition(
   iModelDb: IModelDb,
-  modelId: Id64,
+  modelId: Id64String,
   viewName: string,
-  modelSelectorId: Id64,
-  categorySelectorId: Id64,
-  displayStyleId: Id64,
+  modelSelectorId: Id64String,
+  categorySelectorId: Id64String,
+  displayStyleId: Id64String,
   origin: XYZProps,
   extents: XYZProps,
-): Id64 {
+): Id64String {
   const viewDefinitionProps: SpatialViewDefinitionProps = {
     classFullName: OrthographicViewDefinition.classFullName,
     model: modelId,

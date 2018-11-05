@@ -21,7 +21,11 @@ export interface SelectClassInfo {
   relatedPropertyPaths: ec.RelationshipPathInfo[];
 }
 
-/** Serialized [[SelectClassInfo]] */
+/**
+ * Serialized [[SelectClassInfo]]
+ *
+ * @hidden
+ */
 export interface SelectClassInfoJSON {
   selectClassInfo: ec.ClassInfoJSON;
   isSelectPolymorphic: boolean;
@@ -80,6 +84,8 @@ export interface SelectionInfo {
 
 /**
  * Serialized [[Descriptor]] JSON representation.
+ *
+ * @hidden
  */
 export interface DescriptorJSON {
   connectionId: string;
@@ -134,7 +140,7 @@ export default class Descriptor {
   public filterExpression?: string;
 
   /* istanbul ignore next */
-  private constructor() {}
+  private constructor() { }
 
   /*public toJSON(): DescriptorJSON {
     return Object.assign({}, this, {
@@ -146,6 +152,8 @@ export default class Descriptor {
    * Deserialize Descriptor from JSON
    * @param json JSON or JSON serialized to string to deserialize from
    * @returns Deserialized descriptor or undefined if deserialization failed
+   *
+   * @hidden
    */
   public static fromJSON(json: DescriptorJSON | string | undefined): Descriptor | undefined {
     if (!json)
@@ -162,6 +170,8 @@ export default class Descriptor {
   /**
    * Reviver function that can be used as a second argument for
    * `JSON.parse` method when parsing Content objects.
+   *
+   * @hidden
    */
   public static reviver(key: string, value: any): any {
     return key === "" ? Descriptor.fromJSON(value) : value;

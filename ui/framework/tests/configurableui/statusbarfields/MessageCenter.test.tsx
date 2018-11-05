@@ -11,14 +11,14 @@ import {
   MessageCenterField,
   StatusBarWidgetControl,
   StatusBar,
-  ZoneDef,
   ConfigurableUiManager,
-  ZoneState,
   WidgetState,
   ConfigurableCreateInfo,
   IStatusBar,
   StatusBarFieldId,
   MessageManager,
+  ConfigurableUiControlType,
+  WidgetDef,
 } from "../../../src";
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
@@ -38,7 +38,7 @@ describe("MessageCenter", () => {
     }
   }
 
-  let statusBarZoneDef: ZoneDef;
+  let widgetControl: StatusBarWidgetControl | undefined;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -46,20 +46,13 @@ describe("MessageCenter", () => {
     ConfigurableUiManager.unregisterControl("AppStatusBar");
     ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
 
-    statusBarZoneDef = new ZoneDef({
-      defaultState: ZoneState.Open,
-      allowsMerging: false,
-      widgetProps: [
-        {
-          classId: "AppStatusBar",
-          defaultState: WidgetState.Open,
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:Test.my-label",
-          isFreeform: false,
-          isStatusBar: true,
-        },
-      ],
+    const statusBarWidgetDef = new WidgetDef({
+      classId: AppStatusBarWidgetControl,
+      defaultState: WidgetState.Open,
+      isFreeform: false,
+      isStatusBar: true,
     });
+    widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
   it("Message Center should support all message types", () => {
@@ -76,7 +69,7 @@ describe("MessageCenter", () => {
     MessageManager.addMessage(fatalMessage);
     expect(MessageManager.messages.length).to.eq(4);
 
-    const wrapper = mount(<StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     wrapper.find("div.nz-balloon").simulate("click"); // Opens it
     wrapper.update();
@@ -100,7 +93,7 @@ describe("MessageCenter", () => {
     MessageManager.addMessage(infoMessage);
     expect(MessageManager.messages.length).to.eq(1);
 
-    const wrapper = mount(<StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     wrapper.find("div.nz-balloon").simulate("click");
     wrapper.update();
@@ -124,7 +117,7 @@ describe("MessageCenter", () => {
     MessageManager.addMessage(errorMessage);
     expect(MessageManager.messages.length).to.eq(2);
 
-    const wrapper = mount(<StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     wrapper.find("div.nz-balloon").simulate("click");
     wrapper.update();

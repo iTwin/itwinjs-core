@@ -40,6 +40,18 @@ export abstract class BezierCoffs {
       this.coffs = new Float64Array(data);
     }
   }
+  /**
+   * * Ensure the coefficient array size matches order.  (Reallocate as needed)
+   * * fill with zeros.
+   * @param order required order
+   */
+  protected allocateToOrder(order: number) {
+    if (this.coffs.length !== order) {
+      this.coffs = new Float64Array(order);
+    } else {
+      this.coffs.fill(0);
+    }
+  }
   /** evaluate the basis fucntions at specified u.
    * @param u bezier parameter for evaluation.
    * @param buffer optional destination for values.   ASSUMED large enough for order.
@@ -169,12 +181,20 @@ export abstract class BezierCoffs {
 export class BezierPolynomialAlgebra {
   /**
    * * Univariate bezierA has its coefficients at offset indexA in each block within the array of blocks.
-   * * Symbolically:   `product(s) = (constA - polynomialA(s)) *polynomialB(s)`
+   * * Symbolically:   `product(s) += scale * (constA - polynomialA(s)) *polynomialB(s)`
    * * Where coefficients of polynomialA(s) are in column indexA and coefficients of polynominalB(s) are differences within column indexB.
    * * Treating data as 2-dimensional array:   `product = sum (iA) sum (iB)    (constA - basisFunction[iA} data[indexA][iA]) * basisFunction[iB] * (dataOrder-1)(data[iB + 1][indexB] - data[iB][indexB])`
    * * Take no action if product length is other than `dataOrder + dataOrder - 2`
    */
-  public static accumulateShiftedComponentTimesComponentDelta(product: Float64Array, data: Float64Array, dataBlockSize: number, dataOrder: number, indexA: number, constA: number, indexB: number) {
+  public static accumulateScaledShiftedComponentTimesComponentDelta(
+    product: Float64Array,
+    data: Float64Array,
+    dataBlockSize: number,
+    dataOrder: number,
+    scale: number,
+    indexA: number,
+    constA: number,
+    indexB: number) {
     const orderB = dataOrder - 1;  // coefficients of the first difference are implicitly present as differences of adjacent entries.
     const orderA = dataOrder;
     const orderC = dataOrder + orderB - 1;
@@ -184,7 +204,7 @@ export class BezierPolynomialAlgebra {
     const coffC = PascalCoefficients.getRow(orderC - 1);
     let qA;
     for (let a = 0; a < orderA; a++) {
-      qA = (constA + data[indexA + a * dataBlockSize]) * coffA[a];
+      qA = scale * (constA + data[indexA + a * dataBlockSize]) * coffA[a];
       for (let b = 0, k = indexB; b < orderB; b++ , k += dataBlockSize) {
         product[a + b] += qA * coffB[b] * (data[k + dataBlockSize] - data[k]) / coffC[a + b];
       }
@@ -207,12 +227,26 @@ export class BezierPolynomialAlgebra {
     }
   }
   /**
+   * * Univariate bezier has its coefficients at offset index in each block within the array of blocks.
+   * * return the (dataOrder - 1) differences,
+   *
+   * * Take no action if difference length is other than `dataOrder - 1`
+   */
+  public static componentDifference(difference: Float64Array, data: Float64Array, dataBlockSize: number, dataOrder: number, index: number) {
+    const orderA = dataOrder;
+    const orderDiff = orderA - 1;
+    if (difference.length !== orderDiff) return;
+    for (let i = 0, k = index; i < orderDiff; k += dataBlockSize, i++)
+      difference[i] = data[k + dataBlockSize] - data[k];
+  }
+
+  /**
    * * Univariate bezierA has its coefficients in dataA[i]
    * * Univariate bezierB has its coefficients in dataB[i]
-   * * return the product coefficients for polynominalA(s) * polynomialB(s)
+   * * return the product coefficients for polynominalA(s) * polynomialB(s) * scale
    * * Take no action if product length is other than `orderA + orderB - 1`
    */
-  public static accumulateProduct(product: Float64Array, dataA: Float64Array, dataB: Float64Array) {
+  public static accumulateProduct(product: Float64Array, dataA: Float64Array, dataB: Float64Array, scale: number = 1.0) {
     const orderA = dataA.length;
     const orderB = dataB.length;
     const orderC = orderA + orderB - 1;
@@ -224,7 +258,7 @@ export class BezierPolynomialAlgebra {
     const coffB = PascalCoefficients.getRow(orderB - 1);
     const coffC = PascalCoefficients.getRow(orderC - 1);
     for (a = 0; a < orderA; a++) {
-      qA = coffA[a] * dataA[a];
+      qA = scale * coffA[a] * dataA[a];
       for (b = 0; b < orderB; b++) {
         product[a + b] += qA * coffB[b] * dataB[b] / coffC[a + b];
       }
@@ -234,14 +268,39 @@ export class BezierPolynomialAlgebra {
   /**
    * * Univariate bezierA has its coefficients in dataA[i]
    * * Univariate bezierB has its coefficients in dataB[i]
-   * * return the product coefficients for polynominalA(s) * polynomialB(s)
+   * * return the product coefficients for polynominalADifferencs(s) * polynomialB(s) * scale
+   * * Take no action if product length is other than `orderA + orderB - 2`
+   */
+  public static accumulateProductWithDifferences(product: Float64Array, dataA: Float64Array, dataB: Float64Array, scale: number = 1.0) {
+    const orderA = dataA.length - 1;  // We deal with its differences, which are lower order !!!
+    const orderB = dataB.length;
+    const orderC = orderA + orderB - 1;
+    if (product.length !== orderC) return;
+    let a: number;
+    let b: number;
+    let qA: number;
+    const coffA = PascalCoefficients.getRow(orderA - 1);
+    const coffB = PascalCoefficients.getRow(orderB - 1);
+    const coffC = PascalCoefficients.getRow(orderC - 1);
+    for (a = 0; a < orderA; a++) {
+      qA = scale * coffA[a] * (dataA[a + 1] - dataA[a]);
+      for (b = 0; b < orderB; b++) {
+        product[a + b] += qA * coffB[b] * dataB[b] / coffC[a + b];
+      }
+    }
+  }
+
+  /**
+   * * Univariate bezier has its coefficients in data[i]
+   * * return the diference data[i+1]-data[i] in difference.
    * * Take no action if product length is other than `orderA + orderB - 1`
    */
-  public static univariateDifference(dataA: Float64Array, dataB: Float64Array, order: number, difference: Float64Array) {
-    if (difference.length !== order) return;
-    for (let i = 0; i < order; i++) {
-      difference[i] = dataA[i] - dataB[i];
-    }
+  public static univariateDifference(data: Float64Array, difference: Float64Array) {
+    const differenceOrder = difference.length;
+    if (difference.length + 1 !== differenceOrder)
+      for (let i = 0; i < differenceOrder; i++) {
+        difference[i] = data[i + 1] - data[i];
+      }
   }
   /**
    * * Univariate bezierA has its coefficients in dataA[i]
@@ -271,9 +330,17 @@ export class BezierPolynomialAlgebra {
 export class UnivariateBezier extends BezierCoffs {
   private _order: number;
   public get order() { return this._order; }
-  public constructor(order: number) {
-    super(order);
-    this._order = order;
+  public constructor(data: number | Float64Array | number[]) {
+    super(data);
+    this._order = super.order;
+  }
+
+  /** (Re) initialize with given order (and all coffs zero) */
+  public allocateOrder(order: number) {
+    if (this._order !== order) {
+      super.allocateToOrder(order);
+      this._order = order;
+    }
   }
   /** Return a copy, optionally with coffs array length reduced to actual order. */
   public clone(compressToMinimalAllocation: boolean = false): UnivariateBezier {
@@ -300,11 +367,29 @@ export class UnivariateBezier extends BezierCoffs {
    * copy coefficients into a new bezier.
    * @param coffs coefficients for bezier
    */
-  public static createCoffs(coffs: number[]): UnivariateBezier {
-    const result = new UnivariateBezier(coffs.length);
-    for (let i = 0; i < coffs.length; i++)result.coffs[i] = coffs[i];
+  public static createCoffs(data: number | number[] | Float64Array): UnivariateBezier {
+    return new UnivariateBezier(data);
+  }
+  /**
+   * copy coefficients into a new bezier.
+   * * if result is omitted, a new UnivariateBezier is allocated and returned.
+   * * if result is present but has other order, its coefficients are reallocated
+   * * if result is present and has matching order, the values are replace.
+   * @param coffs coefficients for bezier
+   * @param index0 first index to access
+   * @param order number of coefficients, i.e. order for the result
+   * @param result optional result.
+   *
+   */
+  public static createArraySubset(coffs: number[] | Float64Array, index0: number, order: number, result?: UnivariateBezier): UnivariateBezier {
+    if (!result)
+      result = new UnivariateBezier(order);
+    else if (result.order !== order)
+      result.allocateToOrder (order);
+    for (let i = 0; i < order; i++)result.coffs[i] = coffs[index0 + i];
     return result;
   }
+
   /**
    * Create a product of 2 bezier polynomials.
    * @param bezierA
@@ -407,7 +492,7 @@ export class UnivariateBezier extends BezierCoffs {
    */
   public sumBasisFunctionDerivatives(u: number, polygon: Float64Array, blockSize: number, result?: Float64Array): Float64Array {
     const order = this._order;
-    if (!result) result = new Float64Array(order);
+    if (!result) result = new Float64Array(blockSize);
     this._basisValues = PascalCoefficients.getBezierBasisDerivatives(this.order, u, this._basisValues);
     UnivariateBezier.sumWeightedBlocks(this._basisValues, order, polygon, blockSize, result);
     return result;
@@ -861,10 +946,10 @@ export class Order4Bezier extends BezierCoffs {
   public sumBasisFunctionDerivatives(u: number, polygon: Float64Array, n: number, result?: Float64Array): Float64Array {
     if (!result) result = new Float64Array(n);
     const v = 1 - u;
-    // QUADRATIC basis functions applied to differences ...
-    const f0 = 6 * (v * v);
-    const f1 = 6 * (2 * u * v);
-    const f2 = 6 * u * u;
+    // QUADRATIC basis functions applied to differences ... (with factor 3 for derivative)
+    const f0 = 3 * (v * v);
+    const f1 = 6 * u * v;
+    const f2 = 3 * u * u;
 
     for (let i = 0; i < n; i++) {
       const q0 = polygon[i];
@@ -1026,10 +1111,10 @@ export class Order5Bezier extends BezierCoffs {
     // CUBIC basis functions applied to differences ...
     const uu = u * u;
     const vv = v * v;
-    const f0 = 12 * v * vv;
-    const f1 = 36 * u * vv;
-    const f2 = 36 * uu * v;
-    const f3 = 12 * u * uu;
+    const f0 = 4 * v * vv;
+    const f1 = 12 * u * vv;
+    const f2 = 12 * uu * v;
+    const f3 = 4 * u * uu;
 
     for (let i = 0; i < n; i++) {
       const q0 = polygon[i];

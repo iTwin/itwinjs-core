@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Frontstage */
 
+import * as React from "react";
 import { FrontstageManager } from "./FrontstageManager";
-import { ZoneProps, ZoneDef, ZoneDefFactory } from "./ZoneDef";
-import { ToolItemDef } from "./Item";
+import { ZoneDefProps, ZoneDef, ZoneDefFactory } from "./ZoneDef";
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemPropsList } from "./ItemProps";
 import { ContentLayoutManager, ContentLayoutDef } from "./ContentLayout";
@@ -15,10 +15,10 @@ import { ItemMap } from "./ItemFactory";
 import { ContentGroup } from "./ContentGroup";
 import { ContentGroupManager } from "./ContentGroup";
 import { WidgetDef } from "./WidgetDef";
-import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { ConfigurableUiControlType } from "./ConfigurableUiControl";
-import { ViewportContentControl } from "./ViewportContentControl";
 import { WidgetControl } from "./WidgetControl";
+import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
+import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
+import { FrontstageProvider, Frontstage } from "./Frontstage";
 
 // -----------------------------------------------------------------------------
 // FrontstageProps and associated enums
@@ -42,9 +42,9 @@ export enum SelectionScope {
   Model,
 }
 
-/** Props for a Frontstage.
+/** Properties for a Frontstage.
  */
-export interface FrontstageProps extends ItemPropsList {
+export interface FrontstageDefProps extends ItemPropsList {
   id: string;
   defaultToolId: string;
 
@@ -61,14 +61,14 @@ export interface FrontstageProps extends ItemPropsList {
   defaultSelectionScope?: SelectionScope;       // Default - SelectionScope.Element
   availableSelectionScopes?: SelectionScope[];  // Defaults - SelectionScope.Element, Assembly, TopAssembly, Category, Model
 
-  topLeft?: ZoneProps;
-  topCenter?: ZoneProps;
-  topRight?: ZoneProps;
-  centerLeft?: ZoneProps;
-  centerRight?: ZoneProps;
-  bottomLeft?: ZoneProps;
-  bottomCenter?: ZoneProps;
-  bottomRight?: ZoneProps;
+  topLeft?: ZoneDefProps;
+  topCenter?: ZoneDefProps;
+  topRight?: ZoneDefProps;
+  centerLeft?: ZoneDefProps;
+  centerRight?: ZoneDefProps;
+  bottomLeft?: ZoneDefProps;
+  bottomCenter?: ZoneDefProps;
+  bottomRight?: ZoneDefProps;
 
   applicationData?: any;
 }
@@ -77,7 +77,7 @@ export interface FrontstageProps extends ItemPropsList {
 // FrontstageDef class
 // -----------------------------------------------------------------------------
 
-/** FrontstageDef class.
+/** FrontstageDef class. Application Frontstages can subclass this base class.
  */
 export class FrontstageDef {
   public id: string = "";
@@ -112,20 +112,22 @@ export class FrontstageDef {
   public bottomCenter?: ZoneDef;
   public bottomRight?: ZoneDef;
 
-  private _activeToolItem?: ToolItemDef;
-
   public defaultLayout?: ContentLayoutDef;
 
-  /** Gets the [[ContentGroup]] for this Frontstage */
+  /** The [[ContentGroup]] for this Frontstage */
   public contentGroup?: ContentGroup;
 
-  constructor(frontstageProps?: FrontstageProps) {
+  public frontstageProvider?: FrontstageProvider;
+
+  /** Constructs the [[FrontstageDef]] and optionally initializes it based on the given [[FrontstageProps]]  */
+  constructor(frontstageProps?: FrontstageDefProps) {
     if (frontstageProps) {
       this.initializeFromProps(frontstageProps);
     }
   }
 
-  public initializeFromProps(frontstageProps: FrontstageProps): void {
+  /** Initializes the [[FrontstageDef]] from [[FrontstageProps]]  */
+  public initializeFromProps(frontstageProps: FrontstageDefProps): void {
     this.id = frontstageProps.id;
     this.defaultToolId = frontstageProps.defaultToolId;
 
@@ -171,25 +173,12 @@ export class FrontstageDef {
     this.bottomRight = ZoneDefFactory.Create(frontstageProps.bottomRight);
   }
 
+  /** Finds an item based on a given id */
   public findItem(id: string): ItemDefBase | undefined {
     return this.items.get(id);
   }
 
-  public get activeToolId(): string {
-    return (this._activeToolItem) ? this._activeToolItem.id : "";
-  }
-
-  public get activeToolItem(): ToolItemDef | undefined {
-    return this._activeToolItem;
-  }
-
-  // TODO - connect to Redux
-  public setActiveToolItem(toolItem: ToolItemDef): void {
-    this._activeToolItem = toolItem;
-    toolItem.onActivated();
-    FrontstageManager.onToolActivatedEvent.emit({ toolId: toolItem.id, toolItem });
-  }
-
+  /** Handles when the Frontstage becomes activated */
   public onActivated(): void {
     if (!this.defaultLayout) {
       this.defaultLayout = ContentLayoutManager.findLayout(this.defaultLayoutId);
@@ -199,32 +188,36 @@ export class FrontstageDef {
     }
 
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this.defaultLayout!, contentGroup: this.contentGroup });
-
-    this.zoneDefs.map((zoneDef: ZoneDef) => {
-      zoneDef.clearDefaultOpenUsed();
-    });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ContentLayoutActivated);
   }
 
+  /** Returns once the contained widgets and content controls are ready to use */
   public waitUntilReady(): Promise<void> {
     // create an array of control-ready promises
     const controlReadyPromises = new Array<Promise<void>>();
-    for (const control of this.widgetControls) {
+    for (const control of this._widgetControls) {
       controlReadyPromises.push(control.isReady);
     }
     for (const control of this.contentControls) {
       controlReadyPromises.push(control.isReady);
     }
 
-    return Promise.all(controlReadyPromises).then(() => { });
+    return Promise.all(controlReadyPromises)
+      .then(() => {
+        // Frontstage ready
+      });
   }
 
+  /** Sets the active view content control */
   public setActiveView(newContent: ContentControl, oldContent?: ContentControl): void {
     if (oldContent)
       oldContent.onDeactivated();
     newContent.onActivated();
     FrontstageManager.onContentControlActivatedEvent.emit({ activeContentControl: newContent, oldContentControl: oldContent });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ContentControlActivated);
   }
 
+  /** Gets a [[ZoneDef]] based on a given zone id */
   public getZoneDef(zoneId: number): ZoneDef | undefined {
     let zoneDef;
 
@@ -262,6 +255,7 @@ export class FrontstageDef {
     return zoneDef;
   }
 
+  /** Gets a list of [[ZoneDef]]s */
   public get zoneDefs(): ZoneDef[] {
     const zones = [1, 2, 3, 4, 6, 7, 8, 9];
     const zoneDefs: ZoneDef[] = [];
@@ -275,6 +269,7 @@ export class FrontstageDef {
     return zoneDefs;
   }
 
+  /** Finds a [[WidgetDef]] based on a given id */
   public findWidgetDef(id: string): WidgetDef | undefined {
     for (const zoneDef of this.zoneDefs) {
       const widgetDef = zoneDef.findWidgetDef(id);
@@ -284,8 +279,8 @@ export class FrontstageDef {
     return undefined;
   }
 
-  /** Gets the list of [[WidgetControl]] */
-  public get widgetControls(): WidgetControl[] {
+  /** Gets the list of [[WidgetControl]]s */
+  private get _widgetControls(): WidgetControl[] {
     const widgetControls = new Array<WidgetControl>();
     for (const zoneDef of this.zoneDefs) {
       for (const widgetDef of zoneDef.widgetDefs) {
@@ -297,26 +292,18 @@ export class FrontstageDef {
     return widgetControls;
   }
 
-  /** Gets the list of [[ContentControl]] */
+  /** Gets the list of [[ContentControl]]s */
   public get contentControls(): ContentControl[] {
     if (this.contentGroup)
       return this.contentGroup.getContentControls();
     return [];
   }
 
-  /** Gets the list of ScreenViewport  */
-  public get viewports(): Readonly<ScreenViewport[]> {
-    const viewports = new Array<ScreenViewport>();
-    if (this.contentControls) {
-      this.contentControls.forEach((control: ContentControl) => {
-        if (control.getType() === ConfigurableUiControlType.Viewport) {
-          const viewportControl = control as ViewportContentControl;
-          if (viewportControl.viewport)
-            viewports.push(viewportControl.viewport);
-        }
-      });
+  public initializeFromProvider(frontstageProvider: FrontstageProvider) {
+    if (frontstageProvider.frontstage && React.isValidElement(frontstageProvider.frontstage)) {
+      Frontstage.initializeFrontstageDef(this, frontstageProvider.frontstage.props);
+      this.frontstageProvider = frontstageProvider;
     }
-    return viewports;
   }
 
 }

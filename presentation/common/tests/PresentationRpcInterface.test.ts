@@ -7,7 +7,7 @@ import * as faker from "faker";
 import * as moq from "./_helpers/Mocks";
 import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "./_helpers/random";
 import { using } from "@bentley/bentleyjs-core";
-import { IModelToken, RpcOperation, RpcRequest } from "@bentley/imodeljs-common";
+import { IModelToken, RpcOperation, RpcRequest, RpcSerializedValue } from "@bentley/imodeljs-common";
 import { RpcRegistry } from "@bentley/imodeljs-common/lib/rpc/core/RpcRegistry";
 import {
   PresentationRpcInterface,
@@ -19,6 +19,11 @@ import {
 } from "../lib/PresentationRpcInterface";
 
 describe("PresentationRpcInterface", () => {
+  class TestRpcRequest extends RpcRequest {
+    protected send(): Promise<number> { throw new Error("Not implemented."); }
+    protected load(): Promise<RpcSerializedValue> { throw new Error("Not implemented."); }
+    protected setHeader(_name: string, _value: string): void { throw new Error("Not implemented."); }
+  }
 
   it("finds imodel tokens in RPC requests", () => {
     const token = new IModelToken();
@@ -30,10 +35,10 @@ describe("PresentationRpcInterface", () => {
     const client = RpcRegistry.instance.getClientForInterface(PresentationRpcInterface);
     const operation = RpcOperation.lookup(PresentationRpcInterface, "getRootNodesCount");
     const disposableRequest = {
-      request: new RpcRequest(client, "getRootNodesCount", parameters),
+      request: new TestRpcRequest(client, "getRootNodesCount", parameters),
       dispose: () => {
         // no way to properly destroy the created request...
-        (disposableRequest.request as any).finalize();
+        (disposableRequest.request as any).dispose();
       },
     };
     using(disposableRequest, (dr) => {

@@ -28,6 +28,7 @@ export interface WidgetChangeHandler {
   handleTabDragStart(widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps): void;
   handleTabDragEnd(): void;
   handleTabDrag(dragged: PointProps): void;
+  handleWidgetStateChange(widgetId: number, tabIndex: number, isOpening: boolean): void;
 }
 
 /** Interface defining callbacks for ZoneDropTarget changes */
@@ -40,7 +41,16 @@ export interface ZoneDefProvider {
   getZoneDef(zoneId: number): ZoneDef | undefined;
 }
 
-/** Props for the FrontstageComposer component.
+/** Runtime Props for the Frontstage */
+export interface FrontstageRuntimeProps {
+  nineZoneProps: NineZoneProps;
+  widgetChangeHandler: WidgetChangeHandler;
+  targetChangeHandler: TargetChangeHandler;
+  zoneDefProvider: ZoneDefProvider;
+  frontstageDef: FrontstageDef;
+}
+
+/** Properties for the [[FrontstageComposer]] component.
  */
 export interface FrontstageComposerProps {
   className?: string;
@@ -51,8 +61,8 @@ export interface FrontstageComposerProps {
  */
 export interface FrontstageComposerState {
   frontstageId: string;
-  modalFronstageCount: number;
-  nineZone: NineZoneProps;
+  modalFrontstageCount: number;
+  nineZoneProps: NineZoneProps;
 }
 
 /** FrontstageComposer React component.
@@ -72,11 +82,11 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     this._frontstageDef = FrontstageManager.findFrontstageDef(activeFrontstageId);
 
     const isInFooterMode = (this._frontstageDef) ? this._frontstageDef.isInFooterMode : false;
-    const nineZone = NineZoneStateManager.setIsInFooterMode(isInFooterMode, getDefaultNineZoneState());
+    const nineZoneProps = NineZoneStateManager.setIsInFooterMode(isInFooterMode, getDefaultNineZoneState());
     this.state = {
-      nineZone,
+      nineZoneProps,
       frontstageId: activeFrontstageId,
-      modalFronstageCount: FrontstageManager.modalFrontstageCount,
+      modalFrontstageCount: FrontstageManager.modalFrontstageCount,
     };
   }
 
@@ -86,10 +96,10 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     this.setState((prevState, _props) => {
       const frontstageId = args.frontstageId;
       const isInFooterMode = (this._frontstageDef) ? this._frontstageDef.isInFooterMode : false;
-      const nineZone = FrontstageManager.NineZoneStateManager.setIsInFooterMode(isInFooterMode, prevState.nineZone);
+      const nineZoneProps = FrontstageManager.NineZoneStateManager.setIsInFooterMode(isInFooterMode, prevState.nineZoneProps);
       return {
         frontstageId,
-        nineZone,
+        nineZoneProps,
       };
     });
   }
@@ -97,10 +107,9 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
   private _handleModalFrontstageChangedEvent = (_args: ModalFrontstageChangedEventArgs) => {
     this.setState((_prevState) => {
       return {
-        modalFronstageCount: FrontstageManager.modalFrontstageCount,
+        modalFrontstageCount: FrontstageManager.modalFrontstageCount,
       };
     });
-
   }
 
   private _navigationBack = () => {
@@ -131,19 +140,36 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
   }
 
   public render(): React.ReactNode {
-    return (
-      <div id="frontstage-composer">
-        {this.renderModalFrontstage()}
+    let content: React.ReactNode;
 
-        {this._frontstageDef &&
+    if (this._frontstageDef) {
+      if (this._frontstageDef.frontstageProvider) {
+        const frontstageRuntimeProps: FrontstageRuntimeProps = {
+          nineZoneProps: this.state.nineZoneProps,
+          widgetChangeHandler: this,
+          targetChangeHandler: this,
+          zoneDefProvider: this,
+          frontstageDef: this._frontstageDef,
+        };
+        content = React.cloneElement(this._frontstageDef.frontstageProvider.frontstage, { runtimeProps: frontstageRuntimeProps });
+      } else {
+        content = (
           <FrameworkFrontstage
             frontstageDef={this._frontstageDef}
-            nineZone={this.state.nineZone}
+            nineZone={this.state.nineZoneProps}
             widgetChangeHandler={this}
             targetChangeHandler={this}
             zoneDefProvider={this}
           />
-        }
+        );
+      }
+    }
+
+    return (
+      <div id="frontstage-composer">
+        {this.renderModalFrontstage()}
+
+        {content}
       </div>
     );
   }
@@ -167,55 +193,64 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
 
   public handleResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
     this.setState((prevState) => {
-      const nineZone = FrontstageManager.NineZoneStateManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone);
+      const nineZoneProps = FrontstageManager.NineZoneStateManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZoneProps);
       return {
-        nineZone,
+        nineZoneProps,
       };
     });
   }
 
   public handleTabClick = (widgetId: number, tabIndex: number) => {
     this.setState((prevState) => {
-      const nineZone = FrontstageManager.NineZoneStateManager.handleTabClick(widgetId, tabIndex, prevState.nineZone);
+      const nineZoneProps = FrontstageManager.NineZoneStateManager.handleTabClick(widgetId, tabIndex, prevState.nineZoneProps);
       return {
-        nineZone,
+        nineZoneProps,
       };
     });
   }
 
   public handleTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
     this.setState((prevState) => {
-      const nineZone = FrontstageManager.NineZoneStateManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone);
+      const nineZoneProps = FrontstageManager.NineZoneStateManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZoneProps);
       return {
-        nineZone,
+        nineZoneProps,
       };
     });
   }
 
   public handleTabDragEnd = () => {
     this.setState((prevState) => {
-      const nineZone = FrontstageManager.NineZoneStateManager.handleWidgetTabDragEnd(prevState.nineZone);
+      const nineZoneProps = FrontstageManager.NineZoneStateManager.handleWidgetTabDragEnd(prevState.nineZoneProps);
       return {
-        nineZone,
+        nineZoneProps,
       };
     });
   }
 
   public handleTabDrag = (dragged: PointProps) => {
     this.setState((prevState) => {
-      const nineZone = FrontstageManager.NineZoneStateManager.handleWidgetTabDrag(dragged, prevState.nineZone);
+      const nineZoneProps = FrontstageManager.NineZoneStateManager.handleWidgetTabDrag(dragged, prevState.nineZoneProps);
       return {
-        nineZone,
+        nineZoneProps,
       };
     });
   }
 
   public handleTargetChanged(zoneId: WidgetZoneIndex, type: TargetType, isTargeted: boolean): void {
     this.setState((prevState) => {
-      const nineZone = isTargeted ? FrontstageManager.NineZoneStateManager.handleTargetChanged({ zoneId, type }, prevState.nineZone) :
-        FrontstageManager.NineZoneStateManager.handleTargetChanged(undefined, prevState.nineZone);
+      const nineZoneProps = isTargeted ? FrontstageManager.NineZoneStateManager.handleTargetChanged({ zoneId, type }, prevState.nineZoneProps) :
+        FrontstageManager.NineZoneStateManager.handleTargetChanged(undefined, prevState.nineZoneProps);
       return {
-        nineZone,
+        nineZoneProps,
+      };
+    });
+  }
+
+  public handleWidgetStateChange(widgetId: number, tabIndex: number, isOpening: boolean): void {
+    this.setState((prevState) => {
+      const nineZoneProps = FrontstageManager.NineZoneStateManager.handleWidgetStateChange(widgetId, tabIndex, isOpening, prevState.nineZoneProps);
+      return {
+        nineZoneProps,
       };
     });
   }
@@ -232,19 +267,19 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
   }
 
   public getGhostOutlineBounds(zoneId: WidgetZoneIndex): RectangleProps | undefined {
-    const nineZone = new NineZone(this.state.nineZone);
+    const nineZone = new NineZone(this.state.nineZoneProps);
     return nineZone.getWidgetZone(zoneId).getGhostOutlineBounds();
   }
 
   private layout() {
     this.setState((prevState) => {
       const element = ReactDOM.findDOMNode(this) as Element;
-      let nineZone = prevState.nineZone;
+      let nineZoneProps = prevState.nineZoneProps;
       if (element) {
-        nineZone = FrontstageManager.NineZoneStateManager.layout(new Size(element.clientWidth, element.clientHeight), prevState.nineZone);
+        nineZoneProps = FrontstageManager.NineZoneStateManager.layout(new Size(element.clientWidth, element.clientHeight), prevState.nineZoneProps);
       }
       return {
-        nineZone,
+        nineZoneProps,
       };
     });
   }

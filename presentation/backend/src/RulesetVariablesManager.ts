@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { VariableValueTypes, VariableValue, VariableValueJSON } from "@bentley/presentation-common/lib/RulesetVariables";
 import { NativePlatformDefinition } from "./NativePlatform";
 
@@ -29,8 +29,8 @@ export default class RulesetVariablesManager {
   public setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void {
     switch (type) {
       case VariableValueTypes.Bool: return this.setBool(variableId, value as boolean);
-      case VariableValueTypes.Id64: return this.setId64(variableId, value as Id64);
-      case VariableValueTypes.Id64Array: return this.setId64s(variableId, value as Id64[]);
+      case VariableValueTypes.Id64: return this.setId64(variableId, value as Id64String);
+      case VariableValueTypes.Id64Array: return this.setId64s(variableId, value as Id64String[]);
       case VariableValueTypes.Int: return this.setInt(variableId, value as number);
       case VariableValueTypes.IntArray: return this.setInts(variableId, value as number[]);
       case VariableValueTypes.String: return this.setString(variableId, value as string);
@@ -108,33 +108,33 @@ export default class RulesetVariablesManager {
   }
 
   /**
-   * Retrieves `Id64` variable value.
-   * Returns invalid Id64 if variable does not exist or does not convert to Id64.
+   * Retrieves `Id64String` variable value.
+   * Returns invalid Id64String if variable does not exist or does not convert to Id64String.
    */
-  public getId64(variableId: string): Id64 {
-    return new Id64((this.getValueJSON(variableId, VariableValueTypes.Id64)) as string);
+  public getId64(variableId: string): Id64String {
+    return Id64.fromJSON((this.getValueJSON(variableId, VariableValueTypes.Id64)) as string);
   }
 
   /**
-   * Sets `Id64` variable value
+   * Sets `Id64String` variable value
    */
-  public setId64(variableId: string, value: Id64): void {
-    this.setValueJSON(variableId, VariableValueTypes.Id64, value.value);
+  public setId64(variableId: string, value: Id64String): void {
+    this.setValueJSON(variableId, VariableValueTypes.Id64, value);
   }
 
   /**
-   * Retrieves `Id64[]` variable value.
-   * Returns empty array if variable does not exist or does not convert to Id64 array.
+   * Retrieves `Id64String[]` variable value.
+   * Returns empty array if variable does not exist or does not convert to Id64String array.
    */
-  public getId64s(variableId: string): Id64[] {
+  public getId64s(variableId: string): Id64String[] {
     const value = (this.getValueJSON(variableId, VariableValueTypes.Id64Array)) as string[];
-    return value.map((v) => new Id64(v));
+    return value.map((v) => Id64.fromJSON(v));
   }
 
   /**
-   * Sets `Id64[]` variable value
+   * Sets `Id64String[]` variable value
    */
-  public setId64s(variableId: string, value: Id64[]): void {
-    this.setValueJSON(variableId, VariableValueTypes.Id64Array, value.map((v) => v.value));
+  public setId64s(variableId: string, value: Id64String[]): void {
+    this.setValueJSON(variableId, VariableValueTypes.Id64Array, value.map((v) => v));
   }
 }

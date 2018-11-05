@@ -5,6 +5,7 @@
 /** @module ContentView */
 
 import { ConfigurableUiControlType, ConfigurableCreateInfo, ConfigurableUiControl } from "./ConfigurableUiControl";
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
 
 /** The base class for Frontstage content controls.
  */
@@ -30,10 +31,20 @@ export class ContentControl extends ConfigurableUiControl {
   /** Gets the type of ConfigurableUiControl, which is 'Content' in this case */
   public getType(): ConfigurableUiControlType { return ConfigurableUiControlType.Content; }
 
+  /** Returns true if this control is a Viewport control. */
+  public get isViewport(): boolean { return false; }
+
+  /** Returns the ScreenViewport if isViewport is true */
+  public get viewport(): ScreenViewport | undefined { return undefined; }
   /** Gets the React element associated with this control */
   public get reactElement(): React.ReactNode { return this._reactElement; }
   /** Sets the React element associated with this control */
   public set reactElement(r: React.ReactNode) { this._reactElement = r; }
+
+  /** Get the NavigationAidControl associated with this ContentControl */
+  public get navigationAidControl(): string {
+    return "";
+  }
 }
 
 export default ContentControl;

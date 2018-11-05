@@ -133,4 +133,15 @@ describe("RulesetManager", () => {
 
   });
 
+  describe("dispose", () => {
+
+    it("disposes registered ruleset for add result", async () => {
+      const ruleset = await createRandomRuleset();
+      const result = await manager.add(ruleset);
+      const eventSpy = spy.on(manager, manager.remove.name);
+
+      result.dispose();
+      expect(eventSpy).to.have.been.called();
+    });
+  });
 });

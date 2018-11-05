@@ -6,7 +6,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 import "./Common.scss";
 import "./PopupTest.scss";
-import { Popup, Position} from "@bentley/ui-core";
+import { Popup, Position } from "@bentley/ui-core";
 import { Toggle } from "@bentley/ui-core";
 
 interface PopupTestProps {
@@ -30,14 +30,17 @@ interface PopupTestState {
 
 /**
  * Test for popups.  Do not use, ths will be removed!
+ * @hidden
  */
 export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
 
   constructor(props?: any, context?: any) {
     super(props, context);
 
-    this.state = { showTopLeft: false, showTop: false, showTopRight: false, showBottomLeft: false, showBottom: false, showBottomRight: false,
-      showArrow: false, showStatusBarColors: false, showLeft: false, showRight: false, showShadow: true, onHover: false };
+    this.state = {
+      showTopLeft: false, showTop: false, showTopRight: false, showBottomLeft: false, showBottom: false, showBottomRight: false,
+      showArrow: false, showStatusBarColors: false, showLeft: false, showRight: false, showShadow: true, onHover: false,
+    };
   }
 
   private _toggleTopLeft = () => {
@@ -125,17 +128,17 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
       this.props.onClose();
   }
 
-  private renderPopup(title: string, onClose: () => any)  {
+  private renderPopup(title: string, onClose: () => any) {
     return (
       <div className="popup-test-content">
-         <h4>{title}</h4>
-         <div/>
-         <ul>
+        <h4>{title}</h4>
+        <div />
+        <ul>
           <li onClick={onClose}>Item 1</li>
           <li onClick={onClose}>Item 2</li>
           <li onClick={onClose}>Item 3</li>
           <li onClick={onClose}>Item 4</li>
-          </ul>
+        </ul>
       </div>
     );
   }
@@ -155,8 +158,8 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
                   Top Left
                 </button>
                 <Popup className={className} isShown={this.state.showTopLeft} position={Position.TopLeft}
-                    onClose={this._closeTopLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                    showOnHover={this.state.onHover}>
+                  onClose={this._closeTopLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
+                  showOnHover={this.state.onHover}>
                   {this.renderPopup("Top Left", this._closeTopLeft)}
                 </Popup>
               </div>
@@ -165,7 +168,7 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
                   Top
                 </button>
                 <Popup className={className} isShown={this.state.showTop} position={Position.Top} onClose={this._closeTop}
-                      showArrow={this.state.showArrow} showShadow={this.state.showShadow} showOnHover={this.state.onHover}>
+                  showArrow={this.state.showArrow} showShadow={this.state.showShadow} showOnHover={this.state.onHover}>
                   {this.renderPopup("Top Center", this._closeTop)}
                 </Popup>
               </div>
@@ -174,8 +177,8 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
                   Top Right
                 </button>
                 <Popup className={className} isShown={this.state.showTopRight} position={Position.TopRight}
-                    onClose={this._onCloseTopRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                    showOnHover={this.state.onHover}>
+                  onClose={this._onCloseTopRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
+                  showOnHover={this.state.onHover}>
                   {this.renderPopup("Top Right", this._onCloseTopRight)}
                 </Popup>
               </div>
@@ -186,8 +189,8 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
                   Left
                 </button>
                 <Popup className={className} isShown={this.state.showLeft} position={Position.Left}
-                   onClose={this._onCloseLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                   showOnHover={this.state.onHover}>
+                  onClose={this._onCloseLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
+                  showOnHover={this.state.onHover}>
                   {this.renderPopup("Left Center", this._onCloseLeft)}
                 </Popup>
               </div>
@@ -196,8 +199,8 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
                   Right
                 </button>
                 <Popup className={className} isShown={this.state.showRight} position={Position.Right}
-                    onClose={this._onCloseRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                    showOnHover={this.state.onHover}>
+                  onClose={this._onCloseRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
+                  showOnHover={this.state.onHover}>
                   {this.renderPopup("Right Center", this._onCloseRight)}
                 </Popup>
               </div>
@@ -208,9 +211,9 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
                   Bottom Left
                 </button>
                 <Popup className={className} isShown={this.state.showBottomLeft} position={Position.BottomLeft}
-                    onClose={this._onCloseBottomLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                    showOnHover={this.state.onHover}>
-                    {this.renderPopup("Bottom Left", this._onCloseBottomLeft)}
+                  onClose={this._onCloseBottomLeft} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
+                  showOnHover={this.state.onHover}>
+                  {this.renderPopup("Bottom Left", this._onCloseBottomLeft)}
                 </Popup>
               </div>
               <div>
@@ -218,9 +221,9 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
                   Bottom
                 </button>
                 <Popup className={className} isShown={this.state.showBottom} position={Position.Bottom}
-                    onClose={this._onCloseBottom} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                    showOnHover={this.state.onHover}>
-                    {this.renderPopup("Bottom Center", this._onCloseBottom)}
+                  onClose={this._onCloseBottom} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
+                  showOnHover={this.state.onHover}>
+                  {this.renderPopup("Bottom Center", this._onCloseBottom)}
                 </Popup>
               </div>
               <div>
@@ -228,17 +231,17 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
                   Bottom Right
                 </button>
                 <Popup className={className} isShown={this.state.showBottomRight} position={Position.BottomRight}
-                       onClose={this._onCloseBottomRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
-                       showOnHover={this.state.onHover}>
-                    {this.renderPopup("Bottom Right", this._onCloseBottomRight)}
+                  onClose={this._onCloseBottomRight} showArrow={this.state.showArrow} showShadow={this.state.showShadow}
+                  showOnHover={this.state.onHover}>
+                  {this.renderPopup("Bottom Right", this._onCloseBottomRight)}
                 </Popup>
               </div>
             </div>
-            </div>
+          </div>
           <div className="options">
             <div>
               <label>Arrow</label>
-              <Toggle className="popup-toggle" onChange={this._onArrowChange} isOn={this.state.showArrow}/>
+              <Toggle className="popup-toggle" onChange={this._onArrowChange} isOn={this.state.showArrow} />
             </div>
             <div>
               <label>Shadow</label>
@@ -246,11 +249,11 @@ export class PopupTest extends React.Component<PopupTestProps, PopupTestState> {
             </div>
             <div>
               <label>Hover</label>
-              <Toggle className="popup-toggle" onChange={this._onHoverChange} isOn={this.state.onHover}/>
+              <Toggle className="popup-toggle" onChange={this._onHoverChange} isOn={this.state.onHover} />
             </div>
             <div>
               <label>Status Bar Colors</label>
-              <Toggle className="popup-toggle" onChange={this._onStatusBarChange} isOn={this.state.showStatusBarColors}/>
+              <Toggle className="popup-toggle" onChange={this._onStatusBarChange} isOn={this.state.showStatusBarColors} />
             </div>
           </div>
         </div>

@@ -29,7 +29,7 @@ describe("PersistenceHelper", () => {
       // set up the mock
       const modelsMock = moq.Mock.ofType<IModelConnection.Models>();
       modelsMock.setup((x) => x.getProps([modelKey.id])).returns(async () => [{
-        modeledElement: { id: new Id64("0x1") } as RelatedElementProps,
+        modeledElement: { id: Id64.fromString("0x1") } as RelatedElementProps,
         classFullName: modelKey.className,
         id: modelKey.id,
       } as ModelProps]).verifiable();

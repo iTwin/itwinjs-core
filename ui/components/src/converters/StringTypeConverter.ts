@@ -6,6 +6,7 @@
 
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { Primitives } from "./valuetypes";
 
 /** Operators for string types */
 export interface StringOperatorProcessor {
@@ -23,30 +24,19 @@ export interface StringOperatorProcessor {
  * String Type Converter.
  */
 export class StringTypeConverter extends TypeConverter implements StringOperatorProcessor {
-  public async convertToString(value: any): Promise<string> {
-    return value ? String(value) : "";
+  public async convertToString(value?: Primitives.String): Promise<string> {
+    return value ? value.toString() : "";
   }
 
-  public async convertFromString(value: string): Promise<any> {
+  public async convertFromString(value: string): Promise<string> {
     return value;
   }
 
-  public sortCompare(valueA: any, valueB: any, ignoreCase?: boolean): number {
-    let result = 0;
-
-    const stringA = valueA as string;
-    const stringB = valueB as string;
-
-    try {
-      if (ignoreCase)
-        result = stringA.toLocaleLowerCase().localeCompare(stringB.toLocaleLowerCase());
-      else
-        result = stringA.localeCompare(stringB);
-    } catch (ex) {
-      return 0;
-    }
-
-    return result;
+  public sortCompare(valueA: Primitives.String, valueB: Primitives.String, ignoreCase?: boolean): number {
+    if (ignoreCase)
+      return valueA.toLocaleLowerCase().localeCompare(valueB.toLocaleLowerCase());
+    else
+      return valueA.localeCompare(valueB);
   }
 
   public get isStringType(): boolean { return true; }

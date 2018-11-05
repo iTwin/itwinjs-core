@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, IDisposable, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
 import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
@@ -36,12 +36,12 @@ export class Timer {
 RpcConfiguration.developmentMode = true;
 
 Logger.initializeToConsole();
-if (process.env.imodeljs_imjs_test_logging_config === undefined) {
+if (process.env.imjs_test_logging_config === undefined) {
   // tslint:disable-next-line:no-console
-  console.log("FYI You can set the environment variable imodeljs_imjs_test_logging_config to point to a logging configuration json file.");
+  console.log("FYI You can set the environment variable imjs_test_logging_config to point to a logging configuration json file.");
 }
 
-const loggingConfigFile: string = process.env.imodeljs_imjs_test_logging_config || path.join(__dirname, "logging.config.json");
+const loggingConfigFile: string = process.env.imjs_test_logging_config || path.join(__dirname, "logging.config.json");
 if (IModelJsFs.existsSync(loggingConfigFile)) {
   // tslint:disable-next-line:no-var-requires
   Logger.configureLevels(require(loggingConfigFile));
@@ -141,7 +141,7 @@ export class IModelTestUtils {
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-      iModelInfo.changeSets = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, new Guid(iModelInfo.id));
+      iModelInfo.changeSets = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
 
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
@@ -246,7 +246,7 @@ export class IModelTestUtils {
   //
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   //
-  public static createAndInsertPhysicalPartition(testImodel: IModelDb, newModelCode: Code): Id64 {
+  public static createAndInsertPhysicalPartition(testImodel: IModelDb, newModelCode: Code): Id64String {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       iModel: testImodel,
@@ -261,13 +261,13 @@ export class IModelTestUtils {
   //
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   //
-  public static createAndInsertPhysicalModel(testImodel: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64 {
+  public static createAndInsertPhysicalModel(testImodel: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
 
     const newModel = testImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
     const newModelId = testImodel.models.insertModel(newModel);
 
-    assert.isTrue(newModelId.isValid);
-    assert.isTrue(newModel.id.isValid);
+    assert.isTrue(Id64.isValidId64(newModelId));
+    assert.isTrue(Id64.isValidId64(newModel.id));
     assert.deepEqual(newModelId, newModel.id);
 
     return newModelId;
@@ -277,7 +277,7 @@ export class IModelTestUtils {
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   // @return [modeledElementId, modelId]
   //
-  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: Code, privateModel: boolean = false): Id64[] {
+  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: Code, privateModel: boolean = false): Id64String[] {
     const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode);
     const modeledElementRef = new RelatedElement({ id: eid });
     const mid = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef, privateModel);
@@ -297,7 +297,7 @@ export class IModelTestUtils {
   }
 
   // Create a SpatialCategory, insert it, and set its default appearance
-  public static createAndInsertSpatialCategory(definitionModel: DefinitionModel, categoryName: string, appearance: SubCategoryAppearance): Id64 {
+  public static createAndInsertSpatialCategory(definitionModel: DefinitionModel, categoryName: string, appearance: SubCategoryAppearance): Id64String {
     const cat: SpatialCategory = SpatialCategory.create(definitionModel, categoryName);
     cat.id = definitionModel.iModel.elements.insertElement(cat);
     cat.setDefaultAppearance(appearance);
@@ -305,7 +305,7 @@ export class IModelTestUtils {
   }
 
   // Create a PhysicalObject. (Does not insert it.)
-  public static createPhysicalObject(testImodel: IModelDb, modelId: Id64, categoryId: Id64, elemCode?: Code): Element {
+  public static createPhysicalObject(testImodel: IModelDb, modelId: Id64String, categoryId: Id64String, elemCode?: Code): Element {
     const elementProps: GeometricElementProps = {
       classFullName: "Generic:PhysicalObject",
       iModel: testImodel,

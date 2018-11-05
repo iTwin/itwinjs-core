@@ -189,14 +189,14 @@ export class AccuSnap implements Decorator {
     }
   }
 
-  private showLocateMessage(viewPt: XAndY, vp: ScreenViewport, msg: string) {
+  private showLocateMessage(viewPt: XAndY, vp: ScreenViewport, msg: HTMLElement | string) {
     if (IModelApp.viewManager.doesHostHaveFocus)
       vp.openToolTip(msg, viewPt);
   }
 
   public async displayToolTip(viewPt: XAndY, vp: ScreenViewport, uorPt?: Point3d) {
     // if the tooltip is already displayed, or if user doesn't want it, quit.
-    if (IModelApp.notifications.isToolTipOpen || !this._settings.toolTip)
+    if (0 === this._motionStopTime || !this._settings.toolTip || !IModelApp.notifications.isToolTipSupported || IModelApp.notifications.isToolTipOpen)
       return;
 
     const accuSnapHit = this.currHit;
@@ -206,36 +206,28 @@ export class AccuSnap implements Decorator {
     if (!accuSnapHit && !tpHit && !this.errorIcon.isActive)
       return;
 
-    let timeout = this._settings.toolTipDelay;
-    let theHit: HitDetail | undefined;
-
-    // determine which type of hit and how long to wait, and the detail level
-    if (tpHit) {
-      // when the tentative button is first pressed, we pass nullptr for uorPt so that we show the tooltip immediately
-      if (uorPt) {
-        const aperture = (this._settings.stickyFactor * vp.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
-
-        // see if he came back somewhere near the currently snapped element
-        if (!IModelApp.locateManager.picker.testHit(tpHit, vp, uorPt, aperture, IModelApp.locateManager.options))
-          return;
-
-        timeout = BeDuration.fromSeconds(.3);
-      } else {
-        // if uorPt is nullptr, that means that we want to display the tooltip almost immediately.
-        timeout = BeDuration.fromSeconds(.1);
-      }
-
-      theHit = tpHit;
-    } else {
-      if (!this._settings.toolTip)
-        return;
-
-      theHit = accuSnapHit;
-    }
+    // when the tentative button is first pressed, we pass nullptr for uorPt so that we can know to show the tooltip more quickly.
+    const timeout = (undefined === tpHit || undefined !== uorPt ? this._settings.toolTipDelay : BeDuration.fromSeconds(.1));
 
     // have we waited long enough to show the balloon?
     if ((this._motionStopTime + timeout.milliseconds) > Date.now())
       return;
+
+    this._motionStopTime = 0; // If application chooses to not display tool tip, make sure we don't ask again until we see another motion/motion stopped...
+    let theHit: HitDetail | undefined;
+
+    // determine which type of hit
+    if (tpHit) {
+      if (uorPt) {
+        // see if he came back somewhere near the currently snapped element
+        const aperture = (this._settings.stickyFactor * vp.pixelsFromInches(IModelApp.locateManager.apertureInches) / 2.0) + 1.5;
+        if (!IModelApp.locateManager.picker.testHit(tpHit, vp, uorPt, aperture, IModelApp.locateManager.options))
+          return;
+      }
+      theHit = tpHit;
+    } else {
+      theHit = accuSnapHit;
+    }
 
     // if we're currently showing an error, get the error message...otherwise display hit info...
     if (!this.errorIcon.isActive && theHit) {
@@ -281,7 +273,7 @@ export class AccuSnap implements Decorator {
 
     const crossPt = snap.snapPoint;
     const viewport = snap.viewport!;
-    const crossSprite = IconSprites.getSprite(snap.isHot ? "SnapCross" : "SnapUnfocused", viewport.iModel);
+    const crossSprite = IconSprites.getSpriteFromUrl(snap.isHot ? "SnapCross.png" : "SnapUnfocused.png");
 
     this.cross.activate(crossSprite, viewport, crossPt);
 
@@ -302,12 +294,11 @@ export class AccuSnap implements Decorator {
     this.errorIcon.deactivate();
 
     const vp = ev.viewport!;
-    const iModel = vp.iModel;
     let errorSprite: Sprite | undefined;
     switch (status) {
       case SnapStatus.FilteredByUser:
       case SnapStatus.FilteredByApp:
-        errorSprite = IconSprites.getSprite("SnapAppFiltered", iModel);
+        errorSprite = IconSprites.getSpriteFromUrl("SnapAppFiltered.png");
         break;
 
       case SnapStatus.FilteredByAppQuietly:
@@ -315,12 +306,12 @@ export class AccuSnap implements Decorator {
         break;
 
       case SnapStatus.NotSnappable:
-        errorSprite = IconSprites.getSprite("SnapNotSnappable", iModel);
+        errorSprite = IconSprites.getSpriteFromUrl("SnapNotSnappable.png");
         this.errorKey = ElementLocateManager.getFailureMessageKey("NotSnappable");
         break;
 
       case SnapStatus.ModelNotSnappable:
-        errorSprite = IconSprites.getSprite("SnapNotSnappable", iModel);
+        errorSprite = IconSprites.getSpriteFromUrl("SnapNotSnappable.png");
         this.errorKey = ElementLocateManager.getFailureMessageKey("ModelNotAllowed");
         break;
     }

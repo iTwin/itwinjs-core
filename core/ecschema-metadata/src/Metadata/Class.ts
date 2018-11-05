@@ -3,27 +3,29 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import Schema from "./Schema";
-import Enumeration from "./Enumeration";
-import SchemaItem from "./SchemaItem";
+import { processCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { EntityClass } from "./EntityClass";
+import { Enumeration } from "./Enumeration";
 import {
-  ECClassModifier, parseClassModifier, PrimitiveType, SchemaItemType, parsePrimitiveType,
-  CustomAttributeContainerType, classModifierToString,
-} from "../ECObjects";
-import { SchemaItemKey } from "./../SchemaKey";
-import processCustomAttributes, { serializeCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet } from "./CustomAttribute";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
-import {
-  PrimitiveProperty, PrimitiveArrayProperty, StructProperty, StructArrayProperty,
-  EnumerationProperty, EnumerationArrayProperty, Property,
+  EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty,
+  PrimitiveProperty, Property, StructArrayProperty, StructProperty,
 } from "./Property";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
-import { AnyClass, LazyLoadedECClass, SchemaItemVisitor } from "../Interfaces";
+import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
+import { DelayedPromiseWithProps } from "./../DelayedPromise";
+import { ClassProps } from "./../Deserialization/JsonProps";
+import {
+  classModifierToString, CustomAttributeContainerType, ECClassModifier,
+  parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType,
+} from "./../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { AnyClass, LazyLoadedECClass, SchemaItemVisitor } from "./../Interfaces";
+import { SchemaItemKey } from "./../SchemaKey";
 
 /**
  * A common abstract class for all of the ECClass types.
  */
-export default abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
+export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
   protected _properties?: Property[];
@@ -67,7 +69,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       return undefined;
     }
 
-    return this.schema.lookupItemSync(this.baseClass);
+    return this.schema.lookupItemSync<ECClass>(this.baseClass);
   }
 
   /**
@@ -151,7 +153,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (typeof (propType) === "number")
       return this.addProperty(new PrimitiveProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationProperty(this, name, propType));
+    return this.addProperty(new EnumerationProperty(this, name, new DelayedPromiseWithProps(propType.key, async () => propType)));
   }
 
   /**
@@ -170,7 +172,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (typeof (propType) === "number")
       return this.addProperty(new PrimitiveProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationProperty(this, name, propType));
+    return this.addProperty(new EnumerationProperty(this, name, new DelayedPromiseWithProps(propType.key, async () => propType)));
   }
 
   /**
@@ -188,7 +190,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (typeof (propType) === "number")
       return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationArrayProperty(this, name, propType));
+    return this.addProperty(new EnumerationArrayProperty(this, name, new DelayedPromiseWithProps(propType.key, async () => propType)));
   }
 
   /**
@@ -206,7 +208,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     if (typeof (propType) === "number")
       return this.addProperty(new PrimitiveArrayProperty(this, name, propType));
 
-    return this.addProperty(new EnumerationArrayProperty(this, name, propType));
+    return this.addProperty(new EnumerationArrayProperty(this, name, new DelayedPromiseWithProps(propType.key, async () => propType)));
   }
 
   /**
@@ -342,47 +344,32 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     return schemaJson;
   }
 
-  /**
-   *
-   * @param jsonObj
-   */
-  public async fromJson(jsonObj: any): Promise<void> {
-    this.fromJsonSync(jsonObj);
-  }
+  public deserializeSync(classProps: ClassProps) {
+    super.deserializeSync(classProps);
 
-  /**
-   *
-   * @param jsonObj
-   */
-  public fromJsonSync(jsonObj: any): void {
-    super.fromJsonSync(jsonObj);
-
-    if (undefined !== jsonObj.modifier) {
-      if (typeof (jsonObj.modifier) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'modifier' attribute. It should be of type 'string'.`);
-
-      const modifier = parseClassModifier(jsonObj.modifier);
+    if (undefined !== classProps.modifier) {
+      const modifier = parseClassModifier(classProps.modifier);
       if (undefined === modifier)
-        throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${jsonObj.modifier}' is not a valid ECClassModifier.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidModifier, `The string '${classProps.modifier}' is not a valid ECClassModifier.`);
       this._modifier = modifier;
     }
 
-    if (undefined !== jsonObj.baseClass) {
-      if (typeof (jsonObj.baseClass) !== "string")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECClass ${this.name} has an invalid 'baseClass' attribute. It should be of type 'string'.`);
-
-      const ecClassSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.baseClass);
+    if (undefined !== classProps.baseClass) {
+      const ecClassSchemaItemKey = this.schema.getSchemaItemKey(classProps.baseClass);
       if (!ecClassSchemaItemKey)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${jsonObj.baseClass}.`);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
       this._baseClass = new DelayedPromiseWithProps<SchemaItemKey, ECClass>(ecClassSchemaItemKey,
         async () => {
           const baseClass = await this.schema.lookupItem<ECClass>(ecClassSchemaItemKey);
           if (undefined === baseClass)
-            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${jsonObj.baseClass}.`);
+            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the baseClass ${classProps.baseClass}.`);
           return baseClass;
         });
     }
-    this._customAttributes = processCustomAttributes(jsonObj.customAttributes, this.name, CustomAttributeContainerType.AnyClass);
+    this._customAttributes = processCustomAttributes(classProps.customAttributes, this.name, CustomAttributeContainerType.AnyClass);
+  }
+  public async deserialize(classProps: ClassProps): Promise<void> {
+    this.deserializeSync(classProps);
   }
 
   public async accept(visitor: SchemaItemVisitor) {
@@ -398,8 +385,8 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
     const baseClasses: ECClass[] = [this];
     const addBaseClasses = async (ecClass: AnyClass) => {
       if (SchemaItemType.EntityClass === ecClass.schemaItemType) {
-        for (let i = ecClass.mixins.length - 1; i >= 0; i--) {
-          baseClasses.push(await ecClass.mixins[i]);
+        for (let i = (ecClass as EntityClass).mixins.length - 1; i >= 0; i--) {
+          baseClasses.push(await (ecClass as EntityClass).mixins[i]);
         }
       }
 
@@ -411,7 +398,7 @@ export default abstract class ECClass extends SchemaItem implements CustomAttrib
       const baseClass = baseClasses.pop() as AnyClass;
       await addBaseClasses(baseClass);
       if (baseClass !== this)
-        yield baseClass;
+        yield baseClass as ECClass;
     }
   }
 

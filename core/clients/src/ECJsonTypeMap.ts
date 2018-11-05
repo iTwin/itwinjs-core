@@ -103,7 +103,7 @@
  *     {
  *       @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
  *       @ECJsonTypeMap.propertyToJson("ecdb", "instanceId")
- *       public federationGuid: string;
+ *       public federationGuid: GuidString;
  *
  *       @ECJsonTypeMap.propertyToJson("wsg", "eTag")
  *       public eTag?: string;
@@ -156,9 +156,7 @@
  */
 // @todo Update example with property type conversions once that's available.
 
-import { Logger } from "@bentley/bentleyjs-core/lib/Logger";
-import { assert } from "@bentley/bentleyjs-core/lib/Assert";
-import { Guid, Id64 } from "@bentley/bentleyjs-core/lib/Id";
+import { Id64, Logger, assert } from "@bentley/bentleyjs-core";
 
 export type ConstructorType = new () => any;
 
@@ -578,29 +576,30 @@ export class ECJsonTypeMap {
 
 export class GuidSerializer implements PropertySerializer {
   public serialize(value: any): any {
-    if (value instanceof Guid)
-      return value.toString();
+    if (typeof value === "string")
+      return value;
+
     return undefined;
   }
 
   public deserialize(value: any): any {
     if (typeof value !== "string")
       return undefined;
-    return new Guid(value);
+    return value.trim();
   }
 }
 
 export class Id64Serializer implements PropertySerializer {
   public serialize(value: any): any {
-    if (value instanceof Id64)
-      return value.toString();
+    if (typeof value === "string")
+      return value;
     return undefined;
   }
 
   public deserialize(value: any): any {
     if (typeof value !== "string")
       return undefined;
-    return new Id64(value);
+    return Id64.fromString(value);
   }
 }
 

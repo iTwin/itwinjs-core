@@ -6,7 +6,7 @@
 import * as TypeMoq from "typemoq";
 import { assert } from "chai";
 import { IModelJsFs } from "../../IModelJsFs";
-import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../backend";
@@ -462,7 +462,7 @@ describe.skip("BriefcaseManager", () => {
     await iModel.reinstateChanges(actx, accessToken, IModelVersion.latest());
   });
 
-  const briefcaseExistsOnHub = async (iModelId: Guid, briefcaseId: number): Promise<boolean> => {
+  const briefcaseExistsOnHub = async (iModelId: GuidString, briefcaseId: number): Promise<boolean> => {
     try {
       const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId));
       return (hubBriefcases.length > 0) ? true : false;
@@ -477,20 +477,20 @@ describe.skip("BriefcaseManager", () => {
 
     const iModel2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
     const briefcaseId2: number = iModel2.briefcase.briefcaseId;
-    let exists = await briefcaseExistsOnHub(new Guid(testIModels[0].id), briefcaseId2);
+    let exists = await briefcaseExistsOnHub(testIModels[0].id, briefcaseId2);
     assert.isTrue(exists);
 
     const iModel3: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
     const briefcaseId3: number = iModel3.briefcase.briefcaseId;
-    exists = await briefcaseExistsOnHub(new Guid(testIModels[0].id), briefcaseId3);
+    exists = await briefcaseExistsOnHub(testIModels[0].id, briefcaseId3);
     assert.isTrue(exists);
 
     await BriefcaseManager.purgeCache(actx, accessToken);
 
-    exists = await briefcaseExistsOnHub(new Guid(testIModels[0].id), briefcaseId2);
+    exists = await briefcaseExistsOnHub(testIModels[0].id, briefcaseId2);
     assert.isFalse(exists);
 
-    exists = await briefcaseExistsOnHub(new Guid(testIModels[0].id), briefcaseId3);
+    exists = await briefcaseExistsOnHub(testIModels[0].id, briefcaseId3);
     assert.isFalse(exists);
   });
 

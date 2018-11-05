@@ -7,7 +7,11 @@ import { TypeConverterManager, TypeConverter, StringTypeConverter } from "../../
 
 describe("TypeConverterManager", () => {
 
-  class TestTypeConverter extends TypeConverter { }
+  class TestTypeConverter extends TypeConverter {
+    public sortCompare({ }, { }, _ignoreCase?: boolean | undefined): number {
+      throw new Error("Method not implemented.");
+    }
+  }
 
   it("registerConverter for typename already registered ", async () => {
     expect(() => TypeConverterManager.registerConverter("text", TestTypeConverter)).to.throw(Error);

@@ -329,12 +329,13 @@ export class AccuDraw {
     if (offsetSnap) {
       if (isRectMode) {
         let xIsOffset = false, yIsOffset = false;
-        let xOffset = 0.0, yOffset = 0.0;
 
         const vec = ptP.vectorTo(this._rawPointOnPlane);
+        const xOffset = vec.dotProduct(this.axes.x);
+        const yOffset = vec.dotProduct(this.axes.y);
 
-        xIsOffset = (Math.abs(xOffset = vec.dotProduct(this.axes.x)) > 1.0);
-        yIsOffset = (Math.abs(yOffset = vec.dotProduct(this.axes.y)) > 1.0);
+        xIsOffset = (Math.abs(xOffset) > 1.0);
+        yIsOffset = (Math.abs(yOffset) > 1.0);
 
         if (xIsOffset || yIsOffset)
           return true;
@@ -1900,7 +1901,7 @@ export class AccuDraw {
     if (context.viewport.viewFlags.acsTriad) {
       context.viewport.view.auxiliaryCoordinateSystem.display(context, (ACSDisplayOptions.CheckVisible | ACSDisplayOptions.Active));
       if (undefined === this._acsPickId)
-        this._acsPickId = context.viewport.iModel.transientIds.next.value;
+        this._acsPickId = context.viewport.iModel.transientIds.next;
       const acsPickBuilder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._acsPickId);
       const color = ColorDef.blue.adjustForContrast(context.viewport.view.backgroundColor, 50);
       acsPickBuilder.setSymbology(color, color, 6);

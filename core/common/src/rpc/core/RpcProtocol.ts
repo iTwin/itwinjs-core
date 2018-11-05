@@ -5,18 +5,20 @@
 /** @module RpcInterface */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { RpcRequest, RpcRequestStatus, RpcResponseType } from "./RpcRequest";
+import { RpcRequest } from "./RpcRequest";
 import { RpcInvocation } from "./RpcInvocation";
 import { RpcConfiguration } from "./RpcConfiguration";
 import { RpcOperation } from "./RpcOperation";
-import { RpcMarshaling } from "./RpcMarshaling";
+import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
+import { RpcResponseCacheControl, RpcRequestStatus, RpcProtocolEvent } from "./RpcConstants";
 
 /** A serialized RPC operation descriptor. */
 export interface SerializedRpcOperation {
   interfaceDefinition: string;
   operationName: string;
   interfaceVersion: string;
+  encodedRequest?: string;
 }
 
 /** A serialized RPC operation request. */
@@ -26,7 +28,8 @@ export interface SerializedRpcRequest {
   operation: SerializedRpcOperation;
   method: string;
   path: string;
-  parameters: string | Uint8Array;
+  parameters: RpcSerializedValue;
+  caching: RpcResponseCacheControl;
 }
 
 /** An RPCD operation request fulfillment. */
@@ -38,13 +41,13 @@ export interface RpcRequestFulfillment {
   id: string;
 
   /** The result for the request. */
-  result: string | Uint8Array;
+  result: RpcSerializedValue;
+
+  /** The unserialized result for the request. */
+  rawResult: any;
 
   /** A protocol-specific status code value for the request. */
   status: number;
-
-  /** The type of the result. */
-  type: RpcResponseType;
 }
 
 /** @hidden */
@@ -56,29 +59,10 @@ export namespace RpcRequestFulfillment {
       interfaceName: request.operation.interfaceDefinition,
       id: request.id,
       result,
+      rawResult: error,
       status: RpcRequestStatus.Rejected,
-      type: RpcResponseType.Text,
     };
   }
-}
-
-/** RPC protocol event types. */
-export enum RpcProtocolEvent {
-  RequestCreated,
-  ResponseLoaded,
-  ResponseLoading,
-  ConnectionErrorReceived,
-  UnknownErrorReceived,
-  BackendErrorReceived,
-  ConnectionAborted,
-  AcknowledgementReceived,
-  RequestReceived,
-  BackendResponseCreated,
-  BackendReportedPending,
-  BackendReportedNotFound,
-  BackendErrorOccurred,
-  AcknowledgementCreated,
-  ReleaseResources,
 }
 
 /** Handles RPC protocol events. */
@@ -117,11 +101,6 @@ export abstract class RpcProtocol {
     return status;
   }
 
-  /** Override to supply the protocol-specific method value for an RPC operation. */
-  public supplyMethodForOperation(_operation: RpcOperation): string {
-    return "";
-  }
-
   /** Override to supply the protocol-specific path value for an RPC operation. */
   public supplyPathForOperation(operation: RpcOperation, _request: RpcRequest | undefined): string {
     return JSON.stringify(operation);
@@ -132,11 +111,6 @@ export abstract class RpcProtocol {
     return JSON.parse(path);
   }
 
-  /** Override to supply error objects for protocol events. */
-  public supplyErrorForEvent(_event: RpcProtocolEvent, _object: RpcRequest | RpcInvocation): Error {
-    return new Error();
-  }
-
   /** Obtains the implementation result on the backend for an RPC operation request. */
   public fulfill(request: SerializedRpcRequest): Promise<RpcRequestFulfillment> {
     return new (this.invocationType)(this, request).fulfillment;
@@ -144,13 +118,6 @@ export abstract class RpcProtocol {
 
   /** Serializes a request. */
   public serialize(request: RpcRequest): SerializedRpcRequest {
-    let parameters: string | Uint8Array;
-    if (request.parameters.length === 1 && request.parameters[0] instanceof Uint8Array) {
-      parameters = request.parameters[0];
-    } else {
-      parameters = RpcMarshaling.serialize(request.operation, request.protocol, request.parameters);
-    }
-
     return {
       id: request.id,
       authorization: this.configuration.applicationAuthorizationValue || "",
@@ -159,9 +126,10 @@ export abstract class RpcProtocol {
         operationName: request.operation.operationName,
         interfaceVersion: request.operation.interfaceVersion,
       },
-      method: this.supplyMethodForOperation(request.operation),
-      path: this.supplyPathForOperation(request.operation, request),
-      parameters,
+      method: request.method,
+      path: request.path,
+      parameters: RpcMarshaling.serialize(request.operation, request.protocol, request.parameters),
+      caching: RpcResponseCacheControl.None,
     };
   }
 

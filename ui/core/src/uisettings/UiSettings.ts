@@ -13,7 +13,7 @@ export interface UiSettings {
 
 /** Enum for [[UiSettings]] status. */
 export enum UiSettingsStatus {
-  Sucess = 0,
+  Success = 0,
   NotFound = 1,
   UnknownError = 2,
 }

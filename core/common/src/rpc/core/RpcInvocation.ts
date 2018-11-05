@@ -10,11 +10,11 @@ import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry, CURRENT_INVOCATION } from "./RpcRegistry";
-import { RpcRequestStatus, RpcResponseType } from "./RpcRequest";
-import { RpcProtocol, RpcProtocolEvent, SerializedRpcRequest, RpcRequestFulfillment } from "./RpcProtocol";
+import { RpcProtocol, SerializedRpcRequest, RpcRequestFulfillment } from "./RpcProtocol";
 import { RpcConfiguration } from "./RpcConfiguration";
-import { RpcMarshaling } from "./RpcMarshaling";
-import { RpcPendingResponse, RpcNotFoundResponse } from "./RpcControl";
+import { RpcMarshaling, RpcSerializedValue } from "./RpcMarshaling";
+import { RpcNotFoundResponse, RpcPendingResponse } from "./RpcControl";
+import { RpcRequestStatus, RpcProtocolEvent } from "./RpcConstants";
 
 /** Notification callback for an RPC invocation. */
 export type RpcInvocationCallback_T = (invocation: RpcInvocation) => void;
@@ -107,13 +107,7 @@ export class RpcInvocation {
   }
 
   private resolve(): Promise<any> {
-    let parameters: any[];
-    if (typeof (this.request.parameters) === "string") {
-      parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
-    } else {
-      parameters = [this.request.parameters];
-    }
-
+    const parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
     const op = this.lookupOperationFunction(impl);
@@ -131,13 +125,8 @@ export class RpcInvocation {
   private fulfillResolved(value: any): RpcRequestFulfillment {
     this._timeOut = new Date().getTime();
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendResponseCreated, this);
-
-    if (value instanceof Uint8Array) {
-      return this.fulfill(value, RpcResponseType.Binary);
-    } else {
-      const result = RpcMarshaling.serialize(this.operation, this.protocol, value);
-      return this.fulfill(result, RpcResponseType.Text);
-    }
+    const result = RpcMarshaling.serialize(this.operation, this.protocol, value);
+    return this.fulfill(result, value);
   }
 
   private fulfillRejected(reason: any): RpcRequestFulfillment {
@@ -145,11 +134,11 @@ export class RpcInvocation {
     if (!RpcConfiguration.developmentMode)
       reason.stack = undefined;
 
-    let result = RpcMarshaling.serialize(this.operation, this.protocol, reason);
+    const result = RpcMarshaling.serialize(this.operation, this.protocol, reason);
 
     if (reason instanceof RpcPendingResponse) {
       this._pending = true;
-      result = reason.message;
+      result.objects = reason.message;
       this.protocol.events.raiseEvent(RpcProtocolEvent.BackendReportedPending, this);
     } else if (reason instanceof RpcNotFoundResponse) {
       this._notFound = true;
@@ -159,16 +148,16 @@ export class RpcInvocation {
       this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorOccurred, this);
     }
 
-    return this.fulfill(result, RpcResponseType.Text);
+    return this.fulfill(result, reason);
   }
 
-  private fulfill(result: string | Uint8Array, type: RpcResponseType): RpcRequestFulfillment {
+  private fulfill(result: RpcSerializedValue, rawResult: any): RpcRequestFulfillment {
     const fulfillment = {
       result,
+      rawResult,
       status: this.protocol.getCode(this.status),
       id: this.request.id,
       interfaceName: this.operation.interfaceDefinition.name,
-      type,
     };
 
     return fulfillment;

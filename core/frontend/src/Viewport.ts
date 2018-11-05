@@ -10,14 +10,14 @@ import {
 } from "@bentley/geometry-core";
 import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
 import { StandardView, StandardViewId } from "./StandardView";
-import { BeEvent, BeDuration, BeTimePoint, Id64, StopWatch, assert, Id64Arg, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration, BeTimePoint, StopWatch, assert, Id64Arg, IDisposable, dispose, Id64 } from "@bentley/bentleyjs-core";
 import { EventController } from "./tools/EventController";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { IModelConnection } from "./IModelConnection";
 import { HitDetail, SnapDetail } from "./HitDetail";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { TileRequests } from "./tile/TileTree";
-import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer, ElementProps, PlacementProps } from "@bentley/imodeljs-common";
+import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer, ElementProps, PlacementProps, AnalysisStyle } from "@bentley/imodeljs-common";
 import { IModelApp } from "./IModelApp";
 import { Decorations, RenderTarget, RenderPlan, Pixel, GraphicList } from "./render/System";
 import { FeatureSymbology } from "./render/FeatureSymbology";
@@ -955,7 +955,9 @@ export abstract class Viewport implements IDisposable {
       this.invalidateScene();
     }
   }
-  /** The iModel whose contents are displayed within this Viewport */
+  /** @hidden */
+  public get AnalysisStyle(): AnalysisStyle | undefined { return this.view.AnalysisStyle; }
+  /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
   /** @hidden */
   public get isPointAdjustmentRequired(): boolean { return this.view.is3d(); }
@@ -1688,7 +1690,7 @@ export abstract class Viewport implements IDisposable {
     }
 
     if (this.processFlash()) {
-      target.setFlashed(new Id64(this._flashedElem!), this.flashIntensity);
+      target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this.flashIntensity);
       isRedrawNeeded = true;
     }
 
@@ -1874,7 +1876,7 @@ export class ScreenViewport extends Viewport {
    * @param options the ToolTip options
    * @note There is only one ToolTip window, so calling this method more than once will move the toolTip and show the second message.
    */
-  public openToolTip(message: string, location?: XAndY, options?: ToolTipOptions) {
+  public openToolTip(message: HTMLElement | string, location?: XAndY, options?: ToolTipOptions) {
     IModelApp.notifications.openToolTip(this.toolTipDiv, message, location, options);
   }
 
@@ -1920,14 +1922,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /** Change the cursor for this Viewport */
-  public setCursor(cursor: string = "default"): void {
-    if (cursor === "grab")
-      this.canvas.style.cursor = "-webkit-grab";
-    else if (cursor === "grabbing")
-      this.canvas.style.cursor = "-webkit-grabbing";
-    else
-      this.canvas.style.cursor = cursor;
-  }
+  public setCursor(cursor: string = "default"): void { this.canvas.style.cursor = cursor; }
 
   /** @hidden */
   public synchWithView(saveInUndo: boolean): void {

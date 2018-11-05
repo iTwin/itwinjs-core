@@ -7,8 +7,7 @@
 import * as React from "react";
 import { CSSProperties } from "react";
 
-import { FrontstageManager } from "./FrontstageManager";
-import { ZoneDef } from "./ZoneDef";
+import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
 
 import ToolSettingsWidget from "@bentley/ui-ninezone/lib/widget/ToolSettings";
 import ToolSettingsTab from "@bentley/ui-ninezone/lib/widget/tool-settings/Tab";
@@ -17,6 +16,7 @@ import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";
 import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
+import UiFramework from "../UiFramework";
 
 /** State for the ToolSettingsZone content.
  */
@@ -31,12 +31,12 @@ export interface ToolSettingsZoneState {
   toolSettingsZoneContent: ToolSettingsZoneContent;
   isPopoverOpen: boolean;
   isNestedPopoverOpen: boolean;
+  toolId: string;
 }
 
-/** Props for the ToolSettingsZone React component.
+/** Properties for the [[ToolSettingsZone]] React component.
  */
 export interface ToolSettingsZoneProps extends CommonProps {
-  zoneDef?: ZoneDef;
   bounds: RectangleProps;
 }
 
@@ -44,12 +44,33 @@ export interface ToolSettingsZoneProps extends CommonProps {
  */
 export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, ToolSettingsZoneState> {
 
+  private _title: string;
+
   /** hidden */
   public readonly state: Readonly<ToolSettingsZoneState> = {
     toolSettingsZoneContent: ToolSettingsZoneContent.Closed,
     isPopoverOpen: false,
     isNestedPopoverOpen: false,
+    toolId: "",
   };
+
+  constructor(props: ToolSettingsZoneProps) {
+    super(props);
+
+    this._title = UiFramework.i18n.translate("UiFramework:general.toolSettings");
+  }
+
+  public componentDidMount(): void {
+    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
+  }
+
+  public componentWillUnmount(): void {
+    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
+  }
+
+  private _handleToolActivatedEvent = (args: ToolActivatedEventArgs) => {
+    this.setState((_prevState, _props) => ({ toolId: args.toolId }));
+  }
 
   public render(): React.ReactNode {
     if (FrontstageManager.activeToolAssistanceNode || FrontstageManager.activeToolSettingsNode) {
@@ -152,6 +173,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     if (FrontstageManager.activeToolSettingsNode) {
       return (
         <ToolbarIcon
+          title={this._title}
           key="0"
           isActive={
             this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings

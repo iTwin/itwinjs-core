@@ -5,17 +5,19 @@
 
 import { assert, expect } from "chai";
 
-import Schema, { MutableSchema } from "./../../src/Metadata/Schema";
-import ECClass from "./../../src/Metadata/Class";
-import EntityClass from "./../../src/Metadata/EntityClass";
-import Mixin from "./../../src/Metadata/Mixin";
-import SchemaContext from "./../../src/Context";
+import { Schema, MutableSchema } from "./../../src/Metadata/Schema";
+import { ECClass } from "./../../src/Metadata/Class";
+import { EntityClass } from "./../../src/Metadata/EntityClass";
+import { Mixin } from "./../../src/Metadata/Mixin";
+import { SchemaContext } from "./../../src/Context";
 import { StructClass } from "./../../src/Metadata/Class";
 import { ECObjectsError } from "./../../src/Exception";
 import { SchemaMatchType } from "./../../src/ECObjects";
-import SchemaKey from "./../../src/SchemaKey";
+import { SchemaKey } from "./../../src/SchemaKey";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("Schema", () => {
+  const parser = new JsonParser();
   describe("api creation of schema", () => {
     it("with only the essentials", () => {
       const testSchema = new Schema("TestSchemaCreation", 10, 99, 15);
@@ -90,7 +92,7 @@ describe("Schema", () => {
         };
         const testSchema = new Schema();
         expect(testSchema).to.exist;
-        await testSchema.fromJson(propertyJson);
+        await testSchema.deserialize(parser.parseSchemaProps(propertyJson));
         assertValidSchema(testSchema);
       });
 
@@ -105,20 +107,7 @@ describe("Schema", () => {
         };
         const testSchema = new Schema("ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
-        await testSchema.fromJson(propertyJson);
-        assertValidSchema(testSchema);
-      });
-
-      it("with name/version omitted in JSON", async () => {
-        const propertyJson = {
-          $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-          alias: "vs",
-          label: "SomeDisplayLabel",
-          description: "A really long description...",
-        };
-        const testSchema = new Schema("ValidSchema", 1, 2, 3);
-        expect(testSchema).to.exist;
-        await testSchema.fromJson(propertyJson);
+        await testSchema.deserialize(parser.parseSchemaProps(propertyJson));
         assertValidSchema(testSchema);
       });
       const oneCustomAttributeJson = {
@@ -136,14 +125,14 @@ describe("Schema", () => {
       it("async - Deserialize One Custom Attribute", async () => {
         const testSchema = new Schema("ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
-        await testSchema.fromJson(oneCustomAttributeJson);
+        await testSchema.deserialize(parser.parseSchemaProps(oneCustomAttributeJson));
         expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
         assert(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
       });
       it("sync - Deserialize One Custom Attribute", () => {
         const testSchema = new Schema("ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
-        testSchema.fromJsonSync(oneCustomAttributeJson);
+        testSchema.deserializeSync(parser.parseSchemaProps(oneCustomAttributeJson));
         expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
         assert(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
       });
@@ -164,14 +153,14 @@ describe("Schema", () => {
       it("async - Deserialize Two Custom Attributes", async () => {
         const testSchema = new Schema("ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
-        await testSchema.fromJson(twoCustomAttributeJson);
+        await testSchema.deserialize(parser.parseSchemaProps(twoCustomAttributeJson));
         expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
         expect(testSchema.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
       });
       it("sync - Deserialize Two Custom Attributes", () => {
         const testSchema = new Schema("ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
-        testSchema.fromJsonSync(twoCustomAttributeJson);
+        testSchema.deserializeSync(parser.parseSchemaProps(twoCustomAttributeJson));
         expect(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
         expect(testSchema.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
       });
@@ -196,7 +185,7 @@ describe("Schema", () => {
         };
         const testSchema = new Schema("ValidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
-        testSchema.fromJsonSync(propertyJson);
+        testSchema.deserializeSync(parser.parseSchemaProps(propertyJson));
         assertValidSchema(testSchema);
         assert(testSchema.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === false);
         assert(testSchema.customAttributes!["ExampleCustomAttributes.ExampleSchema"].ShowClasses === true);
@@ -213,82 +202,76 @@ describe("Schema", () => {
       it("async - Custom Attributes must be an array", async () => {
         const testSchema = new Schema("InvalidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
-        await expect(testSchema.fromJson(mustBeArrayJson)).to.be.rejectedWith(ECObjectsError, `The Schema InvalidSchema has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
-
+        assert.throws(() => parser.parseSchemaProps(mustBeArrayJson), ECObjectsError, `The Schema InvalidSchema has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
       });
       it("sync - Custom Attributes must be an array", () => {
         const testSchema = new Schema("InvalidSchema", 1, 2, 3);
         expect(testSchema).to.exist;
-        assert.throws(() => testSchema.fromJsonSync(mustBeArrayJson), ECObjectsError, `The Schema InvalidSchema has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
-
+        assert.throws(() => parser.parseSchemaProps(mustBeArrayJson), ECObjectsError, `The Schema InvalidSchema has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
       });
     });
 
     async function testInvalidAttribute(schema: Schema, attributeName: string, expectedType: string, value: any) {
       expect(schema).to.exist;
       const json: any = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        $schema: "https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
+        name: schema.name,
+        version: "1.2.3",
         [attributeName]: value,
       };
-      await expect(schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECSchema ${schema.name} has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
+      assert.throws(() => parser.parseSchemaProps(json), ECObjectsError, `The ECSchema ${schema.name} has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
     }
 
     it("should throw for missing $schema", async () => {
       const testSchema = new Schema("BadSchema", 1, 2, 3);
       expect(testSchema).to.exist;
-      await expect(testSchema.fromJson({})).to.be.rejectedWith(ECObjectsError);
+      assert.throws(() => parser.parseSchemaProps({}), ECObjectsError, `An ECSchema is missing the required \'$schema\' attribute.`);
     });
 
     it("should throw for invalid $schema", async () => {
-      const schemaJson = { $schema: "https://badmetaschema.com" };
+      const schemaJson = {
+        $schema: "https://badmetaschema.com",
+        name: "InvalidSchema",
+        version: "1.2.3",
+      };
       const testSchema = new Schema("BadSchema", 1, 2, 3);
       expect(testSchema).to.exist;
-      await expect(testSchema.fromJson(schemaJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testSchema.deserialize(parser.parseSchemaProps(schemaJson))).to.be.rejectedWith(ECObjectsError);
     });
 
     it("should throw for missing name", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       };
-      const testSchema = new Schema();
-      expect(testSchema).to.exist;
-      expect(() => testSchema.name).to.throw(ECObjectsError, "An ECSchema is missing the required 'name' attribute.");
-      await expect(testSchema.fromJson(json)).to.be.rejectedWith(ECObjectsError, "An ECSchema is missing the required 'name' attribute.");
+      assert.throws(() => parser.parseSchemaProps(json), ECObjectsError, "An ECSchema is missing the required 'name' attribute.");
     });
 
     it("should throw for mismatched name", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "ThisDoesNotMatch",
+        version: "1.2.3",
       };
       const testSchema = new Schema("BadSchema", 1, 2, 3);
       expect(testSchema).to.exist;
-      await expect(testSchema.fromJson(json)).to.be.rejectedWith(ECObjectsError);
+      await expect(testSchema.deserialize(parser.parseSchemaProps(json))).to.be.rejectedWith(ECObjectsError);
     });
 
     it("should throw for invalid name", async () => {
-      const schema = new Schema();
-      const schemaWithName = new Schema("BadSchema", 1, 2, 3);
-
       const json: any = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: 0,
       };
-      await expect(schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
-      await expect(schemaWithName.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECSchema BadSchema has an invalid 'name' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseSchemaProps(json), ECObjectsError, `An ECSchema has an invalid 'name' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid version", async () => {
-      const schema = new Schema();
-      const schemaWithKey = new Schema("BadSchema", 1, 2, 3);
-
       const json: any = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
         name: "BadSchema",
         version: 0,
       };
-      await expect(schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECSchema BadSchema has an invalid 'version' attribute. It should be of type 'string'.`);
-      await expect(schemaWithKey.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The ECSchema BadSchema has an invalid 'version' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseSchemaProps(json), ECObjectsError, `The ECSchema BadSchema has an invalid 'version' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for missing version", async () => {
@@ -298,7 +281,7 @@ describe("Schema", () => {
       };
       const testSchema = new Schema();
       expect(testSchema).to.exist;
-      await expect(testSchema.fromJson(json)).to.be.rejectedWith(ECObjectsError, "The ECSchema BadSchema is missing the required 'version' attribute.");
+      assert.throws(() => parser.parseSchemaProps(json), ECObjectsError, "The ECSchema BadSchema is missing the required 'version' attribute.");
     });
 
     it("should throw for mismatched version", async () => {
@@ -309,7 +292,7 @@ describe("Schema", () => {
       };
       const testSchema = new Schema("BadSchema", 1, 2, 3);
       expect(testSchema).to.exist;
-      await expect(testSchema.fromJson(json)).to.be.rejectedWith(ECObjectsError);
+      await expect(testSchema.deserialize(parser.parseSchemaProps(json))).to.be.rejectedWith(ECObjectsError);
     });
 
     it("should throw for invalid alias", async () => testInvalidAttribute(new Schema("BadSchema", 1, 2, 3), "alias", "string", 0));
@@ -328,7 +311,7 @@ describe("Schema", () => {
       };
       const testSchema = new Schema("ValidSchema", 1, 2, 3);
       expect(testSchema).to.exist;
-      await testSchema.fromJson(propertyJson);
+      await testSchema.deserialize(parser.parseSchemaProps(propertyJson));
       const serialized = testSchema.toJson();
       assert(serialized.$schema, "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema");
       assert(serialized.name, "ValidSchema");
@@ -353,7 +336,7 @@ describe("Schema", () => {
       };
       const testSchema = new Schema("ValidSchema", 1, 2, 3);
       expect(testSchema).to.exist;
-      await testSchema.fromJson(propertyJson);
+      await testSchema.deserialize(parser.parseSchemaProps(propertyJson));
       const serialized = testSchema.toJson();
       assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
     });
@@ -374,7 +357,7 @@ describe("Schema", () => {
       };
       const testSchema = new Schema("ValidSchema", 1, 2, 3);
       expect(testSchema).to.exist;
-      testSchema.fromJsonSync(propertyJson);
+      testSchema.deserializeSync(parser.parseSchemaProps(propertyJson));
       const serialized = testSchema.toJson();
       assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
       assert(serialized.customAttributes[0].ShowClasses === true);
@@ -401,7 +384,7 @@ describe("Schema", () => {
       };
       const testSchema = new Schema("ValidSchema", 1, 2, 3);
       expect(testSchema).to.exist;
-      await testSchema.fromJson(propertyJson);
+      await testSchema.deserialize(parser.parseSchemaProps(propertyJson));
       const serialized = testSchema.toJson();
       assert(serialized.customAttributes[0].className === "CoreCustomAttributes.HiddenSchema");
       assert(serialized.customAttributes[1].className === "CoreAttributes.HiddenSchema");
@@ -432,7 +415,7 @@ describe("Schema", () => {
       };
       const testSchema = new Schema("ValidSchema", 1, 2, 3);
       expect(testSchema).to.exist;
-      await testSchema.fromJson(propertyJson);
+      await testSchema.deserialize(parser.parseSchemaProps(propertyJson));
       const serialized = testSchema.toJson();
       assert(serialized.customAttributes[0].ShowClasses === true);
       assert(serialized.customAttributes[1].FloatValue === 1.2);
@@ -544,6 +527,17 @@ describe("Schema", () => {
           },
         ],
         items: {
+          testEnum: {
+            schemaItemType: "Enumeration",
+            type: "int",
+            enumerators: [
+              {
+                name: "ZeroValue",
+                value: 0,
+                label: "None",
+              },
+            ],
+          },
           testClass: {
             schemaItemType: "EntityClass",
             label: "ExampleEntity",
@@ -564,17 +558,6 @@ describe("Schema", () => {
                 typeName: "TestSchema.testEnum",
                 minOccurs: 7,
                 maxOccurs: 20,
-              },
-            ],
-          },
-          testEnum: {
-            schemaItemType: "Enumeration",
-            type: "integer",
-            enumerators: [
-              {
-                name: "ZeroValue",
-                value: 0,
-                label: "None",
               },
             ],
           },

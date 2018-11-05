@@ -6,3 +6,6 @@ export * from "./Description";
 export * from "./EditorParams";
 export * from "./Record";
 export * from "./Value";
+export * from "./renderers/PrimitivePropertyValueRenderer";
+export * from "./renderers/ArrayPropertyValueRenderer";
+export * from "./renderers/StructPropertyValueRenderer";

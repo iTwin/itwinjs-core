@@ -2,9 +2,35 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { RpcRequest, RpcManager, RpcOperation, RpcRequestEvent, RpcInterface, RpcInterfaceDefinition, RpcConfiguration, IModelReadRpcInterface, IModelToken } from "@bentley/imodeljs-common";
+import {
+  RpcRequest,
+  RpcManager,
+  RpcOperation,
+  RpcRequestEvent,
+  RpcInterface,
+  RpcInterfaceDefinition,
+  RpcConfiguration,
+  IModelReadRpcInterface,
+  IModelToken,
+  RpcResponseCacheControl,
+} from "@bentley/imodeljs-common";
+import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
 import { OpenMode } from "@bentley/bentleyjs-core";
-import { TestRpcInterface, TestOp1Params, TestRpcInterface2, TestNotFoundResponse, TestNotFoundResponseCode } from "../common/TestRpcInterface";
+import {
+  TestRpcInterface,
+  TestOp1Params,
+  TestRpcInterface2,
+  TestNotFoundResponse,
+  TestNotFoundResponseCode,
+  RpcDirectTransportTest,
+  RpcTransportTestImpl,
+  RpcTransportTest,
+  RpcWebTransportTest,
+  RpcElectronTransportTest,
+  RpcMobileTransportTest,
+  ZeroMajorRpcInterface,
+} from "../common/TestRpcInterface";
+
 import { assert } from "chai";
 import { BentleyError, Id64 } from "@bentley/bentleyjs-core";
 import { TestbedConfig } from "../common/TestbedConfig";
@@ -39,9 +65,9 @@ describe("RpcInterface", () => {
   });
 
   it("should support toJSON/fromJSON", async () => {
-    const id1 = new Id64();
+    const id1 = Id64.invalid;
     const id2 = await TestRpcInterface.getClient().op2(id1);
-    assert.isTrue(id1.equals(id2));
+    assert.equal(id1, id2);
   });
 
   it("should support toJSON and fall back to constructor when fromJSON does not exist", async () => {
@@ -57,7 +83,7 @@ describe("RpcInterface", () => {
     map1.set(true, { y: "b" });
     map1.set(false, new Date());
     map1.set("params", new TestOp1Params(1, 1));
-    map1.set("id", new Id64());
+    map1.set("id", Id64.invalid);
 
     const map2 = await TestRpcInterface.getClient().op4(map1);
     assert.equal(map1.size, map2.size);
@@ -65,8 +91,6 @@ describe("RpcInterface", () => {
     map2.forEach((v, k) => {
       if (v instanceof Date)
         assert.strictEqual(v.getTime(), map1.get(k).getTime());
-      else if (v instanceof Id64)
-        assert.isTrue(v.equals(map1.get(k)));
       else if (v instanceof TestOp1Params)
         assert.strictEqual(v.sum(), map1.get(k).sum());
       else if (typeof (v) === "object")
@@ -84,7 +108,7 @@ describe("RpcInterface", () => {
     set1.add({ y: "b" });
     set1.add(new Date());
     set1.add(new TestOp1Params(1, 1));
-    set1.add(new Id64());
+    set1.add(Id64.invalid);
 
     const set2 = await TestRpcInterface.getClient().op5(set1);
     assert.equal(set1.size, set2.size);
@@ -97,8 +121,6 @@ describe("RpcInterface", () => {
 
       if (v instanceof Date)
         assert.strictEqual(v.getTime(), set1Items[i].getTime());
-      else if (v instanceof Id64)
-        assert.isTrue(v.equals(set1Items[i]));
       else if (v instanceof TestOp1Params)
         assert.strictEqual(v.sum(), set1Items[i].sum());
       else if (typeof (v) === "object")
@@ -327,17 +349,20 @@ describe("RpcInterface", () => {
 
   it("should reject a mismatched RPC interface request", async () => {
     const realVersion = TestRpcInterface.version;
+    const realVersionZ = ZeroMajorRpcInterface.version;
 
-    const test = (code: string | null, expectValid: boolean) => {
+    const test = (code: string | null, expectValid: boolean, c: TestRpcInterface | ZeroMajorRpcInterface) => {
       return new Promise(async (resolve, reject) => {
         if (code === null) {
           reject();
         }
 
         TestRpcInterface.version = code as string;
+        ZeroMajorRpcInterface.version = code as string;
         try {
-          await TestRpcInterface.getClient().op1(new TestOp1Params(0, 0));
+          await c.op1(new TestOp1Params(0, 0));
           TestRpcInterface.version = realVersion;
+          ZeroMajorRpcInterface.version = realVersionZ;
           if (expectValid) {
             resolve();
           } else {
@@ -345,6 +370,7 @@ describe("RpcInterface", () => {
           }
         } catch (err) {
           TestRpcInterface.version = realVersion;
+          ZeroMajorRpcInterface.version = realVersionZ;
           if (expectValid) {
             reject();
           } else {
@@ -354,37 +380,135 @@ describe("RpcInterface", () => {
       });
     };
 
-    await test("", false);
+    const client = TestRpcInterface.getClient();
+    const clientZ = ZeroMajorRpcInterface.getClient();
+
+    await test("", false, client);
+    await test("", false, clientZ);
 
     const current = semver.parse(realVersion)!;
-    await test(current.format(), true);
+    const currentZ = semver.parse(realVersionZ)!;
+
+    await test(current.format(), true, client);
+    await test(currentZ.format(), true, clientZ);
 
     const incMajor = semver.parse(realVersion)!;
     incMajor.inc("major");
-    await (test(incMajor.format(), false));
+
+    const incMajorZ = semver.parse(realVersionZ)!;
+    incMajorZ.inc("major");
+
+    await (test(incMajor.format(), false, client));
+    await (test(incMajorZ.format(), false, clientZ));
 
     const incMinor = semver.parse(realVersion)!;
     incMinor.inc("minor");
-    await (test(incMinor.format(), true));
+
+    const incMinorZ = semver.parse(realVersionZ)!;
+    incMinorZ.inc("minor");
+
+    await (test(incMinor.format(), true, client));
+    await (test(incMinorZ.format(), false, clientZ));
 
     const incPatch = semver.parse(realVersion)!;
     incPatch.inc("patch");
-    await (test(incPatch.format(), true));
+
+    const incPatchZ = semver.parse(realVersionZ)!;
+    incPatchZ.inc("patch");
+
+    await (test(incPatch.format(), true, client));
+    await (test(incPatchZ.format(), true, clientZ));
 
     const incPre = semver.parse(realVersion)!;
     incPre.inc("prerelease");
-    await (test(incPre.format(), false));
+
+    const incPreZ = semver.parse(realVersionZ)!;
+    incPreZ.inc("prerelease");
+
+    await (test(incPre.format(), false, client));
+    await (test(incPreZ.format(), false, clientZ));
 
     const decMajor = semver.parse(realVersion)!;
     --decMajor.major;
-    await (test(decMajor.format(), false));
+
+    const decMajorZ = semver.parse(realVersionZ)!;
+    --decMajorZ.major;
+
+    await (test(decMajor.format(), false, client));
+    await (test(decMajorZ.format(), false, clientZ));
 
     const decMinor = semver.parse(realVersion)!;
     --decMinor.minor;
-    await (test(decMinor.format(), false));
+
+    const decMinorZ = semver.parse(realVersionZ)!;
+    --decMinorZ.minor;
+
+    await (test(decMinor.format(), false, client));
+    await (test(decMinorZ.format(), false, clientZ));
 
     const decPatch = semver.parse(realVersion)!;
     --decPatch.patch;
-    await (test(decPatch.format(), true));
+
+    const decPatchZ = semver.parse(realVersionZ)!;
+    --decPatchZ.patch;
+
+    await (test(decPatch.format(), true, client));
+    await (test(decPatchZ.format(), false, clientZ));
+  });
+
+  it("should validate all transport methods", async () => {
+    function compareBytes(x: Uint8Array, y: Uint8Array) {
+      if (x.byteLength !== y.byteLength) {
+        return false;
+      }
+
+      for (let i = 0; i !== x.byteLength; ++i) {
+        if (x[i] !== y[i]) {
+          return false;
+        }
+      }
+
+      return true;
+    }
+
+    const abc = "abc";
+    const one = 1;
+    const oneZero = new Uint8Array([1, 0, 1, 0]);
+    const zeroOne = new Uint8Array([0, 1, 0, 1]);
+
+    function exercise(client: RpcTransportTest) {
+      return new Promise(async (resolve, reject) => {
+        try {
+          assert.equal(await client.primitive(abc), RpcTransportTestImpl.mutateString(abc));
+          assert(compareBytes(await client.binary(oneZero), RpcTransportTestImpl.mutateBits(oneZero)));
+          const mixed = await client.mixed(abc, zeroOne);
+          assert.equal(mixed[0], RpcTransportTestImpl.mutateString(abc));
+          assert(compareBytes(mixed[1], RpcTransportTestImpl.mutateBits(zeroOne)));
+          const nested = await client.nested({ a: { x: oneZero, y: one }, b: abc, c: zeroOne });
+          assert(compareBytes(nested.a.x, RpcTransportTestImpl.mutateBits(oneZero)));
+          assert.equal(nested.a.y, RpcTransportTestImpl.mutateNumber(one));
+          assert.equal(nested.b, RpcTransportTestImpl.mutateString(abc));
+          assert(compareBytes(nested.c, RpcTransportTestImpl.mutateBits(zeroOne)));
+          resolve();
+        } catch (err) {
+          reject(err);
+        }
+      });
+    }
+
+    await exercise(RpcDirectTransportTest.getClient());
+    await exercise(RpcWebTransportTest.getClient());
+    await exercise(RpcElectronTransportTest.getClient());
+    await exercise(RpcMobileTransportTest.getClient());
+  });
+
+  it("should support cachable responses", async () => {
+    RpcOperation.lookup(TestRpcInterface, "op14").policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
+    assert.equal(2, await TestRpcInterface.getClient().op14(1, 1));
+  });
+
+  it("should successfully call WipRpcInterface.placeholder", async () => {
+    const s: string = await WipRpcInterface.getClient().placeholder(new IModelToken());
+    assert.equal(s, "placeholder");
   });
 });

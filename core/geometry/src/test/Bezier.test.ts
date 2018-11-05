@@ -13,6 +13,13 @@ import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
+import { Sample } from "../serialization/GeometrySamples";
+import { Range3d } from "../geometry3d/Range";
+import { Box } from "../solid/Box";
+import { Transform } from "../geometry3d/Transform";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Segment1d } from "../geometry3d/Segment1d";
+// import { prettyPrint } from "./testFunctions";
 /* tslint:disable:no-console */
 describe("Bezier", () => {
   it("HelloWorld", () => {
@@ -362,6 +369,104 @@ describe("PascalCoefficients", () => {
       y0 += dy;
     }
     GeometryCoreTestIO.saveGeometry(allData, "Bezier", "BasisFunctions");
+  });
+
+  it("TightRange", () => {
+    const ck = new Checker();
+    const allData = [];
+    const thetaStepper = AngleSweep.createStartSweepRadians(-0.4, 1.3);
+    const phiStepper = AngleSweep.createStartSweepRadians(0.4, 0.8);
+    const r = 1.0;
+    const dx = 10.0;
+    let y0 = 0.0;
+    const yShift = 5.0;
+    for (const weighted of [false, true]) {
+      let x0 = 0.0;
+      y0 += 4.0 * yShift;
+      for (const order of [2, 4, 4, 2, 3, 6, 7, 9]) {
+        const bezier = Sample.createTwistingBezier(order, x0, y0, r, thetaStepper, phiStepper,
+          weighted ? Segment1d.create(1.0, 0.8) : undefined)!;
+        let transform = Sample.createMessyRigidTransform(Point3d.create(x0, y0, 0));
+        transform = Transform.createTranslationXYZ(0, yShift).multiplyTransformTransform(transform);
+        x0 += dx;
+        const range0 = Range3d.createNull();
+        const range1 = Range3d.createNull();
+        bezier.extendRange(range0);
+        bezier.extendRange(range1, transform);
+        const testPoints0 = LineString3d.create();
+        // test that the ranges contain strokes (similarly transformed)
+        bezier.emitStrokes(testPoints0);
+        const testPoints1 = testPoints0.cloneTransformed(transform)!;
+        const range0A = testPoints0.range();
+        const range1A = testPoints1.range();
+        range1A.scaleAboutCenterInPlace(0.99999);
+        ck.testTrue(range0.containsRange(range0A), "Direct range " + order);
+        ck.testTrue(range1.containsRange(range1A), "Transformed range " + order);
+        allData.push(bezier.clone());
+        allData.push(Box.createRange(range0, false));
+        allData.push(testPoints0!);
+        bezier.tryTransformInPlace(transform);
+        allData.push(bezier.clone());
+        allData.push(Box.createRange(range1, false)!);
+        allData.push(testPoints1);
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allData, "Bezier", "TightRange");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("Constructors", () => {
+    const ck = new Checker();
+    const coffs = [1, 2, 3, 2, 1];
+    const bezierA = UnivariateBezier.createCoffs(coffs);
+    const bezierB = UnivariateBezier.createCoffs(new Float64Array(coffs));
+    ck.testExactNumber(bezierA.order, bezierB.order);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("Filter01", () => {
+    const ck = new Checker();
+    const filterObject = UnivariateBezier.createCoffs([1, 2, 2, 3]);
+    const dataA = [0, 0.5, 0.75, -0.3, 1.2, 0.25];
+    const dataB = filterObject.filter01(dataA, false)!;
+    const dataC = filterObject.filter01(dataA, true)!;
+    ck.testExactNumber(dataA.length, dataB.length);
+    ck.testLT(dataC.length, dataA.length);
+
+    ck.testUndefined(filterObject.filter01([3, 4], true));
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("SumBasisValues", () => {
+    const ck = new Checker();
+    const polygonX = [];
+    const a = 10.0;
+    for (let i = 0; i < 10; i++) {
+      polygonX.push(i);
+      polygonX.push(a - i);   // contrived so curve has y = a - x at all points.
+    }
+    const polygonY = new Float64Array(polygonX);
+    for (const bezierA of [
+      new Order2Bezier(0, 1),
+      new Order3Bezier(0, 1, 2),
+      new Order4Bezier(0, 1, 2, 3),
+      new Order5Bezier(0, 1, 2, 3, 4)]) {
+      // console.log(prettyPrint (bezierA));
+      const bezierB = UnivariateBezier.create(bezierA)!;
+      for (const u of [0, 0.2, 0.8]) {
+        const blockA = bezierA.sumBasisFunctions(u, polygonY, 2);
+        const blockB = bezierB.sumBasisFunctions(u, polygonY, 2);
+        ck.testCoordinate(blockA[0], blockB[0]);
+        ck.testCoordinate(blockA[1], blockB[1]);
+        ck.testCoordinate(blockA[0], a - blockA[1]);
+
+        const blockA1 = bezierA.sumBasisFunctionDerivatives(u, polygonY, 2);
+        const blockB1 = bezierB.sumBasisFunctionDerivatives(u, polygonY, 2);
+        ck.testCoordinate(blockA1[0], blockB1[0]);
+        ck.testCoordinate(blockA1[1], blockB1[1]);
+        ck.testCoordinate(blockA1[0], - blockA1[1]);
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
   });
 
 });

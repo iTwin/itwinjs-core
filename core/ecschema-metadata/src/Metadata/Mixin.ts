@@ -3,21 +3,22 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import ECClass from "./Class";
-import EntityClass, { createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
-import { LazyLoadedEntityClass } from "./../Interfaces";
-import { ECClassModifier, SchemaItemType, StrengthDirection } from "./../ECObjects";
-import { SchemaItemKey } from "./../SchemaKey";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import Schema from "./Schema";
-import RelationshipClass from "./RelationshipClass";
+import { ECClass } from "./Class";
+import { EntityClass, createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
 import { NavigationProperty } from "./Property";
+import { RelationshipClass } from "./RelationshipClass";
+import { Schema } from "./Schema";
+import { DelayedPromiseWithProps } from "./../DelayedPromise";
+import { ECClassModifier, SchemaItemType, StrengthDirection } from "./../ECObjects";
+import { MixinProps } from "./../Deserialization/JsonProps";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { LazyLoadedEntityClass } from "./../Interfaces";
+import { SchemaItemKey } from "./../SchemaKey";
 
 /**
  * A Typescript class representation of a Mixin.
  */
-export default class Mixin extends ECClass {
+export class Mixin extends ECClass {
   public readonly schemaItemType!: SchemaItemType.Mixin; // tslint:disable-line
   protected _appliesTo?: LazyLoadedEntityClass;
 
@@ -52,27 +53,21 @@ export default class Mixin extends ECClass {
     return schemaJson;
   }
 
-  public async fromJson(jsonObj: any): Promise<void> {
-    this.fromJsonSync(jsonObj);
-  }
-
-  public fromJsonSync(jsonObj: any) {
-    super.fromJsonSync(jsonObj);
-
-    if (undefined === jsonObj.appliesTo)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${this.name} is missing the required 'appliesTo' attribute.`);
-
-    if (typeof (jsonObj.appliesTo) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Mixin ${this.name} has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
-    const entityClassSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.appliesTo);
+  public deserializeSync(mixinProps: MixinProps) {
+    super.deserializeSync(mixinProps);
+    const entityClassSchemaItemKey = this.schema.getSchemaItemKey(mixinProps.appliesTo);
     if (!entityClassSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${jsonObj.appliesTo}.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
     this._appliesTo = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(entityClassSchemaItemKey,
       async () => {
         const appliesTo = await this.schema.lookupItem<EntityClass>(entityClassSchemaItemKey);
         if (undefined === appliesTo)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${jsonObj.appliesTo}.`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the appliesTo ${mixinProps.appliesTo}.`);
         return appliesTo;
       });
+  }
+
+  public async deserialize(mixinProps: MixinProps) {
+    this.deserializeSync(mixinProps);
   }
 }

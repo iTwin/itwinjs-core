@@ -1119,7 +1119,7 @@ export namespace Gradient {
   }
 
   /** @hidden Gradient settings specific to thematic mesh display */
-  export class ThematicSettings {
+  export class ThematicSettings implements ThematicSettingsProps {
     public mode: ThematicMode = ThematicMode.Smooth;
     public stepCount: number = 10;
     public marginColor: ColorDef = ColorDef.from(0x3f, 0x3f, 0x3f);
@@ -1142,6 +1142,20 @@ export namespace Gradient {
       result.rangeLow = json.rangeLow;
       result.rangeHigh = json.rangeHigh;
       return result;
+    }
+    public clone(out?: ThematicSettings): ThematicSettings {
+      const result = undefined !== out ? out : new ThematicSettings();
+      result.copyFrom(this);
+      return result;
+    }
+
+    public copyFrom(other: ThematicSettingsProps): void {
+      this.mode = other.mode;
+      this.stepCount = other.stepCount;
+      this.marginColor = new ColorDef(other.marginColor);
+      this.colorScheme = other.colorScheme;
+      this.rangeLow = other.rangeLow;
+      this.rangeHigh = other.rangeHigh;
     }
   }
 
@@ -1574,14 +1588,14 @@ export class SceneLights {
   public addLight(light: Light): void { if (light.isValid) this._list.push(light); }
 }
 
-/** Describes the display properties of geometry in a persistent element's GeometryStream that aren't inherited from [[SubCategoryAppearance]].
+/** Describes the display properties of graphics in a persistent element's GeometryStream that aren't inherited from [[SubCategoryAppearance]].
  * @see [[GeometryStreamProps]].
  */
 export class GeometryParams {
   /** Optional render material to override [[SubCategoryAppearance.materialId]].
    * Specify an invalid [[Id64]] to override [[SubCategoryAppearance.materialId]] with no material.
    */
-  public materialId?: Id64;
+  public materialId?: Id64String;
   /** Optional display priority added to [[SubCategoryAppearance.priority]].
    * The net display priority value is used to control z ordering when drawing to 2d views.
    */
@@ -1635,7 +1649,15 @@ export class GeometryParams {
    */
   public pattern?: AreaPattern.Params;
 
-  constructor(public categoryId: Id64, public subCategoryId = new Id64()) { if (!subCategoryId.isValid) this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId); }
+  /** Create a GeometryParams given a [[Category]] Id for a [[GeometricElement]] and optional [[SubCategory]] Id. The [[SubCategory.appearance]] establishes the non-overriden display properties of
+   * graphics in a GeometricElement's [[GeometryStreamProps]]. A GeometricElement refers to a single Category through [[GeometricElement.category]], while it's graphics can appear on multiple SubCategories
+   * by adding a [[GeometryAppearanceProps]] with a SubCategory change to the GeometryStream.
+   * @note If a valid SubCategory Id is not supplied, the default SubCategory for the parent Category is used. To be considered valid, [[SubCategory.getCategoryId]] must refer to the specified Category Id.
+   */
+  constructor(public categoryId: Id64String, public subCategoryId = Id64.invalid) {
+    if (Id64.isValid(subCategoryId))
+      this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId);
+  }
 
   public clone(): GeometryParams {
     const retVal = new GeometryParams(this.categoryId, this.subCategoryId);
@@ -1677,9 +1699,9 @@ export class GeometryParams {
     if (this === other)
       return true; // Same pointer
 
-    if (!this.categoryId.equals(other.categoryId))
+    if (this.categoryId !== other.categoryId)
       return false;
-    if (!this.subCategoryId.equals(other.subCategoryId))
+    if (this.subCategoryId !== other.subCategoryId)
       return false;
     if (this.geometryClass !== other.geometryClass)
       return false;
@@ -1701,7 +1723,7 @@ export class GeometryParams {
 
     if ((this.materialId === undefined) !== (other.materialId === undefined))
       return false;
-    if (this.materialId && !this.materialId.equals(other.materialId!))
+    if (this.materialId && this.materialId !== other.materialId!)
       return false;
 
     if ((this.styleInfo === undefined) !== (other.styleInfo === undefined))
@@ -1736,7 +1758,7 @@ export class GeometryParams {
   }
 
   /** Change [[categoryId]] to the supplied id, [[subCategoryId]] to the supplied category's the default subCategory, and optionally clear any [[SubCategoryAppearance]] overrides. */
-  public setCategoryId(categoryId: Id64, clearAppearanceOverrides = true) {
+  public setCategoryId(categoryId: Id64String, clearAppearanceOverrides = true) {
     this.categoryId = categoryId;
     this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId);
     if (clearAppearanceOverrides)
@@ -1744,7 +1766,7 @@ export class GeometryParams {
   }
 
   /** Change [[subCategoryId]] to the supplied id and optionally clear any [[SubCategoryAppearance]] overrides. */
-  public setSubCategoryId(subCategoryId: Id64, clearAppearanceOverrides = true) {
+  public setSubCategoryId(subCategoryId: Id64String, clearAppearanceOverrides = true) {
     this.subCategoryId = subCategoryId;
     if (clearAppearanceOverrides)
       this.resetAppearance();
@@ -1820,13 +1842,13 @@ export class Feature implements Comparable<Feature> {
   public readonly subCategoryId: string;
   public readonly geometryClass: GeometryClass;
 
-  public constructor(elementId: Id64String = Id64.invalidId, subCategoryId: Id64String = Id64.invalidId, geometryClass: GeometryClass = GeometryClass.Primary) {
-    this.elementId = elementId.toString();
-    this.subCategoryId = subCategoryId.toString();
+  public constructor(elementId: Id64String = Id64.invalid, subCategoryId: Id64String = Id64.invalid, geometryClass: GeometryClass = GeometryClass.Primary) {
+    this.elementId = elementId;
+    this.subCategoryId = subCategoryId;
     this.geometryClass = geometryClass;
   }
 
-  public get isDefined(): boolean { return !Id64.isInvalidId(this.elementId) || !Id64.isInvalidId(this.subCategoryId) || this.geometryClass !== GeometryClass.Primary; }
+  public get isDefined(): boolean { return !Id64.isInvalid(this.elementId) || !Id64.isInvalid(this.subCategoryId) || this.geometryClass !== GeometryClass.Primary; }
   public get isUndefined(): boolean { return !this.isDefined; }
 
   public equals(other: Feature): boolean { return 0 === this.compare(other); }
@@ -1871,11 +1893,11 @@ export const enum BatchType {
  * @see [[FeatureSymbology]] for mechanisms for resymbolizing features within a [[ViewState]].
  */
 export class FeatureTable extends IndexMap<Feature> {
-  public readonly modelId: Id64;
+  public readonly modelId: Id64String;
   public readonly type: BatchType;
 
   /** Construct an empty FeatureTable. */
-  public constructor(maxFeatures: number, modelId: Id64 = Id64.invalidId, type: BatchType = BatchType.Primary) {
+  public constructor(maxFeatures: number, modelId: Id64String = Id64.invalid, type: BatchType = BatchType.Primary) {
     super(compare, maxFeatures);
     this.modelId = modelId;
     this.type = type;
@@ -2125,5 +2147,62 @@ export namespace TextureMapping {
       }
       return params;
     }
+  }
+}
+/** Properties for display of analysis data */
+export interface AnalysisStyleProps {
+  inputName?: string;
+  displacementChannelName?: string;
+  scalarChannelName?: string;
+  normalChannelName?: string;
+  displacementScale: number;
+  scalarRange?: Range1d;
+  scalarThematicSettings?: Gradient.ThematicSettingsProps;
+  inputRange?: Range1d;
+}
+
+export class AnalysisStyle implements AnalysisStyleProps {
+  public inputName?: string;
+  public displacementChannelName?: string;
+  public scalarChannelName?: string;
+  public normalChannelName?: string;
+  public displacementScale: number = 1.0;
+  public scalarRange?: Range1d;
+  public scalarThematicSettings?: Gradient.ThematicSettings;
+  public inputRange?: Range1d;
+  public scalarThematicTexture?: RenderTexture;
+
+  public static fromJSON(json?: AnalysisStyleProps) {
+    const result = new AnalysisStyle();
+    if (!json)
+      return result;
+
+    result.inputName = json.inputName;
+    result.displacementChannelName = json.displacementChannelName;
+    result.scalarChannelName = json.scalarChannelName;
+    result.normalChannelName = json.normalChannelName;
+    result.displacementScale = json.displacementScale;
+    result.scalarRange = json.scalarRange ? Range1d.fromJSON(json.scalarRange) : undefined;
+    result.scalarThematicSettings = json.scalarThematicSettings ? Gradient.ThematicSettings.fromJSON(json.scalarThematicSettings) : undefined;
+    result.inputRange = json.inputRange ? Range1d.fromJSON(json.inputRange) : undefined;
+    return result;
+  }
+
+  public copyFrom(source: AnalysisStyle) {
+    this.inputName = source.inputName;
+    this.displacementChannelName = source.displacementChannelName;
+    this.scalarChannelName = source.scalarChannelName;
+    this.normalChannelName = source.normalChannelName;
+    this.displacementScale = source.displacementScale;
+    if (source.scalarRange) this.scalarRange = source.scalarRange.clone();
+    if (source.scalarThematicSettings) this.scalarThematicSettings = source.scalarThematicSettings.clone();
+    this.scalarThematicSettings = source.scalarThematicSettings;
+    if (source.inputRange) this.inputRange = source.inputRange.clone();
+  }
+
+  public clone(out?: AnalysisStyle): AnalysisStyle {
+    const result = undefined !== out ? out : new AnalysisStyle();
+    result.copyFrom(this);
+    return result;
   }
 }

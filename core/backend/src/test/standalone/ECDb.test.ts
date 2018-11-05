@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { ECDbTestHelper } from "./ECDbTestHelper";
-import { DbResult, Id64, using } from "@bentley/bentleyjs-core";
+import { DbResult, Id64String, Id64, using } from "@bentley/bentleyjs-core";
 import { ECSqlInsertResult, ECDb, ECDbOpenMode, ECSqlStatement, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -61,7 +61,7 @@ describe("ECDb", () => {
   it("should be able to import a schema", () => {
     const fileName = "schemaimport.ecdb";
     const ecdbPath: string = path.join(_outDir, fileName);
-    let id: Id64;
+    let id: Id64String;
     using(ECDbTestHelper.createECDb(_outDir, fileName,
       `<ECSchema schemaName="Test" alias="test" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
       <ECEntityClass typeName="Person" modifier="Sealed">
@@ -75,7 +75,7 @@ describe("ECDb", () => {
           const res: ECSqlInsertResult = stmt.stepForInsert();
           assert.equal(res.status, DbResult.BE_SQLITE_DONE);
           assert.isDefined(res.id);
-          assert.isTrue(res.id!.isValid);
+          assert.isTrue(Id64.isValidId64(res.id!));
           return res.id!;
         });
       });

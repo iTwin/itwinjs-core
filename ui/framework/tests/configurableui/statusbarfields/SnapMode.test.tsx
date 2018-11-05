@@ -14,13 +14,12 @@ import {
   SnapModeField,
   StatusBarWidgetControl,
   StatusBar,
-  ZoneDef,
-  ConfigurableUiManager,
-  ZoneState,
   WidgetState,
   ConfigurableCreateInfo,
   IStatusBar,
   StatusBarFieldId,
+  WidgetDef,
+  ConfigurableUiControlType,
 } from "../../../src";
 
 describe("SnapModeField", () => {
@@ -39,28 +38,18 @@ describe("SnapModeField", () => {
     }
   }
 
-  let statusBarZoneDef: ZoneDef;
+  let widgetControl: StatusBarWidgetControl | undefined;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    ConfigurableUiManager.unregisterControl("AppStatusBar");
-    ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
-
-    statusBarZoneDef = new ZoneDef({
-      defaultState: ZoneState.Open,
-      allowsMerging: false,
-      widgetProps: [
-        {
-          classId: "AppStatusBar",
-          defaultState: WidgetState.Open,
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:Test.my-label",
-          isFreeform: false,
-          isStatusBar: true,
-        },
-      ],
+    const statusBarWidgetDef = new WidgetDef({
+      classId: AppStatusBarWidgetControl,
+      defaultState: WidgetState.Open,
+      isFreeform: false,
+      isStatusBar: true,
     });
+    widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
   });
 
   it("Status Bar with SnapModes Field should mount", () => {
@@ -71,7 +60,7 @@ describe("SnapModeField", () => {
       "icon-snaps-origin", "icon-snaps-midpoint", "icon-snaps-bisector"];
 
     const wrapper = mount(<Provider store={TestUtils.store}>
-      <StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />
+      <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
     </Provider>);
 
     for (let i = 0; i < 7; i++) {

@@ -42,7 +42,7 @@ function createBase(): ProgramBuilder {
   vert.addFunction(GLSLVertex.computeLineWeight);
   vert.addUniform("u_lineWeight", VariableType.Float, (prog) => {
     prog.addGraphicUniform("u_lineWeight", (uniform, params) => {
-      uniform.setUniform1f(params.geometry.getLineWeight(params));
+      uniform.setUniform1f(params.geometry.getLineWeight(params.programParams));
     });
   });
   builder.addInlineComputedVarying("v_roundCorners", VariableType.Float, computeRoundCorners);

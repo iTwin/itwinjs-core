@@ -3,34 +3,37 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "../Exception";
+import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
+import { Phenomenon } from "./Phenomenon";
+import { UnitSystem } from "./UnitSystem";
+import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { SchemaItemType } from "./../ECObjects";
+import { UnitProps } from "./../Deserialization/JsonProps";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { LazyLoadedPhenomenon, LazyLoadedUnitSystem, SchemaItemVisitor } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
-import { SchemaItemVisitor } from "../Interfaces";
-import Schema from "./Schema";
-import UnitSystem from "./UnitSystem";
-import Phenomenon from "./Phenomenon";
-import { LazyLoadedUnitSystem, LazyLoadedPhenomenon } from "../Interfaces";
-import { DelayedPromiseWithProps } from "../DelayedPromise";
 
 /**
  * An abstract class that adds the ability to define Units and everything that goes with them, within an ECSchema as a
  * first-class concept is to allow the iModel to not be dependent on any hard-coded Units
  */
-export default class Unit extends SchemaItem {
+export class Unit extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.Unit; // tslint:disable-line
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _unitSystem?: LazyLoadedUnitSystem;
   protected _definition: string;
-  protected _numerator = 1.0;
-  protected _denominator = 1.0;
-  protected _offset = 0.0;
+  protected _numerator: number;
+  protected _denominator: number;
+  protected _offset: number;
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this.schemaItemType = SchemaItemType.Unit;
     this._definition = "";
+    this._numerator = 1.0;
+    this._denominator = 1.0;
+    this._offset = 0.0;
   }
 
   get phenomenon(): LazyLoadedPhenomenon | undefined { return this._phenomenon; }
@@ -39,38 +42,6 @@ export default class Unit extends SchemaItem {
   get numerator(): number { return this._numerator; }
   get offset(): number { return this._offset; }
   get denominator(): number { return this._denominator; }
-
-  private loadUnitProperties(jsonObj: any) {
-    if (undefined === jsonObj.definition)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} does not have the required 'definition' attribute.`);
-    if (typeof (jsonObj.definition) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'definition' attribute. It should be of type 'string'.`);
-    if (this._definition !== "" && jsonObj.definition.toLowerCase() !== this._definition.toLowerCase())
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'definition' attribute.`);
-    else if (this._definition === "") // this is the default value for the definition, which we assigned in the constructor
-      this._definition = jsonObj.definition; // so, if we have yet to define the definition variable, assign it the json definition
-
-    if (undefined !== jsonObj.numerator) { // optional; default is 1.0
-      if (typeof (jsonObj.numerator) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'numerator' attribute. It should be of type 'number'.`);
-      if (jsonObj.numerator !== this._numerator) // if numerator isnt default value of 1.0, reassign numerator variable
-        this._numerator = jsonObj.numerator;
-    }
-
-    if (undefined !== jsonObj.denominator) { // optional; default is 1.0
-      if (typeof (jsonObj.denominator) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'denominator' attribute. It should be of type 'number'.`);
-      if (jsonObj.denominator !== this._denominator) // if denominator isnt default value of 1.0, reassign denominator variable
-        this._denominator = jsonObj.denominator;
-    }
-
-    if (undefined !== jsonObj.offset) { // optional; default is 0.0
-      if (typeof (jsonObj.offset) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'offset' attribute. It should be of type 'number'.`);
-      if (jsonObj.offset !== this._offset) // if offset isnt default value of 1.0, reassign offset variable
-        this._offset = jsonObj.offset;
-    }
-  }
 
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
@@ -86,49 +57,54 @@ export default class Unit extends SchemaItem {
     return schemaJson;
   }
 
-  /**
-   * Populates this Unit with the values from the provided.
-   */
-  public async fromJson(jsonObj: any): Promise<void> {
-    this.fromJsonSync(jsonObj);
-  }
+  public deserializeSync(unitProps: UnitProps) {
+    super.deserializeSync(unitProps);
 
-  /**
-   * Populates this Unit with the values from the provided.
-   */
-  public fromJsonSync(jsonObj: any): void {
-    super.fromJsonSync(jsonObj);
-    if (undefined === jsonObj.phenomenon)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} does not have the required 'phenomenon' attribute.`);
-    if (typeof (jsonObj.phenomenon) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
-    const phenomenonSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.phenomenon);
+    const phenomenonSchemaItemKey = this.schema.getSchemaItemKey(unitProps.phenomenon);
     if (!phenomenonSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${jsonObj.phenomenon}.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
     this._phenomenon = new DelayedPromiseWithProps<SchemaItemKey, Phenomenon>(phenomenonSchemaItemKey,
       async () => {
         const phenom = await this.schema.lookupItem<Phenomenon>(phenomenonSchemaItemKey);
         if (undefined === phenom)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${jsonObj.phenomenon}.`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the phenomenon ${unitProps.phenomenon}.`);
         return phenom;
       });
 
-    if (undefined === jsonObj.unitSystem)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} does not have the required 'unitSystem' attribute.`);
-    if (typeof (jsonObj.unitSystem) !== "string")
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'unitSystem' attribute. It should be of type 'string'.`);
-    const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(jsonObj.unitSystem);
+    const unitSystemSchemaItemKey = this.schema.getSchemaItemKey(unitProps.unitSystem);
     if (!unitSystemSchemaItemKey)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${jsonObj.unitSystem}.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
     this._unitSystem = new DelayedPromiseWithProps<SchemaItemKey, UnitSystem>(unitSystemSchemaItemKey,
       async () => {
         const unitSystem = await this.schema.lookupItem<UnitSystem>(unitSystemSchemaItemKey);
         if (undefined === unitSystem)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${jsonObj.unitSystem}.`);
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate the unitSystem ${unitProps.unitSystem}.`);
         return unitSystem;
       });
 
-    this.loadUnitProperties(jsonObj);
+    if (this._definition !== "" && unitProps.definition.toLowerCase() !== this._definition.toLowerCase())
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Unit ${this.name} has an invalid 'definition' attribute.`);
+    else if (this._definition === "")
+      this._definition = unitProps.definition;
+
+    if (undefined !== unitProps.numerator) {
+      if (unitProps.numerator !== this._numerator)
+        this._numerator = unitProps.numerator;
+    }
+
+    if (undefined !== unitProps.denominator) {
+      if (unitProps.denominator !== this._denominator)
+        this._denominator = unitProps.denominator;
+    }
+
+    if (undefined !== unitProps.offset) {
+      if (unitProps.offset !== this._offset)
+        this._offset = unitProps.offset;
+    }
+  }
+
+  public async deserialize(unitProps: UnitProps) {
+    this.deserializeSync(unitProps);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

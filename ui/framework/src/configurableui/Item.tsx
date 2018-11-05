@@ -5,26 +5,21 @@
 /** @module Item */
 
 import * as React from "react";
+import * as classnames from "classnames";
 
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 
-import ConfigurableUiManager from "./ConfigurableUiManager";
 import { Icon } from "./IconLabelSupport";
-import { ToolUiProvider } from "./ToolUiProvider";
 import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
 import { ToolItemProps, CommandItemProps, CommandHandler } from "./ItemProps";
 import { ItemDefBase } from "./ItemDefBase";
-import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
-
-/** @module Item */
 
 /** An Item that launches a Tool.
  */
 export class ToolItemDef extends ItemDefBase {
   public toolId: string;
-  private _toolUiProvider: ToolUiProvider | undefined;
   private _execute?: () => any;
 
   constructor(toolItemProps: ToolItemProps) {
@@ -41,8 +36,7 @@ export class ToolItemDef extends ItemDefBase {
   }
 
   public execute(): void {
-    if (FrontstageManager.activeFrontstageDef)
-      FrontstageManager.activeFrontstageDef.setActiveToolItem(this);
+    FrontstageManager.setActiveToolId(this.toolId);
 
     if (this._execute) {
       this._execute();
@@ -51,7 +45,6 @@ export class ToolItemDef extends ItemDefBase {
       if (thisTool)
         (new thisTool()).run();
     }
-
   }
 
   public onActivated(): void {
@@ -63,12 +56,14 @@ export class ToolItemDef extends ItemDefBase {
 
   public toolbarReactNode(index?: number): React.ReactNode {
     const key = (index !== undefined) ? index.toString() : this.id;
+    const myClassNames = classnames({ "item-hidden": !this.isVisible, "nz-is-disabled": !this.isEnabled });
 
     return (
       <ToolbarIcon
-        className={!this.isVisible ? "item-hidden" : undefined}
+        className={myClassNames}
         isActive={FrontstageManager.activeToolId === this.toolId}
         isDisabled={!this.isEnabled}
+        title={this.label}
         key={key}
         onClick={this.execute}
         icon={
@@ -76,25 +71,6 @@ export class ToolItemDef extends ItemDefBase {
         }
       />
     );
-  }
-
-  public get toolUiProvider(): ToolUiProvider | undefined {
-    // TODO - should call getConfigurable if widget is sharable
-    if (!this._toolUiProvider && ConfigurableUiManager.isControlRegistered(this.toolId)) {
-      const toolUiProvider = ConfigurableUiManager.createControl(this.toolId, this.id) as ToolUiProvider;
-      if (toolUiProvider) {
-        if (toolUiProvider.getType() !== ConfigurableUiControlType.ToolUiProvider) {
-          throw Error("ToolItemDef.toolUiProvider error: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
-        }
-
-        this._toolUiProvider = toolUiProvider;
-        if (this._toolUiProvider) {
-          this._toolUiProvider.toolItem = this;
-        }
-      }
-    }
-
-    return this._toolUiProvider;
   }
 }
 
@@ -122,11 +98,14 @@ export class CommandItemDef extends ItemDefBase {
 
   public toolbarReactNode(index?: number): React.ReactNode {
     const key = (index !== undefined) ? index.toString() : this.id;
+    let myClassNames: string = "";
+    if (!this.isVisible) myClassNames += "item-hidden";
+    if (!this.isEnabled) myClassNames += "nz-is-disabled";
 
     return (
       <ToolbarIcon
-        className={!this.isVisible ? "item-hidden" : undefined}
-        isDisabled={!this.isEnabled}
+        className={myClassNames.length ? myClassNames : undefined} isDisabled={!this.isEnabled}
+        title={this.label}
         key={key}
         onClick={this.execute}
         icon={

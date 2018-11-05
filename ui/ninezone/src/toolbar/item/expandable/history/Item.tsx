@@ -19,6 +19,8 @@ export interface HistoryItemProps extends CommonProps {
   isDisabled?: boolean;
   /** Function called when the */
   onClick?: () => void;
+  /** Title of the item */
+  title?: string;
 }
 
 /**
@@ -38,6 +40,7 @@ export default class HistoryItem extends React.Component<HistoryItemProps> {
         onClick={this._handleClick}
         className={className}
         style={this.props.style}
+        title={this.props.title}
       >
         {this.props.children}
       </div>

@@ -10,7 +10,7 @@ import { AccessToken, IModelClient } from "../../";
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 
 function getThumbnailLength(size: ThumbnailSize) {
   return size === "Small" ? 1000 : 3500;
@@ -26,12 +26,12 @@ function mockDownloadThumbnail(requestPath: string, size: ThumbnailSize) {
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, { response });
 }
 
-function mockDownloadLatestThumbnail(_projectId: string, imodelId: Guid, size: ThumbnailSize) {
+function mockDownloadLatestThumbnail(_projectId: string, imodelId: GuidString, size: ThumbnailSize) {
   const requestPath = utils.createRequestUrl(ScopeType.Project, _projectId, `${size}Thumbnail`, imodelId + "/$file");
   mockDownloadThumbnail(requestPath, size);
 }
 
-function mockDownloadThumbnailById(imodelId: Guid, thumbnailId: string, size: ThumbnailSize) {
+function mockDownloadThumbnailById(imodelId: GuidString, thumbnailId: string, size: ThumbnailSize) {
   const requestPath = utils.createRequestUrl(ScopeType.iModel, imodelId, `${size}Thumbnail`, thumbnailId + "/$file");
   mockDownloadThumbnail(requestPath, size);
 }
@@ -42,14 +42,14 @@ interface TestParameters {
 }
 
 async function getIModelId(accessToken: AccessToken, name: string) {
-  return new Guid(await utils.getIModelId(accessToken, name));
+  return await utils.getIModelId(accessToken, name);
 }
 
 describe("iModelHub ThumbnailHandler", () => {
   const test: TestParameters[] = [{ size: "Small", thumbnails: [] }, { size: "Large", thumbnails: [] }];
   let accessToken: AccessToken;
   let _projectId: string;
-  let imodelId: Guid;
+  let imodelId: GuidString;
   let versions: Version[];
   const imodelName = "imodeljs-clients Thumbnails test";
   const imodelHubClient: IModelClient = utils.getDefaultClient();
@@ -138,7 +138,7 @@ describe("iModelHub ThumbnailHandler", () => {
     it(`should get ${params.size}Thumbnail by version id`, async () => {
       for (let i = 0; i < 3; i++) {
         utils.mockGetThumbnailsByVersionId(imodelId, params.size, versions[i].id!, params.thumbnails[i]);
-        const actualThumbnail: Thumbnail = (await imodelHubClient.Thumbnails().get(actx, accessToken, imodelId, params.size, new ThumbnailQuery().byVersionId(new Guid(versions[i].id))))[0];
+        const actualThumbnail: Thumbnail = (await imodelHubClient.Thumbnails().get(actx, accessToken, imodelId, params.size, new ThumbnailQuery().byVersionId(versions[i].id!)))[0];
         chai.assert(!!actualThumbnail);
         chai.expect(actualThumbnail.id!.toString()).to.be.equal(params.thumbnails[i].id!.toString());
       }

@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import Schema, { MutableSchema } from "../../src/Metadata/Schema";
-import ECClass, { MutableClass } from "../../src/Metadata/Class";
+import { Schema, MutableSchema } from "../../src/Metadata/Schema";
+import { ECClass, MutableClass } from "../../src/Metadata/Class";
 import { PrimitiveType } from "../../src/ECObjects";
 
 describe("Property Inheritance", () => {

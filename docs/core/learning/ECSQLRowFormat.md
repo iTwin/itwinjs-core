@@ -37,12 +37,12 @@ The resulting types of the returned property values are these:
 ECSQL type | Extended Type | JavaScript Typ
 ---------- | ------------- | ---------------
 Boolean    | -             | boolean
-Blob       | -             | ArrayBuffer
-Blob       | BeGuid        | GUID string (see [Guid]($bentleyjs-core))
+Blob       | -             | Uint8Array
+Blob       | BeGuid        | [GuidString]($bentleyjs-core)
 ClassId system properties | - | fully qualified class name
 Double     | -             | number
-DateTime   | -             | ISO8601 string
-Id system properties | -   | hexadecimal string
+DateTime   | -             | ISO 8601 date time string
+Id system properties | -   | [Id64String]($bentleyjs-core)
 Integer    | -             | number
 Int64      | -             | number
 Int64      | Id            | hexadecimal string

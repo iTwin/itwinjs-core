@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration } from "../../backend";
@@ -30,7 +30,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
     // Push the iModel to the Hub
     const projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
-    const iModelId: Guid = await HubUtility.pushIModel(accessToken, projectId, pathname);
+    const iModelId: GuidString = await HubUtility.pushIModel(accessToken, projectId, pathname);
 
     const iModelDb = await IModelDb.open(actx, accessToken, projectId, iModelId.toString(), OpenParams.pullAndPush(), IModelVersion.latest());
     assert(!!iModelDb);
@@ -138,7 +138,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     const iModelDir = path.join(iModelRootDir, iModelId);
 
     const startTime = Date.now();
-    await HubUtility.downloadIModelById(accessToken1, projectId, new Guid(iModelId), iModelDir);
+    await HubUtility.downloadIModelById(accessToken1, projectId, iModelId, iModelDir);
     const finishTime = Date.now();
     console.log(`Time taken to download is ${finishTime - startTime} milliseconds`); // tslint:disable-line:no-console
   });

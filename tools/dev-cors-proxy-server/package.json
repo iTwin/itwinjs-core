@@ -42,6 +42,7 @@
     "docs": "",
     "lint": "",
     "test": "",
+    "cover": "",
     "start": "cross-env PORT=3001 node ./server.js",
     "skip:lint": "eslint .",
     "skip:test": "mocha ./test/test*.js --reporter spec",

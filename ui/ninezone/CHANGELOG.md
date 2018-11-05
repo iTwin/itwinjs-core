@@ -1,6 +1,24 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Fri, 19 Oct 2018 13:04:14 GMT and should not be manually modified.
+This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+
+## 0.163.0
+Wed, 31 Oct 2018 20:55:37 GMT
+
+### Updates
+
+- Added JSX specification for Frontstage, Zone & Widget
+- Fixed ui-framework unit test
+
+## 0.162.0
+Wed, 24 Oct 2018 19:20:07 GMT
+
+### Updates
+
+- Make ToolAdmin.defaultTool. public. Allow getToolTip to return HTMLElement | string.
+- Tooltips, ToolAdmin.activeToolChanged support, SheetNavigationAid/SheetsModalFrontstage improvements.
+- Ui Documentation
+- Vertical PropertyGrid layout improvements. PropertyGrid background color. Setting the widget state.
 
 ## 0.161.0
 Fri, 19 Oct 2018 13:04:14 GMT

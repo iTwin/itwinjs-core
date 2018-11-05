@@ -1,0 +1,38 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Toggle /> renders correctly 1`] = `
+<label
+  className="toggle rounded"
+  style={
+    Object {
+      "borderRadius": 0,
+      "fontSize": 0,
+    }
+  }
+>
+  <input
+    className="toggle-input"
+    defaultChecked={false}
+    onChange={[Function]}
+    type="checkbox"
+  />
+  <span
+    className="toggle-label"
+  />
+  <span
+    className="toggle-checkmark icon icon-checkmark visible"
+  />
+  <span
+    className="toggle-handle"
+    style={
+      Object {
+        "bottom": 2,
+        "left": 2,
+        "top": 2,
+        "transform": "translateX(0px)",
+        "width": -4,
+      }
+    }
+  />
+</label>
+`;

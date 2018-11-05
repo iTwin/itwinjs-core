@@ -112,7 +112,7 @@
     },
     {
       "name": "body-parser",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "bunyan",
@@ -228,7 +228,7 @@
     },
     {
       "name": "electron",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "backend", "internal" ]
     },
     {
       "name": "electron-chromedriver",
@@ -283,8 +283,16 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "find-root",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "fork-ts-checker-webpack-plugin",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "form-data",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "fs-extra",
@@ -347,6 +355,14 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "istanbul-lib-hook",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "istanbul-lib-instrument",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "js-base64",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
@@ -401,6 +417,10 @@
     {
       "name": "mocha-webpack",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "multiparty",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "nock",
@@ -737,6 +757,10 @@
     {
       "name": "whatwg-fetch",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "ws",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "xmldom",

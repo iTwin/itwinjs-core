@@ -73,20 +73,41 @@ export class IdleTool extends InteractiveTool {
   }
 
   public async onMouseStartDrag(ev: BeButtonEvent): Promise<EventHandled> {
-    if (!ev.viewport || BeButton.Middle !== ev.button)
+    if (!ev.viewport)
       return EventHandled.No;
 
     let toolId: string;
     let handleId: ViewHandleType;
-    if (ev.isControlKey) {
-      toolId = ev.viewport.view.allow3dManipulations() ? "View.Look" : "View.Scroll";
-      handleId = ev.viewport.view.allow3dManipulations() ? ViewHandleType.Look : ViewHandleType.Scroll;
-    } else if (ev.isShiftKey) {
-      toolId = "View.Rotate";
-      handleId = ViewHandleType.Rotate;
-    } else {
-      toolId = "View.Pan";
-      handleId = ViewHandleType.Pan;
+
+    switch (ev.button) {
+      case BeButton.Middle:
+        if (ev.isControlKey) {
+          toolId = ev.viewport.view.allow3dManipulations() ? "View.Look" : "View.Scroll";
+          handleId = ev.viewport.view.allow3dManipulations() ? ViewHandleType.Look : ViewHandleType.Scroll;
+        } else if (ev.isShiftKey) {
+          toolId = "View.Rotate";
+          handleId = ViewHandleType.Rotate;
+        } else {
+          toolId = "View.Pan";
+          handleId = ViewHandleType.Pan;
+        }
+        break;
+
+      case BeButton.Data:
+        // When no active tool is present install rotate view tool on drag of data button
+        if (undefined !== IModelApp.toolAdmin.activeTool)
+          return EventHandled.No;
+        toolId = "View.Rotate";
+        handleId = ViewHandleType.Rotate;
+        break;
+
+      default:
+        // When no active tool is present install pan view tool on drag of reset button
+        if (undefined !== IModelApp.toolAdmin.activeTool)
+          return EventHandled.No;
+        toolId = "View.Pan";
+        handleId = ViewHandleType.Pan;
+        break;
     }
 
     const currTool = IModelApp.toolAdmin.viewTool;

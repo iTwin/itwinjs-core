@@ -5,8 +5,8 @@
 /** @module RpcInterface */
 import { RpcInterface, RpcInterfaceDefinition } from "../../RpcInterface";
 import { RpcManager } from "../../RpcManager";
-import { RpcProtocol, RpcRequestFulfillment, RpcProtocolEvent } from "./RpcProtocol";
-import { RpcRequest, RpcResponseType } from "./RpcRequest";
+import { RpcProtocol, RpcRequestFulfillment } from "./RpcProtocol";
+import { RpcRequest } from "./RpcRequest";
 import { INSTANCE } from "./RpcRegistry";
 import { RpcControlChannel } from "./RpcControl";
 
@@ -109,19 +109,17 @@ export class RpcDirectProtocol extends RpcProtocol {
 // A default request type that can be used for basic testing within a library.
 export class RpcDirectRequest extends RpcRequest {
   public headers: Map<string, string> = new Map();
-  public fulfillment: RpcRequestFulfillment = { result: "", status: 0, id: "", interfaceName: "", type: RpcResponseType.Unknown };
+  public fulfillment: RpcRequestFulfillment | undefined = undefined;
 
-  protected send(): void {
+  protected send() {
     const request = this.protocol.serialize(this);
-
-    this.protocol.fulfill(request).then((fulfillment) => {
-      const result = fulfillment.result;
-      this.fulfillment = JSON.parse(JSON.stringify(fulfillment));
-      if (result instanceof Uint8Array) {
-        this.fulfillment.result = result;
+    return new Promise<number>(async (resolve, reject) => {
+      try {
+        this.fulfillment = await this.protocol.fulfill(request);
+        resolve(this.fulfillment.status);
+      } catch (err) {
+        reject(err);
       }
-
-      this.protocol.events.raiseEvent(RpcProtocolEvent.ResponseLoaded, this);
     });
   }
 
@@ -129,29 +127,7 @@ export class RpcDirectRequest extends RpcRequest {
     this.headers.set(name, value);
   }
 
-  public getResponseStatusCode(): number {
-    return this.fulfillment.status;
-  }
-
-  public getResponseText(): string {
-    const result = this.fulfillment.result;
-    if (typeof (result) === "string") {
-      return result;
-    } else {
-      return super.getResponseText();
-    }
-  }
-
-  public getResponseBytes(): Uint8Array {
-    const result = this.fulfillment.result;
-    if (typeof (result) !== "string") {
-      return result;
-    } else {
-      return super.getResponseBytes();
-    }
-  }
-
-  public getResponseType(): RpcResponseType {
-    return this.fulfillment.type;
+  protected load() {
+    return Promise.resolve(this.fulfillment!.result);
   }
 }

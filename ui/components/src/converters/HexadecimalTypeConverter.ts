@@ -6,27 +6,44 @@
 
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Primitives } from "./valuetypes";
 
 /** Hexadecimal Type Converter.
  */
 export class HexadecimalTypeConverter extends TypeConverter {
-  public async convertToString(value: any): Promise<string> {
-    if (null === value || undefined === value)
+  public async convertToString(value?: Primitives.Hexadecimal): Promise<string> {
+    if (value === undefined)
       return "";
 
-    const valueStr = value.toString(16);
-    return valueStr.toUpperCase();
+    // Need to Uppercase without changing 0x part
+    const hexString = value.toString();
+    return "0x" + hexString.substring(2, hexString.length).toUpperCase();
   }
 
-  public async convertFromString(value: string): Promise<any> {
-    if (null === value || undefined === value)
-      return undefined;
+  public async convertFromString(value: string): Promise<Id64String | undefined> {
+    if (value.substr(0, 2) !== "0x")
+      value = "0x" + value;
 
-    if (value[1] === "x")
-      return parseInt(value.substr(2), 16);
-    else
-      return parseInt(value, 16);
+    value = Id64.fromString(value);
+    if (Id64.isValidId64(value))
+      return value;
+
+    return undefined;
+  }
+
+  public sortCompare(a: Primitives.Hexadecimal, b: Primitives.Hexadecimal): number {
+    // Normalize the strings
+    a = Id64.fromString(a);
+    b = Id64.fromString(b);
+
+    if (a === b)
+      return 0;
+    if (a > b)
+      return 1;
+    return -1;
   }
 }
+
 TypeConverterManager.registerConverter("hex", HexadecimalTypeConverter);
 TypeConverterManager.registerConverter("hexadecimal", HexadecimalTypeConverter);

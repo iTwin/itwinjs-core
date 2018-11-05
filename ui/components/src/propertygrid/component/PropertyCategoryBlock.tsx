@@ -9,7 +9,7 @@ import { ExpandableBlock } from "@bentley/ui-core/";
 import { PropertyCategory } from "../PropertyDataProvider";
 
 /**
- * Props for the PropertyCategoryBlock React component
+ * Properties for the [[PropertyCategoryBlock]] React component
  */
 export interface PropertyCategoryBlockProps {
   /** Category of the properties */

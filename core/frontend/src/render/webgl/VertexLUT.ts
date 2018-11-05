@@ -20,9 +20,9 @@ export class VertexLUT implements IDisposable {
   public readonly qOrigin: Float32Array;  // Origin of quantized positions
   public readonly qScale: Float32Array;   // Scale of quantized positions
   public readonly uvQParams?: Float32Array; // If vertices contain texture UV params, quantization parameters as [origin.x, origin.y, scale.x, scale.y ]
-  public readonly auxDisplacements?: AuxDisplacement[];  // Auxilliary displacements.
-  public readonly auxNormals?: AuxNormal[];  // Auxilliary displacements.
-  public readonly auxParams?: AuxParam[];  // Auxilliary displacements.
+  public readonly auxDisplacements?: Map<string, AuxDisplacement>;  // Auxilliary displacements.
+  public readonly auxNormals?: Map<string, AuxNormal>;  // Auxilliary displacements.
+  public readonly auxParams?: Map<string, AuxParam>;  // Auxilliary displacements.
 
   public static createFromVertexTable(vt: VertexTable): VertexLUT | undefined {
     const texture = TextureHandle.createForData(vt.width, vt.height, vt.data);
@@ -36,11 +36,23 @@ export class VertexLUT implements IDisposable {
     this.colorInfo = colorInfo;
     this.qOrigin = qorigin3dToArray(qparams.origin);
     this.qScale = qscale3dToArray(qparams.scale);
-    this.auxDisplacements = table.auxDisplacements;
-    this.auxParams = table.auxParams;
-    this.auxNormals = table.auxNormals;
-    if (undefined !== uvParams) {
+    if (undefined !== uvParams)
       this.uvQParams = qparams2dToArray(uvParams);
+
+    if (undefined !== table.auxDisplacements) {
+      this.auxDisplacements = new Map<string, AuxDisplacement>();
+      for (const auxDisplacement of table.auxDisplacements)
+        this.auxDisplacements.set(auxDisplacement.name, auxDisplacement);
+    }
+    if (undefined !== table.auxParams) {
+      this.auxParams = new Map<string, AuxParam>();
+      for (const auxParam of table.auxParams)
+        this.auxParams.set(auxParam.name, auxParam);
+    }
+    if (undefined !== table.auxNormals) {
+      this.auxNormals = new Map<string, AuxNormal>();
+      for (const auxNormal of table.auxNormals)
+        this.auxNormals.set(auxNormal.name, auxNormal);
     }
   }
 

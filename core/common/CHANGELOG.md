@@ -1,6 +1,26 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Fri, 19 Oct 2018 13:04:14 GMT and should not be manually modified.
+This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+
+## 0.163.0
+Wed, 31 Oct 2018 20:55:37 GMT
+
+### Updates
+
+- Fully support mixed binary and JSON content in both directions in RPC layer. RPC system internal refactoring. Basic support for cacheable RPC requests.
+- Remove unused RpcInterface methods, move WIP methods
+
+## 0.162.0
+Wed, 24 Oct 2018 19:20:06 GMT
+
+### Updates
+
+- Added view decoration examples to docs.
+- Make ToolAdmin.defaultTool. public. Allow getToolTip to return HTMLElement | string.
+- Breaking changes to optimize usage of 64-bit IDs.
+- Remove unused createAndInsert methods from IModelWriteRpcInterface
+- Correctly parse RPC interface versions with zero major component.
+- Add RpcInterface versioning documentation
 
 ## 0.161.0
 Fri, 19 Oct 2018 13:04:14 GMT

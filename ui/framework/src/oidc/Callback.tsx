@@ -2,12 +2,15 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module OpenIModel */
+
 import * as React from "react";
 import { connect } from "react-redux";
 import { CallbackComponent } from "redux-oidc";
 import { OverallContentPage, OverallContentActions } from "../overallcontent/state";
 import { UiFramework } from "../UiFramework";
 
+/** Properties for the [[CallbackPage]] React component */
 export interface CallbackProps {
   setOverallPage: (page: OverallContentPage | number) => any;
 }
@@ -55,5 +58,7 @@ class CallbackPageComponent extends React.Component<CallbackProps, CallbackState
   }
 }
 
-// tslint:disable-next-line:variable-name
-export const CallbackPage = connect(mapStateToProps, mapDispatch)(CallbackPageComponent);
+/**
+ * Callback page for signing in.
+ */
+export const CallbackPage = connect(mapStateToProps, mapDispatch)(CallbackPageComponent);   // tslint:disable-line:variable-name

@@ -45,7 +45,7 @@ describe("Workflow & WorkflowManager", () => {
     const workflowPropsList: WorkflowPropsList = {
       defaultWorkflowId: "default-workflow",
       taskPicker: {
-        classid: "taskpicker-class",
+        classId: "taskpicker-class",
         iconClass: "taskpicker-icon",
         labelKey: "taskpicker-label",
       },
@@ -53,21 +53,21 @@ describe("Workflow & WorkflowManager", () => {
         {
           id: "ExampleWorkflow3",
           iconClass: "icon-placeholder",
-          labelKey: "Protogist:Test.ExampleWorkflow3",
+          labelKey: "App:Test.ExampleWorkflow3",
           defaultTaskId: "Task3",
           tasks: ["Task4", "Task3", "Task1"],
         },
         {
           id: "ExampleWorkflow",
           iconClass: "icon-placeholder",
-          labelKey: "Protogist:Test.ExampleWorkflow1",
+          labelKey: "App:Test.ExampleWorkflow1",
           defaultTaskId: "Task1",
           tasks: ["Task1", "Task2"],
         },
         {
           id: "ExampleWorkflow2",
           iconClass: "icon-placeholder",
-          labelKey: "Protogist:Test.ExampleWorkflow2",
+          labelKey: "App:Test.ExampleWorkflow2",
           defaultTaskId: "Task2",
           tasks: ["Task4", "Task3", "Task2"],
         },
@@ -107,7 +107,7 @@ describe("Workflow & WorkflowManager", () => {
         {
           id: "ExampleWorkflow",
           iconClass: "icon-placeholder",
-          labelKey: "Protogist:Test.my-label",
+          labelKey: "App:Test.my-label",
           defaultTaskId: "Task1",
           tasks: ["Task4", "Task3", "Task1", "Task2"],
           isDefault: true,
@@ -131,7 +131,7 @@ describe("Workflow & WorkflowManager", () => {
 
     it("Task Picker", () => {
       const taskPickerProps = WorkflowManager.taskPickerProps;
-      expect(taskPickerProps.classid).to.eq("taskpicker-class");
+      expect(taskPickerProps.classId).to.eq("taskpicker-class");
     });
 
     it("setActiveWorkflowAndTask & isActive", () => {

@@ -7,7 +7,6 @@
 import * as React from "react";
 import { CSSProperties } from "react";
 
-import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "./FrontstageComposer";
 import { FrontstageDef } from "./FrontstageDef";
 import { FrontstageZone } from "./FrontstageZone";
@@ -15,12 +14,13 @@ import { ContentLayout } from "./ContentLayout";
 
 import NZ_Zones from "@bentley/ui-ninezone/lib/zones/Zones";
 import NineZone, { NineZoneProps, WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
+import { WidgetZone } from "@bentley/ui-ninezone/lib/zones/state/Zone";
 
 // -----------------------------------------------------------------------------
 // Frontstage React component
 // -----------------------------------------------------------------------------
 
-/** Props for the FrameworkFrontstage component.
+/** Properties for the [[FrameworkFrontstage]] component.
  */
 export interface FrameworkFrontstageProps {
   frontstageDef: FrontstageDef;
@@ -30,38 +30,12 @@ export interface FrameworkFrontstageProps {
   zoneDefProvider: ZoneDefProvider;
 }
 
-/** State for the FrameworkFrontstage component.
- */
-export interface FrameworkFrontstageState {
-  toolId: string;
-}
-
 /** Frontstage React component with a FrontstageDef.
  */
-export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProps, FrameworkFrontstageState> {
-
-  /** hidden */
-  public readonly state: Readonly<FrameworkFrontstageState> = {
-    toolId: "",
-  };
-
-  public componentDidMount(): void {
-    FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
-  }
-
-  public componentWillUnmount(): void {
-    FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
-  }
-
-  private _handleToolActivatedEvent = (args: ToolActivatedEventArgs) => {
-    this.setState((_prevState, _props) => ({ toolId: args.toolId }));
-  }
+export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProps> {
 
   // This uses ConfigurableUi to render the content
   private doContentLayoutRender(): any {
-    // if (ProtogistApp.store.getState().contentState!.layoutDef)
-    //   return undefined;
-
     return (
       <ContentLayout
         contentLayout={this.props.frontstageDef.defaultLayout!}
@@ -109,7 +83,7 @@ export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProp
         <NZ_Zones style={zonesStyle}>
           {
             zones.map((zoneId) => {
-              const zone = nineZone.getWidgetZone(zoneId);
+              const zone: WidgetZone = nineZone.getWidgetZone(zoneId);
               const isDragged = this.props.nineZone.draggingWidget && this.props.nineZone.draggingWidget.id === zoneId;
               const lastPosition = isDragged ? this.props.nineZone.draggingWidget!.lastPosition : undefined;
               const isUnmergeDrag = isDragged ? this.props.nineZone.draggingWidget!.isUnmerge : false;
@@ -118,7 +92,7 @@ export class FrameworkFrontstage extends React.Component<FrameworkFrontstageProp
               return (
                 <FrontstageZone
                   key={zoneId}
-                  zoneState={this.props.nineZone.zones[zoneId]}
+                  zoneProps={this.props.nineZone.zones[zoneId]}
                   widgetChangeHandler={this.props.widgetChangeHandler}
                   targetChangeHandler={this.props.targetChangeHandler}
                   zoneDefProvider={this.props.zoneDefProvider}

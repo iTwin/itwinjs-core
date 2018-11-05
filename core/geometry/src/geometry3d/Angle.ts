@@ -222,6 +222,11 @@ export class Angle implements BeJSONFunctions {
     public isAlmostEqualNoPeriodShift(other: Angle): boolean { return Math.abs(this._radians - other._radians) < Geometry.smallAngleRadians; }
     /**
      * Test if two angle (in radians)  almost equal, NOT allowing shift by full circle multiples of `2 * PI`.
+     * * (Same test as isAlmostEqualRadiansNoPeriodShift)
+     */
+    public isAlmostEqual(other: Angle): boolean { return this.isAlmostEqualNoPeriodShift(other); }
+    /**
+     * Test if two angle (in radians)  almost equal, NOT allowing shift by full circle multiples of `2 * PI`.
      */
     public static isAlmostEqualRadiansNoPeriodShift(radiansA: number, radiansB: number): boolean { return Math.abs(radiansA - radiansB) < Geometry.smallAngleRadians; }
     /**

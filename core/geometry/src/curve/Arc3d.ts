@@ -50,6 +50,8 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   private _center: Point3d;
   private _matrix: Matrix3d; // columns are [vector0, vector90, unitNormal]
   private _sweep: AngleSweep; // sweep limits.
+  private static _workPointA = Point3d.create();
+  private static _workPointB = Point3d.create();
   /**
    * read property for (clone of) center
    */
@@ -156,6 +158,14 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return LineString3d.create(pointA, pointB, pointC);
   }
+  /** The arc has simple proportional arc length if and only if it is a circular arc. */
+  public getFractionToDistanceScale(): number | undefined {
+    const radius = this.circularRadius();
+    if (radius !== undefined)
+      return Math.abs(radius * this._sweep.sweepRadians);
+    return undefined;
+  }
+
   public fractionToPoint(fraction: number, result?: Point3d): Point3d {
     const radians = this._sweep.fractionToRadians(fraction);
     return this._matrix.originPlusMatrixTimesXY(this._center, Math.cos(radians), Math.sin(radians), result);
@@ -204,16 +214,50 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
 
   public startPoint(result?: Point3d): Point3d { return this.fractionToPoint(0.0, result); }
   public endPoint(result?: Point3d): Point3d { return this.fractionToPoint(1.0, result); }
-
+  /** * If this is a circular arc, return the simple length derived from radius and sweep.
+   * * Otherwise (i.e. if this elliptical) fall through to CurvePrimitive base implementation which
+   *     Uses quadrature.
+   */
   public curveLength(): number {
-    const r = this.circularRadius();
-    if (r !== undefined) {
-      return Math.abs(this._sweep.sweepRadians * r);
-    }
+    const simpleLength = this.getFractionToDistanceScale();
+    if (simpleLength !== undefined)
+      return simpleLength;
     // fall through for true ellipse . .. stroke and accumulate quadrature ...
     return super.curveLength();
   }
-  public quickLength(): number { return this._sweep.sweepRadians * Math.sqrt(this._matrix.columnXMagnitude() * this._matrix.columnYMagnitude()); }
+/**
+ * Return an approximate (but easy to compute) arc length.
+ * The estimate is:
+ * * Form 8 chords on full circle, proportionally fewer for partials.  (But 2 extras if less than half circle.)
+ * * sum the chord lengths
+ * * For a circle, we know this crude approximation has to be increased by a factor (theta/(2 sin (theta/2)))
+ * * Apply that factor.
+ * * Experiments confirm that this is within 3 percent for a variety of eccentricities and arc sweeps.
+ */
+  public quickLength(): number {
+    const totalSweep = Math.abs(this._sweep.sweepRadians);
+    let numInterval = Math.ceil(4 * totalSweep / Math.PI);
+    if (numInterval < 1)
+      numInterval = 1;
+    if (numInterval < 4)
+      numInterval += 3;
+    else if (numInterval < 6)
+      numInterval += 2;   // force extras for short arcs
+    const pointA = Arc3d._workPointA;
+    const pointB = Arc3d._workPointB;
+    let chordSum = 0.0;
+    this.fractionToPoint(0.0, pointA);
+    for (let i = 1; i <= numInterval; i++) {
+      this.fractionToPoint(i / numInterval, pointB);
+      chordSum += pointA.distance(pointB);
+      pointA.setFromPoint3d(pointB);
+    }
+    // The chord sum is always shorter.
+    // if it is a true circular arc, the ratio of correct over sum is easy ...
+    const dTheta = totalSweep / numInterval;
+    const factor = dTheta / (2.0 * Math.sin(0.5 * dTheta));
+    return chordSum * factor;
+  }
 
   public allPerpendicularAngles(spacePoint: Point3d, _extend: boolean = false, _endpoints: boolean = false): number[] {
     const radians: number[] = [];

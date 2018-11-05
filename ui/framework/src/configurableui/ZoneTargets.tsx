@@ -15,7 +15,7 @@ import { WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
 import { DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
 import { TargetType } from "@bentley/ui-ninezone/lib/zones/state/Target";
 
-/** Props for the ZoneTargets.
+/** Properties for the [[ZoneTargets]] component.
  */
 export interface ZoneTargetsProps {
   zoneId: WidgetZoneIndex;

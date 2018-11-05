@@ -99,6 +99,7 @@ app.all("/*", (_req, res, next) => {
 app.use(express.static(path.resolve(__dirname, "public")));
 app.get("/v3/swagger.json", (req, res) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
 app.post("*", async (req, res) => cloudConfig.protocol.handleOperationPostRequest(req, res));
+app.get(/\/imodel\//, async (req, res) => cloudConfig.protocol.handleOperationGetRequest(req, res));
 
 // ---------------------------------------------
 // Run the server...

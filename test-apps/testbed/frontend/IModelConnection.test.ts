@@ -5,7 +5,7 @@
 import { assert, expect } from "chai";
 import { Id64, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { XYAndZ, Range3d, Transform } from "@bentley/geometry-core";
-import { BisCodeSpec, CodeSpec, NavigationValue, ECSqlTypedString, ECSqlStringType, RelatedElement, IModelVersion } from "@bentley/imodeljs-common";
+import { BisCodeSpec, CodeSpec, NavigationValue, RelatedElement, IModelVersion } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
@@ -44,7 +44,7 @@ describe("IModelConnection (#integration)", () => {
 
     const elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
-    assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
+    assert.equal(iModel.elements.rootSubjectId, Id64.fromJSON(elementProps[0].id));
     assert.equal(iModel.models.repositoryModelId, RelatedElement.idFromJson(elementProps[0].model).toString());
 
     const queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
@@ -68,7 +68,7 @@ describe("IModelConnection (#integration)", () => {
     assert.exists(codeSpecByName);
     const codeSpecById: CodeSpec = await iModel.codeSpecs.getById(codeSpecByName.id);
     assert.exists(codeSpecById);
-    const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getById(new Id64(codeSpecByName.id));
+    const codeSpecByNewId: CodeSpec = await iModel.codeSpecs.getById(Id64.fromJSON(codeSpecByName.id));
     assert.exists(codeSpecByNewId);
 
     let viewDefinitions = await iModel.views.getViewList({ from: "BisCore.OrthographicViewDefinition" });
@@ -101,7 +101,7 @@ describe("IModelConnection (#integration)", () => {
   it("should be able to re-establish IModelConnection if the backend is shut down", async () => {
     let elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
-    assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
+    assert.equal(iModel.elements.rootSubjectId, Id64.fromJSON(elementProps[0].id));
     assert.equal(iModel.models.repositoryModelId, RelatedElement.idFromJson(elementProps[0].model).toString());
 
     let queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
@@ -112,7 +112,7 @@ describe("IModelConnection (#integration)", () => {
 
     elementProps = await iModel.elements.getProps(iModel.elements.rootSubjectId);
     assert.equal(elementProps.length, 1);
-    assert.isTrue(iModel.elements.rootSubjectId.equals(new Id64(elementProps[0].id)));
+    assert.equal(iModel.elements.rootSubjectId, Id64.fromJSON(elementProps[0].id));
     assert.equal(iModel.models.repositoryModelId, RelatedElement.idFromJson(elementProps[0].model).toString());
 
     queryElementIds = await iModel.elements.queryIds({ from: "BisCore.Category", limit: 20, offset: 0 });
@@ -173,17 +173,33 @@ describe("IModelConnection (#integration)", () => {
     assert.isDefined(sprite);
   });
 
+  it("ECSQL with BLOB", async () => {
+    assert.exists(iModel);
+    let rows = await iModel.executeQuery("SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
+    assert.equal(rows.length, 1);
+    const row: any = rows[0];
+
+    assert.isTrue(Id64.isValidId64(row.id));
+
+    assert.isDefined(row.geometryStream);
+    const geomStream: Uint8Array = row.geometryStream;
+    assert.isAtLeast(geomStream.byteLength, 1);
+
+    rows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE GeometryStream=?", [geomStream]);
+    assert.equal(rows.length, 1);
+  });
+
   it("Parameterized ECSQL", async () => {
     assert.exists(iModel);
     let rows = await iModel.executeQuery("SELECT ECInstanceId,Model,LastMod,CodeValue,FederationGuid,Origin FROM bis.GeometricElement3d LIMIT 1");
     assert.equal(rows.length, 1);
     let expectedRow = rows[0];
-    const expectedId = new Id64(expectedRow.id);
-    assert.isTrue(expectedId.isValid);
+    const expectedId = Id64.fromJSON(expectedRow.id);
+    assert.isTrue(Id64.isValid(expectedId));
     const expectedModel: NavigationValue = expectedRow.model;
-    assert.isTrue(new Id64(expectedModel.id).isValid);
-    const expectedLastMod: ECSqlTypedString = { type: ECSqlStringType.DateTime, value: expectedRow.lastMod };
-    const expectedFedGuid: ECSqlTypedString | undefined = expectedRow.federationGuid !== undefined ? { type: ECSqlStringType.Guid, value: expectedRow.federationGuid } : undefined;
+    assert.isTrue(Id64.isValidId64(expectedModel.id));
+    const expectedLastMod: string = expectedRow.lastMod;
+    const expectedFedGuid: string | undefined = !!expectedRow.federationGuid ? expectedRow.federationGuid : undefined;
     const expectedOrigin: XYAndZ = expectedRow.origin;
 
     let actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement3d WHERE ECInstanceId=? AND Model=? OR (LastMod=? AND CodeValue=? AND FederationGuid=? AND Origin=?)",
@@ -210,11 +226,11 @@ describe("IModelConnection (#integration)", () => {
 
     expectedRow = rows[0];
     actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=? AND Origin=?",
-      [new Id64(expectedRow.id), expectedRow.origin]);
+      [Id64.fromJSON(expectedRow.id), expectedRow.origin]);
     assert.equal(actualRows.length, 1);
 
     actualRows = await iModel.executeQuery("SELECT 1 FROM bis.GeometricElement2d WHERE ECInstanceId=:id AND Origin=:origin",
-      { id: { type: ECSqlStringType.Id, value: expectedRow.id }, origin: expectedRow.origin });
+      { id: expectedRow.id, origin: expectedRow.origin });
     assert.equal(actualRows.length, 1);
   }).timeout(99999);
 
@@ -254,13 +270,13 @@ describe("IModelConnection (#integration)", () => {
   it("should generate unique transient IDs", () => {
     for (let i = 1; i < 40; i++) {
       const id = iModel.transientIds.next;
-      expect(id.getLow()).to.equal(i); // auto-incrementing local ID beginning at 1
-      expect(id.getHigh()).to.equal(0xffffffff); // illegal briefcase ID
-      expect(Id64.isTransientId(id)).to.be.true;
-      expect(Id64.isTransientId(id.toString())).to.be.true;
+      expect(Id64.getLocalId(id)).to.equal(i); // auto-incrementing local ID beginning at 1
+      expect(Id64.getBriefcaseId(id)).to.equal(0xffffff); // illegal briefcase ID
+      expect(Id64.isTransient(id)).to.be.true;
+      expect(Id64.isTransient(id.toString())).to.be.true;
     }
 
-    expect(Id64.isTransientId(Id64.invalidId)).to.be.false;
-    expect(Id64.isTransientId("0xffffff6789abcdef")).to.be.false;
+    expect(Id64.isTransient(Id64.invalid)).to.be.false;
+    expect(Id64.isTransient("0xffffff6789abcdef")).to.be.false;
   });
 });

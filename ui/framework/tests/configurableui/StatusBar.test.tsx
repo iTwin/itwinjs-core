@@ -10,14 +10,13 @@ import {
   StatusBarWidgetControl,
   ConfigurableCreateInfo,
   MessageCenterField,
-  ConfigurableUiManager,
   IStatusBar,
   StatusBarFieldId,
-  ZoneDef,
   WidgetState,
   StatusBar,
-  ZoneState,
   AppNotificationManager,
+  WidgetDef,
+  ConfigurableUiControlType,
 } from "../../src/index";
 
 import {
@@ -47,40 +46,30 @@ describe("StatusBar", () => {
     }
   }
 
-  let statusBarZoneDef: ZoneDef;
+  let widgetControl: StatusBarWidgetControl | undefined;
   let notifications: AppNotificationManager;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    ConfigurableUiManager.unregisterControl("AppStatusBar");
-    ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl);
-
-    statusBarZoneDef = new ZoneDef({
-      defaultState: ZoneState.Open,
-      allowsMerging: false,
-      widgetProps: [
-        {
-          classId: "AppStatusBar",
-          defaultState: WidgetState.Open,
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:Test.my-label",
-          isFreeform: false,
-          isStatusBar: true,
-        },
-      ],
+    const statusBarWidgetDef = new WidgetDef({
+      classId: AppStatusBarWidgetControl,
+      defaultState: WidgetState.Open,
+      isFreeform: false,
+      isStatusBar: true,
     });
+    widgetControl = statusBarWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
 
     notifications = new AppNotificationManager();
   });
 
   it("StatusBar should mount", () => {
-    const wrapper = mount(<StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
     wrapper.unmount();
   });
 
   it("StatusBar should render a Toast message", () => {
-    const wrapper = mount(<StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Warning, "A brief message.");
     notifications.outputMessage(details);
@@ -89,7 +78,7 @@ describe("StatusBar", () => {
   });
 
   it("StatusBar should render a Sticky message", () => {
-    const wrapper = mount(<StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Info, "A brief message.", undefined, OutputMessageType.Sticky);
     notifications.outputMessage(details);
@@ -98,7 +87,7 @@ describe("StatusBar", () => {
   });
 
   it("Sticky message should closed", () => {
-    const wrapper = mount(<StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Error, "A brief message.", undefined, OutputMessageType.Sticky);
     notifications.outputMessage(details);
@@ -110,7 +99,7 @@ describe("StatusBar", () => {
   });
 
   it("StatusBar should render a Modal message", () => {
-    const wrapper = mount(<StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new NotifyMessageDetails(OutputMessagePriority.Fatal, "A brief message.", undefined, OutputMessageType.Alert);
     notifications.outputMessage(details);
@@ -119,7 +108,7 @@ describe("StatusBar", () => {
   });
 
   it("StatusBar should render an Activity message", () => {
-    const wrapper = mount(<StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
@@ -130,7 +119,7 @@ describe("StatusBar", () => {
   });
 
   it("Activity message should be canceled", () => {
-    const wrapper = mount(<StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);
@@ -143,7 +132,7 @@ describe("StatusBar", () => {
   });
 
   it("Activity message should be dismissed", () => {
-    const wrapper = mount(<StatusBar zoneDef={statusBarZoneDef} isInFooterMode={true} />);
+    const wrapper = mount(<StatusBar widgetControl={widgetControl} isInFooterMode={true} />);
 
     const details = new ActivityMessageDetails(true, true, true);
     notifications.setupActivityMessage(details);

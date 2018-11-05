@@ -3,21 +3,22 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import ECClass from "./Class";
-import Mixin from "./Mixin";
-import RelationshipClass from "./RelationshipClass";
-import { LazyLoadedMixin } from "./../Interfaces";
-import { ECClassModifier, StrengthDirection, SchemaItemType, parseStrengthDirection } from "./../ECObjects";
-import { SchemaItemKey } from "./../SchemaKey";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
-import { NavigationProperty, AnyProperty, Property } from "./Property";
+import { ECClass } from "./Class";
+import { Mixin } from "./Mixin";
+import { AnyProperty, NavigationProperty, Property } from "./Property";
+import { Schema } from "./Schema";
+import { RelationshipClass } from "./RelationshipClass";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
-import Schema from "./Schema";
+import { EntityClassProps } from "./../Deserialization/JsonProps";
+import { ECClassModifier, parseStrengthDirection, SchemaItemType, StrengthDirection } from "./../ECObjects";
+import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { LazyLoadedMixin } from "./../Interfaces";
+import { SchemaItemKey } from "./../SchemaKey";
 
 /**
  * A Typescript class representation of an ECEntityClass.
  */
-export default class EntityClass extends ECClass {
+export class EntityClass extends ECClass {
   public readonly schemaItemType!: SchemaItemType.EntityClass; // tslint:disable-line
   protected _mixins?: LazyLoadedMixin[];
 
@@ -170,29 +171,17 @@ export default class EntityClass extends ECClass {
     return schemaJson;
   }
 
-  /**
-   *
-   * @param jsonObj
-   */
-  public async fromJson(jsonObj: any): Promise<void> {
-    this.fromJsonSync(jsonObj);
+  public async deserialize(entityClassProps: EntityClassProps) {
+    this.deserializeSync(entityClassProps);
   }
 
-  /**
-   *
-   * @param jsonObj
-   */
-  public fromJsonSync(jsonObj: any): void {
-    super.fromJsonSync(jsonObj);
+  public deserializeSync(entityClassProps: EntityClassProps) {
+    super.deserializeSync(entityClassProps);
 
-    if (undefined !== jsonObj.mixins) {
-      if (!Array.isArray(jsonObj.mixins))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+    if (undefined !== entityClassProps.mixins) {
       if (!this._mixins)
         this._mixins = [];
-      for (const name of jsonObj.mixins) {
-        if (typeof (name) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has an invalid 'mixins' attribute. It should be of type 'string[]'.`);
+      for (const name of entityClassProps.mixins) {
         const mixinSchemaItemKey = this.schema.getSchemaItemKey(name);
         if (!mixinSchemaItemKey)
           throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ECEntityClass ${this.name} has a mixin ("${name}") that cannot be found.`);

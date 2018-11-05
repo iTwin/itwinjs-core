@@ -67,3 +67,65 @@ Item {
   },
 }
 `;
+
+exports[`Item fromJSON creates valid Item with nested content values 1`] = `
+Item {
+  "classInfo": Object {
+    "id": "0x117d20000006e52",
+    "label": "bypassing Buckinghamshire",
+    "name": "Fantastic",
+  },
+  "displayValues": Object {
+    "key1": undefined,
+  },
+  "imageId": "25d312e8-1f7a-4066-b0a1-de9fba7ba143",
+  "label": "system El Salvador",
+  "mergedFieldNames": Array [
+    "key1",
+  ],
+  "primaryKeys": Array [],
+  "values": Object {
+    "key1": Array [
+      Object {
+        "displayValues": Object {
+          "nested": "",
+        },
+        "mergedFieldNames": Array [
+          "quantifying",
+        ],
+        "primaryKeys": Array [
+          Object {
+            "className": "invoice",
+            "id": "0x1546600000135a6",
+          },
+        ],
+        "values": Object {
+          "nested": undefined,
+        },
+      },
+    ],
+  },
+}
+`;
+
+exports[`Item fromJSON creates valid Item with null values 1`] = `
+Item {
+  "classInfo": Object {
+    "id": "0xf76a000000bd4c",
+    "label": "Clothing Forge Chips",
+    "name": "Intelligent Steel Pants",
+  },
+  "displayValues": Object {
+    "key1": undefined,
+  },
+  "imageId": "6da4e9d2-8abe-47b0-8954-da11390a7074",
+  "label": "optical Keyboard",
+  "mergedFieldNames": Array [
+    "key1",
+  ],
+  "primaryKeys": Array [],
+  "values": Object {
+    "key1": undefined,
+  },
+}
+`;

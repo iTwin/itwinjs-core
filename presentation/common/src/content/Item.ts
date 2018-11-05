@@ -6,18 +6,24 @@
 
 import * as ec from "../EC";
 import { ValuesDictionary } from "../Utils";
-import { Value, DisplayValue } from "./Value";
+import {
+  Value, DisplayValue,
+  DisplayValueJSON, ValueJSON,
+  valuesMapFromJSON, displayValuesMapFromJSON,
+} from "./Value";
 
 /**
  * Serialized [[Item]] JSON representation.
+ *
+ * @hidden
  */
 export interface ItemJSON {
   primaryKeys: ec.InstanceKeyJSON[];
   label: string;
   imageId: string;
   classInfo?: ec.ClassInfoJSON;
-  values: ValuesDictionary<Value>;
-  displayValues: ValuesDictionary<DisplayValue>;
+  values: ValuesDictionary<ValueJSON>;
+  displayValues: ValuesDictionary<DisplayValueJSON>;
   mergedFieldNames: string[];
 }
 
@@ -76,6 +82,8 @@ export default class Item {
    * Deserialize Item from JSON
    * @param json JSON or JSON serialized to string to deserialize from
    * @returns Deserialized item or undefined if deserialization failed
+   *
+   * @hidden
    */
   public static fromJSON(json: ItemJSON | string | undefined): Item | undefined {
     if (!json)
@@ -86,12 +94,16 @@ export default class Item {
     return Object.assign(item, json, {
       primaryKeys: json.primaryKeys.map((pk) => ec.instanceKeyFromJSON(pk)),
       classInfo: json.classInfo ? ec.classInfoFromJSON(json.classInfo) : undefined,
+      values: valuesMapFromJSON(json.values),
+      displayValues: displayValuesMapFromJSON(json.displayValues),
     } as Partial<Item>);
   }
 
   /**
    * Reviver function that can be used as a second argument for
    * `JSON.parse` method when parsing Item objects.
+   *
+   * @hidden
    */
   public static reviver(key: string, value: any): any {
     return key === "" ? Item.fromJSON(value) : value;

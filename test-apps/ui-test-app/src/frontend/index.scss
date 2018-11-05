@@ -3,7 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-@import "@bentley/bwc/lib/index.scss";
+/** Bring in BWC by importing both mixins.scss and classes.scss */
+@import "@bentley/bwc/lib/mixins.scss";
+@import "@bentley/bwc/lib/classes.scss";
 
 body {
   margin: 0;

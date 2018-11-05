@@ -3,21 +3,22 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import SchemaItem from "./SchemaItem";
-import { ECObjectsError, ECObjectsStatus } from "./../Exception";
+import { Schema } from "./Schema";
+import { SchemaItem } from "./SchemaItem";
+import { PropertyCategoryProps } from "./../Deserialization/JsonProps";
 import { SchemaItemType } from "./../ECObjects";
 import { SchemaItemVisitor } from "./../Interfaces";
-import Schema from "./Schema";
 
-export default class PropertyCategory extends SchemaItem {
+export class PropertyCategory extends SchemaItem {
   public readonly schemaItemType!: SchemaItemType.PropertyCategory; // tslint:disable-line
-  protected _priority: number = 0;
+  protected _priority: number;
 
   get priority() { return this._priority; }
 
   constructor(schema: Schema, name: string) {
     super(schema, name);
     this.schemaItemType = SchemaItemType.PropertyCategory;
+    this._priority = 0;
   }
 
   public toJson(standalone: boolean, includeSchemaVersion: boolean) {
@@ -26,14 +27,13 @@ export default class PropertyCategory extends SchemaItem {
     return schemaJson;
   }
 
-  public async fromJson(jsonObj: any) {
-    await super.fromJson(jsonObj);
+  public deserializeSync(propertyCategoryProps: PropertyCategoryProps) {
+    super.deserializeSync(propertyCategoryProps);
+    this._priority = propertyCategoryProps.priority;
+  }
 
-    if (undefined !== jsonObj.priority) {
-      if (typeof (jsonObj.priority) !== "number")
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The PropertyCategory ${this.name} has an invalid 'priority' attribute. It should be of type 'number'.`);
-      this._priority = jsonObj.priority;
-    }
+  public async deserialize(propertyCategoryProps: PropertyCategoryProps) {
+    this.deserializeSync(propertyCategoryProps);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

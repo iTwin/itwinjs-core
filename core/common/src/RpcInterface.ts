@@ -21,6 +21,8 @@ export abstract class RpcInterface {
     const difference = semver.diff(backend, frontend);
     if (semver.prerelease(backend) || semver.prerelease(frontend)) {
       return difference === null;
+    } else if (semver.major(backend) === 0 || semver.major(frontend) === 0) {
+      return difference === null || (difference === "patch" && semver.patch(frontend) < semver.patch(backend));
     } else {
       return difference === null || difference === "patch" || (difference === "minor" && semver.minor(frontend) < semver.minor(backend));
     }
@@ -31,7 +33,7 @@ export abstract class RpcInterface {
 
   /** Obtains the implementation result for an RPC operation. */
   public forward<T>(operation: string, ...parameters: any[]): Promise<T> {
-    const request = new (this.configuration.protocol.requestType)<T>(this, operation, parameters);
+    const request = new (this.configuration.protocol.requestType as any)(this, operation, parameters);
     request.submit();
     (this as any)[CURRENT_REQUEST] = request;
     return request.response;

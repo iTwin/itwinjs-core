@@ -4,54 +4,49 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
 
-import { RpcRequest, RpcResponseType } from "../core/RpcRequest";
-import { RpcProtocolEvent, RpcRequestFulfillment } from "../core/RpcProtocol";
+import { RpcRequest } from "../core/RpcRequest";
+import { RpcRequestFulfillment } from "../core/RpcProtocol";
 import { ElectronRpcProtocol, CHANNEL, interop } from "./ElectronRpcProtocol";
+import { RpcProtocolEvent } from "../core/RpcConstants";
 
 export class ElectronRpcRequest extends RpcRequest {
+  private _response: (value: number) => void = () => undefined;
+  private _fulfillment: RpcRequestFulfillment | undefined = undefined;
+
   /** Convenience access to the protocol of this request. */
   public readonly protocol: ElectronRpcProtocol = this.client.configuration.protocol as any;
 
-  /** The fulfillment of this request. */
-  public fulfillment: RpcRequestFulfillment = { result: "", status: 0, id: "", interfaceName: "", type: RpcResponseType.Unknown };
-
   /** Sends the request. */
-  protected send(): void {
+  protected send() {
     try {
+      this.protocol.requests.set(this.id, this);
       const request = this.protocol.serialize(this);
       interop.ipcRenderer.send(CHANNEL, request);
     } catch (e) {
       this.protocol.events.raiseEvent(RpcProtocolEvent.ConnectionErrorReceived, this);
     }
+
+    return new Promise<number>((resolve) => { this._response = resolve; });
   }
 
-  /** Supplies response status code. */
-  public getResponseStatusCode(): number {
-    return this.fulfillment.status;
-  }
-
-  /** Supplies response text. */
-  public getResponseText(): string {
-    const result = this.fulfillment.result;
-    if (typeof (result) === "string") {
-      return result;
-    } else {
-      return super.getResponseText();
+  /** Loads the request. */
+  protected load() {
+    const fulfillment = this._fulfillment;
+    if (!fulfillment) {
+      return Promise.reject("No request fulfillment available.");
     }
+
+    return Promise.resolve(fulfillment.result);
   }
 
-  /** Supplies response bytes. */
-  public getResponseBytes(): Uint8Array {
-    const result = this.fulfillment.result;
-    if (typeof (result) !== "string") {
-      return result;
-    } else {
-      return super.getResponseBytes();
-    }
+  /** Sets request header values. */
+  protected setHeader(_name: string, _value: string): void {
+    // No implementation
   }
 
-  /** Supplies response type. */
-  public getResponseType(): RpcResponseType {
-    return this.fulfillment.type;
+  /** @hidden */
+  public notifyResponse(fulfillment: RpcRequestFulfillment) {
+    this._fulfillment = fulfillment;
+    this._response(fulfillment.status);
   }
 }

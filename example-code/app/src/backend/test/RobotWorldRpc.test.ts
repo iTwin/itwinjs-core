@@ -8,7 +8,7 @@ import { StandaloneIModelRpcInterface, IModelToken, IModelReadRpcInterface, IMod
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { OpenMode, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { OpenMode, Id64String, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelTestUtils } from "./Utils";
 import { Point3d, Angle } from "@bentley/geometry-core";
 import { TestRpcManager } from "@bentley/imodeljs-common/lib/rpc/TestRpcManager";
@@ -61,9 +61,9 @@ describe("RobotWorldRpc", () => {
     assert.isTrue(iModel !== undefined);
     const iToken: IModelToken = iModel.iModelToken;
 
-    let modelId!: Id64;
+    let modelId!: Id64String;
     for (const modelStr of await iModel.queryEntityIds({ from: "bis:element", where: "CodeValue='test'" }))
-      modelId = new Id64(modelStr);
+      modelId = Id64.fromString(modelStr);
 
     //  Initial placement: Robot1 is not touching any barrier (or other robot)
     //

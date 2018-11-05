@@ -59,10 +59,10 @@ export abstract class DataControllerBase implements DataController {
 /** Manages Property Editors. Property Editors are registered with and created by the manager.
  */
 export class PropertyEditorManager {
-  private static _editors: { [index: string]: (any) } = {};
-  private static _dataControllers: { [index: string]: (any) } = {};
+  private static _editors: { [index: string]: (new () => PropertyEditorBase) } = {};
+  private static _dataControllers: { [index: string]: (new () => DataControllerBase) } = {};
 
-  public static registerEditor(editType: string, editor: typeof PropertyEditorBase, editorName?: string): void {
+  public static registerEditor(editType: string, editor: new () => PropertyEditorBase, editorName?: string): void {
     let fullEditorName = editType;
     if (editorName)
       fullEditorName += ":" + editorName;
@@ -74,7 +74,7 @@ export class PropertyEditorManager {
     PropertyEditorManager._editors[fullEditorName] = editor;
   }
 
-  public static registerDataController(controllerName: string, controller: typeof DataControllerBase): void {
+  public static registerDataController(controllerName: string, controller: new () => DataControllerBase): void {
     if (PropertyEditorManager._dataControllers.hasOwnProperty(controllerName)) {
       throw Error("PropertyEditorManager.RegisterDataController error: type '" + controllerName + "' already registered to '" + (typeof PropertyEditorManager._dataControllers[controllerName]).toString() + "'");
     }

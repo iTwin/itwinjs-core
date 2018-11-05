@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect, assert } from "chai";
-import { Transform } from "@bentley/geometry-core";
 import { WebGLTestContext } from "./WebGLTestContext";
 import { ClippingType } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
@@ -19,7 +18,7 @@ import {
   SingularTechnique,
   ViewportQuadGeometry,
   DrawParams,
-  RenderPass,
+  ShaderProgramParams,
 } from "@bentley/imodeljs-frontend/lib/webgl";
 
 function createPurpleQuadTechnique(target: Target): TechniqueId {
@@ -70,7 +69,10 @@ describe("Technique tests", () => {
     const geom = ViewportQuadGeometry.create(techId);
     assert.isDefined(geom);
 
-    const drawParams = new DrawParams(target, geom!, Transform.createIdentity(), RenderPass.OpaqueGeneral);
+    const progParams = new ShaderProgramParams();
+    progParams.init(target);
+    const drawParams = new DrawParams();
+    drawParams.init(progParams, geom!);
     target.techniques.draw(drawParams);
   });
 

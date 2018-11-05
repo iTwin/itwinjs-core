@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64, JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
+import { JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import { Config } from "@bentley/imodeljs-clients";
@@ -14,7 +14,7 @@ import {
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 import {
   AccuDraw, AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, BeButtonEvent, Cluster, CoordinateLockOverrides, DecorateContext,
-  DynamicsContext, EditManipulator, EventHandled, HitDetail, ImageUtil, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
+  DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
   SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus,
 } from "@bentley/imodeljs-frontend";
@@ -746,7 +746,7 @@ export class MeasurePointsTool extends PrimitiveTool {
       return;
 
     if (undefined === this._snapGeomId)
-      this._snapGeomId = this.iModel.transientIds.next.value;
+      this._snapGeomId = this.iModel.transientIds.next;
 
     const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._snapGeomId);
 
@@ -893,10 +893,8 @@ export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
 
   protected init(): void {
     this.receivedDownEvent = true;
-    IModelApp.toolAdmin.toolState.coordLockOvr = CoordinateLockOverrides.All;
-    IModelApp.accuSnap.enableLocate(false);
-    IModelApp.accuSnap.enableSnap(false);
-    IModelApp.accuDraw.deactivate();
+    this.initLocateElements(false, false, undefined, CoordinateLockOverrides.All); // Disable locate/snap/locks for control modification; overrides state inherited from suspended primitive...
+    IModelApp.accuDraw.deactivate(); // Disable activate of compass from beginDynamics...
     this.beginDynamics();
   }
 
@@ -964,10 +962,10 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   public constructor() {
     super(activeViewState.iModelConnection!);
     this._extents = this.iModel.projectExtents;
-    this._boxId = this.iModel.transientIds.next.value;
+    this._boxId = this.iModel.transientIds.next;
     this.updateDecorationListener(true);
 
-    const image = ImageUtil.fromUrl("map_pin.svg");
+    const image = imageElementFromUrl("map_pin.svg");
     const markerDrawFunc = (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.arc(0, 0, 15, 0, 2 * Math.PI);
@@ -1018,7 +1016,10 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     if (iModel.selectionSet.size <= this._controlIds.length + 1 && iModel.selectionSet.has(this._boxId)) {
       showControls = true;
       if (iModel.selectionSet.size > 1) {
-        iModel.selectionSet.elements.forEach((val) => { if (!Id64.areEqual(this._boxId, val) && !this._controlIds.includes(val)) showControls = false; });
+        iModel.selectionSet.elements.forEach((val) => {
+          if (this._boxId !== val && !this._controlIds.includes(val))
+            showControls = false;
+        });
       }
     }
 
@@ -1029,12 +1030,12 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
 
     const transientIds = iModel.transientIds;
     if (0 === this._controlIds.length) {
-      this._controlIds[0] = transientIds.next.value;
-      this._controlIds[1] = transientIds.next.value;
-      this._controlIds[2] = transientIds.next.value;
-      this._controlIds[3] = transientIds.next.value;
-      this._controlIds[4] = transientIds.next.value;
-      this._controlIds[5] = transientIds.next.value;
+      this._controlIds[0] = transientIds.next;
+      this._controlIds[1] = transientIds.next;
+      this._controlIds[2] = transientIds.next;
+      this._controlIds[3] = transientIds.next;
+      this._controlIds[4] = transientIds.next;
+      this._controlIds[5] = transientIds.next;
     }
 
     const xOffset = 0.5 * this._extents.xLength();
@@ -1071,7 +1072,15 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
   }
 
   public testDecorationHit(id: string): boolean { return (id === this._boxId || this._controlIds.includes(id)); }
-  public async getDecorationToolTip(hit: HitDetail): Promise<string> { return (hit.sourceId === this._boxId ? "Project Extents" : "Resize Project Extents"); }
+  public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
+    if (hit.sourceId === this._boxId) {
+      const popup = window.document.createElement("div");
+      const image = window.document.createElement("img"); image.className = "simpleicon"; image.src = "Warning_sign.svg"; popup.appendChild(image);
+      const descr = window.document.createElement("div"); descr.className = "tooltip"; descr.innerHTML = "Project Extents"; popup.appendChild(descr);
+      return popup;
+    }
+    return "Resize Project Extents";
+  }
   public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> { return (hit.sourceId === this._boxId ? EventHandled.No : super.onDecorationButtonEvent(hit, ev)); }
 
   protected updateDecorationListener(_add: boolean) {
@@ -1263,15 +1272,15 @@ class IncidentMarkerDemo {
 
   public constructor() {
     const makerIcons = [
-      ImageUtil.fromUrl("Hazard_biological.svg"),
-      ImageUtil.fromUrl("Hazard_electric.svg"),
-      ImageUtil.fromUrl("Hazard_flammable.svg"),
-      ImageUtil.fromUrl("Hazard_toxic.svg"),
-      ImageUtil.fromUrl("Hazard_tripping.svg"),
+      imageElementFromUrl("Hazard_biological.svg"),
+      imageElementFromUrl("Hazard_electric.svg"),
+      imageElementFromUrl("Hazard_flammable.svg"),
+      imageElementFromUrl("Hazard_toxic.svg"),
+      imageElementFromUrl("Hazard_tripping.svg"),
     ];
 
     if (undefined === IncidentMarkerDemo.warningSign)
-      ImageUtil.fromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
+      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
 
     const extents = activeViewState.iModelConnection!.projectExtents;
     const pos = new Point3d();
@@ -1681,7 +1690,8 @@ class SVTNotifications extends NotificationManager {
     return Promise.resolve(MessageBoxValue.Ok);
   }
 
-  protected toolTipIsOpen(): boolean { return undefined !== this._toolTip; }
+  public get isToolTipSupported(): boolean { return true; }
+  public get isToolTipOpen(): boolean { return undefined !== this._toolTip; }
 
   public clearToolTip(): void {
     if (!this.isToolTipOpen)
@@ -1694,7 +1704,7 @@ class SVTNotifications extends NotificationManager {
     this._tooltipDiv = undefined;
   }
 
-  protected _showToolTip(el: HTMLElement, message: string, pt?: XAndY, options?: ToolTipOptions): void {
+  protected _showToolTip(el: HTMLElement, message: HTMLElement | string, pt?: XAndY, options?: ToolTipOptions): void {
     this.clearToolTip();
 
     const rect = el.getBoundingClientRect();

@@ -105,6 +105,7 @@ ul.list-unstyled.list-inline {
 .middle-content-text {
   max-width: 900px;
   min-width: 300px;
+  margin-bottom: 3em;
 }
 
 span.gradient {

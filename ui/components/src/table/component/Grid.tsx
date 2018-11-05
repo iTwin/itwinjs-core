@@ -8,7 +8,7 @@ import * as React from "react";
 import ReactDataGrid from "react-data-grid";
 import "./Grid.scss";
 
-/** Props for the Grid React component */
+/** Properties for the [[Grid]] React component */
 export interface GridProps {
   columns: any[];
   rows: any[];

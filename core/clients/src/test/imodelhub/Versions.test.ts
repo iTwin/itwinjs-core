@@ -13,7 +13,7 @@ import {
 import { TestConfig } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
-import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { IModelClient } from "../../IModelClient";
 
 function getSelectStatement(thumbnailSizes: ThumbnailSize[]) {
@@ -23,7 +23,7 @@ function getSelectStatement(thumbnailSizes: ThumbnailSize[]) {
   return selectStatement;
 }
 
-function mockGetVersionsByIdWithThumbnails(imodelId: Guid, versionId: Guid, thumbnailSizes: ThumbnailSize[], ...versions: Version[]) {
+function mockGetVersionsByIdWithThumbnails(imodelId: GuidString, versionId: GuidString, thumbnailSizes: ThumbnailSize[], ...versions: Version[]) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -32,7 +32,7 @@ function mockGetVersionsByIdWithThumbnails(imodelId: Guid, versionId: Guid, thum
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
-function mockGetVersionsByNameWithThumbnails(imodelId: Guid, name: string, thumbnailSizes: ThumbnailSize[], ...versions: Version[]) {
+function mockGetVersionsByNameWithThumbnails(imodelId: GuidString, name: string, thumbnailSizes: ThumbnailSize[], ...versions: Version[]) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -43,7 +43,7 @@ function mockGetVersionsByNameWithThumbnails(imodelId: Guid, name: string, thumb
 
 describe("iModelHub VersionHandler", () => {
   let accessToken: AccessToken;
-  let imodelId: Guid;
+  let imodelId: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients Versions test";
@@ -84,7 +84,7 @@ describe("iModelHub VersionHandler", () => {
         if (utils.getCloudEnv().isIModelHub) {
           // Wait for large thumbnail.
           for (let i = 0; i < 5; i++) {
-            const largeThumbnails = (await iModelClient.Thumbnails().get(actx, accessToken, new Guid(imodelId), "Large", new ThumbnailQuery().byVersionId(new Guid(version.id!))));
+            const largeThumbnails = (await iModelClient.Thumbnails().get(actx, accessToken, imodelId, "Large", new ThumbnailQuery().byVersionId(version.id!)));
             if (largeThumbnails.length > 0)
               break;
             await utils.delay(6000);
@@ -163,11 +163,11 @@ describe("iModelHub VersionHandler", () => {
 
     const mockedSmallThumbnail = utils.generateThumbnail("Small");
     utils.mockGetThumbnailsByVersionId(imodelId, "Small", firstVersion.id!, mockedSmallThumbnail);
-    const smallThumbnail: Thumbnail = (await iModelClient.Thumbnails().get(actx, accessToken, new Guid(imodelId), "Small", new ThumbnailQuery().byVersionId(new Guid(firstVersion.id!))))[0];
+    const smallThumbnail: Thumbnail = (await iModelClient.Thumbnails().get(actx, accessToken, imodelId, "Small", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
 
     const mockedLargeThumbnail = utils.generateThumbnail("Large");
     utils.mockGetThumbnailsByVersionId(imodelId, "Large", firstVersion.id!, mockedLargeThumbnail);
-    const largeThumbnail: Thumbnail = (await iModelClient.Thumbnails().get(actx, accessToken, new Guid(imodelId), "Large", new ThumbnailQuery().byVersionId(new Guid(firstVersion.id!))))[0];
+    const largeThumbnail: Thumbnail = (await iModelClient.Thumbnails().get(actx, accessToken, imodelId, "Large", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
 
     mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, mockedSmallThumbnail.id!, mockedLargeThumbnail.id!));
     mockGetVersionsByIdWithThumbnails(imodelId, firstVersion.id!, ["Small", "Large"], ...mockedVersions);

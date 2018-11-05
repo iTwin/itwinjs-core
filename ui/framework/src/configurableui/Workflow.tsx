@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Workflow */
+/** @module WorkflowTask */
 
 import { UiEvent } from "@bentley/ui-core";
 
@@ -10,12 +10,14 @@ import { IconLabelProps } from "./IconLabelSupport";
 import ItemDefBase from "./ItemDefBase";
 import { ItemProps } from "./ItemProps";
 import { Task, TaskManager } from "./Task";
+import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
+import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 // -----------------------------------------------------------------------------
 //  WorkflowDef and WorkflowsDef
 // -----------------------------------------------------------------------------
 
-/** Properties for a Workflow.
+/** Properties for a [[Workflow]].
  */
 export interface WorkflowProps extends ItemProps {
   id: string;
@@ -27,7 +29,7 @@ export interface WorkflowProps extends ItemProps {
 /** Properties for a TaskPicker.
  */
 export interface TaskPickerProps extends IconLabelProps {
-  classid: string;
+  classId: string;
 }
 
 /** Workflow Properties List definition.
@@ -129,6 +131,7 @@ export class Workflow extends ItemDefBase {
     this.activeTaskId = task.taskId;
     task.onActivated();
     WorkflowManager.onTaskActivatedEvent.emit({ task, taskId: task.id });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.TaskActivated);
   }
 
   /** Gets an array of sorted Tasks in the Workflow. */
@@ -234,6 +237,7 @@ export class WorkflowManager {
   public static setActiveWorkflow(workflow: Workflow): void {
     this._activeWorkflow = workflow;
     WorkflowManager.onWorkflowActivatedEvent.emit({ workflow, workflowId: workflow.id });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.WorkflowActivated);
   }
 
   /** Sets the active Workflow and Task

@@ -5,6 +5,8 @@
 
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 
+export const formatStringRgx = /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
+
 export const enum FormatTraits {
   TrailZeroes = 0x1,
   KeepSingleZero = 0x2,
@@ -189,7 +191,7 @@ export function parseFormatType(jsonObjType: string, formatName: string): Format
   }
 }
 
-export function parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecision {
+export function parseDecimalPrecision(jsonObjPrecision: number, formatName: string): DecimalPrecision {
   switch (jsonObjPrecision) {
     case 0: return DecimalPrecision.Zero;
     case 1: return DecimalPrecision.One;
@@ -205,7 +207,7 @@ export function parseDecimalPrecision(jsonObjPrecision: number): DecimalPrecisio
     case 11: return DecimalPrecision.Eleven;
     case 12: return DecimalPrecision.Twelve;
     default:
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The 'precision' attribute must be an integer in the range 0-12.`);
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${formatName} contains a 'precision' attribute which must be an integer in the range 0-12.`);
   }
 }
 
@@ -230,7 +232,7 @@ export function parsePrecision(precision: number, formatName: string, type: Form
     case FormatType.Decimal:
     case FormatType.Scientific:
     case FormatType.Station:
-      return parseDecimalPrecision(precision);
+      return parseDecimalPrecision(precision, formatName);
     case FormatType.Fractional:
       return parseFractionalPrecision(precision, formatName);
     default:

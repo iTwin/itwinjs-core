@@ -2,118 +2,165 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import * as React from "react";
+
 import {
-  FrontstageProps,
+  GroupButton,
+  ToolButton,
+  ToolWidget,
   ZoneState,
+  NavigationWidget,
+  Frontstage,
+  Zone,
+  Widget,
+  FrontstageProvider,
   WidgetState,
-  FrontstageDef,
+  FrontstageProps,
 } from "@bentley/ui-framework";
 
-export class Frontstage2 extends FrontstageDef {
+import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
+import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 
-  constructor() {
-    super();
-    this.initializeFromProps(this.defineProps());
+import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
+import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { AppUi } from "../AppUi";
+
+export class Frontstage2 extends FrontstageProvider {
+
+  public get frontstage(): React.ReactElement<FrontstageProps> {
+    return (
+      <Frontstage id="Test2"
+        defaultToolId="Select" defaultLayout="TwoHalvesHorizontal" contentGroup="TestContentGroup1" defaultContentId="TestContent1"
+        isInFooterMode={true} applicationData={{ key: "value" }}
+
+        topLeft={
+          <Zone
+            widgets={[
+              <Widget isFreeform={true} element={<FrontstageToolWidget />} />,
+            ]}
+          />
+        }
+        topCenter={
+          <Zone
+            widgets={[
+              <Widget isToolSettings={true} />,
+            ]}
+          />
+        }
+        topRight={
+          <Zone
+            widgets={[
+              <Widget isFreeform={true} element={<FrontstageNavigationWidget />} />,
+            ]}
+          />
+        }
+        centerRight={
+          <Zone allowsMerging={true}
+            widgets={[
+              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
+            ]}
+          />
+        }
+        bottomCenter={
+          <Zone defaultState={ZoneState.Open}
+            widgets={[
+              <Widget isStatusBar={true} iconClass="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
+            ]}
+          />
+        }
+        bottomRight={
+          <Zone allowsMerging={true}
+            widgets={[
+              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconClass="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+              <Widget defaultState={WidgetState.Open} iconClass="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
+            ]}
+          />
+        }
+      />
+    );
   }
+}
 
-  public defineProps(): FrontstageProps {
-    const frontstageProps: FrontstageProps = {
-      id: "Test2",
-      defaultToolId: "PlaceLine",
-      defaultLayout: "FourQuadrants",
-      contentGroup: "TestContentGroup2",
-      defaultContentId: "TestContent1",
+/** Define a ToolWidget with Buttons to display in the TopLeft zone.
+ */
+class FrontstageToolWidget extends React.Component {
+  private _horizontalToolbar =
+    <Toolbar
+      expandsTo={Direction.Bottom}
+      items={
+        <>
+          <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={AppUi.tool1} />
+          <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={AppUi.tool2} />
+          <GroupButton
+            labelKey="SampleApp:buttons.toolGroup"
+            iconClass="icon-placeholder"
+            items={["tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8", "tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+            direction={Direction.Bottom}
+            itemsInColumn={7}
+          />
+        </>
+      }
+    />;
 
-      topLeft: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            classId: "ToolWidget",
-            defaultState: WidgetState.Open,
-            isFreeform: true,
-            iconClass: "icon-home",
-            labelKey: "SampleApp:Test.my-label",
-            appButtonId: "SampleApp.BackstageToggle",
-            horizontalIds: ["tool1", "tool2", "my-group1"],
-            verticalIds: ["item4", "my-group2"],
-          },
-        ],
-      },
-      topCenter: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            defaultState: WidgetState.Open,
-            isFreeform: false,
-            iconClass: "icon-home",
-            labelKey: "SampleApp:Test.my-label",
-            isToolSettings: true,
-          },
-        ],
-      },
-      topRight: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            classId: "NavigationWidget",
-            defaultState: WidgetState.Open,
-            isFreeform: true,
-            iconClass: "my-icon",
-            labelKey: "SampleApp:Test.my-label",
-            navigationAidId: "StandardRotationNavigationAid",
-            horizontalIds: ["item5", "item6", "item7", "item8"],
-          },
-        ],
-      },
-      centerRight: {
-        defaultState: ZoneState.Minimized,
-        allowsMerging: true,
-        widgetProps: [
-          {
-            classId: "NavigationTreeWidget",
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-          {
-            classId: "HorizontalPropertyGridDemoWidget",
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-        ],
-      },
-      bottomCenter: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            classId: "AppStatusBar",
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-            isFreeform: false,
-            isStatusBar: true,
-          },
-        ],
-      },
-      bottomRight: {
-        defaultState: ZoneState.Open,
-        allowsMerging: true,
-        widgetProps: [
-          {
-            classId: "VerticalPropertyGridDemoWidget",
-            defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-        ],
-      },
-    };
+  private _verticalToolbar =
+    <Toolbar
+      expandsTo={Direction.Right}
+      items={
+        <>
+          <GroupButton
+            labelKey="SampleApp:buttons.anotherGroup"
+            iconClass="icon-placeholder"
+            items={["tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+          />
+        </>
+      }
+    />;
 
-    return frontstageProps;
+  public render() {
+    return (
+      <ToolWidget
+        appButtonId="SampleApp.BackstageToggle"
+        horizontalToolbar={this._horizontalToolbar}
+        verticalToolbar={this._verticalToolbar}
+      />
+    );
+  }
+}
+
+/** Define a NavigationWidget with Buttons to display in the TopRight zone.
+ */
+class FrontstageNavigationWidget extends React.Component {
+
+  private _horizontalToolbar =
+    <Toolbar
+      expandsTo={Direction.Bottom}
+      items={
+        <>
+          <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
+          <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
+          <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
+        </>
+      }
+    />;
+
+  private _verticalToolbar =
+    <Toolbar
+      expandsTo={Direction.Right}
+      items={
+        <>
+          <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
+        </>
+      }
+    />;
+
+  public render() {
+    return (
+      <NavigationWidget
+        navigationAidId="StandardRotationNavigationAid"
+        horizontalToolbar={this._horizontalToolbar}
+        verticalToolbar={this._verticalToolbar}
+      />
+    );
   }
 }

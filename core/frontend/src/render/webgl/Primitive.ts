@@ -67,9 +67,15 @@ export abstract class Primitive extends Graphic {
 
   public abstract get renderOrder(): RenderOrder;
 
+  private static _drawParams?: DrawParams;
+
   public draw(shader: ShaderProgramExecutor): void {
     // ###TODO: local to world should be pushed before we're invoked...we shouldn't need to pass (or copy) it
-    const drawParams = new DrawParams(shader.target, this.cachedGeometry, shader.target.currentTransform, shader.renderPass);
+    if (undefined === Primitive._drawParams)
+      Primitive._drawParams = new DrawParams();
+
+    const drawParams = Primitive._drawParams!;
+    drawParams.init(shader.params, this.cachedGeometry, shader.target.currentTransform, shader.renderPass);
     shader.draw(drawParams);
   }
 

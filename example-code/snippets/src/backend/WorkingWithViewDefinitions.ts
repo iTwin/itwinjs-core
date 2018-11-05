@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { ViewQueryParams, ColorDef } from "@bentley/imodeljs-common";
 import { IModelDb, ViewDefinition, DrawingViewDefinition, DisplayStyle } from "@bentley/imodeljs-backend";
 
@@ -14,8 +14,8 @@ import { IModelDb, ViewDefinition, DrawingViewDefinition, DisplayStyle } from "@
  * @param includePrivate Whether or not to include views marked as 'private'
  * @return An array of all of the views which are configured to view the specified drawing model.
  */
-function findViewsOfDrawingModel(iModel: IModelDb, drawingModelId: Id64, includePrivate: boolean = false): DrawingViewDefinition[] {
-  let where = "BaseModel.Id=" + drawingModelId.value; // Limit query to those views which look at the specified model
+function findViewsOfDrawingModel(iModel: IModelDb, drawingModelId: Id64String, includePrivate: boolean = false): DrawingViewDefinition[] {
+  let where = "BaseModel.Id=" + drawingModelId; // Limit query to those views which look at the specified model
   if (!includePrivate)
     where += " AND IsPrivate=FALSE"; // Exclude private views if specified
 
@@ -45,6 +45,6 @@ function getViewBackgroundColor(view: ViewDefinition): ColorDef {
 // __PUBLISH_EXTRACT_END__
 
 const imodel = {} as IModelDb;
-findViewsOfDrawingModel(imodel, Id64.invalidId);
+findViewsOfDrawingModel(imodel, Id64.invalid);
 const fakeView = {} as ViewDefinition;
 getViewBackgroundColor(fakeView);

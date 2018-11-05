@@ -7,10 +7,10 @@ import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
-import Schema from "../../src/Metadata/Schema";
-import Unit from "../../src/Metadata/Unit";
-import Phenomenon from "../../src/Metadata/Phenomenon";
-import UnitSystem from "../../src/Metadata/UnitSystem";
+import { Schema } from "../../src/Metadata/Schema";
+import { Unit } from "../../src/Metadata/Unit";
+import { Phenomenon } from "../../src/Metadata/Phenomenon";
+import { UnitSystem } from "../../src/Metadata/UnitSystem";
 import { ECObjectsError } from "../../src/Exception";
 
 describe("Unit", () => {

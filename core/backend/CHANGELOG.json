@@ -2,6 +2,48 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.163.0",
+      "tag": "@bentley/imodeljs-backend_v0.163.0",
+      "date": "Wed, 31 Oct 2018 20:55:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Guids can now be bound as strings to ECSQL. BLOBs in ECSQL and SQLite are now mapped to UInt8Array instead of ArrayBuffer (as only the former can be marshaled between backend and frontend)."
+          },
+          {
+            "comment": "Fully support mixed binary and JSON content in both directions in RPC la"
+          },
+          {
+            "comment": "remove obsolete script"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.162.0",
+      "tag": "@bentley/imodeljs-backend_v0.162.0",
+      "date": "Wed, 24 Oct 2018 19:20:06 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Removed uncessary comments"
+          },
+          {
+            "comment": "Breaking changes to optimize usage of 64-bit IDs."
+          },
+          {
+            "comment": "Ids and date times can now be directly bound as hex strings or date time ISO strings respectively in ECSQL statements."
+          },
+          {
+            "comment": "Remove unused createAndInsert methods from IModelWriteRpcInterface"
+          },
+          {
+            "comment": "Added classes to reduce electron and express boilerplate in sample apps."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.161.0",
       "tag": "@bentley/imodeljs-backend_v0.161.0",
       "date": "Fri, 19 Oct 2018 13:04:14 GMT",

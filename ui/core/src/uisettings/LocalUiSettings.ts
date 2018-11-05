@@ -16,14 +16,14 @@ export class LocalUiSettings implements UiSettings {
   public getSetting = (settingNamespace: string, settingName: string): UiSettingsResult => {
     const setting = this.w.localStorage.getItem(`${settingNamespace}.${settingName}`);
     if (setting !== null)
-      return { status: UiSettingsStatus.Sucess, setting: JSON.parse(setting) };
+      return { status: UiSettingsStatus.Success, setting: JSON.parse(setting) };
     else
       return { status: UiSettingsStatus.NotFound };
   }
 
   public saveSetting = (settingNamespace: string, settingName: string, setting: any): UiSettingsResult => {
     this.w.localStorage.setItem(`${settingNamespace}.${settingName}`, JSON.stringify(setting));
-    return { status: UiSettingsStatus.Sucess };
+    return { status: UiSettingsStatus.Success };
   }
 
   public deleteSetting = (settingNamespace: string, settingName: string): UiSettingsResult => {
@@ -32,6 +32,6 @@ export class LocalUiSettings implements UiSettings {
     if (setting === null)
       return { status: UiSettingsStatus.NotFound };
     this.w.localStorage.removeItem(name);
-    return { status: UiSettingsStatus.Sucess };
+    return { status: UiSettingsStatus.Success };
   }
 }

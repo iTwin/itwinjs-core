@@ -26,7 +26,9 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
   /** Returns the operation specified by an OpenAPI-compatible URI path. */
   public getOperationFromPath(path: string): SerializedRpcOperation {
     const components = path.split("/");
-    const operationComponent = components.slice(-1)[0];
+    const operationIndex = (components.length % 2 === 0) ? -1 : -2;
+    const operationComponent = components.slice(operationIndex)[0];
+    const encodedRequest = (operationIndex === -1) ? "" : components.slice(-1)[0];
 
     const firstHyphen = operationComponent.indexOf("-");
     const lastHyphen = operationComponent.lastIndexOf("-");
@@ -34,7 +36,7 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     const interfaceVersion = operationComponent.slice(firstHyphen + 1, lastHyphen);
     const operationName = operationComponent.slice(lastHyphen + 1);
 
-    return { interfaceDefinition, operationName, interfaceVersion };
+    return { interfaceDefinition, operationName, interfaceVersion, encodedRequest };
   }
 
   /** Supplies the OpenAPI-compatible URI path for an RPC operation. */

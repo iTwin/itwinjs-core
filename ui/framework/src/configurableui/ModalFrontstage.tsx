@@ -9,10 +9,8 @@ import * as React from "react";
 import BackButton from "@bentley/ui-ninezone/lib/toolbar/button/Back";
 import "./ModalFrontstage.scss";
 
-// TODO - connect to Redux
-
 /**
- * Props for ModalFrontstage React component
+ * Properties for the [[ModalFrontstage]] React component
  */
 export interface ModalFrontstageProps {
   /** Title displayed at the top of the modal Frontstage */

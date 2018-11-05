@@ -1,6 +1,6 @@
 {
   "name": "@bentley/build-tools",
-  "version": "0.161.0",
+  "version": "0.163.0",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
@@ -13,7 +13,8 @@
     "clean": "rimraf tslint-rules",
     "docs": "",
     "lint": "",
-    "test": ""
+    "test": "",
+    "cover": ""
   },
   "keywords": [
     "Bentley",

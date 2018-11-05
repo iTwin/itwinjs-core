@@ -20,7 +20,17 @@ export function addViewport(shader: ShaderBuilder) {
   });
 }
 
-function computeViewportTransformation(viewRect: ViewRect, nearDepthRange: number, farDepthRange: number): Matrix4 {
+const viewportMatrix = new Matrix4();
+const prevViewRect = new ViewRect();
+const nearDepthRange = 0.0;
+const farDepthRange = 1.0;
+
+function computeViewportTransformation(viewRect: ViewRect): Matrix4 {
+  if (viewRect.equals(prevViewRect))
+    return viewportMatrix;
+
+  prevViewRect.setFrom(viewRect);
+
   const x = viewRect.left;
   const y = viewRect.top;
   const width = viewRect.width;
@@ -42,15 +52,15 @@ function computeViewportTransformation(viewRect: ViewRect, nearDepthRange: numbe
     column0Row0, 0.0, 0.0, column3Row0,
     0.0, column1Row1, 0.0, column3Row1,
     0.0, 0.0, column2Row2, column3Row2,
-    0.0, 0.0, 0.0, column3Row3);
+    0.0, 0.0, 0.0, column3Row3, viewportMatrix);
 
   return mat;
 }
 
 export function addViewportTransformation(shader: ShaderBuilder) {
   shader.addUniform("u_viewportTransformation", VariableType.Mat4, (prog) => {
-    prog.addGraphicUniform("u_viewportTransformation", (uniform, params) => {
-      uniform.setMatrix4(computeViewportTransformation(params.target.viewRect, 0.0, 1.0));
+    prog.addProgramUniform("u_viewportTransformation", (uniform, params) => {
+      uniform.setMatrix4(computeViewportTransformation(params.target.viewRect));
     });
   });
 }

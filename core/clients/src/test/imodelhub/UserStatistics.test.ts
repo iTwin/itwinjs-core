@@ -12,11 +12,11 @@ import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { UserStatisticsQuery, UserStatistics } from "../../imodelhub";
 import { TestUsers } from "../TestConfig";
-import { IModelHubStatus, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 
 chai.should();
 
-function mockGetUserStatistics(imodelId: Guid, userStatistics: UserStatistics[], query?: string) {
+function mockGetUserStatistics(imodelId: GuidString, userStatistics: UserStatistics[], query?: string) {
   if (!TestConfig.enableMocks)
     return;
 
@@ -58,7 +58,7 @@ function sortStatistics(value: UserStatistics[]) {
 
 describe("iModelHubClient UserStatisticsHandler", () => {
   const accessTokens: AccessToken[] = [];
-  let imodelId: Guid;
+  let imodelId: GuidString;
 
   const imodelName = "imodeljs-clients Statistics test";
   const imodelHubClient: IModelClient = utils.getDefaultClient();

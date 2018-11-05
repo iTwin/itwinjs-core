@@ -2,15 +2,18 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module OpenIModel */
+
 import * as React from "react";
 import * as classnames from "classnames";
 import { CSSProperties } from "react";
 import { ProjectInfo } from "../clientservices/ProjectServices";
 import { ProjectDialog } from "./ProjectDialog";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
-import { Popup, Position} from "@bentley/ui-core";
+import { Popup, Position } from "@bentley/ui-core";
 import "./ProjectDropdown.scss";
 
+/** Properties for the [[ProjectDropdown]] component */
 export interface ProjectDropdownProps {
   accessToken: AccessToken;
   numVisibleProjects?: number;

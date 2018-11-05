@@ -9,8 +9,8 @@ import { Point3d, Point2d } from "@bentley/geometry-core";
 import { Viewport, ViewRect, ScreenViewport } from "./Viewport";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
-import { PrimitiveTool } from "./tools/PrimitiveTool";
-import { InputSource } from "./tools/Tool";
+import { InputSource, InteractiveTool } from "./tools/Tool";
+import { Id64 } from "@bentley/bentleyjs-core";
 
 /** The possible actions for which a locate filter can be called. */
 export const enum LocateAction {
@@ -152,7 +152,7 @@ export class ElementPicker {
     for (testPoint.x = testPointView.x - pixelRadius; testPoint.x <= testPointView.x + pixelRadius; ++testPoint.x) {
       for (testPoint.y = testPointView.y - pixelRadius; testPoint.y <= testPointView.y + pixelRadius; ++testPoint.y) {
         const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-        if (undefined === pixel || undefined === pixel.elementId || !pixel.elementId.isValid)
+        if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
           continue; // no geometry at this location...
         const distXY = testPointView.distance(testPoint);
         if (distXY > pixelRadius)
@@ -235,7 +235,7 @@ export class ElementLocateManager {
     }
 
     const tool = IModelApp.toolAdmin.activeTool;
-    if (!(tool && tool instanceof PrimitiveTool))
+    if (!(tool && tool instanceof InteractiveTool))
       return LocateFilterStatus.Accept;
 
     const status = tool.filterHit(hit, out);

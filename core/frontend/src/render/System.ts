@@ -9,10 +9,10 @@ import { ClipVector, IndexedPolyface, Plane3dByOriginAndUnitNormal, Point2d, Poi
 import {
   AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, Frustum, Gradient,
   HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d,
-  QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags,
+  QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags, AnalysisStyle,
 } from "@bentley/imodeljs-common";
 import { SkyBox } from "../DisplayStyleState";
-import { ImageUtil } from "../ImageUtil";
+import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
@@ -39,6 +39,8 @@ export class RenderPlan {
   public readonly activeVolume?: RenderClipVolume;
   public readonly hline?: HiddenLine.Settings;
   public readonly lights?: SceneLights;
+  public readonly analysisStyle?: AnalysisStyle;
+  public analysisTexture?: RenderTexture;
   private _curFrustum: ViewFrustum;
 
   public get frustum(): Frustum { return this._curFrustum.getFrustum(); }
@@ -47,7 +49,7 @@ export class RenderPlan {
   public selectTerrainFrustum() { if (undefined !== this.terrainFrustum) this._curFrustum = this.terrainFrustum; }
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Settings, lights?: SceneLights) {
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle) {
     this.is3d = is3d;
     this.viewFlags = viewFlags;
     this.bgColor = bgColor;
@@ -60,6 +62,7 @@ export class RenderPlan {
     this.lights = lights;
     this._curFrustum = this.viewFrustum = viewFrustum;
     this.terrainFrustum = terrainFrustum;
+    this.analysisStyle = analysisStyle;
   }
 
   public static createFromViewport(vp: Viewport): RenderPlan {
@@ -71,8 +74,9 @@ export class RenderPlan {
     const clipVec = view.getViewClip();
     const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
     const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights);
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights, view.displayStyle.AnalysisStyle);
+    if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
+      rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
 
     return rp;
   }
@@ -243,7 +247,7 @@ export class GraphicBranch implements IDisposable {
 export namespace Pixel {
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
-    public constructor(public readonly elementId?: Id64,
+    public constructor(public readonly elementId?: Id64String,
       public readonly distanceFraction: number = -1.0,
       public readonly type: GeometryType = GeometryType.Unknown,
       public readonly planarity: Planarity = Planarity.Unknown) { }
@@ -310,7 +314,7 @@ export namespace Pixel {
  */
 export class PackedFeatureTable {
   private readonly _data: Uint32Array;
-  public readonly modelId: Id64;
+  public readonly modelId: Id64String;
   public readonly maxFeatures: number;
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
@@ -320,7 +324,7 @@ export class PackedFeatureTable {
    * This is used internally when deserializing Tiles in iMdl format.
    * @hidden
    */
-  public constructor(data: Uint32Array, modelId: Id64, numFeatures: number, maxFeatures: number, type: BatchType) {
+  public constructor(data: Uint32Array, modelId: Id64String, numFeatures: number, maxFeatures: number, type: BatchType) {
     this._data = data;
     this.modelId = modelId;
     this.maxFeatures = maxFeatures;
@@ -369,15 +373,15 @@ export class PackedFeatureTable {
       assert(undefined !== subCategoryIndex); // we inserted it above...
       subCategoryIndex |= (feature.geometryClass << 24);
 
-      uint32s[index + 0] = Id64.getLowUint32(feature.elementId);
-      uint32s[index + 1] = Id64.getHighUint32(feature.elementId);
+      uint32s[index + 0] = Id64.getLowerUint32(feature.elementId);
+      uint32s[index + 1] = Id64.getUpperUint32(feature.elementId);
       uint32s[index + 2] = subCategoryIndex;
     }
 
     subcategories.forEach((index: number, id: string, _map) => {
       const index32 = subCategoriesOffset + 2 * index;
-      uint32s[index32 + 0] = Id64.getLowUint32(id);
-      uint32s[index32 + 1] = Id64.getHighUint32(id);
+      uint32s[index32 + 0] = Id64.getLowerUint32(id);
+      uint32s[index32 + 1] = Id64.getUpperUint32(id);
     });
 
     return new PackedFeatureTable(uint32s, featureTable.modelId, featureTable.length, featureTable.maxFeatures, featureTable.type);
@@ -415,7 +419,7 @@ export class PackedFeatureTable {
   }
 
   /** Returns the element ID of the Feature associated with the specified index, or undefined if the index is out of range. */
-  public findElementId(featureIndex: number): Id64 | undefined {
+  public findElementId(featureIndex: number): Id64String | undefined {
     if (featureIndex >= this.numFeatures)
       return undefined;
     else
@@ -443,7 +447,7 @@ export class PackedFeatureTable {
 
   private get _subCategoriesOffset(): number { return this.numFeatures * 3; }
 
-  private readId(offset32: number): Id64 {
+  private readId(offset32: number): Id64String {
     return Id64.fromUint32Pair(this._data[offset32], this._data[offset32 + 1]);
   }
 }
@@ -507,7 +511,7 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public abstract setHiliteSet(hilited: Set<string>): void;
   /** @hidden */
-  public abstract setFlashed(elementId: Id64, intensity: number): void;
+  public abstract setFlashed(elementId: Id64String, intensity: number): void;
   /** @hidden */
   public abstract setViewRect(rect: ViewRect, temporary: boolean): void;
   /** @hidden */
@@ -695,7 +699,7 @@ export abstract class RenderSystem implements IDisposable {
       return undefined;
 
     const imageSource = new ImageSource(base64StringToUint8Array(textureProps.data as string), format);
-    const imagePromise = ImageUtil.extractImage(imageSource);
+    const imagePromise = imageElementFromImageSource(imageSource);
     return imagePromise.then((image: HTMLImageElement) => ({ image, format }));
   }
 
@@ -712,12 +716,12 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new texture from an [[ImageBuffer]]. */
   public createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
-  /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[ImageUtil.extractImage]] */
+  /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]] */
   public createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   /** Create a new texture from an [[ImageSource]]. */
   public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    return ImageUtil.extractImage(source).then((image) => IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined);
+    return imageElementFromImageSource(source).then((image) => IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined);
   }
 
   /** Create a new texture from a cube of HTML images.

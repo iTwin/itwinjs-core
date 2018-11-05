@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module SelectionSet */
-import { Id64, Id64Arg, Id64Set } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, Id64Arg, Id64Set } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "./IModelConnection";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelApp } from "./IModelApp";
@@ -44,7 +44,7 @@ export class HilitedSet {
   public has(id: string) { return this.elements.has(id); }
 
   /** Returns true if the specified element ID is contained in the hilite set. */
-  public isHilited(id: Id64) { return this.elements.has(id.value); }
+  public isHilited(id: Id64String) { return this.elements.has(id); }
 
   /** Returns the number of elements in the hilited set. */
   public get size() { return this.elements.size; }
@@ -82,7 +82,7 @@ export class SelectionSet {
   /** Query whether an Id is in the selection set.
    * @see [[has]]
    */
-  public isSelected(elemId?: Id64): boolean { return !!elemId && this.elements.has(elemId.value); }
+  public isSelected(elemId?: Id64String): boolean { return !!elemId && this.elements.has(elemId); }
 
   /** Clear current selection set.
    * @note raises the [[onChanged]] event with [[SelectEventType.Clear]].

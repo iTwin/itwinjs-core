@@ -133,7 +133,7 @@ describe("Backstage", () => {
       const workflowPropsList: WorkflowPropsList = {
         defaultWorkflowId: "default-workflow",
         taskPicker: {
-          classid: "taskpicker-class",
+          classId: "taskpicker-class",
           iconClass: "taskpicker-icon",
           labelKey: "taskpicker-label",
         },
@@ -141,7 +141,7 @@ describe("Backstage", () => {
           {
             id: "ExampleWorkflow",
             iconClass: "icon-placeholder",
-            labelKey: "Protogist:Test.my-label",
+            labelKey: "SampleApp:Test.my-label",
             defaultTaskId: "task1",
             tasks: ["Task1"],
           },

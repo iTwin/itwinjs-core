@@ -181,7 +181,7 @@ describe("iModelHub GlobalEventHandler", () => {
     const event = await imodelHubClient.GlobalEvents().getEvent(alctx, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(IModelCreatedEvent);
-    chai.expect(event!.iModelId).to.be.instanceof(Guid);
+    chai.assert(!!event!.iModelId);
   });
 
   it("should update Global Event subscription", async () => {
@@ -246,7 +246,7 @@ describe("iModelHub GlobalEventHandler", () => {
     const event = await imodelHubClient.GlobalEvents().getEvent(alctx, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(SoftiModelDeleteEvent);
-    chai.expect(event!.iModelId).to.be.instanceof(Guid);
+    chai.assert(!!event!.iModelId);
   });
 
   it("should receive Global Event HardiModelDeleteEvent", async function (this: Mocha.ITestCallbackContext) {
@@ -259,7 +259,7 @@ describe("iModelHub GlobalEventHandler", () => {
     const event = await imodelHubClient.GlobalEvents().getEvent(alctx, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(HardiModelDeleteEvent);
-    chai.expect(event!.iModelId).to.be.instanceof(Guid);
+    chai.assert(!!event!.iModelId);
   });
 
   it("should receive Global Event ChangeSetCreatedEvent", async function (this: Mocha.ITestCallbackContext) {
@@ -272,7 +272,7 @@ describe("iModelHub GlobalEventHandler", () => {
     const event = await imodelHubClient.GlobalEvents().getEvent(alctx, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(ChangeSetCreatedEvent);
-    chai.expect(event!.iModelId).to.be.instanceof(Guid);
+    chai.assert(!!event!.iModelId);
   });
 
   it("should receive Global Event NamedVersionCreatedEvent", async function (this: Mocha.ITestCallbackContext) {
@@ -285,10 +285,10 @@ describe("iModelHub GlobalEventHandler", () => {
     const event = await imodelHubClient.GlobalEvents().getEvent(alctx, globalEventSas.sasToken!, globalEventSas.baseAddress!, globalEventSubscription.wsgId);
 
     chai.expect(event).to.be.instanceof(NamedVersionCreatedEvent);
-    chai.expect(event!.iModelId).to.be.instanceof(Guid);
+    chai.assert(!!event!.iModelId);
     const typedEvent = event as NamedVersionCreatedEvent;
     chai.assert(!!typedEvent);
-    chai.expect(typedEvent.versionId).to.be.instanceof(Guid);
+    chai.assert(!!typedEvent!.versionId);
   });
 
   it("should delete Global Event subscription by InstanceId", async () => {

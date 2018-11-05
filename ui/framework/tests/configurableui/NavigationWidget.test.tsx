@@ -121,6 +121,7 @@ describe("NavigationWidget", () => {
   it("NavigationWidget should render correctly", () => {
     shallow(
       <NavigationWidget
+        id="navigationWidget"
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}
       />,

@@ -6,15 +6,17 @@
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
 
-import Schema from "./../../src/Metadata/Schema";
-import Format from "./../../src/Metadata/Format";
+import { Schema } from "./../../src/Metadata/Schema";
+import { Format } from "./../../src/Metadata/Format";
 import { ShowSignOption, FormatType, FormatTraits, FractionalPrecision } from "./../../src/utils/FormatEnums";
 import { ECObjectsError } from "./../../src/Exception";
-import Unit from "./../../src/Metadata/Unit";
+import { Unit } from "./../../src/Metadata/Unit";
 import { schemaItemTypeToString, SchemaItemType } from "./../../src/ECObjects";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("Format tests", () => {
   let testFormat: Format;
+  let parser = new JsonParser();
   describe("accept", () => {
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
@@ -65,7 +67,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await testFormat.fromJson(json);
+        await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.name, "AmerMYFI4");
         assert(testFormat.label, "myfi4");
         assert(testFormat.description === "");
@@ -83,6 +85,7 @@ describe("Format tests", () => {
       });
       it("Name must be a valid ECName", async () => {
         const json = {
+          schema: "TestSchema",
           schemaItemType: "Format",
           name: "10AmerMYFI4",
           label: "myfi4",
@@ -95,7 +98,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, ``);
+        assert.throws(() => testFormat.deserialize(parser.parseFormatProps(json, json.name)), ECObjectsError, `The Format TestSchema.10AmerMYFI4 has an invalid 'name' attribute. '10AmerMYFI4' is not a valid ECName.`);
       });
       it("Description must be a string", async () => {
         const json = {
@@ -112,7 +115,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The SchemaItem AmerMYFI4 has an invalid 'description' attribute. It should be of type 'string'.`);
+        assert.throws(() => parser.parseSchemaItemProps(json, testFormat.schema.name, testFormat.name), ECObjectsError, `The SchemaItem TestSchema.AmerMYFI4 has an invalid 'description' attribute. It should be of type 'string'.`);
       });
       it("Round factor is not default value", async () => {
         const json = {
@@ -128,7 +131,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await testFormat.fromJson(json);
+        await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.roundFactor === 20);
       });
       it("Type is required", async () => {
@@ -144,7 +147,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 does not have the required 'type' attribute.`);
+        assert.throws(() => parser.parseFormatProps(json, testFormat.name), ECObjectsError, `The Format AmerMYFI4 does not have the required 'type' attribute.`);
       });
       it("Type value is invalid", async () => {
         const json = {
@@ -160,7 +163,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'type' attribute.`);
+        await expect(testFormat.deserialize(parser.parseFormatProps(json, testFormat.name))).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'type' attribute.`);
       });
       it("Type is fractional; Precision value is invalid", async () => {
         const json = {
@@ -175,7 +178,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'precision' attribute.`);
+        await expect(testFormat.deserialize(parser.parseFormatProps(json, testFormat.name))).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'precision' attribute.`);
       });
       it("Type is fractional; Precision value is valid", async () => {
         const json = {
@@ -191,7 +194,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await testFormat.fromJson(json);
+        await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.precision === 16);
       });
       it("Type is decimal, scientific, or station; Precision value is invalid", async () => {
@@ -236,9 +239,9 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(jsonDecimal)).to.be.rejectedWith(ECObjectsError, `The 'precision' attribute must be an integer in the range 0-12.`);
-        await expect(testFormat.fromJson(jsonScientific)).to.be.rejectedWith(ECObjectsError, `The 'precision' attribute must be an integer in the range 0-12.`);
-        await expect(testFormat.fromJson(jsonStation)).to.be.rejectedWith(ECObjectsError, `The 'precision' attribute must be an integer in the range 0-12.`);
+        await expect(testFormat.deserialize(parser.parseFormatProps(jsonDecimal, testFormat.name))).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 contains a 'precision' attribute which must be an integer in the range 0-12.`);
+        await expect(testFormat.deserialize(parser.parseFormatProps(jsonScientific, testFormat.name))).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 contains a 'precision' attribute which must be an integer in the range 0-12.`);
+        await expect(testFormat.deserialize(parser.parseFormatProps(jsonStation, testFormat.name))).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 contains a 'precision' attribute which must be an integer in the range 0-12.`);
       });
       it("Type is decimal, scientific, or station; Precision value is valid", async () => {
         const jsonDecimal = {
@@ -282,11 +285,11 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await testFormat.fromJson(jsonDecimal);
+        await testFormat.deserialize(parser.parseFormatProps(jsonDecimal, testFormat.name));
         assert(testFormat.precision === 3);
-        await testFormat.fromJson(jsonScientific);
+        await testFormat.deserialize(parser.parseFormatProps(jsonScientific, testFormat.name));
         assert(testFormat.precision === 0);
-        await testFormat.fromJson(jsonStation);
+        await testFormat.deserialize(parser.parseFormatProps(jsonStation, testFormat.name));
         assert(testFormat.precision === 12);
       });
       it("MinWidth is not an int", async () => {
@@ -305,7 +308,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'minWidth' attribute.`);
+        assert.throws(() => parser.parseFormatProps(json, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'minWidth' attribute.`);
       });
       it("MinWidth is not positive", async () => {
         const json = {
@@ -323,7 +326,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'minWidth' attribute.`);
+        assert.throws(() => parser.parseFormatProps(json, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'minWidth' attribute.`);
       });
       it("Type is scientific; ScientificType is required", async () => {
         const json = {
@@ -340,7 +343,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has type 'Scientific' therefore attribute 'scientificType' is required.`);
+        await expect(testFormat.deserialize(parser.parseFormatProps(json, testFormat.name))).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has type 'Scientific' therefore attribute 'scientificType' is required.`);
       });
       it("ScientificType value is not valid", async () => {
         const json = {
@@ -358,7 +361,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'scientificType' attribute.`);
+        await expect(testFormat.deserialize(parser.parseFormatProps(json, testFormat.name))).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'scientificType' attribute.`);
       });
       it("Type is not scientific; ScientificType is provided and should be ignored", async () => {
         const json = {
@@ -375,7 +378,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await testFormat.fromJson(json);
+        await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.scientificType === undefined);
       });
       it("showSignOption must be a string", async () => {
@@ -394,7 +397,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
+        assert.throws(() => parser.parseFormatProps(json, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
       });
       it("showSignOption is not default value", async () => {
         const json = {
@@ -412,7 +415,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await testFormat.fromJson(json);
+        await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.showSignOption === ShowSignOption.NoSign);
       });
       it("showSignOption is invalid", async () => {
@@ -430,7 +433,7 @@ describe("Format tests", () => {
           decimalSeparator: ".",
           thousandSeparator: ",",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'showSignOption' attribute.`);
+        await expect(testFormat.deserialize(parser.parseFormatProps(json, testFormat.name))).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'showSignOption' attribute.`);
       });
       it("UOMSeparator is not default", async () => {
         const json = {
@@ -447,7 +450,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: "-",
         };
-        await testFormat.fromJson(json);
+        await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.uomSeparator, "-");
       });
       it("StationSeparator is not default", async () => {
@@ -465,7 +468,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           stationSeparator: "-",
         };
-        await testFormat.fromJson(json);
+        await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.stationSeparator, "-");
       });
       it("StationOffsetSize is not an int", async () => {
@@ -484,7 +487,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
+        assert.throws(() => parser.parseFormatProps(json, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
       });
       it("StationOffsetSize is not positive", async () => {
         const json = {
@@ -502,7 +505,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
+        assert.throws(() => parser.parseFormatProps(json, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
       });
       it("Type is station; StationOffsetSize is required", async () => {
         const json = {
@@ -519,7 +522,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has type 'Station' therefore attribute 'stationOffsetSize' is required.`);
+        await expect(testFormat.deserialize(parser.parseFormatProps(json, testFormat.name))).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has type 'Station' therefore attribute 'stationOffsetSize' is required.`);
       });
       it("Type is not station; StationOffsetSize is ignored", async () => {
         const json = {
@@ -537,7 +540,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await testFormat.fromJson(json);
+        await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.stationOffsetSize === undefined);
       });
       it("decimalSeparator, thousandSeparator, uomSeparator, stationSeparator cannot be more than one character", async () => {
@@ -597,10 +600,13 @@ describe("Format tests", () => {
           uomSeparator: " ",
           stationSeparator: "++",
         };
-        await expect(testFormat.fromJson(jsonDecimalSeparator)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'decimalSeparator' attribute.`);
-        await expect(testFormat.fromJson(jsonThousandSeparator)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'thousandSeparator' attribute.`);
-        await expect(testFormat.fromJson(jsonUOMSeparator)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'uomSeparator' attribute.`);
-        await expect(testFormat.fromJson(jsonStationSeparator)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationSeparator' attribute.`);
+        assert.throws(() => parser.parseFormatProps(jsonDecimalSeparator, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'decimalSeparator' attribute.`);
+
+        assert.throws(() => parser.parseFormatProps(jsonThousandSeparator, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'thousandSeparator' attribute.`);
+
+        assert.throws(() => parser.parseFormatProps(jsonUOMSeparator, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'uomSeparator' attribute.`);
+
+        assert.throws(() => parser.parseFormatProps(jsonStationSeparator, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationSeparator' attribute.`);
       });
     });
     describe("fromJson FormatTraits Tests", () => {
@@ -619,7 +625,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await testFormat.fromJson(json);
+        await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert((testFormat!.formatTraits & 0x3FF) === testFormat!.formatTraits);
       });
       it("Valid options with multiple separators", async () => {
@@ -637,7 +643,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await testFormat.fromJson(json);
+        await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert((testFormat!.formatTraits & 0x3FF) === testFormat!.formatTraits);
       });
       it("Valid options with invalid separator", async () => {
@@ -655,7 +661,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `Format has an invalid 'formatTraits' option.`);
+        await expect(testFormat.deserialize(parser.parseFormatProps(json, testFormat.name))).to.be.rejectedWith(ECObjectsError, `Format has an invalid 'formatTraits' option.`);
       });
       it("String with invalid option", async () => {
         const json = {
@@ -672,7 +678,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `Format has an invalid 'formatTraits' option.`);
+        await expect(testFormat.deserialize(parser.parseFormatProps(json, testFormat.name))).to.be.rejectedWith(ECObjectsError, `Format has an invalid 'formatTraits' option.`);
       });
       it("Empty string should make formatTraits undefined", async () => {
         const json = {
@@ -689,7 +695,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await testFormat.fromJson(json);
+        await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.formatTraits === 0);
       });
       it("String[] with valid options", async () => {
@@ -718,7 +724,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await testFormat.fromJson(json);
+        await await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert((testFormat!.formatTraits & 0x3FF) === testFormat!.formatTraits);
       });
       it("String[] with one valid option", async () => {
@@ -738,7 +744,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await testFormat.fromJson(json);
+        await testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.hasFormatTrait(FormatTraits.KeepSingleZero) === false);
         assert(testFormat.hasFormatTrait(FormatTraits.TrailZeroes));
         assert(testFormat.hasFormatTrait(FormatTraits.ApplyRounding) === false);
@@ -760,7 +766,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `Format has an invalid 'formatTraits' option.`);
+        await expect(testFormat.deserialize(parser.parseFormatProps(json, testFormat.name))).to.be.rejectedWith(ECObjectsError, `Format has an invalid 'formatTraits' option.`);
       });
     });
   });
@@ -785,7 +791,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.name, "AmerMYFI4");
         assert(testFormat.label, "myfi4");
         assert(testFormat.description === "");
@@ -803,6 +809,7 @@ describe("Format tests", () => {
       });
       it("Name must be a valid ECName", () => {
         const json = {
+          schema: "TestSchema",
           schemaItemType: "Format",
           name: "10AmerMYFI4",
           label: "myfi4",
@@ -815,7 +822,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, "");
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, json.name)), ECObjectsError, `The Format TestSchema.10AmerMYFI4 has an invalid 'name' attribute. '10AmerMYFI4' is not a valid ECName.`);
       });
       it("Description must be a string", () => {
         const json = {
@@ -832,7 +839,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The SchemaItem AmerMYFI4 has an invalid 'description' attribute. It should be of type 'string'.`);
+        assert.throws(() => parser.parseSchemaItemProps(json, testFormat.schema.name, testFormat.name), ECObjectsError, `The SchemaItem TestSchema.AmerMYFI4 has an invalid 'description' attribute. It should be of type 'string'.`);
       });
       it("Round factor is not default value", () => {
         const json = {
@@ -848,7 +855,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.roundFactor === 20);
       });
       it("Type is required", () => {
@@ -864,7 +871,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The Format AmerMYFI4 does not have the required 'type' attribute.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `The Format AmerMYFI4 does not have the required 'type' attribute.`);
       });
       it("Type value is invalid", () => {
         const json = {
@@ -880,7 +887,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The Format AmerMYFI4 has an invalid 'type' attribute.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `The Format AmerMYFI4 has an invalid 'type' attribute.`);
       });
       it("Type is fractional; Precision value is invalid", () => {
         const json = {
@@ -895,7 +902,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The Format AmerMYFI4 has an invalid 'precision' attribute.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `The Format AmerMYFI4 has an invalid 'precision' attribute.`);
       });
       it("Type is fractional; Precision value is valid", () => {
         const json = {
@@ -911,7 +918,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.precision === 16);
       });
       it("Type is decimal, scientific, or station; Precision value is invalid", () => {
@@ -956,9 +963,9 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(jsonDecimal), ECObjectsError, `The 'precision' attribute must be an integer in the range 0-12.`);
-        assert.throws(() => testFormat.fromJsonSync(jsonScientific), ECObjectsError, `The 'precision' attribute must be an integer in the range 0-12.`);
-        assert.throws(() => testFormat.fromJsonSync(jsonStation), ECObjectsError, `The 'precision' attribute must be an integer in the range 0-12.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(jsonDecimal, testFormat.name)), ECObjectsError, `The Format ${testFormat.name} contains a 'precision' attribute which must be an integer in the range 0-12.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(jsonScientific, testFormat.name)), ECObjectsError, `The Format ${testFormat.name} contains a 'precision' attribute which must be an integer in the range 0-12.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(jsonStation, testFormat.name)), ECObjectsError, `The Format ${testFormat.name} contains a 'precision' attribute which must be an integer in the range 0-12.`);
       });
       it("Type is decimal, scientific, or station; Precision value is valid", () => {
         const jsonDecimal = {
@@ -1002,12 +1009,11 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-
-        testFormat.fromJsonSync(jsonDecimal);
+        testFormat.deserializeSync(parser.parseFormatProps(jsonDecimal, testFormat.name));
         assert(testFormat.precision === 3);
-        testFormat.fromJsonSync(jsonScientific);
+        testFormat.deserializeSync(parser.parseFormatProps(jsonScientific, testFormat.name));
         assert(testFormat.precision === 0);
-        testFormat.fromJsonSync(jsonStation);
+        testFormat.deserializeSync(parser.parseFormatProps(jsonStation, testFormat.name));
         assert(testFormat.precision === 12);
       });
       it("MinWidth is not an int", () => {
@@ -1026,7 +1032,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The Format AmerMYFI4 has an invalid 'minWidth' attribute.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `The Format AmerMYFI4 has an invalid 'minWidth' attribute.`);
       });
       it("MinWidth is not positive", () => {
         const json = {
@@ -1044,7 +1050,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The Format AmerMYFI4 has an invalid 'minWidth' attribute.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `The Format AmerMYFI4 has an invalid 'minWidth' attribute.`);
       });
       it("Type is scientific; ScientificType is required", () => {
         const json = {
@@ -1061,7 +1067,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The Format AmerMYFI4 has type 'Scientific' therefore attribute 'scientificType' is required.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `The Format AmerMYFI4 has type 'Scientific' therefore attribute 'scientificType' is required.`);
       });
       it("ScientificType value is not valid", () => {
         const json = {
@@ -1079,7 +1085,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The Format AmerMYFI4 has an invalid 'scientificType' attribute.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `The Format AmerMYFI4 has an invalid 'scientificType' attribute.`);
       });
       it("Type is not scientific; ScientificType is provided and should be ignored", () => {
         const json = {
@@ -1096,7 +1102,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.scientificType === undefined);
       });
       it("showSignOption must be a string", () => {
@@ -1115,7 +1121,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The Format AmerMYFI4 has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `The Format AmerMYFI4 has an invalid 'showSignOption' attribute. It should be of type 'string'.`);
       });
       it("showSignOption is not default value", () => {
         const json = {
@@ -1133,7 +1139,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.showSignOption === ShowSignOption.NoSign);
       });
       it("showSignOption is invalid", () => {
@@ -1151,7 +1157,7 @@ describe("Format tests", () => {
           decimalSeparator: ".",
           thousandSeparator: ",",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The Format AmerMYFI4 has an invalid 'showSignOption' attribute.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `The Format AmerMYFI4 has an invalid 'showSignOption' attribute.`);
       });
       it("UOMSeparator is not default", () => {
         const json = {
@@ -1168,7 +1174,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: "-",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.uomSeparator, "-");
       });
       it("StationSeparator is not default", () => {
@@ -1186,7 +1192,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           stationSeparator: "-",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.stationSeparator, "-");
       });
       it("StationOffsetSize is not an int", () => {
@@ -1205,7 +1211,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
+        assert.throws(() => parser.parseFormatProps(json, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
       });
       it("StationOffsetSize is not positive", () => {
         const json = {
@@ -1223,7 +1229,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
+        assert.throws(() => parser.parseFormatProps(json, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
       });
       it("Type is station; StationOffsetSize is required", () => {
         const json = {
@@ -1240,7 +1246,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `The Format AmerMYFI4 has type 'Station' therefore attribute 'stationOffsetSize' is required.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `The Format AmerMYFI4 has type 'Station' therefore attribute 'stationOffsetSize' is required.`);
       });
       it("Type is not station; StationOffsetSize is ignored", () => {
         const json = {
@@ -1258,7 +1264,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.stationOffsetSize === undefined);
       });
       it("decimalSeparator, thousandSeparator, uomSeparator, stationSeparator cannot be more than one character", () => {
@@ -1318,10 +1324,10 @@ describe("Format tests", () => {
           uomSeparator: " ",
           stationSeparator: "++",
         };
-        assert.throws(() => testFormat.fromJsonSync(jsonDecimalSeparator), ECObjectsError, `The Format AmerMYFI4 has an invalid 'decimalSeparator' attribute.`);
-        assert.throws(() => testFormat.fromJsonSync(jsonThousandSeparator), ECObjectsError, `The Format AmerMYFI4 has an invalid 'thousandSeparator' attribute.`);
-        assert.throws(() => testFormat.fromJsonSync(jsonUOMSeparator), ECObjectsError, `The Format AmerMYFI4 has an invalid 'uomSeparator' attribute.`);
-        assert.throws(() => testFormat.fromJsonSync(jsonStationSeparator), ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationSeparator' attribute.`);
+        assert.throws(() => parser.parseFormatProps(jsonDecimalSeparator, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'decimalSeparator' attribute.`);
+        assert.throws(() => parser.parseFormatProps(jsonThousandSeparator, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'thousandSeparator' attribute.`);
+        assert.throws(() => parser.parseFormatProps(jsonUOMSeparator, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'uomSeparator' attribute.`);
+        assert.throws(() => parser.parseFormatProps(jsonStationSeparator, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has an invalid 'stationSeparator' attribute.`);
       });
     });
     describe("fromJson FormatTraits Tests", () => {
@@ -1340,7 +1346,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert((testFormat!.formatTraits & 0x3FF) === testFormat!.formatTraits);
       });
       it("Valid options with multiple separators", () => {
@@ -1358,7 +1364,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert((testFormat!.formatTraits & 0x3FF) === testFormat!.formatTraits);
       });
       it("Valid options with invalid separator", () => {
@@ -1376,7 +1382,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `Format has an invalid 'formatTraits' option.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `Format has an invalid 'formatTraits' option.`);
       });
       it("String with invalid option", () => {
         const json = {
@@ -1393,7 +1399,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `Format has an invalid 'formatTraits' option.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `Format has an invalid 'formatTraits' option.`);
       });
       it("Empty string should make formatTraits undefined", () => {
         const json = {
@@ -1410,7 +1416,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.formatTraits === 0);
       });
       it("String[] with valid options", () => {
@@ -1439,7 +1445,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name));
         assert((testFormat!.formatTraits & 0x3FF) === testFormat!.formatTraits);
       });
       it("String[] with one valid option", () => {
@@ -1459,7 +1465,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        testFormat.fromJsonSync(json);
+        testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name));
         assert(testFormat.hasFormatTrait(FormatTraits.KeepSingleZero) === false);
         assert(testFormat.hasFormatTrait(FormatTraits.TrailZeroes));
         assert(testFormat.hasFormatTrait(FormatTraits.ApplyRounding) === false);
@@ -1481,7 +1487,7 @@ describe("Format tests", () => {
           thousandSeparator: ",",
           uomSeparator: " ",
         };
-        assert.throws(() => testFormat.fromJsonSync(json), ECObjectsError, `Format has an invalid 'formatTraits' option.`);
+        assert.throws(() => testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name)), ECObjectsError, `Format has an invalid 'formatTraits' option.`);
       });
     });
   });
@@ -1662,7 +1668,7 @@ describe("Format tests", () => {
           ],
         },
       };
-      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'spacer' attribute.`);
+      assert.throws(() => parser.parseFormatProps(json, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'spacer' attribute.`);
     });
     it("spacer must be a string", async () => {
       const json = {
@@ -1682,7 +1688,7 @@ describe("Format tests", () => {
           ],
         },
       };
-      await expect(testFormat.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'spacer' attribute.`);
+      assert.throws(() => parser.parseFormatProps(json, testFormat.name), ECObjectsError, `The Format AmerMYFI4 has a Composite with an invalid 'spacer' attribute.`);
     });
     it("Unit names must be unique", async () => {
       const testSchema = {
@@ -2182,7 +2188,7 @@ describe("Format tests", () => {
         thousandSeparator: ",",
         uomSeparator: " ",
       };
-      testFormat.fromJsonSync(json);
+      testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name));
       const formatSerialization = testFormat.toJson(false, true);
       assert.isDefined(formatSerialization);
       assert(formatSerialization.formatTraits.indexOf("KeepSingleZero") !== -1);
@@ -2203,7 +2209,7 @@ describe("Format tests", () => {
         thousandSeparator: ",",
         uomSeparator: " ",
       };
-      testFormat.fromJsonSync(json);
+      testFormat.deserializeSync(parser.parseFormatProps(json, testFormat.name));
       const formatSerialization = testFormat.toJson(false, true);
       assert.isDefined(formatSerialization);
       assert(formatSerialization.formatTraits.indexOf("TrailZeroes") !== -1);
@@ -2232,8 +2238,7 @@ describe("Format tests", () => {
         thousandSeparator: ",",
         uomSeparator: " ",
       };
-      testFormat.fromJsonSync(json);
-      testFormat.fromJsonSync(json);
+      testFormat.deserialize(parser.parseFormatProps(json, testFormat.name));
       const formatSerialization = testFormat.toJson(false, true);
       assert.isDefined(formatSerialization);
       assert(formatSerialization.formatTraits.length === 0);

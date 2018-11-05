@@ -11,6 +11,7 @@ export * from "./base";
 export * from "./contextmenu";
 export * from "./cube";
 export * from "./dialog";
+export * from "./elementseparator";
 export * from "./hocs";
 export * from "./messagebox";
 export * from "./popup";
@@ -51,6 +52,10 @@ export * from "./utils";
  * Classes for working with a Dialog.
  */
 /**
+ * @docs-group-description ElementSeparator
+ * Classes for working with a ElementSeparator.
+ */
+/**
  * @docs-group-description Expandable
  * Classes for working with a ExpandableBlock or ExpandableList.
  */
@@ -84,9 +89,9 @@ export * from "./utils";
  */
 /**
  * @docs-group-description UiSettings
- * Interfaces for working with persistant UI settings.
+ * Interfaces for working with persistent UI settings.
  */
 /**
- * @docs-group-description Utils
+ * @docs-group-description Utilities
  * Various utility classes for working with a UI.
  */

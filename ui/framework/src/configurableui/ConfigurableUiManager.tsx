@@ -6,7 +6,7 @@
 
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemPropsList } from "./ItemProps";
-import { FrontstageDef, FrontstageProps } from "./FrontstageDef";
+import { FrontstageDef, FrontstageDefProps } from "./FrontstageDef";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableCreateInfo, ConfigurableUiElement, ConfigurableUiControlConstructor } from "./ConfigurableUiControl";
 import { ContentGroupManager, ContentGroupProps } from "./ContentGroup";
@@ -14,10 +14,33 @@ import { ContentLayoutManager, ContentLayoutProps } from "./ContentLayout";
 import { TaskManager, TaskPropsList } from "./Task";
 import { WorkflowManager, WorkflowPropsList } from "./Workflow";
 import { ItemMap } from "./ItemFactory";
+import { FrontstageProvider } from "./Frontstage";
 
 import { StandardRotationNavigationAidControl } from "./navigationaids/StandardRotationNavigationAid";
 import { SheetNavigationAidControl } from "./navigationaids/SheetNavigationAid";
 import { CubeNavigationAidControl } from "./navigationaids/CubeNavigationAid";
+
+/** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control. */
+export const enum ConfigurableSyncUiEventId {
+  ActiveContentChanged = "ActiveContentChanged",
+  ActivityMessageUpdated = "ActivityMessageUpdated",
+  ActivityMessageCancelled = "ActivityMessageCancelled",
+  BackstageCloseEvent = "BackstageCloseEvent",
+  ContentLayoutActivated = "ContentLayoutActivated",
+  ContentControlActivated = "ContentControlActivated",
+  ElementTooltipChanged = "ElementTooltipChanged",
+  FrontstageActivated = "FrontstageActivated",
+  InputFieldMessageAdded = "InputFieldMessageAdded",
+  InputFieldMessageRemoved = "InputFieldMessageRemoved",
+  ModalFrontstageChanged = "ModalFrontstageChanged",
+  ModalDialogChanged = "ModalDialogChanged",
+  NavigationAidActivated = "NavigationAidActivated",
+  NotificationMessageAdded = "NotificationMessageAdded",
+  ToolActivated = "ToolActivated",
+  TaskActivated = "TaskActivated",
+  WidgetStateChanged = "WidgetStateChanged",
+  WorkflowActivated = "WorkflowActivated",
+}
 
 // -----------------------------------------------------------------------------
 // Configurable Ui Manager
@@ -37,6 +60,9 @@ export class ConfigurableUiManager {
     ConfigurableUiManager.registerControl("StandardRotationNavigationAid", StandardRotationNavigationAidControl);
     ConfigurableUiManager.registerControl("SheetNavigationAid", SheetNavigationAidControl);
     ConfigurableUiManager.registerControl("CubeNavigationAid", CubeNavigationAidControl);
+
+    // Initialize the FrontstageManager
+    FrontstageManager.initialize();
   }
 
   /** Loads common Group, Tool and Command items into the item map.
@@ -144,14 +170,14 @@ export class ConfigurableUiManager {
   /** Loads one or more Frontstages into the [[FrontstageManager]].
    * @param frontstagePropsList  the list of Frontstages to load
    */
-  public static loadFrontstages(frontstagePropsList: FrontstageProps[]): void {
+  public static loadFrontstages(frontstagePropsList: FrontstageDefProps[]): void {
     FrontstageManager.loadFrontstages(frontstagePropsList);
   }
 
   /** Loads a Frontstage into the [[FrontstageManager]].
    * @param frontstageProps  the properties of the Frontstage to load
    */
-  public static loadFrontstage(frontstageProps: FrontstageProps): void {
+  public static loadFrontstage(frontstageProps: FrontstageDefProps): void {
     FrontstageManager.loadFrontstage(frontstageProps);
   }
 
@@ -160,6 +186,13 @@ export class ConfigurableUiManager {
    */
   public static addFrontstage(frontstageDef: FrontstageDef): void {
     FrontstageManager.addFrontstageDef(frontstageDef);
+  }
+
+  /** Add a Frontstage via a provider into the [[FrontstageManager]].
+   * @param frontstageProvider  Provider of the Frontstage to add
+   */
+  public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
+    FrontstageManager.addFrontstageProvider(frontstageProvider);
   }
 
   /** Loads one or more ContentGroups into the [[ContentGroupManager]].

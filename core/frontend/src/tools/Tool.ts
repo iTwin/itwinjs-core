@@ -12,6 +12,8 @@ import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { IModelApp } from "../IModelApp";
 import { IModelError, GeometryStreamProps } from "@bentley/imodeljs-common";
 import { FuzzySearch, FuzzySearchResults } from "../FuzzySearch";
+import { CoordinateLockOverrides } from "./ToolAdmin";
+import { LocateResponse, LocateFilterStatus } from "../ElementLocateManager";
 
 export type ToolType = typeof Tool;
 export type ToolList = ToolType[];
@@ -200,7 +202,8 @@ export class BeWheelEvent extends BeButtonEvent {
 }
 
 /**
- * Base Tool class for handling user input events from Viewports.
+ * Base Tool class for writing an immediate tool that executes it's assigned task immediately without further input.
+ * @see [[InteractiveTool]] for a base Tool class to handle user input events from a Viewport.
  * @see [Tools]($docs/learning/frontend/tools.md)
  */
 export class Tool {
@@ -431,10 +434,10 @@ export abstract class InteractiveTool extends Tool {
   /**
    * Invoked before the locate tooltip is displayed to retrieve the information about the located element. Allows the tool to override the toolTip.
    * @param hit The HitDetail whose info is needed.
-   * @return A Promise for the string to describe the hit.
+   * @return A Promise for the HTMLElement or string to describe the hit.
    * @note If you override this method, you may decide whether to call your superclass' implementation or not (it is not required).
    */
-  public async getToolTip(_hit: HitDetail): Promise<string> { return _hit.getToolTip(); }
+  public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string> { return _hit.getToolTip(); }
 
   /** Fill the supplied button event from the current cursor location.   */
   public getCurrentButtonEvent(ev: BeButtonEvent): void { IModelApp.toolAdmin.fillEventFromCursorLocation(ev); }
@@ -450,9 +453,59 @@ export abstract class InteractiveTool extends Tool {
 
   /** Called to allow Tool to display dynamic elements. */
   public onDynamicFrame(_ev: BeButtonEvent, _context: DynamicsContext): void { }
+
+  /** Invoked to allow tools to filter which elements can be located.
+   * @return Reject if hit is unacceptable for this tool (fill out response with explanation, if it is defined)
+   */
+  public filterHit(_hit: HitDetail, _out?: LocateResponse): LocateFilterStatus { return LocateFilterStatus.Accept; }
+
+  /** Helper method to keep the view cursor, display of locate circle, and coordinate lock overrides consistent with [[AccuSnap.isLocateEnabled]] and [[AccuSnap.isSnapEnabled]].
+   * @param enableLocate Value to pass to [[IModelApp.accuSnap.enableLocate]]. Tools that locate elements should always pass true to give the user feedback regarding the element at the current cursor location.
+   * @param enableSnap Optional value to pass to [[IModelApp.accuSnap.enableSnap]]. Tools that don't care about the element pick location should not pass true. Default is false.
+   * @note User must also have snapping enabled [[AccuSnap.isSnapEnabledByUser]], otherwise [[TentativePoint]] is used to snap.
+   * @param cursor Optional tool specific cursor override. Default is either cross or dynamics cursor depending on whether dynamics are currently active.
+   * @param coordLockOvr Optional tool specific coordinate lock overrides. A tool that only identifies elements and does not use [[BeButtonEvent.point]] can set [[ToolState.coordLockOvr]] to CoordinateLockOverrides.ACS
+   * or CoordinateLockOverrides.ACS, otherwise locate is affected by the input point being first projected to the ACS plane. A tool that will use [[BeButtonEvent.point]], especially those that call [[AccuSnap.enableSnap]]
+   * should honor all locks and leave [[ToolState.coordLockOvr]] set to CoordinateLockOverrides.None, the default for ViewTool and PrimitiveTool.
+   */
+  public changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void {
+    if (undefined !== cursor) {
+      IModelApp.toolAdmin.setCursor(cursor);
+      IModelApp.toolAdmin.setLocateCircleOn(enableLocate);
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+    } else {
+      IModelApp.toolAdmin.setLocateCursor(enableLocate);
+    }
+
+    IModelApp.accuSnap.enableLocate(enableLocate);
+    if (undefined !== enableSnap)
+      IModelApp.accuSnap.enableSnap(enableSnap);
+    else
+      IModelApp.accuSnap.enableSnap(false);
+
+    if (undefined !== coordLockOvr) {
+      IModelApp.toolAdmin.toolState.coordLockOvr = coordLockOvr;
+    } else {
+      if (enableLocate && !IModelApp.accuSnap.isSnapEnabled)
+        IModelApp.toolAdmin.toolState.coordLockOvr |= CoordinateLockOverrides.ACS;
+      else
+        IModelApp.toolAdmin.toolState.coordLockOvr &= ~CoordinateLockOverrides.ACS;
+    }
+  }
+
+  /** Helper method for tools that need to locate existing elements.
+   * Initializes [[ElementLocateManager]], changes the view cursor to locate, enables display of the locate circle, and sets the appropriate coordinate lock overrides.
+   * @see [[changeLocateState]]
+   */
+  public initLocateElements(enableLocate: boolean = true, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void {
+    IModelApp.locateManager.initToolLocate();
+    this.changeLocateState(enableLocate, enableSnap, cursor, coordLockOvr);
+  }
 }
 
-/** @hidden */
+/**
+ * The InputCollector class can be used to implement a command for gathering input (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.
+ */
 export abstract class InputCollector extends InteractiveTool {
   public run(): boolean {
     const toolAdmin = IModelApp.toolAdmin;

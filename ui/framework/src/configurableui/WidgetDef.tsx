@@ -7,10 +7,11 @@
 import * as React from "react";
 
 import { IconLabelProps, IconLabelSupport, IconInfo } from "./IconLabelSupport";
-import { ConfigurableUiManager } from "./ConfigurableUiManager";
+import { ConfigurableUiManager, ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
+import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
 
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
@@ -41,7 +42,7 @@ export enum WidgetType {
 
 /** Properties for a Widget.
  */
-export interface WidgetProps extends IconLabelProps {
+export interface WidgetDefProps extends IconLabelProps {
   id?: string;
 
   classId?: string | ConfigurableUiControlConstructor;
@@ -62,7 +63,7 @@ export interface WidgetProps extends IconLabelProps {
 
 /** Properties for a Toolbar Widget.
  */
-export interface ToolbarWidgetProps extends WidgetProps {
+export interface ToolbarWidgetProps extends WidgetDefProps {
   horizontalIds?: string[];  // Item Ids
   horizontalDirection?: Direction;
   verticalIds?: string[];    // Item Ids
@@ -83,7 +84,7 @@ export interface NavigationWidgetProps extends ToolbarWidgetProps {
 
 /** Union of all Widget properties.
  */
-export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
+export type AnyWidgetProps = WidgetDefProps | ToolWidgetProps | NavigationWidgetProps;
 
 // -----------------------------------------------------------------------------
 // Widget and subclasses
@@ -96,7 +97,7 @@ export class WidgetDef {
 
   public id: string;
   public classId: string | ConfigurableUiControlConstructor | undefined = undefined;
-  public defaultState: WidgetState = WidgetState.Open;
+  public widgetState: WidgetState = WidgetState.Open;
   public priority: number = 0;
 
   public featureId: string = "";
@@ -105,10 +106,9 @@ export class WidgetDef {
   public isFloatingStateWindowResizable: boolean = true;
   public isToolSettings: boolean = false;
   public isStatusBar: boolean = false;
-  public isDefaultOpen: boolean = false;
-  public defaultOpenUsed: boolean = false;
+  public stateChanged: boolean = false;
 
-  public widgetType: WidgetType;
+  public widgetType: WidgetType = WidgetType.Rectangular;
 
   public applicationData?: any;
 
@@ -116,46 +116,47 @@ export class WidgetDef {
   private _widgetReactNode: React.ReactNode;
   private _widgetControl!: WidgetControl;
 
-  constructor(widgetProps: WidgetProps) {
-    if (widgetProps.id !== undefined)
+  constructor(widgetProps?: WidgetDefProps) {
+    if (widgetProps && widgetProps.id !== undefined)
       this.id = widgetProps.id;
     else {
       WidgetDef._sId++;
       this.id = "Widget-" + WidgetDef._sId;
     }
 
-    if (widgetProps.classId !== undefined)
-      this.classId = widgetProps.classId;
-    if (widgetProps.defaultState !== undefined)
-      this.defaultState = widgetProps.defaultState;
-    if (widgetProps.priority !== undefined)
-      this.priority = widgetProps.priority;
+    this._iconLabelSupport = new IconLabelSupport();
 
-    if (widgetProps.featureId !== undefined)
-      this.featureId = widgetProps.featureId;
-    if (widgetProps.isFreeform !== undefined)
-      this.isFreeform = widgetProps.isFreeform;
-    if (widgetProps.isFloatingStateSupported !== undefined)
-      this.isFloatingStateSupported = widgetProps.isFloatingStateSupported;
-    if (widgetProps.isFloatingStateWindowResizable !== undefined)
-      this.isFloatingStateWindowResizable = widgetProps.isFloatingStateWindowResizable;
-    if (widgetProps.isToolSettings !== undefined)
-      this.isToolSettings = widgetProps.isToolSettings;
-    if (widgetProps.isStatusBar !== undefined)
-      this.isStatusBar = widgetProps.isStatusBar;
+    if (widgetProps) {
+      if (widgetProps.classId !== undefined)
+        this.classId = widgetProps.classId;
+      if (widgetProps.defaultState !== undefined)
+        this.widgetState = widgetProps.defaultState;
+      if (widgetProps.priority !== undefined)
+        this.priority = widgetProps.priority;
 
-    this.widgetType = this.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
+      if (widgetProps.featureId !== undefined)
+        this.featureId = widgetProps.featureId;
+      if (widgetProps.isFreeform !== undefined)
+        this.isFreeform = widgetProps.isFreeform;
+      if (widgetProps.isFloatingStateSupported !== undefined)
+        this.isFloatingStateSupported = widgetProps.isFloatingStateSupported;
+      if (widgetProps.isFloatingStateWindowResizable !== undefined)
+        this.isFloatingStateWindowResizable = widgetProps.isFloatingStateWindowResizable;
+      if (widgetProps.isToolSettings !== undefined)
+        this.isToolSettings = widgetProps.isToolSettings;
+      if (widgetProps.isStatusBar !== undefined)
+        this.isStatusBar = widgetProps.isStatusBar;
 
-    if (widgetProps.applicationData !== undefined)
-      this.applicationData = widgetProps.applicationData;
+      this.widgetType = this.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
 
-    this._iconLabelSupport = new IconLabelSupport(widgetProps);
+      if (widgetProps.applicationData !== undefined)
+        this.applicationData = widgetProps.applicationData;
 
-    if (widgetProps.reactElement !== undefined)
-      this._widgetReactNode = widgetProps.reactElement;
+      this._iconLabelSupport = new IconLabelSupport(widgetProps);
 
-    if (this.defaultState === WidgetState.Open)
-      this.isDefaultOpen = true;
+      if (widgetProps.reactElement !== undefined)
+        this._widgetReactNode = widgetProps.reactElement;
+    }
   }
 
   public get label(): string { return this._iconLabelSupport.label; }
@@ -164,6 +165,10 @@ export class WidgetDef {
 
   public get widgetControl(): WidgetControl | undefined {
     return this._widgetControl;
+  }
+
+  public set iconLabelSupport(iconLabelSupport: IconLabelSupport) {
+    this._iconLabelSupport = iconLabelSupport;
   }
 
   public getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined {
@@ -199,10 +204,23 @@ export class WidgetDef {
     return this._widgetReactNode;
   }
 
-  public setWidgetState(state: WidgetState): void {
-    this.isDefaultOpen = (state === WidgetState.Open);
-    this.defaultOpenUsed = false;
+  public set reactElement(node: React.ReactNode) {
+    this._widgetReactNode = node;
+  }
 
-    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, widgetState: state });
+  public setWidgetState(state: WidgetState): void {
+    const oldWidgetState = this.widgetState;
+    this.widgetState = state;
+    this.stateChanged = true;
+    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, oldWidgetState, newWidgetState: state });
+    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.WidgetStateChanged);
+  }
+
+  public canShow(): boolean {
+    return (this.widgetState !== WidgetState.Off && this.widgetState !== WidgetState.Hidden);
+  }
+
+  public canOpen(): boolean {
+    return (this.widgetState === WidgetState.Open || this.widgetState === WidgetState.Floating || this.widgetState === WidgetState.Footer);
   }
 }

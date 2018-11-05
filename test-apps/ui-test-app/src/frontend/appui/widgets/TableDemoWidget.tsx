@@ -7,14 +7,15 @@ import * as React from "react";
 import { SampleAppIModelApp } from "../..";
 
 import {
-  ConfigurableUiManager, ConfigurableCreateInfo,
-  WidgetControl, WidgetControlProps,
+  ConfigurableCreateInfo,
+  WidgetControl, WidgetComponentProps,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
 import { Table } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTableDataProvider, tableDropTargetDropCallback, tableDragSourceEndCallback, tableCanDropTargetDropCallback } from "./demoTableDataProvider";
 import { RowDragLayer } from "./RowDragLayer";
+
 export class TableDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
@@ -23,7 +24,7 @@ export class TableDemoWidgetControl extends WidgetControl {
   }
 }
 
-interface Props extends WidgetControlProps {
+interface Props extends WidgetComponentProps {
   iModelConnection?: IModelConnection;
 }
 
@@ -31,7 +32,7 @@ interface State {
   checked: boolean;
 }
 
-class TableDemoWidget extends React.Component<Props, State> {
+export class TableDemoWidget extends React.Component<Props, State> {
   public readonly state: State = {
     checked: false,
   };
@@ -58,8 +59,8 @@ class TableDemoWidget extends React.Component<Props, State> {
 
     return (
       <div>
-        <label htmlFor="recieves_tree">Can accept tree nodes: </label>
-        <input id="recieves_tree" type="checkbox" checked={this.state.checked} onClick={() => {
+        <label htmlFor="receives_tree">Can accept tree nodes: </label>
+        <input id="receives_tree" type="checkbox" checked={this.state.checked} onClick={() => {
           this.setState((prevState) => ({ checked: !prevState.checked }), () => {
             demoMutableTableDataProvider.onRowsChanged.raiseEvent();
 
@@ -76,5 +77,3 @@ class TableDemoWidget extends React.Component<Props, State> {
     );
   }
 }
-
-ConfigurableUiManager.registerControl("TableDemoWidget", TableDemoWidgetControl);

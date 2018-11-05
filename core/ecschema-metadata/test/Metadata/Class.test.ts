@@ -7,16 +7,18 @@ import { assert, expect } from "chai";
 import * as sinon from "sinon";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
-import Schema, { MutableSchema } from "../../src/Metadata/Schema";
-import EntityClass from "../../src/Metadata/EntityClass";
-import SchemaContext from "../../src/Context";
+import { Schema, MutableSchema } from "../../src/Metadata/Schema";
+import { EntityClass } from "../../src/Metadata/EntityClass";
+import { SchemaContext } from "../../src/Context";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
-import ECClass, { MutableClass } from "../../src/Metadata/Class";
+import { ECClass, MutableClass } from "../../src/Metadata/Class";
 import { ECObjectsError } from "../../src/Exception";
 import { SchemaItemType } from "../../src/ECObjects";
+import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("ECClass", () => {
   let schema: Schema;
+  let parser = new JsonParser();
 
   describe("get properties", () => {
     beforeEach(() => {
@@ -226,10 +228,10 @@ describe("ECClass", () => {
       },
     };
     it("async - Custom Attributes must be an array", async () => {
-      await expect(Schema.fromJson(mustBeAnArrayJson)).to.be.rejectedWith(ECObjectsError, `The AnyClass testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      await expect(Schema.fromJson(mustBeAnArrayJson)).to.be.rejectedWith(ECObjectsError, `The ECClass testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
     it("sync - Custom Attributes must be an array", async () => {
-      assert.throws(() => Schema.fromJsonSync(mustBeAnArrayJson), ECObjectsError, `The AnyClass testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      assert.throws(() => Schema.fromJsonSync(mustBeAnArrayJson), ECObjectsError, `The ECClass testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
     it("sync - Deserialize Multiple Custom Attributes with additional properties", () => {
       const classJson = {
@@ -443,7 +445,7 @@ describe("ECClass", () => {
     });
   });
 
-  describe("fromJson", () => {
+  describe("parseProps", () => {
     let testClass: ECClass;
     class MockECClass extends ECClass {
       public readonly schemaItemType!: SchemaItemType.EntityClass; // tslint:disable-line
@@ -461,16 +463,16 @@ describe("ECClass", () => {
     it("should throw for invalid modifier", async () => {
       expect(testClass).to.exist;
       const invalidModifierJson = { schemaItemType: "EntityClass", modifier: 0 };
-      await expect(testClass.fromJson(invalidModifierJson)).to.be.rejectedWith(ECObjectsError, `The ECClass TestClass has an invalid 'modifier' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseClassProps(invalidModifierJson, testClass.name), ECObjectsError, `The ECClass TestClass has an invalid 'modifier' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for invalid baseClass", async () => {
       expect(testClass).to.exist;
       const invalidBaseClassJson = { schemaItemType: "EntityClass", baseClass: 0 };
-      await expect(testClass.fromJson(invalidBaseClassJson)).to.be.rejectedWith(ECObjectsError, `The ECClass TestClass has an invalid 'baseClass' attribute. It should be of type 'string'.`);
+      assert.throws(() => parser.parseClassProps(invalidBaseClassJson, testClass.name), ECObjectsError, `The ECClass TestClass has an invalid 'baseClass' attribute. It should be of type 'string'.`);
 
       const unloadedBaseClassJson = { schemaItemType: "EntityClass", baseClass: "ThisClassDoesNotExist" };
-      await expect(testClass.fromJson(unloadedBaseClassJson)).to.be.rejectedWith(ECObjectsError);
+      await expect(testClass.deserialize(parser.parseClassProps(unloadedBaseClassJson, testClass.name))).to.be.rejectedWith(ECObjectsError);
     });
   });
   describe("toJson", () => {

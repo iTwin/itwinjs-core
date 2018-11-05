@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, Guid, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, Guid } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation,
@@ -529,10 +529,10 @@ export class IModelDb extends IModel {
   public clearSqliteStatementCache(): void { this._sqliteStatementCache.clear(); }
 
   /** Get the GUID of this iModel.  */
-  public getGuid(): Guid { return new Guid(this.nativeDb.getDbGuid()); }
+  public getGuid(): GuidString { return this.nativeDb.getDbGuid(); }
 
   /** Set the GUID of this iModel. */
-  public setGuid(guid: Guid): DbResult { return this.nativeDb.setDbGuid(guid.toString()); }
+  public setGuid(guid: GuidString): DbResult { return this.nativeDb.setDbGuid(guid); }
 
   /** Update the project extents for this iModel.
    * <p><em>Example:</em>
@@ -638,12 +638,12 @@ export class IModelDb extends IModel {
   /** Set iModel as Master copy.
    * @param guid Optionally provide db guid. If its not provided the method would generate one.
    */
-  public setAsMaster(guid?: Guid): void {
+  public setAsMaster(guid?: GuidString): void {
     if (guid === undefined) {
       if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster())
         throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
     } else {
-      if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster(guid!.toString()))
+      if (DbResult.BE_SQLITE_OK !== this.nativeDb.setAsMaster(guid!))
         throw new IModelError(IModelStatus.SQLiteError, "", Logger.logWarning, loggingCategory);
     }
   }
@@ -716,11 +716,11 @@ export class IModelDb extends IModel {
   public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
 
   /** @hidden */
-  public insertCodeSpec(codeSpec: CodeSpec): Id64 {
+  public insertCodeSpec(codeSpec: CodeSpec): Id64String {
     if (!this.briefcase) throw this.newNotOpenError();
     const { error, result } = this.nativeDb.insertCodeSpec(codeSpec.name, codeSpec.specScopeType, codeSpec.scopeReq);
     if (error) throw new IModelError(error.status, "inserting CodeSpec" + codeSpec, Logger.logWarning, loggingCategory);
-    return new Id64(result);
+    return Id64.fromJSON(result);
   }
 
   /** @hidden */
@@ -949,9 +949,9 @@ export namespace IModelDb {
      * @param modeledElementId Identifies the modeled element.
      * @throws [[IModelError]]
      */
-    public getSubModel(modeledElementId: Id64 | Guid | Code): Model {
+    public getSubModel(modeledElementId: Id64String | GuidString | Code): Model {
       const modeledElement = this._iModel.elements.getElement(modeledElementId);
-      if (modeledElement.id.equals(IModel.rootSubjectId))
+      if (modeledElement.id === IModel.rootSubjectId)
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggingCategory);
 
       return this.getModel(modeledElement.id);
@@ -969,11 +969,11 @@ export namespace IModelDb {
      * @returns The newly inserted model's Id.
      * @throws [[IModelError]] if unable to insert the model.
      */
-    public insertModel(model: Model): Id64 {
+    public insertModel(model: Model): Id64String {
       if (!this._iModel.briefcase) throw this._iModel.newNotOpenError();
       const { error, result } = this._iModel.nativeDb.insertModel(JSON.stringify(model));
       if (error) throw new IModelError(error.status, "inserting model", Logger.logWarning, loggingCategory);
-      return model.id = new Id64(JSON.parse(result!).id);
+      return model.id = Id64.fromJSON(JSON.parse(result!).id);
     }
 
     /** Update an existing model.
@@ -995,9 +995,9 @@ export namespace IModelDb {
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      const error: IModelStatus = this._iModel.nativeDb.deleteModel(model.id.value);
+      const error: IModelStatus = this._iModel.nativeDb.deleteModel(model.id);
       if (error !== IModelStatus.Success)
-        throw new IModelError(error, "deleting model id=" + model.id.value, Logger.logWarning, loggingCategory);
+        throw new IModelError(error, "deleting model id=" + model.id, Logger.logWarning, loggingCategory);
     }
   }
 
@@ -1035,10 +1035,15 @@ export namespace IModelDb {
      * Get properties of an Element by Id, FederationGuid, or Code
      * @throws [[IModelError]] if the element is not found.
      */
-    public getElementProps(elementId: Id64String | Guid | Code | ElementLoadProps): ElementProps {
-      if (typeof elementId === "string" || elementId instanceof Id64) elementId = { id: elementId.toString() };
-      else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
-      else if (elementId instanceof Code) elementId = { code: elementId };
+    public getElementProps(elementId: Id64String | GuidString | Code | ElementLoadProps): ElementProps {
+      if (typeof elementId === "string") {
+        if (Guid.isGuid(elementId))
+          elementId = { federationGuid: elementId };
+        else
+          elementId = { id: elementId };
+      } else if (elementId instanceof Code)
+        elementId = { code: elementId };
+
       return this._getElementProps(elementId);
     }
 
@@ -1047,10 +1052,15 @@ export namespace IModelDb {
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
      * @throws [[IModelError]] if the element is not found.
      */
-    public getElement(elementId: Id64String | Guid | Code | ElementLoadProps): Element {
-      if (typeof elementId === "string" || elementId instanceof Id64) elementId = { id: elementId.toString() };
-      else if (elementId instanceof Guid) elementId = { federationGuid: elementId.value };
-      else if (elementId instanceof Code) elementId = { code: elementId };
+    public getElement(elementId: Id64String | GuidString | Code | ElementLoadProps): Element {
+      if (typeof elementId === "string") {
+        if (Guid.isGuid(elementId))
+          elementId = { federationGuid: elementId };
+        else
+          elementId = { id: elementId };
+      } else if (elementId instanceof Code)
+        elementId = { code: elementId };
+
       return this._doGetElement(elementId);
     }
 
@@ -1066,18 +1076,21 @@ export namespace IModelDb {
      * @returns The element that uses the code or undefined if the code is not used.
      * @throws IModelError if the code is invalid
      */
-    public queryElementIdByCode(code: Code): Id64 | undefined {
-      if (!code.spec.isValid) throw new IModelError(IModelStatus.InvalidCodeSpec, "Invalid CodeSpec", Logger.logWarning, loggingCategory);
-      if (code.value === undefined) throw new IModelError(IModelStatus.InvalidCode, "Invalid Code", Logger.logWarning, loggingCategory);
+    public queryElementIdByCode(code: Code): Id64String | undefined {
+      if (Id64.isInvalid(code.spec))
+        throw new IModelError(IModelStatus.InvalidCodeSpec, "Invalid CodeSpec", Logger.logWarning, loggingCategory);
+
+      if (code.value === undefined)
+        throw new IModelError(IModelStatus.InvalidCode, "Invalid Code", Logger.logWarning, loggingCategory);
 
       return this._iModel.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE CodeSpec.Id=? AND CodeScope.Id=? AND CodeValue=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, code.spec);
-        stmt.bindId(2, new Id64(code.scope));
+        stmt.bindId(2, Id64.fromString(code.scope));
         stmt.bindString(3, code.value!);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
           return undefined;
 
-        return new Id64(stmt.getRow().id);
+        return Id64.fromJSON(stmt.getRow().id);
       });
     }
 
@@ -1094,7 +1107,7 @@ export namespace IModelDb {
      * @returns The newly inserted element's Id.
      * @throws [[IModelError]] if unable to insert the element.
      */
-    public insertElement(elProps: ElementProps): Id64 {
+    public insertElement(elProps: ElementProps): Id64String {
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
@@ -1102,7 +1115,7 @@ export namespace IModelDb {
       if (error)
         throw new IModelError(error.status, "Problem inserting element", Logger.logWarning, loggingCategory);
 
-      return new Id64(JSON.parse(json!).id);
+      return Id64.fromJSON(JSON.parse(json!).id);
     }
 
     /** Update some properties of an existing element.
@@ -1135,11 +1148,11 @@ export namespace IModelDb {
      * @returns Returns an array of child element identifiers.
      * @throws [[IModelError]]
      */
-    public queryChildren(elementId: Id64): Id64[] {
+    public queryChildren(elementId: Id64String): Id64String[] {
       const rows: any[] = this._iModel.executeQuery(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=?`, [elementId]);
-      const childIds: Id64[] = [];
+      const childIds: Id64String[] = [];
       for (const row of rows) {
-        childIds.push(new Id64(row.id));
+        childIds.push(Id64.fromJSON(row.id));
       }
       return childIds;
     }
@@ -1150,7 +1163,7 @@ export namespace IModelDb {
     /** Query for aspects rows (by aspect class name) associated with this element.
      * @throws [[IModelError]]
      */
-    private _queryAspects(elementId: Id64, aspectClassName: string): ElementAspect[] {
+    private _queryAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
       const rows: any[] = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE Element.Id=?`, [elementId]);
       if (rows.length === 0)
         throw new IModelError(IModelStatus.NotFound, "ElementAspect class not found", Logger.logWarning, loggingCategory, () => ({ aspectClassName }));
@@ -1172,7 +1185,7 @@ export namespace IModelDb {
      * Get the ElementAspect instances (by class name) that are related to the specified element.
      * @throws [[IModelError]]
      */
-    public getAspects(elementId: Id64, aspectClassName: string): ElementAspect[] {
+    public getAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
       const aspects: ElementAspect[] = this._queryAspects(elementId, aspectClassName);
       return aspects;
     }

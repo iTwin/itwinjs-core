@@ -26,7 +26,7 @@ describe("PresentationRpcInterface usage with RPC protocols", () => {
       const request = () => {
         const params = [{ imodel: token, knownBackendIds: [], rulesetId: faker.random.word() }];
         const r = new WebAppRpcRequest(client, "getRootNodesCount", params);
-        (r as any).finalize(); // no way to properly destroy the created request...
+        (r as any).dispose(); // no way to properly destroy the created request...
       };
       expect(request).to.not.throw();
     });

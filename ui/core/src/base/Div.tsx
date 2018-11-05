@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-/** Props for the Div React component */
+/** Properties for the [[Div]] React component */
 export interface DivProps extends React.DetailedHTMLProps<React.HTMLAttributes<HTMLDivElement>, HTMLDivElement> {
   /** CSS class name */
   className?: string;

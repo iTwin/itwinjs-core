@@ -19,12 +19,6 @@ describe("BooleanTypeConverter", () => {
   });
 
   describe("convertToString", () => {
-
-    it("returns empty string if parameter is null or undefined", async () => {
-      expect(await converter.convertToString(undefined)).to.eq("");
-      expect(await converter.convertToString(null)).to.eq("");
-    });
-
     it("returns parameter value if it's a localized boolean", async () => {
       const trueString = TestUtils.i18n.translate("Components:general.true");
       const falseString = TestUtils.i18n.translate("Components:general.false");
@@ -51,14 +45,12 @@ describe("BooleanTypeConverter", () => {
       expect(await converter.convertToString(0)).to.eq(falseString);
     });
 
+    it("returns empty string if provided value is undefined", async () => {
+      expect(await converter.convertToString(undefined)).to.eq("");
+    });
   });
 
   describe("convertFromString", () => {
-
-    it("returns undefined if parameter is null or undefined", async () => {
-      expect(await converter.convertFromString((null as any))).to.be.undefined;
-      expect(await converter.convertFromString((undefined as any))).to.be.undefined;
-    });
 
     it("returns true if parameter is localized true value", async () => {
       const trueString = TestUtils.i18n.translate("Components:general.true");
@@ -73,11 +65,26 @@ describe("BooleanTypeConverter", () => {
   });
 
   describe("isBooleanType", () => {
-
     it("returns true", () => {
       expect(converter.isBooleanType).to.be.true;
     });
-
   });
 
+  describe("sortCompare", () => {
+    it("returns 0 when boolean values are equal", () => {
+      expect(converter.sortCompare(1, {})).to.be.eq(0);
+      expect(converter.sortCompare({}, [])).to.be.eq(0);
+      expect(converter.sortCompare([], "a")).to.be.eq(0);
+    });
+
+    it("returns greater than 0 when first boolean is true and second is false", () => {
+      expect(converter.sortCompare(1, 0)).to.be.greaterThan(0);
+      expect(converter.sortCompare("a", "")).to.be.greaterThan(0);
+    });
+
+    it("returns less than 0 when first boolean is true and second is false", () => {
+      expect(converter.sortCompare(0, 1)).to.be.lessThan(0);
+      expect(converter.sortCompare("", "a")).to.be.lessThan(0);
+    });
+  });
 });

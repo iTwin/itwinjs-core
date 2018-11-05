@@ -11,8 +11,10 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Arc3d } from "../curve/Arc3d";
 import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
+import { prettyPrint } from "./testFunctions";
 import { Checker } from "./Checker";
 import { expect } from "chai";
+/* tslint:disable:no-console */
 
 function exerciseArcSet(ck: Checker, arcA: Arc3d) {
   const arcB = Arc3d.createXY(Point3d.create(6, 5, 4), 1232.9, AngleSweep.createStartEndDegrees(1, 92));
@@ -85,6 +87,59 @@ describe("Arc3d", () => {
         Vector3d.create(1, 0, 0),
         Vector3d.create(0, 2, 0), AngleSweep.createStartEndDegrees(0, 90))!);
     ck.checkpoint("Arc3d.HelloWorld");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("QuickLength", () => {
+    const ck = new Checker();
+    const origin = Point3d.create();
+    const factorRange = Range1d.createNull();
+    for (const sweep of [AngleSweep.create360(),
+    AngleSweep.createStartEndDegrees(0, 40),
+    AngleSweep.createStartEndDegrees(0, 2),
+    AngleSweep.createStartEndDegrees(-1, 3),
+    AngleSweep.createStartEndDegrees(88, 91),
+    AngleSweep.createStartEndDegrees(0, 18),
+    AngleSweep.createStartEndDegrees(-10, 10),
+    AngleSweep.createStartEndDegrees(80, 100),
+    AngleSweep.createStartEndDegrees(90, 108),
+    AngleSweep.createStartEndDegrees(30, 45),
+    AngleSweep.createStartEndDegrees(80, 110),
+    AngleSweep.createStartEndDegrees(-10, 110),
+    AngleSweep.createStartEndDegrees(-10, 320),
+    AngleSweep.createStartEndDegrees(0, 88),
+    AngleSweep.createStartEndDegrees(45, 132),
+    AngleSweep.createStartEndDegrees(-10, 278),
+    AngleSweep.createStartEndDegrees(30, 80)]) {
+      const factorRange1 = Range1d.createNull();
+      for (const arc of [
+        Arc3d.createXY(origin, 4.0, sweep),
+        Arc3d.createXYEllipse(origin, 4, 2, sweep),
+        Arc3d.createXYEllipse(origin, 8, 2, sweep),
+        Arc3d.createXYEllipse(origin, 5, 4, sweep),
+        Arc3d.createXYEllipse(origin, 20, 2, sweep),
+        Arc3d.create(origin,
+          Vector3d.create(4, 0, 0), Vector3d.create(1, 2, 0), sweep),
+        Arc3d.create(origin,
+          Vector3d.create(8, 7, 0), Vector3d.create(7, 8, 0), sweep)]) {
+        const arcLength = arc.curveLength();
+        const quickLength = arc.quickLength();
+        if (arc.isCircular) {
+          ck.testCoordinate(quickLength, arcLength);
+        } else {
+          const factor = quickLength / arcLength;
+          factorRange.extendX(factor);
+          factorRange1.extendX(factor);
+          //        const scale = arc.getFractionToDistanceScale();
+          if (!ck.testLE(arcLength, 1.1 * quickLength, "arc length .LE.  1.1 * quickLength")) {
+            console.log(prettyPrint(arc));
+          }
+        }
+      }
+      console.log(prettyPrint(sweep) + prettyPrint(factorRange1));
+    }
+    console.log("Arc3d QuickLength FactorRange" + prettyPrint(factorRange));
+
+    ck.checkpoint("Arc3d.QuickLength");
     expect(ck.getNumErrors()).equals(0);
   });
 });

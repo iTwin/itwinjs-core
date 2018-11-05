@@ -30,7 +30,7 @@ export function addWhiteOnWhiteReversal(frag: FragmentShaderBuilder) {
     prog.addGraphicUniform("u_reverseWhiteOnWhite", (uniform, params) => {
       const bgColor: ColorDef = params.target.bgColor.clone();
       bgColor.setAlpha(255);
-      const doReversal = (bgColor.equals(ColorDef.white) && params.geometry.wantWoWReversal(params)) ? 1.0 : 0.0;
+      const doReversal = (bgColor.equals(ColorDef.white) && params.geometry.wantWoWReversal(params.programParams)) ? 1.0 : 0.0;
       uniform.setUniform1f(doReversal);
     });
   });
