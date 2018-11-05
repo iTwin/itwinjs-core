@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added an option to Viewport.readImage() to flip the resultant image vertically.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}
