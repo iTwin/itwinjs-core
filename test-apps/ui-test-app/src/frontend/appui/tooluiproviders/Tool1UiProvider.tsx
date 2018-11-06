@@ -88,4 +88,4 @@ class Tool1Assistance extends React.Component {
   }
 }
 
-ConfigurableUiManager.registerControl("tool1", Tool1UiProvider);
+ConfigurableUiManager.registerControl("Tool1", Tool1UiProvider);

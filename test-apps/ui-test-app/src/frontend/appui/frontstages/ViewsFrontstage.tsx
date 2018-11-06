@@ -262,6 +262,8 @@ class FrontstageToolWidget extends React.Component {
       items={
         <>
           <ActionItemButton actionItem={CoreTools.selectElementCommand} />
+          <ActionItemButton actionItem={AppTools.tool1} />
+          <ActionItemButton actionItem={AppTools.tool2} />
           <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
