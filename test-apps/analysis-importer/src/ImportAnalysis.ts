@@ -59,13 +59,17 @@ async function createAnalysisModel(polyface: any, categoryId: Id64String, modelN
         return;
     const modelId = await Utilities.createModel(iModel, modelName);
 
+    /** generate a geometry stream containing the polyface */
     const geometry = generateGeometryStreamFromPolyface(polyface);
+
+    /** generate DisplayStyles to view the PolyfaceAuxData.  The display styles contain channel selection and gradient specification for the [[PolyfaceAuxData]]
+     */
     const analysisStyleProps = getPolyfaceAnalysisStyleProps(polyface);
     const viewFlags = new ViewFlags();
-    const backgroundColor = ColorDef.white;
-
+    const backgroundColor = ColorDef.white;             // White background...
     viewFlags.renderMode = RenderMode.SolidFill;        // SolidFill rendering ... no lighting etc.
 
+    /** The [[GeometricElement3dProps]]  */
     const props: GeometricElement3dProps = {
         model: modelId,
         code: Code.createEmpty(),
@@ -79,7 +83,7 @@ async function createAnalysisModel(polyface: any, categoryId: Id64String, modelN
     for (const analysisStyleProp of analysisStyleProps) {
         let name = analysisStyleProp.scalarChannelName!;
         if (undefined !== analysisStyleProp.displacementChannelName)
-            name = name + " and " + analysisStyleProp.displacementChannelName;
+            name = modelName + ": " + name + " and " + analysisStyleProp.displacementChannelName;
         const displayStyleId = Utilities.createAndInsertDisplayStyle3d(iModel, name + "Style", viewFlags, backgroundColor, analysisStyleProp);
         const viewId = Utilities.createOrthographicView(iModel, name + " View", modelId, categoryId, polyface.range(), displayStyleId);
         if (first) {
@@ -88,13 +92,19 @@ async function createAnalysisModel(polyface: any, categoryId: Id64String, modelN
         }
     }
 }
-/** Import a polyface from the supplied json file. */
+/** Import a polyface with auxilliary data */
 async function importPolyfaceFromJson(jsonFileName: string) {
     const jsonString = readFileSync(path.join(KnownTestLocations.assetsDir, jsonFileName), "utf8");
     const json = JSON.parse(jsonString);
     return IModelJson.Reader.parse(json);
 }
-/** Create a polyface representing a cantilever beam with [[PolyfaceAuxData]] representing the stress and deflection. */
+
+/** Demonstrate the addition of analytical data to a polyface.
+ * This is a purely fictional example intended to demonstrate concepts of [[PolyfaceAuxData]] concepts only.
+ * Create a polyface representing a flat mesh with superimposed waves and associated [[PolyfaceAuxData]]  to display displacement, height and slope data.
+ * A vector [[AuxChannel]] is created to represent displacement and two scalar [[AuxChannel]] are created to represent height and slope.
+ * Note that data between inputs are interpolated so motion will still remain relatively smooth even with only three inputs in the radial waves.
+*/
 function createFlatMeshWithWaves() {
     const options = StrokeOptions.createForFacets();
     options.shouldTriangulate = true;
@@ -102,6 +112,7 @@ function createFlatMeshWithWaves() {
     const nDimensions = 100;
     const spacing = 1.0;
 
+    /** Create a simple flat mesh with 10,000 points (100x100) */
     for (let iRow = 0; iRow < nDimensions - 1; iRow++) {
         for (let iColumn = 0; iColumn < nDimensions - 1; iColumn++) {
             const quad = [Point3d.create(iRow * spacing, iColumn * spacing, 0.0),
@@ -119,7 +130,10 @@ function createFlatMeshWithWaves() {
     const maxHeight = radius / 4.0;
     const auxChannels = [];
 
-    /** Create a radial wave - start and return to zero */
+    /** Create a radial wave - start and return to zero
+
+    */
+
     for (let i = 0; i < polyface.data.point.length; i++) {
         const angle = Angle.pi2Radians * polyface.data.point.distanceIndexToPoint(i, center) / radius;
         const height = maxHeight * Math.sin(angle);
@@ -145,6 +159,7 @@ function createFlatMeshWithWaves() {
     auxChannels.push(new AuxChannel(radialHeightDataVector, AuxChannelDataType.Distance, "Radial Height", "Radial: Time"));
     auxChannels.push(new AuxChannel(radialSlopeDataVector, AuxChannelDataType.Scalar, "Radial Slope", "Radial: Time"));
 
+    /** Create linear waves -- 10 seperate frames.  */
     const waveHeight = radius / 20.0;
     const waveLength = radius / 2.0;
     const frameCount = 10;
@@ -179,24 +194,28 @@ function createFlatMeshWithWaves() {
 
     return polyface;
 }
-
+/** Demonstrate the creation of models with analytical data. */
 async function doAnalysisExamples() {
     const config = new IModelHostConfiguration();
     IModelHost.startup(config);
 
+    /** Create example by copying empty seed DB. */
     const iModel: IModelDb = Utilities.openIModel("empty.bim", { copyFilename: "AnalysisExample.bim", deleteFirst: true, openMode: OpenMode.ReadWrite });
     if (!iModel)
         return;
 
+    /** Create category for analytical polyfaces */
     const categoryId = await Utilities.createAndInsertSpatialCategory(iModel, "Analysis Category");
-    const importedPolyface = await importPolyfaceFromJson("RadialWave.json");
 
-    if (false)
-        await createAnalysisModel(importedPolyface, categoryId, "Imported Data", iModel);
+    /** import a polyface representing a cantilever beam with stress and displacement data. */
+    const importedPolyface = await importPolyfaceFromJson("Cantilever.json");
+    /** create a model containing the imported data (with display styles, views etc.) */
+    await createAnalysisModel(importedPolyface, categoryId, "Imported Cantilever", iModel);
 
+    /** demonstrate creation of a polyface with analytical data by creating a flat mesh and then superimposiing "wave" data */
     const flatWaveMesh = createFlatMeshWithWaves();
-
-    await createAnalysisModel(flatWaveMesh, categoryId, "Cantiliever Beam", iModel);
+    /** create a model containing the wave data (with display styles, views etc.) */
+    await createAnalysisModel(flatWaveMesh, categoryId, "Waves", iModel);
 
     iModel.saveChanges();
     iModel.closeStandalone();
