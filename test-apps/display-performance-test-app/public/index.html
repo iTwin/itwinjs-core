@@ -1,0 +1,39 @@
+<!doctype html>
+<html lang="en">
+
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no">
+  <meta name="theme-color" content="#000000">
+  <link rel="shortcut icon" href="/favicon.ico">
+  <title>Simple View Test App</title>
+  <style>
+    html,
+    body {
+      height: 100%;
+      width: 100%;
+      margin: 0;
+      position: relative;
+    }
+
+    #root {
+      height: 100%;
+    }
+  </style>
+  <link rel="stylesheet" type="text/css" href="index.css">
+  <script type="text/javascript" src="main.bundle.js"></script>
+</head>
+
+<body>
+  <div id="root">
+    <!-- Browser file selector only used when we are running in browser and were given a base path for all standalone files -->
+    <input type="file" id="browserFileSelector" />
+    <div id="spinner" class="bim-spinner-container">
+      <div class="bim-spinner"></div>
+    </div>
+    <div class="imodel-viewport" id="imodel-viewport">
+    </div>
+  </div>
+</body>
+
+</html>
