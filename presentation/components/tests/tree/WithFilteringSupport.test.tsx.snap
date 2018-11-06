@@ -1,29 +1,5 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Tree withFilteringSupport render renders with full highlightingProps 1`] = `
-<div
-  className="filteredTree"
->
-  <Tree
-    activeHighlightedIndex={6}
-    dataProvider={null}
-    nodeHighlightingProps={
-      Object {
-        "activeResultNode": Object {
-          "id": "test",
-          "index": 0,
-        },
-        "searchText": "filter",
-      }
-    }
-    selectionMode={1}
-  />
-  <div
-    className="filteredTreeOverlay"
-  />
-</div>
-`;
-
 exports[`Tree withFilteringSupport render renders with overlay if connection is different 1`] = `
 <div
   className="filteredTree"
@@ -90,12 +66,7 @@ exports[`Tree withFilteringSupport render renders without overlay if filter is e
 >
   <Tree
     dataProvider={null}
-    nodeHighlightingProps={
-      Object {
-        "activeResultNode": undefined,
-        "searchText": "",
-      }
-    }
+    nodeHighlightingProps={undefined}
     selectionMode={1}
   />
 </div>
@@ -107,12 +78,7 @@ exports[`Tree withFilteringSupport render renders without overlay if filter is u
 >
   <Tree
     dataProvider={null}
-    nodeHighlightingProps={
-      Object {
-        "activeResultNode": undefined,
-        "searchText": undefined,
-      }
-    }
+    nodeHighlightingProps={undefined}
     selectionMode={1}
   />
 </div>
