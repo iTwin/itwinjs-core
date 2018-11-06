@@ -176,6 +176,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "test-apps-analysis-importer",
+      "projectFolder": "test-apps/analysis-importer",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "simpleviewtest",
       "projectFolder": "test-apps/simpleviewtest",
       "reviewCategory": "internal",
