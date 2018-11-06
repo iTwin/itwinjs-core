@@ -104,7 +104,7 @@ async function importPolyfaceFromJson(jsonFileName: string) {
  * Create a polyface representing a flat mesh with superimposed waves and associated [[PolyfaceAuxData]]  to display displacement, height and slope data.
  * A vector [[AuxChannel]] is created to represent displacement and two scalar [[AuxChannel]] are created to represent height and slope.
  * Note that data between inputs are interpolated so motion will still remain relatively smooth even with only three inputs in the radial waves.
-*/
+ */
 function createFlatMeshWithWaves() {
     const options = StrokeOptions.createForFacets();
     options.shouldTriangulate = true;
@@ -130,10 +130,7 @@ function createFlatMeshWithWaves() {
     const maxHeight = radius / 4.0;
     const auxChannels = [];
 
-    /** Create a radial wave - start and return to zero
-
-    */
-
+    /** Create a radial wave - start and return to zero  */
     for (let i = 0; i < polyface.data.point.length; i++) {
         const angle = Angle.pi2Radians * polyface.data.point.distanceIndexToPoint(i, center) / radius;
         const height = maxHeight * Math.sin(angle);
