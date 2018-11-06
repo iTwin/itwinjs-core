@@ -29,7 +29,7 @@ export const enum ModifyElementSource {
 
 /**
  * The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
- * @see [PrimitiveTool]($docs/learning/frontend/primitivetools.md)
+ * @see [Writing a PrimitiveTool]($docs/learning/frontend/primitivetools.md)
  */
 export abstract class PrimitiveTool extends InteractiveTool {
   public targetView?: Viewport;
@@ -169,8 +169,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public abstract onRestartTool(): void;
 
   /**
-   * Called to reset tool to initial state. This method is provided here for convenience; the only
-   * external caller is ElementSetTool. PrimitiveTool implements this method to call onRestartTool.
+   * Called to reset tool to initial state. PrimitiveTool implements this method to call onRestartTool.
    */
   public onReinitialize(): void { this.onRestartTool(); }
 
