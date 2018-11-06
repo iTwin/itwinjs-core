@@ -110,7 +110,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean {
     const vp = ev.viewport;
-
     if (undefined === vp)
       return false;
 
@@ -118,8 +117,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     const view = vp.view;
-    const iModel = view.iModel;
-    if (!view.isSpatialView() || iModel.isReadonly || !this.requireWriteableTarget())
+    if (!view.isSpatialView())
       return true;
 
     // NOTE: If points aren't being adjusted then the tool shouldn't be creating geometry currently (ex. locating elements) and we shouldn't filter point...
@@ -130,13 +128,12 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!IModelApp.accuSnap.isSnapEnabled)
       return true;
 
-    const extents = iModel.projectExtents;
+    const extents = view.iModel.projectExtents;
     if (extents.containsPoint(ev.point))
       return true;
 
-    if (isButtonEvent && ev.isDown) {
+    if (isButtonEvent && ev.isDown)
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Error.ProjectExtents")));
-    }
 
     return false;
   }
