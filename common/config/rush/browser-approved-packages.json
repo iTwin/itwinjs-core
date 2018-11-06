@@ -796,7 +796,7 @@
     },
     {
       "name": "yargs",
-      "allowedCategories": [ "common", "tools" ]
+      "allowedCategories": [ "common", "internal", "tools" ]
     }
   ]
 }

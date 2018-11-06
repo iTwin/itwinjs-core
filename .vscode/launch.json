@@ -526,6 +526,23 @@
       ],
       "protocol": "inspector"
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug imodel-from-geojson",
+      "program": "${workspaceRoot}/test-apps/imodel-from-geojson/lib/Main.js",
+      "cwd": "${workspaceRoot}/test-apps/imodel-from-geojson",
+      "args": [
+        "--input=${workspaceFolder}/test-apps/imodel-from-geojson/data/Neighborhoods_Philadelphia.geojson",
+        "--output=${workspaceFolder}/test-apps/imodel-from-geojson/lib/Neighborhoods_Philadelphia.bim"
+      ],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/imodel-from-geojson/lib/**/*.js"
+      ],
+      "protocol": "inspector"
+    }
   ],
   "compounds": [
     {

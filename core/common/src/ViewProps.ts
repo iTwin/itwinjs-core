@@ -21,17 +21,17 @@ export interface ViewStateData {
   sheetAttachments?: Id64Array;
 }
 /** Properties that define a ModelSelector */
-export interface ModelSelectorProps extends ElementProps {
-  models: string[];
+export interface ModelSelectorProps extends DefinitionElementProps {
+  models: Id64Array;
 }
 
 /** Properties that define a CategorySelector */
-export interface CategorySelectorProps extends ElementProps {
-  categories: string[];
+export interface CategorySelectorProps extends DefinitionElementProps {
+  categories: Id64Array;
 }
 
 /** Properties that define a DisplayStyle */
-export interface DisplayStyleProps extends ElementProps {
+export interface DisplayStyleProps extends DefinitionElementProps {
   viewFlags: ViewFlags;
   backgroundColor: ColorDef;
   monochromeColor: ColorDef;

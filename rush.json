@@ -16,7 +16,8 @@
       "@types"
     ]
   },
-  "projects": [{
+  "projects": [
+    {
       "packageName": "@bentley/build-tools",
       "projectFolder": "tools/build",
       "reviewCategory": "tools",
@@ -178,6 +179,12 @@
     {
       "packageName": "test-apps-analysis-importer",
       "projectFolder": "test-apps/analysis-importer",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "imodel-from-geojson",
+      "projectFolder": "test-apps/imodel-from-geojson",
       "reviewCategory": "internal",
       "shouldPublish": false
     },
