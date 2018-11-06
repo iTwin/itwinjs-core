@@ -186,6 +186,7 @@ export class ThreeAxes {
 
 /**
  * Accudraw is an aide for entering coordinate data.
+ * @see [Using AccuDraw]($docs/learning/frontend/primitivetools.md#AccuDraw)
  */
 export class AccuDraw {
   public currentState = CurrentState.NotEnabled; // Compass state
