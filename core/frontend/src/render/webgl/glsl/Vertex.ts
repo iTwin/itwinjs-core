@@ -48,7 +48,7 @@ vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
 `;
 
 const computeAnimationFrameDisplacement = `
-vec3 computeAnimationFrameDisplacement(float frameIndex, vec3 origin, vec3 scale) {
+vec3 computeAnimationFrameDisplacement(float vertexLUTIndex, float frameIndex, vec3 origin, vec3 scale) {
   vec2 tc = computeLUTCoords(frameIndex + g_vertexLUTIndex * 2.0, u_vertParams.xy, g_vert_center, 1.0);
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
@@ -58,12 +58,12 @@ vec3 computeAnimationFrameDisplacement(float frameIndex, vec3 origin, vec3 scale
 }`;
 
 const computeAnimationDisplacement = `
-vec3 computeAnimationDisplacement(float frameIndex0, float frameIndex1, float fraction, vec3 origin, vec3 scale) {
+vec3 computeAnimationDisplacement(float vertexLUTIndex, float frameIndex0, float frameIndex1, float fraction, vec3 origin, vec3 scale) {
 if (frameIndex0 < 0.0)
   return vec3(0.0, 0.0, 0.0);
-vec3 displacement = computeAnimationFrameDisplacement(frameIndex0, origin, scale);
+vec3 displacement = computeAnimationFrameDisplacement(vertexLUTIndex, frameIndex0, origin, scale);
 if (fraction > 0.0) {
-  vec3 displacement1 = computeAnimationFrameDisplacement(frameIndex1, origin, scale);
+  vec3 displacement1 = computeAnimationFrameDisplacement(vertexLUTIndex, frameIndex1, origin, scale);
   displacement += fraction * (displacement1 - displacement);
   }
 return displacement;
