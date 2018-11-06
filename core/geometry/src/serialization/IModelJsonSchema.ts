@@ -719,7 +719,11 @@ export namespace IModelJson {
           outChannels.push(new AuxChannel(outChannelData, inChannel.dataType as AuxChannelDataType, inChannel.name, inChannel.inputName));
         }
       }
-      return new PolyfaceAuxData(outChannels, data.indices);
+
+      const auxData = new PolyfaceAuxData(outChannels, []);
+      Reader.addZeroBasedIndicesFromSignedOneBased(data.indices, (x: number) => { auxData.indices.push(x); });
+
+      return auxData;
     }
 
     public static parseIndexedMesh(data?: any): any | undefined {
