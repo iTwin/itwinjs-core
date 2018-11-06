@@ -1,7 +1,6 @@
 import { IModelDb, DictionaryModel, SpatialCategory, InformationPartitionElement, DisplayStyle, DisplayStyle3d, ViewDefinition, OrthographicViewDefinition, PhysicalPartition, PhysicalModel, ModelSelector, CategorySelector } from "@bentley/imodeljs-backend";
-import { IModelJsFs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import { ElementProps, DefinitionElementProps, ModelSelectorProps, SpatialViewDefinitionProps, CategorySelectorProps, BisCodeSpec, ViewFlags, ColorDef, Gradient } from "@bentley/imodeljs-common";
-import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { XYZProps, YawPitchRollProps, Matrix3d, Transform, StandardViewIndex, YawPitchRollAngles, Range1d, Range3d } from "@bentley/geometry-core";
 import * as path from "path";
 
@@ -14,12 +13,6 @@ export interface AnalysisStyleProps {
     scalarThematicSettings?: Gradient.ThematicSettingsProps;
     inputName?: string;
     scalarInputRange?: Range1d;
-}
-interface UtilitiesOpenOptions {
-    copyFilename?: string;
-    enableTransactions?: boolean;
-    openMode?: OpenMode;
-    deleteFirst?: boolean;
 }
 export class KnownTestLocations {
 
