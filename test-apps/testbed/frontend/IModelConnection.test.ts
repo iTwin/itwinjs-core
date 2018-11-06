@@ -120,6 +120,19 @@ describe("IModelConnection (#integration)", () => {
     assert.isAtLeast(queryElementIds.size, 1);
   });
 
+  it("should be able to open an IModel with no versions", async () => {
+    const projectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsTest");
+    const iModelId = await TestData.getTestIModelId(TestData.accessToken, projectId, "NoVersionsTest");
+    const noVersionsIModel = await IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    assert.isNotNull(noVersionsIModel);
+
+    const noVersionsIModel2 = await IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.first());
+    assert.isNotNull(noVersionsIModel2);
+
+    const noVersionsIModel3 = await IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.asOfChangeSet(""));
+    assert.isNotNull(noVersionsIModel3);
+  });
+
   it("should reuse open briefcases for exclusive access", async () => {
     // Repeatedly opening a Readonly or ReadWrite connection should result in the same briefcase
     // Note that the IModelDb is opened with OpenParams.FixedVersion(AccessMode.Shared) in the case of ReadOnly connections, and
