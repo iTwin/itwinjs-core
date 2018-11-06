@@ -13,7 +13,9 @@
   overflow: auto;
   padding-left: $padding;
   padding-right: $padding;
-
+  > .nz-container {
+      height: 100%;
+  }
   &.nz-left-anchor {
     display: flex;
     flex-direction: row-reverse;

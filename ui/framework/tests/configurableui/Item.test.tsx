@@ -4,22 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount, shallow } from "enzyme";
-import { expect } from "chai";
 import * as sinon from "sinon";
 
 import {
   ToolButton,
-  CommandButton,
-  ToolItemDef,
-  ToolItemProps,
-  ItemList,
-  ItemPropsList,
+  ActionItemButton,
   CommandItemDef,
-  GroupItemDef,
   FrontstageManager,
 } from "../../src/index";
 import TestUtils from "../TestUtils";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
 describe("ToolButton", () => {
 
@@ -29,17 +22,17 @@ describe("ToolButton", () => {
 
   describe("<ToolButton />", () => {
     it("should render", () => {
-      mount(<ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="UiFramework:tests.label" />);
+      mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />);
     });
 
     it("renders correctly", () => {
       FrontstageManager.setActiveToolId("tool1");
-      shallow(<ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="UiFramework:tests.label" />).should.matchSnapshot();
+      shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />).should.matchSnapshot();
     });
 
     it("should execute a function", () => {
       const spyMethod = sinon.spy();
-      const wrapper = mount(<ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="UiFramework:tests.label" execute={spyMethod} />);
+      const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" execute={spyMethod} />);
       wrapper.find(".nz-toolbar-item-item").simulate("click");
       spyMethod.should.have.been.called;
       wrapper.unmount();
@@ -47,105 +40,52 @@ describe("ToolButton", () => {
   });
 });
 
-describe("CommandButton", () => {
+describe("ActionItemButton", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
 
-  const commandHandler1 = {
-    execute: () => {
-    },
-  };
-
-  describe("<CommandButton />", () => {
+  describe("<ActionItemButton />", () => {
     it("should render", () => {
-      mount(<CommandButton commandId="command1" iconClass="icon-placeholder" labelKey="UiFramework:tests.label" commandHandler={commandHandler1} />);
+      const testCommand =
+        new CommandItemDef({
+          commandId: "command",
+          iconSpec: "icon-placeholder",
+          labelKey: "UiFramework:tests.label",
+          execute: () => { },
+        });
+
+      mount(<ActionItemButton actionItem={testCommand} />);
     });
 
     it("renders correctly", () => {
-      shallow(<CommandButton commandId="command1" iconClass="icon-placeholder" labelKey="UiFramework:tests.label" commandHandler={commandHandler1} />).should.matchSnapshot();
+      const testCommand =
+        new CommandItemDef({
+          commandId: "command",
+          iconSpec: "icon-placeholder",
+          labelKey: "UiFramework:tests.label",
+          execute: () => { },
+        });
+      shallow(<ActionItemButton actionItem={testCommand} />).should.matchSnapshot();
     });
 
     it("should execute a function", () => {
       const spyMethod = sinon.spy();
-      commandHandler1.execute = spyMethod;
-      const wrapper = mount(<CommandButton commandId="command1" iconClass="icon-placeholder" labelKey="UiFramework:tests.label" commandHandler={commandHandler1} />);
+      const spyCommand =
+        new CommandItemDef({
+          commandId: "command",
+          iconSpec: "icon-placeholder",
+          labelKey: "UiFramework:tests.label",
+          execute: spyMethod,
+        });
+
+      const wrapper = mount(<ActionItemButton actionItem={spyCommand} />);
       wrapper.find(".nz-toolbar-item-item").simulate("click");
       spyMethod.should.have.been.called;
       wrapper.unmount();
     });
 
-  });
-
-});
-
-describe("ToolItemDef", () => {
-
-  before(async () => {
-    await TestUtils.initializeUiFramework();
-  });
-
-  it("Defaults", () => {
-    const toolItemProps: ToolItemProps = {
-      toolId: "ToolTest",
-    };
-    const toolItemDef = new ToolItemDef(toolItemProps);
-
-    expect(toolItemDef.isVisible).to.be.true;
-    expect(toolItemDef.isEnabled).to.be.true;
-    expect(toolItemDef.trayId).to.be.undefined;
-  });
-
-  it("Optional properties set", () => {
-    const toolItemProps: ToolItemProps = {
-      toolId: "ToolTest",
-      isEnabled: false,
-      isVisible: false,
-      featureId: "FeatureId",
-      itemSyncMsg: "ItemSyncMsg",
-      applicationData: "AppData",
-    };
-    const toolItemDef = new ToolItemDef(toolItemProps);
-
-    expect(toolItemDef.isVisible).to.be.false;
-    expect(toolItemDef.isEnabled).to.be.false;
-    expect(toolItemDef.featureId).to.eq("FeatureId");
-    expect(toolItemDef.itemSyncMsg).to.eq("ItemSyncMsg");
-    expect(toolItemDef.applicationData).to.eq("AppData");
-  });
-
-});
-
-describe("ItemList & ItemFactory", () => {
-  it("ItemList creates ItemDefs correctly", () => {
-    const itemsList: ItemPropsList = {
-      items: [
-        {
-          toolId: "tool1",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.tool1",
-        },
-        {
-          groupId: "my-group1",
-          labelKey: "SampleApp:buttons.toolGroup",
-          iconClass: "icon-placeholder",
-          items: ["item1", "item2", "item3", "item4"],
-          direction: Direction.Bottom,
-          itemsInColumn: 7,
-        },
-        {
-          commandId: "command1",
-          commandHandler: { execute: () => { } },
-        },
-      ],
-    };
-
-    const itemList = new ItemList(itemsList);
-    expect(itemList.items.length).to.eq(3);
-    expect(itemList.items[0]).to.be.instanceof(ToolItemDef);
-    expect(itemList.items[1]).to.be.instanceof(GroupItemDef);
-    expect(itemList.items[2]).to.be.instanceof(CommandItemDef);
   });
 
 });

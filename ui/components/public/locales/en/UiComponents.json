@@ -11,6 +11,9 @@
       "cancel": "Cancel"
     }
   },
+  "breadcrumb": {
+    "invalidBreadcrumbPath": "Path not found."
+  },
   "tree": {
     "noResultsForFilter": "0 matches found for \"{{searchText}}\""
   }

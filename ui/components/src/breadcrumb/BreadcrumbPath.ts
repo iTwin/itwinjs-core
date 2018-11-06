@@ -4,13 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Breadcrumb */
 
-import {TreeDataProvider, TreeNodeItem } from "../tree";
+import { TreeDataProvider, TreeNodeItem } from "../tree";
 import { UiEvent } from "@bentley/ui-core";
 
 /** BreadcrumbChangeEvent Event Args class.
  */
 export interface BreadcrumbUpdateEventArgs {
-  dataProvider?: TreeDataProvider;
+  dataProvider: TreeDataProvider;
+  oldDataProvider: TreeDataProvider;
   currentNode: TreeNodeItem | undefined;
 }
 
@@ -21,23 +22,22 @@ export class BreadcrumbUpdateEvent extends UiEvent<BreadcrumbUpdateEventArgs> { 
 /** Breadcrumb Path class.
  */
 export class BreadcrumbPath {
-  private _dataProvider?: TreeDataProvider;
+  private _dataProvider: TreeDataProvider;
   private _currentNode: TreeNodeItem | undefined = undefined;
   private _breadcrumbUpdateEvent: BreadcrumbUpdateEvent = new BreadcrumbUpdateEvent();
 
   public get BreadcrumbUpdateEvent(): BreadcrumbUpdateEvent { return this._breadcrumbUpdateEvent; }
 
-  constructor(dataProvider?: TreeDataProvider) {
-    if (dataProvider)
-      this._dataProvider = dataProvider;
+  constructor(dataProvider: TreeDataProvider) {
+    this._dataProvider = dataProvider;
   }
 
   public getDataProvider() {
     return this._dataProvider;
   }
   public setDataProvider(dataProvider: TreeDataProvider) {
+    this.BreadcrumbUpdateEvent.emit({ dataProvider, oldDataProvider: this._dataProvider, currentNode: this._currentNode });
     this._dataProvider = dataProvider;
-    this.BreadcrumbUpdateEvent.emit({dataProvider, currentNode: this._currentNode});
   }
 
   public getCurrentNode() {
@@ -45,7 +45,7 @@ export class BreadcrumbPath {
   }
 
   public setCurrentNode(currentNode: TreeNodeItem | undefined) {
+    this.BreadcrumbUpdateEvent.emit({ dataProvider: this._dataProvider, oldDataProvider: this._dataProvider, currentNode });
     this._currentNode = currentNode;
-    this.BreadcrumbUpdateEvent.emit({dataProvider: this._dataProvider, currentNode});
   }
 }

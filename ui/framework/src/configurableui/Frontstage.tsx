@@ -32,7 +32,9 @@ export abstract class FrontstageProvider {
   public set frontstageDef(f: FrontstageDef | undefined) { this._frontstageDef = f; }
 }
 
-enum ZoneLocation {
+/** Enum for Zone Location. Useful for zone merging.
+ */
+export enum ZoneLocation {
   TopLeft = 1,
   TopCenter = 2,
   TopRight = 3,
@@ -140,28 +142,28 @@ export class Frontstage extends React.Component<FrontstageProps> {
     let zoneElement: React.ReactElement<ZoneProps> | undefined;
 
     switch (zoneId) {
-      case 1:
+      case ZoneLocation.TopLeft:
         zoneElement = props.topLeft;
         break;
-      case 2:
+      case ZoneLocation.TopCenter:
         zoneElement = props.topCenter;
         break;
-      case 3:
+      case ZoneLocation.TopRight:
         zoneElement = props.topRight;
         break;
-      case 4:
+      case ZoneLocation.CenterLeft:
         zoneElement = props.centerLeft;
         break;
-      case 6:
+      case ZoneLocation.CenterRight:
         zoneElement = props.centerRight;
         break;
-      case 7:
+      case ZoneLocation.BottomLeft:
         zoneElement = props.bottomLeft;
         break;
-      case 8:
+      case ZoneLocation.BottomCenter:
         zoneElement = props.bottomCenter;
         break;
-      case 9:
+      case ZoneLocation.BottomRight:
         zoneElement = props.bottomRight;
         break;
       default:
@@ -231,6 +233,10 @@ export class Frontstage extends React.Component<FrontstageProps> {
               if (!zoneElement || !React.isValidElement(zoneElement))
                 return null;
 
+              const zoneDef = runtimeProps.zoneDefProvider.getZoneDef(zoneId);
+              if (!zoneDef)
+                return null;
+
               const zone: WidgetZone = nineZone.getWidgetZone(zoneId);
               const isDragged = runtimeProps.nineZoneProps.draggingWidget && runtimeProps.nineZoneProps.draggingWidget.id === zoneId;
               const lastPosition = isDragged ? runtimeProps.nineZoneProps.draggingWidget!.lastPosition : undefined;
@@ -238,6 +244,7 @@ export class Frontstage extends React.Component<FrontstageProps> {
               const ghostOutline = zone.getGhostOutlineBounds();
               const dropTarget = zone.getDropTarget();
               const zoneRuntimeProps: ZoneRuntimeProps = {
+                zoneDef,
                 zoneProps: runtimeProps.nineZoneProps.zones[zoneId],
                 widgetChangeHandler: runtimeProps.widgetChangeHandler,
                 targetChangeHandler: runtimeProps.targetChangeHandler,

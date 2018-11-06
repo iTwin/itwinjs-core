@@ -5,10 +5,11 @@
 /** @module ConnectServices */
 import { WsgClient } from "./WsgClient";
 import { AccessToken } from "./Token";
-import { request, RequestQueryOptions, Response } from "./Request";
+import { request, RequestQueryOptions, Response, RequestOptions } from "./Request";
 import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Config } from "./Config";
+import * as deepAssign from "deep-assign";
 
 /** Connect project */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -155,11 +156,11 @@ export class RbacClient extends WsgClient {
    * @returns Resolves to an array of projects.
    */
   public async getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: RbacRequestQueryOptions): Promise<RbacProject[]> {
-    const userProfile = token.getUserProfile();
-    if (!userProfile)
+    const userInfo = token.getUserInfo();
+    if (!userInfo)
       return Promise.reject(new Error("Invalid access token"));
 
-    const url: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userProfile.userId + "/Project";
+    const url: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userInfo.id + "/Project";
     return this.getInstances<RbacProject>(alctx, RbacProject, token, url, queryOptions);
   }
 
@@ -182,11 +183,11 @@ export class RbacClient extends WsgClient {
    */
   public async getIModelHubPermissions(alctx: ActivityLoggingContext, token: AccessToken, projectId: string): Promise<IModelHubPermissions> {
     alctx.enter();
-    const userProfile = token.getUserProfile();
-    if (!userProfile)
+    const userInfo = token.getUserInfo();
+    if (!userInfo)
       return Promise.reject(new Error("Invalid access token"));
 
-    const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userProfile.userId + "/Project";
+    const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userInfo.id + "/Project";
     const url: string = await this.getUrl(alctx) + relativeUrlPath;
     alctx.enter();
 
@@ -258,6 +259,11 @@ export class ConnectClient extends WsgClient {
     return ConnectClient.searchKey;
   }
 
+  protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
+    await super.setupOptionDefaults(options);
+    deepAssign(options, { headers: { "content-type": "application/json" } });
+  }
+
   /**
    * Gets theRelyingPartyUrl for the service.
    * @returns RelyingPartyUrl for the service.
@@ -281,7 +287,8 @@ export class ConnectClient extends WsgClient {
    * @returns Resolves to an array of projects.
    */
   public async getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
-    return this.getInstances<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
+    // return this.getInstances<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
+    return this.postQuery<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project/", !queryOptions ? {} : queryOptions);
   }
 
   /**
@@ -291,15 +298,13 @@ export class ConnectClient extends WsgClient {
    * @returns Resolves to the found project. Rejects if no projects, or more than one project is found.
    */
   public async getProject(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project> {
-    return this.getProjects(alctx, token, queryOptions)
-      .then((projects: Project[]) => {
-        if (projects.length === 0) {
-          return Promise.reject(new Error("Could not find a project with the specified criteria"));
-        } else if (projects.length > 1) {
-          return Promise.reject(new Error("More than one project found with the specified criteria"));
-        }
-        return Promise.resolve(projects[0]);
-      });
+    const projects: Project[] = await this.getProjects(alctx, token, queryOptions);
+    if (projects.length === 0)
+      throw new Error("Could not find a project with the specified criteria");
+    else if (projects.length > 1)
+      throw new Error("More than one project found with the specified criteria");
+
+    return projects[0];
   }
 
   /** Get the projects the user has been "invited" to. Note that this involves querying the RBAC and ConnectedContext services.

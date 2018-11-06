@@ -8,40 +8,52 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       items={
         <UNDEFINED>
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool1"
             toolId="tool1"
           />
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2"
           />
           <GroupButton
             direction={3}
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             items={
               Array [
-                "tool1",
-                "tool2",
-                "item3",
-                "item4",
-                "item5",
-                "item6",
-                "item7",
-                "item8",
-                "tool1",
-                "tool2",
-                "item3",
-                "item4",
-                "item5",
-                "item6",
-                "item7",
-                "item8",
+                CommandItemDef {
+                  "commandId": "tool1",
+                  "execute": [Function],
+                  "featureId": "",
+                  "iconSpec": "icon-placeholder",
+                  "isActive": false,
+                  "isEnabled": true,
+                  "isPressed": false,
+                  "isVisible": true,
+                  "label": "",
+                  "stateSyncIds": Array [],
+                  "tooltip": "",
+                },
+                CommandItemDef {
+                  "applicationData": Object {
+                    "key": "value",
+                  },
+                  "commandId": "tool2",
+                  "execute": [Function],
+                  "featureId": "",
+                  "iconSpec": "icon-placeholder",
+                  "isActive": false,
+                  "isEnabled": true,
+                  "isPressed": false,
+                  "isVisible": true,
+                  "label": "",
+                  "stateSyncIds": Array [],
+                  "tooltip": "",
+                },
               ]
             }
             itemsInColumn={7}
-            labelKey="SampleApp:buttons.toolGroup"
           />
         </UNDEFINED>
       }
@@ -49,27 +61,43 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
   }
   toolWidgetDef={
     ToolWidgetDef {
-      "_appButtonId": "SampleApp.BackstageToggle",
-      "_horizontalIds": Array [],
-      "_iconLabelSupport": IconLabelSupport {
+      "_appButton": CommandItemDef {
+        "_commandHandler": Object {
+          "execute": [Function],
+          "getCommandArgs": undefined,
+          "parameters": undefined,
+        },
+        "commandId": "SampleApp.BackstageToggle",
+        "execute": [Function],
+        "featureId": "",
+        "iconSpec": "icon-home",
+        "isActive": false,
+        "isEnabled": true,
+        "isPressed": false,
+        "isVisible": true,
         "label": "",
+        "stateSyncIds": Array [],
         "tooltip": "",
       },
-      "_verticalIds": Array [],
       "classId": undefined,
-      "executeAppButtonClick": [Function],
       "featureId": "",
       "horizontalDirection": 3,
       "id": "toolWidget",
+      "isEnabled": true,
       "isFloatingStateSupported": false,
       "isFloatingStateWindowResizable": true,
       "isFreeform": false,
+      "isPressed": false,
       "isStatusBar": false,
       "isToolSettings": false,
+      "isVisible": true,
+      "label": "",
       "priority": 0,
       "renderHorizontalToolbar": [Function],
       "renderVerticalToolbar": [Function],
       "stateChanged": false,
+      "stateSyncIds": Array [],
+      "tooltip": "",
       "verticalDirection": 2,
       "widgetState": 1,
       "widgetType": 0,
@@ -81,30 +109,50 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       items={
         <UNDEFINED>
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool1"
             toolId="tool1"
           />
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2"
           />
           <GroupButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             items={
               Array [
-                "tool1",
-                "tool2",
-                "item3",
-                "item4",
-                "item5",
-                "item6",
-                "item7",
-                "item8",
+                CommandItemDef {
+                  "commandId": "tool1",
+                  "execute": [Function],
+                  "featureId": "",
+                  "iconSpec": "icon-placeholder",
+                  "isActive": false,
+                  "isEnabled": true,
+                  "isPressed": false,
+                  "isVisible": true,
+                  "label": "",
+                  "stateSyncIds": Array [],
+                  "tooltip": "",
+                },
+                CommandItemDef {
+                  "applicationData": Object {
+                    "key": "value",
+                  },
+                  "commandId": "tool2",
+                  "execute": [Function],
+                  "featureId": "",
+                  "iconSpec": "icon-placeholder",
+                  "isActive": false,
+                  "isEnabled": true,
+                  "isPressed": false,
+                  "isVisible": true,
+                  "label": "",
+                  "stateSyncIds": Array [],
+                  "tooltip": "",
+                },
               ]
             }
-            labelKey="SampleApp:buttons.anotherGroup"
           />
         </UNDEFINED>
       }

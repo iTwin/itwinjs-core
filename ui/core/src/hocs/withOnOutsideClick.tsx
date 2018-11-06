@@ -33,7 +33,7 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
       if (!this.ref)
         return;
       const componentElement = ReactDOM.findDOMNode(this.ref);
-      if (componentElement && !componentElement.contains(e.target as Node))
+      if (componentElement && componentElement instanceof Element && !componentElement.contains(e.target as Node))
         this.props.onOutsideClick && this.props.onOutsideClick();
     }
 

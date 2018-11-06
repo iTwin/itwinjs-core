@@ -299,7 +299,7 @@ export class SelectionTool extends PrimitiveTool {
 
   public async selectDecoration(ev: BeButtonEvent, currHit?: HitDetail): Promise<EventHandled> {
     if (undefined === currHit)
-      currHit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
+      currHit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
 
     if (undefined !== currHit && !currHit.isElementHit)
       return IModelApp.viewManager.onDecorationButtonEvent(currHit, ev);
@@ -334,7 +334,7 @@ export class SelectionTool extends PrimitiveTool {
       return EventHandled.Yes;
     }
 
-    const hit = IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
+    const hit = await IModelApp.locateManager.doLocate(new LocateResponse(), true, ev.point, ev.viewport, ev.inputSource);
     if (hit !== undefined) {
       if (EventHandled.Yes === await this.selectDecoration(ev, hit))
         return EventHandled.Yes;
@@ -377,7 +377,7 @@ export class SelectionTool extends PrimitiveTool {
       // Play nice w/auto-locate, only remove previous hit if not currently auto-locating or over previous hit
       if (undefined === autoHit || autoHit.isSameHit(lastHit)) {
         const response = new LocateResponse();
-        const nextHit = IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
+        const nextHit = await IModelApp.locateManager.doLocate(response, false, ev.point, ev.viewport, ev.inputSource);
 
         // remove element(s) previously selected if in replace mode, or if we have a next element in add mode
         if (SelectionMode.Replace === this.getSelectionMode() || undefined !== nextHit)
@@ -416,7 +416,7 @@ export class SelectionTool extends PrimitiveTool {
     return (modifier === BeModifierKeys.Shift && this.isSelectByPoints) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public filterHit(hit: HitDetail, _out?: LocateResponse): LocateFilterStatus {
+  public async filterHit(hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> {
     if (!this.wantPickableDecorations() && !hit.isElementHit)
       return LocateFilterStatus.Reject;
 

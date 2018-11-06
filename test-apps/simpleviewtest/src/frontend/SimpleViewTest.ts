@@ -14,21 +14,19 @@ import {
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 import {
   AccuDraw, AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, BeButtonEvent, Cluster, CoordinateLockOverrides, DecorateContext,
-  DynamicsContext, EditManipulator, EventHandled, HitDetail, ImageUtil, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
+  DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
-  SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus,
+  SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus, imageBufferToPngDataUrl,
 } from "@bentley/imodeljs-frontend";
 import { FeatureSymbology, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/webgl";
-import * as ttjs from "tooltip.js";
+import ToolTip from "tooltip.js";
 import { IModelApi } from "./IModelApi";
 import { SimpleViewState } from "./SimpleViewState";
 import { showError, showStatus } from "./Utils";
 import { initializeCustomCloudEnv } from "./CustomCloudEnv";
 import { initializeIModelHub } from "./ConnectEnv";
 import { SVTConfiguration } from "../common/SVTConfiguration";
-
-type Tooltip = ttjs.default;
 
 // Only want the following imports if we are using electron and not a browser -----
 // tslint:disable-next-line:variable-name
@@ -56,7 +54,7 @@ let theViewport: ScreenViewport | undefined;
 let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
 let curNumModels = 0;
-const curCategories: Set<string> = new Set<string>();
+const curCategories = new Set<string>();
 const configuration = {} as SVTConfiguration;
 let curFPSIntervalId: NodeJS.Timer;
 let overrideColor: ColorDef | undefined;
@@ -146,13 +144,13 @@ async function buildViewList(state: SimpleViewState, configurations?: { viewName
 }
 
 // open up the model toggle menu
-function startToggleModel(_event: any) {
+function startToggleModel() {
   const menu = document.getElementById("toggleModelMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
 // open up the category selection model
-function startCategorySelection(_event: any) {
+function startCategorySelection() {
   const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
@@ -413,27 +411,27 @@ function addCategoryToggleAllHandler() {
   document.getElementById("cbxCatToggleAll")!.addEventListener("click", () => applyCategoryToggleAllChange());
 }
 
-function toggleStandardViewMenu(_event: any) {
+function toggleStandardViewMenu() {
   const menu = document.getElementById("standardRotationMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
-function toggleDebugToolsMenu(_event: any) {
+function toggleDebugToolsMenu() {
   const menu = document.getElementById("debugToolsMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
-function toggleRenderModeMenu(_event: any) {
+function toggleRenderModeMenu() {
   const menu = document.getElementById("changeRenderModeMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
-function toggleSnapModeMenu(_event: any) {
+function toggleSnapModeMenu() {
   const menu = document.getElementById("changeSnapModeMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
-function toggleAnimationMenu(_event: any) {
+function toggleAnimationMenu() {
   const menu = document.getElementById("animationMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
@@ -461,18 +459,18 @@ function isAnimationLooping(): boolean {
   return animationLoop.checked;
 }
 
-function processAnimationSliderAdjustment(_event: any) {
+function processAnimationSliderAdjustment() {
   const animationSlider = document.getElementById("animationSlider") as HTMLInputElement;
 
   if (animationSlider.value === "0") {
-    stopAnimation([]);
+    stopAnimation();
     return;
   }
 
   if (!isAnimating)
-    startAnimation([]);
+    startAnimation();
   if (!isAnimationPaused)
-    pauseAnimation([]);
+    pauseAnimation();
 
   const sliderValue = parseInt(animationSlider.value, undefined);
   const animationFraction = sliderValue / 1000.0;
@@ -501,10 +499,10 @@ function updateAnimation() {
     window.requestAnimationFrame(updateAnimation);
   }
   if (!userHitStop && isAnimationLooping()) // only loop if user did not hit stop (naturally finished animation)
-    startAnimation([]);
+    startAnimation();
 }
 
-function startAnimation(_event: any) {
+function startAnimation() {
   if (isAnimationPaused) { // resume animation
     const animationPauseOffset = (new Date()).getTime() - animationPauseTime; // how long were we paused?
     animationStartTime += animationPauseOffset;
@@ -529,7 +527,7 @@ function startAnimation(_event: any) {
   window.requestAnimationFrame(updateAnimation);
 }
 
-function pauseAnimation(_event: any) {
+function pauseAnimation() {
   if (isAnimationPaused || !isAnimating)
     return;
   animationPauseTime = (new Date()).getTime();
@@ -537,14 +535,14 @@ function pauseAnimation(_event: any) {
   setAnimationStateMessage("Paused.");
 }
 
-function stopAnimation(_event: any) {
+function stopAnimation() {
   if (!isAnimating)
     return; // already not animating!
   isAnimating = false;
   isAnimationPaused = false;
 }
 
-function processAnimationMenuEvent(_event: any) { // keep animation menu open even when it is clicked
+function processAnimationMenuEvent() { // keep animation menu open even when it is clicked
   const menu = document.getElementById("animationMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
@@ -699,7 +697,7 @@ async function openView(state: SimpleViewState) {
 }
 
 async function _changeView(view: ViewState) {
-  stopAnimation([]); // cease any previous animation
+  stopAnimation(); // cease any previous animation
   theViewport!.changeView(view);
   activeViewState.viewState = view;
   await buildModelMenu(activeViewState);
@@ -965,7 +963,7 @@ export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
     this._boxId = this.iModel.transientIds.next;
     this.updateDecorationListener(true);
 
-    const image = ImageUtil.fromUrl("map_pin.svg");
+    const image = imageElementFromUrl("map_pin.svg");
     const markerDrawFunc = (ctx: CanvasRenderingContext2D) => {
       ctx.beginPath();
       ctx.arc(0, 0, 15, 0, 2 * Math.PI);
@@ -1272,15 +1270,15 @@ class IncidentMarkerDemo {
 
   public constructor() {
     const makerIcons = [
-      ImageUtil.fromUrl("Hazard_biological.svg"),
-      ImageUtil.fromUrl("Hazard_electric.svg"),
-      ImageUtil.fromUrl("Hazard_flammable.svg"),
-      ImageUtil.fromUrl("Hazard_toxic.svg"),
-      ImageUtil.fromUrl("Hazard_tripping.svg"),
+      imageElementFromUrl("Hazard_biological.svg"),
+      imageElementFromUrl("Hazard_electric.svg"),
+      imageElementFromUrl("Hazard_flammable.svg"),
+      imageElementFromUrl("Hazard_toxic.svg"),
+      imageElementFromUrl("Hazard_tripping.svg"),
     ];
 
     if (undefined === IncidentMarkerDemo.warningSign)
-      ImageUtil.fromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
+      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
 
     const extents = activeViewState.iModelConnection!.projectExtents;
     const pos = new Point3d();
@@ -1313,7 +1311,7 @@ class IncidentMarkerDemo {
 }
 
 // Starts Measure between points tool
-function startMeasurePoints(event: any) {
+function startMeasurePoints(event: Event) {
   const menu = document.getElementById("snapModeList") as HTMLDivElement;
   if (event.target === menu)
     return;
@@ -1321,34 +1319,10 @@ function startMeasurePoints(event: any) {
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
-function startToggleCamera(_event: any) {
+function startToggleCamera() {
   const togglingOff = theViewport!.isCameraOn;
   showStatus("Camera", togglingOff ? "off" : "on");
   IModelApp.tools.run("View.ToggleCamera", theViewport!);
-}
-
-function startFit(_event: any) {
-  IModelApp.tools.run("View.Fit", theViewport!, true);
-}
-
-// starts Window Area
-function startWindowArea(_event: any) {
-  IModelApp.tools.run("View.WindowArea", theViewport!);
-}
-
-// starts element selection tool
-function startSelect(_event: any) {
-  IModelApp.tools.run("Select");
-}
-
-// starts walk command
-function startWalk(_event: any) {
-  IModelApp.tools.run("View.Walk", theViewport!);
-}
-
-// start rotate view.
-function startRotateView(_event: any) {
-  IModelApp.tools.run("View.Rotate", theViewport!);
 }
 
 // override symbology for selected elements
@@ -1441,16 +1415,6 @@ async function selectIModel() {
   }
 }
 
-// undo prev view manipulation
-function doUndo(_event: any) {
-  IModelApp.tools.run("View.Undo", theViewport!);
-}
-
-// redo view manipulation
-function doRedo(_event: any) {
-  IModelApp.tools.run("View.Redo", theViewport!);
-}
-
 function setFpsInfo() {
   const perfMet = (theViewport!.target as Target).performanceMetrics;
   if (undefined !== perfMet && document.getElementById("showfps")) {
@@ -1480,6 +1444,23 @@ function keepOpenDebugToolsMenu(_open: boolean = true) { // keep open debug tool
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
+function saveImage() {
+  const vp = theViewport!;
+  const buffer = vp.readImage(undefined, undefined, true); // flip vertically...
+  if (undefined === buffer) {
+    alert("Failed to read image");
+    return;
+  }
+
+  const url = imageBufferToPngDataUrl(buffer);
+  if (undefined === url) {
+    alert("Failed to produce PNG");
+    return;
+  }
+
+  window.open(url, "Saved View");
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
   if (MobileRpcConfiguration.isMobileFrontend) {
@@ -1504,43 +1485,47 @@ function wireIconsToFunctions() {
   } else {
     document.getElementById("selectIModel")!.addEventListener("click", selectIModel);
   }
+
   document.getElementById("viewList")!.addEventListener("change", changeView);
-  document.getElementById("startToggleModel")!.addEventListener("click", startToggleModel);
-  document.getElementById("startCategorySelection")!.addEventListener("click", startCategorySelection);
-  document.getElementById("startToggleCamera")!.addEventListener("click", startToggleCamera);
-  document.getElementById("startFit")!.addEventListener("click", startFit);
-  document.getElementById("startWindowArea")!.addEventListener("click", startWindowArea);
-  document.getElementById("startSelect")!.addEventListener("click", startSelect);
-  document.getElementById("startMeasurePoints")!.addEventListener("click", startMeasurePoints);
-  document.getElementById("startWalk")!.addEventListener("click", startWalk);
-  document.getElementById("startRotateView")!.addEventListener("click", startRotateView);
-  document.getElementById("switchStandardRotation")!.addEventListener("click", toggleStandardViewMenu);
-  document.getElementById("debugTools")!.addEventListener("click", toggleDebugToolsMenu);
-  document.getElementById("renderModeToggle")!.addEventListener("click", toggleRenderModeMenu);
-  document.getElementById("snapModeToggle")!.addEventListener("click", toggleSnapModeMenu);
-  document.getElementById("doUndo")!.addEventListener("click", doUndo);
-  document.getElementById("doRedo")!.addEventListener("click", doRedo);
-  document.getElementById("showAnimationMenu")!.addEventListener("click", toggleAnimationMenu);
-  document.getElementById("animationPlay")!.addEventListener("click", startAnimation);
-  document.getElementById("animationPause")!.addEventListener("click", pauseAnimation);
-  document.getElementById("animationStop")!.addEventListener("click", stopAnimation);
-  document.getElementById("animationMenu")!.addEventListener("click", processAnimationMenuEvent);
   document.getElementById("animationSlider")!.addEventListener("input", processAnimationSliderAdjustment);
 
+  const addClickListener = (el: string, listener: (ev: Event) => void) => { document.getElementById(el)!.addEventListener("click", listener); };
+  addClickListener("startToggleModel", startToggleModel);
+  addClickListener("startCategorySelection", startCategorySelection);
+  addClickListener("startToggleCamera", startToggleCamera);
+  addClickListener("startFit", () => IModelApp.tools.run("View.Fit", theViewport, true));
+  addClickListener("startWindowArea", () => IModelApp.tools.run("View.WindowArea", theViewport));
+  addClickListener("startSelect", () => IModelApp.tools.run("Select"));
+  addClickListener("startMeasurePoints", startMeasurePoints);
+  addClickListener("startWalk", () => IModelApp.tools.run("View.Walk", theViewport));
+  addClickListener("startRotateView", () => IModelApp.tools.run("View.Rotate", theViewport));
+  addClickListener("switchStandardRotation", toggleStandardViewMenu);
+  addClickListener("debugTools", toggleDebugToolsMenu);
+  addClickListener("renderModeToggle", toggleRenderModeMenu);
+  addClickListener("snapModeToggle", toggleSnapModeMenu);
+  addClickListener("doUndo", () => IModelApp.tools.run("View.Undo", theViewport));
+  addClickListener("doRedo", () => IModelApp.tools.run("View.Redo", theViewport));
+  addClickListener("showAnimationMenu", toggleAnimationMenu);
+  addClickListener("animationPlay", startAnimation);
+  addClickListener("animationPause", pauseAnimation);
+  addClickListener("animationStop", stopAnimation);
+  addClickListener("animationMenu", processAnimationMenuEvent);
+
   // debug tool handlers
-  document.getElementById("incidentMarkers")!.addEventListener("click", () => IncidentMarkerDemo.toggle());
-  document.getElementById("projectExtents")!.addEventListener("click", () => ProjectExtentsDecoration.toggle());
-  document.getElementById("debugToolsMenu")!.addEventListener("click", () => { keepOpenDebugToolsMenu(); });
+  addClickListener("incidentMarkers", () => IncidentMarkerDemo.toggle());
+  addClickListener("projectExtents", () => ProjectExtentsDecoration.toggle());
+  addClickListener("saveImage", () => saveImage());
+  addClickListener("debugToolsMenu", () => keepOpenDebugToolsMenu());
 
   // standard view rotation handlers
-  document.getElementById("top")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Top, "Top"));
-  document.getElementById("bottom")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Bottom, "Bottom"));
-  document.getElementById("left")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Left, "Left"));
-  document.getElementById("right")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Right, "Right"));
-  document.getElementById("front")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Front, "Front"));
-  document.getElementById("back")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Back, "Back"));
-  document.getElementById("iso")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.Iso, "Iso"));
-  document.getElementById("rightIso")!.addEventListener("click", () => applyStandardViewRotation(StandardViewId.RightIso, "RightIso"));
+  addClickListener("top", () => applyStandardViewRotation(StandardViewId.Top, "Top"));
+  addClickListener("bottom", () => applyStandardViewRotation(StandardViewId.Bottom, "Bottom"));
+  addClickListener("left", () => applyStandardViewRotation(StandardViewId.Left, "Left"));
+  addClickListener("right", () => applyStandardViewRotation(StandardViewId.Right, "Right"));
+  addClickListener("front", () => applyStandardViewRotation(StandardViewId.Front, "Front"));
+  addClickListener("back", () => applyStandardViewRotation(StandardViewId.Back, "Back"));
+  addClickListener("iso", () => applyStandardViewRotation(StandardViewId.Iso, "Iso"));
+  addClickListener("rightIso", () => applyStandardViewRotation(StandardViewId.RightIso, "RightIso"));
 
   // render mode handlers
   addRenderModeHandler("skybox");
@@ -1647,7 +1632,7 @@ class SVTAccuSnap extends AccuSnap {
 }
 
 class SVTNotifications extends NotificationManager {
-  private _toolTip?: Tooltip;
+  private _toolTip?: ToolTip;
   private _el?: HTMLElement;
   private _tooltipDiv?: HTMLDivElement;
 
@@ -1724,7 +1709,7 @@ class SVTNotifications extends NotificationManager {
 
     this._el = el;
     this._tooltipDiv = location;
-    this._toolTip = new ttjs.default(location, { trigger: "manual", html: true, placement: (options && options.placement) ? options.placement as any : "right-start", title: message });
+    this._toolTip = new ToolTip(location, { trigger: "manual", html: true, placement: (options && options.placement) ? options.placement as any : "right-start", title: message });
     this._toolTip!.show();
   }
 }
@@ -1769,7 +1754,7 @@ async function main() {
     await retrieveConfiguration(); // (does a fetch)
     console.log("Configuration", JSON.stringify(configuration));
   }
-  // Start the app. (This tries to fetch a number of localization json files from the orgin.)
+  // Start the app. (This tries to fetch a number of localization json files from the origin.)
   SVTIModelApp.startup();
 
   // Choose RpcConfiguration based on whether we are in electron or browser

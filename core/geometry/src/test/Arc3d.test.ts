@@ -135,11 +135,90 @@ describe("Arc3d", () => {
           }
         }
       }
-      console.log(prettyPrint(sweep) + prettyPrint(factorRange1));
+      // console.log(prettyPrint(sweep) + prettyPrint(factorRange1));
     }
     console.log("Arc3d QuickLength FactorRange" + prettyPrint(factorRange));
 
     ck.checkpoint("Arc3d.QuickLength");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("EccentricEllipseLengthAccuracyTable", () => {
+    const noisy = false;
+    const ck = new Checker();
+    // Construct 90 degree elliptic arcs of varying eccentricity.
+    // Integrate with 4,8,16... gauss intervals until the results settle.
+    // record factor = N/e
+    // By trial and error, we observe the factor is 8 or less.
+    for (const numGauss of [1, 2, 3, 4, 5]) {
+      let maxFactor = 0;
+      if (noisy)
+        console.log("\n\n  ******************* numGauss" + numGauss);
+      for (let e2 = 1.0; e2 < 1000.0; e2 *= 2.0) {
+        const e = Math.sqrt(e2);
+        const arc = Arc3d.create(Point3d.createZero(),
+          Vector3d.create(e, 0, 0),
+          Vector3d.create(0, 1, 0), AngleSweep.createStartEndDegrees(0, 90));
+        const lengths = [];
+        const deltas = [];
+        const counts = [];
+        let lastNumInterval = 0;
+        let done = false;
+        for (let baseNumInterval = 4; baseNumInterval < 600; baseNumInterval *= 2) {
+          for (const numInterval of [baseNumInterval, 1.25 * baseNumInterval, 1.5 * baseNumInterval, 1.75 * baseNumInterval]) {
+            lengths.push(arc.curveLengthWithFixedIntervalCountQuadrature(0.0, 1.0, numInterval, numGauss));
+            counts.push(numInterval);
+            lastNumInterval = numInterval;
+            const k = lengths.length - 1;
+            if (k >= 1) {
+              const q = (lengths[k] - lengths[k - 1]) / lengths[k];
+              deltas.push(q);
+              if (Math.abs(q) < 4.0e-15) { done = true; break; }
+            }
+          }
+          if (done)
+            break;
+        }
+        const factor = lastNumInterval / e;
+        if (noisy) {
+          console.log("---");
+          console.log(" eccentricity " + e + "   "
+            + lengths.toString()
+            + "  (n " + lastNumInterval + ") (n/(fe) " + factor + ")");
+          console.log(" deltas                             " + deltas.toString());
+        }
+        maxFactor = Math.max(factor, maxFactor);
+      }
+      console.log("Eccentric ellipse integration  (numGauss " + numGauss + ")   (maxFactor  " + maxFactor + ")");
+      if (numGauss === 5)
+        ck.testLE(maxFactor, 20.0, "Eccentric Ellipse integraton factor");
+    }
+    ck.checkpoint("Arc3d.EccentricEllipseLengthAccuracyTable");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("ValidateEllipseIntegrationHeuristic", () => {
+    const ck = new Checker();
+    const degreesInterval = 10.0;
+    const numGauss = 5;
+    // Construct elliptic arcs of varying eccentricity and angles
+    // Integrate with 5 gauss points in intervals of 10 degrees.
+    // By trial and error, we have concluded that this should be accurate.
+    // Compare to integral with twice as many points.
+    for (const sweepDegrees of [30, 90, 135, 180, 239, 360]) {
+      for (let e2 = 1.0; e2 < 1000.0; e2 *= 2.0) {
+        const e = Math.sqrt(e2);
+        const arc = Arc3d.create(Point3d.createZero(),
+          Vector3d.create(e, 0, 0),
+          Vector3d.create(0, 1, 0), AngleSweep.createStartEndDegrees(0, sweepDegrees));
+        const numA = Math.ceil(arc.sweep.sweepDegrees * e / degreesInterval);
+        const lengthA = arc.curveLengthWithFixedIntervalCountQuadrature(0.0, 1.0, numA, numGauss);
+        const lengthB = arc.curveLengthWithFixedIntervalCountQuadrature(0.0, 1.0, 2 * numA, numGauss);
+        const lengthC = arc.curveLength();
+        ck.testLE(Math.abs(lengthB - lengthA) / lengthA, 5.0e-15, "direct quadrature", e, numA);
+        ck.testLE(Math.abs(lengthB - lengthC) / lengthA, 5.0e-15, "compare to method", e, numA);
+      }
+    }
+    ck.checkpoint("Arc3d.ValidateEllipseIntegrationHeuristic");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

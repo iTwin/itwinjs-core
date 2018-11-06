@@ -2,7 +2,7 @@
 
 exports[`ViewSelector should render correctly 1`] = `
 <ListPicker
-  iconClass="icon-saved-view"
+  iconSpec="icon-saved-view"
   items={Array []}
   onExpanded={[Function]}
   setEnabled={[Function]}

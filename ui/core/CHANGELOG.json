@@ -2,6 +2,18 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "0.163.0",
+      "tag": "@bentley/ui-core_v0.163.0",
+      "date": "Wed, 31 Oct 2018 20:55:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added JSX specification for Frontstage, Zone & Widget"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.162.0",
       "tag": "@bentley/ui-core_v0.162.0",
       "date": "Wed, 24 Oct 2018 19:20:07 GMT",

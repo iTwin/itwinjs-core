@@ -1,6 +1,16 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Wed, 24 Oct 2018 19:20:06 GMT and should not be manually modified.
+This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+
+## 0.163.0
+Wed, 31 Oct 2018 20:55:37 GMT
+
+### Updates
+
+- CurveChainWithDistanceIndex WIP
+- fromJSON tests.    Geometry.isAlmostEqualNumber uses smallAngleRadians as absolute minimum tolerance.
+- Add tests for fromJSON methods (small classes)
+- Expand test coverage.    Use small absolute tolerance in Geometry.isAlmostEqualNumber.  "w" component of BezierCurve3d.getPolePoint4d.
 
 ## 0.162.0
 Wed, 24 Oct 2018 19:20:06 GMT

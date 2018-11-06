@@ -1,411 +1,308 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
+// third-party imports
 import * as React from "react";
-import { withDropTarget, DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../dragdrop";
-import { DragDropTreeNode } from "./DragDropNodeWrapper";
-import { Tree as TreeBase, TreeBranch, TreeNode } from "@bentley/ui-core";
-import { BeInspireTree, InspireTreeNode, InspireTreeDataProvider, NodePredicate } from "./BeInspireTree";
+import HighlightingEngine, { HighlightableTreeProps, HighlightableTreeNodeProps } from "../HighlightingEngine";
+// bentley imports
+import { using } from "@bentley/bentleyjs-core";
+import { Tree as TreeBase, TreeNode as TreeNodeBase, shallowDiffers } from "@bentley/ui-core";
+// tree-related imports
+import {
+  BeInspireTree, BeInspireTreeNode, BeInspireTreeNodes, BeInspireTreeNodeConfig,
+  BeInspireTreeEvent, MapPayloadToInspireNodeCallback, toNodes,
+} from "./BeInspireTree";
+import {
+  TreeDataProvider, TreeNodeItem,
+  DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem,
+  isTreeDataProviderInterface,
+} from "../TreeDataProvider";
+// selection-related imports
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
   OnItemsSelectedCallback, OnItemsDeselectedCallback,
 } from "../../common/selection/SelectionHandler";
-import HighlightingEngine, { HighlightableTreeProps } from "../HighlightingEngine";
+// misc
 import UiComponents from "../../UiComponents";
+// css
 import "./Tree.scss";
 
-// tslint:disable-next-line:variable-name
-const DropTree = withDropTarget(TreeBase);
+export type NodesSelectedCallback = OnItemsSelectedCallback<TreeNodeItem>;
+export type NodesDeselectedCallback = OnItemsDeselectedCallback<TreeNodeItem>;
+export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
-/** Signature for the Nodes Selected callback */
-export type OnNodesSelectedCallback = OnItemsSelectedCallback<InspireTreeNode>;
-/** Signature for the Nodes Deselected callback */
-export type OnNodesDeselectedCallback = OnItemsDeselectedCallback<InspireTreeNode>;
+/** Props for the [[Tree]] component  */
+export interface TreeProps {
+  dataProvider: TreeDataProvider;
 
-/** Tree event callbacks  */
-export interface TreeEvents {
-  onNodesSelected: OnNodesSelectedCallback;
-  onNodesDeselected: OnNodesDeselectedCallback;
-  onNodeExpanded: (node: InspireTreeNode) => void;
-  onNodeCollapsed: (node: InspireTreeNode) => void;
-  onChildrenLoaded: (node: InspireTreeNode) => void;
+  selectedNodes?: string[] | ((node: TreeNodeItem) => boolean);
+  selectionMode?: SelectionMode;
+  onNodesSelected?: NodesSelectedCallback;
+  onNodesDeselected?: NodesDeselectedCallback;
+
+  onNodeExpanded?: (node: TreeNodeItem) => void;
+  onNodeCollapsed?: (node: TreeNodeItem) => void;
+
+  onChildrenLoaded?: (parent: TreeNodeItem, children: TreeNodeItem[]) => void;
+  onRootNodesLoaded?: (nodes: TreeNodeItem[]) => void;
+
+  renderNode?: NodeRenderer;
+  /** @hidden */
+  onRender?: () => void;
+
+  nodeHighlightingProps?: HighlightableTreeProps;
 }
 
-/** State for the [[Tree]] React component  */
+/** State for the [[Tree]] component  */
 export interface TreeState {
-  rootNodes: InspireTreeNode[];
+  prev: {
+    dataProvider: TreeDataProvider;
+    modelReady: boolean;
+    selectedNodes?: string[] | ((node: TreeNodeItem) => boolean);
+    nodeHighlightingProps?: HighlightableTreeProps;
+  };
+  model: BeInspireTree<TreeNodeItem>;
+  modelReady: boolean;
+
   /** @hidden */
   highlightingEngine?: HighlightingEngine;
 }
 
-/** Properties for the [[Tree]] React component  */
-export interface TreeProps {
-  onTreeReloaded?: () => void;
-  dataProvider: InspireTreeDataProvider;
-  dragProps?: DragSourceProps;
-  dropProps?: DropTargetProps;
-  renderNode?: (data: InspireTreeNode, children?: React.ReactNode) => React.ReactNode;
-  selectedNodes?: string[] | NodePredicate;
-  selectionMode?: SelectionMode;
-  expandedNodes?: ReadonlyArray<string>;
-  nodeHighlightingProps?: HighlightableTreeProps;
-  key?: any;
-}
-
-/** Type definition of the properties for the [[Tree]] React component  */
-export type Props = TreeProps & Partial<TreeEvents>;
-
 /**
- * A Tree React component that uses the core of InspireTree, but renders it
- *  with Tree, TreeBranch, and TreeNode from ui-core.
+ * A Tree React component that uses the core of BeInspireTree, but renders it
+ * with Tree and TreeNode from ui-core.
  */
-export default class Tree extends React.Component<Props, TreeState> {
+export class Tree extends React.Component<TreeProps, TreeState> {
 
-  private _tree: BeInspireTree;
+  private _tree!: BeInspireTree<TreeNodeItem>;
   private _treeComponent: React.RefObject<TreeBase> = React.createRef();
-  private _nodeRenderFunc: (data: InspireTreeNode, children?: React.ReactNode, index?: number) => React.ReactNode;
-  private _isMounted = false;
-  private _selectionHandler: SelectionHandler<InspireTreeNode>;
-  private _nodesSelectionHandlers?: Array<SingleSelectionHandler<InspireTreeNode>>;
+  private _selectionHandler: SelectionHandler<BeInspireTreeNode<TreeNodeItem>>;
+  private _nodesSelectionHandlers?: Array<SingleSelectionHandler<BeInspireTreeNode<TreeNodeItem>>>;
 
-  public readonly state: Readonly<TreeState> = { rootNodes: [] };
+  public static readonly defaultProps: Partial<TreeProps> = {
+    selectionMode: SelectionMode.Single,
+  };
 
-  constructor(props: Props, context?: any) {
+  constructor(props: TreeProps, context?: any) {
     super(props, context);
 
-    this._tree = this.createTree();
-    this._selectionHandler = new SelectionHandler(props.selectionMode ? props.selectionMode : SelectionMode.Single,
-      this.props.onNodesSelected, this.props.onNodesDeselected);
-    this._nodeRenderFunc = (props.renderNode) ? props.renderNode : this._defaultRenderNode;
+    this.recreateTree();
+
+    this._selectionHandler = new SelectionHandler(props.selectionMode!, this._onNodesSelected, this._onNodesDeselected);
+    this._selectionHandler.onItemsSelectedCallback = this._onNodesSelected;
+    this._selectionHandler.onItemsDeselectedCallback = this._onNodesDeselected;
+
+    this.state = {
+      prev: {
+        dataProvider: props.dataProvider,
+        selectedNodes: props.selectedNodes,
+        modelReady: false,
+      },
+      model: this._tree,
+      modelReady: false,
+    };
   }
 
-  // tslint:disable-next-line:naming-convention
-  private get nodesSelectionHandlers(): Array<SingleSelectionHandler<InspireTreeNode>> {
-    if (!this._nodesSelectionHandlers) {
-      this._nodesSelectionHandlers = [];
-      const nodes = this._tree.visibleNodes();
-      for (const node of nodes) {
-        this._nodesSelectionHandlers.push(this.createItemSelectionHandler(node));
-      }
+  private recreateTree() {
+    this._tree = new BeInspireTree<TreeNodeItem>({
+      dataProvider: this.props.dataProvider,
+      renderer: this._onModelChanged,
+      mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem,
+    });
+    this._tree.on(BeInspireTreeEvent.NodeExpanded, this._onNodeExpanded);
+    this._tree.on(BeInspireTreeEvent.NodeCollapsed, this._onNodeCollapsed);
+    this._tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
+    this._tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
+    this._tree.ready.then(this._onModelReady);
+  }
+
+  public static getDerivedStateFromProps(props: TreeProps, state: TreeState): TreeState | null {
+    const providerChanged = (props.dataProvider !== state.prev.dataProvider);
+    const selectedNodesChanged = (props.selectedNodes !== state.prev.selectedNodes);
+    const modelReadyChanged = (state.modelReady !== state.prev.modelReady);
+    if (providerChanged || selectedNodesChanged || (modelReadyChanged && state.modelReady)) {
+      using((state.model.mute([BeInspireTreeEvent.ChangesApplied]) as any), () => {
+        // note: calling this may actually mutate `model`
+        // and`rootNodes` in state, but that should be fine
+        state.model.updateTreeSelection(props.selectedNodes);
+      });
     }
-    return this._nodesSelectionHandlers;
-  }
 
-  private createTree(): BeInspireTree {
-    const tree = new BeInspireTree(this.props.dataProvider, this._syncNodes);
-    tree.on("node.expanded", this._onNodeExpanded);
-    tree.on("node.collapsed", this._onNodeCollapsed);
-    tree.on("children.loaded", this._onChildrenLoaded);
-    return tree;
-  }
+    // create base state that just updates `prev` values
+    const base: TreeState = {
+      ...state,
+      prev: {
+        ...state.prev,
+        dataProvider: props.dataProvider,
+        modelReady: state.modelReady,
+        selectedNodes: props.selectedNodes,
+        nodeHighlightingProps: props.nodeHighlightingProps,
+      },
+    };
 
-  public async componentWillReceiveProps(props: Props) {
-    if (this.props.selectionMode !== props.selectionMode)
-      this._selectionHandler.selectionMode = props.selectionMode ? props.selectionMode : SelectionMode.Single;
-
-    this._nodeRenderFunc = (props.renderNode) ? props.renderNode : this._defaultRenderNode;
-    this._selectionHandler.onItemsSelectedCallback = this.props.onNodesSelected;
-    this._selectionHandler.onItemsDeselectedCallback = this.props.onNodesDeselected;
-
-    this._tree.pauseRendering();
-
-    const expandedNodeIds = props.expandedNodes ? props.expandedNodes : this._tree.expandedNodeIds;
-
-    if (this.props.dataProvider !== props.dataProvider)
-      await this._tree.reload();
-
-    await this._tree.updateExpansion(expandedNodeIds);
-    await this._tree.updateTreeSelection(props.selectedNodes);
-
-    this._tree.resumeRendering();
-
-    if (this.props.onTreeReloaded)
-      this.props.onTreeReloaded();
-
-    // Move to getDeriveStateFromProps when merge with Grigas' refactoring happens
-    if (props.nodeHighlightingProps) {
-      this.setState({ highlightingEngine: new HighlightingEngine(props.nodeHighlightingProps) });
-    } else if (!props.nodeHighlightingProps) {
-      this.setState({ highlightingEngine: undefined });
+    // update highlighting engine if props have changed
+    if (props.nodeHighlightingProps !== state.prev.nodeHighlightingProps) {
+      base.highlightingEngine = props.nodeHighlightingProps ? new HighlightingEngine(props.nodeHighlightingProps) : undefined;
     }
+
+    // in case provider changed, have to reset `modelReady`
+    if (providerChanged) {
+      return {
+        ...base,
+        modelReady: false,
+      };
+    }
+
+    return base;
   }
 
-  // public static getDerivedStateFromProps(props: Props) {
-  //   if (props.nodeHighlightingProps) {
-  //     return { highlightingEngine: new HighlightingEngine(props.nodeHighlightingProps) };
-  //   } else if (!props.nodeHighlightingProps) {
-  //     return { highlightingEngine: undefined };
-  //   }
-  //   return null;
-  // }
+  public componentDidMount() {
+    if (isTreeDataProviderInterface(this.props.dataProvider) && this.props.dataProvider.onTreeNodeChanged) {
+      // subscribe for data provider `onTreeNodeChanged` events
+      this.props.dataProvider.onTreeNodeChanged.addListener(this._onTreeNodeChanged);
+    }
 
-  public componentWillMount() {
-    this._isMounted = true;
-    this.componentWillReceiveProps(this.props);
+    /* istanbul ignore next */
+    if (this.props.onRender)
+      this.props.onRender();
   }
 
   public componentWillUnmount() {
-    this._isMounted = false;
+    this._tree.removeAllListeners();
+    if (isTreeDataProviderInterface(this.props.dataProvider) && this.props.dataProvider.onTreeNodeChanged) {
+      // unsubscribe from data provider `onTreeNodeChanged` events
+      this.props.dataProvider.onTreeNodeChanged.removeListener(this._onTreeNodeChanged);
+    }
   }
 
-  private _onNodeExpanded = (node: InspireTreeNode) => {
+  public shouldComponentUpdate(nextProps: TreeProps, nextState: TreeState): boolean {
+    if (this.state.modelReady !== nextState.modelReady) {
+      // always render when state.modelReady changes
+      return true;
+    }
+
+    if (!nextState.modelReady) {
+      // if we got here and model is not ready - don't render
+      return false;
+    }
+
+    // otherwise, render when any of the following props / state change
+    return this.props.selectedNodes !== nextProps.selectedNodes
+      || this.props.renderNode !== nextProps.renderNode
+      || this.props.dataProvider !== nextProps.dataProvider
+      || this.props.nodeHighlightingProps !== nextProps.nodeHighlightingProps
+      || this.state.model.nodes().some((n) => n.isDirty());
+  }
+
+  public componentDidUpdate(prevProps: TreeProps) {
+    /* istanbul ignore next */
+    if (this.props.onRender)
+      this.props.onRender();
+
+    this._selectionHandler.selectionMode = this.props.selectionMode!;
+
+    if (this._treeComponent.current && this.props.nodeHighlightingProps && shallowDiffers(this.props.nodeHighlightingProps, prevProps.nodeHighlightingProps))
+      HighlightingEngine.scrollToActiveNode(this._treeComponent.current);
+
+    if (this.props.dataProvider !== prevProps.dataProvider) {
+      if (isTreeDataProviderInterface(prevProps.dataProvider) && prevProps.dataProvider.onTreeNodeChanged) {
+        // unsubscribe from previous data provider `onTreeNodeChanged` events
+        prevProps.dataProvider.onTreeNodeChanged.removeListener(this._onTreeNodeChanged);
+      }
+      if (isTreeDataProviderInterface(this.props.dataProvider) && this.props.dataProvider.onTreeNodeChanged) {
+        // subscribe for new data provider `onTreeNodeChanged` events
+        this.props.dataProvider.onTreeNodeChanged.addListener(this._onTreeNodeChanged);
+      }
+      this.recreateTree();
+      this.setState({ model: this._tree });
+      this._tree.ready.then(this._onModelReady);
+    }
+  }
+
+  private _onNodesSelected = (nodes: Array<BeInspireTreeNode<TreeNodeItem>>, replace: boolean) => {
+    if (this.props.onNodesSelected)
+      this.props.onNodesSelected(nodes.map((n) => n.payload), replace);
+  }
+
+  private _onNodesDeselected = (nodes: Array<BeInspireTreeNode<TreeNodeItem>>) => {
+    if (this.props.onNodesDeselected)
+      this.props.onNodesDeselected(nodes.map((n) => n.payload));
+  }
+
+  private _onNodeExpanded = (node: BeInspireTreeNode<TreeNodeItem>) => {
     if (this.props.onNodeExpanded)
-      this.props.onNodeExpanded(node);
+      this.props.onNodeExpanded(node.payload);
+
+    // note: we get here when parent node is expanded. if data provider loads
+    // children immediately, then node has children here. if data provider
+    // delay loads children, then `node.getChildren()` returns empty array
+    this._tree.updateNodesSelection(node.getChildren(), this.props.selectedNodes);
 
     this._nodesSelectionHandlers = undefined;
-    if (undefined !== node.children && "boolean" !== typeof node.children) {
-      this._tree.updateNodesSelection(node.children as any, this.props.selectedNodes);
-    }
   }
 
-  private _onNodeCollapsed = (node: InspireTreeNode) => {
+  private _onNodeCollapsed = (node: BeInspireTreeNode<TreeNodeItem>) => {
     if (this.props.onNodeCollapsed)
-      this.props.onNodeCollapsed(node);
+      this.props.onNodeCollapsed(node.payload);
+
     this._nodesSelectionHandlers = undefined;
   }
 
-  private _onChildrenLoaded = (parentNode: InspireTreeNode) => {
+  private _onModelLoaded = (rootNodes: BeInspireTreeNodes<TreeNodeItem>) => {
+    if (this.props.onRootNodesLoaded)
+      this.props.onRootNodesLoaded(rootNodes.map((n) => n.payload));
+
+    this._nodesSelectionHandlers = undefined;
+  }
+
+  private _onChildrenLoaded = (parentNode: BeInspireTreeNode<TreeNodeItem>) => {
+    const children = parentNode.getChildren();
+
     if (this.props.onChildrenLoaded)
-      this.props.onChildrenLoaded(parentNode);
+      this.props.onChildrenLoaded(parentNode.payload, toNodes<TreeNodeItem>(children).map((c) => c.payload));
 
-    if (undefined !== parentNode.children && "boolean" !== typeof parentNode.children) {
-      this._tree.updateNodesSelection(parentNode.children as any, this.props.selectedNodes);
-    }
+    // note: we get here when parent node is expanded and data provider
+    // finishes delay-loading its child nodes
+    this._tree.updateNodesSelection(children, this.props.selectedNodes);
+
     this._nodesSelectionHandlers = undefined;
   }
 
-  // Update the state when changes have been made to our nodes
-  private _syncNodes = (rootNodes: InspireTreeNode[]) => {
-    if (!this._isMounted)
-      return;
-
-    this.setState({ rootNodes });
+  private _onModelChanged = (_visibleNodes: Array<BeInspireTreeNode<TreeNodeItem>>) => {
+    // just set the model to initiate update
+    this.setState({ model: this._tree });
   }
 
-  private _getNodeLabelComponent = (node: InspireTreeNode) => {
-    if (this.state.highlightingEngine) {
-      return this.state.highlightingEngine.getNodeLabelComponent(node);
-    }
-    return node.text;
+  private _onModelReady = () => {
+    this.setState({ modelReady: true });
   }
 
-  private _defaultRenderNode = (data: InspireTreeNode, children?: React.ReactNode, index?: number): React.ReactNode => {
-    const itemHandler = this.createItemSelectionHandler(data);
-    const onSelectionChanged = this._selectionHandler.createSelectionFunction(this._multiSelectionHandler, itemHandler);
-
-    const onMouseDown = (_e: React.MouseEvent) => {
-      this._selectionHandler.createDragAction(this._multiSelectionHandler, [this.nodesSelectionHandlers], data);
-    };
-    const toggleExpansion = () => data.toggleCollapse();
-
-    if (this.props.dragProps || this.props.dropProps) {
-      const dragProps: DragSourceProps = {};
-      if (this.props.dragProps) {
-        const { onDragSourceBegin, onDragSourceEnd, objectType } = this.props.dragProps;
-        dragProps.onDragSourceBegin = (args: DragSourceArguments) => {
-          args.dataObject = data;
-          args.parentObject = parent || this.props.dataProvider;
-          return onDragSourceBegin ? onDragSourceBegin(args) : args;
-        };
-        dragProps.onDragSourceEnd = (args: DragSourceArguments) => {
-          if (onDragSourceEnd) {
-            args.parentObject = parent || this.props.dataProvider;
-            onDragSourceEnd(args);
-          }
-        };
-        dragProps.objectType = () => {
-          if (objectType) {
-            if (typeof objectType === "function")
-              return objectType(data);
-            else
-              return objectType;
-          }
-          return "";
-        };
-      }
-      const dropProps: DropTargetProps = {};
-      if (this.props.dropProps) {
-        const { onDropTargetOver, onDropTargetDrop, canDropTargetDrop, objectTypes } = this.props.dropProps;
-        dropProps.onDropTargetOver = (args: DropTargetArguments) => {
-          // populate tree information while it's accessible
-          args.dropLocation = data;
-          if (args.dropRect) {
-            const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
-            if (relativeY < 1 / 3 && relativeY > 2 / 3 && index !== undefined) {
-              args.dropLocation = parent || this.props.dataProvider;
-              args.row = index;
-              if (relativeY > 2 / 3) {
-                args.row = index + 1;
-              }
+  private _onTreeNodeChanged = (items?: TreeNodeItem[]) => {
+    using((this._tree.pauseRendering() as any), async () => {
+      if (items) {
+        for (const item of items) {
+          if (item) {
+            // specific node needs to be reloaded
+            const node = this._tree.node(item.id);
+            if (node) {
+              const wasExpanded = node.expanded();
+              node.assign(Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem.bind(this)));
+              if (wasExpanded)
+                await node.loadChildren();
             }
+          } else {
+            // all root nodes need to be reloaded
+            const expandedNodeIds = this._tree.expanded().map((n) => n.id!);
+            await this._tree.reload();
+            await Promise.all(this._tree.nodes(expandedNodeIds).map((n) => n.loadChildren()));
           }
-          if (onDropTargetOver) onDropTargetOver(args);
-        };
-        dropProps.onDropTargetDrop = (args: DropTargetArguments): DropTargetArguments => {
-          // populate tree information while it's accessible
-          args.dropLocation = data;
-          if (args.dropRect) {
-            const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
-            if ((relativeY < 1 / 3 || relativeY > 2 / 3) && index !== undefined) {
-              args.dropLocation = parent || this.props.dataProvider;
-              args.row = index;
-              if (relativeY > 2 / 3) {
-                args.row = index + 1;
-              }
-            }
-          }
-          if (onDropTargetDrop) return onDropTargetDrop(args);
-          return args;
-        };
-        dropProps.canDropTargetDrop = (args: DropTargetArguments) => {
-          // populate tree information while it's accessible
-          args.dropLocation = data;
-          if (canDropTargetDrop) return canDropTargetDrop(args);
-          return true;
-        };
-        dropProps.objectTypes = objectTypes;
-      }
-      return (
-        <DragDropTreeNode
-          dragProps={dragProps}
-          dropProps={dropProps}
-          shallow={true}
-          key={data.id}
-          isExpanded={data.expanded()}
-          isSelected={data.selected()}
-          isLoading={data.loading()}
-          isLeaf={!data.hasOrWillHaveChildren()}
-          label={this._getNodeLabelComponent(data)}
-          icon={<span className={data.icon} />}
-          onClick={(e: React.MouseEvent) => { onSelectionChanged(e.shiftKey, e.ctrlKey); }}
-          onMouseMove={(e: React.MouseEvent) => { if (e.buttons === 1) this._selectionHandler.updateDragAction(data); }}
-          onMouseDown={onMouseDown}
-          onClickExpansionToggle={toggleExpansion}
-        >
-          {children}
-        </DragDropTreeNode>
-      );
-    } else
-      return (
-        <TreeNode
-          key={data.id}
-          isExpanded={data.expanded()}
-          isSelected={data.selected()}
-          isLoading={data.loading()}
-          isLeaf={!data.hasOrWillHaveChildren()}
-          label={this._getNodeLabelComponent(data)}
-          icon={<span className={data.icon} />}
-          onClick={(e: React.MouseEvent) => { onSelectionChanged(e.shiftKey, e.ctrlKey); }}
-          onMouseMove={(e: React.MouseEvent) => { if (e.buttons === 1) this._selectionHandler.updateDragAction(data); }}
-          onMouseDown={onMouseDown}
-          onClickExpansionToggle={toggleExpansion}
-        >
-          {children}
-        </TreeNode>
-      );
-  }
-
-  private createItemSelectionHandler(node: InspireTreeNode): SingleSelectionHandler<InspireTreeNode> {
-    return {
-      preselect: () => { },
-      select: () => node.select(),
-      deselect: () => node.deselect(),
-      isSelected: () => node.selected(),
-      item: () => node,
-    };
-  }
-
-  private _multiSelectionHandler: MultiSelectionHandler<InspireTreeNode> = {
-    selectBetween: (node1: InspireTreeNode, node2: InspireTreeNode) => this._tree.selectBetween(node1, node2),
-    deselectAll: () => this._tree.deselectAll(),
-    updateSelection: (selections: InspireTreeNode[], deselections: InspireTreeNode[]) => {
-      selections.forEach((x) => x.select());
-      deselections.forEach((x) => x.deselect());
-    },
-    areEqual: (item1: InspireTreeNode, item2: InspireTreeNode) => item1 === item2,
-  };
-
-  private renderBranch(nodes: InspireTreeNode[] | undefined) {
-    const items: React.ReactNode[] = [];
-
-    // For every node
-    (nodes || []).forEach((node: InspireTreeNode) => {
-      // Only render if node is available
-      if (node.available()) {
-        // Build a branch for all children of this node
-        let children: React.ReactNode | undefined;
-        if (node.expanded() && node.hasChildren()) {
-          children = this.renderBranch(node.children as any);
         }
-
-        // Push this node.
-        items.push(this._nodeRenderFunc(node, children));
       }
     });
-
-    return (
-      <TreeBranch>{items}</TreeBranch>);
-  }
-
-  private renderTree(nodes: InspireTreeNode[] | undefined) {
-    if (nodes && nodes.length)
-      return this.renderBranch(nodes);
-    return (
-      <p className="ui-components-tree-errormessage">
-        {this.props.nodeHighlightingProps ?
-          UiComponents.i18n.translate("UiComponents:tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
-          UiComponents.i18n.translate("UiComponents:general.noData")}
-      </p>
-    );
-  }
-
-  public componentDidUpdate() {
-    if (this.state.highlightingEngine && this._treeComponent.current)
-      this.state.highlightingEngine.scrollToActiveNode(this._treeComponent.current);
-  }
-
-  // Renders the wrapping div and root branch
-  public render() {
-    if (this.props.dropProps) {
-      const { onDropTargetOver, onDropTargetDrop, canDropTargetDrop, objectTypes } = this.props.dropProps;
-      const dropProps = {
-        onDropTargetOver: (args: DropTargetArguments) => {
-          if (onDropTargetOver) {
-            args.dropLocation = this.props.dataProvider;
-            onDropTargetOver(args);
-          }
-        },
-        onDropTargetDrop: (args: DropTargetArguments): DropTargetArguments => {
-          args.dropLocation = this.props.dataProvider;
-          return onDropTargetDrop ? onDropTargetDrop(args) : args;
-        },
-        canDropTargetDrop: (args: DropTargetArguments) => {
-          args.dropLocation = this.props.dataProvider;
-          return canDropTargetDrop ? canDropTargetDrop(args) : true;
-        },
-        objectTypes,
-      };
-      return (
-        <DropTree
-          dropStyle={{
-            height: "100%",
-          }}
-          dropProps={dropProps}
-          shallow={true}
-        >
-          {this.renderTree(this.state.rootNodes)}
-        </DropTree>
-      );
-    } else
-      return (
-        <div className="ui-components-tree" onMouseDown={this._onMouseDown}>
-          <TreeBase ref={this._treeComponent}>{this.renderTree(this.state.rootNodes)}</TreeBase>
-        </div>
-      );
   }
 
   private _onMouseDown = () => {
@@ -416,4 +313,153 @@ export default class Tree extends React.Component<Props, TreeState> {
     this._selectionHandler.completeDragAction();
   }
 
+  // tslint:disable-next-line:naming-convention
+  private get nodesSelectionHandlers(): Array<SingleSelectionHandler<BeInspireTreeNode<TreeNodeItem>>> {
+    if (!this._nodesSelectionHandlers) {
+      this._nodesSelectionHandlers = [];
+      const nodes = this._tree.visible();
+      for (const node of nodes) {
+        this._nodesSelectionHandlers.push(this._createItemSelectionHandler(node));
+      }
+    }
+    return this._nodesSelectionHandlers;
+  }
+
+  /** map TreeNodeItem into an InspireNode */
+  public static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>): BeInspireTreeNodeConfig {
+    const node: BeInspireTreeNodeConfig = {
+      id: item.id,
+      text: item.label,
+      itree: {
+        state: {},
+      },
+    };
+    if (item.icon)
+      node.itree!.icon = item.icon;
+    if (item.autoExpand)
+      node.itree!.state!.collapsed = false;
+    if ((item as DelayLoadedTreeNodeItem).hasChildren)
+      node.children = true;
+    else if ((item as ImmediatelyLoadedTreeNodeItem).children)
+      node.children = (item as ImmediatelyLoadedTreeNodeItem).children!.map((p) => remapper(p, remapper));
+    return node;
+  }
+
+  private _createItemSelectionHandler = (node: BeInspireTreeNode<TreeNodeItem>): SingleSelectionHandler<BeInspireTreeNode<TreeNodeItem>> => {
+    return {
+      preselect: () => { },
+      select: () => node.select(),
+      deselect: () => node.deselect(),
+      isSelected: () => node.selected(),
+      item: () => node,
+    };
+  }
+
+  private _multiSelectionHandler: MultiSelectionHandler<BeInspireTreeNode<TreeNodeItem>> = {
+    selectBetween: (node1: BeInspireTreeNode<TreeNodeItem>, node2: BeInspireTreeNode<TreeNodeItem>) => this._tree.selectBetween(node1, node2),
+    deselectAll: () => this._tree.deselectAll(),
+    updateSelection: (selections: Array<BeInspireTreeNode<TreeNodeItem>>, deselections: Array<BeInspireTreeNode<TreeNodeItem>>) => {
+      selections.forEach((x) => x.select());
+      deselections.forEach((x) => x.deselect());
+    },
+    areEqual: (item1: BeInspireTreeNode<TreeNodeItem>, item2: BeInspireTreeNode<TreeNodeItem>) => item1 === item2,
+  };
+
+  // tslint:disable-next-line:naming-convention
+  private static renderLabelComponent = (node: BeInspireTreeNode<TreeNodeItem>, highlightProps?: HighlightableTreeNodeProps) => {
+    if (highlightProps) {
+      return HighlightingEngine.renderNodeLabel(node.text, highlightProps);
+    }
+    return node.text;
+  }
+
+  // tslint:disable-next-line:naming-convention
+  private renderNode = (node: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps): React.ReactNode => {
+    return (
+      <TreeNode key={node.id} {...props} />
+    );
+  }
+
+  public render() {
+    const nodes = this.state.model.visible();
+    if (nodes.length === 0) {
+      return (
+        <p className="ui-components-tree-errormessage">
+          {this.props.nodeHighlightingProps ?
+            UiComponents.i18n.translate("UiComponents:tree.noResultsForFilter", { searchText: this.props.nodeHighlightingProps.searchText }) :
+            UiComponents.i18n.translate("UiComponents:general.noData")}
+        </p>
+      );
+    }
+
+    const renderNode = this.props.renderNode ? this.props.renderNode : this.renderNode;
+    return (
+      <TreeBase ref={this._treeComponent} onMouseDown={this._onMouseDown}>
+        {nodes.map((n) => {
+          const onNodeSelectionChanged = this._selectionHandler.createSelectionFunction(this._multiSelectionHandler, this._createItemSelectionHandler(n));
+          const props: TreeNodeProps = {
+            node: n,
+            highlightProps: this.state.highlightingEngine ? this.state.highlightingEngine.createRenderProps(n) : undefined,
+            renderLabel: Tree.renderLabelComponent,
+            onClick: (e: React.MouseEvent) => onNodeSelectionChanged(e.shiftKey, e.ctrlKey),
+            onMouseDown: () => this._selectionHandler.createDragAction(this._multiSelectionHandler, [this.nodesSelectionHandlers], n),
+            onMouseMove: (e: React.MouseEvent) => { if (e.buttons === 1) this._selectionHandler.updateDragAction(n); },
+          };
+          return renderNode(n, props);
+        })}
+      </TreeBase>
+    );
+  }
+
+}
+
+/** @hidden */
+export namespace Tree {
+  export const enum TestId {
+    Node = "tree-node",
+    NodeContents = "tree-node-contents",
+    NodeExpansionToggle = "tree-node-expansion-toggle",
+  }
+}
+
+/**
+ * Props for the [[TreeNode]] component
+ */
+export interface TreeNodeProps {
+  node: BeInspireTreeNode<TreeNodeItem>;
+  highlightProps?: HighlightableTreeNodeProps;
+  renderLabel: (node: BeInspireTreeNode<TreeNodeItem>, highlightProps?: HighlightableTreeNodeProps) => React.ReactNode;
+  onClick?: (e: React.MouseEvent) => void;
+  onMouseDown?: (e: React.MouseEvent) => void;
+  onMouseMove?: (e: React.MouseEvent) => void;
+  onMouseUp?: (e: React.MouseEvent) => void;
+}
+
+/**
+ * Default component for rendering a node for the [[Tree]]
+ */
+export class TreeNode extends React.Component<TreeNodeProps> {
+  public shouldComponentUpdate(nextProps: TreeNodeProps) {
+    return nextProps.node.isDirty() || shallowDiffers(this.props.highlightProps, nextProps.highlightProps);
+  }
+  public render() {
+    // note: props get mutated here
+    this.props.node.setDirty(false);
+    return (
+      <TreeNodeBase
+        data-testid={Tree.TestId.Node}
+        isExpanded={this.props.node.expanded()}
+        isSelected={this.props.node.selected()}
+        isLoading={this.props.node.loading()}
+        isLeaf={!this.props.node.hasOrWillHaveChildren()}
+        label={this.props.renderLabel(this.props.node, this.props.highlightProps)}
+        icon={this.props.node.itree && this.props.node.itree.icon ? <span className={this.props.node.itree.icon} /> : undefined}
+        level={this.props.node.getParents().length}
+        onClick={this.props.onClick}
+        onMouseMove={this.props.onMouseMove}
+        onMouseDown={this.props.onMouseDown}
+        onClickExpansionToggle={() => this.props.node.toggleCollapse()}
+      />
+    );
+  }
 }

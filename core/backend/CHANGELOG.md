@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 24 Oct 2018 19:20:06 GMT and should not be manually modified.
+This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+
+## 0.163.0
+Wed, 31 Oct 2018 20:55:37 GMT
+
+### Updates
+
+- Guids can now be bound as strings to ECSQL. BLOBs in ECSQL and SQLite are now mapped to UInt8Array instead of ArrayBuffer (as only the former can be marshaled between backend and frontend).
+- Fully support mixed binary and JSON content in both directions in RPC la
+- remove obsolete script
 
 ## 0.162.0
 Wed, 24 Oct 2018 19:20:06 GMT

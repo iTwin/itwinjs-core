@@ -4,20 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 export { default as UiFramework } from "./UiFramework";
 
-export * from "./overallcontent/OverallContent";
-export * from "./overallcontent/state";
+export * from "./oidc/OidcBrowserClient";
 export * from "./FrameworkState";
-export * from "./UiFramework";
 export * from "./SyncUiEventDispatcher";
-export * from "./clientservices/LoginServices";
-export * from "./clientservices/ProjectServices";
-export * from "./clientservices/IModelServices";
+export * from "./UiFramework";
+export * from "./CoreToolDefinitions";
+export * from "./clientservices";
 export * from "./configurableui";
-export * from "./feedback/ValidationTextbox";
-export * from "./messages/InputField";
-export * from "./messages/Pointer";
-export * from "./pickers/ModelSelector";
-export * from "./pickers/ViewSelector";
+export * from "./feedback";
+export * from "./messages";
+export * from "./oidc";
+export * from "./openimodel";
+export * from "./overallcontent";
+export * from "./pickers";
 export * from "./utils";
 
 /** @docs-package-description
@@ -46,8 +45,8 @@ export * from "./utils";
  * Classes for working with a modal dialog
  */
 /**
- * @docs-group-description DragDrop
- * Classes for working with Drag & Drop
+ * @docs-group-description DragDropLayerManager
+ * Classes for managing DragDrop API drag layers
  */
 /**
  * @docs-group-description FrameworkState

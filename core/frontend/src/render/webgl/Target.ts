@@ -165,6 +165,12 @@ export class PerformanceMetrics {
   }
 }
 
+function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
+  const tmp = image.data[i0];
+  image.data[i0] = image.data[i1];
+  image.data[i1] = tmp;
+}
+
 export abstract class Target extends RenderTarget {
   protected _decorations?: Decorations;
   private _stack = new BranchStack();
@@ -896,7 +902,7 @@ export abstract class Target extends RenderTarget {
     return true;
   }
 
-  public readImage(wantRectIn: ViewRect, targetSizeIn: Point2d): ImageBuffer | undefined {
+  public readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
     // Determine capture rect and validate
     const actualViewRect = this.renderRect;
 
@@ -957,6 +963,24 @@ export abstract class Target extends RenderTarget {
     }
     if (isEmptyImage)
       return undefined;
+
+    if (flipVertically) {
+      const halfHeight = Math.floor(image.height / 2);
+      const numBytesPerRow = image.width * 4;
+      for (let loY = 0; loY < halfHeight; loY++) {
+        for (let x = 0; x < image.width; x++) {
+          const hiY = (image.height - 1) - loY;
+          const loIdx = loY * numBytesPerRow + x * 4;
+          const hiIdx = hiY * numBytesPerRow + x * 4;
+
+          swapImageByte(image, loIdx, hiIdx);
+          swapImageByte(image, loIdx + 1, hiIdx + 1);
+          swapImageByte(image, loIdx + 2, hiIdx + 2);
+          swapImageByte(image, loIdx + 3, hiIdx + 3);
+        }
+      }
+    }
+
     return image;
   }
 

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelHubClientError, IModelHubError, ArgumentCheck } from "./Errors";
 import { InstanceIdQuery, addSelectFileAccessKey } from "./Query";
 import { AccessToken } from "../Token";
@@ -23,7 +23,7 @@ const loggingCategory = "imodeljs-clients.imodelhub";
 @ECJsonTypeMap.classToJson("wsg", "ProjectScope.iModel", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class HubIModel extends WsgInstance {
     /** Id of the iModel. */
-    @ECJsonTypeMap.propertyToJson("wsg", "instanceId", new GuidSerializer())
+    @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
     public id?: GuidString;
 
     /** Description of the iModel. */
@@ -74,7 +74,7 @@ export enum InitializationState {
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.SeedFile", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class SeedFile extends WsgInstance {
     /** Id of the iModel. */
-    @ECJsonTypeMap.propertyToJson("wsg", "instanceId", new GuidSerializer())
+    @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
     public id?: GuidString;
 
     @ECJsonTypeMap.propertyToJson("wsg", "properties.FileName")
@@ -86,7 +86,7 @@ export class SeedFile extends WsgInstance {
     @ECJsonTypeMap.propertyToJson("wsg", "properties.FileSize")
     public fileSize?: string;
 
-    @ECJsonTypeMap.propertyToJson("wsg", "properties.FileId", new GuidSerializer())
+    @ECJsonTypeMap.propertyToJson("wsg", "properties.FileId")
     public fileId?: GuidString;
 
     @ECJsonTypeMap.propertyToJson("wsg", "properties.Index")

@@ -9,8 +9,7 @@ import { Point3d, Point2d } from "@bentley/geometry-core";
 import { Viewport, ViewRect, ScreenViewport } from "./Viewport";
 import { IModelApp } from "./IModelApp";
 import { Pixel } from "./rendering";
-import { PrimitiveTool } from "./tools/PrimitiveTool";
-import { InputSource } from "./tools/Tool";
+import { InputSource, InteractiveTool } from "./tools/Tool";
 import { Id64 } from "@bentley/bentleyjs-core";
 
 /** The possible actions for which a locate filter can be called. */
@@ -228,7 +227,7 @@ export class ElementLocateManager {
     return preLocated;
   }
 
-  public filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): LocateFilterStatus {
+  public async filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): Promise<LocateFilterStatus> {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
     if (!this.options.allowDecorations && !hit.isElementHit) {
       out.reason = ElementLocateManager.getFailureMessageKey("Transient");
@@ -236,10 +235,10 @@ export class ElementLocateManager {
     }
 
     const tool = IModelApp.toolAdmin.activeTool;
-    if (!(tool && tool instanceof PrimitiveTool))
+    if (!(tool && tool instanceof InteractiveTool))
       return LocateFilterStatus.Accept;
 
-    const status = tool.filterHit(hit, out);
+    const status = await tool.filterHit(hit, out);
     if (LocateFilterStatus.Reject === status)
       out.reason = ElementLocateManager.getFailureMessageKey("ByCommand");
 
@@ -254,7 +253,7 @@ export class ElementLocateManager {
     IModelApp.tentativePoint.clear(true);
   }
 
-  private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: ScreenViewport | undefined, source: InputSource, filterHits: boolean): HitDetail | undefined {
+  private async _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: ScreenViewport | undefined, source: InputSource, filterHits: boolean): Promise<HitDetail | undefined> {
     if (!vp)
       return;
 
@@ -264,7 +263,7 @@ export class ElementLocateManager {
 
       // if we're snapped to something, that path has the highest priority and becomes the active hit.
       if (hit) {
-        if (!filterHits || LocateFilterStatus.Accept === this.filterHit(hit, LocateAction.Identify, response))
+        if (!filterHits || LocateFilterStatus.Accept === await this.filterHit(hit, LocateAction.Identify, response))
           return hit;
 
         response = new LocateResponse(); // we have the reason and explanation we want.
@@ -279,7 +278,7 @@ export class ElementLocateManager {
 
     let newHit: HitDetail | undefined;
     while (undefined !== (newHit = this.getNextHit())) {
-      if (!filterHits || LocateFilterStatus.Accept === this.filterHit(newHit, LocateAction.Identify, response))
+      if (!filterHits || LocateFilterStatus.Accept === await this.filterHit(newHit, LocateAction.Identify, response))
         return newHit;
       response = new LocateResponse(); // we have the reason and explanation we want.
     }
@@ -287,11 +286,11 @@ export class ElementLocateManager {
     return undefined;
   }
 
-  public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: ScreenViewport | undefined, source: InputSource, filterHits = true): HitDetail | undefined {
+  public async doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: ScreenViewport | undefined, source: InputSource, filterHits = true): Promise<HitDetail | undefined> {
     response.reason = ElementLocateManager.getFailureMessageKey("NoElements");
     response.explanation = "";
 
-    const hit = this._doLocate(response, newSearch, testPoint, view, source, filterHits);
+    const hit = await this._doLocate(response, newSearch, testPoint, view, source, filterHits);
     this.setCurrHit(hit);
 
     // if we found a hit, remove it from the list of remaining hits near the current search point.

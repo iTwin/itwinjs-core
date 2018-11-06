@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DecorateContext, HitDetail, IModelConnection, ImageUtil, IModelApp, MarkerSet, Marker, MarkerImage, Cluster } from "@bentley/imodeljs-frontend";
+import { DecorateContext, HitDetail, IModelConnection, imageElementFromUrl, IModelApp, MarkerSet, Marker, MarkerImage, Cluster } from "@bentley/imodeljs-frontend";
 import { GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ColorDef, NpcCenter, ColorByName } from "@bentley/imodeljs-common";
 import { Point3d, XYAndZ, XAndY, Point2d } from "@bentley/geometry-core";
@@ -188,15 +188,15 @@ export class IncidentMarkerDemo {
 
   public constructor(iModel: IModelConnection) {
     const makerIcons = [
-      ImageUtil.fromUrl("Hazard_biological.svg"),
-      ImageUtil.fromUrl("Hazard_electric.svg"),
-      ImageUtil.fromUrl("Hazard_flammable.svg"),
-      ImageUtil.fromUrl("Hazard_toxic.svg"),
-      ImageUtil.fromUrl("Hazard_tripping.svg"),
+      imageElementFromUrl("Hazard_biological.svg"),
+      imageElementFromUrl("Hazard_electric.svg"),
+      imageElementFromUrl("Hazard_flammable.svg"),
+      imageElementFromUrl("Hazard_toxic.svg"),
+      imageElementFromUrl("Hazard_tripping.svg"),
     ];
 
     if (undefined === IncidentMarkerDemo.warningSign)
-      ImageUtil.fromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
+      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
 
     const extents = iModel!.projectExtents;
     const pos = new Point3d();

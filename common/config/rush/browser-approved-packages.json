@@ -7,10 +7,6 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
-      "name": "@bentley/bentleyjs-tools",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
-    },
-    {
       "name": "@bentley/build-tools",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
@@ -41,6 +37,10 @@
     {
       "name": "@bentley/imodeljs-clients",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "@bentley/imodeljs-clients-backend",
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-common",
@@ -99,6 +99,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@openid/appauth",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "app-root-path",
       "allowedCategories": [ "tools" ]
     },
@@ -141,6 +145,10 @@
     {
       "name": "chai-spies",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "chai-string",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "chalk",

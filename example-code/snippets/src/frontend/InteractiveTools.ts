@@ -26,13 +26,6 @@ export class SamplePrimitiveTool extends PrimitiveTool {
   }
   // __PUBLISH_EXTRACT_END__
 
-  // __PUBLISH_EXTRACT_START__ PrimitiveTool_PostInstall
-  public onPostInstall() {
-    super.onPostInstall();
-    IModelApp.accuSnap.enableSnap(true);
-  }
-  // __PUBLISH_EXTRACT_END__
-
   // __PUBLISH_EXTRACT_START__ PrimitiveTool_Run
   public run(): boolean {
     const { toolAdmin, viewManager } = IModelApp;
@@ -42,6 +35,54 @@ export class SamplePrimitiveTool extends PrimitiveTool {
     toolAdmin.startPrimitiveTool(this);
     toolAdmin.onPostInstallTool(this);
     return true;
+  }
+  // __PUBLISH_EXTRACT_END__
+}
+
+export class SampleSnapTool extends PrimitiveTool {
+  public static toolId = "Sample.Snap";
+  // __PUBLISH_EXTRACT_START__ PrimitiveTool_Snap
+  public readonly points: Point3d[] = [];
+
+  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    if (this.points.length < 1)
+      return;
+
+    const tmpPoints = this.points.slice(); // Create shallow copy of accepted points
+    tmpPoints.push(ev.point.clone()); // Include current cursor location
+
+    const builder = context.createGraphicBuilder(GraphicType.Scene);
+    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1);
+    builder.addLineString(tmpPoints);
+    context.addGraphic(builder.finish()); // Show linestring in view
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    this.points.push(ev.point.clone()); // Accumulate accepted points, ev.point has been adjusted by AccuSnap and locks
+
+    if (!this.isDynamicsStarted)
+      this.beginDynamics(); // Start dynamics on first data button so that onDynamicFrame will be called
+
+    return EventHandled.No;
+  }
+
+  public onPostInstall() {
+    super.onPostInstall();
+    IModelApp.accuSnap.enableSnap(true); // Enable AccuSnap so that linestring can be created by snapping to existing geometry
+  }
+  // __PUBLISH_EXTRACT_END__
+
+  public onRestartTool(): void { this.exitTool(); }
+}
+
+export class SampleLocateTool extends PrimitiveTool {
+  public static toolId = "Sample.Locate";
+  public onRestartTool(): void { this.exitTool(); }
+
+  // __PUBLISH_EXTRACT_START__ PrimitiveTool_Locate
+  public onPostInstall() {
+    super.onPostInstall();
+    this.initLocateElements(); // Enable AccuSnap locate, set view cursor, add CoordinateLockOverrides to disable unwanted pre-locate point adjustments...
   }
   // __PUBLISH_EXTRACT_END__
 }

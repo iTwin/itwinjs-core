@@ -8,7 +8,7 @@ import { ConfigurableUiManager } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { ContentControl } from "@bentley/ui-framework";
 import {
-  SelectionMode, TreeNodeItem, TreeDataProvider,
+  SelectionMode, DelayLoadedTreeNodeItem, TreeDataProvider,
   SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy, Tree,
 } from "@bentley/ui-components";
 
@@ -37,7 +37,7 @@ class TreeExampleContent extends React.Component<{}, TreeExampleState> {
   private _createNodes = (n: number, label: string, levels: number, hierarchy: SimpleTreeDataProviderHierarchy, parentId?: string) => {
     if (levels < 0)
       return;
-    const nodes: TreeNodeItem[] = [];
+    const nodes: DelayLoadedTreeNodeItem[] = [];
     for (let i = 0; i < n; i++) {
       const nodeLabel = label + "-" + i.toString();
       nodes[i] = {

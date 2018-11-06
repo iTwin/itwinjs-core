@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import { TreeDataProvider, TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
+import { ITreeDataProvider, TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
 import IPresentationDataProvider from "../common/IPresentationDataProvider";
 import { NodeKey, NodePathElement } from "@bentley/presentation-common";
 
 /**
  * Presentation tree data provider.
  */
-export default interface IPresentationTreeDataProvider extends TreeDataProvider, IPresentationDataProvider {
+export default interface IPresentationTreeDataProvider extends ITreeDataProvider, IPresentationDataProvider {
   /**
    * Returns a [[NodeKey]] from given [[TreeNodeItem]].
    */

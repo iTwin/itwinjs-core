@@ -8,7 +8,7 @@ import * as chai from "chai";
 import { GuidString, Guid, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
 
 import {
-  ECJsonTypeMap, AccessToken, UserProfile, Project,
+  ECJsonTypeMap, AccessToken, UserInfo, Project,
   ProgressInfo,
 } from "../../";
 import {
@@ -46,9 +46,15 @@ function configMockSettings() {
 /** Other services */
 export class MockAccessToken extends AccessToken {
   public constructor() { super(""); }
-  public getUserProfile(): UserProfile | undefined {
-    return new UserProfile("test", "user", "testuser001@mailinator.com", "596c0d8b-eac2-46a0-aa4a-b590c3314e7c", "Bentley", "fefac5b-bcad-488b-aed2-df27bffe5786", "1004144426", "US");
+  public getUserInfo(): UserInfo | undefined {
+    const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
+    const email = { id: "testuser001@mailinator.com" };
+    const profile = { firstName: "test", lastName: "user" };
+    const organization = { id: "fefac5b-bcad-488b-aed2-df27bffe5786", name: "Bentley" };
+    const featureTracking = { ultimateSite: "1004144426", usageCountryIso: "US" };
+    return new UserInfo(id, email, profile, organization, featureTracking);
   }
+
   public toTokenString() { return ""; }
 }
 

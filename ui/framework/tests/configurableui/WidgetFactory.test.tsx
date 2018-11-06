@@ -12,12 +12,10 @@ describe("WidgetFactory", () => {
     await TestUtils.initializeUiFramework();
   });
 
-  it("appButtonId support", () => {
+  it("appButton support", () => {
     const props: AnyWidgetProps = {
       classId: "ToolWidget",
-      appButtonId: "SampleApp.BackstageToggle",
-      horizontalIds: ["tool1", "tool2", "my-group1"],
-      verticalIds: ["item4", "my-group2"],
+      appButton: undefined,
     };
 
     const widgetDef = WidgetDefFactory.create(props);
@@ -29,7 +27,6 @@ describe("WidgetFactory", () => {
     const props: AnyWidgetProps = {
       classId: "NavigationWidget",
       navigationAidId: "StandardRotationNavigationAid",
-      horizontalIds: ["item5", "item6", "item7", "item8"],
     };
 
     const widgetDef = WidgetDefFactory.create(props);

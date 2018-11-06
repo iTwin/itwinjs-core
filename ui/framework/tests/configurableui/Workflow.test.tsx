@@ -16,25 +16,25 @@ describe("Workflow & WorkflowManager", () => {
         {
           id: "Task1",
           primaryStageId: "Test1",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "SampleApp:backstage.task1",
         },
         {
           id: "Task2",
           primaryStageId: "Test2",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "SampleApp:backstage.task2",
         },
         {
           id: "Task4",
           primaryStageId: "Test4",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "SampleApp:backstage.task4",
         },
         {
           id: "Task3",
           primaryStageId: "Test3",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "SampleApp:backstage.task3",
         },
       ],
@@ -46,27 +46,27 @@ describe("Workflow & WorkflowManager", () => {
       defaultWorkflowId: "default-workflow",
       taskPicker: {
         classId: "taskpicker-class",
-        iconClass: "taskpicker-icon",
+        iconSpec: "taskpicker-icon",
         labelKey: "taskpicker-label",
       },
       workflows: [
         {
           id: "ExampleWorkflow3",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "App:Test.ExampleWorkflow3",
           defaultTaskId: "Task3",
           tasks: ["Task4", "Task3", "Task1"],
         },
         {
           id: "ExampleWorkflow",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "App:Test.ExampleWorkflow1",
           defaultTaskId: "Task1",
           tasks: ["Task1", "Task2"],
         },
         {
           id: "ExampleWorkflow2",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "App:Test.ExampleWorkflow2",
           defaultTaskId: "Task2",
           tasks: ["Task4", "Task3", "Task2"],
@@ -106,7 +106,7 @@ describe("Workflow & WorkflowManager", () => {
       const workflow = new Workflow(
         {
           id: "ExampleWorkflow",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "App:Test.my-label",
           defaultTaskId: "Task1",
           tasks: ["Task4", "Task3", "Task1", "Task2"],

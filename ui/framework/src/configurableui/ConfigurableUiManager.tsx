@@ -4,8 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ConfigurableUi */
 
-import { ItemDefBase } from "./ItemDefBase";
-import { ItemPropsList } from "./ItemProps";
 import { FrontstageDef, FrontstageDefProps } from "./FrontstageDef";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableCreateInfo, ConfigurableUiElement, ConfigurableUiControlConstructor } from "./ConfigurableUiControl";
@@ -13,46 +11,22 @@ import { ContentGroupManager, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutManager, ContentLayoutProps } from "./ContentLayout";
 import { TaskManager, TaskPropsList } from "./Task";
 import { WorkflowManager, WorkflowPropsList } from "./Workflow";
-import { ItemMap } from "./ItemFactory";
 import { FrontstageProvider } from "./Frontstage";
+import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
 
 import { StandardRotationNavigationAidControl } from "./navigationaids/StandardRotationNavigationAid";
 import { SheetNavigationAidControl } from "./navigationaids/SheetNavigationAid";
 import { CubeNavigationAidControl } from "./navigationaids/CubeNavigationAid";
 
-/** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control. */
-export const enum ConfigurableSyncUiEventId {
-  ActiveContentChanged = "ActiveContentChanged",
-  ActivityMessageUpdated = "ActivityMessageUpdated",
-  ActivityMessageCancelled = "ActivityMessageCancelled",
-  BackstageCloseEvent = "BackstageCloseEvent",
-  ContentLayoutActivated = "ContentLayoutActivated",
-  ContentControlActivated = "ContentControlActivated",
-  ElementTooltipChanged = "ElementTooltipChanged",
-  FrontstageActivated = "FrontstageActivated",
-  InputFieldMessageAdded = "InputFieldMessageAdded",
-  InputFieldMessageRemoved = "InputFieldMessageRemoved",
-  ModalFrontstageChanged = "ModalFrontstageChanged",
-  ModalDialogChanged = "ModalDialogChanged",
-  NavigationAidActivated = "NavigationAidActivated",
-  NotificationMessageAdded = "NotificationMessageAdded",
-  ToolActivated = "ToolActivated",
-  TaskActivated = "TaskActivated",
-  WidgetStateChanged = "WidgetStateChanged",
-  WorkflowActivated = "WorkflowActivated",
-}
-
 // -----------------------------------------------------------------------------
 // Configurable Ui Manager
 // -----------------------------------------------------------------------------
 
-/** Configurable Ui Manager maintains common items, controls, Frontstages, Content Groups,
+/** Configurable Ui Manager maintains controls, Frontstages, Content Groups,
  * Content Layouts, Tasks and Workflows.
  */
 export class ConfigurableUiManager {
   private static _registeredControls: { [classId: string]: new (info: ConfigurableCreateInfo, options: any) => ConfigurableUiElement } = {};
-
-  private static _commonItemMap: ItemMap = new ItemMap();
 
   /** Initializes the ConfigurableUiManager and registers core controls. */
   public static initialize() {
@@ -61,29 +35,11 @@ export class ConfigurableUiManager {
     ConfigurableUiManager.registerControl("SheetNavigationAid", SheetNavigationAidControl);
     ConfigurableUiManager.registerControl("CubeNavigationAid", CubeNavigationAidControl);
 
+    // Initialize SyncUiEventDispatcher so it can register event callbacks.
+    SyncUiEventDispatcher.initialize();
+
     // Initialize the FrontstageManager
     FrontstageManager.initialize();
-  }
-
-  /** Loads common Group, Tool and Command items into the item map.
-   * @param itemPropsList list of common items to load
-   */
-  public static loadCommonItems(itemPropsList: ItemPropsList): void {
-    this._commonItemMap.loadItems(itemPropsList);
-  }
-
-  /** Adds a common Group, Tool and Command items into the item map.
-   * @param itemPropsList list of common items to load
-   */
-  public static addCommonItem(itemDef: ItemDefBase): void {
-    this._commonItemMap.addItem(itemDef);
-  }
-
-  /** Gets the map of common items.
-   * @returns An [[ItemMap]] containing the common items
-   */
-  public static get commonItems(): ItemMap {
-    return this._commonItemMap;
   }
 
   /** Finds a FrontstageDef, given its id.
@@ -95,23 +51,6 @@ export class ConfigurableUiManager {
     if (frontstageDef && frontstageDef instanceof FrontstageDef)
       return frontstageDef;
     return undefined;
-  }
-
-  /** Finds a Group, Tool or Command item by looking in the active Frontstage first then the common items.
-   * @param id  the id of the item to find
-   * @returns the [[ItemDefBase]] of the item with the given id, or undefined if not found
-   */
-  public static findItem(id: string): ItemDefBase | undefined {
-    let item: ItemDefBase | undefined;
-
-    if (FrontstageManager.activeFrontstageDef) {
-      item = FrontstageManager.activeFrontstageDef.findItem(id);
-    }
-
-    if (item === undefined && this._commonItemMap)
-      item = this._commonItemMap.get(id);
-
-    return item;
   }
 
   /** Registers a control implementing the [[ConfigurableUiElement]] interface.

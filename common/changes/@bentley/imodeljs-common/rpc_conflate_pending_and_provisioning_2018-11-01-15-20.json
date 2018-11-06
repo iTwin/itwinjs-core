@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Do not diffentiate between backend provisioning and imodel downloading state in RPC wire format (202 for all).",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}

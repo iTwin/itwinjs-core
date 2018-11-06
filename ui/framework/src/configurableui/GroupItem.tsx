@@ -6,11 +6,11 @@
 
 import * as React from "react";
 
+import { ActionButtonItemDef } from "./Item";
 import { ItemDefBase } from "./ItemDefBase";
 import { GroupItemProps, AnyItemDef } from "./ItemProps";
-import { Icon, IconInfo } from "./IconLabelSupport";
+import { Icon } from "./IconComponent";
 import { ItemList, ItemMap } from "./ItemFactory";
-import { ConfigurableUiManager } from "./ConfigurableUiManager";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 import HistoryTray, { History, DefaultHistoryManager, HistoryEntry } from "@bentley/ui-ninezone/lib/toolbar/item/expandable/history/Tray";
@@ -29,22 +29,22 @@ import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
 /** An Item that opens a group of items.
  */
-export class GroupItemDef extends ItemDefBase {
+export class GroupItemDef extends ActionButtonItemDef {
   public groupId: string;
   public direction: Direction;
   public itemsInColumn: number;
-  private _items: AnyItemDef[];
+  public items: AnyItemDef[];
   private _itemList!: ItemList;
   private _itemMap!: ItemMap;
 
-  constructor(groupItemDef: GroupItemProps) {
-    super(groupItemDef);
+  constructor(groupItemProps: GroupItemProps) {
+    super(groupItemProps);
 
-    this.groupId = (groupItemDef.groupId !== undefined) ? groupItemDef.groupId : "";
-    this.direction = (groupItemDef.direction !== undefined) ? groupItemDef.direction : Direction.Bottom;
-    this.itemsInColumn = (groupItemDef.itemsInColumn !== undefined) ? groupItemDef.itemsInColumn : 7;
+    this.groupId = (groupItemProps.groupId !== undefined) ? groupItemProps.groupId : "";
+    this.direction = (groupItemProps.direction !== undefined) ? groupItemProps.direction : Direction.Bottom;
+    this.itemsInColumn = (groupItemProps.itemsInColumn !== undefined) ? groupItemProps.itemsInColumn : 7;
 
-    this._items = groupItemDef.items;
+    this.items = groupItemProps.items;
   }
 
   public get id(): string {
@@ -58,17 +58,9 @@ export class GroupItemDef extends ItemDefBase {
     this._itemList = new ItemList();
     this._itemMap = new ItemMap();
 
-    this._items.map((value, _index) => {
-      let id: string;
-      let item: ItemDefBase | undefined;
-
-      if (typeof value === "string") {
-        id = value;
-        item = ConfigurableUiManager.findItem(value);
-      } else {
-        item = value;
-        id = item.id;
-      }
+    this.items.map((value, _index) => {
+      const item: ItemDefBase | undefined = value;
+      const id: string = item ? item.id : "";
 
       if (item) {
         this._itemList.addItem(item);
@@ -117,7 +109,7 @@ interface HistoryItem {
 }
 
 interface ToolGroupItem {
-  iconInfo: IconInfo;
+  iconSpec?: string | React.ReactNode;
   label: string;
   trayId?: string;
 }
@@ -151,7 +143,7 @@ interface State {
  */
 class GroupItem extends React.Component<Props, State> {
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<State>;
 
   constructor(props: Props, context?: any) {
@@ -218,6 +210,8 @@ class GroupItem extends React.Component<Props, State> {
   }
 
   public render(): React.ReactNode {
+    const icon = <Icon iconSpec={this.props.groupItemDef.iconSpec} />;
+
     return (
       <ExpandableItem
         {...this.props}
@@ -229,9 +223,7 @@ class GroupItem extends React.Component<Props, State> {
         <ToolbarIcon
           title={this.state.groupItemDef.label}
           onClick={() => this._toggleIsToolGroupOpen()}
-          icon={
-            <Icon iconInfo={this.state.groupItemDef.iconInfo} />
-          }
+          icon={icon}
         />
       </ExpandableItem>
     );
@@ -263,7 +255,7 @@ class GroupItem extends React.Component<Props, State> {
       },
       () => {
         const childItem = this.state.groupItemDef.getItemById(itemKey);
-        if (childItem)
+        if (childItem && childItem instanceof ActionButtonItemDef)
           childItem.execute();
       },
     );
@@ -280,7 +272,7 @@ class GroupItem extends React.Component<Props, State> {
       },
       () => {
         const childItem = this.state.groupItemDef.getItemById(item.itemKey);
-        if (childItem)
+        if (childItem && childItem instanceof ActionButtonItemDef)
           childItem.execute();
       },
     );
@@ -301,6 +293,7 @@ class GroupItem extends React.Component<Props, State> {
             const tray = this.state.trays.get(entry.item.trayKey)!;
             const column = tray.columns.get(entry.item.columnIndex)!;
             const item = column.items.get(entry.item.itemKey)!;
+            const icon = <Icon iconSpec={item.iconSpec} />;
 
             return (
               <HistoryIcon
@@ -308,7 +301,7 @@ class GroupItem extends React.Component<Props, State> {
                 onClick={() => this._handleOnHistoryItemClick(entry.item)}
                 title={item.label}
               >
-                <Icon iconInfo={item.iconInfo} />
+                {icon}
               </HistoryIcon>
             );
           })
@@ -329,6 +322,8 @@ class GroupItem extends React.Component<Props, State> {
           <GroupColumn key={columnIndex}>
             {Array.from(column.items.keys()).map((itemKey) => {
               const item = column.items.get(itemKey)!;
+              const icon = <Icon iconSpec={item.iconSpec} />;
+
               const trayId = item.trayId;
               if (trayId)
                 return (
@@ -336,9 +331,7 @@ class GroupItem extends React.Component<Props, State> {
                     key={itemKey}
                     ref={itemKey}
                     label={item.label}
-                    icon={
-                      <Icon iconInfo={item.iconInfo} />
-                    }
+                    icon={icon}
                     onClick={() => this.setState((prevState) => {
                       return {
                         ...prevState,
@@ -354,9 +347,7 @@ class GroupItem extends React.Component<Props, State> {
                   ref={itemKey}
                   label={item.label}
                   onClick={() => this.handleToolGroupItemClicked(this.state.trayId, columnIndex, itemKey)}
-                  icon={
-                    <Icon iconInfo={item.iconInfo} />
-                  }
+                  icon={icon}
                 />
               );
             })}
@@ -405,7 +396,7 @@ export interface GroupItemState {
  */
 export class GroupButton extends React.Component<GroupItemProps, GroupItemState> {
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<GroupItemState>;
 
   constructor(props: GroupItemProps, context?: any) {
@@ -416,6 +407,9 @@ export class GroupButton extends React.Component<GroupItemProps, GroupItemState>
   }
 
   public render(): React.ReactNode {
+    if (!this.state.groupItemDef || !this.state.groupItemDef.resolveItems)
+      return null;
+
     this.state.groupItemDef.resolveItems();
 
     return (
@@ -429,7 +423,7 @@ export class GroupButton extends React.Component<GroupItemProps, GroupItemState>
 
   public static getDerivedStateFromProps(newProps: GroupItemProps, state: GroupItemState) {
     if (newProps !== state.groupItemProps) {
-      return { groupItemDef: new GroupItemDef(newProps), groupItemProps: newProps };
+      return { groupItemProps: new GroupItemDef(newProps), groupItemDef: newProps };
     }
 
     return null;

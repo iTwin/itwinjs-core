@@ -8,7 +8,7 @@ import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodeKey, NodePathElement, HierarchyRequestOptions } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
+import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
 import { PageOptions } from "@bentley/ui-components/lib/common/PageOptions";
 import { createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
@@ -53,32 +53,32 @@ export default class PresentationTreeDataProvider implements IPresentationTreeDa
   }
 
   /**
-   * Returns the root nodes.
-   * @param pageOptions Information about the requested page of data.
-   */
-  public getRootNodes = _.memoize(async (pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
-    const nodes = await Presentation.presentation.getRootNodes({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) });
-    return createTreeNodeItems(nodes);
-  }, MemoizationHelpers.getRootNodesKeyResolver);
-
-  /**
-   * Returns the total number of root nodes.
-   */
-  public getRootNodesCount = _.memoize(async (): Promise<number> => {
-    return await Presentation.presentation.getRootNodesCount(this.createRequestOptions());
-  });
-
-  /**
-   * Returns child nodes.
+   * Returns nodes
    * @param parentNode The parent node to return children for.
    * @param pageOptions Information about the requested page of data.
    */
-  public getChildNodes = _.memoize(async (parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> => {
-    const parentKey = this.getNodeKey(parentNode);
-    const nodes = await Presentation.presentation.getChildren({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
-    const items = createTreeNodeItems(nodes, parentNode.id);
-    return items;
-  }, MemoizationHelpers.getChildNodesKeyResolver);
+  public getNodes = _.memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> => {
+    if (parentNode) {
+      const parentKey = this.getNodeKey(parentNode);
+      const childNodes = await Presentation.presentation.getChildren({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) }, parentKey);
+      return createTreeNodeItems(childNodes, parentNode.id);
+    }
+    const rootNodes = await Presentation.presentation.getRootNodes({ ...this.createRequestOptions(), paging: pageOptionsUiToPresentation(pageOptions) });
+    return createTreeNodeItems(rootNodes);
+  }, MemoizationHelpers.getNodesKeyResolver);
+
+  /**
+   * Returns the total number of nodes
+   * @param parentNode The parent node to return children count for.
+   */
+  public getNodesCount = _.memoize(async (parentNode?: TreeNodeItem): Promise<number> => {
+    if (parentNode) {
+      const parentKey = this.getNodeKey(parentNode);
+      return await Presentation.presentation.getChildrenCount(this.createRequestOptions(), parentKey);
+    } else {
+      return await Presentation.presentation.getRootNodesCount(this.createRequestOptions());
+    }
+  }, MemoizationHelpers.getNodesCountKeyResolver);
 
   /**
    * Returns filtered node paths.
@@ -87,15 +87,6 @@ export default class PresentationTreeDataProvider implements IPresentationTreeDa
   public getFilteredNodePaths = async (filter: string): Promise<NodePathElement[]> => {
     return Presentation.presentation.getFilteredNodePaths(this.createRequestOptions(), filter);
   }
-
-  /**
-   * Returns the total number of child nodes.
-   * @param parentNode The parent node to return children count for.
-   */
-  public getChildNodesCount = _.memoize(async (parentNode: TreeNodeItem): Promise<number> => {
-    const parentKey = this.getNodeKey(parentNode);
-    return await Presentation.presentation.getChildrenCount(this.createRequestOptions(), parentKey);
-  }, MemoizationHelpers.getChildNodesCountKeyResolver);
 }
 
 class MemoizationHelpers {
@@ -104,10 +95,9 @@ class MemoizationHelpers {
       return "0/0";
     return `${(pageOptions.start) ? pageOptions.start : 0}/${(pageOptions.size) ? pageOptions.size : 0}`;
   }
-  public static createKeyForTreeNodeItem(item: TreeNodeItem) { return item.id; }
-  public static getRootNodesKeyResolver(pageOptions?: PageOptions) { return MemoizationHelpers.createKeyForPageOptions(pageOptions); }
-  public static getChildNodesKeyResolver(parent: TreeNodeItem, pageOptions?: PageOptions) {
+  public static createKeyForTreeNodeItem(item?: TreeNodeItem) { return item ? item.id : ""; }
+  public static getNodesKeyResolver(parent?: TreeNodeItem, pageOptions?: PageOptions) {
     return `${MemoizationHelpers.createKeyForTreeNodeItem(parent)}/${MemoizationHelpers.createKeyForPageOptions(pageOptions)}`;
   }
-  public static getChildNodesCountKeyResolver(item: TreeNodeItem) { return MemoizationHelpers.createKeyForTreeNodeItem(item); }
+  public static getNodesCountKeyResolver(parent?: TreeNodeItem) { return MemoizationHelpers.createKeyForTreeNodeItem(parent); }
 }

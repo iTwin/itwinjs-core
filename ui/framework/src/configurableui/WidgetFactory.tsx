@@ -16,7 +16,7 @@ export class WidgetDefFactory {
    * @returns  The created WidgetDef
    */
   public static create(widgetProps: WidgetDefProps): WidgetDef {
-    if ("appButtonId" in widgetProps) {
+    if ("appButton" in widgetProps) {
       return new ToolWidgetDef(widgetProps);
     } else if ("navigationAidId" in widgetProps) {
       return new NavigationWidgetDef(widgetProps);

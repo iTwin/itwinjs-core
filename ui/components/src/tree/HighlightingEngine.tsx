@@ -6,7 +6,7 @@
 
 import Highlighter from "react-highlight-words";
 import * as React from "react";
-import { InspireTreeNode } from "./component/BeInspireTree";
+import { BeInspireTreeNode } from "./component/BeInspireTree";
 import "./HighlightingEngine.scss";
 
 /** @hidden */
@@ -18,6 +18,7 @@ export interface ActiveResultNode {
 /** @hidden */
 export interface IScrollableElement {
   scrollToElement: (elementBoundingBox: ClientRect | DOMRect) => void;
+  getElementsByClassName: (className: string) => Element[];
 }
 
 /** @hidden */
@@ -27,54 +28,58 @@ export interface HighlightableTreeProps {
 }
 
 /** @hidden */
+export interface HighlightableTreeNodeProps {
+  searchText: string;
+  activeResultIndex?: number;
+}
+
+/** @hidden */
 export default class HighlightingEngine {
   private _searchText: string;
   private _activeResultNode?: ActiveResultNode;
-  private _activeResultReactDom: React.RefObject<HTMLSpanElement> = React.createRef();
 
   constructor(props: HighlightableTreeProps) {
     this._searchText = props.searchText;
     this._activeResultNode = props.activeResultNode;
   }
 
-  public isNodeActive(node: InspireTreeNode) {
+  public isNodeActive(node: BeInspireTreeNode<any>) {
     return this._activeResultNode && node.id === this._activeResultNode.id;
   }
 
-  public getActiveNodeIndex(node: InspireTreeNode) {
+  public getActiveNodeIndex(node: BeInspireTreeNode<any>) {
     return this.isNodeActive(node) ? this._activeResultNode!.index : undefined;
   }
 
-  public scrollToActiveNode(scrollableContainer: IScrollableElement) {
-    if (this._activeResultReactDom.current) {
-      // Workaround for edge scrollTo issue https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/15534521/
-      if (!Element.prototype.scrollTo) {
-        this._activeResultReactDom.current.scrollIntoView();
-        return;
-      }
-      const highlightedElement = this._activeResultReactDom.current.getElementsByClassName("ui-components-activehighlight")[0];
+  public static scrollToActiveNode(scrollableContainer: IScrollableElement) {
+    const scrollTo = scrollableContainer.getElementsByClassName("ui-components-activehighlight");
+    if (scrollTo.length === 0)
+      return;
 
-      if (highlightedElement)
-        scrollableContainer.scrollToElement(highlightedElement.getBoundingClientRect());
+    if (!Element.prototype.scrollTo) {
+      // workaround for Edge scrollTo issue https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/15534521/
+      scrollTo[0].scrollIntoView();
+    } else {
+      scrollableContainer.scrollToElement(scrollTo[0].getBoundingClientRect());
     }
   }
 
-  public getNodeLabelComponent(node: InspireTreeNode) {
-    if (node.text && this._searchText) {
-      const activeIndex = this.getActiveNodeIndex(node);
+  public createRenderProps(node: BeInspireTreeNode<any>): HighlightableTreeNodeProps {
+    return {
+      searchText: this._searchText,
+      activeResultIndex: this.getActiveNodeIndex(node),
+    };
+  }
 
-      return (
-        <span ref={activeIndex !== undefined ? this._activeResultReactDom : undefined}>
-          <Highlighter
-            searchWords={[this._searchText]}
-            activeIndex={activeIndex as any} // .d.ts file seems to be wrong, doesn't work if it's a string
-            activeClassName="ui-components-activehighlight"
-            autoEscape={true}
-            textToHighlight={node.text}
-          />
-        </span>
-      );
-    }
-    return node.text;
+  public static renderNodeLabel(text: string, props: HighlightableTreeNodeProps): React.ReactNode {
+    return (
+      <Highlighter
+        searchWords={[props.searchText]}
+        activeIndex={props.activeResultIndex as any} // .d.ts file seems to be wrong, doesn't work if it's a string
+        activeClassName="ui-components-activehighlight"
+        autoEscape={true}
+        textToHighlight={text}
+      />
+    );
   }
 }

@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import { TreeNodeItem, TreeDataProvider, TreeDataChangeEvent } from "./TreeDataProvider";
+import { TreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "./TreeDataProvider";
 import { PageOptions } from "../common/PageOptions";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 /**
  * Used by [[SimpleTreeDataProvider]].
@@ -17,21 +18,23 @@ export type SimpleTreeDataProviderHierarchy = Map<string | undefined, TreeNodeIt
 /**
  * A tree data provider using [[SimpleTreeDataProviderHierarchy]].
  */
-export default class SimpleTreeDataProvider implements TreeDataProvider {
+export default class SimpleTreeDataProvider implements ITreeDataProvider {
   private _hierarchy: SimpleTreeDataProviderHierarchy;
 
   public constructor(hierarchy: SimpleTreeDataProviderHierarchy) {
     this._hierarchy = hierarchy;
   }
 
-  public onTreeNodeChanged: TreeDataChangeEvent = new TreeDataChangeEvent();
+  public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
 
-  private getNodes(parentId?: string, pageOptions?: PageOptions): ReadonlyArray<Readonly<TreeNodeItem>> {
+  private getNodesByParentId(parentId?: string, pageOptions?: PageOptions): TreeNodeItem[] {
     const nodes = this._hierarchy.get(parentId);
+
     if (!nodes)
       return [];
+
     if (!pageOptions)
-      return nodes;
+      return [...nodes];
 
     let pageEndIndex: number | undefined;
     if (pageOptions.size !== undefined && pageOptions.size !== 0) {
@@ -41,20 +44,12 @@ export default class SimpleTreeDataProvider implements TreeDataProvider {
     return nodes.slice(pageOptions.start, pageEndIndex);
   }
 
-  public async getRootNodes(pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {
-    return this.getNodes(undefined, pageOptions);
+  public async getNodes(parent?: TreeNodeItem, pageOptions?: PageOptions): Promise<TreeNodeItem[]> {
+    return this.getNodesByParentId(parent ? parent.id : undefined, pageOptions);
   }
 
-  public async getRootNodesCount(): Promise<number> {
-    return this.getNodes().length;
-  }
-
-  public async getChildNodes(parentNode: TreeNodeItem, pageOptions?: PageOptions): Promise<ReadonlyArray<Readonly<TreeNodeItem>>> {
-    return this.getNodes(parentNode.id, pageOptions);
-  }
-
-  public async getChildNodesCount(parentNode: TreeNodeItem): Promise<number> {
-    return this.getNodes(parentNode.id).length;
+  public async getNodesCount(parent?: TreeNodeItem): Promise<number> {
+    return this.getNodesByParentId(parent ? parent.id : undefined).length;
   }
 
 }

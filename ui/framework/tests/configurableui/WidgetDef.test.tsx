@@ -27,7 +27,7 @@ describe("WidgetDef", () => {
       defaultState: WidgetState.Open,
       priority: 100,
       isFreeform: true,
-      iconClass: "icon-home",
+      iconSpec: "icon-home",
       labelKey: "SampleApp:Test.my-label",
       tooltipKey: "SampleApp:Test.my-tooltip",
       isToolSettings: true,
@@ -52,7 +52,7 @@ describe("WidgetDef", () => {
 
     expect(widgetDef.label).to.eq("Test.my-label");
     expect(widgetDef.tooltip).to.eq("Test.my-tooltip");
-    expect(widgetDef.iconInfo.iconClass).to.eq("icon-home");
+    expect(widgetDef.iconSpec).to.eq("icon-home");
   });
 
   it("registerControl & widgetControl using same classId", () => {

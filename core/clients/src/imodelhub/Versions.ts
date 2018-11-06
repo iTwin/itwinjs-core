@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 
 import { AccessToken } from "../Token";
 import { Logger, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
@@ -20,7 +20,7 @@ const loggingCategory = "imodeljs-clients.imodelhub";
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Version", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Version extends WsgInstance {
-  @ECJsonTypeMap.propertyToJson("wsg", "instanceId", new GuidSerializer())
+  @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
   public id?: GuidString;
 
   /** Description of the named Version. */
@@ -44,11 +44,11 @@ export class Version extends WsgInstance {
   public changeSetId?: string;
 
   /** Id of the [[SmallThumbnail]] of the named Version. */
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId", new GuidSerializer())
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[SmallThumbnail].instanceId")
   public smallThumbnailId?: GuidString;
 
   /** Id of the [[LargeThumbnail]] of the named Version. */
-  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[LargeThumbnail].instanceId", new GuidSerializer())
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[LargeThumbnail].instanceId")
   public largeThumbnailId?: GuidString;
 }
 

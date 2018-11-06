@@ -4,55 +4,59 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
-import IconLabelSupport, { IconInfo } from "./IconLabelSupport";
+import { UiFramework } from "../UiFramework";
 import { ItemProps } from "./ItemProps";
 
-// -----------------------------------------------------------------------------
-// ItemBase and subclasses
-// -----------------------------------------------------------------------------
+/** Base state for any 'stateful' React component */
+export interface BaseItemState {
+  isVisible?: boolean;        // Default - true
+  isEnabled?: boolean;        // Default - true
+  isActive?: boolean;         // Default - false
+}
 
-/** The base class for Items.
- */
+/** The base class for Items. */
 export abstract class ItemDefBase {
-  public isVisible: boolean = true;
-  public isVisibleExpr: string = "";
-  public isEnabled: boolean = true;
-  public isEnabledExpr: string = "";
-  public featureId: string = "";
-  public itemSyncMsg: string = "";
-  public isPressed: boolean = false;
+  public isVisible?: boolean = true;
+  public isEnabled?: boolean = true;
+  public isPressed?: boolean = false;
+  public featureId?: string = "";
   public applicationData?: any;
 
-  private _iconLabelSupport!: IconLabelSupport;
+  public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
+  public stateSyncIds: string[] = [];
+
+  public label: string = "";
+  public tooltip: string = "";
+  public iconSpec?: string | React.ReactNode;
+  public iconElement?: React.ReactNode;
+
+  public static initializeDef(me: ItemDefBase, itemProps: ItemProps): void {
+
+    me.isVisible = (itemProps.isVisible !== undefined) ? itemProps.isVisible : true;
+    me.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true;
+    me.isPressed = (itemProps.isPressed !== undefined) ? itemProps.isPressed : false;
+
+    if (itemProps.featureId !== undefined) me.featureId = itemProps.featureId;
+    if (itemProps.applicationData !== undefined) me.applicationData = itemProps.applicationData;
+    if (itemProps.iconSpec) me.iconSpec = itemProps.iconSpec;
+
+    if (itemProps.label)
+      me.label = itemProps.label;
+    else if (itemProps.labelKey)
+      me.label = UiFramework.i18n.translate(itemProps.labelKey);
+
+    if (itemProps.tooltip)
+      me.tooltip = itemProps.tooltip;
+    else if (itemProps.tooltipKey)
+      me.tooltip = UiFramework.i18n.translate(itemProps.tooltipKey);
+  }
 
   constructor(itemProps?: ItemProps) {
     if (itemProps) {
-      this.isVisible = (itemProps.isVisible !== undefined) ? itemProps.isVisible : true;
-      // isVisibleExpr?: string;
-      this.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true;
-      // isEnabledExpr?: string;
-
-      if (itemProps.featureId !== undefined)
-        this.featureId = itemProps.featureId;
-      if (itemProps.itemSyncMsg !== undefined)
-        this.itemSyncMsg = itemProps.itemSyncMsg;
-      if (itemProps.applicationData !== undefined)
-        this.applicationData = itemProps.applicationData;
-
-      this._iconLabelSupport = new IconLabelSupport(itemProps);
+      ItemDefBase.initializeDef(this, itemProps);
     }
-
-    this.execute = this.execute.bind(this);
   }
 
-  public abstract get id(): string;
-  public abstract execute(): void;
-  public abstract toolbarReactNode(index?: number): React.ReactNode;
-
-  public get label(): string { return this._iconLabelSupport.label; }
-  public get tooltip(): string { return this._iconLabelSupport.tooltip; }
-  public get iconInfo(): IconInfo { return this._iconLabelSupport.iconInfo; }
   public get trayId() { return undefined; }
+  public abstract get id(): string;
 }
-
-export default ItemDefBase;

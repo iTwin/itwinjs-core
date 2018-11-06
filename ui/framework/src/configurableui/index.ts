@@ -5,6 +5,7 @@
 
 export * from "./AppNotificationManager";
 export * from "./Backstage";
+export * from "./ActionItemButton";
 export * from "./ConfigurableUiContent";
 export * from "./ConfigurableUiControl";
 export * from "./ConfigurableUiManager";
@@ -22,15 +23,15 @@ export * from "./FrontstageDef";
 export * from "./FrontstageManager";
 export * from "./FrontstageZone";
 export * from "./GroupItem";
-export * from "./IconLabelSupport";
+export * from "./IconComponent";
 export * from "./Item";
 export * from "./ItemDefBase";
+export * from "./ToolButton";
 export * from "./ItemFactory";
 export * from "./ItemProps";
 export * from "./KeyboardShortcut";
 export * from "./MessageManager";
 export * from "./ModalDialogManager";
-export * from "./DragDropLayerManager";
 export * from "./ModalFrontstage";
 export * from "./NavigationAidControl";
 export * from "./NavigationWidget";

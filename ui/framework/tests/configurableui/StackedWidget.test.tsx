@@ -6,7 +6,7 @@ import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { FrontstageProps, ZoneState, WidgetState, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, FrontstageManager, FrontstageComposer, ContentGroup, ContentLayoutDef } from "../../src";
+import { FrontstageDefProps, ZoneState, WidgetState, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, FrontstageManager, FrontstageComposer, ContentGroup, ContentLayoutDef } from "../../src";
 
 describe("StackedWidget", () => {
 
@@ -38,7 +38,7 @@ describe("StackedWidget", () => {
       priority: 100,
     });
 
-    const frontstageProps: FrontstageProps = {
+    const frontstageProps: FrontstageDefProps = {
       id: "StackedWidget-Frontstage",
       defaultToolId: "PlaceLine",
       defaultLayout: myContentLayout,
@@ -51,13 +51,13 @@ describe("StackedWidget", () => {
           {
             classId: "StackedWidgetTestWidget",
             defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
+            iconSpec: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
           {
             classId: "StackedWidgetTestWidget",
             defaultState: WidgetState.Open,
-            iconClass: "icon-placeholder",
+            iconSpec: "icon-placeholder",
             labelKey: "SampleApp:Test.my-label",
           },
         ],

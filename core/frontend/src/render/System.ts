@@ -12,7 +12,7 @@ import {
   QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags, AnalysisStyle,
 } from "@bentley/imodeljs-common";
 import { SkyBox } from "../DisplayStyleState";
-import { ImageUtil } from "../ImageUtil";
+import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { BeButtonEvent, BeWheelEvent } from "../tools/Tool";
@@ -521,7 +521,7 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   /** @hidden */
-  public abstract readImage(rect: ViewRect, targetSize: Point2d): ImageBuffer | undefined;
+  public abstract readImage(rect: ViewRect, targetSize: Point2d, flipVertically: boolean): ImageBuffer | undefined;
 }
 
 /** Describes a texture loaded from an HTMLImageElement */
@@ -699,7 +699,7 @@ export abstract class RenderSystem implements IDisposable {
       return undefined;
 
     const imageSource = new ImageSource(base64StringToUint8Array(textureProps.data as string), format);
-    const imagePromise = ImageUtil.extractImage(imageSource);
+    const imagePromise = imageElementFromImageSource(imageSource);
     return imagePromise.then((image: HTMLImageElement) => ({ image, format }));
   }
 
@@ -716,12 +716,12 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a new texture from an [[ImageBuffer]]. */
   public createTextureFromImageBuffer(_image: ImageBuffer, _imodel: IModelConnection, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
-  /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[ImageUtil.extractImage]] */
+  /** Create a new texture from an HTML image. Typically the image was extracted from a binary representation of a jpeg or png via [[imageElementFromImageSource]] */
   public createTextureFromImage(_image: HTMLImageElement, _hasAlpha: boolean, _imodel: IModelConnection | undefined, _params: RenderTexture.Params): RenderTexture | undefined { return undefined; }
 
   /** Create a new texture from an [[ImageSource]]. */
   public async createTextureFromImageSource(source: ImageSource, imodel: IModelConnection | undefined, params: RenderTexture.Params): Promise<RenderTexture | undefined> {
-    return ImageUtil.extractImage(source).then((image) => IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined);
+    return imageElementFromImageSource(source).then((image) => IModelApp.hasRenderSystem ? this.createTextureFromImage(image, ImageSourceFormat.Png === source.format, imodel, params) : undefined);
   }
 
   /** Create a new texture from a cube of HTML images.

@@ -6,12 +6,13 @@
 
 import * as React from "react";
 
-import { IconLabelProps, IconLabelSupport, IconInfo } from "./IconLabelSupport";
-import { ConfigurableUiManager, ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
+import { ItemProps } from "./ItemProps";
+import { ConfigurableUiManager } from "./ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
+import { CommandItemDef } from "../configurableui/Item";
+import { ItemDefBase } from "./ItemDefBase";
 
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 
@@ -42,7 +43,7 @@ export enum WidgetType {
 
 /** Properties for a Widget.
  */
-export interface WidgetDefProps extends IconLabelProps {
+export interface WidgetDefProps extends ItemProps {
   id?: string;
 
   classId?: string | ConfigurableUiControlConstructor;
@@ -64,16 +65,14 @@ export interface WidgetDefProps extends IconLabelProps {
 /** Properties for a Toolbar Widget.
  */
 export interface ToolbarWidgetProps extends WidgetDefProps {
-  horizontalIds?: string[];  // Item Ids
   horizontalDirection?: Direction;
-  verticalIds?: string[];    // Item Ids
   verticalDirection?: Direction;
 }
 
 /** Properties for a Tool Widget.
  */
 export interface ToolWidgetProps extends ToolbarWidgetProps {
-  appButtonId?: string;
+  appButton?: CommandItemDef;
 }
 
 /** Properties for a Navigation Widget.
@@ -92,7 +91,7 @@ export type AnyWidgetProps = WidgetDefProps | ToolWidgetProps | NavigationWidget
 
 /** A Widget Definition in the 9-Zone Layout system.
  */
-export class WidgetDef {
+export class WidgetDef extends ItemDefBase {
   private static _sId = 0;
 
   public id: string;
@@ -112,19 +111,17 @@ export class WidgetDef {
 
   public applicationData?: any;
 
-  private _iconLabelSupport: IconLabelSupport;
   private _widgetReactNode: React.ReactNode;
   private _widgetControl!: WidgetControl;
 
   constructor(widgetProps?: WidgetDefProps) {
+    super(widgetProps);
     if (widgetProps && widgetProps.id !== undefined)
       this.id = widgetProps.id;
     else {
       WidgetDef._sId++;
       this.id = "Widget-" + WidgetDef._sId;
     }
-
-    this._iconLabelSupport = new IconLabelSupport();
 
     if (widgetProps) {
       if (widgetProps.classId !== undefined)
@@ -152,23 +149,13 @@ export class WidgetDef {
       if (widgetProps.applicationData !== undefined)
         this.applicationData = widgetProps.applicationData;
 
-      this._iconLabelSupport = new IconLabelSupport(widgetProps);
-
       if (widgetProps.reactElement !== undefined)
         this._widgetReactNode = widgetProps.reactElement;
     }
   }
 
-  public get label(): string { return this._iconLabelSupport.label; }
-  public get tooltip(): string { return this._iconLabelSupport.tooltip; }
-  public get iconInfo(): IconInfo { return this._iconLabelSupport.iconInfo; }
-
   public get widgetControl(): WidgetControl | undefined {
     return this._widgetControl;
-  }
-
-  public set iconLabelSupport(iconLabelSupport: IconLabelSupport) {
-    this._iconLabelSupport = iconLabelSupport;
   }
 
   public getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined {
@@ -213,7 +200,6 @@ export class WidgetDef {
     this.widgetState = state;
     this.stateChanged = true;
     FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, oldWidgetState, newWidgetState: state });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.WidgetStateChanged);
   }
 
   public canShow(): boolean {

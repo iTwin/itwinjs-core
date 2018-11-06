@@ -2,6 +2,30 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.163.0",
+      "tag": "@bentley/imodeljs-frontend_v0.163.0",
+      "date": "Wed, 31 Oct 2018 20:55:37 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Get snap sprites and view cursors from a url"
+          },
+          {
+            "comment": "Move filterHit from PrimitveTool to InteractiveTool. PrimitiveTool docs."
+          },
+          {
+            "comment": "Support conversion of ImageBuffer to PNG."
+          },
+          {
+            "comment": "PrimitiveTool cursor fixes and wip markdown"
+          },
+          {
+            "comment": "Hide WIP ChangeCache methods on IModelConnection"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.162.0",
       "tag": "@bentley/imodeljs-frontend_v0.162.0",
       "date": "Wed, 24 Oct 2018 19:20:06 GMT",

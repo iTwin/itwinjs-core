@@ -11,7 +11,7 @@ import {
   IModelHubClientError,
 } from "../../";
 
-import { TestConfig } from "../TestConfig";
+import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { GuidString, Guid, IModelHubStatus, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
@@ -38,7 +38,7 @@ describe("iModelHubClient LockHandler", () => {
   const alctx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    accessToken = await utils.login();
+    accessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     // Does not create an imodel right now, but should in the future
     await utils.createIModel(accessToken, imodelName, undefined, true);
     imodelId = await utils.getIModelId(accessToken, imodelName);

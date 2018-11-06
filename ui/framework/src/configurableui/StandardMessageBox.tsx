@@ -34,7 +34,7 @@ export interface StandardMessageBoxState {
 /** StandardMessageBox React component displays a standard icon, message text and a standard button set in the lower right. */
 export class StandardMessageBox extends React.Component<StandardMessageBoxProps, StandardMessageBoxState> {
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<StandardMessageBoxState>;
 
   constructor(props: StandardMessageBoxProps) {

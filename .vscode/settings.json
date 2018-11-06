@@ -107,6 +107,7 @@
     "mixins",
     "mline",
     "modelid",
+    "modelselector",
     "modularized",
     "monorepo",
     "ninezone",
@@ -148,6 +149,7 @@
     "viewlet",
     "viewports",
     "viewstate",
+    "withispressed",
     "zbuffer"
   ],
   "typescript.tsdk": "node_modules\\typescript\\lib",

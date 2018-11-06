@@ -6,7 +6,7 @@
 
 import { Point2d, Point3d, XYAndZ } from "@bentley/geometry-core";
 import { ImageSource } from "@bentley/imodeljs-common";
-import { ImageUtil } from "./ImageUtil";
+import { imageElementFromImageSource, imageElementFromUrl } from "./ImageUtil";
 import { CanvasDecoration } from "./render/System";
 import { DecorateContext } from "./ViewContext";
 import { ScreenViewport } from "./Viewport";
@@ -41,12 +41,12 @@ export class Sprite {
    * @param src The ImageSource holding an image to create the texture for this Sprite.
    * @note This method creates the image from the ImageSource asynchronously.
    */
-  public fromImageSource(src: ImageSource): void { ImageUtil.extractImage(src).then((image) => this.onLoaded(image)); }
+  public fromImageSource(src: ImageSource): void { imageElementFromImageSource(src).then((image) => this.onLoaded(image)); }
 
   /** Initialize this Sprite from a URL
    * @param url The url of an image to load for this Sprite.
    */
-  public fromUrl(url: string): void { ImageUtil.fromUrl(url).then((image) => this.onLoaded(image)); }
+  public fromUrl(url: string): void { imageElementFromUrl(url).then((image) => this.onLoaded(image)); }
 }
 
 /** Icon sprites are loaded from .png files in the assets directory of imodeljs-native.

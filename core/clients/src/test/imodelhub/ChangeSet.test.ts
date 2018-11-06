@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import * as deepAssign from "deep-assign";
 
-import { TestConfig } from "../TestConfig";
+import { TestConfig, TestUsers } from "../TestConfig";
 
 import { AccessToken, IModelClient } from "../../";
 import {
@@ -72,7 +72,7 @@ describe("iModelHub ChangeSetHandler", () => {
 
   before(async function (this: Mocha.IHookCallbackContext) {
     this.enableTimeouts(false);
-    accessToken = await utils.login();
+    accessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
     iModelClient = utils.getDefaultClient();

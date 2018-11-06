@@ -1,83 +1,231 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
+ | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+ *--------------------------------------------------------------------------------------------*/
 
-import { TreeDataProvider, TreeDataChangeEvent, PageOptions, TreeNodeItem } from "../../src/index";
+import { BeEvent } from "@bentley/bentleyjs-core";
+import {
+  TreeNodeItem,
+  TreeDataChangesListener,
+  DelayLoadedTreeNodeItem, ITreeDataProvider, PageOptions, ImmediatelyLoadedTreeNodeItem,
+} from "../../src/index";
 
-interface MockTreeNodeItem extends TreeNodeItem {
-  children?: MockTreeNodeItem[];
+export enum TreeDragTypes {
+  Root = "root",
+  Child = "child",
 }
 
-const data: MockTreeNodeItem[] = [
+export interface DemoDragDropObject {
+  id: string;
+  label: string;
+  icon: string;
+  type: string;
+  description: string;
+  children?: DelayLoadedTreeNodeItem[];
+  parentId: string;
+}
+
+export let dataProviderRaw: DelayLoadedTreeNodeItem[] = [
   {
-    label: "Root 1", id: "66640415289992", description: "First root node", iconPath: "icon-clipboard-cut", hasChildren: true,
-    children: [
-      { label: "Child 1.1", id: "14056415405179", description: "First child node to first root node.", parentId: "66640415289992", iconPath: "icon-parallel-move", hasChildren: false },
-      { label: "Child 1.2", id: "13613905720638", description: "Second child node to first root node.", parentId: "66640415289992", iconPath: "icon-phone", hasChildren: false },
-      { label: "Child 1.3", id: "37567272482330", description: "Third child node to first root node.", parentId: "66640415289992", iconPath: "icon-technical-preview-bw", hasChildren: false },
-      { label: "Child 1.4", id: "76545451605244", description: "Fourth child node to first root node.", parentId: "66640415289992", iconPath: "icon-records", hasChildren: false },
-      { label: "Child 1.5", id: "59874551327032", description: "Fifth child node to first root node.", parentId: "66640415289992", iconPath: "icon-share", hasChildren: false },
-    ],
+    label: "Interface Node 1", id: "1", description: "First root node", icon: "icon-clipboard-cut", hasChildren: true,
+    extendedData: {
+      type: TreeDragTypes.Root,
+      children: [
+        { label: "Interface Node 1.1", id: "1.1", extendedData: { type: TreeDragTypes.Child }, description: "First child node to first root node.", parentId: "1", icon: "icon-parallel-move" },
+        { label: "Interface Node 1.2", id: "1.2", extendedData: { type: TreeDragTypes.Child }, description: "Fifth child node to first root node.", parentId: "1", icon: "icon-share" },
+      ],
+    },
   }, {
-    label: "Root 2", id: "66097988616707", description: "Second root node", iconPath: "icon-file-types-xls", hasChildren: true,
-    children: [
-      { label: "Child 2.1", id: "50938067331247", description: "First child node to second root node.", parentId: "66097988616707", iconPath: "icon-slice", hasChildren: false },
-      { label: "Child 2.2", id: "48370230776108", description: "Second child node to second root node.", parentId: "66097988616707", iconPath: "icon-deliverable", hasChildren: false },
-      {
-        label: "Child 2.3", id: "91325646187787", description: "Third child node to second root node.", parentId: "66097988616707", iconPath: "icon-chat-2", hasChildren: true,
-        children: [
-          { label: "Child 2.3.1", id: "1199839571660", description: "First child node to third child node of first root node.", parentId: "91325646187787", iconPath: "icon-checkmark", hasChildren: false },
-        ],
-      },
-      { label: "Child 2.4", id: "17293005347680", description: "Fourth child node to second root node.", parentId: "66097988616707", iconPath: "icon-attach", hasChildren: false },
-      { label: "Child 2.5", id: "13263543111312", description: "Fifth child node to second root node.", parentId: "66097988616707", iconPath: "icon-basket", hasChildren: false },
-    ],
+    label: "Interface Node 2", id: "2", description: "Second root node", icon: "icon-file-types-xls", hasChildren: true,
+    extendedData: {
+      type: TreeDragTypes.Root,
+      children: [
+        { label: "Interface Node 2.1", id: "2.1", extendedData: { type: TreeDragTypes.Child }, description: "First child node to second root node.", parentId: "2", icon: "icon-slice" },
+        {
+          label: "Interface Node 2.2", id: "2.2", description: "Third child node to second root node.", parentId: "2", icon: "icon-chat-2", hasChildren: true,
+          extendedData: {
+            type: TreeDragTypes.Child,
+            children: [
+              { label: "Interface Node 2.2.1", id: "2.2.1", extendedData: { type: TreeDragTypes.Child }, description: "First child node to third child node of first root node.", parentId: "2.2", icon: "icon-checkmark" },
+            ],
+          },
+        } as DelayLoadedTreeNodeItem,
+        { label: "Interface Node 2.5", id: "2.5", extendedData: { type: TreeDragTypes.Child }, description: "Fifth child node to second root node.", parentId: "2", icon: "icon-basket" },
+      ],
+    },
   },
 ];
 
-function getNodeById(nodes: MockTreeNodeItem | MockTreeNodeItem[], id: string): MockTreeNodeItem | undefined {
-  if (!("length" in nodes)) {
-    nodes = [nodes];
+export class DemoITreeDataProvider implements ITreeDataProvider {
+  public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
+  protected _data: DelayLoadedTreeNodeItem[];
+  constructor(data: DelayLoadedTreeNodeItem[]) {
+    this._data = data;
   }
-  for (const node of nodes) {
-    if (node.id === id)
-      return node;
-    if (node.children && node.children.length > 0) {
-      for (const child of node.children) {
-        const n = getNodeById(child, id);
-        if (n) return n;
-      }
+  public getNodes = async (parent?: TreeNodeItem, pageOptions?: PageOptions): Promise<TreeNodeItem[]> => {
+    let start = 0;
+    let end: number | undefined;
+    if (pageOptions !== undefined) {
+      if (pageOptions.start !== undefined)
+        start = pageOptions.start;
+      if (pageOptions.size !== undefined)
+        end = start + pageOptions.size;
     }
+    if (parent) {
+      if (parent && parent.extendedData && parent.extendedData.children)
+        return parent.extendedData.children.slice(start, end);
+      return [];
+    }
+    return this._data.slice(start, end);
   }
-  return undefined;
+
+  public getNodesCount = async (parent?: TreeNodeItem): Promise<number> => {
+    if (parent) {
+      if (parent && parent.extendedData && parent.extendedData.children)
+        return parent.extendedData.children.length;
+      return 0;
+    }
+    return this._data.length;
+  }
 }
 
-const treeDataChangeEvent = new TreeDataChangeEvent();
+export class DemoMutableITreeDataProvider extends DemoITreeDataProvider {
+  public insertNode = (parent: TreeNodeItem | undefined, child: TreeNodeItem, index: number = -1): void => {
+    let nodes = this._data;
+    if (parent) {
+      if (!parent.extendedData) parent.extendedData = {};
+      if (!parent.extendedData.children) parent.extendedData.children = [];
+      nodes = parent.extendedData.children;
+    }
+    if (index !== -1)
+      nodes.splice(index, 0, child);
+    else
+      nodes.push(child);
+    if (parent) {
+      const p = parent as DelayLoadedTreeNodeItem;
+      p.hasChildren = true;
+    }
+    this.onTreeNodeChanged.raiseEvent([parent]);
+  }
 
-export const mockTreeDataProvider: TreeDataProvider = {
-  onTreeNodeChanged: treeDataChangeEvent,
-  getRootNodes: async (_pageOptions: PageOptions): Promise<TreeNodeItem[]> => {
-    return data.map((node: any) => {
-      return node;
-    });
-    return [];
+  public removeNode = (parent: TreeNodeItem | undefined, child: TreeNodeItem): void => {
+    let nodes = this._data;
+    if (parent) {
+      if (!parent.extendedData || !parent.extendedData.children) return;
+      nodes = parent.extendedData.children;
+    }
+    const idx = nodes.findIndex((e) => e.id === child.id);
+    if (idx !== -1) {
+      nodes.splice(idx, 1);
+      if (parent && nodes.length === 0) {
+        const p = parent as DelayLoadedTreeNodeItem;
+        p.hasChildren = false;
+      }
+      this.onTreeNodeChanged.raiseEvent([parent]);
+    }
+  }
+
+  public moveNode = (parent: TreeNodeItem | undefined, newParent: TreeNodeItem | undefined, child: TreeNodeItem, newIndex: number = -1): void => {
+    let nodes = this._data;
+    if (parent) {
+      if (!parent.extendedData || !parent.extendedData.children) return;
+      nodes = parent.extendedData.children;
+    }
+    let toNodes = this._data;
+    if (newParent) {
+      if (!newParent.extendedData) newParent.extendedData = {};
+      if (!newParent.extendedData.children) newParent.extendedData.children = [];
+      toNodes = newParent.extendedData.children;
+    }
+    const index = nodes.findIndex((e) => e.id === child.id);
+    if (parent === newParent && index === newIndex)
+      return;
+    if (index !== -1) {
+      const node = nodes.splice(index, 1)[0];
+      if (parent && nodes.length === 0) {
+        const p = parent as DelayLoadedTreeNodeItem;
+        p.hasChildren = false;
+      }
+      if (newIndex !== -1) {
+        toNodes.splice(newIndex, 0, node);
+        if (newParent) {
+          const np = newParent as DelayLoadedTreeNodeItem;
+          np.hasChildren = true;
+        }
+      } else
+        toNodes.push(node);
+      const arr = [];
+      if (newParent === parent)
+        arr.push(parent);
+      else {
+        if (!this.isDescendent(newParent, parent))
+          arr.push(parent);
+        if (!this.isDescendent(parent, newParent))
+          arr.push(newParent);
+      }
+      this.onTreeNodeChanged.raiseEvent(arr);
+    }
+  }
+
+  private _getNodeById(nodes: DelayLoadedTreeNodeItem[] | DelayLoadedTreeNodeItem, id: string): DelayLoadedTreeNodeItem | undefined {
+    if (!("length" in nodes)) {
+      nodes = [nodes];
+    }
+    for (const node of nodes) {
+      if (node.id === id)
+        return node;
+      if (node.extendedData && node.extendedData.children && node.extendedData.children.length > 0) {
+        for (const child of node.extendedData.children) {
+          const n = this._getNodeById(child, id);
+          if (n) return n;
+        }
+      }
+    }
+    return undefined;
+  }
+
+  public isDescendent = (parent?: TreeNodeItem, nodeItem?: TreeNodeItem): boolean => {
+    let c: DelayLoadedTreeNodeItem | undefined;
+    if ((parent && !nodeItem) || (!parent && !nodeItem))
+      return false;
+    else if (!parent && nodeItem)
+      c = this._getNodeById(this._data, nodeItem.id);
+    else if (parent && nodeItem) {
+      if (parent.id === nodeItem.id)
+        return true;
+      if (parent && parent.extendedData && parent.extendedData.children) {
+        c = this._getNodeById(parent.extendedData.children, nodeItem.id);
+      }
+    }
+    if (c) return true;
+    return false;
+  }
+  public getNodeIndex = (parent: TreeNodeItem | undefined, node: TreeNodeItem): number => {
+    let nodes = this._data;
+    if (parent) {
+      if (!parent.extendedData || !parent.extendedData.children) return -1;
+      nodes = parent.extendedData.children;
+    }
+    // tslint:disable-next-line:prefer-for-of
+    for (let i = 0; i < nodes.length; i++) {
+      if (nodes[i].id === node.id) {
+        return i;
+      }
+    }
+    return -1;
+  }
+}
+
+export const mockInterfaceTreeDataProvider = new DemoITreeDataProvider(dataProviderRaw);
+export const mockMutableInterfaceTreeDataProvider = new DemoMutableITreeDataProvider(dataProviderRaw);
+
+export const mockRawTreeDataProvider: ImmediatelyLoadedTreeNodeItem[] = [
+  { label: "Raw Node 1", id: "1", description: "node 1 child" },
+  {
+    label: "Raw Node 2", id: "2", description: "node 2 child",
+    children: [
+      { label: "Raw Node 2.1", id: "2.1", parentId: "2", description: "node 2.1 child" },
+    ] as ImmediatelyLoadedTreeNodeItem[],
   },
-  getRootNodesCount: async (): Promise<number> => {
-    return data.length;
-  },
-  getChildNodes: async (parent: TreeNodeItem, _pageOptions: PageOptions): Promise<TreeNodeItem[]> => {
-    const n = getNodeById(data, parent.id);
-    if (n && n.children)
-      return n.children.map((c: TreeNodeItem) => {
-        return c;
-      });
-    return [];
-  },
-  getChildNodesCount: async (parent: TreeNodeItem): Promise<number> => {
-    const n = getNodeById(data, parent.id);
-    if (n && n.children)
-      return n.children.length;
-    return 0;
-  },
-};
+  { label: "Raw Node 3", id: "3", description: "node 3 child" },
+  { label: "Raw Node 4", id: "4", description: "node 4 child" },
+];

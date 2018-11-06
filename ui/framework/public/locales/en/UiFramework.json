@@ -88,5 +88,17 @@
   },
   "navigationAid": {
     "sheetsModalFrontstage": "Sheet Views"
+  },
+  "tools": {
+    "View": {
+      "Fly": {
+        "description": "Fly in view",
+        "flyover": "Fly"
+      },
+      "ToggleCamera": {
+        "description": "Turn on/off use of camera in active view",
+        "flyover": "Toggle Camera"
+      }
+    }
   }
 }

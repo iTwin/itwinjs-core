@@ -19,6 +19,10 @@
     "docSiteId": 5,
     "displayName": "Learning"
   },
+  "changehistory": {
+    "docSiteId": 6,
+    "displayName": "Change History"
+  },
   "metadata": {
     "home": "landing-page",
     "logo": "landing-page/assets/imodeljs-logo.svg",
@@ -29,7 +33,8 @@
       "getting-started",
       "learning",
       "bis",
-      "reference"
+      "reference",
+      "ChangeHistory"
     ],
     "headerTabs": {
       "Getting Started": {
@@ -43,6 +48,9 @@
       },
       "API Reference": {
         "docSite": "reference"
+      },
+      "Change History": {
+        "docSite": "changehistory"
       }
     },
     "packageAliases": {

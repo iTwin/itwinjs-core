@@ -27,7 +27,7 @@ import {
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64String, JsonUtils, assert } from "@bentley/bentleyjs-core";
 import { RenderSystem, RenderGraphic, PackedFeatureTable } from "../render/System";
-import { ImageUtil } from "../ImageUtil";
+import { imageElementFromImageSource } from "../ImageUtil";
 import {
   ElementAlignedBox3d,
   FillFlags,
@@ -335,7 +335,7 @@ export namespace IModelTileIO {
       const format = namedTex.format;
       const imageSource = new ImageSource(bytes, format);
 
-      return ImageUtil.extractImage(imageSource).then((image) => {
+      return imageElementFromImageSource(imageSource).then((image) => {
         if (this._isCanceled)
           return undefined;
 

@@ -294,6 +294,13 @@ export enum IModelHubStatus {
   FileNotFound = IMODELHUBERROR_REQUESTERRORBASE + 6,
 }
 
+// iModelHub Services Errors
+export enum AuthStatus {
+  Success = 0,
+  AUTHSTATUS_BASE = 0x20000,
+  Error = AUTHSTATUS_BASE,
+}
+
 /** When you want to associate an explanatory message with an error status value. */
 export interface StatusCodeWithMessage<ErrorCodeType> {
   status: ErrorCodeType;
@@ -614,6 +621,9 @@ export class BentleyError extends Error {
       case IModelHubStatus.NotSupportedInBrowser: return "Not supported in browser";
       case IModelHubStatus.FileHandlerNotSet: return "File handler is not set";
       case IModelHubStatus.FileNotFound: return "File not found";
+
+      // errors returned from authorization
+      case AuthStatus.Error: return "Authorization error";
 
       // Unexpected cases
       case IModelStatus.Success:

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ClientServices */
 
-import { IModelHubClient, AccessToken, HubIModel, Version, UserInfo, ChangeSet, UserInfoQuery, IModelQuery, ChangeSetQuery, VersionQuery } from "@bentley/imodeljs-clients";
+import { IModelHubClient, AccessToken, HubIModel, Version, HubUserInfo, ChangeSet, UserInfoQuery, IModelQuery, ChangeSetQuery, VersionQuery } from "@bentley/imodeljs-clients";
 import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
@@ -37,6 +37,7 @@ class IModelUserInfoImpl implements IModelUserInfo {
 
 /**
  * Provides default [[IModelServices]]
+ * @hidden
  */
 export class DefaultIModelServices implements IModelServices {
   private _hubClient: IModelHubClient;
@@ -132,7 +133,7 @@ export class DefaultIModelServices implements IModelServices {
     const alctx = new ActivityLoggingContext(Guid.createValue());
     const userInfos: IModelUserInfo[] = [];
     try {
-      const users: UserInfo[] = await this._hubClient.Users().get(alctx, accessToken, iModelId, new UserInfoQuery().select("*"));
+      const users: HubUserInfo[] = await this._hubClient.Users().get(alctx, accessToken, iModelId, new UserInfoQuery().select("*"));
       for (const userInfo of users) {
         userInfos.push(this.createUserInfo(userInfo));
       }
@@ -147,7 +148,7 @@ export class DefaultIModelServices implements IModelServices {
     const alctx = new ActivityLoggingContext(Guid.createValue());
     const userInfos: IModelUserInfo[] = [];
     try {
-      const users: UserInfo[] = await this._hubClient.Users().get(alctx, accessToken, iModelId, new UserInfoQuery().byId(userId));
+      const users: HubUserInfo[] = await this._hubClient.Users().get(alctx, accessToken, iModelId, new UserInfoQuery().byId(userId));
       for (const userInfo of users) {
         userInfos.push(this.createUserInfo(userInfo));
       }
@@ -177,7 +178,7 @@ export class DefaultIModelServices implements IModelServices {
     return thisChangeSetInfo;
   }
 
-  private createUserInfo(thisUser: UserInfo): IModelUserInfo {
+  private createUserInfo(thisUser: HubUserInfo): IModelUserInfo {
     const thisUserInfo: IModelUserInfo = new IModelUserInfoImpl(thisUser.firstName!, thisUser.lastName!, thisUser.email!, thisUser.id);
     return thisUserInfo;
   }

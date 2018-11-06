@@ -3,5 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 export * from "./TreeDataProvider";
-export { default as Tree } from "./component/DataTree";
+export { Tree, TreeProps } from "./component/Tree";
+export { TreeDragDropType, withDragDrop as withTreeDragDrop } from "./hocs/withDragDrop";
 export { default as SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "./SimpleTreeDataProvider";

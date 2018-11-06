@@ -6,10 +6,10 @@
 
 import * as React from "react";
 
-import ConfigurableUiManager from "./ConfigurableUiManager";
 import { ToolWidgetProps, WidgetType } from "./WidgetDef";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
-import { Icon } from "./IconLabelSupport";
+import { CommandItemDef } from "./Item";
+import { Icon } from "./IconComponent";
 import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
 
 import NZ_AppButton from "@bentley/ui-ninezone/lib/toolbar/button/App";
@@ -18,22 +18,15 @@ import NZ_ToolsWidget from "@bentley/ui-ninezone/lib/widget/Tools";
 /** A Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  */
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
-  private _appButtonId: string;
+  private _appButton: CommandItemDef | undefined;
   private _reactElement: React.ReactNode;
 
   constructor(def: ToolWidgetProps) {
     super(def);
 
-    this._appButtonId = (def.appButtonId !== undefined) ? def.appButtonId : "";
+    this._appButton = def.appButton;
 
     this.widgetType = WidgetType.Tool;
-  }
-
-  public executeAppButtonClick = (): void => {
-    const appButton = ConfigurableUiManager.findItem(this._appButtonId);
-    if (appButton) {
-      appButton.execute();
-    }
   }
 
   public get reactElement(): React.ReactNode {
@@ -44,14 +37,12 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
   }
 
   public renderCornerItem(): React.ReactNode | undefined {
-    const appButton = ConfigurableUiManager.findItem(this._appButtonId);
-
-    if (appButton) {
+    if (this._appButton) {
       return (
         <NZ_AppButton
-          onClick={this.executeAppButtonClick}
+          onClick={this._appButton.execute}
           icon={
-            <Icon iconInfo={appButton.iconInfo} />
+            <Icon iconSpec={this._appButton.iconSpec} />
           }
         />
       );
@@ -143,8 +134,6 @@ class ToolWidgetWithDef extends React.Component<Props> {
   }
 
   public render(): React.ReactNode {
-    this.props.toolWidgetDef.resolveItems();
-
     const button = (this.props.button !== undefined) ? this.props.button : this.props.toolWidgetDef.renderCornerItem();
     const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.toolWidgetDef.renderHorizontalToolbar();
     const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.toolWidgetDef.renderVerticalToolbar();

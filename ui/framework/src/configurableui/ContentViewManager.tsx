@@ -7,8 +7,6 @@
 import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "./FrontstageManager";
 import { ContentControl } from "./ContentControl";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
-import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 /** [[MouseDownChangedEvent]] Args interface.
  */
@@ -91,8 +89,6 @@ export class ContentViewManager {
           if (activeContentControl)
             activeFrontstageDef.setActiveView(activeContentControl, oldContentControl);
         }
-
-        SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ActiveContentChanged);
       }
     }
   }

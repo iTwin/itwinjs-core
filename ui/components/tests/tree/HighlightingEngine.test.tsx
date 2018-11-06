@@ -5,43 +5,60 @@
 import { expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
+import * as moq from "typemoq";
 import HighlightingEngine, { IScrollableElement } from "../../src/tree/HighlightingEngine";
-// import Tree from "../../src/tree/component/Tree";
-// import InspireTree from "inspire-tree";
+import { BeInspireTreeNode } from "../../src/tree/component/BeInspireTree";
+
+const simulateNode = (id: string): BeInspireTreeNode<any> => {
+  return { id, text: id } as any;
+};
 
 describe("HighlightingEngine", () => {
-  describe("getNodeLabelComponent", () => {
-    it("Expect highlighted word to be wrapped in <mark> tag", () => {
+
+  describe("renderNodeLabel", () => {
+
+    it("wraps highlighted word in <mark> tag", () => {
+      const text = "This is a test";
       const searchText = "test";
-      const highlightingEngine = new HighlightingEngine({ searchText, activeResultNode: { id: "", index: 0 } });
-      const node = { text: "This is a test" };
-
-      const treeComponent = enzyme.mount(<div>{highlightingEngine.getNodeLabelComponent(node as any)}</div>);
-
-      expect(treeComponent.render().find("Mark").text()).to.be.equal(searchText);
+      const treeComponent = enzyme.shallow(<div>{HighlightingEngine.renderNodeLabel(text, { searchText })}</div>);
+      expect(treeComponent.render().find("mark").text()).to.equal(searchText);
     });
 
-    it("Expect active node to be wrapped in <mark class=\"activeHighlight\"> tag", () => {
+    it("wraps active node <mark class=\"activeHighlight\"> tag", () => {
+      const text = "This is a test";
       const searchText = "test";
-      const highlightingEngine = new HighlightingEngine({ searchText, activeResultNode: { id: "#test#", index: 0 } });
-      const node = { text: "This is a test", id: "#test#" };
-
-      const treeComponent = enzyme.mount(<div>{highlightingEngine.getNodeLabelComponent(node as any)}</div>);
-
-      expect(treeComponent.render().find("Mark").text()).to.be.equal(searchText);
-      expect(treeComponent.render().find("Mark").hasClass("ui-components-activehighlight")).to.be.true;
+      const treeComponent = enzyme.shallow(<div>{HighlightingEngine.renderNodeLabel(text, { searchText, activeResultIndex: 0 })}</div>);
+      const mark = treeComponent.render().find("mark");
+      expect(mark.text()).to.equal(searchText);
+      expect(mark.hasClass("ui-components-activehighlight")).to.be.true;
     });
 
-    it("Expect node label to be simple string wrapped in <div> when seachWord is empty", () => {
-      const searchText = "";
-      const highlightingEngine = new HighlightingEngine({ searchText, activeResultNode: { id: "#test#", index: 0 } });
-      const node = { text: "This is a test" };
+  });
 
-      enzyme.mount(<div>{highlightingEngine.getNodeLabelComponent(node as any)}</div>).should.matchSnapshot();
+  describe("createRenderProps", () => {
+
+    it("sets correct searchText", () => {
+      const searchText = "test";
+      const he = new HighlightingEngine({ searchText });
+      expect(he.createRenderProps(simulateNode("id")).searchText).to.eq(searchText);
     });
+
+    it("sets activeResultIndex to undefined when node id doesn't match activeResultNode id", () => {
+      const searchText = "test";
+      const he = new HighlightingEngine({ searchText, activeResultNode: { id: "a", index: 1 } });
+      expect(he.createRenderProps(simulateNode("b")).activeResultIndex).to.be.undefined;
+    });
+
+    it("sets activeResultIndex to correct value when node id matches activeResultNode id", () => {
+      const searchText = "test";
+      const he = new HighlightingEngine({ searchText, activeResultNode: { id: "a", index: 1 } });
+      expect(he.createRenderProps(simulateNode("a")).activeResultIndex).to.eq(1);
+    });
+
   });
 
   describe("scrollToActiveNode", () => {
+
     let scrollToAdded = false;
     let scrollIntoViewAdded = false;
 
@@ -67,67 +84,64 @@ describe("HighlightingEngine", () => {
       }
     });
 
-    it("Does not call scrollable element when there is no active result node", () => {
-      const highlightingEngine = new HighlightingEngine({ searchText: "" });
-      let scrollableElementCalled = false;
-      const scrollableElementMock: IScrollableElement = {
-        scrollToElement: () => { scrollableElementCalled = true; },
-      };
+    it("does not call scrollable container when there is no active result node", () => {
+      const scrollableContainerMock = moq.Mock.ofType<IScrollableElement>();
+      scrollableContainerMock.setup((x) => x.getElementsByClassName("ui-components-activehighlight")).returns(() => []);
 
-      highlightingEngine.scrollToActiveNode(scrollableElementMock);
-
-      expect(scrollableElementCalled).to.be.false;
+      HighlightingEngine.scrollToActiveNode(scrollableContainerMock.object);
+      scrollableContainerMock.verify((x) => x.getElementsByClassName("ui-components-activehighlight"), moq.Times.once());
+      scrollableContainerMock.verify((x) => x.scrollToElement(moq.It.isAny()), moq.Times.never());
     });
 
-    it("Calls scrollable element when there is active result node", () => {
-      const highlightingEngine = new HighlightingEngine({ searchText: "test", activeResultNode: { id: "#node1#", index: 0 } });
-      let scrollableElementCalled = false;
-
-      const node = { id: "#node1#", text: "This is a test" };
-
-      const scrollableElementMock: IScrollableElement = {
-        scrollToElement: () => { scrollableElementCalled = true; },
+    it("scrolls to active element when there is active result node", () => {
+      const elementBounds = {
+        x: 2,
+        left: 2,
+        y: 4,
+        top: 4,
+        right: 3,
+        bottom: 1,
+        width: 5,
+        height: 5,
       };
 
-      enzyme.mount(<div>{highlightingEngine.getNodeLabelComponent(node as any)}</div>);
+      const elementMock = moq.Mock.ofType<Element>();
+      elementMock.setup((x) => x.getBoundingClientRect()).returns(() => elementBounds);
 
-      highlightingEngine.scrollToActiveNode(scrollableElementMock);
+      const scrollableContainerMock = moq.Mock.ofType<IScrollableElement>();
+      scrollableContainerMock.setup((x) => x.getElementsByClassName("ui-components-activehighlight")).returns(() => [elementMock.object]);
 
-      expect(scrollableElementCalled).to.be.true;
+      HighlightingEngine.scrollToActiveNode(scrollableContainerMock.object);
+
+      scrollableContainerMock.verify((x) => x.scrollToElement(elementBounds), moq.Times.once());
     });
 
-    describe("Element.prototype.scrollTo is undefined", () => {
+    describe("when Element.prototype.scrollTo is undefined", () => {
+
       const scrollToFunction = Element.prototype.scrollTo;
-      const scrollIntoViewFunction = Element.prototype.scrollIntoView;
-      let scrollIntoViewCalled = false;
 
       before(() => {
         Element.prototype.scrollTo = undefined as any;
-        Element.prototype.scrollIntoView = () => { scrollIntoViewCalled = true; };
       });
 
       after(() => {
         Element.prototype.scrollTo = scrollToFunction;
-        Element.prototype.scrollIntoView = scrollIntoViewFunction;
       });
 
-      it("Element.prototype.scrollIntoView called instead", () => {
-        const highlightingEngine = new HighlightingEngine({ searchText: "test", activeResultNode: { id: "#node1#", index: 0 } });
-        let scrollableElementCalled = false;
+      it("calls Element.prototype.scrollIntoView instead", () => {
+        const elementMock = moq.Mock.ofType<Element>();
 
-        const node = { id: "#node1#", text: "This is a test" };
+        const scrollableContainerMock = moq.Mock.ofType<IScrollableElement>();
+        scrollableContainerMock.setup((x) => x.getElementsByClassName("ui-components-activehighlight")).returns(() => [elementMock.object]);
 
-        const scrollableElementMock: IScrollableElement = {
-          scrollToElement: () => { scrollableElementCalled = true; },
-        };
+        HighlightingEngine.scrollToActiveNode(scrollableContainerMock.object);
 
-        enzyme.mount(<div>{highlightingEngine.getNodeLabelComponent(node as any)}</div>);
-
-        highlightingEngine.scrollToActiveNode(scrollableElementMock);
-
-        expect(scrollIntoViewCalled).to.be.true;
-        expect(scrollableElementCalled).to.be.false;
+        scrollableContainerMock.verify((x) => x.scrollToElement(moq.It.isAny()), moq.Times.never());
+        elementMock.verify((x) => x.scrollIntoView(), moq.Times.once());
       });
+
     });
+
   });
+
 });

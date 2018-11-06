@@ -1,6 +1,15 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 24 Oct 2018 19:20:07 GMT and should not be manually modified.
+This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+
+## 0.163.0
+Wed, 31 Oct 2018 20:55:37 GMT
+
+### Updates
+
+- Fixed breadcrumb component test
+- Added JSX specification for Frontstage, Zone & Widget
+- Fixed ui-framework unit test
 
 ## 0.162.0
 Wed, 24 Oct 2018 19:20:07 GMT

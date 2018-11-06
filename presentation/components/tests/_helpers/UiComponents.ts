@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
 import { createRandomECInstanceNodeKey } from "@bentley/presentation-common/tests/_helpers/random";
-import { TreeNodeItem } from "@bentley/ui-components";
+import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
 import * as h from "@bentley/presentation-common/lib/hierarchy";
 
-export const createRandomTreeNodeItem = (key?: h.NodeKey, parentId?: string): TreeNodeItem => {
+export const createRandomTreeNodeItem = (key?: h.NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {
   return {
     id: faker.random.uuid(),
     parentId,

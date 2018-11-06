@@ -8,12 +8,12 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       items={
         <UNDEFINED>
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool1"
             toolId="tool1"
           />
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2"
           />
@@ -23,33 +23,27 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
   }
   navigationWidgetDef={
     NavigationWidgetDef {
-      "_horizontalIds": Array [],
-      "_iconLabelSupport": IconLabelSupport {
-        "label": "",
-        "tooltip": "",
-      },
       "_navigationAidId": "",
-      "_verticalIds": Array [],
       "classId": undefined,
       "featureId": "",
       "horizontalDirection": 3,
-      "horizontalItems": ItemList {
-        "_items": Array [],
-      },
       "id": "navigationWidget",
+      "isEnabled": true,
       "isFloatingStateSupported": false,
       "isFloatingStateWindowResizable": true,
       "isFreeform": false,
+      "isPressed": false,
       "isStatusBar": false,
       "isToolSettings": false,
+      "isVisible": true,
+      "label": "",
       "priority": 0,
       "renderHorizontalToolbar": [Function],
       "renderVerticalToolbar": [Function],
       "stateChanged": false,
+      "stateSyncIds": Array [],
+      "tooltip": "",
       "verticalDirection": 2,
-      "verticalItems": ItemList {
-        "_items": Array [],
-      },
       "widgetState": 1,
       "widgetType": 1,
     }
@@ -60,12 +54,12 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       items={
         <UNDEFINED>
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool1"
             toolId="tool1"
           />
           <ToolButton
-            iconClass="icon-placeholder"
+            iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2"
           />

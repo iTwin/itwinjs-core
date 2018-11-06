@@ -303,7 +303,7 @@ export class Tile implements IDisposable {
     }
     if (Tile.Visibility.Visible === vis) {
       // This tile is of appropriate resolution to draw. If need loading or refinement, enqueue.
-      if (!this.isReady && !this.isQueued) {
+      if (!this.isReady) {
         args.insertMissing(this);
       }
 

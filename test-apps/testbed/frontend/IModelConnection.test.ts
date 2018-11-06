@@ -10,16 +10,17 @@ import { TestData } from "./TestData";
 import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection,
-  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState, IModelApp,
+  ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState,
 } from "@bentley/imodeljs-frontend";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { CONSTANTS } from "../common/Testbed";
+import { MaybeRenderApp } from "./WebGLTestContext";
 
 describe("IModelConnection (#integration)", () => {
   let iModel: IModelConnection;
 
   before(async () => {
-    IModelApp.startup();
+    MaybeRenderApp.startup();
 
     Logger.initializeToConsole();
     Logger.setLevel("imodeljs-frontend.IModelConnection", LogLevel.Error); // Change to trace to debug
@@ -31,7 +32,7 @@ describe("IModelConnection (#integration)", () => {
   after(async () => {
     if (iModel)
       await iModel.close(TestData.accessToken);
-    IModelApp.shutdown();
+    MaybeRenderApp.shutdown();
   });
 
   it("should be able to get elements and models from an IModelConnection", async () => {
@@ -150,22 +151,19 @@ describe("IModelConnection (#integration)", () => {
 
     const tf = Transform.fromJSON(tree.location);
     expect(tf.matrix.isIdentity).to.be.true;
-    expect(tf.origin.isAlmostEqualXYZ(0.0025, 0.0025, 10.001)).to.be.true;
+    expect(tf.origin.isAlmostEqualXYZ(5.138785, 4.7847327, 10.15635152, 0.001)).to.be.true;
 
     const rootTile = tree.rootTile;
     expect(rootTile.contentId).to.equal("0/0/0/0/1");
 
     const range = Range3d.fromJSON(rootTile.range);
-    expect(range.low.isAlmostEqualXYZ(-50.0075, -50.0075, -20.003)).to.be.true;
-    expect(range.high.isAlmostEqualXYZ(50.0075, 50.0075, 20.003)).to.be.true;
+    const expectedRange = { x: 35.285026, y: 35.118263, z: 10.157 };
+    expect(range.low.isAlmostEqualXYZ(-expectedRange.x, -expectedRange.y, -expectedRange.z, 0.001)).to.be.true;
+    expect(range.high.isAlmostEqualXYZ(expectedRange.x, expectedRange.y, expectedRange.z, 0.001)).to.be.true;
 
-    expect(rootTile.contentRange).not.to.be.undefined;
-
-    const contentRange = Range3d.fromJSON(rootTile.contentRange);
-    expect(contentRange.low.isAlmostEqualXYZ(-30.14521, -30.332516, -10.001)).to.be.true;
-    expect(contentRange.high.isAlmostEqualXYZ(40.414249, 39.89347, 10.310687)).to.be.true;
-
-    expect(rootTile.isLeaf).to.be.true;
+    // The following are not known until we load the tile content.
+    expect(rootTile.contentRange).to.be.undefined;
+    expect(rootTile.isLeaf).to.be.false;
   });
 
   it("Load native assets", async () => {
@@ -277,6 +275,6 @@ describe("IModelConnection (#integration)", () => {
     }
 
     expect(Id64.isTransient(Id64.invalid)).to.be.false;
-    expect(Id64.isTransient("0xffffff6789abcdef")).to.be.false;
+    expect(Id64.isTransient("0xffffff6789abcdef")).to.be.true;
   });
 });

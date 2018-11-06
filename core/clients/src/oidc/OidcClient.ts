@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Client } from "../Client";
 
-export class OidcClient extends Client {
+export abstract class OidcClient extends Client {
   public static readonly searchKey: string = "IMSOpenID";
 
   public constructor() {

@@ -13,7 +13,7 @@ import {
 } from "../../";
 
 import { ResponseBuilder } from "../ResponseBuilder";
-import { TestConfig } from "../TestConfig";
+import { TestConfig, TestUsers } from "../TestConfig";
 import { IModelHubStatus, ActivityLoggingContext, Id64, GuidString } from "@bentley/bentleyjs-core";
 
 chai.should();
@@ -42,7 +42,7 @@ describe("iModelHub CodeHandler", () => {
 
   before(async function (this: Mocha.IHookCallbackContext) {
     this.enableTimeouts(false);
-    accessToken = await utils.login();
+    accessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
     iModelClient = utils.getDefaultClient();
@@ -357,7 +357,7 @@ describe("iModelHub CodeSequenceHandler", () => {
     if (TestConfig.enableMocks)
       this.skip();
 
-    accessToken = await utils.login();
+    accessToken = await utils.login(TestUsers.super);
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
     iModelClient = utils.getDefaultClient();

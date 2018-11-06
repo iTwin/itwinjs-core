@@ -7,18 +7,16 @@
 import * as React from "react";
 import { FrontstageManager } from "./FrontstageManager";
 import { ZoneDefProps, ZoneDef, ZoneDefFactory } from "./ZoneDef";
-import { ItemDefBase } from "./ItemDefBase";
 import { ItemPropsList } from "./ItemProps";
 import { ContentLayoutManager, ContentLayoutDef } from "./ContentLayout";
 import { ContentControl } from "./ContentControl";
-import { ItemMap } from "./ItemFactory";
 import { ContentGroup } from "./ContentGroup";
 import { ContentGroupManager } from "./ContentGroup";
 import { WidgetDef } from "./WidgetDef";
 import { WidgetControl } from "./WidgetControl";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
-import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 import { FrontstageProvider, Frontstage } from "./Frontstage";
+
+import { NineZoneProps } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
 
 // -----------------------------------------------------------------------------
 // FrontstageProps and associated enums
@@ -101,8 +99,6 @@ export class FrontstageDef {
   ];
   public applicationData?: any;
 
-  public items: ItemMap = new ItemMap();
-
   public topLeft?: ZoneDef;
   public topCenter?: ZoneDef;
   public topRight?: ZoneDef;
@@ -118,6 +114,8 @@ export class FrontstageDef {
   public contentGroup?: ContentGroup;
 
   public frontstageProvider?: FrontstageProvider;
+
+  public nineZoneProps?: NineZoneProps;
 
   /** Constructs the [[FrontstageDef]] and optionally initializes it based on the given [[FrontstageProps]]  */
   constructor(frontstageProps?: FrontstageDefProps) {
@@ -161,8 +159,6 @@ export class FrontstageDef {
     if (frontstageProps.applicationData !== undefined)
       this.applicationData = frontstageProps.applicationData;
 
-    this.items.loadItems(frontstageProps);
-
     this.topLeft = ZoneDefFactory.Create(frontstageProps.topLeft);
     this.topCenter = ZoneDefFactory.Create(frontstageProps.topCenter);
     this.topRight = ZoneDefFactory.Create(frontstageProps.topRight);
@@ -171,11 +167,6 @@ export class FrontstageDef {
     this.bottomLeft = ZoneDefFactory.Create(frontstageProps.bottomLeft);
     this.bottomCenter = ZoneDefFactory.Create(frontstageProps.bottomCenter);
     this.bottomRight = ZoneDefFactory.Create(frontstageProps.bottomRight);
-  }
-
-  /** Finds an item based on a given id */
-  public findItem(id: string): ItemDefBase | undefined {
-    return this.items.get(id);
   }
 
   /** Handles when the Frontstage becomes activated */
@@ -188,7 +179,6 @@ export class FrontstageDef {
     }
 
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this.defaultLayout!, contentGroup: this.contentGroup });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ContentLayoutActivated);
   }
 
   /** Returns once the contained widgets and content controls are ready to use */
@@ -214,7 +204,6 @@ export class FrontstageDef {
       oldContent.onDeactivated();
     newContent.onActivated();
     FrontstageManager.onContentControlActivatedEvent.emit({ activeContentControl: newContent, oldContentControl: oldContent });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ContentControlActivated);
   }
 
   /** Gets a [[ZoneDef]] based on a given zone id */

@@ -11,7 +11,7 @@ import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Ran
 import { TileLoader, TileTree, Tile, TileRequests } from "./TileTree";
 import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
-import { ImageUtil } from "../ImageUtil";
+import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
@@ -199,7 +199,7 @@ class WebMercatorTileLoader extends TileLoader {
     try {
       const isCanceled = false;  // Tbd...
       const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.TileSection);
-      return ImageUtil.extractImage(imageSource)
+      return imageElementFromImageSource(imageSource)
         .then((image) => isCanceled ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
         .catch((_) => undefined);
     } catch (e) {

@@ -46,7 +46,6 @@ export enum RpcRequestStatus {
   Unknown,
   Created,
   Submitted,
-  Provisioning,
   Pending,
   Resolved,
   Rejected,

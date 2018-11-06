@@ -8,40 +8,24 @@ import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 
 import TestUtils from "../TestUtils";
-import { GroupButton, ConfigurableUiManager, ItemPropsList, ToolItemDef, GroupItemDef } from "../../src";
+import { GroupButton, CommandItemDef, GroupItemDef } from "../../src";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+
+const tool1 = new CommandItemDef({
+  commandId: "tool1",
+  iconSpec: "icon-placeholder",
+});
+
+const tool2 = new CommandItemDef({
+  commandId: "tool2",
+  iconSpec: "icon-placeholder",
+  applicationData: { key: "value" },
+});
 
 describe("GroupItem", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-
-    const commonItemsList: ItemPropsList = {
-      items: [
-        {
-          toolId: "item1",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.item1",
-        },
-        {
-          toolId: "item2",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.item2",
-        },
-        {
-          toolId: "item3",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.item3",
-        },
-        {
-          toolId: "item4",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.item4",
-        },
-      ],
-    };
-    ConfigurableUiManager.loadCommonItems(commonItemsList);
-
   });
 
   describe("<GroupButton />", () => {
@@ -49,8 +33,8 @@ describe("GroupItem", () => {
       mount(
         <GroupButton
           labelKey="UiFramework:tests.label"
-          iconClass="icon-placeholder"
-          items={["item1", "item2", "item3", "item4"]}
+          iconSpec="icon-placeholder"
+          items={[tool1, tool2]}
           direction={Direction.Bottom}
           itemsInColumn={4}
         />,
@@ -61,8 +45,8 @@ describe("GroupItem", () => {
       shallow(
         <GroupButton
           labelKey="UiFramework:tests.label"
-          iconClass="icon-placeholder"
-          items={["item1", "item2", "item3", "item4"]}
+          iconSpec="icon-placeholder"
+          items={[tool1, tool2]}
           direction={Direction.Bottom}
           itemsInColumn={4}
         />,
@@ -74,8 +58,8 @@ describe("GroupItem", () => {
       const wrapper = mount(
         <GroupButton
           labelKey="SampleApp:buttons.toolGroup"
-          iconClass="icon-placeholder"
-          items={["item1", "item2", "item3", "item4"]}
+          iconSpec="icon-placeholder"
+          items={[tool1, tool2]}
           direction={Direction.Bottom}
           itemsInColumn={7}
         />,
@@ -93,9 +77,9 @@ describe("GroupItem", () => {
     it("GroupButton opens & support history", () => {
       const executeSpy = sinon.spy();
 
-      const myToolItem1 = new ToolItemDef({
-        toolId: "tool1",
-        iconClass: "icon-placeholder",
+      const testSpyTool = new CommandItemDef({
+        commandId: "spytool",
+        iconSpec: "icon-placeholder",
         labelKey: "SampleApp:buttons.tool1",
         execute: executeSpy,
       });
@@ -103,8 +87,8 @@ describe("GroupItem", () => {
       const wrapper = mount(
         <GroupButton
           labelKey="SampleApp:buttons.toolGroup"
-          iconClass="icon-placeholder"
-          items={[myToolItem1, "item2", "item3", "item4"]}
+          iconSpec="icon-placeholder"
+          items={[testSpyTool, tool1, tool2]}
           direction={Direction.Bottom}
           itemsInColumn={7}
         />,
@@ -117,7 +101,7 @@ describe("GroupItem", () => {
       wrapper.update();
 
       const toolItems = wrapper.find("div.nz-toolbar-item-expandable-group-tool-item");
-      expect(toolItems.length).to.eq(4);
+      expect(toolItems.length).to.eq(3);
       toolItems.at(0).simulate("click");
       expect(executeSpy.calledOnce).to.be.true;
       wrapper.update();
@@ -130,26 +114,19 @@ describe("GroupItem", () => {
   });
 
   describe("GroupItemDef", () => {
-    it("Supports ToolItemDef correctly", () => {
-      const myToolItem1 = new ToolItemDef({
-        toolId: "tool1",
-        iconClass: "icon-placeholder",
-        labelKey: "SampleApp:buttons.tool1",
-        applicationData: { key: "value" },
-      });
-
+    it("Supports CommandItemDef correctly", () => {
       const groupItemDef = new GroupItemDef({
         groupId: "my-group1",
         labelKey: "SampleApp:buttons.toolGroup",
-        iconClass: "icon-placeholder",
-        items: [myToolItem1, "item2", "item3", "item4"],
+        iconSpec: "icon-placeholder",
+        items: [tool1, tool2],
         direction: Direction.Bottom,
         itemsInColumn: 7,
       });
 
       groupItemDef.resolveItems();
 
-      expect(groupItemDef.itemCount).to.eq(4);
+      expect(groupItemDef.itemCount).to.eq(2);
       expect(groupItemDef.getItemById("tool1")).to.not.be.undefined;
 
       groupItemDef.execute(); // Does nothing

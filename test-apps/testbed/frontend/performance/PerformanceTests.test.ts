@@ -382,10 +382,10 @@ async function openView(state: SimpleViewState, viewSize: ViewSize) {
     // theViewport = new Viewport(htmlCanvas, state.viewState!);
     theViewport = ScreenViewport.create(div, state.viewState!);
     debugPrint("theViewport: " + theViewport);
-    const canvas = theViewport.canvas; // document.getElementById("canvas") as HTMLCanvasElement;
+    const canvas = theViewport.canvas as HTMLCanvasElement;
     debugPrint("canvas: " + canvas);
-    canvas.width = viewSize.width;
-    canvas.height = viewSize.height;
+    canvas.style.width = String(viewSize.width) + "px";
+    canvas.style.height = String(viewSize.height) + "px";
     theViewport.continuousRendering = false;
     theViewport.sync.setRedrawPending;
     (theViewport!.target as Target).performanceMetrics = new PerformanceMetrics(true, false);
@@ -444,49 +444,44 @@ async function closeIModel() {
   debugPrint("end closeIModel");
 }
 
-async function outputSavedView(testConfig: DefaultConfigs) {
+async function runTest(testConfig: DefaultConfigs) {
   // Open and finish loading model
   await loadIModel(testConfig);
 
-  savePng(getImageString(testConfig));
+  if (testConfig.testType === "image" || testConfig.testType === "both")
+    await savePng(getImageString(testConfig));
 
-  // Close the imodel
-  await closeIModel();
-}
+  if (testConfig.testType === "timing" || testConfig.testType === "both") {
+    // Throw away the first n renderFrame times, until it's more consistent
+    for (let i = 0; i < 15; ++i) {
+      theViewport!.sync.setRedrawPending();
+      theViewport!.renderFrame();
+    }
 
-async function timeSavedView(testConfig: DefaultConfigs) {
-  // Open and finish loading model
-  await loadIModel(testConfig);
+    // Add a pause so that user can start the GPU Performance Capture program
+    // await resolveAfterXMilSeconds(7000);
 
-  // Throw away the first n renderFrame times, until it's more consistent
-  for (let i = 0; i < 15; ++i) {
-    theViewport!.sync.setRedrawPending();
-    theViewport!.renderFrame();
+    const finalFrameTimings: Array<Map<string, number>> = [];
+    const timer = new StopWatch(undefined, true);
+    const numToRender = 50;
+    for (let i = 0; i < numToRender; ++i) {
+      theViewport!.sync.setRedrawPending();
+      theViewport!.renderFrame();
+      finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
+    }
+    timer.stop();
+    debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
+    debugPrint("Tile Loading Time: " + curTileLoadingTime);
+    for (const t of finalFrameTimings) {
+      let timingsString = "[";
+      t.forEach((val) => {
+        timingsString += val + ", ";
+      });
+      debugPrint(timingsString + "]");
+    }
+
+    printResults(testConfig, getRowData(finalFrameTimings, testConfig));
   }
-
-  // Add a pause so that user can start the GPU Performance Capture program
-  // await resolveAfterXMilSeconds(7000);
-
-  const finalFrameTimings: Array<Map<string, number>> = [];
-  const timer = new StopWatch(undefined, true);
-  const numToRender = 50;
-  for (let i = 0; i < numToRender; ++i) {
-    theViewport!.sync.setRedrawPending();
-    theViewport!.renderFrame();
-    finalFrameTimings[i] = (theViewport!.target as Target).performanceMetrics!.frameTimings;
-  }
-  timer.stop();
-  debugPrint("------------ Elapsed Time: " + timer.elapsed.milliseconds + " = " + timer.elapsed.milliseconds / numToRender + "ms per frame");
-  debugPrint("Tile Loading Time: " + curTileLoadingTime);
-  for (const t of finalFrameTimings) {
-    let timingsString = "[";
-    t.forEach((val) => {
-      timingsString += val + ", ";
-    });
-    debugPrint(timingsString + "]");
-  }
-
-  printResults(testConfig, getRowData(finalFrameTimings, testConfig));
 
   // Close the imodel
   await closeIModel();
@@ -528,13 +523,7 @@ async function testModel(configs: DefaultConfigs, modelData: any) {
     if (!fs.existsSync(testConfig.iModelFile!))
       break;
 
-    if (testConfig.testType === "both") {
-      await outputSavedView(testConfig);
-      await timeSavedView(testConfig);
-    } else if (testConfig.testType === "image")
-      await outputSavedView(testConfig);
-    else
-      await timeSavedView(testConfig);
+    await runTest(testConfig);
   }
   if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".Tiles");
   if (configs.iModelLocation) removeFilesFromDir(configs.iModelLocation, ".TileCache");

@@ -641,7 +641,7 @@ export class AccuSnap implements Decorator {
     return SnapStatus.Success;
   }
 
-  private findLocatableHit(ev: BeButtonEvent, newSearch: boolean, out: LocateResponse): HitDetail | undefined {
+  private async findLocatableHit(ev: BeButtonEvent, newSearch: boolean, out: LocateResponse): Promise<HitDetail | undefined> {
     out.snapStatus = SnapStatus.NoElements;
 
     if (newSearch) {
@@ -661,7 +661,7 @@ export class AccuSnap implements Decorator {
     const ignore = new LocateResponse();
     // keep looking through hits until we find one that is accu-snappable.
     while (undefined !== (thisHit = thisList.getNextHit())) {
-      if (LocateFilterStatus.Accept === IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out))
+      if (LocateFilterStatus.Accept === await IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out))
         return thisHit;
 
       // we only care about the status of the first hit.
@@ -696,7 +696,7 @@ export class AccuSnap implements Decorator {
         hit = await this.getAccuSnapDetail(this.aSnapHits, out);
       }
     } else if (this.isLocateEnabled) {
-      hit = this.findLocatableHit(ev, false, out); // get next AccuSnap path (or undefined)
+      hit = await this.findLocatableHit(ev, false, out); // get next AccuSnap path (or undefined)
     }
 
     // set the current hit
@@ -720,7 +720,7 @@ export class AccuSnap implements Decorator {
         out.snapStatus = this.findHits(ev);
         hit = (SnapStatus.Success !== out.snapStatus) ? undefined : await this.getAccuSnapDetail(this.aSnapHits!, out);
       } else if (this.isLocateEnabled) {
-        hit = this.findLocatableHit(ev, true, out);
+        hit = await this.findLocatableHit(ev, true, out);
       }
     }
 

@@ -36,12 +36,12 @@ export class Timer {
 RpcConfiguration.developmentMode = true;
 
 Logger.initializeToConsole();
-if (process.env.imodeljs_imjs_test_logging_config === undefined) {
+if (process.env.imjs_test_logging_config === undefined) {
   // tslint:disable-next-line:no-console
-  console.log("FYI You can set the environment variable imodeljs_imjs_test_logging_config to point to a logging configuration json file.");
+  console.log("FYI You can set the environment variable imjs_test_logging_config to point to a logging configuration json file.");
 }
 
-const loggingConfigFile: string = process.env.imodeljs_imjs_test_logging_config || path.join(__dirname, "logging.config.json");
+const loggingConfigFile: string = process.env.imjs_test_logging_config || path.join(__dirname, "logging.config.json");
 if (IModelJsFs.existsSync(loggingConfigFile)) {
   // tslint:disable-next-line:no-var-requires
   Logger.configureLevels(require(loggingConfigFile));
@@ -148,7 +148,8 @@ export class IModelTestUtils {
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
       // Purge briefcases that are close to reaching the acquire limit
-      await HubUtility.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, iModelInfo.name);
+      const superAccessToken: AccessToken = await HubUtility.login(TestUsers.super);
+      await HubUtility.purgeAcquiredBriefcases(superAccessToken, TestConfig.projectName, iModelInfo.name);
     }
 
     return [accessToken, testProjectId, cacheDir];
