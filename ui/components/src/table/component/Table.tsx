@@ -319,7 +319,7 @@ export class Table extends React.Component<TableProps, TableState> {
       this._cellItemSelectionHandlers = undefined;
     }
 
-    this._rowGetterAsync.cache.clear();
+    this._rowGetterAsync.cache.clear!();
     this.setState((prev: TableState) => ({
       ...prev,
       rowsCount,

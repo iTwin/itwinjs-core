@@ -226,7 +226,7 @@ export default class PresentationPropertyDataProvider extends ContentDataProvide
   protected invalidateCache(props: CacheInvalidationProps): void {
     super.invalidateCache(props);
     if (this.getMemoizedData)
-      this.getMemoizedData.cache.clear();
+      this.getMemoizedData.cache.clear!();
     if (this.onDataChanged)
       this.onDataChanged.raiseEvent();
   }

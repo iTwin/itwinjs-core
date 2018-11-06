@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Deprecated dev-cors-proxy-server and use of it. ",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Ramanujam.Raman@bentley.com"
+}

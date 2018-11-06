@@ -6,11 +6,9 @@ import * as path from "path";
 import * as express from "express";
 import * as https from "https";
 import * as bodyParser from "body-parser";
-import * as cp from "child_process";
 import * as fs from "fs";
 
 import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
-import { Config } from "@bentley/imodeljs-clients";
 import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { initializeBackend } from "./backend";
@@ -57,22 +55,7 @@ if (process.argv.length === 3) {
 }
 
 if (serverConfig === undefined) {
-  // Start the dev-cors-proxy-server
-  const proxyServer = cp.spawn("node", ["./node_modules/@bentley/dev-cors-proxy-server/server.js", "--serve-over-https"]);
-  proxyServer.stdout.on("data", (data) => {
-    console.log(`proxy server: ${data}`);
-  });
-  proxyServer.stderr.on("data", (data) => {
-    console.log(`proxy server: ${data}`);
-  });
-  proxyServer.on("close", (code) => {
-    console.log(`proxy server terminated with code ${code}`);
-  });
-
-  // Initialize additional web-specific backend parts
-  Config.App.set("imjs_dev_cors_proxy_server", "https://localhost:3001");
   setupStandaloneConfiguration();
-
   serverConfig = { port: 3000, baseUrl: "https://localhost" };
 } else {
 
