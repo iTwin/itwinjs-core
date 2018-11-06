@@ -62,7 +62,7 @@ class MoveByDistanceContext {
   public announcePoint(point1: Point3d, fraction1: number): boolean {
     const a = this.point0.distance(point1);
     const distance1 = this.distance0 + a;
-    if (distance1 < this.targetDistance) {
+    if (distance1 < this.targetDistance && !Geometry.isSameCoordinate(distance1, this.targetDistance)) {
       this.point0.setFromPoint3d(point1);
       this.distance0 = distance1;
       this.fraction0 = fraction1;
