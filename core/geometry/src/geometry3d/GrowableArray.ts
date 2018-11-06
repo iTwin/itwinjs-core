@@ -259,7 +259,7 @@ export class GrowableBlockedArray {
    */
   protected newBlockIndex(): number {
     const index = this._blockSize * this._inUse;
-    if (this._blockSize * (index + 1) > this._data.length)
+    if ((index + 1) > this._data.length)
       this.ensureBlockCapacity(2 * this._inUse);
     this._inUse++;
     for (let i = index; i < index + this._blockSize; i++)
