@@ -5,7 +5,7 @@
 /** @module Picker */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import classnames from "classnames";
 import { ListItem, ListItemType } from "./ListPicker";
 import { IModelApp, Viewport, ViewState, SpatialViewState, SpatialModelState, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { ModelQueryParams } from "@bentley/imodeljs-common/lib/ModelProps";
@@ -14,13 +14,16 @@ import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { WidgetControl } from "../configurableui/WidgetControl";
 import {
-  CheckListBox,
-  CheckListBoxItem,
+  // CheckListBox,
+  // CheckListBoxItem,
   SearchBox,
-  Popup,
-  Position,
 } from "@bentley/ui-core";
+// import Group from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Group";
+import { Tree } from "@bentley/ui-components";
 import "./ModelSelector.scss";
+import { PresentationTreeDataProvider, withUnifiedSelection } from "@bentley/presentation-components/lib/tree";
+import { Presentation } from "@bentley/presentation-frontend";
+import { RegisteredRuleset } from "@bentley/presentation-common";
 
 /** Model Group used by [[ModelSelectorWidget]] */
 export interface ModelGroup {
@@ -37,6 +40,10 @@ export interface ModelSelectorWidgetState {
   expand: boolean;
   activeGroup: ModelGroup;
   showOptions: boolean;
+  treeInfo?: {
+    ruleset: RegisteredRuleset;
+    dataProvider: PresentationTreeDataProvider;
+  };
 }
 
 /** Model Selector [[WidgetControl]] */
@@ -54,6 +61,7 @@ export class ModelSelectorWidgetControl extends WidgetControl {
 export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidgetState> {
   private _removeSelectedViewportChanged?: () => void;
   private _groups: ModelGroup[] = [];
+  private _isMounted = false;
 
   /** Creates a ModelSelectorWidget */
   constructor(props: any) {
@@ -66,11 +74,25 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
 
   /** Adds listeners */
   public componentDidMount() {
+    this._isMounted = true;
+
     this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
+
+    Presentation.presentation.rulesets().add(require("../../rulesets/ModelsCategories"))
+      .then((ruleset: RegisteredRuleset) => {
+        if (!this._isMounted)
+          return;
+        this.setState({ treeInfo: { ruleset, dataProvider: new PresentationTreeDataProvider(this.props.imodel, ruleset.id) } });
+      });
   }
 
   /** Removes listeners */
   public componentWillUnmount() {
+    this._isMounted = false;
+
+    if (this.state.treeInfo)
+      Presentation.presentation.rulesets().remove(this.state.treeInfo.ruleset);
+
     if (this._removeSelectedViewportChanged)
       this._removeSelectedViewportChanged();
   }
@@ -112,21 +134,12 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
     this.setState({ activeGroup: group, expand: true });
   }
 
-  /** collapse widget */
-  private _onCollapse = () => {
-    this.setState({ expand: false });
-  }
-
-  private _onShowOptions = (show: boolean) => {
-    this.setState({ showOptions: show });
-  }
-
-  /** enable or disable a single item */
-  private _onCheckboxClick = (item: ListItem) => {
-    item.enabled = !item.enabled;
-    this.state.activeGroup.setEnabled(item, item.enabled);
-    this.setState({ activeGroup: this.state.activeGroup });
-  }
+  // /** enable or disable a single item */
+  // private _onCheckboxClick = (item: ListItem) => {
+  //   item.enabled = !item.enabled;
+  //   this.state.activeGroup.setEnabled(item, item.enabled);
+  //   this.setState({ activeGroup: this.state.activeGroup });
+  // }
 
   /** enable or disable all items */
   private _onSetEnableAll = (enable: boolean) => {
@@ -248,51 +261,51 @@ export class ModelSelectorWidget extends React.Component<any, ModelSelectorWidge
     });
   }
 
+  private _getChildren = (): DemoMutableNode[] => {
+    const children = new Array<DemoMutableNode>();
+    this.state.activeGroup.items.map((item: ListItem) => {
+      const whatever = { label: item.name, id: item.key, type: item.type.toString(), description: "", parentId: this.state.activeGroup.id, iconPath: "icon-parallel-move" };
+      children.push(whatever);
+    });
+    return children;
+  }
+
   /** @hidden */
   public render() {
-    const groupsClassName = classnames("widget-groups", this.state.expand && "hide");
-    const listClassName = classnames("fw-modelselector", this.state.expand && "show");
-    return (
-      <div className="widget-picker">
-        <div className={groupsClassName}>
-          {this._groups.map((group: ModelGroup) => (
-            <div key={group.id} className="widget-picker-group" onClick={this._onExpand.bind(this, group)}>
-              {group.label}
-              <span className="group-count">{group.items.length}</span>
-              <span className="icon icon-chevron-right" />
-            </div>
-          ))}
-        </div>
-        <div className={listClassName}>
-          <div className="fw-modelselector-header" >
-            <div className="fw-modelselector-back" onClick={this._onCollapse}>
-              <span className="icon icon-chevron-left" />
-              <div className="ms-title">{this.state.activeGroup.label}</div>
-            </div>
-            <div className="options" >
-              <span className="icon icon-more-vertical-2" onClick={this._onShowOptions.bind(this, !this.state.showOptions)}></span>
-              <Popup isShown={this.state.showOptions} position={Position.BottomRight} onClose={this._onShowOptions.bind(this, false)}>
-                <ul>
-                  <li><span className="icon icon-visibility" />Manage...</li>
-                </ul>
-              </Popup>
-            </div>
-          </div>
-          <div className="modelselector-toolbar">
-            <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.all")} onClick={this._onSetEnableAll.bind(this, true)} />
-            <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.none")} onClick={this._onSetEnableAll.bind(this, false)} />
-            <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.invert")} />
-            <SearchBox placeholder="search..." onValueChanged={this._handleSearchValueChanged} />
-          </div>
-          <CheckListBox className="fw-modelselector-listbox">
-            {this.state.activeGroup.items.map((item: ListItem) => (
-              <CheckListBoxItem key={item.key} label={item.name} checked={item.enabled} onClick={this._onCheckboxClick.bind(this, item)} />
-            ))}
-          </CheckListBox>
-        </div>
-      </div>
-    );
+    /*const listClassName = classnames("fw-modelselector", this.state.expand && "show");
+    const activeClassName = classnames(this.state.activeGroup.label && "active");
+
+    if (!this.state.expand)
+      this._onExpand(this.state.activeGroup);
+
+    // Clear data ahead of time
+    data = [];
+    data.push({
+      label: this.state.activeGroup.label, id: this.state.activeGroup.id, type: "root", description: "", iconPath: "icon-clipboard-cut",
+      children: this._getChildren(),
+    });*/
+
+    if (this.state.treeInfo)
+      return <CategoryModelTree dataProvider={this.state.treeInfo.dataProvider} />;
+
+    // WIP: localize
+    return "Loading...";
   }
+}
+
+// tslint:disable-next-line:variable-name
+const CategoryModelTree = withUnifiedSelection(Tree);
+
+// let data = new Array<DemoMutableNode>();
+
+interface DemoMutableNode {
+  label: string;
+  id: string;
+  type: string;
+  description: string;
+  parentId?: string;
+  iconPath?: string;
+  children?: DemoMutableNode[];
 }
 
 export default ModelSelectorWidget;

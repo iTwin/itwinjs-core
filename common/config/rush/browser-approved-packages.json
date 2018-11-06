@@ -68,7 +68,7 @@
     },
     {
       "name": "@bentley/presentation-components",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/presentation-frontend",
