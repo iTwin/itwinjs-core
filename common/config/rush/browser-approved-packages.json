@@ -239,8 +239,16 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "electron-builder",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "electron-chromedriver",
       "allowedCategories": [ "internal", "tools" ]
+    },
+    {
+      "name": "electron-devtools-installer",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "enzyme",

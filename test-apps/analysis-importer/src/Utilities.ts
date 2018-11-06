@@ -6,7 +6,7 @@ import { XYZProps, YawPitchRollProps, Matrix3d, Transform, StandardViewIndex, Ya
 import * as path from "path";
 
 /** Properties for display of analysis data */
-export interface  AnalysisStyleProps {
+export interface AnalysisStyleProps {
     displacementChannelName?: string;
     displacementScale?: number;
     scalarChannelName?: string;
@@ -36,23 +36,6 @@ export class KnownTestLocations {
     }
 }
 export class Utilities {
-    public static openIModel(filename: string, opts?: UtilitiesOpenOptions): IModelDb {
-        const destPath = KnownTestLocations.outputDir;
-        if (!IModelJsFs.existsSync(destPath))
-            IModelJsFs.mkdirSync(destPath);
-
-        if (opts === undefined)
-            opts = {};
-
-        const srcName = path.join(KnownTestLocations.assetsDir, filename);
-        const dbName = path.join(destPath, (opts.copyFilename ? opts.copyFilename! : filename));
-
-        IModelJsFs.removeSync(dbName);
-        IModelJsFs.copySync(srcName, dbName, { preserveTimestamps: true });
-
-        return IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
-    }
-
     private static async createAndInsertPhysicalPartition(iModelDb: IModelDb, modelName: string): Promise<Id64String> {
         const modelCode = InformationPartitionElement.createCode(iModelDb, IModelDb.rootSubjectId, modelName);
         if (iModelDb.elements.queryElementIdByCode(modelCode) !== undefined)

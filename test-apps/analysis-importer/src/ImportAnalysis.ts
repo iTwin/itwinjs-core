@@ -4,7 +4,6 @@
 import { IModelDb, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { GeometryStreamBuilder, GeometryStreamProps, Gradient, Code, GeometricElement3dProps, ViewFlags, ColorDef, RenderMode } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, Polyface, IModelJson, AuxChannelDataType, AuxChannel, PolyfaceBuilder, Point3d, StrokeOptions, AuxChannelData, PolyfaceAuxData } from "@bentley/geometry-core";
 import { Utilities, KnownTestLocations, AnalysisStyleProps } from "./Utilities";
 import * as path from "path";
@@ -196,8 +195,11 @@ async function doAnalysisExamples() {
     const config = new IModelHostConfiguration();
     IModelHost.startup(config);
 
-    /** Create example by copying empty seed DB. */
-    const iModel: IModelDb = Utilities.openIModel("empty.bim", { copyFilename: "AnalysisExample.bim", deleteFirst: true, openMode: OpenMode.ReadWrite });
+    const rootSubjectProps = { name: "Test" };
+    const createIModelProps = { rootSubject: rootSubjectProps };
+
+    const dbName = path.join(KnownTestLocations.outputDir, "AnalysisExample.bim");
+    const iModel: IModelDb = IModelDb.createStandalone(dbName, createIModelProps);
     if (!iModel)
         return;
 
