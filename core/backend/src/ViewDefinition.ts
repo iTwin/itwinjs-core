@@ -11,7 +11,6 @@ import {
   Code,
   CodeScopeProps,
   CodeSpec,
-  ColorDef,
   ViewDefinitionProps,
   ViewDefinition3dProps,
   ViewDefinition2dProps,
@@ -26,7 +25,8 @@ import {
   LightLocationProps,
   RelatedElement,
   DisplayStyleProps,
-  ViewFlags,
+  DisplayStyleSettings,
+  DisplayStyle3dSettings,
 } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -35,59 +35,12 @@ import { IModelDb } from "./IModelDb";
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
  * Many ViewDefinitions may share the same DisplayStyle.
  */
-export class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
-  private readonly _viewFlags: ViewFlags;
-  private readonly _background: ColorDef;
-  private readonly _monochrome: ColorDef;
+export abstract class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
+  public abstract get settings(): DisplayStyleSettings;
 
-  public constructor(props: DisplayStyleProps, iModel: IModelDb) {
+  protected constructor(props: DisplayStyleProps, iModel: IModelDb) {
     super(props, iModel);
-
-    this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
-    this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
-    const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
-    const monoJson = this.styles[monoName];
-    this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
   }
-
-  /** Get the flags controlling how aspects of graphics are rendered using this display style. */
-  public get viewFlags(): ViewFlags { return this._viewFlags; }
-  /** Set the flags controlling how aspects of graphics are rendered using this display style. */
-  public set viewFlags(flags: ViewFlags) {
-    flags.clone(this._viewFlags);
-    this.setStyle("viewflags", flags);
-  }
-
-  /** Get the dictionary of named styles. */
-  public get styles(): any {
-    const p = this.jsonProperties as any;
-    if (undefined === p.styles)
-      p.styles = new Object();
-
-    return p.styles;
-  }
-
-  /** Get a named style from the dictionary. */
-  public getStyle(name: string): any {
-    const style: object = this.styles[name];
-    return style ? style : {};
-  }
-
-  /** change the value of a named style on this DisplayStyle */
-  public setStyle(name: string, value: any): void { this.styles[name] = value; }
-
-  /** Remove a style from this DisplayStyle. */
-  public removeStyle(name: string) { delete this.styles[name]; }
-
-  /** Get the background color for this DisplayStyle */
-  public get backgroundColor(): ColorDef { return this._background; }
-  /** Set the background color for this DisplayStyle */
-  public set backgroundColor(val: ColorDef) { this._background.setFrom(val); this.setStyle("backgroundColor", val); }
-
-  /** Get the color with which graphics are rendered by this DisplayStyle when the monochrome view flag is enabled. */
-  public get monochromeColor(): ColorDef { return this._monochrome; }
-  /** Set the color with which graphics are rendered by this DisplayStyle when the monochrome view flag is enabled. */
-  public set monochromeColor(val: ColorDef) { this._monochrome.setFrom(val); this.setStyle("monochromeColor", val); }
 
   /** Create a Code for a DisplayStyle given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -102,14 +55,28 @@ export class DisplayStyle extends DefinitionElement implements DisplayStyleProps
 
 /** A DisplayStyle for 2d views. */
 export class DisplayStyle2d extends DisplayStyle {
-  public constructor(props: DisplayStyleProps, iModel: IModelDb) { super(props, iModel); }
+  private readonly _settings: DisplayStyleSettings;
+
+  public get settings(): DisplayStyleSettings { return this._settings; }
+
+  public constructor(props: DisplayStyleProps, iModel: IModelDb) {
+    super(props, iModel);
+    this._settings = new DisplayStyleSettings(this.jsonProperties);
+  }
 }
 
 /** A DisplayStyle for 3d views.
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
  */
 export class DisplayStyle3d extends DisplayStyle {
-  public constructor(props: DisplayStyleProps, iModel: IModelDb) { super(props, iModel); }
+  private readonly _settings: DisplayStyle3dSettings;
+
+  public get settings(): DisplayStyle3dSettings { return this._settings; }
+
+  public constructor(props: DisplayStyleProps, iModel: IModelDb) {
+    super(props, iModel);
+    this._settings = new DisplayStyle3dSettings(this.jsonProperties);
+  }
 }
 
 /**

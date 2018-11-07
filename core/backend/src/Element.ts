@@ -44,7 +44,7 @@ export abstract class Element extends Entity implements ElementProps {
   /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
   public userLabel?: string;
   /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this element. */
-  public readonly jsonProperties: any;
+  public readonly jsonProperties: { [key: string]: any };
 
   /** constructor for Element.
    * @hidden

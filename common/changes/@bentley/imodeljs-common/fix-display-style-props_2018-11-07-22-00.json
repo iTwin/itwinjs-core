@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix JSON representation of display styles.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Paul.Connelly@bentley.com"
+}
