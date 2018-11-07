@@ -2155,7 +2155,7 @@ export interface AnalysisStyleProps {
   displacementChannelName?: string;
   scalarChannelName?: string;
   normalChannelName?: string;
-  displacementScale: number;
+  displacementScale?: number;
   scalarRange?: Range1d;
   scalarThematicSettings?: Gradient.ThematicSettingsProps;
   inputRange?: Range1d;
@@ -2166,7 +2166,7 @@ export class AnalysisStyle implements AnalysisStyleProps {
   public displacementChannelName?: string;
   public scalarChannelName?: string;
   public normalChannelName?: string;
-  public displacementScale: number = 1.0;
+  public displacementScale?: number;
   public scalarRange?: Range1d;
   public scalarThematicSettings?: Gradient.ThematicSettings;
   public inputRange?: Range1d;
