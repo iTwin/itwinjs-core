@@ -8,18 +8,20 @@ import * as React from "react";
 import { PropertyRecord } from "../properties/Record";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
+import "./EditorContainer.scss";
+
 /** Arguments for the Property Updated event callback */
 export interface PropertyUpdatedArgs {
   /** The property being updated. */
-  propertyRecord?: PropertyRecord;
+  propertyRecord: PropertyRecord;
   /** The new value for the property. */
   newValue: any;
 }
 
 /** [[EditorContainer]] React component properties */
 export interface EditorContainerProps {
-  propertyRecord?: PropertyRecord;
-  title: string;
+  propertyRecord: PropertyRecord;
+  title?: string;
   onCommit: (commit: PropertyUpdatedArgs) => void;
   onCommitCancel: () => void;
 }
@@ -166,7 +168,7 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
 
   public render() {
     return (
-      <div
+      <div className="components-editor-container"
         onBlur={this._handleBlur}
         onKeyDown={this._handleKeyDown}
         onClick={this._handleClick}

@@ -2,9 +2,10 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/mixins";
 
-$text-font-size: 14px;
-$text-font-color: #000000;
+$text-font-size: $bwc-font-size;
+$text-font-color: $bwc-text-color;
 
 .components-property-record--horizontal {
   display: grid;
@@ -19,6 +20,7 @@ $text-font-color: #000000;
 
   .components-property-record-value {
     border: 1px solid #ccc;
+    min-height: 20px;
     font-size: $text-font-size;
     color: $text-font-color;
     margin-left: -2px;
@@ -34,7 +36,7 @@ $text-font-color: #000000;
     margin-top: 0px;
     padding-top: 6px;
     margin-bottom: 0px;
-    padding-bottom: 1px;
+    padding-bottom: 0px;
   }
 
   &:first-child .components-property-record-label {
@@ -43,13 +45,13 @@ $text-font-color: #000000;
   }
 
   .components-property-record-value {
-    min-height: $text-font-size;
+    min-height: 20px;
     font-size: $text-font-size;
     color: $text-font-color;
     margin-top: 0px;
-    padding-top: 1px;
+    padding-top: 0px;
     margin-bottom: 0px;
-    padding-bottom: 6px;
+    padding-bottom: 4px;
   }
 
   &:last-child .components-property-record-value {
@@ -58,7 +60,9 @@ $text-font-color: #000000;
 }
 
 @mixin record-cell {
-  padding: 0.25em;
+  padding-left: 0.25em;
+  display: flex;
+  align-items: center;
 }
 
 .components-property-record-label {

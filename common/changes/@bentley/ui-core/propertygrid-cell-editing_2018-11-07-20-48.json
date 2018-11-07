@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "PropertyGrid property editing and unit tests",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}

@@ -33,9 +33,9 @@ export enum ButtonStyle {
 
 /** Enum for dialog alignment */
 export enum DialogAlignment {
-    TopLeft = "top-left", Top = "top", TopRight = "top-right",
-    Left = "left", Center = "center", Right = "right",
-    BottomLeft = "bottom-left", Bottom = "bottom", BottomRight = "bottom-right",
+  TopLeft = "top-left", Top = "top", TopRight = "top-right",
+  Left = "left", Center = "center", Right = "right",
+  BottomLeft = "bottom-left", Bottom = "bottom", BottomRight = "bottom-right",
 }
 
 /** interface for a given button in a button cluster */
@@ -246,27 +246,27 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
   public componentDidMount(): void {
     this._setInitial();
-    window.addEventListener("mouseup", this._handleMouseUp);
-    window.addEventListener("touchend", this._handleMouseUp);
+    document.addEventListener("mouseup", this._handleMouseUp, true);
+    document.addEventListener("touchend", this._handleMouseUp, true);
 
-    window.addEventListener("mousemove", this._handleMouseMove);
-    window.addEventListener("touchmove", this._handleMouseMove);
+    document.addEventListener("mousemove", this._handleMouseMove, true);
+    document.addEventListener("touchmove", this._handleMouseMove, true);
 
-    window.addEventListener("keyup", this._handleKeyUp);
+    document.addEventListener("keyup", this._handleKeyUp, true);
   }
 
   public componentWillUnmount(): void {
-    window.removeEventListener("mouseup", this._handleMouseUp);
-    window.removeEventListener("touchend", this._handleMouseUp);
+    document.removeEventListener("mouseup", this._handleMouseUp, true);
+    document.removeEventListener("touchend", this._handleMouseUp, true);
 
-    window.removeEventListener("mousemove", this._handleMouseMove);
-    window.removeEventListener("touchmove", this._handleMouseMove);
+    document.removeEventListener("mousemove", this._handleMouseMove, true);
+    document.removeEventListener("touchmove", this._handleMouseMove, true);
 
-    window.addEventListener("keyup", this._handleKeyUp);
+    document.removeEventListener("keyup", this._handleKeyUp, true);
   }
 
   private _handleKeyUp = (event: any) => {
-    if (event.keyCode === 27 && this.props.opened && this.props.onEscape) {
+    if (event.key === "Escape" && this.props.opened && this.props.onEscape) {
       this.props.onEscape();
     }
   }

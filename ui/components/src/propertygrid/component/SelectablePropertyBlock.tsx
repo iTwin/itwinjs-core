@@ -43,7 +43,9 @@ export class SelectablePropertyBlock extends React.Component<SelectablePropertyB
       || this.props.orientation !== nextProps.orientation
       || this.props.onExpansionToggled !== nextProps.onExpansionToggled
       || this.props.onPropertyClicked !== nextProps.onPropertyClicked
-      || this.state.columnRatio !== nextState.columnRatio)
+      || this.state.columnRatio !== nextState.columnRatio
+      || this.props.editingPropertyKey !== nextProps.editingPropertyKey
+    )
       return true;
 
     // If keys are not the same it means component might need an update, but that's not enough.
@@ -79,6 +81,9 @@ export class SelectablePropertyBlock extends React.Component<SelectablePropertyB
           columnRatio={this.state.columnRatio}
           onColumnChanged={this._onRatioChanged}
           propertyValueRendererManager={this.props.propertyValueRendererManager}
+          editingPropertyKey={this.props.editingPropertyKey}
+          onEditCommit={this.props.onEditCommit}
+          onEditCancel={this.props.onEditCancel}
         />
       </PropertyCategoryBlock>
     );

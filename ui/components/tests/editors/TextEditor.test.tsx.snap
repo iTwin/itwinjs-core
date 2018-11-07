@@ -2,7 +2,7 @@
 
 exports[`<TextEditor /> renders correctly 1`] = `
 <input
-  className="cell cell-editor"
+  className="cell components-cell-editor components-text-editor"
   defaultValue=""
   onChange={[Function]}
   type="text"

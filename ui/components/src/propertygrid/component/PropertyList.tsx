@@ -10,6 +10,7 @@ import { PropertyRecord } from "../../properties";
 import { PropertyRenderer } from "./PropertyRenderer";
 import { PropertyCategory } from "../PropertyDataProvider";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 
 export interface PropertyListProps {
   orientation: Orientation;
@@ -20,6 +21,9 @@ export interface PropertyListProps {
   columnRatio?: number;
   onColumnChanged?: (ratio: number) => void;
   propertyValueRendererManager?: PropertyValueRendererManager;
+  editingPropertyKey?: string;
+  onEditCommit?: (args: PropertyUpdatedArgs, category: PropertyCategory) => void;
+  onEditCancel?: () => void;
 }
 
 /**
@@ -34,6 +38,12 @@ export function getPropertyKey(propertyCategory: PropertyCategory, propertyRecor
  * Container component for properties within a category.
  */
 export class PropertyList extends React.Component<PropertyListProps> {
+
+  private _onEditCommit = (args: PropertyUpdatedArgs) => {
+    if (this.props.onEditCommit && this.props.category)
+      this.props.onEditCommit(args, this.props.category);
+  }
+
   public render() {
     const propertyListClassName = (this.props.orientation === Orientation.Horizontal)
       ? "components-property-list--horizontal" : "components-property-list--vertical";
@@ -52,6 +62,9 @@ export class PropertyList extends React.Component<PropertyListProps> {
               columnRatio={this.props.columnRatio}
               onColumnRatioChanged={this.props.onColumnChanged}
               propertyValueRendererManager={this.props.propertyValueRendererManager}
+              isEditing={key === this.props.editingPropertyKey}
+              onEditCommit={this._onEditCommit}
+              onEditCancel={this.props.onEditCancel}
             />);
         })}
       </div>

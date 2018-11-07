@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
+import * as sinon from "sinon";
+import { expect } from "chai";
+
 import { Dialog, ButtonType } from "../../src/index";
 import TestUtils from "../TestUtils";
 
@@ -46,14 +49,32 @@ describe("Dialog", () => {
   describe("movable & resizable", () => {
     it("movable", () => {
       const wrapper = mount(<Dialog opened={true} movable={true} />);
+
       // TODO: simulate move
+
       wrapper.unmount();
     });
 
     it("resizable", () => {
       const wrapper = mount(<Dialog opened={true} resizable={true} />);
+
       // TODO: simulate resize
+
       wrapper.unmount();
     });
   });
+
+  describe("keyboard support", () => {
+    it("should close on Esc key", () => {
+      const outerNode = document.createElement("div");
+      document.body.appendChild(outerNode);
+
+      const spyOnEscape = sinon.spy();
+      mount(<Dialog opened={true} onEscape={spyOnEscape} />, { attachTo: outerNode });
+
+      outerNode.dispatchEvent(new KeyboardEvent("keyup", { key: "Escape" }));
+      expect(spyOnEscape.calledOnce).to.be.true;
+    });
+  });
+
 });

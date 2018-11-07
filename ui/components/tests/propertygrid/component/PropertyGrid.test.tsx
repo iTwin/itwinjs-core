@@ -141,6 +141,31 @@ describe("PropertyGrid", () => {
     expect(onPropertySelectionChanged.called).to.be.true;
   });
 
+  it("deselects if clicked a 2nd time", async () => {
+    const dataProvider = new SamplePropertyDataProvider();
+    const wrapper = mount(
+      <PropertyGrid
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider}
+        isPropertySelectionEnabled={true}
+      />);
+
+    await TestUtils.flushAsyncOperations();
+
+    wrapper.update();
+
+    const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+    expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+
+    categoryBlock.find(".components--clickable").simulate("click");
+    wrapper.update();
+    expect(wrapper.find(".components--selected").length).to.eq(1);
+
+    categoryBlock.find(".components--clickable").simulate("click");
+    wrapper.update();
+    expect(wrapper.find(".components--selected").length).to.eq(0);
+  });
+
   it("does not call onPropertySelectionChanged when property gets clicked and selection is disabled", async () => {
     const dataProvider = new SamplePropertyDataProvider();
     const onPropertySelectionChanged = sinon.spy();
@@ -176,6 +201,91 @@ describe("PropertyGrid", () => {
 
     const categoryBlocks = wrapper.find(PropertyCategoryBlock);
     expect(categoryBlocks.children().length).to.be.eq(3);
+  });
+
+  it("starts editor on click", async () => {
+    const dataProvider = new SamplePropertyDataProvider();
+    const spyMethod = sinon.spy();
+    const wrapper = mount(
+      <PropertyGrid
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider}
+        isPropertyEditingEnabled={true}
+        onPropertyUpdated={spyMethod}
+      />);
+
+    await TestUtils.flushAsyncOperations();
+
+    wrapper.update();
+
+    const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+    expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+
+    categoryBlock.find(".components--clickable").simulate("click");
+    wrapper.update();
+
+    expect(wrapper.find(".components-cell-editor").length).to.eq(1);
+
+    const inputNode = wrapper.find("input");
+    expect(inputNode.length).to.eq(1);
+
+    inputNode.simulate("keyDown", { key: "Enter" });
+    expect(spyMethod.calledOnce).to.be.true;
+  });
+
+  it("does not start editor on click if not selected yet", async () => {
+    const dataProvider = new SamplePropertyDataProvider();
+    const wrapper = mount(
+      <PropertyGrid
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider}
+        isPropertySelectionEnabled={true}   // when this is true, user must click once to select then again to edit
+        isPropertyEditingEnabled={true}
+      />);
+
+    await TestUtils.flushAsyncOperations();
+
+    wrapper.update();
+
+    const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+    expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+
+    categoryBlock.find(".components--clickable").simulate("click");
+    wrapper.update();
+
+    expect(wrapper.find(".components-cell-editor").length).to.eq(0);
+  });
+
+  it("starts editor on click if clicked before to select", async () => {
+    const dataProvider = new SamplePropertyDataProvider();
+    const wrapper = mount(
+      <PropertyGrid
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider}
+        isPropertySelectionEnabled={true}   // when this is true, user must click once to select then again to edit
+        isPropertyEditingEnabled={true}
+      />);
+
+    await TestUtils.flushAsyncOperations();
+
+    wrapper.update();
+
+    const categoryBlock = wrapper.find(PropertyCategoryBlock).at(0);
+    expect(categoryBlock.exists(), "Category block does not exist").to.be.true;
+
+    categoryBlock.find(".components--clickable").simulate("click");
+    wrapper.update();
+    expect(wrapper.find(".components--selected").length).to.eq(1);
+
+    categoryBlock.find(".components--clickable").simulate("click");
+    wrapper.update();
+    expect(wrapper.find(".components-cell-editor").length).to.eq(1);
+
+    const inputNode = wrapper.find("input");
+    expect(inputNode.length).to.eq(1);
+    inputNode.simulate("keyDown", { key: "Escape" });
+    wrapper.update();
+    expect(wrapper.find(".components-cell-editor").length).to.eq(0);
   });
 
 });
