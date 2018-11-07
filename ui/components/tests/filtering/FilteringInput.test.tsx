@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
+import * as sinon from "sinon";
 import * as enzyme from "enzyme";
 import * as React from "react";
 
@@ -29,7 +30,7 @@ describe("FilteringInput", () => {
       .to.be.eq(TestUtils.i18n.translate("Components:button.label.search"));
   });
 
-  it("loading bar and 'Cancel' is visible when filterinInProgress gets changed from false to true", () => {
+  it("shows loading bar and 'Cancel' button when `filteringInProgress` gets changed from `false` to `true`", () => {
     const filteringInput = enzyme.mount(
       <FilteringInput
         filteringInProgress={false}
@@ -45,7 +46,7 @@ describe("FilteringInput", () => {
       .to.be.eq(TestUtils.i18n.translate("Components:button.label.cancel"));
   });
 
-  it("ResultSelector and 'X' button is visible when filteringInProgress gets changed from true to false and stepping is enabled", () => {
+  it("shows `ResultSelector` and 'X' button when `filteringInProgress` gets changed from `true` to `false` and stepping is enabled", () => {
     const filteringInput = enzyme.mount(
       <FilteringInput
         filteringInProgress={true}
@@ -61,7 +62,7 @@ describe("FilteringInput", () => {
     expect(filteringInput.find(".filtering-input-clear").first().hasClass("icon-close"), "No X button found").to.be.true;
   });
 
-  it("ResultSelector is not visible when filteringInProgress gets changed from true to false and stepping is disabled", () => {
+  it("doesn't show `ResultSelector` when `filteringInProgress` gets changed from `true` to `false` and stepping is disabled", () => {
     const filteringInput = enzyme.mount(
       <FilteringInput
         filteringInProgress={true}
@@ -96,54 +97,74 @@ describe("FilteringInput", () => {
       .to.be.eq(TestUtils.i18n.translate("Components:button.label.search"));
   });
 
-  it("search gets started when input is being edited and 'Enter' key got pressed", () => {
-    let searchStarted = false;
+  it("starts search when input is edited and 'Enter' key is pressed", () => {
+    const startCallback = sinon.spy();
     const filteringInput = enzyme.mount(
       <FilteringInput
         filteringInProgress={false}
         onFilterCancel={() => { }}
         onFilterClear={() => { }}
-        onFilterStart={() => searchStarted = true}
+        onFilterStart={startCallback}
         resultSelectorProps={{ onSelectedChanged: () => { }, resultCount: 0 }} />);
 
     const inputField = filteringInput.find("input[type=\"text\"]").first();
     inputField.simulate("change", { target: { value: "test" } });
 
     inputField.simulate("keyDown", { keyCode: 15 });
-    expect(searchStarted).to.be.false;
+    expect(startCallback).to.not.be.called;
 
     inputField.simulate("keyDown", { keyCode: 13 });
-    expect(searchStarted).to.be.true;
+    expect(startCallback).to.be.calledOnce;
+  });
+
+  it("doesn't start search when input is empty", () => {
+    const startCallback = sinon.spy();
+    const filteringInput = enzyme.mount(
+      <FilteringInput
+        filteringInProgress={false}
+        onFilterCancel={() => { }}
+        onFilterClear={() => { }}
+        onFilterStart={startCallback} />);
+
+    const inputField = filteringInput.find("input[type=\"text\"]").first();
+    expect(inputField.props().value).to.be.empty;
+
+    inputField.simulate("keyDown", { keyCode: 13 });
+    expect(startCallback).to.not.be.called;
+
+    const searchButton = filteringInput.find(".filtering-input-button");
+    searchButton.simulate("click");
+    expect(startCallback).to.not.be.called;
   });
 
   it("calls appropriate callbacks to different button clicks", () => {
-    let searchCallbackCalled = false;
-    let cancelCallbackCalled = false;
-    let clearCallbackCalled = false;
+    const cancelCallback = sinon.spy();
+    const clearCallback = sinon.spy();
+    const startCallback = sinon.spy();
 
     const filteringInput = enzyme.mount(
       <FilteringInput
         filteringInProgress={false}
-        onFilterCancel={() => cancelCallbackCalled = true}
-        onFilterClear={() => clearCallbackCalled = true}
-        onFilterStart={() => searchCallbackCalled = true}
+        onFilterCancel={cancelCallback}
+        onFilterClear={clearCallback}
+        onFilterStart={startCallback}
         resultSelectorProps={{ onSelectedChanged: () => { }, resultCount: 0 }} />);
 
     const inputField = filteringInput.find("input[type=\"text\"]").first();
     inputField.simulate("change", { target: { value: "test" } });
     filteringInput.find(".filtering-input-button").simulate("click");
     filteringInput.setProps({ filteringInProgress: true });
-    expect(searchCallbackCalled, "Search callback not called").to.be.true;
+    expect(startCallback).to.be.calledOnce;
 
     filteringInput.find(".filtering-input-button").simulate("click");
     filteringInput.setProps({ filteringInProgress: false });
-    expect(cancelCallbackCalled, "Cancel callback not called").to.be.true;
+    expect(cancelCallback).to.be.calledOnce;
 
     inputField.simulate("change", { target: { value: "test" } });
     filteringInput.find(".filtering-input-button").simulate("click");
     filteringInput.setProps({ filteringInProgress: true });
     filteringInput.setProps({ filteringInProgress: false, resultCount: 10 });
     filteringInput.find(".filtering-input-clear").simulate("click");
-    expect(clearCallbackCalled, "Clear callback not called").to.be.true;
+    expect(clearCallback).to.be.calledOnce;
   });
 });
