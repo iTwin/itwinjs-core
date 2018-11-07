@@ -179,11 +179,6 @@ describe("IModelConnection (#integration)", () => {
     expect(rootTile.isLeaf).to.be.false;
   });
 
-  it.skip("Load native assets", async () => {
-    const sprite = await iModel.loadNativeAsset("decorators/dgncore/SnapNone.png");
-    assert.isDefined(sprite);
-  });
-
   it("ECSQL with BLOB", async () => {
     assert.exists(iModel);
     let rows = await iModel.executeQuery("SELECT ECInstanceId,GeometryStream FROM bis.GeometricElement3d WHERE GeometryStream IS NOT NULL LIMIT 1");
