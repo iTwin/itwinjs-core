@@ -517,7 +517,7 @@
       "type": "node",
       "request": "launch",
       "name": "Debug analysis-importer",
-      "program": "${workspaceRoot}/test-apps/analysis-importer/lib/ImportAnalysis.js",
+      "program": "${workspaceRoot}/test-apps/analysis-importer/lib/Main.js",
       "cwd": "${workspaceRoot}/test-apps/analysis-importer/",
       "smartStep": true,
       "sourceMaps": true,

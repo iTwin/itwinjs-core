@@ -10,7 +10,7 @@
     "build-code": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json ../../generated-docs",
     "extract-assets": "cpx assets/**/*  lib/assets/",
-    "test": "npm run extract-assets && node ./lib/ImportAnalysis.js",
+    "test": "",
     "docs": ""
   },
   "repository": {},
