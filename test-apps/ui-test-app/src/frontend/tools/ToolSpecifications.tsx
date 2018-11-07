@@ -9,10 +9,15 @@ import {
   OutputMessageType, SnapMode, MessageBoxType, MessageBoxIconType,
 } from "@bentley/imodeljs-frontend";
 import { MessageSeverity } from "@bentley/ui-core";
-import { CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager } from "@bentley/ui-framework";
+import {
+  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, SyncUiEventId,
+  BaseItemState, ContentViewManager,
+} from "@bentley/ui-framework";
 import { SampleAppIModelApp, RootState } from "../";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
+import { MeasurePointsTool } from "../tools/MeasurePoints";
+// cSpell:ignore appui
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 
 export class AppTools {
@@ -36,6 +41,27 @@ export class AppTools {
     });
   }
 
+  public static get measurePoints() {
+    return new ToolItemDef({
+      toolId: MeasurePointsTool.toolId,
+      iconSpec: "icon-measure-distance",
+      labelKey: "SampleApp:tools.Measure.Points.flyover",
+      tooltipKey: "SampleApp:tools.Measure.Points.description",
+      execute: () => { IModelApp.tools.run(MeasurePointsTool.toolId); },
+
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+        const returnState: BaseItemState = { ...currentState };
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
+          returnState.isEnabled = true;
+        else
+          returnState.isEnabled = false;
+        return returnState;
+      },
+    });
+  }
+
   // Tool that toggles the backstage
   public static get backstageToggleCommand() {
     return new CommandItemDef({
@@ -44,6 +70,7 @@ export class AppTools {
       labelKey: "SampleApp:tools.",
       execute: () => {
         const state: RootState = SampleAppIModelApp.store.getState();
+        // cSpell:Ignore BACKSTAGEHIDE BACKSTAGESHOW
         const action: string = (state.sampleAppState!.backstageVisible) ? "SampleApp:BACKSTAGEHIDE" : "SampleApp:BACKSTAGESHOW";
         SampleAppIModelApp.store.dispatch({ type: action });
       },

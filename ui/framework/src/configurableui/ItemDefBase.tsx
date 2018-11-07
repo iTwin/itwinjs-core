@@ -49,6 +49,12 @@ export abstract class ItemDefBase {
       me.tooltip = itemProps.tooltip;
     else if (itemProps.tooltipKey)
       me.tooltip = UiFramework.i18n.translate(itemProps.tooltipKey);
+
+    if (itemProps.stateFunc)
+      me.stateFunc = itemProps.stateFunc;
+
+    if (itemProps.stateSyncIds)
+      me.stateSyncIds = itemProps.stateSyncIds;
   }
 
   constructor(itemProps?: ItemProps) {
