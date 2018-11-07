@@ -2,8 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { BisCodeSpec, CategoryProps, CategorySelectorProps, ColorDef, CreateIModelProps, DisplayStyleProps, ElementProps, IModel, InformationPartitionElementProps, ModelSelectorProps, RelatedElement, SubCategoryAppearance, ViewFlags } from "@bentley/imodeljs-common";
+import { Id64, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { BisCodeSpec, CodeSpec, CodeScopeSpec, CategoryProps, CategorySelectorProps, ColorDef, CreateIModelProps, DisplayStyleProps, ElementProps, IModel, InformationPartitionElementProps, ModelSelectorProps, RelatedElement, SubCategoryAppearance, ViewFlags } from "@bentley/imodeljs-common";
 import { DrawingCategory, SpatialCategory } from "./Category";
 import { DefinitionPartition, DocumentPartition, Drawing, PhysicalPartition } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -25,6 +25,17 @@ export abstract class IModelImporter {
   }
   /** Subclass of Importer should implement this method to perform the actual import. */
   public abstract import(): void;
+  /**
+   * Insert a CodeSpec
+   * @param name The name of the CodeSpec
+   * @param scopeType Specifies what type of object defines the scope of CodeValues
+   * @returns The Id of the newly inserted CodeSpec.
+   */
+  public insertCodeSpec(name: string, scopeType: CodeScopeSpec.Type): Id64String {
+    const codeSpec = new CodeSpec(this.iModelDb, Id64.invalid, name, scopeType);
+    this.iModelDb.codeSpecs.insert(codeSpec);
+    return codeSpec.id;
+  }
   /**
    * Create a parent/child relationship.
    * @param parentId The Id64 of the parent element.
