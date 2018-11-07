@@ -19,7 +19,7 @@ function generateGeometryStreamFromPolyface(polyface: Polyface): GeometryStreamP
 }
 
 /**  get [[AnalysisStyles] for a polyface.  This is just an example - it pairs displacement and scalar channels that have matching input names */
-function getPolyfaceAnalysisStyleProps(polyface: Polyface): AnalysisStyleProps[] {
+function getPolyfaceAnalysisStyleProps(polyface: Polyface, displacementScaleValue: number): AnalysisStyleProps[] {
     const analysisStyleProps: AnalysisStyleProps[] = [];
     if (undefined === polyface.data.auxData)
         return analysisStyleProps;
@@ -43,6 +43,7 @@ function getPolyfaceAnalysisStyleProps(polyface: Polyface): AnalysisStyleProps[]
             /** create the [[AnalysisStyle]] and add to the array. */
             analysisStyleProps.push({
                 displacementChannelName: displacementChannel ? displacementChannel.name : undefined,
+                displacementScale: displacementScaleValue,
                 scalarRange: channel.scalarRange,
                 scalarChannelName: channel.name,
                 scalarThematicSettings: thematicSettings,
@@ -53,7 +54,7 @@ function getPolyfaceAnalysisStyleProps(polyface: Polyface): AnalysisStyleProps[]
     return analysisStyleProps;
 }
 /** Create an analysis model for a [[Polyface]] with [[PolyfaceAuxData]] and [[DisplayStyles]] for viewing the [[AuxChannels]] */
-async function createAnalysisModel(polyface: any, categoryId: Id64String, modelName: string, iModel: IModelDb) {
+async function createAnalysisModel(polyface: any, categoryId: Id64String, modelName: string, iModel: IModelDb, displacementScale = 1.0) {
     if (!(polyface instanceof Polyface))
         return;
     const modelId = await Utilities.createModel(iModel, modelName);
@@ -63,7 +64,7 @@ async function createAnalysisModel(polyface: any, categoryId: Id64String, modelN
 
     /** generate DisplayStyles to view the PolyfaceAuxData.  The display styles contain channel selection and gradient specification for the [[PolyfaceAuxData]]
      */
-    const analysisStyleProps = getPolyfaceAnalysisStyleProps(polyface);
+    const analysisStyleProps = getPolyfaceAnalysisStyleProps(polyface, displacementScale);
     const viewFlags = new ViewFlags();
     const backgroundColor = ColorDef.white;             // White background...
     viewFlags.renderMode = RenderMode.SolidFill;        // SolidFill rendering ... no lighting etc.
@@ -81,10 +82,12 @@ async function createAnalysisModel(polyface: any, categoryId: Id64String, modelN
     let first = true;
     for (const analysisStyleProp of analysisStyleProps) {
         let name = analysisStyleProp.scalarChannelName!;
-        if (undefined !== analysisStyleProp.displacementChannelName)
-            name = modelName + ": " + name + " and " + analysisStyleProp.displacementChannelName;
+        if (undefined !== analysisStyleProp.displacementChannelName) {
+            const exageration = (analysisStyleProp.displacementScale === 1.0) ? "" : (" X " + analysisStyleProp.displacementScale);
+            name = modelName + ": " + name + " and " + analysisStyleProp.displacementChannelName + exageration;
+        }
         const displayStyleId = Utilities.createAndInsertDisplayStyle3d(iModel, name + "Style", viewFlags, backgroundColor, analysisStyleProp);
-        const viewId = Utilities.createOrthographicView(iModel, name + " View", modelId, categoryId, polyface.range(), displayStyleId);
+        const viewId = Utilities.createOrthographicView(iModel, name, modelId, categoryId, polyface.range(), displayStyleId);
         if (first) {
             first = false;
             Utilities.setDefaultViewId(iModel, viewId);
@@ -209,7 +212,7 @@ async function doAnalysisExamples() {
     /** import a polyface representing a cantilever beam with stress and displacement data. */
     const importedPolyface = await importPolyfaceFromJson("Cantilever.json");
     /** create a model containing the imported data (with display styles, views etc.) */
-    await createAnalysisModel(importedPolyface, categoryId, "Imported Cantilever", iModel);
+    await createAnalysisModel(importedPolyface, categoryId, "Cantilever", iModel, 100.0);
 
     /** demonstrate creation of a polyface with analytical data by creating a flat mesh and then superimposiing "wave" data */
     const flatWaveMesh = createFlatMeshWithWaves();
