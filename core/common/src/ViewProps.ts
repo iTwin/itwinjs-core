@@ -35,7 +35,7 @@ export interface DisplayStyleProps extends ElementProps {
   viewFlags: ViewFlags;
   backgroundColor: ColorDef;
   monochromeColor: ColorDef;
-  AnalysisStyle?: AnalysisStyle;
+  analysisStyle?: AnalysisStyle;
 }
 
 export interface ViewQueryParams extends EntityQueryParams {
