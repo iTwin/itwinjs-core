@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Refactor analysis-importer to use IModelImporter",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "ray.bentley@bentley.com"
+}

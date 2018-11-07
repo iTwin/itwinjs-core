@@ -2,13 +2,14 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { BisCodeSpec, CategoryProps, CategorySelectorProps, ColorDef, CreateIModelProps, DefinitionElementProps, InformationPartitionElementProps, ModelSelectorProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Id64Array, Id64String, Id64 } from "@bentley/bentleyjs-core";
+import { BisCodeSpec, CategoryProps, CategorySelectorProps, ColorDef, CreateIModelProps, DefinitionElementProps, InformationPartitionElementProps, ModelSelectorProps, SubCategoryAppearance, SpatialViewDefinitionProps, ViewFlags, AnalysisStyleProps } from "@bentley/imodeljs-common";
 import { SpatialCategory } from "./Category";
 import { DefinitionPartition, PhysicalPartition } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel, PhysicalModel } from "./Model";
-import { CategorySelector, DisplayStyle3d, ModelSelector } from "./ViewDefinition";
+import { CategorySelector, DisplayStyle3d, ModelSelector, ViewDefinition, OrthographicViewDefinition } from "./ViewDefinition";
+import { Matrix3d, Transform, StandardViewIndex, YawPitchRollAngles, Range3d } from "@bentley/geometry-core";
 
 /** Abstract base class that contains helper methods for writing an iModel importer. */
 export abstract class IModelImporter {
@@ -82,11 +83,20 @@ export abstract class IModelImporter {
    * @param name The name of the CategorySelector
    * @returns The Id of the newly inserted DisplayStyle3d element.
    */
-  public insertDisplayStyle3d(definitionModelId: Id64String, name: string): Id64String {
+  public insertDisplayStyle3d(definitionModelId: Id64String, name: string, viewFlagsIn?: ViewFlags, backgroundColor?: ColorDef, analysisStyle?: AnalysisStyleProps): Id64String {
+    const stylesIn: { [k: string]: any } = { viewflags: viewFlagsIn ? viewFlagsIn : new ViewFlags() };
+
+    if (analysisStyle)
+      stylesIn.analysisStyle = analysisStyle;
+
+    if (backgroundColor)
+      stylesIn.backgroundColor = backgroundColor;
+
     const displayStyleProps: DefinitionElementProps = {
       classFullName: DisplayStyle3d.classFullName,
       code: { spec: this.iModelDb.codeSpecs.getByName(BisCodeSpec.displayStyle).id, scope: definitionModelId, value: name },
       model: definitionModelId,
+      jsonProperties: { styles: stylesIn },
       isPrivate: false,
     };
     return this.iModelDb.elements.insertElement(displayStyleProps);
@@ -136,5 +146,37 @@ export abstract class IModelImporter {
       modeledElement: { id: partitionId },
     }) as PhysicalModel;
     return this.iModelDb.models.insertModel(model);
+  }
+  public createOrthographicView(viewName: string, definitionModelId: Id64String, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
+    const rotation = Matrix3d.createStandardWorldToView(standardView);
+    const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
+    const rotatedRange = rotationTransform.multiplyRange(range);
+    const viewOrigin = rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z);
+    const viewExtents = rotatedRange.diagonal();
+
+    const viewDefinitionProps: SpatialViewDefinitionProps = {
+      classFullName: OrthographicViewDefinition.classFullName,
+      model: IModelDb.dictionaryId,
+      code: ViewDefinition.createCode(this.iModelDb, definitionModelId, viewName),
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      origin: viewOrigin,
+      extents: viewExtents,
+      angles,
+      cameraOn: false,
+      camera: { eye: [0, 0, 0], lens: 0, focusDist: 0 }, // not used when cameraOn === false
+    };
+    return this.iModelDb.elements.insertElement(viewDefinitionProps);
+  }
+  public setDefaultViewId(viewId: Id64String) {
+    const spec = { namespace: "dgn_View", name: "DefaultView" };
+    const blob32 = new Uint32Array(2);
+
+    blob32[0] = Id64.getLowerUint32(viewId);
+    blob32[1] = Id64.getUpperUint32(viewId);
+    const blob8 = new Uint8Array(blob32.buffer);
+    this.iModelDb.saveFileProperty(spec, undefined, blob8);
   }
 }
