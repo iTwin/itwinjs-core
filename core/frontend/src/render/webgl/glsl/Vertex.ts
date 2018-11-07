@@ -195,7 +195,7 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
       if (lutGeom.lut.auxDisplacements && analysisStyle && analysisStyle.displacementChannelName && undefined !== (channel = lutGeom.lut.auxDisplacements.get(analysisStyle.displacementChannelName))) {
         const displacementScale = analysisStyle.displacementScale ? analysisStyle.displacementScale : 1.0;
         for (let i = 0; i < 3; i++)
-          scratchAnimDisplacementParams[i] = channel.qScale[i] * displacementScale;
+          scratchAnimDisplacementParams[i] = channel.qScale[i] * displacementScale; // Apply displacement scale.
       }
       uniform.setUniform3fv(scratchAnimDisplacementParams);
     });
@@ -209,7 +209,7 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
       if (lutGeom.lut.auxDisplacements && analysisStyle && analysisStyle.displacementChannelName && undefined !== (channel = lutGeom.lut.auxDisplacements.get(analysisStyle.displacementChannelName))) {
         const displacementScale = analysisStyle.displacementScale ? analysisStyle.displacementScale : 1.0;
         for (let i = 0; i < 3; i++)
-          scratchAnimDisplacementParams[i] = channel.qOrigin[i] * displacementScale;
+          scratchAnimDisplacementParams[i] = channel.qOrigin[i] * displacementScale;   // Apply displacement scale
       }
       uniform.setUniform3fv(scratchAnimDisplacementParams);
     });
