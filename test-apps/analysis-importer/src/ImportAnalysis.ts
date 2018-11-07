@@ -126,7 +126,11 @@ function createFlatMeshWithWaves() {
     }
 
     const polyface = builder.claimPolyface();
-    const zeroScalarData = [], zeroDisplacementData = [], radialHeightData = [], radialSlopeData = [], radialDisplacementData = [];
+    const zeroScalarData = [],
+        zeroDisplacementData = [],
+        radialHeightData = [],
+        radialSlopeData = [],
+        radialDisplacementData = [];
     const radius = nDimensions * spacing / 2.0;
     const center = new Point3d(radius, radius, 0.0);
     const maxHeight = radius / 4.0;
@@ -150,9 +154,18 @@ function createFlatMeshWithWaves() {
         radialDisplacementData.push(height);
     }
 
-    const radialDisplacementDataVector = [new AuxChannelData(0.0, zeroDisplacementData), new AuxChannelData(1.0, radialDisplacementData), new AuxChannelData(2.0, zeroDisplacementData)];
-    const radialHeightDataVector = [new AuxChannelData(0.0, zeroScalarData), new AuxChannelData(1.0, radialHeightData), new AuxChannelData(2.0, zeroScalarData)];
-    const radialSlopeDataVector = [new AuxChannelData(0.0, zeroScalarData), new AuxChannelData(1.0, radialSlopeData), new AuxChannelData(2.0, zeroScalarData)];
+    const radialDisplacementDataVector =
+        [new AuxChannelData(0.0, zeroDisplacementData),
+        new AuxChannelData(1.0, radialDisplacementData),
+        new AuxChannelData(2.0, zeroDisplacementData)];
+    const radialHeightDataVector =
+        [new AuxChannelData(0.0, zeroScalarData),
+        new AuxChannelData(1.0, radialHeightData),
+        new AuxChannelData(2.0, zeroScalarData)];
+    const radialSlopeDataVector =
+        [new AuxChannelData(0.0, zeroScalarData),
+        new AuxChannelData(1.0, radialSlopeData),
+        new AuxChannelData(2.0, zeroScalarData)];
 
     auxChannels.push(new AuxChannel(radialDisplacementDataVector, AuxChannelDataType.Vector, "Radial Displacement", "Radial: Time"));
     auxChannels.push(new AuxChannel(radialHeightDataVector, AuxChannelDataType.Distance, "Radial Height", "Radial: Time"));
