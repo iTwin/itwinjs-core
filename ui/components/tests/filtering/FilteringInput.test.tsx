@@ -6,6 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as enzyme from "enzyme";
 import * as React from "react";
+import { Key } from "ts-key-enum";
 
 import { FilteringInput } from "../../src/filtering/FilteringInput";
 import { ResultSelector } from "../../src/filtering/ResultSelector";
@@ -110,10 +111,10 @@ describe("FilteringInput", () => {
     const inputField = filteringInput.find("input[type=\"text\"]").first();
     inputField.simulate("change", { target: { value: "test" } });
 
-    inputField.simulate("keyDown", { keyCode: 15 });
+    inputField.simulate("keyDown", { key: Key.Backspace });
     expect(startCallback).to.not.be.called;
 
-    inputField.simulate("keyDown", { keyCode: 13 });
+    inputField.simulate("keyDown", { key: Key.Enter });
     expect(startCallback).to.be.calledOnce;
   });
 
@@ -129,7 +130,7 @@ describe("FilteringInput", () => {
     const inputField = filteringInput.find("input[type=\"text\"]").first();
     expect(inputField.props().value).to.be.empty;
 
-    inputField.simulate("keyDown", { keyCode: 13 });
+    inputField.simulate("keyDown", { key: Key.Enter });
     expect(startCallback).to.not.be.called;
 
     const searchButton = filteringInput.find(".filtering-input-button");

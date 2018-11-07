@@ -5,6 +5,7 @@
 /** @module Filtering  */
 
 import * as React from "react";
+import { Key } from "ts-key-enum";
 import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
 import "./FilteringInput.scss";
 import UiComponents from "../UiComponents";
@@ -74,7 +75,7 @@ export class FilteringInput extends React.Component<FilteringInputProps, Filteri
   }
 
   private _onFilterKeyDown = (e: React.KeyboardEvent<HTMLElement>): void => {
-    if (e.keyCode !== 13) // Enter
+    if (e.key !== Key.Enter)
       return;
 
     if (!this.state.searchText)
