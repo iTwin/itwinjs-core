@@ -150,9 +150,9 @@
       "integrity": "sha1-O0KPBOcSPHOVHnP4uyBhEhBgbNQ="
     },
     "@bentley/imodeljs-native-platform-api": {
-      "version": "0.66.0",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-api/-/imodeljs-native-platform-api-0.66.0.tgz",
-      "integrity": "sha1-klrPlb7AXYfoFf3LM7z2hXcxXZg="
+      "version": "0.67.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-api/-/imodeljs-native-platform-api-0.67.0.tgz",
+      "integrity": "sha1-kKoUpqWwD54iaSWtz2OUj5/OHIU="
     },
     "@fimbul/bifrost": {
       "version": "0.15.0",
@@ -450,9 +450,9 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-pIgkG9Qn9xYcsPCdFnIPnNBI7+c=",
+      "integrity": "sha1-eC0fLPQ8hhdWSQMgjkSN9WaXwyY=",
       "requires": {
-        "@bentley/imodeljs-native-platform-api": "0.66.0",
+        "@bentley/imodeljs-native-platform-api": "0.67.0",
         "@types/chai": "4.1.7",
         "@types/express": "4.16.0",
         "@types/form-data": "2.2.1",
@@ -1678,9 +1678,9 @@
       }
     },
     "@types/react-router": {
-      "version": "4.4.0",
-      "resolved": "https://registry.npmjs.org/@types/react-router/-/react-router-4.4.0.tgz",
-      "integrity": "sha512-b16Fpy4nsxC4Ntu72+VAl0kYd1qrT8M5aRGBJ0D4RoY5QeGaA5VguPWu1If2+g2dLNvb8A4vAMQAcDgYdQ4L9w==",
+      "version": "4.4.1",
+      "resolved": "https://registry.npmjs.org/@types/react-router/-/react-router-4.4.1.tgz",
+      "integrity": "sha512-CtQfdcXyMye3vflnQQ2sHU832iDJRoAr4P+7f964KlLYupXU1I5crP1+d/WnCMo6mmtjBjqQvxrtbAbodqerMA==",
       "requires": {
         "@types/history": "4.7.2",
         "@types/react": "16.4.18"
@@ -1693,7 +1693,7 @@
       "requires": {
         "@types/history": "4.7.2",
         "@types/react": "16.4.18",
-        "@types/react-router": "4.4.0"
+        "@types/react-router": "4.4.1"
       }
     },
     "@types/rimraf": {
@@ -5226,7 +5226,7 @@
       "dependencies": {
         "fs-extra": {
           "version": "0.30.0",
-          "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-0.30.0.tgz",
+          "resolved": "http://registry.npmjs.org/fs-extra/-/fs-extra-0.30.0.tgz",
           "integrity": "sha1-8jP/zAjU2n1DLapEl3aYnbHfk/A=",
           "requires": {
             "graceful-fs": "4.1.15",
@@ -18232,7 +18232,7 @@
       "dependencies": {
         "fs-extra": {
           "version": "0.30.0",
-          "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-0.30.0.tgz",
+          "resolved": "http://registry.npmjs.org/fs-extra/-/fs-extra-0.30.0.tgz",
           "integrity": "sha1-8jP/zAjU2n1DLapEl3aYnbHfk/A=",
           "requires": {
             "graceful-fs": "4.1.15",
@@ -18898,7 +18898,7 @@
       "dependencies": {
         "fs-extra": {
           "version": "0.30.0",
-          "resolved": "https://registry.npmjs.org/fs-extra/-/fs-extra-0.30.0.tgz",
+          "resolved": "http://registry.npmjs.org/fs-extra/-/fs-extra-0.30.0.tgz",
           "integrity": "sha1-8jP/zAjU2n1DLapEl3aYnbHfk/A=",
           "requires": {
             "graceful-fs": "4.1.15",

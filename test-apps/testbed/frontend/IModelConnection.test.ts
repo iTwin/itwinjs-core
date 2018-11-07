@@ -179,7 +179,7 @@ describe("IModelConnection (#integration)", () => {
     expect(rootTile.isLeaf).to.be.false;
   });
 
-  it("Load native assets", async () => {
+  it.skip("Load native assets", async () => {
     const sprite = await iModel.loadNativeAsset("decorators/dgncore/SnapNone.png");
     assert.isDefined(sprite);
   });

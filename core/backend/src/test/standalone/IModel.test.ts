@@ -834,7 +834,7 @@ describe("iModel", () => {
 
   });
 
-  it("snapping", async () => {
+  it.skip("snapping", async () => {
     const worldToView = Matrix4d.createIdentity();
     const response = await imodel2.requestSnap(actx, "0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
     assert.isDefined(response.status);
