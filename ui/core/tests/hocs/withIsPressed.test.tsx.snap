@@ -2,6 +2,7 @@
 
 exports[`withIsPressed renders correctly 1`] = `
 <div
+  className="withispressed-wrapper"
   onMouseDown={[Function]}
   onMouseLeave={[Function]}
   onMouseUp={[Function]}

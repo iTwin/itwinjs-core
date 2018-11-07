@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Dialog } from "../../src/index";
+import { Dialog, ButtonType } from "../../src/index";
 import TestUtils from "../TestUtils";
 
 describe("Dialog", () => {
@@ -13,7 +13,7 @@ describe("Dialog", () => {
     await TestUtils.initializeUiCore();
   });
 
-  describe("<Dialog />", () => {
+  describe("renders", () => {
     it("should render", () => {
       const wrapper = mount(<Dialog opened={true} />);
       wrapper.unmount();
@@ -22,7 +22,28 @@ describe("Dialog", () => {
     it("renders correctly", () => {
       shallow(<Dialog opened={true} />).should.matchSnapshot();
     });
+  });
 
+  describe("buttons", () => {
+    it("OK & Cancel", () => {
+      mount(<Dialog opened={true}
+        buttonCluster={[
+          { type: ButtonType.OK, onClick: () => { } },
+          { type: ButtonType.Cancel, onClick: () => { } },
+        ]} />);
+    });
+
+    it("Yes, No & Retry", () => {
+      mount(<Dialog opened={true}
+        buttonCluster={[
+          { type: ButtonType.Yes, onClick: () => { } },
+          { type: ButtonType.No, onClick: () => { } },
+          { type: ButtonType.Retry, onClick: () => { } },
+        ]} />);
+    });
+  });
+
+  describe("movable & resizable", () => {
     it("movable", () => {
       const wrapper = mount(<Dialog opened={true} movable={true} />);
       // TODO: simulate move

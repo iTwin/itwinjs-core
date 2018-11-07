@@ -18,6 +18,7 @@ export interface Props {
 }
 
 export interface State {
+  dataProvider: PresentationTreeDataProvider;
   filter: string;
   filtering: boolean;
   prevProps: Props;
@@ -26,12 +27,11 @@ export interface State {
 }
 
 export default class TreeWidget extends React.Component<Props, State> {
-  private _dataProvider: PresentationTreeDataProvider;
 
   constructor(props: Props) {
     super(props);
-    this._dataProvider = new PresentationTreeDataProvider(props.imodel, props.rulesetId);
     this.state = {
+      dataProvider: new PresentationTreeDataProvider(props.imodel, props.rulesetId),
       filter: "",
       filtering: false,
       prevProps: props,
@@ -41,9 +41,10 @@ export default class TreeWidget extends React.Component<Props, State> {
   }
 
   public static getDerivedStateFromProps(nextProps: Props, state: State) {
+    const base = { ...state, prevProps: nextProps };
     if (nextProps.imodel !== state.prevProps.imodel || nextProps.rulesetId !== state.prevProps.rulesetId)
-      return { ...state, prevProps: nextProps, filtering: true };
-    return state;
+      return { ...base, dataProvider: new PresentationTreeDataProvider(nextProps.imodel, nextProps.rulesetId) };
+    return base;
   }
 
   // tslint:disable-next-line:naming-convention
@@ -74,9 +75,6 @@ export default class TreeWidget extends React.Component<Props, State> {
   }
 
   public render() {
-    if (this.props.imodel !== this.state.prevProps.imodel || this.props.rulesetId !== this.state.prevProps.rulesetId)
-      this._dataProvider = new PresentationTreeDataProvider(this.props.imodel, this.props.rulesetId);
-
     return (
       <div className="treewidget">
         <div className="treewidget-header">
@@ -91,7 +89,7 @@ export default class TreeWidget extends React.Component<Props, State> {
               resultCount: this.state.highlightedCount,
             }} />
         </div>
-        <SampleTree dataProvider={this._dataProvider} filter={this.state.filter}
+        <SampleTree dataProvider={this.state.dataProvider} filter={this.state.filter}
           onFilterApplied={this.onFilterApplied}
           onHighlightedCounted={this._onHighlightedCounted}
           activeHighlightedIndex={this.state.activeHighlightedIndex} />

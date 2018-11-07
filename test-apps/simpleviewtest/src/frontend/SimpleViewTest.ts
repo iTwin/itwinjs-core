@@ -5,7 +5,6 @@
 import { JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
-import { Config } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, LinePixels, ModelProps, ModelQueryParams, RenderMode, RgbColor, RpcConfiguration,
@@ -16,7 +15,7 @@ import {
   AccuDraw, AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, BeButtonEvent, Cluster, CoordinateLockOverrides, DecorateContext,
   DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
-  SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus,
+  SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus, imageBufferToPngDataUrl,
 } from "@bentley/imodeljs-frontend";
 import { FeatureSymbology, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/webgl";
@@ -1444,6 +1443,23 @@ function keepOpenDebugToolsMenu(_open: boolean = true) { // keep open debug tool
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
+function saveImage() {
+  const vp = theViewport!;
+  const buffer = vp.readImage(undefined, undefined, true); // flip vertically...
+  if (undefined === buffer) {
+    alert("Failed to read image");
+    return;
+  }
+
+  const url = imageBufferToPngDataUrl(buffer);
+  if (undefined === url) {
+    alert("Failed to produce PNG");
+    return;
+  }
+
+  window.open(url, "Saved View");
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
   if (MobileRpcConfiguration.isMobileFrontend) {
@@ -1497,6 +1513,7 @@ function wireIconsToFunctions() {
   // debug tool handlers
   addClickListener("incidentMarkers", () => IncidentMarkerDemo.toggle());
   addClickListener("projectExtents", () => ProjectExtentsDecoration.toggle());
+  addClickListener("saveImage", () => saveImage());
   addClickListener("debugToolsMenu", () => keepOpenDebugToolsMenu());
 
   // standard view rotation handlers
@@ -1749,7 +1766,6 @@ async function main() {
   } else {
     const uriPrefix = configuration.customOrchestratorUri;
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
-    Config.App.set("imjs_dev_cors_proxy_server", "https://localhost:3001");
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())

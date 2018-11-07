@@ -55,10 +55,11 @@ class ExerciseCurve {
       ck.testCoordinate(scaleFactor * pointA0.distance(pointA1), pointB0.distance(pointB1));
       const frameA0 = curveA.fractionToFrenetFrame(u0);
       const frameB0 = curveB.fractionToFrenetFrame(u0);
-      if (ck.testPointer(frameA0)
+      if (frameA0 && frameB0
+        /* ck.testPointer(frameA0)
         && ck.testPointer(frameB0)
         && frameA0
-        && frameB0) {
+        && frameB0*/ ) {
         ck.testTransform(frameA0, frameB0);
         const frameA0Inverse = frameA0.inverse();
         if (ck.testPointer(frameA0Inverse) && frameA0Inverse) {
@@ -91,9 +92,9 @@ class ExerciseCurve {
     if (curve instanceof BSplineCurve3d) return;  // TODO
     // if (curve instanceof TransitionSpiral3d) return;  // TODO
     for (const fractionA of [0.421, 0.421, 0.45, 0.45]) {
-      const frameA = curve.fractionToFrenetFrame(fractionA)!; // just point and tangent needed, but exercise this . .
-      if (ck.testPointer(frameA) && frameA) {
-        const plane = Plane3dByOriginAndUnitNormal.create(frameA.getOrigin(), frameA.matrix.columnX())!;
+      const tangentA = curve.fractionToPointAndDerivative(fractionA)!;
+      if (ck.testPointer(tangentA) && tangentA) {
+        const plane = Plane3dByOriginAndUnitNormal.create(tangentA.origin, tangentA.direction)!;
         const intersections: CurveLocationDetail[] = [];
         curve.appendPlaneIntersectionPoints(plane!, intersections);
         const foundAt = intersections.filter(
@@ -195,14 +196,23 @@ class ExerciseCurve {
         const approximateDerivative2 = delta012.scale(1.0 / (derivativeIncrement * derivativeIncrement));
         ck.testTrue(aproximateDerivative.distance(ray1.direction) < derivativeTolerance * (1 + ray1.direction.magnitude()),
           "approximate derivative", ray1.direction, aproximateDerivative, curve, fraction);
-        if (plane1 && !(curve instanceof BSplineCurve3d)) { //  curve instanceof TransitionSpiral3d
+        if (plane1) { //  curve instanceof TransitionSpiral3d
           ck.testPoint3d(ray1.origin, plane1.origin, "points with derivatives");
           if (!(curve instanceof TransitionSpiral3d)) {
             // TransitionSpiral has wierd derivative behavior?
-            ck.testTrue(approximateDerivative2.distance(plane1.vectorV) < derivative2Tolerance * (1 + plane1.vectorV.magnitude()),
-              "approximate 2nd derivative", plane1.vectorV, approximateDerivative2, curve, fraction);
-            ck.testTrue(approximateDerivative2.distance(plane1.vectorV) < derivative2Tolerance * (1 + plane1.vectorV.magnitude()),
-              "approximate 2nd derivative", plane1.vectorV, approximateDerivative2, curve, fraction);
+            // if (!ck.testTrue(approximateDerivative2.distance(plane1.vectorV) < derivative2Tolerance * (1 + plane1.vectorV.magnitude())))
+            //  curve.fractionToPointAnd2Derivatives(fraction);
+            const radians = approximateDerivative2.angleTo(plane1.vectorV).radians;
+            if (!ck.testLE(radians, 0.001))
+              curve.fractionToPointAnd2Derivatives(fraction);
+            if (!ck.testTrue(approximateDerivative2.distance(plane1.vectorV) < derivative2Tolerance * (1 + plane1.vectorV.magnitude()))) {
+              const magU = plane1.vectorU.magnitude();
+              const magV = plane1.vectorV.magnitude();
+              const magV2 = approximateDerivative2.magnitude();
+              const ratio = magV / magV2;
+              console.log(" (magU " + magU + ") (magV " + magV + ") (magV2 " + magV2 + ") (magV/magV2 " + ratio + ") (L " + curve.curveLength() + ") (radians " + radians + ")");
+              curve.fractionToPointAnd2Derivatives(fraction);
+            }
           }
         }
       }
@@ -236,7 +246,8 @@ class ExerciseCurve {
       if (detail.curve === curve) {
         if (!ck.testCoordinate(fractionA, detail.fraction, "fraction round trip")
           || !ck.testPoint3d(pointA, detail.point, "round trip point")) {
-          detail = curve.closestPoint(pointA, false);
+          const pointB = curve.fractionToPoint(fractionA);
+          detail = curve.closestPoint(pointB, false);
         } else {
           // The search tunneled into a contained curve.   Only verify the point.
           if (!ck.testPoint3d(pointA, detail.point, "round trip point")
@@ -414,8 +425,8 @@ class ExerciseCurve {
   }
 }
 
-describe("CurvePrimitive.Evaluations", () => {
-  it("Create and exercise curves", () => {
+describe("CurveChainWithDistanceIndex", () => {
+  it("Exercise", () => {
     const ck = new Checker();
     ExerciseCurve.RunTest(ck);
     ck.checkpoint("End CurvePrimitive.Evaluations");
@@ -434,6 +445,7 @@ describe("CurvePrimitive.Evaluations", () => {
       ExerciseCurve.exerciseStroke(ck, p);
       ExerciseCurve.exerciseClosestPoint(ck, p, 0.1);
       ExerciseCurve.exerciseCloneAndTransform(ck, p);
+      ExerciseCurve.exerciseMoveSignedDistance(ck, p);
     }
 
     ck.checkpoint("CurvePrimitive.Create and exercise distanceIndex");

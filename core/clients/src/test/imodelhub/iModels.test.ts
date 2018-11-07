@@ -14,7 +14,7 @@ import {
   IModelHubClientError,
 } from "../../";
 
-import { TestConfig } from "../TestConfig";
+import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 
@@ -153,7 +153,7 @@ describe("iModelHub iModelHandler", () => {
 
   before(async function (this: Mocha.IHookCallbackContext) {
     this.enableTimeouts(false);
-    accessToken = await utils.login();
+    accessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     projectId = await utils.getProjectId(accessToken, undefined);
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);

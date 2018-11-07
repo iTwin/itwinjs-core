@@ -149,6 +149,7 @@
     "viewlet",
     "viewports",
     "viewstate",
+    "withispressed",
     "zbuffer"
   ],
   "typescript.tsdk": "node_modules\\typescript\\lib",

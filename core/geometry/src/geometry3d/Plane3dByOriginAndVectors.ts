@@ -6,6 +6,7 @@
 /** @module CartesianGeometry */
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { BeJSONFunctions, Geometry } from "../Geometry";
+import { Transform } from "./Transform";
 /**
  * A Point3dVector3dVector3d is an origin and a pair of vectors.
  * This defines a plane with (possibly skewed) uv coordinates
@@ -27,6 +28,35 @@ export class Plane3dByOriginAndVectors implements BeJSONFunctions {
       return result;
     }
     return new Plane3dByOriginAndVectors(origin.clone(), vectorU.clone(), vectorV.clone());
+  }
+  /**
+   * Return a Plane3dByOriginAndVectors, with
+   * * irigin is the translation (aka origin) from the Transform
+   * * vectorU is the X column of the transform
+   * * vectorV is the Y column of the transform.
+   * @param transform source trnasform
+   * @param xLength optional length to impose on vectorU.
+   * @param yLength optional length to impose on vectorV.
+   * @param result optional preexisting result
+   */
+  public static createFromTransformColumnsXYAndLengths(transform: Transform,
+    xLength: number | undefined, yLength: number | undefined,
+    result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+    if (result) {
+      result.origin.setFrom(transform.getOrigin());
+      transform.matrix.columnX(result.vectorU);
+      transform.matrix.columnY(result.vectorV);
+    } else {
+      result = new Plane3dByOriginAndVectors(
+        transform.getOrigin(),
+        transform.matrix.columnX(),
+        transform.matrix.columnY());
+    }
+    if (xLength !== undefined)
+      result.vectorU.scaleToLength(xLength, result.vectorU);
+    if (yLength !== undefined)
+      result.vectorV.scaleToLength(yLength, result.vectorV);
+    return result;
   }
   /** Capture origin and directions in a new planed. */
   public static createCapture(origin: Point3d, vectorU: Vector3d, vectorV: Vector3d, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {

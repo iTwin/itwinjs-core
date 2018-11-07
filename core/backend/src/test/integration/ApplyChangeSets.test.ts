@@ -93,11 +93,6 @@ describe("ApplyChangeSets (#integration)", () => {
     iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
     await testAllOperations(accessToken, projectId, iModelId);
 
-    projectName = "NodeJsTestProject"; iModelName = "TestModel";
-    projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
-    iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
-    await testAllOperations(accessToken, projectId, iModelId);
-
     // Project was removed - find replacement
     // projectName = "SampleBisPlant"; iModelName = "samplePlant20";
     // projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);

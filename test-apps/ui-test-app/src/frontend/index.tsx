@@ -36,6 +36,8 @@ import { AppUi } from "./appui/AppUi";
 import AppBackstage, { BackstageShow, BackstageHide } from "./appui/AppBackstage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { MeasurePointsTool } from "./tools/MeasurePoints";
+import { Tool1 } from "./tools/Tool1";
+import { Tool2 } from "./tools/Tool2";
 
 // Initialize my application gateway configuration for the frontend
 let rpcConfiguration: RpcConfiguration;
@@ -161,6 +163,8 @@ export class SampleAppIModelApp extends IModelApp {
         BackstageShow.register(this.sampleAppNamespace);
         BackstageHide.register(this.sampleAppNamespace);
         MeasurePointsTool.register(this.sampleAppNamespace);
+        Tool1.register(this.sampleAppNamespace);
+        Tool2.register(this.sampleAppNamespace);
     }
 
     public static async handleIModelViewsSelected(iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) {

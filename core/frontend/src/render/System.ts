@@ -521,7 +521,7 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   /** @hidden */
-  public abstract readImage(rect: ViewRect, targetSize: Point2d): ImageBuffer | undefined;
+  public abstract readImage(rect: ViewRect, targetSize: Point2d, flipVertically: boolean): ImageBuffer | undefined;
 }
 
 /** Describes a texture loaded from an HTMLImageElement */

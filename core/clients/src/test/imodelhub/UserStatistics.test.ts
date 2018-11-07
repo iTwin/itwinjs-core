@@ -73,8 +73,8 @@ describe("iModelHubClient UserStatisticsHandler", () => {
   const user2PushedChangesetsCount = 0;
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    accessTokens.push(await utils.login());
-    accessTokens.push(await utils.login(TestUsers.manager));
+    accessTokens.push(TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super));
+    accessTokens.push(TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.manager));
     await utils.createIModel(accessTokens[0], imodelName, undefined, true);
     imodelId = await utils.getIModelId(accessTokens[0], imodelName);
 

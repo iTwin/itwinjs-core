@@ -29,6 +29,11 @@ describe("RadialMenu", () => {
     it("renders correctly", () => {
       shallow(radialMenu1).should.matchSnapshot();
     });
+
+    it("should handle props changes", () => {
+      const wrapper = mount(radialMenu1);
+      wrapper.setProps({ innerRadius: 20, outRadius: 120 });
+    });
   });
 
   describe("<RadialButton />", () => {
@@ -57,6 +62,7 @@ describe("RadialMenu", () => {
             <RadialButton
               key={index}
               icon={obj.icon}
+              labelRotate={true}
             >{obj.label}
             </RadialButton>
           );

@@ -7,6 +7,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
+
 import Timer from "../utils/Timer";
 import { CommonProps } from "../Props";
 import "./Popup.scss";
@@ -50,6 +51,13 @@ export interface PopupProps extends CommonProps {
 interface PopupState {
   isShown: boolean;
   position: Position;
+}
+
+interface Rect {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
 }
 
 /** Popup React component */
@@ -142,7 +150,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
 
   private _onEsc = (event: any): void => {
     // Esc key
-    if (event.keyCode === 27) {
+    if (event.key === "Escape") {
       this._onClose();
     }
   }
@@ -152,8 +160,8 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return;
     }
 
-    document.body.addEventListener("click", this._onBodyClick, false);
-    document.body.addEventListener("keydown", this._onEsc, false);
+    document.addEventListener("click", this._onBodyClick, true);
+    document.addEventListener("keydown", this._onEsc, true);
 
     const newPosition = this.withinViewport();
     this.setState((_prevState) => ({ position: newPosition, isShown: true }), () => {
@@ -167,8 +175,8 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return;
     }
 
-    document.body.removeEventListener("click", this._onBodyClick, false);
-    document.body.removeEventListener("keydown", this._onEsc, false);
+    document.removeEventListener("click", this._onBodyClick, true);
+    document.removeEventListener("keydown", this._onEsc, true);
 
     this.setState((_prevState) => ({ isShown: false, position: this.props.position }), () => {
       if (this.props.onClose)
@@ -206,7 +214,8 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   private withinViewport(): Position {
     const node = ReactDOM.findDOMNode(this) as Element;
     if (node && this._targetRef) {
-      const viewportRect = new DOMRect(window.scrollX, window.scrollY, window.scrollX + window.innerWidth, window.scrollY + window.innerHeight);
+      // Note: Cannot use DOMRect yet since it's experimental and not available in all browsers (Nov. 2018)
+      const viewportRect: Rect = { left: window.scrollX, top: window.scrollY, right: window.scrollX + window.innerWidth, bottom: window.scrollY + window.innerHeight };
       const targetRect = this._targetRef!.getBoundingClientRect();
       const popupRect = node.getBoundingClientRect();
       const containerStyle = window.getComputedStyle(this._targetRef!);

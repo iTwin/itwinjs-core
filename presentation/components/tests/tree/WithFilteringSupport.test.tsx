@@ -9,6 +9,7 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/tests/_helpers/Mocks";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Tree } from "@bentley/ui-components";
+import { ActiveResultNode } from "@bentley/ui-components/lib/tree/HighlightingEngine";
 import withFilteringSupport, { Props } from "../../lib/tree/WithFilteringSupport";
 import FilteredPresentationTreeDataProvider from "../../lib/tree/FilteredDataProvider";
 import IPresentationTreeDataProvider from "../../lib/tree/IPresentationTreeDataProvider";
@@ -307,15 +308,32 @@ describe("Tree withFilteringSupport", () => {
       expect(treeInstance.render()).to.matchSnapshot();
     });
 
-    it("renders with full highlightingProps", async () => {
+    it("renders with highlightingProps only if filter is set", async () => {
       const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
       filteredDataProviderMock.setup((x) => x.getActiveResultNode(moq.It.isAny())).returns(() => ({ id: "test", index: 0 }));
 
       tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
+      tree.setProps({ activeHighlightedIndex: 6, filter: undefined });
+      expect(tree.shallow().find(Tree).props().nodeHighlightingProps).to.be.undefined;
+
+      tree.setProps({ activeHighlightedIndex: 6, filter: "" });
+      expect(tree.shallow().find(Tree).props().nodeHighlightingProps).to.be.undefined;
+    });
+
+    it("renders with full highlightingProps", async () => {
+      const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
+      const activeResultNode: ActiveResultNode = { id: "test", index: 0 };
+      filteredDataProviderMock.setup((x) => x.getActiveResultNode(moq.It.isAny())).returns(() => activeResultNode);
+
+      tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
       tree.setProps({ activeHighlightedIndex: 6 });
 
-      expect(treeInstance.render()).to.matchSnapshot();
+      expect(tree.shallow().find(Tree).props().nodeHighlightingProps).to.deep.eq({
+        searchText: filter,
+        activeResultNode,
+      });
     });
+
   });
 
 });

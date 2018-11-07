@@ -104,7 +104,22 @@
     }
   },
   "tools": {
-    "select": "Select",
+    "Tool1": {
+      "keyin": "Tool1",
+      "description": "Test1 tool",
+      "flyover": "Tool1",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit"
+      }
+    },
+    "Tool2": {
+      "keyin": "Tool2",
+      "description": "Test2 tool",
+      "flyover": "Tool2",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit"
+      }
+    },
     "Measure": {
       "ByPoints": {
         "keyin": "Measure ByPoints",
@@ -116,6 +131,7 @@
         }
       }
     },
+    "select": "Select",
     "fitView": "Fit View",
     "windowArea": "Window Area",
     "rotate": "Rotate",

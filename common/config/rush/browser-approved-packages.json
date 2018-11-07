@@ -239,8 +239,16 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "electron-builder",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "electron-chromedriver",
       "allowedCategories": [ "internal", "tools" ]
+    },
+    {
+      "name": "electron-devtools-installer",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "enzyme",
@@ -659,6 +667,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "ts-key-enum",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "ts-loader",
       "allowedCategories": [ "frontend", "tools" ]
     },
@@ -788,7 +800,7 @@
     },
     {
       "name": "yargs",
-      "allowedCategories": [ "common", "tools" ]
+      "allowedCategories": [ "common", "internal", "tools" ]
     }
   ]
 }

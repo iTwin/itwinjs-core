@@ -210,20 +210,6 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Analysis importer backend tests",
-      "program": "${workspaceFolder}/test-apps/analysis-importer/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}/test-apps/analysis-importer/",
-      "args": [
-        "--testDir=${workspaceFolder}/test-apps/analysis-importer/backend/test",
-        "--debug"
-      ],
-      "port": 9229,
-      "protocol": "inspector",
-      "outputCapture": "std"
-    },
-    {
-      "type": "node",
-      "request": "launch",
       "name": "_Testbed (backend)",
       "cwd": "${workspaceFolder}/test-apps/testbed/",
       "runtimeExecutable": "${workspaceFolder}\\test-apps\\testbed\\node_modules\\.bin\\electron",
@@ -288,6 +274,23 @@
       "protocol": "inspector",
       "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/ui/components",
+      "env": {
+        "TS_NODE_PROJECT": "tests/tsconfig.json"
+      },
+      "args": [
+        "--opts",
+        "../mocha.opts",
+        "--no-timeouts",
+        "tests/**/*.{ts,tsx}"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[UI] Tests: Core",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/ui/core/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/ui/core",
       "env": {
         "TS_NODE_PROJECT": "tests/tsconfig.json"
       },
@@ -513,17 +516,33 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "Analysis backend tests",
-      "program": "${workspaceFolder}/test-apps/analysis-importer/node_modules/@bentley/bentleyjs-tools/scripts/test",
-      "cwd": "${workspaceFolder}/test-apps/analysis-importer",
-      "args": [
-        "--testDir=${workspaceFolder}/test-apps/analysis-importer/lib/backend/test",
-        "--debug"
+      "name": "Debug analysis-importer",
+      "program": "${workspaceRoot}/test-apps/analysis-importer/lib/ImportAnalysis.js",
+      "cwd": "${workspaceRoot}/test-apps/analysis-importer/",
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/agent-test-app/lib/**/*.js"
       ],
-      "port": 9229,
-      "protocol": "inspector",
-      "outputCapture": "std"
+      "protocol": "inspector"
     },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug imodel-from-geojson",
+      "program": "${workspaceRoot}/test-apps/imodel-from-geojson/lib/Main.js",
+      "cwd": "${workspaceRoot}/test-apps/imodel-from-geojson",
+      "args": [
+        "--input=${workspaceFolder}/test-apps/imodel-from-geojson/data/Neighborhoods_Philadelphia.geojson",
+        "--output=${workspaceFolder}/test-apps/imodel-from-geojson/lib/Neighborhoods_Philadelphia.bim"
+      ],
+      "smartStep": true,
+      "sourceMaps": true,
+      "outFiles": [
+        "${workspaceRoot}/test-apps/imodel-from-geojson/lib/**/*.js"
+      ],
+      "protocol": "inspector"
+    }
   ],
   "compounds": [
     {

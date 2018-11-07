@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`MessageBox <MessageBox /> renders correctly 1`] = `
+exports[`MessageBox renders renders correctly 1`] = `
 <Dialog
   alignment="center"
   buttonCluster={

@@ -29,7 +29,7 @@ export const enum ModifyElementSource {
 
 /**
  * The PrimitiveTool class can be used to implement tools to create or modify geometric elements.
- * @see [PrimitiveTool]($docs/learning/frontend/primitivetools.md)
+ * @see [Writing a PrimitiveTool]($docs/learning/frontend/primitivetools.md)
  */
 export abstract class PrimitiveTool extends InteractiveTool {
   public targetView?: Viewport;
@@ -110,7 +110,6 @@ export abstract class PrimitiveTool extends InteractiveTool {
    */
   public isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean {
     const vp = ev.viewport;
-
     if (undefined === vp)
       return false;
 
@@ -118,8 +117,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return true;
 
     const view = vp.view;
-    const iModel = view.iModel;
-    if (!view.isSpatialView() || iModel.isReadonly || !this.requireWriteableTarget())
+    if (!view.isSpatialView())
       return true;
 
     // NOTE: If points aren't being adjusted then the tool shouldn't be creating geometry currently (ex. locating elements) and we shouldn't filter point...
@@ -130,13 +128,12 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (!IModelApp.accuSnap.isSnapEnabled)
       return true;
 
-    const extents = iModel.projectExtents;
+    const extents = view.iModel.projectExtents;
     if (extents.containsPoint(ev.point))
       return true;
 
-    if (isButtonEvent && ev.isDown) {
+    if (isButtonEvent && ev.isDown)
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, IModelApp.i18n.translate("CoreTools:tools.ElementSet.Error.ProjectExtents")));
-    }
 
     return false;
   }
@@ -169,8 +166,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
   public abstract onRestartTool(): void;
 
   /**
-   * Called to reset tool to initial state. This method is provided here for convenience; the only
-   * external caller is ElementSetTool. PrimitiveTool implements this method to call onRestartTool.
+   * Called to reset tool to initial state. PrimitiveTool implements this method to call onRestartTool.
    */
   public onReinitialize(): void { this.onRestartTool(); }
 

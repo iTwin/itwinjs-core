@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
+import * as sinon from "sinon";
+import { expect } from "chai";
+
 import { withOnOutsideClick, Div } from "../../src/index";
 
 describe("WithOnOutsideClick", () => {
@@ -17,6 +20,17 @@ describe("WithOnOutsideClick", () => {
 
   it("renders correctly", () => {
     shallow(<WithOnOutsideClickDiv />).should.matchSnapshot();
+  });
+
+  it("should handle document click", () => {
+    const outerNode = document.createElement("div");
+    document.body.appendChild(outerNode);
+
+    const spyOnClose = sinon.spy();
+    mount(<WithOnOutsideClickDiv onOutsideClick={spyOnClose} />, { attachTo: outerNode });
+
+    outerNode.dispatchEvent(new MouseEvent("click"));
+    expect(spyOnClose.calledOnce).to.be.true;
   });
 
 });

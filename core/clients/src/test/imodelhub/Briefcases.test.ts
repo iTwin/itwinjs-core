@@ -12,7 +12,7 @@ import {
   IModelHubClient, Briefcase, BriefcaseQuery, IModelHubClientError,
 } from "../../";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
-import { TestConfig } from "../TestConfig";
+import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
@@ -59,7 +59,7 @@ describe("iModelHub BriefcaseHandler", () => {
 
   before(async function (this: Mocha.IHookCallbackContext) {
     this.enableTimeouts(false);
-    accessToken = await utils.login();
+    accessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
     iModelClient = utils.getDefaultClient();

@@ -1,17 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`SearchBox <SearchBox /> renders correctly 1`] = `
+exports[`SearchBox renders renders correctly 1`] = `
 <div
   className="searchbox"
 >
   <input
     onChange={[Function]}
     onCut={[Function]}
-    onKeyUp={[Function]}
+    onKeyDown={[Function]}
     onPaste={[Function]}
     placeholder="searchbox.search"
   />
   <div
+    className="searchbox-button"
     onClick={[Function]}
   >
     <span
