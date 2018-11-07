@@ -5,7 +5,8 @@
 /** @module Tree */
 
 import * as React from "react";
-import { TreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/Tree";
+import { TreeProps } from "@bentley/ui-components/lib/tree/component/Tree";
+import { ActiveResultNode, HighlightableTreeProps } from "@bentley/ui-components/lib/tree/HighlightingEngine";
 import { getDisplayName } from "../common/Utils";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 import FilteredPresentationTreeDataProvider from "./FilteredDataProvider";
@@ -134,21 +135,28 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
 
     public render() {
       const {
-        filter, dataProvider, onFilterApplied,
+        filter, dataProvider, onFilterApplied, onHighlightedCounted, activeHighlightedIndex,
         ...props /* tslint:disable-line: trailing-comma */
       } = this.props as any;
 
       const overlay = this.shouldDisplayOverlay ? <div className="filteredTreeOverlay" /> : undefined;
+
+      let nodeHighlightingProps: HighlightableTreeProps | undefined;
+      if (filter) {
+        let activeResultNode: ActiveResultNode | undefined;
+        if (this.state.filteredDataProvider && undefined !== activeHighlightedIndex)
+          activeResultNode = this.state.filteredDataProvider.getActiveResultNode(activeHighlightedIndex);
+        nodeHighlightingProps = {
+          searchText: filter,
+          activeResultNode,
+        };
+      }
+
       return (
         <div className="filteredTree">
           <TreeComponent
             dataProvider={this.state.filteredDataProvider ? this.state.filteredDataProvider : this.props.dataProvider}
-            nodeHighlightingProps={{
-              searchText: this.props.filter,
-              activeResultNode: this.state.filteredDataProvider && this.props.activeHighlightedIndex ?
-                this.state.filteredDataProvider.getActiveResultNode(this.props.activeHighlightedIndex!) :
-                undefined,
-            }}
+            nodeHighlightingProps={nodeHighlightingProps}
             {...props}
           />
           {overlay}

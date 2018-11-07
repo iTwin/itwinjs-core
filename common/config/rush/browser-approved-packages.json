@@ -667,6 +667,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "ts-key-enum",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "ts-loader",
       "allowedCategories": [ "frontend", "tools" ]
     },
