@@ -30,7 +30,7 @@ export class GeoJsonImporter extends IModelImporter {
   public import(): void {
     this.definitionModelId = super.insertDefinitionModel(IModelDb.rootSubjectId, "GeoJSON Definitions");
     this.physicalModelId = super.insertPhysicalModel(IModelDb.rootSubjectId, "GeoJSON Features");
-    this.featureCategoryId = super.insertSpatialCategory(this.definitionModelId, "GeoJSON Feature", ColorDef.green);
+    this.featureCategoryId = super.insertSpatialCategory(this.definitionModelId, "GeoJSON Feature", { color: ColorDef.green });
     this.iModelDb.updateProjectExtents(new AxisAlignedBox3d(new Point3d(-100000, -100000, -100000), new Point3d(100000, 100000, 100000))); // WIP
     this.iModelDb.setEcefLocation({ origin: [1253504, -4731150, 4075980], orientation: {} }); // WIP
     this.convertFeatureCollection();

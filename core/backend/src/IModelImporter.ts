@@ -3,7 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
-import { BisCodeSpec, CategoryProps, CategorySelectorProps, ColorDef, CreateIModelProps, DefinitionElementProps, InformationPartitionElementProps, ModelSelectorProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import {
+  BisCodeSpec, CategoryProps, CategorySelectorProps, CreateIModelProps, DefinitionElementProps, InformationPartitionElementProps,
+  ModelSelectorProps, SubCategoryAppearance, ModelProps,
+} from "@bentley/imodeljs-common";
 import { SpatialCategory } from "./Category";
 import { DefinitionPartition, PhysicalPartition } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -31,17 +34,17 @@ export abstract class IModelImporter {
    * @param color The color to use for the default SubCategory of this SpatialCategory
    * @returns The Id of the newly inserted SpatialCategory element.
    */
-  public insertSpatialCategory(definitionModelId: Id64String, name: string, color: ColorDef): Id64String {
+  public insertSpatialCategory(definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props): Id64String {
     const categoryProps: CategoryProps = {
       classFullName: SpatialCategory.classFullName,
       model: definitionModelId,
       code: SpatialCategory.createCode(this.iModelDb, definitionModelId, name),
       isPrivate: false,
     };
-    const categoryId: Id64String = this.iModelDb.elements.insertElement(categoryProps);
-    const category: SpatialCategory = this.iModelDb.elements.getElement(categoryId) as SpatialCategory;
-    category.setDefaultAppearance(new SubCategoryAppearance({ color }));
-    this.iModelDb.elements.updateElement(category);
+    const elements = this.iModelDb.elements;
+    const categoryId = elements.insertElement(categoryProps);
+    const category = elements.getElement(categoryId) as SpatialCategory;
+    category.setDefaultAppearance(defaultAppearance);
     return categoryId;
   }
   /**
@@ -107,11 +110,11 @@ export abstract class IModelImporter {
       },
       code: DefinitionPartition.createCode(this.iModelDb, parentSubjectId, name),
     };
-    const partitionId: Id64String = this.iModelDb.elements.insertElement(partitionProps);
-    const model: DefinitionModel = this.iModelDb.models.createModel({
+    const partitionId = this.iModelDb.elements.insertElement(partitionProps);
+    const model: ModelProps = {
       classFullName: DefinitionModel.classFullName,
       modeledElement: { id: partitionId },
-    }) as DefinitionModel;
+    };
     return this.iModelDb.models.insertModel(model);
   }
   /**
@@ -130,11 +133,11 @@ export abstract class IModelImporter {
       },
       code: PhysicalPartition.createCode(this.iModelDb, parentSubjectId, name),
     };
-    const partitionId: Id64String = this.iModelDb.elements.insertElement(partitionProps);
-    const model: PhysicalModel = this.iModelDb.models.createModel({
+    const partitionId = this.iModelDb.elements.insertElement(partitionProps);
+    const model: ModelProps = {
       classFullName: PhysicalModel.classFullName,
       modeledElement: { id: partitionId },
-    }) as PhysicalModel;
+    };
     return this.iModelDb.models.insertModel(model);
   }
 }

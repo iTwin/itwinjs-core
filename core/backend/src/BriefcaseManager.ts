@@ -99,7 +99,13 @@ export class BriefcaseEntry {
   public userId?: string;
 
   /** In-memory handle fo the IModelDb that corresponds with this briefcase. This is only set if an IModelDb wrapper has been created for this briefcase */
-  public iModelDb?: IModelDb;
+  private _iModelDb?: IModelDb;
+  public get iModelDb(): IModelDb | undefined { return this._iModelDb; }
+  public set iModelDb(iModelDb: IModelDb | undefined) {
+    // if (iModelDb)
+    //   this.nativeDb.setIModelDb(iModelDb);
+    this._iModelDb = iModelDb;
+  }
 
   /** File Id used to upload change sets for this briefcase (only setup in Read-Write cases) */
   public fileId?: string;
