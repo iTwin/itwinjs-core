@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as React from "react";
-import { expect, spy } from "chai";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -263,7 +264,7 @@ describe("ViewportSelectionHandler", () => {
         origReplace.apply(imodelMock.object.selectionSet, arguments);
         replaceCalled.resolve();
       };
-      replaceSpy = spy.on(imodelMock.object.selectionSet, SelectionSet.prototype.replace.name);
+      replaceSpy = sinon.spy(imodelMock.object.selectionSet, "replace");
     });
 
     it("ignores selection changes to other imodels", async () => {
@@ -278,7 +279,7 @@ describe("ViewportSelectionHandler", () => {
       };
       selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs, selectionManagerMock.object);
       selectionManagerMock.verify((x) => x.getSelection(imodelMock.object, moq.It.isAny()), moq.Times.never());
-      expect(replaceSpy).to.not.be.called();
+      expect(replaceSpy).to.not.be.called;
     });
 
     it("ignores selection changes to selection levels other than 0", async () => {
@@ -292,7 +293,7 @@ describe("ViewportSelectionHandler", () => {
       };
       selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs, selectionManagerMock.object);
       selectionManagerMock.verify((x) => x.getSelection(imodelMock.object, moq.It.isAny()), moq.Times.never());
-      expect(replaceSpy).to.not.be.called();
+      expect(replaceSpy).to.not.be.called;
     });
 
     it("replaces viewport selection with content of current unified selection", async () => {
@@ -343,7 +344,7 @@ describe("ViewportSelectionHandler", () => {
         content.contentSet[0].primaryKeys[1].id,
         content.contentSet[1].primaryKeys[0].id,
       ];
-      expect(replaceSpy).to.be.called.with(ids);
+      expect(replaceSpy).to.be.calledWith(ids);
     });
 
     it("replaces viewport selection with empty list when there's no content for unified selection", async () => {
@@ -375,7 +376,7 @@ describe("ViewportSelectionHandler", () => {
       await replaceCalled.promise;
 
       // verify viewport selection was changed with expected ids
-      expect(replaceSpy).to.be.called.with([]);
+      expect(replaceSpy).to.be.calledWith([]);
     });
 
     it("ignores viewport selection changes while reacting to unified selection changes", async () => {
@@ -484,17 +485,17 @@ describe("ViewportSelectionHandler", () => {
 
     it("ignores unified selection changes while reacting to viewport selection changes", async () => {
       const selectionSetSpies = [
-        spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.add.name),
-        spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.addAndRemove.name),
-        spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.emptyAll.name),
-        spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.invert.name),
-        spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.remove.name),
-        spy.on(imodelMock.target.selectionSet, SelectionSet.prototype.replace.name),
+        sinon.spy(imodelMock.target.selectionSet, "add"),
+        sinon.spy(imodelMock.target.selectionSet, "addAndRemove"),
+        sinon.spy(imodelMock.target.selectionSet, "emptyAll"),
+        sinon.spy(imodelMock.target.selectionSet, "invert"),
+        sinon.spy(imodelMock.target.selectionSet, "remove"),
+        sinon.spy(imodelMock.target.selectionSet, "replace"),
       ];
       const ids = [createRandomId()];
       imodelMock.target.selectionSet.onChanged.raiseEvent(imodelMock.object, SelectEventType.Add, new Set(ids));
       await selectionManagerCalled.promise;
-      selectionSetSpies.forEach((s) => expect(s).to.not.be.called());
+      selectionSetSpies.forEach((s) => expect(s).to.not.be.called);
     });
 
     it("reacts to viewport selection changes after changing imodel", async () => {

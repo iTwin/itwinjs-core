@@ -3,7 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-import { expect, spy } from "chai";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -69,18 +70,18 @@ describe("ContentDataProvider", () => {
   const verifyMemoizedCachesCleared = (expectCleared: boolean = true) => {
     Object.values(memoizedCacheSpies).forEach((s) => {
       if (expectCleared)
-        expect(s).to.be.called();
+        expect(s).to.be.called;
       else
-        expect(s).to.not.be.called();
+        expect(s).to.not.be.called;
     });
   };
   const resetMemoizedCacheSpies = () => {
-    (spy as any).restore();
+    sinon.restore();
     memoizedCacheSpies = {
-      defaultDescriptor: spy.on((provider as any).getDefaultContentDescriptor.cache, "clear"),
-      descriptor: spy.on(provider.publicGetContentDescriptor.cache, "clear"),
-      size: spy.on(provider.publicGetContentSetSize.cache, "clear"),
-      content: spy.on(provider.publicGetContent.cache, "clear"),
+      defaultDescriptor: sinon.spy((provider as any).getDefaultContentDescriptor.cache, "clear"),
+      descriptor: sinon.spy(provider.publicGetContentDescriptor.cache, "clear"),
+      size: sinon.spy(provider.publicGetContentSetSize.cache, "clear"),
+      content: sinon.spy(provider.publicGetContent.cache, "clear"),
     };
   };
 
@@ -177,22 +178,22 @@ describe("ContentDataProvider", () => {
 
     it("clears memoized descriptor", () => {
       provider.invalidateCache({ descriptor: true });
-      expect(memoizedCacheSpies.defaultDescriptor).to.be.called();
+      expect(memoizedCacheSpies.defaultDescriptor).to.be.called;
     });
 
     it("clears memoized configured descriptor", () => {
       provider.invalidateCache({ descriptorConfiguration: true });
-      expect(memoizedCacheSpies.descriptor).to.be.called();
+      expect(memoizedCacheSpies.descriptor).to.be.called;
     });
 
     it("clears memoized content set size", () => {
       provider.invalidateCache({ size: true });
-      expect(memoizedCacheSpies.size).to.be.called();
+      expect(memoizedCacheSpies.size).to.be.called;
     });
 
     it("clears memoized content", () => {
       provider.invalidateCache({ content: true });
-      expect(memoizedCacheSpies.content).to.be.called();
+      expect(memoizedCacheSpies.content).to.be.called;
     });
 
   });
@@ -233,12 +234,12 @@ describe("ContentDataProvider", () => {
     });
 
     it("configures copy of descriptor returned by presentation manager", async () => {
-      const configureSpy = spy.on(provider, Provider.prototype.configureContentDescriptor.name);
+      const configureSpy = sinon.spy(provider, "configureContentDescriptor");
       const result = createRandomDescriptor(displayType);
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => result);
       await provider.publicGetContentDescriptor();
-      expect(configureSpy).to.be.called;
+      expect(configureSpy).to.be.calledOnce;
     });
 
     it("memoizes result", async () => {

@@ -2,7 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect, spy } from "chai";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
@@ -306,12 +307,12 @@ describe("SelectionManager", () => {
   describe("handleEvent", () => {
 
     it("calls selectionChange.raiseEvent after addToSelection, replaceSelection, clearSelection, removeFromSelection", () => {
-      const raiseEventSpy = spy.on(selectionManager.selectionChange, selectionManager.selectionChange.raiseEvent.name);
+      const raiseEventSpy = sinon.spy(selectionManager.selectionChange, "raiseEvent");
       selectionManager.addToSelection(source, imodelMock.object, baseSelection);
       selectionManager.clearSelection(source, imodelMock.object);
       selectionManager.removeFromSelection(source, imodelMock.object, baseSelection);
       selectionManager.replaceSelection(source, imodelMock.object, baseSelection);
-      expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.been.called.exactly(4);
+      expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(4);
     });
 
   });
