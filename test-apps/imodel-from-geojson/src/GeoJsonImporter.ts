@@ -32,7 +32,7 @@ export class GeoJsonImporter extends IModelImporter {
     this.physicalModelId = super.insertPhysicalModel(IModelDb.rootSubjectId, "GeoJSON Features");
     this.featureCategoryId = super.insertSpatialCategory(this.definitionModelId, "GeoJSON Feature", { color: ColorDef.green });
 
-    /** To geo-locate the project we need to first scan the GeoJSon and extract range.  This would not be required
+    /** To geo-locate the project, we need to first scan the GeoJSon and extract range. This would not be required
      * if the bounding box was directly available.
      */
     const featureMin = new Cartographic(), featureMax = new Cartographic();
@@ -130,7 +130,7 @@ export class GeoJsonImporter extends IModelImporter {
       case 1:
         return outLoops[0];
       default:
-        return undefined;   // TBD... Multiloop Regions,
+        return undefined;   // TBD... Multi-loop Regions,
     }
   }
 

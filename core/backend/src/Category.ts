@@ -72,8 +72,8 @@ export class Category extends DefinitionElement implements CategoryProps {
 
   /** Set the appearance of the default SubCategory for this Category */
   public setDefaultAppearance(props: SubCategoryAppearance.Props): void {
-    const subCat = this.iModel.elements.getElement(this.myDefaultSubCategoryId()) as SubCategoryProps;
-    subCat.appearance = props;
+    const subCat = this.iModel.elements.getElement(this.myDefaultSubCategoryId()) as SubCategory;
+    subCat.appearance = new SubCategoryAppearance(props);
     this.iModel.elements.updateElement(subCat);
   }
 }

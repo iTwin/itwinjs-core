@@ -86,8 +86,8 @@ export class AnalysisImporter extends IModelImporter {
         for (const analysisStyleProp of analysisStyleProps) {
             let name = analysisStyleProp.scalarChannelName!;
             if (undefined !== analysisStyleProp.displacementChannelName) {
-                const exageration = (analysisStyleProp.displacementScale === 1.0) ? "" : (" X " + analysisStyleProp.displacementScale);
-                name = modelName + ": " + name + " and " + analysisStyleProp.displacementChannelName + exageration;
+                const exaggeration = (analysisStyleProp.displacementScale === 1.0) ? "" : (" X " + analysisStyleProp.displacementScale);
+                name = modelName + ": " + name + " and " + analysisStyleProp.displacementChannelName + exaggeration;
             }
             const displayStyleId = super.insertDisplayStyle3d(this.definitionModelId, name, viewFlags, backgroundColor, analysisStyleProp);
             const modelSelectorId = super.insertModelSelector(this.definitionModelId, name, [modelId]);
@@ -97,7 +97,7 @@ export class AnalysisImporter extends IModelImporter {
         }
         return viewIds;
     }
-    /** Import a polyface with auxilliary data */
+    /** Import a polyface with auxillary data */
     private importPolyfaceFromJson(jsonFileName: string) {
         const assetsDir = path.join(__dirname, "assets");
         const jsonString = readFileSync(path.join(assetsDir, jsonFileName), "utf8");
@@ -168,7 +168,7 @@ export class AnalysisImporter extends IModelImporter {
         auxChannels.push(new AuxChannel(radialHeightDataVector, AuxChannelDataType.Distance, "Animated Radial Height", "Radial: Time"));
         auxChannels.push(new AuxChannel(radialSlopeDataVector, AuxChannelDataType.Scalar, "Animated Radial Slope", "Radial: Time"));
 
-        /** Create linear waves -- 10 seperate frames.  */
+        /** Create linear waves -- 10 separate frames.  */
         const waveHeight = radius / 20.0;
         const waveLength = radius / 2.0;
         const frameCount = 10;
@@ -208,7 +208,7 @@ export class AnalysisImporter extends IModelImporter {
         this.definitionModelId = super.insertDefinitionModel(IModelDb.rootSubjectId, "Analysis Definitions");
 
         /** Create category for analytical polyfaces */
-        const categoryId = super.insertSpatialCategory(this.definitionModelId, "GeoJSON Feature", ColorDef.white);
+        const categoryId = super.insertSpatialCategory(this.definitionModelId, "GeoJSON Feature", { color: ColorDef.white });
 
         /** import a polyface representing a cantilever beam with stress and displacement data. */
         const importedPolyface = this.importPolyfaceFromJson("Cantilever.json");
@@ -216,7 +216,7 @@ export class AnalysisImporter extends IModelImporter {
         const cantileverViews = this.createAnalysisModel(importedPolyface, categoryId, "Cantilever", 100.0);
         super.setDefaultViewId(cantileverViews[0]);
 
-        /** demonstrate creation of a polyface with analytical data by creating a flat mesh and then superimposiing "wave" data */
+        /** demonstrate creation of a polyface with analytical data by creating a flat mesh and then superimposing "wave" data */
         const flatWaveMesh = this.createFlatMeshWithWaves();
         /** create a model containing the wave data (with display styles, views etc.) */
         this.createAnalysisModel(flatWaveMesh, categoryId, "Waves");

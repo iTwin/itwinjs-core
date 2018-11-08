@@ -2,13 +2,13 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { Id64Array, Id64String, Id64 } from "@bentley/bentleyjs-core";
 import {
   BisCodeSpec, CategoryProps, CategorySelectorProps, CreateIModelProps, DefinitionElementProps, InformationPartitionElementProps,
-  ModelSelectorProps, SubCategoryAppearance, ModelProps,
+  ModelSelectorProps, SubCategoryAppearance, ModelProps, CodeSpec, CodeScopeSpec, RelatedElement, ViewFlags, ColorDef, AnalysisStyleProps, DisplayStyleProps, IModel, SpatialViewDefinitionProps, ElementProps,
 } from "@bentley/imodeljs-common";
-import { SpatialCategory } from "./Category";
-import { DefinitionPartition, PhysicalPartition } from "./Element";
+import { SpatialCategory, DrawingCategory } from "./Category";
+import { DefinitionPartition, PhysicalPartition, DocumentPartition, Drawing } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { ElementRefersToElements } from "./LinkTableRelationship";
 import { DefinitionModel, DocumentListModel, DrawingModel, PhysicalModel } from "./Model";
