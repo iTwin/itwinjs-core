@@ -6,6 +6,8 @@ import { app as electron } from "electron";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { IModelTileRpcInterface, IModelReadRpcInterface, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-backend";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { Config } from "@bentley/imodeljs-clients";
 IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
@@ -15,6 +17,9 @@ Logger.initializeToConsole();
 
 // initialize imodeljs-backend
 IModelHost.startup();
+
+// initialize presentation-backend
+Presentation.initialize();
 
 // invoke platform-specific initialization
 (async () => {
@@ -26,7 +31,7 @@ IModelHost.startup();
     init = (await import("./web/WebServer")).default;
   }
   // get RPCs supported by this backend
-  const rpcs = [IModelTileRpcInterface, IModelReadRpcInterface];
+  const rpcs = [IModelTileRpcInterface, IModelReadRpcInterface, PresentationRpcInterface];
   // do initialize
   init(rpcs);
 })();
