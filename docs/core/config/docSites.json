@@ -26,6 +26,7 @@
   "metadata": {
     "home": "landing-page",
     "logo": "landing-page/assets/imodeljs-logo.svg",
+    "smallLogo": "landing-page/assets/imodeljs-icon.svg",
     "sponsoredByLogo": "landing-page/assets/bentley.svg",
     "favicon": "landing-page/assets/imodeljs_16.png",
     "docSiteOrder": [
@@ -34,7 +35,7 @@
       "learning",
       "bis",
       "reference",
-      "ChangeHistory"
+      "changehistory"
     ],
     "headerTabs": {
       "Getting Started": {
