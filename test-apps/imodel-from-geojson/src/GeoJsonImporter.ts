@@ -5,7 +5,7 @@
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex } from "@bentley/geometry-core";
 import { Cartographic, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, AxisAlignedBox3d, EcefLocation, ViewFlags } from "@bentley/imodeljs-common";
-import { IModelDb, IModelImporter, SpatialModel } from "@bentley/imodeljs-backend";
+import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelImporter, ModelSelector, PhysicalModel, SpatialCategory, SpatialModel } from "@bentley/imodeljs-backend";
 import { GeoJson } from "./GeoJson";
 
 /** */
@@ -28,9 +28,9 @@ export class GeoJsonImporter extends IModelImporter {
 
   /** Perform the import */
   public import(): void {
-    this.definitionModelId = super.insertDefinitionModel(IModelDb.rootSubjectId, "GeoJSON Definitions");
-    this.physicalModelId = super.insertPhysicalModel(IModelDb.rootSubjectId, "GeoJSON Features");
-    this.featureCategoryId = super.insertSpatialCategory(this.definitionModelId, "GeoJSON Feature", { color: ColorDef.green });
+    this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "GeoJSON Definitions");
+    this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "GeoJSON Features");
+    this.featureCategoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, "GeoJSON Feature", { color: ColorDef.green });
 
     /** To geo-locate the project, we need to first scan the GeoJSon and extract range. This would not be required
      * if the bounding box was directly available.
@@ -151,12 +151,12 @@ export class GeoJsonImporter extends IModelImporter {
 
   /** Insert a SpatialView configured to display the GeoJSON data that was converted/imported. */
   protected insertSpatialView(viewName: string, range: AxisAlignedBox3d): Id64String {
-    const modelSelectorId: Id64String = super.insertModelSelector(this.definitionModelId, viewName, [this.physicalModelId]);
-    const categorySelectorId: Id64String = super.insertCategorySelector(this.definitionModelId, viewName, [this.featureCategoryId]);
+    const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
+    const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.featureCategoryId]);
     const viewFlags = new ViewFlags();
     viewFlags.backgroundMap = true;
 
-    const displayStyleId: Id64String = super.insertDisplayStyle3d(this.definitionModelId, viewName, viewFlags);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, viewFlags);
     return super.insertOrthographicView(viewName, this.definitionModelId, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
   }
 }

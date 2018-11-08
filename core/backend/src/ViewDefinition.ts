@@ -4,13 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ViewDefinitions */
 
-import { Id64String, Id64, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
 import { Vector3d, Point3d, Point2d, YawPitchRollAngles, Angle } from "@bentley/geometry-core";
 import {
+  AnalysisStyleProps,
   BisCodeSpec,
   Code,
   CodeScopeProps,
   CodeSpec,
+  ColorDef,
   ViewDefinitionProps,
   ViewDefinition3dProps,
   ViewDefinition2dProps,
@@ -22,6 +24,7 @@ import {
   AuxCoordSystem2dProps,
   AuxCoordSystem3dProps,
   ViewAttachmentProps,
+  ViewFlags,
   LightLocationProps,
   RelatedElement,
   DisplayStyleProps,
@@ -63,6 +66,27 @@ export class DisplayStyle2d extends DisplayStyle {
     super(props, iModel);
     this._settings = new DisplayStyleSettings(this.jsonProperties);
   }
+
+  /**
+   * Insert a DisplayStyle2d for use by a ViewDefinition.
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new DisplayStyle2d into this DefinitionModel
+   * @param name The name of the DisplayStyle2d
+   * @returns The Id of the newly inserted DisplayStyle2d element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String {
+    const displayStyleProps: DisplayStyleProps = {
+      classFullName: DisplayStyle2d.classFullName,
+      code: { spec: iModelDb.codeSpecs.getByName(BisCodeSpec.displayStyle).id, scope: definitionModelId, value: name },
+      model: definitionModelId,
+      isPrivate: false,
+      backgroundColor: new ColorDef(),
+      monochromeColor: ColorDef.white,
+      viewFlags: ViewFlags.createFrom(),
+    };
+    return iModelDb.elements.insertElement(displayStyleProps);
+  }
 }
 
 /** A DisplayStyle for 3d views.
@@ -76,6 +100,36 @@ export class DisplayStyle3d extends DisplayStyle {
   public constructor(props: DisplayStyleProps, iModel: IModelDb) {
     super(props, iModel);
     this._settings = new DisplayStyle3dSettings(this.jsonProperties);
+  }
+
+  /**
+   * Insert a DisplayStyle3d for use by a ViewDefinition.
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new DisplayStyle3d into this DefinitionModel
+   * @param name The name of the DisplayStyle3d
+   * @returns The Id of the newly inserted DisplayStyle3d element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, viewFlagsIn?: ViewFlags, backgroundColor?: ColorDef, analysisStyle?: AnalysisStyleProps): Id64String {
+    const stylesIn: { [k: string]: any } = { viewflags: viewFlagsIn ? viewFlagsIn : new ViewFlags() };
+
+    if (analysisStyle)
+      stylesIn.analysisStyle = analysisStyle;
+
+    if (backgroundColor)
+      stylesIn.backgroundColor = backgroundColor;
+
+    const displayStyleProps: DisplayStyleProps = {
+      classFullName: this.classFullName,
+      code: { spec: iModelDb.codeSpecs.getByName(BisCodeSpec.displayStyle).id, scope: definitionModelId, value: name },
+      model: definitionModelId,
+      jsonProperties: { styles: stylesIn },
+      isPrivate: false,
+      backgroundColor: new ColorDef(),
+      monochromeColor: ColorDef.white,
+      viewFlags: ViewFlags.createFrom(),
+    };
+    return iModelDb.elements.insertElement(displayStyleProps);
   }
 }
 
@@ -105,6 +159,26 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.modelSelector);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
+
+  /**
+   * Insert a ModelSelector which is used to select which Models are displayed by a ViewDefinition.
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new ModelSelector into this DefinitionModel
+   * @param name The name of the ModelSelector
+   * @param models Array of models to select for display
+   * @returns The Id of the newly inserted ModelSelector element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
+    const modelSelectorProps: ModelSelectorProps = {
+      classFullName: this.classFullName,
+      code: { spec: iModelDb.codeSpecs.getByName(BisCodeSpec.modelSelector).id, scope: definitionModelId, value: name },
+      model: definitionModelId,
+      models,
+      isPrivate: false,
+    };
+    return iModelDb.elements.insertElement(modelSelectorProps);
+  }
 }
 
 /**
@@ -132,6 +206,26 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
   public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.categorySelector);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
+
+  /**
+   * Insert a CategorySelector which is used to select which categories are displayed by a ViewDefinition.
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new CategorySelector into this DefinitionModel
+   * @param name The name of the CategorySelector
+   * @param categories Array of categories to select for display
+   * @returns The Id of the newly inserted CategorySelector element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
+    const categorySelectorProps: CategorySelectorProps = {
+      classFullName: this.classFullName,
+      code: { spec: iModelDb.codeSpecs.getByName(BisCodeSpec.categorySelector).id, scope: definitionModelId, value: name },
+      model: definitionModelId,
+      categories,
+      isPrivate: false,
+    };
+    return iModelDb.elements.insertElement(categorySelectorProps);
   }
 }
 

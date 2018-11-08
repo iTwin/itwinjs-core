@@ -5,8 +5,8 @@
 import * as path from "path";
 import { assert } from "chai";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { ColorDef, IModel, SubCategoryAppearance, CodeScopeSpec } from "@bentley/imodeljs-common";
-import { IModelImporter, IModelJsFs } from "../../backend";
+import { ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, IModelImporter, IModelJsFs, ModelSelector, PhysicalModel, SpatialCategory } from "../../backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 class TestImporter extends IModelImporter {
@@ -23,34 +23,31 @@ class TestImporter extends IModelImporter {
   }
 
   public import(): void {
-    const codeSpecId: Id64String = this.insertCodeSpec("TestCodeSpec", CodeScopeSpec.Type.Model);
-    assert.isTrue(Id64.isValid(codeSpecId));
-    const definitionModelId: Id64String = this.insertDefinitionModel(IModel.rootSubjectId, "Definition");
+    const definitionModelId: Id64String = DefinitionModel.insert(this.iModelDb, IModel.rootSubjectId, "Definition");
     assert.isTrue(Id64.isValid(definitionModelId));
-    const physicalModelId: Id64String = this.insertPhysicalModel(IModel.rootSubjectId, "Physical");
+    const physicalModelId: Id64String = PhysicalModel.insert(this.iModelDb, IModel.rootSubjectId, "Physical");
     assert.isTrue(Id64.isValid(physicalModelId));
-    const documentListModelId: Id64String = this.insertDocumentListModel(IModel.rootSubjectId, "Document");
+    const documentListModelId: Id64String = DocumentListModel.insert(this.iModelDb, IModel.rootSubjectId, "Document");
     assert.isTrue(Id64.isValid(documentListModelId));
-    const drawingId: Id64String = this.insertDrawing(documentListModelId, "Drawing");
+    const drawingId: Id64String = Drawing.insert(this.iModelDb, documentListModelId, "Drawing");
     assert.isTrue(Id64.isValid(drawingId));
-    const modelSelectorId: Id64String = this.insertModelSelector(definitionModelId, "PhysicalModels", [physicalModelId]);
+    const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, definitionModelId, "PhysicalModels", [physicalModelId]);
     assert.isTrue(Id64.isValid(modelSelectorId));
-    const spatialCategoryId: Id64String = this.insertSpatialCategory(definitionModelId, "SpatialCategory", { color: ColorDef.red });
+    const spatialCategoryId: Id64String = SpatialCategory.insert(this.iModelDb, definitionModelId, "SpatialCategory", { color: ColorDef.red });
     assert.isTrue(Id64.isValid(spatialCategoryId));
-    const drawingCategoryId: Id64String = this.insertDrawingCategory(definitionModelId, "DrawingCategory", new SubCategoryAppearance());
+    const drawingCategoryId: Id64String = DrawingCategory.insert(this.iModelDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
     assert.isTrue(Id64.isValid(drawingCategoryId));
-    const spatialCategorySelectorId: Id64String = this.insertCategorySelector(definitionModelId, "SpatialCategories", [spatialCategoryId]);
+    const spatialCategorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, definitionModelId, "SpatialCategories", [spatialCategoryId]);
     assert.isTrue(Id64.isValid(spatialCategorySelectorId));
-    const displayStyle2dId: Id64String = this.insertDisplayStyle2d(definitionModelId, "DisplayStyle2d");
+    const displayStyle2dId: Id64String = DisplayStyle2d.insert(this.iModelDb, definitionModelId, "DisplayStyle2d");
     assert.isTrue(Id64.isValid(displayStyle2dId));
-    const displayStyle3dId: Id64String = this.insertDisplayStyle3d(definitionModelId, "DisplayStyle3d");
+    const displayStyle3dId: Id64String = DisplayStyle3d.insert(this.iModelDb, definitionModelId, "DisplayStyle3d");
     assert.isTrue(Id64.isValid(displayStyle3dId));
     this.iModelDb.saveChanges();
   }
 }
 
 describe("IModelImporter", () => {
-
   it("should import", async () => {
     const importer = new TestImporter();
     assert.isDefined(importer);
