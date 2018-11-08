@@ -104,7 +104,7 @@ ul.list-unstyled.list-inline {
 
 .middle-content-text {
   max-width: 900px;
-  min-width: 300px;
+  min-width: 250px;
   margin-bottom: 3em;
 }
 
@@ -128,12 +128,33 @@ span.gradient {
     width: 500px;
     height: 313px;
   }
+  .nav-landing-container .navbar-toggler-icon {
+    background-image: url("data:image/svg+xml;charset=utf8,%3Csvg viewBox='0 0 32 32' xmlns='http://www.w3.org/2000/svg'%3E%3Cpath stroke='#002A44' stroke-width='2' stroke-linecap='round' stroke-miterlimit='10' d='M4 8h24M4 16h24M4 24h24'/%3E%3C/svg%3E") !important;
+  }
+  #navbar7 li:hover {
+    height: 35px;
+    border-bottom: none;
+    font-weight: 700;
+    transition: none;
+  }
+  .landing-bottom-content-item {
+    min-width: 250px;
+    height: auto;
+    padding: 20px 5px 0px 5px;
+    margin: 20px 5px 0px 5px;
+  }
 }
 
 @media screen and (max-width: 600px) {
   .middle-content-group {
     flex-flow: column;
     align-items: center;
+  }
+  .middle-content-image {
+    order: 1 !important;
+  }
+  .middle-content-text {
+    order: 2 !important;
   }
   .imodeljs-header-tagline p {
     font-size: 29px;
@@ -145,5 +166,8 @@ span.gradient {
   .example-view-demonstrator {
     width: 300px;
     height: 188px;
+  }
+  .imodeljs-header-tagline {
+    max-width: 80%;
   }
 }
