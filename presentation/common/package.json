@@ -69,7 +69,7 @@
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typemoq": "^2.1.0",
-    "typescript": "~3.0.0",
+    "typescript": "~3.1.0",
     "typescript-json-schema": "^0.28.0",
     "yargs": "^12.0.0"
   },

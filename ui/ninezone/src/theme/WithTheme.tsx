@@ -27,7 +27,7 @@ export const withTheme = <ComponentProps extends ClassNameProps>(
   return class WithTheme extends React.Component<ComponentProps & WithThemeProps> {
     public getTheme(contextTheme: Theme): Theme {
       if (this.props.theme)
-        return this.props.theme!;
+        return (this.props as WithThemeProps).theme!;
       return contextTheme;
     }
 

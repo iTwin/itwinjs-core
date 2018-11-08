@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated to TypeScript 3.1",
+      "packageName": "@bentley/config-loader",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/config-loader",
+  "email": "Bill.Goehrig@bentley.com"
+}

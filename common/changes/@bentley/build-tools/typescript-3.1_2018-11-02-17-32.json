@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated to TypeScript 3.1",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "Bill.Goehrig@bentley.com"
+}

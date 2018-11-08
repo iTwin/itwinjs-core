@@ -210,7 +210,7 @@ export class RpcMultipartParser {
           break;
         case HEADERS_ALMOST_DONE:
           if (c !== LF) throw new Error("Expected LF Received " + c);
-          const err = this._onParseHeadersEnd(i + 1);
+          const err: any = this._onParseHeadersEnd(i + 1);
           if (err) throw err;
           state = PART_DATA_START;
           break;

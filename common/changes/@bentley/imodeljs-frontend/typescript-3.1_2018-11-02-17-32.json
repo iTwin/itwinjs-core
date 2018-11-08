@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated to TypeScript 3.1",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Bill.Goehrig@bentley.com"
+}
