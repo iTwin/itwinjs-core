@@ -1,6 +1,17 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Nov 2018 17:59:21 GMT and should not be manually modified.
+
+## 0.164.0
+Thu, 08 Nov 2018 17:59:21 GMT
+
+### Updates
+
+- PropertyGrid property editing and unit tests
+- Updated to TypeScript 3.1
+- ui-core unit tests. Fixed backstage open issue.
+- Make Tree-related components pure.
+- Zone & Widget initial state, more ui-core unit tests, cleaned up ui-framework index.ts files.
 
 ## 0.163.0
 Wed, 31 Oct 2018 20:55:37 GMT

@@ -2,6 +2,18 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "0.164.0",
+      "tag": "@bentley/presentation-common_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated to TypeScript 3.1"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.163.0",
       "tag": "@bentley/presentation-common_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",

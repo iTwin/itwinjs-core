@@ -1,6 +1,18 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Nov 2018 17:59:20 GMT and should not be manually modified.
+
+## 0.164.0
+Thu, 08 Nov 2018 17:59:20 GMT
+
+### Updates
+
+- Fix JSON representation of display styles.
+- GeoJson and Analysis Importer simplification
+- ModelSelectorProps, CategorySelectorProps, and DisplayStyleProps now properly extend DefinitionElementProps
+- Support displacement scale for PolyfaceAuxData
+- Do not diffentiate between backend provisioning and imodel downloading state in RPC wire format (202 for all).
+- Updated to TypeScript 3.1
 
 ## 0.163.0
 Wed, 31 Oct 2018 20:55:37 GMT
