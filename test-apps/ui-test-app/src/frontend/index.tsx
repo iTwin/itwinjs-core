@@ -17,6 +17,9 @@ import { IModelApp, IModelConnection, SnapMode, AccuSnap } from "@bentley/imodel
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 
+import { PresentationRpcInterface } from "@bentley/presentation-common";
+import { Presentation } from "@bentley/presentation-frontend";
+
 import { WebFontIcon } from "@bentley/ui-core";
 import { UiCore } from "@bentley/ui-core";
 import { UiComponents } from "@bentley/ui-components";
@@ -41,7 +44,7 @@ import { Tool2 } from "./tools/Tool2";
 
 // Initialize my application gateway configuration for the frontend
 let rpcConfiguration: RpcConfiguration;
-const rpcInterfaces = [IModelTileRpcInterface, IModelReadRpcInterface];
+const rpcInterfaces = [IModelTileRpcInterface, IModelReadRpcInterface, PresentationRpcInterface];
 if (ElectronRpcConfiguration.isElectron)
     rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
 else
@@ -140,6 +143,7 @@ export class SampleAppIModelApp extends IModelApp {
     }
 
     public static async initialize() {
+        Presentation.initialize();
         UiCore.initialize(SampleAppIModelApp.i18n);
         UiComponents.initialize(SampleAppIModelApp.i18n);
 
