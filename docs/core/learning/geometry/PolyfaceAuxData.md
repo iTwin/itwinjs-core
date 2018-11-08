@@ -2,7 +2,7 @@
 
 The [PolyfaceAuxData]($geometry) structure contains one or more analytical data channels for each vertex of a [Polyface]($geometry).  Typically a [Polyface]($geometry) will contain only vertex data required for its basic display, the vertex position, normal and possibly texture parameter.  The [PolyfaceAuxData]($geometry) structure contains supplemental data that is generally computed in an analysis program or extracted from an external data source.  This can be scalar data used to overide the vertex colors through *Thematic Colorization* or XYZ data used to deform the mesh by adjusting the vertex postions. The figure below represents a cantilever beam under a single point load.  The stress is represented through thematic colorization and the deflection is also displayed (exaggerated 100X by applying [AnalysisStyle]($common) with displacementScale: 100.
 
-![>](./figs/PolyfaceAuxData/CantileverBeam.png)
+![>](./figs/PolyfaceAuxData/Cantilever.gif)
 
 Analytical Data Channels.
 -
@@ -21,15 +21,12 @@ In IModelJS [DisplayStyleSettings]($common) contains a group of display settings
 * A single displacement channel. A displacementScale may be included to exaggerate or attenuate the displacement.
 * A single scalar channel, the scalar channel range and the thematic gradient to display the scalar data (`Gradient.ThematicSettings`).  In the images below the same mesh is displayed with two different [AnalysisStyle]($common)s.
 
-      Scalar Slope With default, Blue-Red Gradient
 
-
-![>](./figs/PolyfaceAuxData/SlopeWithDefaultBlueRedGradient.png)
 ___
 
-     Scalar Height with Sea-Mountan Gradient
+     Scalar Height with Sea-Mountain Gradient                   Scalar Slope with Blue-Red Gradient
 
-![>](./figs/PolyfaceAuxData/HeightWithSeaMountainGradient.png)
+![>](./figs/PolyfaceAuxData/RadialWaveHeight.gif) ![>](./figs/PolyfaceAuxData/RadialWaveSlope.gif)
 
 
 Example
