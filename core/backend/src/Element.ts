@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Elements */
 
-import { Id64String, Id64, GuidString, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, GuidString, DbOpcode, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
@@ -58,6 +58,13 @@ export abstract class Element extends Entity implements ElementProps {
     this.userLabel = props.userLabel;
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
+
+  public static onInsert(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
+  public static onInserted(_id: string): void { }
+  public static onUpdate(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
+  public static onUpdated(_props: ElementProps): void { }
+  public static onDelete(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
+  public static onDeleted(_props: ElementProps): void { }
 
   /** Add this Element's properties to an object for serializing to JSON.
    * @hidden

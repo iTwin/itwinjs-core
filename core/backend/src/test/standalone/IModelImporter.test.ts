@@ -35,7 +35,7 @@ class TestImporter extends IModelImporter {
     assert.isTrue(Id64.isValid(drawingId));
     const modelSelectorId: Id64String = this.insertModelSelector(definitionModelId, "PhysicalModels", [physicalModelId]);
     assert.isTrue(Id64.isValid(modelSelectorId));
-    const spatialCategoryId: Id64String = this.insertSpatialCategory(definitionModelId, "SpatialCategory", ColorDef.red);
+    const spatialCategoryId: Id64String = this.insertSpatialCategory(definitionModelId, "SpatialCategory", { color: ColorDef.red });
     assert.isTrue(Id64.isValid(spatialCategoryId));
     const drawingCategoryId: Id64String = this.insertDrawingCategory(definitionModelId, "DrawingCategory", new SubCategoryAppearance());
     assert.isTrue(Id64.isValid(drawingCategoryId));

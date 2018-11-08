@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Models */
 
-import { Id64String, Id64, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, DbOpcode, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
 import { AxisAlignedBox3d, GeometricModel2dProps, IModelError, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
 import { Entity } from "./Entity";
@@ -52,6 +52,13 @@ export class Model extends Entity implements ModelProps {
       val.jsonProperties = this.jsonProperties;
     return val;
   }
+
+  public static onInsert(_props: ModelProps): IModelStatus { return IModelStatus.Success; }
+  public static onInserted(_id: string): void { }
+  public static onUpdate(_props: ModelProps): IModelStatus { return IModelStatus.Success; }
+  public static onUpdated(_props: ModelProps): void { }
+  public static onDelete(_props: ModelProps): IModelStatus { return IModelStatus.Success; }
+  public static onDeleted(_props: ModelProps): void { }
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 
