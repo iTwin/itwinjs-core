@@ -14,11 +14,12 @@ import { Config } from "@bentley/imodeljs-clients";
 import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { initializeBackend } from "./backend";
+import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 
 // tslint:disable:no-console
 
 export function getRpcInterfaces() {
-  return [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
+  return [DisplayPerfRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
 }
 
 function setupStandaloneConfiguration() {
@@ -43,17 +44,23 @@ Logger.setLevel("SVT", LogLevel.Trace);
 
 let serverConfig: any;
 let serverOptions: any;
-if (process.argv.length === 3) {
-  Logger.logTrace("SVT", `reading server config from ${process.argv[2]}`);
 
-  try {
-    // tslint:disable-next-line:no-var-requires
-    serverConfig = require(process.argv[2]);
-    serverOptions = {
-      key: fs.readFileSync(serverConfig.keyFile),
-      cert: fs.readFileSync(serverConfig.certFile),
-    };
-  } catch (_err) { }
+if (process.argv.length >= 3) {
+  if (process.argv.length > 3 && process.argv[3].split(".").pop() === "json")
+    DisplayPerfRpcInterface.jsonFilePath = process.argv[3];
+  else if (process.argv[2].split(".").pop() === "json")
+    DisplayPerfRpcInterface.jsonFilePath = process.argv[2];
+  else {
+    Logger.logTrace("SVT", `reading server config from ${process.argv[2]}`);
+    try {
+      // tslint:disable-next-line:no-var-requires
+      serverConfig = require(process.argv[2]);
+      serverOptions = {
+        key: fs.readFileSync(serverConfig.keyFile),
+        cert: fs.readFileSync(serverConfig.certFile),
+      };
+    } catch (_err) { }
+  }
 }
 
 if (serverConfig === undefined) {

@@ -11,13 +11,15 @@ import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { UrlFileHandler } from "@bentley/imodeljs-clients/lib/UrlFileHandler";
 import { SVTConfiguration } from "../common/SVTConfiguration";
+import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
+import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { Config } from "@bentley/imodeljs-clients";
 
 IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)
 
 export function getRpcInterfaces() {
-  return [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
+  return [DisplayPerfRpcInterface, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface];
 }
 
 function setupStandaloneConfiguration() {
