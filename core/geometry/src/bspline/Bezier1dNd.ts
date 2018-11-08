@@ -171,6 +171,7 @@ export class Bezier1dNd {
   //
   /**
    * interpolate at `fraction` between poleA and poleB.
+   * * Data is left "in place" in poleIndexA
    * @param poleIndexA first pole index
    * @param fraction fractional position
    * @param poleIndexB second pole index
@@ -269,6 +270,58 @@ export class Bezier1dNd {
         }
       }
     }
+    return true;
+  }
+  /**
+   * Apply deCasteljou interpolations to isolate a smaller bezier polygon, representing interval 0..fraction of the original
+   * @param fracton "end" fraction for split.
+   * @returns false if fraction is 0 -- no changes applied.
+   */
+  public subdivideInPlaceKeepLeft(fraction: number): boolean {
+    if (Geometry.isAlmostEqualNumber(fraction, 0.0))
+      return false;
+    const g = 1.0 - fraction;   // interpolations will pull towards right indices
+    const order = this.order;
+    for (let level = 1; level < order; level++) {
+      for (let i1 = order - 1; i1 >= level; i1--) {
+        this.interpolatePoleInPlace(i1, g, i1 - 1); // leave updates to right
+      }
+    }
+    return true;
+  }
+
+  /**
+   * Apply deCasteljou interpolations to isolate a smaller bezier polygon, representing interval 0..fraction of the original
+   * @param fracton "end" fraction for split.
+   * @returns false if fraction is 0 -- no changes applied.
+   */
+  public subdivideInPlaceKeepRight(fraction: number): boolean {
+    if (Geometry.isAlmostEqualNumber(fraction, 0.0))
+      return false;
+    const order = this.order;
+    for (let level = 1; level < order; level++) {
+      for (let i1 = 1; i1 < order; i1++)
+        this.interpolatePoleInPlace(i1 - 1, fraction, i1);   // leave updates to left.
+    }
+    return true;
+  }
+
+  /**
+   * Saturate a univaraite bspline coefficient array in place
+   * @param fracton0 fracton for first split.   This is the start of the output polygon
+   * @param fracton1 fracton for first split.   This is the start of the output polygon
+   * @return false if fractions are (almost) identical.
+   */
+  public subdivideToIntervalInPlace(fraction0: number, fraction1: number): boolean {
+    if (Geometry.isAlmostEqualNumber(fraction0, fraction1))
+      return false;
+    if (fraction1 < fraction0) {
+      this.subdivideToIntervalInPlace(fraction0, fraction1);
+      this.reverseInPlace();
+      return true;
+    }
+    this.subdivideInPlaceKeepLeft(fraction1);
+    this.subdivideInPlaceKeepRight(fraction0 / fraction1);
     return true;
   }
 
