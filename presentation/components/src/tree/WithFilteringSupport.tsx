@@ -83,7 +83,7 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
         return;
       }
 
-      await this.loadDataProvider(this.props.filter!);
+      await this.loadDataProvider(this.props.filter as string);
     }
 
     public async componentDidMount(): Promise<void> {
@@ -92,7 +92,7 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
           this.props.onFilterApplied(this.props.filter);
         return;
       }
-      await this.loadDataProvider(this.props.filter!);
+      await this.loadDataProvider(this.props.filter as string);
     }
 
     private async loadDataProvider(filter: string): Promise<void> {

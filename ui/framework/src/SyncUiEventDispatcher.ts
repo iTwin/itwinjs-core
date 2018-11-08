@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
+// cSpell:ignore configurableui
 import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "./configurableui/FrontstageManager";
 import { Backstage } from "./configurableui/Backstage";

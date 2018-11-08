@@ -97,12 +97,6 @@
     "openRadial": "Open Radial Menu",
     "outputMessage": "Call outputMessage"
   },
-  "MeasureByPoints": {
-    "Prompt": {
-      "FirstPoint": "Enter first point",
-      "NextPoint": "Select next point"
-    }
-  },
   "tools": {
     "Tool1": {
       "keyin": "Tool1",
@@ -121,13 +115,13 @@
       }
     },
     "Measure": {
-      "ByPoints": {
-        "keyin": "Measure ByPoints",
+      "Points": {
+        "keyin": "Measure Points",
         "description": "Measure distance between points",
         "flyover": "Measure ByPoints",
         "Prompts": {
           "FirstPoint": "Enter first point",
-          "NextPoint": "Select next point"
+          "NextPoint": "Select next point / Reset"
         }
       }
     },

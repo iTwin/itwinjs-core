@@ -181,7 +181,7 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
       }
       public componentDidMount() {
         if (this.props.connectDragPreview) {
-          (this.props.connectDragPreview! as any)(getEmptyImage() as any, { captureDraggingState: true });
+          this.props.connectDragPreview(getEmptyImage() as any, { captureDraggingState: true });
         }
         window.addEventListener("keydown", this.handleKeyChange);
         window.addEventListener("keyup", this.handleKeyChange);

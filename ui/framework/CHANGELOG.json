@@ -2,6 +2,27 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.164.0",
+      "tag": "@bentley/ui-framework_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "OIDC related enhancments (WIP). "
+          },
+          {
+            "comment": "Updated to TypeScript 3.1"
+          },
+          {
+            "comment": "ui-core unit tests. Fixed backstage open issue."
+          },
+          {
+            "comment": "Zone & Widget initial state, more ui-core unit tests, cleaned up ui-framework index.ts files."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.163.0",
       "tag": "@bentley/ui-framework_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",

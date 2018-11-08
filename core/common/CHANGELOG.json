@@ -2,6 +2,33 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.164.0",
+      "tag": "@bentley/imodeljs-common_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix JSON representation of display styles."
+          },
+          {
+            "comment": "GeoJson and Analysis Importer simplification"
+          },
+          {
+            "comment": "ModelSelectorProps, CategorySelectorProps, and DisplayStyleProps now properly extend DefinitionElementProps"
+          },
+          {
+            "comment": "Support displacement scale for PolyfaceAuxData"
+          },
+          {
+            "comment": "Do not diffentiate between backend provisioning and imodel downloading state in RPC wire format (202 for all)."
+          },
+          {
+            "comment": "Updated to TypeScript 3.1"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.163.0",
       "tag": "@bentley/imodeljs-common_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",

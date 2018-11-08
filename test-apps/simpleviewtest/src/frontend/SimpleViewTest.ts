@@ -8,7 +8,7 @@ import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization
 import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, LinePixels, ModelProps, ModelQueryParams, RenderMode, RgbColor, RpcConfiguration,
-  RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName, GeometryStreamProps,
+  RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName, GeometryStreamProps, BackgroundMapType,
 } from "@bentley/imodeljs-common";
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 import {
@@ -601,17 +601,15 @@ function changeRenderMode(): void {
   IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
 }
 
-enum MapType { Street = 0, Aerial = 1, Hybrid = 2 } // ###TODO - this is duplicated from WebMercatorTileTree.ts - needs common location
-
-function stringToMapType(s: string): MapType {
-  if ("Street" === s) return MapType.Street;
-  if ("Aerial" === s) return MapType.Aerial;
-  return MapType.Hybrid;
+function stringToMapType(s: string): BackgroundMapType {
+  if ("Street" === s) return BackgroundMapType.Street;
+  if ("Aerial" === s) return BackgroundMapType.Aerial;
+  return BackgroundMapType.Hybrid;
 }
 
-function mapTypeToString(m: MapType): string {
-  if (MapType.Street === m) return "Street";
-  if (MapType.Aerial === m) return "Aerial";
+function mapTypeToString(m: BackgroundMapType): string {
+  if (BackgroundMapType.Street === m) return "Street";
+  if (BackgroundMapType.Aerial === m) return "Aerial";
   return "Hybrid";
 }
 
@@ -623,8 +621,7 @@ function changeBackgroundMapState(): void {
   const mapTypeVal = stringToMapType(mapTypeString);
   const view = theViewport!.view as ViewState3d;
   const ds = view.getDisplayStyle3d();
-  ds.setStyle("backgroundMap", { providerName: mapProviderString, mapType: mapTypeVal });
-  ds.syncBackgroundMapState();
+  ds.setBackgroundMap({ providerName: mapProviderString, providerData: { mapType: mapTypeVal } });
   IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
 }
 
@@ -638,15 +635,15 @@ function updateRenderModeOptionsMap() {
   let skybox = false;
   let groundplane = false;
   let providerName = "BingProvider";
-  let mapType = MapType.Hybrid;
+  let mapType = BackgroundMapType.Hybrid;
   if (theViewport!.view.is3d()) {
     const view = theViewport!.view as ViewState3d;
     const env = view.getDisplayStyle3d().environment;
     skybox = env.sky.display;
     groundplane = env.ground.display;
-    const backgroundMap = view.getDisplayStyle3d().getStyle("backgroundMap");
-    providerName = JsonUtils.asString(backgroundMap.mapType, "BingProvider");
-    mapType = JsonUtils.asInt(backgroundMap.mapType, MapType.Hybrid);
+    const backgroundMap = view.getDisplayStyle3d().backgroundMap;
+    providerName = JsonUtils.asString(backgroundMap.providerName, "BingProvider");
+    mapType = JsonUtils.asInt(backgroundMap.mapType, BackgroundMapType.Hybrid);
   }
 
   const viewflags = theViewport!.view.viewFlags;

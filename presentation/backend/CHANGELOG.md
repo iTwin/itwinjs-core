@@ -1,6 +1,13 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Nov 2018 17:59:20 GMT and should not be manually modified.
+
+## 0.164.0
+Thu, 08 Nov 2018 17:59:20 GMT
+
+### Updates
+
+- Updated to TypeScript 3.1
 
 ## 0.163.0
 Wed, 31 Oct 2018 20:55:37 GMT

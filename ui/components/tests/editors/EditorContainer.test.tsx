@@ -6,62 +6,81 @@
 import * as React from "react";
 import { mount, shallow } from "enzyme";
 import { expect } from "chai";
-import { EditorContainer } from "../../src/editors/EditorContainer";
-import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord } from "../../src/properties";
+import sinon from "sinon";
+
+import { SamplePropertyRecord } from "../propertygrid/PropertyTestHelpers";
+import { EditorContainer, PropertyUpdatedArgs } from "../../src/editors/EditorContainer";
 
 describe("<EditorContainer />", () => {
   it("should render", () => {
-    mount(<EditorContainer title="abc" onCommit={() => { }} onCommitCancel={() => { }} />);
+    const propertyRecord = new SamplePropertyRecord("Test1", 0, "my value");
+    mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCommitCancel={() => { }} />);
   });
 
   it("renders correctly", () => {
-    shallow(<EditorContainer title="abc" onCommit={() => { }} onCommitCancel={() => { }} />).should.matchSnapshot();
+    const propertyRecord = new SamplePropertyRecord("Test1", 0, "my value");
+    shallow(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCommitCancel={() => { }} />).should.matchSnapshot();
   });
 
-  const createPropertyValue = (value?: string): PropertyValue => {
-    const v: PropertyValue = {
-      valueFormat: PropertyValueFormat.Primitive,
-      displayValue: value ? value : "",
-      value,
-    };
-    return v;
-  };
-
-  const createPropertyDescription = (): PropertyDescription => {
-    const pd: PropertyDescription = {
-      typename: "text",
-      name: "key",
-      displayLabel: "label",
-    };
-    return pd;
-  };
-
-  const createPropertyRecord = (value?: string): PropertyRecord => {
-    const v = createPropertyValue(value);
-    const pd = createPropertyDescription();
-    return new PropertyRecord(v, pd);
-  };
-
   it("renders editor for 'text' type using TextEditor", () => {
-    const propertyRecord = createPropertyRecord("my value");
-    const handleCommit = () => { };
-    const handleCommitCancel = () => { };
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCommitCancel={handleCommitCancel} />);
-    const inputNode = wrapper.find("input");
+    const propertyRecord = new SamplePropertyRecord("Test1", 0, "my value");
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCommitCancel={() => { }} />);
+    expect(wrapper.find(".components-text-editor").length).to.eq(1);
+  });
 
-    expect(inputNode).to.not.be.null;
-    if (inputNode) {
-      inputNode.simulate("blur");
-      inputNode.simulate("keyDown", { keyCode: 37 }); // left arrow key
-      inputNode.simulate("click");
-      inputNode.simulate("contextMenu");
-
-      inputNode.simulate("keyDown", { key: "Enter" });
-
-      inputNode.simulate("keyDown", { key: "Escape" });
-
-      inputNode.simulate("keyDown", { key: "Tab" });
+  it("calls onCommit for Enter", () => {
+    const propertyRecord = new SamplePropertyRecord("Test1", 0, "my value");
+    const spyOnCommit = sinon.spy();
+    function handleCommit(_commit: PropertyUpdatedArgs): void {
+      spyOnCommit();
     }
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCommitCancel={() => { }} />);
+    const inputNode = wrapper.find("input");
+    expect(inputNode.length).to.eq(1);
+
+    inputNode.simulate("keyDown", { key: "Enter" });
+    expect(spyOnCommit.calledOnce).to.be.true;
+  });
+
+  it("calls onCommitCancel for Escape", () => {
+    const propertyRecord = new SamplePropertyRecord("Test1", 0, "my value");
+    const spyOnCommitCancel = sinon.spy();
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCommitCancel={spyOnCommitCancel} />);
+    const inputNode = wrapper.find("input");
+    expect(inputNode.length).to.eq(1);
+
+    inputNode.simulate("keyDown", { key: "Escape" });
+    expect(spyOnCommitCancel.calledOnce).to.be.true;
+  });
+
+  it("calls onCommit for Tab", () => {
+    const propertyRecord = new SamplePropertyRecord("Test1", 0, "my value");
+    const spyOnCommit = sinon.spy();
+    function handleCommit(_commit: PropertyUpdatedArgs): void {
+      spyOnCommit();
+    }
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCommitCancel={() => { }} />);
+    const inputNode = wrapper.find("input");
+    expect(inputNode.length).to.eq(1);
+
+    inputNode.simulate("keyDown", { key: "Tab" });
+    expect(spyOnCommit.calledOnce).to.be.true;
+  });
+
+  it("processes other input node events", () => {
+    const propertyRecord = new SamplePropertyRecord("Test1", 0, "my value");
+    const spyOnCommit = sinon.spy();
+    function handleCommit(_commit: PropertyUpdatedArgs): void {
+      spyOnCommit();
+    }
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCommitCancel={() => { }} />);
+    const inputNode = wrapper.find("input");
+    expect(inputNode.length).to.eq(1);
+
+    inputNode.simulate("blur");
+    inputNode.simulate("keyDown", { keyCode: 37 }); // left arrow key
+    inputNode.simulate("click");
+    inputNode.simulate("contextMenu");
   });
 
 });

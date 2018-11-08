@@ -38,9 +38,6 @@ import {
   Widget,
   GroupItemDef,
   ZoneLocation,
-  SyncUiEventId,
-  ContentViewManager,
-  BaseItemState,
   CoreTools,
 } from "@bentley/ui-framework";
 
@@ -53,6 +50,7 @@ import { AppTools } from "../../tools/ToolSpecifications";
 
 import { SampleAppIModelApp } from "../../../frontend/index";
 
+// cSpell:Ignore contentviews statusbars
 import { IModelViewportControl } from "../contentviews/IModelViewport";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
@@ -245,17 +243,6 @@ class FrontstageToolWidget extends React.Component {
     );
   }
 
-  /** example that disables the button if active content is a SheetView */
-  private _measureStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
-    const returnState: BaseItemState = { ...currentState };
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-      returnState.isEnabled = true;
-    else
-      returnState.isEnabled = false;
-    return returnState;
-  }
-
   private _horizontalToolbar =
     <Toolbar
       expandsTo={Direction.Bottom}
@@ -264,7 +251,7 @@ class FrontstageToolWidget extends React.Component {
           <ActionItemButton actionItem={CoreTools.selectElementCommand} />
           <ActionItemButton actionItem={AppTools.tool1} />
           <ActionItemButton actionItem={AppTools.tool2} />
-          <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
+          <ActionItemButton actionItem={AppTools.measurePoints} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconSpec="icon-placeholder"

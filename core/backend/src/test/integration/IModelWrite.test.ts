@@ -234,9 +234,8 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("make local changes");
-    let newModelId: Id64String;
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
 
     rwIModel.saveChanges("inserted generic objects");
     timer.end();
@@ -291,8 +290,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("make local changes");
-    let newModelId: Id64String;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
 
     rwIModel.saveChanges("inserted generic objects");
     timer.end();

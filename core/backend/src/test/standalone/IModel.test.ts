@@ -193,7 +193,50 @@ describe("iModel", () => {
       const elementId: Id64String = imodel2.elements.insertElement(element);
       assert.isTrue(Id64.isValidId64(elementId));
     }
+  });
 
+  it("should insert a DisplayStyle", () => {
+    const model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    expect(model).not.to.be.undefined;
+
+    const settings: DisplayStyleSettingsProps = {
+      backgroundColor: ColorDef.blue,
+      viewflags: ViewFlags.fromJSON({
+        renderMode: RenderMode.SolidFill,
+      }),
+    };
+
+    const props: DisplayStyleProps = {
+      classFullName: DisplayStyle3d.classFullName,
+      model: IModel.dictionaryId,
+      code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId },
+      isPrivate: false,
+      jsonProperties: {
+        styles: settings,
+      },
+    };
+
+    const styleId = imodel2.elements.insertElement(props);
+    let style = imodel2.elements.getElement(styleId) as DisplayStyle3d;
+    expect(style instanceof DisplayStyle3d).to.be.true;
+
+    expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SolidFill);
+    expect(style.settings.backgroundColor.equals(ColorDef.blue)).to.be.true;
+
+    const newFlags = style.settings.viewFlags.clone();
+    newFlags.renderMode = RenderMode.SmoothShade;
+    style.settings.viewFlags = newFlags;
+    style.settings.backgroundColor = ColorDef.red;
+    style.settings.monochromeColor = ColorDef.green;
+    expect(style.jsonProperties.styles.viewflags.renderMode).to.equal(RenderMode.SmoothShade);
+
+    imodel2.elements.updateElement(style.toJSON());
+    style = imodel2.elements.getElement(styleId) as DisplayStyle3d;
+    expect(style instanceof DisplayStyle3d).to.be.true;
+
+    expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SmoothShade);
+    expect(style.settings.backgroundColor.equals(ColorDef.red)).to.be.true;
+    expect(style.settings.monochromeColor.equals(ColorDef.green)).to.be.true;
   });
 
   it("should have a valid root subject element", () => {
@@ -810,10 +853,6 @@ describe("iModel", () => {
     const worldToView = Matrix4d.createIdentity();
     const response = await imodel2.requestSnap(actx, "0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
     assert.isDefined(response.status);
-
-    // make sure we can read native asset files.
-    const sprite = IModelDb.loadNativeAsset("decorators/dgncore/SnapNone.png");
-    assert.isDefined(sprite);
   });
 
   it("should import schemas", () => {

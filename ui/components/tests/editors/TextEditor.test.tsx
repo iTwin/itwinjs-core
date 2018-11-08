@@ -7,6 +7,7 @@ import * as React from "react";
 import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import { TextEditor } from "../../src/editors/TextEditor";
+import { SamplePropertyRecord } from "../propertygrid/PropertyTestHelpers";
 
 describe("<TextEditor />", () => {
   it("should render", () => {
@@ -18,7 +19,8 @@ describe("<TextEditor />", () => {
   });
 
   it("getValue returns proper value after componentDidMount & setState", (done) => {
-    const wrapper = mount(<TextEditor text={"MyValue"} />);
+    const record = new SamplePropertyRecord("Test1", 0, "MyValue");
+    const wrapper = mount(<TextEditor value={record} />);
     setImmediate(() => {
       const textEditor = wrapper.instance() as TextEditor;
       expect(textEditor.getValue()).to.equal("MyValue");
@@ -36,7 +38,8 @@ describe("<TextEditor />", () => {
   });
 
   it("HTML input onChange updates value", () => {
-    const wrapper = mount(<TextEditor text={"MyValue"} />);
+    const record = new SamplePropertyRecord("Test1", 0, "MyValue");
+    const wrapper = mount(<TextEditor value={record} />);
     const textEditor = wrapper.instance() as TextEditor;
     const inputNode = wrapper.find("input");
 

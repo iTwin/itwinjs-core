@@ -72,15 +72,15 @@ describe("PropertyRenderer", () => {
         propertyRecord={propertyRecord}
       />);
 
-    const recordvalue = "ChangedValue";
+    const recordValue = "ChangedValue";
 
-    propertyRenderer.setProps({ propertyRecord: new SamplePropertyRecord("Label", 0, recordvalue) });
+    propertyRenderer.setProps({ propertyRecord: new SamplePropertyRecord("Label", 0, recordValue) });
 
     await TestUtils.flushAsyncOperations();
 
     const displayValueWrapper = mount(<div>{propertyRenderer.state("displayValue")}</div>);
 
-    expect(displayValueWrapper.html().indexOf(recordvalue)).to.be.greaterThan(-1);
+    expect(displayValueWrapper.html().indexOf(recordValue)).to.be.greaterThan(-1);
   });
 
   it("renders as selected when isSelected prop is true", () => {
@@ -124,4 +124,91 @@ describe("PropertyRenderer", () => {
 
     expect(propertyRenderer.find(".components-property-record-value").text()).to.be.eq("Test");
   });
+
+  it("handles mouse enter by setting isHover", () => {
+    const propertyRenderer = mount(
+      <PropertyRenderer
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        onClick={() => { }}
+      />);
+
+    const clickable = propertyRenderer.find(".components--clickable");
+    expect(clickable.length).to.eq(1);
+
+    clickable.simulate("mouseEnter");
+    propertyRenderer.update();
+    expect(propertyRenderer.find(".components--hover").length).to.eq(1);
+
+    clickable.simulate("mouseLeave");
+    propertyRenderer.update();
+    expect(propertyRenderer.find(".components--hover").length).to.eq(0);
+  });
+
+  it("turns off isHover if selected", () => {
+    const propertyRenderer = mount(
+      <PropertyRenderer
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        onClick={() => { }}
+      />);
+
+    const clickable = propertyRenderer.find(".components--clickable");
+    expect(clickable.length).to.eq(1);
+
+    clickable.simulate("mouseEnter");
+    propertyRenderer.update();
+
+    expect(propertyRenderer.find(".components--hover").length).to.eq(1);
+
+    propertyRenderer.setProps({ isSelected: true });
+    propertyRenderer.update();
+    expect(propertyRenderer.find(".components--hover").length).to.eq(0);
+  });
+
+  it("renders an editor correctly", () => {
+    const propertyRenderer = mount(
+      <PropertyRenderer
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        isEditing={true}
+      />);
+
+    expect(propertyRenderer.find(".components-text-editor").length).to.eq(1);
+  });
+
+  it("when editing, calls onEditCommit on Enter key", () => {
+    const spyMethod = sinon.spy();
+    const propertyRenderer = mount(
+      <PropertyRenderer
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        isEditing={true}
+        onEditCommit={spyMethod}
+      />);
+
+    const inputNode = propertyRenderer.find("input");
+    expect(inputNode.length).to.eq(1);
+
+    inputNode.simulate("keyDown", { key: "Enter" });
+    expect(spyMethod.calledOnce).to.be.true;
+  });
+
+  it("when editing, calls onEditCancel on Escape key", () => {
+    const spyMethod = sinon.spy();
+    const propertyRenderer = mount(
+      <PropertyRenderer
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        isEditing={true}
+        onEditCancel={spyMethod}
+      />);
+
+    const inputNode = propertyRenderer.find("input");
+    expect(inputNode.length).to.eq(1);
+
+    inputNode.simulate("keyDown", { key: "Escape" });
+    expect(spyMethod.calledOnce).to.be.true;
+  });
+
 });

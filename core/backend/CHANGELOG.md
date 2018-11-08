@@ -1,6 +1,21 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Nov 2018 17:59:20 GMT and should not be manually modified.
+
+## 0.164.0
+Thu, 08 Nov 2018 17:59:20 GMT
+
+### Updates
+
+- Fix JSON representation of DisplayStyle.
+- Add IModelImporter as a base class for utility methods needed by all importers
+- Removed assertion when deleting a memoized open call. 
+- Add more methods to IModelImporter
+- Fix snapping test
+- OIDC related enhancments (WIP).
+- Re-enabled several backend integration tests. 
+- Refactor analysis-importer to use IModelImporter
+- Updated to TypeScript 3.1
 
 ## 0.163.0
 Wed, 31 Oct 2018 20:55:37 GMT

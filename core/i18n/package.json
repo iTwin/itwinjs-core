@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-i18n",
-  "version": "0.163.0",
+  "version": "0.164.0",
   "description": "iModel.js localization code",
   "license": "MIT",
   "repository": {
@@ -27,15 +27,15 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.163.0"
+    "@bentley/bentleyjs-core": "0.164.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.163.0",
-    "@bentley/build-tools": "0.163.0",
+    "@bentley/bentleyjs-core": "0.164.0",
+    "@bentley/build-tools": "0.164.0",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/i18next-xhr-backend": "^1.4.1",
@@ -44,7 +44,7 @@
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~3.0.0"
+    "typescript": "~3.1.0"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to imodeljs-i18n",

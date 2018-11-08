@@ -5,7 +5,7 @@
 /** @module Tile */
 
 import { assert, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation } from "@bentley/imodeljs-common";
+import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation, BackgroundMapType, BackgroundMapProps } from "@bentley/imodeljs-common";
 import { JsonUtils } from "@bentley/bentleyjs-core";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile, TileRequests } from "./TileTree";
@@ -210,14 +210,11 @@ class WebMercatorTileLoader extends TileLoader {
   public get maxDepth(): number { return this._providerInitialized ? this._imageryProvider.maximumZoomLevel : 32; }
 }
 
-// The type of background map
-enum MapType { Street = 1, Aerial = 2, Hybrid = 3 }   // These are aligned with BackgroundMapType in MicroStation.
-
 // Represents the service that is providing map tiles for Web Mercator models (background maps).
 abstract class ImageryProvider {
-  public mapType: MapType;
+  public mapType: BackgroundMapType;
 
-  constructor(mapType: MapType) {
+  constructor(mapType: BackgroundMapType) {
     this.mapType = mapType;
   }
 
@@ -324,7 +321,7 @@ class BingMapProvider extends ImageryProvider {
   private _missingTileData?: Uint8Array;
   private _logoImage?: HTMLImageElement;
 
-  constructor(mapType: MapType) {
+  constructor(mapType: BackgroundMapType) {
     super(mapType);
     this._zoomMin = this._zoomMax = 0;
     this._tileHeight = this._tileWidth = 0;
@@ -434,9 +431,9 @@ class BingMapProvider extends ImageryProvider {
     const alctx = new ActivityLoggingContext(Guid.createValue());
 
     let imagerySet = "Road";
-    if (MapType.Aerial === this.mapType)
+    if (BackgroundMapType.Aerial === this.mapType)
       imagerySet = "Aerial";
-    else if (MapType.Hybrid === this.mapType)
+    else if (BackgroundMapType.Hybrid === this.mapType)
       imagerySet = "AerialWithLabels";
 
     let bingRequestUrl: string = "http://dev.virtualearth.net/REST/v1/Imagery/Metadata/{imagerySet}?o=json&incl=ImageryProviders&key={bingKey}";
@@ -520,19 +517,19 @@ class MapBoxProvider extends ImageryProvider {
   private _zoomMax: number;
   private _baseUrl: string;
 
-  constructor(mapType: MapType) {
+  constructor(mapType: BackgroundMapType) {
     super(mapType);
     this._zoomMin = 1; this._zoomMax = 20;
     switch (mapType) {
-      case MapType.Street:
+      case BackgroundMapType.Street:
         this._baseUrl = "http://api.mapbox.com/v4/mapbox.streets/";
         break;
 
-      case MapType.Aerial:
+      case BackgroundMapType.Aerial:
         this._baseUrl = "http://api.mapbox.com/v4/mapbox.satellite/";
         break;
 
-      case MapType.Hybrid:
+      case BackgroundMapType.Hybrid:
         this._baseUrl = "http://api.mapbox.com/v4/mapbox.streets-satellite/";
         break;
 
@@ -575,9 +572,9 @@ export class BackgroundMapState {
   private _tileTree?: TileTree;
   private _loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
   private _provider?: ImageryProvider;
-  private _providerName: string;
+  public providerName: string;
   private _groundBias: number;
-  private _mapType: MapType;
+  public mapType: BackgroundMapType;
 
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
     this._tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, true, loader, ""));
@@ -597,11 +594,11 @@ export class BackgroundMapState {
     return displayTiles;
   }
 
-  public constructor(json: any, private _iModel: IModelConnection) {
-    this._providerName = JsonUtils.asString(json.providerName, "BingProvider");
+  public constructor(json: BackgroundMapProps, private _iModel: IModelConnection) {
+    this.providerName = JsonUtils.asString(json.providerName, "BingProvider");
     // this.providerData = JsonUtils.asString(json.providerData, "aerial");
     this._groundBias = JsonUtils.asDouble(json.groundBias, 0.0);
-    this._mapType = json.providerData ? JsonUtils.asInt(json.providerData.mapType, MapType.Hybrid) : MapType.Hybrid;
+    this.mapType = json.providerData ? JsonUtils.asInt(json.providerData.mapType, BackgroundMapType.Hybrid) : BackgroundMapType.Hybrid;
   }
 
   private loadTileTree(): TileTree.LoadStatus {
@@ -612,10 +609,10 @@ export class BackgroundMapState {
       return this._loadStatus;
     }
 
-    if ("BingProvider" === this._providerName) {
-      this._provider = new BingMapProvider(this._mapType);
-    } else if ("MapBoxProvider" === this._providerName) {
-      this._provider = new MapBoxProvider(this._mapType);
+    if ("BingProvider" === this.providerName) {
+      this._provider = new BingMapProvider(this.mapType);
+    } else if ("MapBoxProvider" === this.providerName) {
+      this._provider = new MapBoxProvider(this.mapType);
     }
     if (this._provider === undefined)
       throw new BentleyError(IModelStatus.BadModel, "WebMercator provider invalid");
@@ -666,5 +663,13 @@ export class BackgroundMapState {
       style.backgroundColor = "transparent";
       style.pointerEvents = "initial";
     }
+  }
+
+  public equalsProps(props: BackgroundMapProps): boolean {
+    const providerName = JsonUtils.asString(props.providerName, "BingProvider");
+    const groundBias = JsonUtils.asDouble(props.groundBias, 0.0);
+    const mapType = undefined !== props.providerData ? JsonUtils.asInt(props.providerData.mapType, BackgroundMapType.Hybrid) : BackgroundMapType.Hybrid;
+
+    return providerName === this.providerName && groundBias === this._groundBias && mapType === this.mapType;
   }
 }

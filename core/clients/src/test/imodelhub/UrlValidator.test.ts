@@ -88,7 +88,8 @@ describe("iModelHub URL Whitelist Validator", () => {
         violatingUrls.push(url);
     }
 
-    assert.isTrue(violatingUrls.length === 0, `The URLs '${violatingUrls.reduce((str: string, current: string) => str + "|" + current)}' are not whitelisted.\n` +
+    const violatingUrlsString: string = violatingUrls.length === 0 ? "" : violatingUrls.reduce((str: string, current: string) => str + "|" + current);
+    assert.isTrue(violatingUrls.length === 0, `The URLs '${violatingUrlsString}' are not whitelisted.\n` +
       "If this is caused by a necessary API change, update the whitelist and notify iModelBank of the updates. " +
       "If the whitelist violation is unintentional, modify your changes to use existing API functionality.");
   });

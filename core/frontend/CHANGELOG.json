@@ -2,6 +2,45 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.164.0",
+      "tag": "@bentley/imodeljs-frontend_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "AccuDraw/AccuSnap markdown/examples"
+          },
+          {
+            "comment": "Fix edge animation of PolyfaceAuxData"
+          },
+          {
+            "comment": "Updated frontend performance testing"
+          },
+          {
+            "comment": "Change filterHit on InteractiveTool to async to support backend queries"
+          },
+          {
+            "comment": "Fix JSON representation of DisplayStyleState."
+          },
+          {
+            "comment": "Fix links in tool docs"
+          },
+          {
+            "comment": "Added an option to Viewport.readImage() to flip the resultant image vertically."
+          },
+          {
+            "comment": "PrimitiveTool isValidLocation shouldn't require write, want check for measure tools too"
+          },
+          {
+            "comment": "Add Comments"
+          },
+          {
+            "comment": "Updated to TypeScript 3.1"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.163.0",
       "tag": "@bentley/imodeljs-frontend_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",

@@ -2,10 +2,31 @@
 
 exports[`<EditorContainer /> renders correctly 1`] = `
 <div
+  className="components-editor-container"
   onBlur={[Function]}
   onClick={[Function]}
   onContextMenu={[Function]}
   onKeyDown={[Function]}
   title="abc"
-/>
+>
+  <TextEditor
+    onBlur={[Function]}
+    value={
+      SamplePropertyRecord {
+        "description": "Test1 - description",
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Test1",
+          "name": "Test10",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "my value",
+          "value": "my value",
+          "valueFormat": 0,
+        },
+      }
+    }
+  />
+</div>
 `;
