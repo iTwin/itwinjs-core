@@ -201,7 +201,7 @@ export abstract class IModelImporter {
     }) as PhysicalModel;
     return this.iModelDb.models.insertModel(model);
   }
-  public createOrthographicView(viewName: string, definitionModelId: Id64String, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
+  public insertOrthographicView(viewName: string, definitionModelId: Id64String, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
     const rotation = Matrix3d.createStandardWorldToView(standardView);
     const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
     const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);

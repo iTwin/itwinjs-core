@@ -5,7 +5,7 @@
 /** @module iModels */
 
 import { Id64String, Id64, GuidString, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { Point3d, XYZProps, Range3dProps, YawPitchRollProps, YawPitchRollAngles, Transform, XYAndZ } from "@bentley/geometry-core";
+import { Point3d, XYZProps, Range3dProps, YawPitchRollProps, YawPitchRollAngles, Transform, XYAndZ, Vector3d, Matrix3d, AxisOrder } from "@bentley/geometry-core";
 import { AxisAlignedBox3d } from "./geometry/Primitives";
 import { ThumbnailProps } from "./Thumbnail";
 import { IModelError } from "./IModelError";
@@ -52,6 +52,14 @@ export class EcefLocation implements EcefLocationProps {
     this.orientation = YawPitchRollAngles.fromJSON(props.orientation);
     this.origin.freeze(); // may not be modified
     this.orientation.freeze(); // may not be modified
+  }
+  /** Construct ECEF Location from cartographic origin.   */
+  public static createFromCartographicOrigin(origin: Cartographic) {
+    const ecefOrigin = origin.toEcef();
+    const zVector = Vector3d.createFrom(ecefOrigin).normalize();
+    const xVector = Vector3d.create(-Math.sin(origin.longitude), Math.cos(origin.latitude), 0.0);
+    const matrix = Matrix3d.createRigidFromColumns(zVector!, xVector, AxisOrder.ZXY);
+    return new EcefLocation({ origin: ecefOrigin, orientation: YawPitchRollAngles.createFromMatrix3d(matrix!)! });
   }
 }
 

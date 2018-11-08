@@ -93,7 +93,7 @@ export class AnalysisImporter extends IModelImporter {
             const modelSelectorId = super.insertModelSelector(this.definitionModelId, name, [modelId]);
             const categorySelectorId = super.insertCategorySelector(this.definitionModelId, name, [categoryId]);
 
-            viewIds.push(super.createOrthographicView(name, this.definitionModelId, modelSelectorId, categorySelectorId, displayStyleId, polyface.range()));
+            viewIds.push(super.insertOrthographicView(name, this.definitionModelId, modelSelectorId, categorySelectorId, displayStyleId, polyface.range()));
         }
         return viewIds;
     }
