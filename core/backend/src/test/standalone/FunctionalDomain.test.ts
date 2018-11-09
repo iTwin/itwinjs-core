@@ -7,7 +7,7 @@ import * as path from "path";
 import { ActivityLoggingContext, DbResult, Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Code, CodeSpec, CodeScopeSpec, FunctionalElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
-import { BriefcaseManager, ECSqlStatement, Functional, FunctionalModel, FunctionalPartition, IModelDb, SqliteStatement } from "../../backend";
+import { BriefcaseManager, ECSqlStatement, Functional, FunctionalModel, FunctionalPartition, IModelDb, SqliteStatement, SubjectOwnsPartitionElements } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {
@@ -51,10 +51,7 @@ describe("Functional Domain", () => {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: FunctionalPartition.classFullName,
       model: IModel.repositoryModelId,
-      parent: {
-        id: IModel.rootSubjectId,
-        relClassName: "BisCore:SubjectOwnsPartitionElements",
-      },
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       code: FunctionalPartition.createCode(iModelDb, IModel.rootSubjectId, "Test Functional Model"),
     };
     const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);

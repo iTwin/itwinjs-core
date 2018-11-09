@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelDb, SpatialCategory, ModelSelector, CategorySelector, DisplayStyle3d, OrthographicViewDefinition, ViewDefinition, Subject, DefinitionPartition, DefinitionModel } from "@bentley/imodeljs-backend";
+import { IModelDb, SpatialCategory, ModelSelector, CategorySelector, DisplayStyle3d, OrthographicViewDefinition, ViewDefinition, Subject, DefinitionPartition, DefinitionModel, SubjectOwnsPartitionElements } from "@bentley/imodeljs-backend";
 import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { CodeSpec, CodeScopeSpec, ColorDef, CategoryProps, SubCategoryAppearance, ModelSelectorProps, CategorySelectorProps, DefinitionElementProps, SpatialViewDefinitionProps, GeometryStreamProps, GeometryStreamBuilder, SubjectProps, InformationPartitionElementProps, IModel, Code, BisCodeSpec } from "@bentley/imodeljs-common";
 import { XYZProps, Arc3d, Point3d } from "@bentley/geometry-core";
@@ -27,10 +27,7 @@ export function insertDefinitionModel(parentSubject: Subject, modelName: string)
   const partitionProps: InformationPartitionElementProps = {
     classFullName: DefinitionPartition.classFullName,
     model: IModel.repositoryModelId,
-    parent: {
-      id: parentSubject.id,
-      relClassName: "BisCore:SubjectOwnsPartitionElements",
-    },
+    parent: new SubjectOwnsPartitionElements(parentSubject.id),
     code: DefinitionPartition.createCode(iModelDb, parentSubject.id, modelName),
   };
   const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);

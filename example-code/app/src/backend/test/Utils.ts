@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { ElementProps, RelatedElement } from "@bentley/imodeljs-common";
 import { OpenMode, Id64, Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { Element, IModelDb, InformationPartitionElement } from "@bentley/imodeljs-backend";
+import { Element, IModelDb, InformationPartitionElement, SubjectOwnsPartitionElements } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
 import { AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, Config } from "@bentley/imodeljs-clients";
@@ -139,7 +139,7 @@ export class IModelTestUtils {
     const modeledElementProps: ElementProps = {
       classFullName: "BisCore:PhysicalPartition",
       iModel: outputImodel,
-      parent: { id: parentElement.id, relClassName: "BisCore:SubjectOwnsPartitionElements" },
+      parent: new SubjectOwnsPartitionElements(parentElement.id),
       model: IModelDb.repositoryModelId,
       code: modelCode,
     };

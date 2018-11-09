@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCore, ConcurrencyControl, Element, ElementAspect, InformationPartitionElement, IModelDb, PhysicalModel, PhysicalPartition } from "@bentley/imodeljs-backend";
+import { BisCore, ConcurrencyControl, Element, ElementAspect, InformationPartitionElement, IModelDb, PhysicalModel, PhysicalPartition, SubjectOwnsPartitionElements } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
 import { ElementAspectProps, ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel, RelatedElement } from "@bentley/imodeljs-common";
 import { Id64, Id64String, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
@@ -37,7 +37,7 @@ describe("Example Code", () => {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       iModel: outputImodel,
-      parent: { id: parentSubject.id, relClassName: "BisCore:SubjectOwnsPartitionElements" },
+      parent: new SubjectOwnsPartitionElements(parentSubject.id),
       model: IModel.repositoryModelId,
       code: modelCode,
     };

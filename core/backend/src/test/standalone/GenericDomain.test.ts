@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { CategoryProps, Code, GeometricElement3dProps, ElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
-import { Generic, GroupInformationPartition, Group, GroupModel, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory } from "../../backend";
+import { Generic, GroupInformationPartition, Group, GroupModel, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory, SubjectOwnsPartitionElements } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Generic Domain", () => {
@@ -48,10 +48,7 @@ describe("Generic Domain", () => {
     const physicalPartitionProps: InformationPartitionElementProps = {
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
-      parent: {
-        id: IModel.rootSubjectId,
-        relClassName: "BisCore:SubjectOwnsPartitionElements",
-      },
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       code: PhysicalPartition.createCode(iModelDb, IModel.rootSubjectId, "Test Physical Model"),
     };
     const physicalPartitionId: Id64String = iModelDb.elements.insertElement(physicalPartitionProps);
@@ -79,10 +76,7 @@ describe("Generic Domain", () => {
     const groupPartitionProps: InformationPartitionElementProps = {
       classFullName: GroupInformationPartition.classFullName,
       model: IModel.repositoryModelId,
-      parent: {
-        id: IModel.rootSubjectId,
-        relClassName: "BisCore:SubjectOwnsPartitionElements",
-      },
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       code: GroupInformationPartition.createCode(iModelDb, IModel.rootSubjectId, "Test Group Model"),
     };
     const groupPartitionId: Id64String = iModelDb.elements.insertElement(groupPartitionProps);

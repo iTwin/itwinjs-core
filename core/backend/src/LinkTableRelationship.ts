@@ -69,9 +69,13 @@ export class ElementRefersToElements extends LinkTableRelationship {
    * @param classFullName The full name of the ElementRefersToElements class. Must be specified to create an instance of a derived class. May be omitted to create an instance of the ElementRefersToElements base class.
    * @return an instance of the specified class.
    */
-  public static create(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, classFullName: string = ElementRefersToElements.classFullName): ElementRefersToElements {
+  public static create(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, classFullName: string = this.classFullName): ElementRefersToElements {
     return iModel.linkTableRelationships.createInstance({ sourceId, targetId, classFullName }) as ElementRefersToElements;
   }
+}
+
+/** Relates a [[DrawingGraphic]] to the [[Element]] that it represents */
+export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
 }
 
 /** Properties that are common to all types of link table ECRelationships */

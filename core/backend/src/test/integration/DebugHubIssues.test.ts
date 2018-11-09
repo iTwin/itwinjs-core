@@ -6,11 +6,10 @@ import * as path from "path";
 import { assert } from "chai";
 import { OpenMode, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration } from "../../backend";
+import { IModel, IModelVersion } from "@bentley/imodeljs-common";
+import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration, PhysicalModel } from "../../backend";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { IModelWriter } from "./IModelWriter";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BriefcaseManager } from "../../BriefcaseManager";
 
@@ -36,7 +35,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     assert(!!iModelDb);
 
     // Create and upload a dummy change set to the Hub
-    const modelId = IModelWriter.insertPhysicalModel(iModelDb, "DummyTestModel");
+    const modelId = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "DummyTestModel");
     assert(!!modelId);
     iModelDb.saveChanges("Dummy change set");
     await iModelDb.pushChanges(actx, accessToken!);

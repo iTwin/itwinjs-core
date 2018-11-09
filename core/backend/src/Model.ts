@@ -10,6 +10,7 @@ import { Point2d } from "@bentley/geometry-core";
 import { DefinitionPartition, DocumentPartition, PhysicalPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
+import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 
 /**
  * A Model is a container for persisting a collection of related elements within an iModel.
@@ -136,7 +137,7 @@ export class PhysicalModel extends SpatialModel {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: PhysicalPartition.classFullName,
       model: IModel.repositoryModelId,
-      parent: { id: parentSubjectId, relClassName: "BisCore:SubjectOwnsPartitionElements" },
+      parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: PhysicalPartition.createCode(iModelDb, parentSubjectId, name),
     };
     const partitionId = iModelDb.elements.insertElement(partitionProps);
@@ -213,7 +214,7 @@ export class DefinitionModel extends InformationModel {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: DefinitionPartition.classFullName,
       model: IModel.repositoryModelId,
-      parent: { id: parentSubjectId, relClassName: "BisCore:SubjectOwnsPartitionElements" },
+      parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: DefinitionPartition.createCode(iModelDb, parentSubjectId, name),
     };
     const partitionId = iModelDb.elements.insertElement(partitionProps);
@@ -246,7 +247,7 @@ export class DocumentListModel extends InformationModel {
     const partitionProps: InformationPartitionElementProps = {
       classFullName: DocumentPartition.classFullName,
       model: IModel.repositoryModelId,
-      parent: { id: parentSubjectId, relClassName: "BisCore:SubjectOwnsPartitionElements" },
+      parent: new SubjectOwnsPartitionElements(parentSubjectId),
       code: DocumentPartition.createCode(iModelDb, parentSubjectId, name),
     };
     const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);

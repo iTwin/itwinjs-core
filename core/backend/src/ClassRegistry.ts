@@ -117,7 +117,7 @@ export class ClassRegistry {
    * Get the Entity class for the specified Entity.
    * @param fullName The name of the Entity
    * @param iModel The IModel that contains the class definitions
-   * @returns A promise that resolves to an object containing a result property set to the Entity.
+   * @returns The Entity class
    */
   public static getClass(fullName: string, iModel: IModelDb): typeof Entity {
     const key = fullName.toLowerCase();

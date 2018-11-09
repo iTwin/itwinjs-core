@@ -2,9 +2,11 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { FunctionalElementProps, InformationPartitionElementProps, ModelProps, TypeDefinitionElementProps } from "@bentley/imodeljs-common";
+import { Id64String } from "@bentley/bentleyjs-core";
+import { FunctionalElementProps, InformationPartitionElementProps, ModelProps, RelatedElement, TypeDefinitionElementProps } from "@bentley/imodeljs-common";
 import { InformationPartitionElement, RoleElement, TypeDefinitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
+import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../LinkTableRelationship";
 import { RoleModel } from "../Model";
 
 /**
@@ -66,4 +68,20 @@ export abstract class FunctionalType extends TypeDefinitionElement {
   public constructor(props: TypeDefinitionElementProps, iModel: IModelDb) {
     super(props, iModel);
   }
+}
+
+/** Relates a [[FunctionalElement]] to its [[FunctionalType]] */
+export class FunctionalElementIsOfType extends RelatedElement {
+  public static classFullName = "Functional:FunctionalElementIsOfType";
+  public constructor(id: Id64String, relClassName: string = FunctionalElementIsOfType.classFullName) {
+    super({ id, relClassName });
+  }
+}
+
+/** Relates a [[PhysicalElement]] to the [[FunctionalElement]] elements that it fulfills. */
+export class PhysicalElementFulfillsFunction extends ElementRefersToElements {
+}
+
+/** Relates a [[DrawingGraphic]] to the [[FunctionalElement]] that it represents */
+export class DrawingGraphicRepresentsFunctionalElement extends DrawingGraphicRepresentsElement {
 }
