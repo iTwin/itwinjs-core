@@ -146,7 +146,7 @@ describe("BsplineCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it.only("BsplineGrid", () => {
+  it("BsplineGrid", () => {
     const ck = new Checker();
     const geometry: GeometryQuery[] = [];
     const a = 3.0;
