@@ -101,9 +101,6 @@
       "jsdom-global/register",
       "source-map-support/register",
       "ts-node/register"
-    ],
-    "exclude": [
-      "lib/**/*"
     ]
   }
 }
