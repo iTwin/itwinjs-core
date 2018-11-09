@@ -12,19 +12,5 @@
   "exclude": [
     "lib",
     "node_modules"
-  ],
-  "references": [
-    {
-      "path": "../../presentation/common"
-    },
-    {
-      "path": "../../presentation/backend"
-    },
-    {
-      "path": "../../presentation/frontend"
-    },
-    {
-      "path": "../../presentation/components"
-    }
   ]
 }

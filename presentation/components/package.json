@@ -23,19 +23,19 @@
   "main": "lib/index.js",
   "typings": "lib/index",
   "scripts": {
-    "build": "tsc -b ./src 1>&2 && npm run build:assets && npm run build:scss && npm run extract",
+    "build": "tsc -b ./src/test 1>&2 && npm run build:assets && npm run build:scss && npm run extract",
     "build:scss": "cpx \"./src/**/*.scss\" ./lib",
     "build:assets": "cpx \"./public/**/*\" ./lib/public && npm run pseudolocalize",
     "clean": "rimraf lib package-deps.json",
-    "cover": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json nyc npm test",
+    "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
     "docs:changelog": "cpx \"./CHANGELOG.md\" ../../generated-docs/presentation/presentation-components",
     "docs:reference": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/presentation/presentation-components/json/file.json --onlyJson %TYPEDOC_THEME%",
-    "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./tests --recursive --out=../../generated-docs/extract",
+    "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src/test --recursive --out=../../generated-docs/extract",
     "lint": "echo Disabled until https://github.com/palantir/tslint/issues/4148 is fixed",
     "//lint": "tslint -p ./src 1>&2",
     "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
-    "test": "cross-env TS_NODE_PROJECT=./tests/tsconfig.json mocha --opts ../mocha.opts -r ignore-styles -r jsdom-global/register --file ./tests/index.test.ts tests/**/*.{ts,tsx}",
+    "test": "mocha --opts ../mocha.opts -r ignore-styles -r jsdom-global/register --file ./lib/test/index.test.js lib/test/**/*.js",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "dependencies": {

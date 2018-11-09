@@ -274,14 +274,11 @@
       "protocol": "inspector",
       "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/ui/components",
-      "env": {
-        "TS_NODE_PROJECT": "tests/tsconfig.json"
-      },
       "args": [
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "tests/**/*.{ts,tsx}"
+        "lib/test/**/*.js"
       ]
     },
     {
@@ -291,14 +288,11 @@
       "protocol": "inspector",
       "program": "${workspaceFolder}/ui/core/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/ui/core",
-      "env": {
-        "TS_NODE_PROJECT": "tests/tsconfig.json"
-      },
       "args": [
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "tests/**/*.{ts,tsx}"
+        "lib/test/**/*.js"
       ]
     },
     {
@@ -308,14 +302,11 @@
       "protocol": "inspector",
       "program": "${workspaceFolder}/ui/framework/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/ui/framework",
-      "env": {
-        "TS_NODE_PROJECT": "tests/tsconfig.json"
-      },
       "args": [
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "tests/**/*.{ts,tsx}"
+        "lib/test/**/*.js"
       ],
       "console": "integratedTerminal"
     },
@@ -326,14 +317,11 @@
       "protocol": "inspector",
       "program": "${workspaceFolder}/ui/ninezone/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/ui/ninezone",
-      "env": {
-        "TS_NODE_PROJECT": "tests/tsconfig.json"
-      },
       "args": [
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "tests/**/*.{ts,tsx}"
+        "lib/test/**/*.js"
       ],
       "console": "integratedTerminal"
     },
@@ -344,14 +332,11 @@
       "protocol": "inspector",
       "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/presentation/common",
-      "env": {
-        "TS_NODE_PROJECT": "tests/tsconfig.json"
-      },
       "args": [
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "tests/**/*.ts"
+        "lib/test/**/*.js"
       ]
     },
     {
@@ -361,14 +346,11 @@
       "protocol": "inspector",
       "program": "${workspaceFolder}/presentation/backend/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/presentation/backend",
-      "env": {
-        "TS_NODE_PROJECT": "tests/tsconfig.json"
-      },
       "args": [
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "tests/**/*.ts"
+        "lib/test/**/*.js"
       ]
     },
     {
@@ -378,14 +360,11 @@
       "protocol": "inspector",
       "program": "${workspaceFolder}/presentation/frontend/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/presentation/frontend",
-      "env": {
-        "TS_NODE_PROJECT": "tests/tsconfig.json"
-      },
       "args": [
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "tests/**/*.ts"
+        "lib/test/**/*.js"
       ]
     },
     {
@@ -395,9 +374,6 @@
       "protocol": "inspector",
       "program": "${workspaceFolder}/presentation/components/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/presentation/components",
-      "env": {
-        "TS_NODE_PROJECT": "tests/tsconfig.json"
-      },
       "args": [
         "--opts",
         "../mocha.opts",
@@ -406,7 +382,7 @@
         "ignore-styles",
         "-r",
         "jsdom-global/register",
-        "tests/**/*.{ts,tsx}"
+        "lib/test/**/*.js"
       ]
     },
     {
@@ -415,13 +391,10 @@
       "name": "[Presentation] Tests: Integration",
       "program": "${workspaceFolder}/test-apps/presentation-integration-tests/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/test-apps/presentation-integration-tests",
-      "env": {
-        "TS_NODE_PROJECT": "./tsconfig.json"
-      },
       "args": [
         "--opts",
         "mocha.opts",
-        "src/**/*.ts"
+        "lib/**/*.js"
       ]
     },
     {

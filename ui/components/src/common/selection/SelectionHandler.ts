@@ -72,13 +72,13 @@ export interface MultiSelectionHandler<TItem> {
  * @param items Items that were selected.
  * @param replace Should replace current selection.
  */
-export declare type OnItemsSelectedCallback<TItem> = (items: TItem[], replace: boolean) => void;
+export declare type OnItemsSelectedCallback<TItem> = (items: TItem[], replace: boolean) => void | boolean;
 
 /**
  * Called after items were deselected.
  * @param items Items that were deselected.
  */
-export declare type OnItemsDeselectedCallback<Item> = (items: Item[]) => void;
+export declare type OnItemsDeselectedCallback<Item> = (items: Item[]) => void | boolean;
 
 class BatchSelectionOperation<Item> {
   public readonly selections = new Array<Item>();

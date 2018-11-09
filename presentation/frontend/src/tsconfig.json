@@ -4,14 +4,11 @@
     "skipLibCheck": true,
     "composite": true,
     "outDir": "../lib",
-    "baseUrl": "../node_modules/"
   },
   "include": [
     "./**/*.ts"
   ],
-  "references": [
-    {
-      "path": "../../common/src"
-    }
+  "exclude": [
+    "./test/**/*"
   ]
 }

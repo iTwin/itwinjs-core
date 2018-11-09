@@ -9,12 +9,12 @@
   },
   "private": true,
   "scripts": {
-    "build": "npm run extract",
+    "build": "tsc 1>&2 && npm run extract",
     "clean": "rimraf lib",
     "docs": "",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint -p ./",
-    "test": "cross-env TS_NODE_PROJECT=./tsconfig.json mocha --opts ./mocha.opts ./src/**/*.ts",
+    "test": "mocha --opts ./mocha.opts ./lib/**/*.js",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch",
     "cover": ""
   },
