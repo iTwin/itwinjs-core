@@ -15,11 +15,10 @@ import {
   createRandomECInstanceNodeKey,
   createRandomDescriptor,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { Id64String, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { ElementProps, Code } from "@bentley/imodeljs-common";
 import { IModelConnection, SelectionSet, ViewState3d, NoRenderApp, SelectEventType } from "@bentley/imodeljs-frontend";
-import { KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item } from "@bentley/presentation-common";
+import { KeySet, DefaultContentDisplayTypes, SelectionInfo, Content, Item, InstanceKey } from "@bentley/presentation-common";
 import {
   Presentation,
   SelectionManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType,
@@ -36,6 +35,7 @@ describe("Viewport withUnifiedSelection", () => {
 
   before(() => {
     NoRenderApp.startup();
+    classNameGenerator = () => faker.random.word();
   });
   after(() => {
     NoRenderApp.shutdown();
@@ -50,7 +50,12 @@ describe("Viewport withUnifiedSelection", () => {
     const viewsMock = moq.Mock.ofInstance<IModelConnection.Views>(new IModelConnection.Views(imodelMock.object));
     viewsMock.setup((views) => views.load(moq.It.isAny())).returns(async () => moq.Mock.ofType<ViewState3d>().object);
     imodelMock.reset();
-    imodelMock.setup((imodel) => imodel.selectionSet).returns((imodel) => new SelectionSet(imodel));
+    let selectionSet: SelectionSet | undefined;
+    imodelMock.setup((imodel) => imodel.selectionSet).returns((imodel) => {
+      if (!selectionSet)
+        selectionSet = new SelectionSet(imodel);
+      return selectionSet;
+    });
     imodelMock.setup((imodel) => imodel.views).returns(() => viewsMock.object);
   });
 
@@ -180,9 +185,11 @@ describe("ViewportSelectionHandler", () => {
 
   before(() => {
     NoRenderApp.startup();
-    rulesetId = faker.random.word();
     Presentation.presentation = presentationManagerMock.object;
     Presentation.selection = selectionManagerMock.object;
+    rulesetId = faker.random.word();
+    const defaultClassName = faker.random.word();
+    classNameGenerator = () => defaultClassName;
   });
 
   after(() => {
@@ -204,25 +211,6 @@ describe("ViewportSelectionHandler", () => {
   afterEach(() => {
     handler.dispose();
   });
-
-  const mockIModel = (mock: moq.IMock<IModelConnection>) => {
-    const imodelElementsMock = moq.Mock.ofType<IModelConnection.Elements>();
-    imodelElementsMock.setup((x) => x.getProps(moq.It.isAny())).returns(async (ids: Id64Arg) => createElementProps(ids));
-
-    const selectionSet = new SelectionSet(mock.object);
-    mock.reset();
-    mock.setup((imodel) => imodel.selectionSet).returns(() => selectionSet);
-    mock.setup((imodel) => imodel.elements).returns(() => imodelElementsMock.object);
-  };
-
-  const createElementProps = (ids: Id64Arg): ElementProps[] => {
-    return [...Id64.toIdSet(ids)].map((id: string): ElementProps => ({
-      id: Id64.fromString(id),
-      classFullName: `class_name_${id}`,
-      code: Code.createEmpty(),
-      model: Id64.fromString(id),
-    }));
-  };
 
   describe("imodel", () => {
 
@@ -256,15 +244,8 @@ describe("ViewportSelectionHandler", () => {
   describe("reacting to unified selection changes", () => {
 
     let replaceSpy: any;
-    let replaceCalled: PromiseContainer<void>;
     beforeEach(() => {
-      replaceCalled = new PromiseContainer<void>();
-      const origReplace = imodelMock.object.selectionSet.replace;
-      imodelMock.object.selectionSet.replace = () => {
-        origReplace.apply(imodelMock.object.selectionSet, arguments);
-        replaceCalled.resolve();
-      };
-      replaceSpy = sinon.spy(imodelMock.object.selectionSet, "replace");
+      replaceSpy = sinon.spy(imodelMock.target.selectionSet, "replace");
     });
 
     it("ignores selection changes to other imodels", async () => {
@@ -336,7 +317,7 @@ describe("ViewportSelectionHandler", () => {
       selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs, selectionManagerMock.object);
 
       // wait for event handler to finish
-      await replaceCalled.promise;
+      await waitForSyncHandlers([handler]);
 
       // verify viewport selection was changed with expected ids
       const ids = [
@@ -373,7 +354,7 @@ describe("ViewportSelectionHandler", () => {
       selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs, selectionManagerMock.object);
 
       // wait for event handler to finish
-      await replaceCalled.promise;
+      await waitForSyncHandlers([handler]);
 
       // verify viewport selection was changed with expected ids
       expect(replaceSpy).to.be.calledWith([]);
@@ -405,7 +386,7 @@ describe("ViewportSelectionHandler", () => {
       selectionManagerMock.target.selectionChange.raiseEvent(selectionChangeArgs, selectionManagerMock.object);
 
       // wait for event handler to finish
-      await replaceCalled.promise;
+      await waitForSyncHandlers([handler]);
 
       // ensure this didn't result in any more unified selection changes
       selectionManagerMock.verify((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()), moq.Times.never());
@@ -418,9 +399,7 @@ describe("ViewportSelectionHandler", () => {
 
   describe("reacting to viewport selection changes", () => {
 
-    let selectionManagerCalled: PromiseContainer<void>;
     beforeEach(() => {
-      selectionManagerCalled = new PromiseContainer<void>();
       const defaultArgs = {
         imodel: imodelMock.object,
         level: 0,
@@ -429,7 +408,6 @@ describe("ViewportSelectionHandler", () => {
       };
       const callback = (args: SelectionChangeEventArgs) => {
         selectionManagerMock.target.selectionChange.raiseEvent(args, selectionManagerMock.object);
-        selectionManagerCalled.resolve();
       };
       selectionManagerMock.setup((x) => x.addToSelection(moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .callback((source) => callback({ ...defaultArgs, changeType: SelectionChangeType.Add, source }));
@@ -449,13 +427,13 @@ describe("ViewportSelectionHandler", () => {
 
     it("handles adding to selection when viewport reports undefined ids added to selection", async () => {
       imodelMock.target.selectionSet.onChanged.raiseEvent(imodelMock.object, SelectEventType.Add, undefined);
-      await selectionManagerCalled.promise;
+      await waitForSyncHandlers([handler]);
       selectionManagerMock.verify((x) => x.addToSelection(moq.It.isAnyString(), imodelMock.object, [], 0, rulesetId), moq.Times.once());
     });
 
     it("clears unified selection when viewport selection is cleared", async () => {
       imodelMock.target.selectionSet.onChanged.raiseEvent(imodelMock.object, SelectEventType.Clear);
-      await selectionManagerCalled.promise;
+      await waitForSyncHandlers([handler]);
       selectionManagerMock.verify((x) => x.clearSelection(moq.It.isAnyString(), imodelMock.object, 0, rulesetId), moq.Times.once());
     });
 
@@ -463,7 +441,7 @@ describe("ViewportSelectionHandler", () => {
       const ids = [createRandomId(), createRandomId(), createRandomId()];
       const keys = createElementProps(ids);
       imodelMock.target.selectionSet.onChanged.raiseEvent(imodelMock.object, SelectEventType.Add, new Set(ids));
-      await selectionManagerCalled.promise;
+      await waitForSyncHandlers([handler]);
       selectionManagerMock.verify((x) => x.addToSelection(moq.It.isAnyString(), imodelMock.object, keys, 0, rulesetId), moq.Times.once());
     });
 
@@ -471,7 +449,7 @@ describe("ViewportSelectionHandler", () => {
       const ids = [createRandomId(), createRandomId(), createRandomId()];
       const keys = createElementProps(ids);
       imodelMock.target.selectionSet.onChanged.raiseEvent(imodelMock.object, SelectEventType.Replace, new Set(ids));
-      await selectionManagerCalled.promise;
+      await waitForSyncHandlers([handler]);
       selectionManagerMock.verify((x) => x.replaceSelection(moq.It.isAnyString(), imodelMock.object, keys, 0, rulesetId), moq.Times.once());
     });
 
@@ -479,7 +457,7 @@ describe("ViewportSelectionHandler", () => {
       const ids = [createRandomId(), createRandomId(), createRandomId()];
       const keys = createElementProps(ids);
       imodelMock.target.selectionSet.onChanged.raiseEvent(imodelMock.object, SelectEventType.Remove, new Set(ids));
-      await selectionManagerCalled.promise;
+      await waitForSyncHandlers([handler]);
       selectionManagerMock.verify((x) => x.removeFromSelection(moq.It.isAnyString(), imodelMock.object, keys, 0, rulesetId), moq.Times.once());
     });
 
@@ -494,7 +472,7 @@ describe("ViewportSelectionHandler", () => {
       ];
       const ids = [createRandomId()];
       imodelMock.target.selectionSet.onChanged.raiseEvent(imodelMock.object, SelectEventType.Add, new Set(ids));
-      await selectionManagerCalled.promise;
+      await waitForSyncHandlers([handler]);
       selectionSetSpies.forEach((s) => expect(s).to.not.be.called);
     });
 
@@ -502,10 +480,135 @@ describe("ViewportSelectionHandler", () => {
       mockIModel(imodelMock);
       handler.imodel = imodelMock.object;
       imodelMock.target.selectionSet.onChanged.raiseEvent(imodelMock.object, SelectEventType.Clear);
-      await selectionManagerCalled.promise;
+      await waitForSyncHandlers([handler]);
       selectionManagerMock.verify((x) => x.clearSelection(moq.It.isAnyString(), imodelMock.object, 0, rulesetId), moq.Times.once());
     });
 
   });
 
 });
+
+describe("Integration: ViewportSelectionHandler", () => {
+
+  let rulesetId: string;
+  let key: InstanceKey;
+  let selectionManager = new SelectionManager();
+  const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
+  const imodelMock = moq.Mock.ofType<IModelConnection>();
+
+  before(() => {
+    NoRenderApp.startup();
+    Presentation.presentation = presentationManagerMock.object;
+    rulesetId = faker.random.word();
+    key = createRandomECInstanceKey();
+    classNameGenerator = () => key.className;
+  });
+
+  after(() => {
+    NoRenderApp.shutdown();
+  });
+
+  beforeEach(() => {
+    presentationManagerMock.reset();
+    mockIModel(imodelMock);
+    Presentation.selection = selectionManager = new SelectionManager();
+  });
+
+  describe("multiple ViewportSelectionHandlers", () => {
+
+    let handlers: ViewportSelectionHandler[];
+    let unifiedSelectionChangedListener: sinon.SinonSpy;
+    let viewportSelectionChangedListener: sinon.SinonSpy;
+    let selectionInfo: SelectionInfo;
+
+    const setupUnifiedSelection = () => {
+      // we'll be listening for selection changes
+      unifiedSelectionChangedListener = sinon.spy();
+      selectionManager.selectionChange.addListener(unifiedSelectionChangedListener);
+
+      // selection handler asks for content descriptor + content for the selection
+      selectionInfo = {
+        providerName: faker.random.word(),
+        level: 0,
+      };
+      const descriptor = createRandomDescriptor();
+      const content: Content = {
+        descriptor,
+        contentSet: [new Item([key], "", "", undefined, {}, {}, [])],
+      };
+      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId },
+        DefaultContentDisplayTypes.VIEWPORT, moq.It.isAny(), moq.It.isAny())).returns(async () => descriptor);
+      presentationManagerMock.setup((x) => x.getContent({ imodel: imodelMock.object, rulesetId, paging: undefined },
+        moq.It.isAny(), moq.It.isAny())).returns(async () => content);
+    };
+
+    const setupViewportSelection = () => {
+      // we'll be listening for the onChanged event
+      viewportSelectionChangedListener = sinon.spy();
+      imodelMock.target.selectionSet.onChanged.clear();
+      imodelMock.target.selectionSet.onChanged.addListener(viewportSelectionChangedListener);
+    };
+
+    beforeEach(() => {
+      setupUnifiedSelection();
+      setupViewportSelection();
+      handlers = [1, 2].map(() => new ViewportSelectionHandler(imodelMock.object, rulesetId));
+    });
+
+    afterEach(() => {
+      handlers.forEach((h) => h.dispose());
+      handlers = [];
+    });
+
+    it("should not trigger secondary unified selection changes", async () => {
+      // trigger the selection change
+      selectionManager.replaceSelection(selectionInfo.providerName,
+        imodelMock.object, new KeySet([key]), selectionInfo.level!);
+      await waitForSyncHandlers(handlers);
+
+      // verify the listeners were called only once
+      expect(unifiedSelectionChangedListener).to.be.calledOnce;
+      expect(viewportSelectionChangedListener).to.be.calledOnce;
+    });
+
+    it("should not trigger secondary viewport selection set changes", async () => {
+      // trigger a selection change
+      imodelMock.target.selectionSet.replace(key.id);
+      await waitForSyncHandlers(handlers);
+
+      // verify the listeners were called only once
+      expect(viewportSelectionChangedListener).to.be.calledOnce;
+      expect(unifiedSelectionChangedListener).to.be.calledOnce;
+    });
+
+  });
+
+});
+
+const mockIModel = (mock: moq.IMock<IModelConnection>) => {
+  const imodelElementsMock = moq.Mock.ofType<IModelConnection.Elements>();
+  imodelElementsMock.setup((x) => x.getProps(moq.It.isAny())).returns(async (ids: Id64Arg) => createElementProps(ids));
+
+  const selectionSet = new SelectionSet(mock.object);
+  mock.reset();
+  mock.setup((imodel) => imodel.selectionSet).returns(() => selectionSet);
+  mock.setup((imodel) => imodel.elements).returns(() => imodelElementsMock.object);
+};
+
+let classNameGenerator = () => faker.random.word();
+const createElementProps = (ids: Id64Arg): ElementProps[] => {
+  return [...Id64.toIdSet(ids)].map((id: Id64String): ElementProps => ({
+    id,
+    classFullName: classNameGenerator(),
+    code: Code.createEmpty(),
+    model: id,
+  }));
+};
+
+const waitForSyncHandlers = async (handlers: ViewportSelectionHandler[]) => {
+  const havePendingAsyncs = handlers.some((h) => h.hasPendingAsyncs);
+  if (havePendingAsyncs) {
+    await new Promise((resolve) => setTimeout(resolve, 0));
+    await waitForSyncHandlers(handlers);
+  }
+};

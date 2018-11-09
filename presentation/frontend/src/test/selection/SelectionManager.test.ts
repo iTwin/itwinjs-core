@@ -110,12 +110,20 @@ describe("SelectionManager", () => {
       }
     });
 
-    it("clears higher level selection after adding items to lower level selection", () => {
+    it("clears higher level selection when adding items to lower level selection", () => {
       selectionManager.addToSelection(source, imodelMock.object, baseSelection);
-      selectionManager.addToSelection(source, imodelMock.object, baseSelection, 1);
-      selectionManager.addToSelection(source, imodelMock.object, [baseSelection[1]]);
+      selectionManager.addToSelection(source, imodelMock.object, [createRandomECInstanceKey()], 1);
+      selectionManager.addToSelection(source, imodelMock.object, [createRandomECInstanceKey()]);
       const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
-      expect(selectedItemsSet.size).to.be.equal(0);
+      expect(selectedItemsSet.isEmpty).to.be.true;
+    });
+
+    it("doesn't clear higher level selection when adding same items to lower level selection", () => {
+      selectionManager.addToSelection(source, imodelMock.object, baseSelection);
+      selectionManager.addToSelection(source, imodelMock.object, [createRandomECInstanceKey()], 1);
+      selectionManager.addToSelection(source, imodelMock.object, baseSelection);
+      const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
+      expect(selectedItemsSet.isEmpty).to.be.false;
     });
 
   });
@@ -169,12 +177,20 @@ describe("SelectionManager", () => {
       }
     });
 
-    it("clears higher level selection after replacing items of lower level selection", () => {
+    it("clears higher level selection when replacing lower level selection", () => {
       selectionManager.addToSelection(source, imodelMock.object, baseSelection);
-      selectionManager.addToSelection(source, imodelMock.object, baseSelection, 1);
-      selectionManager.replaceSelection(source, imodelMock.object, [baseSelection[1]]);
+      selectionManager.addToSelection(source, imodelMock.object, [createRandomECInstanceKey()], 1);
+      selectionManager.replaceSelection(source, imodelMock.object, [createRandomECInstanceKey()]);
       const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
-      expect(selectedItemsSet.size).to.be.equal(0);
+      expect(selectedItemsSet.isEmpty).to.be.true;
+    });
+
+    it("doesn't clear higher level selection when replacing lower level selection with same items", () => {
+      selectionManager.addToSelection(source, imodelMock.object, baseSelection);
+      selectionManager.addToSelection(source, imodelMock.object, [createRandomECInstanceKey()], 1);
+      selectionManager.replaceSelection(source, imodelMock.object, baseSelection);
+      const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
+      expect(selectedItemsSet.isEmpty).to.be.false;
     });
 
   });
@@ -227,12 +243,19 @@ describe("SelectionManager", () => {
       }
     });
 
-    it("clears higher level selection after clearing items of lower level selection", () => {
+    it("clears higher level selection when clearing items in lower level selection", () => {
       selectionManager.addToSelection(source, imodelMock.object, baseSelection);
-      selectionManager.addToSelection(source, imodelMock.object, baseSelection, 1);
+      selectionManager.addToSelection(source, imodelMock.object, [createRandomECInstanceKey()], 1);
       selectionManager.clearSelection(source, imodelMock.object);
       const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
-      expect(selectedItemsSet.size).to.be.equal(0);
+      expect(selectedItemsSet.isEmpty).to.be.true;
+    });
+
+    it("doesn't clears higher level selection when clearing empty lower level selection", () => {
+      selectionManager.addToSelection(source, imodelMock.object, [createRandomECInstanceKey()], 1);
+      selectionManager.clearSelection(source, imodelMock.object);
+      const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
+      expect(selectedItemsSet.isEmpty).to.be.false;
     });
 
   });
@@ -294,25 +317,42 @@ describe("SelectionManager", () => {
       expect(selectedItemsSet.has(baseSelection[2])).true;
     });
 
-    it("clears higher level selection after removing items of lower level selection", () => {
+    it("clears higher level selection when removing items from lower level selection", () => {
       selectionManager.addToSelection(source, imodelMock.object, baseSelection);
-      selectionManager.addToSelection(source, imodelMock.object, baseSelection, 1);
+      selectionManager.addToSelection(source, imodelMock.object, [createRandomECInstanceKey()], 1);
       selectionManager.removeFromSelection(source, imodelMock.object, baseSelection);
       const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
-      expect(selectedItemsSet.size).to.be.equal(0);
+      expect(selectedItemsSet.isEmpty).to.be.true;
+    });
+
+    it("doesn't clear higher level selection when removing non-existing items from lower level selection", () => {
+      selectionManager.addToSelection(source, imodelMock.object, baseSelection);
+      selectionManager.addToSelection(source, imodelMock.object, [createRandomECInstanceKey()], 1);
+      selectionManager.removeFromSelection(source, imodelMock.object, [createRandomECInstanceKey()]);
+      const selectedItemsSet = selectionManager.getSelection(imodelMock.object, 1);
+      expect(selectedItemsSet.isEmpty).to.be.false;
     });
 
   });
 
   describe("handleEvent", () => {
 
-    it("calls selectionChange.raiseEvent after addToSelection, replaceSelection, clearSelection, removeFromSelection", () => {
+    it("fires `selectionChange` event after `addToSelection`, `replaceSelection`, `clearSelection`, `removeFromSelection`", () => {
       const raiseEventSpy = sinon.spy(selectionManager.selectionChange, "raiseEvent");
       selectionManager.addToSelection(source, imodelMock.object, baseSelection);
-      selectionManager.clearSelection(source, imodelMock.object);
       selectionManager.removeFromSelection(source, imodelMock.object, baseSelection);
       selectionManager.replaceSelection(source, imodelMock.object, baseSelection);
+      selectionManager.clearSelection(source, imodelMock.object);
       expect(raiseEventSpy, "Expected selectionChange.raiseEvent to be called").to.have.callCount(4);
+    });
+
+    it("doesn't fire `selectionChange` event after addToSelection, replaceSelection, clearSelection, removeFromSelection if nothing changes", () => {
+      const raiseEventSpy = sinon.spy(selectionManager.selectionChange, "raiseEvent");
+      selectionManager.addToSelection(source, imodelMock.object, []);
+      selectionManager.clearSelection(source, imodelMock.object);
+      selectionManager.removeFromSelection(source, imodelMock.object, baseSelection);
+      selectionManager.replaceSelection(source, imodelMock.object, []);
+      expect(raiseEventSpy, "Expected selectionChange.raiseEvent to not be called").to.not.have.been.called;
     });
 
   });

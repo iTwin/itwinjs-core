@@ -11,7 +11,7 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, Keys, InstanceKey } from "@bentley/presentation-common";
+import { KeySet, InstanceKey } from "@bentley/presentation-common";
 import {
   Presentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent, SelectionChangeType, ISelectionProvider, SelectionChangeEventArgs,
@@ -423,7 +423,7 @@ describe("Table withUnifiedSelection", () => {
 
     describe("reacting to unified selection changes", () => {
 
-      const triggerSelectionChange = (overallSelection: Keys, selectionLevel: number) => {
+      const triggerSelectionChange = (overallSelection: KeySet, selectionLevel: number) => {
         const args: SelectionChangeEventArgs = {
           changeType: SelectionChangeType.Clear,
           imodel: imodelMock.object,
@@ -440,8 +440,8 @@ describe("Table withUnifiedSelection", () => {
           selectionHandlerMock.setup((x) => x.getSelection(selectionLevel)).returns(() => new KeySet());
           selectionLevel--;
         }
-        selectionProviderMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => new KeySet(overallSelection));
-        selectionHandlerMock.setup((x) => x.getSelection(0)).returns(() => new KeySet(overallSelection));
+        selectionProviderMock.setup((x) => x.getSelection(imodelMock.object, 0)).returns(() => overallSelection);
+        selectionHandlerMock.setup((x) => x.getSelection(0)).returns(() => overallSelection);
         selectionHandlerMock.target.onSelect!(args, selectionProviderMock.object);
       };
 
@@ -475,7 +475,7 @@ describe("Table withUnifiedSelection", () => {
           selectionLevel={2}
         />);
         triggerSelectionChange(keys, 1);
-        dataProviderMock.verify((x) => x.keys = keys, moq.Times.once());
+        dataProviderMock.verify((x) => x.keys = moq.isKeySet(keys), moq.Times.once());
       });
 
       it("ignores selection changes with selection level equal to table's boundary level when base ref is not initialized", () => {

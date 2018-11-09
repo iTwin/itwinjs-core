@@ -55,6 +55,7 @@ export default class SelectionManager implements ISelectionProvider {
   private handleEvent(evt: SelectionChangeEventArgs): void {
     const container = this.getContainer(evt.imodel);
     const selectedItemsSet = container.getSelection(evt.level);
+    const guidBefore = selectedItemsSet.guid;
     switch (evt.changeType) {
       case SelectionChangeType.Add:
         selectedItemsSet.add(evt.keys);
@@ -63,14 +64,21 @@ export default class SelectionManager implements ISelectionProvider {
         selectedItemsSet.delete(evt.keys);
         break;
       case SelectionChangeType.Replace:
-        selectedItemsSet.clear().add(evt.keys);
+        if (selectedItemsSet.size !== evt.keys.size || !selectedItemsSet.hasAll(evt.keys)) {
+          // note: the above check is only needed to avoid changing
+          // guid of the keyset if we're replacing keyset with the same keys
+          selectedItemsSet.clear().add(evt.keys);
+        }
         break;
       case SelectionChangeType.Clear:
         selectedItemsSet.clear();
         break;
     }
-    container.clear(evt.level + 1);
 
+    if (selectedItemsSet.guid === guidBefore)
+      return;
+
+    container.clear(evt.level + 1);
     this.selectionChange.raiseEvent(evt, this);
   }
 

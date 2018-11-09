@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
 
-import { Id64 } from "@bentley/bentleyjs-core";
+import { Id64, GuidString, Guid } from "@bentley/bentleyjs-core";
 import { InstanceId, InstanceKey } from "./EC";
 import { NodeKey, NodeKeyJSON, fromJSON as nodeKeyFromJSON } from "./hierarchy/Key";
 import { EntityProps } from "@bentley/imodeljs-common";
@@ -34,6 +34,7 @@ export default class KeySet {
   // note: all keys are stored as strings because we need ability to find them by value
   private _instanceKeys: Map<string, Set<string>>; // class name => instance ids
   private _nodeKeys: Set<string>;
+  private _guid: GuidString;
 
   /**
    * Creates an instance of KeySet.
@@ -42,9 +43,17 @@ export default class KeySet {
   constructor(source?: Keys) {
     this._instanceKeys = new Map();
     this._nodeKeys = new Set();
+    this._guid = Guid.createValue();
     if (source)
       this.add(source);
   }
+
+  /**
+   * Get a GUID that identifies changes in this keyset. The value
+   * does not uniquely identify contents of the keyset, but it can be
+   * used to check whether keyset has changed.
+   */
+  public get guid(): GuidString { return this._guid; }
 
   /**
    * Serializes this KeySet to JSON
@@ -121,8 +130,12 @@ export default class KeySet {
    * @returns itself
    */
   public clear(): KeySet {
+    if (this.isEmpty)
+      return this;
+
     this._instanceKeys = new Map();
     this._nodeKeys = new Set();
+    this._guid = Guid.createValue();
     return this;
   }
 
@@ -156,6 +169,7 @@ export default class KeySet {
   public add(value: Keys | Key): KeySet {
     if (!value)
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
+    const sizeBefore = this.size;
     if (this.isKeySet(value)) {
       this.addKeySet(value);
     } else if (this.isKeySetJSON(value)) {
@@ -174,6 +188,8 @@ export default class KeySet {
     } else {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     }
+    if (this.size !== sizeBefore)
+      this._guid = Guid.createValue();
     return this;
   }
 
@@ -211,6 +227,7 @@ export default class KeySet {
   public delete(value: Keys | Key): KeySet {
     if (!value)
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
+    const sizeBefore = this.size;
     if (this.isKeySet(value)) {
       this.deleteKeySet(value);
     } else if (this.isKeySetJSON(value)) {
@@ -229,6 +246,8 @@ export default class KeySet {
     } else {
       throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
     }
+    if (this.size !== sizeBefore)
+      this._guid = Guid.createValue();
     return this;
   }
 
@@ -248,6 +267,114 @@ export default class KeySet {
     if (this.isEntityProps(value))
       return this.has({ className: value.classFullName, id: value.id! } as InstanceKey);
     throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${value}`);
+  }
+
+  private hasKeySet(readonlyKeys: Readonly<KeySet>, checkType: "all" | "any"): boolean {
+    // note: cast-away read-onlyness to access private members...
+    const keys = readonlyKeys as KeySet;
+
+    if (checkType === "all") {
+      if (this._nodeKeys.size < keys._nodeKeys.size || this._instanceKeys.size < keys._instanceKeys.size)
+        return false;
+      if ([...keys._nodeKeys].some((key) => !this._nodeKeys.has(key)))
+        return false;
+      for (const otherEntry of keys._instanceKeys) {
+        const thisEntryKeys = this._instanceKeys.get(otherEntry["0"]);
+        if (!thisEntryKeys || thisEntryKeys.size < otherEntry["1"].size)
+          return false;
+        if ([...otherEntry["1"]].some((key) => !thisEntryKeys.has(key)))
+          return false;
+      }
+      return true;
+    }
+
+    // "any" check type
+    if ([...keys._nodeKeys].some((key) => this._nodeKeys.has(key)))
+      return true;
+    for (const otherEntry of keys._instanceKeys) {
+      const thisEntryKeys = this._instanceKeys.get(otherEntry["0"]);
+      if (thisEntryKeys && [...otherEntry["1"]].some((key) => thisEntryKeys.has(key)))
+        return true;
+    }
+    return false;
+  }
+
+  private hasKeySetJSON(keys: Readonly<KeySetJSON>, checkType: "all" | "any"): boolean {
+    if (checkType === "all") {
+      if (this._nodeKeys.size < keys.nodeKeys.length || this._instanceKeys.size < keys.instanceKeys.length)
+        return false;
+      if ([...keys.nodeKeys].some((key) => !this._nodeKeys.has(JSON.stringify(key))))
+        return false;
+      for (const otherEntry of keys.instanceKeys) {
+        const thisEntryKeys = this._instanceKeys.get(otherEntry["0"]);
+        if (!thisEntryKeys || thisEntryKeys.size < otherEntry["1"].length)
+          return false;
+        if ([...otherEntry["1"]].some((key) => !thisEntryKeys.has(key)))
+          return false;
+      }
+      return true;
+    }
+
+    // "any" check type
+    if ([...keys.nodeKeys].some((key) => this._nodeKeys.has(JSON.stringify(key))))
+      return true;
+    for (const otherEntry of keys.instanceKeys) {
+      const thisEntryKeys = this._instanceKeys.get(otherEntry["0"]);
+      if (thisEntryKeys && [...otherEntry["1"]].some((key) => thisEntryKeys.has(key)))
+        return true;
+    }
+    return false;
+  }
+
+  private hasKeysArray(keys: ReadonlyArray<Key>, checkType: "all" | "any"): boolean {
+    if (checkType === "all") {
+      if (this.size < keys.length)
+        return false;
+      for (const key of keys) {
+        if (!this.has(key))
+          return false;
+      }
+      return true;
+    }
+
+    // "any" check type
+    for (const key of keys) {
+      if (this.has(key))
+        return true;
+    }
+    return false;
+  }
+
+  /**
+   * Check if this KeySet contains all the specified keys.
+   * @param keys The keys to check.
+   */
+  public hasAll(keys: Keys): boolean {
+    if (!keys)
+      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${keys}`);
+    if (this.isKeySet(keys))
+      return this.hasKeySet(keys, "all");
+    if (this.isKeySetJSON(keys))
+      return this.hasKeySetJSON(keys, "all");
+    if (this.isKeysArray(keys))
+      return this.hasKeysArray(keys, "all");
+    throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: keys = ${keys}`);
+  }
+
+  /**
+   * Check if this KeySet contains any of the specified keys.
+   * @param keys The keys to check.
+   */
+  public hasAny(keys: Keys): boolean {
+    if (!keys)
+      throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: value = ${keys}`);
+    if (this.isKeySet(keys))
+      return this.hasKeySet(keys, "any");
+    if (this.isKeySetJSON(keys))
+      return this.hasKeySetJSON(keys, "any");
+    if (this.isKeysArray(keys))
+      return this.hasKeysArray(keys, "any");
+    throw new PresentationError(PresentationStatus.InvalidArgument, `Invalid argument: keys = ${keys}`);
   }
 
   /**

@@ -216,7 +216,8 @@ describe("ContentDataProvider", () => {
 
     it("requests presentation manager for descriptor and returns its copy", async () => {
       const result = createRandomDescriptor(displayType);
-      presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, displayType, new KeySet(), selection))
+      presentationManagerMock
+        .setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, displayType, moq.It.isAnyObject(KeySet), selection))
         .returns(async () => result)
         .verifiable();
       provider.selectionInfo = selection;

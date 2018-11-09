@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix SelectionSet broadcasting excessive selection change events",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

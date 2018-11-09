@@ -5,7 +5,7 @@
 /** @module UnifiedSelection */
 
 import * as React from "react";
-import { Id64Set, Id64String, IDisposable } from "@bentley/bentleyjs-core";
+import { Id64Set, Id64String, IDisposable, GuidString, Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection, SelectEventType } from "@bentley/imodeljs-frontend";
 import { SelectionInfo, DefaultContentDisplayTypes, KeySet } from "@bentley/presentation-common";
 import { SelectionHandler, Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
@@ -41,7 +41,7 @@ export default function withUnifiedSelection<P extends ViewportProps>(ViewportCo
     /** Returns the display name of this component */
     public static get displayName() { return `WithUnifiedSelection(${getDisplayName(ViewportComponent)})`; }
 
-    /** Get selection handler used by this property grid */
+    /** Get selection handler used by this viewport */
     public get selectionHandler(): SelectionHandler | undefined {
       return this._selectionHandler ? this._selectionHandler.selectionHandler : undefined;
     }
@@ -85,6 +85,12 @@ export default function withUnifiedSelection<P extends ViewportProps>(ViewportCo
 }
 
 /**
+ * A handler that syncs selection between unified selection
+ * manager (`Presentation.selection`) and a viewport (`imodel.selectionSet`).
+ * It has nothing to do with the viewport component itself - the
+ * viewport updates its highlighted elements when `imodel.selectionSet`
+ * changes.
+ *
  * @hidden
  */
 export class ViewportSelectionHandler implements IDisposable {
@@ -95,6 +101,7 @@ export class ViewportSelectionHandler implements IDisposable {
   private _imodelSelectionListenerDisposeFunc: () => void;
   private _selectedElementsProvider: SelectedElementsProvider;
   private _isApplyingUnifiedSelection = false;
+  private _asyncsInProgress = new Set<GuidString>();
 
   public constructor(imodel: IModelConnection, rulesetId: string) {
     this._imodel = imodel;
@@ -134,6 +141,8 @@ export class ViewportSelectionHandler implements IDisposable {
     this._selectedElementsProvider.rulesetId = value;
   }
 
+  public get hasPendingAsyncs() { return this._asyncsInProgress.size !== 0; }
+
   // tslint:disable-next-line:naming-convention
   private onUnifiedSelectionChanged = async (args: SelectionChangeEventArgs, provider: ISelectionProvider): Promise<void> => {
     // this component only cares about its own imodel
@@ -144,6 +153,9 @@ export class ViewportSelectionHandler implements IDisposable {
     // wip: may want to handle different selection levels?
     if (0 !== args.level)
       return;
+
+    const asyncId = Guid.createValue();
+    this._asyncsInProgress.add(asyncId);
 
     const selection = provider.getSelection(args.imodel, 0);
     const info: SelectionInfo = {
@@ -156,6 +168,7 @@ export class ViewportSelectionHandler implements IDisposable {
       args.imodel.selectionSet.replace(ids);
     } finally {
       this._isApplyingUnifiedSelection = false;
+      this._asyncsInProgress.delete(asyncId);
     }
   }
 
@@ -179,21 +192,27 @@ export class ViewportSelectionHandler implements IDisposable {
       return;
     }
 
-    // we only have element ids, but the library requires instance keys (with
-    // class names), so have to query
-    const elementProps = ids ? await imodel.elements.getProps(ids) : [];
+    const asyncId = Guid.createValue();
+    this._asyncsInProgress.add(asyncId);
+    try {
+      // we only have element ids, but the library requires instance keys (with
+      // class names), so have to query
+      const elementProps = ids ? await imodel.elements.getProps(ids) : [];
 
-    // report the change
-    switch (eventType) {
-      case SelectEventType.Add:
-        this._selectionHandler.addToSelection(elementProps, selectionLevel);
-        break;
-      case SelectEventType.Replace:
-        this._selectionHandler.replaceSelection(elementProps, selectionLevel);
-        break;
-      case SelectEventType.Remove:
-        this._selectionHandler.removeFromSelection(elementProps, selectionLevel);
-        break;
+      // report the change
+      switch (eventType) {
+        case SelectEventType.Add:
+          this._selectionHandler.addToSelection(elementProps, selectionLevel);
+          break;
+        case SelectEventType.Replace:
+          this._selectionHandler.replaceSelection(elementProps, selectionLevel);
+          break;
+        case SelectEventType.Remove:
+          this._selectionHandler.removeFromSelection(elementProps, selectionLevel);
+          break;
+      }
+    } finally {
+      this._asyncsInProgress.delete(asyncId);
     }
   }
 }
