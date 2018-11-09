@@ -9,6 +9,7 @@ import { Orientation, ElementSeparator } from "@bentley/ui-core";
 import UiComponents from "../../UiComponents";
 import { PropertyRecord } from "../../properties";
 import { PropertyValueRendererManager, IPropertyValueRendererContext, PropertyContainerType } from "../../properties/ValueRendererManager";
+import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import "./PropertyRenderer.scss";
 
 /**
@@ -31,6 +32,12 @@ export interface PropertyRendererProps {
   onColumnRatioChanged?: (ratio: number) => void;
   /** Custom value renderer */
   propertyValueRendererManager?: PropertyValueRendererManager;
+  /** Indicates property is being edited */
+  isEditing?: boolean;
+  /** Called when property edit is committed. */
+  onEditCommit?: (args: PropertyUpdatedArgs) => void;
+  /** Called when property edit is cancelled. */
+  onEditCancel?: () => void;
 }
 
 /** State of [[PropertyRenderer]] React component */
@@ -39,6 +46,8 @@ export interface PropertyRendererState {
   displayValue?: React.ReactNode;
   /** Current width of this component in pixels */
   width?: number;
+  /** Mouse s hovering over */
+  isHover: boolean;
 }
 
 /**
@@ -50,11 +59,20 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
   public readonly state: Readonly<PropertyRendererState> = {
     displayValue: UiComponents.i18n.translate("UiComponents:general.loading"),
     width: undefined,
+    isHover: false,
   };
 
   private _onClick = () => {
     if (this.props.onClick)
       this.props.onClick(this.props.propertyRecord, this.props.uniqueKey);
+  }
+
+  private _onMouseEnter = () => {
+    this.setState({ isHover: !this.props.isSelected && this.props.onClick !== undefined });
+  }
+
+  private _onMouseLeave = () => {
+    this.setState({ isHover: false });
   }
 
   private async updateDisplayValue(props: PropertyRendererProps) {
@@ -82,6 +100,9 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
       ? "components-property-record--horizontal"
       : "components-property-record--vertical";
 
+    if (this.state.isHover)
+      propertyRecordClassName += " components--hover";
+
     if (props.isSelected)
       propertyRecordClassName += " components--selected";
 
@@ -99,7 +120,21 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
   public componentDidUpdate(prevProps: PropertyRendererProps) {
     if (prevProps.propertyRecord !== this.props.propertyRecord)
       this.updateDisplayValue(this.props);
+
+    if (this.state.isHover && this.props.isSelected)
+      this.setState({ isHover: false });
+
     this.afterRender();
+  }
+
+  private _onEditCommit = (args: PropertyUpdatedArgs) => {
+    if (this.props.onEditCommit)
+      this.props.onEditCommit(args);
+  }
+
+  private _onEditCancel = () => {
+    if (this.props.onEditCancel)
+      this.props.onEditCancel();
   }
 
   public render() {
@@ -120,12 +155,20 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
       ref = this._containerRef;
     }
 
+    let valueNode: React.ReactNode;
+    if (this.props.isEditing)
+      valueNode = <EditorContainer propertyRecord={this.props.propertyRecord} onCommit={this._onEditCommit} onCommitCancel={this._onEditCancel} />;
+    else
+      valueNode = this.state.displayValue;
+
     return (
       <div
         ref={ref}
         style={divStyle}
         className={this.getClassName(this.props)}
         onClick={this._onClick}
+        onMouseEnter={this._onMouseEnter}
+        onMouseLeave={this._onMouseLeave}
       >
         <div className="components-property-record-label">{this.props.propertyRecord.property.displayLabel}</div>
         {this.props.orientation === Orientation.Horizontal && this.props.onColumnRatioChanged ?
@@ -135,14 +178,8 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
             ratio={ratio}
             orientation={this.props.orientation}
           /> : undefined}
-        <div className="components-property-record-value">{this.state.displayValue}</div>
+        <div className="components-property-record-value">{valueNode}</div>
       </div>
     );
   }
 }
-
-// class ArrayPropertyValueRenderer extends React.PureComponent<{ orientation: Orientation, value: ArrayValue }> {
-//   public render() {
-//     return <PropertyList orientation={this.props.orientation} properties={this.props.value.items} />;
-//   }
-// }

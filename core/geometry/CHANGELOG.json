@@ -2,6 +2,36 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "0.164.0",
+      "tag": "@bentley/geometry-core_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Complete analysis import test application"
+          },
+          {
+            "comment": "Add support for PolyfaceAuxData to PolyfaceVisitor"
+          },
+          {
+            "comment": "implement curve method \"moveSignedDistanceFromFraction\""
+          },
+          {
+            "comment": "polyface.compress performance problem -- extraneous reallocations"
+          },
+          {
+            "comment": "CurveChainWithDistanceIndex derivative and distance methods"
+          },
+          {
+            "comment": "PolyfaceAuxData documentation"
+          },
+          {
+            "comment": "Updated to TypeScript 3.1"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.163.0",
       "tag": "@bentley/geometry-core_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",

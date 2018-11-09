@@ -131,9 +131,13 @@ export class SelectionSet {
    * @returns True if any Ids were either added or removed.
    */
   public addAndRemove(adds: Id64Arg, removes: Id64Arg): boolean {
-    const added = this.add(adds);
-    const removed = this.remove(removes);
-    return added || removed; // don't put this on one line. Make sure we call both.
+    const added = this.add(adds, false);
+    const removed = this.remove(removes, false);
+    if (added || removed) {
+      this.sendChangedEvent(SelectEventType.Replace, Id64.toIdSet(adds));
+      return true;
+    }
+    return false;
   }
 
   /** Invert the state of a set of Ids in the SelectionSet */
@@ -144,8 +148,24 @@ export class SelectionSet {
     return this.addAndRemove(elementsToAdd, elementsToRemove);
   }
 
+  private static areEqual(lhs: Set<Id64String>, rhs: Set<Id64String>): boolean {
+    if (lhs.size !== rhs.size)
+      return false;
+
+    for (const id of lhs) {
+      if (!rhs.has(id))
+        return false;
+    }
+
+    return true;
+  }
+
   /** Change selection set to be the supplied set of Ids. */
   public replace(elem: Id64Arg): void {
+    elem = Id64.toIdSet(elem);
+    if (SelectionSet.areEqual(elem, this.elements))
+      return;
+
     this.elements.clear();
     this.add(elem, false);
     this.sendChangedEvent(SelectEventType.Replace, this.elements);

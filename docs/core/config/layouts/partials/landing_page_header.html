@@ -49,6 +49,10 @@
         {{#if this.docSiteMetadata.logo}}
         <img id="site-logo" class="site-logo" src="{{site.siteRoot}}{{this.docSiteMetadata.logo}}" />
         {{/if}}
+        {{#if this.docSiteMetadata.smallLogo}}
+        <img id="site-logo-small" class="site-logo-small" src="{{site.siteRoot}}{{this.docSiteMetadata.smallLogo}}"
+          style="display:none;" />
+        {{/if}}
       </a>
       <button class="navbar-toggler" type="button" data-toggle="collapse" data-target="#navbar7">
         <span class="navbar-toggler-icon"></span>

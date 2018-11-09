@@ -24,9 +24,40 @@ export class SimplePropertyDataProvider implements PropertyDataProvider, Propert
     return categoryIdx;
   }
 
+  public findCategoryIndex(category: PropertyCategory): number {
+    const index = this.categories.findIndex((testCategory: PropertyCategory) => {
+      return testCategory.name === category.name;
+    });
+    return index;
+  }
+
   public addProperty(propertyRecord: PropertyRecord, categoryIdx: number): void {
     this.records[this.categories[categoryIdx].name].push(propertyRecord);
     this.onDataChanged.raiseEvent();
+  }
+
+  public removeProperty(propertyRecord: PropertyRecord, categoryIdx: number): boolean {
+    const index = this.records[this.categories[categoryIdx].name].findIndex((record: PropertyRecord) => {
+      return record === propertyRecord;
+    });
+    if (index >= 0) {
+      this.records[this.categories[categoryIdx].name].splice(index, 1);
+      this.onDataChanged.raiseEvent();
+      return true;
+    }
+    return false;
+  }
+
+  public replaceProperty(propertyRecord: PropertyRecord, categoryIdx: number, newRecord: PropertyRecord): boolean {
+    const index = this.records[this.categories[categoryIdx].name].findIndex((record: PropertyRecord) => {
+      return record === propertyRecord;
+    });
+    if (index >= 0) {
+      this.records[this.categories[categoryIdx].name].splice(index, 1, newRecord);
+      this.onDataChanged.raiseEvent();
+      return true;
+    }
+    return false;
   }
 
   public getData(): Promise<PropertyData> {

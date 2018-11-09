@@ -4,19 +4,13 @@
     "skipLibCheck": true,
     "composite": true,
     "outDir": "../lib",
-    "baseUrl": "../node_modules/",
     "jsx": "react"
   },
   "include": [
     "./**/*.ts",
     "./**/*.tsx"
   ],
-  "references": [
-    {
-      "path": "../../common/src"
-    },
-    {
-      "path": "../../frontend/src"
-    },
+  "exclude": [
+    "./test/**/*"
   ]
 }

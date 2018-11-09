@@ -1,5 +1,4 @@
 --require ../scripts/copy-test-setup.js
---require ts-node/register
 --require source-map-support/register
 --check-leaks
 --timeout 60000

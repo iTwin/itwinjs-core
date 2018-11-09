@@ -316,7 +316,7 @@ export function containerTypeToString(type: CustomAttributeContainerType): strin
     if (containerType.length === 0)
       containerType = val;
     else
-      containerType += "," + val;
+      containerType += ", " + val;
   };
 
   if (testContainerTypeValue(CustomAttributeContainerType.Schema, type))

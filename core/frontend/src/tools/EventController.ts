@@ -25,7 +25,7 @@ export class EventController {
     this.addDomListeners(["mousedown", "mouseup", "mousemove", "mouseenter", "mouseleave", "wheel", "touchstart", "touchend", "touchcancel", "touchmove"], element);
 
     element.oncontextmenu = () => false;
-    element.onselectstart = () => false;
+    (element as any).onselectstart = () => false; // TODO: onselectstart is experimental. This cast should be removed once it becomes official.
   }
 
   public destroy() {

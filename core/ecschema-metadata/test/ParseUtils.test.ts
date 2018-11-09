@@ -109,7 +109,7 @@ describe("Parsing/ToString Functions", () => {
       | CustomAttributeContainerType.AnyClass
       | CustomAttributeContainerType.TargetRelationshipConstraint
       | CustomAttributeContainerType.StructProperty;
-    expect(containerTypeToString(combo)).to.equal("Schema,AnyClass,StructProperty,TargetRelationshipConstraint");
+    expect(containerTypeToString(combo)).to.equal("Schema, AnyClass, StructProperty, TargetRelationshipConstraint");
   });
 
   it("parseRelationshipEnd", () => {

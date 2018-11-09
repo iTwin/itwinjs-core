@@ -7,6 +7,7 @@ import {
   PanViewTool, RotateViewTool, ViewToggleCameraTool, WalkViewTool, FlyViewTool, ZoomViewTool,
 } from "@bentley/imodeljs-frontend";
 
+// cSpell:ignore configurableui
 import { ToolItemDef } from "./configurableui/Item";
 
 /** Utility Class that provides definitions of tools provided by imodel.js core. These definitions can be used to populate the ui. */

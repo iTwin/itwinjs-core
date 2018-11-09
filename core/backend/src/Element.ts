@@ -4,8 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Elements */
 
-import { Id64String, Id64, GuidString, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, GuidString, DbOpcode, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
+import { DrawingModel } from "./Model";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import {
@@ -44,7 +45,7 @@ export abstract class Element extends Entity implements ElementProps {
   /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
   public userLabel?: string;
   /** Optional [json properties]($docs/bis/intro/element-fundamentals.md#jsonproperties) of this element. */
-  public readonly jsonProperties: any;
+  public readonly jsonProperties: { [key: string]: any };
 
   /** constructor for Element.
    * @hidden
@@ -58,6 +59,13 @@ export abstract class Element extends Entity implements ElementProps {
     this.userLabel = props.userLabel;
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
+
+  public static onInsert(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
+  public static onInserted(_id: string): void { }
+  public static onUpdate(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
+  public static onUpdated(_props: ElementProps): void { }
+  public static onDelete(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
+  public static onDeleted(_props: ElementProps): void { }
 
   /** Add this Element's properties to an object for serializing to JSON.
    * @hidden
@@ -348,6 +356,28 @@ export class Drawing extends Document {
   public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.drawing);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
+
+  /**
+   * Insert a Drawing element and a DrawingModel that breaks it down.
+   * @param iModelDb Insert into this iModel
+   * @param documentListModelId Insert the new Drawing into this DocumentListModel
+   * @param name The name of the Drawing.
+   * @returns The Id of the newly inserted Drawing element and the DrawingModel that breaks it down (same value).
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String {
+    const drawingProps: ElementProps = {
+      classFullName: this.classFullName,
+      model: documentListModelId,
+      code: this.createCode(iModelDb, documentListModelId, name),
+    };
+    const drawingId: Id64String = iModelDb.elements.insertElement(drawingProps);
+    const model: DrawingModel = iModelDb.models.createModel({
+      classFullName: DrawingModel.classFullName,
+      modeledElement: { id: drawingId },
+    }) as DrawingModel;
+    return iModelDb.models.insertModel(model);
   }
 }
 

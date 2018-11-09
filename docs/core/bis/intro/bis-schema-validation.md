@@ -84,3 +84,4 @@ The rules are broken into the different parts of the Schema they are validated a
   - **BeGuid**
   - **GeometryStream**
   - **Json**
+- Properties must not use CustomAttribute **bis:CustomHandledProperty** unless CustomAttribute **bis:ClassHasHandler** is defined on their parent class (**not** derived from a base class)

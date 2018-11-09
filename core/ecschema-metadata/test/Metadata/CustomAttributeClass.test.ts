@@ -152,7 +152,7 @@ describe("CustomAttributeClass", () => {
       const customAttributeClass = testCustomAttribute as CustomAttributeClass;
       const caSerialization = customAttributeClass!.toJson(false, true);
       assert.isDefined(caSerialization);
-      expect(caSerialization.appliesTo).eql("Schema,AnyProperty");
+      expect(caSerialization.appliesTo).eql("Schema, AnyProperty");
       expect(caSerialization.modifier).eql("Sealed");
     });
     it("sync - should succeed with fully defined without standalone", () => {
@@ -180,7 +180,7 @@ describe("CustomAttributeClass", () => {
       const customAttributeClass = testCustomAttribute as CustomAttributeClass;
       const caSerialization = customAttributeClass!.toJson(false, false);
       assert.isDefined(caSerialization);
-      expect(caSerialization.appliesTo).eql("Schema,AnyProperty");
+      expect(caSerialization.appliesTo).eql("Schema, AnyProperty");
       expect(caSerialization.modifier).eql("Sealed");
     });
   });

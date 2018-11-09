@@ -8,7 +8,7 @@
     "jsx": "react"
   },
   "include": [
-    "./src/**/*.ts"
+    "./src/**/*.ts*"
   ],
   "exclude": [
     "lib",

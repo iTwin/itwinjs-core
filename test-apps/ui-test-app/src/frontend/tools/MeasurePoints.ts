@@ -20,8 +20,8 @@ class DistanceMarker implements CanvasDecoration {
   public label: string = "";
   public labelOffset: XAndY = { x: 0, y: 20 };
   public labelStyle: string = "white";
-  public labelAlign: string = "center";
-  public labelBaseline: string = "middle";
+  public labelAlign: CanvasTextAlign = "center";
+  public labelBaseline: CanvasTextBaseline = "middle";
   public labelFont: string = "14px san-serif";
   public padding: number = 20;
   public frameHeight: number = 30;

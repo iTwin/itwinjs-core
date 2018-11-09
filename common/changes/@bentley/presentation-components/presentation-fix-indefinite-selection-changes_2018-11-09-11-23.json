@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Unified Selection: Fix selection change events being broadcasted indefinitely when multiple unified selection viewports are used",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}

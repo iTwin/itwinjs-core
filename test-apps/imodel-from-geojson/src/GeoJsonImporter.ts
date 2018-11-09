@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, GeometryQuery, LineString3d, Loop, Point3d } from "@bentley/geometry-core";
-import { Cartographic, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, SpatialViewDefinitionProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
-import { IModelDb, IModelImporter, OrthographicViewDefinition, SpatialModel } from "@bentley/imodeljs-backend";
+import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex } from "@bentley/geometry-core";
+import { Cartographic, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, AxisAlignedBox3d, EcefLocation, ViewFlags } from "@bentley/imodeljs-common";
+import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelImporter, ModelSelector, PhysicalModel, SpatialCategory, SpatialModel } from "@bentley/imodeljs-backend";
 import { GeoJson } from "./GeoJson";
 
 /** */
@@ -28,14 +28,54 @@ export class GeoJsonImporter extends IModelImporter {
 
   /** Perform the import */
   public import(): void {
-    this.definitionModelId = super.insertDefinitionModel(IModelDb.rootSubjectId, "GeoJSON Definitions");
-    this.physicalModelId = super.insertPhysicalModel(IModelDb.rootSubjectId, "GeoJSON Features");
-    this.featureCategoryId = super.insertSpatialCategory(this.definitionModelId, "GeoJSON Feature", ColorDef.green);
-    this.iModelDb.updateProjectExtents(new AxisAlignedBox3d(new Point3d(-100000, -100000, -100000), new Point3d(100000, 100000, 100000))); // WIP
-    this.iModelDb.setEcefLocation({ origin: [1253504, -4731150, 4075980], orientation: {} }); // WIP
+    this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "GeoJSON Definitions");
+    this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "GeoJSON Features");
+    this.featureCategoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, "GeoJSON Feature", { color: ColorDef.green });
+
+    /** To geo-locate the project, we need to first scan the GeoJSon and extract range. This would not be required
+     * if the bounding box was directly available.
+     */
+    const featureMin = new Cartographic(), featureMax = new Cartographic();
+    if (!this.getFeatureRange(featureMin, featureMax))
+      return;
+    const featureCenter = new Cartographic((featureMin.longitude + featureMax.longitude) / 2, (featureMin.latitude + featureMax.latitude) / 2);
+
+    this.iModelDb.setEcefLocation(EcefLocation.createFromCartographicOrigin(featureCenter));
     this.convertFeatureCollection();
-    this.insertSpatialView(this.definitionModelId, "Spatial View");
+
+    const featureModel: SpatialModel = this.iModelDb.models.getModel(this.physicalModelId) as SpatialModel;
+    const featureModelExtents: AxisAlignedBox3d = featureModel.queryExtents();
+
+    this.insertSpatialView("Spatial View", featureModelExtents);
+    this.iModelDb.updateProjectExtents(featureModelExtents);
     this.iModelDb.saveChanges();
+  }
+  /** Iterate through and accumulate the GeoJSON FeatureCollection range. */
+  protected getFeatureRange(featureMin: Cartographic, featureMax: Cartographic) {
+    featureMin.longitude = featureMin.latitude = Angle.pi2Radians;
+    featureMax.longitude = featureMax.latitude = -Angle.pi2Radians;
+
+    for (const feature of this._geoJson.data.features) {
+      if (feature.geometry) {
+        switch (feature.geometry.type) {
+          case GeoJson.GeometryType.multiPolygon:
+            for (const polygon of feature.geometry.coordinates)
+              for (const loop of polygon) {
+                for (const point of loop) {
+                  const longitude = Angle.degreesToRadians(point[0]);
+                  const latitude = Angle.degreesToRadians(point[1]);
+                  featureMin.longitude = Math.min(longitude, featureMin.longitude);
+                  featureMin.latitude = Math.min(latitude, featureMin.latitude);
+                  featureMax.longitude = Math.max(longitude, featureMax.longitude);
+                  featureMax.latitude = Math.max(latitude, featureMax.latitude);
+                }
+              }
+            break;
+          // TBD... Support other geometry types
+        }
+      }
+    }
+    return featureMin.longitude < featureMax.longitude && featureMin.latitude < featureMax.latitude;
   }
 
   /** Iterate through the GeoJSON FeatureCollection converting each Feature in the collection. */
@@ -68,6 +108,7 @@ export class GeoJsonImporter extends IModelImporter {
             builder.appendGeometry(outGeometry);
         }
         break;
+      // TBD... Support other geometry types
     }
     return builder.geometryStream;
   }
@@ -89,7 +130,7 @@ export class GeoJsonImporter extends IModelImporter {
       case 1:
         return outLoops[0];
       default:
-        return undefined;   // TBD... Multiloop Regions,
+        return undefined;   // TBD... Multi-loop Regions,
     }
   }
 
@@ -109,25 +150,13 @@ export class GeoJsonImporter extends IModelImporter {
   }
 
   /** Insert a SpatialView configured to display the GeoJSON data that was converted/imported. */
-  protected insertSpatialView(definitionModelId: Id64String, viewName: string): Id64String {
-    const modelSelectorId: Id64String = super.insertModelSelector(definitionModelId, viewName, [this.physicalModelId]);
-    const categorySelectorId: Id64String = super.insertCategorySelector(definitionModelId, viewName, [this.featureCategoryId]);
-    const displayStyleId: Id64String = super.insertDisplayStyle3d(definitionModelId, viewName);
-    // Insert ViewDefinition
-    const featureModel: SpatialModel = this.iModelDb.models.getModel(this.physicalModelId) as SpatialModel;
-    const featureModelExtents: AxisAlignedBox3d = featureModel.queryExtents();
-    const viewDefinitionProps: SpatialViewDefinitionProps = {
-      classFullName: OrthographicViewDefinition.classFullName,
-      model: definitionModelId,
-      code: OrthographicViewDefinition.createCode(this.iModelDb, definitionModelId, viewName),
-      modelSelectorId,
-      categorySelectorId,
-      displayStyleId,
-      origin: featureModelExtents.low,
-      extents: [featureModelExtents.xLength(), featureModelExtents.yLength(), featureModelExtents.zLength()],
-      cameraOn: false,
-      camera: { eye: [0, 0, 0], lens: 0, focusDist: 0 }, // not used when cameraOn === false
-    };
-    return this.iModelDb.elements.insertElement(viewDefinitionProps);
+  protected insertSpatialView(viewName: string, range: AxisAlignedBox3d): Id64String {
+    const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
+    const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.featureCategoryId]);
+    const viewFlags = new ViewFlags();
+    viewFlags.backgroundMap = true;
+
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, viewFlags);
+    return super.insertOrthographicView(viewName, this.definitionModelId, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
   }
 }

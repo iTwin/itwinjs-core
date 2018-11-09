@@ -620,11 +620,11 @@
     },
     {
       "name": "sinon",
-      "allowedCategories": [ "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "sinon-chai",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "source-map-loader",
@@ -665,6 +665,10 @@
     {
       "name": "tree-kill",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "ts-key-enum",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "ts-loader",

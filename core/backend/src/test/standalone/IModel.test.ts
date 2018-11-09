@@ -2,52 +2,25 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { ActivityLoggingContext, BeEvent, DbResult, Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Angle, Matrix4d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import {
+  AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
+  FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
+  ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec,
+} from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
-import { DbResult, Guid, Id64String, Id64, BeEvent, OpenMode, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-core";
 import {
-  ClassRegistry,
-  BisCore,
-  Element,
-  GeometricElement2d,
-  GeometricElement3d,
-  GeometricModel,
-  InformationPartitionElement,
-  DefinitionPartition,
-  LinkPartition,
-  PhysicalPartition,
-  GroupInformationPartition,
-  DocumentPartition,
-  Subject,
-  ElementPropertyFormatter,
-  IModelDb,
-  ECSqlStatement,
-  SqliteStatement,
-  SqliteValue,
-  SqliteValueType,
-  Entity,
-  Model,
-  DictionaryModel,
-  Category,
-  SubCategory,
-  SpatialCategory,
-  ElementGroupsMembers,
-  LightLocation,
-  PhysicalModel,
-  AutoPushEventType,
-  AutoPush,
-  AutoPushState,
-  AutoPushEventHandler,
-  ViewDefinition,
+  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCore, Category, ClassRegistry, DefinitionPartition,
+  DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementPropertyFormatter, Entity,
+  GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
+  LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, SpatialCategory, SqliteStatement, SqliteValue,
+  SqliteValueType, SubCategory, Subject, ViewDefinition, DisplayStyle3d,
 } from "../../backend";
-import {
-  GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
-  AxisAlignedBox3d, SubCategoryAppearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement, EntityMetaData, PrimitiveTypeCode,
-} from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { AccessToken } from "@bentley/imodeljs-clients";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -221,7 +194,50 @@ describe("iModel", () => {
       const elementId: Id64String = imodel2.elements.insertElement(element);
       assert.isTrue(Id64.isValidId64(elementId));
     }
+  });
 
+  it("should insert a DisplayStyle", () => {
+    const model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    expect(model).not.to.be.undefined;
+
+    const settings: DisplayStyleSettingsProps = {
+      backgroundColor: ColorDef.blue,
+      viewflags: ViewFlags.fromJSON({
+        renderMode: RenderMode.SolidFill,
+      }),
+    };
+
+    const props: DisplayStyleProps = {
+      classFullName: DisplayStyle3d.classFullName,
+      model: IModel.dictionaryId,
+      code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId },
+      isPrivate: false,
+      jsonProperties: {
+        styles: settings,
+      },
+    };
+
+    const styleId = imodel2.elements.insertElement(props);
+    let style = imodel2.elements.getElement(styleId) as DisplayStyle3d;
+    expect(style instanceof DisplayStyle3d).to.be.true;
+
+    expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SolidFill);
+    expect(style.settings.backgroundColor.equals(ColorDef.blue)).to.be.true;
+
+    const newFlags = style.settings.viewFlags.clone();
+    newFlags.renderMode = RenderMode.SmoothShade;
+    style.settings.viewFlags = newFlags;
+    style.settings.backgroundColor = ColorDef.red;
+    style.settings.monochromeColor = ColorDef.green;
+    expect(style.jsonProperties.styles.viewflags.renderMode).to.equal(RenderMode.SmoothShade);
+
+    imodel2.elements.updateElement(style.toJSON());
+    style = imodel2.elements.getElement(styleId) as DisplayStyle3d;
+    expect(style instanceof DisplayStyle3d).to.be.true;
+
+    expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SmoothShade);
+    expect(style.settings.backgroundColor.equals(ColorDef.red)).to.be.true;
+    expect(style.settings.monochromeColor.equals(ColorDef.green)).to.be.true;
   });
 
   it("should have a valid root subject element", () => {
@@ -838,10 +854,6 @@ describe("iModel", () => {
     const worldToView = Matrix4d.createIdentity();
     const response = await imodel2.requestSnap(actx, "0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
     assert.isDefined(response.status);
-
-    // make sure we can read native asset files.
-    const sprite = IModelDb.loadNativeAsset("decorators/dgncore/SnapNone.png");
-    assert.isDefined(sprite);
   });
 
   it("should import schemas", () => {
@@ -869,20 +881,14 @@ describe("iModel", () => {
     assert.deepEqual(newModelPersist.modeledElement.id, modeledElementId);
 
     // Update the model
-    const changedModelProps: ModelProps = Object.assign({}, newModelPersist);
-    changedModelProps.isPrivate = false;
-    testImodel.models.updateModel(changedModelProps);
+    newModelPersist.isPrivate = false;
+    testImodel.models.updateModel(newModelPersist);
     //  ... and check that it updated the model in the db
-    const newModelPersist2: Model = testImodel.models.getModel(newModelId);
+    const newModelPersist2 = testImodel.models.getModel(newModelId);
     assert.isFalse(newModelPersist2.isPrivate);
 
     // Delete the model
-    testImodel.models.deleteModel(newModelPersist);
-    try {
-      assert.fail();
-    } catch (err) {
-      // this is expected
-    }
+    testImodel.models.deleteModel(newModelId);
   });
 
   it("should create model with custom relationship to modeled element", () => {

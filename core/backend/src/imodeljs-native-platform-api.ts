@@ -5,6 +5,7 @@
 import {
   IModelStatus, StatusCodeWithMessage, RepositoryStatus, BentleyStatus, ChangeSetApplyOption, DbResult, DbOpcode, OpenMode, IDisposable, ChangeSetStatus, Id64String, GuidString,
 } from "@bentley/bentleyjs-core";
+import { IModelDb } from "./IModelDb";
 
 /**
  * The primary key for the DGN_TABLE_Txns table.
@@ -93,6 +94,8 @@ export declare class NativeDgnDb {
    * @return non-zero error status if operation failed.
    */
   public openIModel(dbName: string, mode: OpenMode): DbResult;
+
+  public setIModelDb(iModelDb: IModelDb): void;
 
   /** Close this iModel. */
   public closeIModel(): void;

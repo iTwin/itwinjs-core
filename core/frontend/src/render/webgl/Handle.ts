@@ -55,14 +55,14 @@ export class BufferHandle implements IDisposable {
   public static unbind(target: GL.Buffer.Target): void { System.instance.context.bindBuffer(target, null); }
 
   /** Binds this buffer to the specified target and sets the buffer's data store. */
-  public bindData(target: GL.Buffer.Target, data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): void {
+  public bindData(target: GL.Buffer.Target, data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): void {
     this.bind(target);
     System.instance.context.bufferData(target, data, usage);
     BufferHandle.unbind(target);
   }
 
   /** Creates a BufferHandle and binds its data */
-  public static createBuffer(target: GL.Buffer.Target, data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): BufferHandle | undefined {
+  public static createBuffer(target: GL.Buffer.Target, data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw): BufferHandle | undefined {
     const handle = new BufferHandle();
     if (handle.isDisposed) {
       return undefined;
@@ -72,7 +72,7 @@ export class BufferHandle implements IDisposable {
     return handle;
   }
   /** Creates a BufferHandle and binds its data */
-  public static createArrayBuffer(data: BufferData, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw) {
+  public static createArrayBuffer(data: BufferSource, usage: GL.Buffer.Usage = GL.Buffer.Usage.StaticDraw) {
     return BufferHandle.createBuffer(GL.Buffer.Target.ArrayBuffer, data, usage);
   }
 

@@ -1,6 +1,22 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Nov 2018 17:59:20 GMT and should not be manually modified.
+
+## 0.164.0
+Thu, 08 Nov 2018 17:59:20 GMT
+
+### Updates
+
+- AccuDraw/AccuSnap markdown/examples
+- Fix edge animation of PolyfaceAuxData
+- Updated frontend performance testing
+- Change filterHit on InteractiveTool to async to support backend queries
+- Fix JSON representation of DisplayStyleState.
+- Fix links in tool docs
+- Added an option to Viewport.readImage() to flip the resultant image vertically.
+- PrimitiveTool isValidLocation shouldn't require write, want check for measure tools too
+- Add Comments
+- Updated to TypeScript 3.1
 
 ## 0.163.0
 Wed, 31 Oct 2018 20:55:37 GMT

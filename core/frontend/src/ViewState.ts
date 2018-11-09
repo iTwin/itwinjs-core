@@ -198,7 +198,7 @@ export abstract class ViewState extends ElementState {
     }
   }
   /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
-  public get AnalysisStyle(): AnalysisStyle | undefined { return this.displayStyle.AnalysisStyle; }
+  public get AnalysisStyle(): AnalysisStyle | undefined { return this.displayStyle.settings.analysisStyle; }
 
   /** Determine whether this ViewState exactly matches another.
    * @see [[ViewState.equalState]] for determining broader equivalence of two ViewStates.
