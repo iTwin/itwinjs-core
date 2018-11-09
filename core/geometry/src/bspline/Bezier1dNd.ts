@@ -278,6 +278,8 @@ export class Bezier1dNd {
    * @returns false if fraction is 0 -- no changes applied.
    */
   public subdivideInPlaceKeepLeft(fraction: number): boolean {
+    if (Geometry.isAlmostEqualNumber(fraction, 1.0))
+      return true;
     if (Geometry.isAlmostEqualNumber(fraction, 0.0))
       return false;
     const g = 1.0 - fraction;   // interpolations will pull towards right indices
@@ -297,11 +299,13 @@ export class Bezier1dNd {
    */
   public subdivideInPlaceKeepRight(fraction: number): boolean {
     if (Geometry.isAlmostEqualNumber(fraction, 0.0))
+      return true;
+    if (Geometry.isAlmostEqualNumber(fraction, 1.0))
       return false;
     const order = this.order;
     for (let level = 1; level < order; level++) {
-      for (let i1 = 1; i1 < order; i1++)
-        this.interpolatePoleInPlace(i1 - 1, fraction, i1);   // leave updates to left.
+      for (let i0 = 0; i0 + level < order; i0++)
+        this.interpolatePoleInPlace(i0, fraction, i0 + 1);   // leave updates to left.
     }
     return true;
   }

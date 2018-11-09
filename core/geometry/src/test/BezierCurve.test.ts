@@ -149,7 +149,7 @@ describe("BsplineCurve", () => {
   it.only("BsplineGrid", () => {
     const ck = new Checker();
     const geometry: GeometryQuery[] = [];
-    const a = 2.0;
+    const a = 3.0;
     const controlPoints: Point3d[] = [
       Point3d.create(0, 0, 0),
       Point3d.create(a, 10, 0),
@@ -167,11 +167,13 @@ describe("BsplineCurve", () => {
     const tickLength = 0.5;
     const setbackDistance = 0.5;
     GeometryCoreTestIO.captureGeometry(geometry, LineString3d.create(controlPoints), x0, y0);
-    for (const order of [2, 3, 4, 5]) {
+    for (const order of [3, 2, 3, 4, 5]) {
       x0 += dx;
       y0 = 0.0;
       const y1 = y0 + 2 * dy;
       const y2 = y0 + 1 * dy;
+      const y3 = y0 + 3 * dy;
+      const y4 = y3;
       // Output the full bspline with tic marks at the knot breaks
       const bcurve = BSplineCurve3d.createUniformKnots(controlPoints, order)!;
       GeometryCoreTestIO.captureGeometry(geometry, bcurve.clone(), x0, y0);
@@ -199,6 +201,18 @@ describe("BsplineCurve", () => {
         if (bezierIndex === 0)
           GeometryCoreTestIO.createAndCaptureXYCircle(geometry, bezier.fractionToPoint(0.0), setbackDistance, x0, y2);
         GeometryCoreTestIO.createAndCaptureXYCircle(geometry, bezier.fractionToPoint(1.0), setbackDistance, x0, y2);
+        // make sure partialClones overlap original  . . .
+        const g0 = 0.2342345;
+        const g1 = 0.82342367;
+        GeometryCoreTestIO.captureGeometry(geometry, bezier.clone()!, x0, y3);
+
+        const bezier4 = bezier.clonePartialCurve(g0, 1.0)!;
+        const bezier5 = bezier4.clonePartialCurve(0.0, (g1 - g0) / (1 - g0))!;  // Remark:  This uses the opposite left/right order of what happen in clone partial.  (Same result expected)
+        const bezier6 = bezier.clonePartialCurve(g0, g1)!;
+        ck.testTrue(bezier5.isAlmostEqual(bezier6), "bezier subdivision");  // wow, math is right.
+        GeometryCoreTestIO.captureGeometry(geometry, bezier4, x0, y4);
+        GeometryCoreTestIO.captureGeometry(geometry, bezier5, x0, y4);
+        GeometryCoreTestIO.captureGeometry(geometry, bezier6, x0, y4);
         bezierIndex++;
       }
     }
