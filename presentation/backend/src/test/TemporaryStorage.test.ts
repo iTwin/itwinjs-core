@@ -2,7 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect, spy } from "chai";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import * as lolex from "lolex";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { using } from "@bentley/bentleyjs-core";
@@ -21,23 +22,23 @@ describe("TemporaryStorage", () => {
   describe("constructor", () => {
 
     it("doesn't set up timer callback when interval is not set", () => {
-      const s = spy.on(clock, clock.setInterval.name);
+      const s = sinon.spy(clock, "setInterval");
       using(new TemporaryStorage<string>({ factory: () => "" }), () => {
         expect(s).to.not.be.called;
       });
     });
 
     it("doesn't set up timer callback when interval is set to 0", () => {
-      const s = spy.on(clock, clock.setInterval.name);
+      const s = sinon.spy(clock, "setInterval");
       using(new TemporaryStorage<string>({ factory: () => "", cleanupInterval: 0 }), () => {
         expect(s).to.not.be.called;
       });
     });
 
     it("sets up timer callback when interval is set to more than 0", () => {
-      const s = spy.on(clock, clock.setInterval.name);
+      const s = sinon.spy(clock, "setInterval");
       using(new TemporaryStorage<string>({ factory: () => "", cleanupInterval: 1 }), () => {
-        expect(s).to.be.called.once;
+        expect(s).to.be.calledOnce;
       });
     });
 
@@ -46,10 +47,10 @@ describe("TemporaryStorage", () => {
   describe("dispose", () => {
 
     it("stops automatic cleanup when cleanup interval is set", () => {
-      const s = spy.on(clock, clock.clearInterval.name);
+      const s = sinon.spy(clock, "clearInterval");
       const storage = new TemporaryStorage<string>({ factory: () => "", cleanupInterval: 1 });
       storage.dispose();
-      expect(s).to.be.called.once;
+      expect(s).to.be.calledOnce;
     });
 
     it("calls cleanup handler for every value", () => {

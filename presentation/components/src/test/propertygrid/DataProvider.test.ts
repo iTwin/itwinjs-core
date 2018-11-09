@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as path from "path";
-import { expect, spy } from "chai";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
@@ -63,7 +64,7 @@ describe("PropertyDataProvider", () => {
 
   const resetMemoizedCacheSpies = () => {
     memoizedCacheSpies = {
-      getData: spy.on((provider as any).getMemoizedData.cache, "clear"),
+      getData: sinon.spy((provider as any).getMemoizedData.cache, "clear"),
     };
   };
 
@@ -79,13 +80,13 @@ describe("PropertyDataProvider", () => {
 
     it("resets memoized data", () => {
       provider.invalidateCache({});
-      expect(memoizedCacheSpies.getData).to.be.called();
+      expect(memoizedCacheSpies.getData).to.be.calledOnce;
     });
 
     it("raises onDataChanged event", () => {
-      const s = spy.on(provider.onDataChanged, provider.onDataChanged.raiseEvent.name);
+      const s = sinon.spy(provider.onDataChanged, "raiseEvent");
       provider.invalidateCache({});
-      expect(s).to.be.called();
+      expect(s).to.be.calledOnce;
     });
 
   });

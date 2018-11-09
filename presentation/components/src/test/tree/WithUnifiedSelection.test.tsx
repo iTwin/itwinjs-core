@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as React from "react";
-import { expect, spy } from "chai";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
@@ -427,9 +428,9 @@ describe("Tree withUnifiedSelection", () => {
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
         />);
-        const s = spy.on(tree.instance(), Tree.prototype.render.name);
+        const s = sinon.spy(tree.instance(), "render");
         triggerSelectionChange(0);
-        expect(s).to.be.called();
+        expect(s).to.be.calledOnce;
       });
 
       it("doesn't re-render tree on selection changes when selection level is not 0", () => {
@@ -437,9 +438,9 @@ describe("Tree withUnifiedSelection", () => {
           dataProvider={dataProviderMock.object}
           selectionHandler={selectionHandlerMock.object}
         />);
-        const s = spy.on(tree.instance(), Tree.prototype.render.name);
+        const s = sinon.spy(tree.instance(), "render");
         triggerSelectionChange(1);
-        expect(s).to.not.be.called();
+        expect(s).to.not.be.called;
       });
 
     });

@@ -2,7 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect, spy } from "chai";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import * as faker from "faker";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64 } from "@bentley/bentleyjs-core";
@@ -46,10 +47,10 @@ describe("RulesetVariablesManager", () => {
     });
 
     it("sets and returns value", async () => {
-      const eventSpy = spy.on(vars.onStateChanged, vars.onStateChanged.raiseEvent.name);
+      const eventSpy = sinon.spy(vars.onStateChanged, "raiseEvent");
       const value = faker.random.word();
       await vars.setString(variableId, value);
-      expect(eventSpy).to.be.called();
+      expect(eventSpy).to.be.calledOnce;
       expect(await vars.getString(variableId)).to.eq(value);
     });
 
@@ -62,10 +63,10 @@ describe("RulesetVariablesManager", () => {
     });
 
     it("sets and returns value", async () => {
-      const eventSpy = spy.on(vars.onStateChanged, vars.onStateChanged.raiseEvent.name);
+      const eventSpy = sinon.spy(vars.onStateChanged, "raiseEvent");
       const value = faker.random.boolean();
       await vars.setBool(variableId, value);
-      expect(eventSpy).to.be.called();
+      expect(eventSpy).to.be.calledOnce;
       expect(await vars.getBool(variableId)).to.eq(value);
     });
 
@@ -94,10 +95,10 @@ describe("RulesetVariablesManager", () => {
     });
 
     it("sets and returns value", async () => {
-      const eventSpy = spy.on(vars.onStateChanged, vars.onStateChanged.raiseEvent.name);
+      const eventSpy = sinon.spy(vars.onStateChanged, "raiseEvent");
       const value = faker.random.number();
       await vars.setInt(variableId, value);
-      expect(eventSpy).to.be.called();
+      expect(eventSpy).to.be.calledOnce;
       expect(await vars.getInt(variableId)).to.eq(value);
     });
 
@@ -120,10 +121,10 @@ describe("RulesetVariablesManager", () => {
     });
 
     it("sets and returns value", async () => {
-      const eventSpy = spy.on(vars.onStateChanged, vars.onStateChanged.raiseEvent.name);
+      const eventSpy = sinon.spy(vars.onStateChanged, "raiseEvent");
       const value = [faker.random.number(), faker.random.number()];
       await vars.setInts(variableId, value);
-      expect(eventSpy).to.be.called();
+      expect(eventSpy).to.be.calledOnce;
       expect(await vars.getInts(variableId)).to.eq(value);
     });
 
@@ -146,10 +147,10 @@ describe("RulesetVariablesManager", () => {
     });
 
     it("sets and returns value", async () => {
-      const eventSpy = spy.on(vars.onStateChanged, vars.onStateChanged.raiseEvent.name);
+      const eventSpy = sinon.spy(vars.onStateChanged, "raiseEvent");
       const value = createRandomId();
       await vars.setId64(variableId, value);
-      expect(eventSpy).to.be.called();
+      expect(eventSpy).to.be.calledOnce;
       expect(await vars.getId64(variableId)).to.eq(value);
     });
 
@@ -172,10 +173,10 @@ describe("RulesetVariablesManager", () => {
     });
 
     it("sets and returns value", async () => {
-      const eventSpy = spy.on(vars.onStateChanged, vars.onStateChanged.raiseEvent.name);
+      const eventSpy = sinon.spy(vars.onStateChanged, "raiseEvent");
       const value = [createRandomId(), createRandomId()];
       await vars.setId64s(variableId, value);
-      expect(eventSpy).to.be.called();
+      expect(eventSpy).to.be.calledOnce;
       expect(await vars.getId64s(variableId)).to.eq(value);
     });
 

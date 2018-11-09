@@ -203,10 +203,10 @@ describe("PropertyGrid withUnifiedSelection", () => {
         source: faker.random.word(),
         changeType: SelectionChangeType.Clear,
         level: 0,
-        keys: new KeySet(),
+        keys: emptyKeySet,
         timestamp: new Date(),
       }, selectionProviderMock.object);
-      dataProviderMock.verify((x) => x.keys = emptyKeySet, moq.Times.once());
+      dataProviderMock.verify((x) => x.keys = moq.isKeySet(emptyKeySet), moq.Times.once());
     });
 
   });
