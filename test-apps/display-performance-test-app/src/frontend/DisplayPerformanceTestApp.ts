@@ -43,6 +43,10 @@ async function getDefaultConfigs(): Promise<string> {
   return await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
 }
 
+async function saveCsv(outputPath: string, outputName: string, rowData: Map<string, number | string>): Promise<void> {
+  return await DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, rowData);
+}
+
 const wantConsoleOutput: boolean = false;
 function debugPrint(msg: string): void {
   if (wantConsoleOutput)
@@ -71,16 +75,6 @@ function removeFilesFromDir(_startPath: string, _filter: string) {
   //   }
   // });
 }
-
-// function readJsonFile() {
-// let jsonStr = "";
-// const defaultJsonFile = "frontend\\performance\\DefaultConfig.json";
-// if (fs.existsSync(jsonFilePath))
-//   jsonStr = fs.readFileSync(jsonFilePath).toString();
-// else if (fs.existsSync(defaultJsonFile))
-//   jsonStr = fs.readFileSync(defaultJsonFile).toString();
-// return JSON.parse(jsonStr);
-// }
 
 function setViewFlagOverrides(vf: any, vfo?: ViewFlag.Overrides): ViewFlag.Overrides {
   if (!vfo) vfo = new ViewFlag.Overrides();
@@ -494,6 +488,7 @@ async function runTest(testConfig: DefaultConfigs) {
     }
 
     printResults(testConfig, getRowData(finalFrameTimings, testConfig));
+    await saveCsv(testConfig.outputPath!, testConfig.outputName!, getRowData(finalFrameTimings, testConfig));
   }
 
   // Close the imodel

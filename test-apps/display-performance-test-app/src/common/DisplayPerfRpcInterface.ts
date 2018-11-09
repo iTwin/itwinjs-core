@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 
-/** Sample RPC interface. */
+/** Display Performance RPC interface. */
 export default class DisplayPerfRpcInterface extends RpcInterface {
   /** The version of the interface. */
   public static version = "1.0.0";
@@ -18,5 +18,5 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
   public static getClient(): DisplayPerfRpcInterface { return RpcManager.getClientForInterface(DisplayPerfRpcInterface); }
 
   public getDefaultConfigs(): Promise<string> { return this.forward.apply(this, arguments); }
-
+  public saveCsv(_outputPath: string, _outputName: string, _rowData: Map<string, number | string>): Promise<void> { return this.forward.apply(this, arguments); }
 }

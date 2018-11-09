@@ -5,6 +5,8 @@
 
 import * as fs from "fs";
 
+// const fs = require('fs');
+
 export function readCsvFile(file: string) {
   const rawFile = new XMLHttpRequest();
   rawFile.open("GET", file, false);
@@ -32,13 +34,14 @@ export function createFilePath(filePath: string) {
 }
 
 export function createNewCsvFile(filePath: string, fileName: string, data: Map<string, number | string>): boolean {
+  console.log("---Start createNewCsvFile"); // tslint:disable-line
   let fd;
   let file = filePath;
   const lastChar = filePath[filePath.length - 1];
   if (lastChar !== "/" && lastChar !== "\\")
     file += "\\";
   file += fileName;
-  if (!fs.existsSync(filePath)) fs.mkdirSync(filePath);
+  if (!fs.existsSync(filePath)) createFilePath(filePath);
   if (!fs.existsSync(file)) {
     try {
       fd = fs.openSync(file, "a");
