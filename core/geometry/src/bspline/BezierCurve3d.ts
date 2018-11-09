@@ -108,6 +108,12 @@ export class BezierCurve3d extends BezierCurveBase {
   public clone(): BezierCurve3d {
     return new BezierCurve3d(this._polygon.clonePolygon());
   }
+  public clonePartialCurve(f0: number, f1: number): BezierCurve3d | undefined {
+    const partialCurve = new BezierCurve3d(this._polygon.clonePolygon());
+    partialCurve._polygon.subdivideToIntervalInPlace(f0, f1);
+    return partialCurve;
+  }
+
   /**
    * Return a curve after transform.
    */
