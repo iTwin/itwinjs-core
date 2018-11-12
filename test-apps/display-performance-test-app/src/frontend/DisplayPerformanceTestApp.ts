@@ -32,11 +32,8 @@ import { ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps } from "@b
 import { AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients";
 import { StopWatch } from "@bentley/bentleyjs-core";
 import { PerformanceMetrics, /*System,*/ Target } from "@bentley/imodeljs-frontend/lib/webgl";
-// import { addColumnsToCsvFile, addDataToCsvFile, createFilePath, createNewCsvFile } from "./CsvWriter";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi } from "./ProjectApi";
-// import * as fs from "fs";
-// import * as path from "path";
 
 // Retrieve default config data from json file
 async function getDefaultConfigs(): Promise<string> {
@@ -262,26 +259,25 @@ function printResults(_configs: DefaultConfigs, _rowData: Map<string, number | s
 }
 
 function getImageString(configs: DefaultConfigs): string {
-  const output = configs.outputPath ? configs.outputPath : "";
-  // createFilePath(output);
-  // const lastChar = output[output.length - 1];
-  // if (lastChar !== "/" && lastChar !== "\\")
-  //   output += "\\";
-  // output += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
-  // output += configs.viewName ? "_" + configs.viewName : "";
-  // output += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
-  // output += getRenderMode() ? "_" + getRenderMode() : "";
-  // output += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
-  // output += ".png";
+  let output = configs.outputPath ? configs.outputPath : "";
+  const lastChar = output[output.length - 1];
+  if (lastChar !== "/" && lastChar !== "\\")
+    output += "\\";
+  output += configs.iModelName ? configs.iModelName.replace(/\.[^/.]+$/, "") : "";
+  output += configs.viewName ? "_" + configs.viewName : "";
+  output += configs.displayStyle ? "_" + configs.displayStyle.trim() : "";
+  output += getRenderMode() ? "_" + getRenderMode() : "";
+  output += getViewFlagsString() !== "" ? "_" + getViewFlagsString() : "";
+  output += ".png";
   return output;
 }
 
-function savePng(_fileName: string) {
-  // if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
-  // const img = System.instance.canvas.toDataURL("image/png");
-  // const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
-  // const buf = new Buffer(data, "base64");
-  // fs.writeFileSync(fileName, buf);
+async function savePng(fileName: string): Promise<void> {
+  if (theViewport && theViewport.canvas) {
+    const img = theViewport.canvas.toDataURL("image/png"); // System.instance.canvas.toDataURL("image/png");
+    const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
+    return await DisplayPerfRpcInterface.getClient().savePng(fileName, data);
+  }
 }
 
 class ViewSize {

@@ -91,7 +91,7 @@ Logger.logTrace("SVT", `config = ${JSON.stringify(serverConfig)}`);
 const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "SimpleViewApp", version: "v1.0" } }, getRpcInterfaces());
 
 const app = express();
-app.use(bodyParser.text());
+app.use(bodyParser.text({ limit: "50mb" }));
 
 // Enable CORS for all apis
 app.all("/*", (_req, res, next) => {

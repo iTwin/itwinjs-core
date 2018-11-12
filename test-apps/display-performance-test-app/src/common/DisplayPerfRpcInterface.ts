@@ -19,4 +19,5 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
 
   public getDefaultConfigs(): Promise<string> { return this.forward.apply(this, arguments); }
   public saveCsv(_outputPath: string, _outputName: string, _rowData: Map<string, number | string>): Promise<void> { return this.forward.apply(this, arguments); }
+  public savePng(_fileName: string, _png: string): Promise<void> { return this.forward.apply(this, arguments); }
 }

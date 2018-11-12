@@ -43,6 +43,12 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     }
   }
 
+  public async savePng(fileName: string, png: string) {
+    if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
+    const buf = new Buffer(png, "base64");
+    fs.writeFileSync(fileName, buf);
+  }
+
   private createFullFilePath(filePath: string | undefined, fileName: string | undefined): string | undefined {
     if (fileName === undefined)
       return undefined;
