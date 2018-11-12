@@ -43,7 +43,6 @@ import { PntsTileIO } from "./PntsTileIO";
 import { DgnTileIO } from "./DgnTileIO";
 import { IModelTileIO } from "./IModelTileIO";
 import { ViewFrustum } from "../Viewport";
-import { SpatialModelState } from "../ModelState";
 
 function compareMissingTiles(lhs: Tile, rhs: Tile): number {
   const diff = compareNumbers(lhs.depth, rhs.depth);
@@ -898,11 +897,11 @@ export namespace TileTree {
 export class TileTreeState {
   public tileTree?: TileTree;
   public loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
-  public get iModel() { return this._modelState.iModel; }
+  public get iModel() { return this._iModel; }
 
-  constructor(private _modelState: SpatialModelState) { }
+  constructor(private _iModel: IModelConnection, private _is3d: boolean, private _modelId: Id64String) { }
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    this.tileTree = new TileTree(TileTree.Params.fromJSON(props, this._modelState.iModel, this._modelState.is3d, loader, this._modelState.id));
+    this.tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, this._is3d, loader, this._modelId));
     this.loadStatus = TileTree.LoadStatus.Loaded;
   }
 }
