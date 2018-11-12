@@ -2,6 +2,30 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.165.0",
+      "tag": "@bentley/imodeljs-backend_v0.165.0",
+      "date": "Mon, 12 Nov 2018 15:47:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "clean up IModelImporter"
+          },
+          {
+            "comment": "Add static insert methods to many classes to simplify iModel creation."
+          },
+          {
+            "comment": "Add more TypeScript wrapper classes for BisCore relationships"
+          },
+          {
+            "comment": "Add Subject.createCode and Subject.insert methods"
+          },
+          {
+            "comment": "Add FunctionalModel.insert method"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.164.0",
       "tag": "@bentley/imodeljs-backend_v0.164.0",
       "date": "Thu, 08 Nov 2018 17:59:20 GMT",

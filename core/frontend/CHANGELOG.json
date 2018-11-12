@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.165.0",
+      "tag": "@bentley/imodeljs-frontend_v0.165.0",
+      "date": "Mon, 12 Nov 2018 15:47:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix SelectionSet broadcasting excessive selection change events"
+          },
+          {
+            "comment": "Add support for Context Reality Models"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.164.0",
       "tag": "@bentley/imodeljs-frontend_v0.164.0",
       "date": "Thu, 08 Nov 2018 17:59:20 GMT",

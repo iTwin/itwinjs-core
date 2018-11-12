@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 08 Nov 2018 17:59:20 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Nov 2018 15:47:00 GMT and should not be manually modified.
+
+## 0.165.0
+Mon, 12 Nov 2018 15:47:00 GMT
+
+### Updates
+
+- clean up IModelImporter
+- Add static insert methods to many classes to simplify iModel creation.
+- Add more TypeScript wrapper classes for BisCore relationships
+- Add Subject.createCode and Subject.insert methods
+- Add FunctionalModel.insert method
 
 ## 0.164.0
 Thu, 08 Nov 2018 17:59:20 GMT
