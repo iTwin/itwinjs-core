@@ -135,11 +135,32 @@ export class BriefcaseEntry {
     // Standalone (FixedVersion, PullOnly)
     if (this.briefcaseId === BriefcaseId.Standalone) {
       const uniqueId = path.basename(path.dirname(this.pathname)).substr(1);
-      return `${this.iModelId}:${this.changeSetId}:${uniqueId}`;
+      return `${this.iModelId}:${this.currentChangeSetId}:${uniqueId}`;
     }
 
     // Acquired (PullPush)
     return `${this.iModelId}:${this.briefcaseId}`;
+  }
+
+  /**
+   * Gets the current changeSetId of the briefcase
+   * Note that this may not be the changeSetId if the briefcase has reversed changes
+   */
+  public get currentChangeSetId(): string {
+    return (typeof this.reversedChangeSetId !== "undefined") ? this.reversedChangeSetId : this.changeSetId;
+  }
+
+  /**
+   * Gets the current changeSetIndex of the briefcase
+   * Note that this may not be the changeSetIndex if the briefcase has reversed changes
+   */
+  public get currentChangeSetIndex(): number {
+    return (typeof this.reversedChangeSetIndex !== "undefined") ? this.reversedChangeSetIndex! : this.changeSetIndex!;
+  }
+
+  /** Returns true if the briefcase has reversed changes */
+  public get hasReversedChanges(): boolean {
+    return typeof this.reversedChangeSetId !== "undefined";
   }
 }
 
@@ -306,14 +327,14 @@ export class BriefcaseManager {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase directory ${briefcaseDir} must contain exactly one briefcase`);
     const pathname = path.join(briefcaseDir, fileNames[0]);
 
-    // Open the briefcase (for now as ReadWrite to allow reinstating reversed briefcases)
-    const briefcase = BriefcaseManager.openBriefcase(iModelId, pathname, new OpenParams(OpenMode.ReadWrite));
+    // Open the briefcase
+    const briefcase = BriefcaseManager.openBriefcase(iModelId, pathname, new OpenParams(OpenMode.Readonly));
 
     try {
       // Append information from the IModelServer
       briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(actx, accessToken, briefcase.iModelId, briefcase.changeSetId);
       actx.enter();
-      if (briefcase.reversedChangeSetId)
+      if (typeof briefcase.reversedChangeSetId !== "undefined")
         briefcase.reversedChangeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(actx, accessToken, briefcase.iModelId, briefcase.reversedChangeSetId);
       actx.enter();
       if (briefcase.briefcaseId !== BriefcaseId.Standalone) {
@@ -322,15 +343,6 @@ export class BriefcaseManager {
           throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unable to find briefcase ${briefcase.briefcaseId}:${briefcase.pathname} on the Hub (for the current user)`);
         briefcase.userId = hubBriefcases[0].userId;
         briefcase.fileId = hubBriefcases[0].fileId!.toString();
-      }
-
-      // Reinstate any reversed changes - these can happen with exclusive briefcases
-      // Note: We currently allow reversal only in Exclusive briefcases. Ideally we should just keep these briefcases reversed in case they
-      // are exclusive, but at the moment we don't have a way of differentiating exclusive and shared briefcases when opening them the
-      // first time. We could consider caching that information also. see findCachedBriefcaseToOpen()
-      if (briefcase.reversedChangeSetId) {
-        await BriefcaseManager.reinstateChanges(actx, accessToken, briefcase);
-        assert(!briefcase.reversedChangeSetId && !briefcase.nativeDb.getReversedChangeSetId(), "Error with reinstating reversed changes");
       }
     } catch (error) {
       throw error;
@@ -469,76 +481,61 @@ export class BriefcaseManager {
   /** Open a briefcase */
   public static async open(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: GuidString, openParams: OpenParams, version: IModelVersion): Promise<BriefcaseEntry> {
     await BriefcaseManager.memoizedInitCache(actx, accessToken);
-
     actx.enter();
-
     assert(!!BriefcaseManager.imodelClient);
 
-    let perfLogger = new PerfLogger("IModelDb.open, evaluating change set");
+    let perfLogger = new PerfLogger("BriefcaseManager.open -> version.evaluateChangeSet + BriefcaseManager.getChangeSetIndexFromId");
     const changeSetId: string = await version.evaluateChangeSet(actx, accessToken, iModelId, BriefcaseManager.imodelClient);
     actx.enter();
-    let changeSetIndex: number;
-    if (changeSetId === "") {
-      changeSetIndex = 0; // First version
-    } else {
-      const changeSet: ChangeSet = await BriefcaseManager.getChangeSetFromId(actx, accessToken, iModelId, changeSetId);
-      actx.enter();
-      changeSetIndex = changeSet ? +changeSet.index! : 0;
-    }
+    const changeSetIndex: number = await BriefcaseManager.getChangeSetIndexFromId(actx, accessToken, iModelId, changeSetId);
+    actx.enter();
     perfLogger.dispose();
 
-    perfLogger = new PerfLogger("IModelDb.open, find cached briefcase");
+    // Find a cached briefcase if possible
+    perfLogger = new PerfLogger("BriefcaseManager.open -> BriefcaseManager.findCachedBriefcaseToOpen");
     let briefcase = BriefcaseManager.findCachedBriefcaseToOpen(accessToken, iModelId, changeSetIndex, openParams);
-    if (briefcase && briefcase.isOpen && briefcase.changeSetIndex === changeSetIndex) {
+
+    if (briefcase && briefcase.isOpen && briefcase.currentChangeSetIndex === changeSetIndex) {
       Logger.logTrace(loggingCategory, `Reused briefcase ${briefcase.pathname} without changes`);
       return briefcase;
     }
-
     perfLogger.dispose();
 
-    perfLogger = new PerfLogger("IModelDb.open, preparing briefcase");
+    // Create or open the briefcase
     let isNewBriefcase: boolean = false;
-    const tempOpenParams = new OpenParams(OpenMode.ReadWrite, openParams.accessMode, openParams.syncMode, openParams.exclusiveAccessOption); // Merge needs the Db to be opened ReadWrite
+    const tempOpenParams = new OpenParams(OpenMode.ReadWrite, openParams.accessMode, openParams.syncMode, openParams.exclusiveAccessOption); // Open ReadWrite to allow applying changes
     if (briefcase) {
       Logger.logTrace(loggingCategory, `Reused briefcase ${briefcase.pathname} after upgrades (if necessary)`);
       BriefcaseManager.reopenBriefcase(accessToken, briefcase, tempOpenParams);
     } else {
+      perfLogger = new PerfLogger("BriefcaseManager.open -> BriefcaseManager.createBriefcase");
       briefcase = await BriefcaseManager.createBriefcase(actx, accessToken, contextId, iModelId, tempOpenParams); // Merge needs the Db to be opened ReadWrite
       actx.enter();
+      perfLogger.dispose();
       isNewBriefcase = true;
     }
 
-    let changeSetApplyOption: ChangeSetApplyOption | undefined;
-    if (changeSetIndex > briefcase.changeSetIndex!) {
-      changeSetApplyOption = ChangeSetApplyOption.Merge;
-    } else if (changeSetIndex < briefcase.changeSetIndex!) {
-      if (openParams.syncMode === SyncMode.PullAndPush) {
-        Logger.logWarning(loggingCategory, `No support to open an older version when opening an IModel to push changes (SyncMode.PullAndPush). Cannot open briefcase ${briefcase.iModelId}:${briefcase.briefcaseId}.`);
-        await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
-        actx.enter();
-        return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Cannot merge when there are reversed changes"));
-      }
-      changeSetApplyOption = ChangeSetApplyOption.Reverse;
+    if (changeSetIndex < briefcase.changeSetIndex! && openParams.syncMode === SyncMode.PullAndPush) {
+      Logger.logError(loggingCategory, `No support to open an older version when opening an IModel to push changes (SyncMode.PullAndPush). Cannot open briefcase ${briefcase.iModelId}:${briefcase.briefcaseId}.`);
+      await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
+      actx.enter();
+      return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Cannot merge when there are reversed changes"));
     }
 
-    if (changeSetApplyOption) {
-      assert(briefcase.isOpen && briefcase.openParams!.openMode === OpenMode.ReadWrite); // Briefcase must be opened ReadWrite first to allow applying change sets
-      try {
-        await BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, IModelVersion.asOfChangeSet(changeSetId), changeSetApplyOption);
-        actx.enter();
-      } catch (error) {
-        actx.enter();
-        Logger.logWarning(loggingCategory, `Error applying changes to briefcase  ${briefcase.iModelId}:${briefcase.briefcaseId}. Deleting it so that it can be re-fetched again.`);
-        await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
-        return Promise.reject(error);
-      }
+    // Apply the required change sets
+    try {
+      await BriefcaseManager.processChangeSets(actx, accessToken, briefcase, version);
+    } catch (error) {
+      actx.enter();
+      Logger.logWarning(loggingCategory, `Error applying changes to briefcase  ${briefcase.iModelId}:${briefcase.briefcaseId}. Deleting it so that it can be re-fetched again.`);
+      await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
+      actx.enter();
+      return Promise.reject(error);
     }
 
     // Reopen the briefcase if the briefcase hasn't been opened with the required OpenMode
     if (briefcase.openParams!.openMode !== openParams.openMode)
       BriefcaseManager.reopenBriefcase(accessToken, briefcase, openParams);
-
-    perfLogger.dispose();
 
     // Add briefcase to cache if necessary
     if (isNewBriefcase) {
@@ -561,17 +558,6 @@ export class BriefcaseManager {
     }
   }
 
-  /** Get the change set from the specified id */
-  private static async getChangeSetFromId(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: GuidString, changeSetId: string): Promise<ChangeSet> {
-    actx.enter();
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelId, new ChangeSetQuery().byId(changeSetId));
-    if (changeSets.length > 0)
-      return changeSets[0];
-
-    actx.enter();
-    return Promise.reject(new IModelError(BriefcaseStatus.VersionNotFound, changeSetId));
-  }
-
   /** Finds any existing briefcase for the specified parameters. Pass null for the requiredChangeSet if the first version is to be retrieved */
   private static findCachedBriefcaseToOpen(accessToken: AccessToken, iModelId: GuidString, requiredChangeSetIndex: number, requiredOpenParams: OpenParams): BriefcaseEntry | undefined {
     const requiredUserId = accessToken.getUserInfo()!.id;
@@ -582,64 +568,74 @@ export class BriefcaseManager {
       if (entry.iModelId !== iModelId)
         return false;
 
-      // Narrow down open briefcases
-      if (entry.isOpen) {
-        // If exclusive access is required, do not reuse if the user preference indicates so, or if the briefcase wasn't previously created by the same user
-        if (requiredOpenParams.accessMode === AccessMode.Exclusive && (requiredOpenParams.exclusiveAccessOption !== ExclusiveAccessOption.TryReuseOpenBriefcase || requiredUserId !== entry.userId))
+      // Narrow down briefcases for PullAndPush access
+      if (requiredOpenParams.syncMode === SyncMode.PullAndPush) {
+        if (entry.briefcaseId === BriefcaseId.Standalone) // only acquired briefcases
           return false;
-
-        // Any open briefcase must have been opened with the exact same open parameters
-        if (!entry.openParams!.equals(requiredOpenParams))
+        assert(requiredOpenParams.accessMode === AccessMode.Exclusive); // only exclusive access can be requested
+        if (!entry.userId || entry.userId !== requiredUserId) // must've been acquired by same user
           return false;
-
-        if (entry.openParams!.exclusiveAccessOption === ExclusiveAccessOption.CreateNewBriefcase)
-          return false;
+        if (entry.isOpen) {
+          if (requiredOpenParams.exclusiveAccessOption === ExclusiveAccessOption.CreateNewBriefcase || entry.openParams!.exclusiveAccessOption === ExclusiveAccessOption.CreateNewBriefcase)
+            return false; // user doesn't want to reuse
+          assert(entry.openParams!.equals(requiredOpenParams));
+        } else {
+          if (requiredChangeSetIndex < entry.changeSetIndex!) // Cannot push (write) to a reversed briefcase
+            return false;
+        }
+        return true;
       }
 
-      // For PullOnly or FixedVersion briefcases, ensure that the briefcase is opened Standalone, and does NOT have any reversed changes
+      // Narrow down briefcase for PullOnly or FixedVersion access
       // Note: We currently allow reversal only in Exclusive briefcases. Also, we reinstate any reversed changes in all briefcases when the
       // cache is initialized, but that may be removed in the future. See addBriefcaseToCache()
-      if (requiredOpenParams.syncMode !== SyncMode.PullAndPush)
-        return entry.briefcaseId === BriefcaseId.Standalone && !entry.reversedChangeSetId;
+      assert(requiredOpenParams.syncMode === SyncMode.FixedVersion || requiredOpenParams.syncMode === SyncMode.PullOnly);
+      if (entry.briefcaseId !== BriefcaseId.Standalone) // only standalone briefcases
+        return false;
+      if (!entry.isOpen) // can reuse any closed standalone briefcase
+        return true;
 
-      // For PullAndPush briefcases, ensure that the user had acquired the briefcase the first time around
-      // else if (requiredOpenParams.syncMode === SyncMode.PullAndPush)
-      return entry.briefcaseId !== BriefcaseId.Standalone && entry.userId === requiredUserId;
+      // Further narrow down open briefcase
+      if (entry.openParams!.accessMode !== requiredOpenParams.accessMode) // exclusive/shared briefcases cannot be re-purposed
+        return false;
+      if (entry.openParams!.syncMode !== requiredOpenParams.syncMode) // PullOnly and FixedVersion briefcases cannot be re-purposed for the other
+        return false;
+      if (entry.currentChangeSetIndex !== requiredChangeSetIndex) // current changeset index must exactly match
+        return false;
+
+      if (requiredOpenParams.accessMode === AccessMode.Exclusive) {
+        assert(!!entry.userId);
+        if (entry.userId !== requiredUserId) // must've been opened by the same user
+          return false;
+        if (requiredOpenParams.exclusiveAccessOption === ExclusiveAccessOption.CreateNewBriefcase || entry.openParams!.exclusiveAccessOption === ExclusiveAccessOption.CreateNewBriefcase)
+          return false; // user doesn't want to reuse
+      }
+
+      return true;
     };
 
     const briefcases = this._cache.getFilteredBriefcases(filterBriefcaseFn);
     if (!briefcases || briefcases.length === 0)
       return undefined;
 
-    let briefcase: BriefcaseEntry | undefined;
+    const sortedBriefcases = briefcases.sort((a: BriefcaseEntry, b: BriefcaseEntry) => { // Return -1 if a < b, +1 if a > b, and 0 if a = b
+      // Prefer open
+      if (a.isOpen && !b.isOpen)
+        return -1;
+      if (!a.isOpen && b.isOpen)
+        return 1;
 
-    // first prefer open briefcases, with a changeSetIndex that can be upgraded in case Exclusive access is required, or with the same exact changeSetIndex if Shared access is required
-    briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
-      if (!entry.isOpen)
-        return false;
-
-      return (requiredOpenParams.accessMode === AccessMode.Exclusive) ?
-        entry.changeSetIndex! <= requiredChangeSetIndex :
-        entry.changeSetIndex === requiredChangeSetIndex;
+      // Prefer closer change set index (a better metric will be change set size)
+      const aDist = Math.abs(a.currentChangeSetIndex - requiredChangeSetIndex);
+      const bDist = Math.abs(b.currentChangeSetIndex - requiredChangeSetIndex);
+      if (aDist < bDist)
+        return -1;
+      if (aDist > bDist)
+        return 1;
+      return 0;
     });
-    if (briefcase)
-      return briefcase;
 
-    // next prefer a briefcase that's closed, and with changeSetIndex = requiredChangeSetIndex
-    briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
-      return !entry.isOpen && entry.changeSetIndex === requiredChangeSetIndex;
-    });
-    if (briefcase)
-      return briefcase;
-
-    // next prefer any standalone briefcase that's closed, and with changeSetIndex < requiredChangeSetIndex
-    briefcase = briefcases.find((entry: BriefcaseEntry): boolean => {
-      return !entry.isOpen && entry.changeSetIndex! < requiredChangeSetIndex;
-    });
-    if (briefcase)
-      return briefcase;
-
-    return undefined;
+    return sortedBriefcases[0];
   }
 
   private static setupBriefcase(briefcase: BriefcaseEntry, openParams: OpenParams): DbResult {
@@ -679,24 +675,29 @@ export class BriefcaseManager {
     briefcase.iModelId = iModelId;
     briefcase.userId = accessToken.getUserInfo()!.id;
 
+    let hubBriefcase: HubBriefcase;
     if (openParams.syncMode !== SyncMode.PullAndPush) {
-      /* FixedVersion, PullOnly => Create standalone briefcase */
+      /* FixedVersion, PullOnly => Create standalone briefcase
+       * We attempt to get any briefcase for the iModel to download the latest copy. If there isn't
+       * such a briefcase available, we simply acquire one and keep it unused. The iModelHub team
+       * will be providing an API that helps avoid this acquisition and get to a checkpoint that's
+       * closest to the requested version.
+       */
+      hubBriefcase = await BriefcaseManager.getOrAcquireBriefcase(actx, accessToken, iModelId);
+      actx.enter();
       briefcase.pathname = BriefcaseManager.buildStandalonePathname(iModelId, iModel.name!);
       briefcase.briefcaseId = BriefcaseId.Standalone;
-      await BriefcaseManager.downloadSeedFile(actx, accessToken, iModelId, briefcase.pathname);
-      actx.enter();
-      briefcase.changeSetId = "";
-      briefcase.changeSetIndex = 0;
     } else {
       /* PullAndPush => Acquire a briefcase from the hub */
-      const hubBriefcase: HubBriefcase = await BriefcaseManager.acquireBriefcase(actx, accessToken, iModelId);
+      hubBriefcase = await BriefcaseManager.acquireBriefcase(actx, accessToken, iModelId);
+      actx.enter();
       briefcase.pathname = BriefcaseManager.buildAcquiredPathname(iModelId, +hubBriefcase.briefcaseId!, iModel.name!);
       briefcase.briefcaseId = hubBriefcase.briefcaseId!;
-      briefcase.fileId = hubBriefcase.fileId!.toString();
-      await BriefcaseManager.downloadBriefcase(actx, hubBriefcase, briefcase.pathname);
-      briefcase.changeSetId = hubBriefcase.mergedChangeSetId!;
-      briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(actx, accessToken, iModelId, briefcase.changeSetId);
     }
+    briefcase.fileId = hubBriefcase.fileId!.toString();
+    await BriefcaseManager.downloadBriefcase(actx, hubBriefcase, briefcase.pathname);
+    briefcase.changeSetId = hubBriefcase.mergedChangeSetId!;
+    briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(actx, accessToken, iModelId, briefcase.changeSetId);
 
     const res: DbResult = BriefcaseManager.setupBriefcase(briefcase, openParams);
     if (DbResult.BE_SQLITE_OK !== res) {
@@ -709,6 +710,14 @@ export class BriefcaseManager {
     briefcase.imodelClientContext = contextId;
 
     return briefcase;
+  }
+
+  private static async getOrAcquireBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: GuidString): Promise<HubBriefcase> {
+    actx.enter();
+    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, iModelId, (new BriefcaseQuery()).selectDownloadUrl());
+    const someBriefcase = briefcases.length > 0 ? briefcases[0] : await BriefcaseManager.acquireBriefcase(actx, accessToken, iModelId);
+    actx.enter();
+    return someBriefcase;
   }
 
   /** Acquire a briefcase */
@@ -733,21 +742,6 @@ export class BriefcaseManager {
         actx.enter();
         return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload, "Could not download briefcase", Logger.logError, loggingCategory));
       });
-  }
-
-  /** Downloads the briefcase seed file */
-  private static async downloadSeedFile(actx: ActivityLoggingContext, accessToken: AccessToken, imodelId: GuidString, seedPathname: string): Promise<void> {
-    actx.enter();
-    if (IModelJsFs.existsSync(seedPathname))
-      return;
-
-    const perfLogger = new PerfLogger("BriefcaseManager.downloadSeedFile");
-    await BriefcaseManager.imodelClient.IModels().download(actx, accessToken, imodelId, seedPathname)
-      .catch(() => {
-        actx.enter();
-        return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload, "Could not download briefcase seed file", Logger.logError, loggingCategory));
-      });
-    perfLogger.dispose();
   }
 
   /** Deletes a briefcase from the local disk (if it exists) */
@@ -1042,55 +1036,100 @@ export class BriefcaseManager {
     briefcase.isOpen = true;
   }
 
-  private static async applyChangeSets(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, targetVersion: IModelVersion, processOption: ChangeSetApplyOption): Promise<void> {
+  private static async processChangeSets(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, targetVersion: IModelVersion, requestedChangeSetOption?: ChangeSetApplyOption): Promise<void> {
     actx.enter();
-    assert(!!briefcase.nativeDb && briefcase.isOpen);
-    assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.changeSetId, "Mismatch between briefcase and the native Db");
+    const perfLogger = new PerfLogger("BriefcaseManager.processChangeSets");
 
+    if (!briefcase.nativeDb || !briefcase.isOpen)
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open to process change sets"));
+    if (briefcase.openParams!.openMode !== OpenMode.ReadWrite)
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets"));
+    assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.changeSetId, "Mismatch between briefcase and the native Db");
     if (briefcase.changeSetIndex === undefined)
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot apply changes to a standalone file"));
 
     const targetChangeSetId: string = await targetVersion.evaluateChangeSet(actx, accessToken, briefcase.iModelId, BriefcaseManager.imodelClient);
     const targetChangeSetIndex: number = await BriefcaseManager.getChangeSetIndexFromId(actx, accessToken, briefcase.iModelId, targetChangeSetId);
     actx.enter();
-    if (targetChangeSetIndex === undefined)
+    if (typeof targetChangeSetIndex === "undefined")
       return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Could not determine change set information from the Hub"));
 
-    const hasReversedChanges = briefcase.reversedChangeSetId !== undefined;
+    // Error check the requested change set option
+    if (requestedChangeSetOption) {
+      const currentChangeSetIndex: number = briefcase.currentChangeSetIndex;
+      switch (requestedChangeSetOption) {
+        case ChangeSetApplyOption.Merge:
+          if (targetChangeSetIndex < currentChangeSetIndex)
+            return Promise.reject(new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge"));
+          break;
+        case ChangeSetApplyOption.Reinstate:
+          if (targetChangeSetIndex < currentChangeSetIndex)
+            return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reinstate to an earlier version"));
+          break;
+        case ChangeSetApplyOption.Reverse:
+          if (targetChangeSetIndex >= currentChangeSetIndex)
+            return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse to a later version"));
+          break;
+        default:
+          assert(false, "Unknown change set process option");
+          return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Unknown ChangeSet process option"));
+      }
+    }
 
-    const currentChangeSetId: string = hasReversedChanges ? briefcase.reversedChangeSetId! : briefcase.changeSetId!;
-    const currentChangeSetIndex: number = hasReversedChanges ? briefcase.reversedChangeSetIndex! : briefcase.changeSetIndex!;
+    // Determine the reinstates, reversals or merges required
+    let reverseToId: string | undefined, reinstateToId: string | undefined, mergeToId: string | undefined;
+    let reverseToIndex: number | undefined, reinstateToIndex: number | undefined, mergeToIndex: number | undefined;
+    if (briefcase.hasReversedChanges) {
+      if (targetChangeSetIndex < briefcase.reversedChangeSetIndex!) {
+        reverseToId = targetChangeSetId;
+        reverseToIndex = targetChangeSetIndex;
+      } else if (targetChangeSetIndex > briefcase.reversedChangeSetIndex!) {
+        reinstateToId = targetChangeSetId;
+        reinstateToIndex = targetChangeSetIndex;
+        if (targetChangeSetIndex > briefcase.changeSetIndex!) {
+          reinstateToId = briefcase.changeSetId;
+          reinstateToIndex = briefcase.changeSetIndex;
+          mergeToId = targetChangeSetId;
+          mergeToIndex = targetChangeSetIndex;
+        }
+      }
+    } else {
+      if (targetChangeSetIndex < briefcase.changeSetIndex!) {
+        reverseToId = targetChangeSetId;
+        reverseToIndex = targetChangeSetIndex;
+      } else if (targetChangeSetIndex > briefcase.changeSetIndex!) {
+        mergeToId = targetChangeSetId;
+        mergeToIndex = targetChangeSetIndex;
+      }
+    }
+
+    // Reverse, reinstate and merge as necessary
+    if (typeof reverseToId !== "undefined") {
+      Logger.logTrace(loggingCategory, `Reversing briefcase to ${reverseToId}`);
+      await BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, reverseToId, reverseToIndex!, ChangeSetApplyOption.Reverse);
+      actx.enter();
+    }
+    if (typeof reinstateToId !== "undefined") {
+      Logger.logTrace(loggingCategory, `Reinstating briefcase to ${reinstateToId}`);
+      await BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, reinstateToId, reinstateToIndex!, ChangeSetApplyOption.Reinstate);
+      actx.enter();
+    }
+    if (typeof mergeToId !== "undefined") {
+      Logger.logTrace(loggingCategory, `Merging briefcase to ${mergeToId}`);
+      await BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, mergeToId, mergeToIndex!, ChangeSetApplyOption.Merge);
+      actx.enter();
+    }
+    perfLogger.dispose();
+  }
+
+  private static async applyChangeSets(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, targetChangeSetId: string, targetChangeSetIndex: number, processOption: ChangeSetApplyOption): Promise<void> {
+    actx.enter();
+
+    const currentChangeSetId: string = briefcase.currentChangeSetId;
+    const currentChangeSetIndex: number = briefcase.currentChangeSetIndex;
 
     if (targetChangeSetIndex === currentChangeSetIndex)
       return Promise.resolve(); // nothing to apply
-
-    switch (processOption) {
-      case ChangeSetApplyOption.Merge:
-        if (hasReversedChanges)
-          return Promise.reject(new IModelError(ChangeSetStatus.CannotMergeIntoReversed, "Cannot merge when there are reversed changes"));
-        if (targetChangeSetIndex < currentChangeSetIndex)
-          return Promise.reject(new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge"));
-
-        break;
-      case ChangeSetApplyOption.Reinstate:
-        if (!hasReversedChanges)
-          return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "No reversed changes to reinstate"));
-        if (targetChangeSetIndex < currentChangeSetIndex)
-          return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reinstate to an earlier version"));
-        assert(briefcase.openParams!.accessMode !== AccessMode.Shared, "Cannot reinstate. If a Db has shared access, we should NOT have allowed to reverse in the first place!");
-
-        break;
-      case ChangeSetApplyOption.Reverse:
-        if (targetChangeSetIndex >= currentChangeSetIndex)
-          return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse to a later version"));
-        if (briefcase.openParams!.accessMode === AccessMode.Shared)
-          return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changes when the Db allows shared access - open with AccessMode.Exclusive"));
-
-        break;
-      default:
-        assert(false, "Unknown change set process option");
-        return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Unknown ChangeSet process option"));
-    }
 
     const reverse: boolean = (targetChangeSetIndex < currentChangeSetIndex);
     const changeSets: ChangeSet[] = await BriefcaseManager.downloadChangeSets(actx, accessToken, briefcase.iModelId, reverse ? targetChangeSetId : currentChangeSetId, reverse ? currentChangeSetId : targetChangeSetId);
@@ -1115,9 +1154,11 @@ export class BriefcaseManager {
     if (containsSchemaChanges)
       briefcase.isOpen = true;
 
+    const oldKey = briefcase.getKey();
     switch (processOption) {
       case ChangeSetApplyOption.Merge:
-        BriefcaseManager.updateBriefcaseVersion(briefcase, targetChangeSetId, targetChangeSetIndex);
+        briefcase.changeSetId = targetChangeSetId;
+        briefcase.changeSetIndex = targetChangeSetIndex;
         assert(briefcase.nativeDb.getParentChangeSetId() === briefcase.changeSetId);
         break;
       case ChangeSetApplyOption.Reinstate:
@@ -1140,28 +1181,25 @@ export class BriefcaseManager {
         return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Unknown ChangeSet process option"));
     }
 
-    briefcase.onChangesetApplied.raiseEvent();
-  }
-
-  private static updateBriefcaseVersion(briefcase: BriefcaseEntry, changeSetId: string, changeSetIndex: number) {
-    const oldKey = briefcase.getKey();
-    briefcase.changeSetId = changeSetId;
-    briefcase.changeSetIndex = changeSetIndex;
-
     // Update cache if necessary
     if (BriefcaseManager._cache.findBriefcaseByKey(oldKey)) {
       BriefcaseManager._cache.deleteBriefcaseByKey(oldKey);
       BriefcaseManager._cache.addBriefcase(briefcase);
     }
+
+    briefcase.onChangesetApplied.raiseEvent();
   }
 
   public static async reverseChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, reverseToVersion: IModelVersion): Promise<void> {
-    return BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, reverseToVersion, ChangeSetApplyOption.Reverse);
+    if (briefcase.openParams!.accessMode === AccessMode.Shared)
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changes when the Db allows shared access - open with AccessMode.Exclusive"));
+    return BriefcaseManager.processChangeSets(actx, accessToken, briefcase, reverseToVersion);
   }
 
   public static async reinstateChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, reinstateToVersion?: IModelVersion): Promise<void> {
+    assert(briefcase.openParams!.accessMode !== AccessMode.Shared, "Cannot reinstate. If a Db has shared access, we should NOT have allowed to reverse in the first place!");
     const targetVersion: IModelVersion = reinstateToVersion || IModelVersion.asOfChangeSet(briefcase.changeSetId);
-    return BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, targetVersion, ChangeSetApplyOption.Reinstate);
+    return BriefcaseManager.processChangeSets(actx, accessToken, briefcase, targetVersion);
   }
 
   /**
@@ -1172,7 +1210,8 @@ export class BriefcaseManager {
    */
   public static async pullAndMergeChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, mergeToVersion: IModelVersion = IModelVersion.latest()): Promise<void> {
     await BriefcaseManager.updatePendingChangeSets(actx, accessToken, briefcase);
-    return BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, mergeToVersion, ChangeSetApplyOption.Merge);
+    actx.enter();
+    return BriefcaseManager.processChangeSets(actx, accessToken, briefcase, mergeToVersion);
   }
 
   private static startCreateChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
@@ -1382,7 +1421,16 @@ export class BriefcaseManager {
     actx.enter();
 
     BriefcaseManager.finishCreateChangeSet(briefcase);
-    BriefcaseManager.updateBriefcaseVersion(briefcase, postedChangeSet!.wsgId, +postedChangeSet!.index!);
+
+    const oldKey = briefcase.getKey();
+    briefcase.changeSetId = postedChangeSet!.wsgId;
+    briefcase.changeSetIndex = +postedChangeSet!.index!;
+
+    // Update cache if necessary
+    if (BriefcaseManager._cache.findBriefcaseByKey(oldKey)) {
+      BriefcaseManager._cache.deleteBriefcaseByKey(oldKey);
+      BriefcaseManager._cache.addBriefcase(briefcase);
+    }
   }
 
   /** Attempt to pull merge and push once */

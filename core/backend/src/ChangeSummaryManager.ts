@@ -139,7 +139,7 @@ export class ChangeSummaryManager {
 
     const ctx = new ChangeSummaryExtractContext(accessToken, iModel);
 
-    const endChangeSetId: string = iModel.briefcase.reversedChangeSetId || iModel.briefcase.changeSetId;
+    const endChangeSetId: string = iModel.briefcase.currentChangeSetId;
     assert(endChangeSetId.length !== 0);
 
     let startChangeSetId: string = "";
@@ -247,7 +247,8 @@ export class ChangeSummaryManager {
       changesFile.dispose();
 
       perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
-      await iModel.reinstateChanges(actx, accessToken, IModelVersion.asOfChangeSet(endChangeSetId));
+      if (iModel.briefcase.currentChangeSetId !== endChangeSetId)
+        await iModel.reinstateChanges(actx, accessToken, IModelVersion.asOfChangeSet(endChangeSetId));
       actx.enter();
       perfLogger.dispose();
       Logger.logTrace(loggingCategory, "Moved iModel to initial changeset (the end changeset).", () => ({ iModel: ctx.iModelId, startChangeset: startChangeSetId, endChangeset: endChangeSetId }));

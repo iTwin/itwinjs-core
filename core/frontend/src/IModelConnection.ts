@@ -48,7 +48,7 @@ export class IModelConnection extends IModel {
   /** A unique Id of this IModelConnection. */
   public readonly connectionId = Guid.createValue();
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
-  private static _connectionTimeout: number = 5 * 60 * 1000;
+  private static _connectionTimeout: number = 10 * 60 * 1000;
   private _openAccessToken?: AccessToken;
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
@@ -166,7 +166,7 @@ export class IModelConnection extends IModel {
 
       const connectionTimeElapsed = Date.now() - startTime;
       if (connectionTimeElapsed > IModelConnection._connectionTimeout) {
-        Logger.logTrace(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection._connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
+        Logger.logError(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection._connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
