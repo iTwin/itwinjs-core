@@ -71,8 +71,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._backgroundMap = new BackgroundMapState(mapProps, iModel);
     this._contextModels = [];
 
+    /*  For testing...
     styles.contextModels = [];
     styles.contextModels.push({ tilesetUrl: "http://localhost:8080/ClarkIsland/74/TileRoot.json" })
+    */
 
     if (styles && styles.contextModels)
       for (const contextModel of styles.contextModels)
