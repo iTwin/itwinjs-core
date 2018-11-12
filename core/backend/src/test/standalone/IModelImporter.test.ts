@@ -24,27 +24,27 @@ class TestImporter extends IModelImporter {
 
   public import(): void {
     const subjectId: Id64String = Subject.insert(this.iModelDb, IModel.rootSubjectId, "Subject", "Subject description");
-    assert.isTrue(Id64.isValid(subjectId));
+    assert.isTrue(Id64.isValidId64(subjectId));
     const definitionModelId: Id64String = DefinitionModel.insert(this.iModelDb, subjectId, "Definition");
-    assert.isTrue(Id64.isValid(definitionModelId));
+    assert.isTrue(Id64.isValidId64(definitionModelId));
     const physicalModelId: Id64String = PhysicalModel.insert(this.iModelDb, subjectId, "Physical");
-    assert.isTrue(Id64.isValid(physicalModelId));
+    assert.isTrue(Id64.isValidId64(physicalModelId));
     const documentListModelId: Id64String = DocumentListModel.insert(this.iModelDb, subjectId, "Document");
-    assert.isTrue(Id64.isValid(documentListModelId));
+    assert.isTrue(Id64.isValidId64(documentListModelId));
     const drawingId: Id64String = Drawing.insert(this.iModelDb, documentListModelId, "Drawing");
-    assert.isTrue(Id64.isValid(drawingId));
+    assert.isTrue(Id64.isValidId64(drawingId));
     const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, definitionModelId, "PhysicalModels", [physicalModelId]);
-    assert.isTrue(Id64.isValid(modelSelectorId));
+    assert.isTrue(Id64.isValidId64(modelSelectorId));
     const spatialCategoryId: Id64String = SpatialCategory.insert(this.iModelDb, definitionModelId, "SpatialCategory", { color: ColorDef.red });
-    assert.isTrue(Id64.isValid(spatialCategoryId));
+    assert.isTrue(Id64.isValidId64(spatialCategoryId));
     const drawingCategoryId: Id64String = DrawingCategory.insert(this.iModelDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
-    assert.isTrue(Id64.isValid(drawingCategoryId));
+    assert.isTrue(Id64.isValidId64(drawingCategoryId));
     const spatialCategorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, definitionModelId, "SpatialCategories", [spatialCategoryId]);
-    assert.isTrue(Id64.isValid(spatialCategorySelectorId));
+    assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
     const displayStyle2dId: Id64String = DisplayStyle2d.insert(this.iModelDb, definitionModelId, "DisplayStyle2d");
-    assert.isTrue(Id64.isValid(displayStyle2dId));
+    assert.isTrue(Id64.isValidId64(displayStyle2dId));
     const displayStyle3dId: Id64String = DisplayStyle3d.insert(this.iModelDb, definitionModelId, "DisplayStyle3d");
-    assert.isTrue(Id64.isValid(displayStyle3dId));
+    assert.isTrue(Id64.isValidId64(displayStyle3dId));
     this.iModelDb.saveChanges();
   }
 }
