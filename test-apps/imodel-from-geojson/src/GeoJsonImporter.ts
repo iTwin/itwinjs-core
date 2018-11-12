@@ -5,11 +5,12 @@
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Angle, GeometryQuery, LineString3d, Loop, StandardViewIndex } from "@bentley/geometry-core";
 import { Cartographic, Code, ColorDef, GeometricElement3dProps, GeometryStreamBuilder, GeometryStreamProps, AxisAlignedBox3d, EcefLocation, ViewFlags } from "@bentley/imodeljs-common";
-import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelImporter, ModelSelector, PhysicalModel, SpatialCategory, SpatialModel } from "@bentley/imodeljs-backend";
+import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SpatialModel } from "@bentley/imodeljs-backend";
 import { GeoJson } from "./GeoJson";
 
 /** */
-export class GeoJsonImporter extends IModelImporter {
+export class GeoJsonImporter {
+  public iModelDb: IModelDb;
   public definitionModelId: Id64String = Id64.invalid;
   public physicalModelId: Id64String = Id64.invalid;
   public featureCategoryId: Id64String = Id64.invalid;
@@ -22,7 +23,7 @@ export class GeoJsonImporter extends IModelImporter {
    * @param geoJson the input GeoJson data
    */
   public constructor(iModelFileName: string, geoJson: GeoJson) {
-    super(iModelFileName, { rootSubject: { name: geoJson.title } });
+    this.iModelDb = IModelDb.createStandalone(iModelFileName, { rootSubject: { name: geoJson.title } });
     this._geoJson = geoJson;
   }
 
@@ -155,8 +156,7 @@ export class GeoJsonImporter extends IModelImporter {
     const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.featureCategoryId]);
     const viewFlags = new ViewFlags();
     viewFlags.backgroundMap = true;
-
     const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, viewFlags);
-    return super.insertOrthographicView(viewName, this.definitionModelId, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
+    return OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Top);
   }
 }

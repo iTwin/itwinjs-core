@@ -21,7 +21,6 @@ export * from "./Entity";
 export * from "./ExpressServer";
 export * from "./IModelJsFs";
 export * from "./IModelHost";
-export * from "./IModelImporter";
 export * from "./Platform";
 export * from "./LinkTableRelationship";
 export * from "./LineStyle";

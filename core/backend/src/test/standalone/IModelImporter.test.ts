@@ -5,12 +5,14 @@
 import * as path from "path";
 import { assert } from "chai";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Range3d } from "@bentley/geometry-core";
 import { ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, IModelImporter, IModelJsFs, ModelSelector, PhysicalModel, SpatialCategory, Subject } from "../../backend";
+import { CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, IModelDb, IModelJsFs, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "../../backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-class TestImporter extends IModelImporter {
-  /** Construct a new TestImporter */
+class TestImporter {
+  public readonly iModelDb: IModelDb;
+
   public constructor() {
     const outputDir = KnownTestLocations.outputDir;
     if (!IModelJsFs.existsSync(outputDir))
@@ -18,7 +20,7 @@ class TestImporter extends IModelImporter {
     const outputFile: string = path.join(outputDir, "TestImporter.bim");
     if (IModelJsFs.existsSync(outputFile))
       IModelJsFs.removeSync(outputFile);
-    super(outputFile, { rootSubject: { name: "TestImporter" } });
+    this.iModelDb = IModelDb.createStandalone(outputFile, { rootSubject: { name: "TestImporter" } });
     assert.isTrue(IModelJsFs.existsSync(outputFile));
   }
 
@@ -45,6 +47,10 @@ class TestImporter extends IModelImporter {
     assert.isTrue(Id64.isValidId64(displayStyle2dId));
     const displayStyle3dId: Id64String = DisplayStyle3d.insert(this.iModelDb, definitionModelId, "DisplayStyle3d");
     assert.isTrue(Id64.isValidId64(displayStyle3dId));
+    const viewRange = new Range3d(0, 0, 0, 100, 100, 20);
+    const viewId: Id64String = OrthographicViewDefinition.insert(this.iModelDb, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, viewRange);
+    assert.isTrue(Id64.isValidId64(viewId));
+    this.iModelDb.views.setDefaultViewId(viewId);
     this.iModelDb.saveChanges();
   }
 }
