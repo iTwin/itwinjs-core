@@ -138,19 +138,28 @@ interface SplitContainerProps {
   percentage: number;
   resizable?: boolean;
   splitterStateId?: string;
+  onSplitterChange?: (size: number, percentage: number) => void;
+}
+
+interface SplitContainerState {
+  pane2Width: string;
+  pane2Height: string;
 }
 
 /** Split Container class.
  */
-class SplitContainer extends React.Component<SplitContainerProps> {
+class SplitContainer extends React.Component<SplitContainerProps, SplitContainerState> {
 
-  private _containerDiv: HTMLElement | null = null;
-  private _currentPercentage: number;
+  private _containerDiv: HTMLDivElement | null = null;
+
+  /** @hidden */
+  public readonly state: Readonly<SplitContainerState> = {
+    pane2Width: "100%",
+    pane2Height: "100%",
+  };
 
   constructor(props: SplitContainerProps) {
     super(props);
-
-    this._currentPercentage = this.props.percentage;
 
     if (this.props.resizable) {
       // only set m_splitterStateId if the container is resizable.
@@ -160,29 +169,88 @@ class SplitContainer extends React.Component<SplitContainerProps> {
   }
 
   private _onSplitterChange = (size: number): void => {
+    let percentage = 0;
+
+    if (this._containerDiv && size > 0) {
+      const width = this._containerDiv.getBoundingClientRect().width;
+      const height = this._containerDiv.getBoundingClientRect().height;
+
+      if (this.props.orientation === Orientation.Horizontal) {
+        if (width > 0) {
+          percentage = size / width;
+        }
+      } else {
+        if (height > 0) {
+          percentage = size / height;
+        }
+      }
+
+      if (this.props.onSplitterChange)
+        this.props.onSplitterChange(size, percentage);
+
+      this.determinePane2Size(size, width, height);
+    }
+  }
+
+  private determinePane2Size(size: number, containerWidth: number, containerHeight: number): void {
+    let pane2Width = "100%";
+    let pane2Height = "100%";
+    const splitterSize = 6;
+
     if (this._containerDiv && size > 0) {
       if (this.props.orientation === Orientation.Horizontal) {
-        const width = this._containerDiv.getBoundingClientRect().width;
-        if (width > 0)
-          this._currentPercentage = size / width;
+        pane2Height = (containerHeight - size - splitterSize).toString() + "px";
       } else {
-        const height = this._containerDiv.getBoundingClientRect().height;
-        if (height > 0)
-          this._currentPercentage = size / height;
+        pane2Width = (containerWidth - size - splitterSize).toString() + "px";
       }
+
+      if (pane2Width !== this.state.pane2Width || pane2Height !== this.state.pane2Height)
+        this.setState({ pane2Width, pane2Height });
+    }
+  }
+
+  public componentDidMount() {
+    window.addEventListener("resize", this._handleWindowResize, true);
+    this.handleResize();
+  }
+
+  public componentWillUnmount() {
+    window.removeEventListener("resize", this._handleWindowResize, true);
+  }
+
+  private _handleWindowResize = () => {
+    this.handleResize();
+  }
+
+  private handleResize(): void {
+    if (this._containerDiv) {
+      const width = this._containerDiv.getBoundingClientRect().width;
+      const height = this._containerDiv.getBoundingClientRect().height;
+      let size = 0;
+
+      if (this.props.orientation === Orientation.Horizontal) {
+        size = height * this.props.percentage;
+      } else {
+        size = width * this.props.percentage;
+      }
+
+      this.determinePane2Size(size, width, height);
     }
   }
 
   public render(): React.ReactNode {
     const orientation = (this.props.orientation === Orientation.Horizontal) ? "horizontal" : "vertical";
-    const defaultSize = (this._currentPercentage * 100).toString() + "%";
+    const defaultSize = (this.props.percentage * 100).toString() + "%";
+
     return (
-      <div ref={(e) => { this._containerDiv = e; }} >
+      <div ref={(e) => { this._containerDiv = e; }} style={{ width: "100%", height: "100%" }} >
         <SplitPane split={orientation} minSize={50} defaultSize={defaultSize} onChange={this._onSplitterChange}>
           {this.props.contentA}
-          {this.props.contentB}
+          <div style={{ width: this.state.pane2Width, height: this.state.pane2Height }}>
+            {this.props.contentB}
+          </div>
         </SplitPane>
-      </div>
+      </div >
     );
   }
 }

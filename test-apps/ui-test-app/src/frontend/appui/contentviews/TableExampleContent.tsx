@@ -154,8 +154,8 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
 
   public render(): React.ReactNode {
     return (
-      <div style={{ width: "100%", height: "100%" }}>
-        <div style={{ width: "100%", height: "10%" }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
+        <div style={{ marginBottom: "4px" }}>
           <select onChange={this._onChangeSelectionMode}>
             <option value={SelectionMode.Single}> Single </option>
             < option value={SelectionMode.SingleAllowDeselect} > SingleAllowDeselect </option>
@@ -167,7 +167,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
             < option value={TableSelectionTarget.Cell} > Cell </option>
           </select>
         </div>
-        <div style={{ width: "100%", height: "90%" }}>
+        <div style={{ flex: "1" }}>
           <Table
             dataProvider={this.state.dataProvider}
             tableSelectionTarget={this.state.tableSelectionTarget}

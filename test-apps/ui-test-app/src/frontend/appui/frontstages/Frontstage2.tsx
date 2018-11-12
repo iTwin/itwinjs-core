@@ -16,11 +16,14 @@ import {
   FrontstageProvider,
   WidgetState,
   FrontstageProps,
+  ContentGroup,
+  ContentLayoutDef,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
+import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl, HorizontalPropertyGridContentControl } from "../widgets/PropertyGridDemoWidget";
+import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
@@ -30,9 +33,44 @@ import { AppTools } from "../../tools/ToolSpecifications";
 export class Frontstage2 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
+      { // Four Views, two stacked on the left, two stacked on the right.
+        descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
+        priority: 85,
+        verticalSplit: {
+          percentage: 0.50,
+          left: { horizontalSplit: { percentage: 0.50, top: 0, bottom: 1 } },
+          right: { horizontalSplit: { percentage: 0.50, top: 2, bottom: 3 } },
+        },
+      },
+    );
+
+    const myContentGroup: ContentGroup = new ContentGroup(
+      {
+        contents: [
+          {
+            classId: "IModelViewport",
+            applicationData: { label: "Content 1a", bgColor: "black" },
+          },
+          {
+            classId: TreeExampleContentControl,
+            applicationData: { label: "Content 2a", bgColor: "black" },
+          },
+          {
+            classId: "IModelViewport",
+            applicationData: { label: "Content 3a", bgColor: "black" },
+          },
+          {
+            classId: HorizontalPropertyGridContentControl,
+            applicationData: { label: "Content 4a", bgColor: "black" },
+          },
+        ],
+      },
+    );
+
     return (
       <Frontstage id="Test2"
-        defaultToolId="Select" defaultLayout="TwoHalvesHorizontal" contentGroup="TestContentGroup1" defaultContentId="TestContent1"
+        defaultToolId="Select" defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
 
         topLeft={
@@ -57,7 +95,7 @@ export class Frontstage2 extends FrontstageProvider {
           />
         }
         centerRight={
-          <Zone allowsMerging={true}
+          <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
             ]}
@@ -71,10 +109,10 @@ export class Frontstage2 extends FrontstageProvider {
           />
         }
         bottomRight={
-          <Zone allowsMerging={true}
+          <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
             widgets={[
               <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
-              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
+              <Widget defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
             ]}
           />
         }
