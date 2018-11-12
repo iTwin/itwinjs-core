@@ -11,6 +11,7 @@ import { Checker } from "./Checker";
 import { expect } from "chai";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+/* tslint:disable:no-console */
 
 function exerciseLineString3d(ck: Checker, lsA: LineString3d) {
   const expectValidResults = lsA.numPoints() > 1;
@@ -106,4 +107,73 @@ describe("LineString3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+});
+/**
+ * Class to act as an iterator over points in a linestring.
+ * * Internal data is:
+ *   * pointer to the parent linestring
+ *   * index of index of the next ponit to read.
+ * * the parent LineString class
+ */
+class IterableLineStringPoint3dIterator implements Iterator<Point3d> {
+  private _linestring: LineStringWithIterator;
+  private _nextReadIndex: number;
+  public constructor(linestring: LineStringWithIterator) {
+    this._linestring = linestring;
+    this._nextReadIndex = 0;
+  }
+  public next(): IteratorResult<Point3d> {
+    const point = this._linestring.pointAt(this._nextReadIndex++);
+    if (point)
+      return { done: false, value: point };
+    return { done: true, value: undefined } as any as IteratorResult<Point3d>;
+  }
+  public [Symbol.iterator](): IterableIterator<Point3d> { return this; }
+}
+/**
+ * This is a linestring class which
+ * * Stores its point data in a Float64Array (NOT as individual Point3d objects)
+ * * has a `pointIterator ()` method which returns an iterator so that users can visit points with `for (const p of linestring.pointIterator()){}`
+ */
+class LineStringWithIterator {
+  private _data: Float64Array;
+  public constructor(points: Point3d[]) {
+    this._data = new Float64Array(3 * points.length);
+    let i = 0;
+    for (const p of points) {
+      this._data[i++] = p.x;
+      this._data[i++] = p.y;
+      this._data[i++] = p.z;
+    }
+  }
+  /** return an iterator to support  */
+  public pointIterator(): IterableLineStringPoint3dIterator { return new IterableLineStringPoint3dIterator(this); }
+  /**
+   * access a point by index.  The point coordinates are returned as a first class point object.
+   * @param index index of point to access
+   */
+  public pointAt(index: number): Point3d | undefined {
+    const k = index * 3;
+    if (k < this._data.length)
+      return new Point3d(this._data[k], this._data[k + 1], this._data[k + 2]);
+    return undefined;
+  }
+}
+describe("LineStringIterator", () => {
+
+  it("HelloWorld", () => {
+    const ck = new Checker();
+    const allPoints: Point3d[] = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(0, 10, 0),
+      Point3d.create(10, 10, 0),
+      Point3d.create(10, 0, 0),
+      Point3d.create(20, 0, 0),
+      Point3d.create(20, 10, 0)];
+    const ls = new LineStringWithIterator(allPoints);
+    for (const p of ls.pointIterator()) {
+      console.log("for..of ", p.toJSON());
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });
