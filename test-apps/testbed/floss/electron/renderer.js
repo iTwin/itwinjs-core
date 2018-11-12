@@ -1,5 +1,6 @@
 'use strict';
 
+require("../../../../common/scripts/mocha-reporter-tweaks");
 const Mocha = require('mocha');
 const chai = require('chai');
 //const sinon = require('sinon');
