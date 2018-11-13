@@ -196,7 +196,7 @@ export interface EnvironmentProps {
   sky?: SkyBoxProps;
 }
 /** JSON representation of a context reality model */
-export interface ContextModelProps {
+export interface ContextRealityModelProps {
   tilesetUrl: string;
   name?: string;
 }
@@ -219,7 +219,7 @@ export interface DisplayStyleSettingsProps {
   /** Settings controlling display of map imagery within views of geolocated models. */
   backgroundMap?: BackgroundMapProps;
   /** Contexual Reality Models */
-  ContextModels?: ContextModelProps[];
+  ContextRealityModels?: ContextRealityModelProps[];
 }
 
 /** JSON representation of settings assocaited with a [[DisplayStyle3dProps]].

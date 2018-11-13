@@ -1715,7 +1715,7 @@ export class SpatialViewState extends ViewState3d {
   }
   public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void {
     this.forEachModel((model: GeometricModelState) => func(model));
-    this.displayStyle.forEachContextModel((model: TileTreeModelState) => func(model));
+    this.displayStyle.forEachContextRealityModel((model: TileTreeModelState) => func(model));
   }
 }
 

@@ -18,7 +18,8 @@ import {
   DisplayStyleSettings,
   DisplayStyle3dSettings,
   BackgroundMapProps,
-  ContextModelProps,
+  ContextRealityModelProps,
+  CartographicRange,
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
@@ -28,17 +29,21 @@ import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 import { TileTreeModelState } from "./ModelState";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { TileTree, TileTreeState } from "./tile/TileTree";
-import { RealityModelTileTree } from "./tile/RealityModelTileTree";
+import { RealityModelTileTree, RealityModelTileClient, RealityModelTileUtils } from "./tile/RealityModelTileTree";
 
-class ContextModelState implements TileTreeModelState {
+export class ContextRealityModelState implements TileTreeModelState {
   protected _tilesetUrl: string;
   protected _name: string;
   protected _tileTreeState: TileTreeState;
-  constructor(props: ContextModelProps, iModel: IModelConnection) {
+  protected _iModel: IModelConnection;
+  constructor(props: ContextRealityModelProps, iModel: IModelConnection) {
     this._name = props.name ? props.name : "";
     this._tilesetUrl = props.tilesetUrl;
     this._tileTreeState = new TileTreeState(iModel, true, "");
+    this._iModel = iModel;
   }
+  public get name() { return this._name; }
+  public get url() { return this._tilesetUrl; }
   public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
   public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
   public loadTileTree(_asClassifier?: boolean, _classifierExpansion?: number): TileTree.LoadStatus {
@@ -51,6 +56,26 @@ class ContextModelState implements TileTreeModelState {
     RealityModelTileTree.loadRealityModelTileTree(this._tilesetUrl, undefined, tileTreeState);
     return tileTreeState.loadStatus;
   }
+  public async intersectsProjectExtents(): Promise<boolean> {
+    if (undefined === this._iModel.ecefLocation)
+      return false;
+    const client = new RealityModelTileClient(this._tilesetUrl);
+    const json = await client.getRootDocument(this._tilesetUrl);
+    let tileTreeRange, tileTreeTransform;
+    if (json === undefined ||
+      undefined === json.root ||
+      undefined === (tileTreeRange = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)) ||
+      undefined === (tileTreeTransform = RealityModelTileUtils.transformFromJson(json.root.transform)))
+      return false;
+
+    const treeCartographicRange = new CartographicRange(tileTreeRange, tileTreeTransform);
+    const projectCartographicRange = new CartographicRange(this._iModel.projectExtents, this._iModel.ecefLocation.getTransform());
+
+    return treeCartographicRange.intersectsRange(projectCartographicRange);
+  }
+  public matches(other: ContextRealityModelState) {
+    return other.name === this.name && other.url === this.url;
+  }
 }
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]]
  * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
@@ -59,7 +84,7 @@ class ContextModelState implements TileTreeModelState {
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   private _backgroundMap: BackgroundMapState;
-  private _contextModels: ContextModelState[];
+  private _contextRealityModels: ContextRealityModelState[];
 
   public abstract get settings(): DisplayStyleSettings;
 
@@ -69,16 +94,16 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     const backgroundMap = undefined !== styles ? styles.backgroundMap : undefined;
     const mapProps = undefined !== backgroundMap ? backgroundMap : {};
     this._backgroundMap = new BackgroundMapState(mapProps, iModel);
-    this._contextModels = [];
+    this._contextRealityModels = [];
 
     /*  For testing...
-    styles.contextModels = [];
-    styles.contextModels.push({ tilesetUrl: "http://localhost:8080/ClarkIsland/74/TileRoot.json" })
+    styles.contextRealityModels = [];
+    styles.contextRealityModels.push({ tilesetUrl: "http://localhost:8080/ClarkIsland/74/TileRoot.json" })
     */
 
-    if (styles && styles.contextModels)
-      for (const contextModel of styles.contextModels)
-        this._contextModels.push(new ContextModelState(contextModel, this.iModel));
+    if (styles && styles.ContextRealityModels)
+      for (const contextRealityModel of styles.contextRealityModels)
+        this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel));
   }
 
   /** @hidden */
@@ -89,8 +114,8 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     }
   }
   /** @hidden */
-  public forEachContextModel(func: (model: TileTreeModelState) => void): void {
-    for (const contextModel of this._contextModels) { func(contextModel); }
+  public forEachContextRealityModel(func: (model: TileTreeModelState) => void): void {
+    for (const contextRealityModel of this._contextRealityModels) { func(contextRealityModel); }
   }
   public equalState(other: DisplayStyleState): boolean {
     return JSON.stringify(this.settings) === JSON.stringify(other.settings);
@@ -101,6 +126,20 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Get the name of this DisplayStyle */
   public get name(): string { return this.code.getValue(); }
+
+  /** @hidden */
+  public get contextRealityModels(): ContextRealityModelState[] { return this._contextRealityModels; }
+  /** @hidden */
+  public set contextRealityModels(contextRealityModels: ContextRealityModelState[]) { this._contextRealityModels = contextRealityModels; }
+
+  /** @hidden */
+  public containsContextRealityModel(contextRealityModel: ContextRealityModelState) {
+    for (const curr of this._contextRealityModels)
+      if (curr.matches(contextRealityModel))
+        return true;
+
+    return false;
+  }
 
   /** The ViewFlags associated with this style.
    * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[ViewState.viewFlags]] to modify the ViewFlags to ensure
