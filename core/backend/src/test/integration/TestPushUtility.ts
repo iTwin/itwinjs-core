@@ -67,7 +67,7 @@ export class TestPushUtility {
 
     const definitionModelId: Id64String = IModel.dictionaryId;
     this._physicalModelId = PhysicalModel.insert(this._iModelDb, IModel.rootSubjectId, "TestModel");
-    this._codeSpecId = IModelWriter.insertCodeSpec(this._iModelDb, "TestCodeSpec", CodeScopeSpec.Type.Model);
+    this._codeSpecId = this._iModelDb.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
     this._categoryId = SpatialCategory.insert(this._iModelDb, definitionModelId, "TestCategory", { color: new ColorDef("blanchedAlmond") });
 
     // Insert a ViewDefinition for the PhysicalModel

@@ -2,18 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelDb } from "@bentley/imodeljs-backend";
-import { Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { CodeSpec, CodeScopeSpec, GeometryStreamProps, GeometryStreamBuilder } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, GeometryStreamBuilder } from "@bentley/imodeljs-common";
 import { Arc3d, Point3d } from "@bentley/geometry-core";
-
-// __PUBLISH_EXTRACT_START__ InsertCodeSpec.example-code
-export function insertCodeSpec(iModelDb: IModelDb, name: string, scopeType: CodeScopeSpec.Type): Id64String {
-  const codeSpec = new CodeSpec(iModelDb, Id64.invalid, name, scopeType);
-  iModelDb.codeSpecs.insert(codeSpec);
-  return codeSpec.id;
-}
-// __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ GeometryStreamBuilder.example-code
 // Simple example of using GeometryStreamBuilder. Note how the building works with

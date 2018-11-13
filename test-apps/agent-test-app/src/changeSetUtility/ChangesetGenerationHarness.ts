@@ -68,24 +68,24 @@ export class ChangesetGenerationHarness {
         if (fs.existsSync(pathname))
             fs.unlinkSync(pathname);
 
-        this._iModelDb = IModelDb.createStandalone(pathname, { rootSubject: { name: this._iModelName! } });
+        this._iModelDb = IModelDb.createStandalone(pathname, { rootSubject: { name: this._iModelName } });
 
         const definitionModelId: Id64String = IModel.dictionaryId;
-        this._physicalModelId = PhysicalModel.insert(this._iModelDb!, IModel.rootSubjectId, "TestModel");
-        this._codeSpecId = IModelDbHandler.insertCodeSpec(this._iModelDb!, "TestCodeSpec", CodeScopeSpec.Type.Model);
-        this._categoryId = SpatialCategory.insert(this._iModelDb!, definitionModelId, "TestCategory", { color: new ColorDef("blanchedAlmond") });
+        this._physicalModelId = PhysicalModel.insert(this._iModelDb, IModel.rootSubjectId, "TestModel");
+        this._codeSpecId = this._iModelDb.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
+        this._categoryId = SpatialCategory.insert(this._iModelDb, definitionModelId, "TestCategory", { color: new ColorDef("blanchedAlmond") });
 
         // Insert a ViewDefinition for the PhysicalModel
         const viewName = "Physical View";
-        const modelSelectorId: Id64String = ModelSelector.insert(this._iModelDb!, definitionModelId, viewName, [this._physicalModelId!]);
-        const categorySelectorId: Id64String = CategorySelector.insert(this._iModelDb!, definitionModelId, viewName, [this._categoryId!]);
-        const displayStyleId: Id64String = DisplayStyle3d.insert(this._iModelDb!, definitionModelId, viewName);
+        const modelSelectorId: Id64String = ModelSelector.insert(this._iModelDb, definitionModelId, viewName, [this._physicalModelId]);
+        const categorySelectorId: Id64String = CategorySelector.insert(this._iModelDb, definitionModelId, viewName, [this._categoryId]);
+        const displayStyleId: Id64String = DisplayStyle3d.insert(this._iModelDb, definitionModelId, viewName);
         const viewRange = new Range3d(0, 0, 0, 50, 50, 50);
-        OrthographicViewDefinition.insert(this._iModelDb!, definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, viewRange);
+        OrthographicViewDefinition.insert(this._iModelDb, definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, viewRange);
 
-        this._iModelDb!.updateProjectExtents(new AxisAlignedBox3d(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000)));
-        this._iModelDb!.saveChanges("Setup new iModel");
-        this._iModelDb!.closeStandalone();
+        this._iModelDb.updateProjectExtents(new AxisAlignedBox3d(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000)));
+        this._iModelDb.saveChanges("Setup new iModel");
+        this._iModelDb.closeStandalone();
         this._iModelDb = undefined;
 
         return pathname;
