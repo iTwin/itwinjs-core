@@ -17,6 +17,7 @@ export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
 export * from "./CategorySelectorState";
+export * from "./ContextRealityModelState";
 export * from "./DisplayStyleState";
 export * from "./ElementLocateManager";
 export * from "./EntityState";

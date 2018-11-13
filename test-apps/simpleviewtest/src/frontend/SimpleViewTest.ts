@@ -48,12 +48,7 @@ const renderModeOptions: RenderModeOptions = {
   mode: RenderMode.SmoothShade,
 };
 
-const availableContextRealityModels: ContextRealityModelProps[] = [];
-/*  Testing...
-availableContextRealityModels.push({ name: "Clark Island", tilesetUrl: "http://localhost:8080/clarkIsland/74/TileRoot.json" });
-availableContextRealityModels.push({ name: "Philadelphia LoRes", tilesetUrl: "http://localhost:8080/PhiladelphiaLoResClassification/80/TileRoot.json" });
-availableContextRealityModels.push({ name: "Philadelphia HiRes", tilesetUrl: "http://localhost:8080/PhiladelphiaHiResClassification/80/TileRoot.json" });
-*/
+const availableContextRealityModels: ContextRealityModelProps[] = ContextRealityModelState.findAvailableRealityModels();
 
 let activeViewState: SimpleViewState = new SimpleViewState();
 const viewMap = new Map<string, ViewState | IModelConnection.ViewSpec>();
@@ -179,7 +174,7 @@ async function buildContextRealityModelMenu(state: SimpleViewState) {
   }
   curContextRealityModels = [];
   contextRealityModelButton.style.display = "inline";
-  contextRealityModelMenu.innerHTML = '<input id="cbxContextRealityModelToggleAll" type="checkbox"> Toggle All\n<br>\n';
+  contextRealityModelMenu.innerHTML = '<input id="cbxCRMToggleAll" type="checkbox"> Toggle All\n<br>\n';
   for (const availableCRM of availableContextRealityModels) {
     const contextRealityModel = new ContextRealityModelState(availableCRM, activeViewState.iModelConnection!);
 
@@ -206,7 +201,7 @@ async function buildContextRealityModelMenu(state: SimpleViewState) {
     updateCheckboxToggleState(cbxName, enabled);
     addContextRealityModelToggleHandler(cbxName);
   }
-  updateCheckboxToggleState("cbxContextRealityModelToggleAll", allEnabled);
+  updateCheckboxToggleState("cbxCRMToggleAll", allEnabled);
   addContextRealityModelToggleAllHandler();
 }
 
@@ -396,19 +391,19 @@ function applyContextRealityModelToggleAllChange() {
   if (!(theViewport!.view instanceof SpatialViewState))
     return;
 
+  const isChecked = getCheckboxToggleState("cbxCRMToggleAll");
   const view = theViewport!.view as SpatialViewState;
   const displayStyle = view.displayStyle;
-  const notEnabled = [];
 
-  for (const curr of curContextRealityModels)
-    if (!displayStyle.containsContextRealityModel(curr))
-      notEnabled.push(curr);
-
-  if (notEnabled.length === 0) {
+  if (!isChecked)
     displayStyle.contextRealityModels = [];
-  } else {
-    for (const curr of notEnabled)
+
+  for (const curr of curContextRealityModels) {
+    if (isChecked && !displayStyle.containsContextRealityModel(curr))
       displayStyle.contextRealityModels.push(curr);
+
+    const cbxName = "cbxCRM" + curr.url; // Use URL for ID.
+    updateCheckboxToggleState(cbxName, isChecked);
   }
   theViewport!.sync.invalidateScene();
 }
@@ -495,7 +490,7 @@ function addContextRealityModelToggleHandler(id: string) {
 }
 
 function addContextRealityModelToggleAllHandler() {
-  document.getElementById("cbxContextRealityModelToggleAll")!.addEventListener("click", () => applyContextRealityModelToggleAllChange());
+  document.getElementById("cbxCRMToggleAll")!.addEventListener("click", () => applyContextRealityModelToggleAllChange());
 }
 
 // add a click handler to classifier checkbox
