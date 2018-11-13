@@ -8,9 +8,9 @@ import { IModelDbHandler } from "./IModelDbHandler";
 import { ChangesetGenerator } from "./ChangesetGenerator";
 import { TestChangesetSequence } from "./TestChangesetSequence";
 import { Id64String, Logger, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
-import { CategorySelector, DisplayStyle3d, IModelDb, IModelHost, IModelHostConfiguration, KeepBriefcase, ModelSelector, PhysicalModel, SpatialCategory } from "@bentley/imodeljs-backend/lib/backend";
+import { CategorySelector, DisplayStyle3d, IModelDb, IModelHost, IModelHostConfiguration, KeepBriefcase, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "@bentley/imodeljs-backend/lib/backend";
 import { IModel, CodeScopeSpec, ColorDef, AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/common";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Range3d } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients/lib";
 import * as fs from "fs";
 import * as path from "path";
@@ -80,9 +80,8 @@ export class ChangesetGenerationHarness {
         const modelSelectorId: Id64String = ModelSelector.insert(this._iModelDb!, definitionModelId, viewName, [this._physicalModelId!]);
         const categorySelectorId: Id64String = CategorySelector.insert(this._iModelDb!, definitionModelId, viewName, [this._categoryId!]);
         const displayStyleId: Id64String = DisplayStyle3d.insert(this._iModelDb!, definitionModelId, viewName);
-        const physicalViewOrigin = new Point3d(0, 0, 0);
-        const physicalViewExtents = new Point3d(50, 50, 50);
-        IModelDbHandler.insertOrthographicViewDefinition(this._iModelDb!, definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, physicalViewOrigin, physicalViewExtents);
+        const viewRange = new Range3d(0, 0, 0, 50, 50, 50);
+        OrthographicViewDefinition.insert(this._iModelDb!, definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, viewRange);
 
         this._iModelDb!.updateProjectExtents(new AxisAlignedBox3d(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000)));
         this._iModelDb!.saveChanges("Setup new iModel");

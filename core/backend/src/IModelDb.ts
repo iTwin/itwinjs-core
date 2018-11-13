@@ -189,7 +189,7 @@ export class IModelDb extends IModel {
   private static constructIModelDb(briefcaseEntry: BriefcaseEntry, openParams: OpenParams, contextId?: string): IModelDb {
     if (briefcaseEntry.iModelDb)
       return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, briefcaseEntry.iModelId, briefcaseEntry.changeSetId, openParams.openMode);
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openParams.openMode);
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
@@ -1338,6 +1338,18 @@ export namespace IModelDb {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
       return this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
+    }
+
+    /** Set the default view property the iModel
+     * @param viewId The Id of the ViewDefinition to use as the default
+     */
+    public setDefaultViewId(viewId: Id64String): void {
+      const spec = { namespace: "dgn_View", name: "DefaultView" };
+      const blob32 = new Uint32Array(2);
+      blob32[0] = Id64.getLowerUint32(viewId);
+      blob32[1] = Id64.getUpperUint32(viewId);
+      const blob8 = new Uint8Array(blob32.buffer);
+      this._iModel.saveFileProperty(spec, undefined, blob8);
     }
   }
 

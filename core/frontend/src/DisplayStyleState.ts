@@ -44,8 +44,8 @@ export class ContextRealityModelState implements TileTreeModelState {
   }
   public get name() { return this._name; }
   public get url() { return this._tilesetUrl; }
-  public tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
-  public loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
+  public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
+  public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
   public loadTileTree(_asClassifier?: boolean, _classifierExpansion?: number): TileTree.LoadStatus {
     const tileTreeState = this._tileTreeState;
     if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)

@@ -6,15 +6,14 @@ import * as path from "path";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { IModelTestUtils, TestUsers } from "./Utils";
 import { RobotWorldEngine } from "../RobotWorldEngine";
-import { XYZProps, Angle, AngleProps, Point3d } from "@bentley/geometry-core";
-import { insertOrthographicViewDefinition } from "./BridgeUtils";
+import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { Robot } from "../RobotElement";
 import { Barrier } from "../BarrierElement";
 import { Project, IModelHubClient, IModelQuery } from "@bentley/imodeljs-clients";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { ActivityLoggingContext, Guid, Id64String } from "@bentley/bentleyjs-core";
 import { AccessToken, HubIModel } from "@bentley/imodeljs-clients";
-import { BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OpenParams, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
+import { BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, ModelSelector, OpenParams, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "@bentley/imodeljs-backend";
 import { ColorByName, ColorDef, IModel } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_END__
 
@@ -135,9 +134,8 @@ async function runBridgeFirstTime(accessToken: AccessToken, iModelId: string, pr
   const spatialCategoryIds = [Robot.getCategory(briefcase).id, Barrier.getCategory(briefcase).id];
   const categorySelectorId = CategorySelector.insert(briefcase, defModelId, viewName, spatialCategoryIds);
   const displayStyleId = DisplayStyle3d.insert(briefcase, defModelId, viewName);
-  const viewOrigin = { x: 0, y: 0, z: 0 };
-  const viewExtents = { x: 10, y: 10, z: 1 }; // Note that you could compute the extents from the imported geometry. But real-world assets have known extents.
-  insertOrthographicViewDefinition(briefcase, defModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, viewOrigin, viewExtents);
+  const viewRange = new Range3d(0, 0, 0, 10, 10, 1); // Note that you could compute the extents from the imported geometry. But real-world assets have known extents.
+  OrthographicViewDefinition.insert(briefcase, defModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, viewRange);
 
   //  III. Push the data changes to iModel Server
 

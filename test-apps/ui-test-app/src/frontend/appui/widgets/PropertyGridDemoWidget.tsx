@@ -193,7 +193,7 @@ class HorizontalPropertyGridWidget extends React.Component {
 
 ConfigurableUiManager.registerControl("HorizontalPropertyGridDemoWidget", HorizontalPropertyGridWidgetControl);
 
-class HorizontalPropertyGridContentControl extends ContentControl {
+export class HorizontalPropertyGridContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
@@ -201,7 +201,7 @@ class HorizontalPropertyGridContentControl extends ContentControl {
   }
 }
 
-export class HorizontalPropertyGridContent extends React.Component {
+class HorizontalPropertyGridContent extends React.Component {
   private _dataProvider: PropertyDataProvider;
 
   constructor(props: any) {

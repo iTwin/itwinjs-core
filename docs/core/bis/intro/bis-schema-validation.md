@@ -28,6 +28,7 @@ The rules are broken into the different parts of the Schema they are validated a
 - A schema reference must specify a three-part version number (in the same format described above)
 - If the schema contains 'dynamic' (case-insensitive) in its name it must apply the **CoreCA:DynamicSchema** custom attribute
 - Classes within the same schema cannot have the same display label
+- Classes may not use custom attributes that are deprecated
 
 ### Mixin Rules
 
@@ -53,6 +54,7 @@ The rules are broken into the different parts of the Schema they are validated a
   - **bis:LinkModel**
 - Property overrides cannot change the persistence unit.
 - Subclasses of **bis:Model** cannot have additional properties defined outside of **BisCore**.
+- Entity classes may not subclass deprecated classes
 
 ### Relationship Classes
 

@@ -244,7 +244,7 @@ export abstract class ViewState extends ElementState {
   /** @hidden */
   public cancelAllTileLoads(): void {
     this.forEachTileTreeModel((model) => {
-      const tileTree = model.tileTree();
+      const tileTree = model.tileTree;
       if (tileTree !== undefined)
         tileTree.rootTile.cancelAllLoads();
     });
@@ -254,7 +254,7 @@ export abstract class ViewState extends ElementState {
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachTileTreeModel((model) => {
-      const loadStatus = model.loadStatus();
+      const loadStatus = model.loadStatus;
       if (loadStatus !== TileTree.LoadStatus.Loaded)
         allLoaded = false;
     });
@@ -1054,7 +1054,7 @@ export abstract class ViewState extends ElementState {
 
   private addModelToScene(model: TileTreeModelState, context: SceneContext): void {
     model.loadTileTree();
-    const tileTree = model.tileTree();
+    const tileTree = model.tileTree;
     if (undefined !== tileTree) {
       tileTree.drawScene(context);
     }
@@ -1674,7 +1674,7 @@ export class SpatialViewState extends ViewState3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
     this.forEachModel((model: GeometricModelState) => {   // Only fit real models -- ignore context models for fit.
-      const tileTree = model.tileTree();
+      const tileTree = model.tileTree;
       if (tileTree !== undefined && tileTree.rootTile !== undefined && model.useRangeForFit()) {   // can we assume that a loaded model
         range.extendRange(tileTree.rootTile.computeWorldContentRange());
       }

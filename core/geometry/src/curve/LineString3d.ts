@@ -462,7 +462,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /** If i is a valid index, return that point. */
   public pointAt(i: number, result?: Point3d): Point3d | undefined {
-    return this._points.getPoint3dAt(i, result);
+    if (this._points.isIndexValid(i))
+      return this._points.getPoint3dAt(i, result);
+    return undefined;
   }
   /** If i and j are both valid indices, return the vector from point i to point j
    */
