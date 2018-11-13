@@ -5,6 +5,7 @@
 /** @module Item */
 
 import * as React from "react";
+import * as classnames from "classnames";
 
 import { Icon } from "./IconComponent";
 import { FrontstageManager } from "./FrontstageManager";
@@ -30,8 +31,8 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     super(props);
 
     this.state = {
-      isVisible: undefined !== props.actionItem.isVisible ? props.actionItem.isVisible : true,
-      isEnabled: undefined !== props.actionItem.isEnabled ? props.actionItem.isEnabled : true,
+      isVisible: props.actionItem.isVisible,
+      isEnabled: props.actionItem.isEnabled,
       isActive: false,
     };
   }
@@ -76,12 +77,10 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
   public render(): React.ReactNode {
     const icon = <Icon iconSpec={this.props.actionItem.iconSpec} />;
-
-    let myClassNames = "";
-    if (!this.state.isVisible)
-      myClassNames += "item-hidden";
-    if (!this.state.isEnabled)
-      myClassNames += "nz-is-disabled";
+    const myClassNames = classnames(
+      !this.state.isVisible && "item-hidden",
+      !this.state.isEnabled && "nz-is-disabled",
+    );
 
     return (
       <ToolbarIcon

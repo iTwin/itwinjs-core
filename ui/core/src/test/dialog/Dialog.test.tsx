@@ -74,6 +74,8 @@ describe("Dialog", () => {
 
       outerNode.dispatchEvent(new KeyboardEvent("keyup", { key: "Escape" }));
       expect(spyOnEscape.calledOnce).to.be.true;
+
+      document.body.removeChild(outerNode);
     });
   });
 

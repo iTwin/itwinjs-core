@@ -1,5 +1,35 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`ActionItemButton <ActionItemButton /> disabled renders correctly 1`] = `
+<Icon
+  className="nz-is-disabled"
+  icon={
+    <Icon
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={false}
+  key="command"
+  onClick={[Function]}
+  title="tests.label"
+/>
+`;
+
+exports[`ActionItemButton <ActionItemButton /> hidden renders correctly 1`] = `
+<Icon
+  className="item-hidden"
+  icon={
+    <Icon
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={false}
+  key="command"
+  onClick={[Function]}
+  title="tests.label"
+/>
+`;
+
 exports[`ActionItemButton <ActionItemButton /> renders correctly 1`] = `
 <Icon
   className=""

@@ -128,20 +128,43 @@ describe("Popup", () => {
 
       outerNode.dispatchEvent(new KeyboardEvent("keydown", { key: "Escape" }));
       expect(spyOnClose.calledOnce).to.be.true;
+      document.body.removeChild(outerNode);
     });
   });
 
-  describe.skip("mouse processing", () => {
+  describe("mouse processing", () => {
     it("should handle document click", () => {
       const outerNode = document.createElement("div");
       document.body.appendChild(outerNode);
 
       const spyOnClose = sinon.spy();
-      const wrapper = mount(<Popup isShown={false} onClose={spyOnClose} showOnHover={true} />, { attachTo: outerNode });
+      const wrapper = mount(<Popup isShown={false} onClose={spyOnClose} showOnHover={true} showTime={0} hideTime={0} />, { attachTo: outerNode });
       wrapper.setProps({ isShown: true });
 
-      outerNode.dispatchEvent(new MouseEvent("click"));
-      expect(spyOnClose.calledOnce).to.be.true;
+      document.body.dispatchEvent(new MouseEvent("click"));
+      setImmediate(() => {
+        expect(spyOnClose.calledOnce).to.be.true;
+        document.body.removeChild(outerNode);
+      });
+    });
+
+    it("should handle mouse enter/leave", () => {
+      const outerNode = document.createElement("div");
+      document.body.appendChild(outerNode);
+
+      const spyOnOpen = sinon.spy();
+      const spyOnClose = sinon.spy();
+      mount(<Popup isShown={false} onOpen={spyOnOpen} onClose={spyOnClose} showOnHover={true} showTime={0} hideTime={0} />, { attachTo: outerNode });
+
+      outerNode.dispatchEvent(new MouseEvent("mouseenter"));
+      setTimeout(() => {
+        expect(spyOnOpen.calledOnce).to.be.true;
+        outerNode.dispatchEvent(new MouseEvent("mouseleave"));
+        setTimeout(() => {
+          expect(spyOnClose.calledOnce).to.be.true;
+          document.body.removeChild(outerNode);
+        }, 5);
+      }, 5);
     });
   });
 

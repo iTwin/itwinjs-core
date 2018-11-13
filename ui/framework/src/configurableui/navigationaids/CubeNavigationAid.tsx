@@ -106,7 +106,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
 
   /** @hidden */
   public componentDidMount() {
-    ViewRotationCube.viewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
+    ViewRotationCube.onViewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
     this._then = Date.now();
 
     // set initial rotation
@@ -122,7 +122,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
 
   /** @hidden */
   public componentWillUnmount() {
-    ViewRotationCube.viewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
+    ViewRotationCube.onViewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
   }
 
   // Synchronize with rotation coming from the Viewport

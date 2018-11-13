@@ -133,15 +133,6 @@ export class FrontstageManager {
   private static _activeToolId: string = "";
   private static _toolInformationMap: Map<string, ToolInformation> = new Map<string, ToolInformation>();
 
-  private static _frontstageActivatedEvent: FrontstageActivatedEvent = new FrontstageActivatedEvent();
-  private static _frontstageReadyEvent: FrontstageReadyEvent = new FrontstageReadyEvent();
-  private static _modalFrontstageChangedEvent: ModalFrontstageChangedEvent = new ModalFrontstageChangedEvent();
-  private static _toolActivatedEvent: ToolActivatedEvent = new ToolActivatedEvent();
-  private static _contentLayoutActivatedEvent: ContentLayoutActivatedEvent = new ContentLayoutActivatedEvent();
-  private static _contentControlActivatedEvent: ContentControlActivatedEvent = new ContentControlActivatedEvent();
-  private static _navigationAidActivatedEvent: NavigationAidActivatedEvent = new NavigationAidActivatedEvent();
-  private static _widgetStateChangedEvent: WidgetStateChangedEvent = new WidgetStateChangedEvent();
-
   /** Initializes the FrontstageManager */
   public static initialize() {
 
@@ -156,28 +147,28 @@ export class FrontstageManager {
   public static get isLoading(): boolean { return this._isLoading; }
 
   /** Get Frontstage Activated event. */
-  public static get onFrontstageActivatedEvent(): FrontstageActivatedEvent { return this._frontstageActivatedEvent; }
+  public static readonly onFrontstageActivatedEvent = new FrontstageActivatedEvent();
 
   /** Get Frontstage Activated event. */
-  public static get onFrontstageReadyEvent(): FrontstageReadyEvent { return this._frontstageReadyEvent; }
+  public static readonly onFrontstageReadyEvent = new FrontstageReadyEvent();
 
   /** Get Modal Frontstage Changed event. */
-  public static get onModalFrontstageChangedEvent(): ModalFrontstageChangedEvent { return this._modalFrontstageChangedEvent; }
+  public static readonly onModalFrontstageChangedEvent = new ModalFrontstageChangedEvent();
 
   /** Get Tool Activated event. */
-  public static get onToolActivatedEvent(): ToolActivatedEvent { return this._toolActivatedEvent; }
+  public static readonly onToolActivatedEvent = new ToolActivatedEvent();
 
   /** Get Content Layout Activated event. */
-  public static get onContentLayoutActivatedEvent(): ContentLayoutActivatedEvent { return this._contentLayoutActivatedEvent; }
+  public static readonly onContentLayoutActivatedEvent = new ContentLayoutActivatedEvent();
 
   /** Get Content Control Activated event. */
-  public static get onContentControlActivatedEvent(): ContentControlActivatedEvent { return this._contentControlActivatedEvent; }
+  public static readonly onContentControlActivatedEvent = new ContentControlActivatedEvent();
 
   /** Get Navigation Aid Activated event. */
-  public static get onNavigationAidActivatedEvent(): NavigationAidActivatedEvent { return this._navigationAidActivatedEvent; }
+  public static readonly onNavigationAidActivatedEvent = new NavigationAidActivatedEvent();
 
   /** Get Widget State Changed event. */
-  public static get onWidgetStateChangedEvent(): WidgetStateChangedEvent { return this._widgetStateChangedEvent; }
+  public static readonly onWidgetStateChangedEvent = new WidgetStateChangedEvent();
 
   /** Get  Nine-zone State Manager. */
   public static get NineZoneStateManager() { return NineZoneStateManager; }
@@ -208,7 +199,7 @@ export class FrontstageManager {
     this._frontstageDefs.set(frontstageDef.id, frontstageDef);
   }
 
-  /** Add a Frontstage via a [[FrontstageElement]].
+  /** Add a Frontstage via a [[FrontstageProvider]].
    * @param frontstageProvider  FrontstageProvider representing the Frontstage to add
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {

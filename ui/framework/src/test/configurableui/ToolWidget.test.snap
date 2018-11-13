@@ -7,6 +7,28 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       expandsTo={3}
       items={
         <UNDEFINED>
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "execute": [Function],
+                "featureId": "",
+                "iconSpec": "icon-cursor",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "label": "tools.Select.flyover",
+                "stateSyncIds": Array [],
+                "toolId": "Select",
+                "tooltip": "tools.Select.description",
+              }
+            }
+          />
           <ToolButton
             iconSpec="icon-placeholder"
             labelKey="SampleApp:buttons.tool1"
@@ -115,6 +137,18 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
           />
           <ToolButton
             iconSpec="icon-placeholder"
+            labelKey="SampleApp:buttons.tool2"
+            toolId="tool2"
+          />
+          <ToolButton
+            iconSpec="icon-placeholder"
+            isEnabled={false}
+            labelKey="SampleApp:buttons.tool1"
+            toolId="tool1"
+          />
+          <ToolButton
+            iconSpec="icon-placeholder"
+            isVisible={false}
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2"
           />

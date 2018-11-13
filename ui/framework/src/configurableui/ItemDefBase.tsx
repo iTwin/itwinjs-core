@@ -16,10 +16,10 @@ export interface BaseItemState {
 
 /** The base class for Items. */
 export abstract class ItemDefBase {
-  public isVisible?: boolean = true;
-  public isEnabled?: boolean = true;
-  public isPressed?: boolean = false;
-  public featureId?: string = "";
+  public isVisible: boolean = true;
+  public isEnabled: boolean = true;
+  public isPressed: boolean = false;
+  public featureId: string = "";
   public applicationData?: any;
 
   public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;

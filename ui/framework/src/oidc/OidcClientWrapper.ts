@@ -2,6 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module OIDC */
+
 import { IOidcFrontendClient, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { OidcBrowserClient } from "./OidcBrowserClient";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
@@ -17,6 +19,7 @@ if (ElectronRpcConfiguration.isElectron) {
   OidcClient = OidcBrowserClient;
 }
 
+/** @hidden */
 export class OidcClientWrapper {
 
   private static _oidcClient: IOidcFrontendClient;

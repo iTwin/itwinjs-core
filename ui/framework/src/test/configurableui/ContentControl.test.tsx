@@ -73,6 +73,10 @@ describe("ContentControl", () => {
           const activatedMethod = sinon.spy(contentControl, "onActivated");
           ContentViewManager.setActiveContent(contentSet[0]);
           expect(activatedMethod.calledOnce).to.be.true;
+
+          expect(contentControl.isViewport).to.be.false;
+          expect(contentControl.viewport).to.be.undefined;
+          expect(contentControl.navigationAidControl.length).to.eq(0);
         }
       }
     }

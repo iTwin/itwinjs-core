@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "ui-framework unit tests & docs",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

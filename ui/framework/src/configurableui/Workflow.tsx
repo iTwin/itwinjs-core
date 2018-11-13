@@ -182,11 +182,11 @@ export class WorkflowManager {
   private static _activeWorkflow: Workflow;
   private static _defaultWorkflowId: string;
   private static _taskPickerProps: TaskPickerProps;
-  private static _workflowActivatedEvent: WorkflowActivatedEvent = new WorkflowActivatedEvent();
-  private static _taskActivatedEvent: TaskActivatedEvent = new TaskActivatedEvent();
 
-  public static get onWorkflowActivatedEvent(): WorkflowActivatedEvent { return this._workflowActivatedEvent; }
-  public static get onTaskActivatedEvent(): TaskActivatedEvent { return this._taskActivatedEvent; }
+  /** Get Workflow Activated event. */
+  public static readonly onWorkflowActivatedEvent = new WorkflowActivatedEvent();
+  /** Get Task Activated event. */
+  public static readonly onTaskActivatedEvent = new TaskActivatedEvent();
 
   /** Loads one or more Workflows.
    * @param workflowPropsList  the list of Workflows to load

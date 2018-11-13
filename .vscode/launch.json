@@ -278,7 +278,7 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "lib/test/**/*.js"
+        "lib/test/**/*.test.js"
       ]
     },
     {
@@ -292,7 +292,7 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "lib/test/**/*.js"
+        "lib/test/**/*.test.js"
       ]
     },
     {
@@ -306,7 +306,7 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "lib/test/**/*.js"
+        "lib/test/**/*.test.js"
       ],
       "console": "integratedTerminal"
     },
@@ -321,7 +321,7 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "lib/test/**/*.js"
+        "lib/test/**/*.test.js"
       ],
       "console": "integratedTerminal"
     },
@@ -336,7 +336,7 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "lib/test/**/*.js"
+        "lib/test/**/*.test.js"
       ]
     },
     {
@@ -350,7 +350,7 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "lib/test/**/*.js"
+        "lib/test/**/*.test.js"
       ]
     },
     {
@@ -364,7 +364,7 @@
         "--opts",
         "../mocha.opts",
         "--no-timeouts",
-        "lib/test/**/*.js"
+        "lib/test/**/*.test.js"
       ]
     },
     {
@@ -382,7 +382,7 @@
         "ignore-styles",
         "-r",
         "jsdom-global/register",
-        "lib/test/**/*.js"
+        "lib/test/**/*.test.js"
       ]
     },
     {
