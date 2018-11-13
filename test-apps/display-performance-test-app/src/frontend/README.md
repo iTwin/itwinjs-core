@@ -1,8 +1,10 @@
 # How to Utilize the Performance Tests
 
-## To run all performance tests (i.e. all files ending in .test.ts):
-1. To specify a json config file that you wish to use, set the 'jsonFilePath' variable (found in the PerformanceTests.ts file) to the full file path of the json file you wish to use. For example, "D:/timingTests.json" or "C:\\wireframeTimings.json". If no valid json config file has been specified, the default json config file (DefaultConfig.json) will be used.
-2. run the command "npm run test:frontend:performance"
+## To run a performance test on a web browser:
+1. run the command "npm run start:web" or, to specify a json config file that you wish to use, add the full file path to the command. For example, run the command "npm run start:web D:/timingTests.json" or "npm run start:web C:\\wireframeTimings.json". If no valid json config file has been specified, the default json config file (DefaultConfig.json) will be used.
+
+## To run a performance test with electron:
+1. run the command "npm run start:electron" or, to specify a json config file that you wish to use, add the full file path to the command. For example, run the command "npm run start:electron D:/timingTests.json" or "npm run start:electron C:\\wireframeTimings.json". If no valid json config file has been specified, the default json config file (DefaultConfig.json) will be used.
 
 ## Configuration json file
 The default configuration file allows you to specify the following:
