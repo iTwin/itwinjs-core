@@ -19,13 +19,14 @@
     "docSiteId": 5,
     "displayName": "Learning"
   },
-  "ChangeHistory": {
+  "changehistory": {
     "docSiteId": 6,
     "displayName": "Change History"
   },
   "metadata": {
     "home": "landing-page",
     "logo": "landing-page/assets/imodeljs-logo.svg",
+    "smallLogo": "landing-page/assets/imodeljs-icon.svg",
     "sponsoredByLogo": "landing-page/assets/bentley.svg",
     "favicon": "landing-page/assets/imodeljs_16.png",
     "docSiteOrder": [
@@ -34,7 +35,7 @@
       "learning",
       "bis",
       "reference",
-      "ChangeHistory"
+      "changehistory"
     ],
     "headerTabs": {
       "Getting Started": {
@@ -50,7 +51,7 @@
         "docSite": "reference"
       },
       "Change History": {
-        "docSite": "ChangeHistory"
+        "docSite": "changehistory"
       }
     },
     "packageAliases": {

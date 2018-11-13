@@ -9,6 +9,7 @@ import { Orientation, ElementSeparator } from "@bentley/ui-core";
 import UiComponents from "../../UiComponents";
 import { PropertyRecord } from "../../properties";
 import { PropertyValueRendererManager, IPropertyValueRendererContext, PropertyContainerType } from "../../properties/ValueRendererManager";
+import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import "./PropertyRenderer.scss";
 
 /**
@@ -31,6 +32,12 @@ export interface PropertyRendererProps {
   onColumnRatioChanged?: (ratio: number) => void;
   /** Custom value renderer */
   propertyValueRendererManager?: PropertyValueRendererManager;
+  /** Indicates property is being edited */
+  isEditing?: boolean;
+  /** Called when property edit is committed. */
+  onEditCommit?: (args: PropertyUpdatedArgs) => void;
+  /** Called when property edit is cancelled. */
+  onEditCancel?: () => void;
 }
 
 /** State of [[PropertyRenderer]] React component */
@@ -99,7 +106,18 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
   public componentDidUpdate(prevProps: PropertyRendererProps) {
     if (prevProps.propertyRecord !== this.props.propertyRecord)
       this.updateDisplayValue(this.props);
+
     this.afterRender();
+  }
+
+  private _onEditCommit = (args: PropertyUpdatedArgs) => {
+    if (this.props.onEditCommit)
+      this.props.onEditCommit(args);
+  }
+
+  private _onEditCancel = () => {
+    if (this.props.onEditCancel)
+      this.props.onEditCancel();
   }
 
   public render() {
@@ -120,6 +138,12 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
       ref = this._containerRef;
     }
 
+    let valueNode: React.ReactNode;
+    if (this.props.isEditing)
+      valueNode = <EditorContainer propertyRecord={this.props.propertyRecord} onCommit={this._onEditCommit} onCommitCancel={this._onEditCancel} />;
+    else
+      valueNode = this.state.displayValue;
+
     return (
       <div
         ref={ref}
@@ -135,14 +159,8 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
             ratio={ratio}
             orientation={this.props.orientation}
           /> : undefined}
-        <div className="components-property-record-value">{this.state.displayValue}</div>
+        <div className="components-property-record-value">{valueNode}</div>
       </div>
     );
   }
 }
-
-// class ArrayPropertyValueRenderer extends React.PureComponent<{ orientation: Orientation, value: ArrayValue }> {
-//   public render() {
-//     return <PropertyList orientation={this.props.orientation} properties={this.props.value.items} />;
-//   }
-// }

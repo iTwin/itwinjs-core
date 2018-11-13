@@ -69,7 +69,7 @@ export class ImsActiveSecureTokenClient extends Client {
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
-    options.useCorsProxy = true;
+    options.useCorsProxy = false;
   }
 
   /**
@@ -136,7 +136,7 @@ export class ImsDelegationSecureTokenClient extends Client {
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
-    options.useCorsProxy = true;
+    options.useCorsProxy = false;
   }
 
   /**

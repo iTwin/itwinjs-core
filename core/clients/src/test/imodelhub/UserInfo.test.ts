@@ -50,8 +50,8 @@ describe("iModelHubClient UserInfoHandler", () => {
   const imodelHubClient: IModelClient = utils.getDefaultClient();
 
   before(async function (this: Mocha.IHookCallbackContext) {
-    accessTokens.push(await utils.login());
-    accessTokens.push(await utils.login(TestUsers.manager));
+    accessTokens.push(TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super));
+    accessTokens.push(TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.manager));
 
     accessTokens.sort((a: AccessToken, b: AccessToken) => a.getUserInfo()!.id.localeCompare(b.getUserInfo()!.id));
     await utils.createIModel(accessTokens[0], imodelName);

@@ -66,7 +66,7 @@ export class ECVersion {
   /**
    * Compares two schema versions.
    * @param rhs The schema to compare.
-   * @return A negative number if this schema version is less than the given version, a positive number if greater, and 0 if are equalivalent.
+   * @return A negative number if this schema version is less than the given version, a positive number if greater, and 0 if are equivalent.
    */
   public compare(rhv: ECVersion): number {
     if (this.read !== rhv.read)
@@ -160,7 +160,7 @@ export class SchemaKey {
   /**
    * Compares two schema versions.
    * @param rhs The schema to compare.
-   * @return A negative number if this schema version is less than the given version, a positive number if greater, and 0 if are equalivalent.
+   * @return A negative number if this schema version is less than the given version, a positive number if greater, and 0 if are equivalent.
    */
   public compareByVersion(rhs: SchemaKey): number {
     return this.version.compare(rhs.version);
@@ -210,8 +210,6 @@ export class SchemaItemKey {
   private _name: ECName;
   protected _schemaKey: SchemaKey;
 
-  constructor(name: string, schema: SchemaKey);
-  constructor(name: string, schema: SchemaKey); // tslint:disable-line
   constructor(name: string, schema: SchemaKey) {
     this._name = new ECName(name);
     this._schemaKey = schema;

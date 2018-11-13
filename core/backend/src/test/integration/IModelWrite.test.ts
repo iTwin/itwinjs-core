@@ -39,7 +39,7 @@ export async function createNewModelAndCategory(rwIModel: IModelDb, accessToken:
   return { modelId, spatialCategoryId };
 }
 
-describe.skip("IModelWriteTest", () => {
+describe("IModelWriteTest (#integration)", () => {
   const index = process.argv.indexOf("--offline");
   const offline: boolean = process.argv[index + 1] === "mock";
   let testProjectId: string;
@@ -234,9 +234,8 @@ describe.skip("IModelWriteTest", () => {
     timer.end();
 
     timer = new Timer("make local changes");
-    let newModelId: Id64String;
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
 
     rwIModel.saveChanges("inserted generic objects");
     timer.end();
@@ -291,8 +290,7 @@ describe.skip("IModelWriteTest", () => {
     timer.end();
 
     timer = new Timer("make local changes");
-    let newModelId: Id64String;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
+    IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, code, true);
 
     rwIModel.saveChanges("inserted generic objects");
     timer.end();

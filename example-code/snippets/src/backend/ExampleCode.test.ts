@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BisCore, ConcurrencyControl, Element, ElementAspect, InformationPartitionElement, IModelDb, PhysicalModel, PhysicalPartition } from "@bentley/imodeljs-backend";
+import { BisCore, ConcurrencyControl, Element, ElementAspect, IModelDb, PhysicalModel } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./IModelTestUtils";
-import { ElementAspectProps, ElementProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel, RelatedElement } from "@bentley/imodeljs-common";
+import { ElementAspectProps, AxisAlignedBox3d, CodeSpec, CodeScopeSpec, IModel } from "@bentley/imodeljs-common";
 import { Id64, Id64String, ActivityLoggingContext, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 
@@ -24,36 +24,6 @@ describe("Example Code", () => {
   after(() => {
     iModel.closeStandalone();
   });
-
-  // __PUBLISH_EXTRACT_START__ IModelDb.Models.createModel.example-code
-  function createNewModel(parentSubject: Element, modelName: string, isModelPrivate: boolean): Id64String {
-
-    const outputImodel = parentSubject.iModel;
-
-    // The modeled element's code
-    const modelCode = InformationPartitionElement.createCode(outputImodel, parentSubject.id, modelName);
-
-    //  The modeled element
-    const modeledElementProps: ElementProps = {
-      classFullName: PhysicalPartition.classFullName,
-      iModel: outputImodel,
-      parent: { id: parentSubject.id, relClassName: "BisCore:SubjectOwnsPartitionElements" },
-      model: IModel.repositoryModelId,
-      code: modelCode,
-    };
-    const modeledElement: Element = outputImodel.elements.createElement(modeledElementProps);
-    const modeledElementId: Id64String = outputImodel.elements.insertElement(modeledElement);
-
-    const modeledElementRef = new RelatedElement({ id: modeledElementId });
-
-    // The model
-    const newModel = outputImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: isModelPrivate });
-    const newModelId = outputImodel.models.insertModel(newModel);
-    assert.isTrue(Id64.isValid(newModelId));
-
-    return modeledElementId;
-  }
-  // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ ActivityLoggingContext.asyncCallback
   //                                  Rule: A Promise-returning function takes an ActivityLoggingContext as an argument
@@ -162,7 +132,7 @@ describe("Example Code", () => {
     // __PUBLISH_EXTRACT_END__
 
     // Create a modeled element and a model.
-    const newModeledElementId = createNewModel(iModel.elements.getRootSubject(), "newModelCode", false);
+    const newModeledElementId = PhysicalModel.insert(iModel, IModel.rootSubjectId, "newModelCode");
 
     // __PUBLISH_EXTRACT_START__ ConcurrencyControl.request
     // Now acquire all locks and reserve all codes needed.

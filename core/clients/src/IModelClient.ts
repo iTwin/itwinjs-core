@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 import { FileHandler } from "./FileHandler";
-import { BriefcaseHandler, IModelHandler, ChangeSetHandler, LockHandler, CodeHandler, UserInfoHandler, VersionHandler, EventHandler } from "./imodelhub/index";
+import { BriefcaseHandler, IModelsHandler, IModelHandler, ChangeSetHandler, LockHandler, CodeHandler, UserInfoHandler, VersionHandler, EventHandler } from "./imodelhub/index";
 import { ThumbnailHandler } from "./imodelhub/Thumbnails";
 import { GlobalEventHandler } from "./imodelhub/GlobalEvents";
 import { IModelBaseHandler } from "./imodelhub/BaseHandler";
@@ -38,9 +38,17 @@ export abstract class IModelClient {
 
   /**
    * Get the handler for [[HubIModel]] instances.
+   * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[Project]] workflow.
    */
-  public IModels(): IModelHandler {
-    return new IModelHandler(this._handler, this._fileHandler);
+  public IModels(): IModelsHandler {
+    return new IModelsHandler(this._handler, this._fileHandler);
+  }
+
+  /**
+   * Get the handler for [[HubIModel]].
+   */
+  public IModel(): IModelHandler {
+    return new IModelHandler(new IModelsHandler(this._handler, this._fileHandler));
   }
 
   /**

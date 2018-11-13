@@ -720,7 +720,11 @@ export namespace IModelJson {
           outChannels.push(new AuxChannel(outChannelData, inChannel.dataType as AuxChannelDataType, inChannel.name, inChannel.inputName));
         }
       }
-      return new PolyfaceAuxData(outChannels, data.indices);
+
+      const auxData = new PolyfaceAuxData(outChannels, []);
+      Reader.addZeroBasedIndicesFromSignedOneBased(data.indices, (x: number) => { auxData.indices.push(x); });
+
+      return auxData;
     }
 
     public static parseIndexedMesh(data?: any): any | undefined {
@@ -1384,17 +1388,16 @@ export namespace IModelJson {
 
     private handlePolyfaceAuxData(auxData: PolyfaceAuxData, pf: IndexedPolyface): any {
       const contents: { [k: string]: any } = {};
-      const indices = [];
+      contents.indices = [];
       const visitor = pf.createVisitor(0);
       if (!visitor.auxData) return;
 
       while (visitor.moveToNextFacet()) {
         for (let i = 0; i < visitor.indexCount; i++) {
-          indices.push(visitor.auxData.indices[i] + 1);
+          contents.indices.push(visitor.auxData.indices[i] + 1);
         }
-        indices.push(0);  // facet terminator.
+        contents.indices.push(0);  // facet terminator.
       }
-      contents.indices = auxData.indices.slice(0);
       contents.channels = [];
       for (const inChannel of auxData.channels) {
         const outChannel: { [k: string]: any } = {};

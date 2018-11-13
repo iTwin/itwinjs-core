@@ -5,18 +5,17 @@
 import { JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
-import { Config } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, LinePixels, ModelProps, ModelQueryParams, RenderMode, RgbColor, RpcConfiguration,
-  RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName, GeometryStreamProps,
+  RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName, GeometryStreamProps, BackgroundMapType,
 } from "@bentley/imodeljs-common";
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 import {
   AccuDraw, AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, BeButtonEvent, Cluster, CoordinateLockOverrides, DecorateContext,
   DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
-  SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus,
+  SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus, imageBufferToPngDataUrl,
 } from "@bentley/imodeljs-frontend";
 import { FeatureSymbology, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/webgl";
@@ -602,17 +601,15 @@ function changeRenderMode(): void {
   IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
 }
 
-enum MapType { Street = 0, Aerial = 1, Hybrid = 2 } // ###TODO - this is duplicated from WebMercatorTileTree.ts - needs common location
-
-function stringToMapType(s: string): MapType {
-  if ("Street" === s) return MapType.Street;
-  if ("Aerial" === s) return MapType.Aerial;
-  return MapType.Hybrid;
+function stringToMapType(s: string): BackgroundMapType {
+  if ("Street" === s) return BackgroundMapType.Street;
+  if ("Aerial" === s) return BackgroundMapType.Aerial;
+  return BackgroundMapType.Hybrid;
 }
 
-function mapTypeToString(m: MapType): string {
-  if (MapType.Street === m) return "Street";
-  if (MapType.Aerial === m) return "Aerial";
+function mapTypeToString(m: BackgroundMapType): string {
+  if (BackgroundMapType.Street === m) return "Street";
+  if (BackgroundMapType.Aerial === m) return "Aerial";
   return "Hybrid";
 }
 
@@ -624,8 +621,7 @@ function changeBackgroundMapState(): void {
   const mapTypeVal = stringToMapType(mapTypeString);
   const view = theViewport!.view as ViewState3d;
   const ds = view.getDisplayStyle3d();
-  ds.setStyle("backgroundMap", { providerName: mapProviderString, mapType: mapTypeVal });
-  ds.syncBackgroundMapState();
+  ds.setBackgroundMap({ providerName: mapProviderString, providerData: { mapType: mapTypeVal } });
   IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
 }
 
@@ -639,15 +635,15 @@ function updateRenderModeOptionsMap() {
   let skybox = false;
   let groundplane = false;
   let providerName = "BingProvider";
-  let mapType = MapType.Hybrid;
+  let mapType = BackgroundMapType.Hybrid;
   if (theViewport!.view.is3d()) {
     const view = theViewport!.view as ViewState3d;
     const env = view.getDisplayStyle3d().environment;
     skybox = env.sky.display;
     groundplane = env.ground.display;
-    const backgroundMap = view.getDisplayStyle3d().getStyle("backgroundMap");
-    providerName = JsonUtils.asString(backgroundMap.mapType, "BingProvider");
-    mapType = JsonUtils.asInt(backgroundMap.mapType, MapType.Hybrid);
+    const backgroundMap = view.getDisplayStyle3d().backgroundMap;
+    providerName = JsonUtils.asString(backgroundMap.providerName, "BingProvider");
+    mapType = JsonUtils.asInt(backgroundMap.mapType, BackgroundMapType.Hybrid);
   }
 
   const viewflags = theViewport!.view.viewFlags;
@@ -1269,7 +1265,7 @@ class IncidentMarkerDemo {
   private static _decorator?: IncidentMarkerDemo; // static variable just so we can tell if the demo is active.
 
   public constructor() {
-    const makerIcons = [
+    const markerIcons = [
       imageElementFromUrl("Hazard_biological.svg"),
       imageElementFromUrl("Hazard_electric.svg"),
       imageElementFromUrl("Hazard_flammable.svg"),
@@ -1286,7 +1282,7 @@ class IncidentMarkerDemo {
       pos.x = extents.low.x + (Math.random() * extents.xLength());
       pos.y = extents.low.y + (Math.random() * extents.yLength());
       pos.z = extents.low.z + (Math.random() * extents.zLength());
-      this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, makerIcons[i % makerIcons.length]));
+      this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, markerIcons[i % markerIcons.length]));
     }
   }
 
@@ -1444,6 +1440,23 @@ function keepOpenDebugToolsMenu(_open: boolean = true) { // keep open debug tool
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
+function saveImage() {
+  const vp = theViewport!;
+  const buffer = vp.readImage(undefined, undefined, true); // flip vertically...
+  if (undefined === buffer) {
+    alert("Failed to read image");
+    return;
+  }
+
+  const url = imageBufferToPngDataUrl(buffer);
+  if (undefined === url) {
+    alert("Failed to produce PNG");
+    return;
+  }
+
+  window.open(url, "Saved View");
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
   if (MobileRpcConfiguration.isMobileFrontend) {
@@ -1497,6 +1510,7 @@ function wireIconsToFunctions() {
   // debug tool handlers
   addClickListener("incidentMarkers", () => IncidentMarkerDemo.toggle());
   addClickListener("projectExtents", () => ProjectExtentsDecoration.toggle());
+  addClickListener("saveImage", () => saveImage());
   addClickListener("debugToolsMenu", () => keepOpenDebugToolsMenu());
 
   // standard view rotation handlers
@@ -1749,7 +1763,6 @@ async function main() {
   } else {
     const uriPrefix = configuration.customOrchestratorUri;
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
-    Config.App.set("imjs_dev_cors_proxy_server", "https://localhost:3001");
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
     for (const definition of rpcConfiguration.interfaces())

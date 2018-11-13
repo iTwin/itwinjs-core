@@ -518,7 +518,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
     main.addline("  vec4 rawPosition = unquantizeVertexPosition(a_pos, u_qOrigin, u_qScale);");
     if (this._isAnimated)
-      main.addline("  rawPosition.xyz += computeAnimationDisplacement(u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);");
+      main.addline("  rawPosition.xyz += computeAnimationDisplacement(g_vertexLUTIndex, u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);");
 
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {

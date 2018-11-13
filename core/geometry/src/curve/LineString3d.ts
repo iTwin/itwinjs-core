@@ -62,7 +62,7 @@ class MoveByDistanceContext {
   public announcePoint(point1: Point3d, fraction1: number): boolean {
     const a = this.point0.distance(point1);
     const distance1 = this.distance0 + a;
-    if (distance1 < this.targetDistance) {
+    if (distance1 < this.targetDistance && !Geometry.isSameCoordinate(distance1, this.targetDistance)) {
       this.point0.setFromPoint3d(point1);
       this.distance0 = distance1;
       this.fraction0 = fraction1;
@@ -462,7 +462,9 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   }
   /** If i is a valid index, return that point. */
   public pointAt(i: number, result?: Point3d): Point3d | undefined {
-    return this._points.getPoint3dAt(i, result);
+    if (this._points.isIndexValid(i))
+      return this._points.getPoint3dAt(i, result);
+    return undefined;
   }
   /** If i and j are both valid indices, return the vector from point i to point j
    */

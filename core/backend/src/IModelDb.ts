@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode, Guid } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation,
@@ -189,7 +189,7 @@ export class IModelDb extends IModel {
   private static constructIModelDb(briefcaseEntry: BriefcaseEntry, openParams: OpenParams, contextId?: string): IModelDb {
     if (briefcaseEntry.iModelDb)
       return briefcaseEntry.iModelDb; // If there's an IModelDb already associated with the briefcase, that should be reused.
-    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, briefcaseEntry.iModelId, briefcaseEntry.changeSetId, openParams.openMode);
+    const iModelToken = new IModelToken(briefcaseEntry.getKey(), contextId, briefcaseEntry.iModelId, briefcaseEntry.currentChangeSetId, openParams.openMode);
     return new IModelDb(briefcaseEntry, iModelToken, openParams);
   }
 
@@ -747,20 +747,23 @@ export class IModelDb extends IModel {
    * @throws [[IModelError]] if the entity cannot be constructed.
    */
   public constructEntity(props: EntityProps): Entity {
-    let entity: Entity;
+    const jsClass = this.getJsClass(props.classFullName);
+    return new jsClass(props, this);
+  }
+
+  /** Get the JavaScript class that handles a given entity class.  */
+  public getJsClass(classFullName: string): typeof Entity {
     try {
-      entity = ClassRegistry.createInstance(props, this);
+      return ClassRegistry.getClass(classFullName, this);
     } catch (err) {
       if (!ClassRegistry.isNotFoundError(err)) {
         Logger.logError(loggingCategory, err.toString());
         throw err;
       }
 
-      // Probably, we have not yet loaded the metadata for this class and/or its superclasses. Do that now, and retry the create.
-      this.loadMetaData(props.classFullName!);
-      entity = ClassRegistry.createInstance(props, this);
+      this.loadMetaData(classFullName);
+      return ClassRegistry.getClass(classFullName, this);
     }
-    return entity;
   }
 
   /** Get metadata for a class. This method will load the metadata from the iModel into the cache as a side-effect, if necessary.
@@ -801,27 +804,23 @@ export class IModelDb extends IModel {
 
   /*** @hidden */
   private loadMetaData(classFullName: string) {
-    if (!this.briefcase)
-      throw this.newNotOpenError();
-
     if (this.classMetaDataRegistry.find(classFullName))
       return;
+
     const className = classFullName.split(":");
     if (className.length !== 2)
       throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
 
-    const { error, result: metaDataJson } = this.nativeDb.getECClassMetaData(className[0], className[1]);
-    if (error)
-      throw new IModelError(error.status, "Error getting class meta data", Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
+    const val = this.nativeDb.getECClassMetaData(className[0], className[1]);
+    if (val.error)
+      throw new IModelError(val.error.status, "Error getting class meta data", Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
 
-    const metaData = new EntityMetaData(JSON.parse(metaDataJson!));
+    const metaData = new EntityMetaData(JSON.parse(val.result!));
     this.classMetaDataRegistry.add(classFullName, metaData);
-    // Recursive, to make sure that base class is cached.
-    if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0) {
-      metaData.baseClasses.forEach((baseClassName: string) => {
-        this.loadMetaData(baseClassName);
-      });
-    }
+
+    // Recursive, to make sure that base classes are cached.
+    if (metaData.baseClasses !== undefined && metaData.baseClasses.length > 0)
+      metaData.baseClasses.forEach((baseClassName: string) => this.loadMetaData(baseClassName));
   }
 
   /** Query if this iModel contains the definition of the specified class.
@@ -831,10 +830,7 @@ export class IModelDb extends IModel {
    */
   public containsClass(classFullName: string): boolean {
     const className = classFullName.split(":");
-    if (className.length !== 2)
-      throw new IModelError(IModelStatus.BadArg, "Invalid classFullName", Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
-    const { error } = this.nativeDb.getECClassMetaData(className[0], className[1]);
-    return (error === undefined);
+    return className.length === 2 && this.nativeDb.getECClassMetaData(className[0], className[1]).error === undefined;
   }
 
   /** Query a "file property" from this iModel, as a string.
@@ -922,10 +918,17 @@ export namespace IModelDb {
      * @param modelId The Model identifier.
      * @throws [[IModelError]]
      */
-    public getModel(modelId: Id64String): Model {
+    public getModelProps(modelId: Id64String): ModelProps {
       const json = this.getModelJson(JSON.stringify({ id: modelId.toString() }));
-      const props = JSON.parse(json!) as ModelProps;
-      return this._iModel.constructEntity(props) as Model;
+      return JSON.parse(json) as ModelProps;
+    }
+
+    /** Get the Model with the specified identifier.
+     * @param modelId The Model identifier.
+     * @throws [[IModelError]]
+     */
+    public getModel(modelId: Id64String): Model {
+      return this._iModel.constructEntity(this.getModelProps(modelId)) as Model;
     }
 
     /**
@@ -935,9 +938,10 @@ export namespace IModelDb {
      */
     public getModelJson(modelIdArg: string): string {
       if (!this._iModel.briefcase) throw this._iModel.newNotOpenError();
-      const { error, result } = this._iModel.nativeDb.getModel(modelIdArg);
-      if (error) throw new IModelError(error.status, "Model=" + modelIdArg);
-      return result!;
+      const val = this._iModel.nativeDb.getModel(modelIdArg);
+      if (val.error)
+        throw new IModelError(val.error.status, "Model=" + modelIdArg);
+      return val.result!;
     }
 
     /** Get the sub-model of the specified Element.
@@ -961,54 +965,64 @@ export namespace IModelDb {
     public createModel(modelProps: ModelProps): Model { return this._iModel.constructEntity(modelProps) as Model; }
 
     /** Insert a new model.
-     * @param model The data for the new model.
+     * @param props The data for the new model.
      * @returns The newly inserted model's Id.
      * @throws [[IModelError]] if unable to insert the model.
      */
-    public insertModel(model: Model): Id64String {
-      if (!this._iModel.briefcase) throw this._iModel.newNotOpenError();
-      const { error, result } = this._iModel.nativeDb.insertModel(JSON.stringify(model));
-      if (error) throw new IModelError(error.status, "inserting model", Logger.logWarning, loggingCategory);
-      return model.id = Id64.fromJSON(JSON.parse(result!).id);
+    public insertModel(props: ModelProps): Id64String {
+      const jsClass = this._iModel.getJsClass(props.classFullName) as unknown as typeof Model;
+      if (IModelStatus.Success !== jsClass.onInsert(props))
+        return Id64.invalid;
+
+      const val = this._iModel.nativeDb.insertModel(JSON.stringify(props));
+      if (val.error)
+        throw new IModelError(val.error.status, "inserting model", Logger.logWarning, loggingCategory);
+
+      props.id = Id64.fromJSON(JSON.parse(val.result!).id);
+      jsClass.onInserted(props.id);
+      return props.id;
     }
 
     /** Update an existing model.
-     * @param model An editable copy of the model, containing the new/proposed data.
+     * @param props the properties of the model to change
      * @throws [[IModelError]] if unable to update the model.
      */
-    public updateModel(model: ModelProps): void {
-      if (!this._iModel.briefcase) throw this._iModel.newNotOpenError();
-      const error: IModelStatus = this._iModel.nativeDb.updateModel(JSON.stringify(model));
+    public updateModel(props: ModelProps): void {
+      const jsClass = this._iModel.getJsClass(props.classFullName) as unknown as typeof Model;
+      if (IModelStatus.Success !== jsClass.onUpdate(props))
+        return;
+
+      const error = this._iModel.nativeDb.updateModel(JSON.stringify(props));
       if (error !== IModelStatus.Success)
-        throw new IModelError(error, "updating model id=" + model.id, Logger.logWarning, loggingCategory);
+        throw new IModelError(error, "updating model id=" + props.id, Logger.logWarning, loggingCategory);
+
+      jsClass.onUpdated(props);
     }
 
-    /** Delete an existing model.
-     * @param model The model to be deleted
+    /** Delete one or more existing models.
+     * @param ids The Ids of the models to be deleted
      * @throws [[IModelError]]
      */
-    public deleteModel(model: Model): void {
-      if (!this._iModel.briefcase)
-        throw this._iModel.newNotOpenError();
+    public deleteModel(ids: Id64Arg): void {
+      Id64.toIdSet(ids).forEach((id) => {
+        const props = this.getModelProps(id);
+        const jsClass = this._iModel.getJsClass(props.classFullName) as unknown as typeof Model;
+        if (IModelStatus.Success !== jsClass.onDelete(props))
+          return;
 
-      const error: IModelStatus = this._iModel.nativeDb.deleteModel(model.id);
-      if (error !== IModelStatus.Success)
-        throw new IModelError(error, "deleting model id=" + model.id, Logger.logWarning, loggingCategory);
+        const error = this._iModel.nativeDb.deleteModel(id);
+        if (error !== IModelStatus.Success)
+          throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+
+        jsClass.onDeleted(props);
+      });
     }
   }
 
   /** The collection of elements in an [[IModelDb]]. */
   export class Elements {
     /** @hidden */
-    public constructor(private _iModel: IModelDb) {
-    }
-
-    /** Private implementation details of getElementProps */
-    private _getElementProps(opts: ElementLoadProps): ElementProps {
-      const json = this.getElementJson(JSON.stringify(opts));
-      const props = json as ElementProps;
-      return props;
-    }
+    public constructor(private _iModel: IModelDb) { }
 
     /**
      * Read element data from iModel as a json string
@@ -1016,14 +1030,15 @@ export namespace IModelDb {
      * @return a json string with the properties of the element.
      */
     public getElementJson(elementIdArg: string): any {
-      const { error, result } = this._iModel.nativeDb.getElement(elementIdArg);
-      if (error) throw new IModelError(error.status, "reading element=" + elementIdArg, Logger.logWarning, loggingCategory);
-      return result!;
+      const val = this._iModel.nativeDb.getElement(elementIdArg);
+      if (val.error)
+        throw new IModelError(val.error.status, "reading element=" + elementIdArg, Logger.logWarning, loggingCategory);
+      return val.result!;
     }
 
     /** Private implementation details of getElement */
     private _doGetElement(opts: ElementLoadProps): Element {
-      const props = this._getElementProps(opts);
+      const props = this.getElementJson(JSON.stringify(opts)) as ElementProps;
       return this._iModel.constructEntity(props) as Element;
     }
 
@@ -1032,15 +1047,12 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the element is not found.
      */
     public getElementProps(elementId: Id64String | GuidString | Code | ElementLoadProps): ElementProps {
-      if (typeof elementId === "string") {
-        if (Guid.isGuid(elementId))
-          elementId = { federationGuid: elementId };
-        else
-          elementId = { id: elementId };
-      } else if (elementId instanceof Code)
+      if (typeof elementId === "string")
+        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
+      else if (elementId instanceof Code)
         elementId = { code: elementId };
 
-      return this._getElementProps(elementId);
+      return this.getElementJson(JSON.stringify(elementId)) as ElementProps;
     }
 
     /**
@@ -1049,19 +1061,16 @@ export namespace IModelDb {
      * @throws [[IModelError]] if the element is not found.
      */
     public getElement(elementId: Id64String | GuidString | Code | ElementLoadProps): Element {
-      if (typeof elementId === "string") {
-        if (Guid.isGuid(elementId))
-          elementId = { federationGuid: elementId };
-        else
-          elementId = { id: elementId };
-      } else if (elementId instanceof Code)
+      if (typeof elementId === "string")
+        elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
+      else if (elementId instanceof Code)
         elementId = { code: elementId };
 
       return this._doGetElement(elementId);
     }
 
     /**
-     * Query for the DgnElementId of the element that has the specified code.
+     * Query for the Id of the element that has a specified code.
      * This method is for the case where you know the element's Code.
      * If you only know the code *value*, then in the simplest case, you can query on that
      * and filter the results.
@@ -1104,27 +1113,33 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to insert the element.
      */
     public insertElement(elProps: ElementProps): Id64String {
-      if (!this._iModel.briefcase)
-        throw this._iModel.newNotOpenError();
+      const jsClass = this._iModel.getJsClass(elProps.classFullName) as unknown as typeof Element;
+      if (IModelStatus.Success !== jsClass.onInsert(elProps))
+        return Id64.invalid;
 
-      const { error, result: json } = this._iModel.nativeDb.insertElement(JSON.stringify(elProps));
-      if (error)
-        throw new IModelError(error.status, "Problem inserting element", Logger.logWarning, loggingCategory);
+      const val = this._iModel.nativeDb.insertElement(JSON.stringify(elProps));
+      if (val.error)
+        throw new IModelError(val.error.status, "Problem inserting element", Logger.logWarning, loggingCategory);
 
-      return Id64.fromJSON(JSON.parse(json!).id);
+      elProps.id = Id64.fromJSON(JSON.parse(val.result!).id);
+      jsClass.onInserted(elProps.id);
+      return elProps.id;
     }
 
     /** Update some properties of an existing element.
      * @param el the properties of the element to update.
      * @throws [[IModelError]] if unable to update the element.
      */
-    public updateElement(props: ElementProps): void {
-      if (!this._iModel.briefcase)
-        throw this._iModel.newNotOpenError();
+    public updateElement(elProps: ElementProps): void {
+      const jsClass = this._iModel.getJsClass(elProps.classFullName) as unknown as typeof Element;
+      if (IModelStatus.Success !== jsClass.onUpdate(elProps))
+        return;
 
-      const error: IModelStatus = this._iModel.nativeDb.updateElement(JSON.stringify(props));
+      const error = this._iModel.nativeDb.updateElement(JSON.stringify(elProps));
       if (error !== IModelStatus.Success)
         throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+
+      jsClass.onUpdated(elProps);
     }
 
     /**
@@ -1134,9 +1149,16 @@ export namespace IModelDb {
      */
     public deleteElement(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
-        const error: IModelStatus = this._iModel.nativeDb.deleteElement(id);
+        const props = this.getElementProps(id);
+        const jsClass = this._iModel.getJsClass(props.classFullName) as unknown as typeof Element;
+        if (IModelStatus.Success !== jsClass.onDelete(props))
+          return;
+
+        const error = this._iModel.nativeDb.deleteElement(id);
         if (error !== IModelStatus.Success)
           throw new IModelError(error, "", Logger.logWarning, loggingCategory);
+
+        jsClass.onDeleted(props);
       });
     }
 
@@ -1160,7 +1182,7 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     private _queryAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
-      const rows: any[] = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE Element.Id=?`, [elementId]);
+      const rows = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE Element.Id=?`, [elementId]);
       if (rows.length === 0)
         throw new IModelError(IModelStatus.NotFound, "ElementAspect class not found", Logger.logWarning, loggingCategory, () => ({ aspectClassName }));
 
@@ -1195,7 +1217,7 @@ export namespace IModelDb {
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
-      const status: IModelStatus = this._iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps));
+      const status = this._iModel.nativeDb.insertElementAspect(JSON.stringify(aspectProps));
       if (status !== IModelStatus.Success)
         throw new IModelError(status, "Error inserting ElementAspect", Logger.logWarning, loggingCategory);
     }
@@ -1207,7 +1229,7 @@ export namespace IModelDb {
      */
     public deleteAspect(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
-        const status: IModelStatus = this._iModel.nativeDb.deleteElementAspect(id);
+        const status = this._iModel.nativeDb.deleteElementAspect(id);
         if (status !== IModelStatus.Success)
           throw new IModelError(status, "Error deleting ElementAspect", Logger.logWarning, loggingCategory);
       });
@@ -1316,6 +1338,18 @@ export namespace IModelDb {
       const viewArg = this.getViewThumbnailArg(viewDefinitionId);
       const props = { format: thumbnail.format, height: thumbnail.height, width: thumbnail.width };
       return this._iModel.nativeDb.saveFileProperty(viewArg, JSON.stringify(props), thumbnail.image);
+    }
+
+    /** Set the default view property the iModel
+     * @param viewId The Id of the ViewDefinition to use as the default
+     */
+    public setDefaultViewId(viewId: Id64String): void {
+      const spec = { namespace: "dgn_View", name: "DefaultView" };
+      const blob32 = new Uint32Array(2);
+      blob32[0] = Id64.getLowerUint32(viewId);
+      blob32[1] = Id64.getUpperUint32(viewId);
+      const blob8 = new Uint8Array(blob32.buffer);
+      this._iModel.saveFileProperty(spec, undefined, blob8);
     }
   }
 

@@ -11,6 +11,7 @@ const isCI = (process.env.TF_BUILD);
 
 const paths = require("./config/paths");
 const path = require("path");
+const fs = require("fs");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 const argv = require("yargs").argv;
 
@@ -27,8 +28,12 @@ const timeout = (argv.timeout !== undefined) ? argv.timeout : "999999";
 
 const tscPaths = argv.tscPaths ? ["--require", "tsconfig-paths/register"] : [];
 
+const inMonoRepo = fs.existsSync(path.join(__dirname, "../../../common/scripts/mocha-reporter-tweaks.js"));
+const rushTweaks = (inMonoRepo) ? ["--require", require.resolve("../../../common/scripts/mocha-reporter-tweaks")] : [];
+
 const options = [
   "--check-leaks",
+  ...rushTweaks,
   "--require", "source-map-support/register",
   "--require", "ts-node/register",
   "--watch-extensions", "ts",

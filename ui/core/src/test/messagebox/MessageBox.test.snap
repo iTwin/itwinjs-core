@@ -1,0 +1,28 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`MessageBox renders renders correctly 1`] = `
+<Dialog
+  alignment="center"
+  buttonCluster={
+    Array [
+      Object {
+        "buttonStyle": "bwc-buttons-primary",
+        "onClick": [Function],
+        "type": "close",
+      },
+    ]
+  }
+  height=""
+  minHeight={400}
+  minWidth={400}
+  modal={true}
+  movable={false}
+  opened={true}
+  resizable={false}
+  width="512px"
+>
+  <MessageContainer
+    severity={1}
+  />
+</Dialog>
+`;

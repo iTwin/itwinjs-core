@@ -6,7 +6,6 @@
 
 .react-data-grid-wrapper {
 
-  /* padding: 0 55px 0 0; */
   height: 100%;
   width: 100%;
   user-select: none;
@@ -169,7 +168,7 @@
     background: inherit;
   }
 
-  .cell-editor {
+  .components-cell-editor {
     border: $bwc-blue solid 2px;
     background: #F9F9F9 !important;
     box-sizing: border-box;

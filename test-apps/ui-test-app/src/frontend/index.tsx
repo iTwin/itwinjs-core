@@ -10,7 +10,7 @@ import { CSSProperties } from "react";
 import { createStore, combineReducers, Store } from "redux";
 import { Provider } from "react-redux";
 import {
-    RpcConfiguration, RpcOperation, IModelToken, IModelReadRpcInterface, IModelTileRpcInterface,
+    RpcConfiguration, RpcOperation, IModelToken,
     ElectronRpcManager, ElectronRpcConfiguration, BentleyCloudRpcManager,
 } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend";
@@ -31,15 +31,19 @@ import {
     createAction, ActionsUnion, DeepReadonly,
 } from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
+import { Presentation } from "@bentley/presentation-frontend";
 
+import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
 import AppBackstage, { BackstageShow, BackstageHide } from "./appui/AppBackstage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { MeasurePointsTool } from "./tools/MeasurePoints";
+import { Tool1 } from "./tools/Tool1";
+import { Tool2 } from "./tools/Tool2";
 
 // Initialize my application gateway configuration for the frontend
 let rpcConfiguration: RpcConfiguration;
-const rpcInterfaces = [IModelTileRpcInterface, IModelReadRpcInterface];
+const rpcInterfaces = getSupportedRpcs();
 if (ElectronRpcConfiguration.isElectron)
     rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
 else
@@ -157,10 +161,17 @@ export class SampleAppIModelApp extends IModelApp {
 
         await UiFramework.initialize(SampleAppIModelApp.store, SampleAppIModelApp.i18n, oidcConfiguration);
 
+        // initialize Presentation
+        Presentation.initialize({
+            activeLocale: IModelApp.i18n.languageList()[0],
+        });
+
         // Register tools.
         BackstageShow.register(this.sampleAppNamespace);
         BackstageHide.register(this.sampleAppNamespace);
         MeasurePointsTool.register(this.sampleAppNamespace);
+        Tool1.register(this.sampleAppNamespace);
+        Tool2.register(this.sampleAppNamespace);
     }
 
     public static async handleIModelViewsSelected(iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) {

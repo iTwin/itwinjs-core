@@ -4,33 +4,40 @@
 *--------------------------------------------------------------------------------------------*/
 import { ImsActiveSecureTokenClient } from "../ImsClients";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { Version, HubIModel, VersionQuery, IModelQuery } from "../imodelhub";
+import { HubIModel } from "../imodelhub";
 import { IModelHubClient, IModelClient } from "..";
 import { ConnectClient, Project } from "../ConnectClients";
 import { expect } from "chai";
-import { loggingCategoryFullUrl } from "../Request";
 import * as fs from "fs";
 
-import { Logger, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, ActivityLoggingContext, GuidString, Guid } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { loggingCategoryFullUrl } from "../Request";
+
 IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
-export const whitelistPath = "./lib/test/assets/whitelist.txt";
-export const logPath = "./lib/test/iModelClientsTests.log";
+const actx = new ActivityLoggingContext(Guid.createValue());
 
-const fileStream = fs.createWriteStream(logPath, { flags: "a" });
-const actx = new ActivityLoggingContext("");
+const logFileStream = fs.createWriteStream("./lib/test/iModelClientsTests.log", { flags: "a" });
+
+// The Request URLs are captured separate. The log file is used by the Hub URL whitelist validation.
+export const urllogPath = "./lib/test/requesturls.log";
+const urlLogFileStream = fs.createWriteStream(urllogPath, { flags: "a" });
+
+function logFunction(logLevel: string, category: string, message: string) {
+  if (category === loggingCategoryFullUrl)
+    urlLogFileStream.write(message + "\n");
+  else
+    logFileStream.write(logLevel + "|" + category + "|" + message + "\n");
+}
 
 // Initialize logger to file
 Logger.initialize(
-  (category: string, message: string): void => { fileStream.write("Error   |" + category + " | " + message + "\n"); },
-  (category: string, message: string): void => { fileStream.write("Warning |" + category + " | " + message + "\n"); },
-  (category: string, message: string): void => { fileStream.write("Info    |" + category + " | " + message + "\n"); },
-  (category: string, message: string): void => { fileStream.write("Trace   |" + category + " | " + message + "\n"); });
-
-// Log at minimum the full url category, so url validator test can execute
-Logger.setLevel(loggingCategoryFullUrl, LogLevel.Trace);
+  (category: string, message: string): void => { logFunction("Error", category, message); },
+  (category: string, message: string): void => { logFunction("Warning", category, message); },
+  (category: string, message: string): void => { logFunction("Info", category, message); },
+  (category: string, message: string): void => { logFunction("Trace", category, message); });
 
 // Note: Turn this off unless really necessary - it causes Error messages on the
 // console with the existing suite of tests, and this is quite misleading,
@@ -40,6 +47,9 @@ if (!!loggingConfigFile) {
   // tslint:disable-next-line:no-var-requires
   Logger.configureLevels(require(loggingConfigFile));
 }
+
+// log all request URLs as this will be the input to the Hub URL whitelist test
+Logger.setLevel(loggingCategoryFullUrl, LogLevel.Trace);
 
 /** Credentials for test users */
 export interface UserCredentials {
@@ -56,7 +66,7 @@ function isOfflineSet(): boolean {
  */
 export class TestConfig {
   /** Name of project used by most tests */
-  public static readonly projectName: string = "NodeJsTestProject";
+  public static readonly projectName: string = "iModelJsTest";
   public static readonly enableMocks: boolean = isOfflineSet();
 
   /** Login the specified user and return the AuthorizationToken */
@@ -70,31 +80,27 @@ export class TestConfig {
     return authToken;
   }
 
-  /** Query for the test file from connect/hub */
-  public static async queryTestCase(accessToken: AccessToken, projectName: string, iModelName?: string, versionName?: string): Promise<{ project: Project, iModel?: HubIModel, version?: Version }> {
+  public static async queryProject(accessToken: AccessToken, projectName: string): Promise<Project> {
     const connectClient = new ConnectClient();
-    const imodelHubClient: IModelClient = new IModelHubClient();
 
     const project: Project | undefined = await connectClient.getProject(actx, accessToken, {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,
     });
-    expect(project);
+    if (!project)
+      throw new Error(`Project ${projectName} not found for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
 
-    let iModel: HubIModel | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
-    let version: Version | undefined = undefined; // tslint:disable-line:no-unnecessary-initializer
-    if (iModelName) {
-      const iModels = await imodelHubClient.IModels().get(actx, accessToken, project.wsgId, new IModelQuery().byName(iModelName));
-      expect(iModels.length === 1);
-      iModel = iModels[0];
+    return project;
+  }
 
-      if (versionName) {
-        version = (await imodelHubClient.Versions().get(actx, accessToken, iModel.id!, new VersionQuery().byName(versionName)))[0];
-        expect(version);
-      }
-    }
+  public static async queryIModel(accessToken: AccessToken, projectId: GuidString): Promise<HubIModel> {
+    const imodelHubClient: IModelClient = new IModelHubClient();
 
-    return { project, iModel, version };
+    const iModels = await imodelHubClient.IModel().get(actx, accessToken, projectId);
+    if (iModels.length === 0)
+      throw new Error(`Primary iModel ${projectId} not found for project ${projectId} for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
+
+    return iModels[0];
   }
 }
 

@@ -8,9 +8,8 @@ import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@
 import {
   Table, ColumnDescription, RowItem, TableDataProvider,
   SimpleTableDataProvider, TableSelectionTarget, SelectionMode, PropertyRecord, PropertyValueFormat, PropertyValue, PropertyDescription,
+  PropertyUpdatedArgs, TableCellUpdatedArgs,
 } from "@bentley/ui-components";
-// import { RowUpdatedArgs } from "@bentley/ui-components/lib/table/component/Table";
-import { PropertyUpdatedArgs } from "@bentley/ui-components/lib/editors/EditorContainer";
 
 class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -124,12 +123,30 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     this.setState({ tableSelectionTarget: TableSelectionTarget.Cell });
   }
 
-  private _handlePropertyUpdated = async (args: PropertyUpdatedArgs): Promise<boolean> => {
+  private _updatePropertyRecord(record: PropertyRecord, newValue: string): PropertyRecord {
+    const propertyValue: PropertyValue = {
+      valueFormat: PropertyValueFormat.Primitive,
+      value: newValue,
+      displayValue: newValue,
+    };
+    return record.copyWithNewValue(propertyValue);
+  }
+
+  private _handlePropertyUpdated = async (propertyArgs: PropertyUpdatedArgs, cellArgs: TableCellUpdatedArgs): Promise<boolean> => {
     let updated = false;
 
-    if (args.propertyRecord) {
-      args.propertyRecord = args.propertyRecord.copyWithNewValue(args.newValue);
-      updated = true;
+    if (propertyArgs.propertyRecord) {
+      propertyArgs.propertyRecord = this._updatePropertyRecord(propertyArgs.propertyRecord, propertyArgs.newValue);
+      if (cellArgs.rowIndex >= 0) {
+        const rowItem = await this.state.dataProvider.getRow(cellArgs.rowIndex);
+        if (rowItem) {
+          const cellItem = rowItem.cells.find((cell) => cell.key === cellArgs.cellKey);
+          if (cellItem) {
+            cellItem.record = propertyArgs.propertyRecord;
+            updated = true;
+          }
+        }
+      }
     }
 
     return updated;
@@ -137,8 +154,8 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
 
   public render(): React.ReactNode {
     return (
-      <div style={{ width: "100%", height: "100%" }}>
-        <div style={{ width: "100%", height: "10%" }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
+        <div style={{ marginBottom: "4px" }}>
           <select onChange={this._onChangeSelectionMode}>
             <option value={SelectionMode.Single}> Single </option>
             < option value={SelectionMode.SingleAllowDeselect} > SingleAllowDeselect </option>
@@ -150,12 +167,11 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
             < option value={TableSelectionTarget.Cell} > Cell </option>
           </select>
         </div>
-        <div style={{ width: "100%", height: "90%" }}>
+        <div style={{ flex: "1" }}>
           <Table
             dataProvider={this.state.dataProvider}
             tableSelectionTarget={this.state.tableSelectionTarget}
             selectionMode={this.state.selectionMode}
-            // onRowUpdated={this._handleRowUpdated}
             onPropertyUpdated={this._handlePropertyUpdated}
           />
         </div>

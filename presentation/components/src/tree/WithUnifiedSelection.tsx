@@ -41,6 +41,18 @@ export interface Props {
   /** Defines what gets put into selection when a node is selected */
   selectionTarget?: SelectionTarget;
 
+  /**
+   * Called when nodes are selected. The callback should return `true`
+   * to continue default handling or `false` otherwise.
+   */
+  onNodesSelected?: (items: TreeNodeItem[], replace: boolean) => boolean;
+
+  /**
+   * Called when nodes are deselected. The callback should return `true`
+   * to continue default handling or `false` otherwise.
+   */
+  onNodesDeselected?: (items: TreeNodeItem[]) => boolean;
+
   /** @hidden */
   selectionHandler?: SelectionHandler;
 }
@@ -71,7 +83,7 @@ export default function withUnifiedSelection<P extends TreeProps>(TreeComponent:
     public get rulesetId() { return this.props.dataProvider.rulesetId; }
 
     // tslint:disable-next-line:naming-convention
-    private get baseProps(): Subtract<TreeProps, Props> { return this.props; }
+    private get baseProps(): TreeProps { return this.props; }
 
     public componentDidMount() {
       const name = `Tree_${counter++}`;
@@ -137,10 +149,13 @@ export default function withUnifiedSelection<P extends TreeProps>(TreeComponent:
 
     // tslint:disable-next-line:naming-convention
     private onNodesSelected = (nodes: TreeNodeItem[], replace: boolean) => {
+      // workaround for https://github.com/Microsoft/TypeScript/issues/27201
+      const props: Readonly<Props> = this.props;
+
       // give consumers a chance to handle selection changes and either
       // continue default handling (by returning `true`) or abort (by
       // returning `false`)
-      if (this.baseProps.onNodesSelected && !this.baseProps.onNodesSelected(nodes, replace))
+      if (props.onNodesSelected && !props.onNodesSelected(nodes, replace))
         return;
 
       if (!this._selectionHandler)
@@ -154,10 +169,13 @@ export default function withUnifiedSelection<P extends TreeProps>(TreeComponent:
 
     // tslint:disable-next-line:naming-convention
     private onNodesDeselected = (nodes: TreeNodeItem[]) => {
+      // workaround for https://github.com/Microsoft/TypeScript/issues/27201
+      const props: Readonly<Props> = this.props;
+
       // give consumers a chance to handle selection changes and either
       // continue default handling (by returning `true`) or abort (by
       // returning `false`)
-      if (this.baseProps.onNodesDeselected && !this.baseProps.onNodesDeselected(nodes))
+      if (props.onNodesDeselected && !props.onNodesDeselected(nodes))
         return;
 
       if (!this._selectionHandler)

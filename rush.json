@@ -1,5 +1,5 @@
 {
-  "rushVersion": "5.4.0",
+  "rushVersion": "5.5.2",
   "npmVersion": "5.5.1",
   "nodeSupportedVersionRange": ">=8.9.0 <9.0.0",
   "projectFolderMinDepth": 2,
@@ -165,12 +165,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/dev-cors-proxy-server",
-      "projectFolder": "tools/dev-cors-proxy-server",
-      "reviewCategory": "tools",
-      "shouldPublish": true
-    },
-    {
       "packageName": "example-code-snippets",
       "projectFolder": "example-code/snippets",
       "reviewCategory": "internal",
@@ -179,6 +173,18 @@
     {
       "packageName": "example-code-app",
       "projectFolder": "example-code/app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "test-apps-analysis-importer",
+      "projectFolder": "test-apps/analysis-importer",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "imodel-from-geojson",
+      "projectFolder": "test-apps/imodel-from-geojson",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

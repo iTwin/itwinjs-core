@@ -13,7 +13,7 @@ export class EntityState implements EntityProps {
   public readonly id: Id64String;
   public readonly iModel: IModelConnection;
   public readonly classFullName: string;
-  public readonly jsonProperties: any;
+  public readonly jsonProperties: { [key: string]: any };
   public static schemaName = "BisCore";
 
   /**

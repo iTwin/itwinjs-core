@@ -6,7 +6,7 @@ Topics:
 * [Curve Collections](./CurveCollection.md)
 * [Sample create methods and IModelJson form](./IModelJsonGeometrySchema.md)
 * [Surface Normals](./FacetNormals.md)
-* [PolyfaceAuxData](./PolyfaceAuxData.md)
+* [Polyface Analytical Data Visualization](./PolyfaceAuxData.md)
 * [PolyfaceBuilder](./PolyfaceBuilder.md)
 * [StrokeOptions](./StrokeOptions.md)
 

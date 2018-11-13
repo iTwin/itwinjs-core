@@ -7,7 +7,7 @@ import * as chai from "chai";
 import { ChangeSet, Version, Thumbnail, ThumbnailSize, ThumbnailQuery } from "../../";
 import { AccessToken, IModelClient } from "../../";
 
-import { TestConfig } from "../TestConfig";
+import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
@@ -62,7 +62,7 @@ describe("iModelHub ThumbnailHandler", () => {
       imodelHubClient.RequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
 
-    accessToken = await utils.login();
+    accessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     _projectId = await utils.getProjectId(accessToken);
     await utils.createIModel(accessToken, imodelName, _projectId);
     imodelId = await getIModelId(accessToken, imodelName);

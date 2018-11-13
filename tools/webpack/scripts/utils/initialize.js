@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+ * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+ *--------------------------------------------------------------------------------------------*/
 "use strict";
 
-function init(NODE_ENV, MOCHA_ENV=undefined) {
+function init(NODE_ENV, MOCHA_ENV = undefined) {
   process.env.BABEL_ENV = NODE_ENV;
   process.env.NODE_ENV = NODE_ENV;
 
@@ -17,10 +17,6 @@ function init(NODE_ENV, MOCHA_ENV=undefined) {
     process.env.CI = "true";
 
   global.CONTINUOUS_INTEGRATION = process.env.CI;
-
-  // By default, the dev CORS proxy server should run on port 3001
-  if (NODE_ENV === "development" && !process.env.CORS_PROXY_PORT)
-    process.env.CORS_PROXY_PORT = "3001";
 
   // Makes the script crash on unhandled rejections instead of silently
   // ignoring them. In the future, promise rejections that are not handled will

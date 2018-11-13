@@ -12,6 +12,7 @@ import { PropertyDataProvider, PropertyCategory, PropertyData } from "../Propert
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
 import "./PropertyGrid.scss";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
+import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 
 /** Properties for [[PropertyGrid]] React component */
 export interface PropertyGridProps {
@@ -21,10 +22,30 @@ export interface PropertyGridProps {
   orientation: Orientation;
   /** Enables/disables property selection */
   isPropertySelectionEnabled?: boolean;
+  /** Enables/disables property editing */
+  isPropertyEditingEnabled?: boolean;
   /** Callback to property selection */
   onPropertySelectionChanged?: (property: PropertyRecord) => void;
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
+  /** Callback for when properties are being edited */
+  onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
+  /** Callback for when properties are updated */
+  onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
+}
+
+/** Property Editor state */
+export interface PropertyEditorState {
+  active: boolean;
+  propertyRecord?: PropertyRecord;
+}
+
+/** Arguments for the Property Editing event callback */
+export interface PropertyEditingArgs {
+  /** PropertyRecord being edited  */
+  propertyRecord: PropertyRecord;
+  /** Unique key of currently edited property */
+  propertyKey?: string;
 }
 
 /** Property Category in the [[PropertyGrid]] state */
@@ -40,6 +61,8 @@ export interface PropertyGridState {
   categories: PropertyGridCategory[];
   /** Unique key of currently selected property */
   selectedPropertyKey?: string;
+  /** Unique key of currently edited property */
+  editingPropertyKey?: string;
 }
 
 /** PropertyGrid React component.
@@ -52,6 +75,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   public readonly state: Readonly<PropertyGridState> = {
     categories: [],
     selectedPropertyKey: undefined,
+    editingPropertyKey: undefined,
   };
 
   constructor(props: PropertyGridProps) {
@@ -126,20 +150,53 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this.setState({ categories });
   }
 
+  private _isClickSupported(): boolean {
+    return (!this.props.isPropertySelectionEnabled && !this.props.isPropertyEditingEnabled) ? false : true;
+  }
+
   private _onPropertyClicked = (property: PropertyRecord, key?: string) => {
-    if (!this.props.isPropertySelectionEnabled)
+    if (!this._isClickSupported())
       return;
 
-    if (this.state.selectedPropertyKey === key) {
-      // Deselect
-      this.setState({ selectedPropertyKey: undefined });
-    } else {
-      // Select another one
-      this.setState({ selectedPropertyKey: key });
+    let selectedPropertyKey = this.state.selectedPropertyKey;
+    let editingPropertyKey = this.state.editingPropertyKey;
+
+    if (this.props.isPropertyEditingEnabled) {
+      if (this.props.isPropertySelectionEnabled) {
+        if (this.state.selectedPropertyKey === key)
+          editingPropertyKey = key;
+        else
+          editingPropertyKey = undefined;
+      } else {
+        editingPropertyKey = key;
+      }
     }
 
-    if (this.props.onPropertySelectionChanged)
-      this.props.onPropertySelectionChanged(property);
+    if (this.props.isPropertySelectionEnabled && editingPropertyKey !== key) {
+      if (this.state.selectedPropertyKey === key) {
+        // Deselect
+        selectedPropertyKey = undefined;
+      } else {
+        // Select another one
+        selectedPropertyKey = key;
+      }
+
+      if (this.props.onPropertySelectionChanged)
+        this.props.onPropertySelectionChanged(property);
+    }
+
+    this.setState({ selectedPropertyKey, editingPropertyKey });
+  }
+
+  private _onEditCommit = async (args: PropertyUpdatedArgs, category: PropertyCategory) => {
+    if (this.props.onPropertyUpdated) {
+      await this.props.onPropertyUpdated(args, category);
+      this.setState({ editingPropertyKey: undefined });
+    }
+  }
+
+  private _onEditCancel = () => {
+    this.setState({ editingPropertyKey: undefined });
   }
 
   public render() {
@@ -155,8 +212,11 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
                 orientation={this.props.orientation}
                 selectedPropertyKey={this.state.selectedPropertyKey}
                 onExpansionToggled={this._onExpansionToggled}
-                onPropertyClicked={this.props.isPropertySelectionEnabled ? this._onPropertyClicked : undefined}
+                onPropertyClicked={this._isClickSupported() ? this._onPropertyClicked : undefined}
                 propertyValueRendererManager={this.props.propertyValueRendererManager}
+                editingPropertyKey={this.state.editingPropertyKey}
+                onEditCommit={this._onEditCommit}
+                onEditCancel={this._onEditCancel}
               />
             ))
           }

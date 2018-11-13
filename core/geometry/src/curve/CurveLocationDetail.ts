@@ -63,6 +63,11 @@ export class CurveLocationDetail {
   public vectorInCurveLocationDetail?: Vector3d;
   /** A context-specific numeric value.  (E.g. a distance) */
   public a: number;
+  /** optional CurveLocationDetail with more detail of location.  For instance, a detail for fractional position within
+   * a CurveChainWithDistanceIndex returns fraction and distance along the chain as its primary data and
+   * further detail of the particular curve within the chain in the childDetail.
+   */
+  public childDetail?: CurveLocationDetail;
   /** A status indicator for certain searches.
    * * e.g. CurvePrimitive.moveSignedDistanceFromFraction
    */

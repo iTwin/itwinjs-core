@@ -37,10 +37,6 @@ import {
   Zone,
   Widget,
   GroupItemDef,
-  ZoneLocation,
-  SyncUiEventId,
-  ContentViewManager,
-  BaseItemState,
   CoreTools,
 } from "@bentley/ui-framework";
 
@@ -53,13 +49,16 @@ import { AppTools } from "../../tools/ToolSpecifications";
 
 import { SampleAppIModelApp } from "../../../frontend/index";
 
+// cSpell:Ignore contentviews statusbars
 import { IModelViewportControl } from "../contentviews/IModelViewport";
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
-import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
+import { VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
+import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
+import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
 // import SvgPath from "@bentley/ui-ninezone/lib/base/SvgPath";
 
 export class ViewsFrontstage extends FrontstageProvider {
@@ -82,7 +81,7 @@ export class ViewsFrontstage extends FrontstageProvider {
     for (const viewId of this.viewIds) {
       const thisContentProps: ContentProps = {
         classId: IModelViewportControl,
-        applicationData: { viewId, iModelConnection: this.iModelConnection },
+        applicationData: { viewId, iModelConnection: this.iModelConnection, rulesetId: "Items" },
       };
       contentProps.push(thisContentProps);
     }
@@ -114,20 +113,29 @@ export class ViewsFrontstage extends FrontstageProvider {
             ]}
           />
         }
+        centerLeft={
+          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
+            widgets={[
+              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
+                applicationData={{ iModelConnection: this.iModelConnection }} />,
+            ]}
+          />
+        }
         centerRight={
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
-                applicationData={{ iModel: SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection }} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
+                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} />,
             ]}
           />
         }
         bottomLeft={
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
-              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={FeedbackDemoWidget} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
+                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} />,
             ]}
           />
         }
@@ -139,10 +147,12 @@ export class ViewsFrontstage extends FrontstageProvider {
           />
         }
         bottomRight={
-          <Zone defaultState={ZoneState.Open} allowsMerging={true} mergeWithZone={ZoneLocation.CenterRight}
+          <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
+              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
+                control={UnifiedSelectionPropertyGridWidgetControl}
+                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} />,
               <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
-              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
             ]}
           />
         }
@@ -245,24 +255,15 @@ class FrontstageToolWidget extends React.Component {
     );
   }
 
-  /** example that disables the button if active content is a SheetView */
-  private _measureStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
-    const returnState: BaseItemState = { ...currentState };
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-      returnState.isEnabled = true;
-    else
-      returnState.isEnabled = false;
-    return returnState;
-  }
-
   private _horizontalToolbar =
     <Toolbar
       expandsTo={Direction.Bottom}
       items={
         <>
           <ActionItemButton actionItem={CoreTools.selectElementCommand} />
-          <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
+          <ActionItemButton actionItem={AppTools.tool1} />
+          <ActionItemButton actionItem={AppTools.tool2} />
+          <ActionItemButton actionItem={AppTools.measurePoints} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconSpec="icon-placeholder"

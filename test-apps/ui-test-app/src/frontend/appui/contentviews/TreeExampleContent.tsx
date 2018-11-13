@@ -12,7 +12,7 @@ import {
   SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy, Tree,
 } from "@bentley/ui-components";
 
-class TreeExampleContentControl extends ContentControl {
+export class TreeExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
@@ -76,16 +76,16 @@ class TreeExampleContent extends React.Component<{}, TreeExampleState> {
 
   public render() {
     return (
-      <div style={{ width: "100%", height: "100%" }}>
-        <div style={{ width: "100%", height: "10%" }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
+        <div style={{ marginBottom: "4px" }}>
           <select onChange={this._onChangeSelectionMode}>
             <option value={SelectionMode.Single}> Single </option>
-            < option value={SelectionMode.SingleAllowDeselect} > SingleAllowDeselect </option>
-            < option value={SelectionMode.Multiple} > Multiple </option>
-            < option value={SelectionMode.Extended} > Extended </option>
+            <option value={SelectionMode.SingleAllowDeselect} > SingleAllowDeselect </option>
+            <option value={SelectionMode.Multiple} > Multiple </option>
+            <option value={SelectionMode.Extended} > Extended </option>
           </select>
         </div>
-        <div style={{ width: "100%", height: "90%", overflow: "scroll" }}>
+        <div style={{ flex: "1", height: "100%" }}>
           <Tree dataProvider={this.state.dataProvider} selectionMode={this.state.selectionMode} />
         </div>
       </div >

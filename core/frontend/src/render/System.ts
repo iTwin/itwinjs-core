@@ -69,12 +69,12 @@ export class RenderPlan {
     const view = vp.view;
     const style = view.displayStyle;
 
-    const hline = style.is3d() ? style.getHiddenLineParams() : undefined;
+    const hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
     const lights = undefined; // view.is3d() ? view.getLights() : undefined
     const clipVec = view.getViewClip();
     const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
     const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights, view.displayStyle.AnalysisStyle);
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights, view.displayStyle.settings.analysisStyle);
     if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
       rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
 
@@ -521,7 +521,7 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   /** @hidden */
-  public abstract readImage(rect: ViewRect, targetSize: Point2d): ImageBuffer | undefined;
+  public abstract readImage(rect: ViewRect, targetSize: Point2d, flipVertically: boolean): ImageBuffer | undefined;
 }
 
 /** Describes a texture loaded from an HTMLImageElement */

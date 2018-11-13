@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
 
-import { EntityProps, IModelError, IModelStatus, EntityMetaData } from "@bentley/imodeljs-common";
+import { IModelError, IModelStatus, EntityMetaData } from "@bentley/imodeljs-common";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { Schema, Schemas } from "./Schema";
@@ -18,28 +18,8 @@ export class ClassRegistry {
   /** @hidden */
   public static isNotFoundError(err: any) { return (err instanceof IModelError) && (err.errorNumber === IModelStatus.NotFound); }
 
-  private static makeClassNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "class " + className + "not found"); }
-
   /** @hidden */
   public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "metadata not found for " + className); }
-
-  /**
-   * Construct an instance of an Entity class, given its EntityProps.
-   * @throws IModelError if the class or class metadata is not available.
-   * @hidden
-   */
-  public static createInstance(props: EntityProps, iModel: IModelDb): Entity {
-    if (!props.classFullName)
-      throw new IModelError(IModelStatus.BadArg, "props must have a classFullName member");
-
-    let entityClass = this._classMap.get(props.classFullName.toLowerCase());
-    if (!entityClass) {
-      entityClass = this.generateClass(props.classFullName, iModel);
-      if (!entityClass)
-        throw this.makeClassNotFoundError(props.classFullName);
-    }
-    return new entityClass(props, iModel);
-  }
 
   /** @hidden */
   public static register(entityClass: typeof Entity) { this._classMap.set(this.getKey(entityClass.schema.name, entityClass.name), entityClass); }
@@ -127,27 +107,28 @@ export class ClassRegistry {
   }
 
   /**
+   * Find a registered class by classFullName (must be all lowercase, caller should ensure that)
+   * @param classFullName class to find
+   * @param iModel The IModel that contains the class definitions
+   */
+  public static findRegisteredClass(classFullName: string): typeof Entity | undefined { return this._classMap.get(classFullName); }
+
+  /**
    * Get the Entity class for the specified Entity.
    * @param fullName The name of the Entity
    * @param iModel The IModel that contains the class definitions
-   * @returns A promise that resolves to an object containing a result property set to the Entity.
-   * @throws [[IModelError]] if the class is not found.
+   * @returns The Entity class
    */
   public static getClass(fullName: string, iModel: IModelDb): typeof Entity {
     const key = fullName.toLowerCase();
-    if (!this._classMap.has(key))
-      return this.generateClass(fullName, iModel);
-
-    const ctor = this._classMap.get(key);
-    if (!ctor)
-      throw this.makeClassNotFoundError(fullName);
-
-    return ctor;
+    const ctor = this.findRegisteredClass(key);
+    return ctor ? ctor : this.generateClass(key, iModel);
   }
 }
 
 /**
- * A cache that records mappings between class names and class metadata
+ * A cache that records the mapping between class names and class metadata
+ * @hidden
  */
 export class MetaDataRegistry {
   private _registry: Map<string, EntityMetaData> = new Map<string, EntityMetaData>();

@@ -25,6 +25,7 @@ export * from "./Platform";
 export * from "./LinkTableRelationship";
 export * from "./LineStyle";
 export * from "./Model";
+export * from "./NavigationRelationship";
 export * from "./Schema";
 export * from "./SqliteStatement";
 export * from "./ViewDefinition";

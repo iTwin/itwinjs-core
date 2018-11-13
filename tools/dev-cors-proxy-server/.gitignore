@@ -1,8 +1,0 @@
-*.swp
-*.tmp
-*.log
-
-coverage/
-node_modules/
-
-/.npmrc

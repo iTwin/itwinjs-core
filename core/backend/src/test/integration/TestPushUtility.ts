@@ -7,7 +7,7 @@ import { Id64String, ActivityLoggingContext, GuidString } from "@bentley/bentley
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams, BriefcaseManager } from "../../backend";
+import { IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, ModelSelector, PhysicalModel, SpatialCategory } from "../../backend";
 import * as path from "path";
 import * as fs from "fs";
 import { IModelWriter } from "./IModelWriter";
@@ -66,17 +66,18 @@ export class TestPushUtility {
     this._iModelDb = IModelDb.createStandalone(pathname, { rootSubject: { name: this.iModelName! } });
 
     const definitionModelId: Id64String = IModel.dictionaryId;
-    this._physicalModelId = IModelWriter.insertPhysicalModel(this._iModelDb, "TestModel");
+    this._physicalModelId = PhysicalModel.insert(this._iModelDb, IModel.rootSubjectId, "TestModel");
     this._codeSpecId = IModelWriter.insertCodeSpec(this._iModelDb, "TestCodeSpec", CodeScopeSpec.Type.Model);
-    this._categoryId = IModelWriter.insertSpatialCategory(this._iModelDb, definitionModelId, "TestCategory", new ColorDef("blanchedAlmond"));
+    this._categoryId = SpatialCategory.insert(this._iModelDb, definitionModelId, "TestCategory", { color: new ColorDef("blanchedAlmond") });
 
     // Insert a ViewDefinition for the PhysicalModel
-    const modelSelectorId: Id64String = IModelWriter.insertModelSelector(this._iModelDb, definitionModelId, [this._physicalModelId.toString()]);
-    const categorySelectorId: Id64String = IModelWriter.insertCategorySelector(this._iModelDb, definitionModelId, [this._categoryId.toString()]);
-    const displayStyleId: Id64String = IModelWriter.insertDisplayStyle3d(this._iModelDb, definitionModelId);
+    const viewName = "Physical View";
+    const modelSelectorId: Id64String = ModelSelector.insert(this._iModelDb, definitionModelId, viewName, [this._physicalModelId]);
+    const categorySelectorId: Id64String = CategorySelector.insert(this._iModelDb, definitionModelId, viewName, [this._categoryId]);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this._iModelDb, definitionModelId, viewName);
     const physicalViewOrigin = new Point3d(0, 0, 0);
     const physicalViewExtents = new Point3d(50, 50, 50);
-    IModelWriter.insertOrthographicViewDefinition(this._iModelDb, definitionModelId, "Physical View", modelSelectorId, categorySelectorId, displayStyleId, physicalViewOrigin, physicalViewExtents);
+    IModelWriter.insertOrthographicViewDefinition(this._iModelDb, definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, physicalViewOrigin, physicalViewExtents);
 
     this._iModelDb.updateProjectExtents(new AxisAlignedBox3d(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000)));
 

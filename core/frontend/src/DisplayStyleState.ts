@@ -4,81 +4,100 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 import {
-  Light,
-  LightType,
   ViewFlags,
-  HiddenLine,
-  ColorDefProps,
   ColorDef,
-  ColorByName,
   DisplayStyleProps,
   RenderTexture,
   RenderMaterial,
-  Gradient,
   SubCategoryOverride,
-  AnalysisStyle,
+  SkyBoxProps,
+  SkyBoxImageType,
+  SkyCubeProps,
+  EnvironmentProps,
+  GroundPlane,
+  DisplayStyleSettings,
+  DisplayStyle3dSettings,
+  BackgroundMapProps,
+  ContextModelProps,
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Vector3d } from "@bentley/geometry-core";
 import { RenderSystem, TextureImage } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
+import { TileTreeModelState } from "./ModelState";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
+import { TileTree, TileTreeState } from "./tile/TileTree";
+import { RealityModelTileTree } from "./tile/RealityModelTileTree";
 
+class ContextModelState implements TileTreeModelState {
+  protected _tilesetUrl: string;
+  protected _name: string;
+  protected _tileTreeState: TileTreeState;
+  constructor(props: ContextModelProps, iModel: IModelConnection) {
+    this._name = props.name ? props.name : "";
+    this._tilesetUrl = props.tilesetUrl;
+    this._tileTreeState = new TileTreeState(iModel, true, "");
+  }
+  public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
+  public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
+  public loadTileTree(_asClassifier?: boolean, _classifierExpansion?: number): TileTree.LoadStatus {
+    const tileTreeState = this._tileTreeState;
+    if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)
+      return tileTreeState.loadStatus;
+
+    tileTreeState.loadStatus = TileTree.LoadStatus.Loading;
+
+    RealityModelTileTree.loadRealityModelTileTree(this._tilesetUrl, undefined, tileTreeState);
+    return tileTreeState.loadStatus;
+  }
+}
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]]
  * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
  * the DisplayStyle directly will generally not result in immediately visible changes on the screen.
  * [[ViewState]] provides APIs which forward to the DisplayStyle API and also ensure the screen is updated promptly.
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
-  private readonly _viewFlags: ViewFlags;
-  private readonly _background: ColorDef;
-  private readonly _monochrome: ColorDef;
-  private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
-  private readonly _analysisStyle?: AnalysisStyle;
   private _backgroundMap: BackgroundMapState;
+  private _contextModels: ContextModelState[];
+
+  public abstract get settings(): DisplayStyleSettings;
 
   constructor(props: DisplayStyleProps, iModel: IModelConnection) {
     super(props, iModel);
-    this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
-    this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
-    this._analysisStyle = AnalysisStyle.fromJSON(this.styles.analysisStyle);
-    const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
-    const monoJson = this.styles[monoName];
-    this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
-    this._backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), iModel);
+    const styles = this.jsonProperties.styles;
+    const backgroundMap = undefined !== styles ? styles.backgroundMap : undefined;
+    const mapProps = undefined !== backgroundMap ? backgroundMap : {};
+    this._backgroundMap = new BackgroundMapState(mapProps, iModel);
+    this._contextModels = [];
 
-    // Read subcategory overrides.
-    // ###TODO: overrideSubCategory() and dropSubCategoryOverride() should be updating this element's JSON properties...
-    // NB: Not using this.getStyle() because it inserts the style as an object if not found, but this style is supposed to be an array...
-    const jsonProps = JsonUtils.asObject(props.jsonProperties);
-    const styles = undefined !== jsonProps ? JsonUtils.asObject(jsonProps.styles) : undefined;
-    const ovrsArray = undefined !== styles ? JsonUtils.asArray(styles.subCategoryOvr) : undefined;
-    if (undefined !== ovrsArray) {
-      for (const ovrJson of ovrsArray) {
-        const subCatId = Id64.fromJSON(ovrJson.subCategory);
-        if (Id64.isValid(subCatId)) {
-          const subCatOvr = SubCategoryOverride.fromJSON(ovrJson);
-          if (subCatOvr.anyOverridden)
-            this.overrideSubCategory(subCatId, subCatOvr);
-        }
-      }
-    }
+    /*  For testing...
+    styles.contextModels = [];
+    styles.contextModels.push({ tilesetUrl: "http://localhost:8080/ClarkIsland/74/TileRoot.json" })
+    */
+
+    if (styles && styles.contextModels)
+      for (const contextModel of styles.contextModels)
+        this._contextModels.push(new ContextModelState(contextModel, this.iModel));
   }
 
   /** @hidden */
-  public syncBackgroundMapState() {
-    this._backgroundMap = new BackgroundMapState(this.getStyle("backgroundMap"), this.iModel);
+  public setBackgroundMap(mapProps: BackgroundMapProps): void {
+    if (!this.backgroundMap.equalsProps(mapProps)) {
+      this._backgroundMap = new BackgroundMapState(mapProps, this.iModel);
+      this.settings.backgroundMap = mapProps;
+    }
   }
-
+  /** @hidden */
+  public forEachContextModel(func: (model: TileTreeModelState) => void): void {
+    for (const contextModel of this._contextModels) { func(contextModel); }
+  }
   public equalState(other: DisplayStyleState): boolean {
-    return JSON.stringify(this.styles) === JSON.stringify(other.styles);
+    return JSON.stringify(this.settings) === JSON.stringify(other.settings);
   }
 
   /** @hidden */
   public get backgroundMap() { return this._backgroundMap; }
-  public get AnalysisStyle() { return this._analysisStyle; }
 
   /** Get the name of this DisplayStyle */
   public get name(): string { return this.code.getValue(); }
@@ -87,40 +106,18 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[ViewState.viewFlags]] to modify the ViewFlags to ensure
    * the changes are promptly visible on the screen.
    */
-  public get viewFlags(): ViewFlags { return this._viewFlags; }
-  public set viewFlags(flags: ViewFlags) {
-    flags.clone(this._viewFlags);
-    this.setStyle("viewflags", flags);
-  }
-
-  /** @hidden */
-  public get styles(): any {
-    const p = this.jsonProperties as any;
-    if (undefined === p.styles)
-      p.styles = new Object();
-
-    return p.styles;
-  }
-
-  /** @hidden */
-  public getStyle(name: string): any {
-    const style: object = this.styles[name];
-    return style ? style : {};
-  }
-  /** @hidden */
-  public setStyle(name: string, value: any): void { this.styles[name] = value; }
-  /** @hidden */
-  public removeStyle(name: string) { delete this.styles[name]; }
+  public get viewFlags(): ViewFlags { return this.settings.viewFlags; }
+  public set viewFlags(flags: ViewFlags) { this.settings.viewFlags = flags; }
 
   /** The background color for this DisplayStyle */
-  public get backgroundColor(): ColorDef { return this._background; }
-  public set backgroundColor(val: ColorDef) { this._background.setFrom(val); this.setStyle("backgroundColor", val); }
+  public get backgroundColor(): ColorDef { return this.settings.backgroundColor; }
+  public set backgroundColor(val: ColorDef) { this.settings.backgroundColor = val; }
 
   /** The color used to draw geometry in monochrome mode.
    * @see [[ViewFlags.monochrome]] for enabling monochrome mode.
    */
-  public get monochromeColor(): ColorDef { return this._monochrome; }
-  public set monochromeColor(val: ColorDef) { this._monochrome.setFrom(val); this.setStyle("monochromeColor", val); }
+  public get monochromeColor(): ColorDef { return this.settings.monochromeColor; }
+  public set monochromeColor(val: ColorDef) { this.settings.monochromeColor = val; }
 
   /** @hidden */
   public get backgroundMapPlane(): Plane3dByOriginAndUnitNormal | undefined { return this.viewFlags.backgroundMap ? this.backgroundMap.getPlane() : undefined; }
@@ -134,9 +131,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * the changes are promptly visible on the screen.
    * @see [[dropSubCategoryOverride]]
    */
-  public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) {
-    this._subCategoryOverrides.set(id.toString(), ovr);
-  }
+  public overrideSubCategory(id: Id64String, ovr: SubCategoryOverride) { this.settings.overrideSubCategory(id, ovr); }
 
   /** Remove any [[SubCategoryOverride]] applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
@@ -144,151 +139,29 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
    * the changes are promptly visible on the screen.
    * @see [[overrideSubCategory]]
    */
-  public dropSubCategoryOverride(id: Id64String) {
-    this._subCategoryOverrides.delete(id.toString());
-  }
+  public dropSubCategoryOverride(id: Id64String) { this.settings.dropSubCategoryOverride(id); }
 
   /** Returns true if an [[SubCategoryOverride]s are defined by this style. */
-  public get hasSubCategoryOverride() { return this._subCategoryOverrides.entries.length > 0; }
+  public get hasSubCategoryOverride() { return this.settings.hasSubCategoryOverride; }
 
   /** Obtain the overrides applied to a [[SubCategoryAppearance]] by this style.
    * @param id The ID of the [[SubCategory]].
    * @returns The corresponding SubCategoryOverride, or undefined if the SubCategory's appearance is not overridden.
    * @see [[overrideSubCategory]]
    */
-  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined {
-    return this._subCategoryOverrides.get(id.toString());
-  }
+  public getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined { return this.settings.getSubCategoryOverride(id); }
 }
 
 /** A DisplayStyle for 2d views */
 export class DisplayStyle2dState extends DisplayStyleState {
-  constructor(props: DisplayStyleProps, iModel: IModelConnection) { super(props, iModel); }
-}
+  private readonly _settings: DisplayStyleSettings;
 
-/** JSON representation of a [[GroundPlane]]. */
-export interface GroundPlaneProps {
-  /** Whether the ground plane should be displayed. Defaults to false. */
-  display?: boolean;
-  /** The Z height at which to draw the ground plane. */
-  elevation?: number;
-  /** The color in which to draw the ground plane when viewed from above. */
-  aboveColor?: ColorDefProps;
-  /** The color in which to draw the ground plane when viewed from below. */
-  belowColor?: ColorDefProps;
-}
+  public get settings(): DisplayStyleSettings { return this._settings; }
 
-/** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents, used to represent the ground as a reference point within a spatial view. */
-export class GroundPlane implements GroundPlaneProps {
-  /** Whether the ground plane should be displayed. */
-  public display: boolean = false;
-  /** The Z height at which to draw the plane. */
-  public elevation: number = 0.0;
-  /** The color in which to draw the ground plane when viewed from above. */
-  public aboveColor: ColorDef;
-  /** The color in which to draw the ground plane when viewed from below. */
-  public belowColor: ColorDef;
-  private _aboveSymb?: Gradient.Symb;
-  private _belowSymb?: Gradient.Symb;
-
-  public constructor(ground?: GroundPlaneProps) {
-    ground = ground ? ground : {};
-    this.display = JsonUtils.asBool(ground.display, false);
-    this.elevation = JsonUtils.asDouble(ground.elevation, -.01);
-    this.aboveColor = (undefined !== ground.aboveColor) ? ColorDef.fromJSON(ground.aboveColor) : new ColorDef(ColorByName.darkGreen);
-    this.belowColor = (undefined !== ground.belowColor) ? ColorDef.fromJSON(ground.belowColor) : new ColorDef(ColorByName.darkBrown);
+  constructor(props: DisplayStyleProps, iModel: IModelConnection) {
+    super(props, iModel);
+    this._settings = new DisplayStyleSettings(this.jsonProperties);
   }
-
-  /**
-   * Returns and locally stores gradient symbology for the ground plane texture depending on whether we are looking from above or below.
-   * Will store the ground colors used in the optional ColorDef array provided.
-   * @hidden
-   */
-  public getGroundPlaneGradient(aboveGround: boolean): Gradient.Symb {
-    let gradient = aboveGround ? this._aboveSymb : this._belowSymb;
-    if (undefined !== gradient)
-      return gradient;
-
-    const values = [0, .25, .5];   // gradient goes from edge of rectangle (0.0) to center (1.0)...
-    const color = aboveGround ? this.aboveColor : this.belowColor;
-    const alpha = aboveGround ? 0x80 : 0x85;
-    const groundColors = [color.clone(), color.clone(), color.clone()];
-    groundColors[0].setTransparency(0xff);
-    groundColors[1].setTransparency(alpha);
-    groundColors[2].setTransparency(alpha);
-
-    // Get the possibly cached gradient from the system, specific to whether or not we want ground from above or below.
-    gradient = new Gradient.Symb();
-    gradient.mode = Gradient.Mode.Spherical;
-    gradient.keys = [{ color: groundColors[0], value: values[0] }, { color: groundColors[1], value: values[1] }, { color: groundColors[2], value: values[2] }];
-
-    // Store the gradient for possible future use
-    if (aboveGround)
-      this._aboveSymb = gradient;
-    else
-      this._belowSymb = gradient;
-
-    return gradient;
-  }
-}
-
-/** Enumerates the supported types of [[SkyBox]] images. */
-export const enum SkyBoxImageType {
-  None,
-  /** A single image mapped to the surface of a sphere. @see [[SkySphere]] */
-  Spherical,
-  /** 6 images mapped to the faces of a cube. @see [[SkyCube]] */
-  Cube,
-  /** @hidden not yet supported */
-  Cylindrical,
-}
-
-/** JSON representation of a set of images used by a [[SkyCube]]. Each property specifies the element ID of a texture associated with one face of the cube. */
-export interface SkyCubeProps {
-  front?: Id64String;
-  back?: Id64String;
-  top?: Id64String;
-  bottom?: Id64String;
-  right?: Id64String;
-  left?: Id64String;
-}
-
-/** JSON representation of an image or images used by a [[SkySphere]] or [[SkyCube]]. */
-export interface SkyBoxImageProps {
-  /** The type of skybox image. */
-  type?: SkyBoxImageType;
-  /** For [[SkyBoxImageType.Spherical]], the element ID of the texture to be drawn as the "sky". */
-  texture?: Id64String;
-  /** For [[SkyBoxImageType.Cube]], the IDs of the texture elements drawn on each face of the cube. */
-  textures?: SkyCubeProps;
-}
-
-/** JSON representation of a [[SkyBox]]. */
-export interface SkyBoxProps {
-  /** Whether or not the skybox should be displayed. Defaults to false. */
-  display?: boolean;
-  /** @hidden ###TODO Figure out how this is used... */
-  twoColor?: boolean;
-  /** @hidden ###TODO Figure out how this is used... */
-  groundExponent?: number;
-  /** @hidden ###TODO Figure out how this is used... */
-  skyExponent?: number;
-  /** For a [[SkyGradient]], the color of the ground. */
-  groundColor?: ColorDefProps;
-  /** @hidden ###TODO Figure out how this is used... */
-  zenithColor?: ColorDefProps;
-  /** @hidden ###TODO Figure out how this is used... */
-  nadirColor?: ColorDefProps;
-  /** For a [[SkyGradient]], the color of the sky. */
-  skyColor?: ColorDefProps;
-  /** For a [[SkySphere]] or [[SkyCube]], the skybox image(s). */
-  image?: SkyBoxImageProps;
-}
-
-/** JSON representation of the environment setup of a [[DisplayStyle3dState]]. */
-export interface EnvironmentProps {
-  ground?: GroundPlaneProps;
-  sky?: SkyBoxProps;
 }
 
 /** The SkyBox is part of an [[Environment]] drawn in the background of spatial views to provide context.
@@ -553,7 +426,7 @@ export class Environment implements EnvironmentProps {
   public toJSON(): EnvironmentProps {
     return {
       sky: this.sky.toJSON(),
-      ground: this.ground, // ###TODO GroundPlane.toJSON missing...but lots of JSON inconsistencies associated with DisplayStyle...fix them all up later?
+      ground: this.ground.toJSON(),
     };
   }
 }
@@ -565,66 +438,26 @@ export class DisplayStyle3dState extends DisplayStyleState {
   private _skyBoxParams?: SkyBox.CreateParams;
   private _skyBoxParamsLoaded?: boolean;
   private _environment?: Environment;
+  private _settings: DisplayStyle3dSettings;
 
-  public constructor(props: DisplayStyleProps, iModel: IModelConnection) { super(props, iModel); }
+  public get settings(): DisplayStyle3dSettings { return this._settings; }
 
-  public getHiddenLineParams(): HiddenLine.Settings { return HiddenLine.Settings.fromJSON(this.getStyle("hline")); }
-  public setHiddenLineParams(params: HiddenLine.Settings) { this.setStyle("hline", params.toJSON()); }
-
-  /** change one of the scene light specifications (Ambient, Flash, or Portrait) for this display style
-   * @hidden
-   */
-  public setSceneLight(light: Light) {
-    if (!light.isValid)
-      return;
-
-    const sceneLights = this.getStyle("sceneLights");
-    switch (light.lightType) {
-      case LightType.Ambient:
-        sceneLights.ambient = light;
-        break;
-
-      case LightType.Flash:
-        sceneLights.flash = light;
-        break;
-
-      case LightType.Portrait:
-        sceneLights.portrait = light;
-        break;
-    }
-    this.setStyle("sceneLights", sceneLights);
-  }
-
-  /** change the light specification and direction of the solar light for this display style
-   * @hidden
-   */
-  public setSolarLight(light: Light, direction: Vector3d) {
-    const sceneLights = this.getStyle("sceneLights");
-    if (light.lightType !== LightType.Solar || !light.isValid) {
-      delete sceneLights.sunDir;
-    } else {
-      sceneLights.sun = light;
-      sceneLights.sunDir = direction;
-    }
-    this.setStyle("sceneLights", sceneLights);
+  public constructor(props: DisplayStyleProps, iModel: IModelConnection) {
+    super(props, iModel);
+    this._settings = new DisplayStyle3dSettings(this.jsonProperties);
   }
 
   /** The [[SkyBox]] and [[GroundPlane]] settings for this style. */
   public get environment(): Environment {
     if (undefined === this._environment)
-      this._environment = new Environment(this.getStyle("environment"));
+      this._environment = new Environment(this.settings.environment);
 
     return this._environment;
   }
   public set environment(env: Environment) {
-    this.setStyle("environment", env.toJSON());
+    this.settings.environment = env.toJSON();
     this._environment = undefined;
   }
-
-  /** @hidden */
-  public setSceneBrightness(fstop: number): void { fstop = Math.max(-3.0, Math.min(fstop, 3.0)); this.getStyle("sceneLights").fstop = fstop; }
-  /** @hidden */
-  public getSceneBrightness(): number { return JsonUtils.asDouble(this.getStyle("sceneLights").fstop, 0.0); }
 
   /** Attempts to create textures for the sky of the environment, and load it into the sky. Returns true on success, and false otherwise.
    * @hidden

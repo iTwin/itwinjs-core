@@ -21,7 +21,7 @@ export class DefaultRequestOptionsProvider {
   constructor() {
     this._defaultOptions = {
       method: "GET",
-      useCorsProxy: true,
+      useCorsProxy: false,
     };
   }
 

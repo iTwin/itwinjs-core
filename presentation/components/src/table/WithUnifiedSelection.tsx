@@ -64,7 +64,7 @@ export default function withUnifiedSelection<P extends TableProps>(TableComponen
     public get rulesetId() { return this.props.dataProvider.rulesetId; }
 
     // tslint:disable-next-line:naming-convention
-    private get baseProps(): Subtract<TableProps, Props> { return this.props; }
+    private get baseProps(): TableProps { return this.props; }
 
     public componentDidMount() {
       const name = `Table_${counter++}`;

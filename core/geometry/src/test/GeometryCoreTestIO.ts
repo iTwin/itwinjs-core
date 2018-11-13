@@ -7,6 +7,8 @@ import { prettyPrint } from "./testFunctions";
 import { Geometry } from "../Geometry";
 import * as fs from "fs";
 import { IModelJson } from "../serialization/IModelJsonSchema";
+import { Arc3d } from "../curve/Arc3d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 // Methods (called from other files in the test suite) for doing I/O of tests files.
 export class GeometryCoreTestIO {
   public static outputRootDirectory = "./src/test/output";
@@ -25,6 +27,27 @@ export class GeometryCoreTestIO {
     if (newGeometry) {
       if (Geometry.hypotenuseSquaredXYZ(dx, dy, dz) !== 0)
         newGeometry.tryTranslateInPlace(dx, dy, dz);
+      collection.push(newGeometry);
+    }
+  }
+  /**
+   * Create a circle (or many circles) given center and radius.  Save the arcs in collection, shifted by [dx,dy,dz]
+   * @param collection growing array of geometry
+   * @param center single or multiple center point data
+   * @param radius radius of circles
+   * @param dx x shift
+   * @param dy y shift
+   * @param dz z shift
+   */
+  public static createAndCaptureXYCircle(collection: GeometryQuery[], center: Point3d | Point3d[], radius: number, dx: number = 0, dy: number = 0, dz: number = 0) {
+    if (Array.isArray(center)) {
+      for (const c of center)
+        this.createAndCaptureXYCircle(collection, c, radius, dx, dy, dz);
+      return;
+    }
+    if (!Geometry.isSameCoordinate(0, radius)) {
+      const newGeometry = Arc3d.createXY(center, radius);
+      newGeometry.tryTranslateInPlace(dx, dy, dz);
       collection.push(newGeometry);
     }
   }

@@ -1,9 +1,9 @@
 --require ../scripts/copy-test-setup.js
 --require raf/polyfill
---require ts-node/register
+--require ../../common/scripts/mocha-reporter-tweaks.js
 --require source-map-support/register
 --require jsdom-global/register
 --require ignore-styles
 --check-leaks
 --timeout 60000
---file lib/setup-tests.js
+--file lib/test/setup.js

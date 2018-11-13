@@ -13,6 +13,11 @@ import {
   ViewportContentControl,
 } from "@bentley/ui-framework";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
+import { withUnifiedSelection } from "@bentley/presentation-components/lib/viewport";
+
+// create a HOC viewport component that supports unified selection
+// tslint:disable-next-line:variable-name
+const UnifiedSelectionViewport = withUnifiedSelection(ViewportComponent);
 
 /** iModel Viewport Control
  */
@@ -25,7 +30,8 @@ export class IModelViewportControl extends ViewportContentControl {
     this._options = options;
 
     if (options.viewId) {
-      this.reactElement = <ViewportComponent viewportRef={(v: ScreenViewport) => { this.viewport = v; }} viewDefinitionId={options.viewId} imodel={options.iModelConnection} />;
+      this.reactElement = <UnifiedSelectionViewport viewportRef={(v: ScreenViewport) => { this.viewport = v; }}
+        viewDefinitionId={options.viewId} imodel={options.iModelConnection} rulesetId={options.rulesetId} />;
     } else {
       this.reactElement = <MockIModelViewport bgColor={options.bgColor} />;
     }

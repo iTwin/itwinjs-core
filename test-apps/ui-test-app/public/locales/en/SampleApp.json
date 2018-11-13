@@ -13,6 +13,7 @@
     "TwoAlongside": "Side by Side",
     "TwoStacked": "Stacked",
     "ThreeRightStacked": "Three Right Stacked",
+    "ThreeLeftStacked": "Three Left Stacked",
     "FourQuadrants": "Four Quadrants",
     "TwoHalvesHorizontal": "Two Halves Horizontal",
     "TwoHalvesVertical": "Two Halves Vertical",
@@ -97,25 +98,35 @@
     "openRadial": "Open Radial Menu",
     "outputMessage": "Call outputMessage"
   },
-  "MeasureByPoints": {
-    "Prompt": {
-      "FirstPoint": "Enter first point",
-      "NextPoint": "Select next point"
-    }
-  },
   "tools": {
-    "select": "Select",
+    "Tool1": {
+      "keyin": "Tool1",
+      "description": "Test1 tool",
+      "flyover": "Tool1",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit"
+      }
+    },
+    "Tool2": {
+      "keyin": "Tool2",
+      "description": "Test2 tool",
+      "flyover": "Tool2",
+      "Prompts": {
+        "GetPoint": "Enter point/Reset to Exit"
+      }
+    },
     "Measure": {
-      "ByPoints": {
-        "keyin": "Measure ByPoints",
+      "Points": {
+        "keyin": "Measure Points",
         "description": "Measure distance between points",
         "flyover": "Measure ByPoints",
         "Prompts": {
           "FirstPoint": "Enter first point",
-          "NextPoint": "Select next point"
+          "NextPoint": "Select next point / Reset"
         }
       }
     },
+    "select": "Select",
     "fitView": "Fit View",
     "windowArea": "Window Area",
     "rotate": "Rotate",
@@ -132,7 +143,10 @@
     "StatusBar": "Status Bar",
     "VerticalPropertyGrid": "Vertical PropertyGrid",
     "HorizontalPropertyGrid": "Horizontal PropertyGrid",
+    "UnifiedSelectPropertyGrid": "Unified Selection PropertyGrid",
+    "UnifiedSelectionTable": "Unified Selection Table",
     "TableDemo": "Table Demo",
-    "TreeDemo": "Tree Demo"
+    "TreeDemo": "Tree Demo",
+    "FeedbackDemo": "Feedback Demo"
   }
 }

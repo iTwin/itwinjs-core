@@ -62,9 +62,9 @@ export interface TableProps {
   /** Specifies the selection mode. */
   selectionMode?: SelectionMode;
   /** Callback for when properties are being edited */
-  onPropertyEditing?: (args: CellEditorState) => void;
+  onPropertyEditing?: (args: TableCellEditorState) => void;
   /** Callback for when properties are updated */
-  onPropertyUpdated?: (args: PropertyUpdatedArgs) => Promise<boolean>;
+  onPropertyUpdated?: (propertyArgs: PropertyUpdatedArgs, cellArgs: TableCellUpdatedArgs) => Promise<boolean>;
   /** @hidden */
   renderRow?: (item: RowItem, props: TableRowProps) => React.ReactNode;
   /** Indicates whether the Table columns are reorderable */
@@ -101,11 +101,18 @@ interface RowsLoadResult {
 }
 
 /** Cell/Property Editor state */
-export interface CellEditorState {
+export interface TableCellEditorState {
   active: boolean;
   rowIndex?: number;
   colIndex?: number;
   cellKey?: string;
+}
+
+/** Cell/Property Updated Args */
+export interface TableCellUpdatedArgs {
+  rowIndex: number;
+  colIndex: number;
+  cellKey: string;
 }
 
 /** State for the [[Table]] component */
@@ -113,7 +120,7 @@ export interface TableState {
   columns: ReactDataGridColumn[];
   rows: RowProps[];
   rowsCount: number;
-  cellEditorState: CellEditorState;
+  cellEditorState: TableCellEditorState;
 }
 
 /** ReactDataGrid.Column with additional properties */
@@ -319,7 +326,7 @@ export class Table extends React.Component<TableProps, TableState> {
       this._cellItemSelectionHandlers = undefined;
     }
 
-    this._rowGetterAsync.cache.clear();
+    this._rowGetterAsync.cache.clear!();
     this.setState((prev: TableState) => ({
       ...prev,
       rowsCount,
@@ -765,9 +772,9 @@ export class Table extends React.Component<TableProps, TableState> {
           {cell}
         </div>;
       } else {
-        if (editorCell) {
+        if (editorCell && cellProps.item.record)
           cells[column.key] = <EditorContainer propertyRecord={cellProps.item.record} title={cellProps.displayValue} onCommit={this._onCellCommit} onCommitCancel={this._deactivateCellEditor} />;
-        } else
+        else
           cells[column.key] = <div className={"cell"} title={cellProps.displayValue}>{cell}</div>;
       }
     }
@@ -868,31 +875,17 @@ export class Table extends React.Component<TableProps, TableState> {
     return true;
   }
 
-  private getRowItem(rowIndex: number): RowItem | undefined {
-    const row = this.state.rows[rowIndex];
-    return row ? row.item : undefined;
-  }
-
-  private updateRowItem(rowIndex: number, rowItem: RowItem): void {
-    const row = this.state.rows[rowIndex];
-    if (row)
-      row.item = rowItem;
-  }
-
   private _onCellCommit = async (args: PropertyUpdatedArgs) => {
     if (this.props.onPropertyUpdated) {
-      const allowed = await this.props.onPropertyUpdated(args);
+      const cellUpdatedArgs: TableCellUpdatedArgs = {
+        rowIndex: this.state.cellEditorState.rowIndex!,
+        colIndex: this.state.cellEditorState.colIndex!,
+        cellKey: this.state.cellEditorState.cellKey!,
+      };
+      const allowed = await this.props.onPropertyUpdated(args, cellUpdatedArgs);
       if (allowed && this.state.cellEditorState.rowIndex !== undefined && this.state.cellEditorState.rowIndex >= 0) {
-        const rowItem = this.getRowItem(this.state.cellEditorState.rowIndex);
-        if (rowItem) {
-          const cellItem = rowItem.cells.find((cell) => cell.key === this.state.cellEditorState.cellKey);
-          if (cellItem) {
-            cellItem.record = args.propertyRecord;
-            this.updateRowItem(this.state.cellEditorState.rowIndex, rowItem);
-            this._deactivateCellEditor();
-            await this.updateRows();
-          }
-        }
+        this._deactivateCellEditor();
+        await this.updateRows();
       } else {
         this._deactivateCellEditor();
       }
