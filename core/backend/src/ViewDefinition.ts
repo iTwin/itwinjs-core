@@ -5,7 +5,7 @@
 /** @module ViewDefinitions */
 
 import { Id64String, Id64, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
-import { Vector3d, Point3d, Point2d, YawPitchRollAngles, Angle } from "@bentley/geometry-core";
+import { Angle, Matrix3d, Point2d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   AnalysisStyleProps,
   BisCodeSpec,
@@ -360,6 +360,40 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
  */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
+  /**
+   * Insert an OrthographicViewDefinition
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new OrthographicViewDefinition into this DefinitionModel
+   * @param name The name/CodeValue of the view
+   * @param modelSelectorId The [[ModelSelector]] that this view should use
+   * @param categorySelectorId The [[CategorySelector]] that this view should use
+   * @param displayStyleId The [[DisplayStyle3d]] that this view should use
+   * @param range Defines the view origin and extents
+   * @param standardView Optionally defines the view's rotation
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
+    const rotation = Matrix3d.createStandardWorldToView(standardView);
+    const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
+    const rotatedRange = rotationTransform.multiplyRange(range);
+    const viewOrigin = rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z);
+    const viewExtents = rotatedRange.diagonal();
+    const viewDefinitionProps: SpatialViewDefinitionProps = {
+      classFullName: OrthographicViewDefinition.classFullName,
+      model: IModelDb.dictionaryId,
+      code: ViewDefinition.createCode(iModelDb, definitionModelId, name),
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      origin: viewOrigin,
+      extents: viewExtents,
+      angles,
+      cameraOn: false,
+      camera: { eye: [0, 0, 0], lens: 0, focusDist: 0 }, // not used when cameraOn === false
+    };
+    return iModelDb.elements.insertElement(viewDefinitionProps);
+  }
 }
 
 /** Defines a view of a single 2d model. Each 2d model has its own coordinate system, so only one may appear per view. */

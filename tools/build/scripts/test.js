@@ -11,6 +11,7 @@ const isCI = (process.env.TF_BUILD);
 
 const paths = require("./config/paths");
 const path = require("path");
+const fs = require("fs");
 const {
   spawn,
   handleInterrupts
@@ -28,8 +29,12 @@ const packageRoot = (argv.packageRoot !== undefined) ? argv.packageRoot : proces
 const testDir = (argv.testDir !== undefined) ? argv.testDir : paths.appLibTests;
 const timeout = (argv.timeout !== undefined) ? argv.timeout : "999999";
 
+const inMonoRepo = fs.existsSync(path.join(__dirname, "../../../common/scripts/mocha-reporter-tweaks.js"));
+const rushTweaks = (inMonoRepo) ? ["--require", require.resolve("../../../common/scripts/mocha-reporter-tweaks")] : [];
+
 const options = [
   "--check-leaks",
+  ...rushTweaks,
   "--require", "source-map-support/register",
   "--watch-extensions", "ts",
   "-u", "tdd",

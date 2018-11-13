@@ -112,7 +112,7 @@ Examples of arc sweep
 | (0 to 135) | 135 | ![>](./figs/CurvePrimitives/E0to135.png) |
 | (270 to 495) | 225 | ![>](./figs/CurvePrimitives/E270to495.png) |
 | (90 to 270) | 180 | ![>](./figs/CurvePrimitives/E90to270.png) |
-| (90 to 405) | 315 | ![>](./figs/CurvePrimitives/E90to405.png) |Ex
+| (90 to 405) | 315 | ![>](./figs/CurvePrimitives/E90to405.png) |
 
 Examples with json fragments
 ![>](./figs/CurvePrimitives/ArcJsonFragments.png)
@@ -234,5 +234,58 @@ to extract knots.  The caller can indicate if they prefer overlcamped knots by p
 * When knots are written in `iModelJson ` objects, they are written with overclamp.
 
 
+## Example: Order 2 (linear) bspline curve
+
+* An order 2 bspline curve has degree 1, i.e. is straight lines
+* The circles in the figure for order 2 bspline are both control points and span breaks.
+  * This is the only order for which the span breaks occur at the control points.
+* The direction (first derivative) changes at control point
+* Hence there are sharp corners exactly at the control points.
+
+![>](./figs/BCurves/order2.png)
+
+## Example: Order 3 (quadratic) bspline curve
+
+* An order 3 bspline curve has degree 2, i.e. is piecewise quadratic
+* The curve does _not_ pass through the control points (dark)
+* There are (for uniform interior knots) span breaks (circles) at midpoints of interior edges.
+* Span changes (circles) are exactly at the midpoints of polygon edges.
+* Direction (slope, first derivative) is continuous at each span change (circles)
+* The concavity (second derivative) changes abruptly at each span change (circles)
+  * This concavity change is not always visually obvious.
+  * These curves are not as smooth as your eye thinks.
+* There are no concavity changes within any single span.
+* Clamping (2 identical knots at start, 2 identical knots at end) makes the curve pass throught the end control points and point at neighbors.
+
+
+![>](./figs/BCurves/order3.png)
+
+
+## Example: Order 4 (cubic) bspline curve
+
+* An order 4 bspline curve has degree 3, i.e. is piecewise cubic
+* The curve does _not_ pass through the control points (dark).
+* The curve does _not_ pass through particular points of the polygon edges.
+* Span changes (circles) are generally "off the polygon"
+* Direction and concavity are both continuous at span changes.
+* There can be one concavity change within a span.
+* Clamping (3 identical knots at start, 3 identical knots at end) makes the curve pass throught the end control points and point at neighbors.
+
+
+![>](./figs/BCurves/order4.png)
+
+
+## Example: Order 5 (quartic) bspline curve
+
+* An order 5 bspline curve has degree 4, i.e. is piecewise quartic
+* The curve does _not_ pass through the control points (dark).
+* The curve does _not_ pass through particular points of the polygon edges.
+* Span changes (circles) are generally "off the polygon"
+* Direction, concavity, and one more derivative are all continuous at span changes.
+* There can be two concavity change within a span.
+* Clamping (4 identical knots at start, 4 identical knots at end) makes the curve pass throught the end control points and point at neighbors.
+
+
+![>](./figs/BCurves/order5.png)
 
 

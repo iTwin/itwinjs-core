@@ -7,7 +7,17 @@
 $text-font-size: $bwc-font-size;
 $text-font-color: $bwc-text-color;
 
+@mixin components-property-record {
+  &:not(.components--selected) {
+    &.components--clickable:hover {
+      background-color: $bwc-blue-highlight;
+    }
+  }
+}
+
 .components-property-record--horizontal {
+  @include components-property-record;
+
   display: grid;
   margin-top: -1px;
 
@@ -28,6 +38,8 @@ $text-font-color: $bwc-text-color;
 }
 
 .components-property-record--vertical {
+  @include components-property-record;
+
   .components-property-record-label {
     border-top: 1px solid #ccc;
     font-weight: bold;

@@ -3,11 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { IModelDb } from "@bentley/imodeljs-backend";
+import { IModelDb, PhysicalModel } from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "./Utils";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { RobotWorld } from "../RobotWorldSchema";
 import { Point3d, Angle } from "@bentley/geometry-core";
+import { IModel } from "@bentley/imodeljs-common";
 import { Barrier } from "../BarrierElement";
 import { Id64String, OpenMode, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Robot } from "../RobotElement";
@@ -33,7 +34,7 @@ describe("RobotWorld", () => {
 
         assert.equal(RobotWorldEngine.countRobots(iModel), 0, "no Robots should be found in the empty iModel at first");
 
-        const modelId: Id64String = IModelTestUtils.createNewModel(iModel.elements.getRootSubject(), "RobotWorld", false);
+        const modelId: Id64String = PhysicalModel.insert(iModel, IModel.rootSubjectId, "RobotWorld");
 
         //  Initial placement: Robot1 is not touching any barrier (or other robot)
         //

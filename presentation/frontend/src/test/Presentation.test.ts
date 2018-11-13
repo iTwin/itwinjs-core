@@ -2,7 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect, spy } from "chai";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import "./_helpers/MockFrontendEnvironment";
 import { I18N } from "@bentley/imodeljs-i18n";
@@ -42,12 +43,12 @@ describe("Presentation", () => {
     });
 
     it("initializes PresentationManager with props", () => {
-      const constructorSpy = spy.on(PresentationManager, PresentationManager.create.name);
+      const constructorSpy = sinon.spy(PresentationManager, "create");
       const props = {
         activeLocale: "test-locale",
       };
       Presentation.initialize(props);
-      expect(constructorSpy).to.be.called.with(props);
+      expect(constructorSpy).to.be.calledWith(props);
     });
 
     it("initializes PresentationManager.i18n with IModelApp.i18", () => {
@@ -61,9 +62,9 @@ describe("Presentation", () => {
       const i18nMock = moq.Mock.ofType<I18N>();
       i18nMock.setup((x) => x.languageList()).returns(() => ["test-locale"]).verifiable();
       Presentation.i18n = i18nMock.object;
-      const constructorSpy = spy.on(PresentationManager, PresentationManager.create.name);
+      const constructorSpy = sinon.spy(PresentationManager, "create");
       Presentation.initialize();
-      expect(constructorSpy).to.be.called.with({
+      expect(constructorSpy).to.be.calledWith({
         activeLocale: "test-locale",
       });
       i18nMock.verifyAll();
@@ -73,9 +74,9 @@ describe("Presentation", () => {
       const i18nMock = moq.Mock.ofType<I18N>();
       i18nMock.setup((x) => x.languageList()).returns(() => ["test-locale"]).verifiable();
       Presentation.i18n = i18nMock.object;
-      const constructorSpy = spy.on(PresentationManager, PresentationManager.create.name);
+      const constructorSpy = sinon.spy(PresentationManager, "create");
       Presentation.initialize({});
-      expect(constructorSpy).to.be.called.with({
+      expect(constructorSpy).to.be.calledWith({
         activeLocale: "test-locale",
       });
       i18nMock.verifyAll();
@@ -85,9 +86,9 @@ describe("Presentation", () => {
       const i18nMock = moq.Mock.ofType<I18N>();
       i18nMock.setup((x) => x.languageList()).returns(() => []).verifiable();
       Presentation.i18n = i18nMock.object;
-      const constructorSpy = spy.on(PresentationManager, PresentationManager.create.name);
+      const constructorSpy = sinon.spy(PresentationManager, "create");
       Presentation.initialize({});
-      expect(constructorSpy).to.be.called.with({
+      expect(constructorSpy).to.be.calledWith({
         activeLocale: undefined,
       });
       i18nMock.verifyAll();

@@ -82,10 +82,12 @@
   }
 
   &:not(.is-hover-disabled) {
-    *:hover + * + .whole-row,
-    *:hover + .whole-row,
-    .whole-row:hover {
-      background: $bwc-blue-highlight;
+    &:not(.is-selected) {
+      *:hover + * + .whole-row,
+      *:hover + .whole-row,
+      .whole-row:hover {
+        background: $bwc-blue-highlight;
+      }
     }
   }
 

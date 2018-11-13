@@ -54,27 +54,32 @@ export class ModelState extends EntityState implements ModelProps {
   public useRangeForFit(): boolean { return true; }
 }
 
+export interface TileTreeModelState {
+  tileTree(): TileTree | undefined;
+  loadStatus(): TileTree.LoadStatus;
+  loadTileTree(asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
+}
 /** Represents the front-end state of a [GeometricModel]($backend).
  * The contents of a GeometricModelState can be rendered inside a [[Viewport]].
  */
-export abstract class GeometricModelState extends ModelState {
+export abstract class GeometricModelState extends ModelState implements TileTreeModelState {
   /** @hidden */
-  protected _tileTreeState: TileTreeState = new TileTreeState(this);
+  protected _tileTreeState: TileTreeState = new TileTreeState(this.iModel, !this.is2d, this.id);
   /** @hidden */
-  protected _classifierTileTreeState: TileTreeState = new TileTreeState(this);
+  protected _classifierTileTreeState: TileTreeState = new TileTreeState(this.iModel, !this.is2d, this.id);
 
   /** Returns true if this is a 3d model (a [[GeometricModel3dState]]). */
   public abstract get is3d(): boolean;
   /** Returns true if this is a 2d model (a [[GeometricModel2dState]]). */
   public get is2d(): boolean { return !this.is3d; }
   /** @hidden */
-  public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
+  public tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
   /** @hidden */
   public get classifierTileTree(): TileTree | undefined { return this._classifierTileTreeState.tileTree; }
   /** @hidden */
-  public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
+  public loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
   /** @hidden */
-  public set loadStatus(status: TileTree.LoadStatus) { this._tileTreeState.loadStatus = status; }
+  public setLoadStatus(status: TileTree.LoadStatus) { this._tileTreeState.loadStatus = status; }
   /** @hidden */
   public get isGeometricModel(): boolean { return true; }
   /** @hidden */
@@ -82,11 +87,11 @@ export abstract class GeometricModelState extends ModelState {
     if (undefined === this.tileTree)
       this.loadTileTree();
 
-    return this.tileTree;
+    return this.tileTree();
   }
 
   /** @hidden */
-  public loadTileTree(asClassifier: boolean = false, classifierExpansion?: number): TileTree.LoadStatus {
+  public loadTileTree(asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
     const tileTreeState = asClassifier ? this._classifierTileTreeState : this._tileTreeState;
     if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)
       return tileTreeState.loadStatus;
@@ -101,7 +106,7 @@ export abstract class GeometricModelState extends ModelState {
     return this.loadIModelTileTree(tileTreeState, asClassifier, classifierExpansion);
   }
 
-  private loadIModelTileTree(tileTreeState: TileTreeState, asClassifier: boolean, classifierExpansion?: number): TileTree.LoadStatus {
+  private loadIModelTileTree(tileTreeState: TileTreeState, asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus {
     const id = asClassifier ? ("C:" + classifierExpansion as string + "_" + this.id) : this.id;
 
     this.iModel.tiles.getTileTreeProps(id).then((result: TileTreeProps) => {

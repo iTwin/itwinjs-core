@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "",
+      "comment": "Add OrthographicViewDefinition.insert",
       "packageName": "@bentley/imodeljs-backend",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-backend",
-  "email": "Bill.Goehrig@bentley.com"
+  "email": "shaun.sewall@bentley.com"
 }

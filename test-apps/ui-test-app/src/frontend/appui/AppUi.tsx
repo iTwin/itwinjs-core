@@ -32,6 +32,7 @@ import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
+import IModelViewportControl from "./contentviews/IModelViewport";
 
 /** Example Ui Configuration for an iModelJS App
  */
@@ -83,7 +84,7 @@ export class AppUi {
       id: "one2dIModelViewport",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
           defaultViewSpec: {
             viewDefinitionClass: ViewClass.Drawing,
@@ -97,7 +98,7 @@ export class AppUi {
       id: "DrawingAndSheetViewports",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
           defaultViewSpec: {
             viewDefinitionClass: ViewClass.Drawing,
@@ -105,7 +106,7 @@ export class AppUi {
           },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
           defaultViewSpec: {
             viewDefinitionClass: ViewClass.Sheet,
@@ -119,7 +120,7 @@ export class AppUi {
       id: "ThreeIModelViewportsWithItemsTable",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
           defaultViewSpec: {
             viewDefinitionClass: ViewClass.Camera,
@@ -127,7 +128,7 @@ export class AppUi {
           },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
           defaultViewSpec: {
             viewDefinitionClass: ViewClass.Orthographic,
@@ -138,7 +139,7 @@ export class AppUi {
           classId: "TablePane",
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
           defaultViewSpec: {
             viewDefinitionClass: ViewClass.Orthographic,
@@ -152,11 +153,11 @@ export class AppUi {
       id: "TestContentGroup1",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 1a", bgColor: "black" },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 2a", bgColor: "black" },
         },
         {
@@ -174,11 +175,11 @@ export class AppUi {
       id: "TestContentGroup2",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 1b", bgColor: "black" },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 2b", bgColor: "black" },
         },
         {
@@ -186,7 +187,7 @@ export class AppUi {
           applicationData: { label: "Content 3b", bgColor: "black" },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 4b", bgColor: "black" },
         },
       ],
@@ -196,7 +197,7 @@ export class AppUi {
       id: "TestContentGroup3",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 1a", bgColor: "black" },
         },
         {
@@ -208,7 +209,7 @@ export class AppUi {
           applicationData: { label: "Content 3a", bgColor: "black" },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 4a", bgColor: "black" },
         },
       ],
@@ -218,11 +219,11 @@ export class AppUi {
       id: "TestContentGroup4",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 1a", bgColor: "black" },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 2a", bgColor: "black" },
         },
         {

@@ -195,6 +195,11 @@ export interface EnvironmentProps {
   ground?: GroundPlaneProps;
   sky?: SkyBoxProps;
 }
+/** JSON representation of a context reality model */
+export interface ContextModelProps {
+  tilesetUrl: string;
+  name?: string;
+}
 
 /** JSON representation of the settings associated with a [[DisplayStyleProps]].
  * These settings are not stored directly as members of the [[DisplayStyleProps]]. Instead, they are stored
@@ -213,6 +218,8 @@ export interface DisplayStyleSettingsProps {
   subCategoryOvr?: DisplayStyleSubCategoryProps[];
   /** Settings controlling display of map imagery within views of geolocated models. */
   backgroundMap?: BackgroundMapProps;
+  /** Contexual Reality Models */
+  ContextModels?: ContextModelProps[];
 }
 
 /** JSON representation of settings assocaited with a [[DisplayStyle3dProps]].
@@ -319,7 +326,7 @@ export class DisplayStyleSettings {
    */
   public constructor(jsonProperties: { styles?: DisplayStyleSettingsProps }) {
     if (undefined === jsonProperties.styles)
-      jsonProperties.styles = { };
+      jsonProperties.styles = {};
 
     this._json = jsonProperties.styles;
 
@@ -375,7 +382,7 @@ export class DisplayStyleSettings {
   /** @hidden */
   public get backgroundMap(): BackgroundMapProps | undefined {
     const props = this._json.backgroundMap;
-    return undefined !== props ? props : { };
+    return undefined !== props ? props : {};
   }
   /** @hidden */
   public set backgroundMap(map: BackgroundMapProps | undefined) { this._json.backgroundMap = map; }
@@ -491,7 +498,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   /** @hidden */
   public get environment(): EnvironmentProps {
     const env = this._json3d.environment;
-    return undefined !== env ? env : { };
+    return undefined !== env ? env : {};
   }
 
   /** @hidden */

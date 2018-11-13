@@ -239,7 +239,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
   }
 
   public componentWillUnmount(): void {
-    document.removeEventListener("resize", this._handleWindowResize, true);
+    window.removeEventListener("resize", this._handleWindowResize, true);
     FrontstageManager.onFrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
     FrontstageManager.onModalFrontstageChangedEvent.removeListener(this._handleModalFrontstageChangedEvent);
   }

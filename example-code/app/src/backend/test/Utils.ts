@@ -3,9 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ElementProps, RelatedElement } from "@bentley/imodeljs-common";
-import { OpenMode, Id64, Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { Element, IModelDb, InformationPartitionElement } from "@bentley/imodeljs-backend";
+import { OpenMode, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { IModelDb } from "@bentley/imodeljs-backend";
 import { IModelJsFs, IModelJsFsStats } from "@bentley/imodeljs-backend/lib/IModelJsFs";
 import * as path from "path";
 import { AuthorizationToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AccessToken, Config } from "@bentley/imodeljs-clients";
@@ -126,33 +125,5 @@ export class IModelTestUtils {
     const iModel: IModelDb = IModelDb.openStandalone(dbName, opts.openMode, opts.enableTransactions); // could throw Error
     assert.exists(iModel);
     return iModel!;
-  }
-
-  public static createNewModel(parentElement: Element, modelName: string, isModelPrivate: boolean): Id64String {
-
-    const outputImodel = parentElement.iModel;
-
-    // The modeled element's code
-    const modelCode = InformationPartitionElement.createCode(outputImodel, parentElement.id, modelName);
-
-    //  The modeled element
-    const modeledElementProps: ElementProps = {
-      classFullName: "BisCore:PhysicalPartition",
-      iModel: outputImodel,
-      parent: { id: parentElement.id, relClassName: "BisCore:SubjectOwnsPartitionElements" },
-      model: IModelDb.repositoryModelId,
-      code: modelCode,
-    };
-    const modeledElement: Element = outputImodel.elements.createElement(modeledElementProps);
-    const modeledElementId: Id64String = outputImodel.elements.insertElement(modeledElement);
-
-    const modeledElementRef = new RelatedElement({ id: modeledElementId });
-
-    // The model
-    const newModel = outputImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: "BisCore:PhysicalModel", isPrivate: isModelPrivate });
-    const newModelId = outputImodel.models.insertModel(newModel);
-    assert.isTrue(Id64.isValid(newModelId));
-
-    return modeledElementId;
   }
 }

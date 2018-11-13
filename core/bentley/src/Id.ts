@@ -5,14 +5,14 @@
 /** @module Ids */
 
 /**
- * A string containing a well-formed string representation of an [[Id64]].
+ * A string containing a well-formed string representation of an [Id64]($bentleyjs-core).
  *
  * See [Working with Ids]($docs/learning/common/Id64.md).
  */
 export type Id64String = string;
 
 /**
- * A string containing a well-formed string representation of a [[Guid]].
+ * A string containing a well-formed string representation of a [Guid]($bentleyjs-core).
  */
 export type GuidString = string;
 
@@ -237,7 +237,7 @@ export namespace Id64 {
    * @param id A well-formed Id string.
    * @returns true if the Id represents a transient Id.
    * @note This method assumes the input is a well-formed Id string.
-   * @see [[isTransientId64]]
+   * @see [[Id64.isTransientId64]]
    * @see [[TransientIdSequence]]
    */
   export function isTransient(id: Id64String): boolean {
@@ -247,8 +247,8 @@ export namespace Id64 {
   }
 
   /** Determine if the input is a well-formed [[Id64String]] and represents a transient Id.
-   * @see [[isTransient]]
-   * @see [[isId64]]
+   * @see [[Id64.isTransient]]
+   * @see [[Id64.isId64]]
    * @see [[TransientIdSequence]]
    */
   export function isTransientId64(id: string): boolean {
@@ -258,7 +258,7 @@ export namespace Id64 {
   /** Determine if the input is a well-formed [[Id64String]].
    *
    * For a description of "well-formed", see [Working with Ids]($docs/learning/common/Id64.md).
-   * @see [[isValidId64]]
+   * @see [[Id64.isValidId64]]
    */
   export function isId64(id: string): boolean {
     const len = id.length;
@@ -302,19 +302,19 @@ export namespace Id64 {
 
   /** Returns true if the input is not equal to the representation of an invalid Id.
    * @note This method assumes the input is a well-formed Id string.
-   * @see [[isInvalid]]
-   * @see [[isValidId64]]
+   * @see [[Id64.isInvalid]]
+   * @see [[Id64.isValidId64]]
    */
   export function isValid(id: Id64String): boolean { return Id64.invalid !== id; }
 
   /** Returns true if the input is a well-formed [[Id64String]] representing a valid Id.
-   * @see [[isValid]]
-   * @see [[isId64]]
+   * @see [[Id64.isValid]]
+   * @see [[Id64.isId64]]
    */
   export function isValidId64(id: string): boolean { return Id64.invalid !== id && Id64.isId64(id); }
 
   /** Returns true if the input is a well-formed [[Id64String]] representing an invalid Id.
-   * @see [[isValid]]
+   * @see [[Id64.isValid]]
    */
   export function isInvalid(id: Id64String): boolean { return Id64.invalid === id; }
 }

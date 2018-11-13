@@ -3,13 +3,13 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
-import { expect, spy } from "chai";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomDescriptor, createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { SortDirection } from "@bentley/ui-core";
-import { TableDataChangeEvent } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PresentationError, ValuesDictionary } from "@bentley/presentation-common";
 import * as content from "@bentley/presentation-common/lib/content";
@@ -49,9 +49,9 @@ describe("TableDataProvider", () => {
   });
 
   const resetMemoizedCacheSpies = () => {
-    (spy as any).restore();
+    sinon.restore();
     memoizedCacheSpies = {
-      getColumns: spy.on(provider.getColumns.cache, "clear"),
+      getColumns: sinon.spy(provider.getColumns.cache, "clear"),
     };
   };
 
@@ -88,7 +88,7 @@ describe("TableDataProvider", () => {
   describe("invalidateCache", () => {
 
     it("resets filtering, sorting, memoized columns and raises onColumnsChanged event when 'descriptor' flag is set", () => {
-      const onColumnsChangedSpy = spy.on(provider.onColumnsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
+      const onColumnsChangedSpy = sinon.spy(provider.onColumnsChanged, "raiseEvent");
       presentationManagerMock.setup((x) => x.getContentDescriptor({ imodel: imodelMock.object, rulesetId }, moq.It.isAny(), moq.It.isAny(), moq.It.isAny()))
         .returns(async () => createRandomDescriptor());
 
@@ -98,21 +98,21 @@ describe("TableDataProvider", () => {
 
       provider.invalidateCache({ descriptor: true });
 
-      expect(memoizedCacheSpies.getColumns).to.be.called.once;
-      expect(onColumnsChangedSpy).to.be.called.once;
+      expect(memoizedCacheSpies.getColumns).to.be.calledOnce;
+      expect(onColumnsChangedSpy).to.be.calledOnce;
     });
 
     it("resets memoized columns and raises onColumnsChanged event when 'descriptorConfiguration' flag is set", () => {
-      const onColumnsChangedSpy = spy.on(provider.onColumnsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
+      const onColumnsChangedSpy = sinon.spy(provider.onColumnsChanged, "raiseEvent");
 
       provider.invalidateCache({ descriptorConfiguration: true });
 
-      expect(memoizedCacheSpies.getColumns).to.be.called.once;
-      expect(onColumnsChangedSpy).to.be.called.once;
+      expect(memoizedCacheSpies.getColumns).to.be.calledOnce;
+      expect(onColumnsChangedSpy).to.be.calledOnce;
     });
 
     it("resets cached pages and raises onRowsChanged event when 'size' flag is set", async () => {
-      const onRowsChangedSpy = spy.on(provider.onRowsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
+      const onRowsChangedSpy = sinon.spy(provider.onRowsChanged, "raiseEvent");
 
       const getContentMock = moq.Mock.ofInstance((provider as any).getContent);
       getContentMock.setup((x) => x(moq.It.isAny())).returns(async () => createSingleRecordContent());
@@ -124,11 +124,11 @@ describe("TableDataProvider", () => {
       provider.invalidateCache({ size: true });
 
       expect(provider.getLoadedRow(0)).to.be.undefined;
-      expect(onRowsChangedSpy).to.be.called.once;
+      expect(onRowsChangedSpy).to.be.calledOnce;
     });
 
     it("resets cached pages and raises onRowsChanged event when 'content' flag is set", async () => {
-      const onRowsChangedSpy = spy.on(provider.onRowsChanged, TableDataChangeEvent.prototype.raiseEvent.name);
+      const onRowsChangedSpy = sinon.spy(provider.onRowsChanged, "raiseEvent");
 
       const getContentMock = moq.Mock.ofInstance((provider as any).getContent);
       getContentMock.setup((x) => x(moq.It.isAny())).returns(async () => createSingleRecordContent());
@@ -141,7 +141,7 @@ describe("TableDataProvider", () => {
       provider.invalidateCache({ content: true });
 
       expect(provider.getLoadedRow(0)).to.be.undefined;
-      expect(onRowsChangedSpy).to.be.called.once;
+      expect(onRowsChangedSpy).to.be.calledOnce;
     });
 
   });
@@ -194,7 +194,7 @@ describe("TableDataProvider", () => {
 
       provider.filterExpression = "test 2";
       expect(provider.filterExpression).to.eq("test 2");
-      expect(memoizedCacheSpies.getColumns).to.be.called();
+      expect(memoizedCacheSpies.getColumns).to.be.calledOnce;
     });
 
     it("doesn't clear caches if setting to the same filterExpression", () => {
@@ -204,7 +204,7 @@ describe("TableDataProvider", () => {
 
       provider.filterExpression = "test";
       expect(provider.filterExpression).to.eq("test");
-      expect(memoizedCacheSpies.getColumns).to.not.be.called();
+      expect(memoizedCacheSpies.getColumns).to.not.be.called;
     });
 
   });

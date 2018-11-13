@@ -2,10 +2,10 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect, spy } from "chai";
+import { expect } from "chai";
+import * as sinon from "sinon";
 import * as faker from "faker";
 import * as moq from "typemoq";
-import { BeEvent } from "@bentley/bentleyjs-core";
 import { RpcManager } from "@bentley/imodeljs-common";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { PresentationError } from "@bentley/presentation-common";
@@ -23,15 +23,15 @@ describe("Presentation", () => {
   describe("initialize", () => {
 
     it("registers rpc implementation", () => {
-      const registerSpy = spy.on(RpcManager, RpcManager.registerImpl.name);
+      const registerSpy = sinon.spy(RpcManager, "registerImpl");
       Presentation.initialize();
-      expect(registerSpy).to.be.called();
+      expect(registerSpy).to.be.calledOnce;
     });
 
     it("registers itself as IModelHost shutdown listener", () => {
-      const addListenerSpy = spy.on(IModelHost.onBeforeShutdown, BeEvent.prototype.addListener.name);
+      const addListenerSpy = sinon.spy(IModelHost.onBeforeShutdown, "addListener");
       Presentation.initialize();
-      expect(addListenerSpy).to.be.called();
+      expect(addListenerSpy).to.be.calledOnce;
     });
 
     it("creates a manager instance", () => {

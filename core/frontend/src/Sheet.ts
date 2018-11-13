@@ -661,9 +661,9 @@ export namespace Attachments {
         return State.Empty;
 
       viewedModel.getOrLoadTileTree();
-      const loadStatus = viewedModel.loadStatus;
+      const loadStatus = viewedModel.loadStatus();
       if (loadStatus === TileTree.LoadStatus.Loaded) {
-        attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, viewedModel.tileTree!);
+        attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, viewedModel.tileTree()!);
         return State.Ready;
       }
       return loadStatus === TileTree.LoadStatus.Loading ? State.Loading : State.Empty;

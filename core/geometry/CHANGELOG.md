@@ -1,6 +1,19 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Thu, 08 Nov 2018 17:59:20 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Nov 2018 16:42:10 GMT and should not be manually modified.
+
+## 0.166.0
+Mon, 12 Nov 2018 16:42:10 GMT
+
+*Version update only*
+
+## 0.165.0
+Mon, 12 Nov 2018 15:47:00 GMT
+
+### Updates
+
+- bspline docs.    Add bezier curve left and right subdivision methods"
+- Correct return value (undefined is right!) for LineString3d.pointAt (index)
 
 ## 0.164.0
 Thu, 08 Nov 2018 17:59:20 GMT

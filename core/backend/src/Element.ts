@@ -13,7 +13,7 @@ import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, DefinitionElementProps, LineStyleProps, GeometryPartProps, EntityMetaData,
+  InformationPartitionElementProps, DefinitionElementProps, LineStyleProps, GeometryPartProps, EntityMetaData, IModel,
 } from "@bentley/imodeljs-common";
 
 /**
@@ -329,6 +329,34 @@ export class Subject extends InformationReferenceElement implements SubjectProps
   public description?: string;
   /** @hidden */
   public constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
+  /**
+   * Create a Code for a Subject given a name that is meant to be unique within the scope of its parent Subject.
+   * @param iModelDb The IModelDb
+   * @param parentSubjectId The Id of the DocumentListModel that contains the Drawing and provides the scope for its name.
+   * @param codeValue The Drawing name
+   */
+  public static createCode(iModelDb: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.subject);
+    return new Code({ spec: codeSpec.id, scope: parentSubjectId, value: codeValue });
+  }
+  /**
+   * Insert a Subject
+   * @param iModelDb Insert into this IModelDb
+   * @param parentSubjectId The new Subject will be inserted as a child of this Subject
+   * @param name The name (codeValue) of the Subject
+   * @param description The optional description of the Subject
+   * @returns The Id of the newly inserted Subject
+   * @throws [[IModelError]] if there is a problem inserting the Subject
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
+    const subjectProps: SubjectProps = {
+      classFullName: this.classFullName,
+      model: IModel.repositoryModelId,
+      code: this.createCode(iModelDb, parentSubjectId, name),
+      description,
+    };
+    return iModelDb.elements.insertElement(subjectProps);
+  }
 }
 
 /**

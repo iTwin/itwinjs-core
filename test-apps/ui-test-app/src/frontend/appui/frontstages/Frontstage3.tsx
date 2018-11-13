@@ -18,6 +18,7 @@ import {
   Widget,
   FrontstageProvider,
   FrontstageProps,
+  ZoneLocation,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -114,7 +115,7 @@ export class Frontstage3 extends FrontstageProvider {
           />
         }
         bottomRight={
-          <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
+          <Zone allowsMerging={true} defaultState={ZoneState.Minimized} mergeWithZone={ZoneLocation.CenterRight}
             widgets={[
               <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,

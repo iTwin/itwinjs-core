@@ -1,5 +1,6 @@
 --require ../scripts/copy-test-setup.js
 --require raf/polyfill
+--require ../../common/scripts/mocha-reporter-tweaks.js
 --require source-map-support/register
 --require jsdom-global/register
 --require ignore-styles

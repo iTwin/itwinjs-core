@@ -6,14 +6,15 @@ const faker = require("faker");
 const chai = require("chai");
 const chaiAsPromised = require("chai-as-promised");
 const chaiJestSnapshot = require("chai-jest-snapshot");
-const spies = require("chai-spies");
+const sinonChai = require("sinon-chai");
+const sinon = require("sinon");
 
 faker.seed(1);
 
 // setup chai
 chai.use(chaiAsPromised);
 chai.use(chaiJestSnapshot);
-chai.use(spies);
+chai.use(sinonChai);
 
 before(function () {
   chaiJestSnapshot.resetSnapshotRegistry();
@@ -38,5 +39,5 @@ beforeEach(function () {
   chaiJestSnapshot.setTestName(currentTest.fullTitle());
 });
 beforeEach(() => {
-  chai.spy.restore();
+  sinon.restore();
 });

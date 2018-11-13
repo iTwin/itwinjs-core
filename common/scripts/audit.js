@@ -6,10 +6,11 @@
 const path = require("path");
 const fs = require("fs");
 const { spawnSync } = require("child_process");
+const { requireFromTempNodeModules, logBuildError, logBuildWarning, failBuild } = require("./utils");
 
 // NEEDSWORK: This really isn't the safest way to import the ssri package - I don't actually know how it gets into common/temp/node_modules,
 // or if npm is going to move it somewhere else someday, but this seems a lot easier for now than having to setup an entire package just for this script.
-const ssri = require(path.join(__dirname, "..", "temp", "node_modules", "ssri"));
+const ssri = requireFromTempNodeModules("ssri");
 
 // There seems to be an issue with the shrinkwrap file rush creates in common/temp.
 // Basically, the shrinkwrap contains @rush-temp packages with undefined versions.
@@ -43,9 +44,8 @@ for (const k of Object.keys(shrinkwrap.dependencies)) {
 
 if (jsonOut.error) {
   console.error(jsonOut.error.summary);
-  console.log("##vso[task.logissue type=error;]Rush audit failed. This may be caused by a problem with the npm-shrinkwrap.json.");
-  console.log("##vso[task.complete result=Failed;]DONE")
-  process.exit(0);
+  logBuildError("Rush audit failed. This may be caused by a problem with the npm-shrinkwrap.json.");
+  failBuild();
 }
 
 for (const action of jsonOut.actions) {
@@ -55,12 +55,16 @@ for (const action of jsonOut.actions) {
     // Map "scrubbed" packages hashes back to readable package names
     const mpath = issue.path.replace(/[\da-f]{64}/, (match) => hashes[match])
 
-    // For now, we'll only treat HIGH and CRITICAL vulnerabilities as errors in CI builds.
     const severity = advisory.severity.toUpperCase();
-    const prefix = `##vso[task.logissue type=${(severity === "HIGH" || severity === "CRITICAL") ? "error" : "warning"};]`
-    console.log(`${prefix}${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`);
+    const message = `${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`;
+
+    // For now, we'll only treat HIGH and CRITICAL vulnerabilities as errors in CI builds.
+    if (severity === "HIGH" || severity === "CRITICAL")
+      logBuildError(message);
+    else
+      logBuildWarning(message);
   }
 }
 
 if (jsonOut.metadata.vulnerabilities.high || jsonOut.metadata.vulnerabilities.critical)
-  console.log("##vso[task.complete result=Failed;]DONE")
+  failBuild();

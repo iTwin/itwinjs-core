@@ -6,8 +6,8 @@ import { assert } from "chai";
 import * as path from "path";
 import { ActivityLoggingContext, DbResult, Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { Logger } from "@bentley/bentleyjs-core";
-import { Code, CodeSpec, CodeScopeSpec, FunctionalElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
-import { BriefcaseManager, ECSqlStatement, Functional, FunctionalModel, FunctionalPartition, IModelDb, SqliteStatement } from "../../backend";
+import { Code, CodeSpec, CodeScopeSpec, FunctionalElementProps, IModel } from "@bentley/imodeljs-common";
+import { BriefcaseManager, ECSqlStatement, Functional, FunctionalModel, IModelDb, SqliteStatement } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {
@@ -47,23 +47,7 @@ describe("Functional Domain", () => {
     iModelDb.codeSpecs.insert(codeSpec);
     assert.isTrue(Id64.isValidId64(codeSpec.id));
 
-    // Create and populate a FunctionalModel
-    const partitionProps: InformationPartitionElementProps = {
-      classFullName: FunctionalPartition.classFullName,
-      model: IModel.repositoryModelId,
-      parent: {
-        id: IModel.rootSubjectId,
-        relClassName: "BisCore:SubjectOwnsPartitionElements",
-      },
-      code: FunctionalPartition.createCode(iModelDb, IModel.rootSubjectId, "Test Functional Model"),
-    };
-    const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);
-    assert.isTrue(Id64.isValidId64(partitionId));
-    const model: FunctionalModel = iModelDb.models.createModel({
-      classFullName: FunctionalModel.classFullName,
-      modeledElement: { id: partitionId },
-    }) as FunctionalModel;
-    const modelId: Id64String = iModelDb.models.insertModel(model);
+    const modelId: Id64String = FunctionalModel.insert(iModelDb, IModel.rootSubjectId, "Test Functional Model");
     assert.isTrue(Id64.isValidId64(modelId));
 
     const breakdownProps: FunctionalElementProps = {

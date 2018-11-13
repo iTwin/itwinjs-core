@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "",
+      "comment": "Fixed some content control sizing issues",
       "packageName": "@bentley/ui-ninezone",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-ninezone",
-  "email": "Bill.Goehrig@bentley.com"
+  "email": "dan.east@bentley.com"
 }

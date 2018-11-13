@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Add static insert methods to many classes to simplify iModel creation.",
+      "comment": "Add IModelDb.Views.setDefaultViewId",
       "packageName": "@bentley/imodeljs-backend",
       "type": "none"
     }

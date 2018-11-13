@@ -125,47 +125,6 @@ describe("PropertyRenderer", () => {
     expect(propertyRenderer.find(".components-property-record-value").text()).to.be.eq("Test");
   });
 
-  it("handles mouse enter by setting isHover", () => {
-    const propertyRenderer = mount(
-      <PropertyRenderer
-        orientation={Orientation.Horizontal}
-        propertyRecord={propertyRecord}
-        onClick={() => { }}
-      />);
-
-    const clickable = propertyRenderer.find(".components--clickable");
-    expect(clickable.length).to.eq(1);
-
-    clickable.simulate("mouseEnter");
-    propertyRenderer.update();
-    expect(propertyRenderer.find(".components--hover").length).to.eq(1);
-
-    clickable.simulate("mouseLeave");
-    propertyRenderer.update();
-    expect(propertyRenderer.find(".components--hover").length).to.eq(0);
-  });
-
-  it("turns off isHover if selected", () => {
-    const propertyRenderer = mount(
-      <PropertyRenderer
-        orientation={Orientation.Horizontal}
-        propertyRecord={propertyRecord}
-        onClick={() => { }}
-      />);
-
-    const clickable = propertyRenderer.find(".components--clickable");
-    expect(clickable.length).to.eq(1);
-
-    clickable.simulate("mouseEnter");
-    propertyRenderer.update();
-
-    expect(propertyRenderer.find(".components--hover").length).to.eq(1);
-
-    propertyRenderer.setProps({ isSelected: true });
-    propertyRenderer.update();
-    expect(propertyRenderer.find(".components--hover").length).to.eq(0);
-  });
-
   it("renders an editor correctly", () => {
     const propertyRenderer = mount(
       <PropertyRenderer

@@ -8,7 +8,7 @@ import { AccessToken, Config } from "@bentley/imodeljs-clients";
 import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, NativePlatformRegistry,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, NativePlatformRegistry, SubjectOwnsPartitionElements,
 } from "../backend";
 import { DisableNativeAssertions as NativeDisableNativeAssertions } from "../imodeljs-native-platform-api";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -251,7 +251,7 @@ export class IModelTestUtils {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       iModel: testImodel,
-      parent: { id: IModel.rootSubjectId, relClassName: "BisCore:SubjectOwnsPartitionElements" },
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       model: IModel.repositoryModelId,
       code: newModelCode,
     };
