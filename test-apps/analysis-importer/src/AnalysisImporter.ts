@@ -1,25 +1,24 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelDb, IModelImporter } from "@bentley/imodeljs-backend";
+import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "@bentley/imodeljs-backend";
 import { GeometryStreamBuilder, GeometryStreamProps, Gradient, Code, GeometricElement3dProps, ViewFlags, ColorDef, RenderMode, AnalysisStyleProps } from "@bentley/imodeljs-common";
 import { Id64, Id64String, Id64Array } from "@bentley/bentleyjs-core";
 import { Angle, Polyface, IModelJson, AuxChannelDataType, AuxChannel, PolyfaceBuilder, Point3d, StrokeOptions, AuxChannelData, PolyfaceAuxData } from "@bentley/geometry-core";
 import * as path from "path";
 import { readFileSync } from "fs";
 
-export class AnalysisImporter extends IModelImporter {
+export class AnalysisImporter {
+    public iModelDb: IModelDb;
     public definitionModelId: Id64String = Id64.invalid;
 
     public constructor(iModelFileName: string) {
-        super(iModelFileName, { rootSubject: { name: "Analysis Example" } });
+        this.iModelDb = IModelDb.createStandalone(iModelFileName, { rootSubject: { name: "Analysis Example" } });
     }
     /** Create a geometry stream from a Polyface. */
     private generateGeometryStreamFromPolyface(polyface: Polyface): GeometryStreamProps {
         const builder = new GeometryStreamBuilder();
-
         builder.appendGeometry(polyface);
-
         return builder.geometryStream;
     }
 
@@ -60,7 +59,7 @@ export class AnalysisImporter extends IModelImporter {
     }
     /** Create an analysis model for a [[Polyface]] with [[PolyfaceAuxData]] and [[DisplayStyles]] for viewing the [[AuxChannels]] */
     private createAnalysisModel(polyface: any, categoryId: Id64String, modelName: string, displacementScale = 1.0): Id64Array {
-        const modelId = super.insertPhysicalModel(IModelDb.rootSubjectId, modelName);
+        const modelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, modelName);
 
         /** generate a geometry stream containing the polyface */
         const geometry = this.generateGeometryStreamFromPolyface(polyface);
@@ -86,18 +85,18 @@ export class AnalysisImporter extends IModelImporter {
         for (const analysisStyleProp of analysisStyleProps) {
             let name = analysisStyleProp.scalarChannelName!;
             if (undefined !== analysisStyleProp.displacementChannelName) {
-                const exageration = (analysisStyleProp.displacementScale === 1.0) ? "" : (" X " + analysisStyleProp.displacementScale);
-                name = modelName + ": " + name + " and " + analysisStyleProp.displacementChannelName + exageration;
+                const exaggeration = (analysisStyleProp.displacementScale === 1.0) ? "" : (" X " + analysisStyleProp.displacementScale);
+                name = modelName + ": " + name + " and " + analysisStyleProp.displacementChannelName + exaggeration;
             }
-            const displayStyleId = super.insertDisplayStyle3d(this.definitionModelId, name, viewFlags, backgroundColor, analysisStyleProp);
-            const modelSelectorId = super.insertModelSelector(this.definitionModelId, name, [modelId]);
-            const categorySelectorId = super.insertCategorySelector(this.definitionModelId, name, [categoryId]);
+            const displayStyleId = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, name, viewFlags, backgroundColor, analysisStyleProp);
+            const modelSelectorId = ModelSelector.insert(this.iModelDb, this.definitionModelId, name, [modelId]);
+            const categorySelectorId = CategorySelector.insert(this.iModelDb, this.definitionModelId, name, [categoryId]);
 
-            viewIds.push(super.createOrthographicView(name, this.definitionModelId, modelSelectorId, categorySelectorId, displayStyleId, polyface.range()));
+            viewIds.push(OrthographicViewDefinition.insert(this.iModelDb, this.definitionModelId, name, modelSelectorId, categorySelectorId, displayStyleId, polyface.range()));
         }
         return viewIds;
     }
-    /** Import a polyface with auxilliary data */
+    /** Import a polyface with auxillary data */
     private importPolyfaceFromJson(jsonFileName: string) {
         const assetsDir = path.join(__dirname, "assets");
         const jsonString = readFileSync(path.join(assetsDir, jsonFileName), "utf8");
@@ -168,7 +167,7 @@ export class AnalysisImporter extends IModelImporter {
         auxChannels.push(new AuxChannel(radialHeightDataVector, AuxChannelDataType.Distance, "Animated Radial Height", "Radial: Time"));
         auxChannels.push(new AuxChannel(radialSlopeDataVector, AuxChannelDataType.Scalar, "Animated Radial Slope", "Radial: Time"));
 
-        /** Create linear waves -- 10 seperate frames.  */
+        /** Create linear waves -- 10 separate frames.  */
         const waveHeight = radius / 20.0;
         const waveLength = radius / 2.0;
         const frameCount = 10;
@@ -205,18 +204,18 @@ export class AnalysisImporter extends IModelImporter {
     }
     /** Demonstrate the creation of models with analytical data. */
     public import() {
-        this.definitionModelId = super.insertDefinitionModel(IModelDb.rootSubjectId, "Analysis Definitions");
+        this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Analysis Definitions");
 
         /** Create category for analytical polyfaces */
-        const categoryId = super.insertSpatialCategory(this.definitionModelId, "GeoJSON Feature", ColorDef.white);
+        const categoryId = SpatialCategory.insert(this.iModelDb, this.definitionModelId, "GeoJSON Feature", { color: ColorDef.white });
 
         /** import a polyface representing a cantilever beam with stress and displacement data. */
         const importedPolyface = this.importPolyfaceFromJson("Cantilever.json");
         /** create a model containing the imported data (with display styles, views etc.) */
         const cantileverViews = this.createAnalysisModel(importedPolyface, categoryId, "Cantilever", 100.0);
-        super.setDefaultViewId(cantileverViews[0]);
+        this.iModelDb.views.setDefaultViewId(cantileverViews[0]);
 
-        /** demonstrate creation of a polyface with analytical data by creating a flat mesh and then superimposiing "wave" data */
+        /** demonstrate creation of a polyface with analytical data by creating a flat mesh and then superimposing "wave" data */
         const flatWaveMesh = this.createFlatMeshWithWaves();
         /** create a model containing the wave data (with display styles, views etc.) */
         this.createAnalysisModel(flatWaveMesh, categoryId, "Waves");

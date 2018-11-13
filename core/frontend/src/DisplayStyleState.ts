@@ -24,7 +24,9 @@ import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { RenderSystem, TextureImage } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
+import { TileTreeModelState } from "./ModelState";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
+import { ContextRealityModelState } from "./ContextRealityModelState";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]]
  * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
@@ -33,6 +35,7 @@ import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
  */
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   private _backgroundMap: BackgroundMapState;
+  private _contextRealityModels: ContextRealityModelState[];
 
   public abstract get settings(): DisplayStyleSettings;
 
@@ -40,8 +43,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     super(props, iModel);
     const styles = this.jsonProperties.styles;
     const backgroundMap = undefined !== styles ? styles.backgroundMap : undefined;
-    const mapProps = undefined !== backgroundMap ? backgroundMap : { };
+    const mapProps = undefined !== backgroundMap ? backgroundMap : {};
     this._backgroundMap = new BackgroundMapState(mapProps, iModel);
+    this._contextRealityModels = [];
+
+    if (styles && styles.ContextRealityModels)
+      for (const contextRealityModel of styles.contextRealityModels)
+        this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel));
   }
 
   /** @hidden */
@@ -51,7 +59,10 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       this.settings.backgroundMap = mapProps;
     }
   }
-
+  /** @hidden */
+  public forEachContextRealityModel(func: (model: TileTreeModelState) => void): void {
+    for (const contextRealityModel of this._contextRealityModels) { func(contextRealityModel); }
+  }
   public equalState(other: DisplayStyleState): boolean {
     return JSON.stringify(this.settings) === JSON.stringify(other.settings);
   }
@@ -61,6 +72,20 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Get the name of this DisplayStyle */
   public get name(): string { return this.code.getValue(); }
+
+  /** @hidden */
+  public get contextRealityModels(): ContextRealityModelState[] { return this._contextRealityModels; }
+  /** @hidden */
+  public set contextRealityModels(contextRealityModels: ContextRealityModelState[]) { this._contextRealityModels = contextRealityModels; }
+
+  /** @hidden */
+  public containsContextRealityModel(contextRealityModel: ContextRealityModelState) {
+    for (const curr of this._contextRealityModels)
+      if (curr.matches(contextRealityModel))
+        return true;
+
+    return false;
+  }
 
   /** The ViewFlags associated with this style.
    * @note If this style is associated with a [[ViewState]] attached to a [[Viewport]], use [[ViewState.viewFlags]] to modify the ViewFlags to ensure

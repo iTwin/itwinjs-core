@@ -21,7 +21,7 @@ import { ElementState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
-import { GeometricModel2dState, GeometricModelState } from "./ModelState";
+import { GeometricModel2dState, GeometricModelState, TileTreeModelState } from "./ModelState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { StandardView, StandardViewId } from "./StandardView";
@@ -243,7 +243,7 @@ export abstract class ViewState extends ElementState {
 
   /** @hidden */
   public cancelAllTileLoads(): void {
-    this.forEachModel((model) => {
+    this.forEachTileTreeModel((model) => {
       const tileTree = model.tileTree;
       if (tileTree !== undefined)
         tileTree.rootTile.cancelAllLoads();
@@ -253,7 +253,7 @@ export abstract class ViewState extends ElementState {
   /** @hidden */
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
-    this.forEachModel((model: GeometricModelState) => {
+    this.forEachTileTreeModel((model) => {
       const loadStatus = model.loadStatus;
       if (loadStatus !== TileTree.LoadStatus.Loaded)
         allLoaded = false;
@@ -492,8 +492,13 @@ export abstract class ViewState extends ElementState {
   /** Execute a function on each viewed model */
   public abstract forEachModel(func: (model: GeometricModelState) => void): void;
 
+  /** Execute a function on each viewed model */
+  public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void { this.forEachModel((model: GeometricModelState) => func(model)); }
   /** @hidden */
-  public createScene(context: SceneContext): void { this.forEachModel((model: GeometricModelState) => this.addModelToScene(model, context)); }
+  public createScene(context: SceneContext): void {
+    this.forEachTileTreeModel((model: TileTreeModelState) => this.addModelToScene(model, context));
+
+  }
 
   /** @hidden */
   public createTerrain(context: SceneContext): void {
@@ -1047,10 +1052,11 @@ export abstract class ViewState extends ElementState {
     this.verifyFocusPlane(); // changes delta/origin
   }
 
-  private addModelToScene(model: GeometricModelState, context: SceneContext): void {
+  private addModelToScene(model: TileTreeModelState, context: SceneContext): void {
     model.loadTileTree();
-    if (undefined !== model.tileTree) {
-      model.tileTree.drawScene(context);
+    const tileTree = model.tileTree;
+    if (undefined !== tileTree) {
+      tileTree.drawScene(context);
     }
   }
   private addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void {
@@ -1667,9 +1673,10 @@ export class SpatialViewState extends ViewState3d {
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
-    this.forEachModel((model: GeometricModelState) => {
-      if (model.tileTree !== undefined && model.tileTree.rootTile !== undefined && model.useRangeForFit()) {   // can we assume that a loaded model
-        range.extendRange(model.tileTree.rootTile.computeWorldContentRange());
+    this.forEachModel((model: GeometricModelState) => {   // Only fit real models -- ignore context models for fit.
+      const tileTree = model.tileTree;
+      if (tileTree !== undefined && tileTree.rootTile !== undefined && model.useRangeForFit()) {   // can we assume that a loaded model
+        range.extendRange(tileTree.rootTile.computeWorldContentRange());
       }
     });
 
@@ -1705,6 +1712,10 @@ export class SpatialViewState extends ViewState3d {
       if (undefined !== model && model.isGeometricModel)
         func(model as GeometricModelState);
     }
+  }
+  public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void {
+    this.forEachModel((model: GeometricModelState) => func(model));
+    this.displayStyle.forEachContextRealityModel((model: TileTreeModelState) => func(model));
   }
 }
 

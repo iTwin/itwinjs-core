@@ -2,6 +2,51 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.166.0",
+      "tag": "@bentley/ui-components_v0.166.0",
+      "date": "Mon, 12 Nov 2018 16:42:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.165.0",
+      "tag": "@bentley/ui-components_v0.165.0",
+      "date": "Mon, 12 Nov 2018 15:47:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.164.0",
+      "tag": "@bentley/ui-components_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecated dev-cors-proxy-server and use of it. "
+          },
+          {
+            "comment": "Fix: Do not start search if input field is empty"
+          },
+          {
+            "comment": "Use strongly typed enums for identifying keyboard keys"
+          },
+          {
+            "comment": "PropertyGrid property editing and unit tests"
+          },
+          {
+            "comment": "Updated to TypeScript 3.1"
+          },
+          {
+            "comment": "Refactored Tree component to improve its performance"
+          },
+          {
+            "comment": "Refactored Breadcrumb and added tests"
+          },
+          {
+            "comment": "Zone & Widget initial state, more ui-core unit tests, cleaned up ui-framework index.ts files."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.163.0",
       "tag": "@bentley/ui-components_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",

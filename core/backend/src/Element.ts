@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Elements */
 
-import { Id64String, Id64, GuidString, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64String, Id64, GuidString, DbOpcode, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
 import { Transform } from "@bentley/geometry-core";
+import { DrawingModel } from "./Model";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
   SubjectProps, SheetBorderTemplateProps, SheetTemplateProps, SheetProps, TypeDefinitionElementProps,
-  InformationPartitionElementProps, DefinitionElementProps, LineStyleProps, GeometryPartProps, EntityMetaData,
+  InformationPartitionElementProps, DefinitionElementProps, LineStyleProps, GeometryPartProps, EntityMetaData, IModel,
 } from "@bentley/imodeljs-common";
 
 /**
@@ -58,6 +59,13 @@ export abstract class Element extends Entity implements ElementProps {
     this.userLabel = props.userLabel;
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
+
+  public static onInsert(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
+  public static onInserted(_id: string): void { }
+  public static onUpdate(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
+  public static onUpdated(_props: ElementProps): void { }
+  public static onDelete(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
+  public static onDeleted(_props: ElementProps): void { }
 
   /** Add this Element's properties to an object for serializing to JSON.
    * @hidden
@@ -321,6 +329,34 @@ export class Subject extends InformationReferenceElement implements SubjectProps
   public description?: string;
   /** @hidden */
   public constructor(props: SubjectProps, iModel: IModelDb) { super(props, iModel); }
+  /**
+   * Create a Code for a Subject given a name that is meant to be unique within the scope of its parent Subject.
+   * @param iModelDb The IModelDb
+   * @param parentSubjectId The Id of the DocumentListModel that contains the Drawing and provides the scope for its name.
+   * @param codeValue The Drawing name
+   */
+  public static createCode(iModelDb: IModelDb, parentSubjectId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModelDb.codeSpecs.getByName(BisCodeSpec.subject);
+    return new Code({ spec: codeSpec.id, scope: parentSubjectId, value: codeValue });
+  }
+  /**
+   * Insert a Subject
+   * @param iModelDb Insert into this IModelDb
+   * @param parentSubjectId The new Subject will be inserted as a child of this Subject
+   * @param name The name (codeValue) of the Subject
+   * @param description The optional description of the Subject
+   * @returns The Id of the newly inserted Subject
+   * @throws [[IModelError]] if there is a problem inserting the Subject
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string, description?: string): Id64String {
+    const subjectProps: SubjectProps = {
+      classFullName: this.classFullName,
+      model: IModel.repositoryModelId,
+      code: this.createCode(iModelDb, parentSubjectId, name),
+      description,
+    };
+    return iModelDb.elements.insertElement(subjectProps);
+  }
 }
 
 /**
@@ -348,6 +384,28 @@ export class Drawing extends Document {
   public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.drawing);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
+
+  /**
+   * Insert a Drawing element and a DrawingModel that breaks it down.
+   * @param iModelDb Insert into this iModel
+   * @param documentListModelId Insert the new Drawing into this DocumentListModel
+   * @param name The name of the Drawing.
+   * @returns The Id of the newly inserted Drawing element and the DrawingModel that breaks it down (same value).
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, documentListModelId: Id64String, name: string): Id64String {
+    const drawingProps: ElementProps = {
+      classFullName: this.classFullName,
+      model: documentListModelId,
+      code: this.createCode(iModelDb, documentListModelId, name),
+    };
+    const drawingId: Id64String = iModelDb.elements.insertElement(drawingProps);
+    const model: DrawingModel = iModelDb.models.createModel({
+      classFullName: DrawingModel.classFullName,
+      modeledElement: { id: drawingId },
+    }) as DrawingModel;
+    return iModelDb.models.insertModel(model);
   }
 }
 

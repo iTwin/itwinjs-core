@@ -47,24 +47,25 @@ export class OpenIModelDbMemoizer extends PromiseMemoizer<IModelDb> {
       OpenIModelDbMemoizer._openIModelDbMemoizer = new OpenIModelDbMemoizer();
     const { memoize: memoizeOpenIModelDb, deleteMemoized: deleteMemoizedOpenIModelDb } = OpenIModelDbMemoizer._openIModelDbMemoizer;
 
-    const qp = memoizeOpenIModelDb(actx, accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
+    const openPromise = memoizeOpenIModelDb(actx, accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
-    await BeDuration.wait(50); // Wait a little before issuing a pending response - this avoids a potentially expensive round trip for the case a briefcase was already downloaded
+    const waitPromise = BeDuration.wait(100); // Wait a little before issuing a pending response - this avoids a potentially expensive round trip for the case a briefcase was already downloaded.
+    await Promise.race([openPromise, waitPromise]); // This resolves as soon as either the open is completed or the wait time has expired. Prevents waiting un-necessarily if the open has already completed.
 
-    if (qp.isPending) {
+    if (openPromise.isPending) {
       Logger.logTrace(loggingCategory, "Issuing pending status in OpenIModelDbMemoizer.openIModelDb", () => (iModelToken));
       throw new RpcPendingResponse();
     }
 
     deleteMemoizedOpenIModelDb(actx, accessTokenObj!, iModelToken.contextId!, iModelToken.iModelId!, openParams, iModelVersion);
 
-    if (qp.isFulfilled) {
+    if (openPromise.isFulfilled) {
       Logger.logTrace(loggingCategory, "Completed open request in OpenIModelDbMemoizer.openIModelDb", () => (iModelToken));
-      return qp.result!;
+      return openPromise.result!;
     }
 
-    assert(qp.isRejected);
+    assert(openPromise.isRejected);
     Logger.logTrace(loggingCategory, "Rejected open request in OpenIModelDbMemoizer.openIModelDb", () => (iModelToken));
-    throw qp.error!;
+    throw openPromise.error!;
   }
 }

@@ -4,6 +4,14 @@ const fs = require('fs');
 const path = require('path');
 const { app, BrowserWindow, ipcMain } = require('electron');
 
+// NEEDSWORK: Electron seems to be redirecting this process's stderr stream to stdout somewhere.
+// Since rush test depends on stderr messages, we're using a separate IPC channel to force console.error to write to our parent process's stderr.
+if (process.send) {
+    console.error = function () {
+        process.send([...arguments]);
+    }
+}
+
 // Path to the html render
 const htmlPath = path.join(__dirname, 'index.html');
 

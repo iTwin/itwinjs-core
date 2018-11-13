@@ -90,29 +90,22 @@ class OngoingActivityMessage {
 export class MessageManager {
   private static _maxCachedMessages = 500;
   private static _messages: NotifyMessageDetails[] = new Array<NotifyMessageDetails>();
-  private static _MessageAddedEvent: MessageAddedEvent = new MessageAddedEvent();
-
-  private static _ActivityMessageUpdatedEvent: ActivityMessageUpdatedEvent = new ActivityMessageUpdatedEvent();
-  private static _ActivityMessageCancelledEvent: ActivityMessageCancelledEvent = new ActivityMessageCancelledEvent();
   private static _OngoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
 
-  private static _InputFieldMessageAddedEvent: InputFieldMessageAddedEvent = new InputFieldMessageAddedEvent();
-  private static _InputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent = new InputFieldMessageRemovedEvent();
-
   /** The MessageAddedEvent is fired when a message is added via IModelApp.notifications.outputMessage(). */
-  public static get onMessageAddedEvent(): MessageAddedEvent { return this._MessageAddedEvent; }
+  public static readonly onMessageAddedEvent = new MessageAddedEvent();
 
   /** The ActivityMessageUpdatedEvent is fired when an Activity message updates via IModelApp.notifications.outputActivityMessage(). */
-  public static get onActivityMessageUpdatedEvent(): ActivityMessageUpdatedEvent { return this._ActivityMessageUpdatedEvent; }
+  public static readonly onActivityMessageUpdatedEvent = new ActivityMessageUpdatedEvent();
 
   /** The ActivityMessageCancelledEvent is fired when an Activity message is cancelled via
    * IModelApp.notifications.endActivityMessage(ActivityMessageEndReason.Cancelled) or
    * by the user clicking the 'Cancel' link.
    */
-  public static get onActivityMessageCancelledEvent(): ActivityMessageCancelledEvent { return this._ActivityMessageCancelledEvent; }
+  public static readonly onActivityMessageCancelledEvent = new ActivityMessageCancelledEvent();
 
-  public static get onInputFieldMessageAddedEvent(): InputFieldMessageAddedEvent { return this._InputFieldMessageAddedEvent; }
-  public static get onInputFieldMessageRemovedEvent(): InputFieldMessageRemovedEvent { return this._InputFieldMessageRemovedEvent; }
+  public static readonly onInputFieldMessageAddedEvent = new InputFieldMessageAddedEvent();
+  public static readonly onInputFieldMessageRemovedEvent = new InputFieldMessageRemovedEvent();
 
   /** List of messages as NotifyMessageDetails. */
   public static get messages(): Readonly<NotifyMessageDetails[]> { return this._messages; }

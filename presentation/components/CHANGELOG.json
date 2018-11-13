@@ -2,6 +2,45 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "0.166.0",
+      "tag": "@bentley/presentation-components_v0.166.0",
+      "date": "Mon, 12 Nov 2018 16:42:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.165.0",
+      "tag": "@bentley/presentation-components_v0.165.0",
+      "date": "Mon, 12 Nov 2018 15:47:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Unified Selection: Fix selection change events being broadcasted indefinitely when multiple unified selection viewports are used"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.164.0",
+      "tag": "@bentley/presentation-components_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecated dev-cors-proxy-server and use of it. "
+          },
+          {
+            "comment": "Fix filtered tree rendering \"0 matches found\" when there's no filtering applied and data provider returns 0 nodes"
+          },
+          {
+            "comment": "Updated to TypeScript 3.1"
+          },
+          {
+            "comment": "React to Tree API changes"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.163.0",
       "tag": "@bentley/presentation-components_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",

@@ -10,8 +10,8 @@ import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { NativeSqliteStatement, NativeECDb, NativeDgnDb } from "./imodeljs-native-platform-api";
 
 /** Marks a string as either an [Id64String]($bentleyjs-core) or [GuidString]($bentleyjs-core), so
- *  that it can be passed to [SqliteStatement's]($backend) [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
- *  methods.
+ *  that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
+ *  methods of [SqliteStatement]($backend).
  */
 export interface StringParam {
   id?: Id64String;

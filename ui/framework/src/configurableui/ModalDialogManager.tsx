@@ -23,9 +23,8 @@ export class ModalDialogChangedEvent extends UiEvent<ModalDialogChangedEventArgs
  */
 export class ModalDialogManager {
   private static _modalDialogs: React.ReactNode[] = new Array<React.ReactNode>();
-  private static _modalDialogStackChangedEvent: ModalDialogChangedEvent = new ModalDialogChangedEvent();
 
-  public static get onModalDialogChangedEvent(): ModalDialogChangedEvent { return this._modalDialogStackChangedEvent; }
+  public static readonly onModalDialogChangedEvent = new ModalDialogChangedEvent();
 
   public static get modalDialogs(): Readonly<React.ReactNode[]> { return this._modalDialogs; }
 

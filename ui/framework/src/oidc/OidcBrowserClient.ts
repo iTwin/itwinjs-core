@@ -2,13 +2,15 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module OIDC */
+
 import { ActivityLoggingContext, BeEvent, AuthStatus, Logger, BentleyError } from "@bentley/bentleyjs-core";
 import { UserManagerSettings, UserManager, User } from "oidc-client";
 import { Config, OidcClient, IOidcFrontendClient, UserInfo, AccessToken, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 
 const loggingCategory = "imodeljs-clients-device.OidcBrowserClient";
 
-/** Utility to generate OIDC/OAuth tokens for backend applications */
+/** Utility to generate OIDC/OAuth tokens for frontend applications */
 export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient {
   private _userManager?: UserManager;
   private _accessToken?: AccessToken;

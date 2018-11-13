@@ -27,7 +27,7 @@ export * from "./IconComponent";
 export * from "./Item";
 export * from "./ItemDefBase";
 export * from "./ToolButton";
-export * from "./ItemFactory";
+export * from "./ItemMap";
 export * from "./ItemProps";
 export * from "./KeyboardShortcut";
 export * from "./MessageManager";

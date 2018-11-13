@@ -133,6 +133,27 @@ describe("IModelConnection (#integration)", () => {
     assert.isNotNull(noVersionsIModel3);
   });
 
+  it("should be able to open the same IModel many times", async () => {
+    const projectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsTest");
+    const iModelId = await TestData.getTestIModelId(TestData.accessToken, projectId, "ReadOnlyTest");
+
+    const readOnlyTest = await IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
+    assert.isNotNull(readOnlyTest);
+
+    const promises = new Array<Promise<void>>();
+    let n = 0;
+    while (++n < 25) {
+      const promise = IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.latest())
+        .then((readOnlyTest2: IModelConnection) => {
+          assert.isNotNull(readOnlyTest2);
+          assert.isTrue(readOnlyTest.iModelToken.key === readOnlyTest2.iModelToken.key);
+        });
+      promises.push(promise);
+    }
+
+    await Promise.all(promises);
+  });
+
   it("should reuse open briefcases for exclusive access", async () => {
     // Repeatedly opening a Readonly or ReadWrite connection should result in the same briefcase
     // Note that the IModelDb is opened with OpenParams.FixedVersion(AccessMode.Shared) in the case of ReadOnly connections, and

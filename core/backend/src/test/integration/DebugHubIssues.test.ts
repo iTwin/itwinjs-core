@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration } from "../../backend";
+import { IModel, IModelVersion } from "@bentley/imodeljs-common";
+import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration, PhysicalModel } from "../../backend";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { IModelWriter } from "./IModelWriter";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BriefcaseManager } from "../../BriefcaseManager";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe.skip("DebugHubIssues (#integration)", () => {
@@ -22,6 +22,62 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
   before(async () => {
     accessToken = await HubUtility.login(TestUsers.super);
+
+    Logger.initializeToConsole();
+    Logger.setLevelDefault(LogLevel.Warning);
+    Logger.setLevel("Performance", LogLevel.Info);
+  });
+
+  it.skip("should be able to download the seed files, change sets, for UKRail_EWR2 (EWR_2E) model", async () => {
+    const projectName = "UKRail_EWR2";
+    const iModelName = "EWR_2E";
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+  });
+
+  it.skip("should be able to download the seed files, change sets, for 1MWCCN01 - North Project (SECTION_08_IM01) model", async () => {
+    const projectName = "1MWCCN01 - North Project";
+    const iModelName = "SECTION_08_IM01";
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+  });
+
+  it.skip("should be able to open UKRail_EWR2 (EWR_2E) model", async () => {
+    const projectName = "UKRail_EWR2";
+    const iModelName = "EWR_2E";
+
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
+
+    const perfLogger = new PerfLogger("EWR_2E");
+
+    const iModel: IModelDb = await IModelDb.open(actx, accessToken, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    assert.exists(iModel);
+    assert(iModel.openParams.openMode === OpenMode.Readonly);
+
+    perfLogger.dispose();
+
+    await iModel.close(actx, accessToken);
+  });
+
+  it.skip("should be able to open 1MWCCN01 - North Project (SECTION_08_IM01) model", async () => {
+    const projectName = "1MWCCN01 - North Project";
+    const iModelName = "SECTION_08_IM01";
+
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
+
+    const perfLogger = new PerfLogger("SECTION_08_IM01");
+
+    const iModel: IModelDb = await IModelDb.open(actx, accessToken, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    assert.exists(iModel);
+    assert(iModel.openParams.openMode === OpenMode.Readonly);
+
+    perfLogger.dispose();
+
+    await iModel.close(actx, accessToken);
   });
 
   it.skip("create a test case on the Hub with a named version from a standalone iModel", async () => {
@@ -36,7 +92,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     assert(!!iModelDb);
 
     // Create and upload a dummy change set to the Hub
-    const modelId = IModelWriter.insertPhysicalModel(iModelDb, "DummyTestModel");
+    const modelId = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "DummyTestModel");
     assert(!!modelId);
     iModelDb.saveChanges("Dummy change set");
     await iModelDb.pushChanges(actx, accessToken!);

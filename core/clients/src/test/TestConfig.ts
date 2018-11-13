@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ImsActiveSecureTokenClient } from "../ImsClients";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { HubIModel, IModelQuery } from "../imodelhub";
+import { HubIModel } from "../imodelhub";
 import { IModelHubClient, IModelClient } from "..";
 import { ConnectClient, Project } from "../ConnectClients";
 import { expect } from "chai";
@@ -96,7 +96,7 @@ export class TestConfig {
   public static async queryIModel(accessToken: AccessToken, projectId: GuidString): Promise<HubIModel> {
     const imodelHubClient: IModelClient = new IModelHubClient();
 
-    const iModels = await imodelHubClient.IModels().get(actx, accessToken, projectId, new IModelQuery().primary());
+    const iModels = await imodelHubClient.IModel().get(actx, accessToken, projectId);
     if (iModels.length === 0)
       throw new Error(`Primary iModel ${projectId} not found for project ${projectId} for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
 

@@ -1,6 +1,25 @@
 # Change Log - @bentley/build-tools
 
-This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Nov 2018 16:42:10 GMT and should not be manually modified.
+
+## 0.166.0
+Mon, 12 Nov 2018 16:42:10 GMT
+
+*Version update only*
+
+## 0.165.0
+Mon, 12 Nov 2018 15:47:00 GMT
+
+*Version update only*
+
+## 0.164.0
+Thu, 08 Nov 2018 17:59:20 GMT
+
+### Updates
+
+- Copy CHANGELOG.json on rush docs
+- Updated to TypeScript 3.1
+- Add "skipLibCheck" flag to avoid checking third-party declarations
 
 ## 0.163.0
 Wed, 31 Oct 2018 20:55:37 GMT

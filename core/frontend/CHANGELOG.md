@@ -1,6 +1,37 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Nov 2018 16:42:10 GMT and should not be manually modified.
+
+## 0.166.0
+Mon, 12 Nov 2018 16:42:10 GMT
+
+### Updates
+
+- Hydrated briefcases for ReadOnly cases from the latest checkpoint, rather than the seed files. This significantly improves performance of IModelDb/IModelConnection.open() for typical cases. 
+
+## 0.165.0
+Mon, 12 Nov 2018 15:47:00 GMT
+
+### Updates
+
+- Fix SelectionSet broadcasting excessive selection change events
+- Add support for Context Reality Models
+
+## 0.164.0
+Thu, 08 Nov 2018 17:59:20 GMT
+
+### Updates
+
+- AccuDraw/AccuSnap markdown/examples
+- Fix edge animation of PolyfaceAuxData
+- Updated frontend performance testing
+- Change filterHit on InteractiveTool to async to support backend queries
+- Fix JSON representation of DisplayStyleState.
+- Fix links in tool docs
+- Added an option to Viewport.readImage() to flip the resultant image vertically.
+- PrimitiveTool isValidLocation shouldn't require write, want check for measure tools too
+- Add Comments
+- Updated to TypeScript 3.1
 
 ## 0.163.0
 Wed, 31 Oct 2018 20:55:37 GMT

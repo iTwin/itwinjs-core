@@ -48,7 +48,7 @@ export class Marker implements CanvasDecoration {
   public imageOffset?: XAndY;
   /** The size of [[image]], in pixels. If undefined, use [[size]]. */
   public imageSize?: XAndY;
-  /** A text Label for this Maker. If undefined, no label is displayed. */
+  /** A text Label for this Marker. If undefined, no label is displayed. */
   public label?: string;
   /** The offset for [[label]], in pixels, from the *center* of this Marker. If undefined, (0,0). */
   public labelOffset?: XAndY;

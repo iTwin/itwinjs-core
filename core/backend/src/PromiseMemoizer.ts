@@ -2,9 +2,6 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
-import { assert } from "@bentley/bentleyjs-core";
-
 /** Wrapper around a promise that allows synchronous queries of it's state
  * @hidden
  */
@@ -44,7 +41,6 @@ export class PromiseMemoizer<T> {
 
   public deleteMemoized = (...args: any[]) => {
     const key: string = this._generateKeyFn(...args);
-    const ret = this._cachedPromises.delete(key);
-    assert(ret, "Memoized function not found in cache");
+    this._cachedPromises.delete(key);
   }
 }

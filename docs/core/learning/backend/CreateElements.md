@@ -26,21 +26,9 @@ That is why the IModelDb.Elements.insertElement API takes a "props" object and w
 
 Here are examples of creating various specific types of elements:
 
-## InformationPartitionElement
-
-```ts
-[[include:insertDefinitionModel.example-code]]
-```
-
-See [InformationPartitionElementProps]($common), [Code]($common), and [creating models](./CreateModels.md)
-
 ## Subject
 
-```ts
-[[include:insertSubject.example-code]]
-```
-
-See [SubjectProps]($common), [Code]($common)
+See [Subject.insert]($backend)
 
 ## GeometricElement3d
 
@@ -59,42 +47,20 @@ See [GeometryStreamBuilder]($common)
 
 ## SpatialCategory
 
-``` ts
-[[include:InsertSpatialCategory.example-code]]
-```
-
-See [SpatialCategory]($backend), [CategoryProps]($common), [SubCategoryAppearance]($common).
-
-Also see [IModelDb.Elements.updateElement]($backend).
+See [SpatialCategory.insert]($backend)
 
 ## ModelSelector
 
-``` ts
-[[include:InsertModelSelector.example-code]]
-```
-
-See [ModelSelector]($backend), [ModelSelectorProps]($common)
+See [ModelSelector.insert]($backend)
 
 ## CategorySelector
 
-``` ts
-[[include:InsertCategorySelector.example-code]]
-```
-
-See [CategorySelector]($backend), [CategorySelectorProps]($common)
+See [CategorySelector.insert]($backend)
 
 ## DisplayStyle3d
 
-``` ts
-[[include:InsertDisplayStyle3d.example-code]]
-```
-
-See [DefinitionElementProps]($common), [DisplayStyle3d]($backend)
+See [DisplayStyle3d.insert]($backend)
 
 ## OrthographicViewDefinition
 
-``` ts
-[[include:InsertOrthographicViewDefinition.example-code]]
-```
-
-See [ViewDefinition.createCode]($backend), [OrthographicViewDefinition]($backend), [SpatialViewDefinitionProps]($common)
+See [OrthographicViewDefinition.insert]($backend)

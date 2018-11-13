@@ -5,6 +5,7 @@
 /** @module Item */
 
 import * as React from "react";
+import * as classnames from "classnames";
 
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 
@@ -78,11 +79,10 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
 
   public render(): React.ReactNode {
     const icon = <Icon iconSpec={this.props.iconSpec} />;
-    let myClassNames = "";
-    if (!this.state.isVisible)
-      myClassNames += "item-hidden";
-    if (!this.state.isEnabled)
-      myClassNames += "nz-is-disabled";
+    const myClassNames = classnames(
+      !this.state.isVisible && "item-hidden",
+      !this.state.isEnabled && "nz-is-disabled",
+    );
 
     return (
       <ToolbarIcon

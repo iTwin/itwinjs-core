@@ -46,8 +46,6 @@ export interface PropertyRendererState {
   displayValue?: React.ReactNode;
   /** Current width of this component in pixels */
   width?: number;
-  /** Mouse s hovering over */
-  isHover: boolean;
 }
 
 /**
@@ -59,20 +57,11 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
   public readonly state: Readonly<PropertyRendererState> = {
     displayValue: UiComponents.i18n.translate("UiComponents:general.loading"),
     width: undefined,
-    isHover: false,
   };
 
   private _onClick = () => {
     if (this.props.onClick)
       this.props.onClick(this.props.propertyRecord, this.props.uniqueKey);
-  }
-
-  private _onMouseEnter = () => {
-    this.setState({ isHover: !this.props.isSelected && this.props.onClick !== undefined });
-  }
-
-  private _onMouseLeave = () => {
-    this.setState({ isHover: false });
   }
 
   private async updateDisplayValue(props: PropertyRendererProps) {
@@ -100,9 +89,6 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
       ? "components-property-record--horizontal"
       : "components-property-record--vertical";
 
-    if (this.state.isHover)
-      propertyRecordClassName += " components--hover";
-
     if (props.isSelected)
       propertyRecordClassName += " components--selected";
 
@@ -120,9 +106,6 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
   public componentDidUpdate(prevProps: PropertyRendererProps) {
     if (prevProps.propertyRecord !== this.props.propertyRecord)
       this.updateDisplayValue(this.props);
-
-    if (this.state.isHover && this.props.isSelected)
-      this.setState({ isHover: false });
 
     this.afterRender();
   }
@@ -167,8 +150,6 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
         style={divStyle}
         className={this.getClassName(this.props)}
         onClick={this._onClick}
-        onMouseEnter={this._onMouseEnter}
-        onMouseLeave={this._onMouseLeave}
       >
         <div className="components-property-record-label">{this.props.propertyRecord.property.displayLabel}</div>
         {this.props.orientation === Orientation.Horizontal && this.props.onColumnRatioChanged ?

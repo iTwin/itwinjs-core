@@ -34,6 +34,7 @@ When the bridge runs for the very first time, it would look like the following. 
 ```
 
 See:
+
 * [Importing a schema and bootstrapping definitions](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
 * [AccessToken](./common/AccessToken.md)
 * [IModelDb.create]($backend)
@@ -41,8 +42,8 @@ See:
 * [IModelDb.pullAndMergeChanges]($backend)
 * [IModelDb.pushChanges]($backend)
 * [ConcurrencyControl](./backend/ConcurrencyControl.md)
-* [Insert a DefinitionModel](./backend/CreateModels.md#DefinitionModel)
-* [Insert a PhysicalModel](./backend/CreateModels.md#PhysicalModel)
+* [DefinitionModel.insert]($backend)
+* [PhysicalModel.insert]($backend)
 * [Insert a Subject element](./backend/CreateElements.md#Subject)
 * [Insert a ModelSelector element](./backend/CreateElements.md#ModelSelector)
 * [Insert a CategorySelector element](./backend/CreateElements.md#CategorySelector)

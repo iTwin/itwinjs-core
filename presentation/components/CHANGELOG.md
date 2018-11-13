@@ -1,6 +1,28 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Wed, 31 Oct 2018 20:55:37 GMT and should not be manually modified.
+This log was last generated on Mon, 12 Nov 2018 16:42:10 GMT and should not be manually modified.
+
+## 0.166.0
+Mon, 12 Nov 2018 16:42:10 GMT
+
+*Version update only*
+
+## 0.165.0
+Mon, 12 Nov 2018 15:47:00 GMT
+
+### Updates
+
+- Unified Selection: Fix selection change events being broadcasted indefinitely when multiple unified selection viewports are used
+
+## 0.164.0
+Thu, 08 Nov 2018 17:59:21 GMT
+
+### Updates
+
+- Deprecated dev-cors-proxy-server and use of it. 
+- Fix filtered tree rendering "0 matches found" when there's no filtering applied and data provider returns 0 nodes
+- Updated to TypeScript 3.1
+- React to Tree API changes
 
 ## 0.163.0
 Wed, 31 Oct 2018 20:55:37 GMT

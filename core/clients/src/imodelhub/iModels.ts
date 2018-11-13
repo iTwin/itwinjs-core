@@ -223,7 +223,7 @@ class SeedFileHandler {
 }
 
 /**
- * Query object for getting [[HubIModel]] instances. You can use this to modify the [[IModelHandler.get]] results.
+ * Query object for getting [[HubIModel]] instances. You can use this to modify the [[IModelsHandler.get]] results.
  */
 export class IModelQuery extends InstanceIdQuery {
     /**
@@ -237,31 +237,22 @@ export class IModelQuery extends InstanceIdQuery {
         this.addFilter(`Name+eq+'${name}'`);
         return this;
     }
-
-    /**
-     * Query [[Project]] primary iModel.
-     * @returns This query.
-     */
-    public primary() {
-        this.resetQueryOptions();
-
-        this.orderBy("CreatedDate+asc").top(1);
-        return this;
-    }
 }
 
 /**
  * Handler for managing [[HubIModel]] instances. Use [[IModelHubClient.IModels]] to get an instance of this handler.
+ * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[Project]] workflow.
  */
-export class IModelHandler {
+export class IModelsHandler {
     private _handler: IModelBaseHandler;
     private _fileHandler?: FileHandler;
     private _seedFileHandler: SeedFileHandler;
 
     /**
-     * Constructor for IModelHandler. Should use @see IModelClient instead of directly constructing this.
+     * Constructor for IModelsHandler. Should use @see IModelClient instead of directly constructing this.
      * @param handler Handler for WSG requests.
      * @param fileHandler Handler for file system.
+     * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[Project]] workflow.
      * @hidden
      */
     constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
@@ -530,5 +521,138 @@ export class IModelHandler {
         await this._fileHandler.downloadFile(alctx, seedFiles[0].downloadUrl!, downloadToPathname, parseInt(seedFiles[0].fileSize!, 10), progressCallback);
         alctx.enter();
         Logger.logTrace(loggingCategory, `Downloading seed file for iModel ${imodelId}`);
+    }
+}
+
+/**
+ * Handler for managing [[HubIModel]] instance. Use [[IModelHubClient.IModel]] to get an instance of this handler.
+ * @note Use [[IModelHubClient.IModels]] if multiple iModels per [[Project]] are supported.
+ */
+export class IModelHandler {
+    private _handler: IModelsHandler;
+
+    /**
+     * Constructor for IModelHandler. Should use @see IModelClient instead of directly constructing this.
+     * @param handler Handler for managing [[HubIModel]] instances.
+     * @note Use [[IModelHubClient.IModels]] if multiple iModels per [[Project]] are supported.
+     * @hidden
+     */
+    constructor(handler: IModelsHandler) {
+        this._handler = handler;
+    }
+
+    /**
+     * Get iModel that belong to the specified [[Project]].
+     * @param alctx Activity logging context
+     * @param token Delegation token of the authorized user.
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @returns [[HubIModel]] instances that match the query.
+     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
+     * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+     */
+    public async get(alctx: ActivityLoggingContext, token: AccessToken, contextId: string): Promise<HubIModel> {
+        alctx.enter();
+
+        Logger.logInfo(loggingCategory, `Querying iModel in project ${contextId}`);
+        const query = new IModelQuery().orderBy("CreatedDate+asc").top(1);
+        const imodels = await this._handler.get(alctx, token, contextId, query);
+
+        if (imodels.length < 1)
+            return Promise.reject(new IModelHubError(IModelHubStatus.iModelDoesNotExist));
+
+        return imodels[0];
+    }
+
+    /**
+     * Delete an iModel from a [[Project]]. This method is not supported in iModelBank.
+     * @param alctx Activity logging context
+     * @param token Delegation token of the authorized user.
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
+     * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have DeleteiModel permission.
+     * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+     */
+    public async delete(alctx: ActivityLoggingContext, token: AccessToken, contextId: string): Promise<void> {
+        const imodel = await this.get(alctx, token, contextId);
+        await this._handler.delete(alctx, token, contextId, imodel.id!);
+    }
+
+    /**
+     * Get the [[InitializationState]] for the specified iModel. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+     * @param alctx Activity logging context
+     * @param token Delegation token of the authorized user.
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @returns State of the seed file initialization.
+     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
+     * @throws [[IModelHubError]] with [IModelHubStatus.FileDoesNotExist]($bentley) if the seed file was not found.
+     * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+     */
+    public async getInitializationState(alctx: ActivityLoggingContext, token: AccessToken, contextId: string): Promise<InitializationState> {
+        const imodel = await this.get(alctx, token, contextId);
+        return await this._handler.getInitializationState(alctx, token, imodel.id!);
+    }
+
+    /**
+     * Create an iModel from given seed file. In most cases [IModelDb.create]($backend) should be used instead. See [iModel creation]($docs/learning/iModelHub/iModels/CreateiModel.md).
+     *
+     * This method does not work on browsers. If iModel creation fails before finishing file upload, partially created iModel is deleted. This method is not supported in iModelBank.
+     * @param alctx Activity logging context
+     * @param token Delegation token of the authorized user.
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param name Name of the iModel on the Hub.
+     * @param description Description of the iModel on the Hub.
+     * @param progressCallback Callback for tracking progress.
+     * @param timeOutInMiliseconds Time to wait for iModel initialization.
+     * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
+     * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+     */
+    public async create(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, name: string, pathName: string,
+        description?: string, progressCallback?: (progress: ProgressInfo) => void,
+        timeOutInMilliseconds: number = 120000): Promise<HubIModel> {
+        let imodelExists = true;
+        try {
+            await this.get(alctx, token, contextId);
+        } catch (err) {
+            if (err instanceof IModelHubError && err.errorNumber === IModelHubStatus.iModelDoesNotExist)
+                imodelExists = false;
+            else
+                throw err;
+        }
+
+        if (imodelExists)
+            return Promise.reject(new IModelHubError(IModelHubStatus.iModelAlreadyExists));
+
+        return await this._handler.create(alctx, token, contextId, name, pathName, description, progressCallback, timeOutInMilliseconds);
+    }
+
+    /**
+     * Update iModel's name and/or description
+     * @param alctx Activity logging context
+     * @param token Delegation token of the authorized user.
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param imodel iModel to update. See [[HubIModel]].
+     * @throws [[IModelHubError]] with [IModelHubStatus.UserDoesNotHavePermission]($bentley) if the user does not have CreateiModel permission.
+     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
+     * @throws [[IModelHubError]] with [IModelHubStatus.iModelIsNotInitialized]$(bentley) if iModel is not initialized.
+     * @throws [[IModelHubError]] with [IModelHubStatus.iModelAlreadyExists]$(bentley) if iModel with specified name already exists.
+     * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+     */
+    public async update(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, imodel: HubIModel): Promise<HubIModel> {
+        return await this._handler.update(alctx, token, contextId, imodel);
+    }
+
+    /**
+     * Method to download the seed file for iModel. This will download the original seed file, that was uploaded when creating iModel. To download a file that was updated with ChangeSets on iModelHub, see [[BriefcaseHandler.download]].
+     * @param alctx Activity logging context
+     * @param token Delegation token of the authorized user.
+     * @param contextId Id for the iModel's context. For iModelHub it should be the id of the connect [[Project]].
+     * @param downloadToPathname Directory where the seed file should be downloaded.
+     * @param progressCallback Callback for tracking progress.
+     * @throws [[IModelHubError]] with [IModelHubStatus.iModelDoesNotExist]$(bentley) if iModel does not exist.
+     * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
+     */
+    public async download(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, downloadToPathname: string, progressCallback?: (progress: ProgressInfo) => void): Promise<void> {
+        const imodel = await this.get(alctx, token, contextId);
+        await this._handler.download(alctx, token, imodel.id!, downloadToPathname, progressCallback);
     }
 }
