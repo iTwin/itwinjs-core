@@ -69,7 +69,7 @@ export class ContextRealityModelState implements TileTreeModelState {
       return false;
 
     const treeCartographicRange = new CartographicRange(tileTreeRange, tileTreeTransform);
-    const projectCartographicRange = new CartographicRange(this._iModel.projectExtents, this._iModel.ecefLocation.getTransform())
+    const projectCartographicRange = new CartographicRange(this._iModel.projectExtents, this._iModel.ecefLocation.getTransform());
 
     return treeCartographicRange.intersectsRange(projectCartographicRange);
   }
