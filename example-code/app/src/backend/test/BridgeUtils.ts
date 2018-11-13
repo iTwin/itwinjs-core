@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { IModelDb, OrthographicViewDefinition, ViewDefinition, Subject } from "@bentley/imodeljs-backend";
 import { Id64String, Id64 } from "@bentley/bentleyjs-core";
-import { CodeSpec, CodeScopeSpec, SpatialViewDefinitionProps, GeometryStreamProps, GeometryStreamBuilder, SubjectProps, Code, BisCodeSpec } from "@bentley/imodeljs-common";
+import { CodeSpec, CodeScopeSpec, SpatialViewDefinitionProps, GeometryStreamProps, GeometryStreamBuilder, SubjectProps, Code, BisCodeSpec, Camera } from "@bentley/imodeljs-common";
 import { XYZProps, Arc3d, Point3d } from "@bentley/geometry-core";
 
 // __PUBLISH_EXTRACT_START__ insertSubject.example-code
@@ -61,7 +61,7 @@ export function insertOrthographicViewDefinition(
     origin,
     extents,
     cameraOn: false,
-    camera: { eye: [0, 0, 0], lens: 0, focusDist: 0 }, // not used when cameraOn === false
+    camera: new Camera(), // not used when cameraOn === false
   };
   return iModelDb.elements.insertElement(viewDefinitionProps);
 }

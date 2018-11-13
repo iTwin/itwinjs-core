@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { Box, Point3d, Vector3d, XYZProps } from "@bentley/geometry-core";
-import { CodeScopeSpec, CodeSpec, GeometryStreamBuilder, GeometryStreamProps, SpatialViewDefinitionProps } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, CodeSpec, GeometryStreamBuilder, GeometryStreamProps, SpatialViewDefinitionProps, Camera } from "@bentley/imodeljs-common";
 import { IModelDb, OrthographicViewDefinition, ViewDefinition } from "../../backend";
 
 export class IModelWriter {
@@ -37,7 +37,7 @@ export class IModelWriter {
       origin,
       extents,
       cameraOn: false,
-      camera: { eye: [0, 0, 0], lens: 0, focusDist: 0 }, // not used when cameraOn === false
+      camera: new Camera(), // not used when cameraOn === false
     };
     return iModelDb.elements.insertElement(viewDefinitionProps);
   }
