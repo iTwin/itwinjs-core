@@ -95,18 +95,19 @@ export class FluentdLoggerStream extends Writable {
         return response;
     }
 
+    // tslint:disable-next-line:naming-convention
     public _writev(chunks: Array<{ chunk: any, encoding: string }>, callback: (err?: Error) => void): void {
         for (const entry of chunks) {
             this._write(entry.chunk, entry.encoding, callback);
         }
     }
 
+    // tslint:disable-next-line:naming-convention
     public _write(chunk: any, encoding: string, callback: (err?: Error) => void): void {
         // we create a domain to catch errors from the socket. Major errors like CONNECTION not made is sent to bunyan
-        // TODO: investigate more for a better way
         const fluentdDomain: domain.Domain = domain.create();
         fluentdDomain.on("error", (errEvent: Error) => {
-            console.error("Fluentd domain error -- ", errEvent.message);
+            this.emit("error", new Error(`Fluentd domain error -- , ${errEvent.message}`));
             callback(errEvent);
         });
 
@@ -120,7 +121,7 @@ export class FluentdLoggerStream extends Writable {
                 }
                 packet = JSON.stringify(packet);
             } catch (error) {
-                console.error(`Error: ${error}, Encoding: ${encoding}`);
+                this.emit("error", new Error(`Error: ${error}, Encoding: ${encoding}`));
                 packet = JSON.stringify(chunk);
             }
 
@@ -128,7 +129,7 @@ export class FluentdLoggerStream extends Writable {
             const poster = new PostFluentd();
             Promise.resolve(poster.postasync(this._fluentdParams, packet))
                 .then((res) => { if (res === -1 || res !== 200) { throw new Error("invalid response from fluentd"); } })
-                .catch((err) => { console.error("Fluentd post error -- " + err.message); });
+                .catch((err) => { this.emit("error", new Error(`Fluentd post error --  ${err.message}`)); });
             callback();
         });
     }
