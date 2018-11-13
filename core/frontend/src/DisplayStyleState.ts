@@ -39,8 +39,8 @@ class ContextModelState implements TileTreeModelState {
     this._tilesetUrl = props.tilesetUrl;
     this._tileTreeState = new TileTreeState(iModel, true, "");
   }
-  public tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
-  public loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
+  public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
+  public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
   public loadTileTree(_asClassifier?: boolean, _classifierExpansion?: number): TileTree.LoadStatus {
     const tileTreeState = this._tileTreeState;
     if (TileTree.LoadStatus.NotLoaded !== tileTreeState.loadStatus)
