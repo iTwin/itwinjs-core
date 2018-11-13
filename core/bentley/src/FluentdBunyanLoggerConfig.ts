@@ -15,7 +15,7 @@ import { BentleyError, IModelStatus } from "./BentleyError";
 export class FluentdBunyanLoggerConfig {
     /** Create a bunyan logger that streams to fluentd
      * ```
-     * BunyanLoggerConfig.logToBunyan(SeqLoggerConfig.createBunyanSeqLogger(seqConfig));
+     * BunyanLoggerConfig.logToBunyan(FluentdBunyanLoggerConfig.createBunyanFluentdLogger(fluentdConfig));
      * ```
      * See [[BunyanLoggerConfig.logToBunyan]]
      */
