@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
-import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, ModelSelector, PhysicalModel, SpatialCategory } from "../../backend";
+import { IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "../../backend";
 import * as path from "path";
 import * as fs from "fs";
 import { IModelWriter } from "./IModelWriter";
@@ -75,9 +75,8 @@ export class TestPushUtility {
     const modelSelectorId: Id64String = ModelSelector.insert(this._iModelDb, definitionModelId, viewName, [this._physicalModelId]);
     const categorySelectorId: Id64String = CategorySelector.insert(this._iModelDb, definitionModelId, viewName, [this._categoryId]);
     const displayStyleId: Id64String = DisplayStyle3d.insert(this._iModelDb, definitionModelId, viewName);
-    const physicalViewOrigin = new Point3d(0, 0, 0);
-    const physicalViewExtents = new Point3d(50, 50, 50);
-    IModelWriter.insertOrthographicViewDefinition(this._iModelDb, definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, physicalViewOrigin, physicalViewExtents);
+    const viewRange = new Range3d(0, 0, 0, 50, 50, 50);
+    OrthographicViewDefinition.insert(this._iModelDb, definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, viewRange);
 
     this._iModelDb.updateProjectExtents(new AxisAlignedBox3d(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000)));
 

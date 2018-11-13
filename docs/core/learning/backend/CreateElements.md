@@ -63,8 +63,4 @@ See [DisplayStyle3d.insert]($backend)
 
 ## OrthographicViewDefinition
 
-``` ts
-[[include:InsertOrthographicViewDefinition.example-code]]
-```
-
-See [ViewDefinition.createCode]($backend), [OrthographicViewDefinition]($backend), [SpatialViewDefinitionProps]($common)
+See [OrthographicViewDefinition.insert]($backend)
