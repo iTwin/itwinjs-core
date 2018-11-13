@@ -239,7 +239,7 @@ export abstract class RenderTexture implements IDisposable {
   }
 
   /** Releases any WebGL resources owned by this texture.
-   * If [[RenderTexture.isOwned]] is true, then whatever object claims ownership of the texture is reponsible for disposing of it when it is no longer needed.
+   * If [[RenderTexture.isOwned]] is true, then whatever object claims ownership of the texture is responsible for disposing of it when it is no longer needed.
    * Otherwise, imodeljs will handle its disposal.
    */
   public abstract dispose(): void;
@@ -456,10 +456,20 @@ export class Camera implements CameraProps {
     this.focusDist = rhs.focusDist;
     this.eye.setFrom(rhs.eye);
   }
-  public constructor(json: CameraProps) {
-    this.lens = Angle.fromJSON(json.lens);
-    this.focusDist = JsonUtils.asDouble(json.focusDist);
-    this.eye = Point3d.fromJSON(json.eye);
+
+  /** Construct a Camera
+   * @param props The properties of the new camera. If undefined, create a camera with eye at {0,0,0}, 90 degree lens, 1 meter focus distance.
+   */
+  public constructor(props?: CameraProps) {
+    if (props !== undefined) {
+      this.lens = Angle.fromJSON(props.lens);
+      this.focusDist = JsonUtils.asDouble(props.focusDist);
+      this.eye = Point3d.fromJSON(props.eye);
+      return;
+    }
+    this.lens = Angle.createRadians(Math.PI / 2.0);
+    this.focusDist = 1;
+    this.eye = new Point3d();
   }
 }
 
@@ -1617,7 +1627,7 @@ export class GeometryParams {
    */
   public backgroundFill?: BackgroundFill;
   /** Optional fill specification that determines when and if a region interior will display using [[gradient]], [[backgroundFill]], or [[fillColor]] in that order of preference.
-   * Fill only applies to [[RenderMode.Wireframe]] views. In a [[RenderMode.SmoothShade]] or [[RenderMode.SolidFill]] view, regions will always display as surfaces prefering [[fillColor]] when present over [[lineColor]].
+   * Fill only applies to [[RenderMode.Wireframe]] views. In a [[RenderMode.SmoothShade]] or [[RenderMode.SolidFill]] view, regions will always display as surfaces preferring [[fillColor]] when present over [[lineColor]].
    * Default is [[FillDisplay.Never]].
    */
   public fillDisplay?: FillDisplay;

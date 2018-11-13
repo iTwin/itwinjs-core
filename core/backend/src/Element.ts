@@ -61,10 +61,10 @@ export abstract class Element extends Entity implements ElementProps {
   }
 
   public static onInsert(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
-  public static onInserted(_id: string): void { }
   public static onUpdate(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
-  public static onUpdated(_props: ElementProps): void { }
   public static onDelete(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
+  public static onInserted(_props: ElementProps): void { }
+  public static onUpdated(_props: ElementProps): void { }
   public static onDeleted(_props: ElementProps): void { }
 
   /** Add this Element's properties to an object for serializing to JSON.

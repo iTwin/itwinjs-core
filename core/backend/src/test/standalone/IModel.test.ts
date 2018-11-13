@@ -86,7 +86,7 @@ describe("iModel", () => {
   });
 
   it("FontMap", () => {
-    const fonts1 = imodel1.getFontMap();
+    const fonts1 = imodel1.fontMap;
     assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
     assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
     assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");

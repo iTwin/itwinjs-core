@@ -126,17 +126,18 @@ export class IModelDb extends IModel {
   public elements = new IModelDb.Elements(this);
   public views = new IModelDb.Views(this);
   public tiles = new IModelDb.Tiles(this);
+  public txns = new TxnManager(this);
   private _linkTableRelationships?: IModelDbLinkTableRelationships;
   private readonly _statementCache = new ECSqlStatementCache();
   private readonly _sqliteStatementCache = new SqliteStatementCache();
   private _codeSpecs?: CodeSpecs;
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
-  private _txnManager?: TxnManager;
   protected _fontMap?: FontMap;
   private readonly _snaps = new Map<string, SnapRequest>();
+
   public readFontJson(): string { return this.nativeDb.readFontMap(); }
-  public getFontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
+  public get fontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
   public embedFont(prop: FontProps): FontProps { this._fontMap = undefined; return JSON.parse(this.nativeDb.embedFont(JSON.stringify(prop))) as FontProps; }
 
   /** Get the parameters used to open this iModel */
@@ -238,11 +239,11 @@ export class IModelDb extends IModel {
   }
 
   /** Create an iModel on iModelHub */
-  public static async create(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, fileName: string, args: CreateIModelProps): Promise<IModelDb> {
-    actx.enter();
+  public static async create(activity: ActivityLoggingContext, accessToken: AccessToken, contextId: string, fileName: string, args: CreateIModelProps): Promise<IModelDb> {
+    activity.enter();
     IModelDb.onCreate.raiseEvent(accessToken, contextId, args);
-    const iModelId: string = await BriefcaseManager.create(actx, accessToken, contextId, fileName, args);
-    return IModelDb.open(actx, accessToken, contextId, iModelId);
+    const iModelId: string = await BriefcaseManager.create(activity, accessToken, contextId, fileName, args);
+    return IModelDb.open(activity, accessToken, contextId, iModelId);
   }
 
   /** Open an iModel from a local file.
@@ -257,7 +258,7 @@ export class IModelDb extends IModel {
   }
 
   /**
-   * Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from the iModelHub to the
+   * Open an iModel from iModelHub. IModelDb files are cached locally. The requested version may be downloaded from iModelHub to the
    * cache, or a previously downloaded version re-used from the cache - this behavior can optionally be configured through OpenParams.
    * Every open call must be matched with a call to close the IModelDb.
    * @param accessToken Delegation token of the authorized user.
@@ -266,14 +267,14 @@ export class IModelDb extends IModel {
    * @param version Version of the iModel to open
    * @param openParams Parameters to open the iModel
    */
-  public static async open(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
-    actx.enter();
-    IModelDb.onOpen.raiseEvent(accessToken, contextId, iModelId, openParams, version, actx);
-    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(actx, accessToken, contextId, iModelId, openParams, version);
-    actx.enter();
+  public static async open(activity: ActivityLoggingContext, accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams = OpenParams.pullAndPush(), version: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
+    activity.enter();
+    IModelDb.onOpen.raiseEvent(accessToken, contextId, iModelId, openParams, version, activity);
+    const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(activity, accessToken, contextId, iModelId, openParams, version);
+    activity.enter();
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
     IModelDb.setFirstAccessToken(imodelDb.briefcase.iModelId, accessToken);
-    IModelDb.onOpened.raiseEvent(imodelDb, actx);
+    IModelDb.onOpened.raiseEvent(imodelDb, activity);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
     return imodelDb;
   }
@@ -303,18 +304,18 @@ export class IModelDb extends IModel {
    * @param keepBriefcase Hint to discard or keep the briefcase for potential future use.
    * @throws IModelError if the iModel is not open, or is really a standalone iModel
    */
-  public async close(actx: ActivityLoggingContext, accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
+  public async close(activity: ActivityLoggingContext, accessToken: AccessToken, keepBriefcase: KeepBriefcase = KeepBriefcase.Yes): Promise<void> {
     if (!this.briefcase)
       throw this.newNotOpenError();
     if (this.briefcase.isStandalone)
       throw new IModelError(BentleyStatus.ERROR, "Cannot use IModelDb.close() to close a standalone iModel. Use IModelDb.closeStandalone() instead");
 
     try {
-      await BriefcaseManager.close(actx, accessToken, this.briefcase, keepBriefcase);
+      await BriefcaseManager.close(activity, accessToken, this.briefcase, keepBriefcase);
     } catch (error) {
       throw error;
     } finally {
-      actx.enter();
+      activity.enter();
       this.clearBriefcaseEntry();
     }
   }
@@ -577,32 +578,32 @@ export class IModelDb extends IModel {
   }
 
   /**
-   * Pull and Merge changes from the iModelHub
+   * Pull and Merge changes from iModelHub
    * @param accessToken Delegation token of the authorized user.
    * @param version Version to pull and merge to.
    * @throws [[IModelError]] If the pull and merge fails.
    */
-  public async pullAndMergeChanges(actx: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    actx.enter();
+  public async pullAndMergeChanges(activity: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    activity.enter();
     this.concurrencyControl.onMergeChanges();
-    await BriefcaseManager.pullAndMergeChanges(actx, accessToken, this.briefcase, version);
-    actx.enter();
+    await BriefcaseManager.pullAndMergeChanges(activity, accessToken, this.briefcase, version);
+    activity.enter();
     this.concurrencyControl.onMergedChanges();
     this._token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
   }
 
   /**
-   * Push changes to the iModelHub
+   * Push changes to iModelHub
    * @param accessToken Delegation token of the authorized user.
    * @param describer A function that returns a description of the changeset. Defaults to the combination of the descriptions of all local Txns.
    * @throws [[IModelError]] If the pull and merge fails.
    */
-  public async pushChanges(actx: ActivityLoggingContext, accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
-    actx.enter();
+  public async pushChanges(activity: ActivityLoggingContext, accessToken: AccessToken, describer?: ChangeSetDescriber): Promise<void> {
+    activity.enter();
     const description = describer ? describer(this.txns.getCurrentTxnId()) : this.txns.describeChangeSet();
-    await BriefcaseManager.pushChanges(actx, accessToken, this.briefcase, description);
-    actx.enter();
+    await BriefcaseManager.pushChanges(activity, accessToken, this.briefcase, description);
+    activity.enter();
     this._token.changeSetId = this.briefcase.changeSetId;
     this.initializeIModelDb();
   }
@@ -613,9 +614,9 @@ export class IModelDb extends IModel {
    * @param version Version to reverse changes to.
    * @throws [[IModelError]] If the reversal fails.
    */
-  public async reverseChanges(actx: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    await BriefcaseManager.reverseChanges(actx, accessToken, this.briefcase, version);
-    actx.enter();
+  public async reverseChanges(activity: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    await BriefcaseManager.reverseChanges(activity, accessToken, this.briefcase, version);
+    activity.enter();
     this.initializeIModelDb();
   }
 
@@ -625,9 +626,9 @@ export class IModelDb extends IModel {
    * @param version Version to reinstate changes to.
    * @throws [[IModelError]] If the reinstate fails.
    */
-  public async reinstateChanges(actx: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    await BriefcaseManager.reinstateChanges(actx, accessToken, this.briefcase, version);
-    actx.enter();
+  public async reinstateChanges(activity: ActivityLoggingContext, accessToken: AccessToken, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    await BriefcaseManager.reinstateChanges(activity, accessToken, this.briefcase, version);
+    activity.enter();
     this.initializeIModelDb();
   }
 
@@ -652,15 +653,15 @@ export class IModelDb extends IModel {
    * @throws IModelError if the schema lock cannot be obtained.
    * @see containsClass
    */
-  public async importSchema(actx: ActivityLoggingContext, schemaFileName: string): Promise<void> {
-    actx.enter();
+  public async importSchema(activity: ActivityLoggingContext, schemaFileName: string): Promise<void> {
+    activity.enter();
 
     if (!this.briefcase)
       throw this.newNotOpenError();
 
     if (!this.briefcase.isStandalone) {
-      await this.concurrencyControl.lockSchema(actx, IModelDb.getAccessToken(this.iModelToken.iModelId!));
-      actx.enter();
+      await this.concurrencyControl.lockSchema(activity, IModelDb.getAccessToken(this.iModelToken.iModelId!));
+      activity.enter();
     }
     const stat = this.briefcase.nativeDb.importSchema(schemaFileName);
     if (DbResult.BE_SQLITE_OK !== stat) {
@@ -670,9 +671,9 @@ export class IModelDb extends IModel {
       try {
         // The schema import logic and/or imported Domains may have created new elements and models.
         // Make sure we have the supporting locks and codes.
-        await this.concurrencyControl.request(actx, IModelDb.getAccessToken(this.iModelToken.iModelId!));
+        await this.concurrencyControl.request(activity, IModelDb.getAccessToken(this.iModelToken.iModelId!));
       } catch (err) {
-        actx.enter();
+        activity.enter();
         this.abandonChanges();
         throw err;
       }
@@ -704,9 +705,6 @@ export class IModelDb extends IModel {
 
   /** Get the ConcurrencyControl for this IModel. */
   public get concurrencyControl(): ConcurrencyControl { return (this._concurrency !== undefined) ? this._concurrency : (this._concurrency = new ConcurrencyControl(this)); }
-
-  /** Get the TxnManager for this IModelDb. */
-  public get txns(): TxnManager { return (this._txnManager !== undefined) ? this._txnManager : (this._txnManager = new TxnManager(this)); }
 
   /** Get the CodeSpecs in this IModel. */
   public get codeSpecs(): CodeSpecs { return (this._codeSpecs !== undefined) ? this._codeSpecs : (this._codeSpecs = new CodeSpecs(this)); }
@@ -862,8 +860,8 @@ export class IModelDb extends IModel {
    */
   public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
 
-  public requestSnap(actx: ActivityLoggingContext, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
-    actx.enter();
+  public requestSnap(activity: ActivityLoggingContext, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+    activity.enter();
     let request = this._snaps.get(connectionId);
     if (undefined === request) {
       request = (new (NativePlatformRegistry.getNativePlatform()).SnapRequest()) as SnapRequest;
@@ -1122,7 +1120,7 @@ export namespace IModelDb {
         throw new IModelError(val.error.status, "Problem inserting element", Logger.logWarning, loggingCategory);
 
       elProps.id = Id64.fromJSON(JSON.parse(val.result!).id);
-      jsClass.onInserted(elProps.id);
+      jsClass.onInserted(elProps);
       return elProps.id;
     }
 
@@ -1347,13 +1345,13 @@ export namespace IModelDb {
     public constructor(private _iModel: IModelDb) { }
 
     /** @hidden */
-    public requestTileTreeProps(actx: ActivityLoggingContext, id: string): Promise<TileTreeProps> {
-      actx.enter();
+    public requestTileTreeProps(activity: ActivityLoggingContext, id: string): Promise<TileTreeProps> {
+      activity.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
       return new Promise<TileTreeProps>((resolve, reject) => {
-        actx.enter();
+        activity.enter();
         this._iModel.nativeDb.getTileTree(id, (ret: ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, "TreeId=" + id));
@@ -1364,13 +1362,13 @@ export namespace IModelDb {
     }
 
     /** @hidden */
-    public requestTileContent(actx: ActivityLoggingContext, treeId: string, tileId: string): Promise<Uint8Array> {
-      actx.enter();
+    public requestTileContent(activity: ActivityLoggingContext, treeId: string, tileId: string): Promise<Uint8Array> {
+      activity.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
 
       return new Promise<Uint8Array>((resolve, reject) => {
-        actx.enter();
+        activity.enter();
         this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
@@ -1387,6 +1385,11 @@ export namespace IModelDb {
  */
 export class TxnManager {
   constructor(private _iModel: IModelDb) { }
+
+  private _onBeforeOutputsHandled(_inputId: Id64String): void { }
+  private _onRootChange(_relClassName: string, _relId: Id64String, _inputId: Id64String, _outputId: Id64String): void { }
+  private _onAllInputsHandled(_outputId: Id64String): void { }
+  private _onValidateOutput(_relClassName: string, _relId: Id64String, _inputId: Id64String, _outputId: Id64String): void { }
 
   /** Get the Id of the first transaction, if any. */
   public queryFirstTxnId(): TxnManager.TxnId { return this._iModel.nativeDb!.txnManagerQueryFirstTxnId(); }
