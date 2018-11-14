@@ -39,7 +39,7 @@ Some `Model` subclasses do not correspond to modeling perspectives. `RepositoryM
 
 ### Modeling Perspective Consistency of Partitions, Models and Elements
 
-As is described in [Top of the World](top-of-the-world), for every Subject, there may be zero or more `InformationPartitionElement` child `Element`s. Each of those `InformationPartitionElement`s is effectively a declaration of modeling perspective and starts a `Model` hierarchy that is of that the declared modeling perspective.
+As is described in [Top of the World](./top-of-the-world), for every Subject, there may be zero or more `InformationPartitionElement` child `Element`s. Each of those `InformationPartitionElement`s is effectively a declaration of modeling perspective and starts a `Model` hierarchy that is of that the declared modeling perspective.
 
 Each `InformationPartitionElement` breaks down into a `Model` that is of the same modeling perspective. That `Model` in turn contains only `Element`s of the same modeling perspective. Some of those `Element`s will have breakdown `Model`s; the breakdown `Model`s must be of the same modeling perspective as the `Element` they break down.
 
