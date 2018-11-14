@@ -73,6 +73,7 @@ export class TableDemoWidget extends React.Component<Props, State> {
           dragProps={dragProps}
           dropProps={dropProps}
           reorderableColumns={true}
+          togglableColumns={true}
           settingsIdentifier="Test"
         />
       </div >

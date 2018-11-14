@@ -59,9 +59,9 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
           </div>
           <ContextMenu
             ref={(el) => { this._menu = el; }}
-            selected={0}
+            selectedIndex={0}
             onSelect={this._handleClose}
-            onBlur={this._handleClose}
+            onOutsideClick={this._handleClose}
             onEsc={this._handleClose}
             opened={this.state.expanded}
             autoflip={false}>

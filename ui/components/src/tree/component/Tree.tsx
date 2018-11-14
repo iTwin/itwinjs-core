@@ -31,8 +31,11 @@ import UiComponents from "../../UiComponents";
 // css
 import "./Tree.scss";
 
+/** Type for nodesSelected callback */
 export type NodesSelectedCallback = OnItemsSelectedCallback<TreeNodeItem>;
+/** Type for nodesDeselected callback */
 export type NodesDeselectedCallback = OnItemsDeselectedCallback<TreeNodeItem>;
+/** Type for node renderer */
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
 /** Props for the [[Tree]] component  */
@@ -78,6 +81,7 @@ export interface TreeState {
  */
 export class Tree extends React.Component<TreeProps, TreeState> {
 
+  private _mounted: boolean = false;
   private _tree!: BeInspireTree<TreeNodeItem>;
   private _treeComponent: React.RefObject<TreeBase> = React.createRef();
   private _selectionHandler: SelectionHandler<BeInspireTreeNode<TreeNodeItem>>;
@@ -161,6 +165,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   public componentDidMount() {
+    this._mounted = true;
     if (isTreeDataProviderInterface(this.props.dataProvider) && this.props.dataProvider.onTreeNodeChanged) {
       // subscribe for data provider `onTreeNodeChanged` events
       this.props.dataProvider.onTreeNodeChanged.addListener(this._onTreeNodeChanged);
@@ -177,6 +182,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       // unsubscribe from data provider `onTreeNodeChanged` events
       this.props.dataProvider.onTreeNodeChanged.removeListener(this._onTreeNodeChanged);
     }
+    this._mounted = false;
   }
 
   public shouldComponentUpdate(nextProps: TreeProps, nextState: TreeState): boolean {
@@ -278,16 +284,20 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   private _onModelReady = () => {
-    this.setState({ modelReady: true });
+    // istanbul ignore else
+    if (this._mounted)
+      this.setState({ modelReady: true });
   }
 
   private _onTreeNodeChanged = (items?: TreeNodeItem[]) => {
     using((this._tree.pauseRendering() as any), async () => {
+      // istanbul ignore else
       if (items) {
         for (const item of items) {
           if (item) {
             // specific node needs to be reloaded
             const node = this._tree.node(item.id);
+            // istanbul ignore else
             if (node) {
               const wasExpanded = node.expanded();
               node.assign(Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem.bind(this)));
@@ -414,6 +424,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 }
 
 /** @hidden */
+// istanbul ignore next
 export namespace Tree {
   export const enum TestId {
     Node = "tree-node",

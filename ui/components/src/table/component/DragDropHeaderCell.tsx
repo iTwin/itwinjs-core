@@ -9,7 +9,7 @@ import classnames from "classnames";
 import * as RDG from "react-data-grid";
 
 // tslint:disable-next-line:variable-name
-const HeaderCell = (RDG && (RDG as any).HeaderCell) || (() => (<></>)); // react-data-grid @types does not support the HeaderCell export, but it is exported in the js-only library.
+const HeaderCell = (RDG && (RDG as any).HeaderCell); // react-data-grid @types does not support the HeaderCell export, but it is exported in the js-only library.
 
 import {
   withDragSource, DragSourceArguments,
@@ -60,13 +60,14 @@ class HeaderWrapper extends React.Component<HeaderWrapperProps> {
   }
 }
 
+/** @hidden */
+export const DragDropHeaderWrapper = withDragSource(withDropTarget(HeaderWrapper)); // tslint:disable-line:variable-name
+
 // Used only internally in ./Table.tsx
 /** @hidden */
 export class DragDropHeaderCell extends React.Component<DragDropHeaderCellProps> {
   public render(): React.ReactNode {
     const { column } = this.props;
-    // tslint:disable-next-line:variable-name
-    const DDHeader = withDragSource(withDropTarget(HeaderWrapper));
     const dropTargetProps = {
       onDropTargetDrop: (args: DropTargetArguments): DropTargetArguments => {
         const sourceKey = args.dataObject.key || "";
@@ -97,7 +98,7 @@ export class DragDropHeaderCell extends React.Component<DragDropHeaderCellProps>
       defaultDragLayer: ColumnDragLayer,
     };
     return (
-      <DDHeader
+      <DragDropHeaderWrapper
         {...this.props}
         dragProps={dragSourceProps}
         dropProps={dropTargetProps}

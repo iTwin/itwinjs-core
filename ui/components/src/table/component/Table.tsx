@@ -24,6 +24,7 @@ import { PropertyValueRendererManager, IPropertyValueRendererContext, PropertyCo
 import { PropertyValueFormat, PrimitiveValue } from "../../properties";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { DragDropHeaderCell } from "./DragDropHeaderCell";
+import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
 
 /**
  * Specifies table selection target.
@@ -33,7 +34,7 @@ export enum TableSelectionTarget {
   Cell,
 }
 
-/** Properties for the [[Table]] React component */
+/** Properties for the Table React component */
 export interface TableProps {
   /** Data provider for the Table */
   dataProvider: TableDataProvider;
@@ -67,6 +68,8 @@ export interface TableProps {
   onPropertyUpdated?: (propertyArgs: PropertyUpdatedArgs, cellArgs: TableCellUpdatedArgs) => Promise<boolean>;
   /** @hidden */
   renderRow?: (item: RowItem, props: TableRowProps) => React.ReactNode;
+  /** Enables context menu to enable/disable columns */
+  togglableColumns?: boolean;
   /** Indicates whether the Table columns are reorderable */
   reorderableColumns?: boolean;
   /** Optional parameter for persistent UI settings. Used for row reordering and row collapsing persistency. */
@@ -115,11 +118,15 @@ export interface TableCellUpdatedArgs {
   cellKey: string;
 }
 
-/** State for the [[Table]] component */
+/** @hidden */
 export interface TableState {
   columns: ReactDataGridColumn[];
+  hiddenColumns: string[];
   rows: RowProps[];
   rowsCount: number;
+  menuVisible: boolean;
+  menuX: number;
+  menuY: number;
   cellEditorState: TableCellEditorState;
 }
 
@@ -130,9 +137,13 @@ export interface ReactDataGridColumn extends ReactDataGrid.Column {
 
 const initialState: TableState = {
   columns: [],
+  hiddenColumns: [],
   rows: [],
   rowsCount: 0,
   cellEditorState: { active: false },
+  menuVisible: false,
+  menuX: 0,
+  menuY: 0,
 };
 
 interface CellKey {
@@ -303,11 +314,7 @@ export class Table extends React.Component<TableProps, TableState> {
         uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
       }
     }
-    this.setState(() => {
-      return {
-        columns,
-      };
-    });
+    this.setState({ columns });
   }
 
   private _onColumnsChanged = async () => {
@@ -327,10 +334,7 @@ export class Table extends React.Component<TableProps, TableState> {
     }
 
     this._rowGetterAsync.cache.clear!();
-    this.setState((prev: TableState) => ({
-      ...prev,
-      rowsCount,
-    }));
+    this.setState({ rowsCount });
     this._rowGetterAsync(0, true);
   }
 
@@ -892,14 +896,56 @@ export class Table extends React.Component<TableProps, TableState> {
     }
   }
 
+  private _getVisibleColumns = () => {
+    return this.state.columns.filter((col) => this.state.hiddenColumns.indexOf(col.key) === -1);
+  }
+
+  private _showContextMenu = (e: React.MouseEvent) => {
+    const header = e.currentTarget.querySelector(".react-grid-Header");
+    // istanbul ignore else
+    if (header) {
+      const headerRect = header.getBoundingClientRect();
+      const offsetY = headerRect.top;
+      const height = headerRect.height;
+      const x = e.clientX, y = e.clientY;
+      if (y < offsetY + height) {
+        e.preventDefault();
+        this.setState({
+          menuX: x, menuY: y,
+          menuVisible: true,
+        });
+      }
+    }
+  }
+
+  private _hideContextMenu = () => {
+    // istanbul ignore else
+    if (this.props.togglableColumns)
+      this.setState({ menuVisible: false });
+  }
+
+  private _handleShowHideChange = (cols: string[]) => {
+    this.setState({ hiddenColumns: cols });
+    return true;
+  }
+
   public render() {
-    const wrapperName = "react-data-grid-wrapper";
     const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
 
+    const visibleColumns = this._getVisibleColumns();
     return (
-      <div className={wrapperName} onMouseDown={this._onMouseDown}>
+      <div className="react-data-grid-wrapper" onMouseDown={this._onMouseDown} onContextMenu={this.props.togglableColumns ? this._showContextMenu : undefined}>
+        {this.props.togglableColumns &&
+          <ShowHideMenu
+            opened={this.state.menuVisible}
+            items={this.state.columns.map((column) => ({ id: column.key, label: column.name }))}
+            x={this.state.menuX} y={this.state.menuY}
+            initialHidden={this.state.hiddenColumns}
+            onClose={this._hideContextMenu}
+            onShowHideChange={this._handleShowHideChange} />
+        }
         <ReactDataGrid
-          columns={this.state.columns}
+          columns={visibleColumns}
           rowGetter={this._rowGetter}
           rowRenderer={rowRenderer}
           rowsCount={this.state.rowsCount}
@@ -942,7 +988,7 @@ export interface TableRowProps {
 }
 
 /**
- * Default component for rendering a row for the [[Table]]
+ * Default component for rendering a row for the Table
  */
 export class TableRow extends React.Component<TableRowProps> {
   public render() {

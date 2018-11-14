@@ -8,21 +8,53 @@ import * as moq from "typemoq";
 import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
+import TestBackend from "react-dnd-test-backend";
 import {
   Table, TableDataProvider, RowItem,
   TableDataChangeEvent, TableDataChangesListener, CellItem,
   TableSelectionTarget, TableProps, ColumnDescription,
-} from "../../..//table";
-import { SelectionMode } from "../../..//common";
+} from "../../../table";
+import { SelectionMode } from "../../../common";
 import { PropertyRecord, PropertyValue, PropertyValueFormat, PropertyDescription, PropertyUpdatedArgs } from "../../../";
 import { waitForSpy } from "../../test-helpers/misc";
+import { DragDropContext } from "react-dnd";
+import { DragDropHeaderWrapper } from "../../../table/component/DragDropHeaderCell";
+import { LocalUiSettings } from "@bentley/ui-core";
+import TestUtils from "../../TestUtils";
 import { EditorContainer } from "../../../";
 
 describe("Table", () => {
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
   const rowClassName = "div.row";
+  const tableWrapper = ".react-data-grid-wrapper";
   const selectedRowClassName = "div.react-grid-Row.row-selected";
   const cellClassName = "div.cell";
   const selectedCellClassName = "div.cell.is-selected";
+
+  const storageMock = () => {
+    const storage: { [key: string]: any } = {};
+    return {
+      setItem: (key: string, value: string) => {
+        storage[key] = value || "";
+      },
+      getItem: (key: string) => {
+        return key in storage ? storage[key] : null;
+      },
+      removeItem: (key: string) => {
+        delete storage[key];
+      },
+      get length() {
+        return Object.keys(storage).length;
+      },
+      key: (i: number) => {
+        const keys = Object.keys(storage);
+        return keys[i] || null;
+      },
+    };
+  };
 
   const createRowItem = (index: number) => {
     const rowItem: RowItem = { key: index.toString(), cells: [] };
@@ -139,7 +171,8 @@ describe("Table", () => {
     onRowsLoaded.resetHistory();
     onPropertyEditing.resetHistory();
     onPropertyUpdated.resetHistory();
-    table = enzyme.mount(<Table
+    const TableWithContext = DragDropContext(TestBackend)(Table); // tslint:disable-line:variable-name
+    table = enzyme.mount(<TableWithContext
       dataProvider={dataProviderMock.object}
       onRowsSelected={onRowsSelectedCallbackMock.object}
       onRowsDeselected={onRowsDeselectedCallbackMock.object}
@@ -148,6 +181,10 @@ describe("Table", () => {
       onRowsLoaded={onRowsLoaded}
       onPropertyEditing={onPropertyEditing}
       onPropertyUpdated={onPropertyUpdated}
+      settingsIdentifier="test"
+      reorderableColumns={true}
+      togglableColumns={true}
+      uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
     />);
     await waitForSpy(table, onRowsLoaded);
   });
@@ -731,5 +768,22 @@ describe("Table", () => {
     });
 
   });
-
+  describe("column drag and drop", async () => {
+    it("should begin and end drag", () => {
+      table.update();
+      const instance = table.instance() as any;
+      const backend = instance.getManager().getBackend();
+      const head = table.find(DragDropHeaderWrapper);
+      expect(head).to.exist;
+      const firstInstance = head.at(1).instance() as any;
+      backend.simulateBeginDrag([firstInstance.getHandlerId()]);
+      backend.simulateEndDrag();
+    });
+  });
+  describe("columns enable/disablable", async () => {
+    it("should open context menu", () => {
+      const t = table.find(tableWrapper);
+      t.simulate("contextmenu", { currentTarget: t, clientX: -1, clientY: -1 });
+    });
+  });
 });

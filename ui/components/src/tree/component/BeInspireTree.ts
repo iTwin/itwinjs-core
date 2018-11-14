@@ -33,6 +33,7 @@ export enum BeInspireTreeEvent {
   NodeUnchecked = "node.unchecked",
 }
 
+/** Be alias for Inspire.NodeConfig */
 export type BeInspireTreeNodeConfig = Inspire.NodeConfig;
 
 /**
@@ -118,6 +119,7 @@ export class EventsMuteContext implements IDisposable {
   }
 }
 
+/** @hidden */
 export type MapPayloadToInspireNodeCallback<TPayload> = (payload: TPayload, remapper: MapPayloadToInspireNodeCallback<TPayload>) => BeInspireTreeNodeConfig;
 
 /**

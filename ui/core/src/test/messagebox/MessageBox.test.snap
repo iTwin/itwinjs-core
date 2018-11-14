@@ -12,7 +12,6 @@ exports[`MessageBox renders renders correctly 1`] = `
       },
     ]
   }
-  height=""
   minHeight={400}
   minWidth={400}
   modal={true}

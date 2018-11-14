@@ -10,13 +10,14 @@ import * as ReactDOM from "react-dom";
 /** Properties for [[withOnOutsideClick]] React higher-order component */
 export interface WithOnOutsideClickProps {
   /** outside click callback function */
-  onOutsideClick?: () => void;
+  onOutsideClick?: (event: MouseEvent) => any;
 }
 
 /** withOnOutsideClick is a React higher-order component that adds outside click support. */
 export const withOnOutsideClick = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
+  defaultOnOutsideClick?: (event: MouseEvent) => any,
 ) => {
   return class WithOnOutsideClick extends React.Component<ComponentProps & WithOnOutsideClickProps> {
     public ref: HTMLDivElement | undefined;
@@ -34,7 +35,8 @@ export const withOnOutsideClick = <ComponentProps extends {}>(
         return;
       const componentElement = ReactDOM.findDOMNode(this.ref);
       if (componentElement && componentElement instanceof Element && !componentElement.contains(e.target as Node))
-        this.props.onOutsideClick && this.props.onOutsideClick();
+        if (this.props.onOutsideClick) return this.props.onOutsideClick(e);
+        else if (defaultOnOutsideClick) return defaultOnOutsideClick(e);
     }
 
     public setRef = (element: HTMLDivElement) => {
