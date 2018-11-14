@@ -372,7 +372,7 @@ export class AppTools {
     return new CommandItemDef({
       commandId: "verticalPropertyGridOff",
       iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:buttons.tool1",
+      labelKey: "SampleApp:buttons.tool2",
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {

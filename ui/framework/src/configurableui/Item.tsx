@@ -5,7 +5,6 @@
 /** @module Item */
 
 import * as React from "react";
-import * as classnames from "classnames";
 
 import { Icon } from "./IconComponent";
 import { CommandItemProps, ToolItemProps, CommandHandler } from "./ItemProps";
@@ -39,16 +38,14 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
   }
 
   public toolbarReactNode(index?: number): React.ReactNode {
+    if (!this.isVisible)
+      return null;
+
     const key = (index !== undefined) ? index.toString() : this.id;
-    const myClassNames = classnames(
-      !this.isVisible && "item-hidden",
-      !this.isEnabled && "nz-is-disabled",
-    );
     const icon = <Icon iconSpec={this.iconSpec} />;
 
     return (
       <ToolbarIcon
-        className={myClassNames}
         isDisabled={!this.isEnabled}
         title={this.label}
         key={key}
