@@ -9,7 +9,6 @@ import { RpcRequestFulfillment } from "../core/RpcProtocol";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
 import { RpcSerializedValue } from "../core/RpcMarshaling";
-import { RpcMultipart } from "../web/RpcMultipart";
 import { RpcEndpoint } from "../core/RpcConstants";
 /** @hidden */
 declare var bentley: any;
@@ -29,141 +28,224 @@ export const interop = (() => {
   return mobilegateway;
 })();
 
+export type MobileRpcChunks = Array<string | Uint8Array>;
+
+interface MobileRpcGateway {
+  handler: (payload: ArrayBuffer | string) => void;
+  sendString: (message: string) => void;
+  sendBinary: (message: Uint8Array) => void;
+  port: number;
+}
+
 /** RPC interface protocol for an Mobile-based application. */
 export class MobileRpcProtocol extends RpcProtocol {
   public socket: WebSocket = (undefined as any);
   public requests: Map<string, MobileRpcRequest> = new Map();
-  public pending: Blob[] = [];
+  private _pending: MobileRpcChunks[] = [];
+  private _capacity: number = 1;
+  private _sendInterval: number | undefined = undefined;
+  private _sendIntervalHandler = () => this.trySend();
   public readonly requestType = MobileRpcRequest;
+  private _partialRequest: SerializedRpcRequest | undefined = undefined;
+  private _partialFulfillment: RpcRequestFulfillment | undefined = undefined;
+  private _partialData: Uint8Array[] = [];
 
-  /** Encodes a request for transport. */
-  public static encodeRequest(request: MobileRpcRequest): Uint8Array[] {
+  public static encodeRequest(request: MobileRpcRequest): MobileRpcChunks {
     const serialized = request.protocol.serialize(request);
     const data = serialized.parameters.data;
-    MobileRpcProtocol._deflateData(serialized.parameters);
-    return MobileRpcProtocol._encode(JSON.stringify(serialized), data);
+    serialized.parameters.data = data.map((v) => v.byteLength) as any[];
+    return [JSON.stringify(serialized), ...data];
   }
 
-  /** Encodes a response for transport. */
-  public static encodeResponse(fulfillment: RpcRequestFulfillment): Uint8Array[] {
+  private static encodeResponse(fulfillment: RpcRequestFulfillment): MobileRpcChunks {
     const data = fulfillment.result.data;
-    MobileRpcProtocol._deflateData(fulfillment.result);
-    return MobileRpcProtocol._encode(JSON.stringify(fulfillment), data);
+    fulfillment.result.data = data.map((v) => v.byteLength) as any[];
+    const raw = fulfillment.rawResult;
+    fulfillment.rawResult = undefined;
+    const encoded = [JSON.stringify(fulfillment), ...data];
+    fulfillment.rawResult = raw;
+    return encoded;
   }
 
-  /** Decodes a request from transport format. */
-  public static decodeRequest(data: ArrayBuffer): SerializedRpcRequest {
-    const header = MobileRpcProtocol._decodeHeader(data);
-    const objectString = MobileRpcProtocol._decodeObject(header, data);
-    const request = JSON.parse(objectString) as SerializedRpcRequest;
-    MobileRpcProtocol._inflateData(request.parameters, data, header);
-    return request;
-  }
-
-  /** Decodes a request from transport format. */
-  public static decodeResponse(data: ArrayBuffer): RpcRequestFulfillment {
-    const header = MobileRpcProtocol._decodeHeader(data);
-    const objectString = MobileRpcProtocol._decodeObject(header, data);
-    const fulfillment = JSON.parse(objectString) as RpcRequestFulfillment;
-    MobileRpcProtocol._inflateData(fulfillment.result, data, header);
-    return fulfillment;
-  }
-
-  private static _deflateData(value: RpcSerializedValue): void {
-    value.data = value.data.map((v) => v.byteLength) as any[];
-  }
-
-  private static _inflateData(value: RpcSerializedValue, data: ArrayBuffer, offset: number): void {
-    let i = offset + 4;
-    for (let j = 0; j !== value.data.length; ++j) {
-      const l = value.data[j] as any as number;
-      value.data[j] = new Uint8Array(data, i, l);
-      i += l;
-    }
-  }
-
-  private static _decodeHeader(data: ArrayBuffer): number {
-    return new DataView(data, 0, 4).getUint32(0);
-  }
-
-  private static _decodeObject(length: number, data: ArrayBuffer): string {
-    return MobileRpcProtocol._decodeString(new Uint16Array(data, 4, length / 2));
-  }
-
-  private static _toBytes(data: ArrayBufferView): Uint8Array {
-    return new Uint8Array(data.buffer, data.byteOffset, data.byteLength);
-  }
-
-  private static _encode(object: string, data: Uint8Array[]): Uint8Array[] {
-    const objectChars = MobileRpcProtocol._encodeString(object);
-
-    const header = new DataView(new ArrayBuffer(4));
-    header.setUint32(0, objectChars.byteLength);
-
-    return [MobileRpcProtocol._toBytes(header), MobileRpcProtocol._toBytes(objectChars), ...data];
-  }
-
-  private static _decodeString(data: Uint16Array): string {
-    return String.fromCharCode.apply(null, data);
-  }
-
-  private static _encodeString(value: string): Uint16Array {
-    const data = new Uint16Array(new ArrayBuffer(value.length * 2));
-    for (let i = 0; i !== value.length; ++i) {
-      data[i] = value.charCodeAt(i);
-    }
-
-    return data;
-  }
-
-  /** Constructs an Mobile protocol. */
   constructor(configuration: MobileRpcConfiguration, endPoint: RpcEndpoint) {
     super(configuration);
 
-    interface MobileGateway {
-      handler: (payload: ArrayBuffer) => void;
-      send: (message: Uint8Array[]) => void;
-      port: number;
-    }
-
-    // Initialize for frontend
     if (endPoint === RpcEndpoint.Frontend) {
-      if (typeof (WebSocket) === "undefined") {
-        throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol on frontend require websocket to work");
-      }
+      this.initializeFrontend();
+    } else if (endPoint === RpcEndpoint.Backend) {
+      this.initializeBackend();
+    }
+  }
 
-      this.socket = new WebSocket(`ws://localhost:${window.location.hash.substr(1)}`);
-      this.socket.addEventListener("message", async (event) => {
-        const buf = await RpcMultipart.readFormBlob(event.data);
-        const response = MobileRpcProtocol.decodeResponse(buf);
-        const request = this.requests.get(response.id) as MobileRpcRequest;
-        this.requests.delete(response.id);
-        request.notifyResponse(response);
-      });
-
-      this.socket.addEventListener("open", (_event) => {
-        for (const pending of this.pending) {
-          this.socket.send(pending);
-        }
-        this.pending = [];
-      });
+  private initializeFrontend() {
+    if (typeof (WebSocket) === "undefined") {
+      throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol on frontend require websocket to work");
     }
 
-    // Initialize for backend
-    if (endPoint === RpcEndpoint.Backend) {
-      const mobilegateway: MobileGateway = interop as MobileGateway;
-      if (mobilegateway === undefined || mobilegateway == null) {
-        throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol on backend require native bridge to be setup");
+    this.socket = new WebSocket(`ws://localhost:${window.location.hash.substr(1)}`);
+    this.socket.binaryType = "arraybuffer";
+    this.socket.addEventListener("message", async (event) => this.handleMessageFromBackend(event.data));
+    this.socket.addEventListener("open", (_event) => this.scheduleSend());
+  }
+
+  private scheduleSend() {
+    if (!this._pending.length) {
+      return;
+    }
+
+    this.trySend();
+
+    if (this._pending.length && typeof (this._sendInterval) === "undefined") {
+      this._sendInterval = window.setInterval(this._sendIntervalHandler, 0);
+    }
+  }
+
+  private trySend() {
+    if (this.socket.readyState !== WebSocket.OPEN) {
+      return;
+    }
+
+    while (this._capacity !== 0 && this._pending.length) {
+      --this._capacity;
+      const next = this._pending.shift()!;
+      for (const chunk of next) {
+        this.socket.send(chunk);
       }
+    }
 
-      mobilegateway.handler = async (payload) => {
-        const request: SerializedRpcRequest = MobileRpcProtocol.decodeRequest(payload);
-        const fulfillment = await this.fulfill(request);
-        const response = MobileRpcProtocol.encodeResponse(fulfillment);
-        mobilegateway.send(response);
-      };
+    if (!this._pending.length && typeof (this._sendInterval) !== "undefined") {
+      window.clearInterval(this._sendInterval);
+      this._sendInterval = undefined;
+    }
+  }
 
-      (self as any).__imodeljs_mobilegateway_handler__ = mobilegateway.handler;
+  private handleMessageFromBackend(data: string | ArrayBuffer) {
+    if (typeof (data) === "string") {
+      this.handleStringFromBackend(data);
+    } else {
+      this.handleBinaryFromBackend(data);
+    }
+  }
+
+  private handleStringFromBackend(data: string) {
+    if (this._partialFulfillment) {
+      throw new IModelError(BentleyStatus.ERROR, "Invalid state (already receiving response).");
+    }
+
+    const response = JSON.parse(data) as RpcRequestFulfillment;
+    this._partialFulfillment = response;
+
+    if (!response.result.data.length) {
+      this.notifyResponse();
+    }
+  }
+
+  private handleBinaryFromBackend(data: ArrayBuffer) {
+    const fulfillment = this._partialFulfillment;
+    if (!fulfillment) {
+      throw new IModelError(BentleyStatus.ERROR, "Invalid state (no response received).");
+    }
+
+    this._partialData.push(new Uint8Array(data));
+    if (this._partialData.length === fulfillment.result.data.length) {
+      this.notifyResponse();
+    }
+  }
+
+  private notifyResponse() {
+    const response = this._partialFulfillment;
+    if (!response) {
+      throw new IModelError(BentleyStatus.ERROR, "Invalid state (no response exists).");
+    }
+
+    ++this._capacity;
+    this.consumePartialData(response.result);
+    this._partialFulfillment = undefined;
+
+    const request = this.requests.get(response.id) as MobileRpcRequest;
+    this.requests.delete(response.id);
+    request.notifyResponse(response);
+  }
+
+  private consumePartialData(value: RpcSerializedValue) {
+    for (let i = 0, l = value.data.length; i !== l; ++i) {
+      value.data[i] = this._partialData[i];
+    }
+
+    this._partialData.length = 0;
+  }
+
+  private initializeBackend() {
+    const mobilegateway: MobileRpcGateway = interop as MobileRpcGateway;
+    if (mobilegateway === undefined || mobilegateway == null) {
+      throw new IModelError(BentleyStatus.ERROR, "MobileRpcProtocol on backend require native bridge to be setup");
+    }
+
+    mobilegateway.handler = (payload) => this.handleMessageFromFrontend(payload);
+    (self as any).__imodeljs_mobilegateway_handler__ = mobilegateway.handler;
+  }
+
+  private handleMessageFromFrontend(data: string | ArrayBuffer) {
+    if (typeof (data) === "string") {
+      this.handleStringFromFrontend(data);
+    } else {
+      this.handleBinaryFromFrontend(data);
+    }
+  }
+
+  private handleStringFromFrontend(data: string) {
+    if (this._partialRequest) {
+      throw new IModelError(BentleyStatus.ERROR, "Invalid state (already receiving request).");
+    }
+
+    const request = JSON.parse(data) as SerializedRpcRequest;
+    this._partialRequest = request;
+
+    if (!request.parameters.data.length) {
+      this.notifyRequest();
+    }
+  }
+
+  private handleBinaryFromFrontend(data: ArrayBuffer) {
+    const request = this._partialRequest;
+    if (!request) {
+      throw new IModelError(BentleyStatus.ERROR, "Invalid state (no request received).");
+    }
+
+    this._partialData.push(new Uint8Array(data));
+    if (this._partialData.length === request.parameters.data.length) {
+      this.notifyRequest();
+    }
+  }
+
+  private async notifyRequest() {
+    const request = this._partialRequest;
+    if (!request) {
+      throw new IModelError(BentleyStatus.ERROR, "Invalid state (no request exists).");
+    }
+
+    this.consumePartialData(request.parameters);
+    this._partialRequest = undefined;
+
+    const fulfillment = await this.fulfill(request);
+    const response = MobileRpcProtocol.encodeResponse(fulfillment);
+    this.sendToFrontend(response);
+  }
+
+  public sendToBackend(message: MobileRpcChunks): void {
+    this._pending.push(message);
+    this.scheduleSend();
+  }
+
+  private sendToFrontend(message: MobileRpcChunks): void {
+    const mobilegateway: MobileRpcGateway = interop as MobileRpcGateway;
+
+    for (const chunk of message) {
+      if (typeof (chunk) === "string") {
+        mobilegateway.sendString(chunk);
+      } else {
+        mobilegateway.sendBinary(chunk);
+      }
     }
   }
 }

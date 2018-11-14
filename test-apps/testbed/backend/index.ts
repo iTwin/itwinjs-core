@@ -207,10 +207,18 @@ function setupMobileMock() {
   let connection: WebSocket;
 
   const mobilegateway = {
-    handler: (_payload: ArrayBuffer) => { throw new Error("Not implemented."); },
+    handler: (_payload: ArrayBuffer | string) => { throw new Error("Not implemented."); },
 
-    send: (message: Uint8Array[]) => {
-      connection.send(Buffer.concat(message), (err) => {
+    sendString: (message: string) => {
+      connection.send(message, (err) => {
+        if (err) {
+          throw err;
+        }
+      });
+    },
+
+    sendBinary: (message: Uint8Array) => {
+      connection.send(Buffer.from(message), (err) => {
         if (err) {
           throw err;
         }
@@ -223,10 +231,13 @@ function setupMobileMock() {
   server.on("connection", (con) => {
     connection = con;
     con.on("message", (msg) => {
-      const buf = msg as Buffer;
-      const copy = new Buffer(buf.length);
-      buf.copy(copy);
-      mobilegateway.handler(copy.buffer as ArrayBuffer);
+      if (Buffer.isBuffer(msg)) {
+        const copy = new Buffer(msg.length);
+        msg.copy(copy);
+        mobilegateway.handler(copy.buffer as ArrayBuffer);
+      } else if (typeof (msg) === "string") {
+        mobilegateway.handler(msg);
+      }
     });
   });
 
