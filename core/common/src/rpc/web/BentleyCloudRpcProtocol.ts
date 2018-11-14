@@ -12,6 +12,7 @@ import { RpcRequest } from "../core/RpcRequest";
 import { IModelError } from "../../IModelError";
 import { BentleyStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { Logger, assert } from "@bentley/bentleyjs-core";
+import { URL } from "url";
 
 enum AppMode {
   MilestoneReview = "1",
@@ -25,10 +26,11 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
 
   /** Returns the operation specified by an OpenAPI-compatible URI path. */
   public getOperationFromPath(path: string): SerializedRpcOperation {
-    const components = path.split("/");
-    const operationIndex = (components.length % 2 === 0) ? -1 : -2;
-    const operationComponent = components.slice(operationIndex)[0];
-    const encodedRequest = (operationIndex === -1) ? "" : components.slice(-1)[0];
+    const url = new URL(path, "https://localhost/");
+    const components = url.pathname.split("/");
+
+    const operationComponent = components.slice(-1)[0];
+    const encodedRequest = url.searchParams.get("parameters") || "";
 
     const firstHyphen = operationComponent.indexOf("-");
     const lastHyphen = operationComponent.lastIndexOf("-");
