@@ -77,8 +77,8 @@ export class DisplayStyle2d extends DisplayStyle {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String {
     const displayStyleProps: DisplayStyleProps = {
-      classFullName: DisplayStyle2d.classFullName,
-      code: { spec: iModelDb.codeSpecs.getByName(BisCodeSpec.displayStyle).id, scope: definitionModelId, value: name },
+      classFullName: this.classFullName,
+      code: this.createCode(iModelDb, definitionModelId, name),
       model: definitionModelId,
       isPrivate: false,
       backgroundColor: new ColorDef(),
@@ -121,7 +121,7 @@ export class DisplayStyle3d extends DisplayStyle {
 
     const displayStyleProps: DisplayStyleProps = {
       classFullName: this.classFullName,
-      code: { spec: iModelDb.codeSpecs.getByName(BisCodeSpec.displayStyle).id, scope: definitionModelId, value: name },
+      code: this.createCode(iModelDb, definitionModelId, name),
       model: definitionModelId,
       jsonProperties: { styles: stylesIn },
       isPrivate: false,
@@ -172,7 +172,7 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
     const modelSelectorProps: ModelSelectorProps = {
       classFullName: this.classFullName,
-      code: { spec: iModelDb.codeSpecs.getByName(BisCodeSpec.modelSelector).id, scope: definitionModelId, value: name },
+      code: this.createCode(iModelDb, definitionModelId, name),
       model: definitionModelId,
       models,
       isPrivate: false,
@@ -220,7 +220,7 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
     const categorySelectorProps: CategorySelectorProps = {
       classFullName: this.classFullName,
-      code: { spec: iModelDb.codeSpecs.getByName(BisCodeSpec.categorySelector).id, scope: definitionModelId, value: name },
+      code: this.createCode(iModelDb, definitionModelId, name),
       model: definitionModelId,
       categories,
       isPrivate: false,
@@ -380,9 +380,9 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
     const viewOrigin = rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z);
     const viewExtents = rotatedRange.diagonal();
     const viewDefinitionProps: SpatialViewDefinitionProps = {
-      classFullName: OrthographicViewDefinition.classFullName,
-      model: IModelDb.dictionaryId,
-      code: ViewDefinition.createCode(iModelDb, definitionModelId, name),
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
       modelSelectorId,
       categorySelectorId,
       displayStyleId,
