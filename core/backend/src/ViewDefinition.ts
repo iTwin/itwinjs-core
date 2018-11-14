@@ -474,6 +474,16 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
   public origin?: Point2d;
   public angle!: number;
   public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a Code for a AuxCoordSystem2d element given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystem2d element and provides the scope for its name.
+   * @param codeValue The AuxCoordSystem2d name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystem2d);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /**
@@ -485,12 +495,31 @@ export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3d
   public pitch!: number;
   public roll!: number;
   public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a Code for a AuxCoordSystem3d element given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystem3d element and provides the scope for its name.
+   * @param codeValue The AuxCoordSystem3d name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystem3d);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /**
  * A spatial auxiliary coordinate system.
  */
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
+  /** Create a Code for a AuxCoordSystemSpatial element given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystemSpatial element and provides the scope for its name.
+   * @param codeValue The AuxCoordSystemSpatial name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystemSpatial);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /**
