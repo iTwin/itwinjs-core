@@ -156,13 +156,19 @@ export class BeInspireTree<TNodePayload> {
       },
     } as Inspire.Config);
 
-    this._tree.on([BeInspireTreeEvent.ChangesApplied], () => props.renderer(this.visible()));
+    this._tree.on([BeInspireTreeEvent.ChangesApplied], () => {
+      props.renderer(this.visible());
+    });
     this.onModelInvalidated();
   }
 
   private onModelInvalidated() {
     this._readyPromise = new Promise<Inspire.TreeNodes>((resolve) => {
-      this._tree.once([BeInspireTreeEvent.ModelLoaded], resolve);
+      this._tree.once([BeInspireTreeEvent.ModelLoaded], () => {
+        const nodes = this._tree.nodes();
+        nodes.forEach((n) => toNode(n).setDirty(true));
+        resolve(nodes);
+      });
     }).then(async (rootNodes: Inspire.TreeNodes) => {
       await using(this.pauseRendering(), async () => {
         await ensureNodesAutoExpanded(rootNodes);

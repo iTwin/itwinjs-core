@@ -102,6 +102,7 @@ describe("BeInspireTree", () => {
         children,
       });
     }
+    node.setDirty(false);
   };
 
   const flatten = (hierarchicalList: Node[]): Node[] => {
@@ -128,9 +129,19 @@ describe("BeInspireTree", () => {
     hierarchy = createHierarchy(2, 2);
     renderedTree = [];
     rendererMock.reset();
-    rendererMock.setup((x) => x(moq.It.isAny())).callback((_nodes: BeInspireTreeNodes<Node>) => {
+    rendererMock.setup((x) => x(moq.It.isAny())).callback((_flatNodes: BeInspireTreeNodes<Node>) => {
+      const rootNodes = tree.nodes();
+      if (!rootNodes.some((n) => n.isDirty())) {
+        // the Tree component has this check to avoid re-rendering non-dirty
+        // trees - have it here as well to catch any places we don't dirty the
+        // tree when we should
+        return;
+      }
+
       renderedTree = [];
-      tree.nodes().forEach((n) => handleNodeRender(renderedTree, n));
+      rootNodes.forEach((n) => {
+        handleNodeRender(renderedTree, n);
+      });
     });
   });
 
