@@ -33,7 +33,7 @@ export interface BreadcrumbDetailsState {
 }
 
 /**
- * A [[Table]] containing all children of tree node specified in path.
+ * A Table containing all children of tree node specified in path.
  * Used in conjunction with [[Breadcrumb]] to see children of current path.
  */
 export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, BreadcrumbDetailsState> {
@@ -214,7 +214,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
         else if (parents.length === 1)
           this.props.path.setCurrentNode(undefined);
       }
-      const table = BreadcrumbTreeUtils.aliasNodeListToTableDataProvider(childNodes, this.props.columns!);
+      const table = BreadcrumbTreeUtils.aliasNodeListToTableDataProvider(childNodes, this.props.columns!, this.props.path.getDataProvider());
       this.setState({ table, childNodes });
     }
   }

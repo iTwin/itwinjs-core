@@ -42,7 +42,7 @@ if (!fs.existsSync(tmpd)) {
   fs.mkdirSync(tmpd)
 }
 
-const pattern = '../../core/backend/lib/**/!(*.test.*).js'
+const pattern = '../../core/@(frontend|backend)/lib/**/!(*.test*).js'
 
 const matched = match()
 //const matched = function (file) { console.log(file); return true }

@@ -71,6 +71,7 @@
 - [ConfigurableUi]($framework:ConfigurableUi)
 - [ContentView]($framework:ContentView)
 - [Dialog]($framework:Dialog)
+- [DragDrop]($framework:DragDrop)
 - [FrameworkState]($framework:FrameworkState)
 - [Frontstage]($framework:Frontstage)
 - [Item]($framework:Item)

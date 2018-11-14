@@ -7,10 +7,13 @@ exports[`ContextMenu <ContextMenu /> renders close correctly 1`] = `
   onClick={[Function]}
   onKeyUp={[Function]}
 >
-  <div
-    className="context-menu-container bottom right"
-    tabIndex={0}
-  />
+  <WithOnOutsideClick>
+    <div
+      className="context-menu-container floating bottom right"
+      data-testid="context-menu-container"
+      tabIndex={0}
+    />
+  </WithOnOutsideClick>
 </div>
 `;
 
@@ -21,10 +24,13 @@ exports[`ContextMenu <ContextMenu /> renders open correctly 1`] = `
   onClick={[Function]}
   onKeyUp={[Function]}
 >
-  <div
-    className="context-menu-container opened bottom right"
-    tabIndex={0}
-  />
+  <WithOnOutsideClick>
+    <div
+      className="context-menu-container opened floating bottom right"
+      data-testid="context-menu-container"
+      tabIndex={0}
+    />
+  </WithOnOutsideClick>
 </div>
 `;
 
@@ -35,101 +41,111 @@ exports[`ContextMenu <ContextMenu /> renders with ContextMenuItem correctly 1`] 
   onClick={[Function]}
   onKeyUp={[Function]}
 >
-  <div
-    className="context-menu-container opened bottom right"
-    tabIndex={0}
-  >
-    <ContextMenuItem
-      disabled={false}
-      key=".0"
-      onHover={[Function]}
-      parent={
-        ContextMenu {
-          "_handleClick": [Function],
-          "_handleFocusChange": [Function],
-          "_handleKeyUp": [Function],
-          "_length": 1,
-          "_menuElement": null,
-          "_rootElement": null,
-          "_selectedElement": null,
-          "blur": [Function],
-          "context": Object {},
-          "focus": [Function],
-          "getRect": [Function],
-          "props": Object {
-            "autoflip": true,
-            "children": <ContextMenuItem
-              disabled={false}
-              selected={false}
-            >
-               Test 
-            </ContextMenuItem>,
-            "direction": "bottom right",
-            "edgeLimit": true,
-            "floating": true,
-            "opened": true,
-            "selected": -1,
-          },
-          "refs": Object {},
-          "setState": [Function],
-          "state": Object {
-            "selected": -1,
-          },
-          "updater": Updater {
-            "_callbacks": Array [],
-            "_renderer": ReactShallowRenderer {
-              "_context": Object {},
-              "_element": <ContextMenu
-                autoflip={true}
-                direction="bottom right"
-                edgeLimit={true}
-                floating={true}
-                opened={true}
-                selected={-1}
+  <WithOnOutsideClick>
+    <div
+      className="context-menu-container opened floating bottom right"
+      data-testid="context-menu-container"
+      tabIndex={0}
+    >
+      <ContextMenuItem
+        disabled={false}
+        isSelected={false}
+        key=".0"
+        onHover={[Function]}
+        parentMenu={
+          ContextMenu {
+            "_handleClick": [Function],
+            "_handleFocusChange": [Function],
+            "_handleKeyUp": [Function],
+            "_length": 1,
+            "_menuElement": null,
+            "_menuRef": [Function],
+            "_rootElement": null,
+            "_rootRef": [Function],
+            "_selectedElement": null,
+            "blur": [Function],
+            "context": Object {},
+            "focus": [Function],
+            "getRect": [Function],
+            "props": Object {
+              "autoflip": true,
+              "children": <ContextMenuItem
+                disabled={false}
+                isSelected={false}
               >
-                <ContextMenuItem
-                  disabled={false}
-                  selected={false}
-                >
-                   Test 
-                </ContextMenuItem>
-              </ContextMenu>,
-              "_forcedUpdate": false,
-              "_instance": [Circular],
-              "_newState": null,
-              "_rendered": <div
-                className="context-menu"
-                data-testid="context-menu-root"
-                onClick={[Function]}
-                onKeyUp={[Function]}
-                style={undefined}
-              >
-                <div
-                  className="context-menu-container opened bottom right"
-                  tabIndex={0}
+                 Test 
+              </ContextMenuItem>,
+              "direction": "bottom right",
+              "edgeLimit": true,
+              "floating": true,
+              "opened": true,
+              "selectedIndex": -1,
+            },
+            "refs": Object {},
+            "setState": [Function],
+            "state": Object {
+              "direction": "bottom right",
+              "selectedIndex": -1,
+            },
+            "updater": Updater {
+              "_callbacks": Array [],
+              "_renderer": ReactShallowRenderer {
+                "_context": Object {},
+                "_element": <ContextMenu
+                  autoflip={true}
+                  direction="bottom right"
+                  edgeLimit={true}
+                  floating={true}
+                  opened={true}
+                  selectedIndex={-1}
                 >
                   <ContextMenuItem
                     disabled={false}
-                    onHover={[Function]}
-                    parent={[Circular]}
-                    selected={false}
+                    isSelected={false}
                   >
                      Test 
                   </ContextMenuItem>
-                </div>
-              </div>,
-              "_rendering": false,
-              "_updater": [Circular],
+                </ContextMenu>,
+                "_forcedUpdate": false,
+                "_instance": [Circular],
+                "_newState": null,
+                "_rendered": <div
+                  className="context-menu"
+                  data-testid="context-menu-root"
+                  onClick={[Function]}
+                  onKeyUp={[Function]}
+                >
+                  <WithOnOutsideClick
+                    onOutsideClick={undefined}
+                  >
+                    <div
+                      className="context-menu-container opened floating bottom right"
+                      data-testid="context-menu-container"
+                      tabIndex={0}
+                    >
+                      <ContextMenuItem
+                        disabled={false}
+                        isSelected={false}
+                        onHover={[Function]}
+                        parentMenu={[Circular]}
+                      >
+                         Test 
+                      </ContextMenuItem>
+                    </div>
+                  </WithOnOutsideClick>
+                </div>,
+                "_rendering": false,
+                "_updater": [Circular],
+              },
             },
-          },
-          Symbol(enzyme.__setState__): [Function],
+            Symbol(enzyme.__setState__): [Function],
+          }
         }
-      }
-      selected={false}
-    >
-       Test 
-    </ContextMenuItem>
-  </div>
+      >
+         Test 
+      </ContextMenuItem>
+    </div>
+  </WithOnOutsideClick>
 </div>
 `;
 
@@ -166,131 +182,147 @@ exports[`ContextMenu <ContextSubMenu /> renders correctly 1`] = `
   onClick={[Function]}
   onKeyUp={[Function]}
 >
-  <div
-    className="context-menu-container opened bottom right"
-    tabIndex={0}
-  >
-    <ContextSubMenu
-      autoflip={true}
-      direction="bottom right"
-      disabled={false}
-      key=".0"
-      label="test"
-      onHover={[Function]}
-      parent={
-        ContextMenu {
-          "_handleClick": [Function],
-          "_handleFocusChange": [Function],
-          "_handleKeyUp": [Function],
-          "_length": 1,
-          "_menuElement": null,
-          "_rootElement": null,
-          "_selectedElement": null,
-          "blur": [Function],
-          "context": Object {},
-          "focus": [Function],
-          "getRect": [Function],
-          "props": Object {
-            "autoflip": true,
-            "children": <ContextSubMenu
-              autoflip={true}
-              disabled={false}
-              label="test"
-              selected={false}
-            >
-              <ContextMenuItem
-                disabled={false}
-                selected={false}
-              >
-                 Test 
-              </ContextMenuItem>
-            </ContextSubMenu>,
-            "direction": "bottom right",
-            "edgeLimit": true,
-            "floating": true,
-            "opened": true,
-            "selected": -1,
-          },
-          "refs": Object {},
-          "setState": [Function],
-          "state": Object {
-            "selected": -1,
-          },
-          "updater": Updater {
-            "_callbacks": Array [],
-            "_renderer": ReactShallowRenderer {
-              "_context": Object {},
-              "_element": <ContextMenu
+  <WithOnOutsideClick>
+    <div
+      className="context-menu-container opened floating bottom right"
+      data-testid="context-menu-container"
+      tabIndex={0}
+    >
+      <ContextSubMenu
+        autoflip={true}
+        direction="bottom right"
+        disabled={false}
+        isSelected={false}
+        key=".0"
+        label="test"
+        onHover={[Function]}
+        parentMenu={
+          ContextMenu {
+            "_handleClick": [Function],
+            "_handleFocusChange": [Function],
+            "_handleKeyUp": [Function],
+            "_length": 1,
+            "_menuElement": null,
+            "_menuRef": [Function],
+            "_rootElement": null,
+            "_rootRef": [Function],
+            "_selectedElement": null,
+            "blur": [Function],
+            "context": Object {},
+            "focus": [Function],
+            "getRect": [Function],
+            "props": Object {
+              "autoflip": true,
+              "children": <ContextSubMenu
                 autoflip={true}
                 direction="bottom right"
-                edgeLimit={true}
-                floating={true}
-                opened={true}
-                selected={-1}
+                disabled={false}
+                isSelected={false}
+                label="test"
+                selectedIndex={0}
               >
-                <ContextSubMenu
-                  autoflip={true}
+                <ContextMenuItem
                   disabled={false}
-                  label="test"
-                  selected={false}
+                  isSelected={false}
                 >
-                  <ContextMenuItem
-                    disabled={false}
-                    selected={false}
-                  >
-                     Test 
-                  </ContextMenuItem>
-                </ContextSubMenu>
-              </ContextMenu>,
-              "_forcedUpdate": false,
-              "_instance": [Circular],
-              "_newState": null,
-              "_rendered": <div
-                className="context-menu"
-                data-testid="context-menu-root"
-                onClick={[Function]}
-                onKeyUp={[Function]}
-                style={undefined}
-              >
-                <div
-                  className="context-menu-container opened bottom right"
-                  tabIndex={0}
+                   Test 
+                </ContextMenuItem>
+              </ContextSubMenu>,
+              "direction": "bottom right",
+              "edgeLimit": true,
+              "floating": true,
+              "opened": true,
+              "selectedIndex": -1,
+            },
+            "refs": Object {},
+            "setState": [Function],
+            "state": Object {
+              "direction": "bottom right",
+              "selectedIndex": -1,
+            },
+            "updater": Updater {
+              "_callbacks": Array [],
+              "_renderer": ReactShallowRenderer {
+                "_context": Object {},
+                "_element": <ContextMenu
+                  autoflip={true}
+                  direction="bottom right"
+                  edgeLimit={true}
+                  floating={true}
+                  opened={true}
+                  selectedIndex={-1}
                 >
                   <ContextSubMenu
                     autoflip={true}
                     direction="bottom right"
                     disabled={false}
+                    isSelected={false}
                     label="test"
-                    onHover={[Function]}
-                    parent={[Circular]}
-                    selected={false}
+                    selectedIndex={0}
                   >
                     <ContextMenuItem
                       disabled={false}
-                      selected={false}
+                      isSelected={false}
                     >
                        Test 
                     </ContextMenuItem>
                   </ContextSubMenu>
-                </div>
-              </div>,
-              "_rendering": false,
-              "_updater": [Circular],
+                </ContextMenu>,
+                "_forcedUpdate": false,
+                "_instance": [Circular],
+                "_newState": null,
+                "_rendered": <div
+                  className="context-menu"
+                  data-testid="context-menu-root"
+                  onClick={[Function]}
+                  onKeyUp={[Function]}
+                >
+                  <WithOnOutsideClick
+                    onOutsideClick={undefined}
+                  >
+                    <div
+                      className="context-menu-container opened floating bottom right"
+                      data-testid="context-menu-container"
+                      tabIndex={0}
+                    >
+                      <ContextSubMenu
+                        autoflip={true}
+                        direction="bottom right"
+                        disabled={false}
+                        isSelected={false}
+                        label="test"
+                        onHover={[Function]}
+                        parentMenu={[Circular]}
+                        selectedIndex={0}
+                      >
+                        <ContextMenuItem
+                          disabled={false}
+                          isSelected={false}
+                        >
+                           Test 
+                        </ContextMenuItem>
+                      </ContextSubMenu>
+                    </div>
+                  </WithOnOutsideClick>
+                </div>,
+                "_rendering": false,
+                "_updater": [Circular],
+              },
             },
-          },
-          Symbol(enzyme.__setState__): [Function],
+            Symbol(enzyme.__setState__): [Function],
+          }
         }
-      }
-      selected={false}
-    >
-      <ContextMenuItem
-        disabled={false}
-        selected={false}
+        selectedIndex={0}
       >
-         Test 
-      </ContextMenuItem>
-    </ContextSubMenu>
-  </div>
+        <ContextMenuItem
+          disabled={false}
+          isSelected={false}
+        >
+           Test 
+        </ContextMenuItem>
+      </ContextSubMenu>
+    </div>
+  </WithOnOutsideClick>
 </div>
 `;
 
@@ -317,7 +349,7 @@ exports[`ContextMenu <GlobalContextMenu /> renders correctly 1`] = `
       edgeLimit={true}
       floating={true}
       opened={true}
-      selected={-1}
+      selectedIndex={-1}
     />
   </div>
 </Portal>

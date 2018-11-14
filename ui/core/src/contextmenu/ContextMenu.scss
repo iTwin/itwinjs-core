@@ -23,7 +23,11 @@
   z-index: 9999;
 
   .context-menu-container {
-    position: fixed;
+    position: absolute;
+
+    &.floating {
+      position: fixed;
+    }
 
     &.opened {
       visibility: inherit;
@@ -31,24 +35,45 @@
       transform: scaleY(1);
     }
 
-    &.center {transform: translate(-50%, -50%); }
-    &.right {transform: translate(0%, -50%); }
-    &.left {transform: translate(-100%, -50%); }
-    &.top {
-      transform: translate(-50%, -100%);
-      &.right {transform: translate(0%, -100%); }
-      &.left {transform: translate(-100%, -100%); }
-    }
-    &.bottom {
-      transform: translate(-50%, 0%);
-      &.right {transform: translate(0%, 0%); }
-      &.left {transform: translate(-100%, 0%); }
+    &.center {
+      transform: translate(-50%, -50%);
     }
 
-    transition: transform .3s;
+    &.right {
+      transform: translate(0%, -50%);
+    }
+
+    &.left {
+      transform: translate(-100%, -50%);
+    }
+
+    &.top {
+      transform: translate(-50%, -100%);
+
+      &.right {
+        transform: translate(0%, -100%);
+      }
+
+      &.left {
+        transform: translate(-100%, -100%);
+      }
+    }
+
+    &.bottom {
+      transform: translate(-50%, 0%);
+
+      &.right {
+        transform: translate(0%, 0%);
+      }
+
+      &.left {
+        transform: translate(-100%, 0%);
+      }
+    }
+
     visibility: hidden;
     transform: scaleY(0);
-    display: inline-block;
+    display: table;
     background-color: $bwc-white;
     border: 1px solid $bwc-inputs-border-color;
     box-shadow: rgba($bwc-black, 0.25) 0px 1px 1px;
@@ -57,8 +82,9 @@
       display: flex;
       cursor: default;
       padding: ($bwc-unbordered-padding / 2) $bwc-bordered-padding;
+      width: calc(100% - 2 * #{$bwc-bordered-padding});
 
-      &.selected {
+      &.is-selected {
         background-color: $bwc-gray;
       }
 
@@ -82,12 +108,12 @@
         font-size: $bwc-icons-small;
         line-height: $bwc-line-height;
         text-align: center;
+        margin-right: $bwc-unbordered-padding;
       }
 
       > .context-menu-content {
         flex-shrink: 0;
         flex-grow: 1;
-        margin-left: $bwc-unbordered-padding;
       }
     }
 
@@ -96,45 +122,55 @@
       box-shadow: rgba($bwc-black, 0.25) 0px 1px 1px;
       outline: 0px;
 
-      > .context-menu-item.selected,
-      > .context-submenu > .context-menu-item.selected {
+      > .context-menu-item.is-selected,
+      > .context-submenu > .context-menu-item.is-selected {
         background-color: $bwc-blue;
       }
     }
+
     .context-submenu {
       display: flex;
+
       &.top {
         flex-direction: column;
         align-items: center;
       }
+
       &.left {
         flex-direction: row-reverse;
         align-items: center;
       }
+
       &.right {
         flex-direction: row;
         align-items: center;
       }
+
       &.center {
         flex-direction: column;
         align-items: center;
       }
+
       &.top.left {
         flex-direction: column;
         align-items: flex-start;
       }
+
       &.top.right {
         flex-direction: row;
         align-items: flex-end;
       }
+
       &.bottom.left {
         flex-direction: row-reverse;
         align-items: flex-start;
       }
+
       &.bottom.right {
         flex-direction: row;
         align-items: flex-start;
       }
+
       .context-submenu-container .context-submenu-arrow {
         flex-shrink: 0;
         flex-grow: 0;

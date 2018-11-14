@@ -17,14 +17,8 @@ export class MobileRpcRequest extends RpcRequest {
   /** Sends the request. */
   protected send(): Promise<number> {
     this.protocol.requests.set(this.id, this);
-    const parts = new Blob(MobileRpcProtocol.encodeRequest(this), { type: "application/octet-stream" });
-
-    if (this.protocol.socket.readyState === WebSocket.OPEN) {
-      this.protocol.socket.send(parts);
-    } else {
-      this.protocol.pending.push(parts);
-    }
-
+    const parts = MobileRpcProtocol.encodeRequest(this);
+    this.protocol.sendToBackend(parts);
     return new Promise<number>((resolve) => { this._response = resolve; });
   }
 

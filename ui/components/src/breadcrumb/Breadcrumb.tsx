@@ -17,6 +17,7 @@ import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/component/BeInspireTree";
 import UiComponents from "../UiComponents";
 
+/** @hidden */
 export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem, index?: number) => React.ReactNode;
 
 /** Property interface for [[Breadcrumb]] component */
@@ -51,6 +52,7 @@ export interface BreadcrumbProps {
   onRender?: () => void;
 }
 
+/** @hidden */
 export enum BreadcrumbMode {
   Dropdown = "dropdown",
   Input = "input",
@@ -381,12 +383,6 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   };
 
   public render(): JSX.Element {
-    let width = 0;
-    if (this._inputElement) {
-      const rect = this._inputElement.getBoundingClientRect();
-      width = rect.width;
-    }
-
     return (
       <div className="breadcrumb-input-root" data-testid="breadcrumb-input-root">
         <input
@@ -400,9 +396,10 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
         <div className="breadcrumb-close icon icon-close" data-testid="breadcrumb-input-close" onClick={this._handleClose} />
         <ContextMenu
           ref={(el) => { this._autocomplete = el; }}
+          style={{ width: "100%" }}
           opened={this.state.autocompleting}
-          edgeLimit={false} style={{ width }}
-          selected={0} floating={false} autoflip={false}
+          edgeLimit={false}
+          selectedIndex={0} floating={false} autoflip={false}
           onEsc={() => { if (this._inputElement) this._inputElement.focus(); }}
         >
           {this.state.autocompleteList.map((listItem, index) => {

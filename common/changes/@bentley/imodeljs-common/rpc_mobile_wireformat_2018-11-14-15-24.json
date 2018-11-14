@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated Mobile RPC to deal with binary data",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "khanaffan@gmail.com"
+}

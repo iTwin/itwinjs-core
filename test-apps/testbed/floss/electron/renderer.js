@@ -39,11 +39,7 @@ class Renderer {
             // for instance errors on the page like test's requires
             this.setupConsoleOutput(quiet, !debug);
 
-            if (debug) {
-                this.headful(path);
-            } else {
-                this.headless(path);
-            }
+            this.headless(path);
         });
 
         // Add the stylesheet
@@ -53,6 +49,10 @@ class Renderer {
     }
 
     applyOptions(mochaInst) {
+        if (this.options.debug) {
+            mochaInst.enableTimeouts(false);
+        }
+
         if (this.options.timeout) {
             mochaInst.suite.timeout(this.options.timeout);
         }

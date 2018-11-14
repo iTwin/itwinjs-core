@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use URL query instead of path segment for cacheable RPC request parameters.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}

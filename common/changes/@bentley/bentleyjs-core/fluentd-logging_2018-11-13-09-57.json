@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fluentd Bunnyan Logger added",
+      "packageName": "@bentley/bentleyjs-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "tauqeer.hassan@bentley.com"
+}

@@ -17,7 +17,7 @@ export interface TableDropTargetProps<DragDropObject = any> extends DropTargetPr
   canDropOn?: boolean;
 }
 /**
- * Type for drag and drop,
+ * Type for DragDrop drag item
  */
 export type TableDragDropType = {} | RowItem | TableDataProvider;
 

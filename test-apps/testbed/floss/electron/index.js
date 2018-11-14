@@ -69,7 +69,7 @@ function createWindow() {
         mainWindow.blur();
 
     ipcMain.on('mocha-done', function () {
-        process.exit(0);
+        mainWindow.close();
     });
 
     ipcMain.on('mocha-error', function () {

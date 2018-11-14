@@ -500,6 +500,33 @@ describe("RpcInterface", () => {
     await exercise(RpcWebTransportTest.getClient());
     await exercise(RpcElectronTransportTest.getClient());
     await exercise(RpcMobileTransportTest.getClient());
+
+    function stress(client: RpcTransportTest) {
+      return new Promise((resolve, reject) => {
+        let c = 0;
+        for (let i = 0; i !== 100; ++i) {
+          client.nested({ a: { x: oneZero, y: one }, b: abc, c: zeroOne }).then((nested) => {
+            ++c;
+
+            assert(compareBytes(nested.a.x, RpcTransportTestImpl.mutateBits(oneZero)));
+            assert.equal(nested.a.y, RpcTransportTestImpl.mutateNumber(one));
+            assert.equal(nested.b, RpcTransportTestImpl.mutateString(abc));
+            assert(compareBytes(nested.c, RpcTransportTestImpl.mutateBits(zeroOne)));
+
+            if (c === 99) {
+              resolve();
+            }
+          }).catch((reason) => {
+            reject(reason);
+          });
+        }
+      });
+    }
+
+    await stress(RpcDirectTransportTest.getClient());
+    await stress(RpcWebTransportTest.getClient());
+    await stress(RpcElectronTransportTest.getClient());
+    await stress(RpcMobileTransportTest.getClient());
   });
 
   it("should support cachable responses", async () => {

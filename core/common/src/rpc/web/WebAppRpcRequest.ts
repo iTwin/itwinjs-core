@@ -42,7 +42,7 @@ export class WebAppRpcRequest extends RpcRequest {
 
   /** Parses a request. */
   public static async parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest> {
-    const operation = protocol.getOperationFromPath(req.path);
+    const operation = protocol.getOperationFromPath(req.url!);
 
     const request = {
       id: req.header(protocol.requestIdHeaderName) || "",
@@ -53,7 +53,7 @@ export class WebAppRpcRequest extends RpcRequest {
         interfaceVersion: operation.interfaceVersion,
       },
       method: req.method,
-      path: req.path,
+      path: req.url!,
       parameters: operation.encodedRequest ? WebAppRpcRequest.parseFromPath(operation) : await WebAppRpcRequest.parseFromBody(req),
       caching: operation.encodedRequest ? RpcResponseCacheControl.Immutable : RpcResponseCacheControl.None,
     };
@@ -212,12 +212,12 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   private async performFetch(): Promise<number> {
-    let path = this.path;
+    const path = new URL(this.path, window.location.origin);
     if (this._pathSuffix) {
-      path += `/${this._pathSuffix}`;
+      path.searchParams.set("parameters", this._pathSuffix);
     }
 
-    const request = new Request(path, this._request);
+    const request = new Request(path.toString(), this._request);
     const response = await fetch(request);
     this._response = response;
     this.metadata.status = response.status;

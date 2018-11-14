@@ -21,7 +21,7 @@ describe("StandardMessageBox", () => {
     const spyMethod = sinon.spy();
 
     const reactNode = <StandardMessageBox
-      opened={false}
+      opened={true}
       title="My Title"
       iconType={MessageBoxIconType.NoSymbol}
       messageBoxType={MessageBoxType.Ok}
@@ -42,7 +42,7 @@ describe("StandardMessageBox", () => {
     const spyMethod = sinon.spy();
 
     const reactNode = <StandardMessageBox
-      opened={false}
+      opened={true}
       title="My Title"
       iconType={MessageBoxIconType.Information}
       messageBoxType={MessageBoxType.OkCancel}
@@ -63,7 +63,7 @@ describe("StandardMessageBox", () => {
     const spyMethod = sinon.spy();
 
     const reactNode = <StandardMessageBox
-      opened={false}
+      opened={true}
       title="My Title"
       iconType={MessageBoxIconType.Question}
       messageBoxType={MessageBoxType.YesNo}
@@ -82,7 +82,7 @@ describe("StandardMessageBox", () => {
 
   it("MediumAlert & Question", () => {
     const reactNode = <StandardMessageBox
-      opened={false}
+      opened={true}
       title="My Title"
       iconType={MessageBoxIconType.Warning}
       messageBoxType={MessageBoxType.MediumAlert}
@@ -95,7 +95,7 @@ describe("StandardMessageBox", () => {
 
   it("YesNoCancel & Critical", () => {
     const reactNode = <StandardMessageBox
-      opened={false}
+      opened={true}
       title="My Title"
       iconType={MessageBoxIconType.Critical}
       messageBoxType={MessageBoxType.YesNoCancel}

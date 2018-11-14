@@ -16,5 +16,11 @@
   },
   "tree": {
     "noResultsForFilter": "0 matches found for \"{{searchText}}\""
+  },
+  "showhide": {
+    "noLabel": "[unlabeled]",
+    "showAll": "Show all",
+    "list": "List...",
+    "title": "Show/Hide"
   }
 }

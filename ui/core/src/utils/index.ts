@@ -5,3 +5,4 @@
 export { default as Timer } from "./Timer";
 export * from "./getDisplayName";
 export * from "./shallowDiffers";
+export * from "./typeUtils";

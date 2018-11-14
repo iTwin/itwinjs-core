@@ -195,6 +195,9 @@ export class FrontstageLaunchBackstageItem extends React.Component<FrontstageLau
   }
 
   public render(): React.ReactNode {
+    if (!this._backstageItem.isVisible)
+      return null;
+
     const icon = <Icon iconSpec={this._backstageItem.iconSpec} />;
     return (
       <NZ_BackstageItem key={this._backstageItem.id}
@@ -219,6 +222,9 @@ export class CommandLaunchBackstageItem extends React.Component<CommandLaunchBac
   }
 
   public render(): React.ReactNode {
+    if (!this._backstageItem.isVisible)
+      return null;
+
     const icon = <Icon iconSpec={this._backstageItem.iconSpec} />;
     return (
       <NZ_BackstageItem key={this._backstageItem.id} label={this._backstageItem.label} icon={icon} onClick={this._backstageItem.execute} />
@@ -238,6 +244,9 @@ export class TaskLaunchBackstageItem extends React.Component<TaskLaunchBackstage
   }
 
   public render(): React.ReactNode {
+    if (!this._backstageItem.isVisible)
+      return null;
+
     const icon = <Icon iconSpec={this._backstageItem.iconSpec} />;
     return (
       <NZ_BackstageItem key={this._backstageItem.id} label={this._backstageItem.label} icon={icon} onClick={this._backstageItem.execute} />
@@ -264,6 +273,9 @@ export class SeparatorBackstageItem extends React.Component<BackstageItemProps> 
   }
 
   public render(): React.ReactNode {
+    if (!this._backstageItem.isVisible)
+      return null;
+
     return (
       <NZ_BackstageSeparator key={this._key} />
     );

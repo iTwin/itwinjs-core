@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Moved most isHidden logic for toolbar items into ui-ninezone",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}
