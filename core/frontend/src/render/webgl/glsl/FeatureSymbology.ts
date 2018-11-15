@@ -422,30 +422,20 @@ const checkForEarlySurfaceDiscardWithElemID = `
     return false; // just do normal z-testing.
 
   // Calculate depthTolerance for letting edges show through their own surfaces
-  vec3 eyeDir;
-  float dtWidthFactor;
-  if (u_frustum.z == kFrustumType_Perspective) {
-    eyeDir = normalize(-v_eyeSpace.xyz);
-    dtWidthFactor = -v_eyeSpace.z * u_pixelWidthFactor;
-  } else {
-    eyeDir = vec3(0.0, 0.0, 1.0);
-    dtWidthFactor = u_pixelWidthFactor;
-  }
+  float perspectiveFrustum = step(kFrustumType_Perspective, u_frustum.z);
+  vec4 eyeDirAndWidthFactor = mix(vec4(0.0, 0.0, 1.0, u_pixelWidthFactor), vec4(normalize(-v_eyeSpace.xyz), -v_eyeSpace.z * u_pixelWidthFactor), perspectiveFrustum);
+  vec3 eyeDir = eyeDirAndWidthFactor.xyz;
+  float dtWidthFactor = eyeDirAndWidthFactor.w;
 
   // Compute depth tolerance based on angle of triangle to screen
+  float isSilhouette = float(depthAndOrder.x == kRenderOrder_Silhouette);
   float dSq = dot(eyeDir, v_n);
-  if (depthAndOrder.x == kRenderOrder_Silhouette) // curved surface
-    dSq *= 0.5;
-  else
-    dSq *= 0.9;
-
+  dSq *= 0.5 + 0.4 * (1.0 - isSilhouette);
   dSq = dSq * dSq;
-  dSq = max(dSq, 0.0001);
-  dSq = min(dSq, 0.999);
+  dSq = clamp(dSq, 0.0001, 0.999);
 
   float depthTolerance = dtWidthFactor * v_lineWeight * sqrt((1.0 - dSq) / dSq);
-  if (depthAndOrder.x == kRenderOrder_Silhouette) // curved surface
-    depthTolerance = depthTolerance * 1.333;
+  depthTolerance *= 1.0 + .333 * isSilhouette;
 
   // Make sure stuff behind camera doesn't get pushed in front of it
   depthTolerance = max(depthTolerance, 0.0);
@@ -705,16 +695,14 @@ const computeFeatureOverrides = `
   v_feature_alpha_flashed.y += 2.0 * extractNthFeatureBit(flags, kOvrBit_Hilited);
 `;
 
+// v_feature_rgb.r = -1.0 if rgb color not overridden for feature.
+// v_feature_alpha_flashed.x = -1.0 if alpha not overridden for feature.
 const applyFeatureColor = `
-  if (v_feature_rgb.r >= 0.0)
-    baseColor.rgb = v_feature_rgb.rgb * baseColor.a;
-
-  if (v_feature_alpha_flashed.x >= 0.0)
-    baseColor = adjustPreMultipliedAlpha(baseColor, v_feature_alpha_flashed.x);
-
-  return baseColor;
+  vec4 color = mix(baseColor, vec4(v_feature_rgb.rgb * baseColor.a, baseColor.a), step(0.0, v_feature_rgb.r));
+  return mix(color, adjustPreMultipliedAlpha(color, v_feature_alpha_flashed.x), step(0.0, v_feature_alpha_flashed.x));
 `;
 
+// u_hilite_color.a is 1.0 for lit geometry, 0.0 for unlit. Lit gets brightened; unlit gets tweened.
 const applyFlash = `
   float flashHilite = floor(v_feature_alpha_flashed.y + 0.5);
   float isFlashed = (flashHilite == 1.0 || flashHilite == 3.0) ? 1.0 : 0.0;
@@ -724,18 +712,17 @@ const applyFlash = `
   baseColor = revertPreMultipliedAlpha(baseColor);
   baseColor.rgb = mix(baseColor.rgb, u_hilite_color.rgb, hiliteRatio);
 
-  if (u_hilite_color.a == 1.0) { // .a indicates lit geometry - brighten it
-    const float maxBrighten = 0.2;
-    float brighten = u_flash_intensity * maxBrighten;
-    baseColor.rgb += isFlashed * brighten;
-  } else { // unlit geometry - tween it toward flash color
-    float maxTween = 0.75;
-    float hiliteFraction = u_flash_intensity * isFlashed * maxTween;
-    baseColor.rgb *= (1.0 - hiliteFraction);
-    baseColor.rgb += u_hilite_color.rgb * hiliteFraction;
-  }
+  const float maxBrighten = 0.2;
+  float brighten = u_flash_intensity * maxBrighten;
+  vec3 brightRgb = baseColor.rgb + isFlashed * brighten;
 
-  return applyPreMultipliedAlpha(baseColor);
+  const float maxTween = 0.75;
+  float hiliteFraction = u_flash_intensity * isFlashed * maxTween;
+  vec3 tweenRgb = baseColor.rgb * (1.0 - hiliteFraction);
+  tweenRgb += u_hilite_color.rgb * hiliteFraction;
+
+  vec4 color = vec4(mix(tweenRgb, brightRgb, u_hilite_color.a), baseColor.a);
+  return applyPreMultipliedAlpha(color);
 `;
 
 export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, opts: FeatureSymbologyOptions, alwaysUniform: boolean = false): void {
