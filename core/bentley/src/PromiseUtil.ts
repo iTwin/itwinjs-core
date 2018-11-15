@@ -33,7 +33,7 @@ class PromiseWithAbort<T> {
   constructor(private _run: (...args: any[]) => Promise<T>, private _args: any[]) { }
 
   /** Create a Promise that is chained to the underlying Promise, but is connected to the abort method. */
-  public init(msg: string): Promise<T> { return new Promise<T>((resolve, reject) => { this.abort = () => reject(new BusyError(msg)); this._resolve = resolve; }); }
+  public async init(msg: string): Promise<T> { return new Promise<T>((resolve, reject) => { this.abort = () => reject(new BusyError(msg)); this._resolve = resolve; }); }
 
   /** Call the [[run]] method supplied to the ctor to start the underlying Promise. */
   public start() { this._run(this._args).then((val) => this._resolve(val)); }

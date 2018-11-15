@@ -74,8 +74,8 @@ function addFeatureOverrides(ovrs: FeatureSymbology.Overrides, viewport: Viewpor
 }
 
 // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
-function retrieveConfiguration(): Promise<void> {
-  return new Promise((resolve, _reject) => {
+async function retrieveConfiguration(): Promise<void> {
+  return new Promise<void>((resolve, _reject) => {
     const request: XMLHttpRequest = new XMLHttpRequest();
     request.open("GET", "configuration.json", false);
     request.setRequestHeader("Cache-Control", "no-cache");
@@ -1737,7 +1737,7 @@ class SVTNotifications extends NotificationManager {
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails) { showError(message.briefMessage); }
 
-  public openMessageBox(_mbType: MessageBoxType, _message: string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
+  public async openMessageBox(_mbType: MessageBoxType, _message: string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
     const rootDiv: HTMLDivElement = document.getElementById("root") as HTMLDivElement;
     if (!rootDiv)
       return Promise.resolve(MessageBoxValue.Cancel);
@@ -1826,8 +1826,8 @@ const docReady = new Promise((resolve) => {
 });
 
 // Retrieves the configuration for which project and imodel to open from connect-configuration.json file located in the built public folder
-function retrieveProjectConfiguration(): Promise<void> {
-  return new Promise((resolve, _reject) => {
+async function retrieveProjectConfiguration(): Promise<void> {
+  return new Promise<void>((resolve, _reject) => {
     const request: XMLHttpRequest = new XMLHttpRequest();
     request.open("GET", "connect-configuration.json", false);
     request.setRequestHeader("Cache-Control", "no-cache");

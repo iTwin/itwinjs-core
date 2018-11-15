@@ -249,7 +249,7 @@ export class BIMReviewShareClient extends WsgClient {
    * @param projectId Id of the project to get the instances from
    * @param module Name of the module (e.g. 'DataViz')
    */
-  public getContentInstances(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, module: string, owner?: string) {
+  public async getContentInstances(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, module: string, owner?: string) {
     const queryOptions: RequestQueryOptions = {
       $filter: `ProjectId+eq+'${projectId}'+and+Module+eq+'${module}'` + (owner ? `+and+owner+eq+'${owner}'` : ``),
     };
@@ -266,7 +266,7 @@ export class BIMReviewShareClient extends WsgClient {
    * @param instanceId Instance Id of the Content
    * @param queryOptions Query options for filtering
    */
-  public getContentInstance(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, moduleName: string, instanceId: string, queryOptions?: RequestQueryOptions) {
+  public async getContentInstance(alctx: ActivityLoggingContext, token: AccessToken, projectId: string, moduleName: string, instanceId: string, queryOptions?: RequestQueryOptions) {
     const url = `/Repositories/ContentPlugin--default/ContentSchema/Content/${projectId}${moduleName}${instanceId}`;
     return this.getInstances<Content>(alctx, Content, token, url, queryOptions);
   }
@@ -278,7 +278,7 @@ export class BIMReviewShareClient extends WsgClient {
    * @param content Content instance
    * @param options WsgRequestOptions optional
    */
-  public deleteContentInstance(alctx: ActivityLoggingContext, token: AccessToken, content: Content, options?: WsgRequestOptions) {
+  public async deleteContentInstance(alctx: ActivityLoggingContext, token: AccessToken, content: Content, options?: WsgRequestOptions) {
     const url = `/Repositories/ContentPlugin--default/ContentSchema/Content/${content.wsgId}`;
     return this.deleteInstance(alctx, token, url, content, options);
   }
@@ -290,7 +290,7 @@ export class BIMReviewShareClient extends WsgClient {
    * @param instanceId Instance Id of the Content instance
    * @param queryOptions Query options for filtering
    */
-  public getContentData(alctx: ActivityLoggingContext, token: AccessToken, instanceId: string, queryOptions?: RequestQueryOptions) {
+  public async getContentData(alctx: ActivityLoggingContext, token: AccessToken, instanceId: string, queryOptions?: RequestQueryOptions) {
     const url = `/Repositories/ContentPlugin--default/ContentSchema/Content/${instanceId}/$file`;
     return this.getBlob(alctx, token, url, queryOptions);
   }

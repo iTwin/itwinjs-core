@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "comment": "Turn on tslint promise-function-async rule",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    },
+    {
+      "comment": "Turn on tslint no-return-await rule",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "shaun.sewall@bentley.com"
+}

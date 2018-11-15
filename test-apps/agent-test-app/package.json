@@ -6,7 +6,7 @@
     "build": "tsc --rootDir ./src 1>&2",
     "clean": "rimraf lib",
     "docs": "",
-    "lint": "tslint --project .",
+    "lint": "tslint --project . 1>&2",
     "test": "",
     "test:integration": "",
     "cover": "",

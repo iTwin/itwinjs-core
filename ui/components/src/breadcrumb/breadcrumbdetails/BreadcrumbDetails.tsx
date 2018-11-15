@@ -162,7 +162,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
           } else {
             // all root nodes need to be reloaded
             await this._tree.reload();
-            await Promise.all(this._tree.nodes().map((n) => n.loadChildren()));
+            await Promise.all(this._tree.nodes().map(async (n) => n.loadChildren()));
           }
         }
       }

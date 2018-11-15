@@ -328,7 +328,7 @@ export class HubUtility {
 
 class ImsUserMgr {
   public async authorizeUser(_actx: ActivityLoggingContext, _userInfo: HubUserInfo | undefined, userCredentials: any): Promise<AccessToken> {
-    return await doImsLogin(userCredentials);
+    return doImsLogin(userCredentials);
   }
 }
 
@@ -349,7 +349,7 @@ class TestIModelHubProject {
     const client = this.iModelHubClient;
     return client.IModels().create(actx, accessToken, projectId, params.name, params.seedFile, params.description, params.tracker);
   }
-  public deleteIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: GuidString): Promise<void> {
+  public async deleteIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: GuidString): Promise<void> {
     const client = this.iModelHubClient;
     return client.IModels().delete(actx, accessToken, projectId, iModelId);
   }

@@ -206,7 +206,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     if (!schema)
       return undefined;
 
-    return await schema.getItem<T>(schemaItemKey.name);
+    return schema.getItem<T>(schemaItemKey.name);
   }
 
   public getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined {

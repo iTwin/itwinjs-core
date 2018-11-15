@@ -16,7 +16,7 @@ describe.skip("PromiseMemoizer", () => {
   let accessTokenRegular: AccessToken;
   let accessTokenManager: AccessToken;
 
-  const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
   const generateTestFunctionKey = (accessToken: AccessToken, contextId: string, iModelId: string, openParams: OpenParams, version: IModelVersion): string => {
     return `${accessToken.toTokenString()}:${contextId}:${iModelId}:${JSON.stringify(openParams)}:${JSON.stringify(version)}`;

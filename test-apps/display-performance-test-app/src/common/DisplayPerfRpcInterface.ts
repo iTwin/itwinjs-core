@@ -17,7 +17,7 @@ export default class DisplayPerfRpcInterface extends RpcInterface {
 
   public static getClient(): DisplayPerfRpcInterface { return RpcManager.getClientForInterface(DisplayPerfRpcInterface); }
 
-  public getDefaultConfigs(): Promise<string> { return this.forward.apply(this, arguments); }
-  public saveCsv(_outputPath: string, _outputName: string, _rowData: Map<string, number | string>): Promise<void> { return this.forward.apply(this, arguments); }
-  public savePng(_fileName: string, _png: string): Promise<void> { return this.forward.apply(this, arguments); }
+  public async getDefaultConfigs(): Promise<string> { return this.forward.apply(this, arguments); }
+  public async saveCsv(_outputPath: string, _outputName: string, _rowData: Map<string, number | string>): Promise<void> { return this.forward.apply(this, arguments); }
+  public async savePng(_fileName: string, _png: string): Promise<void> { return this.forward.apply(this, arguments); }
 }

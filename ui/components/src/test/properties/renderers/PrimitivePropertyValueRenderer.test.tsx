@@ -26,7 +26,7 @@ describe("PrimitivePropertyValueRenderer", () => {
 
       await renderer.render(arrayProperty)
         .then(() => { assert.fail(undefined, undefined, "Function did not throw"); })
-        .catch(() => Promise.resolve());
+        .catch(async () => Promise.resolve());
     });
   });
 

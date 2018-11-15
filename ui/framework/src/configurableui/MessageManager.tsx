@@ -249,7 +249,7 @@ export class MessageManager {
    * @param icon         The MessageBox icon type.
    * @return the response from the user.
    */
-  public static openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
+  public static async openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
     const title = UiFramework.i18n.translate("UiFramework:general.alert");
 
     return new Promise((onFulfilled: (result: MessageBoxValue) => void, onRejected: (reason: any) => void) => {

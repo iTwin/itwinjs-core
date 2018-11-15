@@ -85,11 +85,11 @@ export abstract class Client {
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
     const searchKey: string = this.getUrlSearchKey();
     return urlDiscoveryClient.discoverUrl(alctx, searchKey, undefined)
-      .then((url: string): Promise<string> => {
+      .then(async (url: string): Promise<string> => {
         this._url = url;
         return Promise.resolve(this._url); // TODO: On the server this really needs a lifetime!!
       })
-      .catch((): Promise<string> => {
+      .catch(async (): Promise<string> => {
         return Promise.reject(`Failed to discover URL for service identified by "${searchKey}"`);
       });
   }

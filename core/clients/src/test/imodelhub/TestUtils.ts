@@ -165,7 +165,7 @@ export function createRequestUrl(scope: ScopeType, id: string | GuidString, clas
   return requestUrl;
 }
 
-export function delay(ms: number) {
+export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 

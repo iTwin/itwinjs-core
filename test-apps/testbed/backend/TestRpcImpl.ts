@@ -147,7 +147,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     }
   }
 
-  public op14(x: number, y: number): Promise<number> {
+  public async op14(x: number, y: number): Promise<number> {
     return Promise.resolve(x + y);
   }
 }

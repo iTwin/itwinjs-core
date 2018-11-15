@@ -48,7 +48,7 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 // __PUBLISH_EXTRACT_END__
 
 async function queryProjectIdByName(activityContext: ActivityLoggingContext, accessToken: AccessToken, projectName: string): Promise<Project> {
-  return await BriefcaseManager.connectClient.getProject(activityContext, accessToken, {
+  return BriefcaseManager.connectClient.getProject(activityContext, accessToken, {
     $select: "*",
     $filter: "Name+eq+'" + projectName + "'",
   });

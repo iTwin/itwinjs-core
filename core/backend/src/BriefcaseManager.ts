@@ -738,7 +738,7 @@ export class BriefcaseManager {
     if (IModelJsFs.existsSync(seedPathname))
       return;
     return BriefcaseManager.imodelClient.Briefcases().download(actx, briefcase, seedPathname)
-      .catch(() => {
+      .catch(async () => {
         actx.enter();
         return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload, "Could not download briefcase", Logger.logError, loggingCategory));
       });
@@ -831,7 +831,7 @@ export class BriefcaseManager {
     if (changeSetsToDownload.length > 0) {
       const perfLogger = new PerfLogger("BriefcaseManager.downloadChangeSets");
       await BriefcaseManager.imodelClient.ChangeSets().download(actx, changeSetsToDownload, changeSetsPath)
-        .catch(() => {
+        .catch(async () => {
           actx.enter();
           return Promise.reject(new IModelError(BriefcaseStatus.CannotDownload, "Could not download changesets", Logger.logError, loggingCategory));
         });
@@ -1436,7 +1436,7 @@ export class BriefcaseManager {
   /** Attempt to pull merge and push once */
   private static async pushChangesOnce(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, description: string, relinquishCodesLocks: boolean): Promise<void> {
     await BriefcaseManager.pullAndMergeChanges(actx, accessToken, briefcase, IModelVersion.latest());
-    await BriefcaseManager.pushChangeSet(actx, accessToken, briefcase, description, relinquishCodesLocks).catch((err) => {
+    await BriefcaseManager.pushChangeSet(actx, accessToken, briefcase, description, relinquishCodesLocks).catch(async (err) => {
       actx.enter();
       BriefcaseManager.abandonCreateChangeSet(briefcase);
       return Promise.reject(err);

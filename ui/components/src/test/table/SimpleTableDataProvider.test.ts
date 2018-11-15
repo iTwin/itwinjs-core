@@ -115,7 +115,7 @@ describe("SimpleTableDataProvider", () => {
     it("should throw Error if invalid row requested", async () => {
       dataProvider = new SimpleTableDataProvider(columns);
       expect(await dataProvider.getRowsCount()).to.eq(0);
-      await expect(dataProvider.getRow(0)).to.be.rejected;
+      await expect(dataProvider.getRow(0)).to.be.rejected; // tslint:disable-line:await-promise
     });
   });
 

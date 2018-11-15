@@ -411,7 +411,7 @@ async function ensureChildrenLoaded(branch: Inspire.TreeNodes | Inspire.TreeNode
   const childNodes = branch.filter((n) => filterNodeIds.includes(toNode(n).id!));
   const allChildren = (await Promise.all(childNodes.map(async (n) => {
     if (needsChildrenLoaded(n))
-      return await loadChildrenRecursive(toNode(n), filterNodeIds);
+      return loadChildrenRecursive(toNode(n), filterNodeIds);
     return n.getChildren();
   }))).reduce((children: Inspire.TreeNode[], curr: Inspire.TreeNodes) => {
     children.push(...curr);
@@ -443,7 +443,7 @@ export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNo
   // override the loadChildren method to handle multiple calls with memoization
   if (!anyNode._loadChildrenOverriden) {
     const loadChildrenBase = inspireNode.loadChildren;
-    inspireNode.loadChildren = (): Promise<Inspire.TreeNodes> => {
+    inspireNode.loadChildren = async (): Promise<Inspire.TreeNodes> => {
       const loadedNode: Inspire.TreeNode & { _loadingPromise?: Promise<Inspire.TreeNodes> } = inspireNode;
       if (!loadedNode._loadingPromise) {
         const baseResult = loadChildrenBase.call(inspireNode);
@@ -462,7 +462,7 @@ export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNo
       // note: we want to allow a single render to show node as loading
       // before pausing rendering
       const allowedRendersBeforePause = needsChildrenLoaded(inspireNode) ? 1 : 0;
-      return await using(tree.pauseRendering(allowedRendersBeforePause), async () => {
+      return using(tree.pauseRendering(allowedRendersBeforePause), async () => {
         // note: the base `expand` method returns the expanded node if it's immediately loaded
         // and returns its children if the expanded node is delay-loaded...
         const expandResult = await expandBase.call(inspireNode);
@@ -524,9 +524,9 @@ const wrapDataProvider = <TPayload>(tree: BeInspireTree<TPayload>, provider: BeI
 
   if (typeof provider === "object") {
     if (isDataProviderInterface(provider))
-      return (parent?: BeInspireTreeNode<TPayload>) => provider.getNodes(nodeToPayload(parent)).then(mapPayloadToInspireNodes);
+      return async (parent?: BeInspireTreeNode<TPayload>) => provider.getNodes(nodeToPayload(parent)).then(mapPayloadToInspireNodes);
     return provider.then(mapPayloadToInspireNodes);
   }
 
-  return (parent?: BeInspireTreeNode<TPayload>) => provider(nodeToPayload(parent)).then(mapPayloadToInspireNodes);
+  return async (parent?: BeInspireTreeNode<TPayload>) => provider(nodeToPayload(parent)).then(mapPayloadToInspireNodes);
 };

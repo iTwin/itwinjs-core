@@ -182,7 +182,7 @@ export class FrontstageDef {
   }
 
   /** Returns once the contained widgets and content controls are ready to use */
-  public waitUntilReady(): Promise<void> {
+  public async waitUntilReady(): Promise<void> {
     // create an array of control-ready promises
     const controlReadyPromises = new Array<Promise<void>>();
     for (const control of this._widgetControls) {

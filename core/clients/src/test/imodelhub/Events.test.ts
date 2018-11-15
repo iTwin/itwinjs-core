@@ -225,7 +225,7 @@ describe("iModelHub EventHandler", () => {
 
     let receivedEventsCount = 0;
     const deleteListener = imodelHubClient.Events().createListener(alctx, async () => {
-      return await utils.login();
+      return utils.login();
     }, subscription.wsgId, imodelId, (receivedEvent: IModelHubEvent) => {
       if (receivedEvent instanceof CodeEvent)
         receivedEventsCount++;

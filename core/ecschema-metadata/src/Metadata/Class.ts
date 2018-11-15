@@ -89,7 +89,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       return undefined;
     }
 
-    return await this.getInheritedProperty(name);
+    return this.getInheritedProperty(name);
   }
 
   /**
@@ -119,7 +119,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   public async getInheritedProperty(name: string): Promise<Property | undefined> {
     if (this.baseClass) {
       const baseClassObj = await this.baseClass;
-      return await baseClassObj.getProperty(name, true);
+      return baseClassObj.getProperty(name, true);
     }
 
     return undefined;

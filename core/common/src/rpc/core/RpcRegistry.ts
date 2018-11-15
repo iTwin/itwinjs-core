@@ -61,7 +61,7 @@ export class RpcRegistry {
     return this.definitionClasses.get(name) as RpcInterfaceDefinition;
   }
 
-  public describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]> {
+  public async describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]> {
     const requests: Array<Promise<RpcInterfaceEndpoints[]>> = [];
     for (const channel of RpcControlChannel.channels) {
       requests.push(channel.describeEndpoints());

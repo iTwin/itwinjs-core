@@ -41,8 +41,8 @@ interface TestParameters {
   size: ThumbnailSize;
 }
 
-async function getIModelId(accessToken: AccessToken, name: string) {
-  return await utils.getIModelId(accessToken, name);
+async function getIModelId(accessToken: AccessToken, name: string): Promise<string> {
+  return utils.getIModelId(accessToken, name);
 }
 
 describe("iModelHub ThumbnailHandler", () => {

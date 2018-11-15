@@ -225,7 +225,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
           } else {
             // all root nodes need to be reloaded
             await this._tree.reload();
-            await Promise.all(this._tree.nodes().map((n) => n.loadChildren()));
+            await Promise.all(this._tree.nodes().map(async (n) => n.loadChildren()));
           }
         }
       }
@@ -476,7 +476,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
       p = p.substr(0, p.length - delimiter.length);
     if (p.length === 0)
       return undefined;
-    const root = await this.props.tree.nodes();
+    const root = this.props.tree.nodes();
     for (const node of root) {
       const found = await this._find(node, p);
       if (found)

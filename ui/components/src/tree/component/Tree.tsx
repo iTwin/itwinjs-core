@@ -336,7 +336,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
                         // all root nodes need to be reloaded
                         const expandedNodeIds = this._tree.expanded().map((n) => n.id!);
                         await this._tree.reload();
-                        await Promise.all(this._tree.nodes(expandedNodeIds).map((n) => n.loadChildren()));
+                        await Promise.all(this._tree.nodes(expandedNodeIds).map(async (n) => n.loadChildren()));
                     }
                 }
             }

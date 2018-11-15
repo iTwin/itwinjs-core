@@ -34,7 +34,7 @@ export class RpcMultipart {
   }
 
   /** Obtains the RPC value from a multipart HTTP request. */
-  public static parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue> {
+  public static async parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue> {
     throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
   }
 

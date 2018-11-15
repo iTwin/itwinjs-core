@@ -54,7 +54,7 @@ export class RpcManager {
    * Describes the RPC interfaces and endpoints that are currently available from the backend.
    * @note Some endpoints may be marked incompatible if the frontend expected a different interface declaration than the backend supplied. RPC operations against an incompatible interface will fail.
    */
-  public static describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]> {
+  public static async describeAvailableEndpoints(): Promise<RpcInterfaceEndpoints[]> {
     return RpcRegistry.instance.describeAvailableEndpoints();
   }
 }

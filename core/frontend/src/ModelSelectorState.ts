@@ -61,5 +61,5 @@ export class ModelSelectorState extends ElementState {
   public containsModel(modelId: Id64String): boolean { return this.has(modelId.toString()); }
 
   /** Make sure all models referenced by this ModelSelectorState are loaded. */
-  public load(): Promise<void> { return this.iModel.models.load(this.models); }
+  public async load(): Promise<void> { return this.iModel.models.load(this.models); }
 }
