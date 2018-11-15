@@ -232,7 +232,9 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     }
 
     this.state.activeGroup.updateState();
-    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent();
+
+    const nodes = await this.state.treeInfo!.dataProvider.getNodes();
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(nodes);
   }
 
   private async _updateModelsWithViewport(vp: Viewport) {
@@ -434,7 +436,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
   /** enable or disable a single item */
   private _onCheckboxClick = (label: string) => {
-    const item = this._getItem(label);
+    const item = this._getItem(label as string);
     item.enabled = !item.enabled;
     this.state.activeGroup.setEnabled(item, item.enabled);
     this.setState({ activeGroup: this.state.activeGroup });
@@ -531,7 +533,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           </div>
         </div >
       );
-
     // WIP: localize
     return "Loading...";
   }
