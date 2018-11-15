@@ -179,18 +179,11 @@ vec3 octDecodeNormal(vec2 e) {
 `;
 
 const computeNormal = `
-  if (!isSurfaceBitSet(kSurfaceBit_HasNormals))
-    return vec3(0.0);
-
-  vec2 normal = g_vertexData2;
-  if (isSurfaceBitSet(kSurfaceBit_HasColorAndNormal)) {
-    vec2 tc = g_vertexBaseCoords;
-    tc.x += 3.0 * g_vert_stepX;
-    vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
-    normal = enc.xy;
-  }
-
-  return normalize(u_nmx * octDecodeNormal(normal));
+  vec2 tc = g_vertexBaseCoords;
+  tc.x += 3.0 * g_vert_stepX;
+  vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+  vec2 normal = mix(g_vertexData2, enc.xy, extractSurfaceBit(kSurfaceBit_HasColorAndNormal));
+  return mix(vec3(0.0), normalize(u_nmx * octDecodeNormal(normal)), extractSurfaceBit(kSurfaceBit_HasNormals));
 `;
 
 const computeAnimatedNormal = `
@@ -199,19 +192,14 @@ const computeAnimatedNormal = `
 ` + computeNormal;
 
 const applyBackgroundColor = `
-  if (isSurfaceBitSet(kSurfaceBit_BackgroundFill))
-    baseColor.rgb = u_bgColor.rgb;
-
-  return baseColor;
+  return mix(baseColor, vec4(u_bgColor.rgb, 1.0), extractSurfaceBit(kSurfaceBit_BackgroundFill));
 `;
 
 const computeTexCoord = `
-  if (!isSurfaceBitSet(kSurfaceBit_HasTexture))
-    return vec2(0.0);
   vec2 tc = g_vertexBaseCoords;
   tc.x += 3.0 * g_vert_stepX;  vec4 rgba = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   vec2 qcoords = vec2(decodeUInt16(rgba.xy), decodeUInt16(rgba.zw));
-  return unquantize2d(qcoords, u_qTexCoordParams);
+  return mix(vec2(0.0), unquantize2d(qcoords, u_qTexCoordParams), extractSurfaceBit(kSurfaceBit_HasTexture));
 `;
 const computeAnimatedTexCoord = `
   if (u_animScalarQParams.x >= 0.0)
