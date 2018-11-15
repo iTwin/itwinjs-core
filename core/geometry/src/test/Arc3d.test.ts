@@ -14,6 +14,7 @@ import { Angle } from "../geometry3d/Angle";
 import { prettyPrint } from "./testFunctions";
 import { Checker } from "./Checker";
 import { expect } from "chai";
+import { Sample } from "../serialization/GeometrySamples";
 /* tslint:disable:no-console */
 
 function exerciseArcSet(ck: Checker, arcA: Arc3d) {
@@ -221,4 +222,22 @@ describe("Arc3d", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("ScaledForm", () => {
+    const ck = new Checker();
+    const arcs = Sample.createManyArcs([0.2, -0.25]);
+    for (const arc of arcs) {
+      const scaledForm = arc.toScaledMatrix3d();
+      const arc1 = Arc3d.createScaledXYColumns(
+        scaledForm.center,
+        scaledForm.axes,
+        scaledForm.r0,
+        scaledForm.r90,
+        scaledForm.sweep);
+      for (const fraction of [0.0, 0.2, 0.4, 0.6, 0.8]) {
+        ck.testPoint3d(arc.fractionToPoint(fraction), arc1.fractionToPoint(fraction));
+      }
+    }
+    ck.checkpoint("Arc3d.ScaledForm");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

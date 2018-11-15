@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Geometry } from "../Geometry";
-import { GrowableFloat64Array, GrowableXYZArray } from "../geometry3d/GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 /* tslint:disable:no-console no-unused-variable */
 

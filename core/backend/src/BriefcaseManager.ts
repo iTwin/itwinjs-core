@@ -241,7 +241,7 @@ export class BriefcaseManager {
   public static get imodelClient(): IModelClient {
     if (!this._imodelClient) {
       // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
-      this._imodelClient = new IModelHubClient(new AzureFileHandler(false));
+      this._imodelClient = new IModelHubClient(new AzureFileHandler());
     }
     return this._imodelClient;
   }

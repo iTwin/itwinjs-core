@@ -11,7 +11,6 @@ import { AccessToken } from "../../";
 import {
   IModelHubClient, Briefcase, BriefcaseQuery, IModelHubClientError,
 } from "../../";
-import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
@@ -180,23 +179,6 @@ describe("iModelHub BriefcaseHandler", () => {
 
     const progressTracker = new utils.ProgressTracker();
     await iModelClient.Briefcases().download(actx, briefcase, downloadToPathname, progressTracker.track());
-    progressTracker.check();
-    fs.existsSync(downloadToPathname).should.be.equal(true);
-  });
-
-  it("should download a Briefcase without buffered write", async () => {
-    mockGetBriefcaseWithDownloadUrl(imodelId, utils.generateBriefcase(briefcaseId));
-    const briefcase: Briefcase = (await iModelClient.Briefcases().get(actx, accessToken, imodelId, new BriefcaseQuery().byId(briefcaseId).selectDownloadUrl()))[0];
-    chai.assert(briefcase.downloadUrl);
-
-    const fileName: string = briefcase.fileName!;
-    const downloadToPathname: string = path.join(utils.workDir, fileName);
-
-    utils.mockFileResponse();
-
-    const progressTracker = new utils.ProgressTracker();
-    const client = new IModelHubClient(new AzureFileHandler(false));
-    await client.Briefcases().download(actx, briefcase, downloadToPathname, progressTracker.track());
     progressTracker.check();
     fs.existsSync(downloadToPathname).should.be.equal(true);
   });

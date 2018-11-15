@@ -45,7 +45,8 @@ import { LineString3d } from "../curve/LineString3d";
 import { PointString3d } from "../curve/PointString3d";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
-import { GrowableFloat64Array, GrowableXYZArray } from "../geometry3d/GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
@@ -1393,6 +1394,48 @@ export class Sample {
         LineSegment3d.create(pointsA[0], pointsA[1]),
         Arc3d.createCircularStartMiddleEnd(pointsA[1], pointsA[2], pointsA[3])!,
         LineSegment3d.create(pointsA[3], pointsA[4]))));
+    return result;
+  }
+  /**
+   * Create various elliptic arcs
+   * * circle with vector0, vector90 aligned with x,y
+   * * circle with axes rotated
+   * *
+   * @param radiusRatio = vector90.magnitude / vector0.magnitude
+   */
+  public static createArcs(radiusRatio: number = 1.0, sweep: AngleSweep = AngleSweep.create360()): Arc3d[] {
+    const arcs = [];
+    const center0 = Point3d.create(0, 0, 0);
+    const a = 1.0;
+    const b = radiusRatio;
+    const direction0 = Vector3d.createPolar(a, Angle.createDegrees(35.0));
+    const direction90 = direction0.rotate90CCWXY();
+    direction90.scaleInPlace(radiusRatio);
+    arcs.push(Arc3d.create(center0, Vector3d.create(a, 0, 0), Vector3d.create(0, b, 0), sweep));
+    arcs.push(Arc3d.create(center0, direction0, direction90, sweep));
+    return arcs;
+  }
+  /**
+   * Create many arcs, optionally including skews
+   * * @param skewFactor array of skew factors.  for each skew factor, all base arcs are replicated with vector90 shifted by the factor times vector0
+   */
+  public static createManyArcs(skewFactors: number[] = []): Arc3d[] {
+    const result: Arc3d[] = [];
+    const sweep1 = AngleSweep.createStartEndDegrees(-10, 75);
+    const sweep2 = AngleSweep.createStartEndDegrees(160.0, 380.0);
+    for (const arcs of [
+      Sample.createArcs(1.0), Sample.createArcs(0.5),
+      Sample.createArcs(1.0, sweep1), Sample.createArcs(0.3, sweep2)]) {
+      for (const arc of arcs)
+        result.push(arc);
+    }
+    const numBase = result.length;
+    for (const skewFactor of skewFactors) {
+      for (let i = 0; i < numBase; i++) {
+        const originalArc = result[i];
+        result.push(Arc3d.create(originalArc.center, originalArc.vector0, originalArc.vector90.plusScaled(originalArc.vector0, skewFactor), originalArc.sweep));
+      }
+    }
     return result;
   }
 

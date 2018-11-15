@@ -21,7 +21,7 @@ import { Checker } from "./Checker";
 import { expect } from "chai";
 import { Sample } from "../serialization/GeometrySamples";
 import { MomentData } from "../geometry4d/MomentData";
-import { GrowableXYZArray } from "../geometry3d/GrowableArray";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 /* tslint:disable:no-console */
 
 describe("FrameBuilder.HelloWorld", () => {
