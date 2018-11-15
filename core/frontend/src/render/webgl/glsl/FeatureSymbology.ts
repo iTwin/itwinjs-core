@@ -78,7 +78,7 @@ float getFeatureIndex() {
 // Returns 1.0 if the specified flag is not globally overridden and is set in flags
 const extractNthLinearFeatureBit = `
 float extractNthFeatureBit(float flags, float n) {
-  return 0.0 == extractNthBit(u_globalOvrFlags, n) ? extractNthBit(flags, n) : 0.0;
+  return (1.0 - extractNthBit(u_globalOvrFlags, n)) * extractNthBit(flags, n);
 }
 `;
 
@@ -127,13 +127,13 @@ vec4 getSecondFeatureRgba() {
 
 const computeLineWeight = `
 float ComputeLineWeight() {
-  return 1.0 == linear_feature_overrides.x ? linear_feature_overrides.y : u_lineWeight;
+  return mix(u_lineWeight, linear_feature_overrides.y, linear_feature_overrides.x);
 }
 `;
 
 const computeLineCode = `
 float ComputeLineCode() {
-  return 1.0 == linear_feature_overrides.z ? linear_feature_overrides.w : u_lineCode;
+  return mix(u_lineCode, linear_feature_overrides.w, linear_feature_overrides.z);
 }
 `;
 

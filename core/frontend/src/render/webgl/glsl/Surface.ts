@@ -217,7 +217,7 @@ const computeBaseColor = `
       vec4 surfCol = getSurfaceColor();
       const vec3 white = vec3(1.0);
       const vec3 epsilon = vec3(0.0001);
-      vec3 color = surfCol.a > 0.0 ? surfCol.rgb / surfCol.a : surfCol.rgb; // revert premultiplied alpha
+      vec3 color = surfCol.rgb / max(0.0001, surfCol.a); // revert premultiplied alpha
       vec3 delta = (color + epsilon) - white;
       if (u_reverseWhiteOnWhite > 0.5 && delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0)
         surfCol.rgb = vec3(0.0);
