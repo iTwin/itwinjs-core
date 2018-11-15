@@ -5,6 +5,7 @@
 /** @module Picker */
 
 import * as React from "react";
+import * as _ from "lodash";
 import classnames from "classnames";
 import { ListItem, ListItemType } from "./ListPicker";
 import { IModelApp, Viewport, ViewState, SpatialViewState, SpatialModelState, SelectedViewportChangedArgs, IModelConnection } from "@bentley/imodeljs-frontend";
@@ -13,11 +14,13 @@ import { UiFramework } from "../UiFramework";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { WidgetControl } from "../configurableui/WidgetControl";
-import { Tree, FilteringInput } from "@bentley/ui-components";
+import { Tree, FilteringInput, TreeNodeItem, PageOptions, DelayLoadedTreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
 import "./ModelSelector.scss";
-import { PresentationTreeDataProvider, withUnifiedSelection, withFilteringSupport } from "@bentley/presentation-components/lib/tree";
+import { PresentationTreeDataProvider, withUnifiedSelection, withFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components/lib/tree";
 import { Presentation } from "@bentley/presentation-frontend";
-import { RegisteredRuleset } from "@bentley/presentation-common";
+import { RegisteredRuleset, NodeKey, NodePathElement } from "@bentley/presentation-common";
+import { CheckBoxState } from "@bentley/ui-core";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 /** Model Group used by [[ModelSelectorWidget]] */
 export interface ModelGroup {
@@ -42,7 +45,7 @@ export interface ModelSelectorWidgetState {
   showOptions: boolean;
   treeInfo?: {
     ruleset: RegisteredRuleset;
-    dataProvider: PresentationTreeDataProvider;
+    dataProvider: ModelSelectorDataProvider;
     filter?: string;
     prevProps?: any;
     filtering?: boolean;
@@ -51,14 +54,57 @@ export interface ModelSelectorWidgetState {
   };
 }
 
+class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
+  private _baseProvider: PresentationTreeDataProvider;
+
+  constructor(imodel: IModelConnection, rulesetId: string) {
+    this._baseProvider = new PresentationTreeDataProvider(imodel, rulesetId);
+  }
+
+  /** Id of the ruleset used by this data provider */
+  public get rulesetId(): string { return this._baseProvider.rulesetId; }
+
+  /** [[IModelConnection]] used by this data provider */
+  public get connection(): IModelConnection { return this._baseProvider.connection; }
+
+  public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
+
+  /**
+   * Returns a [[NodeKey]] from given [[TreeNodeItem]].
+   * **Warning:** the `node` must be created by this data provider.
+   */
+  public getNodeKey(node: TreeNodeItem): NodeKey {
+    return this._baseProvider.getNodeKey(node);
+  }
+
+  /**
+   * Returns filtered node paths.
+   * @param filter Filter.
+   */
+  public getFilteredNodePaths = async (filter: string): Promise<NodePathElement[]> => {
+    return this._baseProvider.getFilteredNodePaths(filter);
+  }
+
+  public getNodesCount = _.memoize(async (parentNode?: TreeNodeItem): Promise<number> => {
+    return this._baseProvider.getNodesCount(parentNode);
+  });
+
+  public getNodes = _.memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> => {
+    const nodes = await this._baseProvider.getNodes(parentNode, pageOptions);
+    nodes.forEach((n) => {
+      n.checkBoxState = CheckBoxState.On;
+    });
+    return nodes;
+  });
+}
+
 /** Model Selector [[WidgetControl]] */
 export class ModelSelectorWidgetControl extends WidgetControl {
   /** Creates a ModelSelectorDemoWidget */
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    const thing = options.iModel;
-    this.reactElement = <ModelSelectorWidget imodel={thing} />;
+    this.reactElement = <ModelSelectorWidget imodel={options.iModelConnection} />;
   }
 }
 
@@ -93,7 +139,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         this.setState({
           treeInfo: {
             ruleset,
-            dataProvider: new PresentationTreeDataProvider(this.props.imodel, ruleset.id),
+            dataProvider: new ModelSelectorDataProvider(this.props.imodel, ruleset.id),
             filter: "",
             filtering: false,
             prevProps: this.props,
@@ -168,7 +214,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this.setState({
       treeInfo: {
         ruleset: activeRuleset,
-        dataProvider: new PresentationTreeDataProvider(this.props.imodel, activeRuleset.id),
+        dataProvider: new ModelSelectorDataProvider(this.props.imodel, activeRuleset.id),
         filter: this.state.treeInfo ? this.state.treeInfo.filter : "",
         filtering: this.state.treeInfo ? this.state.treeInfo.filtering : false,
         activeHighlightedIndex: this.state.treeInfo ? this.state.treeInfo.activeHighlightedIndex : 0,
@@ -180,13 +226,13 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** enable or disable all items */
-  private _onSetEnableAll = (enable: boolean) => {
+  private _onSetEnableAll = async (enable: boolean) => {
     for (const item of this.state.activeGroup.items) {
       this.state.activeGroup.setEnabled(item, enable);
     }
 
     this.state.activeGroup.updateState();
-    this.forceUpdate();
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent();
   }
 
   private async _updateModelsWithViewport(vp: Viewport) {
