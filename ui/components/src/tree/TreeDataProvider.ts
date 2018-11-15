@@ -26,6 +26,7 @@ export interface TreeNodeItem {
   checkBoxState?: CheckBoxState;
   isCheckBoxEnabled?: boolean;
   extendedData?: any;
+  isEditable?: boolean;
 }
 
 /** A [[TreeNodeItem]] for immediately loaded trees */
@@ -79,7 +80,14 @@ export const isTreeDataProviderInterface = (provider: TreeDataProvider): provide
 export type TreeDataChangesListener = (node?: TreeNodeItem[]) => void;
 
 /**
- * MutableTreeDataProvider provides manipulation processing for the DataTree.
+ * EditableTreeDataProvider provides cell editing processing for the Tree.
+ */
+export interface EditableTreeDataProvider extends ITreeDataProvider {
+  updateLabel(nodeItem: TreeNodeItem, newLabel: string): void;
+}
+
+/**
+ * MutableTreeDataProvider provides manipulation processing for the Tree.
  * Useful for Drag & Drop processing.
  */
 export interface MutableTreeDataProvider extends ITreeDataProvider {

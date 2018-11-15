@@ -64,8 +64,8 @@ class TreeDemoWidget extends React.Component<Props, State> {
 
     return (
       <div style={{ height: "100%" }}>
-        <label htmlFor="recieves_row">Can accept rows: </label>
-        <input id="recieves_row" type="checkbox" onChange={(event) => {
+        <label htmlFor="receives_row">Can accept rows: </label>
+        <input id="receives_row" type="checkbox" onChange={(event) => {
           this.setState({ checked: event.target.checked });
         }} />
         <DragDropTree

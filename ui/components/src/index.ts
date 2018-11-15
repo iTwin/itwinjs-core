@@ -17,6 +17,7 @@ export * from "./viewport";
 
 // WIP: Merge with Barry's module work
 export { TableCellEditorState, TableCellUpdatedArgs } from "./table/component/Table";
+export { TreeCellEditorState, TreeCellUpdatedArgs } from "./tree/component/Tree";
 
 /** @docs-package-description
  * The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.

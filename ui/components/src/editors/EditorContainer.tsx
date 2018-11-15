@@ -168,7 +168,7 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
 
   public render() {
     return (
-      <div className="components-editor-container"
+      <span className="components-editor-container"
         onBlur={this._handleBlur}
         onKeyDown={this._handleKeyDown}
         onClick={this._handleClick}
@@ -176,7 +176,7 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
         title={this.props.title}
       >
         {this.createEditor()}
-      </div>
+      </span>
     );
   }
 }
