@@ -324,7 +324,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
             // istanbul ignore else
             if (node) {
               const wasExpanded = node.expanded();
-              node.assign(Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem.bind(this)));
+              node.assign(Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem.bind(this), node));
               if (wasExpanded)
                 await node.loadChildren();
             }
@@ -360,12 +360,17 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   /** map TreeNodeItem into an InspireNode */
-  public static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>): BeInspireTreeNodeConfig {
+  public static inspireNodeFromTreeNodeItem(item: TreeNodeItem, remapper: MapPayloadToInspireNodeCallback<TreeNodeItem>, base?: BeInspireTreeNodeConfig): BeInspireTreeNodeConfig {
+    base = base || { text: "" };
     const node: BeInspireTreeNodeConfig = {
+      ...base,
       id: item.id,
       text: item.label,
       itree: {
-        state: {},
+        ...base.itree,
+        state: {
+          ...(base.itree ? base.itree.state : undefined),
+        },
       },
     };
     if (item.icon)
