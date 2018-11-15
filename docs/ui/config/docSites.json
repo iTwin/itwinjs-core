@@ -21,15 +21,9 @@
       "reference"
     ],
     "headerTabs": {
-      "Getting Started": {
-        "docSite": "getting-started"
-      },
-      "Learning": {
-        "docSite": "learning"
-      },
-      "API Reference": {
-        "docSite": "reference"
-      }
+      "Getting Started": "getting-started",
+      "Learning": "learning",
+      "API Reference": "reference"
     },
     "packageAliases": {
       "components": "ui-components",
