@@ -99,9 +99,7 @@ const applyClipPlanes = `
           clippedByCurrentPlaneSet = true;
       }
 
-  if (clippedByCurrentPlaneSet)
-      numSetsClippedBy = numSetsClippedBy + 1;
-
+  numSetsClippedBy += int(clippedByCurrentPlaneSet);
   if (numSetsClippedBy == numPlaneSets)
       discard;
 `;

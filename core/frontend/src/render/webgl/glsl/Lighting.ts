@@ -171,16 +171,10 @@ const applyLighting = `
     float alpha = baseColor.a;
     baseColor.rgb /= alpha;
 
+    // negate normal if not front-facing
     vec3 normal = normalize(v_n.xyz);
-    vec3 toEye;
-
-    if (!gl_FrontFacing)
-      normal = -normal;
-
-    if (kFrustumType_Perspective == u_frustum.z) // perspective
-      toEye = normalize (v_pos.xyz);
-    else
-      toEye = vec3(0.0, 0.0, -1.0);
+    normal *= 2.0 * float(gl_FrontFacing) - 1.0;
+    vec3 toEye = mix(vec3(0.0, 0.0, -1.0), normalize(v_pos.xyz), float(kFrustumType_Perspective == u_frustum.z));
 
     bool    useDefaults = isSurfaceBitSet(kSurfaceBit_IgnoreMaterial);
     float   specularExp =  useDefaults ? 43.2 : u_specular.a;

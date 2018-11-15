@@ -66,10 +66,9 @@ const reverseWhiteOnWhite = `
     // Account for erroneous interpolation from varying vec3(1.0)...
     const vec3 white = vec3(1.0);
     const vec3 epsilon = vec3(0.0001);
-    vec3 color = baseColor.a > 0.0 ? baseColor.rgb / baseColor.a : baseColor.rgb; // revert premultiplied alpha
+    vec3 color = baseColor.rgb / max(0.0001, baseColor.a); // revert premultiplied alpha
     vec3 delta = (color + epsilon) - white;
-    if (delta.x > 0.0 && delta.y > 0.0 && delta.z > 0.0)
-      baseColor.rgb = vec3(0.0);
+    baseColor.rgb *= vec3(float(delta.x <= 0.0 || delta.y <= 0.0 || delta.z <= 0.0)); // set to black if almost white
   }
   return baseColor;
 `;
@@ -119,8 +118,7 @@ export namespace GLSLFragment {
 
   export const revertPreMultipliedAlpha = `
 vec4 revertPreMultipliedAlpha(vec4 rgba) {
-  if (0.0 < rgba.a)
-    rgba.rgb /= rgba.a;
+  rgba.rgb /= max(0.0001, rgba.a);
   return rgba;
 }
 `;
@@ -135,9 +133,7 @@ vec4 applyPreMultipliedAlpha(vec4 rgba) {
   export const adjustPreMultipliedAlpha = `
 vec4 adjustPreMultipliedAlpha(vec4 rgba, float newAlpha) {
   float oldAlpha = rgba.a;
-  if (0.0 < oldAlpha)
-    rgba.rgb /= oldAlpha;
-
+  rgba.rgb /= max(0.0001, oldAlpha);
   rgba.rgb *= newAlpha;
   rgba.a = newAlpha;
   return rgba;
