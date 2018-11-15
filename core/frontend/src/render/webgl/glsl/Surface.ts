@@ -117,8 +117,12 @@ export function createSurfaceHiliter(): ProgramBuilder {
 }
 
 // nvidia hardware incorrectly interpolates varying floats when we send the same exact value for every vertex...
+const extractSurfaceBit = `
+float extractSurfaceBit(float flag) { return extractNthBit(floor(v_surfaceFlags + 0.5), flag); }
+`;
+
 const isSurfaceBitSet = `
-bool isSurfaceBitSet(float flag) { return 0.0 != extractNthBit(floor(v_surfaceFlags + 0.5), flag); }
+bool isSurfaceBitSet(float flag) { return 0.0 != extractSurfaceBit(flag); }
 `;
 
 function addSurfaceFlagsLookup(builder: ShaderBuilder) {
@@ -142,6 +146,7 @@ function addSurfaceFlagsLookup(builder: ShaderBuilder) {
   builder.addConstant("kSurfaceMask_EnvironmentMap", VariableType.Float, "128.0");
 
   builder.addFunction(GLSLCommon.extractNthBit);
+  builder.addFunction(extractSurfaceBit);
   builder.addFunction(isSurfaceBitSet);
 }
 
