@@ -16,6 +16,7 @@ import {
 import { IModelApp, IModelConnection, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { Presentation } from "@bentley/presentation-frontend";
 
 import { WebFontIcon } from "@bentley/ui-core";
 import { UiCore } from "@bentley/ui-core";
@@ -31,7 +32,6 @@ import {
     createAction, ActionsUnion, DeepReadonly,
 } from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Presentation } from "@bentley/presentation-frontend";
 
 import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
@@ -142,6 +142,7 @@ export class SampleAppIModelApp extends IModelApp {
     }
 
     public static async initialize() {
+        Presentation.initialize();
         UiCore.initialize(SampleAppIModelApp.i18n);
         UiComponents.initialize(SampleAppIModelApp.i18n);
 

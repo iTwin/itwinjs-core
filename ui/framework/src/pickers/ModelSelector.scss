@@ -3,8 +3,35 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/colors";
+
+.category-model-horizontal-tabs {
+  @include bwc-tabs-horizontal;
+
+  > li {
+    width: 50%;
+  }
+
+  > li > a {
+    background-color: $background-2;
+    text-align: center;
+  }
+
+  > li.active > a {
+    color: $primary-base;
+    background-color: $background-1;
+    border-bottom: none;
+  }
+}
+
+.nz-tree-tree .nz-tree-node {
+  @include bwc-text( leading );
+  padding: 5px;
+  background-color: $background-1;
+}
 
 .widget-picker {
+  background-color: $background-1;
   margin: 0 5px;
   position: relative;
   overflow-x: hidden;
@@ -26,6 +53,7 @@
     }
 
     > .widget-picker-group {
+      width: 100%;
       padding: 10px 5px;
       display: flex;
       align-items: center;
@@ -61,7 +89,6 @@
   }
 
   .fw-modelselector {
-    position: absolute;
     top: 0;
     left: 0;
     width: 100%;
@@ -71,6 +98,7 @@
     opacity: 0;
     transform: translateX(100%);
     transition: .2s linear;
+    background-color: $background-2;
 
     &.show {
       opacity: 1;
@@ -135,28 +163,32 @@
     }
 
     > .modelselector-toolbar {
-      display: inherit;
-
-      > .icon {
-        margin-right: 5px;
-        padding: 7px;
-        border: 1px solid #ccc;
-        font-size: 18px;
-        color: $bwc-icons-light;
-        cursor: pointer;
-        -webkit-transition: color .2s ease;
-        -moz-transition: color .2s ease;
-        -o-transition: color .2s ease;
-        transition: color .2s ease;
-
-        &:hover {
-        color: $bwc-icons-dark;
-        }
-      }
+      background-color: $background-1;
 
       > .searchbox {
-        width: 100%;
-        margin-left: 5px;
+        width: 95%;
+        margin: 10px 5px;
+      }
+
+      .modelselector-buttons {
+        margin: 15px 5px;
+
+        > .icon {
+          margin-right: 5px;
+          padding: 7px;
+          border: 1px solid #ccc;
+          font-size: 18px;
+          color: $bwc-icons-light;
+          cursor: pointer;
+          -webkit-transition: color .2s ease;
+          -moz-transition: color .2s ease;
+          -o-transition: color .2s ease;
+          transition: color .2s ease;
+
+          &:hover {
+          color: $bwc-icons-dark;
+          }
+        }
       }
     }
 
