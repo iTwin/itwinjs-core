@@ -57,6 +57,7 @@ export default class HighlightingEngine {
     return (
       <Highlighter
         searchWords={[props.searchText]}
+        findChunks={findChunksNoRegex as any} // .d.ts declaration wrong
         activeIndex={props.activeResultIndex as any} // .d.ts file seems to be wrong, doesn't work if it's a string
         activeClassName={HighlightingEngine.ACTIVE_CLASS_NAME}
         autoEscape={true}
@@ -65,3 +66,26 @@ export default class HighlightingEngine {
     );
   }
 }
+
+interface HighlighterChunk {
+  highlight: boolean;
+  start: number;
+  end: number;
+}
+interface FindChunksArgs {
+  autoEscape?: boolean;
+  caseSensitive?: boolean;
+  searchWords: string[];
+  textToHighlight: string;
+}
+const findChunksNoRegex = (args: FindChunksArgs): HighlighterChunk[] => {
+  const text = args.caseSensitive ? args.textToHighlight : args.textToHighlight.toUpperCase();
+  const term = args.caseSensitive ? args.searchWords[0] : args.searchWords[0].toUpperCase();
+  const chunks: HighlighterChunk[] = [];
+  let index = text.indexOf(term);
+  while (index !== -1) {
+    chunks.push({ start: index, end: index + term.length, highlight: true });
+    index = text.indexOf(term, index + 1);
+  }
+  return chunks;
+};
