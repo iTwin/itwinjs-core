@@ -26,10 +26,13 @@ import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
   OnItemsSelectedCallback, OnItemsDeselectedCallback,
 } from "../../common/selection/SelectionHandler";
+// cell editing imports
+import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 // misc
 import UiComponents from "../../UiComponents";
 // css
 import "./Tree.scss";
+import { CellEditorPropertyRecord } from "./CellEditorPropertyRecord";
 
 /** Type for nodesSelected callback */
 export type NodesSelectedCallback = OnItemsSelectedCallback<TreeNodeItem>;
@@ -58,6 +61,9 @@ export interface TreeProps {
   onRender?: () => void;
 
   nodeHighlightingProps?: HighlightableTreeProps;
+
+  onCellEditing?: (cellEditorState: TreeCellEditorState) => void;
+  onCellUpdated?: (args: TreeCellUpdatedArgs) => Promise<boolean>;
 }
 
 /** State for the [[Tree]] component  */
@@ -70,9 +76,24 @@ export interface TreeState {
   };
   model: BeInspireTree<TreeNodeItem>;
   modelReady: boolean;
+  cellEditorState: TreeCellEditorState;
 
   /** @hidden */
   highlightingEngine?: HighlightingEngine;
+}
+
+/** Tree Cell Editor state */
+export interface TreeCellEditorState {
+  active: boolean;
+  node?: BeInspireTreeNode<TreeNodeItem>;
+}
+
+/** Arguments for the Tree Cell Updated event callback */
+export interface TreeCellUpdatedArgs {
+  /** The cell being updated. */
+  node: BeInspireTreeNode<TreeNodeItem>;
+  /** The new value for the cell. */
+  newValue: any;
 }
 
 /**
@@ -86,6 +107,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   private _treeComponent: React.RefObject<TreeBase> = React.createRef();
   private _selectionHandler: SelectionHandler<BeInspireTreeNode<TreeNodeItem>>;
   private _nodesSelectionHandlers?: Array<SingleSelectionHandler<BeInspireTreeNode<TreeNodeItem>>>;
+  private _pressedItemSelected: boolean = false;
 
   public static readonly defaultProps: Partial<TreeProps> = {
     selectionMode: SelectionMode.Single,
@@ -108,6 +130,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       },
       model: this._tree,
       modelReady: false,
+      cellEditorState: { active: false },
     };
   }
 
@@ -201,6 +224,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       || this.props.renderNode !== nextProps.renderNode
       || this.props.dataProvider !== nextProps.dataProvider
       || this.props.nodeHighlightingProps !== nextProps.nodeHighlightingProps
+      || this.state.cellEditorState !== nextState.cellEditorState
       || this.state.model.nodes().some((n) => n.isDirty());
   }
 
@@ -357,9 +381,17 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
   private _createItemSelectionHandler = (node: BeInspireTreeNode<TreeNodeItem>): SingleSelectionHandler<BeInspireTreeNode<TreeNodeItem>> => {
     return {
-      preselect: () => { },
-      select: () => node.select(),
-      deselect: () => node.deselect(),
+      preselect: () => {
+        this._pressedItemSelected = node.selected();
+      },
+      select: () => {
+        if (!node.selected())
+          node.select();
+      },
+      deselect: () => {
+        if (node.selected())
+          node.deselect();
+      },
       isSelected: () => node.selected(),
       item: () => node,
     };
@@ -367,7 +399,13 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
   private _multiSelectionHandler: MultiSelectionHandler<BeInspireTreeNode<TreeNodeItem>> = {
     selectBetween: (node1: BeInspireTreeNode<TreeNodeItem>, node2: BeInspireTreeNode<TreeNodeItem>) => this._tree.selectBetween(node1, node2),
-    deselectAll: () => this._tree.deselectAll(),
+    deselectAll: () => {
+      this._tree.deselectAll();
+      if (!this._pressedItemSelected) {
+        this._deactivateCellEditor();
+        this.forceUpdate();
+      }
+    },
     updateSelection: (selections: Array<BeInspireTreeNode<TreeNodeItem>>, deselections: Array<BeInspireTreeNode<TreeNodeItem>>) => {
       selections.forEach((x) => x.select());
       deselections.forEach((x) => x.deselect());
@@ -375,8 +413,64 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     areEqual: (item1: BeInspireTreeNode<TreeNodeItem>, item2: BeInspireTreeNode<TreeNodeItem>) => item1 === item2,
   };
 
+  private _checkCellEditorStatus = (node: BeInspireTreeNode<TreeNodeItem>): void => {
+    let activate = false;
+
+    const isSelected = node.selected();
+    const nodeItem: TreeNodeItem = node.payload;
+    if (isSelected && this._pressedItemSelected && nodeItem.isEditable)
+      activate = true;
+
+    if (activate)
+      this._activateCellEditor(node);
+    else
+      this._deactivateCellEditor();
+  }
+
+  private _activateCellEditor = (node: BeInspireTreeNode<TreeNodeItem>): void => {
+    const cellEditorState: TreeCellEditorState = { active: true, node };
+    if (cellEditorState !== this.state.cellEditorState) {
+      this.setState(
+        { cellEditorState },
+        () => {
+          if (this.props.onCellEditing)
+            this.props.onCellEditing(cellEditorState);
+        },
+      );
+    }
+  }
+
+  private _deactivateCellEditor = (): void => {
+    if (this.state.cellEditorState.active) {
+      if (this.state.cellEditorState.node)
+        this.state.cellEditorState.node.setDirty(true);
+      const cellEditorState: TreeCellEditorState = { active: true, node: undefined };
+      this.setState({ cellEditorState });
+    }
+  }
+
+  private _onCellEditCommit = async (args: PropertyUpdatedArgs) => {
+    if (this.props.onCellUpdated && this.state.cellEditorState.node) {
+      const cellUpdatedArgs: TreeCellUpdatedArgs = {
+        node: this.state.cellEditorState.node,
+        newValue: args.newValue,
+      };
+      const allowed = await this.props.onCellUpdated(cellUpdatedArgs);
+      if (allowed)
+        this.state.cellEditorState.node.setDirty(true);
+    }
+    this._deactivateCellEditor();
+  }
+
   // tslint:disable-next-line:naming-convention
-  private static renderLabelComponent = (node: BeInspireTreeNode<TreeNodeItem>, highlightProps?: HighlightableTreeNodeProps) => {
+  private static renderLabelComponent = (node: BeInspireTreeNode<TreeNodeItem>, highlightProps?: HighlightableTreeNodeProps, cellEditorProps?: TreeNodeCellEditorProps) => {
+    if (cellEditorProps) {
+      if (cellEditorProps.cellEditorState.active && node === cellEditorProps.cellEditorState.node) {
+        const record = new CellEditorPropertyRecord(node.text);
+        return <EditorContainer propertyRecord={record} title={record.description} onCommit={cellEditorProps.onCellEditCommit} onCommitCancel={cellEditorProps.onCellEditCancel} />;
+      }
+    }
+
     if (highlightProps) {
       return HighlightingEngine.renderNodeLabel(node.text, highlightProps);
     }
@@ -411,9 +505,13 @@ export class Tree extends React.Component<TreeProps, TreeState> {
             node: n,
             highlightProps: this.state.highlightingEngine ? this.state.highlightingEngine.createRenderProps(n) : undefined,
             renderLabel: Tree.renderLabelComponent,
-            onClick: (e: React.MouseEvent) => onNodeSelectionChanged(e.shiftKey, e.ctrlKey),
+            onClick: (e: React.MouseEvent) => {
+              onNodeSelectionChanged(e.shiftKey, e.ctrlKey);
+              this._checkCellEditorStatus(n);
+            },
             onMouseDown: () => this._selectionHandler.createDragAction(this._multiSelectionHandler, [this.nodesSelectionHandlers], n),
             onMouseMove: (e: React.MouseEvent) => { if (e.buttons === 1) this._selectionHandler.updateDragAction(n); },
+            cellEditorProps: { cellEditorState: this.state.cellEditorState, onCellEditCommit: this._onCellEditCommit, onCellEditCancel: this._deactivateCellEditor },
           };
           return renderNode(n, props);
         })}
@@ -433,13 +531,20 @@ export namespace Tree {
   }
 }
 
+export interface TreeNodeCellEditorProps {
+  cellEditorState: TreeCellEditorState;
+  onCellEditCommit: (args: PropertyUpdatedArgs) => void;
+  onCellEditCancel: () => void;
+}
+
 /**
  * Props for the [[TreeNode]] component
  */
 export interface TreeNodeProps {
   node: BeInspireTreeNode<TreeNodeItem>;
   highlightProps?: HighlightableTreeNodeProps;
-  renderLabel: (node: BeInspireTreeNode<TreeNodeItem>, highlightProps?: HighlightableTreeNodeProps) => React.ReactNode;
+  cellEditorProps?: TreeNodeCellEditorProps;
+  renderLabel: (node: BeInspireTreeNode<TreeNodeItem>, highlightProps?: HighlightableTreeNodeProps, cellEditorProps?: TreeNodeCellEditorProps) => React.ReactNode;
   onClick?: (e: React.MouseEvent) => void;
   onMouseDown?: (e: React.MouseEvent) => void;
   onMouseMove?: (e: React.MouseEvent) => void;
@@ -463,7 +568,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         isSelected={this.props.node.selected()}
         isLoading={this.props.node.loading()}
         isLeaf={!this.props.node.hasOrWillHaveChildren()}
-        label={this.props.renderLabel(this.props.node, this.props.highlightProps)}
+        label={this.props.renderLabel(this.props.node, this.props.highlightProps, this.props.cellEditorProps)}
         icon={this.props.node.itree && this.props.node.itree.icon ? <span className={this.props.node.itree.icon} /> : undefined}
         level={this.props.node.getParents().length}
         onClick={this.props.onClick}
