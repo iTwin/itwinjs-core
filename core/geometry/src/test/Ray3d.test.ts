@@ -96,6 +96,11 @@ describe("Ray3d", () => {
     ck.testCoordinate(spacePoint.distance(nullray.origin), nullray.distance(spacePoint), "distance to null ray");
 
     ck.testFalse(nullray.trySetDirectionMagnitudeInPlace(), "trySetMagnnitude of nullray");
+
+    ck.testUndefined(
+      Ray3d.createWeightedDerivative(
+        new Float64Array([1, 2, 3, 0]),
+        new Float64Array([2, 1, 4, 0])));
     expect(ck.getNumErrors()).equals(0);
   });
 });

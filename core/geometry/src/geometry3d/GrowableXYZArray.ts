@@ -14,334 +14,6 @@ import { IndexedXYZCollection } from "./IndexedXYZCollection";
 
 import { Plane3dByOriginAndUnitNormal } from "./Plane3dByOriginAndUnitNormal";
 
-export type OptionalGrowableFloat64Array = GrowableFloat64Array | undefined;
-export type BlockComparisonFunction = (data: Float64Array, blockSize: number, index0: number, index1: number) => number;
-
-export class GrowableFloat64Array {
-  private _data: Float64Array;
-  private _inUse: number;
-  constructor(initialCapacity: number = 8) {
-    this._data = new Float64Array(initialCapacity);
-    this._inUse = 0;
-  }
-  public static compare(a: any, b: any): number {
-    return a - b;
-  }
-  public get length() {
-    return this._inUse;
-  }
-  /**
-   * Set the value at specified index.
-   * @param index index of entry to set
-   * @param value value to set
-   */
-  public setAt(index: number, value: number) {
-    this._data[index] = value;
-  }
-
-  /**
-   * Move the value at index i to index j.
-   * @param i source index
-   * @param j destination index.
-   */
-  public move(i: number, j: number) {
-    this._data[j] = this._data[i];
-  }
-
-  public push(toPush: number) {
-    if (this._inUse + 1 < this._data.length) {
-      this._data[this._inUse] = toPush;
-      this._inUse++;
-    } else {
-      // Make new array (double size), copy values, then push toPush
-      const newData = new Float64Array(this._inUse * 2);
-      for (let i = 0; i < this._inUse; i++) {
-        newData[i] = this._data[i];
-      }
-      this._data = newData;
-      this._data[this._inUse] = toPush;
-      this._inUse++;
-    }
-  }
-  /** Push a `numToCopy` consecutive values starting at `copyFromIndex` to the end of the array. */
-  public pushBlockCopy(copyFromIndex: number, numToCopy: number) {
-    const newLength = this._inUse + numToCopy;
-    this.ensureCapacity(newLength);
-    const limit = copyFromIndex + numToCopy;
-    for (let i = copyFromIndex; i < limit; i++)
-      this._data[this._inUse++] = this._data[i];
-  }
-  /** Clear the array to 0 length.  The underlying memory remains allocated for reuse. */
-  public clear() {
-    while (this._inUse > 0)
-      this.pop();
-  }
-  public capacity() {
-    return this._data.length;
-  }
-  public ensureCapacity(newCapacity: number) {
-    if (newCapacity > this.capacity()) {
-      const oldInUse = this._inUse;
-      const newData = new Float64Array(newCapacity);
-      for (let i = 0; i < oldInUse; i++)
-        newData[i] = this._data[i];
-      this._data = newData;
-    }
-  }
-  /**
-   * * If newLength is less than current (active) length, just set (active) length.
-   * * If newLength is greater, ensureCapacity (newSize) and pad with padValue up to newSize;
-   * @param newLength new data count
-   * @param padValue value to use for padding if the length increases.
-   */
-  public resize(newLength: number, padValue: number = 0) {
-    // quick out for easy case ...
-    if (newLength <= this._inUse) {
-      this._inUse = newLength;
-      return;
-    }
-    const oldLength = this._inUse;
-    this.ensureCapacity(newLength);
-    for (let i = oldLength; i < newLength; i++)
-      this._data[i] = padValue;
-    this._inUse = newLength;
-  }
-  public pop() {
-    // Could technically access outside of array, if filled and then reduced using pop (similar to C
-    // and accessing out of bounds), but with adjusted inUse counter, that data will eventually be overwritten
-    if (this._inUse > 0) {
-      this._inUse--;
-    }
-  }
-
-  public at(index: number): number {
-    return this._data[index];
-  }
-
-  public front() {
-    return this._data[0];
-  }
-  public back() {
-    return this._data[this._inUse - 1];
-  }
-  public reassign(index: number, value: number) {
-    this._data[index] = value;
-  }
-
-  /**
-   * * Sort the array entries.
-   * * Uses insertion sort -- fine for small arrays (less than 30), slow for larger arrays
-   * @param compareMethod comparison method
-   */
-  public sort(compareMethod: (a: any, b: any) => number = GrowableFloat64Array.compare) {
-    for (let i = 0; i < this._inUse; i++) {
-      for (let j = i + 1; j < this._inUse; j++) {
-        const tempI = this._data[i];
-        const tempJ = this._data[j];
-        if (compareMethod(tempI, tempJ) > 0) {
-          this._data[i] = tempJ;
-          this._data[j] = tempI;
-        }
-      }
-    }
-  }
-  /**
-   * * compress out values not within the [a,b] interval.
-   * * Note that if a is greater than b all values are rejected.
-   * @param a low value for accepted interval
-   * @param b high value for accepted interval
-   */
-  public restrictToInterval(a: number, b: number) {
-    const data = this._data;
-    const n = data.length;
-    let numAccept = 0;
-    let q = 0;
-    for (let i = 0; i < n; i++) {
-      q = data[i];
-      if (q >= a && q <= b)
-        data[numAccept++] = q;
-    }
-    this._inUse = numAccept;
-  }
-  /**
-   * * For each index `i0 <= i < i1` overwrite `data[i+1]` by `f0*data[i]+f1*data[i+1]
-   * * This is the essential step of a bezier polynomial subdivision step
-   * @param i0 first index to update
-   * @param i1 one beyond last index to update.
-   * @param f0 left scale
-   * @param f1 right scale
-   */
-  public overwriteWithScaledCombinations(i0: number, i1: number, f0: number, f1: number) {
-    // work right to left for simplest overwrite
-    for (let i = i1; i > i0; i--) {
-      this._data[i] = f0 * this._data[i - 1] + f1 * this._data[i];
-    }
-  }
-  /**
-   * @returns Return the weighted sum `data[i0+i]*weights[i]`.
-   * @param i0 first index of data
-   * @param weights array of weights.
-   * @note The length of the weight array is the number of summed terms.
-   */
-  public weightedSum(i0: number, weights: Float64Array) {
-    let i = i0;
-    let sum: number = 0.0;
-    const data = this._data;
-    for (const w of weights)
-      sum += w * data[i++];
-    return sum;
-  }
-  /**
-   * @returns Return the weighted sum `(data[i0+i] - data[i])*weights[i]`.
-   * @param i0 first index of data
-   * @param weights array of weights.
-   * @note The length of the weight array is the number of summed terms.
-   */
-  public weightedDifferenceSum(i0: number, weights: Float64Array) {
-    let i = i0;
-    let sum: number = 0.0;
-    const data = this._data;
-    for (const w of weights) {
-      sum += w * (data[i + 1] - data[i]);
-      i++;
-    }
-    return sum;
-  }
-
-}
-/**
- * Array of contiguous doubles, indexed by block number and index within block.
- * * This is essentially a rectangular matrix, with each block being a row of the matrix.
- */
-export class GrowableBlockedArray {
-  protected _data: Float64Array;
-  protected _inUse: number;
-  protected _blockSize: number;  // positive integer !!!
-  protected constructor(blockSize: number, initialBlocks: number = 8) {
-    this._data = new Float64Array(initialBlocks * blockSize);
-    this._inUse = 0;
-    this._blockSize = blockSize;
-  }
-  /** computed property: length (in blocks, not doubles) */
-  public get numBlocks(): number { return this._inUse; }
-  /** property: number of data values per block */
-  public get numPerBlock(): number { return this._blockSize; }
-  /**
-   * Return a single value indexed within a blcok
-   * @param blockIndex index of block to read
-   * @param indexInBlock  offset within the block
-   */
-  public getWithinBlock(blockIndex: number, indexWithinBlock: number): number {
-    return this._data[blockIndex * this._blockSize + indexWithinBlock];
-  }
-  /** clear the block count to zero, but maintain the allocated memory */
-  public clear() { this._inUse = 0; }
-  /** Return the capacity in blocks (not doubles) */
-  public blockCapacity() {
-    return this._data.length / this._blockSize;
-  }
-  /** ensure capacity (in blocks, not doubles) */
-  public ensureBlockCapacity(blockCapacity: number) {
-    if (blockCapacity > this.blockCapacity()) {
-      const newData = new Float64Array(blockCapacity * this._blockSize);
-      for (let i = 0; i < this._data.length; i++) {
-        newData[i] = this._data[i];
-      }
-      this._data = newData;
-    }
-  }
-  /**
-   * Return the starting index of a block of (zero-initialized) doubles at the end.
-   *
-   * * this.data is reallocated if needed to include the new block.
-   * * The inUse count is incremented to include the new block.
-   * * The returned block is an index to the Float64Array (not a block index)
-   */
-  protected newBlockIndex(): number {
-    const index = this._blockSize * this._inUse;
-    if ((index + 1) > this._data.length)
-      this.ensureBlockCapacity(2 * this._inUse);
-    this._inUse++;
-    for (let i = index; i < index + this._blockSize; i++)
-      this._data[i] = 0.0;
-    return index;
-  }
-  /** reduce the block count by one. */
-  public popBlock() {
-    if (this._inUse > 0)
-      this._inUse--;
-  }
-  /** convert a block index to the simple index to the underlying Float64Array. */
-  protected blockIndexToDoubleIndex(blockIndex: number) { return this._blockSize * blockIndex; }
-  /** Access a single double at offset within a block, with index checking and return undefined if indexing is invalid. */
-  public checkedComponent(blockIndex: number, componentIndex: number): number | undefined {
-    if (blockIndex >= this._inUse || blockIndex < 0 || componentIndex < 0 || componentIndex >= this._blockSize)
-      return undefined;
-    return this._data[this._blockSize * blockIndex + componentIndex];
-  }
-  /** Access a single double at offset within a block.  This has no index checking. */
-  public component(blockIndex: number, componentIndex: number): number {
-    return this._data[this._blockSize * blockIndex + componentIndex];
-  }
-  /** compre two blocks in simple lexical order.
-   * @param data data array
-   * @param blockSize number of items to compare
-   * @param ia raw index (not block index) of first block
-   * @param ib raw index (not block index) of second block
-   */
-  public static compareLexicalBlock(data: Float64Array, blockSize: number, ia: number, ib: number): number {
-    let ax = 0;
-    let bx = 0;
-    for (let i = 0; i < blockSize; i++) {
-      ax = data[ia + i];
-      bx = data[ib + i];
-      if (ax > bx) return 1;
-      if (ax < bx) return -1;
-    }
-    return ia - ib; // so original order is maintained among duplicates !!!!
-  }
-  /** Return an array of block indices sorted per compareLexicalBlock function */
-  public sortIndicesLexical(compareBlocks: BlockComparisonFunction = GrowableBlockedArray.compareLexicalBlock): Uint32Array {
-    const n = this._inUse;
-    // let numCompare = 0;
-    const result = new Uint32Array(n);
-    const data = this._data;
-    const blockSize = this._blockSize;
-    for (let i = 0; i < n; i++)result[i] = i;
-    result.sort(
-      (blockIndexA: number, blockIndexB: number) => {
-        // numCompare++;
-        return compareBlocks(data, blockSize, blockIndexA * blockSize, blockIndexB * blockSize);
-      });
-    // console.log (n, numCompare);
-    return result;
-  }
-  public distanceBetweenBlocks(blockIndexA: number, blockIndexB: number): number {
-    let dd = 0.0;
-    let iA = this.blockIndexToDoubleIndex(blockIndexA);
-    let iB = this.blockIndexToDoubleIndex(blockIndexB);
-    let a = 0;
-    const data = this._data;
-    for (let i = 0; i < this._blockSize; i++) {
-      a = data[iA++] - data[iB++];
-      dd += a * a;
-    }
-    return Math.sqrt(dd);
-  }
-
-  public distanceBetweenSubBlocks(blockIndexA: number, blockIndexB: number, iBegin: number, iEnd: number): number {
-    let dd = 0.0;
-    const iA = this.blockIndexToDoubleIndex(blockIndexA);
-    const iB = this.blockIndexToDoubleIndex(blockIndexB);
-    let a = 0;
-    const data = this._data;
-    for (let i = iBegin; i < iEnd; i++) {
-      a = data[iA + i] - data[iB + i];
-      dd += a * a;
-    }
-    return Math.sqrt(dd);
-  }
-}
 /** Use a Float64Array to pack xyz coordinates. */
 export class GrowableXYZArray extends IndexedXYZCollection {
   private _data: Float64Array;
@@ -360,6 +32,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   public get length() { return this._inUse; }
   /** @returns Return the number of float64 in use. */
   public get float64Length() { return this._inUse * 3; }
+
   /** If necessary, increase the capacity to a new pointCount.  Current coordinates and point count (length) are unchnaged. */
   public ensureCapacity(pointCapacity: number) {
     if (pointCapacity > this._capacity) {
@@ -384,6 +57,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
       }
       this._data = newArray;
       this._capacity = pointCount;
+      this._inUse = pointCount;
     }
   }
   /**
@@ -468,28 +142,11 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     const index = 3 * pointIndex;
     return Point3d.create(this._data[index], this._data[index + 1], this._data[index + 2], result);
   }
-  /**
-   * Get a point by index, strongly typed as a Point3d.
-   * @param pointIndexA start point index
-   * @param pointIndexB end point index
-   * @param result optional result
-   */
-  public getVector3dBetweenIndices(pointIndexA: number, pointIndexB: number, result?: Vector3d): Vector3d | undefined {
-    const indexA = 3 * pointIndexA;
-    const indexB = 3 * pointIndexB;
-    const inuse = this._inUse;  // this is a point count, not double count.
-    if (pointIndexA >= 0 && pointIndexA < inuse
-      && pointIndexB >= 0 && pointIndexB < inuse)
-      return Vector3d.createStartEndXYZXYZ(
-        this._data[indexA], this._data[indexA + 1], this._data[indexA + 2],
-        this._data[indexB], this._data[indexB + 1], this._data[indexB + 2], result);
-    return undefined;
-  }
 
   /** copy xyz into strongly typed Point3d */
   public atPoint3dIndex(pointIndex: number, result?: Point3d): Point3d | undefined {
     const index = 3 * pointIndex;
-    if (pointIndex >= 0 && pointIndex < this._inUse) {
+    if (this.isIndexValid(pointIndex)) {
       if (!result) result = Point3d.create();
       result.x = this._data[index];
       result.y = this._data[index + 1];
@@ -520,7 +177,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
    * @returns true if destIndex and sourceIndex are both valid.
    */
   public transferFromGrowableXYZArray(destIndex: number, source: GrowableXYZArray, sourceIndex: number): boolean {
-    if (destIndex < this.length && sourceIndex < source.length) {
+    if (this.isIndexValid(destIndex) && source.isIndexValid(sourceIndex)) {
       const i = destIndex * 3;
       const j = sourceIndex * 3;
       this._data[i] = source._data[j];
@@ -530,6 +187,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     }
     return false;
   }
+
   /**
    * push coordinates from the source array to the end of this array.
    * @param source source array
@@ -537,7 +195,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
    * @returns true if sourceIndex is valid.
    */
   public pushFromGrowableXYZArray(source: GrowableXYZArray, sourceIndex: number) {
-    if (sourceIndex < source.length) {
+    if (source.isIndexValid(sourceIndex)) {
       const j = sourceIndex * 3;
       this.pushXYZ(source._data[j], source._data[j + 1], source._data[j + 2]);
       return true;
@@ -556,7 +214,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
    * @returns Return the last point, or undefined if the array is empty.
    */
   public back(result?: Point3d): Point3d | undefined {
-    if (this._inUse - 1 < 0) return undefined;
+    if (this._inUse < 1) return undefined;
     return this.getPoint3dAt(this._inUse - 1, result);
   }
   /**
@@ -565,7 +223,8 @@ export class GrowableXYZArray extends IndexedXYZCollection {
    * @param value coordinates to set
    */
   public setAt(pointIndex: number, value: XYAndZ): boolean {
-    if (pointIndex < 0 || pointIndex >= this._inUse) return false;
+    if (!this.isIndexValid(pointIndex))
+      return false;
     let index = pointIndex * 3;
     this._data[index++] = value.x;
     this._data[index++] = value.y;
@@ -580,7 +239,8 @@ export class GrowableXYZArray extends IndexedXYZCollection {
    * @param z z coordinate
    */
   public setCoordinates(pointIndex: number, x: number, y: number, z: number): boolean {
-    if (pointIndex < 0 || pointIndex >= this._inUse) return false;
+    if (!this.isIndexValid(pointIndex))
+      return false;
     let index = pointIndex * 3;
     this._data[index++] = x;
     this._data[index++] = y;
@@ -681,7 +341,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   }
   /** Compute a point at fractional coordinate between points i and j */
   public interpolate(i: number, fraction: number, j: number, result?: Point3d): Point3d | undefined {
-    if (i >= 0 && i < this._inUse) {
+    if (this.isIndexValid(i) && this.isIndexValid(j)) {
       const fraction0 = 1.0 - fraction;
       const data = this._data;
       i = 3 * i;
@@ -714,12 +374,9 @@ export class GrowableXYZArray extends IndexedXYZCollection {
     return 0.5 * area;
   }
 
-  /** Compute a vector from index target i to indexed target j  */
+  /** Compute a vector from index origin i to indexed target j  */
   public vectorIndexIndex(i: number, j: number, result?: Vector3d): Vector3d | undefined {
-    const n = this._inUse;
-    if (i < 0 || i >= n)
-      return undefined;
-    if (j < 0 || j >= n)
+    if (!this.isIndexValid(i) || !this.isIndexValid(j))
       return undefined;
     if (!result) result = Vector3d.create();
     const data = this._data;
@@ -733,7 +390,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
 
   /** Compute a vector from origin to indexed target j */
   public vectorXYAndZIndex(origin: XYAndZ, j: number, result?: Vector3d): Vector3d | undefined {
-    if (j >= 0 && j < this._inUse) {
+    if (this.isIndexValid(j)) {
       const data = this._data;
       j = 3 * j;
       return Vector3d.create(
@@ -789,7 +446,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   }
 
   /** Return the distance between two points in the array. */
-  public distance(i: number, j: number): number {
+  public distance(i: number, j: number): number | undefined {
     if (i >= 0 && i < this._inUse && j >= 0 && j <= this._inUse) {
       const i0 = 3 * i;
       const j0 = 3 * j;
@@ -798,10 +455,10 @@ export class GrowableXYZArray extends IndexedXYZCollection {
         this._data[j0 + 1] - this._data[i0 + 1],
         this._data[j0 + 2] - this._data[i0 + 2]);
     }
-    return 0.0;
+    return undefined;
   }
   /** Return the distance between an array point and the input point. */
-  public distanceIndexToPoint(i: number, spacePoint: Point3d): number {
+  public distanceIndexToPoint(i: number, spacePoint: Point3d): number | undefined {
     if (i >= 0 && i < this._inUse) {
       const i0 = 3 * i;
       return Geometry.hypotenuseXYZ(
@@ -809,7 +466,7 @@ export class GrowableXYZArray extends IndexedXYZCollection {
         spacePoint.y - this._data[i0 + 1],
         spacePoint.z - this._data[i0 + 2]);
     }
-    return 0.0;
+    return undefined;
   }
 
   public static isAlmostEqual(dataA: GrowableXYZArray | undefined, dataB: GrowableXYZArray | undefined): boolean {

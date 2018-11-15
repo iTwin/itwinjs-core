@@ -7,7 +7,7 @@ import { Range1d } from "../geometry3d/Range";
 import { Range1dArray } from "../numerics/Range1dArray";
 import { Checker } from "./Checker";
 import { expect } from "chai";
-import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 // import { prettyPrint } from "./testFunctions";
 /* tslint:disable:no-console */
 

@@ -8,7 +8,8 @@
 import { Geometry } from "../Geometry";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
-import { GrowableBlockedArray, GrowableXYZArray } from "../geometry3d/GrowableArray";
+import { GrowableBlockedArray } from "../geometry3d/GrowableBlockedArray";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 
 export class ClusterableArray extends GrowableBlockedArray {
   private static readonly _vectorFactor = 0.8732;  // use 1.0 to rig easy tests.

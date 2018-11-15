@@ -164,7 +164,15 @@ export class Matrix3d implements BeJSONFunctions {
   }
 
   /** Freeze this Matrix3d. */
-  public freeze() { this.computeCachedInverse(true); Object.freeze(this); }
+  public freeze() {
+    this.computeCachedInverse(true);
+    /* hm.. can't freeze the Float64Arrays . . .
+    Object.freeze(this.coffs);
+    if (this.inverseCoffs)
+      Object.freeze(this.inverseCoffs);
+    */
+    Object.freeze(this);
+  }
   /**
    *
    * @param coffs optional coefficient array.  This is captured.
@@ -288,19 +296,17 @@ export class Matrix3d implements BeJSONFunctions {
   // install all matrix entries.
   public static createColumnsInAxisOrder(axisOrder: AxisOrder, columnA: Vector3d, columnB: Vector3d, columnC: Vector3d | undefined, result?: Matrix3d) {
     if (!result) result = new Matrix3d();
-    if (axisOrder === AxisOrder.XYZ) {
-      result.setColumns(columnA, columnB, columnC);
-    } else if (axisOrder === AxisOrder.YZX) {
-      result.setColumns(columnB, columnC, columnA);
-    } else if (axisOrder === AxisOrder.ZXY) {
+    if (axisOrder === AxisOrder.YZX) {
       result.setColumns(columnC, columnA, columnB);
+    } else if (axisOrder === AxisOrder.ZXY) {
+      result.setColumns(columnB, columnC, columnA);
     } else if (axisOrder === AxisOrder.XZY) {
       result.setColumns(columnA, columnC, columnB);
     } else if (axisOrder === AxisOrder.YXZ) {
       result.setColumns(columnB, columnA, columnC);
     } else if (axisOrder === AxisOrder.ZYX) {
       result.setColumns(columnC, columnB, columnA);
-    } else {  // should not happen -- go to default
+    } else {  // fallthrough should only happen for AxisOrder.XYZ
       result.setColumns(columnA, columnB, columnC);
     }
     return result;
@@ -528,9 +534,7 @@ export class Matrix3d implements BeJSONFunctions {
    */
   public static createStandardWorldToView(index: StandardViewIndex, invert: boolean = false, result?: Matrix3d): Matrix3d {
     switch (index) {
-      case StandardViewIndex.Top:
-        result = Matrix3d.createIdentity(result);
-        break;
+
       case StandardViewIndex.Bottom:
         result = Matrix3d.createRowValues(
           1, 0, 0,
@@ -573,6 +577,7 @@ export class Matrix3d implements BeJSONFunctions {
           -0.408248290463863, 0.40824829046386302, 0.81649658092772603,
           0.577350269189626, -0.57735026918962573, 0.57735026918962573);
         break;
+      case StandardViewIndex.Top:
       default:
         result = Matrix3d.createIdentity(result);
     }
@@ -688,15 +693,18 @@ export class Matrix3d implements BeJSONFunctions {
       }
 
       // 180 degree flip around some other axis ...
+      // eigenvalues will have 1.0 once, -1.0 twice.
+      // These cases look for each place (x,y,z) that the 1.0 might appear.
+      // But fastSymmetricEigenvalues reliably always seems to put the 1.0 as the x eigenvalue.
+      // so only the getColumn(0) return seems reachable in unit tests.
       const eigenvectors = Matrix3d.createIdentity();
       const eigenvalues = Vector3d.create(0, 0, 0);
       if (this.fastSymmetricEigenvalues(eigenvectors, eigenvalues)) {
-        if (Geometry.isAlmostEqualNumber(1, eigenvalues.x))
-          return { axis: eigenvectors.getColumn(0), angle: theta180, ok: true };
-        if (Geometry.isAlmostEqualNumber(1, eigenvalues.y))
-          return { axis: eigenvectors.getColumn(1), angle: theta180, ok: true };
-        if (Geometry.isAlmostEqualNumber(1, eigenvalues.z))
-          return { axis: eigenvectors.getColumn(2), angle: theta180, ok: true };
+        for (let axisIndex = 0; axisIndex < 2; axisIndex++) {
+          const lambda = eigenvalues.at(axisIndex);
+          if (Geometry.isAlmostEqualNumber(1, lambda))
+            return { axis: eigenvectors.getColumn(axisIndex), angle: theta180, ok: true };
+        }
         // Don't know if this can be reached ....
         return { axis: Vector3d.create(0, 0, 1), angle: Angle.createRadians(0), ok: false };
       }

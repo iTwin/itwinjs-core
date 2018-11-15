@@ -13,7 +13,7 @@ import { Matrix3d } from "./Matrix3d";
 import { Range1dProps, Range2dProps, Range3dProps } from "./XYZProps";
 import { LowAndHighXYZ, LowAndHighXY } from "./XYZProps";
 import { XAndY, XYAndZ } from "./XYZProps";
-import { GrowableXYZArray } from "./GrowableArray";
+import { GrowableXYZArray } from "./GrowableXYZArray";
 
 export abstract class RangeBase {
   protected static readonly _EXTREME_POSITIVE: number = 1.0e200;

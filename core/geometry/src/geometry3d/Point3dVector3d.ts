@@ -366,7 +366,10 @@ export class Point3d extends XYZ {
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB + vectorC * scalarC */
   public plus3Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number, result?: Point3d): Point3d {
-    return Point3d.create(this.x + vectorA.x * scalarA + vectorB.x * scalarB + vectorC.x * scalarC, this.y + vectorA.y * scalarA + vectorB.y * scalarB + vectorC.y * scalarC, this.z + vectorA.z * scalarA + vectorB.z * scalarB + vectorC.z * scalarC, result);
+    return Point3d.create(
+      this.x + vectorA.x * scalarA + vectorB.x * scalarB + vectorC.x * scalarC,
+      this.y + vectorA.y * scalarA + vectorB.y * scalarB + vectorC.y * scalarC,
+      this.z + vectorA.z * scalarA + vectorB.z * scalarB + vectorC.z * scalarC, result);
   }
   /**
    * Return a point that is scaled from the source point.

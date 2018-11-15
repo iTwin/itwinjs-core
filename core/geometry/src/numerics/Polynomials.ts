@@ -9,7 +9,7 @@ import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 // import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";
-import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Point4d } from "../geometry4d/Point4d";
 // import { Arc3d } from "../curve/Arc3d";
 
