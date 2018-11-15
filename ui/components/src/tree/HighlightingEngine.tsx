@@ -16,12 +16,6 @@ export interface ActiveResultNode {
 }
 
 /** @hidden */
-export interface IScrollableElement {
-  scrollToElement: (elementBoundingBox: ClientRect | DOMRect) => void;
-  getElementsByClassName: (className: string) => Element[];
-}
-
-/** @hidden */
 export interface HighlightableTreeProps {
   searchText: string;
   activeResultNode?: ActiveResultNode;
@@ -37,6 +31,7 @@ export interface HighlightableTreeNodeProps {
 export default class HighlightingEngine {
   private _searchText: string;
   private _activeResultNode?: ActiveResultNode;
+  public static readonly ACTIVE_CLASS_NAME = "ui-components-activehighlight";
 
   constructor(props: HighlightableTreeProps) {
     this._searchText = props.searchText;
@@ -51,19 +46,6 @@ export default class HighlightingEngine {
     return this.isNodeActive(node) ? this._activeResultNode!.index : undefined;
   }
 
-  public static scrollToActiveNode(scrollableContainer: IScrollableElement) {
-    const scrollTo = scrollableContainer.getElementsByClassName("ui-components-activehighlight");
-    if (scrollTo.length === 0)
-      return;
-
-    if (!Element.prototype.scrollTo) {
-      // workaround for Edge scrollTo issue https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/15534521/
-      scrollTo[0].scrollIntoView();
-    } else {
-      scrollableContainer.scrollToElement(scrollTo[0].getBoundingClientRect());
-    }
-  }
-
   public createRenderProps(node: BeInspireTreeNode<any>): HighlightableTreeNodeProps {
     return {
       searchText: this._searchText,
@@ -76,7 +58,7 @@ export default class HighlightingEngine {
       <Highlighter
         searchWords={[props.searchText]}
         activeIndex={props.activeResultIndex as any} // .d.ts file seems to be wrong, doesn't work if it's a string
-        activeClassName="ui-components-activehighlight"
+        activeClassName={HighlightingEngine.ACTIVE_CLASS_NAME}
         autoEscape={true}
         textToHighlight={text}
       />

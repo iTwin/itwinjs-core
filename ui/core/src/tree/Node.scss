@@ -20,6 +20,7 @@
 .nz-tree-node {
   /* Rules applied to the <be-tree-node> itself */
   display: block;
+  box-sizing: border-box;
   width: fit-content;
   min-width: 100%;
   line-height: 24px;
@@ -28,7 +29,6 @@
   color: $text-dark;
   white-space: nowrap;
   text-overflow: ellipsis;
-  clear: both;
 
   * {
     vertical-align: top;
@@ -37,8 +37,7 @@
   > .loader {
     @include bwc-loaders-small;
     margin: 4px;
-    display: block;
-    float: left;
+    position: absolute;
     z-index: 2;
   }
 
@@ -68,8 +67,7 @@
   }
 
   > .expansion-toggle {
-    position: relative;
-    float: left;
+    position: absolute;
     z-index: 2;
   }
 

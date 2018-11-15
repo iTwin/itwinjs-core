@@ -941,7 +941,7 @@
     },
     "@rush-temp/ui-components": {
       "version": "file:projects/ui-components.tgz",
-      "integrity": "sha1-ym5H1GfFYOqzvkXl5h++UuxWHDE=",
+      "integrity": "sha1-9oDmVTjLYg4sAkFIymgqSGc26MI=",
       "requires": {
         "@bentley/bwc": "7.0.1",
         "@bentley/icons-generic-webfont": "0.0.6",
@@ -959,6 +959,7 @@
         "@types/react-data-grid": "2.0.14",
         "@types/react-dom": "16.0.7",
         "@types/react-highlight-words": "0.11.1",
+        "@types/react-virtualized": "9.18.7",
         "@types/sinon": "5.0.5",
         "@types/sinon-chai": "3.2.0",
         "chai": "4.2.0",
@@ -990,6 +991,7 @@
         "react-dom": "16.6.3",
         "react-highlight-words": "0.14.0",
         "react-testing-library": "5.2.3",
+        "react-virtualized": "9.21.0",
         "rimraf": "2.6.2",
         "sinon": "7.1.1",
         "sinon-chai": "3.2.0",
@@ -1727,6 +1729,15 @@
         "@types/history": "4.7.2",
         "@types/react": "16.7.6",
         "@types/react-router": "4.4.1"
+      }
+    },
+    "@types/react-virtualized": {
+      "version": "9.18.7",
+      "resolved": "https://registry.npmjs.org/@types/react-virtualized/-/react-virtualized-9.18.7.tgz",
+      "integrity": "sha512-zFLpFJjj5r8MUHf0O5xSWLlv/QYkSkBsYCaYaZbn87d7bb45HP0fZI0IEn9FhvFmt4kgfJhstX2bIkxoOWadYw==",
+      "requires": {
+        "@types/prop-types": "15.5.6",
+        "@types/react": "16.7.3"
       }
     },
     "@types/rimraf": {
@@ -2572,6 +2583,20 @@
         "babel-runtime": "6.26.0"
       }
     },
+    "babel-plugin-syntax-flow": {
+      "version": "6.18.0",
+      "resolved": "http://registry.npmjs.org/babel-plugin-syntax-flow/-/babel-plugin-syntax-flow-6.18.0.tgz",
+      "integrity": "sha1-TDqyCiryaqIM0lmVw5jE63AxDI0="
+    },
+    "babel-plugin-transform-flow-strip-types": {
+      "version": "6.22.0",
+      "resolved": "https://registry.npmjs.org/babel-plugin-transform-flow-strip-types/-/babel-plugin-transform-flow-strip-types-6.22.0.tgz",
+      "integrity": "sha1-hMtnKTXUNxT9wyvOhFaNh0Qc988=",
+      "requires": {
+        "babel-plugin-syntax-flow": "6.18.0",
+        "babel-runtime": "6.26.0"
+      }
+    },
     "babel-polyfill": {
       "version": "6.26.0",
       "resolved": "https://registry.npmjs.org/babel-polyfill/-/babel-polyfill-6.26.0.tgz",
@@ -2589,6 +2614,14 @@
           "integrity": "sha1-M2w+/BIgrc7dosn6tntaeVWjNlg=",
           "optional": true
         }
+      }
+    },
+    "babel-preset-flow": {
+      "version": "6.23.0",
+      "resolved": "https://registry.npmjs.org/babel-preset-flow/-/babel-preset-flow-6.23.0.tgz",
+      "integrity": "sha1-5xIYiHCFrpoktb5Baa/7WZgWxJ0=",
+      "requires": {
+        "babel-plugin-transform-flow-strip-types": "6.22.0"
       }
     },
     "babel-runtime": {
@@ -4962,6 +4995,14 @@
       "integrity": "sha512-gd3ypIPfOMr9h5jIKq8E3sHOTCjeirnl0WK5ZdS1AW0Odt0b1PaWaHdJ4Qk4klv+YB9aJBS7mESXjFoDQPu6DA==",
       "requires": {
         "utila": "0.4.0"
+      }
+    },
+    "dom-helpers": {
+      "version": "3.4.0",
+      "resolved": "https://registry.npmjs.org/dom-helpers/-/dom-helpers-3.4.0.tgz",
+      "integrity": "sha512-LnuPJ+dwqKDIyotW1VzmOZ5TONUN7CwkCR5hrgawTUbkBGYdeoNLZo6nNfGkCrjtE1nXXaj7iMMpDa8/d9WoIA==",
+      "requires": {
+        "@babel/runtime": "7.1.5"
       }
     },
     "dom-serializer": {
@@ -14183,6 +14224,19 @@
       "integrity": "sha512-Bw52++7uORuIQnL55lK/WQfppqAc9+8yFG4lWUp/kmSOvYDnt8J9oI5fNCfAGSQi9iIhAv9aNsI2G5rtid0nrA==",
       "requires": {
         "dom-testing-library": "3.12.3"
+      }
+    },
+    "react-virtualized": {
+      "version": "9.21.0",
+      "resolved": "https://registry.npmjs.org/react-virtualized/-/react-virtualized-9.21.0.tgz",
+      "integrity": "sha512-duKD2HvO33mqld4EtQKm9H9H0p+xce1c++2D5xn59Ma7P8VT7CprfAe5hwjd1OGkyhqzOZiTMlTal7LxjH5yBQ==",
+      "requires": {
+        "babel-runtime": "6.26.0",
+        "classnames": "2.2.6",
+        "dom-helpers": "3.4.0",
+        "loose-envify": "1.4.0",
+        "prop-types": "15.6.2",
+        "react-lifecycles-compat": "3.0.4"
       }
     },
     "read-chunk": {

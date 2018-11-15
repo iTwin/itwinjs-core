@@ -512,7 +512,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
                 {/* <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.invert")} /> */}
               </div>
             </div>
-            <div>
+            <div style={{ height: "100%" }}>
               {
                 (this.props.imodel && this.state.treeInfo.dataProvider) ?
                   <CategoryModelTree
