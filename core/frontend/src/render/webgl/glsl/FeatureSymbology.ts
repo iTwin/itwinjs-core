@@ -66,9 +66,6 @@ function addDimensionConstants(shader: ShaderBuilder): void {
 
 const getFeatureIndex = `
 float getFeatureIndex() {
-  if (u_featureInfo.x <= kFeatureDimension_SingleNonUniform)
-      return u_featureInfo.y;
-
   vec2 tc = g_featureIndexCoords;
   vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   return decodeUInt32(enc.xyz);
