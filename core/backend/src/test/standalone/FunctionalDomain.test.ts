@@ -36,12 +36,25 @@ describe("Functional Domain", () => {
     // Import the Functional schema
     await Functional.importSchema(activityLoggingContext, iModelDb);
     Functional.registerSchema();
+
+    let commits = 0;
+    let committed = 0;
+    const dropCommit = iModelDb.txns.onCommit.addListener(() => commits++);
+    const dropCommitted = iModelDb.txns.onCommitted.addListener(() => committed++);
     iModelDb.saveChanges("Import Functional schema");
+
+    assert.equal(commits, 1);
+    assert.equal(committed, 1);
+    dropCommit();
+    dropCommitted();
 
     BriefcaseManager.createStandaloneChangeSet(iModelDb.briefcase); // importSchema below will fail if this is not called to flush local changes
 
     await iModelDb.importSchema(activityLoggingContext, path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
+
     iModelDb.saveChanges("Import TestFunctional schema");
+    assert.equal(commits, 1);
+    assert.equal(committed, 1);
 
     const codeSpec = new CodeSpec(iModelDb, Id64.invalid, "Test Functional Elements", CodeScopeSpec.Type.Model);
     iModelDb.codeSpecs.insert(codeSpec);

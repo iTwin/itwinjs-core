@@ -22,7 +22,7 @@ import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
 import { ElementAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
-import { ErrorStatusOrResult, NativeDgnDb, SnapRequest } from "./imodeljs-native-platform-api";
+import { ErrorStatusOrResult, NativeDgnDb, SnapRequest, TxnIdString } from "./imodeljs-native-platform-api";
 import { IModelJsFs } from "./IModelJsFs";
 import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
 import { Model } from "./Model";
@@ -35,7 +35,7 @@ import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 const loggingCategory = "imodeljs-backend.IModelDb";
 
 /** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId. */
-export type ChangeSetDescriber = (endTxnId: TxnManager.TxnId) => string;
+export type ChangeSetDescriber = (endTxnId: TxnIdString) => string;
 
 /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub */
 export enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
@@ -1392,48 +1392,119 @@ export namespace IModelDb {
   }
 }
 
+export const enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
+
 /**
  * Local Txns in an IModelDb. Local Txns persist only until [[IModelDb.pushChanges]] is called.
  */
 export class TxnManager {
   constructor(private _iModel: IModelDb) { }
 
-  private _onBeforeOutputsHandled(_inputId: Id64String): void { }
-  private _onRootChange(_relClassName: string, _relId: Id64String, _inputId: Id64String, _outputId: Id64String): void { }
-  private _onAllInputsHandled(_outputId: Id64String): void { }
-  private _onValidateOutput(_relClassName: string, _relId: Id64String, _inputId: Id64String, _outputId: Id64String): void { }
+  private get _nativeDb() { return this._iModel.nativeDb!; }
+
+  /** @hidden */
+  protected _onBeforeOutputsHandled(_inputId: Id64String): void { }
+  /** @hidden */
+  protected _onRootChange(_relClassName: string, _relId: Id64String, _inputId: Id64String, _outputId: Id64String): void { }
+  /** @hidden */
+  protected _onAllInputsHandled(_outputId: Id64String): void { }
+  /** @hidden */
+  protected _onValidateOutput(_relClassName: string, _relId: Id64String, _inputId: Id64String, _outputId: Id64String): void { }
+
+  /** Event raised before a commit operation is performed. Initiated by a call to [[IModelDb.saveChanges]] */
+  public readonly onCommit = new BeEvent<() => void>();
+  /** Event raised after a commit operation has been performed. Initiated by a call to [[IModelDb.saveChanges]] */
+  public readonly onCommitted = new BeEvent<() => void>();
+  /** Event raised after a ChangeSet has been applied to this briefcase */
+  public readonly onChangesApplied = new BeEvent<() => void>();
+  /** Event raised before an undo/redo operation is performed.
+   * @param _action The action being performed.
+   */
+  public readonly onBeforeUndoRedo = new BeEvent<() => void>();
+  /** Event raised after an undo/redo operation has been performed. */
+  public readonly onAfterUndoRedo = new BeEvent<(_action: TxnAction) => void>();
+
+  /** Determine if there are currently any reversible (undoable) changes to this IModelDb. */
+  public get isUndoPossible(): boolean { return this._nativeDb.isUndoPossible(); }
+
+  /** Determine if there are currently any reinstatable (redoable) changes to this IModelDb */
+  public get isRedoPossible(): boolean { return this._nativeDb.isRedoPossible(); }
+
+  /** Get the description of the operation that would be reversed by calling reverseTxns(1).
+   * This is useful for showing the operation that would be undone, for example in a menu.
+   */
+  public getUndoString(): string { return this._nativeDb.getUndoString(); }
+
+  /** Get a description of the operation that would be reinstated by calling reinstateTxn.
+   * This is useful for showing the operation that would be redone, in a pull-down menu for example.
+   */
+  public getRedoString(): string { return this._nativeDb.getRedoString(); }
+
+  /** Reverse (undo) the most recent operation(s) to this IModelDb.
+   * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
+   *  be reinstated together when/if ReinstateTxn is called.
+   * @note If there are any outstanding uncommitted changes, they are reversed.
+   * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
+   * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
+   * @note If numOperations is too large only the operations are reversible are reversed.
+   */
+  public reverseTxns(numOperations: number): IModelStatus { return this._nativeDb.reverseTxns(numOperations); }
+
+  /** Reverse the most recent operation. */
+  public reverseSingleTxn(): IModelStatus { return this.reverseTxns(1); }
+
+  /** Reverse all changes back to the beginning of the session. */
+  public reverseAll(): IModelStatus { return this._nativeDb.reverseAll(); }
+
+  /** Reverse all changes back to a previously saved TxnId.
+   * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
+   * @returns Success if the transactions were reversed, error status otherwise.
+   * @see  [[getCurrentTxnId]] [[cancelTo]]
+   */
+  public reverseTo(txnId: TxnIdString) { return this._nativeDb.reverseTo(txnId); }
+
+  /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
+   * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
+   * @returns Success if the transactions were reversed and cleared, error status otherwise.
+   */
+  public cancelTo(txnId: TxnIdString) { return this._nativeDb.cancelTo(txnId); }
+
+  /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
+   * may take multiple calls to this method to reinstate all reversed operations.
+   * @returns Success if a reversed transaction was reinstated, error status otherwise.
+   * @note If there are any outstanding uncommitted changes, they are reversed before the Txn is reinstated.
+   */
+  public reinstateTxn(): IModelStatus { return this._nativeDb.reinstateTxn(); }
 
   /** Get the Id of the first transaction, if any. */
-  public queryFirstTxnId(): TxnManager.TxnId { return this._iModel.nativeDb!.txnManagerQueryFirstTxnId(); }
+  public queryFirstTxnId(): TxnIdString { return this._nativeDb.queryFirstTxnId(); }
 
   /** Get the successor of the specified TxnId */
-  public queryNextTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId { return this._iModel.nativeDb!.txnManagerQueryNextTxnId(txnId); }
+  public queryNextTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryNextTxnId(txnId); }
 
   /** Get the predecessor of the specified TxnId */
-  public queryPreviousTxnId(txnId: TxnManager.TxnId): TxnManager.TxnId { return this._iModel.nativeDb!.txnManagerQueryPreviousTxnId(txnId); }
+  public queryPreviousTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryPreviousTxnId(txnId); }
 
   /** Get the Id of the current (tip) transaction.  */
-  public getCurrentTxnId(): TxnManager.TxnId { return this._iModel.nativeDb!.txnManagerGetCurrentTxnId(); }
+  public getCurrentTxnId(): TxnIdString { return this._nativeDb.getCurrentTxnId(); }
 
   /** Get the description that was supplied when the specified transaction was saved. */
-  public getTxnDescription(txnId: TxnManager.TxnId): string { return this._iModel.nativeDb!.txnManagerGetTxnDescription(txnId); }
+  public getTxnDescription(txnId: TxnIdString): string { return this._nativeDb.getTxnDescription(txnId); }
 
   /** Test if a TxnId is valid */
-  public isTxnIdValid(txnId: TxnManager.TxnId): boolean { return this._iModel.nativeDb!.txnManagerIsTxnIdValid(txnId); }
+  public isTxnIdValid(txnId: TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
-  public findPendingTxns(): boolean { return this.isTxnIdValid(this.queryFirstTxnId()); }
+  public get hasPendingTxns(): boolean { return this.isTxnIdValid(this.queryFirstTxnId()); }
 
   /** Query if there are any changes in memory that have yet to be saved to the IModelDb. */
-  public findUnsavedChanges(): boolean {
-    return this._iModel.nativeDb!.txnManagerHasUnsavedChanges();
-  }
+  public get hasUnsavedChanges(): boolean { return this._nativeDb.hasUnsavedChanges(); }
 
   /** Query if there are un-saved or un-pushed local changes. */
-  public findLocalChanges(): boolean { return this.findUnsavedChanges() || this.findPendingTxns(); }
+  public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
 
   /** Make a description of the changeset by combining all local txn comments. */
-  public describeChangeSet(endTxnId?: TxnManager.TxnId): string {
+  public describeChangeSet(endTxnId?: TxnIdString): string {
     if (endTxnId === undefined)
       endTxnId = this.getCurrentTxnId();
 
@@ -1453,12 +1524,5 @@ export class TxnManager {
       txnId = this.queryNextTxnId(txnId);
     }
     return JSON.stringify(changes);
-  }
-}
-
-export namespace TxnManager {
-  /** Identifies a transaction that is local to a specific IModelDb. */
-  export interface TxnId {
-    readonly _id: string;
   }
 }

@@ -125,6 +125,13 @@ export abstract class Element extends Entity implements ElementProps {
     return msg;
   }
 
+  /** Insert this Element into the iModel. */
+  public insert() { return this.iModel.elements.insertElement(this); }
+  /** Update this Element in the iModel. */
+  public update() { this.iModel.elements.updateElement(this); }
+  /** Delete this Element from the iModel. */
+  public delete() { this.iModel.elements.deleteElement(this.id); }
+
   /**
    * Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.

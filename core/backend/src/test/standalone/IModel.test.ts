@@ -586,28 +586,6 @@ describe("iModel", () => {
     }
   });
 
-  it("should set auto-handled number property with value of zero", () => {
-    const testImodel: IModelDb = imodel1;
-    try {
-      testImodel.getMetaData("TestBim:TestPhysicalObject");
-    } catch (err) {
-      const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
-      assert.isDefined(testImodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
-    }
-
-    const props: GeometricElementProps = {
-      classFullName: "TestBim:TestPhysicalObject",
-      model: "0",
-      category: "0",
-      code: Code.createEmpty(),
-      intProperty: 0,
-    };
-
-    const element = testImodel.elements.createElement(props);
-    assert.equal(element.intProperty, 0, "int property should be zero");
-  });
-
   function checkElementMetaData(obj: EntityMetaData) {
     assert.isNotNull(obj);
     assert.equal(obj.ecclass, Element.classFullName);
