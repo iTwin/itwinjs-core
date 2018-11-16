@@ -306,6 +306,11 @@ export namespace Pixel {
     /** Retrieve the data associated with the pixel at (x,y) in view coordinates. */
     getPixel(x: number, y: number): Data;
   }
+
+  /** A function which receives the results of a call to [[Viewport.readPixels]].
+   * @note The contents of the buffer become invalid once the Receiver function returns. Do not store a reference to it.
+   */
+  export type Receiver = (pixels: Buffer | undefined) => void;
 }
 
 /**
@@ -519,7 +524,7 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   /** @hidden */
-  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
+  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver): void;
   /** @hidden */
   public abstract readImage(rect: ViewRect, targetSize: Point2d, flipVertically: boolean): ImageBuffer | undefined;
 }

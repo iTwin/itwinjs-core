@@ -775,13 +775,15 @@ export abstract class Target extends RenderTarget {
     return this._dcAssigned;
   }
 
-  public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver): void {
     // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
     // to the pick buffers and others we don't want - such as non-pickable decorations - do.
     // Render to an offscreen buffer so that we don't destroy the current color buffer.
     const texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === texture)
-      return undefined;
+    if (undefined === texture) {
+      receiver(undefined);
+      return;
+    }
 
     let result: Pixel.Buffer | undefined;
     const fbo = FrameBuffer.create([texture]);
@@ -794,7 +796,10 @@ export abstract class Target extends RenderTarget {
     }
     dispose(texture);
 
-    return result;
+    receiver(result);
+
+    // Reset the batch IDs in all batches drawn for this call.
+    // ###TODO UNCOMMENT ME !!! this._batchState.reset();
   }
 
   private readonly _scratchTmpFrustum = new Frustum();
