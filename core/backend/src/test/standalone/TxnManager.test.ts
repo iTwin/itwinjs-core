@@ -2,25 +2,20 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext, IModelStatus, Id64String } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, IModelStatus } from "@bentley/bentleyjs-core";
 import { assert } from "chai";
 import * as path from "path";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelDb, DictionaryModel, SpatialCategory, TxnAction } from "../../backend";
+import { IModelDb, SpatialCategory, TxnAction, PhysicalModel } from "../../backend";
 import { GeometricElementProps, Code, IModel, SubCategoryAppearance, ColorByName, IModelError } from "@bentley/imodeljs-common";
 
-describe.only("TxnManager", () => {
+describe("TxnManager", () => {
   let imodel: IModelDb;
   const actx = new ActivityLoggingContext("");
 
-  before(() => {
-    imodel = IModelTestUtils.openIModel("test.bim");
-  });
-
-  after(() => {
-    IModelTestUtils.closeIModel(imodel);
-  });
+  before(() => imodel = IModelTestUtils.openIModel("test.bim"));
+  after(() => IModelTestUtils.closeIModel(imodel));
 
   it("Undo/Redo", () => {
 
@@ -37,15 +32,10 @@ describe.only("TxnManager", () => {
     imodel.nativeDb.enableTxnTesting();
     assert.isFalse(txns.hasPendingTxns);
 
-    let newModelId: Id64String;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
+    const newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
 
-    // Find or create a SpatialCategory
-    const dictionary = imodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-    let spatialCategoryId: Id64String | undefined = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
-    if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
-    }
+    // create a SpatialCategory
+    const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
 
     const props: GeometricElementProps = {
       classFullName: "TestBim:TestPhysicalObject",
@@ -88,7 +78,6 @@ describe.only("TxnManager", () => {
     assert.equal(undoAction, TxnAction.Reverse);
 
     assert.throws(() => imodel.elements.getElement(elementId), IModelError);
-
     assert.equal(IModelStatus.Success, txns.reinstateTxn());
     assert.isTrue(txns.isUndoPossible);
     assert.isFalse(txns.isRedoPossible);
@@ -114,6 +103,8 @@ describe.only("TxnManager", () => {
     assert.throws(() => imodel.elements.getElement(elementId), IModelError);
     imodel.abandonChanges(); //
     element = imodel.elements.getElement(elementId); // should be back now.
+    imodel.elements.insertElement(props); // create a new element
+    imodel.saveChanges(change2Msg);
 
     elementId = imodel.elements.insertElement(props); // create a new element
     assert.isTrue(txns.hasUnsavedChanges);
@@ -122,6 +113,30 @@ describe.only("TxnManager", () => {
     assert.throws(() => imodel.elements.getElement(elementId), IModelError); // reversing a txn with pending uncommitted changes should abandon them.
     assert.equal(IModelStatus.Success, txns.reinstateTxn());
     assert.throws(() => imodel.elements.getElement(elementId), IModelError); // doesn't come back, wasn't committed
+
+    // verify multi-txn operations are undone/redone together
+    const el1 = imodel.elements.insertElement(props);
+    imodel.saveChanges("step 1");
+    txns.beginMultiTxnOperation();
+    const el2 = imodel.elements.insertElement(props);
+    imodel.saveChanges("step 2");
+    const el3 = imodel.elements.insertElement(props);
+    imodel.saveChanges("step 3");
+    txns.endMultiTxnOperation();
+    assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
+    assert.throws(() => imodel.elements.getElement(el2), IModelError);
+    assert.throws(() => imodel.elements.getElement(el3), IModelError);
+    imodel.elements.getElement(el1);
+    assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
+    assert.throws(() => imodel.elements.getElement(el1), IModelError);
+    assert.equal(IModelStatus.Success, txns.reinstateTxn());
+    assert.throws(() => imodel.elements.getElement(el2), IModelError);
+    assert.throws(() => imodel.elements.getElement(el3), IModelError);
+    imodel.elements.getElement(el1);
+    assert.equal(IModelStatus.Success, txns.reinstateTxn());
+    imodel.elements.getElement(el1);
+    imodel.elements.getElement(el2);
+    imodel.elements.getElement(el3);
 
     assert.equal(IModelStatus.Success, txns.cancelTo(txns.queryFirstTxnId()));
     assert.isFalse(txns.hasUnsavedChanges);

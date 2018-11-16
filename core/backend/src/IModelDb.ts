@@ -1417,11 +1417,11 @@ export class TxnManager {
   public readonly onCommitted = new BeEvent<() => void>();
   /** Event raised after a ChangeSet has been applied to this briefcase */
   public readonly onChangesApplied = new BeEvent<() => void>();
-  /** Event raised before an undo/redo operation is performed.
-   * @param _action The action being performed.
-   */
+  /** Event raised before an undo/redo operation is performed. */
   public readonly onBeforeUndoRedo = new BeEvent<() => void>();
-  /** Event raised after an undo/redo operation has been performed. */
+  /** Event raised after an undo/redo operation has been performed.
+   * @param _action The action that was performed.
+   */
   public readonly onAfterUndoRedo = new BeEvent<(_action: TxnAction) => void>();
 
   /** Determine if there are currently any reversible (undoable) changes to this IModelDb. */
@@ -1439,6 +1439,17 @@ export class TxnManager {
    * This is useful for showing the operation that would be redone, in a pull-down menu for example.
    */
   public getRedoString(): string { return this._nativeDb.getRedoString(); }
+
+  /** Begin a new multi-Txn operation. This can be used to cause a series of Txns, that would normally
+   * be considered separate actions for undo, to be grouped into a single undoable operation. This means that when reverseTxns(1) is called,
+   * the entire group of changes are undone together. Multi-Txn operations can be nested, and until the outermost operation is closed,
+   * all changes constitute a single operation.
+   * @note This method must always be paired with a call to endMultiTxnAction.
+   */
+  public beginMultiTxnOperation(): DbResult { return this._nativeDb.beginMultiTxnOperation(); }
+
+  /** End a multi-Txn operation */
+  public endMultiTxnOperation(): DbResult { return this._nativeDb.endMultiTxnOperation(); }
 
   /** Reverse (undo) the most recent operation(s) to this IModelDb.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will

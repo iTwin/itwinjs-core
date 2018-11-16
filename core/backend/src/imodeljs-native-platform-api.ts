@@ -33,15 +33,6 @@ export declare class NativeBriefcaseManagerResourcesRequest {
   public toJSON(): string;
 }
 
-/* How to handle a conflict
-export const enum NativeBriefcaseManagerOnConflict {
-    // Reject the incoming change
-    RejectIncomingChange = 0,
-    // Accept the incoming change
-    AcceptIncomingChange = 1,
-}
-*/
-
 /**
  * The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
  * The scenario is that the caller has made some changes to the *local* briefcase. Now, the caller is attempting to
@@ -67,6 +58,7 @@ export declare class NativeDgnDb {
   public appendBriefcaseManagerResourcesRequest(reqOut: NativeBriefcaseManagerResourcesRequest, reqIn: NativeBriefcaseManagerResourcesRequest): void;
   public applyChangeSets(changeSets: string, processOptions: ChangeSetApplyOption): ChangeSetStatus;
   public attachChangeCache(changeCachePath: string): DbResult;
+  public beginMultiTxnOperation(): DbResult;
   public briefcaseManagerEndBulkOperation(): RepositoryStatus;
   public briefcaseManagerStartBulkOperation(): RepositoryStatus;
   public buildBriefcaseManagerResourcesRequestForElement(req: NativeBriefcaseManagerResourcesRequest, elemId: string, opcode: DbOpcode): RepositoryStatus;
@@ -84,6 +76,7 @@ export declare class NativeDgnDb {
   public dumpChangeSet(changeSet: string): void;
   public embedFont(fontProps: string): string;
   public enableTxnTesting(): void;
+  public endMultiTxnOperation(): DbResult;
   public executeTest(testName: string, params: string): string;
   public extractBriefcaseManagerResourcesRequest(reqOut: NativeBriefcaseManagerResourcesRequest, reqIn: NativeBriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
   public extractBulkResourcesRequest(req: NativeBriefcaseManagerResourcesRequest, locks: boolean, codes: boolean): void;
