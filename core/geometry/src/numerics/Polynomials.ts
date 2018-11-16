@@ -334,14 +334,12 @@ export class SphereImplicit {
     return x * x + y * y + z * z - this.radius * this.radius;
   }
 
-  // Evaluate the implicit function at weighted space point (wx/w, wy/w, wz/w)
+  // Evaluate the implicit function at weighted space point (wx, wy, wz, w)
   // @param [in] wx (preweighted) x coordinate
   // @param [in] wy (preweighted) y coordinate
   // @param [in] wz (preweighted) z coordinate
   // @param [in] w  weight
   public evaluateImplicitFunctionXYZW(wx: number, wy: number, wz: number, w: number): number {
-    if (w === 0.0)
-      return 0.0;
     return (wx * wx + wy * wy + wz * wz) - this.radius * this.radius * w * w;
   }
 
@@ -567,7 +565,7 @@ export class AnalyticRoots {
     AnalyticRoots.appendSolution(Geometry.conditionalDivideFraction(-c0, c1), values);
   }
   // Search an array for the value which is farthest from the average of all the values.
-  private static mostDistantFromMean(data: GrowableFloat64Array | undefined): number {
+  public static mostDistantFromMean(data: GrowableFloat64Array | undefined): number {
     if (!data || data.length === 0) return 0;
     let a = 0.0;  // to become the sum and finally the average.
     for (let i = 0; i < data.length; i++) a += data.at(i);
@@ -576,7 +574,7 @@ export class AnalyticRoots {
     let result = data.at(0);
     for (let i = 0; i < data.length; i++) {
       const d = Math.abs(data.at(i) - a);
-      if (d < dMax) {
+      if (d > dMax) {
         dMax = d;
         result = data.at(i);
       }
@@ -1011,7 +1009,7 @@ export class TrigPolynomial {
     }
     const coffTol = relTol * maxCoff;
     let degree = nominalDegree;
-    while (degree > 0 && (Math.abs(coff[degree - 1]) <= coffTol)) {
+    while (degree > 0 && (Math.abs(coff[degree]) <= coffTol)) {
       degree--;
     }
     // let bstat = false;

@@ -23,6 +23,17 @@ export class GrowableFloat64Array {
     this._data = new Float64Array(initialCapacity);
     this._inUse = 0;
   }
+  /**
+   * Create a GrowableFloat64Array with given contents.
+   * @param contents data to copy into the array
+   */
+  public static create(contents: Float64Array | number[]): GrowableFloat64Array {
+    const result = new GrowableFloat64Array(contents.length);
+    for (const a of contents) {
+      result.push(a);
+    }
+    return result;
+  }
   public static compare(a: any, b: any): number {
     return a - b;
   }

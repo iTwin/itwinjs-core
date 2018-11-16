@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "AnalyticRoots and Polynomial coverage",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}
