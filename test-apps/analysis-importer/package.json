@@ -11,7 +11,8 @@
     "clean": "rimraf lib package-deps.json ../../generated-docs",
     "extract-assets": "cpx assets/**/*  lib/assets/",
     "test": "",
-    "docs": ""
+    "docs": "",
+    "cover": ""
   },
   "repository": {},
   "dependencies": {
