@@ -6,7 +6,7 @@
 
 import { ActivityLoggingContext, BeEvent, AuthStatus, Logger, BentleyError } from "@bentley/bentleyjs-core";
 import { UserManagerSettings, UserManager, User } from "oidc-client";
-import { Config, OidcClient, IOidcFrontendClient, UserInfo, AccessToken, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { OidcClient, IOidcFrontendClient, UserInfo, AccessToken, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 
 const loggingCategory = "imodeljs-clients-device.OidcBrowserClient";
 
@@ -124,7 +124,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
   }
 
   private getIsLoading(): boolean {
-    return (window.location.pathname === Config.App.getString("imjs_browser_test_redirect_uri"));
+    return (window.location.pathname === this._redirectPath);
   }
 
   private _onUserStateChanged = (user: User | undefined, _reason: string) => {

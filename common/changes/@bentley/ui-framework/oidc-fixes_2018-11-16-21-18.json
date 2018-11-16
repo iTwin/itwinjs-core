@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fixed OidcBrowserClient comparision of redirect path.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Ramanujam.Raman@bentley.com"
+}
