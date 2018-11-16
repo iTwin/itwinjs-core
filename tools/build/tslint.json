@@ -5,6 +5,9 @@
   ],
   "jsRules": {},
   "rules": {
+    "await-promise": true,
+    "no-return-await": true,
+    "promise-function-async": true,
     // Standard Rules ======================================================
     "max-line-length": [
       false

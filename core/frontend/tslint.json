@@ -1,3 +1,6 @@
 {
-  "extends": "@bentley/build-tools/tslint.json"
+  "extends": "@bentley/build-tools/tslint.json",
+  "rules": {
+    "promise-function-async": false // Problem processing src/tools/ToolAdmin.ts?
+  }
 }

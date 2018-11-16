@@ -466,9 +466,9 @@ export class EventHandler extends EventBaseHandler {
 
     const subscription = new ListenerSubscription();
     subscription.authenticationCallback = authenticationCallback;
-    subscription.getEvent = (sasToken: string, baseAddress: string, id: string, timeout?: number) =>
+    subscription.getEvent = async (sasToken: string, baseAddress: string, id: string, timeout?: number) =>
       this.getEvent(alctx, sasToken, baseAddress, id, timeout);
-    subscription.getSASToken = (token: AccessToken) => this.getSASToken(alctx, token, imodelId);
+    subscription.getSASToken = async (token: AccessToken) => this.getSASToken(alctx, token, imodelId);
     subscription.id = subscriptionId;
     return EventListener.create(subscription, listener);
   }

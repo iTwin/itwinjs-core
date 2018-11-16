@@ -478,7 +478,7 @@ class BingMapProvider extends ImageryProvider {
   }
 
   // reads the Bing logo from the url returned as part of the first response.
-  private readLogo(): Promise<Uint8Array | undefined> {
+  private async readLogo(): Promise<Uint8Array | undefined> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
     if (!this._logoUrl || (this._logoUrl.length === 0))
       return Promise.resolve(undefined);

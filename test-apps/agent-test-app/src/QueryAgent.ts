@@ -15,7 +15,7 @@ import * as path from "path";
 const actx = new ActivityLoggingContext("");
 
 /** Sleep for ms */
-const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /** Agent for querying changesets. Contains backend iModel.js engine. */
 export class QueryAgent {
     private _tokenStore?: OpenIdConnectTokenStore;

@@ -68,7 +68,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 
   /** Returns a promise that resolves to the AccessToken. The token is silently refreshed if it's possible and necessary. */
-  public getAccessToken(_actx: ActivityLoggingContext): Promise<AccessToken> {
+  public async getAccessToken(_actx: ActivityLoggingContext): Promise<AccessToken> {
     return Promise.resolve(this._accessToken!);
   }
 

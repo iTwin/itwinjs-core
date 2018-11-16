@@ -87,7 +87,7 @@ export class IModelVersion {
    * version was already specified as of a ChangeSet, the method simply returns
    * that Id without any validation.
    */
-  public evaluateChangeSet(alctx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string, imodelClient: IModelClient): Promise<string> {
+  public async evaluateChangeSet(alctx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string, imodelClient: IModelClient): Promise<string> {
     if (this._first)
       return Promise.resolve("");
 

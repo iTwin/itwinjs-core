@@ -352,7 +352,7 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
   * superagent, but may eventually switch to JavaScript's fetch library.
   */
   return sareq
-    .then((response: sarequest.Response) => {
+    .then(async (response: sarequest.Response) => {
       const retResponse: Response = {
         body: response.body,
         header: response.header,
@@ -360,7 +360,7 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
       };
       return Promise.resolve(retResponse);
     })
-    .catch((error: any) => {
+    .catch(async (error: any) => {
       const parsedError = errorCallback(error);
       return Promise.reject(parsedError);
     });

@@ -127,7 +127,7 @@ async function handleHttp2Post(req2: http2.Http2ServerRequest, res2: http2.Http2
   }
 }
 
-function readHttp2Body(req2: http2.Http2ServerRequest) {
+async function readHttp2Body(req2: http2.Http2ServerRequest) {
   return new Promise<string | Buffer>((resolve, reject) => {
     const chunks: Buffer[] = [];
     req2.on("data", (chunk) => {

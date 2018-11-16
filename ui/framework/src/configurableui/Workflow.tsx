@@ -244,7 +244,7 @@ export class WorkflowManager {
       this.setActiveWorkflow(workflow);
 
     if (!task.isActive)
-      await workflow.setActiveTask(task);
+      workflow.setActiveTask(task);
   }
 
   /** Gets the active Workflow */

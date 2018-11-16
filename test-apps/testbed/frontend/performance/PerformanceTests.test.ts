@@ -23,7 +23,7 @@ function debugPrint(msg: string): void {
     console.log(msg); // tslint:disable-line
 }
 
-function resolveAfterXMilSeconds(ms: number) { // must call await before this function!!!
+async function resolveAfterXMilSeconds(ms: number) { // must call await before this function!!!
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve();
@@ -449,7 +449,7 @@ async function runTest(testConfig: DefaultConfigs) {
   await loadIModel(testConfig);
 
   if (testConfig.testType === "image" || testConfig.testType === "both")
-    await savePng(getImageString(testConfig));
+    savePng(getImageString(testConfig));
 
   if (testConfig.testType === "timing" || testConfig.testType === "both") {
     // Throw away the first n renderFrame times, until it's more consistent

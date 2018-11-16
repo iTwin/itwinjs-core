@@ -39,20 +39,20 @@ export class IModelJsExpressServer {
   protected _configureRoutes() {
     this._app.get("/v3/swagger.json", (req, res) => this._protocol.handleOpenApiDescriptionRequest(req, res));
     this._app.post("*", async (req, res) => this._protocol.handleOperationPostRequest(req, res));
-    this._app.get(/\/imodel\//, (req, res) => this._protocol.handleOperationGetRequest(req, res));
+    this._app.get(/\/imodel\//, async (req, res) => this._protocol.handleOperationGetRequest(req, res));
   }
 
   /**
    * Configure the express application with necessary headers, routes, and middleware, then starts listening on the given port.
    * @param port The port to listen on
    */
-  public initialize(port: number): Promise<HttpServer> {
+  public async initialize(port: number): Promise<HttpServer> {
     this._configureMiddleware();
     this._configureHeaders();
     this._configureRoutes();
 
     this._app.set("port", port);
-    return new Promise((resolve) => {
+    return new Promise<HttpServer>((resolve) => {
       const server = this._app.listen(this._app.get("port"), () => resolve(server));
     });
   }

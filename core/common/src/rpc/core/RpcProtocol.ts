@@ -112,7 +112,7 @@ export abstract class RpcProtocol {
   }
 
   /** Obtains the implementation result on the backend for an RPC operation request. */
-  public fulfill(request: SerializedRpcRequest): Promise<RpcRequestFulfillment> {
+  public async fulfill(request: SerializedRpcRequest): Promise<RpcRequestFulfillment> {
     return new (this.invocationType)(this, request).fulfillment;
   }
 

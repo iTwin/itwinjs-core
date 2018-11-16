@@ -48,11 +48,11 @@ function logResult(..._args: any[]) {
 }
 
 describe("ToolRegistry", () => {
-  before(async () => await setupToolRegistryTests());
+  before(async () => setupToolRegistryTests());
   after(() => TestCommandApp.shutdown());
 
   it("Should find Select tool", async () => {
-    const command: typeof Tool | undefined = await IModelApp.tools.findExactMatch("Select Elements");
+    const command: typeof Tool | undefined = IModelApp.tools.findExactMatch("Select Elements");
     assert.isDefined(command, "Found Select Elements Command");
     if (command) {
       assert.isTrue(command.prototype instanceof Tool);
@@ -60,7 +60,7 @@ describe("ToolRegistry", () => {
   });
 
   it("Should execute the TestImmediate command", async () => {
-    const cmdReturn: boolean = await IModelApp.tools.executeExactMatch("Localized TestImmediate Keyin");
+    const cmdReturn: boolean = IModelApp.tools.executeExactMatch("Localized TestImmediate Keyin");
     assert.isTrue(cmdReturn);
     assert.equal(testVal1, "test1", "TestImmediate tool set values");
     assert.equal(testVal2, "test2");

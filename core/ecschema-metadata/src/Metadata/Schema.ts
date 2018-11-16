@@ -321,7 +321,7 @@ export class Schema implements CustomAttributeContainerProps {
     }
 
     if (!schemaName || schemaName.toUpperCase() === this.name.toUpperCase()) {
-      return await this.getItem<T>(itemName);
+      return this.getItem<T>(itemName);
       // this._context.
     }
 
@@ -330,7 +330,7 @@ export class Schema implements CustomAttributeContainerProps {
       return undefined;
 
     // TODO: use the context and not get the full schema here
-    return await refSchema.getItem<T>(itemName);
+    return refSchema.getItem<T>(itemName);
   }
 
   /**

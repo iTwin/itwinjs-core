@@ -14,6 +14,6 @@ export class IModelDbHandler {
     public constructor() { }
     public async openLatestIModelDb(accessToken: AccessToken, projectId: string, iModelId: string,
         openParams: OpenParams = OpenParams.pullAndPush(), iModelVersion: IModelVersion = IModelVersion.latest()): Promise<IModelDb> {
-        return await IModelDb.open(actx, accessToken, projectId, iModelId, openParams, iModelVersion);
+        return IModelDb.open(actx, accessToken, projectId, iModelId, openParams, iModelVersion);
     }
 }

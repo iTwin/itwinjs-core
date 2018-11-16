@@ -30,7 +30,7 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     const baseUrl: string = await this.getUrl(alctx);
 
     const imsClient = new ImsDelegationSecureTokenClient();
-    return await imsClient.getToken(alctx, authSamlToken, baseUrl);
+    return imsClient.getToken(alctx, authSamlToken, baseUrl);
   }
 
   /**
@@ -110,9 +110,9 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     const urlOptions: string = this.getUrlOptions(settingNamespace, settingName, userSpecific, applicationSpecific, projectId, iModelId);
     const url: string = baseUrl.concat(urlOptions);
 
-    return request(alctx, url, options).then((_response: Response): Promise<SettingsResult> => {
+    return request(alctx, url, options).then(async (_response: Response): Promise<SettingsResult> => {
       return Promise.resolve(new SettingsResult(SettingsStatus.Success));
-    }, (response: Response): Promise<SettingsResult> => {
+    }, async (response: Response): Promise<SettingsResult> => {
       if ((response.status < 200) || (response.status > 299))
         return Promise.resolve(this.formErrorResponse(response));
       return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
@@ -133,9 +133,9 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     const urlOptions: string = this.getUrlOptions(settingNamespace, settingName, userSpecific, applicationSpecific, projectId, iModelId);
     const url: string = baseUrl.concat(urlOptions);
 
-    return request(alctx, url, options).then((response: Response): Promise<SettingsResult> => {
+    return request(alctx, url, options).then(async (response: Response): Promise<SettingsResult> => {
       return Promise.resolve(new SettingsResult(SettingsStatus.Success, undefined, response.body.properties));
-    }, (response: Response): Promise<SettingsResult> => {
+    }, async (response: Response): Promise<SettingsResult> => {
       if ((response.status < 200) || (response.status > 299))
         return Promise.resolve(this.formErrorResponse(response));
       return Promise.resolve(new SettingsResult(SettingsStatus.UnknownError, "Unexpected Status " + JSON.stringify(response)));
@@ -156,9 +156,9 @@ export class ConnectSettingsClient extends Client implements SettingsAdmin {
     const urlOptions: string = this.getUrlOptions(settingNamespace, settingName, userSpecific, applicationSpecific, projectId, iModelId);
     const url: string = baseUrl.concat(urlOptions);
 
-    return request(alctx, url, options).then((_response: Response): Promise<SettingsResult> => {
+    return request(alctx, url, options).then(async (_response: Response): Promise<SettingsResult> => {
       return Promise.resolve(new SettingsResult(SettingsStatus.Success));
-    }, (response: Response): Promise<SettingsResult> => {
+    }, async (response: Response): Promise<SettingsResult> => {
       if ((response.status < 200) || (response.status > 299))
         return Promise.resolve(this.formErrorResponse(response));
       else

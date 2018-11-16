@@ -14,7 +14,7 @@ import { IModelWriter } from "./IModelWriter";
 import { HubUtility, UserCredentials } from "./HubUtility";
 import { TestUsers } from "../IModelTestUtils";
 
-const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const actx = new ActivityLoggingContext("");
 
 export class TestPushUtility {

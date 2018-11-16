@@ -157,17 +157,17 @@ describe("Table", () => {
     onCellsSelectedCallbackMock.reset();
     onCellsDeselectedCallbackMock.reset();
 
-    onRowsSelectedCallbackMock.setup((x) => x(moq.It.isAny(), moq.It.isAny())).callback((iterator: AsyncIterableIterator<RowItem>) => { selectedRowsIterator = iterator; });
-    onRowsDeselectedCallbackMock.setup((x) => x(moq.It.isAny())).callback((iterator: AsyncIterableIterator<RowItem>) => { deselectedRowsIterator = iterator; });
-    onCellsSelectedCallbackMock.setup((x) => x(moq.It.isAny(), moq.It.isAny())).callback(async (iterator: AsyncIterableIterator<[RowItem, CellItem]>) => { selectedCellsIterator = iterator; });
-    onCellsDeselectedCallbackMock.setup((x) => x(moq.It.isAny())).callback(async (iterator: AsyncIterableIterator<[RowItem, CellItem]>) => { deselectedCellsIterator = iterator; });
+    onRowsSelectedCallbackMock.setup(async (x) => x(moq.It.isAny(), moq.It.isAny())).callback((iterator: AsyncIterableIterator<RowItem>) => { selectedRowsIterator = iterator; });
+    onRowsDeselectedCallbackMock.setup(async (x) => x(moq.It.isAny())).callback((iterator: AsyncIterableIterator<RowItem>) => { deselectedRowsIterator = iterator; });
+    onCellsSelectedCallbackMock.setup(async (x) => x(moq.It.isAny(), moq.It.isAny())).callback(async (iterator: AsyncIterableIterator<[RowItem, CellItem]>) => { selectedCellsIterator = iterator; });
+    onCellsDeselectedCallbackMock.setup(async (x) => x(moq.It.isAny())).callback(async (iterator: AsyncIterableIterator<[RowItem, CellItem]>) => { deselectedCellsIterator = iterator; });
 
     tableDataChangeEventMock.setup((x) => x.addListener(moq.It.isAny())).returns(() => moq.Mock.ofType<TableDataChangesListener>().object);
     dataProviderMock.setup((x) => x.onColumnsChanged).returns(() => tableDataChangeEventMock.object);
     dataProviderMock.setup((x) => x.onRowsChanged).returns(() => tableDataChangeEventMock.object);
-    dataProviderMock.setup((x) => x.getRowsCount()).returns(async () => 10);
-    dataProviderMock.setup((x) => x.getRow(moq.It.isAnyNumber())).returns(async (index) => createRowItem(index));
-    dataProviderMock.setup((x) => x.getColumns()).returns(async () => columns);
+    dataProviderMock.setup(async (x) => x.getRowsCount()).returns(async () => 10);
+    dataProviderMock.setup(async (x) => x.getRow(moq.It.isAnyNumber())).returns(async (index) => createRowItem(index));
+    dataProviderMock.setup(async (x) => x.getColumns()).returns(async () => columns);
     onRowsLoaded.resetHistory();
     onPropertyEditing.resetHistory();
     onPropertyUpdated.resetHistory();
@@ -211,8 +211,8 @@ describe("Table", () => {
     const strictDataProviderMock = moq.Mock.ofType<TableDataProvider>(undefined, moq.MockBehavior.Strict);
     strictDataProviderMock.setup((provider) => provider.onRowsChanged).returns(() => rowChangeEvent);
     strictDataProviderMock.setup((provider) => provider.onColumnsChanged).returns(() => columnChangeEvent);
-    strictDataProviderMock.setup((provider) => provider.getColumns()).returns(async () => []);
-    strictDataProviderMock.setup((provider) => provider.getRowsCount()).returns(async () => 0);
+    strictDataProviderMock.setup(async (provider) => provider.getColumns()).returns(async () => []);
+    strictDataProviderMock.setup(async (provider) => provider.getRowsCount()).returns(async () => 0);
     strictDataProviderMock.setup((a: any) => a.getRow(moq.It.isAnyNumber())).returns(async () => undefined);
 
     const shallowTable = enzyme.shallow(<Table dataProvider={dataProviderMock.object} />);
@@ -220,15 +220,15 @@ describe("Table", () => {
 
     let iteration = 0;
     strictDataProviderMock.reset();
-    strictDataProviderMock.setup((provider) => provider.getColumns()).returns(async () => []);
-    strictDataProviderMock.setup((provider) => provider.getRowsCount()).returns(async () => 1);
-    strictDataProviderMock.setup((provider) => provider.getRow(moq.It.isAnyNumber())).callback(async () => {
+    strictDataProviderMock.setup(async (provider) => provider.getColumns()).returns(async () => []);
+    strictDataProviderMock.setup(async (provider) => provider.getRowsCount()).returns(async () => 1);
+    strictDataProviderMock.setup(async (provider) => provider.getRow(moq.It.isAnyNumber())).callback(async () => {
       iteration++;
       if (iteration >= 2) {
         // Change data provider while update is still going
         strictDataProviderMock.reset();
-        strictDataProviderMock.setup((provider) => provider.getColumns()).returns(async () => []);
-        strictDataProviderMock.setup((provider) => provider.getRowsCount()).returns(async () => 0);
+        strictDataProviderMock.setup(async (provider) => provider.getColumns()).returns(async () => []);
+        strictDataProviderMock.setup(async (provider) => provider.getRowsCount()).returns(async () => 0);
         strictDataProviderMock.setup((provider: any) => provider.getRow(moq.It.isAnyNumber())).returns(async () => undefined);
         await (shallowTable.instance() as Table).update();
       }
@@ -247,7 +247,7 @@ describe("Table", () => {
         row.simulate("click");
 
         await verifyRowIterator(["0"], selectedRowsIterator);
-        onRowsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.once());
+        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
         expect(table.find(selectedRowClassName).length).to.be.equal(1);
       });
 
@@ -260,8 +260,8 @@ describe("Table", () => {
         row.simulate("click");
 
         await verifyRowIterator(["0"], selectedRowsIterator);
-        onRowsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.once());
-        onRowsDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+        onRowsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.never());
         expect(table.find(selectedRowClassName).length).to.be.equal(1);
       });
 
@@ -282,7 +282,7 @@ describe("Table", () => {
         row2.simulate("click", { shiftKey: true });
         await verifyRowIterator(["0", "1", "2"], selectedRowsIterator);
 
-        onRowsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
         expect(table.find(selectedRowClassName).length).to.be.equal(3);
       });
 
@@ -296,7 +296,7 @@ describe("Table", () => {
         row0.simulate("click", { shiftKey: true });
         await verifyRowIterator(["0", "1", "2"], selectedRowsIterator);
 
-        onRowsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
         expect(table.find(selectedRowClassName).length).to.be.equal(3);
       });
 
@@ -309,7 +309,7 @@ describe("Table", () => {
         row2.simulate("click", { ctrlKey: true });
         await verifyRowIterator(["2"], selectedRowsIterator);
 
-        onRowsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), false), moq.Times.exactly(2));
+        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.exactly(2));
         expect(table.find(selectedRowClassName).length).to.be.equal(2);
       });
 
@@ -330,7 +330,7 @@ describe("Table", () => {
         document.dispatchEvent(new MouseEvent("mouseup"));
 
         await verifyRowIterator(["0", "1", "2"], selectedRowsIterator);
-        onRowsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), false), moq.Times.once());
+        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
         expect(table.find(selectedRowClassName).length).to.be.equal(3);
       });
 
@@ -348,8 +348,8 @@ describe("Table", () => {
 
         await verifyRowIterator(["2"], selectedRowsIterator);
         await verifyRowIterator(["0", "1"], deselectedRowsIterator);
-        onRowsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), false), moq.Times.once());
-        onRowsDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.once());
+        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
+        onRowsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.once());
         expect(table.find(selectedRowClassName).length).to.be.equal(1);
       });
 
@@ -368,8 +368,8 @@ describe("Table", () => {
         row.simulate("click");
         await verifyRowIterator(["0"], deselectedRowsIterator);
 
-        onRowsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.once());
-        onRowsDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.once());
+        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+        onRowsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.once());
         expect(table.find(selectedRowClassName).length).to.be.equal(0);
       });
 
@@ -453,7 +453,7 @@ describe("Table", () => {
         const cell = table.find(cellClassName).first();
         cell.simulate("click");
         await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.once());
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
         expect(table.find(selectedCellClassName).length).to.be.equal(1);
       });
 
@@ -466,8 +466,8 @@ describe("Table", () => {
         cell.simulate("click");
 
         await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.once());
-        onCellsDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+        onCellsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.never());
         expect(table.find(selectedCellClassName).length).to.be.equal(1);
       });
 
@@ -494,7 +494,7 @@ describe("Table", () => {
           { rowKey: "2", columnKey: "key1" },
           { rowKey: "2", columnKey: "key2" },
         ], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
         expect(table.find(selectedCellClassName).length).to.be.equal(6);
       });
 
@@ -513,7 +513,7 @@ describe("Table", () => {
           { rowKey: "2", columnKey: "key1" },
           { rowKey: "2", columnKey: "key2" },
         ], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
         expect(table.find(selectedCellClassName).length).to.be.equal(6);
       });
 
@@ -529,7 +529,7 @@ describe("Table", () => {
           { rowKey: "0", columnKey: "key1" },
           { rowKey: "0", columnKey: "key2" },
         ], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
         expect(table.find(selectedCellClassName).length).to.be.equal(3);
       });
 
@@ -545,7 +545,7 @@ describe("Table", () => {
           { rowKey: "0", columnKey: "key1" },
           { rowKey: "0", columnKey: "key2" },
         ], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
         expect(table.find(selectedCellClassName).length).to.be.equal(3);
       });
 
@@ -566,8 +566,8 @@ describe("Table", () => {
           { rowKey: "2", columnKey: "key2" },
         ], selectedCellsIterator);
 
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.once());
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), false), moq.Times.exactly(2));
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.exactly(2));
         expect(table.find(selectedCellClassName).length).to.be.equal(6);
       });
 
@@ -580,8 +580,8 @@ describe("Table", () => {
         cell13.simulate("click", { ctrlKey: true });
         await verifyCellIterator([{ rowKey: "0", columnKey: "key2" }], selectedCellsIterator);
 
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.once());
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), false), moq.Times.once());
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
         expect(table.find(selectedCellClassName).length).to.be.equal(2);
       });
 
@@ -607,7 +607,7 @@ describe("Table", () => {
           { rowKey: "1", columnKey: "key0" },
           { rowKey: "1", columnKey: "key1" },
         ], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), false), moq.Times.once());
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
         expect(table.find(selectedCellClassName).length).to.be.equal(4);
       });
 
@@ -624,8 +624,8 @@ describe("Table", () => {
 
         await verifyCellIterator([{ rowKey: "1", columnKey: "key0" }, { rowKey: "1", columnKey: "key1" }], selectedCellsIterator);
         await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }, { rowKey: "0", columnKey: "key1" }], deselectedCellsIterator);
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), false), moq.Times.once());
-        onCellsDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.once());
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
+        onCellsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.once());
         expect(table.find(selectedCellClassName).length).to.be.equal(3);
       });
 
@@ -644,8 +644,8 @@ describe("Table", () => {
         cell.simulate("click");
         await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], deselectedCellsIterator);
 
-        onCellsSelectedCallbackMock.verify((x) => x(moq.It.isAny(), true), moq.Times.once());
-        onCellsDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.once());
+        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+        onCellsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.once());
         expect(table.find(selectedCellClassName).length).to.be.equal(0);
       });
 

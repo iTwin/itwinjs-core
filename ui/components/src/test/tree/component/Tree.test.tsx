@@ -703,6 +703,10 @@ describe("Tree", () => {
       }, renderSpy, 1);
       expect(renderedTree.getByText("test")).to.not.be.undefined;
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+
+      // verify the node is collapsed
+      const toggle = within(getNode("test")).queryByTestId(Tree.TestId.NodeExpansionToggle);
+      expect(toggle!.classList.contains("is-expanded")).to.be.false;
     });
 
     it("rerenders when `onTreeNodeChanged` is broadcasted with expanded node", async () => {
@@ -718,6 +722,10 @@ describe("Tree", () => {
       }, renderSpy, 1);
       expect(renderedTree.getByText("test")).to.not.be.undefined;
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
+
+      // verify the node is expanded
+      const toggle = within(getNode("test")).queryByTestId(Tree.TestId.NodeExpansionToggle);
+      expect(toggle!.classList.contains("is-expanded")).to.be.true;
     });
 
     it("rerenders when `onTreeNodeChanged` is broadcasted with undefined node", async () => {

@@ -83,7 +83,7 @@ describe("BeInspireTree", () => {
     const m = createDataProviderMethod(h);
     return {
       getNodesCount: async (parent?: Node) => (await m(parent)).length,
-      getNodes: async (parent?: Node) => (await m(parent)),
+      getNodes: async (parent?: Node) => (await m(parent)), // tslint:disable-line:no-return-await
     };
   };
 
@@ -137,7 +137,7 @@ describe("BeInspireTree", () => {
   // run tests for every type of supported provider
   const providers = [
     { name: "with raw data provider", createProvider: (h: Node[]) => h, isDelayLoaded: false },
-    { name: "with promise data provider", createProvider: (h: Node[]) => Promise.resolve(h), isDelayLoaded: false },
+    { name: "with promise data provider", createProvider: async (h: Node[]) => Promise.resolve(h), isDelayLoaded: false },
     { name: "with method data provider", createProvider: (h: Node[]) => createDataProviderMethod(h), isDelayLoaded: true },
     { name: "with interface data provider", createProvider: (h: Node[]) => createDataProviderInterface(h), isDelayLoaded: true },
   ];
@@ -261,8 +261,8 @@ describe("BeInspireTree", () => {
           describe("selected", () => {
 
             it("returns flat list of selected nodes", async () => {
-              await source.node("0")!.select();
-              await source.node("0-1")!.select();
+              source.node("0")!.select();
+              source.node("0-1")!.select();
               const result = source.selected();
               expect(result.map(asText)).to.deep.eq(["0", "0-1"]);
             });
@@ -508,7 +508,7 @@ describe("BeInspireTree", () => {
 
         beforeEach(async () => {
           // expand the whole tree so we can test selection between multiple hierarchy levels
-          await Promise.all(tree.flatten().collapsed().map((n) => n.expand()));
+          await Promise.all(tree.flatten().collapsed().map(async (n) => n.expand()));
         });
 
         it("selects nodes at the same hierarchy level", () => {
@@ -570,7 +570,7 @@ describe("BeInspireTree", () => {
         beforeEach(async () => {
           // expand the whole tree and select all nodes
           allNodeIds = flatten(hierarchy).map((n) => n.id);
-          await Promise.all(tree.collapsed().map((n) => n.expand()));
+          await Promise.all(tree.collapsed().map(async (n) => n.expand()));
           tree.updateTreeSelection(() => true);
         });
 

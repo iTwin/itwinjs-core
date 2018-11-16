@@ -60,7 +60,7 @@ export class SimplePropertyDataProvider implements PropertyDataProvider, Propert
     return false;
   }
 
-  public getData(): Promise<PropertyData> {
+  public async getData(): Promise<PropertyData> {
     return Promise.resolve(this);
   }
 }

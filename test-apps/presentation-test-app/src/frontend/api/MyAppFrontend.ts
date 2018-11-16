@@ -10,7 +10,7 @@ export class MyAppFrontend {
   public static iModel: IModelConnection | undefined;
 
   public static async getSampleImodels(): Promise<string[]> {
-    return await SampleRpcInterface.getClient().getSampleImodels();
+    return SampleRpcInterface.getClient().getSampleImodels();
   }
 
   public static async openIModel(path: string): Promise<IModelConnection> {

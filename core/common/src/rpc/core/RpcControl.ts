@@ -52,7 +52,7 @@ export class RpcControlChannel {
   }
 
   /** @hidden */
-  public describeEndpoints() {
+  public async describeEndpoints() {
     this.activateClient();
     return this._describeEndpoints();
   }
@@ -72,11 +72,11 @@ export class RpcControlChannel {
   private _channelInterface = class extends RpcInterface {
     public static readonly version = "CONTROL";
     public static readonly types = () => [];
-    public describeEndpoints(): Promise<RpcInterfaceEndpoints[]> { return this.forward.apply(this, arguments); }
+    public async describeEndpoints(): Promise<RpcInterfaceEndpoints[]> { return this.forward.apply(this, arguments); }
   };
 
   private _channelImpl = class extends RpcInterface {
-    public describeEndpoints(): Promise<RpcInterfaceEndpoints[]> {
+    public async describeEndpoints(): Promise<RpcInterfaceEndpoints[]> {
       const endpoints: RpcInterfaceEndpoints[] = [];
 
       this.configuration.interfaces().forEach((definition) => {
@@ -119,7 +119,7 @@ export class RpcControlChannel {
     this._clientActive = true;
     RpcOperation.forEach(this._channelInterface, (operation) => operation.policy.token = (_request) => RpcOperation.fallbackToken || new IModelToken("none", "none", "none", "none", undefined));
     const client = RpcManager.getClientForInterface(this._channelInterface);
-    this._describeEndpoints = () => client.describeEndpoints();
+    this._describeEndpoints = async () => client.describeEndpoints();
   }
 
   /** @hidden */

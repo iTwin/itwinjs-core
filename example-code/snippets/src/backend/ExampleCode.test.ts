@@ -86,7 +86,7 @@ describe("Example Code", () => {
 
   it("should handle ActivityLoggingContext in async callbacks", async () => {
     await asyncFunctionCallsAsync(new ActivityLoggingContext("abc"));
-    await synchronousFunctionCallsAsync();
+    await synchronousFunctionCallsAsync(); // tslint:disable-line:await-promise
     await asyncMethodExample(new ActivityLoggingContext("abc"));
   });
 

@@ -24,7 +24,7 @@ describe("ViewportComponent", () => {
   beforeEach(() => {
     viewDefinitionId = createRandomId();
     const viewsMock = moq.Mock.ofInstance<IModelConnection.Views>(new IModelConnection.Views(imodelMock.object));
-    viewsMock.setup((views) => views.load(moq.It.isAny())).returns(async () => moq.Mock.ofType<ViewState3d>().object);
+    viewsMock.setup(async (views) => views.load(moq.It.isAny())).returns(async () => moq.Mock.ofType<ViewState3d>().object);
     imodelMock.reset();
     imodelMock.setup((imodel) => imodel.views).returns(() => viewsMock.object);
   });

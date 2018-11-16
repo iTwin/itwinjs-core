@@ -75,7 +75,7 @@ export class PerformanceReportWriter {
   public static async applyToWorksheet(fnc: (worksheet: Excel.Worksheet) => void): Promise<void> {
     const workbook = new Excel.Workbook();
     return workbook.xlsx.readFile(PerformanceReportWriter.input)
-      .then(() => {
+      .then(async () => {
         fnc(workbook.getWorksheet(1));
         return workbook.xlsx.writeFile(PerformanceReportWriter.output);
       });

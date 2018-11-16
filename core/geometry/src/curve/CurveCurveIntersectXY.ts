@@ -24,7 +24,7 @@ import { Point4d } from "../geometry4d/Point4d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Arc3d } from "./Arc3d";
-import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { BSplineCurve3d, BSplineCurve3dBase } from "../bspline/BSplineCurve";
 import { BezierCurveBase } from "../bspline/BezierCurveBase";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";

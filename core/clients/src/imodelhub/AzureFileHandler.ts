@@ -11,7 +11,7 @@ import { ArgumentCheck } from "./Errors";
 import * as fs from "fs";
 import * as path from "path";
 import * as https from "https";
-import { Writable } from "stream";
+import { Transform, TransformCallback } from "stream";
 import * as sareq from "superagent";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
@@ -19,50 +19,35 @@ const loggingCategory = "imodeljs-clients.imodelhub";
 /**
  * Stream that buffers writing to file.
  */
-class BufferedStream extends Writable {
+class BufferedStream extends Transform {
   private _buffer?: Buffer;
-  private _highWaterMark: number;
-  private _stream: fs.WriteStream;
-  public constructor(outputPath: string, highWaterMark: number) {
+  private _threshold: number;
+  public constructor(threshold: number) {
     super();
-    this._stream = fs.createWriteStream(outputPath, { encoding: "binary" });
-    this._highWaterMark = highWaterMark;
-  }
-
-  private flush(callback: (err?: Error) => void) {
-    if (this._buffer) {
-      this._stream.write(this._buffer, () => {
-        this._buffer = undefined;
-        callback();
-      });
-    } else {
-      callback();
-    }
+    this._threshold = threshold;
   }
 
   // override
-  public _write(chunk: any, chunkEncoding: string, callback: (err?: Error) => void) {   // tslint:disable-line
-    if (chunkEncoding !== "buffer" && chunkEncoding !== "binary")
-      throw new TypeError(`Encoding '${chunkEncoding}' is not supported.`);
+  public _transform(chunk: any, encoding: string, callback: TransformCallback): void {   // tslint:disable-line
+    if (encoding !== "buffer" && encoding !== "binary")
+      throw new TypeError(`Encoding '${encoding}' is not supported.`);
     if (!this._buffer) {
       this._buffer = new Buffer("", "binary");
     }
     this._buffer = Buffer.concat([this._buffer, chunk]);
-    if (this._buffer.length > this._highWaterMark) {
-      this.flush(callback);
+    if (this._buffer.length > this._threshold) {
+      callback(undefined, this._buffer);
+      this._buffer = undefined;
       return;
+    } else {
+      callback();
     }
-    callback();
+
   }
 
   // override
-  public _final(callback: (err?: Error) => void) {  // tslint:disable-line
-    this.flush(callback);
-    this._stream.close();
-  }
-
-  get bytesWritten(): number {
-    return this._stream.bytesWritten;
+  public _flush(callback: TransformCallback): void {   // tslint:disable-line
+    callback(undefined, this._buffer);
   }
 }
 
@@ -72,17 +57,14 @@ class BufferedStream extends Writable {
 export class AzureFileHandler implements FileHandler {
   /** @hidden */
   public agent: https.Agent;
-  private _bufferedDownload = false;
-  private _highWaterMark: number;
+  private _threshold: number;
 
   /**
    * Constructor for AzureFileHandler.
-   * @param bufferedDownload Set true, if writing to files should be buffered.
-   * @param highWaterMark Minimum chunk size in bytes for a single file write.
+   * @param threshold Minimum chunk size in bytes for a single file write.
    */
-  constructor(bufferedDownload = true, highWaterMark = 1000000) {
-    this._bufferedDownload = bufferedDownload;
-    this._highWaterMark = highWaterMark;
+  constructor(threshold = 1000000) {
+    this._threshold = threshold;
   }
 
   /** Create a directory, recursively setting up the path as necessary. */
@@ -117,22 +99,14 @@ export class AzureFileHandler implements FileHandler {
 
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
 
-    let outputStream: Writable;
-    let bytesWritten: () => number;
-    if (this._bufferedDownload) {
-      const bufferedStream = new BufferedStream(downloadToPathname, this._highWaterMark);
-      outputStream = bufferedStream;
-      bytesWritten = () => bufferedStream.bytesWritten;
-    } else {
-      const fileStream = fs.createWriteStream(downloadToPathname, "binary");
-      outputStream = fileStream;
-      bytesWritten = () => fileStream.bytesWritten;
-    }
+    const bufferedStream = new BufferedStream(this._threshold);
+    const fileStream = fs.createWriteStream(downloadToPathname, "binary");
+    const bytesWritten: () => number = () => fileStream.bytesWritten;
     if (progressCallback) {
-      outputStream.on("drain", () => {
+      fileStream.on("drain", () => {
         progressCallback({ loaded: bytesWritten(), total: fileSize, percent: fileSize ? bytesWritten() / fileSize : 0 });
       });
-      outputStream.on("finish", () => {
+      fileStream.on("finish", () => {
         progressCallback({ loaded: bytesWritten(), total: fileSize, percent: fileSize ? bytesWritten() / fileSize : 0 });
       });
     }
@@ -145,7 +119,8 @@ export class AzureFileHandler implements FileHandler {
           .timeout({
             response: 10000,
           })
-          .pipe(outputStream)
+          .pipe(bufferedStream)
+          .pipe(fileStream)
           .on("error", (error: any) => {
             const parsedError = ResponseError.parse(error);
             reject(parsedError);

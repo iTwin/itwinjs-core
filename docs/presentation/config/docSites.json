@@ -24,21 +24,11 @@
     "logo": "learning/imodeljs.ico",
     "favicon": "learning/imodeljs.ico",
     "headerTabs": {
-      "Home": {
-        "docSite": "learning"
-      },
-      "Consume": {
-        "docSite": "consume"
-      },
-      "Reference": {
-        "docSite": "reference"
-      },
-      "Contribute": {
-        "docSite": "contribute"
-      },
-      "Releases": {
-        "docSite": "releases"
-      }
+      "Home": "learning",
+      "Consume": "consume",
+      "Reference": "reference",
+      "Contribute": "contribute",
+      "Releases": "releases"
     },
     "packageAliases": {
       "backend": "presentation-backend",

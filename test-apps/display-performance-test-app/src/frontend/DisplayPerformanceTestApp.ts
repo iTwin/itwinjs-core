@@ -37,11 +37,11 @@ import { ProjectApi } from "./ProjectApi";
 
 // Retrieve default config data from json file
 async function getDefaultConfigs(): Promise<string> {
-  return await DisplayPerfRpcInterface.getClient().getDefaultConfigs();
+  return DisplayPerfRpcInterface.getClient().getDefaultConfigs();
 }
 
 async function saveCsv(outputPath: string, outputName: string, rowData: Map<string, number | string>): Promise<void> {
-  return await DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, rowData);
+  return DisplayPerfRpcInterface.getClient().saveCsv(outputPath, outputName, rowData);
 }
 
 const wantConsoleOutput: boolean = false;
@@ -50,7 +50,7 @@ function debugPrint(msg: string): void {
     console.log(msg); // tslint:disable-line
 }
 
-function resolveAfterXMilSeconds(ms: number) { // must call await before this function!!!
+async function resolveAfterXMilSeconds(ms: number) { // must call await before this function!!!
   return new Promise((resolve) => {
     setTimeout(() => {
       resolve();
@@ -276,7 +276,7 @@ async function savePng(fileName: string): Promise<void> {
   if (theViewport && theViewport.canvas) {
     const img = theViewport.canvas.toDataURL("image/png"); // System.instance.canvas.toDataURL("image/png");
     const data = img.replace(/^data:image\/\w+;base64,/, ""); // strip off the data: url prefix to get just the base64-encoded bytes
-    return await DisplayPerfRpcInterface.getClient().savePng(fileName, data);
+    return DisplayPerfRpcInterface.getClient().savePng(fileName, data);
   }
 }
 

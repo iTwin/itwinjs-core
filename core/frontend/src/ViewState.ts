@@ -113,7 +113,7 @@ export class ViewSubCategories {
    * This function is invoked by ViewState.changeCategoryDisplay() to ensure subcategory information is present for any newly-enabled
    * categories.
    */
-  public update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+  public async update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
     let missing: Set<string> | undefined;
     for (const catId of addedCategoryIds) {
       if (undefined === this._byCategoryId.get(catId)) {

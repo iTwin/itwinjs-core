@@ -111,7 +111,7 @@ export class RpcDirectRequest extends RpcRequest {
   public headers: Map<string, string> = new Map();
   public fulfillment: RpcRequestFulfillment | undefined = undefined;
 
-  protected send() {
+  protected async send() {
     const request = this.protocol.serialize(this);
     return new Promise<number>(async (resolve, reject) => {
       try {
@@ -127,7 +127,7 @@ export class RpcDirectRequest extends RpcRequest {
     this.headers.set(name, value);
   }
 
-  protected load() {
+  protected async load() {
     return Promise.resolve(this.fulfillment!.result);
   }
 }

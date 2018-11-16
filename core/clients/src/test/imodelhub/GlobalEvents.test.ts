@@ -205,7 +205,7 @@ describe("iModelHub GlobalEventHandler", () => {
 
     let receivedEventsCount = 0;
     const deleteListener = imodelHubClient.GlobalEvents().createListener(alctx, async () => {
-      return await utils.login(TestUsers.serviceAccount1);
+      return utils.login(TestUsers.serviceAccount1);
     }, globalEventSubscription.wsgId, (receivedEvent: IModelHubGlobalEvent) => {
       if (receivedEvent instanceof SoftiModelDeleteEvent)
         receivedEventsCount++;

@@ -69,7 +69,7 @@ export class PropertyValueRendererManager {
     if (!selectedRenderer || !selectedRenderer.canRender(record, context))
       return undefined;
 
-    return await selectedRenderer.render(record, context);
+    return selectedRenderer.render(record, context);
   }
 
   /** Register a specified property type renderer */

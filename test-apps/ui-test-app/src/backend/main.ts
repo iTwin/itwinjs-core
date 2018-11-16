@@ -7,9 +7,9 @@ import { app as electron } from "electron";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { Presentation } from "@bentley/presentation-backend";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { Config } from "@bentley/imodeljs-clients";
-import { Presentation } from "@bentley/presentation-backend";
 import getSupportedRpcs from "../common/rpcs";
 
 IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);

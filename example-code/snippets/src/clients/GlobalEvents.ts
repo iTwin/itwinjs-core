@@ -70,7 +70,7 @@ async () => {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ GlobalEventHandler.createListener.create.example-code
-  const deleteCallback = await imodelHubClient.GlobalEvents()
+  const deleteCallback = await imodelHubClient.GlobalEvents() // tslint:disable-line:await-promise
     .createListener(alctx, authenticate, subscription.wsgId, processGlobalEvent);
   // __PUBLISH_EXTRACT_END__
 

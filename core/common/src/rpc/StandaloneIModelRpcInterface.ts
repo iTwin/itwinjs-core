@@ -23,6 +23,6 @@ export abstract class StandaloneIModelRpcInterface extends RpcInterface {
   /** Returns the StandaloneIModelRpcInterface client instance for the frontend. */
   public static getClient(): StandaloneIModelRpcInterface { return RpcManager.getClientForInterface(StandaloneIModelRpcInterface); }
 
-  public openStandalone(_fileName: string, _openMode: OpenMode): Promise<IModel> { return this.forward.apply(this, arguments); }
-  public closeStandalone(_iModelToken: IModelToken): Promise<boolean> { return this.forward.apply(this, arguments); }
+  public async openStandalone(_fileName: string, _openMode: OpenMode): Promise<IModel> { return this.forward.apply(this, arguments); }
+  public async closeStandalone(_iModelToken: IModelToken): Promise<boolean> { return this.forward.apply(this, arguments); }
 }

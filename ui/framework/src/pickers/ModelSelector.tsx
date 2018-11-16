@@ -5,7 +5,8 @@
 /** @module Picker */
 
 import * as React from "react";
-import * as classnames from "classnames";
+import * as _ from "lodash";
+import classnames from "classnames";
 import { ListItem, ListItemType } from "./ListPicker";
 import { IModelApp, Viewport, ViewState, SpatialViewState, SpatialModelState, SelectedViewportChangedArgs, IModelConnection } from "@bentley/imodeljs-frontend";
 import { ModelQueryParams, ModelProps } from "@bentley/imodeljs-common";
@@ -13,14 +14,13 @@ import { UiFramework } from "../UiFramework";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { WidgetControl } from "../configurableui/WidgetControl";
-import {
-  CheckListBox,
-  CheckListBoxItem,
-  SearchBox,
-  Popup,
-  Position,
-} from "@bentley/ui-core";
+import { Tree, FilteringInput, TreeNodeItem, PageOptions, DelayLoadedTreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
 import "./ModelSelector.scss";
+import { PresentationTreeDataProvider, withUnifiedSelection, withFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components/lib/tree";
+import { Presentation } from "@bentley/presentation-frontend";
+import { RegisteredRuleset, NodeKey, NodePathElement } from "@bentley/presentation-common";
+import { CheckBoxState } from "@bentley/ui-core";
+import { BeEvent } from "@bentley/bentleyjs-core";
 
 /** Model Group used by [[ModelSelectorWidget]] */
 export interface ModelGroup {
@@ -34,7 +34,7 @@ export interface ModelGroup {
 
 /** Properties for the [[ModelSelectorWidget]] component */
 export interface ModelSelectorWidgetProps {
-  imodel?: IModelConnection;
+  imodel: IModelConnection;
   allViewports?: boolean;
 }
 
@@ -43,6 +43,59 @@ export interface ModelSelectorWidgetState {
   expand: boolean;
   activeGroup: ModelGroup;
   showOptions: boolean;
+  treeInfo?: {
+    ruleset: RegisteredRuleset;
+    dataProvider: ModelSelectorDataProvider;
+    filter?: string;
+    prevProps?: any;
+    filtering?: boolean;
+    activeHighlightedIndex?: number;
+    highlightedCount?: number;
+  };
+}
+
+class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
+  private _baseProvider: PresentationTreeDataProvider;
+
+  constructor(imodel: IModelConnection, rulesetId: string) {
+    this._baseProvider = new PresentationTreeDataProvider(imodel, rulesetId);
+  }
+
+  /** Id of the ruleset used by this data provider */
+  public get rulesetId(): string { return this._baseProvider.rulesetId; }
+
+  /** [[IModelConnection]] used by this data provider */
+  public get connection(): IModelConnection { return this._baseProvider.connection; }
+
+  public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
+
+  /**
+   * Returns a [[NodeKey]] from given [[TreeNodeItem]].
+   * **Warning:** the `node` must be created by this data provider.
+   */
+  public getNodeKey(node: TreeNodeItem): NodeKey {
+    return this._baseProvider.getNodeKey(node);
+  }
+
+  /**
+   * Returns filtered node paths.
+   * @param filter Filter.
+   */
+  public getFilteredNodePaths = async (filter: string): Promise<NodePathElement[]> => {
+    return this._baseProvider.getFilteredNodePaths(filter);
+  }
+
+  public getNodesCount = _.memoize(async (parentNode?: TreeNodeItem): Promise<number> => {
+    return this._baseProvider.getNodesCount(parentNode);
+  });
+
+  public getNodes = _.memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> => {
+    const nodes = await this._baseProvider.getNodes(parentNode, pageOptions);
+    nodes.forEach((n) => {
+      n.checkBoxState = CheckBoxState.On;
+    });
+    return nodes;
+  });
 }
 
 /** Model Selector [[WidgetControl]] */
@@ -51,8 +104,7 @@ export class ModelSelectorWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    const thing = options.iModel;
-    this.reactElement = <ModelSelectorWidget imodel={thing} />;
+    this.reactElement = <ModelSelectorWidget imodel={options.iModelConnection} />;
   }
 }
 
@@ -60,6 +112,9 @@ export class ModelSelectorWidgetControl extends WidgetControl {
 export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProps, ModelSelectorWidgetState> {
   private _removeSelectedViewportChanged?: () => void;
   private _groups: ModelGroup[] = [];
+  private _isMounted = false;
+  private _modelRuleset?: RegisteredRuleset;
+  private _categoryRuleset?: RegisteredRuleset;
 
   /** Creates a ModelSelectorWidget */
   constructor(props: ModelSelectorWidgetProps) {
@@ -72,12 +127,44 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
   /** Adds listeners */
   public componentDidMount() {
-    if (IModelApp.viewManager)
-      this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
+    this._isMounted = true;
+
+    this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
+
+    Presentation.presentation.rulesets().add(require("../../rulesets/Models"))
+      .then((ruleset: RegisteredRuleset) => {
+        if (!this._isMounted)
+          return;
+        this._modelRuleset = ruleset;
+        this.setState({
+          treeInfo: {
+            ruleset,
+            dataProvider: new ModelSelectorDataProvider(this.props.imodel, ruleset.id),
+            filter: "",
+            filtering: false,
+            prevProps: this.props,
+            activeHighlightedIndex: 0,
+            highlightedCount: 0,
+          },
+          expand: true,
+        });
+      });
+
+    Presentation.presentation.rulesets().add(require("../../rulesets/Categories"))
+      .then((ruleset: RegisteredRuleset) => {
+        if (!this._isMounted)
+          return;
+        this._categoryRuleset = ruleset;
+      });
   }
 
   /** Removes listeners */
   public componentWillUnmount() {
+    this._isMounted = false;
+
+    if (this.state.treeInfo)
+      Presentation.presentation.rulesets().remove(this.state.treeInfo.ruleset);
+
     if (this._removeSelectedViewportChanged)
       this._removeSelectedViewportChanged();
   }
@@ -110,38 +197,42 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     }
   }
 
-  private _handleSearchValueChanged = (value: string): void => {
-    alert("search " + value); alert("search " + value);
-  }
-
   /** expand the selected group */
   private _onExpand = (group: ModelGroup) => {
-    this.setState({ activeGroup: group, expand: true });
-  }
+    if (!this._modelRuleset || !this._categoryRuleset)
+      return;
 
-  /** collapse widget */
-  private _onCollapse = () => {
-    this.setState({ expand: false });
-  }
+    let activeRuleset;
 
-  private _onShowOptions = (show: boolean) => {
-    this.setState({ showOptions: show });
-  }
+    if (group.label === UiFramework.i18n.translate("UiFramework:categoriesModels.models"))
+      activeRuleset = this._modelRuleset;
+    else if (group.label === UiFramework.i18n.translate("UiFramework:categoriesModels.categories"))
+      activeRuleset = this._categoryRuleset;
+    else
+      activeRuleset = this._modelRuleset;
 
-  /** enable or disable a single item */
-  private _onCheckboxClick = (item: ListItem) => {
-    item.enabled = !item.enabled;
-    this.state.activeGroup.setEnabled(item, item.enabled);
-    this.setState({ activeGroup: this.state.activeGroup });
+    this.setState({
+      treeInfo: {
+        ruleset: activeRuleset,
+        dataProvider: new ModelSelectorDataProvider(this.props.imodel, activeRuleset.id),
+        filter: this.state.treeInfo ? this.state.treeInfo.filter : "",
+        filtering: this.state.treeInfo ? this.state.treeInfo.filtering : false,
+        activeHighlightedIndex: this.state.treeInfo ? this.state.treeInfo.activeHighlightedIndex : 0,
+        highlightedCount: this.state.treeInfo ? this.state.treeInfo.highlightedCount : 0,
+      },
+      activeGroup: group,
+      expand: true,
+    });
   }
 
   /** enable or disable all items */
-  private _onSetEnableAll = (enable: boolean) => {
+  private _onSetEnableAll = async (enable: boolean) => {
     for (const item of this.state.activeGroup.items) {
       this.state.activeGroup.setEnabled(item, enable);
     }
 
     this.state.activeGroup.updateState();
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent();
   }
 
   private async _updateModelsWithViewport(vp: Viewport) {
@@ -270,52 +361,185 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
   }
 
+  // tslint:disable-next-line:naming-convention
+  private onFilterApplied = (_filter?: string): void => {
+    if (this.state.treeInfo && this.state.treeInfo.filtering)
+      this.setState({
+        treeInfo: {
+          ...this.state.treeInfo,
+          filtering: false,
+        },
+      });
+  }
+  private _onFilterStart = (filter: string) => {
+    if (!this.state.treeInfo)
+      return;
+
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo,
+        filter,
+        filtering: true,
+      },
+    });
+  }
+
+  private _onFilterCancel = () => {
+    if (!this.state.treeInfo)
+      return;
+
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo,
+        filter: "",
+        filtering: false,
+      },
+    });
+  }
+
+  private _onFilterClear = () => {
+    if (!this.state.treeInfo)
+      return;
+
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo,
+        filter: "",
+        filtering: false,
+      },
+    });
+  }
+
+  private _onHighlightedCounted = (count: number) => {
+    if (this.state.treeInfo && count !== this.state.treeInfo.highlightedCount)
+      this.setState({
+        treeInfo: {
+          ...this.state.treeInfo,
+          highlightedCount: count,
+        },
+      });
+  }
+
+  private _onFilteringInputSelectedChanged = (index: number) => {
+    if (!this.state.treeInfo)
+      return;
+
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo,
+        activeHighlightedIndex: index,
+      },
+    });
+  }
+
+  /** enable or disable a single item */
+  private _onCheckboxClick = (label: string) => {
+    const item = this._getItem(label);
+    item.enabled = !item.enabled;
+    this.state.activeGroup.setEnabled(item, item.enabled);
+    this.setState({ activeGroup: this.state.activeGroup });
+  }
+
+  private _isCheckboxChecked = (label: string) => {
+    const item = this._getItem(label);
+    if (item && item.enabled)
+      return true;
+    return false;
+  }
+
+  private _getItem = (label: string): ListItem => {
+    let items: ListItem[];
+    switch (this.state.activeGroup.id) {
+      case "Models":
+        items = this._groups[0].items;
+        break;
+      case "Categories":
+        items = this._groups[1].items;
+        break;
+      default:
+        items = this._groups[0].items;
+        break;
+    }
+
+    let selectedItem = items[0];
+    items.forEach((item) => {
+      if (label === item.name) {
+        selectedItem = item;
+        return;
+      }
+    });
+
+    return selectedItem;
+  }
+
   /** @hidden */
   public render() {
-    const groupsClassName = classnames("widget-groups", this.state.expand && "hide");
     const listClassName = classnames("fw-modelselector", this.state.expand && "show");
-    return (
-      <div className="widget-picker">
-        <div className={groupsClassName}>
-          {this._groups.map((group: ModelGroup) => (
-            <div key={group.id} className="widget-picker-group" onClick={this._onExpand.bind(this, group)}>
-              {group.label}
-              <span className="group-count">{group.items.length}</span>
-              <span className="icon icon-chevron-right" />
-            </div>
-          ))}
-        </div>
-        <div className={listClassName}>
-          <div className="fw-modelselector-header" >
-            <div className="fw-modelselector-back" onClick={this._onCollapse}>
-              <span className="icon icon-chevron-left" />
-              <div className="ms-title">{this.state.activeGroup.label}</div>
-            </div>
-            <div className="options" >
-              <span className="icon icon-more-vertical-2" onClick={this._onShowOptions.bind(this, !this.state.showOptions)}></span>
-              <Popup isShown={this.state.showOptions} position={Position.BottomRight} onClose={this._onShowOptions.bind(this, false)}>
-                <ul>
-                  <li><span className="icon icon-visibility" />Manage...</li>
-                </ul>
-              </Popup>
-            </div>
+    const activeClassName = classnames(this.state.activeGroup.label && "active");
+
+    if (this.state.treeInfo)
+      return (
+        <div className="widget-picker">
+          <div>
+            <ul className="category-model-horizontal-tabs">
+              {
+                this._groups.map((group: any) =>
+                  (
+                    <li
+                      className={group.label === this.state.activeGroup.label ? activeClassName : ""}
+                      onClick={this._onExpand.bind(this, group)}>
+                      <a>{group.label}</a>
+                    </li>
+                  ))
+              }
+            </ul>
           </div>
-          <div className="modelselector-toolbar">
-            <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.all")} onClick={this._onSetEnableAll.bind(this, true)} />
-            <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.none")} onClick={this._onSetEnableAll.bind(this, false)} />
-            <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.invert")} />
-            <SearchBox placeholder="search..." onValueChanged={this._handleSearchValueChanged} />
+          <div className={listClassName}>
+            <div className="modelselector-toolbar">
+              <FilteringInput
+                filteringInProgress={this.state.treeInfo.filtering ? this.state.treeInfo.filtering : false}
+                onFilterCancel={this._onFilterCancel}
+                onFilterClear={this._onFilterClear}
+                onFilterStart={this._onFilterStart}
+                resultSelectorProps={{
+                  onSelectedChanged: this._onFilteringInputSelectedChanged,
+                  resultCount: this.state.treeInfo.highlightedCount ? this.state.treeInfo.highlightedCount : 0,
+                }}
+              />
+              <div className="modelselector-buttons">
+                <span className="icon icon-visibility" title={UiFramework.i18n.translate("UiFramework:pickerButtons.all")} onClick={this._onSetEnableAll.bind(this, true)} />
+                <span className="icon icon-visibility-hide" title={UiFramework.i18n.translate("UiFramework:pickerButtons.none")} onClick={this._onSetEnableAll.bind(this, false)} />
+                {/* <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.invert")} /> */}
+              </div>
+            </div>
+            <div>
+              {
+                (this.props.imodel && this.state.treeInfo.dataProvider) ?
+                  <CategoryModelTree
+                    dataProvider={this.state.treeInfo.dataProvider}
+                    filter={this.state.treeInfo.filter}
+                    onFilterApplied={this.onFilterApplied}
+                    onHighlightedCounted={this._onHighlightedCounted}
+                    activeHighlightedIndex={this.state.treeInfo.activeHighlightedIndex}
+                    checkboxEnabled={true}
+                    onCheckboxClick={this._onCheckboxClick}
+                    isChecked={this._isCheckboxChecked}
+                  /> :
+                  <div />
+              }
+            </div >
           </div>
-          <CheckListBox className="fw-modelselector-listbox">
-            {this.state.activeGroup.items.map((item: ListItem) => (
-              <CheckListBoxItem key={item.key} label={item.name} checked={item.enabled} onClick={this._onCheckboxClick.bind(this, item)} />
-            ))}
-          </CheckListBox>
-        </div>
-      </div>
-    );
+        </div >
+      );
+
+    // WIP: localize
+    return "Loading...";
   }
+
 }
+
+// tslint:disable-next-line:variable-name
+const CategoryModelTree = withFilteringSupport(withUnifiedSelection(Tree));
 
 export default ModelSelectorWidget;
 

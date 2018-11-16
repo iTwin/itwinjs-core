@@ -665,7 +665,7 @@ export class Table extends React.Component<TableProps, TableState> {
     const promises = new Array<Promise<RowProps>>();
     for (let i = beginIndex; i < endIndex; ++i) {
       promises.push(
-        this.props.dataProvider.getRow(i).then((rowData) =>
+        this.props.dataProvider.getRow(i).then(async (rowData) =>
           this.createPropsForRowItem(rowData, i).then((rowProps) => (rowProps)),
         ));
     }

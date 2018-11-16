@@ -137,7 +137,7 @@ export class AnalysisImporter {
 
         /** Create a radial wave - start and return to zero  */
         for (let i = 0; i < polyface.data.point.length; i++) {
-            const angle = Angle.pi2Radians * polyface.data.point.distanceIndexToPoint(i, center) / radius;
+            const angle = Angle.pi2Radians * polyface.data.point.distanceIndexToPoint(i, center)! / radius;
             const height = maxHeight * Math.sin(angle);
             const slope = Math.abs(Math.cos(angle));
 

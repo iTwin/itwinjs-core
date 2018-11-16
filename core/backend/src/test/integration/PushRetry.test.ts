@@ -26,7 +26,7 @@ describe("PushRetry", () => {
   let testIModel: IModelDb;
   const testPushUtility: TestPushUtility = new TestPushUtility();
   const iModelName = "PushRetryTest";
-  const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   const actx = new ActivityLoggingContext("");
 
   before(async () => {

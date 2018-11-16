@@ -49,7 +49,7 @@ import { BezierCurve3d } from "../bspline/BezierCurve3d";
 
 export namespace IModelJson {
 
-  export interface GeometryProps extends CurvePrimitiveProps, SolidPrimitiveProps {
+  export interface GeometryProps extends CurvePrimitiveProps, SolidPrimitiveProps, CurveCollectionProps {
     indexedMesh?: IndexedMeshProps;
     point?: XYZProps;
     bsurf?: BSplineSurfaceProps;
