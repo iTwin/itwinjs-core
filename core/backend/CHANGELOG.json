@@ -2,6 +2,36 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.167.0",
+      "tag": "@bentley/imodeljs-backend_v0.167.0",
+      "date": "Fri, 16 Nov 2018 21:45:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add IModelDb.CodeSpecs.insert overload"
+          },
+          {
+            "comment": "Add SubCategory.insert"
+          },
+          {
+            "comment": "Add missing createCode methods"
+          },
+          {
+            "comment": "Changes to debug utilities. "
+          },
+          {
+            "comment": "Added IModelHubClient.IModel, removed IModelQuery.primary(), use IModelHubClient.IModel.Get instead"
+          },
+          {
+            "comment": "Add IModelDb.Views.setDefaultViewId"
+          },
+          {
+            "comment": "Add OrthographicViewDefinition.insert"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.166.0",
       "tag": "@bentley/imodeljs-backend_v0.166.0",
       "date": "Mon, 12 Nov 2018 16:42:10 GMT",

@@ -1,6 +1,19 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 12 Nov 2018 16:42:10 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Nov 2018 21:45:44 GMT and should not be manually modified.
+
+## 0.167.0
+Fri, 16 Nov 2018 21:45:44 GMT
+
+### Updates
+
+- Add IModelDb.CodeSpecs.insert overload
+- Add SubCategory.insert
+- Add missing createCode methods
+- Changes to debug utilities. 
+- Added IModelHubClient.IModel, removed IModelQuery.primary(), use IModelHubClient.IModel.Get instead
+- Add IModelDb.Views.setDefaultViewId
+- Add OrthographicViewDefinition.insert
 
 ## 0.166.0
 Mon, 12 Nov 2018 16:42:10 GMT

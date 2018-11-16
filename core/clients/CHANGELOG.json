@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.167.0",
+      "tag": "@bentley/imodeljs-clients_v0.167.0",
+      "date": "Fri, 16 Nov 2018 21:45:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updated iModel Hub Client so iModel Base Handler is injectable. Now Http Request Options can be sepecified for the iModelHubClient"
+          },
+          {
+            "comment": "Added IModelHubClient.IModel, removed IModelQuery.primary(), use IModelHubClient.IModel.Get instead"
+          },
+          {
+            "comment": "Simplified download stream"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.166.0",
       "tag": "@bentley/imodeljs-clients_v0.166.0",
       "date": "Mon, 12 Nov 2018 16:42:10 GMT",

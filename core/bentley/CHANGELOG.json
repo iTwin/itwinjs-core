@@ -2,6 +2,21 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "0.167.0",
+      "tag": "@bentley/bentleyjs-core_v0.167.0",
+      "date": "Fri, 16 Nov 2018 21:45:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "changes to debug utilities. "
+          },
+          {
+            "comment": "Fluentd Bunnyan Logger added"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.166.0",
       "tag": "@bentley/bentleyjs-core_v0.166.0",
       "date": "Mon, 12 Nov 2018 16:42:10 GMT",

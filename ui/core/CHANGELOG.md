@@ -1,6 +1,15 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Mon, 12 Nov 2018 16:42:10 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Nov 2018 21:45:44 GMT and should not be manually modified.
+
+## 0.167.0
+Fri, 16 Nov 2018 21:45:44 GMT
+
+### Updates
+
+- Fixed some content control sizing issues
+- Fixed Dialog movable prop and ContextMenu autoFlip.
+- ui-framework unit tests & docs
 
 ## 0.166.0
 Mon, 12 Nov 2018 16:42:10 GMT

@@ -2,6 +2,24 @@
   "name": "@bentley/build-tools",
   "entries": [
     {
+      "version": "0.167.0",
+      "tag": "@bentley/build-tools_v0.167.0",
+      "date": "Fri, 16 Nov 2018 21:45:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Turn on tslint await-promise rule"
+          },
+          {
+            "comment": "Turn on tslint promise-function-async rule"
+          },
+          {
+            "comment": "Turn on tslint no-return-await rule"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.166.0",
       "tag": "@bentley/build-tools_v0.166.0",
       "date": "Mon, 12 Nov 2018 16:42:10 GMT",
