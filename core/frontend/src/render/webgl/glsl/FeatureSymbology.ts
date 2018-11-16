@@ -441,7 +441,7 @@ const checkForEarlySurfaceDiscardWithElemID = `
 
   // Convert depthTolerance from eye space to linear depth
   depthTolerance /= (u_frustum.y - u_frustum.x);
-  
+
   float surfaceDepth = computeLinearDepth(v_eyeSpace.z);
   float depthDelta = abs(depthAndOrder.y - surfaceDepth);
   bool withinDepthTolerance = depthDelta <= depthTolerance;
