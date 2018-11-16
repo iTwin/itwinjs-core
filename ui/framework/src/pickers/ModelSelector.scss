@@ -24,12 +24,6 @@
   }
 }
 
-.nz-tree-tree .nz-tree-node {
-  @include bwc-text( leading );
-  padding: 5px;
-  background-color: $background-1;
-}
-
 .widget-picker {
   background-color: $background-1;
   margin: 0 5px;
@@ -99,6 +93,12 @@
     transform: translateX(100%);
     transition: .2s linear;
     background-color: $background-2;
+
+    .nz-tree-tree .nz-tree-node {
+      @include bwc-text( leading );
+      padding: 5px;
+      background-color: $background-1;
+    }
 
     &.show {
       opacity: 1;

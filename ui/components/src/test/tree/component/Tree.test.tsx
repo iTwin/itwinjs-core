@@ -11,7 +11,7 @@ import { waitForUpdate } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 import {
   Tree, TreeProps,
-  NodesSelectedCallback, NodesDeselectedCallback, TreeNodeProps,
+  NodesSelectedCallback, NodesDeselectedCallback, TreeNodeProps, TreeCellUpdatedArgs,
 } from "../../../tree/component/Tree";
 import { SelectionMode } from "../../../common";
 import { TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "../../..";
@@ -54,7 +54,7 @@ describe("Tree", () => {
     return async (parent?: TreeNodeItem) => {
       if (!parent)
         return [
-          { id: "0", label: "0", hasChildren: true, autoExpand: isExpanded("0") },
+          { id: "0", label: "0", hasChildren: true, autoExpand: isExpanded("0"), isEditable: true },
           { id: "1", label: "1", hasChildren: true, autoExpand: isExpanded("1") },
         ];
       return [
@@ -127,7 +127,7 @@ describe("Tree", () => {
         expect(getSelectedNodes().length).to.eq(2);
 
         // select node 0
-        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy, 2);
 
         // verify node 0 replaced multi-selection
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
@@ -850,4 +850,108 @@ describe("Tree", () => {
     expect(spy.calledWith(rootNode, [childNode])).to.be.true;
   });
 
+  describe("cell editing", () => {
+
+    const getSelectedNodes = (): Array<HTMLElement & { label: string }> => {
+      return renderedTree.getAllByTestId(Tree.TestId.Node as any)
+        .filter((node) => node.classList.contains("is-selected"))
+        .map((node) => Object.assign(node, { label: within(node).getByTestId(Tree.TestId.NodeContents).innerHTML }));
+    };
+
+    let defaultSelectionProps: TreeProps;
+    const onCellEditingSpy = sinon.spy();
+    const onCellUpdatedSpy = sinon.spy();
+
+    const handleCellUpdated = async (_args: TreeCellUpdatedArgs): Promise<boolean> => {
+      onCellUpdatedSpy();
+      return true;
+    };
+
+    beforeEach(async () => {
+      onCellEditingSpy.resetHistory();
+      onCellUpdatedSpy.resetHistory();
+
+      defaultSelectionProps = {
+        ...defaultProps,
+        dataProvider: createDataProvider(),
+        onCellEditing: onCellEditingSpy,
+        onCellUpdated: handleCellUpdated,
+        ignoreEditorBlur: true,
+      };
+    });
+
+    describe("with Single selection mode", () => {
+
+      beforeEach(async () => {
+        await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps} selectionMode={SelectionMode.Single} />), renderSpy, 2);
+      });
+
+      it("activates the editor when clicking a selected mode", async () => {
+        // select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+        // click node 0 again
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+
+        // verify
+        expect(getSelectedNodes().length).to.eq(1);
+        expect(onCellEditingSpy.calledOnce).to.be.true;
+      });
+
+      it("does not activate the editor when isEditable is false", async () => {
+        // select node 1
+        await waitForUpdate(() => fireEvent.click(getNode("1").contentArea), renderSpy);
+        // click node 1 again
+        await waitForUpdate(() => fireEvent.click(getNode("1").contentArea), renderSpy);
+
+        // verify
+        expect(getSelectedNodes().length).to.eq(1);
+        expect(onCellEditingSpy.called).to.be.false;
+      });
+
+      it("commits the change on Enter", async () => {
+        // select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+        // click node 0 again
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+
+        // verify
+        expect(onCellEditingSpy.calledOnce).to.be.true;
+
+        // Get editor input element & press Enter
+        const inputNode = renderedTree.queryByTestId("components-text-editor");
+        expect(inputNode).to.exist;
+
+        if (inputNode) {
+          await waitForUpdate(() => fireEvent.keyDown(inputNode, { key: "Enter" }), renderSpy);
+          expect(onCellUpdatedSpy.calledOnce).to.be.true;
+          const inputNode2 = renderedTree.queryByTestId("components-text-editor");
+          expect(inputNode2).to.not.exist;
+        }
+
+      });
+
+      it("cancels the change on Escape", async () => {
+        // select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+        // click node 0 again
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+
+        // verify
+        expect(onCellEditingSpy.calledOnce).to.be.true;
+
+        // Get editor input element & press Enter
+        const inputNode = renderedTree.queryByTestId("components-text-editor");
+        expect(inputNode).to.exist;
+
+        if (inputNode) {
+          await waitForUpdate(() => fireEvent.keyDown(inputNode, { key: "Escape" }), renderSpy);
+          expect(onCellUpdatedSpy.called).to.be.false;
+          const inputNode2 = renderedTree.queryByTestId("components-text-editor");
+          expect(inputNode2).to.not.exist;
+        }
+
+      });
+
+    });
+  });
 });

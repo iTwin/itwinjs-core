@@ -23,7 +23,10 @@ export interface EditorContainerProps {
   propertyRecord: PropertyRecord;
   title?: string;
   onCommit: (commit: PropertyUpdatedArgs) => void;
-  onCommitCancel: () => void;
+  onCancel: () => void;
+
+  /** @hidden */
+  ignoreEditorBlur?: boolean;
 }
 
 /**
@@ -43,7 +46,7 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
 
     const editorProps = {
       ref: editorRef,
-      onBlur: this._commit,
+      onBlur: this._handleEditorBlur,
       value: this.props.propertyRecord,
     };
 
@@ -66,7 +69,12 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
     return null;
   }
 
-  private _handleBlur = (e: React.FocusEvent) => {
+  private _handleEditorBlur = (_e: React.FocusEvent) => {
+    if (!this.props.ignoreEditorBlur)
+      this._commit();
+  }
+
+  private _handleContainerBlur = (e: React.FocusEvent) => {
     e.stopPropagation();
   }
 
@@ -105,12 +113,12 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
     }
   }
 
-  private onPressEnter(e: React.KeyboardEvent): void {
-    this._commit({ key: e.key });
+  private onPressEnter(_e: React.KeyboardEvent): void {
+    this._commit();
   }
 
-  private onPressTab(e: React.KeyboardEvent): void {
-    this._commit({ key: e.key });
+  private onPressTab(_e: React.KeyboardEvent): void {
+    this._commit();
   }
 
   private editorIsSelectOpen(): boolean {
@@ -142,7 +150,7 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
     return true;
   }
 
-  private _commit = (_args: { key: string }) => {
+  private _commit = () => {
     const newValue = this.getEditor().getValue();
     if (this.isNewValueValid(newValue)) {
       this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue });
@@ -150,7 +158,7 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
   }
 
   private _commitCancel = () => {
-    this.props.onCommitCancel();
+    this.props.onCancel();
   }
 
   public componentDidMount() {
@@ -169,7 +177,7 @@ export class EditorContainer extends React.Component<EditorContainerProps> {
   public render() {
     return (
       <span className="components-editor-container"
-        onBlur={this._handleBlur}
+        onBlur={this._handleContainerBlur}
         onKeyDown={this._handleKeyDown}
         onClick={this._handleClick}
         onContextMenu={this._handleRightClick}

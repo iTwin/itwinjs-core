@@ -777,7 +777,7 @@ export class Table extends React.Component<TableProps, TableState> {
         </div>;
       } else {
         if (editorCell && cellProps.item.record)
-          cells[column.key] = <EditorContainer propertyRecord={cellProps.item.record} title={cellProps.displayValue} onCommit={this._onCellCommit} onCommitCancel={this._deactivateCellEditor} />;
+          cells[column.key] = <EditorContainer propertyRecord={cellProps.item.record} title={cellProps.displayValue} onCommit={this._onCellCommit} onCancel={this._deactivateCellEditor} />;
         else
           cells[column.key] = <div className={"cell"} title={cellProps.displayValue}>{cell}</div>;
       }

@@ -88,6 +88,7 @@ export class TextEditor extends React.Component<TextEditorProps, TextEditorState
         className={className}
         defaultValue={this.state.inputValue}
         onChange={this._updateInputValue}
+        data-testid="components-text-editor"
       />
     );
   }
