@@ -62,15 +62,13 @@ export function addNormalMatrixF(frag: FragmentShaderBuilder) {
 */
 
 const reverseWhiteOnWhite = `
-  if (u_reverseWhiteOnWhite > 0.5) {
-    // Account for erroneous interpolation from varying vec3(1.0)...
-    const vec3 white = vec3(1.0);
-    const vec3 epsilon = vec3(0.0001);
-    vec3 color = baseColor.rgb / max(0.0001, baseColor.a); // revert premultiplied alpha
-    vec3 delta = (color + epsilon) - white;
-    baseColor.rgb *= vec3(float(delta.x <= 0.0 || delta.y <= 0.0 || delta.z <= 0.0)); // set to black if almost white
-  }
-  return baseColor;
+  const vec3 white = vec3(1.0);
+  const vec3 epsilon = vec3(0.0001);
+  vec3 color = baseColor.rgb / max(0.0001, baseColor.a); // revert premultiplied alpha
+  vec3 delta = (color + epsilon) - white;
+  vec4 wowColor = vec4(baseColor.rgb * vec3(float(delta.x <= 0.0 || delta.y <= 0.0 || delta.z <= 0.0)), baseColor.a); // set to black if almost white
+  wowColor.rgb *= wowColor.a; // reapply premultiplied alpha
+  return mix(baseColor, wowColor, floor(u_reverseWhiteOnWhite + 0.5));
 `;
 
 const computePickBufferOutputs = `

@@ -400,26 +400,27 @@ vec2 readDepthAndOrder(vec2 tc) {
 }
 `;
 
+// ####TODO vertex shader already tests transparency threshold...native renderer tests here as well?
 const checkForEarlySurfaceDiscard = `
-  if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Background)
-    return false;
+  float factor = float(u_renderPass <= kRenderPass_Translucent); // never discard during specific passes
+  float term = 0.0; // float(isBelowTransparencyThreshold()); // else always discard if alpha < transparency threshold
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
   vec2 depthAndOrder = readDepthAndOrder(tc);
   float surfaceDepth = computeLinearDepth(v_eyeSpace.z);
-  return depthAndOrder.x > u_renderOrder && abs(depthAndOrder.y - surfaceDepth) < 4.0e-5;
+  term += float(depthAndOrder.x > u_renderOrder && abs(depthAndOrder.y - surfaceDepth) < 4.0e-5);
+  return factor * term > 0.0;
 `;
 
+// ####TODO vertex shader already tests transparency threshold...native renderer tests here as well?
 const checkForEarlySurfaceDiscardWithElemID = `
-  if (u_renderPass > kRenderPass_Translucent || u_renderPass <= kRenderPass_Background)
-    return false;
-  else if (!isSurfaceBitSet(kSurfaceBit_HasNormals))
-    return false; // no normal == never-lit geometry == never rendered with edges == don't have to test further
+  // No normals => unlt => reality model => no edges.
+  bool neverDiscard = u_renderPass > kRenderPass_Translucent || !isSurfaceBitSet(kSurfaceBit_HasNormals);
+  bool alwaysDiscard = false; // !neverDiscard && isBelowTransparencyThreshold();
 
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
   vec2 depthAndOrder = readDepthAndOrder(tc);
-  if (depthAndOrder.x <= u_renderOrder)
-    return false; // just do normal z-testing.
+  bool discardByOrder = depthAndOrder.x > u_renderOrder;
 
   // Calculate depthTolerance for letting edges show through their own surfaces
   float perspectiveFrustum = step(kFrustumType_Perspective, u_frustum.z);
@@ -432,7 +433,8 @@ const checkForEarlySurfaceDiscardWithElemID = `
   float dSq = dot(eyeDir, v_n);
   dSq *= 0.5 + 0.4 * (1.0 - isSilhouette);
   dSq = dSq * dSq;
-  dSq = clamp(dSq, 0.0001, 0.999);
+  dSq = max(dSq, 0.0001);
+  dSq = min(dSq, 0.999);
 
   float depthTolerance = dtWidthFactor * v_lineWeight * sqrt((1.0 - dSq) / dSq);
   depthTolerance *= 1.0 + .333 * isSilhouette;
@@ -442,11 +444,10 @@ const checkForEarlySurfaceDiscardWithElemID = `
 
   // Convert depthTolerance from eye space to linear depth
   depthTolerance /= (u_frustum.y - u_frustum.x);
-
+  
   float surfaceDepth = computeLinearDepth(v_eyeSpace.z);
   float depthDelta = abs(depthAndOrder.y - surfaceDepth);
-  if (depthDelta > depthTolerance)
-    return false; // don't discard and let normal z-testing happen
+  bool withinDepthTolerance = depthDelta <= depthTolerance;
 
   // Does pick buffer contain same element?
   vec4 elemId0 = TEXTURE(u_pickElementId0, tc);
@@ -455,19 +456,14 @@ const checkForEarlySurfaceDiscardWithElemID = `
   ivec4 elemId0_i = ivec4(elemId0 * 255.0 + 0.5);
   ivec4 v_element_id0_i = ivec4(v_element_id0 * 255.0 + 0.5);
   bool isSameElement = elemId0_i == v_element_id0_i;
-  if (isSameElement) {
-    vec4 elemId1 = TEXTURE(u_pickElementId1, tc);
-    ivec4 elemId1_i = ivec4(elemId1 * 255.0 + 0.5);
-    ivec4 v_element_id1_i = ivec4(v_element_id1 * 255.0 + 0.5);
-    isSameElement = elemId1_i == v_element_id1_i;
-  }
-  if (!isSameElement) {
-    // If what was in the pick buffer is a planar line/edge/silhouette then we've already tested the depth so return true to discard.
-    // If it was a planar surface then use a tighter and constant tolerance to see if we want to let it show through since we're only fighting roundoff error.
-    return (depthAndOrder.x > kRenderOrder_PlanarSurface) || ((depthAndOrder.x == kRenderOrder_PlanarSurface) && (depthDelta <= 4.0e-5));
-  }
+  vec4 elemId1 = TEXTURE(u_pickElementId1, tc);
+  ivec4 elemId1_i = ivec4(elemId1 * 255.0 + 0.5);
+  ivec4 v_element_id1_i = ivec4(v_element_id1 * 255.0 + 0.5);
+  isSameElement = elemId1_i == v_element_id1_i;
 
-  return true; // discard surface in favor of pick buffer contents.
+  // If what was in the pick buffer is a planar line/edge/silhouette then we've already tested the depth so return true to discard.
+  // If it was a planar surface then use a tighter and constant tolerance to see if we want to let it show through since we're only fighting roundoff error.
+  return alwaysDiscard || (!neverDiscard && discardByOrder && withinDepthTolerance && (isSameElement || ((depthAndOrder.x > kRenderOrder_PlanarSurface) || ((depthAndOrder.x == kRenderOrder_PlanarSurface) && (depthDelta <= 4.0e-5)))));
 `;
 
 function addEdgeWidth(builder: ShaderBuilder) {
