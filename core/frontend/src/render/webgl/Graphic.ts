@@ -436,6 +436,7 @@ export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
   public readonly featureTable: PackedFeatureTable;
   public readonly range: ElementAlignedBox3d;
+  public batchId: number = 0; // Transient ID assigned while rendering a frame, reset afterward.
   private _pickTable?: PickTable;
   private _overrides: FeatureOverrides[] = [];
 
