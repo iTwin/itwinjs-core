@@ -28,6 +28,19 @@ describe.skip("DebugHubIssues (#integration)", () => {
     Logger.setLevel("Performance", LogLevel.Info);
   });
 
+  it.skip("should be able to validate change set operations", async () => {
+    const projectName = "iModelJsTest";
+    const iModelName = "ReadOnlyTest";
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
+
+    const link = `https://connect-imodelweb.bentley.com/imodeljs/?projectId=${myProjectId}&iModelId=${myIModelId}`;
+    console.log(`ProjectName: ${projectName}, iModelName: ${iModelName}, URL Link: ${link}`); // tslint:disable-line:no-console
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.validateAllChangeSetOperations(accessToken, myProjectId, myIModelId, iModelDir);
+  });
+
   it.skip("should be able to download the seed files, change sets, for UKRail_EWR2 (EWR_2E) model", async () => {
     const projectName = "UKRail_EWR2";
     const iModelName = "EWR_2E";

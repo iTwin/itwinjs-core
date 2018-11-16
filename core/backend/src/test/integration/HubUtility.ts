@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, HubUserInfo, IModelHubClient } from "@bentley/imodeljs-clients";
 import { HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType } from "@bentley/imodeljs-clients";
-import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
 
@@ -118,14 +118,21 @@ export class HubUtility {
     const query = new ChangeSetQuery();
     query.selectDownloadUrl();
 
+    let perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Get ChangeSet Infos");
     const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelId, query);
+    perfLogger.dispose();
     if (changeSets.length === 0)
       return new Array<ChangeSet>();
 
+    perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Download ChangeSets");
     await BriefcaseManager.imodelClient.ChangeSets().download(actx, changeSets, changeSetsPath);
+    perfLogger.dispose();
     return changeSets;
   }
 
+  /** Download an IModel's seed files and change sets from the Hub.
+   *  A standard hierarchy of folders is created below the supplied downloadDir
+   */
   public static async downloadIModelById(accessToken: AccessToken, projectId: string, iModelId: GuidString, downloadDir: string): Promise<void> {
     // Recreate the download folder if necessary
     if (IModelJsFs.existsSync(downloadDir))
@@ -143,7 +150,9 @@ export class HubUtility {
 
     // Download the seed file
     const seedPathname = path.join(downloadDir, "seed", iModel.name!.concat(".bim"));
+    const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
     await BriefcaseManager.imodelClient.IModels().download(actx, accessToken, iModelId, seedPathname);
+    perfLogger.dispose();
 
     // Download the change sets
     const changeSetDir = path.join(downloadDir, "changeSets//");
@@ -154,7 +163,9 @@ export class HubUtility {
     IModelJsFs.writeFileSync(changeSetsJsonPathname, changeSetsJsonStr);
   }
 
-  /** Download an IModel's seed files and change sets from the Hub */
+  /** Download an IModel's seed files and change sets from the Hub.
+   *  A standard hierarchy of folders is created below the supplied downloadDir
+   */
   public static async downloadIModelByName(accessToken: AccessToken, projectName: string, iModelName: string, downloadDir: string): Promise<void> {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
 
@@ -174,6 +185,47 @@ export class HubUtility {
     const iModelId: GuidString = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
 
     await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, iModelId);
+  }
+
+  /** Validate all change set operations by downloading seed files & change sets, creating a standalone iModel,
+   * merging the change sets, reversing them, and finally reinstating them. The method also logs the necessary performance
+   * metrics with these operations.
+   */
+  public static async validateAllChangeSetOperations(accessToken: AccessToken, projectId: string, iModelId: GuidString, iModelDir: string) {
+    Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
+    await HubUtility.downloadIModelById(accessToken, projectId, iModelId, iModelDir);
+
+    const seedPathname = HubUtility.getSeedPathname(iModelDir);
+    const iModelPathname = path.join(iModelDir, path.basename(seedPathname));
+
+    Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
+    HubUtility.createStandaloneIModel(iModelPathname, iModelDir);
+    const iModel: IModelDb = IModelDb.openStandalone(iModelPathname, OpenMode.ReadWrite);
+
+    const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
+
+    let status: ChangeSetStatus;
+
+    // Logger.logInfo(HubUtility.logCategory, "Dumping all available change sets");
+    // HubUtility.dumpStandaloneChangeSets(iModel, changeSets);
+
+    Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
+    status = HubUtility.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Merge);
+
+    if (status === ChangeSetStatus.Success) {
+      Logger.logInfo(HubUtility.logCategory, "Reversing all available change sets");
+      changeSets.reverse();
+      status = HubUtility.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Reverse);
+    }
+
+    if (status === ChangeSetStatus.Success) {
+      Logger.logInfo(HubUtility.logCategory, "Reinstating all available change sets");
+      changeSets.reverse();
+      status = HubUtility.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Reinstate);
+    }
+
+    iModel.closeStandalone();
+    assert(status === ChangeSetStatus.Success, "Error applying change sets");
   }
 
   public static getSeedPathname(iModelDir: string) {
@@ -202,7 +254,7 @@ export class HubUtility {
   }
 
   /** Upload an IModel's seed files and change sets to the hub
-   *  @hidden
+   * It's assumed that the uploadDir contains a standard hierarchy of seed files and change sets.
    */
   public static async pushIModelAndChangeSets(accessToken: AccessToken, projectName: string, uploadDir: string): Promise<GuidString> {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
@@ -300,6 +352,8 @@ export class HubUtility {
 
   /** Applies change sets one by one (for debugging) */
   public static applyStandaloneChangeSets(iModel: IModelDb, changeSets: ChangeSetToken[], applyOption: ChangeSetApplyOption): ChangeSetStatus {
+    const perfLogger = new PerfLogger(`Applying change sets for operation ${ChangeSetApplyOption[applyOption]}`);
+
     // Apply change sets one by one to debug any issues
     for (const changeSet of changeSets) {
       const tempChangeSets = [changeSet];
@@ -314,6 +368,7 @@ export class HubUtility {
         return status;
     }
 
+    perfLogger.dispose();
     return ChangeSetStatus.Success;
   }
 
