@@ -13,8 +13,11 @@ import { System, RenderType } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
 import { SurfaceGeometry } from "../Surface";
 
+const extractShaderBit = `
+  float extractShaderBit(float flag) { return extractNthBit(floor(u_shaderFlags + 0.5), flag); }
+`;
 const isShaderBitSet = `
-bool isShaderBitSet(float flag) { return 0.0 != extractNthBit(floor(u_shaderFlags + 0.5), flag); }
+bool isShaderBitSet(float flag) { return 0.0 != extractShaderBit(flag); }
 `;
 
 function addShaderFlagsLookup(shader: ShaderBuilder) {
@@ -24,6 +27,7 @@ function addShaderFlagsLookup(shader: ShaderBuilder) {
   shader.addConstant("kShaderBit_OITScaleOutput", VariableType.Float, "3.0");
 
   shader.addFunction(GLSLCommon.extractNthBit);
+  shader.addFunction(extractShaderBit);
   shader.addFunction(isShaderBitSet);
 }
 

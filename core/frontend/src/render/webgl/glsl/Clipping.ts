@@ -90,18 +90,14 @@ const applyClipPlanes = `
       if (plane.xyz == vec3(0.0)) // indicates start of new clip plane set
           {
           numPlaneSets = numPlaneSets + 1;
-          if (clippedByCurrentPlaneSet)
-              numSetsClippedBy = numSetsClippedBy + 1;
-
+          numSetsClippedBy += int(clippedByCurrentPlaneSet);
           clippedByCurrentPlaneSet = false;
           }
       else if (!clippedByCurrentPlaneSet && calcClipPlaneDist(v_eyeSpace, plane, u_viewMatrix) < 0.0)
           clippedByCurrentPlaneSet = true;
       }
 
-  if (clippedByCurrentPlaneSet)
-      numSetsClippedBy = numSetsClippedBy + 1;
-
+  numSetsClippedBy += int(clippedByCurrentPlaneSet);
   if (numSetsClippedBy == numPlaneSets)
       discard;
 `;

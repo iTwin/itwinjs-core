@@ -30,7 +30,6 @@ import { ShaderLights } from "./Lighting";
 import { Pixel } from "../System";
 import { ClipDef } from "./TechniqueFlags";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
-import { AttributeHandle } from "./Handle";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -368,7 +367,6 @@ export abstract class Target extends RenderTarget {
   public changeDecorations(decs: Decorations): void {
     this._decorations = dispose(this._decorations);
     this._decorations = decs;
-    AttributeHandle.disableAll();
   }
   public changeScene(scene: GraphicList, _activeVolume: ClipPlanesVolume | ClipMaskVolume) {
     this._scene = scene;
