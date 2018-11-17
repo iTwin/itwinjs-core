@@ -1,6 +1,11 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Fri, 16 Nov 2018 21:45:44 GMT and should not be manually modified.
+This log was last generated on Sat, 17 Nov 2018 14:20:11 GMT and should not be manually modified.
+
+## 0.168.0
+Sat, 17 Nov 2018 14:20:11 GMT
+
+*Version update only*
 
 ## 0.167.0
 Fri, 16 Nov 2018 21:45:44 GMT
