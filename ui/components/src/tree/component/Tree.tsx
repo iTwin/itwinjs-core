@@ -150,7 +150,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     this._tree.on(BeInspireTreeEvent.NodeCollapsed, this._onNodeCollapsed);
     this._tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
     this._tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
-    this._tree.ready.then(this._onModelReady);
+    this._tree.ready.then(this._onModelReady); // tslint:disable-line:no-floating-promises
   }
 
   public static getDerivedStateFromProps(props: TreeProps, state: TreeState): TreeState | null {
@@ -255,7 +255,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       }
       this.recreateTree();
       this.setState({ model: this._tree });
-      this._tree.ready.then(this._onModelReady);
+      this._tree.ready.then(this._onModelReady); // tslint:disable-line:no-floating-promises
     }
   }
 
@@ -320,7 +320,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   private _onTreeNodeChanged = (items?: TreeNodeItem[]) => {
-    using((this._tree.pauseRendering() as any), async () => {
+    using((this._tree.pauseRendering() as any), async () => { // tslint:disable-line:no-floating-promises
       // istanbul ignore else
       if (items) {
         for (const item of items) {

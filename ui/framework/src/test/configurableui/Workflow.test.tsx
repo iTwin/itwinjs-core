@@ -143,7 +143,7 @@ describe("Workflow & WorkflowManager", () => {
         expect(task1).to.not.be.undefined;
 
         if (task1) {
-          WorkflowManager.setActiveWorkflowAndTask(workflow, task1);
+          WorkflowManager.setActiveWorkflowAndTask(workflow, task1); // tslint:disable-line:no-floating-promises
           expect(workflow.isActive).to.be.true;
           expect(task1.isActive).to.be.true;
         }

@@ -31,7 +31,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
 
   public async close(accessToken: AccessToken, iModelToken: IModelToken): Promise<boolean> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
-    IModelDb.find(iModelToken).close(activityContext, AccessToken.fromJson(accessToken)!);
+    await IModelDb.find(iModelToken).close(activityContext, AccessToken.fromJson(accessToken)!);
     return Promise.resolve(true);
   }
 

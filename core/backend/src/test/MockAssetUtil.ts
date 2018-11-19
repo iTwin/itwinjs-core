@@ -140,8 +140,8 @@ export class MockAssetUtil {
     cacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/offlineCache/"));
     IModelHost.configuration!.briefcaseCacheDir = cacheDir;
 
-    MockAssetUtil.setupConnectClientMock(connectClientMock, assetDir);
-    MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
+    await MockAssetUtil.setupConnectClientMock(connectClientMock, assetDir);
+    await MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
 
     (BriefcaseManager as any)._defaultHubClient = iModelHubClientMock.object;
 

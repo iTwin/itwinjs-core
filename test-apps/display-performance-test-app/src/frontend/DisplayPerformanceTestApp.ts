@@ -566,5 +566,5 @@ window.onload = () => {
       RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test", OpenMode.Readonly));
   }
 
-  main();
+  main(); // tslint:disable-line:no-floating-promises
 };

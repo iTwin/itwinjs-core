@@ -397,7 +397,7 @@ export abstract class ViewState extends ElementState {
     if (display) {
       this.categorySelector.addCategories(categories);
       const categoryIds = Id64.toIdSet(categories);
-      this.subCategories.update(categoryIds, this.iModel).then(() => {
+      this.subCategories.update(categoryIds, this.iModel).then(() => { // tslint:disable-line:no-floating-promises
         this.setFeatureOverridesDirty();
         if (enableAllSubCategories) {
           for (const categoryId of categoryIds) {

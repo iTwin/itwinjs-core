@@ -137,7 +137,7 @@ describe("PushRetry", () => {
     const namedVersionSubscription = await BriefcaseManager.imodelClient.Events().Subscriptions().create(actx, accessToken, testIModelId, ["VersionEvent"]);
     const deleteNamedVersionListener = BriefcaseManager.imodelClient.Events().createListener(actx, async () => accessToken, namedVersionSubscription.wsgId, testIModelId, async (receivedEvent: NamedVersionCreatedEvent) => {
       actualVersionCount++;
-      extractChangeSummary(receivedEvent.changeSetId!);
+      extractChangeSummary(receivedEvent.changeSetId!); // tslint:disable-line:no-floating-promises
     });
 
     // Start pushing change sets and versions

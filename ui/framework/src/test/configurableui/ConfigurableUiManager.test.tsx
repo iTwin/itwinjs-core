@@ -43,7 +43,7 @@ describe("ConfigurableUiManager", () => {
   });
 
   it("findFrontstageDef passed no argument", () => {
-    FrontstageManager.setActiveFrontstageDef(undefined);
+    FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
     expect(ConfigurableUiManager.findFrontstageDef()).to.be.undefined;
   });
 
@@ -58,7 +58,7 @@ describe("ConfigurableUiManager", () => {
     ConfigurableUiManager.loadFrontstage(frontstageProps);
     const frontstageDef = ConfigurableUiManager.findFrontstageDef("TestFrontstage2");
     expect(frontstageDef).to.not.be.undefined;
-    FrontstageManager.setActiveFrontstageDef(frontstageDef);
+    FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
   });
 
   class TestWidget extends WidgetControl {

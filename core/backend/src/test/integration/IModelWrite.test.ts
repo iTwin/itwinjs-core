@@ -57,7 +57,7 @@ describe("IModelWriteTest (#integration)", () => {
 
   before(async () => {
     if (offline) {
-      MockAssetUtil.setupMockAssets(assetDir);
+      await MockAssetUtil.setupMockAssets(assetDir);
       testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
     } else {
       [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);

@@ -122,7 +122,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     this._initGroups();
     this.state = { expand: false, activeGroup: this._groups[0], showOptions: false };
-    this.updateState();
+    this.updateState(); // tslint:disable-line:no-floating-promises
   }
 
   /** Adds listeners */
@@ -131,7 +131,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
 
-    Presentation.presentation.rulesets().add(require("../../rulesets/Models"))
+    Presentation.presentation.rulesets().add(require("../../rulesets/Models")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
           return;
@@ -150,7 +150,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         });
       });
 
-    Presentation.presentation.rulesets().add(require("../../rulesets/Categories"))
+    Presentation.presentation.rulesets().add(require("../../rulesets/Categories")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
           return;
@@ -163,7 +163,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this._isMounted = false;
 
     if (this.state.treeInfo)
-      Presentation.presentation.rulesets().remove(this.state.treeInfo.ruleset);
+      Presentation.presentation.rulesets().remove(this.state.treeInfo.ruleset); // tslint:disable-line:no-floating-promises
 
     if (this._removeSelectedViewportChanged)
       this._removeSelectedViewportChanged();
@@ -193,7 +193,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
     if (args.current) {
       this._initGroups();
-      this.updateState();
+      this.updateState(); // tslint:disable-line:no-floating-promises
     }
   }
 
@@ -328,7 +328,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     } else if (IModelApp.viewManager.selectedView) {
       updateViewport(IModelApp.viewManager.selectedView);
     }
-    this._updateCategoriesWithViewport(IModelApp.viewManager.selectedView);
+    this._updateCategoriesWithViewport(IModelApp.viewManager.selectedView); // tslint:disable-line:no-floating-promises
   }
 
   /** Add models to current viewport */
@@ -338,7 +338,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     const vp = IModelApp.viewManager.getFirstOpenView();
     if (vp)
-      this._updateModelsWithViewport(vp);
+      this._updateModelsWithViewport(vp); // tslint:disable-line:no-floating-promises
   }
 
   /** Add categories to current viewport */
@@ -348,7 +348,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
-      this._updateCategoriesWithViewport(vp);
+      this._updateCategoriesWithViewport(vp); // tslint:disable-line:no-floating-promises
   }
 
   /** Update state for each group */

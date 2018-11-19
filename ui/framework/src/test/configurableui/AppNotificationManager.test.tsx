@@ -48,7 +48,7 @@ describe("AppNotificationManager", () => {
 
   it("openMessageBox", () => {
     const spyMethod = sinon.spy(MessageManager, "openMessageBox");
-    notifications.openMessageBox(MessageBoxType.OkCancel, "Message string", MessageBoxIconType.Information);
+    notifications.openMessageBox(MessageBoxType.OkCancel, "Message string", MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
     expect(spyMethod.calledOnce).to.be.true;
 
     expect(ModalDialogManager.modalDialogCount).to.eq(1);

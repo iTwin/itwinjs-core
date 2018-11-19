@@ -100,7 +100,7 @@ describe("RobotWorldRpc", () => {
     //  |                   V
     //  +-- -- -- -- -- -- --
     if (true) {
-      roWrite.moveRobot(iToken, robot1Id, barrier1.placement.origin);
+      await roWrite.moveRobot(iToken, robot1Id, barrier1.placement.origin);
       await iModel.saveChanges();
       const r1 = (await iModel.elements.getProps(robot1Id))[0];
       assert.deepEqual(r1.placement.origin, barrier1.placement.origin);

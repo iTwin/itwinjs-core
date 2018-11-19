@@ -69,7 +69,7 @@ describe("Tree", () => {
   let defaultProps: Partial<TreeProps>;
 
   before(() => {
-    TestUtils.initializeUiComponents();
+    TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
   });
 
   beforeEach(() => {

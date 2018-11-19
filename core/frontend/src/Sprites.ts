@@ -41,12 +41,12 @@ export class Sprite {
    * @param src The ImageSource holding an image to create the texture for this Sprite.
    * @note This method creates the image from the ImageSource asynchronously.
    */
-  public fromImageSource(src: ImageSource): void { imageElementFromImageSource(src).then((image) => this.onLoaded(image)); }
+  public fromImageSource(src: ImageSource): void { imageElementFromImageSource(src).then((image) => this.onLoaded(image)); } // tslint:disable-line:no-floating-promises
 
   /** Initialize this Sprite from a URL
    * @param url The url of an image to load for this Sprite.
    */
-  public fromUrl(url: string): void { imageElementFromUrl(url).then((image) => this.onLoaded(image)); }
+  public fromUrl(url: string): void { imageElementFromUrl(url).then((image) => this.onLoaded(image)); } // tslint:disable-line:no-floating-promises
 }
 
 /** Icon sprites are loaded from .png files in the assets directory of imodeljs-native.

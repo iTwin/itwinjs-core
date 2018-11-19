@@ -237,22 +237,22 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _onRowsSelected: OnItemsSelectedCallback<number> = (rowIndices: number[], replace: boolean) => {
     if (this.props.onRowsSelected)
-      this.props.onRowsSelected(this.createRowIterator(rowIndices), replace);
+      this.props.onRowsSelected(this.createRowIterator(rowIndices), replace); // tslint:disable-line:no-floating-promises
   }
 
   private _onRowsDeselected: OnItemsDeselectedCallback<number> = (rowIndices: number[]) => {
     if (this.props.onRowsDeselected)
-      this.props.onRowsDeselected(this.createRowIterator(rowIndices));
+      this.props.onRowsDeselected(this.createRowIterator(rowIndices)); // tslint:disable-line:no-floating-promises
   }
 
   private _onCellsSelected: OnItemsSelectedCallback<CellKey> = (cellKeys: CellKey[], replace: boolean) => {
     if (this.props.onCellsSelected)
-      this.props.onCellsSelected(this.createCellIterator(cellKeys), replace);
+      this.props.onCellsSelected(this.createCellIterator(cellKeys), replace); // tslint:disable-line:no-floating-promises
   }
 
   private _onCellsDeselected: OnItemsDeselectedCallback<CellKey> = (cellKeys: CellKey[]) => {
     if (this.props.onCellsDeselected)
-      this.props.onCellsDeselected(this.createCellIterator(cellKeys));
+      this.props.onCellsDeselected(this.createCellIterator(cellKeys)); // tslint:disable-line:no-floating-promises
   }
 
   private get _tableSelectionTarget(): TableSelectionTarget {
@@ -275,7 +275,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (this.props.onRender)
       this.props.onRender();
     if (this.props.dataProvider !== previousProps.dataProvider)
-      this.update();
+      this.update(); // tslint:disable-line:no-floating-promises
     else if (this.props.isCellSelected !== previousProps.isCellSelected
       || this.props.isRowSelected !== previousProps.isRowSelected) {
       this.updateSelectedRows();
@@ -288,7 +288,7 @@ export class Table extends React.Component<TableProps, TableState> {
     /* istanbul ignore next */
     if (this.props.onRender)
       this.props.onRender();
-    this.update();
+    this.update(); // tslint:disable-line:no-floating-promises
   }
 
   public componentWillUnmount() {
@@ -335,7 +335,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
     this._rowGetterAsync.cache.clear!();
     this.setState({ rowsCount });
-    this._rowGetterAsync(0, true);
+    this._rowGetterAsync(0, true); // tslint:disable-line:no-floating-promises
   }
 
   private _onRowsChanged = async () => {
@@ -568,7 +568,7 @@ export class Table extends React.Component<TableProps, TableState> {
     // get another page of rows
     // note: always start loading at the beginning of a page to avoid
     // requesting duplicate data (e.g. a page that starts at 0, at 1, at 2, ...)
-    this._rowGetterAsync(i - (i % this._pageAmount), false);
+    this._rowGetterAsync(i - (i % this._pageAmount), false); // tslint:disable-line:no-floating-promises
 
     // Return placeholder object
     return { item: { key: "", cells: [] }, index: i, cells: {} };
@@ -710,7 +710,7 @@ export class Table extends React.Component<TableProps, TableState> {
     }
 
     // Sort the column
-    this.gridSortAsync(columnKey, directionEnum);
+    this.gridSortAsync(columnKey, directionEnum); // tslint:disable-line:no-floating-promises
   }
 
   private getColumnIndexFromKey(columnKey: string): number {
@@ -744,7 +744,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (!this._isMounted)
       return;
 
-    this.updateRows();
+    this.updateRows(); // tslint:disable-line:no-floating-promises
   }
 
   private createRowCells(rowProps: RowProps): { [columnKey: string]: React.ReactNode } {

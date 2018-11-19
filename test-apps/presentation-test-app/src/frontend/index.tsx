@@ -68,7 +68,7 @@ export class SampleApp extends IModelApp {
 
 SampleApp.startup();
 
-SampleApp.ready.then(() => {
+SampleApp.ready.then(() => { // tslint:disable-line:no-floating-promises
   ReactDOM.render(
     <App />,
     document.getElementById("root") as HTMLElement,

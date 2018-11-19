@@ -514,7 +514,7 @@ export class CodeHandler {
     ArgumentCheck.nonEmptyArray("codes", codes);
 
     updateOptions = updateOptions || {};
-    this.setupOptionDefaults(updateOptions);
+    this.setupOptionDefaults(updateOptions); // tslint:disable-line:no-floating-promises
 
     const result: HubCode[] = [];
     let conflictError: ConflictingCodesError | undefined;

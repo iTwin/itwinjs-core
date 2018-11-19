@@ -99,13 +99,13 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
   }
 
   public componentDidMount() {
-    this.updateDisplayValue(this.props);
+    this.updateDisplayValue(this.props); // tslint:disable-line:no-floating-promises
     this.afterRender();
   }
 
   public componentDidUpdate(prevProps: PropertyRendererProps) {
     if (prevProps.propertyRecord !== this.props.propertyRecord)
-      this.updateDisplayValue(this.props);
+      this.updateDisplayValue(this.props); // tslint:disable-line:no-floating-promises
 
     this.afterRender();
   }

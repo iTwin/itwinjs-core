@@ -50,7 +50,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
   public signIn(_actx: ActivityLoggingContext) {
     if (!this._userManager)
       throw new BentleyError(AuthStatus.Error, "OidcBrowserClient not initialized", Logger.logError, loggingCategory);
-    this._userManager.signinRedirect();
+    this._userManager.signinRedirect(); // tslint:disable-line:no-floating-promises
   }
 
   /**
@@ -61,7 +61,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
   public signOut(_actx: ActivityLoggingContext): void {
     if (!this._userManager)
       throw new BentleyError(AuthStatus.Error, "OidcBrowserClient not initialized", Logger.logError, loggingCategory);
-    this._userManager.signoutRedirect();
+    this._userManager.signoutRedirect(); // tslint:disable-line:no-floating-promises
   }
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */

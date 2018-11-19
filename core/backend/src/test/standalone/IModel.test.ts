@@ -586,13 +586,13 @@ describe("iModel", () => {
     }
   });
 
-  it("should set auto-handled number property with value of zero", () => {
+  it("should set auto-handled number property with value of zero", async () => {
     const testImodel: IModelDb = imodel1;
     try {
       testImodel.getMetaData("TestBim:TestPhysicalObject");
     } catch (err) {
       const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
+      await testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
       assert.isDefined(testImodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
     }
 
@@ -856,9 +856,9 @@ describe("iModel", () => {
     assert.isDefined(response.status);
   });
 
-  it("should import schemas", () => {
+  it("should import schemas", async () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    imodel1.importSchema(actx, schemaPathname); // will throw an exception if import fails
+    await imodel1.importSchema(actx, schemaPathname); // will throw an exception if import fails
 
     const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
     assert.isDefined(classMetaData.properties.testDocumentProperty);
@@ -891,12 +891,12 @@ describe("iModel", () => {
     testImodel.models.deleteModel(newModelId);
   });
 
-  it("should create model with custom relationship to modeled element", () => {
+  it("should create model with custom relationship to modeled element", async () => {
     const testBimName = "should-create-models-with-custom-relationship.bim";
     let testImodel: IModelDb = IModelTestUtils.openIModel("test.bim", { copyFilename: testBimName });
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
+    await testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
     assert.isDefined(testImodel.getMetaData("TestBim:TestModelModelsElement"), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
 
     let newModelId1: Id64String;
@@ -995,14 +995,14 @@ describe("iModel", () => {
 
   });
 
-  it("should set EC properties of various types", () => {
+  it("should set EC properties of various types", async () => {
 
     const testImodel = imodel1;
     try {
       testImodel.getMetaData("TestBim:TestPhysicalObject");
     } catch (err) {
       const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
+      await testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
       assert.isTrue(testImodel.getMetaData("TestBim:TestPhysicalObject") !== undefined);
     }
 
@@ -1142,10 +1142,10 @@ describe("iModel", () => {
     });
 
     let callbackcount = 0;
-    testPromise.then(() => {
+    testPromise.then(() => { // tslint:disable-line:no-floating-promises
       ++callbackcount;
     });
-    testPromise.then(() => {
+    testPromise.then(() => { // tslint:disable-line:no-floating-promises
       ++callbackcount;
     });
 
@@ -1226,7 +1226,7 @@ describe("iModel", () => {
     assert.equal(lastAutoPushEventType, AutoPushEventType.PushFinished, "event handler should have been called");
 
     // Just verify that this doesn't blow up.
-    autoPush.reserveCodes();
+    await autoPush.reserveCodes();
 
     // Now turn on auto-schedule and verify that we get a few auto-pushes
     lastPushTimeMillis = 0;

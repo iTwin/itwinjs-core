@@ -497,7 +497,7 @@ export class ToolAdmin {
       case "touchstart": {
         current.lastTouchStart = ev;
         if (undefined !== tool)
-          tool.onTouchStart(ev);
+          tool.onTouchStart(ev); // tslint:disable-line:no-floating-promises
         return;
       }
 
@@ -544,13 +544,13 @@ export class ToolAdmin {
       case "touchcancel": {
         current.lastTouchStart = undefined;
         if (undefined !== tool)
-          tool.onTouchCancel(ev);
+          tool.onTouchCancel(ev); // tslint:disable-line:no-floating-promises
         return;
       }
 
       case "touchmove": {
         if (undefined !== tool)
-          tool.onTouchMove(ev);
+          tool.onTouchMove(ev); // tslint:disable-line:no-floating-promises
 
         if (undefined === current.lastTouchStart)
           return;
@@ -576,7 +576,7 @@ export class ToolAdmin {
           current.lastTouchStart = undefined;
 
           if (undefined === tool || EventHandled.Yes !== await tool.onTouchMoveStart(ev, touchStart))
-            this.idleTool.onTouchMoveStart(ev, touchStart);
+            this.idleTool.onTouchMoveStart(ev, touchStart); // tslint:disable-line:no-floating-promises
           return;
         }
         return;
@@ -630,7 +630,7 @@ export class ToolAdmin {
     if (!ToolAdmin._wantEventLoop) // flag turned on at startup
       return;
 
-    IModelApp.toolAdmin.processEvent();
+    IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
     IModelApp.viewManager.renderLoop();
     requestAnimationFrame(ToolAdmin.eventLoop);
   }
@@ -847,7 +847,7 @@ export class ToolAdmin {
     }
 
     if (tool) {
-      tool.onMouseMotion(ev);
+      tool.onMouseMotion(ev); // tslint:disable-line:no-floating-promises
       this.updateDynamics(ev);
     }
 

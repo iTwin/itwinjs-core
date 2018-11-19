@@ -146,7 +146,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
-    iModel.close(actx, accessToken);
+    await iModel.close(actx, accessToken);
   });
 
   it.skip("should be able to create a change set from a standalone iModel)", async () => {
@@ -171,7 +171,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
-    iModel.close(actx, accessToken);
+    await iModel.close(actx, accessToken);
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub in PROD", async () => {

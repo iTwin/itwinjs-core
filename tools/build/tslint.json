@@ -8,6 +8,7 @@
     "await-promise": true,
     "no-return-await": true,
     "promise-function-async": true,
+    "no-floating-promises": true,
     // Standard Rules ======================================================
     "max-line-length": [
       false

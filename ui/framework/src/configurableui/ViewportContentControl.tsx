@@ -59,7 +59,7 @@ export class ViewportContentControl extends ContentControl {
     super.onActivated();
 
     const me = this;
-    this.isReady
+    this.isReady // tslint:disable-line:no-floating-promises
       .then(() => {
         if (IModelApp.viewManager)
           IModelApp.viewManager.setSelectedView(me.viewport);

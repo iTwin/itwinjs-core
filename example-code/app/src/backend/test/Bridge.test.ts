@@ -68,7 +68,7 @@ async function createIModel(activityContext: ActivityLoggingContext, accessToken
   try {
     const existingid = await queryIModelByName(activityContext, accessToken, projectId, name);
     if (existingid !== undefined && !!existingid.id)
-      BriefcaseManager.imodelClient.IModels().delete(activityContext, accessToken, projectId, existingid.id!);
+      BriefcaseManager.imodelClient.IModels().delete(activityContext, accessToken, projectId, existingid.id!); // tslint:disable-line:no-floating-promises
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code
@@ -174,6 +174,6 @@ describe.skip("Bridge", async () => {
 
   it("should run bridge the first time", async () => {
     const assetsDir = path.join(__dirname, "..", "assets");
-    runBridgeFirstTime(accessToken, imodelRepository.wsgId, testProjectId, assetsDir);
+    await runBridgeFirstTime(accessToken, imodelRepository.wsgId, testProjectId, assetsDir);
   });
 });

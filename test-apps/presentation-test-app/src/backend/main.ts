@@ -31,7 +31,7 @@ Presentation.initialize({
 // __PUBLISH_EXTRACT_END__
 
 // invoke platform-specific initialization
-(async () => {
+(async () => { // tslint:disable-line:no-floating-promises
   // get platform-specific initialization function
   let init: (rpcs: RpcInterfaceDefinition[]) => void;
   if (electron) {

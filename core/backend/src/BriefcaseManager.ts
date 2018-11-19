@@ -1413,7 +1413,7 @@ export class BriefcaseManager {
     } catch (error) {
       // If ChangeSet already exists, updating codes and locks might have timed out.
       if (!(error instanceof IModelHubError) || error.errorNumber !== IModelHubStatus.ChangeSetAlreadyExists) {
-        Promise.reject(error);
+        return Promise.reject(error);
       }
     }
 

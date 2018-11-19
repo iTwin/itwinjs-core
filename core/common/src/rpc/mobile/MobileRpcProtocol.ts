@@ -202,7 +202,7 @@ export class MobileRpcProtocol extends RpcProtocol {
     this._partialRequest = request;
 
     if (!request.parameters.data.length) {
-      this.notifyRequest();
+      this.notifyRequest(); // tslint:disable-line:no-floating-promises
     }
   }
 
@@ -214,7 +214,7 @@ export class MobileRpcProtocol extends RpcProtocol {
 
     this._partialData.push(new Uint8Array(data));
     if (this._partialData.length === request.parameters.data.length) {
-      this.notifyRequest();
+      this.notifyRequest(); // tslint:disable-line:no-floating-promises
     }
   }
 

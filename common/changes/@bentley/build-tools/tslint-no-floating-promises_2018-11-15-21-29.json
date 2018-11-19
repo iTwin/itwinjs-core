@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Turn on tslint no-floating-promises rule",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "shaun.sewall@bentley.com"
+}
