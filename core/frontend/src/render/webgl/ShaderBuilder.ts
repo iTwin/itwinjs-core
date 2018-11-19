@@ -464,9 +464,6 @@ export const enum VertexShaderComponent {
   // (Required) Return this vertex's position in clip space.
   // vec4 computePosition(vec4 rawPos)
   ComputePosition,
-  // (Optional) Add the element id to the vertex shader.
-  // void computeElementId()
-  AddComputeElementId,
   // (Optional) After all output (varying) values have been computed, return true if this vertex should be discarded.
   // bool checkForLateDiscard()
   CheckForLateDiscard,
@@ -536,11 +533,6 @@ export class VertexShaderBuilder extends ShaderBuilder {
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
       main.add(GLSLVertex.discard);
-    }
-
-    const compElemId = this.get(VertexShaderComponent.AddComputeElementId);
-    if (undefined !== compElemId) {
-      main.addline("  computeElementId();");
     }
 
     main.addline("  gl_Position = computePosition(rawPosition);");

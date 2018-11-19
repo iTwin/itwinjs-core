@@ -321,8 +321,7 @@ export abstract class SceneCompositor implements IDisposable {
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
   public abstract readElementIds(high: boolean, rect: ViewRect): Uint8Array | undefined;
 
-  public abstract get elementId0(): TextureHandle;
-  public abstract get elementId1(): TextureHandle;
+  public abstract get featureIds(): TextureHandle;
   public abstract get depthAndOrder(): TextureHandle;
 
   protected constructor() { }
@@ -940,8 +939,7 @@ class MRTCompositor extends Compositor {
     return 0;
   }
 
-  public get elementId0(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
-  public get elementId1(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
+  public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
   public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 2 : 3); }
 
   private get _fbos(): MRTFrameBuffers { return this._frameBuffers as MRTFrameBuffers; }
@@ -1096,8 +1094,7 @@ class MPCompositor extends Compositor {
   private get _geometry(): MPGeometry { return this._geom as MPGeometry; }
 
   public get currentRenderTargetIndex(): number { return this._currentRenderTargetIndex; }
-  public get elementId0(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.accumulation! : this._textures.idLow!; }
-  public get elementId1(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.hilite! : this._textures.idHigh!; }
+  public get featureIds(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.accumulation! : this._textures.idLow!; }
   public get depthAndOrder(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.revealage! : this._textures.depthAndOrder!; }
 
   protected getBackgroundFbo(needComposite: boolean): FrameBuffer { return needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!; }

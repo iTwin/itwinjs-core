@@ -180,13 +180,10 @@ export class BatchPrimitiveCommand extends PrimitiveCommand {
   }
 
   public preExecute(exec: ShaderProgramExecutor): void {
-    exec.target.currentOverrides = this._batch.getOverrides(exec.target);
-    assert(undefined === exec.target.currentPickTable);
-    exec.target.currentPickTable = this._batch.pickTable;
+    exec.target.pushBatch(this._batch);
   }
   public postExecute(exec: ShaderProgramExecutor): void {
-    exec.target.currentOverrides = undefined;
-    exec.target.currentPickTable = undefined;
+    exec.target.popBatch();
   }
 
   public computeIsFlashed(flashedId: Id64String): boolean {

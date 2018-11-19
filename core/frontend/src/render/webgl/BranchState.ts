@@ -119,6 +119,7 @@ export class BatchState {
   private _curBatch?: Batch;
 
   public get currentBatch(): Batch | undefined { return this._curBatch; }
+  public get currentBatchId(): number { return undefined !== this._curBatch ? this._curBatch.batchId : 0; }
   public get isEmpty(): boolean { return 0 === this._batches.length; }
 
   public push(batch: Batch, allowAdd: boolean): void {

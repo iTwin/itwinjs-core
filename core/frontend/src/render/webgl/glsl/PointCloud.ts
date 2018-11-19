@@ -44,6 +44,6 @@ export function createPointCloudBuilder(): ProgramBuilder {
 
 export function createPointCloudHiliter(): ProgramBuilder {
   const builder = createBuilder();
-  addHiliter(builder, false, true);
+  addHiliter(builder, false);
   return builder;
 }

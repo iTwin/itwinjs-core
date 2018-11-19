@@ -47,20 +47,13 @@ export enum TextureUnit {
     FeatureSymbology = One,
     SurfaceTexture = Two,
     LineCode = Two,
-    ElementId = Three,
+    UNUSED_ElementId = Three,
 
-    PickElementId0 = Four,
-    PickElementId1 = Five,
+    PickFeatureId = Four,
+    UNUSED_PickElementId1 = Five,
     PickDepthAndOrder = Six,
 
     VertexLUT = Seven,
-
-    // WIP - Image lighting (won't work if device limited to 8 textures).
-    DiffuseMap = WebGLRenderingContext.TEXTURE8,
-    IBLSpecular = WebGLRenderingContext.TEXTURE9,
-    BRDFLUT = WebGLRenderingContext.TEXTURE10,
-    EnvironmentMap = WebGLRenderingContext.TEXTURE11,
-    AnimationLUT = WebGLRenderingContext.TEXTURE12,
 }
 
 /**

@@ -12,7 +12,7 @@ import { Target } from "./Target";
 import { RenderPass } from "./RenderFlags";
 import { TechniqueFlags } from "./TechniqueFlags";
 import { System } from "./System";
-import { Branch } from "./Graphic";
+import { Branch, Batch } from "./Graphic";
 
 /** Flags which control some conditional branches in shader code */
 export const enum ShaderFlags {
@@ -350,6 +350,8 @@ export class ShaderProgramExecutor {
 
   public pushBranch(branch: Branch): void { this.target.pushBranch(this, branch); }
   public popBranch(): void { this.target.popBranch(); }
+  public pushBatch(batch: Batch): void { this.target.pushBatch(batch); }
+  public popBatch(): void { this.target.popBatch(); }
 
   private changeProgram(program?: ShaderProgram): boolean {
     if (this._program === program) {

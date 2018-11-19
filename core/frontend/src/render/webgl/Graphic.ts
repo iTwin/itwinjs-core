@@ -5,110 +5,27 @@
 /** @module WebGL */
 
 import { assert, Id64, Id64String, BeTimePoint, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { ViewFlags, ColorDef, ElementAlignedBox3d } from "@bentley/imodeljs-common";
+import { ViewFlags, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
 import { RenderGraphic, GraphicBranch, GraphicList, PackedFeatureTable } from "../System";
 import { RenderCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
-import { LUTDimensions, LUTParams, LUTDimension } from "./FeatureDimensions";
+import { LUTDimensions, LUTParams } from "./FeatureDimensions";
 import { Target } from "./Target";
-import { FloatRgba } from "./FloatRGBA";
 import { OvrFlags } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
 import { RenderPass } from "./RenderFlags";
 
-class OvrUniform {
-  public floatFlags: number = 0;
-  public weight: number = 0;
-  public lineCode: number = 0;
-  public unused: number = 0;
-  public rgba: FloatRgba = FloatRgba.fromColorDef(ColorDef.black, 0);
-  public flags: OvrFlags = OvrFlags.None;
-
-  public isFlagSet(flag: OvrFlags): boolean { return OvrFlags.None !== (this.flags & flag); }
-
-  public get anyOverridden() { return OvrFlags.None !== this.flags; }
-  public get allHidden() { return this.isFlagSet(OvrFlags.Visibility); }
-  public get anyOpaque() { return this.isFlagSet(OvrFlags.Alpha) && 1.0 === this.rgba.alpha; }
-  public get anyTranslucent() { return this.isFlagSet(OvrFlags.Alpha) && 1.0 > this.rgba.alpha; }
-  public get anyHilited() { return this.isFlagSet(OvrFlags.Hilited); }
-
-  public initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashed: Id64String) {
-    this.update(map, hilite, flashed, ovrs);
-  }
-
-  public update(map: PackedFeatureTable, hilites: Set<string>, flashedElemId: Id64String, ovrs?: FeatureSymbology.Overrides) {
-    assert(map.isUniform);
-
-    // NB: To be consistent with the lookup table approach for non-uniform feature tables and share shader code, we pass
-    // the override data as two RGBA values - hence all the conversions to floating point range [0.0..1.0]
-    const feature = map.uniform!;
-    const isFlashed = Id64.isValid(flashedElemId) && feature.elementId === flashedElemId;
-    const isHilited = hilites.has(feature.elementId);
-
-    if (undefined === ovrs) {
-      // We only need to update the 'flashed' and 'hilited' flags
-      // NB: Don't do so if the feature is invisible
-      if (OvrFlags.None === (this.flags & OvrFlags.Visibility)) {
-        this.flags = isFlashed ? (this.flags | OvrFlags.Flashed) : (this.flags & ~OvrFlags.Flashed);
-        this.flags = isHilited ? (this.flags | OvrFlags.Hilited) : (this.flags & ~OvrFlags.Hilited);
-        this.floatFlags = this.flags / 256.0;
-      }
-
-      return;
-    }
-
-    this.floatFlags = this.weight = this.lineCode = this.unused = 0;
-    this.rgba = FloatRgba.fromColorDef(ColorDef.black, 0);
-    this.flags = OvrFlags.None;
-
-    const app = ovrs.getAppearance(feature, map.modelId, map.type);
-    if (undefined === app) {
-      // We're invisible. Don't care about any other overrides.
-      this.flags = OvrFlags.Visibility;
-      this.floatFlags = this.flags / 256.0;
-      return;
-    }
-
-    if (isFlashed)
-      this.flags |= OvrFlags.Flashed;
-
-    if (isHilited)
-      this.flags |= OvrFlags.Hilited;
-
-    if (app.overridesRgb && app.rgb) {
-      this.flags |= OvrFlags.Rgb;
-      this.rgba = FloatRgba.fromColorDef(ColorDef.from(app.rgb.r, app.rgb.g, app.rgb.b, 1.0)); // NB: Alpha ignored unless OvrFlags.Alpha set...
-    }
-
-    if (undefined !== app.transparency) {
-      const alpha = 1.0 - app.transparency;
-      this.flags |= OvrFlags.Alpha;
-      this.rgba = new FloatRgba(this.rgba.red, this.rgba.green, this.rgba.blue, alpha); // NB: rgb ignored unless OvrFlags.Rgb set...
-    }
-
-    if (app.overridesWeight && app.weight) {
-      this.flags |= OvrFlags.Weight;
-      this.weight = app.weight / 256.0;
-    }
-
-    if (app.overridesLinePixels && app.linePixels) {
-      this.flags |= OvrFlags.LineCode;
-      this.lineCode = LineCode.valueFromLinePixels(app.linePixels) / 256.0;
-    }
-
-    if (app.ignoresMaterial)
-      this.flags |= OvrFlags.IgnoreMaterial;
-
-    this.floatFlags = this.flags / 256.0;
-  }
-}
-
-class OvrNonUniform {
+export class FeatureOverrides implements IDisposable {
+  public lut?: TextureHandle;
+  public readonly target: Target;
+  private _lastOverridesUpdated: BeTimePoint = BeTimePoint.now();
+  private _lastFlashUpdated: BeTimePoint = BeTimePoint.now();
+  private _lastHiliteUpdated: BeTimePoint = BeTimePoint.now();
   public lutParams: LUTParams = new LUTParams(1, 1);
   public anyOverridden: boolean = true;
   public allHidden: boolean = true;
@@ -116,7 +33,7 @@ class OvrNonUniform {
   public anyOpaque: boolean = true;
   public anyHilited: boolean = true;
 
-  public initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashedElemId: Id64String): TextureHandle | undefined {
+  private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashedElemId: Id64String): TextureHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims: LUTDimensions = LUTDimensions.computeWidthAndHeight(nFeatures, 2);
     const width = dims.width;
@@ -132,7 +49,7 @@ class OvrNonUniform {
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
-  public update(map: PackedFeatureTable, lut: TextureHandle, flashedElemId: Id64String, hilites?: Set<string>, ovrs?: FeatureSymbology.Overrides) {
+  private _update(map: PackedFeatureTable, lut: TextureHandle, flashedElemId: Id64String, hilites?: Set<string>, ovrs?: FeatureSymbology.Overrides) {
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
 
     if (undefined === ovrs) {
@@ -268,19 +185,6 @@ class OvrNonUniform {
       }
     }
   }
-}
-
-export class FeatureOverrides implements IDisposable {
-  public lut?: TextureHandle;
-  public readonly target: Target;
-  public dimension: LUTDimension = LUTDimension.Uniform;
-
-  private _uniform?: OvrUniform;
-  private _nonUniform?: OvrNonUniform;
-
-  private _lastOverridesUpdated: BeTimePoint = BeTimePoint.now();
-  private _lastFlashUpdated: BeTimePoint = BeTimePoint.now();
-  private _lastHiliteUpdated: BeTimePoint = BeTimePoint.now();
 
   private constructor(target: Target) {
     this.target = target;
@@ -295,49 +199,15 @@ export class FeatureOverrides implements IDisposable {
     this.lut = undefined;
   }
 
-  public get isNonUniform(): boolean { return LUTDimension.NonUniform === this.dimension; }
-  public get isUniform(): boolean { return !this.isNonUniform; }
-  public get anyOverridden(): boolean { return this._uniform ? this._uniform.anyOverridden : this._nonUniform!.anyOverridden; }
-  public get allHidden(): boolean { return this._uniform ? this._uniform.allHidden : this._nonUniform!.allHidden; }
-  public get anyOpaque(): boolean { return this._uniform ? this._uniform.anyOpaque : this._nonUniform!.anyOpaque; }
-  public get anyTranslucent(): boolean { return this._uniform ? this._uniform.anyTranslucent : this._nonUniform!.anyTranslucent; }
-  public get anyHilited(): boolean { return this._uniform ? this._uniform.anyHilited : this._nonUniform!.anyHilited; }
-
-  public get uniform1(): Float32Array {
-    if (this.isUniform) {
-      const uniform = this._uniform!;
-      return new Float32Array([uniform.floatFlags, uniform.weight, uniform.lineCode, uniform.unused]);
-    }
-    return new Float32Array(4);
-  }
-
-  public get uniform2(): Float32Array {
-    if (this.isUniform) {
-      const rgba = this._uniform!.rgba;
-      return new Float32Array([rgba.red, rgba.green, rgba.blue, rgba.alpha]);
-    }
-    return new Float32Array(4);
-  }
-
   public initFromMap(map: PackedFeatureTable) {
     const nFeatures = map.numFeatures;
     assert(0 < nFeatures);
 
-    this._uniform = this._nonUniform = undefined;
     this.lut = undefined;
 
     const ovrs: FeatureSymbology.Overrides = this.target.currentFeatureSymbologyOverrides;
     const hilite: Set<string> = this.target.hilite;
-    if (1 < nFeatures) {
-      this._nonUniform = new OvrNonUniform();
-      this.lut = this._nonUniform.initialize(map, ovrs, hilite, this.target.flashedElemId);
-      this.dimension = LUTDimension.NonUniform;
-    } else {
-      this._uniform = new OvrUniform();
-      this._uniform.initialize(map, ovrs, hilite, this.target.flashedElemId);
-      this.dimension = LUTDimension.Uniform;
-    }
-
+    this.lut = this._initialize(map, ovrs, hilite, this.target.flashedElemId);
     this._lastOverridesUpdated = this._lastFlashUpdated = this._lastHiliteUpdated = BeTimePoint.now();
   }
 
@@ -351,10 +221,7 @@ export class FeatureOverrides implements IDisposable {
     const ovrs = ovrsUpdated ? this.target.currentFeatureSymbologyOverrides : undefined;
     const hilite = this.target.hilite;
     if (ovrsUpdated || hiliteUpdated || this._lastFlashUpdated.before(flashLastUpdated)) {
-      if (this.isUniform)
-        this._uniform!.update(features, hilite, this.target.flashedElemId, ovrs);
-      else
-        this._nonUniform!.update(features, this.lut!, this.target.flashedElemId, undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs);
+      this._update(features, this.lut!, this.target.flashedElemId, undefined !== ovrs || hiliteUpdated ? hilite : undefined, ovrs);
 
       this._lastOverridesUpdated = styleLastUpdated;
       this._lastFlashUpdated = flashLastUpdated;
@@ -363,71 +230,10 @@ export class FeatureOverrides implements IDisposable {
   }
 }
 
-export interface UniformPickTable {
-  readonly elemId0: Float32Array; // 4 bytes
-  readonly elemId1: Float32Array; // 4 bytes
-}
-
-export type NonUniformPickTable = TextureHandle;
-
-export interface PickTable {
-  readonly uniform?: UniformPickTable;
-  readonly nonUniform?: NonUniformPickTable;
-}
-
-const scratchUint32 = new Uint32Array(1);
-const scratchBytes = new Uint8Array(scratchUint32.buffer);
-function uint32ToFloatArray(value: number): Float32Array {
-  scratchUint32[0] = value;
-  const floats = new Float32Array(4);
-  for (let i = 0; i < 4; i++)
-    floats[i] = scratchBytes[i] / 255.0;
-
-  return floats;
-}
-
-function createUniformPickTable(elemIdParts: { low: number, high: number }): UniformPickTable {
-  return {
-    elemId0: uint32ToFloatArray(elemIdParts.low),
-    elemId1: uint32ToFloatArray(elemIdParts.high),
-  };
-}
-
-function createNonUniformPickTable(features: PackedFeatureTable): NonUniformPickTable | undefined {
-  const nFeatures = features.numFeatures;
-  if (nFeatures <= 1) {
-    assert(false);
-    return undefined;
-  }
-
-  const dims = LUTDimensions.computeWidthAndHeight(nFeatures, 2);
-  assert(dims.width * dims.height >= nFeatures);
-
-  const bytes = new Uint8Array(dims.width * dims.height * 4);
-  const ids = new Uint32Array(bytes.buffer);
-  for (let index = 0; index < features.numFeatures; index++) {
-    const elemIdParts = features.getElementIdParts(index);
-    ids[index * 2] = elemIdParts.low;
-    ids[index * 2 + 1] = elemIdParts.high;
-  }
-
-  return TextureHandle.createForData(dims.width, dims.height, bytes);
-}
-
-function createPickTable(features: PackedFeatureTable): PickTable {
-  if (!features.anyDefined)
-    return {};
-  else if (features.isUniform)
-    return { uniform: createUniformPickTable(features.getElementIdParts(0)) };
-  else
-    return { nonUniform: createNonUniformPickTable(features) };
-}
-
 export abstract class Graphic extends RenderGraphic {
   public abstract addCommands(_commands: RenderCommands): void;
   public get isPickable(): boolean { return false; }
   public addHiliteCommands(_commands: RenderCommands, _batch: Batch, _pass: RenderPass): void { assert(false); }
-  public assignUniformFeatureIndices(_index: number): void { } // ###TODO: Implement for Primitive
   public toPrimitive(): Primitive | undefined { return undefined; }
   // public abstract setIsPixelMode(): void;
 }
@@ -437,7 +243,6 @@ export class Batch extends Graphic {
   public readonly featureTable: PackedFeatureTable;
   public readonly range: ElementAlignedBox3d;
   public batchId: number = 0; // Transient ID assigned while rendering a frame, reset afterward.
-  private _pickTable?: PickTable;
   private _overrides: FeatureOverrides[] = [];
 
   public constructor(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) {
@@ -455,13 +260,6 @@ export class Batch extends Graphic {
       dispose(over);
     }
     this._overrides.length = 0;
-  }
-
-  public get pickTable(): PickTable | undefined {
-    if (undefined === this._pickTable)
-      this._pickTable = createPickTable(this.featureTable);
-
-    return this._pickTable;
   }
 
   public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
@@ -525,14 +323,7 @@ export class Branch extends Graphic {
   public dispose() { this.branch.dispose(); }
 
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
-
   public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void { commands.addHiliteBranch(this, batch, pass); }
-
-  public assignUniformFeatureIndices(index: number): void {
-    for (const entry of this.branch.entries) {
-      (entry as Graphic).assignUniformFeatureIndices(index);
-    }
-  }
 }
 
 export class WorldDecorations extends Branch {
@@ -564,12 +355,6 @@ export class GraphicsArray extends Graphic {
   public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void {
     for (const graphic of this.graphics) {
       (graphic as Graphic).addHiliteCommands(commands, batch, pass);
-    }
-  }
-
-  public assignUniformFeatureIndices(index: number): void {
-    for (const gf of this.graphics) {
-      (gf as Graphic).assignUniformFeatureIndices(index);
     }
   }
 }

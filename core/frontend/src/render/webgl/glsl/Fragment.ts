@@ -74,8 +74,8 @@ const reverseWhiteOnWhite = `
 const computePickBufferOutputs = `
   float linearDepth = computeLinearDepth(v_eyeSpace.z);
   vec4 output0 = baseColor;
-  vec4 output1 = v_element_id0;
-  vec4 output2 = v_element_id1;
+  vec4 output1 = v_feature_id;
+  vec4 output2 = v_feature_id; // ###TODO remove me.
   vec4 output3 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
 `;
 

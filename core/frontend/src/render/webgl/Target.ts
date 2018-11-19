@@ -14,7 +14,7 @@ import { TechniqueId } from "./TechniqueId";
 import { System } from "./System";
 import { BranchStack, BranchState, BatchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
-import { Branch, WorldDecorations, FeatureOverrides, PickTable, Batch } from "./Graphic";
+import { Branch, WorldDecorations, FeatureOverrides, Batch } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
 import { ViewRect } from "../../Viewport";
 import { RenderCommands, DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -216,7 +216,6 @@ export abstract class Target extends RenderTarget {
   public analysisStyle?: AnalysisStyle;
   public analysisTexture?: RenderTexture;
   private _currentOverrides?: FeatureOverrides;
-  public currentPickTable?: PickTable;
   private _batches: Batch[] = [];
   public plan?: RenderPlan;
 
@@ -249,7 +248,6 @@ export abstract class Target extends RenderTarget {
   public get flashIntensity(): number { return this._flashIntensity; }
 
   public get overridesUpdateTime(): BeTimePoint { return this._overridesUpdateTime; }
-  public get areDecorationOverridesActive(): boolean { return false; } // ###TODO
 
   public get fStop(): number { return this._fStop; }
   public get ambientLight(): Float32Array { return this._ambientLight; }
@@ -344,6 +342,16 @@ export abstract class Target extends RenderTarget {
   public popActiveVolume(): void {
     if (this._activeClipVolume !== undefined)
       this._activeClipVolume.pop(this);
+  }
+
+  public get currentBatchId(): number { return this._batchState.currentBatchId; }
+  public pushBatch(batch: Batch) {
+    this._batchState.push(batch, false);
+    this.currentOverrides = batch.getOverrides(this);
+  }
+  public popBatch() {
+    this.currentOverrides = undefined;
+    this._batchState.pop();
   }
 
   public addBatch(batch: Batch) {

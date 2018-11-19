@@ -96,6 +96,17 @@ export function addEyeSpace(builder: ProgramBuilder) {
   builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec4, computeEyeSpace);
 }
 
+export const addUInt32s = `
+  vec4 addUInt32s(vec4 a, vec4 b)
+      {
+      vec4 c = a + b;
+      if (c.x > 255.0) { c.x -= 255.0; c.y += 1.0; }
+      if (c.y > 255.0) { c.y -= 255.0; c.z += 1.0; }
+      if (c.z > 255.0) { c.z -= 255.0; c.w += 1.0; }
+      return c;
+      }
+`;
+
 export namespace GLSLCommon {
   // Expects flags in range [0...256] with no fraction; and bit is [0..31] with no fraction.
   // Returns 1.0 if the nth bit is set, 0.0 otherwise.
