@@ -26,7 +26,7 @@ describe("HighlightingEngine", () => {
     it("wraps active node <mark class=\"activeHighlight\"> tag", () => {
       const text = "This is a test";
       const searchText = "test";
-      const treeComponent = enzyme.shallow(<div>{HighlightingEngine.renderNodeLabel(text, { searchText, activeResultIndex: 0 })}</div>);
+      const treeComponent = enzyme.shallow(<div>{HighlightingEngine.renderNodeLabel(text, { searchText, activeMatchIndex: 0 })}</div>);
       const mark = treeComponent.render().find("mark");
       expect(mark.text()).to.equal(searchText);
       expect(mark.hasClass("ui-components-activehighlight")).to.be.true;
@@ -42,16 +42,16 @@ describe("HighlightingEngine", () => {
       expect(he.createRenderProps(simulateNode("id")).searchText).to.eq(searchText);
     });
 
-    it("sets activeResultIndex to undefined when node id doesn't match activeResultNode id", () => {
+    it("sets activeMatchIndex to undefined when node id doesn't match nodeId in activeMatch", () => {
       const searchText = "test";
-      const he = new HighlightingEngine({ searchText, activeResultNode: { id: "a", index: 1 } });
-      expect(he.createRenderProps(simulateNode("b")).activeResultIndex).to.be.undefined;
+      const he = new HighlightingEngine({ searchText, activeMatch: { nodeId: "a", matchIndex: 1 } });
+      expect(he.createRenderProps(simulateNode("b")).activeMatchIndex).to.be.undefined;
     });
 
-    it("sets activeResultIndex to correct value when node id matches activeResultNode id", () => {
+    it("sets activeResultIndex to correct value when node id matches id in activeMatch", () => {
       const searchText = "test";
-      const he = new HighlightingEngine({ searchText, activeResultNode: { id: "a", index: 1 } });
-      expect(he.createRenderProps(simulateNode("a")).activeResultIndex).to.eq(1);
+      const he = new HighlightingEngine({ searchText, activeMatch: { nodeId: "a", matchIndex: 1 } });
+      expect(he.createRenderProps(simulateNode("a")).activeMatchIndex).to.eq(1);
     });
 
   });

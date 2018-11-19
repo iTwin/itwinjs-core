@@ -578,7 +578,7 @@ describe("Tree", () => {
         renderedTree = render(<Tree
           {...defaultProps}
           dataProvider={[]}
-          nodeHighlightingProps={{ activeResultNode: { id: "", index: 0 }, searchText: "test" }}
+          nodeHighlightingProps={{ activeMatch: { nodeId: "", matchIndex: 0 }, searchText: "test" }}
         />);
       }, renderSpy, 2);
       const expectedContent = TestUtils.i18n.translate("Components:tree.noResultsForFilter", { test: "test" });
@@ -631,7 +631,7 @@ describe("Tree", () => {
           nodeHighlightingProps={{ searchText: "test" }}
         />);
       }, renderSpy, 2);
-      expect(renderLabelSpy.calledWith("0", { searchText: "test", activeResultIndex: undefined })).to.be.true;
+      expect(renderLabelSpy.calledWith("0", { searchText: "test", activeMatchIndex: undefined })).to.be.true;
     });
 
     it("rerenders without HighlightingEngine when nodeHighlightingProps are reset to undefined", async () => {
@@ -833,9 +833,9 @@ describe("Tree", () => {
       }, renderSpy, 2);
       const highlightProps: HighlightableTreeProps = {
         searchText: "er",
-        activeResultNode: {
-          id: "0",
-          index: 0,
+        activeMatch: {
+          nodeId: "0",
+          matchIndex: 0,
         },
       };
       await waitForUpdate(() => {
@@ -844,14 +844,14 @@ describe("Tree", () => {
       expect(scrollToSpy).to.be.calledOnce;
     });
 
-    it("does nothing when there's no active result node", async () => {
+    it("does nothing when there's no active match", async () => {
       const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
       }, renderSpy, 2);
       const highlightProps: HighlightableTreeProps = {
         searchText: "er",
-        activeResultNode: undefined,
+        activeMatch: undefined,
       };
       await waitForUpdate(() => {
         renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} />);
@@ -859,16 +859,16 @@ describe("Tree", () => {
       expect(scrollToSpy).to.not.be.called;
     });
 
-    it("does nothing when there's active result node's element is not found", async () => {
+    it("does nothing when there's active match element is not found", async () => {
       const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
       }, renderSpy, 2);
       const highlightProps: HighlightableTreeProps = {
         searchText: "er",
-        activeResultNode: {
-          id: "1",
-          index: 0,
+        activeMatch: {
+          nodeId: "1",
+          matchIndex: 0,
         },
       };
       await waitForUpdate(() => {
@@ -881,9 +881,9 @@ describe("Tree", () => {
       const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
       const highlightProps: HighlightableTreeProps = {
         searchText: "er",
-        activeResultNode: {
-          id: "0",
-          index: 0,
+        activeMatch: {
+          nodeId: "0",
+          matchIndex: 0,
         },
       };
       await waitForUpdate(() => {

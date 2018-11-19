@@ -264,15 +264,16 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
   private scrollToActiveNode() {
     if (!this._scrollableContainerRef.current || !this._treeRef.current
-      || !this.props.nodeHighlightingProps || !this.props.nodeHighlightingProps.activeResultNode) {
+      || !this.props.nodeHighlightingProps || !this.props.nodeHighlightingProps.activeMatch) {
       return;
     }
 
-    // todo: why this.props.nodeHighlightingProps.activeResultNode.index is always 0?
-    const index = this.state.model.visible().findIndex((n) => n.id === this.props.nodeHighlightingProps!.activeResultNode!.id);
+    // scroll to active node
+    const activeNodeId = this.props.nodeHighlightingProps.activeMatch.nodeId;
+    const index = this.state.model.visible().findIndex((n) => n.id === activeNodeId);
     this._scrollableContainerRef.current.scrollToRow(index);
 
-    // now make sure the active highlight is also visible
+    // now make sure the active match is also visible
     const scrollTo = [...this._treeRef.current.getElementsByClassName(HighlightingEngine.ACTIVE_CLASS_NAME)];
     if (scrollTo.length === 0)
       return;

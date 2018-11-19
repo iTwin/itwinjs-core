@@ -185,21 +185,20 @@ describe("FilteredTreeDataProvider", () => {
     });
   });
 
-  describe("getActiveResultNode", () => {
-    it("returns correct active node", () => {
+  describe("getActiveMatch", () => {
+    it("returns correct match", () => {
       provider = new FilteredPresentationTreeDataProvider(parentProviderMock.object, constantFilter, filteredNodePaths);
-      const activeResultNode = provider.getActiveResultNode(2);
+      const result = provider.getActiveMatch(2);
 
-      expect(activeResultNode).to.not.be.undefined;
-      expect(activeResultNode!.id).to.be.eq(createTreeNodeItem(filteredNodePaths[1].node).id);
-      expect(activeResultNode!.index).to.be.eq(0);
+      expect(result).to.not.be.undefined;
+      expect(result!.nodeId).to.be.eq(createTreeNodeItem(filteredNodePaths[1].node).id);
+      expect(result!.matchIndex).to.be.eq(0);
     });
 
     it("returns undefined when index is 0 or lower", () => {
       provider = new FilteredPresentationTreeDataProvider(parentProviderMock.object, constantFilter, filteredNodePaths);
-      const activeResultNode = provider.getActiveResultNode(0);
-
-      expect(activeResultNode).to.be.undefined;
+      const result = provider.getActiveMatch(0);
+      expect(result).to.be.undefined;
     });
   });
 });

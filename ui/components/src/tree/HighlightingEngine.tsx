@@ -10,46 +10,46 @@ import { BeInspireTreeNode } from "./component/BeInspireTree";
 import "./HighlightingEngine.scss";
 
 /** @hidden */
-export interface ActiveResultNode {
-  id: string;
-  index: number;
+export interface ActiveMatchInfo {
+  nodeId: string;
+  matchIndex: number;
 }
 
 /** @hidden */
 export interface HighlightableTreeProps {
   searchText: string;
-  activeResultNode?: ActiveResultNode;
+  activeMatch?: ActiveMatchInfo;
 }
 
 /** @hidden */
 export interface HighlightableTreeNodeProps {
   searchText: string;
-  activeResultIndex?: number;
+  activeMatchIndex?: number;
 }
 
 /** @hidden */
 export default class HighlightingEngine {
   private _searchText: string;
-  private _activeResultNode?: ActiveResultNode;
+  private _activeMatch?: ActiveMatchInfo;
   public static readonly ACTIVE_CLASS_NAME = "ui-components-activehighlight";
 
   constructor(props: HighlightableTreeProps) {
     this._searchText = props.searchText;
-    this._activeResultNode = props.activeResultNode;
+    this._activeMatch = props.activeMatch;
   }
 
   public isNodeActive(node: BeInspireTreeNode<any>) {
-    return this._activeResultNode && node.id === this._activeResultNode.id;
+    return this._activeMatch && node.id === this._activeMatch.nodeId;
   }
 
-  public getActiveNodeIndex(node: BeInspireTreeNode<any>) {
-    return this.isNodeActive(node) ? this._activeResultNode!.index : undefined;
+  public getActiveMatchIndex(node: BeInspireTreeNode<any>) {
+    return this.isNodeActive(node) ? this._activeMatch!.matchIndex : undefined;
   }
 
   public createRenderProps(node: BeInspireTreeNode<any>): HighlightableTreeNodeProps {
     return {
       searchText: this._searchText,
-      activeResultIndex: this.getActiveNodeIndex(node),
+      activeMatchIndex: this.getActiveMatchIndex(node),
     };
   }
 
@@ -58,7 +58,7 @@ export default class HighlightingEngine {
       <Highlighter
         searchWords={[props.searchText]}
         findChunks={findChunksNoRegex as any} // .d.ts declaration wrong
-        activeIndex={props.activeResultIndex as any} // .d.ts file seems to be wrong, doesn't work if it's a string
+        activeIndex={props.activeMatchIndex as any} // .d.ts file seems to be wrong, doesn't work if it's a string
         activeClassName={HighlightingEngine.ACTIVE_CLASS_NAME}
         autoEscape={true}
         textToHighlight={text}
