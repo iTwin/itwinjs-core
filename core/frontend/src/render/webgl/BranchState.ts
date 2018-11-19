@@ -192,7 +192,16 @@ export class BatchState {
     if (featureId <= 0)
       return -1;
 
-    const found = lowerBound(featureId, this._batches, (lhs: number, rhs: Batch) => lhs - rhs.batchId);
+    const found = lowerBound(featureId, this._batches, (lhs: number, rhs: Batch) => {
+      // Determine if the requested feature ID is within the range of this batch.
+      if (lhs < rhs.batchId)
+        return -1;
+
+      const numFeatures = rhs.featureTable.numFeatures;
+      const nextBatchId = rhs.batchId + (numFeatures > 0 ? numFeatures : 1);
+      return lhs < nextBatchId ? 0 : 1;
+    });
+
     return found.index < this._batches.length ? found.index : -1;
   }
 

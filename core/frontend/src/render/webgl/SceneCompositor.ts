@@ -8,17 +8,19 @@ import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry, CachedGeometry } from "./CachedGeometry";
-// import { Vector3d } from "@bentley/geometry-core";
+import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
 import { Pixel, GraphicList } from "../System";
 import { ViewRect } from "../../Viewport";
-import { assert, Id64, /**Id64String,**/ IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { RenderCommands, ShaderProgramParams, DrawParams, DrawCommands, BatchPrimitiveCommand } from "./DrawCommand";
 import { RenderState } from "./RenderState";
-import { CompositeFlags, RenderPass /*, RenderOrder*/ } from "./RenderFlags";
+import { CompositeFlags, RenderPass, RenderOrder } from "./RenderFlags";
 import { FloatRgba } from "./FloatRGBA";
+import { BatchState } from "./BranchState";
+import { Feature } from "@bentley/imodeljs-common";
 
 let progParams: ShaderProgramParams | undefined;
 let drawParams: DrawParams | undefined;
@@ -152,14 +154,13 @@ class Geometry implements IDisposable {
   }
 }
 
-/** ###TODO adjust me for feature IDs.
 // Represents a view of data read from a region of the frame buffer.
 class PixelBuffer implements Pixel.Buffer {
   private readonly _rect: ViewRect;
   private readonly _selector: Pixel.Selector;
-  private readonly _elemIdLow?: Uint32Array;
-  private readonly _elemIdHi?: Uint32Array;
+  private readonly _featureId?: Uint32Array;
   private readonly _depthAndOrder?: Uint32Array;
+  private readonly _batchState: BatchState;
 
   private get _numPixels(): number { return this._rect.width * this._rect.height; }
 
@@ -176,17 +177,20 @@ class PixelBuffer implements Pixel.Buffer {
     y = this._rect.height - 1 - y;
     return y * this._rect.width + x;
   }
+
   private getPixel32(data: Uint32Array, pixelIndex: number): number | undefined {
     return pixelIndex < data.length ? data[pixelIndex] : undefined;
   }
 
-  private getElementId(pixelIndex: number): Id64String | undefined {
-    if (undefined === this._elemIdLow || undefined === this._elemIdHi)
+  private getFeature(pixelIndex: number): Feature | undefined {
+    if (undefined === this._featureId)
       return undefined;
 
-    const lo = this.getPixel32(this._elemIdLow, pixelIndex);
-    const hi = this.getPixel32(this._elemIdHi, pixelIndex);
-    return undefined !== lo && undefined !== hi ? Id64.fromUint32Pair(lo, hi) : undefined;
+    const featureId = this.getPixel32(this._featureId, pixelIndex);
+    if (undefined === featureId)
+      return undefined;
+
+    return this._batchState.getFeature(featureId);
   }
 
   private readonly _scratchUint32Array = new Uint32Array(1);
@@ -216,6 +220,7 @@ class PixelBuffer implements Pixel.Buffer {
     return dec;
   }
 
+
   private readonly _invalidPixelData = new Pixel.Data();
   public getPixel(x: number, y: number): Pixel.Data {
     const px = this._invalidPixelData;
@@ -228,56 +233,50 @@ class PixelBuffer implements Pixel.Buffer {
     let geometryType = px.type;
     let planarity = px.planarity;
 
-    const elemId = Pixel.Selector.None !== (this._selector & Pixel.Selector.ElementId) ? this.getElementId(index) : undefined;
-
-    if (undefined !== this._depthAndOrder) {
-      const wantDistance = Pixel.Selector.None !== (this._selector & Pixel.Selector.Distance);
-      const wantGeometry = Pixel.Selector.None !== (this._selector & Pixel.Selector.Geometry);
-
-      const depthAndOrder = wantDistance || wantGeometry ? this.getPixel32(this._depthAndOrder, index) : undefined;
+    const feature = Pixel.Selector.None !== (this._selector & Pixel.Selector.Feature) ? this.getFeature(index) : undefined;
+    if (Pixel.Selector.None !== (this._selector & Pixel.Selector.GeometryAndDistance) && undefined !== this._depthAndOrder) {
+      const depthAndOrder = this.getPixel32(this._depthAndOrder, index);
       if (undefined !== depthAndOrder) {
-        if (wantDistance)
-          distanceFraction = this.decodeDepthRgba(depthAndOrder);
+        distanceFraction = this.decodeDepthRgba(depthAndOrder);
 
-        if (wantGeometry) {
-          const orderWithPlanarBit = this.decodeRenderOrderRgba(depthAndOrder);
-          const order = orderWithPlanarBit & ~RenderOrder.PlanarBit;
-          planarity = (orderWithPlanarBit === order) ? Pixel.Planarity.NonPlanar : Pixel.Planarity.Planar;
-          switch (order) {
-            case RenderOrder.None:
-              geometryType = Pixel.GeometryType.None;
-              planarity = Pixel.Planarity.None;
-              break;
-            case RenderOrder.BlankingRegion:
-            case RenderOrder.Surface:
-              geometryType = Pixel.GeometryType.Surface;
-              break;
-            case RenderOrder.Linear:
-              geometryType = Pixel.GeometryType.Linear;
-              break;
-            case RenderOrder.Edge:
-              geometryType = Pixel.GeometryType.Edge;
-              break;
-            case RenderOrder.Silhouette:
-              geometryType = Pixel.GeometryType.Silhouette;
-              break;
-            default:
-              // ###TODO: may run into issues with point clouds - they are not written correctly in C++.
-              assert(false, "Invalid render order");
-              geometryType = Pixel.GeometryType.None;
-              planarity = Pixel.Planarity.None;
-              break;
-          }
+        const orderWithPlanarBit = this.decodeRenderOrderRgba(depthAndOrder);
+        const order = orderWithPlanarBit & ~RenderOrder.PlanarBit;
+        planarity = (orderWithPlanarBit === order) ? Pixel.Planarity.NonPlanar : Pixel.Planarity.Planar;
+        switch (order) {
+          case RenderOrder.None:
+            geometryType = Pixel.GeometryType.None;
+            planarity = Pixel.Planarity.None;
+            break;
+          case RenderOrder.BlankingRegion:
+          case RenderOrder.Surface:
+            geometryType = Pixel.GeometryType.Surface;
+            break;
+          case RenderOrder.Linear:
+            geometryType = Pixel.GeometryType.Linear;
+            break;
+          case RenderOrder.Edge:
+            geometryType = Pixel.GeometryType.Edge;
+            break;
+          case RenderOrder.Silhouette:
+            geometryType = Pixel.GeometryType.Silhouette;
+            break;
+          default:
+            // ###TODO: may run into issues with point clouds - they are not written correctly in C++.
+            assert(false, "Invalid render order");
+            geometryType = Pixel.GeometryType.None;
+            planarity = Pixel.Planarity.None;
+            break;
         }
       }
     }
 
-    return new Pixel.Data(elemId, distanceFraction, geometryType, planarity);
+    return new Pixel.Data(feature, distanceFraction, geometryType, planarity);
   }
 
   private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {
     this._rect = rect.clone();
     this._selector = selector;
+    this._batchState = compositor.target.batchState;
 
     if (Pixel.Selector.None !== (selector & Pixel.Selector.GeometryAndDistance)) {
       const depthAndOrderBytes = compositor.readDepthAndOrder(rect);
@@ -287,15 +286,12 @@ class PixelBuffer implements Pixel.Buffer {
         this._selector &= ~Pixel.Selector.GeometryAndDistance;
     }
 
-    if (Pixel.Selector.None !== (selector & Pixel.Selector.ElementId)) {
-      const loBytes = compositor.readElementIds(false, rect);
-      const hiBytes = undefined !== loBytes ? compositor.readElementIds(true, rect) : undefined;
-      if (undefined !== loBytes && undefined !== hiBytes) {
-        this._elemIdLow = new Uint32Array(loBytes.buffer);
-        this._elemIdHi = new Uint32Array(hiBytes.buffer);
-      } else {
-        this._selector &= ~Pixel.Selector.ElementId;
-      }
+    if (Pixel.Selector.None !== (selector & Pixel.Selector.Feature)) {
+      const features = compositor.readFeatureIds(rect);
+      if (undefined !== features)
+        this._featureId = new Uint32Array(features.buffer);
+      else
+        this._selector &= ~Pixel.Selector.Feature;
     }
   }
 
@@ -306,23 +302,24 @@ class PixelBuffer implements Pixel.Buffer {
     return pdb.isEmpty ? undefined : pdb;
   }
 }
-*/
 
 // Orchestrates rendering of the scene on behalf of a Target.
 // This base class exists only so we don't have to export all the types of the shared Compositor members like Textures, FrameBuffers, etc.
 export abstract class SceneCompositor implements IDisposable {
+  public readonly target: Target;
+
   public abstract get currentRenderTargetIndex(): number;
   public abstract dispose(): void;
   public abstract draw(_commands: RenderCommands): void;
   public abstract drawForReadPixels(_commands: RenderCommands, overlays?: GraphicList): void;
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
   public abstract readDepthAndOrder(rect: ViewRect): Uint8Array | undefined;
-  public abstract readElementIds(high: boolean, rect: ViewRect): Uint8Array | undefined;
+  public abstract readFeatureIds(rect: ViewRect): Uint8Array | undefined;
 
   public abstract get featureIds(): TextureHandle;
   public abstract get depthAndOrder(): TextureHandle;
 
-  protected constructor() { }
+  protected constructor(target: Target) { this.target = target; }
 
   public static create(target: Target): SceneCompositor {
     return System.instance.capabilities.supportsDrawBuffers ? new MRTCompositor(target) : new MPCompositor(target);
@@ -331,7 +328,6 @@ export abstract class SceneCompositor implements IDisposable {
 
 // The actual base class. Specializations are provided based on whether or not multiple render targets are supported.
 abstract class Compositor extends SceneCompositor {
-  protected _target: Target;
   protected _width: number = -1;
   protected _height: number = -1;
   protected _textures = new Textures();
@@ -359,9 +355,8 @@ abstract class Compositor extends SceneCompositor {
   protected abstract pingPong(): void;
 
   protected constructor(target: Target, fbos: FrameBuffers, geometry: Geometry) {
-    super();
+    super(target);
 
-    this._target = target;
     this._frameBuffers = fbos;
     this._geom = geometry;
 
@@ -416,7 +411,7 @@ abstract class Compositor extends SceneCompositor {
   }
 
   public update(): boolean {
-    const rect = this._target.viewRect;
+    const rect = this.target.viewRect;
     const width = rect.width;
     const height = rect.height;
 
@@ -448,42 +443,42 @@ abstract class Compositor extends SceneCompositor {
 
     // Render the background
     this.renderBackground(commands, needComposite);
-    if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render Background");
+    if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Background");
 
     // Render the sky box
     this.renderSkyBox(commands, needComposite);
-    if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render SkyBox");
+    if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render SkyBox");
 
     // Render the terrain
     this.renderTerrain(commands, needComposite);
-    if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render Terrain");
+    if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Terrain");
 
     // Enable clipping
-    this._target.pushActiveVolume();
-    if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Enable Clipping");
+    this.target.pushActiveVolume();
+    if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Enable Clipping");
 
     // Render opaque geometry
     this.renderOpaque(commands, needComposite, false);
-    if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render Opaque");
+    if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Opaque");
 
     // Render stencil volumes
     this.renderClassification(commands, needComposite, false);
-    if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render Stencils");
+    if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Stencils");
 
     if (needComposite) {
       this._geom.composite!.update(flags);
       this.clearTranslucent();
       this.renderTranslucent(commands);
-      if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render Translucent");
+      if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Translucent");
       this.renderHilite(commands);
-      if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Render Hilite");
+      if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Hilite");
       this.composite();
-      if (this._target.performanceMetrics) this._target.performanceMetrics.recordTime("Composite");
+      if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Composite");
     }
-    this._target.popActiveVolume();
+    this.target.popActiveVolume();
   }
 
-  public get fullHeight(): number { return this._target.viewRect.height; }
+  public get fullHeight(): number { return this.target.viewRect.height; }
 
   public drawForReadPixels(commands: RenderCommands, overlays?: GraphicList) {
     if (!this.update()) {
@@ -497,10 +492,10 @@ abstract class Compositor extends SceneCompositor {
     // It's possible we have no pickable scene graphics or decorations, but do have pickable world overlays.
     const haveRenderCommands = !commands.isEmpty;
     if (haveRenderCommands) {
-      this._target.pushActiveVolume();
+      this.target.pushActiveVolume();
       this.renderOpaque(commands, false, true);
       this.renderClassification(commands, false, true);
-      this._target.popActiveVolume();
+      this.target.popActiveVolume();
     }
 
     if (undefined === overlays || 0 === overlays.length)
@@ -526,15 +521,14 @@ abstract class Compositor extends SceneCompositor {
     this.renderOpaque(commands, false, true);
   }
 
-  public readPixels(_rect: ViewRect, _selector: Pixel.Selector): Pixel.Buffer | undefined {
-    return undefined; // ###TODO PixelBuffer.create(rect, selector, this);
+  public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+    return PixelBuffer.create(rect, selector, this);
   }
 
   public readDepthAndOrder(rect: ViewRect): Uint8Array | undefined { return this.readFrameBuffer(rect, this._frameBuffers.depthAndOrder); }
 
-  public readElementIds(_high: boolean, _rect: ViewRect): Uint8Array | undefined {
-    /**
-    const tex = high ? this._textures.idHigh : this._textures.idLow;
+  public readFeatureIds(rect: ViewRect): Uint8Array | undefined {
+    const tex = this._textures.featureId;
     if (undefined === tex)
       return undefined;
 
@@ -544,8 +538,6 @@ abstract class Compositor extends SceneCompositor {
     dispose(fbo);
 
     return result;
-    **/
-    return undefined;
   }
 
   private readFrameBuffer(rect: ViewRect, fbo?: FrameBuffer): Uint8Array | undefined {
@@ -590,18 +582,18 @@ abstract class Compositor extends SceneCompositor {
       return;
     }
 
-    this._target.plan!.selectTerrainFrustum();
-    this._target.changeFrustum(this._target.plan!);
+    this.target.plan!.selectTerrainFrustum();
+    this.target.changeFrustum(this.target.plan!);
 
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
       System.instance.applyRenderState(this.getRenderState(RenderPass.Terrain));
-      this._target.techniques.execute(this._target, cmds, RenderPass.Terrain);
+      this.target.techniques.execute(this.target, cmds, RenderPass.Terrain);
     });
 
-    this._target.plan!.selectViewFrustum();
-    this._target.changeFrustum(this._target.plan!);
+    this.target.plan!.selectViewFrustum();
+    this.target.changeFrustum(this.target.plan!);
   }
 
   private renderSkyBox(commands: RenderCommands, needComposite: boolean) {
@@ -613,10 +605,10 @@ abstract class Compositor extends SceneCompositor {
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
-      this._target.pushState(this._target.decorationState);
+      this.target.pushState(this.target.decorationState);
       System.instance.applyRenderState(this.getRenderState(RenderPass.SkyBox));
-      this._target.techniques.execute(this._target, cmds, RenderPass.SkyBox);
-      this._target.popBranch();
+      this.target.techniques.execute(this.target, cmds, RenderPass.SkyBox);
+      this.target.popBranch();
     });
   }
 
@@ -629,22 +621,22 @@ abstract class Compositor extends SceneCompositor {
     const fbStack = System.instance.frameBufferStack;
     const fbo = this.getBackgroundFbo(needComposite);
     fbStack.execute(fbo, true, () => {
-      this._target.pushState(this._target.decorationState);
+      this.target.pushState(this.target.decorationState);
       System.instance.applyRenderState(this.getRenderState(RenderPass.Background));
-      this._target.techniques.execute(this._target, cmds, RenderPass.Background);
-      this._target.popBranch();
+      this.target.techniques.execute(this.target, cmds, RenderPass.Background);
+      this.target.popBranch();
     });
   }
 
   private findFlashedClassifier(cmdsByIndex: DrawCommands): number {
-    if (!Id64.isValid(this._target.flashedElemId))
+    if (!Id64.isValid(this.target.flashedElemId))
       return -1; // nothing flashed
     for (let i = 1; i < cmdsByIndex.length; i += 3) {
       const command = cmdsByIndex[i];
       if (command.isPrimitiveCommand) {
         if (command instanceof BatchPrimitiveCommand) {
           const batch = command as BatchPrimitiveCommand;
-          if (batch.computeIsFlashed(this._target.flashedElemId)) {
+          if (batch.computeIsFlashed(this.target.flashedElemId)) {
             return (i - 1) / 3;
           }
         }
@@ -656,10 +648,10 @@ abstract class Compositor extends SceneCompositor {
   private renderIndexedClassifier(cmdsByIndex: DrawCommands, index: number, needComposite: boolean) {
     // Set the stencil for the given classifier stencil volume.
     System.instance.frameBufferStack.execute(this._frameBuffers.stencilSet!, false, () => {
-      this._target.pushState(this._target.decorationState);
+      this.target.pushState(this.target.decorationState);
       System.instance.applyRenderState(this._stencilSetRenderState);
-      this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.Classification, index);
-      this._target.popBranch();
+      this.target.techniques.executeForIndexedClassifier(this.target, cmdsByIndex, RenderPass.Classification, index);
+      this.target.popBranch();
     });
     // Process the stencil for the pick data.
     this.renderIndexedClassifierForReadPixels(cmdsByIndex, index, this._classifyPickDataRenderState, needComposite);
@@ -676,12 +668,12 @@ abstract class Compositor extends SceneCompositor {
       System.instance.frameBufferStack.execute(this.getBackgroundFbo(needComposite), true, () => {
         if (1 === this._debugStencil) {
           System.instance.applyRenderState(this.getRenderState(RenderPass.OpaqueGeneral));
-          this._target.techniques.execute(this._target, cmds, RenderPass.OpaqueGeneral);
+          this.target.techniques.execute(this.target, cmds, RenderPass.OpaqueGeneral);
         } else {
-          this._target.pushState(this._target.decorationState);
+          this.target.pushState(this.target.decorationState);
           System.instance.applyRenderState(this._debugStencilRenderState);
-          this._target.techniques.execute(this._target, cmds, RenderPass.Classification);
-          this._target.popBranch();
+          this.target.techniques.execute(this.target, cmds, RenderPass.Classification);
+          this.target.popBranch();
         }
       });
       return;
@@ -715,20 +707,20 @@ abstract class Compositor extends SceneCompositor {
     if (cmds.length > 0) {
       // Set the stencil for the given classifier stencil volume.
       fbStack.execute(fboSet, false, () => {
-        this._target.pushState(this._target.decorationState);
+        this.target.pushState(this.target.decorationState);
         System.instance.applyRenderState(this._stencilSetRenderState);
-        this._target.techniques.execute(this._target, cmdsH, RenderPass.Hilite);
-        this._target.popBranch();
+        this.target.techniques.execute(this.target, cmdsH, RenderPass.Hilite);
+        this.target.popBranch();
       });
       // Process the stencil volumes, blending into the current color buffer.
       fbStack.execute(fboCopy!, true, () => {
-        this._target.pushState(this._target.decorationState);
+        this.target.pushState(this.target.decorationState);
         this._classifyColorRenderState.blend.color = [1.0, 1.0, 1.0, 0.2];
         this._classifyColorRenderState.blend.setBlendFunc(GL.BlendFactor.ConstAlpha, GL.BlendFactor.OneMinusConstAlpha); // Mix with select/hilite color
         System.instance.applyRenderState(this._classifyColorRenderState);
-        const params = getDrawParams(this._target, this._geom.stencilCopy!);
-        this._target.techniques.draw(params);
-        this._target.popBranch();
+        const params = getDrawParams(this.target, this._geom.stencilCopy!);
+        this.target.techniques.draw(params);
+        this.target.popBranch();
       });
     }
 
@@ -736,19 +728,19 @@ abstract class Compositor extends SceneCompositor {
     if (flashedClassifier !== -1) {
       // Set the stencil for this one classifier.
       fbStack.execute(this._frameBuffers.stencilSet!, false, () => {
-        this._target.pushState(this._target.decorationState);
+        this.target.pushState(this.target.decorationState);
         System.instance.applyRenderState(this._stencilSetRenderState);
-        this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.Classification, flashedClassifier);
-        this._target.popBranch();
+        this.target.techniques.executeForIndexedClassifier(this.target, cmdsByIndex, RenderPass.Classification, flashedClassifier);
+        this.target.popBranch();
       });
       // Process the stencil.
       fbStack.execute(fboCopy!, true, () => {
-        this._target.pushState(this._target.decorationState);
-        this._classifyColorRenderState.blend.color = [1.0, 1.0, 1.0, this._target.flashIntensity * 0.5];
+        this.target.pushState(this.target.decorationState);
+        this._classifyColorRenderState.blend.color = [1.0, 1.0, 1.0, this.target.flashIntensity * 0.5];
         this._classifyColorRenderState.blend.setBlendFuncSeparate(GL.BlendFactor.ConstAlpha, GL.BlendFactor.ConstAlpha, GL.BlendFactor.One, GL.BlendFactor.OneMinusConstAlpha); // want to just add flash color
         System.instance.applyRenderState(this._classifyColorRenderState);
-        this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.OpaquePlanar, flashedClassifier);
-        this._target.popBranch();
+        this.target.techniques.executeForIndexedClassifier(this.target, cmdsByIndex, RenderPass.OpaquePlanar, flashedClassifier);
+        this.target.popBranch();
       });
     }
 
@@ -756,15 +748,15 @@ abstract class Compositor extends SceneCompositor {
     // ###TODO: Need a way to only do this to reality mesh and point cloud data
     // Set the stencil using the stencil command list.
     fbStack.execute(fboSet!, false, () => {
-      this._target.pushState(this._target.decorationState);
+      this.target.pushState(this.target.decorationState);
       System.instance.applyRenderState(this._stencilSetRenderState);
-      this._target.techniques.execute(this._target, cmds, RenderPass.Classification);
-      this._target.popBranch();
+      this.target.techniques.execute(this.target, cmds, RenderPass.Classification);
+      this.target.popBranch();
     });
 
     // Process the stencil volumes, blending into the current color buffer.
     fbStack.execute(fboCopy!, true, () => {
-      this._target.pushState(this._target.decorationState);
+      this.target.pushState(this.target.decorationState);
       this._classifyColorRenderState.stencil.frontFunction.function = GL.StencilFunction.Equal;
       this._classifyColorRenderState.stencil.backFunction.function = GL.StencilFunction.Equal;
       this._classifyColorRenderState.blend.color = [1.0, 1.0, 1.0, 0.4];
@@ -772,9 +764,9 @@ abstract class Compositor extends SceneCompositor {
       System.instance.applyRenderState(this._classifyColorRenderState);
       this._classifyColorRenderState.stencil.frontFunction.function = GL.StencilFunction.NotEqual;
       this._classifyColorRenderState.stencil.backFunction.function = GL.StencilFunction.NotEqual;
-      const params = getDrawParams(this._target, this._geom.stencilCopy!);
-      this._target.techniques.draw(params);
-      this._target.popBranch();
+      const params = getDrawParams(this.target, this._geom.stencilCopy!);
+      this.target.techniques.draw(params);
+      this.target.popBranch();
     });
   }
 
@@ -794,23 +786,23 @@ abstract class Compositor extends SceneCompositor {
     }
     // Set the stencil for the given classifier stencil volume.
     system.frameBufferStack.execute(this._frameBuffers.stencilSet!, false, () => {
-      this._target.pushState(this._target.decorationState);
+      this.target.pushState(this.target.decorationState);
       system.applyRenderState(this._stencilSetRenderState);
-      this._target.techniques.execute(this._target, cmds, RenderPass.Hilite);
-      this._target.popBranch();
+      this.target.techniques.execute(this.target, cmds, RenderPass.Hilite);
+      this.target.popBranch();
     });
 
     // Process the stencil for the hilite data.
     system.frameBufferStack.execute(this._frameBuffers.hiliteUsingStencil!, true, () => {
       system.applyRenderState(this._classifyPickDataRenderState);
-      this._target.techniques.execute(this._target, cmds, RenderPass.Hilite);
+      this.target.techniques.execute(this.target, cmds, RenderPass.Hilite);
     });
   }
 
   private composite() {
     System.instance.applyRenderState(RenderState.defaults);
-    const params = getDrawParams(this._target, this._geom.composite!);
-    this._target.techniques.draw(params);
+    const params = getDrawParams(this.target, this._geom.composite!);
+    this.target.techniques.draw(params);
   }
 
   private getRenderState(pass: RenderPass): RenderState {
@@ -835,7 +827,7 @@ abstract class Compositor extends SceneCompositor {
     }
 
     System.instance.applyRenderState(this.getRenderState(pass));
-    this._target.techniques.execute(this._target, cmds, pass);
+    this.target.techniques.execute(this.target, cmds, pass);
   }
 }
 
@@ -954,8 +946,8 @@ class MRTCompositor extends Compositor {
       // (0,0,0,0) in elementID0 and ElementID1 buffers indicates invalid element id
       // (0,0,0,0) in DepthAndOrder buffer indicates render order 0 and encoded depth of 0 (= far plane)
       system.applyRenderState(this._noDepthMaskRenderState);
-      const params = getDrawParams(this._target, this._geometry.clearPickAndColor!);
-      this._target.techniques.draw(params);
+      const params = getDrawParams(this.target, this._geometry.clearPickAndColor!);
+      this.target.techniques.draw(params);
 
       // Clear depth buffer
       system.applyRenderState(RenderState.defaults); // depthMask == true.
@@ -993,7 +985,7 @@ class MRTCompositor extends Compositor {
     const fbStack = System.instance.frameBufferStack;
     fbStack.execute(needComposite ? this._fbos.idOnlyAndComposite! : this._fbos.idOnly!, true, () => {
       System.instance.applyRenderState(state);
-      this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.OpaqueGeneral, index);
+      this.target.techniques.executeForIndexedClassifier(this.target, cmdsByIndex, RenderPass.OpaqueGeneral, index);
     });
     this._readPickDataFromPingPong = false;
   }
@@ -1001,8 +993,8 @@ class MRTCompositor extends Compositor {
   protected clearTranslucent() {
     System.instance.applyRenderState(this._noDepthMaskRenderState);
     System.instance.frameBufferStack.execute(this._fbos.clearTranslucent!, true, () => {
-      const params = getDrawParams(this._target, this._geometry.clearTranslucent!);
-      this._target.techniques.draw(params);
+      const params = getDrawParams(this.target, this._geometry.clearTranslucent!);
+      this.target.techniques.draw(params);
     });
   }
 
@@ -1015,8 +1007,8 @@ class MRTCompositor extends Compositor {
   protected pingPong() {
     System.instance.applyRenderState(this._noDepthMaskRenderState);
     System.instance.frameBufferStack.execute(this._fbos.pingPong!, true, () => {
-      const params = getDrawParams(this._target, this._geometry.copyPickBuffers!);
-      this._target.techniques.draw(params);
+      const params = getDrawParams(this.target, this._geometry.copyPickBuffers!);
+      this.target.techniques.draw(params);
     });
   }
 
@@ -1094,7 +1086,7 @@ class MPCompositor extends Compositor {
   protected getBackgroundFbo(needComposite: boolean): FrameBuffer { return needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!; }
 
   protected clearOpaque(needComposite: boolean): void {
-    const bg = FloatRgba.fromColorDef(this._target.bgColor);
+    const bg = FloatRgba.fromColorDef(this.target.bgColor);
     this.clearFbo(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, bg.red, bg.green, bg.blue, bg.alpha, true);
     this.clearFbo(this._fbos.depthAndOrder!, 0, 0, 0, 0, true);
     this.clearFbo(this._fbos.featureId!, 0, 0, 0, 0, true);
@@ -1128,7 +1120,7 @@ class MPCompositor extends Compositor {
     stack.execute(this._fbos.featureIdWithDepth!, true, () => {
       state.stencil.backOperation.zPass = GL.StencilOperation.Zero;
       System.instance.applyRenderState(state);
-      this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.OpaqueGeneral, index);
+      this.target.techniques.executeForIndexedClassifier(this.target, cmdsByIndex, RenderPass.OpaqueGeneral, index);
     });
     this._currentRenderTargetIndex = 0;
     this._readPickDataFromPingPong = false;
@@ -1174,8 +1166,8 @@ class MPCompositor extends Compositor {
     const geom = this._geometry.copyColor!;
     geom.texture = src.getHandle()!;
     System.instance.frameBufferStack.execute(dst, true, () => {
-      const params = getDrawParams(this._target, geom);
-      this._target.techniques.draw(params);
+      const params = getDrawParams(this.target, geom);
+      this.target.techniques.draw(params);
     });
   }
 

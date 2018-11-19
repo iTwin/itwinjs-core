@@ -192,7 +192,7 @@ export class SelectionTool extends PrimitiveTool {
 
     const rect = new ViewRect();
     rect.initFromRange(range);
-    vp.readPixels(rect, Pixel.Selector.ElementId, (pixels) => {
+    vp.readPixels(rect, Pixel.Selector.Feature, (pixels) => {
       if (undefined === pixels)
         return;
 

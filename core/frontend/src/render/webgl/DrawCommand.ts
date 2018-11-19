@@ -468,11 +468,14 @@ export class RenderCommands {
 
   public clear(): void {
     assert(this._batchState.isEmpty, "BatchState should be cleared at end of frame");
+    this._clearCommands();
+  }
+  private _clearCommands(): void {
     this._commands.forEach((cmds: DrawCommands) => { cmds.splice(0); });
   }
 
   public initForPickOverlays(overlays: GraphicList): void {
-    this.clear();
+    this._clearCommands();
 
     this._addTranslucentAsOpaque = true;
     this._stack.pushState(this.target.decorationState);

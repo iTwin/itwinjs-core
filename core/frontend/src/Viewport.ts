@@ -1071,7 +1071,7 @@ export abstract class Viewport implements IDisposable {
       return undefined;
 
     let retVal: DepthRangeNpc | undefined;
-    this.readPixels(readRect, Pixel.Selector.Distance, (pixels) => {
+    this.readPixels(readRect, Pixel.Selector.GeometryAndDistance, (pixels) => {
       if (!pixels)
         return;
 

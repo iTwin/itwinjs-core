@@ -344,6 +344,7 @@ export abstract class Target extends RenderTarget {
       this._activeClipVolume.pop(this);
   }
 
+  public get batchState(): BatchState { return this._batchState; }
   public get currentBatchId(): number { return this._batchState.currentBatchId; }
   public pushBatch(batch: Batch) {
     this._batchState.push(batch, false);
@@ -837,7 +838,6 @@ export abstract class Target extends RenderTarget {
     this.pushState(state);
 
     // Create a culling frustum based on the input rect.
-    // NB: C++ BSIRect => TypeScript ViewRect...
     const viewRect = this.viewRect;
     const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
     const rightScale = (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
