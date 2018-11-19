@@ -15,7 +15,7 @@ import { Primitive } from "./Primitive";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { Target } from "./Target";
-import { BranchStack } from "./BranchState";
+import { BranchStack, BatchState } from "./BranchState";
 import { GraphicList, Decorations, RenderGraphic } from "../System";
 import { TechniqueId } from "./TechniqueId";
 import { SurfacePrimitive, SurfaceGeometry } from "./Surface";
@@ -214,8 +214,8 @@ export class RenderCommands {
   private readonly _scratchFrustum = new Frustum();
   private readonly _scratchRange = new ElementAlignedBox3d();
   private readonly _commands: DrawCommands[];
-  private readonly _stack: BranchStack;
-  private _curBatch?: Batch = undefined;
+  private readonly _stack: BranchStack; // refers to the Target's BranchStack
+  private readonly _batchState: BatchState; // refers to the Target's BatchState
   private _forcedRenderPass: RenderPass = RenderPass.None;
   private _opaqueOverrides: boolean = false;
   private _translucentOverrides: boolean = false;
@@ -245,12 +245,15 @@ export class RenderCommands {
     return flags;
   }
 
+  private get _curBatch(): Batch | undefined { return this._batchState.currentBatch; }
+
   public hasCommands(pass: RenderPass): boolean { return 0 !== this.getCommands(pass).length; }
   public isOpaquePass(pass: RenderPass): boolean { return pass >= RenderPass.OpaqueLinear && pass <= RenderPass.OpaqueGeneral; }
 
-  constructor(target: Target, stack: BranchStack) {
+  constructor(target: Target, stack: BranchStack, batchState: BatchState) {
     this.target = target;
     this._stack = stack;
+    this._batchState = batchState;
     this._commands = Array<DrawCommands>(RenderPass.COUNT);
     for (let i = 0; i < RenderPass.COUNT; ++i)
       this._commands[i] = [];
@@ -467,6 +470,7 @@ export class RenderCommands {
   }
 
   public clear(): void {
+    assert(this._batchState.isEmpty, "BatchState should be cleared at end of frame");
     this._commands.forEach((cmds: DrawCommands) => { cmds.splice(0); });
   }
 
@@ -616,24 +620,13 @@ export class RenderCommands {
       }
     }
 
-    // Don't bother pushing the batch if no features within it are overridden...
-    // ^ Actually, we need the pick table...
-    const pushBatch = /*overrides.AnyOverridden()*/ true;
-    if (pushBatch) {
-      this._curBatch = batch;
-      this._opaqueOverrides = overrides.anyOpaque;
-      this._translucentOverrides = overrides.anyTranslucent;
-    }
+    this._batchState.push(batch, true);
+    this._opaqueOverrides = overrides.anyOpaque;
+    this._translucentOverrides = overrides.anyTranslucent;
 
     (batch.graphic as Graphic).addCommands(this);
 
-    if (!pushBatch) {
-      assert(!this._opaqueOverrides && !this._translucentOverrides);
-      assert(undefined === this._curBatch);
-      return;
-    }
-
-    this._curBatch = undefined;
+    this._batchState.pop();
 
     // If the batch contains hilited features, need to render them in the hilite pass
     const anyHilited = overrides.anyHilited;

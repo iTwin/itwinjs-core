@@ -12,7 +12,7 @@ import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
 import { System } from "./System";
-import { BranchStack, BranchState } from "./BranchState";
+import { BranchStack, BranchState, BatchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
 import { Branch, WorldDecorations, FeatureOverrides, PickTable, Batch } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
@@ -173,6 +173,7 @@ function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
 export abstract class Target extends RenderTarget {
   protected _decorations?: Decorations;
   private _stack = new BranchStack();
+  private _batchState = new BatchState();
   private _scene: GraphicList = [];
   private _terrain: GraphicList = [];
   private _dynamics?: GraphicList;
@@ -221,7 +222,7 @@ export abstract class Target extends RenderTarget {
 
   protected constructor(rect?: ViewRect) {
     super();
-    this._renderCommands = new RenderCommands(this, this._stack);
+    this._renderCommands = new RenderCommands(this, this._stack, this._batchState);
     this._overlayRenderState = new RenderState();
     this._overlayRenderState.flags.depthMask = false;
     this._overlayRenderState.flags.blend = true;
@@ -716,6 +717,9 @@ export abstract class Target extends RenderTarget {
       if (this.performanceMetrics) this.performanceMetrics.recordTime("Overlay Draws");
     }
 
+    // Reset the batch IDs in all batches drawn for this call.
+    this._batchState.reset();
+
     this._endPaint();
     if (this.performanceMetrics) this.performanceMetrics.recordTime("End Paint");
 
@@ -799,7 +803,7 @@ export abstract class Target extends RenderTarget {
     receiver(result);
 
     // Reset the batch IDs in all batches drawn for this call.
-    // ###TODO UNCOMMENT ME !!! this._batchState.reset();
+    this._batchState.reset();
   }
 
   private readonly _scratchTmpFrustum = new Frustum();
