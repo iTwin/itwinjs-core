@@ -16,7 +16,6 @@ const assignFragData = `
   FragColor0 = baseColor;
   FragColor1 = vec4(0.0);
   FragColor2 = vec4(0.0);
-  FragColor3 = vec4(0.0);
 `;
 
 export function createClearPickAndColorProgram(context: WebGLRenderingContext): ShaderProgram {

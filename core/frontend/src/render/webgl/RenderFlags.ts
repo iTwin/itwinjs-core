@@ -47,13 +47,11 @@ export enum TextureUnit {
     FeatureSymbology = One,
     SurfaceTexture = Two,
     LineCode = Two,
-    UNUSED_ElementId = Three,
 
-    PickFeatureId = Four,
-    UNUSED_PickElementId1 = Five,
-    PickDepthAndOrder = Six,
+    PickFeatureId = Three,
+    PickDepthAndOrder = Four,
 
-    VertexLUT = Seven,
+    VertexLUT = Five,
 }
 
 /**

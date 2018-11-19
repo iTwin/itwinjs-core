@@ -420,7 +420,6 @@ export class ShaderBuilder extends ShaderVariables {
         src.addline("#define FragColor0 gl_FragData[0]");
         src.addline("#define FragColor1 gl_FragData[1]");
         src.addline("#define FragColor2 gl_FragData[2]");
-        src.addline("#define FragColor3 gl_FragData[3]");
       }
 
       if (isLit) {

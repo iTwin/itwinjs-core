@@ -548,18 +548,17 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
 
 // Geometry used to ping-pong the pick buffer data in between opaque passes.
 export class CopyPickBufferGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(idLow: WebGLTexture, idHigh: WebGLTexture, depthAndOrder: WebGLTexture) {
+  public static createGeometry(featureId: WebGLTexture, depthAndOrder: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined !== params) {
-      return new CopyPickBufferGeometry(params, [idLow, idHigh, depthAndOrder]);
+      return new CopyPickBufferGeometry(params, [featureId, depthAndOrder]);
     } else {
       return undefined;
     }
   }
 
-  public get elemIdLow() { return this._textures[0]; }
-  public get elemIdHigh() { return this._textures[1]; }
-  public get depthAndOrder() { return this._textures[2]; }
+  public get featureId() { return this._textures[0]; }
+  public get depthAndOrder() { return this._textures[1]; }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.CopyPickBuffers, textures);

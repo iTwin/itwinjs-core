@@ -8,16 +8,16 @@ import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { Target } from "./Target";
 import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry, CachedGeometry } from "./CachedGeometry";
-import { Vector3d } from "@bentley/geometry-core";
+// import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
 import { Pixel, GraphicList } from "../System";
 import { ViewRect } from "../../Viewport";
-import { assert, Id64, Id64String, IDisposable, dispose } from "@bentley/bentleyjs-core";
+import { assert, Id64, /**Id64String,**/ IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
 import { RenderCommands, ShaderProgramParams, DrawParams, DrawCommands, BatchPrimitiveCommand } from "./DrawCommand";
 import { RenderState } from "./RenderState";
-import { CompositeFlags, RenderPass, RenderOrder } from "./RenderFlags";
+import { CompositeFlags, RenderPass /*, RenderOrder*/ } from "./RenderFlags";
 import { FloatRgba } from "./FloatRGBA";
 
 let progParams: ShaderProgramParams | undefined;
@@ -39,8 +39,7 @@ class Textures implements IDisposable {
   public accumulation?: TextureHandle;
   public revealage?: TextureHandle;
   public color?: TextureHandle;
-  public idLow?: TextureHandle;
-  public idHigh?: TextureHandle;
+  public featureId?: TextureHandle;
   public depthAndOrder?: TextureHandle;
   public hilite?: TextureHandle;
 
@@ -48,8 +47,7 @@ class Textures implements IDisposable {
     this.accumulation = dispose(this.accumulation);
     this.revealage = dispose(this.revealage);
     this.color = dispose(this.color);
-    this.idLow = dispose(this.idLow);
-    this.idHigh = dispose(this.idHigh);
+    this.featureId = dispose(this.featureId);
     this.depthAndOrder = dispose(this.depthAndOrder);
     this.hilite = dispose(this.hilite);
   }
@@ -84,15 +82,13 @@ class Textures implements IDisposable {
 
     this.color = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
-    this.idLow = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    this.idHigh = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.featureId = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     this.depthAndOrder = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
     return undefined !== this.accumulation
       && undefined !== this.revealage
       && undefined !== this.color
-      && undefined !== this.idLow
-      && undefined !== this.idHigh
+      && undefined !== this.featureId
       && undefined !== this.depthAndOrder
       && undefined !== this.hilite;
   }
@@ -156,6 +152,7 @@ class Geometry implements IDisposable {
   }
 }
 
+/** ###TODO adjust me for feature IDs.
 // Represents a view of data read from a region of the frame buffer.
 class PixelBuffer implements Pixel.Buffer {
   private readonly _rect: ViewRect;
@@ -309,6 +306,7 @@ class PixelBuffer implements Pixel.Buffer {
     return pdb.isEmpty ? undefined : pdb;
   }
 }
+*/
 
 // Orchestrates rendering of the scene on behalf of a Target.
 // This base class exists only so we don't have to export all the types of the shared Compositor members like Textures, FrameBuffers, etc.
@@ -528,13 +526,14 @@ abstract class Compositor extends SceneCompositor {
     this.renderOpaque(commands, false, true);
   }
 
-  public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
-    return PixelBuffer.create(rect, selector, this);
+  public readPixels(_rect: ViewRect, _selector: Pixel.Selector): Pixel.Buffer | undefined {
+    return undefined; // ###TODO PixelBuffer.create(rect, selector, this);
   }
 
   public readDepthAndOrder(rect: ViewRect): Uint8Array | undefined { return this.readFrameBuffer(rect, this._frameBuffers.depthAndOrder); }
 
-  public readElementIds(high: boolean, rect: ViewRect): Uint8Array | undefined {
+  public readElementIds(_high: boolean, _rect: ViewRect): Uint8Array | undefined {
+    /**
     const tex = high ? this._textures.idHigh : this._textures.idLow;
     if (undefined === tex)
       return undefined;
@@ -545,6 +544,8 @@ abstract class Compositor extends SceneCompositor {
     dispose(fbo);
 
     return result;
+    **/
+    return undefined;
   }
 
   private readFrameBuffer(rect: ViewRect, fbo?: FrameBuffer): Uint8Array | undefined {
@@ -857,7 +858,7 @@ class MRTFrameBuffers extends FrameBuffers {
     if (undefined === boundColor)
       return false;
 
-    const colorAndPick = [boundColor, textures.idLow!, textures.idHigh!, textures.depthAndOrder!];
+    const colorAndPick = [boundColor, textures.featureId!, textures.depthAndOrder!];
     this.opaqueAll = FrameBuffer.create(colorAndPick, depth);
 
     colorAndPick[0] = textures.color!;
@@ -867,14 +868,14 @@ class MRTFrameBuffers extends FrameBuffers {
     this.translucent = FrameBuffer.create(colors, depth);
     this.clearTranslucent = FrameBuffer.create(colors);
 
-    // We borrow the SceneCompositor's accum, hilite, and revealage textures for the surface pass.
+    // We borrow the SceneCompositor's accum and revealage textures for the surface pass.
     // First we render edges, writing to our textures.
     // Then we copy our textures to borrowed textures.
     // Finally we render surfaces, writing to our textures and reading from borrowed textures.
-    const pingPong = [textures.accumulation!, textures.hilite!, textures.revealage!];
+    const pingPong = [textures.accumulation!, textures.revealage!];
     this.pingPong = FrameBuffer.create(pingPong);
 
-    const ids = [boundColor, textures.idLow!, textures.idHigh!];
+    const ids = [boundColor, textures.featureId!];
     this.idOnly = FrameBuffer.create(ids, depth);
     colorAndPick[0] = textures.color!;
     this.idOnlyAndComposite = FrameBuffer.create(ids, depth);
@@ -912,7 +913,7 @@ class MRTGeometry extends Geometry {
 
     assert(undefined === this.copyPickBuffers);
 
-    this.copyPickBuffers = CopyPickBufferGeometry.createGeometry(textures.idLow!.getHandle()!, textures.idHigh!.getHandle()!, textures.depthAndOrder!.getHandle()!);
+    this.copyPickBuffers = CopyPickBufferGeometry.createGeometry(textures.featureId!.getHandle()!, textures.depthAndOrder!.getHandle()!);
     this.clearTranslucent = ViewportQuadGeometry.create(TechniqueId.OITClearTranslucent);
     this.clearPickAndColor = ViewportQuadGeometry.create(TechniqueId.ClearPickAndColor);
 
@@ -940,7 +941,7 @@ class MRTCompositor extends Compositor {
   }
 
   public get featureIds(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 0 : 1); }
-  public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 2 : 3); }
+  public get depthAndOrder(): TextureHandle { return this.getSamplerTexture(this._readPickDataFromPingPong ? 1 : 2); }
 
   private get _fbos(): MRTFrameBuffers { return this._frameBuffers as MRTFrameBuffers; }
   private get _geometry(): MRTGeometry { return this._geom as MRTGeometry; }
@@ -1028,10 +1029,8 @@ class MRTCompositor extends Compositor {
 class MPFrameBuffers extends FrameBuffers {
   public accumulation?: FrameBuffer;
   public revealage?: FrameBuffer;
-  public idLow?: FrameBuffer;
-  public idHigh?: FrameBuffer;
-  public idLowWithDepth?: FrameBuffer;
-  public idHighWithDepth?: FrameBuffer;
+  public featureId?: FrameBuffer;
+  public featureIdWithDepth?: FrameBuffer;
 
   public init(textures: Textures, depth: DepthBuffer): boolean {
     if (!super.init(textures, depth))
@@ -1041,13 +1040,10 @@ class MPFrameBuffers extends FrameBuffers {
 
     this.accumulation = FrameBuffer.create([textures.accumulation!], depth);
     this.revealage = FrameBuffer.create([textures.revealage!], depth);
-    this.idLow = FrameBuffer.create([textures.idLow!]);
-    this.idHigh = FrameBuffer.create([textures.idHigh!]);
-    this.idLowWithDepth = FrameBuffer.create([textures.idLow!], depth);
-    this.idHighWithDepth = FrameBuffer.create([textures.idHigh!], depth);
+    this.featureId = FrameBuffer.create([textures.featureId!]);
+    this.featureIdWithDepth = FrameBuffer.create([textures.featureId!], depth);
 
-    return undefined !== this.accumulation && undefined !== this.revealage && undefined !== this.idLow
-      && undefined !== this.idHigh && undefined !== this.idLowWithDepth && undefined !== this.idHighWithDepth;
+    return undefined !== this.accumulation && undefined !== this.revealage && undefined !== this.featureId && undefined !== this.featureIdWithDepth;
   }
 
   public dispose(): void {
@@ -1055,10 +1051,8 @@ class MPFrameBuffers extends FrameBuffers {
 
     this.accumulation = dispose(this.accumulation);
     this.revealage = dispose(this.revealage);
-    this.idLow = dispose(this.idLow);
-    this.idHigh = dispose(this.idHigh);
-    this.idLowWithDepth = dispose(this.idLowWithDepth);
-    this.idHighWithDepth = dispose(this.idHighWithDepth);
+    this.featureId = dispose(this.featureId);
+    this.featureIdWithDepth = dispose(this.featureIdWithDepth);
   }
 }
 
@@ -1070,7 +1064,7 @@ class MPGeometry extends Geometry {
       return false;
 
     assert(undefined === this.copyColor);
-    this.copyColor = SingleTexturedViewportQuadGeometry.createGeometry(textures.idLow!.getHandle()!, TechniqueId.CopyColor);
+    this.copyColor = SingleTexturedViewportQuadGeometry.createGeometry(textures.featureId!.getHandle()!, TechniqueId.CopyColor);
     return undefined !== this.copyColor;
   }
 
@@ -1094,7 +1088,7 @@ class MPCompositor extends Compositor {
   private get _geometry(): MPGeometry { return this._geom as MPGeometry; }
 
   public get currentRenderTargetIndex(): number { return this._currentRenderTargetIndex; }
-  public get featureIds(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.accumulation! : this._textures.idLow!; }
+  public get featureIds(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.accumulation! : this._textures.featureId!; }
   public get depthAndOrder(): TextureHandle { return this._readPickDataFromPingPong ? this._textures.revealage! : this._textures.depthAndOrder!; }
 
   protected getBackgroundFbo(needComposite: boolean): FrameBuffer { return needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!; }
@@ -1103,8 +1097,7 @@ class MPCompositor extends Compositor {
     const bg = FloatRgba.fromColorDef(this._target.bgColor);
     this.clearFbo(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, bg.red, bg.green, bg.blue, bg.alpha, true);
     this.clearFbo(this._fbos.depthAndOrder!, 0, 0, 0, 0, true);
-    this.clearFbo(this._fbos.idLow!, 0, 0, 0, 0, true);
-    this.clearFbo(this._fbos.idHigh!, 0, 0, 0, 0, true);
+    this.clearFbo(this._fbos.featureId!, 0, 0, 0, 0, true);
   }
 
   protected renderOpaque(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean): void {
@@ -1132,14 +1125,8 @@ class MPCompositor extends Compositor {
     this._readPickDataFromPingPong = true;
     const stack = System.instance.frameBufferStack;
     this._currentRenderTargetIndex = 1;
-    stack.execute(this._fbos.idLowWithDepth!, true, () => {
-      state.stencil.backOperation.zPass = GL.StencilOperation.Keep; // don't clear the stencil yet so we can do another pass.
-      System.instance.applyRenderState(state);
-      this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.OpaqueGeneral, index);
-    });
-    this._currentRenderTargetIndex = 2;
-    stack.execute(this._fbos.idHighWithDepth!, true, () => {
-      state.stencil.backOperation.zPass = GL.StencilOperation.Zero; // clear the stencil this time before the next classifier is drawn.
+    stack.execute(this._fbos.featureIdWithDepth!, true, () => {
+      state.stencil.backOperation.zPass = GL.StencilOperation.Zero;
       System.instance.applyRenderState(state);
       this._target.techniques.executeForIndexedClassifier(this._target, cmdsByIndex, RenderPass.OpaqueGeneral, index);
     });
@@ -1152,9 +1139,7 @@ class MPCompositor extends Compositor {
     const stack = System.instance.frameBufferStack;
     stack.execute(colorFbo, true, () => this.drawPass(commands, pass, pingPong));
     this._currentRenderTargetIndex++;
-    stack.execute(this._fbos.idLow!, true, () => this.drawPass(commands, pass, false));
-    this._currentRenderTargetIndex++;
-    stack.execute(this._fbos.idHigh!, true, () => this.drawPass(commands, pass, false));
+    stack.execute(this._fbos.featureId!, true, () => this.drawPass(commands, pass, false));
     this._currentRenderTargetIndex++;
     stack.execute(this._fbos.depthAndOrder!, true, () => this.drawPass(commands, pass, false));
     this._currentRenderTargetIndex = 0;
@@ -1181,9 +1166,8 @@ class MPCompositor extends Compositor {
   protected pingPong() {
     System.instance.applyRenderState(this._noDepthMaskRenderState);
 
-    this.copyFbo(this._textures.idLow!, this._fbos.accumulation!);
-    this.copyFbo(this._textures.idHigh!, this._fbos.revealage!);
-    this.copyFbo(this._textures.depthAndOrder!, this._fbos.hilite!);
+    this.copyFbo(this._textures.featureId!, this._fbos.accumulation!);
+    this.copyFbo(this._textures.depthAndOrder!, this._fbos.revealage!);
   }
 
   private copyFbo(src: TextureHandle, dst: FrameBuffer): void {
