@@ -22,7 +22,7 @@ export * from "./ExpressServer";
 export * from "./IModelJsFs";
 export * from "./IModelHost";
 export * from "./Platform";
-export * from "./LinkTableRelationship";
+export * from "./Relationship";
 export * from "./LineStyle";
 export * from "./Model";
 export * from "./NavigationRelationship";

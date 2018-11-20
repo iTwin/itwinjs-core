@@ -248,7 +248,7 @@ export class AutoPush {
   //  Push changes, if there are changes and only if the backend is idle.
   private doAutoPush() {
     // Nothing to push?
-    if (!this.iModel.txns.findLocalChanges()) {
+    if (!this.iModel.txns.hasLocalChanges) {
       this.cancel();
       this.scheduleNextPush();
       return;

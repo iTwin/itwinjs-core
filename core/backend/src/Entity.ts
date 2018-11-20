@@ -34,6 +34,8 @@ export class Entity implements EntityProps {
   public toJSON(): EntityProps {
     const val: any = {};
     val.classFullName = this.classFullName;
+    if (Id64.isValid(this.id))
+      val.id = this.id;
     this.forEachProperty((propName: string) => val[propName] = this[propName]);
     return val;
   }

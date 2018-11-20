@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
-import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
+import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, NativePlatformRegistry, SubjectOwnsPartitionElements,
@@ -244,10 +244,8 @@ export class IModelTestUtils {
     }
   }
 
-  //
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  //
-  public static createAndInsertPhysicalPartition(testImodel: IModelDb, newModelCode: Code): Id64String {
+  public static createAndInsertPhysicalPartition(testImodel: IModelDb, newModelCode: CodeProps): Id64String {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       iModel: testImodel,
@@ -259,9 +257,7 @@ export class IModelTestUtils {
     return testImodel.elements.insertElement(modeledElement);
   }
 
-  //
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  //
   public static createAndInsertPhysicalModel(testImodel: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
 
     const newModel = testImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
@@ -278,7 +274,7 @@ export class IModelTestUtils {
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   // @return [modeledElementId, modelId]
   //
-  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: Code, privateModel: boolean = false): Id64String[] {
+  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false): Id64String[] {
     const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode);
     const modeledElementRef = new RelatedElement({ id: eid });
     const mid = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef, privateModel);

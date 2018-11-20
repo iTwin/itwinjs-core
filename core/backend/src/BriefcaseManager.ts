@@ -102,8 +102,9 @@ export class BriefcaseEntry {
   private _iModelDb?: IModelDb;
   public get iModelDb(): IModelDb | undefined { return this._iModelDb; }
   public set iModelDb(iModelDb: IModelDb | undefined) {
+    // NEEDS_WORK_MERGE: uncomment the following lines when Keith's changes to javascript-domains are merged in
     // if (iModelDb)
-    //   this.nativeDb.setIModelDb(iModelDb);
+    //   this.nativeDb.setIModelDb(iModelDb); // store a pointer to this IModelDb on the native object so we can send it callbacks
     this._iModelDb = iModelDb;
   }
 

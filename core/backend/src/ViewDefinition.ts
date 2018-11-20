@@ -390,7 +390,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
       extents: viewExtents,
       angles,
       cameraOn: false,
-      camera: { eye: [0, 0, 0], lens: 0, focusDist: 0 }, // not used when cameraOn === false
+      camera: new Camera(), // not used when cameraOn === false
     };
     return iModelDb.elements.insertElement(viewDefinitionProps);
   }
