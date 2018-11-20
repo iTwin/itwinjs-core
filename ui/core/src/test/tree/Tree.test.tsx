@@ -53,8 +53,9 @@ describe("<Tree />", () => {
       wrapper.getDOMNode().getBoundingClientRect = () => createRect(1000, 0, 1100, 100);
       wrapper.getDOMNode().scrollLeft = 100;
       const tree = wrapper.instance() as Tree;
-      const elementRect = createRect(980, 0, 1000, 20);
-      tree.scrollToElement(elementRect);
+      const element = document.createElement("div");
+      sinon.stub(element, "getBoundingClientRect").returns(createRect(980, 0, 1000, 20));
+      tree.scrollToElement(element);
       expect(scrollToSpy).to.be.calledWithMatch(sinon.match(({ left }) => left === 0));
     });
 
@@ -63,8 +64,9 @@ describe("<Tree />", () => {
       wrapper.getDOMNode().getBoundingClientRect = () => createRect(1000, 0, 1100, 100);
       wrapper.getDOMNode().scrollLeft = 100;
       const tree = wrapper.instance() as Tree;
-      const elementRect = createRect(1000, 0, 1020, 20);
-      tree.scrollToElement(elementRect);
+      const element = document.createElement("div");
+      sinon.stub(element, "getBoundingClientRect").returns(createRect(1000, 0, 1020, 20));
+      tree.scrollToElement(element);
       expect(scrollToSpy).to.be.calledWithMatch(sinon.match(({ left }) => left === 100));
     });
 
@@ -73,8 +75,9 @@ describe("<Tree />", () => {
       wrapper.getDOMNode().getBoundingClientRect = () => createRect(1000, 0, 1100, 100);
       wrapper.getDOMNode().scrollLeft = 0;
       const tree = wrapper.instance() as Tree;
-      const elementRect = createRect(1100, 0, 1120, 20);
-      tree.scrollToElement(elementRect);
+      const element = document.createElement("div");
+      sinon.stub(element, "getBoundingClientRect").returns(createRect(1100, 0, 1120, 20));
+      tree.scrollToElement(element);
       expect(scrollToSpy).to.be.calledWithMatch(sinon.match(({ left }) => left === 100));
     });
 
@@ -83,8 +86,9 @@ describe("<Tree />", () => {
       wrapper.getDOMNode().getBoundingClientRect = () => createRect(0, 100, 100, 220);
       wrapper.getDOMNode().scrollTop = 20;
       const tree = wrapper.instance() as Tree;
-      const elementRect = createRect(0, 120, 20, 140);
-      tree.scrollToElement(elementRect);
+      const element = document.createElement("div");
+      sinon.stub(element, "getBoundingClientRect").returns(createRect(0, 120, 20, 140));
+      tree.scrollToElement(element);
       expect(scrollToSpy).to.be.calledWithMatch(sinon.match(({ top }) => top === 20));
     });
 
@@ -93,21 +97,26 @@ describe("<Tree />", () => {
       wrapper.getDOMNode().getBoundingClientRect = () => createRect(0, 100, 100, 220);
       wrapper.getDOMNode().scrollLeft = 0;
       const tree = wrapper.instance() as Tree;
-      const elementRect = createRect(0, 220, 20, 240);
-      tree.scrollToElement(elementRect);
+      const element = document.createElement("div");
+      sinon.stub(element, "getBoundingClientRect").returns(createRect(0, 220, 20, 240));
+      tree.scrollToElement(element);
       expect(scrollToSpy).to.be.calledWithMatch(sinon.match(({ top }) => top === 120));
     });
 
     it("does nothing if Tree isn't mounted properly", () => {
       const tree = new Tree({});
-      tree.scrollToElement(createRandomRect());
+      const element = document.createElement("div");
+      sinon.stub(element, "getBoundingClientRect").returns(createRandomRect());
+      tree.scrollToElement(element);
       expect(scrollToSpy).to.not.be.called;
     });
 
     it("does nothing if Tree is not scrollable and doesn't have a scrollable child", () => {
       const wrapper = mount(<Tree><div /></Tree>);
       const tree = wrapper.instance() as Tree;
-      tree.scrollToElement(createRandomRect());
+      const element = document.createElement("div");
+      sinon.stub(element, "getBoundingClientRect").returns(createRandomRect());
+      tree.scrollToElement(element);
       expect(scrollToSpy).to.not.be.called;
     });
   });

@@ -41,11 +41,18 @@ export default class Tree extends React.PureComponent<TreeProps> {
     return scrollableContainer;
   }
 
-  public scrollToElement(elementBox: ClientRect | DOMRect) {
+  public scrollToElement(element: Element) {
     const container = this._scrollableContainer;
     if (!container)
       return;
 
+    if (!Element.prototype.scrollTo) {
+      // workaround for Edge scrollTo issue https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/15534521/
+      element.scrollIntoView();
+      return;
+    }
+
+    const elementBox = element.getBoundingClientRect();
     const elementRange = Range2d.createXYXY(elementBox.left, elementBox.top, elementBox.right, elementBox.bottom);
     const containerBox = container.getBoundingClientRect();
     const containerRange = Range2d.createXYXY(containerBox.left - container.scrollLeft, containerBox.top - container.scrollTop,
@@ -74,7 +81,14 @@ export default class Tree extends React.PureComponent<TreeProps> {
   }
 
   public getElementsByClassName(className: string): Element[] {
-    return this._treeElement.current ? [...this._treeElement.current.getElementsByClassName(className)] : [];
+    if (!this._treeElement.current)
+      return [];
+
+    const elems = new Array<Element>();
+    const collection = this._treeElement.current.getElementsByClassName(className);
+    for (let i = 0; i < collection.length; ++i)
+      elems.push(collection.item(i)!);
+    return elems;
   }
 
   public render() {

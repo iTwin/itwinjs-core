@@ -275,10 +275,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
     // now make sure the active match is also visible
     const scrollTo = [...this._treeRef.current.getElementsByClassName(HighlightingEngine.ACTIVE_CLASS_NAME)];
-    if (scrollTo.length === 0)
-      return;
-
-    this._treeRef.current.scrollToElement(scrollTo[0].getBoundingClientRect());
+    if (scrollTo.length > 0)
+      this._treeRef.current.scrollToElement(scrollTo[0]);
   }
 
   private _onNodesSelected = (nodes: Array<BeInspireTreeNode<TreeNodeItem>>, replace: boolean) => {
