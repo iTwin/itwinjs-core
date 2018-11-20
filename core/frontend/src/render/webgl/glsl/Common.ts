@@ -100,9 +100,9 @@ export const addUInt32s = `
   vec4 addUInt32s(vec4 a, vec4 b)
       {
       vec4 c = a + b;
-      if (c.x > 255.0) { c.x -= 255.0; c.y += 1.0; }
-      if (c.y > 255.0) { c.y -= 255.0; c.z += 1.0; }
-      if (c.z > 255.0) { c.z -= 255.0; c.w += 1.0; }
+      if (c.x > 255.0) { c.x -= 256.0; c.y += 1.0; }
+      if (c.y > 255.0) { c.y -= 256.0; c.z += 1.0; }
+      if (c.z > 255.0) { c.z -= 256.0; c.w += 1.0; }
       return c;
       }
 `;

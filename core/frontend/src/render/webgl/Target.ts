@@ -866,7 +866,6 @@ export abstract class Target extends RenderTarget {
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
 
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
-    // ###TODO: Handle pickable decorations.
     this._renderCommands.clear();
     this._renderCommands.setCheckRange(rectFrust);
     this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);

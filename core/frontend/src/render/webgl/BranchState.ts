@@ -165,6 +165,13 @@ export class BatchState {
     return batch.featureTable.findFeature(featureIndex);
   }
 
+  public get numFeatureIds() { return this._nextBatchId; }
+  public get numBatches() { return this._batches.length; }
+  public findBatchId(featureId: number) {
+    const batch = this.find(featureId);
+    return undefined !== batch ? batch.batchId : 0;
+  }
+
   private get _nextBatchId(): number {
     if (this.isEmpty)
       return 1;

@@ -72,9 +72,12 @@ const reverseWhiteOnWhite = `
 `;
 
 const computePickBufferOutputs = `
-  float linearDepth = computeLinearDepth(v_eyeSpace.z);
   vec4 output0 = baseColor;
-  vec4 output1 = v_feature_id;
+
+  // Fix interpolation errors despite all vertices sending exact same v_feature_id...
+  ivec4 v_feature_id_i = ivec4(v_feature_id * 255.0 + 0.5);
+  vec4 output1 = vec4(v_feature_id_i) / 255.0;
+  float linearDepth = computeLinearDepth(v_eyeSpace.z);
   vec4 output2 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
 `;
 

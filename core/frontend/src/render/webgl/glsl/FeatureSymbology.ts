@@ -55,10 +55,13 @@ function addFlagConstants(builder: ShaderBuilder): void {
   builder.addConstant("kOvrBit_IgnoreMaterial", VariableType.Float, "7.0");
 }
 
+const computeFeatureIndex = `
+  g_featureIndex = floor(TEXTURE(u_vertLUT, g_featureIndexCoords) * 255.0 + 0.5);
+`;
+
 const getFeatureIndex = `
 float getFeatureIndex() {
-  vec2 tc = g_featureIndexCoords;
-  g_featureIndex = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+` + computeFeatureIndex + `
   return decodeUInt32(g_featureIndex.xyz);
 }
 `;
@@ -138,8 +141,13 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   addFeatureIndex(vert);
 
   const haveOverrides = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.HasOverrides);
-  if (!haveOverrides)
+  if (!haveOverrides) {
+    // For pick output we must compute g_featureIndex...
+    if (FeatureMode.Pick === mode)
+      vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureIndex);
+
     return true;
+  }
 
   const wantWeight = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.Weight);
   const wantLineCode = FeatureSymbologyOptions.None !== (opts & FeatureSymbologyOptions.LineCode);

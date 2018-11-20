@@ -244,6 +244,18 @@ export class VertexTable implements VertexTableProps {
     this.auxDisplacements = props.auxDisplacements;
     this.auxNormals = props.auxNormals;
     this.auxParams = props.auxParams;
+
+    // ###TODO: Fix add-on to put uniform feature index into vertex table...
+    if (undefined !== this.uniformFeatureID)
+      this.fixUpUniformFeatureId(this.uniformFeatureID);
+  }
+
+  private fixUpUniformFeatureId(id: number): void {
+    const u32 = new Uint32Array(this.data.buffer);
+    for (let i = 0; i < this.numVertices; i++) {
+      const rgbaIndex = (i * this.numRgbaPerVertex) + 2;
+      u32[rgbaIndex] = id;
+    }
   }
 
   public static buildFrom(builder: VertexTableBuilder, colorIndex: ColorIndex, featureIndex: FeatureIndex): VertexTable {
