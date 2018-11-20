@@ -118,11 +118,13 @@ describe("TxnManager", () => {
     const el1 = imodel.elements.insertElement(props);
     imodel.saveChanges("step 1");
     txns.beginMultiTxnOperation();
+    assert.equal(1, txns.getMultiTxnOperationDepth());
     const el2 = imodel.elements.insertElement(props);
     imodel.saveChanges("step 2");
     const el3 = imodel.elements.insertElement(props);
     imodel.saveChanges("step 3");
     txns.endMultiTxnOperation();
+    assert.equal(0, txns.getMultiTxnOperationDepth());
     assert.equal(IModelStatus.Success, txns.reverseSingleTxn());
     assert.throws(() => imodel.elements.getElement(el2), IModelError);
     assert.throws(() => imodel.elements.getElement(el3), IModelError);

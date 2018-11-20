@@ -66,14 +66,14 @@ export abstract class Element extends Entity implements ElementProps {
   public static onInserted(_props: ElementProps): void { }
   public static onUpdated(_props: ElementProps): void { }
   public static onDeleted(_props: ElementProps): void { }
+  public static onBeforeOutputsHandled(_id: Id64String): void { }
+  public static onAllInputsHandled(_id: Id64String): void { }
 
   /** Add this Element's properties to an object for serializing to JSON.
    * @hidden
    */
   public toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
-    if (Id64.isValid(this.id))
-      val.id = this.id;
 
     if (Id64.isValid(this.code.spec))
       val.code = this.code;

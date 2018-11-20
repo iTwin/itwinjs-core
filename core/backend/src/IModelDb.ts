@@ -24,7 +24,7 @@ import { ElementAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
 import { ErrorStatusOrResult, NativeDgnDb, SnapRequest, TxnIdString } from "./imodeljs-native-platform-api";
 import { IModelJsFs } from "./IModelJsFs";
-import { IModelDbLinkTableRelationships } from "./LinkTableRelationship";
+import { IModelDbLinkTableRelationships, LinkTableRelationship, LinkTableRelationshipProps } from "./LinkTableRelationship";
 import { Model } from "./Model";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { KnownLocations } from "./Platform";
@@ -122,11 +122,11 @@ export class IModelDb extends IModel {
   private static _accessTokens?: Map<string, AccessToken>;
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
-  public models = new IModelDb.Models(this);
-  public elements = new IModelDb.Elements(this);
-  public views = new IModelDb.Views(this);
-  public tiles = new IModelDb.Tiles(this);
-  public txns = new TxnManager(this);
+  public readonly models = new IModelDb.Models(this);
+  public readonly elements = new IModelDb.Elements(this);
+  public readonly views = new IModelDb.Views(this);
+  public readonly tiles = new IModelDb.Tiles(this);
+  public readonly txns = new TxnManager(this);
   private _linkTableRelationships?: IModelDbLinkTableRelationships;
   private readonly _statementCache = new ECSqlStatementCache();
   private readonly _sqliteStatementCache = new SqliteStatementCache();
@@ -925,9 +925,7 @@ export namespace IModelDb {
      * @param modelId The Model identifier.
      * @throws [[IModelError]]
      */
-    public getModel(modelId: Id64String): Model {
-      return this._iModel.constructEntity(this.getModelProps(modelId)) as Model;
-    }
+    public getModel<T extends Model>(modelId: Id64String): T { return this._iModel.constructEntity(this.getModelProps(modelId)) as T; }
 
     /**
      * Read the properties for a Model as a json string.
@@ -1394,22 +1392,52 @@ export namespace IModelDb {
 
 export const enum TxnAction { None = 0, Commit = 1, Abandon = 2, Reverse = 3, Reinstate = 4, Merge = 5 }
 
+/** An error generated during dependency validation. */
+export interface ValidationError {
+  /** If true, txn is aborted. */
+  fatal: boolean;
+  /** The type of error. */
+  errorType: string;
+  /** Optional description of what went wrong. */
+  message?: string;
+}
+
 /**
  * Local Txns in an IModelDb. Local Txns persist only until [[IModelDb.pushChanges]] is called.
  */
 export class TxnManager {
   constructor(private _iModel: IModelDb) { }
+  /** Array of errors from dependency propagation */
+  public readonly validationErrors: ValidationError[] = [];
 
   private get _nativeDb() { return this._iModel.nativeDb!; }
+  private _getElementClass(elClassName: string): typeof Element { return this._iModel.getJsClass(elClassName) as unknown as typeof Element; }
+  private _getRelationshipClass(relClassName: string): typeof LinkTableRelationship { return this._iModel.getJsClass(relClassName) as unknown as typeof LinkTableRelationship; }
 
   /** @hidden */
-  protected _onBeforeOutputsHandled(_inputId: Id64String): void { }
+  protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void { this._getElementClass(elClassName).onBeforeOutputsHandled(elId); }
   /** @hidden */
-  protected _onRootChange(_relClassName: string, _relId: Id64String, _inputId: Id64String, _outputId: Id64String): void { }
+  protected _onAllInputsHandled(elClassName: string, elId: Id64String): void { this._getElementClass(elClassName).onAllInputsHandled(elId); }
+
   /** @hidden */
-  protected _onAllInputsHandled(_outputId: Id64String): void { }
+  protected _onRootChanged(props: LinkTableRelationshipProps): void { this._getRelationshipClass(props.classFullName).onRootChanged(props); }
   /** @hidden */
-  protected _onValidateOutput(_relClassName: string, _relId: Id64String, _inputId: Id64String, _outputId: Id64String): void { }
+  protected _onValidateOutput(props: LinkTableRelationshipProps): void { this._getRelationshipClass(props.classFullName).onValidateOutput(props); }
+  /** @hidden */
+  protected _onDeletedDependency(props: LinkTableRelationshipProps): void { this._getRelationshipClass(props.classFullName).onDeletedDependency(props); }
+
+  /** @hidden */
+  protected _onBeginValidate() { this.validationErrors.length = 0; }
+  /** @hidden */
+  protected _onEndValidate() { }
+
+  /** Dependency handlers may call method this to report a validation error.
+   * @param error The error. If error.fatal === true, the transaction will cancel rather than commit.
+   */
+  public reportError(error: ValidationError) { this.validationErrors.push(error); this._nativeDb.logTxnError(error.fatal); }
+
+  /** Determine whether any fatal validation errors have occurred during dependency propagation.  */
+  public get hasFatalError(): boolean { return this._nativeDb.hasFatalTxnError(); }
 
   /** Event raised before a commit operation is performed. Initiated by a call to [[IModelDb.saveChanges]] */
   public readonly onCommit = new BeEvent<() => void>();
@@ -1450,6 +1478,9 @@ export class TxnManager {
 
   /** End a multi-Txn operation */
   public endMultiTxnOperation(): DbResult { return this._nativeDb.endMultiTxnOperation(); }
+
+  /** Return the depth of the multi-Txn stack. Generally for diagnostic use only. */
+  public getMultiTxnOperationDepth(): number { return this._nativeDb.getMultiTxnOperationDepth(); }
 
   /** Reverse (undo) the most recent operation(s) to this IModelDb.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will

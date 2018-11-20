@@ -92,6 +92,7 @@ export declare class NativeDgnDb {
   public getElementPropertiesForDisplay(id: string): ErrorStatusOrResult<IModelStatus, string>;
   public getIModelProps(): string;
   public getModel(opts: string): ErrorStatusOrResult<IModelStatus, string>;
+  public getMultiTxnOperationDepth(): number;
   public getParentChangeSetId(): string;
   public getPendingChangeSets(): ErrorStatusOrResult<DbResult, string>;
   public getRedoString(): string;
@@ -102,6 +103,7 @@ export declare class NativeDgnDb {
   public getTileTree(id: string, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
   public getTxnDescription(txnId: TxnIdString): string;
   public getUndoString(): string;
+  public hasFatalTxnError(): boolean;
   public hasUnsavedChanges(): boolean;
   public importFunctionalSchema(): DbResult;
   public importSchema(schemaPathname: string): DbResult;
@@ -115,6 +117,7 @@ export declare class NativeDgnDb {
   public isRedoPossible(): boolean;
   public isTxnIdValid(txnId: TxnIdString): boolean;
   public isUndoPossible(): boolean;
+  public logTxnError(fatal: boolean): void;
   public openIModel(dbName: string, mode: OpenMode): DbResult;
   public queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
   public queryFirstTxnId(): TxnIdString;
