@@ -18,13 +18,13 @@ describe.skip("TxnManager", () => {
   before(() => imodel = IModelTestUtils.openIModel("test.bim"));
   after(() => IModelTestUtils.closeIModel(imodel));
 
-  it("Undo/Redo", () => {
+  it("Undo/Redo", async () => {
 
     try {
       imodel.getMetaData("TestBim:TestPhysicalObject");
     } catch (err) {
       const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
+      await imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
       assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
       imodel.saveChanges("schema change");
     }
