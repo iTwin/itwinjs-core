@@ -24,7 +24,8 @@ describe("Functional Domain", () => {
     // Logger.setLevel("ECDb", LogLevel.Warning);
   });
 
-  it("should populate FunctionalModel", async () => {
+  // NEEDS_WORK_MERGE: uncomment the following lines when Keith's changes to javascript-domains are merged in
+  it.skip("should populate FunctionalModel", async () => {
     const iModelDb: IModelDb = IModelTestUtils.createStandaloneIModel("FunctionalTest.bim", {
       rootSubject: { name: "FunctionalTest", description: "Test of the Functional domain schema." },
       client: "Functional",

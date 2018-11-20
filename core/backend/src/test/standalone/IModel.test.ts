@@ -909,7 +909,8 @@ describe("iModel", () => {
     assert.equal(foundRelClassName2, relClassName2);
   });
 
-  it("should create link table relationship instances", () => {
+  // NEEDS_WORK_MERGE: uncomment the following lines when Keith's changes to javascript-domains are merged in
+  it.skip("should create link table relationship instances", () => {
     const testImodel = imodel1;
     const elements = testImodel.elements;
 

@@ -127,7 +127,7 @@ export class IModelDb extends IModel {
   public readonly views = new IModelDb.Views(this);
   public readonly tiles = new IModelDb.Tiles(this);
   public readonly txns = new TxnManager(this);
-  private _linkTableRelationships?: Relationships;
+  private _relationships?: Relationships;
   private readonly _statementCache = new ECSqlStatementCache();
   private readonly _sqliteStatementCache = new SqliteStatementCache();
   private _codeSpecs?: CodeSpecs;
@@ -701,7 +701,7 @@ export class IModelDb extends IModel {
   }
 
   /** Get the linkTableRelationships for this IModel */
-  public get relationships(): Relationships { return this._linkTableRelationships || (this._linkTableRelationships = new Relationships(this)); }
+  public get relationships(): Relationships { return this._relationships || (this._relationships = new Relationships(this)); }
 
   /** Get the ConcurrencyControl for this IModel. */
   public get concurrencyControl(): ConcurrencyControl { return (this._concurrency !== undefined) ? this._concurrency : (this._concurrency = new ConcurrencyControl(this)); }
