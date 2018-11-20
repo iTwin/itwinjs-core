@@ -8,6 +8,7 @@ import { UiComponents } from "@bentley/ui-components";
 import { UiCore } from "@bentley/ui-core";
 import { Store, createStore, combineReducers } from "redux";
 import { DeepReadonly, ActionsUnion, createAction } from "..//utils/redux-ts";
+
 export interface SampleAppState {
   placeHolder?: boolean;
 }

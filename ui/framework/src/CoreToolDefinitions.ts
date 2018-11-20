@@ -11,6 +11,10 @@ import {
 
 // cSpell:ignore configurableui
 import { ToolItemDef } from "./configurableui/Item";
+import { ContentViewManager } from "./configurableui/ContentViewManager";
+import { BaseItemState } from "./configurableui/ItemDefBase";
+import { SyncUiEventId } from "./SyncUiEventDispatcher";
+import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 
 /** Utility Class that provides definitions of tools provided by imodel.js core. These definitions can be used to populate the ui. */
 export class CoreTools {
@@ -104,4 +108,24 @@ export class CoreTools {
     });
   }
 
+  public static get analysisAnimationCommand() {
+    return new ToolItemDef({
+      toolId: AnalysisAnimationTool.toolId,
+      iconSpec: "icon-camera-animation",
+      labelKey: "UiFramework:tools.AnalysisAnimation.flyover",
+      tooltipKey: "UiFramework:tools.AnalysisAnimation.description",
+      execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+        const returnState: BaseItemState = { ...currentState };
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+
+        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.AnalysisStyle))
+          returnState.isVisible = true;
+        else
+          returnState.isVisible = false;
+        return returnState;
+      },
+    });
+  }
 }
