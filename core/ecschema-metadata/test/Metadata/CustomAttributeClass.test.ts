@@ -11,10 +11,8 @@ import { ECObjectsError } from "../../src/Exception";
 import { CustomAttributeClass } from "../../src/Metadata/CustomAttributeClass";
 import { ECClassModifier } from "../../src/ECObjects";
 import { CustomAttributeContainerType } from "../../src";
-import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("CustomAttributeClass", () => {
-  let parser = new JsonParser();
   describe("deserialization", () => {
     function createSchemaJson(caClassJson: any): any {
       return createSchemaJsonWithItems({
@@ -55,28 +53,11 @@ describe("CustomAttributeClass", () => {
   });
 
   describe("fromJson", () => {
-    let testClass: CustomAttributeClass;
-    const baseJson = { schemaItemType: "CustomAttributeClass" };
-
-    beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
-      testClass = new CustomAttributeClass(schema, "TestCustomAttribute");
-    });
-
-    it("should throw for missing appliesTo", async () => {
-      expect(testClass).to.exist;
-      assert.throws(() => parser.parseCustomAttributeClassProps({ ...baseJson }, testClass.name), ECObjectsError, `The CustomAttributeClass TestCustomAttribute is missing the required 'appliesTo' attribute.`);
-    });
-
-    it("should throw for invalid appliesTo", async () => {
-      expect(testClass).to.exist;
-      const json = {
-        ...baseJson,
-        appliesTo: 0,
-      };
-      assert.throws(() => parser.parseCustomAttributeClassProps(json, testClass.name), ECObjectsError, `The CustomAttributeClass TestCustomAttribute has an invalid 'appliesTo' attribute. It should be of type 'string'.`);
+    it("TODO", () => {
+      // TODO: Need a test...
     });
   });
+
   describe("toJson", () => {
     let testClass: CustomAttributeClass;
 
@@ -96,7 +77,7 @@ describe("CustomAttributeClass", () => {
         appliesTo: "Schema, AnyProperty",
       };
 
-      await testClass.deserialize(parser.parseCustomAttributeClassProps(schemaJson, testClass.name));
+      await testClass.deserialize(schemaJson);
       const caJson = testClass!.toJson(true, true);
       assert(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem");
       assert(caJson.appliesTo, "Schema,AnyProperty");
@@ -117,7 +98,7 @@ describe("CustomAttributeClass", () => {
         appliesTo: "Schema, AnyProperty",
       };
 
-      testClass.deserializeSync(parser.parseCustomAttributeClassProps(schemaJson, testClass.name));
+      testClass.deserializeSync(schemaJson);
       const caJson = testClass!.toJson(true, true);
       assert(caJson.$schema, "https://dev.bentley.com/json_schemas/ec/31/draft-01/schemaitem");
       assert(caJson.appliesTo, "Schema,AnyProperty");

@@ -87,134 +87,158 @@ export class Format extends SchemaItem implements IFormat {
   get includeZero(): boolean | undefined { return this._includeZero; }
   get units(): Array<[Unit | InvertedUnit, string | undefined]> | undefined { return this._units; }
 
-  private verifyFormatTraitsOptions(formatTraitsFromJson: string | string[]) {
-    const formatTraits = (Array.isArray(formatTraitsFromJson)) ? formatTraitsFromJson : formatTraitsFromJson.split(/,|;|\|/);
-    formatTraits.forEach((formatTraitsString: string) => { // for each element in the string array
-      this._formatTraits = parseFormatTrait(formatTraitsString, this.formatTraits);
-    });
+  private parseFormatTraits(formatTraitsFromJson: string | string[]) {
+    const formatTraits = Array.isArray(formatTraitsFromJson) ? formatTraitsFromJson : formatTraitsFromJson.split(/,|;|\|/);
+    for (const traitStr of formatTraits) {
+      const formatTrait = parseFormatTrait(traitStr);
+      if (undefined === formatTrait)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'formatTraits' attribute. The string '${traitStr}' is not a valid format trait.`);
+      this._formatTraits = this._formatTraits | formatTrait;
+    }
   }
 
   public hasFormatTrait(formatTrait: FormatTraits) {
     return (this._formatTraits & formatTrait) === formatTrait;
   }
 
-  protected setUnits(units: Array<[Unit | InvertedUnit, string | undefined]> | undefined) {
-    // TODO: Need to do validation
-    this._units = units;
+  /**
+   * Adds a Unit, or InvertedUnit, with an optional label override.
+   * @param unit The Unit, or InvertedUnit, to add to this Format.
+   * @param label A label that overrides the label defined within the Unit when a value is formatted.
+   */
+  protected addUnit(unit: Unit | InvertedUnit, label?: string) {
+    if (undefined === this._units)
+      this._units = [];
+    else { // Validate that a duplicate is not added.
+      for (const existingUnit of this._units) {
+        if (unit.fullName.toLowerCase() === existingUnit[0].fullName.toLowerCase())
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has duplicate units, '${unit.fullName}'.`); // TODO: Validation - this should be a validation error not a hard failure.
+      }
+    }
+
+    this._units.push([unit, label]);
   }
+
   protected setPrecision(precision: number) { this._precision = precision; }
 
-  /**
-   * Creates a Unit with the provided name and label and adds it to this unit array
-   * @param name The name of the Unit
-   * @param label A localized display label that is used instead of the name in a GUI.
-   */
-  private createUnitSync(name: string, label?: string) {
-    let newUnit: Unit | InvertedUnit | undefined;
-    if (name === undefined || typeof (name) !== "string" || (label !== undefined && typeof (label) !== "string")) // throws if name is undefined or name isnt a string or if label is defined and isnt a string
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    for (const unit of this.units!) {
-      const unitObj = unit[0].name;
-      if (unitObj.toLowerCase() === (name.split(".")[1]).toLowerCase()) // no duplicate names- take unit name after "."
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit ${unitObj} has a duplicate name.`);
-    }
-    newUnit = this.schema.lookupItemSync<Unit | InvertedUnit>(name);
-    if (!newUnit)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    this.units!.push([newUnit, label]);
-  }
-
-  private async createUnit(name: string, label?: string) {
-    let newUnit: Unit | InvertedUnit | undefined;
-    if (name === undefined || typeof (name) !== "string" || (label !== undefined && typeof (label) !== "string")) // throws if name is undefined or name isnt a string or if label is defined and isnt a string
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `This Composite has a unit with an invalid 'name' or 'label' attribute.`);
-    for (const unit of this.units!) {
-      const unitObj = unit[0].name;
-      if (unitObj.toLowerCase() === (name.split(".")[1]).toLowerCase()) // duplicate names are not allowed- take unit name after "."
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The unit ${unitObj} has a duplicate name.`);
-    }
-    newUnit = await this.schema.lookupItem<Unit | InvertedUnit>(name);
-    if (!newUnit)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
-    this.units!.push([newUnit, label]);
-  }
-
   private typecheck(formatProps: FormatProps) {
-    this._type = parseFormatType(formatProps.type, this.name);
-    this._precision = parsePrecision(formatProps.precision!, this.name, this._type);
+    const formatType = parseFormatType(formatProps.type);
+    if (undefined === formatType)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'type' attribute.`);
+    this._type = formatType;
 
-    if (this.type === FormatType.Scientific) {
-      if (undefined === formatProps.scientificType) // if format type is scientific and scientific type is undefined, throw
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has type 'Scientific' therefore attribute 'scientificType' is required.`);
-      this._scientificType = parseScientificType(formatProps.scientificType, this.name);
-    }
-
-    if (this.type === FormatType.Station) {
-      if (undefined === formatProps.stationOffsetSize)
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.name} has type 'Station' therefore attribute 'stationOffsetSize' is required.`);
-      this._stationOffsetSize = formatProps.stationOffsetSize;
-    }
-
-    if (undefined !== formatProps.roundFactor) {
-      if (formatProps.roundFactor !== this.roundFactor)
-        this._roundFactor = formatProps.roundFactor;
+    if (undefined !== formatProps.precision) {
+      if (!Number.isInteger(formatProps.precision)) // must be an integer
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'precision' attribute. It should be an integer.`);
+      const precision = parsePrecision(formatProps.precision, this._type);
+      if (undefined === precision)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'precision' attribute.`);
+      this._precision = precision;
     }
 
     if (undefined !== formatProps.minWidth) {
+      if (!Number.isInteger(formatProps.minWidth) || formatProps.minWidth < 0) // must be a positive int
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'minWidth' attribute. It should be a positive integer.`);
       this._minWidth = formatProps.minWidth;
     }
 
-    if (undefined !== formatProps.showSignOption) {
-      this._showSignOption = parseShowSignOption(formatProps.showSignOption, this.name);
+    if (FormatType.Scientific === this.type) {
+      if (undefined === formatProps.scientificType) // if format type is scientific and scientific type is undefined, throw
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} is 'Scientific' type therefore the attribute 'scientificType' is required.`);
+      const scientificType = parseScientificType(formatProps.scientificType);
+      if (undefined === scientificType)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'scientificType' attribute.`);
+      this._scientificType = scientificType;
     }
 
-    if (undefined !== formatProps.formatTraits && formatProps.formatTraits.length !== 0) {
-      this.verifyFormatTraitsOptions(formatProps.formatTraits);
+    if (FormatType.Station === this.type) {
+      if (undefined === formatProps.stationOffsetSize)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} is 'Station' type therefore the attribute 'stationOffsetSize' is required.`);
+      if (!Number.isInteger(formatProps.stationOffsetSize) || formatProps.stationOffsetSize < 0) // must be a positive int > 0
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'stationOffsetSize' attribute. It should be a positive integer.`);
+      this._stationOffsetSize = formatProps.stationOffsetSize;
     }
+
+    if (undefined !== formatProps.showSignOption) {
+      const signOption = parseShowSignOption(formatProps.showSignOption);
+      if (undefined === signOption)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'showSignOption' attribute.`);
+      this._showSignOption = signOption;
+    }
+
+    if (undefined !== formatProps.formatTraits && formatProps.formatTraits.length !== 0)
+      this.parseFormatTraits(formatProps.formatTraits);
+
+    if (undefined !== formatProps.roundFactor)
+      this._roundFactor = formatProps.roundFactor;
 
     if (undefined !== formatProps.decimalSeparator) {
+      if (formatProps.decimalSeparator.length > 1)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'decimalSeparator' attribute. It should be an empty or one character string.`);
       this._decimalSeparator = formatProps.decimalSeparator;
     }
 
     if (undefined !== formatProps.thousandSeparator) {
+      if (formatProps.thousandSeparator.length > 1)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'thousandSeparator' attribute. It should be an empty or one character string.`);
       this._thousandSeparator = formatProps.thousandSeparator;
     }
 
     if (undefined !== formatProps.uomSeparator) {
+      if (formatProps.uomSeparator.length > 1)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'uomSeparator' attribute. It should be an empty or one character string.`);
       this._uomSeparator = formatProps.uomSeparator;
     }
 
     if (undefined !== formatProps.stationSeparator) {
+      if (formatProps.stationSeparator.length > 1)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'stationSeparator' attribute. It should be an empty or one character string.`);
       this._stationSeparator = formatProps.stationSeparator;
     }
-    if (undefined !== formatProps.composite) {
-      this._units = new Array<[Unit | InvertedUnit, string | undefined]>();
-      if (formatProps.composite.includeZero !== undefined) {
+
+    if (undefined !== formatProps.composite) { // TODO: This is duplicated below when the units need to be processed...
+      if (undefined !== formatProps.composite.includeZero)
         this._includeZero = formatProps.composite.includeZero;
-      }
-      if (formatProps.composite.spacer !== undefined) {
+
+      if (undefined !== formatProps.composite.spacer) {
+        if (formatProps.composite.spacer.length > 1)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has a composite with an invalid 'spacer' attribute. It should be an empty or one character string.`);
         this._spacer = formatProps.composite.spacer;
       }
+
+      // Composite requires 1-4 units
+      if (formatProps.composite.units.length <= 0 || formatProps.composite.units.length > 4)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Format ${this.fullName} has an invalid 'Composite' attribute. It should have 1-4 units.`);
     }
   }
 
   public deserializeSync(formatProps: FormatProps) {
     super.deserializeSync(formatProps);
     this.typecheck(formatProps);
-    if (undefined !== formatProps.composite) {
-      for (const unit of formatProps.composite.units!) {
-        this.createUnitSync(unit.name, unit.label);
-      }
+    if (undefined === formatProps.composite)
+      return;
+
+    // Units are separated from the rest of the deserialization because of the need to have separate sync and async implementation
+    for (const unit of formatProps.composite.units) {
+      const newUnit = this.schema.lookupItemSync<Unit | InvertedUnit>(unit.name);
+      if (undefined === newUnit)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      this.addUnit(newUnit, unit.label);
     }
   }
 
   public async deserialize(formatProps: FormatProps) {
     super.deserialize(formatProps);
     this.typecheck(formatProps);
-    if (undefined !== formatProps.composite) {
-      for (const unit of formatProps.composite.units!) {
-        await this.createUnit(unit.name, unit.label);
-      }
+    if (undefined === formatProps.composite)
+      return;
+
+    // Units are separated from the rest of the deserialization because of the need to have separate sync and async implementation
+    for (const unit of formatProps.composite.units) {
+      const newUnit = await this.schema.lookupItem<Unit | InvertedUnit>(unit.name);
+      if (undefined === newUnit)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      this.addUnit(newUnit, unit.label);
     }
   }
 
@@ -222,44 +246,46 @@ export class Format extends SchemaItem implements IFormat {
     const schemaJson = super.toJson(standalone, includeSchemaVersion);
     schemaJson.type = formatTypeToString(this.type!);
     schemaJson.precision = this.precision;
-    if (undefined !== this.roundFactor)
-      schemaJson.roundFactor = this.roundFactor;
-    if (undefined !== this.minWidth)
-      schemaJson.minWidth = this.minWidth;
-    if (undefined !== this.showSignOption)
-      schemaJson.showSignOption = showSignOptionToString(this.showSignOption);
-    if (undefined !== this.formatTraits)
-      schemaJson.formatTraits = formatTraitsToArray(this.formatTraits);
-    if (undefined !== this.decimalSeparator)
-      schemaJson.decimalSeparator = this.decimalSeparator;
-    if (undefined !== this.thousandSeparator)
-      schemaJson.thousandSeparator = this.thousandSeparator;
-    if (undefined !== this.uomSeparator)
-      schemaJson.uomSeparator = this.uomSeparator;
-    if (undefined !== this.scientificType)
+
+    // this._spacer = " ";
+    // this._includeZero = true;
+
+    // Serialize the minimal amount of information needed so anything that is the same as the default, do not serialize.
+    if (0.0 !== this.roundFactor) schemaJson.roundFactor = this.roundFactor;
+    if (ShowSignOption.OnlyNegative !== this.showSignOption) schemaJson.showSignOption = showSignOptionToString(this.showSignOption);
+    if (0x0 !== this.formatTraits) schemaJson.formatTraits = formatTraitsToArray(this.formatTraits);
+    if ("." !== this.decimalSeparator) schemaJson.decimalSeparator = this.decimalSeparator;
+    if ("," !== this.thousandSeparator) schemaJson.thousandSeparator = this.thousandSeparator;
+    if (" " !== this.uomSeparator) schemaJson.uomSeparator = this.uomSeparator;
+
+    if (undefined !== this.minWidth) schemaJson.minWidth = this.minWidth;
+
+    if (FormatType.Scientific === this.type && undefined !== this.scientificType)
       schemaJson.scientificType = scientificTypeToString(this.scientificType);
-    if (undefined !== this.stationOffsetSize)
-      schemaJson.stationOffsetSize = this.stationOffsetSize;
-    if (undefined !== this.stationSeparator)
-      schemaJson.stationSeparator = this.stationSeparator;
-    if (undefined !== this.units) {
-      const composite: { [value: string]: any } = {};
-      composite.spacer = this.spacer;
-      composite.includeZero = this.includeZero;
-      composite.units = [];
-      this.units.forEach((unit: any) => {
-        if (undefined !== unit[1])
-          composite.units.push({
-            name: unit[0].name,
-            label: unit[1],
-          });
-        else
-          composite.units.push({
-            name: unit[0].name,
-          });
-      });
-      schemaJson.composite = composite;
+
+    if (FormatType.Station === this.type) {
+      if (undefined !== this.stationOffsetSize)
+        schemaJson.stationOffsetSize = this.stationOffsetSize;
+      if (" " !== this.stationSeparator)
+        schemaJson.stationSeparator = this.stationSeparator;
     }
+
+    if (undefined === this.units)
+      return schemaJson;
+
+    schemaJson.composite = {};
+
+    if (" " !== this.spacer) schemaJson.composite.spacer = this.spacer;
+    if (true !== this.includeZero) schemaJson.composite.includeZero = this.includeZero;
+
+    schemaJson.composite.units = [];
+    for (const unit of this.units) {
+      schemaJson.composite.units.push({
+        name: unit[0].fullName,
+        label: unit[1],
+      });
+    }
+
     return schemaJson;
   }
 

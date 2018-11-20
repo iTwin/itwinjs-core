@@ -5,10 +5,8 @@
 
 import { assert, expect } from "chai";
 import { Schema } from "../../src/Metadata/Schema";
-import { ECObjectsError } from "../../src/Exception";
 import { PropertyCategory } from "../../src/Metadata/PropertyCategory";
 import * as sinon from "sinon";
-import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("PropertyCategory", () => {
   describe("deserialization", () => {
@@ -42,23 +40,11 @@ describe("PropertyCategory", () => {
   });
 
   describe("fromJson", () => {
-    let testCategory: PropertyCategory;
-    let parser = new JsonParser();
-
-    beforeEach(() => {
-      const schema = new Schema("TestSchema", 1, 0, 0);
-      testCategory = new PropertyCategory(schema, "TestCategory");
-    });
-
-    it("should throw for invalid priority", async () => {
-      expect(testCategory).to.exist;
-      const json = {
-        schemaItemType: "PropertyCategory",
-        priority: "1",
-      };
-      assert.throws(() => parser.parsePropertyCategoryProps(json, testCategory.name), ECObjectsError, `The PropertyCategory TestCategory has an invalid 'priority' attribute. It should be of type 'number'.`);
+    it("TODO", async () => {
+      // TODO: Implement test...
     });
   });
+
   describe("toJson", () => {
     it("fully defined", async () => {
       const testSchema = {
