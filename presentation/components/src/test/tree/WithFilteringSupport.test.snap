@@ -8,7 +8,7 @@ exports[`Tree withFilteringSupport render renders with overlay if connection is 
     dataProvider={null}
     nodeHighlightingProps={
       Object {
-        "activeResultNode": undefined,
+        "activeMatch": undefined,
         "searchText": "filter",
       }
     }
@@ -28,7 +28,7 @@ exports[`Tree withFilteringSupport render renders with overlay if filter is diff
     dataProvider={null}
     nodeHighlightingProps={
       Object {
-        "activeResultNode": undefined,
+        "activeMatch": undefined,
         "searchText": "filter",
       }
     }
@@ -48,7 +48,7 @@ exports[`Tree withFilteringSupport render renders with overlay if rulesetId is d
     dataProvider={null}
     nodeHighlightingProps={
       Object {
-        "activeResultNode": undefined,
+        "activeMatch": undefined,
         "searchText": "filter",
       }
     }
@@ -92,7 +92,7 @@ exports[`Tree withFilteringSupport render renders without overlay if nothing is 
     dataProvider={null}
     nodeHighlightingProps={
       Object {
-        "activeResultNode": undefined,
+        "activeMatch": undefined,
         "searchText": "filter",
       }
     }

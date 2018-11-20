@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { TreeProps } from "@bentley/ui-components/lib/tree/component/Tree";
-import { ActiveResultNode, HighlightableTreeProps } from "@bentley/ui-components/lib/tree/HighlightingEngine";
+import { ActiveMatchInfo, HighlightableTreeProps } from "@bentley/ui-components/lib/tree/HighlightingEngine";
 import { getDisplayName } from "../common/Utils";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 import FilteredPresentationTreeDataProvider from "./FilteredDataProvider";
@@ -19,18 +19,12 @@ export interface Props {
   filter?: string;
   /** The data provider used by the tree. */
   dataProvider: IPresentationTreeDataProvider;
-  /**
-   * Called once filter is applied.
-   */
+  /** Called when filter is applied. */
   onFilterApplied?: (filter?: string) => void;
-  /**
-   * Called once FilteredDataProvider counts how many results there are
-   */
-  onHighlightedCounted?: (count: number) => void;
-  /**
-   * Index of current active highlighted node in a filtered tree
-   */
-  activeHighlightedIndex?: number;
+  /** Called when FilteredDataProvider counts the number of matches */
+  onMatchesCounted?: (count: number) => void;
+  /** Index of the active match */
+  activeMatchIndex?: number;
 }
 
 interface State {
@@ -102,8 +96,8 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
 
       const filteredDataProvider = new FilteredPresentationTreeDataProvider(this.props.dataProvider, filter, nodePaths);
 
-      if (this.props.onHighlightedCounted)
-        this.props.onHighlightedCounted(filteredDataProvider.countFilteringResults(nodePaths));
+      if (this.props.onMatchesCounted)
+        this.props.onMatchesCounted(filteredDataProvider.countFilteringResults(nodePaths));
 
       this.setState({ filteredDataProvider });
     }
@@ -135,7 +129,7 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
 
     public render() {
       const {
-        filter, dataProvider, onFilterApplied, onHighlightedCounted, activeHighlightedIndex,
+        filter, dataProvider, onFilterApplied, onMatchesCounted, activeMatchIndex,
         ...props /* tslint:disable-line: trailing-comma */
       } = this.props as any;
 
@@ -143,12 +137,12 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
 
       let nodeHighlightingProps: HighlightableTreeProps | undefined;
       if (filter) {
-        let activeResultNode: ActiveResultNode | undefined;
-        if (this.state.filteredDataProvider && undefined !== activeHighlightedIndex)
-          activeResultNode = this.state.filteredDataProvider.getActiveResultNode(activeHighlightedIndex);
+        let activeMatch: ActiveMatchInfo | undefined;
+        if (this.state.filteredDataProvider && undefined !== activeMatchIndex)
+          activeMatch = this.state.filteredDataProvider.getActiveMatch(activeMatchIndex);
         nodeHighlightingProps = {
           searchText: filter,
-          activeResultNode,
+          activeMatch,
         };
       }
 

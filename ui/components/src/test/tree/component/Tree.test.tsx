@@ -16,7 +16,7 @@ import {
 import { SelectionMode } from "../../../common";
 import { TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "../../..";
 import { BeInspireTreeNode } from "../../../tree/component/BeInspireTree";
-import HighlightingEngine from "../../../tree/HighlightingEngine";
+import HighlightingEngine, { HighlightableTreeProps } from "../../../tree/HighlightingEngine";
 import { BeEvent } from "@bentley/bentleyjs-core";
 
 describe("Tree", () => {
@@ -78,6 +78,13 @@ describe("Tree", () => {
     defaultProps = {
       onRender: renderSpy,
     };
+
+    // note: this is needed for AutoSizer used by the Tree to
+    // have non-zero size and render the virtualized list
+    Object.defineProperties(HTMLElement.prototype, {
+      offsetHeight: { get: () => 200 },
+      offsetWidth: { get: () => 200 },
+    });
   });
 
   describe("selection", () => {
@@ -571,7 +578,7 @@ describe("Tree", () => {
         renderedTree = render(<Tree
           {...defaultProps}
           dataProvider={[]}
-          nodeHighlightingProps={{ activeResultNode: { id: "", index: 0 }, searchText: "test" }}
+          nodeHighlightingProps={{ activeMatch: { nodeId: "", matchIndex: 0 }, searchText: "test" }}
         />);
       }, renderSpy, 2);
       const expectedContent = TestUtils.i18n.translate("Components:tree.noResultsForFilter", { test: "test" });
@@ -624,12 +631,12 @@ describe("Tree", () => {
           nodeHighlightingProps={{ searchText: "test" }}
         />);
       }, renderSpy, 2);
-      expect(renderLabelSpy.calledWith("0", { searchText: "test", activeResultIndex: undefined })).to.be.true;
+      expect(renderLabelSpy.calledWith("0", { searchText: "test", activeMatchIndex: undefined })).to.be.true;
     });
 
     it("rerenders without HighlightingEngine when nodeHighlightingProps are reset to undefined", async () => {
       const renderLabelSpy = sinon.spy(HighlightingEngine, "renderNodeLabel");
-      const dp = [{ id: "0", label: "0", icon: "test-icon" }];
+      const dp: TreeDataProviderRaw = [{ id: "0", label: "0", icon: "test-icon", children: [] }];
       await waitForUpdate(() => {
         renderedTree = render(<Tree
           {...defaultProps}
@@ -659,8 +666,9 @@ describe("Tree", () => {
       }, renderSpy, 2);
       expect(renderedTree.getAllByText("0").length).to.eq(1);
       expect(renderedTree.getAllByText("1").length).to.eq(1);
-      // note: node renderer called 4 times in total - 2 for each render
-      renderMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(4));
+      // note: node renderer called only 2 times, because the first render doesn't render nodes
+      // and the second one renders each node once
+      renderMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(2));
     });
 
   });
@@ -796,28 +804,95 @@ describe("Tree", () => {
 
   describe("scrolling to highlighted nodes", () => {
 
+    const methodOverrides = {
+      scrollTo: Element.prototype.scrollTo,
+      getComputedStyle: window.getComputedStyle,
+    };
+    const scrollToSpy = sinon.spy();
+
+    beforeEach(() => {
+      scrollToSpy.resetHistory();
+      Element.prototype.scrollTo = scrollToSpy;
+      // tslint:disable-next-line:only-arrow-functions
+      window.getComputedStyle = function () {
+        const result = methodOverrides.getComputedStyle.apply(window, arguments);
+        result.overflow = "auto";
+        return result;
+      };
+    });
+
+    afterEach(() => {
+      Element.prototype.scrollTo = methodOverrides.scrollTo;
+      window.getComputedStyle = methodOverrides.getComputedStyle;
+    });
+
     it("scrolls to highlighted node when highlighting props change", async () => {
-      const dp = [{ id: "0", label: "0", icon: "test-icon" }];
+      const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
       }, renderSpy, 2);
-      const scrollSpy = sinon.spy(HighlightingEngine, "scrollToActiveNode");
+      const highlightProps: HighlightableTreeProps = {
+        searchText: "er",
+        activeMatch: {
+          nodeId: "0",
+          matchIndex: 0,
+        },
+      };
       await waitForUpdate(() => {
-        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={{ searchText: "text" }} />);
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} />);
       }, renderSpy, 1);
-      expect(scrollSpy.calledOnce).to.be.true;
+      expect(scrollToSpy).to.be.calledOnce;
     });
 
-    it("doesn't scroll to highlighted node when unrelated props change", async () => {
-      const dp = [{ id: "0", label: "0", icon: "test-icon" }];
+    it("does nothing when there's no active match", async () => {
+      const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
       await waitForUpdate(() => {
-        renderedTree = render(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={{ searchText: "text" }} />);
+        renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
       }, renderSpy, 2);
-      const scrollSpy = sinon.spy(HighlightingEngine, "scrollToActiveNode");
+      const highlightProps: HighlightableTreeProps = {
+        searchText: "er",
+        activeMatch: undefined,
+      };
       await waitForUpdate(() => {
-        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={{ searchText: "text" }} selectionMode={SelectionMode.Multiple} />);
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} />);
       }, renderSpy, 1);
-      expect(scrollSpy.called).to.be.false;
+      expect(scrollToSpy).to.not.be.called;
+    });
+
+    it("does nothing when there's active match element is not found", async () => {
+      const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
+      }, renderSpy, 2);
+      const highlightProps: HighlightableTreeProps = {
+        searchText: "er",
+        activeMatch: {
+          nodeId: "1",
+          matchIndex: 0,
+        },
+      };
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} />);
+      }, renderSpy, 1);
+      expect(scrollToSpy).to.not.be.called;
+    });
+
+    it("does nothing when unrelated props change", async () => {
+      const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
+      const highlightProps: HighlightableTreeProps = {
+        searchText: "er",
+        activeMatch: {
+          nodeId: "0",
+          matchIndex: 0,
+        },
+      };
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} />);
+      }, renderSpy, 2);
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} selectedNodes={[]} />);
+      }, renderSpy, 1);
+      expect(scrollToSpy).to.not.be.called;
     });
 
   });
