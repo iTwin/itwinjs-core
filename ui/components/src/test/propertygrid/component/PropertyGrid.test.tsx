@@ -35,19 +35,19 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
 
 describe("PropertyGrid", () => {
 
-  before(() => {
-    TestUtils.initializeUiComponents();
+  before(async () => {
+    await TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
   });
 
   it("handles onDataChanged event subscriptions when mounting, changing props and unmounting", () => {
     const evt1 = new PropertyDataChangeEvent();
     const providerMock1 = moq.Mock.ofType<PropertyDataProvider>();
-    providerMock1.setup((x) => x.getData()).returns(async () => ({ label: "", categories: [], records: {} }));
+    providerMock1.setup(async (x) => x.getData()).returns(async () => ({ label: "", categories: [], records: {} }));
     providerMock1.setup((x) => x.onDataChanged).returns(() => evt1);
 
     const evt2 = new PropertyDataChangeEvent();
     const providerMock2 = moq.Mock.ofType<PropertyDataProvider>();
-    providerMock2.setup((x) => x.getData()).returns(async () => ({ label: "", categories: [], records: {} }));
+    providerMock2.setup(async (x) => x.getData()).returns(async () => ({ label: "", categories: [], records: {} }));
     providerMock2.setup((x) => x.onDataChanged).returns(() => evt2);
 
     const pane = shallow(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={providerMock1.object} />);

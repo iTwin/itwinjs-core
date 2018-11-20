@@ -55,8 +55,8 @@ export class ModelState extends EntityState implements ModelProps {
 }
 
 export interface TileTreeModelState {
-  tileTree(): TileTree | undefined;
-  loadStatus(): TileTree.LoadStatus;
+  readonly tileTree: TileTree | undefined;
+  readonly loadStatus: TileTree.LoadStatus;
   loadTileTree(asClassifier?: boolean, classifierExpansion?: number): TileTree.LoadStatus;
 }
 /** Represents the front-end state of a [GeometricModel]($backend).
@@ -73,13 +73,13 @@ export abstract class GeometricModelState extends ModelState implements TileTree
   /** Returns true if this is a 2d model (a [[GeometricModel2dState]]). */
   public get is2d(): boolean { return !this.is3d; }
   /** @hidden */
-  public tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
+  public get tileTree(): TileTree | undefined { return this._tileTreeState.tileTree; }
   /** @hidden */
   public get classifierTileTree(): TileTree | undefined { return this._classifierTileTreeState.tileTree; }
   /** @hidden */
-  public loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
+  public get loadStatus(): TileTree.LoadStatus { return this._tileTreeState.loadStatus; }
   /** @hidden */
-  public setLoadStatus(status: TileTree.LoadStatus) { this._tileTreeState.loadStatus = status; }
+  public set loadStatus(status: TileTree.LoadStatus) { this._tileTreeState.loadStatus = status; }
   /** @hidden */
   public get isGeometricModel(): boolean { return true; }
   /** @hidden */
@@ -87,7 +87,7 @@ export abstract class GeometricModelState extends ModelState implements TileTree
     if (undefined === this.tileTree)
       this.loadTileTree();
 
-    return this.tileTree();
+    return this.tileTree;
   }
 
   /** @hidden */

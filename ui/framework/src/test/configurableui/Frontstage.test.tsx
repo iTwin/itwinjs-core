@@ -133,7 +133,7 @@ describe("Frontstage", () => {
     const spyMethod = sinon.spy();
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => {
+    FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => { // tslint:disable-line:no-floating-promises
       spyMethod();
     });
     setImmediate(() => {
@@ -158,7 +158,7 @@ describe("Frontstage", () => {
     const spyMethod = sinon.spy();
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
-    FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => {
+    FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => { // tslint:disable-line:no-floating-promises
       spyMethod();
     });
     setImmediate(() => {

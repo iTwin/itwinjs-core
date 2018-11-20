@@ -172,7 +172,7 @@ export const enum DbResult {
 /**
  * Options that specify how to apply ChangeSets.
  */
-export const enum ChangeSetApplyOption {
+export enum ChangeSetApplyOption {
   /** ChangeSet won't be used.  */
   None = 0,
   /** ChangeSet will be merged into the Db */

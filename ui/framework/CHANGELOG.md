@@ -1,6 +1,33 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Mon, 12 Nov 2018 16:42:10 GMT and should not be manually modified.
+This log was last generated on Tue, 20 Nov 2018 16:17:15 GMT and should not be manually modified.
+
+## 0.169.0
+Tue, 20 Nov 2018 16:17:15 GMT
+
+### Updates
+
+- Include presentation rulesets in package
+
+## 0.168.0
+Sat, 17 Nov 2018 14:20:11 GMT
+
+### Updates
+
+- Fixed OidcBrowserClient comparision of redirect path.
+
+## 0.167.0
+Fri, 16 Nov 2018 21:45:44 GMT
+
+### Updates
+
+- Overhaul category/model picker to use presentation rules
+- Fixed some content control sizing issues
+- Moved most isHidden logic for toolbar items into ui-ninezone
+- Hiding items by rendering them conditionally instead of using a CSS class.
+- Fixed tests
+- Tree cell editing unit tests
+- ui-framework unit tests & docs
 
 ## 0.166.0
 Mon, 12 Nov 2018 16:42:10 GMT

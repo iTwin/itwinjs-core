@@ -45,11 +45,11 @@ class CubeContent extends React.Component<{}, CubeContentState> {
   }
 
   public componentDidMount() {
-    ViewRotationCube.cubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent);
+    ViewRotationCube.onCubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent);
   }
 
   public componentWillUnmount() {
-    ViewRotationCube.cubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent);
+    ViewRotationCube.onCubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent);
   }
 
   private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {

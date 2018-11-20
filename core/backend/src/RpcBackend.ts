@@ -23,7 +23,7 @@ export function initializeRpcBackend() {
     return form;
   };
 
-  RpcMultipart.parseRequest = (req: HttpServerRequest) => {
+  RpcMultipart.parseRequest = async (req: HttpServerRequest) => {
     return new Promise<RpcSerializedValue>((resolve, reject) => {
       const form = new multiparty.Form({ maxFieldsSize: Infinity });
       form.on("error", (err) => {

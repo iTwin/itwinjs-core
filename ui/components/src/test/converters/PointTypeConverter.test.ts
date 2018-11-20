@@ -44,23 +44,23 @@ describe("Point2dTypeConverter", () => {
 
   describe("sortCompare", () => {
     it("returns less than 0 when first value is invalid", async () => {
-      expect(await converter.sortCompare(["a", "b", "c"], ["1", "2"])).to.be.lessThan(0);
+      expect(converter.sortCompare(["a", "b", "c"], ["1", "2"])).to.be.lessThan(0);
     });
 
     it("returns greater than 0 when second value is invalid", async () => {
-      expect(await converter.sortCompare(["1", "2"], ["a", "b", "c"])).to.be.greaterThan(0);
+      expect(converter.sortCompare(["1", "2"], ["a", "b", "c"])).to.be.greaterThan(0);
     });
 
     it("returns 0 if points are mirrored", async () => {
-      expect(await converter.sortCompare(["1", "1"], ["-1", "-1"])).to.be.eq(0);
+      expect(converter.sortCompare(["1", "1"], ["-1", "-1"])).to.be.eq(0);
     });
 
     it("returns less than 0 if second point is further from [0,0]", async () => {
-      expect(await converter.sortCompare(["1", "1"], ["2", "2"])).to.be.lessThan(0);
+      expect(converter.sortCompare(["1", "1"], ["2", "2"])).to.be.lessThan(0);
     });
 
     it("returns greater than 0 if first point is further from [0,0]", async () => {
-      expect(await converter.sortCompare(["2", "2"], ["1", "1"])).to.be.greaterThan(0);
+      expect(converter.sortCompare(["2", "2"], ["1", "1"])).to.be.greaterThan(0);
     });
   });
 
@@ -99,19 +99,19 @@ describe("Point3dTypeConverter", () => {
 
   describe("sortCompare", () => {
     it("returns less than 0 when first value is invalid", async () => {
-      expect(await converter.sortCompare(["a", "b", "c"], ["1", "2", "1"])).to.be.lessThan(0);
+      expect(converter.sortCompare(["a", "b", "c"], ["1", "2", "1"])).to.be.lessThan(0);
     });
 
     it("returns 0 if points are mirrored", async () => {
-      expect(await converter.sortCompare(["1", "1", "-2"], ["-1", "-1", "2"])).to.be.eq(0);
+      expect(converter.sortCompare(["1", "1", "-2"], ["-1", "-1", "2"])).to.be.eq(0);
     });
 
     it("returns less than 0 if second point is further from [0,0,0]", async () => {
-      expect(await converter.sortCompare(["1", "1", "1"], ["2", "2", "2"])).to.be.lessThan(0);
+      expect(converter.sortCompare(["1", "1", "1"], ["2", "2", "2"])).to.be.lessThan(0);
     });
 
     it("returns greater than 0 if first point is further from [0,0,0]", async () => {
-      expect(await converter.sortCompare(["2", "2", "2"], ["1", "1", "1"])).to.be.greaterThan(0);
+      expect(converter.sortCompare(["2", "2", "2"], ["1", "1", "1"])).to.be.greaterThan(0);
     });
   });
 });

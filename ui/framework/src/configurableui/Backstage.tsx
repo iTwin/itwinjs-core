@@ -93,7 +93,7 @@ export class FrontstageLaunchBackstageItemDef extends BackstageItemDef {
 
     const frontstageDef = FrontstageManager.findFrontstageDef(this._frontstageId);
     if (frontstageDef)
-      FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
   }
 
   public get id(): string {
@@ -157,7 +157,7 @@ export class TaskLaunchBackstageItemDef extends BackstageItemDef {
     if (workflow) {
       const task = workflow.getTask(this._taskId);
       if (task) {
-        WorkflowManager.setActiveWorkflowAndTask(workflow, task);
+        WorkflowManager.setActiveWorkflowAndTask(workflow, task); // tslint:disable-line:no-floating-promises
       }
     }
   }
@@ -195,6 +195,9 @@ export class FrontstageLaunchBackstageItem extends React.Component<FrontstageLau
   }
 
   public render(): React.ReactNode {
+    if (!this._backstageItem.isVisible)
+      return null;
+
     const icon = <Icon iconSpec={this._backstageItem.iconSpec} />;
     return (
       <NZ_BackstageItem key={this._backstageItem.id}
@@ -219,6 +222,9 @@ export class CommandLaunchBackstageItem extends React.Component<CommandLaunchBac
   }
 
   public render(): React.ReactNode {
+    if (!this._backstageItem.isVisible)
+      return null;
+
     const icon = <Icon iconSpec={this._backstageItem.iconSpec} />;
     return (
       <NZ_BackstageItem key={this._backstageItem.id} label={this._backstageItem.label} icon={icon} onClick={this._backstageItem.execute} />
@@ -238,6 +244,9 @@ export class TaskLaunchBackstageItem extends React.Component<TaskLaunchBackstage
   }
 
   public render(): React.ReactNode {
+    if (!this._backstageItem.isVisible)
+      return null;
+
     const icon = <Icon iconSpec={this._backstageItem.iconSpec} />;
     return (
       <NZ_BackstageItem key={this._backstageItem.id} label={this._backstageItem.label} icon={icon} onClick={this._backstageItem.execute} />
@@ -264,6 +273,9 @@ export class SeparatorBackstageItem extends React.Component<BackstageItemProps> 
   }
 
   public render(): React.ReactNode {
+    if (!this._backstageItem.isVisible)
+      return null;
+
     return (
       <NZ_BackstageSeparator key={this._key} />
     );

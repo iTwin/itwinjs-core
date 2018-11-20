@@ -661,9 +661,9 @@ export namespace Attachments {
         return State.Empty;
 
       viewedModel.getOrLoadTileTree();
-      const loadStatus = viewedModel.loadStatus();
+      const loadStatus = viewedModel.loadStatus;
       if (loadStatus === TileTree.LoadStatus.Loaded) {
-        attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, viewedModel.tileTree()!);
+        attachment.tree = new Tree2d(viewedModel.iModel, attachment, view, viewedModel.tileTree!);
         return State.Ready;
       }
       return loadStatus === TileTree.LoadStatus.Loading ? State.Loading : State.Empty;
@@ -1083,7 +1083,7 @@ export class SheetViewState extends ViewState2d {
 
     // For each ViewAttachmentProps, load the view that the attachment references. Once the view is loaded, officially construct the attachment & add it to the array.
     for (const attachmentProps of attachmentPropList) {
-      this.iModel.views.load(attachmentProps.view.id).then((view: ViewState) => {
+      this.iModel.views.load(attachmentProps.view.id).then((view: ViewState) => { // tslint:disable-line:no-floating-promises
         if (view.is3d())
           this._attachments.add(new Attachments.Attachment3d(attachmentProps, view as ViewState3d));
         else

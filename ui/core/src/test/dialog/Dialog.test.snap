@@ -2,60 +2,65 @@
 
 exports[`Dialog renders renders correctly 1`] = `
 <div
-  className="dialog dialog-open"
+  className="dialog"
+  data-testid="dialog-root"
 >
-  <div
-    className="dialog-container center"
-    style={
-      Object {
-        "height": "",
-        "left": "",
-        "margin": "",
-        "top": "",
-        "width": "50%",
-      }
-    }
-  >
+  <WithOnOutsideClick>
     <div
-      className="dialog-area"
+      className="dialog-container center"
+      data-testid="dialog-container"
+      style={
+        Object {
+          "height": undefined,
+          "left": undefined,
+          "margin": "",
+          "top": undefined,
+          "width": "50%",
+        }
+      }
     >
       <div
-        className="dialog-head"
-        onMouseDown={[Function]}
+        className="dialog-area"
       >
         <div
-          className="dialog-title"
+          className="dialog-head"
+          onMouseDown={[Function]}
+        >
+          <div
+            className="dialog-title"
+          />
+          <span
+            className="dialog-close icon icon-close"
+            data-testid="dialog-close"
+          />
+        </div>
+        <div
+          className="dialog-content"
         />
-        <span
-          className="dialog-close icon icon-close"
-        />
+        <div
+          className="dialog-footer"
+        >
+          <div
+            className="dialog-buttons"
+          />
+        </div>
       </div>
       <div
-        className="dialog-content"
+        className="dialog-drag dialog-drag-right"
+        onMouseDown={[Function]}
+        onTouchStart={[Function]}
       />
       <div
-        className="dialog-footer"
-      >
-        <div
-          className="dialog-buttons"
-        />
-      </div>
+        className="dialog-drag dialog-drag-bottom-mid"
+        onMouseDown={[Function]}
+        onTouchStart={[Function]}
+      />
+      <div
+        className="dialog-drag dialog-drag-bottom-right"
+        onMouseDown={[Function]}
+        onTouchStart={[Function]}
+      />
     </div>
-    <div
-      className="dialog-drag dialog-drag-right"
-      onMouseDown={[Function]}
-      onTouchStart={[Function]}
-    />
-    <div
-      className="dialog-drag dialog-drag-bottom-mid"
-      onMouseDown={[Function]}
-      onTouchStart={[Function]}
-    />
-    <div
-      className="dialog-drag dialog-drag-bottom-right"
-      onMouseDown={[Function]}
-      onTouchStart={[Function]}
-    />
-  </div>
+  </WithOnOutsideClick>
 </div>
 `;

@@ -15,7 +15,7 @@ describe("SelectablePropertyBlock", () => {
   let props: SelectablePropertyBlockProps;
 
   before(() => {
-    TestUtils.initializeUiComponents();
+    TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
   });
 
   beforeEach(() => {

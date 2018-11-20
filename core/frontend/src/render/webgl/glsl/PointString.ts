@@ -13,9 +13,7 @@ import { ProgramBuilder, VertexShaderComponent, VariableType, FragmentShaderComp
 
 const computePosition = `
   float lineWeight = ComputeLineWeight();
-  if (lineWeight > 4.0)
-    lineWeight += 0.5; // ###TODO: Fudge factor for rounding fat points...
-
+  lineWeight += 0.5 * float(lineWeight > 4.0); // fudge factor for rounding fat points...
   gl_PointSize = lineWeight;
   return u_mvp * rawPos;
 `;

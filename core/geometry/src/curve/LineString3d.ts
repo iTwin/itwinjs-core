@@ -15,7 +15,8 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { GrowableXYZArray, GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
@@ -91,6 +92,8 @@ class MoveByDistanceContext {
     fraction0: number, fraction1: number): boolean {
     const residual = this.targetDistance - this.distance0;
     const d01 = points.distance(index0, index1);
+    if (!d01)
+      return false;
     const extensionFraction = Geometry.conditionalDivideFraction(residual, d01);
     if (extensionFraction === undefined)
       return false;
@@ -190,7 +193,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     }
     if (enforceClosure && points.length > 1) {
       const distance = xyz.distance(0, xyz.length - 1);
-      if (distance !== 0.0) {
+      if (distance !== undefined && distance !== 0.0) {
         if (Geometry.isSameCoordinate(0, distance)) {
           xyz.pop();   // nonzero but small distance -- to be replaced by point 0 exactly.
           const xyzA = xyz.front();
@@ -198,7 +201,6 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         }
       }
     }
-    result.addPoints(points);
     return result;
   }
 
@@ -228,13 +230,11 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
    * If the linestring is not already closed, add a closure point.
    */
   public addClosurePoint() {
-    const n = this._points.length;
-    if (n > 1) {
-      if (!Geometry.isSameCoordinate(0, this._points.distance(0, n - 1)))
-        this._points.pushWrap(1);
-    }
+    const distance = this._points.distance(0, this._points.length - 1);
+    if (distance !== undefined && !Geometry.isSameCoordinate(distance, 0))
+      this._points.pushWrap(1);
   }
-
+  /** Elminate (but do not return!!) the final point of the linestring */
   public popPoint() {
     this._points.pop();
   }
@@ -469,7 +469,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
   /** If i and j are both valid indices, return the vector from point i to point j
    */
   public vectorBetween(i: number, j: number, result?: Vector3d): Vector3d | undefined {
-    return this._points.getVector3dBetweenIndices(i, j, result);
+    return this._points.vectorIndexIndex(i, j, result);
   }
 
   public numPoints(): number { return this._points.length; }
@@ -514,14 +514,14 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     const localFraction1 = scaledFraction1 - index1;
     if (index0 > index1) {
       // the interval is entirely within a single segment
-      return Math.abs(scaledFraction1 - scaledFraction0) * this._points.distance(index0 - 1, index0);
+      return Math.abs(scaledFraction1 - scaledFraction0) * this._points.distance(index0 - 1, index0)!;
     } else {
       // there is leading partial interval, 0 or more complete segments, and a trailing partial interval.
       // (either or both partial may be zero length)
-      let sum = localFraction0 * this._points.distance(index0 - 1, index0)
-        + localFraction1 * this._points.distance(index1, index1 + 1);
+      let sum = localFraction0 * this._points.distance(index0 - 1, index0)!
+        + localFraction1 * (this._points.distance(index1, index1 + 1))!;
       for (let i = index0; i < index1; i++)
-        sum += this._points.distance(i, i + 1);
+        sum += this._points.distance(i, i + 1)!;
       return sum;
     }
   }

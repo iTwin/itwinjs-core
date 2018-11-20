@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { WidgetDef, ToolbarWidgetProps } from "./WidgetDef";
-import { ItemList } from "./ItemFactory";
+import { ItemList } from "./ItemMap";
 import { ActionButtonItemDef } from "./Item";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";

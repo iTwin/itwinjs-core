@@ -54,7 +54,7 @@ if (TestbedConfig.cloudRpc) {
       if (req2.method === "GET") {
         handleHttp2Get(req2, res2);
       } else if (req2.method === "POST") {
-        handleHttp2Post(req2, res2);
+        handleHttp2Post(req2, res2); // tslint:disable-line:no-floating-promises
       }
     }).listen(TestbedConfig.serverPort);
   } else {
@@ -69,11 +69,11 @@ if (TestbedConfig.cloudRpc) {
         return;
       }
 
-      TestbedConfig.cloudRpc.protocol.handleOperationPostRequest(req, res);
+      TestbedConfig.cloudRpc.protocol.handleOperationPostRequest(req, res); // tslint:disable-line:no-floating-promises
     });
 
     app.get(/\/imodel\//, (req, res) => {
-      TestbedConfig.cloudRpc.protocol.handleOperationGetRequest(req, res);
+      TestbedConfig.cloudRpc.protocol.handleOperationGetRequest(req, res); // tslint:disable-line:no-floating-promises
     });
 
     app.listen(TestbedConfig.serverPort);
@@ -86,7 +86,7 @@ function handleHttp2Get(req2: http2.Http2ServerRequest, res2: http2.Http2ServerR
   if (req2.url.indexOf("/v3/swagger.json") === 0) {
     TestbedConfig.cloudRpc.protocol.handleOpenApiDescriptionRequest(req, res);
   } else if (req2.url.match(/\/imodel\//)) {
-    TestbedConfig.cloudRpc.protocol.handleOperationGetRequest(req, res);
+    TestbedConfig.cloudRpc.protocol.handleOperationGetRequest(req, res); // tslint:disable-line:no-floating-promises
   } else {
     // serve static assets...
     const p = path.join(__dirname, "/public", req2.url); // FYI: path.join(...req.url) is NOT safe for a production server
@@ -121,13 +121,13 @@ async function handleHttp2Post(req2: http2.Http2ServerRequest, res2: http2.Http2
 
   try {
     req.body = await readHttp2Body(req2);
-    TestbedConfig.cloudRpc.protocol.handleOperationPostRequest(req, res);
+    TestbedConfig.cloudRpc.protocol.handleOperationPostRequest(req, res); // tslint:disable-line:no-floating-promises
   } catch (err) {
     res2.end(`Fatal testbed error: ${err.toString()}`);
   }
 }
 
-function readHttp2Body(req2: http2.Http2ServerRequest) {
+async function readHttp2Body(req2: http2.Http2ServerRequest) {
   return new Promise<string | Buffer>((resolve, reject) => {
     const chunks: Buffer[] = [];
     req2.on("data", (chunk) => {
@@ -207,10 +207,18 @@ function setupMobileMock() {
   let connection: WebSocket;
 
   const mobilegateway = {
-    handler: (_payload: ArrayBuffer) => { throw new Error("Not implemented."); },
+    handler: (_payload: ArrayBuffer | string) => { throw new Error("Not implemented."); },
 
-    send: (message: Uint8Array[]) => {
-      connection.send(Buffer.concat(message), (err) => {
+    sendString: (message: string) => {
+      connection.send(message, (err) => {
+        if (err) {
+          throw err;
+        }
+      });
+    },
+
+    sendBinary: (message: Uint8Array) => {
+      connection.send(Buffer.from(message), (err) => {
         if (err) {
           throw err;
         }
@@ -223,10 +231,13 @@ function setupMobileMock() {
   server.on("connection", (con) => {
     connection = con;
     con.on("message", (msg) => {
-      const buf = msg as Buffer;
-      const copy = new Buffer(buf.length);
-      buf.copy(copy);
-      mobilegateway.handler(copy.buffer as ArrayBuffer);
+      if (Buffer.isBuffer(msg)) {
+        const copy = new Buffer(msg.length);
+        msg.copy(copy);
+        mobilegateway.handler(copy.buffer as ArrayBuffer);
+      } else if (typeof (msg) === "string") {
+        mobilegateway.handler(msg);
+      }
     });
   });
 

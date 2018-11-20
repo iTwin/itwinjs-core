@@ -33,12 +33,24 @@ describe("Tree withUnifiedSelection", () => {
   });
 
   let testRulesetId: string;
-  const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
-  const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
+  let imodelMock: moq.IMock<IModelConnection>;
+  let dataProviderMock: moq.IMock<IPresentationTreeDataProvider>;
+  let selectionHandlerMock: moq.IMock<SelectionHandler>;
   beforeEach(() => {
+    imodelMock = moq.Mock.ofType<IModelConnection>();
+    // note: can't use `ofType` because it creates a mock whose typeof is "function" and
+    // we expect it to be "object" for IPresentationTreeDataProvider instances
+    dataProviderMock = moq.Mock.ofInstance<any>({
+      connection: undefined,
+      rulesetId: undefined,
+      onTreeNodeChanged: undefined,
+      getNodesCount: async () => 0,
+      getNodes: async () => [],
+      getNodeKey: () => createRandomECInstanceNodeKey(),
+      getFilteredNodePaths: async () => [],
+    });
+    selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
     testRulesetId = faker.random.word();
-    selectionHandlerMock.reset();
     setupDataProvider();
   });
 
@@ -53,12 +65,11 @@ describe("Tree withUnifiedSelection", () => {
       rootNodes = () => [];
     if (!childNodes)
       childNodes = () => [];
-    providerMock.reset();
     providerMock.setup((x) => x.connection).returns(() => imodel!);
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
     providerMock.setup((x) => x.onTreeNodeChanged).returns(() => undefined);
     providerMock.setup((x) => x.getNodeKey(moq.It.isAny())).returns((n: TreeNodeItem) => n.extendedData.key);
-    providerMock.setup((x) => x.getNodes(moq.It.isAny(), moq.It.isAny())).returns(async (p) => p ? childNodes!(p) : rootNodes!());
+    providerMock.setup((x) => x.getNodes(moq.It.isAny())).returns(async (p) => p ? childNodes!(p) : rootNodes!());
     providerMock.setup((x) => x.getNodesCount(moq.It.isAny())).returns(async (p) => (p ? childNodes!(p) : rootNodes!()).length);
   };
 

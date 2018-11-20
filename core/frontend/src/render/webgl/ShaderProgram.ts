@@ -266,9 +266,10 @@ export class ShaderProgram implements IDisposable {
       uniform.bind(params);
     }
 
-    for (const attribute of this._attributes) {
+    for (const attribute of this._attributes)
       attribute.bind(params);
-    }
+
+    System.instance.updateVertexAttribArrays();
 
     params.geometry.draw();
   }

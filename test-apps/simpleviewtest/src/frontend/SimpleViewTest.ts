@@ -8,7 +8,7 @@ import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization
 import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, LinePixels, ModelProps, ModelQueryParams, RenderMode, RgbColor, RpcConfiguration,
-  RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName, GeometryStreamProps, BackgroundMapType,
+  RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName, GeometryStreamProps, BackgroundMapType, ContextRealityModelProps,
 } from "@bentley/imodeljs-common";
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 import {
@@ -16,6 +16,7 @@ import {
   DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
   SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus, imageBufferToPngDataUrl,
+  ContextRealityModelState,
 } from "@bentley/imodeljs-frontend";
 import { FeatureSymbology, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/webgl";
@@ -47,6 +48,8 @@ const renderModeOptions: RenderModeOptions = {
   mode: RenderMode.SmoothShade,
 };
 
+const availableContextRealityModels: ContextRealityModelProps[] = ContextRealityModelState.findAvailableRealityModels();
+
 let activeViewState: SimpleViewState = new SimpleViewState();
 const viewMap = new Map<string, ViewState | IModelConnection.ViewSpec>();
 let theViewport: ScreenViewport | undefined;
@@ -58,6 +61,7 @@ const configuration = {} as SVTConfiguration;
 let curFPSIntervalId: NodeJS.Timer;
 let overrideColor: ColorDef | undefined;
 let overrideTransparency: number | undefined;
+let curContextRealityModels: ContextRealityModelState[];
 
 function addFeatureOverrides(ovrs: FeatureSymbology.Overrides, viewport: Viewport): void {
   if (undefined === overrideColor && undefined === overrideTransparency)
@@ -70,8 +74,8 @@ function addFeatureOverrides(ovrs: FeatureSymbology.Overrides, viewport: Viewpor
 }
 
 // Retrieves the configuration for starting SVT from configuration.json file located in the built public folder
-function retrieveConfiguration(): Promise<void> {
-  return new Promise((resolve, _reject) => {
+async function retrieveConfiguration(): Promise<void> {
+  return new Promise<void>((resolve, _reject) => {
     const request: XMLHttpRequest = new XMLHttpRequest();
     request.open("GET", "configuration.json", false);
     request.setRequestHeader("Cache-Control", "no-cache");
@@ -147,11 +151,58 @@ function startToggleModel() {
   const menu = document.getElementById("toggleModelMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
+// open up the context model toggle menu
+function startToggleContextRealityModel() {
+  const menu = document.getElementById("toggleContextRealityModelMenu") as HTMLDivElement;
+  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
 
 // open up the category selection model
 function startCategorySelection() {
   const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+}
+
+// build list of contextRealityContextRealityModels; enables those defined in contextRealityModel selector
+async function buildContextRealityModelMenu(state: SimpleViewState) {
+  const contextRealityModelMenu = document.getElementById("toggleContextRealityModelMenu") as HTMLDivElement;
+  const contextRealityModelButton = document.getElementById("startToggleContextRealityModel")!;
+  const spatialView = undefined !== state.viewState && state.viewState instanceof SpatialViewState ? state.viewState as SpatialViewState : undefined;
+  if (undefined === spatialView) {
+    contextRealityModelMenu.style.display = contextRealityModelButton.style.display = "none";
+    return;
+  }
+  curContextRealityModels = [];
+  contextRealityModelButton.style.display = "inline";
+  contextRealityModelMenu.innerHTML = '<input id="cbxCRMToggleAll" type="checkbox"> Toggle All\n<br>\n';
+  for (const availableCRM of availableContextRealityModels) {
+    const contextRealityModel = new ContextRealityModelState(availableCRM, activeViewState.iModelConnection!);
+
+    if (await contextRealityModel.intersectsProjectExtents()) {   // Add geospatial filtering
+      curContextRealityModels.push(contextRealityModel);
+    }
+  }
+  if (curContextRealityModels.length === 0) {
+    contextRealityModelMenu.style.display = contextRealityModelButton.style.display = "none";
+    return;
+  }
+
+  for (const contextRealityModel of curContextRealityModels) {
+    const cbxName = "cbxCRM" + contextRealityModel.url; // Use URL for ID.
+    contextRealityModelMenu.innerHTML += '&nbsp;&nbsp;<input id="' + cbxName + '" type="checkbox"> ' + contextRealityModel.name + "\n<br>\n";
+  }
+
+  let allEnabled = true;    // TBD - Test if all enabled
+
+  for (const contextRealityModel of curContextRealityModels) {
+    const enabled = spatialView.displayStyle.containsContextRealityModel(contextRealityModel);
+    if (!enabled) allEnabled = false;
+    const cbxName = "cbxCRM" + contextRealityModel.url; // Use URL for ID.
+    updateCheckboxToggleState(cbxName, enabled);
+    addContextRealityModelToggleHandler(cbxName);
+  }
+  updateCheckboxToggleState("cbxCRMToggleAll", allEnabled);
+  addContextRealityModelToggleAllHandler();
 }
 
 // build list of models; enables those defined in model selector
@@ -318,6 +369,44 @@ function applyClassifierToggleChange(cName: string) {
     }
   }
 }
+// apply a model checkbox state being changed (actually change list of viewed models)
+function applyContextRealityModelToggleChange(_cbxContextRealityModel: string) {
+  if (!(theViewport!.view instanceof SpatialViewState))
+    return;
+  const view = theViewport!.view as SpatialViewState;
+  const currentCRMs = view.displayStyle.contextRealityModels;
+  const prefix = "cbxCRM";
+
+  for (let i = 0; i < currentCRMs.length; i++) {
+    if (prefix + currentCRMs[i].url === _cbxContextRealityModel) {
+      currentCRMs.splice(i, 1);
+      theViewport!.sync.invalidateScene();
+      return;
+    }
+  }
+  currentCRMs.push(new ContextRealityModelState({ name: "", tilesetUrl: _cbxContextRealityModel.slice(prefix.length) }, activeViewState.iModelConnection!));
+  theViewport!.sync.invalidateScene();
+}
+function applyContextRealityModelToggleAllChange() {
+  if (!(theViewport!.view instanceof SpatialViewState))
+    return;
+
+  const isChecked = getCheckboxToggleState("cbxCRMToggleAll");
+  const view = theViewport!.view as SpatialViewState;
+  const displayStyle = view.displayStyle;
+
+  if (!isChecked)
+    displayStyle.contextRealityModels = [];
+
+  for (const curr of curContextRealityModels) {
+    if (isChecked && !displayStyle.containsContextRealityModel(curr))
+      displayStyle.contextRealityModels.push(curr);
+
+    const cbxName = "cbxCRM" + curr.url; // Use URL for ID.
+    updateCheckboxToggleState(cbxName, isChecked);
+  }
+  theViewport!.sync.invalidateScene();
+}
 
 function toggleCategoryState(invis: boolean, catId: string, view: ViewState) {
   const enableAllSubCategories = false; // set to true to emulate semi-wacky Navigator behavior...
@@ -393,6 +482,15 @@ function addModelToggleHandler(id: string) {
 
 function addModelToggleAllHandler() {
   document.getElementById("cbxModelToggleAll")!.addEventListener("click", () => applyModelToggleAllChange());
+}
+
+// add a click handler to context reality model checkbox
+function addContextRealityModelToggleHandler(id: string) {
+  document.getElementById(id)!.addEventListener("click", () => applyContextRealityModelToggleChange(id));
+}
+
+function addContextRealityModelToggleAllHandler() {
+  document.getElementById("cbxCRMToggleAll")!.addEventListener("click", () => applyContextRealityModelToggleAllChange());
 }
 
 // add a click handler to classifier checkbox
@@ -698,6 +796,7 @@ async function _changeView(view: ViewState) {
   activeViewState.viewState = view;
   await buildModelMenu(activeViewState);
   await buildCategoryMenu(activeViewState);
+  await buildContextRealityModelMenu(activeViewState);
   updateRenderModeOptionsMap();
 }
 
@@ -1151,7 +1250,7 @@ class IncidentMarker extends Marker {
   public onMouseButton(ev: BeButtonEvent): boolean {
     if (ev.button === BeButton.Data) {
       if (ev.isDown) {
-        IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information);
+        IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
       }
     }
     return true;
@@ -1274,7 +1373,7 @@ class IncidentMarkerDemo {
     ];
 
     if (undefined === IncidentMarkerDemo.warningSign)
-      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
+      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image); // tslint:disable-line:no-floating-promises
 
     const extents = activeViewState.iModelConnection!.projectExtents;
     const pos = new Point3d();
@@ -1487,6 +1586,7 @@ function wireIconsToFunctions() {
 
   const addClickListener = (el: string, listener: (ev: Event) => void) => { document.getElementById(el)!.addEventListener("click", listener); };
   addClickListener("startToggleModel", startToggleModel);
+  addClickListener("startToggleContextRealityModel", startToggleContextRealityModel);
   addClickListener("startCategorySelection", startCategorySelection);
   addClickListener("startToggleCamera", startToggleCamera);
   addClickListener("startFit", () => IModelApp.tools.run("View.Fit", theViewport, true));
@@ -1583,9 +1683,9 @@ function wireIconsToFunctions() {
 window.onbeforeunload = () => {
   if (activeViewState.iModelConnection !== undefined)
     if (configuration.standalone)
-      activeViewState.iModelConnection.closeStandalone();
+      activeViewState.iModelConnection.closeStandalone(); // tslint:disable-line:no-floating-promises
     else
-      activeViewState.iModelConnection.close(activeViewState.accessToken!);
+      activeViewState.iModelConnection.close(activeViewState.accessToken!); // tslint:disable-line:no-floating-promises
 };
 
 function stringToSnapModes(name: string): SnapMode[] {
@@ -1637,7 +1737,7 @@ class SVTNotifications extends NotificationManager {
   /** Output a message and/or alert to the user. */
   public outputMessage(message: NotifyMessageDetails) { showError(message.briefMessage); }
 
-  public openMessageBox(_mbType: MessageBoxType, _message: string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
+  public async openMessageBox(_mbType: MessageBoxType, _message: string, _icon: MessageBoxIconType): Promise<MessageBoxValue> {
     const rootDiv: HTMLDivElement = document.getElementById("root") as HTMLDivElement;
     if (!rootDiv)
       return Promise.resolve(MessageBoxValue.Cancel);
@@ -1726,8 +1826,8 @@ const docReady = new Promise((resolve) => {
 });
 
 // Retrieves the configuration for which project and imodel to open from connect-configuration.json file located in the built public folder
-function retrieveProjectConfiguration(): Promise<void> {
-  return new Promise((resolve, _reject) => {
+async function retrieveProjectConfiguration(): Promise<void> {
+  return new Promise<void>((resolve, _reject) => {
     const request: XMLHttpRequest = new XMLHttpRequest();
     request.open("GET", "connect-configuration.json", false);
     request.setRequestHeader("Cache-Control", "no-cache");
@@ -1818,4 +1918,4 @@ function hideSpinner() {
 }
 
 // Entry point - run the main function
-main();
+main(); // tslint:disable-line:no-floating-promises

@@ -15,9 +15,9 @@ export interface BackstageItemProps extends CommonProps {
   icon?: React.ReactChild;
   /** Optional label. */
   label?: string;
-  /** Describes if the items is active. */
+  /** Describes if the item is active. */
   isActive?: boolean;
-  /** Describes if the items is disabled. */
+  /** Describes if the item is disabled. */
   isDisabled?: boolean;
   /** Function called when item is clicked. */
   onClick?: () => void;

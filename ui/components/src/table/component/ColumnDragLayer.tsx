@@ -8,7 +8,7 @@ import * as React from "react";
 import { DragLayerProps } from "../../dragdrop";
 
 /**
- * React component used to portray a column being dragged during [[Table]] column reordering.
+ * React component used to portray a column being dragged during Table column reordering.
  */
 export class ColumnDragLayer extends React.Component<DragLayerProps> {
   public render(): React.ReactNode {

@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
+import * as sinon from "sinon";
 import { shallow, ShallowWrapper } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Tree } from "@bentley/ui-components";
-import { ActiveResultNode } from "@bentley/ui-components/lib/tree/HighlightingEngine";
+import { ActiveMatchInfo } from "@bentley/ui-components/lib/tree/HighlightingEngine";
 import withFilteringSupport, { Props } from "../../tree/WithFilteringSupport";
 import FilteredPresentationTreeDataProvider from "../../tree/FilteredDataProvider";
 import IPresentationTreeDataProvider from "../../tree/IPresentationTreeDataProvider";
@@ -232,14 +233,14 @@ describe("Tree withFilteringSupport", () => {
       expect(treeInstance.state.filteredDataProvider).to.be.undefined;
     });
 
-    it("calls onHighlightedCounted if it's given through props", async () => {
-      let functionCalled = false;
-      tree.setProps({ onHighlightedCounted: () => { functionCalled = true; } });
+    it("calls onMatchesCounted if it's given through props", async () => {
+      const cb = sinon.spy();
+      tree.setProps({ onMatchesCounted: cb });
 
       if (treeInstance.componentDidMount)
         await treeInstance.componentDidMount();
 
-      expect(functionCalled).to.be.true;
+      expect(cb).to.be.calledOnce;
     });
   });
 
@@ -310,27 +311,27 @@ describe("Tree withFilteringSupport", () => {
 
     it("renders with highlightingProps only if filter is set", async () => {
       const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
-      filteredDataProviderMock.setup((x) => x.getActiveResultNode(moq.It.isAny())).returns(() => ({ id: "test", index: 0 }));
+      filteredDataProviderMock.setup((x) => x.getActiveMatch(moq.It.isAny())).returns(() => ({ nodeId: "test", matchIndex: 0 }));
 
       tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
-      tree.setProps({ activeHighlightedIndex: 6, filter: undefined });
+      tree.setProps({ activeMatchIndex: 6, filter: undefined });
       expect(tree.shallow().find(Tree).props().nodeHighlightingProps).to.be.undefined;
 
-      tree.setProps({ activeHighlightedIndex: 6, filter: "" });
+      tree.setProps({ activeMatchIndex: 6, filter: "" });
       expect(tree.shallow().find(Tree).props().nodeHighlightingProps).to.be.undefined;
     });
 
     it("renders with full highlightingProps", async () => {
       const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
-      const activeResultNode: ActiveResultNode = { id: "test", index: 0 };
-      filteredDataProviderMock.setup((x) => x.getActiveResultNode(moq.It.isAny())).returns(() => activeResultNode);
+      const activeMatch: ActiveMatchInfo = { nodeId: "test", matchIndex: 0 };
+      filteredDataProviderMock.setup((x) => x.getActiveMatch(moq.It.isAny())).returns(() => activeMatch);
 
       tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
-      tree.setProps({ activeHighlightedIndex: 6 });
+      tree.setProps({ activeMatchIndex: 6 });
 
       expect(tree.shallow().find(Tree).props().nodeHighlightingProps).to.deep.eq({
         searchText: filter,
-        activeResultNode,
+        activeMatch,
       });
     });
 

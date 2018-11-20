@@ -58,7 +58,7 @@ describe("ContentControl", () => {
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
       const contentGroup = frontstageDef.contentGroup;
       expect(contentGroup).to.not.be.undefined;
 
@@ -73,6 +73,10 @@ describe("ContentControl", () => {
           const activatedMethod = sinon.spy(contentControl, "onActivated");
           ContentViewManager.setActiveContent(contentSet[0]);
           expect(activatedMethod.calledOnce).to.be.true;
+
+          expect(contentControl.isViewport).to.be.false;
+          expect(contentControl.viewport).to.be.undefined;
+          expect(contentControl.navigationAidControl.length).to.eq(0);
         }
       }
     }
@@ -106,7 +110,7 @@ describe("ContentControl", () => {
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
       const contentGroup = frontstageDef.contentGroup;
       expect(contentGroup).to.not.be.undefined;
 

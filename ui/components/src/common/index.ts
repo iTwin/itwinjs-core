@@ -5,3 +5,4 @@
 export { PageOptions } from "./PageOptions";
 export { SelectionMode } from "./selection/SelectionModes";
 export { SelectionHandler } from "./selection/SelectionHandler";
+export * from "./showhide";

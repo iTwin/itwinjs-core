@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Vector3d, Point3d } from "../geometry3d/Point3dVector3d";
-import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Matrix3d, InverseMatrixState } from "../geometry3d/Matrix3d";
 import { Transform } from "../geometry3d/Transform";
 import { AxisOrder, Geometry, AxisIndex } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
@@ -52,6 +52,39 @@ describe("Matrix3d", () => {
       10, 1, 2,
       3, 20, 1,
       4, 2, 15));
+
+    const singularX = Matrix3d.createScale(0, 1, 1);
+    const singularY = Matrix3d.createScale(1, 0, 1);
+    const singularZ = Matrix3d.createScale(1, 1, 0);
+
+    const vector = Vector3d.create(4, 2.324324, 9.21);
+
+    for (const matrix of [singularX, singularY, singularZ]) {
+      ck.testUndefined(matrix.inverseCoffs);
+      ck.testExactNumber(InverseMatrixState.singular, matrix.inverseState);
+      ck.testUndefined(singularX.multiplyInverseTranspose(vector));
+      ck.testUndefined(singularX.multiplyInverse(vector));
+      ck.testUndefined(singularX.multiplyInverseXYZAsVector3d(vector.x, vector.y, vector.z));
+      ck.testUndefined(singularX.multiplyInverseXYZAsPoint3d(vector.x, vector.y, vector.z));
+      const matrix1 = matrix.clone();
+      const originalMagnitudes = Vector3d.create();
+      ck.testFalse(matrix1.normalizeColumnsInPlace(originalMagnitudes));
+      ck.testMatrix3d(matrix, matrix1, "failed normalize leaves matrix alone");
+      ck.testFalse(matrix1.normalizeRowsInPlace(originalMagnitudes));
+      ck.testMatrix3d(matrix, matrix1, "failed normalize leaves matrix alone");
+    }
+
+    // scaling columns updates inverse.
+    // scaling columns with a zero scale clears inverse.
+    for (const matrix of Sample.createScaleSkewMatrix3d()) {
+      const vectorQ = matrix.multiplyInverseXYZAsVector3d(4, 7, 11);
+      // There should now be a stored inversed . ..
+      if (vectorQ) {
+        ck.testPointer(matrix.inverseCoffs);
+        matrix.scaleColumnsInPlace(0, 3, 8);
+        ck.testExactNumber(matrix.inverseState, InverseMatrixState.singular);
+      }
+    }
     ck.checkpoint("Matrix3d.CachedInverse");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -118,10 +151,32 @@ describe("AxisOrder.Verify", () => {
       ck.testExactNumber(axis2, Geometry.cyclic3dAxis(axis1 + shift));
       ck.testExactNumber(axis0, Geometry.cyclic3dAxis(axis2 + shift));
 
-      ck.checkpoint("AxisOrder.Verify");
-      expect(ck.getNumErrors()).equals(0);
     }
+    ck.checkpoint("AxisOrder.Verify");
+    expect(ck.getNumErrors()).equals(0);
   });
+  it("AssembleColumns", () => {
+    const vector0 = Vector3d.create(1000, 2, 5);
+    const vector1 = Vector3d.create(1, 1001, -2);
+    const vector2 = Vector3d.create(-3, 1.234, 1002);
+    const ck = new Checker();
+    for (const axisOrder of [AxisOrder.XYZ, AxisOrder.YZX, AxisOrder.ZXY, AxisOrder.ZXY, AxisOrder.XZY, AxisOrder.YXZ, AxisOrder.ZYX]) {
+
+      const axis0 = Geometry.axisOrderToAxis(axisOrder, 0);
+      const axis1 = Geometry.axisOrderToAxis(axisOrder, 1);
+      const axis2 = Geometry.axisOrderToAxis(axisOrder, 2);
+      const matrix = Matrix3d.createColumnsInAxisOrder(axisOrder, vector0, vector1, vector2);
+      const vectorB0 = matrix.getColumn(axis0);
+      const vectorB1 = matrix.getColumn(axis1);
+      const vectorB2 = matrix.getColumn(axis2);
+      ck.testVector3d(vector0, vectorB0);
+      ck.testVector3d(vector1, vectorB1);
+      ck.testVector3d(vector2, vectorB2);
+    }
+    ck.checkpoint("AxisOrder.AssembleColumns");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
 
 function verifyRigidScale(ck: Checker, candidate: Matrix3d, expectedScale: number, expectRigid: boolean) {
@@ -158,6 +213,7 @@ describe("Matrix3d.Factors", () => {
 
   it("AxisAndAngleOfRotationA", () => {
     const ck = new Checker();
+
     const rotations = Sample.createRigidAxes();
     for (const rigid of rotations) {
       ck.testTrue(rigid.isRigid(), "verify rigid");
@@ -169,6 +225,20 @@ describe("Matrix3d.Factors", () => {
       }
     }
     ck.checkpoint("Matrix3d.AxisAndAngleOfRotationA");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("BadInputCases", () => {
+    const ck = new Checker();
+    const failure1 = Matrix3d.createViewedAxes(Vector3d.unitX(), Vector3d.unitX());
+    ck.testUndefined(failure1, "createViewedAxes with cross failure");
+
+    const failure2 = Matrix3d.createRotationAroundVector(Vector3d.createZero(), Angle.createDegrees(40));
+    ck.testUndefined(failure2, "createRotationAroundVector with 000 axis");
+
+    const failure3 = Matrix3d.createDirectionalScale(Vector3d.createZero(), 2.0);
+    ck.testTrue(failure3.isDiagonal, "createDirectionalScale fails to uniform scale");
+    ck.checkpoint("Matrix3d.BadInputCases");
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -223,6 +293,11 @@ describe("Matrix3d.Factors", () => {
       Vector3d.unitY(),
       Vector3d.unitZ(),
       Vector3d.create(1, 1, 0),
+      Vector3d.create(-1, 1, 0),
+      Vector3d.create(0, 1, 1),
+      Vector3d.create(0, -1, 1),
+      Vector3d.create(1, 0, 1),
+      Vector3d.create(-1, 0, 1),
       Vector3d.create(-1, 2, 0),
       Vector3d.create(1, 2, 3),
       Vector3d.create(-1, 2, 3),
@@ -338,6 +413,8 @@ describe("Matrix3d.ViewConstructions", () => {
     testRotateVectorToVector(Vector3d.create(1, 0, 0), Vector3d.create(-1, 0), ck);
     testRotateVectorToVector(Vector3d.create(0, -1, 0), Vector3d.create(-0, 1, 0), ck);
     testRotateVectorToVector(Vector3d.create(0, 0, 1), Vector3d.create(0, 0, -1), ck);
+    ck.testUndefined(Matrix3d.createPartialRotationVectorToVector(Vector3d.createZero(), 0.3, Vector3d.createZero()), "rotation with zero vector");
+    ck.testUndefined(Matrix3d.createPartialRotationVectorToVector(Vector3d.createZero(), 0.2, Vector3d.unitX()), "rotation with zero vector");
 
     const vectorA = Vector3d.create(1, 2, 3);
     const vectorB = Vector3d.create(4, 2, 9);
@@ -415,8 +492,20 @@ describe("Matrix3d.ViewConstructions", () => {
     ck.testCoordinate(transposeDiff.sumSquares(), 2.0 * byColumn.sumSkewSquares(), "skew squares");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("QuickDots", () => {
+    const ck = new Checker();
+    const vectorX = Vector3d.create(1, 2, 4);
+    const vectorY = Vector3d.create(3, 9, 27);
+    const vectorZ = Vector3d.create(5, 25, 125);
+    const byRow = Matrix3d.createRows(vectorX, vectorY, vectorZ);
+    const vector = Vector3d.create(-3.12321, 0.28, 1.249);
+    ck.testCoordinate(vector.dotProduct(vectorX), byRow.dotRowXXYZ(vector.x, vector.y, vector.z));
+    ck.testCoordinate(vector.dotProduct(vectorY), byRow.dotRowYXYZ(vector.x, vector.y, vector.z));
+    ck.testCoordinate(vector.dotProduct(vectorZ), byRow.dotRowZXYZ(vector.x, vector.y, vector.z));
+    expect(ck.getNumErrors()).equals(0);
+  });
 
-  it("SgnedPerumtation", () => {
+  it("SignedPerumtation", () => {
     const ck = new Checker();
     const unitX = Vector3d.unitX();
     const unitY = Vector3d.unitY();
@@ -441,6 +530,15 @@ describe("Matrix3d.ViewConstructions", () => {
           ck.testFalse(matrixA.isSignedPermutation, "confirm not signed permutation");
         }
       }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("StandardView", () => {
+    const ck = new Checker();
+    for (let viewIndex = 0; viewIndex < 8; viewIndex++) {
+      const matrix = Matrix3d.createStandardWorldToView(viewIndex);
+      ck.testTrue(matrix.isRigid());
     }
     expect(ck.getNumErrors()).equals(0);
   });
@@ -509,6 +607,34 @@ describe("Matrix3d.ViewConstructions", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("MultiplyXYZToFloat64Array", () => {
+    const ck = new Checker();
+    const vectors = Sample.createNonZeroVectors();
+    for (const perpVector of [
+      Vector3d.unitX(),
+      Vector3d.unitY(),
+      Vector3d.unitZ(),
+      Vector3d.create(1, 2, 4)]) {
+      perpVector.normalizeInPlace();
+      const matrix = Matrix3d.createDirectionalScale(perpVector, -1.0);
+      const columnX = matrix.columnX();
+      const columnY = matrix.columnY();
+      const columnZ = matrix.columnZ();
+      const origin = Point3d.create(4, 3, 0.1231);
+      const w = 0.9213123678687689769;
+      for (const v of vectors) {
+        const resultBW = Matrix3d.XYZPlusMatrixTimesWeightedCoordinatesToFloat64Array(origin, matrix, v.x, v.y, v.z, w);
+        const resultAW = Point3d.createScale(origin, w).plus3Scaled(columnX, v.x, columnY, v.y, columnZ, v.z);
+        const resultB = Matrix3d.XYZPlusMatrixTimesCoordinatesToFloat64Array(origin, matrix, v.x, v.y, v.z);
+        const resultA = origin.plus3Scaled(columnX, v.x, columnY, v.y, columnZ, v.z);
+        ck.testXYZ(resultA, Vector3d.createFrom(resultB), "XYZPlusMatrixTimesWeightedCoordinatesToFloat64Array");
+        ck.testXYZ(resultAW, Vector3d.createFrom(resultBW), "XYZPlusMatrixTimesCoordinatesToFloat64Array");
+
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("AxisOrderConstructions", () => {
     const ck = new Checker();
     const perpVector = Vector3d.create(1, 2, 4);
@@ -567,6 +693,15 @@ describe("Matrix3d.ViewConstructions", () => {
     const matrixZ = Matrix3d.fromJSON([4, 3, 2, 1]);
     const matrixZ1 = Matrix3d.createRowValues(4, 3, 0, 2, 1, 0, 0, 0, 1);
     ck.testTrue(matrixZ.isAlmostEqual(matrixZ1, epsilon), "2d matrix");
+
+    const matrixC = Matrix3d.fromJSON();  // creates zeros
+    ck.testMatrix3d(matrixC, Matrix3d.createZero());
+
+    const matrixD = Matrix3d.fromJSON(matrixA);  // clone!
+    ck.testMatrix3d(matrixA, matrixD);
+
+    const matrixE = Matrix3d.fromJSON([1, 2, 3, 4, 5, 6, 7, 8, 9]);
+    ck.testMatrix3d(matrixA, matrixE);
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -622,4 +757,20 @@ describe("SkewFactorization", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+});
+
+describe("InverseVariants", () => {
+  it("CreateCapture", () => {
+    const ck = new Checker();
+    for (const matrix of Sample.createScaleSkewMatrix3d()) {
+      const coffs = new Float64Array(matrix.coffs);
+      matrix.computeCachedInverse(true);
+      const inverseCoffs = new Float64Array(matrix.inverseCoffs!);
+      const matrix1 = Matrix3d.createCapture(coffs);     // matrix1 uses coffs direction.
+      const matrix2 = Matrix3d.createCapture(new Float64Array(coffs), inverseCoffs);   // uses copy of coffs; uses inverseCoffs directly
+      ck.testMatrix3d(matrix, matrix1);
+      ck.testMatrix3d(matrix, matrix2);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

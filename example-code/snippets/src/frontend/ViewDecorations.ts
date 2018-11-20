@@ -196,7 +196,7 @@ export class IncidentMarkerDemo {
     ];
 
     if (undefined === IncidentMarkerDemo.warningSign)
-      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
+      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image); // tslint:disable-line:no-floating-promises
 
     const extents = iModel!.projectExtents;
     const pos = new Point3d();

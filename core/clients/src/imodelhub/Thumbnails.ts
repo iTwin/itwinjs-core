@@ -197,7 +197,7 @@ export class ThumbnailHandler {
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     if (this.isTipThumbnail(thumbnail)) {
-      return await this.downloadTipThumbnail(alctx, token, thumbnail.projectId, imodelId, thumbnail.size);
+      return this.downloadTipThumbnail(alctx, token, thumbnail.projectId, imodelId, thumbnail.size);
     }
 
     const size: ThumbnailSize = thumbnail instanceof SmallThumbnail ? "Small" : "Large";

@@ -198,7 +198,7 @@ export class ConcurrencyControl {
   }
 
   /** Obtain the schema lock. This is always an immediate request, never deferred. */
-  public lockSchema(actx: ActivityLoggingContext, accessToken: AccessToken): Promise<Lock[]> {
+  public async lockSchema(actx: ActivityLoggingContext, accessToken: AccessToken): Promise<Lock[]> {
     actx.enter();
     const locks: Lock[] = [
       {

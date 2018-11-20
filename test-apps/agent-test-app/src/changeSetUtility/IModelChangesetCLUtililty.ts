@@ -2,11 +2,11 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ChangesetGenerationHarness} from "./ChangesetGenerationHarness";
+import { ChangesetGenerationHarness } from "./ChangesetGenerationHarness";
 import { TestChangesetSequence } from "./TestChangesetSequence";
 import { ChangeSetUtilityConfig } from "./ChangeSetUtilityConfig";
 class ProcessHandler {
-    constructor(private _process: NodeJS.Process) {}
+    constructor(private _process: NodeJS.Process) { }
     public exitSuccessfully() { this._process.exit(); }
     public exitWithError() { this._process.exit(1); }
 }
@@ -19,10 +19,10 @@ export const main = async (_process: NodeJS.Process, harness: ChangesetGeneratio
     let success = false;
     try {
         success = await harness.generateChangesets(changesetSequence);
-    } catch {}
+    } catch { }
     if (success)
         processHandler.exitSuccessfully();
     processHandler.exitWithError();
 };
 // Invoke main if IModelChangesetCLUtility.js is being run directly
-if (require.main === module) { main(process); }
+if (require.main === module) { main(process); } // tslint:disable-line:no-floating-promises

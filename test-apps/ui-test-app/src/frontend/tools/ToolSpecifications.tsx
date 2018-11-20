@@ -314,6 +314,7 @@ export class AppTools {
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.openMessageBox",
       execute: () => {
+        // tslint:disable-next-line:no-floating-promises
         IModelApp.notifications.openMessageBox(MessageBoxType.Ok, "This is a box opened using IModelApp.notifications.openMessageBox and using promise/then to process result.", MessageBoxIconType.Information)
           .then((value: MessageBoxValue) => { window.alert("Closing message box ... value is " + value); });
       },
@@ -372,7 +373,7 @@ export class AppTools {
     return new CommandItemDef({
       commandId: "verticalPropertyGridOff",
       iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:buttons.tool1",
+      labelKey: "SampleApp:buttons.tool2",
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {

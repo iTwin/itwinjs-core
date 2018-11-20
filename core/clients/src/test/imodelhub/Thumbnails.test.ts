@@ -41,8 +41,8 @@ interface TestParameters {
   size: ThumbnailSize;
 }
 
-async function getIModelId(accessToken: AccessToken, name: string) {
-  return await utils.getIModelId(accessToken, name);
+async function getIModelId(accessToken: AccessToken, name: string): Promise<string> {
+  return utils.getIModelId(accessToken, name);
 }
 
 describe("iModelHub ThumbnailHandler", () => {
@@ -117,7 +117,7 @@ describe("iModelHub ThumbnailHandler", () => {
       params.thumbnails = await imodelHubClient.Thumbnails().get(actx, accessToken, imodelId, params.size);
 
       if (params.thumbnails.length < 3) {
-        utils.deleteIModelByName(accessToken, _projectId, imodelName);
+        utils.deleteIModelByName(accessToken, _projectId, imodelName); // tslint:disable-line:no-floating-promises
         chai.expect(params.thumbnails.length).to.be.gte(3);
       }
     });

@@ -47,7 +47,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   public async componentDidMount() {
     // we don't get the thumbnail until it's needed.
     if (!this.props.iModel.thumbnail)
-      this.startRetrieveThumbnail(this.props.iModel);
+      this.startRetrieveThumbnail(this.props.iModel); // tslint:disable-line:no-floating-promises
   }
 
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.

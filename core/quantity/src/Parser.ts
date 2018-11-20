@@ -310,7 +310,7 @@ export class Parser {
    *  @param format   Defines the likely format of inString.
    *  @param unitsProvider required to look up units that may be specified in inString
    */
-  public static parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps> {
+  public static async parseIntoQuantity(inString: string, format: Format, unitsProvider: UnitsProvider): Promise<QuantityProps> {
     const tokens: ParseToken[] = Parser.parseQuantitySpecification(inString, format);
     if (tokens.length === 0)
       return Promise.resolve(new Quantity());

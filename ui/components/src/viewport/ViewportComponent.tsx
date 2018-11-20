@@ -51,7 +51,7 @@ export class ViewportComponent extends React.Component<ViewportProps> {
 
   public async componentDidMount() {
     if (!this._viewportDiv.current)
-      throw new Error("Canvas failed to load");
+      throw new Error("Parent <div> failed to load");
 
     const viewState = await this.props.imodel.views.load(this.props.viewDefinitionId);
     if (!viewState)
@@ -64,8 +64,8 @@ export class ViewportComponent extends React.Component<ViewportProps> {
       this.props.viewportRef(this._vp);
 
     ViewRotationCube.initialize();
-    ViewRotationCube.cubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent, this);
-    ViewRotationCube.standardRotationChangeEvent.addListener(this._handleStandardRotationChangeEvent, this);
+    ViewRotationCube.onCubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent, this);
+    ViewRotationCube.onStandardRotationChangeEvent.addListener(this._handleStandardRotationChangeEvent, this);
     this._vp.onViewChanged.addListener(this._handleViewChanged, this);
   }
 
@@ -75,8 +75,8 @@ export class ViewportComponent extends React.Component<ViewportProps> {
       this._vp.onViewChanged.removeListener(this._handleViewChanged, this);
     }
 
-    ViewRotationCube.cubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent, this);
-    ViewRotationCube.standardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent, this);
+    ViewRotationCube.onCubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent, this);
+    ViewRotationCube.onStandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent, this);
   }
 
   private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {

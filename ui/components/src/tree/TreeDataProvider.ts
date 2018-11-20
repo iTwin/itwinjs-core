@@ -26,12 +26,15 @@ export interface TreeNodeItem {
   checkBoxState?: CheckBoxState;
   isCheckBoxEnabled?: boolean;
   extendedData?: any;
+  isEditable?: boolean;
 }
 
+/** A [[TreeNodeItem]] for immediately loaded trees */
 export interface ImmediatelyLoadedTreeNodeItem extends TreeNodeItem {
   children?: TreeNodeItem[];
 }
 
+/** A [[TreeNodeItem]] for delay-loaded trees */
 export interface DelayLoadedTreeNodeItem extends TreeNodeItem {
   hasChildren?: boolean;
 }
@@ -55,15 +58,19 @@ export interface ITreeDataProvider {
 /** Type definition for all BeInspireTree data providers */
 export type TreeDataProvider = TreeDataProviderRaw | TreeDataProviderPromise | TreeDataProviderMethod | ITreeDataProvider;
 
+/** checks if [[TreeDataProvider]] is a [[TreeDataProviderRaw]] */
 export const isTreeDataProviderRaw = (provider: TreeDataProvider): provider is TreeDataProviderRaw => {
   return Array.isArray(provider);
 };
+/** checks if [[TreeDataProvider]] is a [[TreeDataProviderPromise]] */
 export const isTreeDataProviderPromise = (provider: TreeDataProvider): provider is TreeDataProviderPromise => {
   return (undefined !== (provider as TreeDataProviderPromise).then);
 };
+/** checks if [[TreeDataProvider]] is a [[TreeDataProviderMethod]] */
 export const isTreeDataProviderMethod = (provider: TreeDataProvider): provider is TreeDataProviderMethod => {
   return (typeof provider === "function");
 };
+/** checks if [[TreeDataProvider]] is a [[ITreeDataProvider]] */
 export const isTreeDataProviderInterface = (provider: TreeDataProvider): provider is ITreeDataProvider => {
   const candidate = provider as ITreeDataProvider;
   return undefined !== candidate.getNodes && undefined !== candidate.getNodesCount;
@@ -73,7 +80,14 @@ export const isTreeDataProviderInterface = (provider: TreeDataProvider): provide
 export type TreeDataChangesListener = (node?: TreeNodeItem[]) => void;
 
 /**
- * MutableTreeDataProvider provides manipulation processing for the DataTree.
+ * EditableTreeDataProvider provides cell editing processing for the Tree.
+ */
+export interface EditableTreeDataProvider extends ITreeDataProvider {
+  updateLabel(nodeItem: TreeNodeItem, newLabel: string): void;
+}
+
+/**
+ * MutableTreeDataProvider provides manipulation processing for the Tree.
  * Useful for Drag & Drop processing.
  */
 export interface MutableTreeDataProvider extends ITreeDataProvider {

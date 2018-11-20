@@ -20,7 +20,7 @@ import { SphereImplicit, TorusImplicit } from "../numerics/Polynomials";
 /* tslint:disable:no-console */
 
 import { UnivariateBezier, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, BezierCoffs } from "../numerics/BezierPolynomials";
-import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Point4d } from "../geometry4d/Point4d";
 
 function testBezier(ck: Checker, bezier: BezierCoffs) {
@@ -62,35 +62,60 @@ describe("Bezier.HelloWorld", () => {
     ck.checkpoint("Order2Bezier");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("degenerateCases", () => {
+    const ck = new Checker();
+    const nullTorus = new TorusImplicit(0, 0);    // DEGENERATE
+    ck.testExactNumber(1.0, nullTorus.implicitFunctionScale());
+    const data = nullTorus.XYZToThetaPhiDistance(Point3d.create(0, 0, 0));
+    ck.testFalse(data.safePhi);
+    ck.checkpoint("Bezier.degenerateCases");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("rootServices", () => {
+    const ck = new Checker();
+    const bigNum = 100;
+    const myArray = GrowableFloat64Array.create([1, 2, 3, 4, bigNum]);
+
+    const a = AnalyticRoots.mostDistantFromMean(myArray);
+    ck.testCoordinate(0, AnalyticRoots.mostDistantFromMean(undefined));
+    ck.testLT(20, a);
+    ck.checkpoint("Bezier.rootServices");
+    expect(ck.getNumErrors()).equals(0);
+  });
 
 });
 
 describe("Cubic.Solutions", () => {
   it("Cubic.3Roots", () => {
     const ck = new Checker();
-    const root0 = 0.0;
-    const root1 = -1.0;
-    for (const root2 of [0, 1, 2, 10]) {
-      const cubic = Degree3PowerPolynomial.fromRootsAndC3(root0, root1, root2, 1.0);
-      for (const x of [root0, root1, root2]) {
-        const f = cubic.evaluate(x);
-        ck.testCoordinate(f, 0, "known root");
-        const f1 = cubic.evaluate(x + 0.5);
-        ck.testBoolean(false, Geometry.isAlmostEqualNumber(0.0, f1), "known non root");
-      }
-      const df = 2.3;
-      cubic.addConstant(df);
-      for (const x of [root0, root1, root2]) {
-        ck.testCoordinate(df, cubic.evaluate(x), "shifted cubic evaluate");
-      }
-      const a = 3.2;
-      const b = 0.3;
-      cubic.addSquaredLinearTerm(a, b);
-      for (const x of [root0, root1, root2]) {
-        const q = a + b * x;
-        ck.testCoordinate(df + q * q, cubic.evaluate(x), "shifted cubic evaluate");
-      }
+    const root0a = 0.0;
+    const root1a = -1.0;
+    for (const sign of [-1, 1]) {
+      for (const root2a of [0, 1, 2, 10]) {
+        const root2 = root2a * sign;
+        const root1 = root1a * sign;
+        const root0 = root0a * sign;
+        const cubic = Degree3PowerPolynomial.fromRootsAndC3(root0, root1, root2, 1.0);
+        for (const x of [root0, root1, root2]) {
+          const f = cubic.evaluate(x);
+          ck.testCoordinate(f, 0, "known root");
+          const f1 = cubic.evaluate(x + 0.5);
+          ck.testBoolean(false, Geometry.isAlmostEqualNumber(0.0, f1), "known non root");
+        }
+        const df = 2.3;
+        cubic.addConstant(df);
+        for (const x of [root0, root1, root2]) {
+          ck.testCoordinate(df, cubic.evaluate(x), "shifted cubic evaluate");
+        }
+        const a = 3.2;
+        const b = 0.3;
+        cubic.addSquaredLinearTerm(a, b);
+        for (const x of [root0, root1, root2]) {
+          const q = a + b * x;
+          ck.testCoordinate(df + q * q, cubic.evaluate(x), "shifted cubic evaluate");
+        }
 
+      }
     }
     ck.checkpoint("Cubic3Roots");
     expect(ck.getNumErrors()).equals(0);
@@ -236,6 +261,7 @@ describe("ImplicitSurface", () => {
     ck.testCoordinate(0, sphere.evaluateImplicitFunction(r, 0, 0), "evaluate sphere");
     ck.testCoordinate(0, sphere.evaluateImplicitFunction(0, r, 0), "evaluate sphere");
     ck.testCoordinate(0, sphere.evaluateImplicitFunction(0, 0, r), "evaluate sphere");
+
     for (const xyz of [Point3d.create(1, 2, 4),
     Point3d.create(0, 0, 0),
     Point3d.create(r, 0, 0)]) {
@@ -259,6 +285,13 @@ describe("ImplicitSurface", () => {
       const thetaPhiA = sphere.XYZToThetaPhiR(xyz);
       ck.testCoordinate(thetaPhi[0], thetaPhiA.theta, "implicit sphere theta inverse");
       ck.testCoordinate(thetaPhi[1], thetaPhiA.phi, "implicit sphere phi inverse");
+    }
+    for (const sphereA of [
+      new SphereImplicit(0), new SphereImplicit(1)]) {
+      const thetaPhiB = sphereA.XYZToThetaPhiR(Point3d.create(0, 0, 0));
+      const thetaPhiC = sphereA.XYZToThetaPhiR(Point3d.create(0, 0, 1));
+      ck.testExactNumber(0.0, thetaPhiB.phi);
+      ck.testExactNumber(0.0, thetaPhiC.theta);
     }
     ck.checkpoint("ImplicitSurface.Sphere");
     expect(ck.getNumErrors()).equals(0);
@@ -342,7 +375,9 @@ describe("PowerPolynomials", () => {
     /* equivalent Degree4PowerPolynomial ... */
     for (const roots of [
       [0, 0, 0, 0],
-      [0.5, 1, 2, 3]]) {
+      [0.5, 1, 2, 3],
+      // [0.1, 0.1, 0.5, 0.5]
+    ]) {
       const power = Degree4PowerPolynomial.fromRootsAndC4(roots[0], roots[1], roots[2], roots[3], 2);
       const bezier = Order5Bezier.createFromDegree4PowerPolynomial(power);
       const powerRoots = new GrowableFloat64Array(4);
@@ -364,6 +399,39 @@ describe("PowerPolynomials", () => {
     ck.checkpoint("PowerPolynomials.Degree4PowerPolynomial");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("DegenerateDegree4PowerPolynomial", () => {
+    const ck = new Checker();
+    /* equivalent Degree4PowerPolynomial ... */
+    for (const coffs of [
+      [0, 0, 0, 0, 0],
+      [1, 0, 0, 0, 0],
+      [1, -2, 0, 0, 0],
+      [1, 2, -3, 0, 0],
+      [0.5, 1, 2, 3, 0]]) {
+      const power = new Degree4PowerPolynomial(coffs[0], coffs[1], coffs[2], coffs[3], coffs[4]);
+      const bezier = Order5Bezier.createFromDegree4PowerPolynomial(power);
+      const powerRoots = new GrowableFloat64Array(4);
+      const bezierRoots = new GrowableFloat64Array(4);
+      AnalyticRoots.appendQuarticRoots(power.coffs, powerRoots);
+      bezier.realRoots(0.0, false, bezierRoots);
+      // make sure that each reported root is a root ... this does not confirm completeness
+      for (let i = 0; i < powerRoots.length; i++) {
+        const r = powerRoots.at(i);
+        const f = power.evaluate(r);
+        ck.testCoordinate(0, f);
+      }
+      for (let i = 0; i < bezierRoots.length; i++) {
+        const r = bezierRoots.at(i);
+        const f = bezier.evaluate(r);
+        ck.testCoordinate(0, f);
+      }
+
+    }
+    ck.checkpoint("PowerPolynomials.DegenerateDegree4PowerPolynomial");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("Degree3PowerPolynomial", () => {
     const ck = new Checker();
     /* equivalent Degree4PowerPolynomial ... */

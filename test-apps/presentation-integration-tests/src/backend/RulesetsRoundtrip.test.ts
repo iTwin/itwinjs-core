@@ -107,7 +107,7 @@ describe("Rulesets roundtrip", () => {
     }
   };
   const getRoundtripRuleset = async (sourceRuleset: Ruleset): Promise<Ruleset> => {
-    const registered = await rulesets.get(sourceRuleset.id);
+    const registered = rulesets.get(sourceRuleset.id);
     if (!registered)
       throw new Error(`Did not find a registered ruleset with id ${sourceRuleset.id}`);
     const roundtripRuleset = registered.toJSON();
@@ -119,7 +119,7 @@ describe("Rulesets roundtrip", () => {
     it(`ruleset stays the same after roundtrip to/from native platform ${i + 1}`, async () => {
       const sourceRuleset: Ruleset = await createRandomRuleset();
       try {
-        await using(await rulesets.add(sourceRuleset), async () => {
+        await using(rulesets.add(sourceRuleset), async () => {
           const afterRoundtripRuleset = await getRoundtripRuleset(sourceRuleset);
           expect(afterRoundtripRuleset).to.deep.equal(sourceRuleset,
             `Before: \r\n${JSON.stringify(sourceRuleset)} \r\nAfter: \r\n${JSON.stringify(afterRoundtripRuleset)}`);

@@ -59,7 +59,7 @@ describe("TypeConverter", () => {
     it("returns property with empty value when convertFromString returns undefined", async () => {
       const converterMock = moq.Mock.ofType(TestTypeConverter, moq.MockBehavior.Loose);
       converterMock.callBase = true;
-      converterMock.setup((mock) => mock.convertFromString(moq.It.isAny())).returns(async () => undefined);
+      converterMock.setup(async (mock) => mock.convertFromString(moq.It.isAny())).returns(async () => undefined);
 
       const propertyValue = await converterMock.object.convertFromStringToPropertyValue("def", TestUtils.createPrimitiveStringProperty("abc", "abc"));
       expect((propertyValue as PrimitiveValue).value).to.be.empty;
@@ -68,7 +68,7 @@ describe("TypeConverter", () => {
     it("returns property with correct value when convertFromString also returns a correct value", async () => {
       const converterMock = moq.Mock.ofType(TestTypeConverter, moq.MockBehavior.Loose);
       converterMock.callBase = true;
-      converterMock.setup((mock) => mock.convertFromString(moq.It.isAny())).returns(async (value: string) => value);
+      converterMock.setup(async (mock) => mock.convertFromString(moq.It.isAny())).returns(async (value: string) => value);
 
       const propertyValue = await converterMock.object.convertFromStringToPropertyValue("def", TestUtils.createPrimitiveStringProperty("abc", "abc"));
       expect((propertyValue as PrimitiveValue).value).to.be.eq("def");

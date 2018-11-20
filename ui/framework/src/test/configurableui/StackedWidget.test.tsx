@@ -67,7 +67,7 @@ describe("StackedWidget", () => {
     ConfigurableUiManager.registerControl("StackedWidgetTestWidget", TestWidget);
     ConfigurableUiManager.loadFrontstage(frontstageProps);
 
-    FrontstageManager.setActiveFrontstageDef(undefined);
+    FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
 
     const wrapper = mount(<FrontstageComposer />);
 

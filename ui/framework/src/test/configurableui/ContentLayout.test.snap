@@ -1,5 +1,141 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
+<div
+  className="contentlayout-open-mode"
+  id="ContentLayoutDiv"
+  onMouseDown={[Function]}
+  onMouseUp={[Function]}
+>
+  <SplitContainer
+    contentA={
+      <SplitContainer
+        contentA={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        contentB={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        orientation={0}
+        percentage={0.5}
+        resizable={false}
+        splitterStateId=""
+      />
+    }
+    contentB={
+      <SplitContainer
+        contentA={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        contentB={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        orientation={0}
+        percentage={0.5}
+        resizable={false}
+        splitterStateId=""
+      />
+    }
+    orientation={1}
+    percentage={0.5}
+    resizable={false}
+    splitterStateId=""
+  />
+</div>
+`;
+
+exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
+<div
+  className="contentlayout-open-mode"
+  id="ContentLayoutDiv"
+  onMouseDown={[Function]}
+  onMouseUp={[Function]}
+>
+  <SplitContainer
+    contentA={
+      <SplitContainer
+        contentA={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        contentB={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        orientation={1}
+        percentage={0.5}
+        resizable={false}
+        splitterStateId=""
+      />
+    }
+    contentB={
+      <SplitContainer
+        contentA={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        contentB={
+          <ContentWrapper
+            content={
+              <div>
+                Test
+              </div>
+            }
+          />
+        }
+        orientation={1}
+        percentage={0.5}
+        resizable={false}
+        splitterStateId=""
+      />
+    }
+    orientation={0}
+    percentage={0.5}
+    resizable={false}
+    splitterStateId=""
+  />
+</div>
+`;
+
 exports[`ContentLayout SingleContent renders correctly 1`] = `
 <div
   className="contentlayout-footer-mode"
@@ -8,7 +144,11 @@ exports[`ContentLayout SingleContent renders correctly 1`] = `
   onMouseUp={[Function]}
 >
   <SingleContentContainer
-    content={<div />}
+    content={
+      <div>
+        Test
+      </div>
+    }
   />
 </div>
 `;
@@ -23,12 +163,20 @@ exports[`ContentLayout TwoHalvesHorizontal renders correctly 1`] = `
   <SplitContainer
     contentA={
       <ContentWrapper
-        content={<div />}
+        content={
+          <div>
+            Test
+          </div>
+        }
       />
     }
     contentB={
       <ContentWrapper
-        content={<div />}
+        content={
+          <div>
+            Test
+          </div>
+        }
       />
     }
     orientation={0}
@@ -49,12 +197,20 @@ exports[`ContentLayout TwoHalvesVertical renders correctly 1`] = `
   <SplitContainer
     contentA={
       <ContentWrapper
-        content={<div />}
+        content={
+          <div>
+            Test
+          </div>
+        }
       />
     }
     contentB={
       <ContentWrapper
-        content={<div />}
+        content={
+          <div>
+            Test
+          </div>
+        }
       />
     }
     orientation={1}

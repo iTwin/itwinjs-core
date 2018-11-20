@@ -106,7 +106,7 @@ export class RpcInvocation {
     return this.protocol.configuration.controlChannel.handleUnknownOperation(this, error);
   }
 
-  private resolve(): Promise<any> {
+  private async resolve(): Promise<any> {
     const parameters = RpcMarshaling.deserialize(this.operation, this.protocol, this.request.parameters);
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
@@ -116,7 +116,7 @@ export class RpcInvocation {
     return Promise.resolve(op.call(impl, ...parameters));
   }
 
-  private reject(error: any): Promise<any> {
+  private async reject(error: any): Promise<any> {
     this._threw = true;
     this.protocol.events.raiseEvent(RpcProtocolEvent.BackendErrorOccurred, this);
     return Promise.reject(error);

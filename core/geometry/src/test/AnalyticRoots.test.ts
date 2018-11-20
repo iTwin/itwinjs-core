@@ -6,8 +6,11 @@
 import { expect } from "chai";
 import { Checker } from "./Checker";
 import { NumberArray } from "../geometry3d/PointHelpers";
-import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
-import { AnalyticRoots, Degree2PowerPolynomial } from "../numerics/Polynomials";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
+import { AnalyticRoots, Degree2PowerPolynomial, PowerPolynomial, TrigPolynomial, SmallSystem, Degree3PowerPolynomial } from "../numerics/Polynomials";
+import { Vector2d, Point2d } from "../geometry3d/Point2dVector2d";
+import { Point4d } from "../geometry4d/Point4d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 
 /* tslint:disable:no-console no-trailing-whitespace */
 
@@ -83,6 +86,61 @@ describe("AnalyticRoots.SolveQuadric", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+  it("ImplicitLineUnitCircle", () => {
+    const ck = new Checker();
+    const cosValues = new GrowableFloat64Array();
+    const sinValues = new GrowableFloat64Array();
+    const radiansValues = new GrowableFloat64Array();
+    const tol = 1.0e-12;
+    ck.testExactNumber(1, AnalyticRoots.appendImplicitLineUnitCircleIntersections(1, 0, 1, cosValues, sinValues, radiansValues, tol));
+    ck.testExactNumber(2, AnalyticRoots.appendImplicitLineUnitCircleIntersections(0.1, 0, 1, cosValues, sinValues, radiansValues, tol));
+    ck.testExactNumber(-2, AnalyticRoots.appendImplicitLineUnitCircleIntersections(0, 0, 0, cosValues, sinValues, radiansValues, tol));
+    ck.testExactNumber(-1, AnalyticRoots.appendImplicitLineUnitCircleIntersections(1, 0, 0, cosValues, sinValues, radiansValues, -1));
+
+    ck.checkpoint("ImplicitLineUnitCircle");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("PowerPolynomial", () => {
+    const ck = new Checker();
+    const coffs = new Float64Array([1, 2, 3, 4]);
+    ck.testExactNumber(0, PowerPolynomial.degreeKnownEvaluate(coffs, -1, 4));
+    const radians: number[] = [];
+    ck.testTrue(TrigPolynomial.SolveAngles(new Float64Array([1, 1, 0, 0, 0]), 4, 100, radians));
+    ck.testTrue(TrigPolynomial.SolveAngles(new Float64Array([0, 1, 1, 0, 0, 0]), 4, 100, radians));
+
+    const z3 = new Degree3PowerPolynomial();
+    const z2 = new Degree2PowerPolynomial();
+    ck.testExactNumber(4, z3.coffs.length);
+    ck.testExactNumber(3, z2.coffs.length);
+    ck.checkpoint("PowerPolynomial");
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("SmallSystemFailures", () => {
+    const ck = new Checker();
+    ck.testUndefined(SmallSystem.linearSystem3d(
+      1, 2, 3,
+      1, 2, 5,
+      1, 2, 0,
+      1, 2, 3));
+    const result = Vector2d.create();
+    ck.testFalse(SmallSystem.linearSystem2d(
+      1, 2,
+      1, 2,
+      1, 2, result));
+
+    ck.testUndefined(SmallSystem.lineSegment3dHXYTransverseIntersectionUnbounded(
+      Point4d.create(0, 0, 0, 1), Point4d.create(1, 0, 0, 1),
+      Point4d.create(1, 0, 0, 1), Point4d.create(2, 0, 0, 1)));
+    ck.testFalse(SmallSystem.lineSegment3dXYTransverseIntersectionUnbounded(
+      Point3d.create(0, 0, 0), Point3d.create(1, 0, 0),
+      Point3d.create(1, 0, 0), Point3d.create(2, 0, 0), result));
+    ck.testFalse(SmallSystem.lineSegment2dXYTransverseIntersectionUnbounded(
+      Point2d.create(0, 0), Point2d.create(1, 0),
+      Point2d.create(1, 0), Point2d.create(2, 0), result));
+    ck.checkpoint("SmallSystemFailures");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });
 
 // Cubic and Quartic tests (taken from t_analyticRoots.cpp) --------------------------------

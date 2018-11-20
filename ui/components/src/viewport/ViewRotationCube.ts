@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Viewport */
 
-import { IModelApp, Viewport } from "@bentley/imodeljs-frontend";
+import { IModelApp, Viewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
 import { Matrix3d } from "@bentley/geometry-core";
@@ -43,31 +43,34 @@ export class ViewRotationCube {
     if (undefined !== this._removeListener)
       return;
 
-    this._removeListener = IModelApp.viewManager.onSelectedViewportChanged.addListener((args) => {
-      setImmediate(() => {
-        if (args.current) {
-          ViewRotationCube.setViewMatrix(args.current);
-        }
-      });
-    });
+    if (IModelApp.viewManager)  // Not set in unit test environment
+      this._removeListener = IModelApp.viewManager.onSelectedViewportChanged.addListener(ViewRotationCube.handleSelectedViewportChanged);
   }
 
   public static readonly rMatrix = Matrix3d.createIdentity();
-  public static readonly cubeRotationChangeEvent = new CubeRotationChangeEvent();
-  public static readonly standardRotationChangeEvent = new StandardRotationChangeEvent();
-  public static readonly viewRotationChangeEvent = new ViewRotationChangeEvent();
+  public static readonly onCubeRotationChangeEvent = new CubeRotationChangeEvent();
+  public static readonly onStandardRotationChangeEvent = new StandardRotationChangeEvent();
+  public static readonly onViewRotationChangeEvent = new ViewRotationChangeEvent();
+
+  private static handleSelectedViewportChanged(args: SelectedViewportChangedArgs): void {
+    setImmediate(() => {
+      if (args.current) {
+        ViewRotationCube.setViewMatrix(args.current);
+      }
+    });
+  }
 
   public static setCubeMatrix(rotMatrix: Matrix3d, animationTime?: number): void {
     this.rMatrix.setFrom(rotMatrix);
-    this.cubeRotationChangeEvent.emit({ rotMatrix, animationTime });
+    this.onCubeRotationChangeEvent.emit({ rotMatrix, animationTime });
   }
 
   public static setStandardRotation(standardRotation: StandardViewId): void {
-    this.standardRotationChangeEvent.emit({ standardRotation });
+    this.onStandardRotationChangeEvent.emit({ standardRotation });
   }
 
   public static setViewMatrix(viewport: Viewport, animationTime?: number): void {
     this.rMatrix.setFrom(viewport.rotation);
-    this.viewRotationChangeEvent.emit({ viewport, animationTime });
+    this.onViewRotationChangeEvent.emit({ viewport, animationTime });
   }
 }

@@ -138,7 +138,7 @@ export class RobotWorldEngine {
         // __PUBLISH_EXTRACT_START__ Schema.importSchema
         // Make sure the RobotWorld schema is in the iModel.
         IModelDb.onOpened.addListener((iModel: IModelDb) => {
-            RobotWorld.importSchema(activityContext, iModel);
+            RobotWorld.importSchema(activityContext, iModel); // tslint:disable-line:no-floating-promises
         });
         // __PUBLISH_EXTRACT_END__
     }

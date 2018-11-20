@@ -32,7 +32,7 @@ import { OpenMode } from "@bentley/bentleyjs-core";
 
 declare var ___TESTBED_IPC_RENDERER___: any;
 
-export function testInterfaceResource() {
+export async function testInterfaceResource() {
   const data = new Uint8Array(4);
   data[0] = 1;
   data[1] = 2;

@@ -195,6 +195,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "display-performance-test-app",
+      "projectFolder": "test-apps/display-performance-test-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "testbed",
       "projectFolder": "test-apps/testbed",
       "reviewCategory": "internal",

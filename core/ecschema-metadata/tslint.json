@@ -1,6 +1,9 @@
 {
   "extends": "@bentley/build-tools/tslint.json",
   "rules": {
+    "await-promise": false, // WIP: should fix code so that await-promise=true can be inherited from @bentley/build-tools/tslint.json
+    "promise-function-async": false, // WIP: should fix code so that promise-function-async=true can be inherited from @bentley/build-tools/tslint.json
+    "no-floating-promises": false, // WIP: should fix code so that no-floating-promises=true can be inherited from @bentley/build-tools/tslint.json
     "no-conditional-assignment": true
   }
 }

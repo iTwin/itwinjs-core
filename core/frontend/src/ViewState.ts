@@ -113,7 +113,7 @@ export class ViewSubCategories {
    * This function is invoked by ViewState.changeCategoryDisplay() to ensure subcategory information is present for any newly-enabled
    * categories.
    */
-  public update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+  public async update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
     let missing: Set<string> | undefined;
     for (const catId of addedCategoryIds) {
       if (undefined === this._byCategoryId.get(catId)) {
@@ -244,7 +244,7 @@ export abstract class ViewState extends ElementState {
   /** @hidden */
   public cancelAllTileLoads(): void {
     this.forEachTileTreeModel((model) => {
-      const tileTree = model.tileTree();
+      const tileTree = model.tileTree;
       if (tileTree !== undefined)
         tileTree.rootTile.cancelAllLoads();
     });
@@ -254,7 +254,7 @@ export abstract class ViewState extends ElementState {
   public get areAllTileTreesLoaded(): boolean {
     let allLoaded = true;
     this.forEachTileTreeModel((model) => {
-      const loadStatus = model.loadStatus();
+      const loadStatus = model.loadStatus;
       if (loadStatus !== TileTree.LoadStatus.Loaded)
         allLoaded = false;
     });
@@ -397,7 +397,7 @@ export abstract class ViewState extends ElementState {
     if (display) {
       this.categorySelector.addCategories(categories);
       const categoryIds = Id64.toIdSet(categories);
-      this.subCategories.update(categoryIds, this.iModel).then(() => {
+      this.subCategories.update(categoryIds, this.iModel).then(() => { // tslint:disable-line:no-floating-promises
         this.setFeatureOverridesDirty();
         if (enableAllSubCategories) {
           for (const categoryId of categoryIds) {
@@ -1054,7 +1054,7 @@ export abstract class ViewState extends ElementState {
 
   private addModelToScene(model: TileTreeModelState, context: SceneContext): void {
     model.loadTileTree();
-    const tileTree = model.tileTree();
+    const tileTree = model.tileTree;
     if (undefined !== tileTree) {
       tileTree.drawScene(context);
     }
@@ -1674,7 +1674,7 @@ export class SpatialViewState extends ViewState3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
     this.forEachModel((model: GeometricModelState) => {   // Only fit real models -- ignore context models for fit.
-      const tileTree = model.tileTree();
+      const tileTree = model.tileTree;
       if (tileTree !== undefined && tileTree.rootTile !== undefined && model.useRangeForFit()) {   // can we assume that a loaded model
         range.extendRange(tileTree.rootTile.computeWorldContentRange());
       }
@@ -1715,7 +1715,7 @@ export class SpatialViewState extends ViewState3d {
   }
   public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void {
     this.forEachModel((model: GeometricModelState) => func(model));
-    this.displayStyle.forEachContextModel((model: TileTreeModelState) => func(model));
+    this.displayStyle.forEachContextRealityModel((model: TileTreeModelState) => func(model));
   }
 }
 

@@ -45,7 +45,7 @@ export * from "./utils";
  * Classes for working with a modal dialog
  */
 /**
- * @docs-group-description DragDropLayerManager
+ * @docs-group-description DragDrop
  * Classes for managing DragDrop API drag layers
  */
 /**
@@ -73,6 +73,10 @@ export * from "./utils";
  * Classes for working with a Notification or Message
  */
 /**
+ * @docs-group-description OIDC
+ * Classes for working with the OpenID Connect (OIDC) protocol
+ */
+/**
  * @docs-group-description OpenIModel
  * Classes for working with the UI for opening an iModel
  */
@@ -91,6 +95,10 @@ export * from "./utils";
 /**
  * @docs-group-description WorkflowTask
  * Classes for working a Workflow or Task
+ */
+/**
+ * @docs-group-description Tools
+ * Core Tool definitions
  */
 /**
  * @docs-group-description ToolSettings

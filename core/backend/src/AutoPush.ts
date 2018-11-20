@@ -200,7 +200,7 @@ export class AutoPush {
     Logger.logTrace(loggingCategory, "AutoPush - next push in " + (intervalMillis / 1000) + " seconds...");
   }
 
-  public reserveCodes(): Promise<void> {
+  public async reserveCodes(): Promise<void> {
     return this._iModel.concurrencyControl.request(this._activityContext, this.getAccessToken());
   }
 

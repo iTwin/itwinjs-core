@@ -34,8 +34,8 @@ describe("Multiple frontends for one backend", async () => {
     it("Handles multiple simultaneous requests from different frontends with ruleset variables", async () => {
       const rulesetId = "RulesetVariables";
       for (let i = 0; i < 100; ++i) {
-        frontends.forEach((f, fi) => f.vars(rulesetId).setString("variable_id", `${i}_${fi}`));
-        const nodes = await Promise.all(frontends.map((f) => f.getRootNodes({ imodel, rulesetId })));
+        frontends.forEach(async (f, fi) => f.vars(rulesetId).setString("variable_id", `${i}_${fi}`));
+        const nodes = await Promise.all(frontends.map(async (f) => f.getRootNodes({ imodel, rulesetId })));
         frontends.forEach((_f, fi) => {
           expect(nodes[fi][0].label).to.eq(`${i}_${fi}`);
         });

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Geometry */
 
-import { Angle, Point3d, Vector3d, XYZ, XYAndZ } from "@bentley/geometry-core";
+import { Angle, Point3d, Vector3d, XYZ, XYAndZ, Range1d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
 
 // portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
 export interface LatAndLong { longitude: number; latitude: number; }
@@ -265,5 +265,44 @@ export class Cartographic implements LatLongAndHeight {
     result = result ? result : new Point3d();
     Cartographic.addPoints(scratchK, scratchN, result);
     return result;
+  }
+}
+/**  A cartographic range representing a rectangular region if low longitude/latitude > high then area crossing seam is indicated.
+ */
+export class CartographicRange {
+  private _ranges: Range2d[];
+  constructor(spatialRange: Range3d, spatialToEcef: Transform) {
+
+    const ecefRange = spatialToEcef.multiplyRange(spatialRange);
+
+    const low = Cartographic.fromEcef(ecefRange.low)!;
+    const high = Cartographic.fromEcef(ecefRange.high)!;
+
+    const longitudeRanges = [];
+    const minLongitude = Math.min(low.longitude, high.longitude), maxLongitude = Math.max(low.longitude, high.longitude);
+    if (maxLongitude - minLongitude > Angle.piRadians) {
+      longitudeRanges.push(Range1d.createXX(0.0, minLongitude));
+      longitudeRanges.push(Range1d.createXX(maxLongitude, Angle.pi2Radians));
+    } else {
+      longitudeRanges.push(Range1d.createXX(minLongitude, maxLongitude));
+    }
+
+    this._ranges = [];
+    for (const longitudeRange of longitudeRanges) {
+      const minLatitude = Math.min(low.latitude, high.latitude), maxLatitude = Math.max(low.latitude, high.latitude);
+      if (maxLatitude - minLatitude > Angle.piOver2Radians) {
+        this._ranges.push(Range2d.createXYXY(longitudeRange.low, 0.0, longitudeRange.high, minLatitude));
+        this._ranges.push(Range2d.createXYXY(longitudeRange.low, maxLatitude, longitudeRange.high, Angle.piRadians));
+      } else {
+        this._ranges.push(Range2d.createXYXY(longitudeRange.low, minLatitude, longitudeRange.high, maxLatitude));
+      }
+    }
+  }
+  public intersectsRange(other: CartographicRange): boolean {
+    for (const range of this._ranges)
+      for (const otherRange of other._ranges)
+        if (range.intersectsRange(otherRange))
+          return true;
+    return false;
   }
 }

@@ -53,7 +53,7 @@ async () => {
   if (!event)
     return;
   // __PUBLISH_EXTRACT_START__ EventHandler.createListener.create.example-code
-  const deleteCallback = await imodelHubClient.Events()
+  const deleteCallback = await imodelHubClient.Events()  // tslint:disable-line:await-promise
     .createListener(alctx, authenticate, subscription.wsgId, imodelId, processEvent);
   // __PUBLISH_EXTRACT_END__
 

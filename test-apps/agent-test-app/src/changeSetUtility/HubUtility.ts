@@ -40,7 +40,7 @@ export class HubUtility {
     public async createNamedVersion(accessToken: AccessToken, iModelId: string, name: string, description: string): Promise<Version> {
         const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, accessToken, iModelId, this._hubClient);
         Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, `Creating named version "${name}" on the Hub`);
-        return await this._hubClient.Versions().create(actx, accessToken, iModelId, changeSetId, name, description);
+        return this._hubClient.Versions().create(actx, accessToken, iModelId, changeSetId, name, description);
     }
     /** Push an iModel to the Hub */
     public async pushIModel(accessToken: AccessToken, projectId: string, pathname: string): Promise<string> {

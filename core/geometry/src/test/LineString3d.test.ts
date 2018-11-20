@@ -11,6 +11,7 @@ import { Checker } from "./Checker";
 import { expect } from "chai";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { Point2d } from "../geometry3d/Point2dVector2d";
 /* tslint:disable:no-console */
 
 function exerciseLineString3d(ck: Checker, lsA: LineString3d) {
@@ -67,6 +68,18 @@ describe("LineString3d", () => {
       3, 2, true);
     exerciseLineString3d(ck, lsB);
     ck.checkpoint("LineString3d.HelloWorld");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("createXY", () => {
+    const ck = new Checker();
+    const ls = LineString3d.createXY(
+      [Point2d.create(1, 1),
+      Point2d.create(4, 1),
+      Point2d.create(4, 2),
+      Point2d.create(0, 2)],
+      10.0);
+    ck.testExactNumber(4, ls.numPoints());
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -146,8 +159,7 @@ class LineStringWithIterator {
       this._data[i++] = p.z;
     }
   }
-  /** return an iterator to support  */
-  public pointIterator(): IterableLineStringPoint3dIterator { return new IterableLineStringPoint3dIterator(this); }
+  public [Symbol.iterator](): IterableIterator<Point3d> { return new IterableLineStringPoint3dIterator(this); }
   /**
    * access a point by index.  The point coordinates are returned as a first class point object.
    * @param index index of point to access
@@ -171,7 +183,7 @@ describe("LineStringIterator", () => {
       Point3d.create(20, 0, 0),
       Point3d.create(20, 10, 0)];
     const ls = new LineStringWithIterator(allPoints);
-    for (const p of ls.pointIterator()) {
+    for (const p of ls) {
       console.log("for..of ", p.toJSON());
     }
     expect(ck.getNumErrors()).equals(0);

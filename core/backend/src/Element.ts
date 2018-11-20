@@ -456,6 +456,16 @@ export class Sheet extends Document implements SheetProps {
     this.scale = props.scale;
     this.sheetTemplate = props.sheetTemplate ? Id64.fromJSON(props.sheetTemplate) : undefined;
   }
+
+  /** Create a Code for a Sheet given a name that is meant to be unique within the scope of the specified DocumentListModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DocumentListModel that contains the Sheet and provides the scope for its name.
+   * @param codeValue The Sheet name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.sheet);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /**
@@ -525,6 +535,16 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
 export abstract class PhysicalType extends TypeDefinitionElement {
   /** @hidden */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a Code for a PhysicalType element given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the PhysicalType element and provides the scope for its name.
+   * @param codeValue The PhysicalType name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.physicalType);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /**
@@ -533,6 +553,16 @@ export abstract class PhysicalType extends TypeDefinitionElement {
 export abstract class SpatialLocationType extends TypeDefinitionElement {
   /** @hidden */
   constructor(props: TypeDefinitionElementProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a Code for a SpatialLocationType element given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the SpatialLocationType element and provides the scope for its name.
+   * @param codeValue The SpatialLocationType name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.spatialLocationType);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /**
@@ -549,6 +579,16 @@ export class TemplateRecipe3d extends RecipeDefinitionElement {
 export abstract class GraphicalType2d extends TypeDefinitionElement {
   /** @hidden */
   public constructor(props: ElementProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a Code for a GraphicalType2d element given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the GraphicalType2d element and provides the scope for its name.
+   * @param codeValue The GraphicalType2d name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.graphicalType2d);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /**
@@ -638,10 +678,20 @@ export class SpatialLocationPartition extends InformationPartitionElement {
  */
 export abstract class GroupInformationElement extends InformationReferenceElement {
 }
+
 /**
  * An information element that specifies a link.
  */
 export abstract class LinkElement extends InformationReferenceElement {
+  /** Create a Code for a LinkElement given a name that is meant to be unique within the scope of the specified Model.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the Model that contains the LinkElement and provides the scope for its name.
+   * @param codeValue The LinkElement name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.linkElement);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /**
@@ -693,6 +743,17 @@ export class GeometryPart extends DefinitionElement implements GeometryPartProps
     val.bbox = this.bbox;
     return val;
   }
+
+  /** Create a Code for a GeometryPart element given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the GeometryPart element and provides the scope for its name.
+   * @param codeValue The GeometryPart name
+   * @note GeometryPart elements are not required to be named (have a non-empty Code).
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.geometryPart);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /**
@@ -708,7 +769,7 @@ export class LineStyle extends DefinitionElement implements LineStyleProps {
    * @param iModel The IModel
    * @param scopeModelId The Id of the DefinitionModel that contains the LineStyle and provides the scope for its name.
    * @param codeValue The name of the LineStyle
-   * @return A LineStyle Code
+   * @returns A LineStyle Code
    */
   public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     return new Code({ spec: iModel.codeSpecs.getByName(BisCodeSpec.lineStyle).id, scope: scopeModelId, value: codeValue });

@@ -110,7 +110,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
 
               if (includeCard) {
                 return (
-                  <SheetCard key={card.label} label={card.label} index={card.index} iconSpec={iconClassName} isActive={card.isActive} onClick={() => this._handleCardSelected(card)} />
+                  <SheetCard key={card.label} label={card.label} index={card.index} iconSpec={iconClassName} isActive={card.isActive} onClick={async () => this._handleCardSelected(card)} />
                 );
               }
 
@@ -147,11 +147,11 @@ export class CardContainer extends React.Component<CardContainerProps> {
    * @param card Data about the sheet card selected.
    */
   private async _handleCardSelected(card: CardInfo) {
-    const vp = IModelApp.viewManager.selectedView;
-    if (!vp)
-      return;
-    const viewState = await this.props.connection.views.load(card.viewId);
-    vp.changeView(viewState);
+    if (IModelApp.viewManager && IModelApp.viewManager.selectedView) {
+      const vp = IModelApp.viewManager.selectedView;
+      const viewState = await this.props.connection.views.load(card.viewId);
+      vp.changeView(viewState);
+    }
 
     card.isActive = true;
     FrontstageManager.closeModalFrontstage();
@@ -171,26 +171,27 @@ export interface SheetCardProps {
 /** State for [[SheetCard]] */
 export interface SheetCardState {
   isActive: boolean;
-  isHover: boolean;
+  isPressed: boolean;
 }
 
 /** Displays information about an individual sheet */
 export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
   constructor(props: SheetCardProps) {
     super(props);
-    this.state = { isActive: this.props.isActive, isHover: false };
+    this.state = { isActive: this.props.isActive, isPressed: false };
   }
 
   private _onClick = () => {
-    this.setState({ isActive: true, isHover: false }, () => this.props.onClick());
+    this.setState({ isActive: true }, () => this.props.onClick());
   }
 
-  private _onMouseEnter = () => {
-    this.setState({ isHover: !this.state.isActive });
+  private _onMouseDown = () => {
+    this.setState({ isPressed: true });
   }
 
   private _onMouseLeave = () => {
-    this.setState({ isHover: false });
+    if (this.state.isPressed)
+      this.setState({ isPressed: false });
   }
 
   /** @hidden */
@@ -200,13 +201,16 @@ export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
     const className = classnames(
       "sheet-card",
       this.state.isActive && "is-active",
-      this.state.isHover && "is-hover",
+      this.state.isPressed && "is-pressed",
     );
 
-    const iconClassName = "icon " + (typeof iconSpec === "string") ? iconSpec : "icon-placeholder";
+    const iconClassName = classnames(
+      "icon",
+      (typeof iconSpec === "string") ? iconSpec : "icon-placeholder",
+    );
 
     return (
-      <div className={className} onClick={this._onClick} onMouseEnter={this._onMouseEnter} onMouseLeave={this._onMouseLeave}>
+      <div className={className} onClick={this._onClick} onMouseDown={this._onMouseDown} onMouseLeave={this._onMouseLeave} >
         {label}
         <div className="sheet-image-container">
           <div className={iconClassName} />

@@ -70,6 +70,30 @@ describe("ActionItemButton", () => {
       shallow(<ActionItemButton actionItem={testCommand} />).should.matchSnapshot();
     });
 
+    it("hidden renders correctly", () => {
+      const testCommand =
+        new CommandItemDef({
+          commandId: "command",
+          iconSpec: "icon-placeholder",
+          labelKey: "UiFramework:tests.label",
+          isVisible: false,
+          execute: () => { },
+        });
+      shallow(<ActionItemButton actionItem={testCommand} />).should.matchSnapshot();
+    });
+
+    it("disabled renders correctly", () => {
+      const testCommand =
+        new CommandItemDef({
+          commandId: "command",
+          iconSpec: "icon-placeholder",
+          labelKey: "UiFramework:tests.label",
+          isEnabled: false,
+          execute: () => { },
+        });
+      shallow(<ActionItemButton actionItem={testCommand} />).should.matchSnapshot();
+    });
+
     it("should execute a function", () => {
       const spyMethod = sinon.spy();
       const spyCommand =

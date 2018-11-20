@@ -13,7 +13,7 @@ import { ItemProps } from "./ItemProps";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 
-/** Abstract base class that is used by classes the execute a action when pressed. */
+/** Abstract base class that is used by classes to execute an action when pressed. */
 export abstract class ActionButtonItemDef extends ItemDefBase {
   protected _commandHandler?: CommandHandler;
   public parameters?: any;
@@ -38,15 +38,15 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
   }
 
   public toolbarReactNode(index?: number): React.ReactNode {
+    if (!this.isVisible)
+      return null;
+
     const key = (index !== undefined) ? index.toString() : this.id;
-    let myClassNames: string = "";
-    if (!this.isVisible) myClassNames += "item-hidden";
-    if (!this.isEnabled) myClassNames += "nz-is-disabled";
     const icon = <Icon iconSpec={this.iconSpec} />;
 
     return (
       <ToolbarIcon
-        className={myClassNames.length ? myClassNames : undefined} isDisabled={!this.isEnabled}
+        isDisabled={!this.isEnabled}
         title={this.label}
         key={key}
         onClick={this.execute}

@@ -46,7 +46,7 @@ This also enables you to experiment more with ECSQL by modifying the tutorial's 
 
 Run this command:
 
-> `.open -project:<project name> -imodel:<iModel name>`
+> `.open -project:<project name>`
 
 ### Step 3 - Run an ECSQL in the iModelConsole
 

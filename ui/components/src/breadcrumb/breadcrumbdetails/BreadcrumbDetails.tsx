@@ -33,7 +33,7 @@ export interface BreadcrumbDetailsState {
 }
 
 /**
- * A [[Table]] containing all children of tree node specified in path.
+ * A Table containing all children of tree node specified in path.
  * Used in conjunction with [[Breadcrumb]] to see children of current path.
  */
 export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, BreadcrumbDetailsState> {
@@ -99,7 +99,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     });
     this._tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
     this._tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
-    this._tree.ready.then(this._onModelReady);
+    this._tree.ready.then(this._onModelReady); // tslint:disable-line:no-floating-promises
   }
 
   /** @hidden */
@@ -149,7 +149,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   }
 
   private _onTreeNodeChanged = (items?: TreeNodeItem[]) => {
-    using((this._tree as any).pauseRendering(), async () => {
+    using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
       if (items) {
         for (const item of items) {
           if (item) {
@@ -162,7 +162,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
           } else {
             // all root nodes need to be reloaded
             await this._tree.reload();
-            await Promise.all(this._tree.nodes().map((n) => n.loadChildren()));
+            await Promise.all(this._tree.nodes().map(async (n) => n.loadChildren()));
           }
         }
       }
@@ -203,7 +203,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   }
   private _updateTree = (node: BeInspireTreeNode<TreeNodeItem> | undefined) => {
     if (node && node.hasOrWillHaveChildren() && !(node as any).hasLoadedChildren())
-      node.loadChildren();
+      node.loadChildren(); // tslint:disable-line:no-floating-promises
     else {
       const childNodes = (node ? toNodes<TreeNodeItem>(node.getChildren()) : this._tree.nodes()).map((child) => child.payload);
       if (childNodes.length === 0) {
@@ -214,7 +214,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
         else if (parents.length === 1)
           this.props.path.setCurrentNode(undefined);
       }
-      const table = BreadcrumbTreeUtils.aliasNodeListToTableDataProvider(childNodes, this.props.columns!);
+      const table = BreadcrumbTreeUtils.aliasNodeListToTableDataProvider(childNodes, this.props.columns!, this.props.path.getDataProvider());
       this.setState({ table, childNodes });
     }
   }

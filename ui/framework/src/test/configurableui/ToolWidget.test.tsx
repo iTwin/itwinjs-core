@@ -16,6 +16,8 @@ import {
   GroupButton,
   ToolWidget,
   CommandItemDef,
+  ActionItemButton,
+  CoreTools,
 } from "../../index";
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
@@ -24,8 +26,48 @@ describe("ToolWidget", () => {
 
   const testCallback = sinon.stub();
 
+  let horizontalToolbar: React.ReactNode;
+  let verticalToolbar: React.ReactNode;
+
   before(async () => {
     await TestUtils.initializeUiFramework();
+
+    // Set in the before() after UiFramework.i18n is initialized
+    horizontalToolbar =
+      <Toolbar
+        expandsTo={Direction.Bottom}
+        items={
+          <>
+            <ActionItemButton actionItem={CoreTools.selectElementCommand} />
+            <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <GroupButton
+              iconSpec="icon-placeholder"
+              items={[tool1, tool2]}
+              direction={Direction.Bottom}
+              itemsInColumn={7}
+            />
+          </>
+        }
+      />;
+
+    verticalToolbar =
+      <Toolbar
+        expandsTo={Direction.Right}
+        items={
+          <>
+            <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
+            <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
+            <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" isEnabled={false} />
+            <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" isVisible={false} />
+            <GroupButton
+              iconSpec="icon-placeholder"
+              items={[tool1, tool2]}
+            />
+          </>
+        }
+      />;
+
   });
 
   const backstageToggleCommand =
@@ -71,38 +113,6 @@ describe("ToolWidget", () => {
     const reactNode = toolWidgetDef.renderCornerItem();
     expect(reactNode).to.not.be.undefined;
   });
-
-  const horizontalToolbar =
-    <Toolbar
-      expandsTo={Direction.Bottom}
-      items={
-        <>
-          <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-          <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
-          <GroupButton
-            iconSpec="icon-placeholder"
-            items={[tool1, tool2]}
-            direction={Direction.Bottom}
-            itemsInColumn={7}
-          />
-        </>
-      }
-    />;
-
-  const verticalToolbar =
-    <Toolbar
-      expandsTo={Direction.Right}
-      items={
-        <>
-          <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" />
-          <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" />
-          <GroupButton
-            iconSpec="icon-placeholder"
-            items={[tool1, tool2]}
-          />
-        </>
-      }
-    />;
 
   it("ToolWidget should render", () => {
     const wrapper = mount(

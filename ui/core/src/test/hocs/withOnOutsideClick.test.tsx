@@ -31,6 +31,8 @@ describe("WithOnOutsideClick", () => {
 
     outerNode.dispatchEvent(new MouseEvent("click"));
     expect(spyOnClose.calledOnce).to.be.true;
+
+    document.body.removeChild(outerNode);
   });
 
 });

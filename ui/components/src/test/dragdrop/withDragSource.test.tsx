@@ -31,23 +31,23 @@ describe("withDragSource", () => {
     const TestDragSource = withDragSource(TestComponent); // tslint:disable-line:variable-name
     const BaseComponent = TestDragSource.DecoratedComponent; // tslint:disable-line:variable-name
     it("mounts wrapped component", () => {
-      mount(<BaseComponent dragProps={{}} connectDragSource={(e: any) => e } />);
+      mount(<BaseComponent dragProps={{}} connectDragSource={(e: any) => e} />);
     });
     it("renders wrapped component correctly", () => {
-      shallow(<BaseComponent dragProps={{}} connectDragSource={(e: any) => e } />).should.matchSnapshot();
+      shallow(<BaseComponent dragProps={{}} connectDragSource={(e: any) => e} />).should.matchSnapshot();
     });
     it("detects ctrl and alt keypresses correctly", () => {
-      const wrapper = mount(<BaseComponent dragProps={{}} connectDragSource={(e: any) => e } />) as any;
+      const wrapper = mount(<BaseComponent dragProps={{}} connectDragSource={(e: any) => e} />) as any;
       const instance = wrapper.instance();
       instance.state.ctrlKey.should.be.false;
       instance.state.altKey.should.be.false;
-      instance.handleKeyChange({ctrlKey: true, altKey: false});
+      instance.handleKeyChange({ ctrlKey: true, altKey: false });
       instance.state.ctrlKey.should.be.true;
       instance.state.altKey.should.be.false;
-      instance.handleKeyChange({ctrlKey: false, altKey: true});
+      instance.handleKeyChange({ ctrlKey: false, altKey: true });
       instance.state.ctrlKey.should.be.false;
       instance.state.altKey.should.be.true;
-      instance.handleKeyChange({ctrlKey: true, altKey: true});
+      instance.handleKeyChange({ ctrlKey: true, altKey: true });
       instance.state.ctrlKey.should.be.true;
       instance.state.altKey.should.be.true;
     });
@@ -61,12 +61,12 @@ describe("withDragSource", () => {
     const TestDragSource = withDragSource(TestComponent); // tslint:disable-line:variable-name
     const ContextTestDragSource = wrapInTestContext(TestDragSource) as any; // tslint:disable-line:variable-name
     const onDragSourceBegin = (args: DragSourceArguments) => {
-      args.dataObject = {test: true};
+      args.dataObject = { test: true };
       return args;
     };
     const beginSpy = sinon.spy(onDragSourceBegin);
     const onDragSourceEnd = sinon.fake();
-    const wrapper = mount(<ContextTestDragSource dragProps={{onDragSourceBegin: beginSpy, onDragSourceEnd, objectType: "test"}} />);
+    const wrapper = mount(<ContextTestDragSource dragProps={{ onDragSourceBegin: beginSpy, onDragSourceEnd, objectType: "test" }} />);
     const component = wrapper.find(TestComponent);
     it("initializes starting variables correctly", () => {
       component.props().isDragging.should.be.false;
@@ -79,13 +79,13 @@ describe("withDragSource", () => {
     it("calls onDragSourceBegin correctly", () => {
       backend.simulateBeginDrag([id]);
       beginSpy.should.have.been.calledOnce;
-      beginSpy.should.have.been.calledWith(sinon.match({dataObject: {test: true}}));
+      beginSpy.should.have.been.calledWith(sinon.match({ dataObject: { test: true } }));
 
     });
     it("calls onDragSourceEnd correctly", () => {
       backend.simulateEndDrag();
       onDragSourceEnd.should.have.been.calledOnce;
-      onDragSourceEnd.should.have.been.calledWith(sinon.match({dataObject: {test: true}}));
+      onDragSourceEnd.should.have.been.calledWith(sinon.match({ dataObject: { test: true } }));
     });
   });
 });

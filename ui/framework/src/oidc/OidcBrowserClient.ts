@@ -2,13 +2,15 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/** @module OIDC */
+
 import { ActivityLoggingContext, BeEvent, AuthStatus, Logger, BentleyError } from "@bentley/bentleyjs-core";
 import { UserManagerSettings, UserManager, User } from "oidc-client";
-import { Config, OidcClient, IOidcFrontendClient, UserInfo, AccessToken, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { OidcClient, IOidcFrontendClient, UserInfo, AccessToken, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 
 const loggingCategory = "imodeljs-clients-device.OidcBrowserClient";
 
-/** Utility to generate OIDC/OAuth tokens for backend applications */
+/** Utility to generate OIDC/OAuth tokens for frontend applications */
 export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient {
   private _userManager?: UserManager;
   private _accessToken?: AccessToken;
@@ -48,7 +50,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
   public signIn(_actx: ActivityLoggingContext) {
     if (!this._userManager)
       throw new BentleyError(AuthStatus.Error, "OidcBrowserClient not initialized", Logger.logError, loggingCategory);
-    this._userManager.signinRedirect();
+    this._userManager.signinRedirect(); // tslint:disable-line:no-floating-promises
   }
 
   /**
@@ -59,14 +61,14 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
   public signOut(_actx: ActivityLoggingContext): void {
     if (!this._userManager)
       throw new BentleyError(AuthStatus.Error, "OidcBrowserClient not initialized", Logger.logError, loggingCategory);
-    this._userManager.signoutRedirect();
+    this._userManager.signoutRedirect(); // tslint:disable-line:no-floating-promises
   }
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or simply because the token expired */
   public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
 
   /** Returns a promise that resolves to the AccessToken. The token is silently refreshed if it's possible and necessary. */
-  public getAccessToken(_actx: ActivityLoggingContext): Promise<AccessToken> {
+  public async getAccessToken(_actx: ActivityLoggingContext): Promise<AccessToken> {
     return Promise.resolve(this._accessToken!);
   }
 
@@ -122,7 +124,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
   }
 
   private getIsLoading(): boolean {
-    return (window.location.pathname === Config.App.getString("imjs_browser_test_redirect_uri"));
+    return (window.location.pathname === this._redirectPath);
   }
 
   private _onUserStateChanged = (user: User | undefined, _reason: string) => {

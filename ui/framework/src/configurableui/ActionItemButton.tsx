@@ -30,8 +30,8 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     super(props);
 
     this.state = {
-      isVisible: undefined !== props.actionItem.isVisible ? props.actionItem.isVisible : true,
-      isEnabled: undefined !== props.actionItem.isEnabled ? props.actionItem.isEnabled : true,
+      isVisible: props.actionItem.isVisible,
+      isEnabled: props.actionItem.isEnabled,
       isActive: false,
     };
   }
@@ -75,18 +75,15 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconSpec={this.props.actionItem.iconSpec} />;
-
-    let myClassNames = "";
     if (!this.state.isVisible)
-      myClassNames += "item-hidden";
-    if (!this.state.isEnabled)
-      myClassNames += "nz-is-disabled";
+      return null;
+
+    const icon = <Icon iconSpec={this.props.actionItem.iconSpec} />;
 
     return (
       <ToolbarIcon
-        className={myClassNames}
         isActive={this.state.isActive}
+        isDisabled={!this.state.isEnabled}
         title={this.props.actionItem.label}
         key={this.props.actionItem.id}
         onClick={this._execute}

@@ -860,7 +860,7 @@ export class IModelDb extends IModel {
    */
   public queryNextAvailableFileProperty(prop: FilePropertyProps) { return this.nativeDb.queryNextAvailableFileProperty(JSON.stringify(prop)); }
 
-  public requestSnap(activity: ActivityLoggingContext, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
+  public async requestSnap(activity: ActivityLoggingContext, connectionId: string, props: SnapRequestProps): Promise<SnapResponseProps> {
     activity.enter();
     let request = this._snaps.get(connectionId);
     if (undefined === request) {
@@ -1355,7 +1355,7 @@ export namespace IModelDb {
     public constructor(private _iModel: IModelDb) { }
 
     /** @hidden */
-    public requestTileTreeProps(activity: ActivityLoggingContext, id: string): Promise<TileTreeProps> {
+    public async requestTileTreeProps(activity: ActivityLoggingContext, id: string): Promise<TileTreeProps> {
       activity.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();
@@ -1372,7 +1372,7 @@ export namespace IModelDb {
     }
 
     /** @hidden */
-    public requestTileContent(activity: ActivityLoggingContext, treeId: string, tileId: string): Promise<Uint8Array> {
+    public async requestTileContent(activity: ActivityLoggingContext, treeId: string, tileId: string): Promise<Uint8Array> {
       activity.enter();
       if (!this._iModel.briefcase)
         throw this._iModel.newNotOpenError();

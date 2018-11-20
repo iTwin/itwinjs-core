@@ -6,8 +6,11 @@ import * as path from "path";
 import { assert } from "chai";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, IModelDb, IModelJsFs, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject } from "../../backend";
+import { CodeScopeSpec, ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import {
+  CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
+  IModelDb, IModelJsFs, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SubCategory, Subject,
+} from "../../backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 class TestImporter {
@@ -25,6 +28,8 @@ class TestImporter {
   }
 
   public import(): void {
+    const codeSpecId: Id64String = this.iModelDb.codeSpecs.insert("CodeSpec", CodeScopeSpec.Type.Model);
+    assert.isTrue(Id64.isValidId64(codeSpecId));
     const subjectId: Id64String = Subject.insert(this.iModelDb, IModel.rootSubjectId, "Subject", "Subject description");
     assert.isTrue(Id64.isValidId64(subjectId));
     const definitionModelId: Id64String = DefinitionModel.insert(this.iModelDb, subjectId, "Definition");
@@ -39,6 +44,8 @@ class TestImporter {
     assert.isTrue(Id64.isValidId64(modelSelectorId));
     const spatialCategoryId: Id64String = SpatialCategory.insert(this.iModelDb, definitionModelId, "SpatialCategory", { color: ColorDef.red });
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
+    const subCategoryId: Id64String = SubCategory.insert(this.iModelDb, spatialCategoryId, "SubCategory", { color: ColorDef.blue });
+    assert.isTrue(Id64.isValidId64(subCategoryId));
     const drawingCategoryId: Id64String = DrawingCategory.insert(this.iModelDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
     assert.isTrue(Id64.isValidId64(drawingCategoryId));
     const spatialCategorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, definitionModelId, "SpatialCategories", [spatialCategoryId]);

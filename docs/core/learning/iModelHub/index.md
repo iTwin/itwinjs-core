@@ -1,6 +1,6 @@
 # iModelHub - The Backbone for iModel.js Applications
 
-[iModelHub](http:/www.iModelHub.com) is the control center for iModels. It is responsible for coordinating concurrent access to [iModels](./iModels/index.md) as well as changes made to them in a form of [ChangeSets]($docs/learning/glossary.md#changeset).
+[iModelHub](http://www.iModelHub.com) is the control center for iModels. It is responsible for coordinating concurrent access to [iModels](./iModels/index.md) as well as changes made to them in a form of [ChangeSets]($docs/learning/glossary.md#changeset).
 
 ![iModelHub](./iModelHub.png)
 

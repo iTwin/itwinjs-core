@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-clients
 
-This log was last generated on Mon, 12 Nov 2018 16:42:10 GMT and should not be manually modified.
+This log was last generated on Tue, 20 Nov 2018 16:17:15 GMT and should not be manually modified.
+
+## 0.169.0
+Tue, 20 Nov 2018 16:17:15 GMT
+
+*Version update only*
+
+## 0.168.0
+Sat, 17 Nov 2018 14:20:11 GMT
+
+*Version update only*
+
+## 0.167.0
+Fri, 16 Nov 2018 21:45:44 GMT
+
+### Updates
+
+- Updated iModel Hub Client so iModel Base Handler is injectable. Now Http Request Options can be sepecified for the iModelHubClient
+- Added IModelHubClient.IModel, removed IModelQuery.primary(), use IModelHubClient.IModel.Get instead
+- Simplified download stream
 
 ## 0.166.0
 Mon, 12 Nov 2018 16:42:10 GMT

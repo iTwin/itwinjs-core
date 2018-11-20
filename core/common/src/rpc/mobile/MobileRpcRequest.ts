@@ -15,21 +15,15 @@ export class MobileRpcRequest extends RpcRequest {
   public readonly protocol: MobileRpcProtocol = this.client.configuration.protocol as any;
 
   /** Sends the request. */
-  protected send(): Promise<number> {
+  protected async send(): Promise<number> {
     this.protocol.requests.set(this.id, this);
-    const parts = new Blob(MobileRpcProtocol.encodeRequest(this), { type: "application/octet-stream" });
-
-    if (this.protocol.socket.readyState === WebSocket.OPEN) {
-      this.protocol.socket.send(parts);
-    } else {
-      this.protocol.pending.push(parts);
-    }
-
+    const parts = MobileRpcProtocol.encodeRequest(this);
+    this.protocol.sendToBackend(parts);
     return new Promise<number>((resolve) => { this._response = resolve; });
   }
 
   /** Loads the request. */
-  protected load(): Promise<RpcSerializedValue> {
+  protected async load(): Promise<RpcSerializedValue> {
     const fulfillment = this._fulfillment;
     if (!fulfillment) {
       return Promise.reject("No request fulfillment available.");

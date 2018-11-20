@@ -10,7 +10,7 @@ import { ActionButtonItemDef } from "./Item";
 import { ItemDefBase } from "./ItemDefBase";
 import { GroupItemProps, AnyItemDef } from "./ItemProps";
 import { Icon } from "./IconComponent";
-import { ItemList, ItemMap } from "./ItemFactory";
+import { ItemList, ItemMap } from "./ItemMap";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 import HistoryTray, { History, DefaultHistoryManager, HistoryEntry } from "@bentley/ui-ninezone/lib/toolbar/item/expandable/history/Tray";

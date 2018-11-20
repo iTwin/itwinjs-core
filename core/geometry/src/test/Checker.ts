@@ -10,7 +10,7 @@ import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 
-import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Range3d } from "../geometry3d/Range";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Arc3d } from "../curve/Arc3d";
@@ -147,7 +147,25 @@ export class Checker {
     }
     return this.announceOK();
   }
-
+  /**
+   * Test if number arrays (either or  both possibly undefined) match.
+   */
+  public testNumberArrayGG(dataA: GrowableFloat64Array | undefined, dataB: GrowableFloat64Array | undefined, ...params: any[]): boolean {
+    const numA = dataA === undefined ? 0 : dataA.length;
+    const numB = dataB === undefined ? 0 : dataB.length;
+    if (numA !== numB)
+      return this.announceError("array length mismatch", dataA, dataB, params);
+    if (dataA && dataB) {
+      let numError = 0;
+      for (let i = 0; i < dataA.length; i++) {
+        if (!Geometry.isSameCoordinate(dataA.at(i), dataB.at(i)))
+          numError++;
+      }
+      if (numError !== 0)
+        return this.announceError("contents different", dataA, dataB, params);
+    }
+    return this.announceOK();
+  }
   public testRange3d(dataA: Range3d, dataB: Range3d, ...params: any[]): boolean {
     if (dataA.isAlmostEqual(dataB))
       return this.announceOK();

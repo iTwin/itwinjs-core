@@ -13,6 +13,7 @@ import { FrontstageManager } from "./FrontstageManager";
 import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../SyncUiEventDispatcher";
 import { BaseItemState } from "./ItemDefBase";
 import { ToolItemProps } from "./ItemProps";
+import { UiFramework } from "../UiFramework";
 
 import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
 
@@ -20,12 +21,18 @@ import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
  */
 export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
   private _componentUnmounting = false;
+  private _label: string = "";
 
   /** @hidden */
   public readonly state: Readonly<BaseItemState>;
 
   constructor(props: ToolItemProps) {
     super(props);
+
+    if (props.label)
+      this._label = props.label;
+    else if (props.labelKey)
+      this._label = UiFramework.i18n.translate(props.labelKey);
 
     this.state = {
       isVisible: undefined !== props.isVisible ? props.isVisible : true,
@@ -77,18 +84,16 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconSpec={this.props.iconSpec} />;
-    let myClassNames = "";
     if (!this.state.isVisible)
-      myClassNames += "item-hidden";
-    if (!this.state.isEnabled)
-      myClassNames += "nz-is-disabled";
+      return null;
+
+    const icon = <Icon iconSpec={this.props.iconSpec} />;
 
     return (
       <ToolbarIcon
-        className={myClassNames}
         isActive={this.state.isActive}
-        title={this.props.label}
+        isDisabled={!this.state.isEnabled}
+        title={this._label}
         key={this.props.toolId}
         onClick={this._execute}
         icon={icon}

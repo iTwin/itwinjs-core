@@ -83,7 +83,7 @@ describe("BeInspireTree", () => {
     const m = createDataProviderMethod(h);
     return {
       getNodesCount: async (parent?: Node) => (await m(parent)).length,
-      getNodes: async (parent?: Node) => (await m(parent)),
+      getNodes: async (parent?: Node) => (await m(parent)), // tslint:disable-line:no-return-await
     };
   };
 
@@ -102,6 +102,7 @@ describe("BeInspireTree", () => {
         children,
       });
     }
+    node.setDirty(false);
   };
 
   const flatten = (hierarchicalList: Node[]): Node[] => {
@@ -128,16 +129,26 @@ describe("BeInspireTree", () => {
     hierarchy = createHierarchy(2, 2);
     renderedTree = [];
     rendererMock.reset();
-    rendererMock.setup((x) => x(moq.It.isAny())).callback((_nodes: BeInspireTreeNodes<Node>) => {
+    rendererMock.setup((x) => x(moq.It.isAny())).callback((_flatNodes: BeInspireTreeNodes<Node>) => {
+      const rootNodes = tree.nodes();
+      if (!rootNodes.some((n) => n.isDirty())) {
+        // the Tree component has this check to avoid re-rendering non-dirty
+        // trees - have it here as well to catch any places we don't dirty the
+        // tree when we should
+        return;
+      }
+
       renderedTree = [];
-      tree.nodes().forEach((n) => handleNodeRender(renderedTree, n));
+      rootNodes.forEach((n) => {
+        handleNodeRender(renderedTree, n);
+      });
     });
   });
 
   // run tests for every type of supported provider
   const providers = [
     { name: "with raw data provider", createProvider: (h: Node[]) => h, isDelayLoaded: false },
-    { name: "with promise data provider", createProvider: (h: Node[]) => Promise.resolve(h), isDelayLoaded: false },
+    { name: "with promise data provider", createProvider: async (h: Node[]) => Promise.resolve(h), isDelayLoaded: false },
     { name: "with method data provider", createProvider: (h: Node[]) => createDataProviderMethod(h), isDelayLoaded: true },
     { name: "with interface data provider", createProvider: (h: Node[]) => createDataProviderInterface(h), isDelayLoaded: true },
   ];
@@ -261,8 +272,8 @@ describe("BeInspireTree", () => {
           describe("selected", () => {
 
             it("returns flat list of selected nodes", async () => {
-              await source.node("0")!.select();
-              await source.node("0-1")!.select();
+              source.node("0")!.select();
+              source.node("0-1")!.select();
               const result = source.selected();
               expect(result.map(asText)).to.deep.eq(["0", "0-1"]);
             });
@@ -508,7 +519,7 @@ describe("BeInspireTree", () => {
 
         beforeEach(async () => {
           // expand the whole tree so we can test selection between multiple hierarchy levels
-          await Promise.all(tree.flatten().collapsed().map((n) => n.expand()));
+          await Promise.all(tree.flatten().collapsed().map(async (n) => n.expand()));
         });
 
         it("selects nodes at the same hierarchy level", () => {
@@ -570,7 +581,7 @@ describe("BeInspireTree", () => {
         beforeEach(async () => {
           // expand the whole tree and select all nodes
           allNodeIds = flatten(hierarchy).map((n) => n.id);
-          await Promise.all(tree.collapsed().map((n) => n.expand()));
+          await Promise.all(tree.collapsed().map(async (n) => n.expand()));
           tree.updateTreeSelection(() => true);
         });
 

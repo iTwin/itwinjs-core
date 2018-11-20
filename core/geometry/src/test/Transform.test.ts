@@ -10,6 +10,7 @@ import { Checker } from "./Checker";
 // import { prettyPrint } from "./testFunctions";
 import { Sample } from "../serialization/GeometrySamples";
 import { expect } from "chai";
+import { AxisOrder } from "../Geometry";
 /* tslint:disable:no-console */
 
 describe("Transform", () => {
@@ -196,6 +197,66 @@ describe("Transform", () => {
     matrixA.multiplyMatrixTransform(transformB1, transformB1);
     ck.testFalse(transformA.isAlmostEqual(transformB1), "inplace multiply changes input");
     ck.testTransform(transformB1, transformE);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("frozenIdentity", () => {
+    const ck = new Checker();
+    // confirm that "createIdentity" returns new transforms, whereas the property "identity" returns the same object each time (which we believe is frozen)
+    const myIdentity0 = Transform.createIdentity();
+    const myIdentity1 = Transform.createIdentity();
+    const systemIdentity0 = Transform.identity;
+    const systemIdentity1 = Transform.identity;
+    ck.testTransform(myIdentity0, systemIdentity0, "matching identity contents");
+    ck.testTransform(myIdentity1, systemIdentity1), "matching identity contents";
+    ck.testTrue(systemIdentity0 === systemIdentity1, "system identity is unique");
+    ck.testFalse(myIdentity0 === myIdentity1, "createIdentity makes distinct objects");
+    ck.testFalse(systemIdentity0 === myIdentity0);
+    ck.testFalse(systemIdentity0 === myIdentity1);
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("finalCoverage", () => {
+    const ck = new Checker();
+    // confirm that "createIdentity" returns new transforms, whereas the property "identity" returns the same object each time (which we believe is frozen)
+    const transformA = Transform.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12);
+    const transformB = Transform.createIdentity();
+    const transformB1 = transformA.clone(transformB);    // transformB is no longer an identity !!!!
+    ck.testTrue(transformB === transformB1);
+
+    const transformC = Transform.createIdentity();
+    const transformB2 = Transform.createRowValues(1, 2, 3, 4, 5, 6, 7, 8, 9, 10, 11, 12, transformC);
+    ck.testTransform(transformA, transformB2);
+    ck.testTransform(transformA, transformB, "clone to result");
+
+    transformC.setFromJSON();
+    ck.testTransform(transformC, Transform.identity, "setFromJSON defaults to identity");
+
+    transformC.setFromJSON(transformB);
+    ck.testTransform(transformC, transformB, "setFromJSON with Transform object input");
+
+    const singularA = Transform.createRowValues(
+      1, 2, 4, 0,
+      2, 4, 3, 1,
+      3, 6, -10, 1);
+    const points = [Point3d.create(1, 2, 3), Point3d.create(3, 2, 9)];
+    ck.testFalse(singularA.multiplyInversePoint3dArrayInPlace(points));
+    ck.testUndefined(singularA.cloneRigid(AxisOrder.XYZ), "cloneRigid fail with known XY degenerate");
+    const rigidA = singularA.cloneRigid(AxisOrder.ZXY);
+    if (ck.testPointer(rigidA, "cloneRigid corrects known Y degenerate") && rigidA) {
+      ck.testTrue(rigidA.matrix.isRigid());
+      const xy = Point2d.create(1, 2);
+      const xyz = Point3d.create(xy.x, xy.y, 0.0);
+      const xyB = rigidA.multiplyPoint2d(xy);
+      const xyzB = rigidA.multiplyPoint3d(xyz);
+      ck.testCoordinate(xyB.x, xyzB.x);
+      ck.testCoordinate(xyB.y, xyzB.y);
+    }
+
+    const shift = Point3d.create(1, 2, 3);
+    const translateA = Transform.createTranslation(shift);
+    const translateB = Transform.createOriginAndMatrix(shift, undefined);
+    ck.testTransform(translateA, translateB);
     expect(ck.getNumErrors()).equals(0);
   });
 

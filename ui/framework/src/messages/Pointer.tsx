@@ -16,13 +16,13 @@ import "./Pointer.scss";
 import Tooltip, { offsetAndContainInContainer } from "@bentley/ui-ninezone/lib/popup/tooltip/Tooltip";
 import { RelativePosition, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
 
-/** Properties of [[Pointer]] component. */
+/** Properties of [[PointerMessage]] component. */
 export interface PointerMessageProps extends CommonProps {
   /** Text to display */
   message?: string;
 }
 
-/** [[Pointer]] state.
+/** [[PointerMessage]] state.
  */
 export interface PointerMessageState {
   isVisible: boolean;
@@ -44,7 +44,7 @@ export interface PointerMessageChangedEventArgs {
   pt?: XAndY;
 }
 
-/** Pointer Message Changed Event emitted by the [[Pointer]] component
+/** Pointer Message Changed Event emitted by the [[PointerMessage]] component
  */
 export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEventArgs> { }
 

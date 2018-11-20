@@ -13,7 +13,7 @@ import { AnyCurve } from "./CurveChain";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
-import { GrowableXYZArray } from "../geometry3d/GrowableArray";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 // import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches";
 

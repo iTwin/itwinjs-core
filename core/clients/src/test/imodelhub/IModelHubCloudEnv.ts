@@ -12,7 +12,7 @@ import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/Connect project */
 class TestConnectClient implements ContextManagerClient {
   public async queryContextByName(alctx: ActivityLoggingContext, accessToken: AccessToken, name: string): Promise<Project> {
-    const client = await new ConnectClient();
+    const client = new ConnectClient();
     return client.getProject(alctx, accessToken, {
       $select: "*",
       $filter: `Name+eq+'${name}'`,

@@ -20,7 +20,7 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
     const value = (record.value as PrimitiveValue).value;
 
     if (value !== undefined)
-      return await TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);
+      return TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);
 
     return "";
   }

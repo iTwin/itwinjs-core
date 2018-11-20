@@ -28,6 +28,7 @@ describe("SheetNavigationAid", () => {
   });
 
   const connection = moq.Mock.ofType<IModelConnection>();
+
   describe("<SheetNavigationAid />", () => {
     it("should render", () => {
       const wrapper = mount(<SheetNavigationAid iModelConnection={connection.object} />);

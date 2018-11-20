@@ -26,7 +26,7 @@ describe("PushRetry", () => {
   let testIModel: IModelDb;
   const testPushUtility: TestPushUtility = new TestPushUtility();
   const iModelName = "PushRetryTest";
-  const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
@@ -137,7 +137,7 @@ describe("PushRetry", () => {
     const namedVersionSubscription = await BriefcaseManager.imodelClient.Events().Subscriptions().create(actx, accessToken, testIModelId, ["VersionEvent"]);
     const deleteNamedVersionListener = BriefcaseManager.imodelClient.Events().createListener(actx, async () => accessToken, namedVersionSubscription.wsgId, testIModelId, async (receivedEvent: NamedVersionCreatedEvent) => {
       actualVersionCount++;
-      extractChangeSummary(receivedEvent.changeSetId!);
+      extractChangeSummary(receivedEvent.changeSetId!); // tslint:disable-line:no-floating-promises
     });
 
     // Start pushing change sets and versions

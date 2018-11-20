@@ -16,8 +16,9 @@ import { ContentViewManager, ActiveContentChangedEventArgs } from "./ContentView
 import { Orientation } from "@bentley/ui-core";
 
 // There is a problem with this import and a different tsconfig being used. Using the require statement instead.
-import SplitPane from "react-split-pane";
-// const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // tslint:disable-line
+// Locking into react-split-pane release 0.1.77 and using the require statement works for browser, electron and mocha test environment.
+// import SplitPane from "react-split-pane";
+const SplitPane: typeof import("react-split-pane").default = require("react-split-pane"); // tslint:disable-line
 
 /** Base interface for layout split properties */
 export interface LayoutSplitPropsBase {
@@ -84,11 +85,11 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
     };
 
     const overlayClassName = classnames(
-      "content-overlay-div",
-      this.state.isActive ? "content-overlay-active" : "content-overlay-inactive");
+      "contentlayout-overlay-div",
+      this.state.isActive ? "contentlayout-overlay-active" : "contentlayout-overlay-inactive");
 
     return (
-      <div style={divStyle}
+      <div className="contentlayout-wrapper" style={divStyle}
         onMouseDown={this._handleMouseDown}
       >
         {this.state.content}
@@ -160,12 +161,6 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
 
   constructor(props: SplitContainerProps) {
     super(props);
-
-    if (this.props.resizable) {
-      // only set m_splitterStateId if the container is resizable.
-      // if (splitterStateId && splitterStateId.length > 0)
-      //     this._splitterStateId = splitterStateId;
-    }
   }
 
   private _onSplitterChange = (size: number): void => {
@@ -244,7 +239,7 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
 
     return (
       <div ref={(e) => { this._containerDiv = e; }} style={{ width: "100%", height: "100%" }} >
-        <SplitPane split={orientation} minSize={50} defaultSize={defaultSize} onChange={this._onSplitterChange}>
+        <SplitPane split={orientation} minSize={50} defaultSize={defaultSize} onChange={this._onSplitterChange} allowResize={this.props.resizable}>
           {this.props.contentA}
           <div style={{ width: this.state.pane2Width, height: this.state.pane2Height }}>
             {this.props.contentB}
@@ -279,9 +274,7 @@ class SingleContentContainer extends React.Component<SingleContentProps> {
 
 /** Common interface for [[HorizontalSplit]] and [[VerticalSplit]] */
 interface LayoutSplit {
-  getSize(): number;
   createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode;
-  getMaxUsedIndex(currentMax: number): number;
   isLocked: boolean;
 }
 
@@ -320,38 +313,6 @@ class HorizontalSplit implements LayoutSplit {
 
   public get isLocked(): boolean {
     return this._isLocked;
-  }
-
-  public getMaxUsedIndex(currentMax: number): number {
-    let maxIndex = currentMax;
-
-    if (!this._topSplit) {
-      if (this._topIndex > maxIndex) {
-        maxIndex = this._topIndex;
-      }
-    } else {
-      const topMax = this._topSplit.getMaxUsedIndex(maxIndex);
-      if (topMax > maxIndex)
-        maxIndex = topMax;
-    }
-
-    if (!this._bottomSplit) {
-      if (this._bottomIndex > maxIndex) {
-        maxIndex = this._bottomIndex;
-      }
-    } else {
-      const bottomMax = this._bottomSplit.getMaxUsedIndex(maxIndex);
-      if (bottomMax > maxIndex)
-        maxIndex = bottomMax;
-    }
-
-    return maxIndex;
-  }
-
-  public getSize(): number {
-    const topSize = (!this._topSplit) ? 1 : this._topSplit.getSize();
-    const bottomSize = (!this._bottomSplit) ? 1 : this._bottomSplit.getSize();
-    return topSize + bottomSize;
   }
 
   public createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode {
@@ -408,38 +369,6 @@ class VerticalSplit implements LayoutSplit {
 
   public get isLocked(): boolean {
     return this._isLocked;
-  }
-
-  public getMaxUsedIndex(currentMax: number): number {
-    let maxIndex = currentMax;
-
-    if (!this._leftSplit) {
-      if (this._leftIndex > maxIndex) {
-        maxIndex = this._leftIndex;
-      }
-    } else {
-      const leftMax = this._leftSplit.getMaxUsedIndex(maxIndex);
-      if (leftMax > maxIndex)
-        maxIndex = leftMax;
-    }
-
-    if (!this._rightSplit) {
-      if (this._rightIndex > maxIndex) {
-        maxIndex = this._rightIndex;
-      }
-    } else {
-      const rightMax = this._rightSplit.getMaxUsedIndex(maxIndex);
-      if (rightMax > maxIndex)
-        maxIndex = rightMax;
-    }
-
-    return maxIndex;
-  }
-
-  public getSize(): number {
-    const leftSize = (!this._leftSplit) ? 1 : this._leftSplit.getSize();
-    const rightSize = (!this._rightSplit) ? 1 : this._rightSplit.getSize();
-    return leftSize + rightSize;
   }
 
   public createContentContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode {

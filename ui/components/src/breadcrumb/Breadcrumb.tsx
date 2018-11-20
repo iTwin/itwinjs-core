@@ -17,6 +17,7 @@ import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/component/BeInspireTree";
 import UiComponents from "../UiComponents";
 
+/** @hidden */
 export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem, index?: number) => React.ReactNode;
 
 /** Property interface for [[Breadcrumb]] component */
@@ -51,6 +52,7 @@ export interface BreadcrumbProps {
   onRender?: () => void;
 }
 
+/** @hidden */
 export enum BreadcrumbMode {
   Dropdown = "dropdown",
   Input = "input",
@@ -142,7 +144,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     });
     this._tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
     this._tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
-    this._tree.ready.then(this._onModelReady);
+    this._tree.ready.then(this._onModelReady); // tslint:disable-line:no-floating-promises
   }
 
   /** @hidden */
@@ -210,7 +212,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 
   private _onTreeNodeChanged = (items?: TreeNodeItem[]) => {
-    using((this._tree as any).pauseRendering(), async () => {
+    using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
       if (items) {
         for (const item of items) {
           if (item) {
@@ -223,7 +225,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
           } else {
             // all root nodes need to be reloaded
             await this._tree.reload();
-            await Promise.all(this._tree.nodes().map((n) => n.loadChildren()));
+            await Promise.all(this._tree.nodes().map(async (n) => n.loadChildren()));
           }
         }
       }
@@ -381,12 +383,6 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   };
 
   public render(): JSX.Element {
-    let width = 0;
-    if (this._inputElement) {
-      const rect = this._inputElement.getBoundingClientRect();
-      width = rect.width;
-    }
-
     return (
       <div className="breadcrumb-input-root" data-testid="breadcrumb-input-root">
         <input
@@ -400,9 +396,10 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
         <div className="breadcrumb-close icon icon-close" data-testid="breadcrumb-input-close" onClick={this._handleClose} />
         <ContextMenu
           ref={(el) => { this._autocomplete = el; }}
+          style={{ width: "100%" }}
           opened={this.state.autocompleting}
-          edgeLimit={false} style={{ width }}
-          selected={0} floating={false} autoflip={false}
+          edgeLimit={false}
+          selectedIndex={0} floating={false} autoflip={false}
           onEsc={() => { if (this._inputElement) this._inputElement.focus(); }}
         >
           {this.state.autocompleteList.map((listItem, index) => {
@@ -420,7 +417,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
                     this._inputElement.setSelectionRange(listItem.length, listItem.length);
 
                     const autocompleteStr = this._inputElement.value.substring(0, this._inputElement.selectionEnd!);
-                    this._getAutocompleteList(autocompleteStr).then((list) => {
+                    this._getAutocompleteList(autocompleteStr).then((list) => { // tslint:disable-line:no-floating-promises
                       this.setState({
                         autocompleting: false,
                         autocompleteList: list,
@@ -479,7 +476,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
       p = p.substr(0, p.length - delimiter.length);
     if (p.length === 0)
       return undefined;
-    const root = await this.props.tree.nodes();
+    const root = this.props.tree.nodes();
     for (const node of root) {
       const found = await this._find(node, p);
       if (found)
@@ -563,7 +560,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   private _handleChange = (): void => {
     if (this._inputElement) {
       const autocompleteStr = this._inputElement.value.substring(0, this._inputElement.selectionEnd!);
-      this._getAutocompleteList(autocompleteStr).then((list) => {
+      this._getAutocompleteList(autocompleteStr).then((list) => { // tslint:disable-line:no-floating-promises
         this.setState({
           autocompleting: list.length > 0,
           autocompleteList: list,
@@ -593,7 +590,7 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
   /** @hidden */
   public componentDidMount() {
     if (this.props.node && this.props.node.hasOrWillHaveChildren() && !(this.props.node as any).hasLoadedChildren())
-      this.props.node.loadChildren();
+      this.props.node.loadChildren(); // tslint:disable-line:no-floating-promises
     this.props.tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     this.props.tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
   }

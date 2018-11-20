@@ -13,8 +13,8 @@ import { Orientation } from "@bentley/ui-core";
 import { PropertyRenderer } from "../../..//propertygrid/component/PropertyRenderer";
 
 describe("StructPropertyValueRenderer", () => {
-  before(() => {
-    TestUtils.initializeUiComponents();
+  before(async () => {
+    await TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
   });
 
   describe("render", () => {
@@ -75,7 +75,7 @@ describe("StructPropertyValueRenderer", () => {
 
       await renderer.render(stringProperty)
         .then(() => { assert.fail(undefined, undefined, "Function did not throw"); })
-        .catch(() => Promise.resolve());
+        .catch(async () => Promise.resolve());
     });
   });
 
