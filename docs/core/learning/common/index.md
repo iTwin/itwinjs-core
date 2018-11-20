@@ -9,3 +9,6 @@ The iModel.js common libraries are contained in the following npm packages:
 * `@bentley/imodeljs-clients`
 * `@bentley/geometry-core`
 * `@bentley/bentleyjs-core`
+
+Topics:
+* [GeometryStream](./GeometryStream.md)
