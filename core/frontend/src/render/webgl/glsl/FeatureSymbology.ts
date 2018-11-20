@@ -456,7 +456,7 @@ const checkForEarlySurfaceDiscardWithElemID = `
   vec4 elemId1 = TEXTURE(u_pickElementId1, tc);
   ivec4 elemId1_i = ivec4(elemId1 * 255.0 + 0.5);
   ivec4 v_element_id1_i = ivec4(v_element_id1 * 255.0 + 0.5);
-  isSameElement = elemId1_i == v_element_id1_i;
+  isSameElement = isSameElement && elemId1_i == v_element_id1_i;
 
   // If what was in the pick buffer is a planar line/edge/silhouette then we've already tested the depth so return true to discard.
   // If it was a planar surface then use a tighter and constant tolerance to see if we want to let it show through since we're only fighting roundoff error.
