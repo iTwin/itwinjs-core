@@ -11,7 +11,7 @@ import { Code, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { Element } from "./Element";
 import { Model } from "./Model";
 import { BriefcaseEntry, BriefcaseManager } from "./BriefcaseManager";
-import { LinkTableRelationship } from "./LinkTableRelationship";
+import { Relationship } from "./Relationship";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { IModelDb } from "./IModelDb";
 
@@ -84,7 +84,7 @@ export class ConcurrencyControl {
   }
 
   /** @hidden [[LinkTableRelationship.buildConcurrencyControlRequest]] */
-  public buildRequestForLinkTableRelationship(instance: LinkTableRelationship, opcode: DbOpcode): void {
+  public buildRequestForRelationship(instance: Relationship, opcode: DbOpcode): void {
     if (!this._iModel.briefcase)
       throw new IModelError(IModelStatus.BadRequest, "Invalid briefcase", Logger.logError, loggingCategory);
     const rc: RepositoryStatus = this._iModel.briefcase.nativeDb.buildBriefcaseManagerResourcesRequestForLinkTableRelationship(this._pendingRequest as NativeBriefcaseManagerResourcesRequest, JSON.stringify(instance), opcode);

@@ -909,7 +909,7 @@ describe("iModel", () => {
     assert.equal(foundRelClassName2, relClassName2);
   });
 
-  it.only("should create link table relationship instances", () => {
+  it("should create link table relationship instances", () => {
     const testImodel = imodel1;
     const elements = testImodel.elements;
 
@@ -983,7 +983,6 @@ describe("iModel", () => {
   });
 
   it("should set EC properties of various types", () => {
-
     const testImodel = imodel1;
     try {
       testImodel.getMetaData("TestBim:TestPhysicalObject");

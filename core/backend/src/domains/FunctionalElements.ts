@@ -6,7 +6,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { FunctionalElementProps, IModel, InformationPartitionElementProps, ModelProps, RelatedElement, TypeDefinitionElementProps } from "@bentley/imodeljs-common";
 import { InformationPartitionElement, RoleElement, TypeDefinitionElement } from "../Element";
 import { IModelDb } from "../IModelDb";
-import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../LinkTableRelationship";
+import { DrawingGraphicRepresentsElement, ElementRefersToElements } from "../Relationship";
 import { RoleModel } from "../Model";
 import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
 

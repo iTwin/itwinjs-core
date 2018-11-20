@@ -11,72 +11,70 @@ import { Id64, Id64String, Logger, DbOpcode, DbResult } from "@bentley/bentleyjs
 import { ECSqlStatement } from "./ECSqlStatement";
 
 /** @hidden */
-const loggingCategory = "imodeljs-backend.LinkTableRelationship";
+const loggingCategory = "imodeljs-backend.Relationship";
 
-/** Specifies the source and target elements of a [[LinkTableRelationship]] instance. */
+/** Specifies the source and target elements of a [[Relationship]] instance. */
 export interface SourceAndTarget {
   sourceId: Id64String;
   targetId: Id64String;
 }
 
 /** Properties that are common to all types of link table ECRelationships */
-export interface LinkTableRelationshipProps extends EntityProps, SourceAndTarget {
+export interface RelationshipProps extends EntityProps, SourceAndTarget {
 }
 
 /** Base class for all link table ECRelationships */
-export class LinkTableRelationship extends Entity implements LinkTableRelationshipProps {
+export class Relationship extends Entity implements RelationshipProps {
   public readonly sourceId: Id64String;
   public readonly targetId: Id64String;
 
   /** @hidden */
-  protected constructor(props: LinkTableRelationshipProps, iModel: IModelDb) {
+  protected constructor(props: RelationshipProps, iModel: IModelDb) {
     super(props, iModel);
     this.sourceId = Id64.fromJSON(props.sourceId);
     this.targetId = Id64.fromJSON(props.targetId);
   }
 
   /** @hidden */
-  public toJSON(): LinkTableRelationshipProps {
-    const val = super.toJSON() as LinkTableRelationshipProps;
+  public toJSON(): RelationshipProps {
+    const val = super.toJSON() as RelationshipProps;
     val.sourceId = this.sourceId;
     val.targetId = this.targetId;
     return val;
   }
 
-  public static onRootChanged(_props: LinkTableRelationshipProps): void { }
-  public static onValidateOutput(_props: LinkTableRelationshipProps): void { }
-  public static onDeletedDependency(_props: LinkTableRelationshipProps): void { }
+  public static onRootChanged(_props: RelationshipProps): void { }
+  public static onValidateOutput(_props: RelationshipProps): void { }
+  public static onDeletedDependency(_props: RelationshipProps): void { }
 
-  /** Insert this LinkTableRelationship into the iModel. */
-  public insert(): Id64String { return this.iModel.linkTableRelationships.insertInstance(this); }
-  /** Update this LinkTableRelationship in the iModel. */
-  public update() { this.iModel.linkTableRelationships.updateInstance(this); }
-  /** Delete this LinkTableRelationship from the iModel. */
-  public delete() { this.iModel.linkTableRelationships.deleteInstance(this); }
+  /** Insert this Relationship into the iModel. */
+  public insert(): Id64String { return this.iModel.relationships.insertInstance(this); }
+  /** Update this Relationship in the iModel. */
+  public update() { this.iModel.relationships.updateInstance(this); }
+  /** Delete this Relationship from the iModel. */
+  public delete() { this.iModel.relationships.deleteInstance(this); }
 
-  public static getInstance<T extends LinkTableRelationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T {
-    return iModel.linkTableRelationships.getInstance(this.classFullName, criteria);
-  }
+  public static getInstance<T extends Relationship>(iModel: IModelDb, criteria: Id64String | SourceAndTarget): T { return iModel.relationships.getInstance(this.classFullName, criteria); }
 
   /**
    * Add a request for the locks that would be needed to carry out the specified operation.
-   * @param opcode The operation that will be performed on the LinkTableRelationship instance.
+   * @param opcode The operation that will be performed on the Relationship instance.
    */
-  public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForLinkTableRelationship(this, opcode); }
+  public buildConcurrencyControlRequest(opcode: DbOpcode): void { this.iModel.concurrencyControl.buildRequestForRelationship(this, opcode); }
 }
 
 /**
- * A LinkTableRelationship where one Element refers to another Element
+ * A Relationship where one Element refers to another Element
  */
-export class ElementRefersToElements extends LinkTableRelationship {
-  /** Create an instance of the LinkTableRelationship.
+export class ElementRefersToElements extends Relationship {
+  /** Create an instance of the Relationship.
    * @param iModel The iModel that will contain the relationship
    * @param sourceId The sourceId of the relationship, that is, the driver element
    * @param targetId The targetId of the relationship, that is, the driven element
    * @return an instance of the specified class.
    */
   public static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T {
-    return iModel.linkTableRelationships.createInstance({ sourceId, targetId, classFullName: this.classFullName }) as T;
+    return iModel.relationships.createInstance({ sourceId, targetId, classFullName: this.classFullName }) as T;
   }
 }
 
@@ -85,7 +83,7 @@ export class DrawingGraphicRepresentsElement extends ElementRefersToElements {
 }
 
 /** Properties that are common to all types of link table ECRelationships */
-export interface ElementGroupsMembersProps extends LinkTableRelationshipProps {
+export interface ElementGroupsMembersProps extends RelationshipProps {
   memberPriority: number;
 }
 
@@ -102,20 +100,20 @@ export class ElementGroupsMembers extends ElementRefersToElements {
 
   public static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, memberPriority: number = 0): T {
     const props: ElementGroupsMembersProps = { sourceId, targetId, memberPriority, classFullName: this.classFullName };
-    return iModel.linkTableRelationships.createInstance(props) as T;
+    return iModel.relationships.createInstance(props) as T;
   }
 }
 
 /** Properties that are common to all types of ElementDrivesElements */
-export interface ElementDrivesElementProps extends LinkTableRelationshipProps {
+export interface ElementDrivesElementProps extends RelationshipProps {
   status: number;
   priority: number;
 }
 
 /**
- * A LinkTableRelationship where one Element *drives* another Element
+ * A Relationship where one Element *drives* another Element
  */
-export class ElementDrivesElement extends LinkTableRelationship implements ElementDrivesElementProps {
+export class ElementDrivesElement extends Relationship implements ElementDrivesElementProps {
   public status: number;
   public priority: number;
 
@@ -128,32 +126,32 @@ export class ElementDrivesElement extends LinkTableRelationship implements Eleme
 
   public static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String, priority: number = 0): T {
     const props: ElementDrivesElementProps = { sourceId, targetId, priority, status: 0, classFullName: this.classFullName };
-    return iModel.linkTableRelationships.createInstance(props) as T;
+    return iModel.relationships.createInstance(props) as T;
   }
 }
 
-/** Manages [[LinkTableRelationship]]s. */
-export class IModelDbLinkTableRelationships {
+/** Manages [[Relationship]]s. */
+export class Relationships {
   private _iModel: IModelDb;
 
   /** @hidden */
   public constructor(iModel: IModelDb) { this._iModel = iModel; }
 
   /**
-   * Create a new instance of a LinkTableRelationship.
-   * @param props The properties of the new LinkTableRelationship.
-   * @throws [[IModelError]] if there is a problem creating the LinkTableRelationship.
+   * Create a new instance of a Relationship.
+   * @param props The properties of the new Relationship.
+   * @throws [[IModelError]] if there is a problem creating the Relationship.
    */
-  public createInstance(props: LinkTableRelationshipProps): LinkTableRelationship { return this._iModel.constructEntity(props) as LinkTableRelationship; }
+  public createInstance(props: RelationshipProps): Relationship { return this._iModel.constructEntity(props) as Relationship; }
 
   /**
    * Insert a new relationship instance into the iModel.
-   * @param props The properties of the new relationship instance.
-   * @returns The Id of the newly inserted relationship instance.
+   * @param props The properties of the new relationship.
+   * @returns The Id of the newly inserted relationship.
    * @note The id property of the props object is set as a side effect of this function.
    * @throws [[IModelError]] if unable to insert the relationship instance.
    */
-  public insertInstance(props: LinkTableRelationshipProps): Id64String {
+  public insertInstance(props: RelationshipProps): Id64String {
     const val = this._iModel.briefcase.nativeDb.insertLinkTableRelationship(JSON.stringify(props));
     if (val.error)
       throw new IModelError(val.error.status, "Problem inserting relationship instance", Logger.logWarning, loggingCategory);
@@ -167,51 +165,48 @@ export class IModelDbLinkTableRelationships {
    * @param props the properties of the relationship instance to update. Any properties that are not present will be left unchanged.
    * @throws [[IModelError]] if unable to update the relationship instance.
    */
-  public updateInstance(props: LinkTableRelationshipProps): void {
+  public updateInstance(props: RelationshipProps): void {
     const error = this._iModel.briefcase.nativeDb.updateLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_OK)
       throw new IModelError(error, "", Logger.logWarning, loggingCategory);
   }
 
   /**
-   * Delete an relationship instance from this iModel.
-   * @param id The Id of the relationship instance to be deleted
+   * Delete an Relationship instance from this iModel.
+   * @param id The Id of the Relationship to be deleted
    * @throws [[IModelError]]
    */
-  public deleteInstance(props: LinkTableRelationshipProps): void {
+  public deleteInstance(props: RelationshipProps): void {
     const error = this._iModel.briefcase.nativeDb.deleteLinkTableRelationship(JSON.stringify(props));
     if (error !== DbResult.BE_SQLITE_DONE)
       throw new IModelError(error, "", Logger.logWarning, loggingCategory);
   }
 
-  /** get the props of a relationship instance */
-  public getInstanceProps<T extends LinkTableRelationshipProps>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T {
+  /** Get the props of a Relationship instance */
+  public getInstanceProps<T extends RelationshipProps>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T {
+    let props: T;
     if (typeof criteria === "string") {
-      return this._iModel.withPreparedStatement(`SELECT * FROM ${relClassSqlName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
+      props = this._iModel.withPreparedStatement(`SELECT * FROM ${relClassSqlName} WHERE ecinstanceid=?`, (stmt: ECSqlStatement) => {
         stmt.bindId(1, criteria);
         if (DbResult.BE_SQLITE_ROW !== stmt.step())
-          throw new IModelError(IModelStatus.NotFound, "LinkTableRelationship not found", Logger.logWarning, loggingCategory);
+          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggingCategory);
+        return stmt.getRow() as T;
+      });
+    } else {
+      props = this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE SourceECInstanceId=? AND TargetECInstanceId=?", (stmt: ECSqlStatement) => {
+        stmt.bindId(1, criteria.sourceId);
+        stmt.bindId(2, criteria.targetId);
+        if (DbResult.BE_SQLITE_ROW !== stmt.step())
+          throw new IModelError(IModelStatus.NotFound, "Relationship not found", Logger.logWarning, loggingCategory);
         return stmt.getRow() as T;
       });
     }
-
-    return this._iModel.withPreparedStatement("SELECT * FROM " + relClassSqlName + " WHERE SourceECInstanceId=? AND TargetECInstanceId=?", (stmt: ECSqlStatement) => {
-      stmt.bindId(1, criteria.sourceId);
-      stmt.bindId(2, criteria.targetId);
-      if (DbResult.BE_SQLITE_ROW !== stmt.step())
-        throw new IModelError(IModelStatus.NotFound, "LinkTableRelationship not found", Logger.logWarning, loggingCategory);
-      return stmt.getRow() as T;
-    });
+    props.classFullName = props.className.replace(".", ":");
+    return props;
   }
 
-  /** get a relationship instance */
-  public getInstance<T extends LinkTableRelationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T {
-    const props = this.getInstanceProps(relClassSqlName, criteria);
-    props.classFullName = props.className.replace(".", ":");
-    if (props.sourceClassName !== undefined)
-      props.sourceClassName = props.sourceClassName.replace(".", ":");
-    if (props.targetClassName !== undefined)
-      props.targetClassName = props.targetClassName.replace(".", ":");
-    return this._iModel.constructEntity(props) as T;
+  /** Get a Relationship instance */
+  public getInstance<T extends Relationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T {
+    return this._iModel.constructEntity(this.getInstanceProps(relClassSqlName, criteria)) as T;
   }
 }
