@@ -2,6 +2,18 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "0.169.0",
+      "tag": "@bentley/ui-core_v0.169.0",
+      "date": "Tue, 20 Nov 2018 16:17:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Base Tree component improvements to allow virtualization"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.168.0",
       "tag": "@bentley/ui-core_v0.168.0",
       "date": "Sat, 17 Nov 2018 14:20:11 GMT",

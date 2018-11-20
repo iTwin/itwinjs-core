@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Sat, 17 Nov 2018 14:20:11 GMT and should not be manually modified.
+This log was last generated on Tue, 20 Nov 2018 16:17:15 GMT and should not be manually modified.
+
+## 0.169.0
+Tue, 20 Nov 2018 16:17:15 GMT
+
+### Updates
+
+- Include presentation rulesets in package
 
 ## 0.168.0
 Sat, 17 Nov 2018 14:20:11 GMT
