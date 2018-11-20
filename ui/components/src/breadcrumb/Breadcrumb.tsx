@@ -144,7 +144,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     });
     this._tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
     this._tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
-    this._tree.ready.then(this._onModelReady);
+    this._tree.ready.then(this._onModelReady); // tslint:disable-line:no-floating-promises
   }
 
   /** @hidden */
@@ -212,7 +212,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 
   private _onTreeNodeChanged = (items?: TreeNodeItem[]) => {
-    using((this._tree as any).pauseRendering(), async () => {
+    using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
       if (items) {
         for (const item of items) {
           if (item) {
@@ -417,7 +417,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
                     this._inputElement.setSelectionRange(listItem.length, listItem.length);
 
                     const autocompleteStr = this._inputElement.value.substring(0, this._inputElement.selectionEnd!);
-                    this._getAutocompleteList(autocompleteStr).then((list) => {
+                    this._getAutocompleteList(autocompleteStr).then((list) => { // tslint:disable-line:no-floating-promises
                       this.setState({
                         autocompleting: false,
                         autocompleteList: list,
@@ -560,7 +560,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   private _handleChange = (): void => {
     if (this._inputElement) {
       const autocompleteStr = this._inputElement.value.substring(0, this._inputElement.selectionEnd!);
-      this._getAutocompleteList(autocompleteStr).then((list) => {
+      this._getAutocompleteList(autocompleteStr).then((list) => { // tslint:disable-line:no-floating-promises
         this.setState({
           autocompleting: list.length > 0,
           autocompleteList: list,
@@ -590,7 +590,7 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
   /** @hidden */
   public componentDidMount() {
     if (this.props.node && this.props.node.hasOrWillHaveChildren() && !(this.props.node as any).hasLoadedChildren())
-      this.props.node.loadChildren();
+      this.props.node.loadChildren(); // tslint:disable-line:no-floating-promises
     this.props.tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     this.props.tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
   }

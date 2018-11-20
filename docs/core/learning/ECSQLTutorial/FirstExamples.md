@@ -242,7 +242,7 @@ some class, you can let ECSQL do calculations. The following example uses ECSQL 
 Using **aliases** is also helpful when working with the iModel.js API. The API returns query results as JavaScript object literals where
 each expression of the SELECT clause becomes the member of the object.
 
-If you, for example, used the [Element Count example](#element-count) with the iModeljs API, you would get this JavaScript object literal:
+If you, for example, used the [Element Count example](#element-count) with the iModel.js API, you would get this JavaScript object literal:
 
  ```ts
  { "count(*)" : 26 }

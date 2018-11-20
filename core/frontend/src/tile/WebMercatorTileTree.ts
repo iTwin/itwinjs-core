@@ -188,7 +188,7 @@ class WebMercatorTileLoader extends TileLoader {
       } else {
         const textureLoad = this.loadTextureImage(imageSource as ImageSource, this._iModel, IModelApp.renderSystem);
         textureLoad.catch((_err) => missingTile.setNotFound());
-        textureLoad.then((result) => {
+        textureLoad.then((result) => { // tslint:disable-line:no-floating-promises
           missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
         });
       }
@@ -395,7 +395,7 @@ class BingMapProvider extends ImageryProvider {
     for (const match of matchingAttributions) {
       dataString = dataString.concat("<li>", match.copyrightMessage, "</li>");
     }
-    IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, dataString, MessageBoxIconType.Information);
+    IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, dataString, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
   }
 
   public getCopyrightImage(_bgMapState: BackgroundMapState): HTMLImageElement | undefined { return this._logoImage; }
@@ -459,7 +459,7 @@ class BingMapProvider extends ImageryProvider {
       this.readAttributions(thisResourceProps.imageryProviders);
 
       // read the Bing logo data, used in getCopyrightImage
-      this.readLogo().then((logoByteArray) => {
+      this.readLogo().then((logoByteArray) => { // tslint:disable-line:no-floating-promises
         this._logoImage = new Image();
         const base64Data = Base64.btoa(String.fromCharCode.apply(null, logoByteArray));
         this._logoImage.src = "data:image/png;base64," + base64Data;
@@ -469,7 +469,7 @@ class BingMapProvider extends ImageryProvider {
       // for tiles at zoom levels where they don't have data. Their application stops you from zooming in when that's the
       // case, but we can't stop - the user might want to look at design data a closer zoom. So we intentionally load such
       // a tile, and then compare other tiles to it, rejecting them if they match.
-      this.loadTile(0, 0, this._zoomMax - 1).then((tileData: ImageSource | undefined) => {
+      this.loadTile(0, 0, this._zoomMax - 1).then((tileData: ImageSource | undefined) => { // tslint:disable-line:no-floating-promises
         if (tileData !== undefined) this._missingTileData = tileData.data;
       });
     } catch (error) {

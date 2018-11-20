@@ -119,7 +119,9 @@ export interface GeometryPartInstanceProps {
   scale?: number;
 }
 
-/** Allowed GeometryStream entries - should only set one value */
+/** Allowed GeometryStream entries - should only set one value.
+ * @see [GeometryStream]($docs/learning/common/geometrystream.md)
+ */
 export interface GeometryStreamEntryProps extends GeomJson.GeometryProps {
   appearance?: GeometryAppearanceProps;
   styleMod?: LineStyle.ModifierProps;

@@ -35,8 +35,8 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
 
 describe("PropertyGrid", () => {
 
-  before(() => {
-    TestUtils.initializeUiComponents();
+  before(async () => {
+    await TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
   });
 
   it("handles onDataChanged event subscriptions when mounting, changing props and unmounting", () => {

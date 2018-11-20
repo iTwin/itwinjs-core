@@ -29,6 +29,8 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
     };
   }
 
+  // tslint:disable:no-floating-promises (flagged at openMessageBox)
+
   public render(): JSX.Element {
     return (
       <MessageBox

@@ -1250,7 +1250,7 @@ class IncidentMarker extends Marker {
   public onMouseButton(ev: BeButtonEvent): boolean {
     if (ev.button === BeButton.Data) {
       if (ev.isDown) {
-        IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information);
+        IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
       }
     }
     return true;
@@ -1373,7 +1373,7 @@ class IncidentMarkerDemo {
     ];
 
     if (undefined === IncidentMarkerDemo.warningSign)
-      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
+      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image); // tslint:disable-line:no-floating-promises
 
     const extents = activeViewState.iModelConnection!.projectExtents;
     const pos = new Point3d();
@@ -1683,9 +1683,9 @@ function wireIconsToFunctions() {
 window.onbeforeunload = () => {
   if (activeViewState.iModelConnection !== undefined)
     if (configuration.standalone)
-      activeViewState.iModelConnection.closeStandalone();
+      activeViewState.iModelConnection.closeStandalone(); // tslint:disable-line:no-floating-promises
     else
-      activeViewState.iModelConnection.close(activeViewState.accessToken!);
+      activeViewState.iModelConnection.close(activeViewState.accessToken!); // tslint:disable-line:no-floating-promises
 };
 
 function stringToSnapModes(name: string): SnapMode[] {
@@ -1918,4 +1918,4 @@ function hideSpinner() {
 }
 
 // Entry point - run the main function
-main();
+main(); // tslint:disable-line:no-floating-promises

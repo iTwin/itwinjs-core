@@ -990,7 +990,7 @@ class AccuDrawShortcutsTool extends InputCollector {
   public onPostInstall(): void { super.onPostInstall(); this.initLocateElements(false, true, undefined, CoordinateLockOverrides.None); this._shortcut.doManipulationStart(); } // NOTE: InputCollector inherits suspended primitive's state, set everything...
   public onCleanup(): void { this._shortcut.doManipulationStop(this._cancel); }
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> { if (await this._shortcut.doManipulation(ev, false)) { this._cancel = false; this.exitTool(); } return EventHandled.No; }
-  public async onMouseMotion(ev: BeButtonEvent): Promise<void> { this._shortcut.doManipulation(ev, true); }
+  public async onMouseMotion(ev: BeButtonEvent): Promise<void> { this._shortcut.doManipulation(ev, true); } // tslint:disable-line:no-floating-promises
   public decorate(context: DecorateContext) { this._shortcut.onDecorate(context); }
   public exitTool() { super.exitTool(); AccuDrawShortcuts.requestInputFocus(); } // re-grab focus when auto-focus tool setting set...
 }
@@ -1000,7 +1000,7 @@ export abstract class AccuDrawTool {
     if (this.activateAccuDrawOnStart())
       IModelApp.accuDraw.activate();
 
-    this.doManipulation(undefined, true);
+    this.doManipulation(undefined, true); // tslint:disable-line:no-floating-promises
   }
 
   public doManipulationStop(cancel: boolean) {

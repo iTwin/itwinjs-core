@@ -99,13 +99,13 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
   }
 
   public componentDidMount() {
-    this.updateDisplayValue(this.props);
+    this.updateDisplayValue(this.props); // tslint:disable-line:no-floating-promises
     this.afterRender();
   }
 
   public componentDidUpdate(prevProps: PropertyRendererProps) {
     if (prevProps.propertyRecord !== this.props.propertyRecord)
-      this.updateDisplayValue(this.props);
+      this.updateDisplayValue(this.props); // tslint:disable-line:no-floating-promises
 
     this.afterRender();
   }
@@ -140,7 +140,7 @@ export class PropertyRenderer extends React.PureComponent<PropertyRendererProps,
 
     let valueNode: React.ReactNode;
     if (this.props.isEditing)
-      valueNode = <EditorContainer propertyRecord={this.props.propertyRecord} onCommit={this._onEditCommit} onCommitCancel={this._onEditCancel} />;
+      valueNode = <EditorContainer propertyRecord={this.props.propertyRecord} onCommit={this._onEditCommit} onCancel={this._onEditCancel} />;
     else
       valueNode = this.state.displayValue;
 

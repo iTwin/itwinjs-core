@@ -85,7 +85,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
 
   public componentDidMount() {
     this._isMounted = true;
-    this.gatherData(this.props.dataProvider);
+    this.gatherData(this.props.dataProvider); // tslint:disable-line:no-floating-promises
   }
 
   public componentWillUnmount() {
@@ -103,7 +103,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   }
 
   private _onPropertyDataChanged = () => {
-    this.gatherData(this.props.dataProvider);
+    this.gatherData(this.props.dataProvider); // tslint:disable-line:no-floating-promises
   }
 
   private _shouldExpandCategory = (category: PropertyCategory): boolean => {

@@ -669,7 +669,7 @@ export class TileTree implements IDisposable {
 
   public requestTiles(missing: Tile[]): void {
     // TBD - cancel any loaded/queued tiles which are no longer needed.
-    this.loader.loadTileContents(missing);
+    this.loader.loadTileContents(missing); // tslint:disable-line:no-floating-promises
   }
 
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {
@@ -743,7 +743,7 @@ export abstract class TileLoader {
 
     const read = reader.read();
     read.catch((_err) => tile.setNotFound());
-    read.then((result) => {
+    read.then((result) => { // tslint:disable-line:no-floating-promises
       // Make sure we still want this tile - may been unloaded, imodel may have been closed, IModelApp may have shut down taking render system with it, etc.
       if (tile.isLoading) {
         tile.setGraphic(result.renderGraphic, result.isLeaf, result.contentRange, result.sizeMultiplier);

@@ -17,7 +17,7 @@ import {
   DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementPropertyFormatter, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, SpatialCategory, SqliteStatement, SqliteValue,
-  SqliteValueType, SubCategory, Subject, ViewDefinition, DisplayStyle3d,
+  SqliteValueType, SubCategory, Subject, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
 } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -86,7 +86,7 @@ describe("iModel", () => {
   });
 
   it("FontMap", () => {
-    const fonts1 = imodel1.getFontMap();
+    const fonts1 = imodel1.fontMap;
     assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
     assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
     assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
@@ -586,28 +586,6 @@ describe("iModel", () => {
     }
   });
 
-  it("should set auto-handled number property with value of zero", () => {
-    const testImodel: IModelDb = imodel1;
-    try {
-      testImodel.getMetaData("TestBim:TestPhysicalObject");
-    } catch (err) {
-      const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
-      assert.isDefined(testImodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
-    }
-
-    const props: GeometricElementProps = {
-      classFullName: "TestBim:TestPhysicalObject",
-      model: "0",
-      category: "0",
-      code: Code.createEmpty(),
-      intProperty: 0,
-    };
-
-    const element = testImodel.elements.createElement(props);
-    assert.equal(element.intProperty, 0, "int property should be zero");
-  });
-
   function checkElementMetaData(obj: EntityMetaData) {
     assert.isNotNull(obj);
     assert.equal(obj.ecclass, Element.classFullName);
@@ -856,9 +834,9 @@ describe("iModel", () => {
     assert.isDefined(response.status);
   });
 
-  it("should import schemas", () => {
+  it("should import schemas", async () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    imodel1.importSchema(actx, schemaPathname); // will throw an exception if import fails
+    await imodel1.importSchema(actx, schemaPathname); // will throw an exception if import fails
 
     const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
     assert.isDefined(classMetaData.properties.testDocumentProperty);
@@ -891,12 +869,12 @@ describe("iModel", () => {
     testImodel.models.deleteModel(newModelId);
   });
 
-  it("should create model with custom relationship to modeled element", () => {
+  it("should create model with custom relationship to modeled element", async () => {
     const testBimName = "should-create-models-with-custom-relationship.bim";
     let testImodel: IModelDb = IModelTestUtils.openIModel("test.bim", { copyFilename: testBimName });
 
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
+    await testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
     assert.isDefined(testImodel.getMetaData("TestBim:TestModelModelsElement"), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
 
     let newModelId1: Id64String;
@@ -931,41 +909,44 @@ describe("iModel", () => {
     assert.equal(foundRelClassName2, relClassName2);
   });
 
-  it("should create link table relationship instances", () => {
-    const testImodel: IModelDb = imodel1;
+  // NEEDS_WORK_MERGE: uncomment the following lines when Keith's changes to javascript-domains are merged in
+  it.skip("should create link table relationship instances", () => {
+    const testImodel = imodel1;
+    const elements = testImodel.elements;
+
+    testImodel.nativeDb.enableTxnTesting();
 
     // Create a new physical model
-    let newModelId: Id64String;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
+    const newModelId = PhysicalModel.insert(testImodel, IModel.rootSubjectId, "TestModel");
 
-    // Find or create a SpatialCategory
-    const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-    let spatialCategoryId: Id64String | undefined = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
-    if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
-
-      const updated = testImodel.elements.getElement(IModelDb.getDefaultSubCategoryId(spatialCategoryId)) as SubCategory;
-      assert.equal(updated.appearance.color.tbgr, ColorByName.darkRed, "SubCategory appearance should be updated");
-    }
+    // create a SpatialCategory
+    const spatialCategoryId = SpatialCategory.insert(testImodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
 
     // Create a couple of physical elements.
-    const id0 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
-    const id1 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
-    const id2 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
+    const elementProps: GeometricElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      iModel: testImodel,
+      model: newModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+    };
 
-    const geometricModel = testImodel.models.getModel(newModelId) as GeometricModel;
+    const id0 = elements.insertElement(elementProps);
+    const id1 = elements.insertElement(elementProps);
+    const id2 = elements.insertElement(elementProps);
+
+    const geometricModel = testImodel.models.getModel<GeometricModel>(newModelId);
     assert.throws(() => geometricModel.queryExtents()); // no geometry
 
     // Create grouping relationships from 0 to 1 and from 0 to 2
-    const r1: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id1);
-    r1.memberPriority = 1;
-    testImodel.linkTableRelationships.insertInstance(r1);
-    const r2: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id2);
-    testImodel.linkTableRelationships.insertInstance(r2);
+    const r1 = ElementGroupsMembers.create(testImodel, id0, id1, 1);
+    r1.insert();
+    const r2 = ElementGroupsMembers.create(testImodel, id0, id2);
+    r2.insert();
 
     // Look up by id
-    const g1 = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, r1.id) as ElementGroupsMembers;
-    const g2 = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, r2.id) as ElementGroupsMembers;
+    const g1 = ElementGroupsMembers.getInstance<ElementGroupsMembers>(testImodel, r1.id);
+    const g2 = ElementGroupsMembers.getInstance<ElementGroupsMembers>(testImodel, r2.id);
 
     assert.deepEqual(g1.id, r1.id);
     assert.equal(g1.classFullName, ElementGroupsMembers.classFullName);
@@ -975,34 +956,41 @@ describe("iModel", () => {
     assert.equal(g2.memberPriority, 0, "g2.memberPriority");  // The memberPriority parameter defaults to 0 in ElementGroupsMembers.create
 
     // Look up by source and target
-    const g1byst: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, { sourceId: r1.sourceId, targetId: r1.targetId }) as ElementGroupsMembers;
+    const g1byst = ElementGroupsMembers.getInstance<ElementGroupsMembers>(testImodel, { sourceId: r1.sourceId, targetId: r1.targetId });
     assert.deepEqual(g1byst, g1);
-
-    // TODO: Do an ECSQL query to verify that 0->1 and 0->2 relationships can be found
 
     // Update relationship instance property
     r1.memberPriority = 2;
-    testImodel.linkTableRelationships.updateInstance(r1);
+    r1.update();
 
-    const g11: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, r1.id) as ElementGroupsMembers;
+    const g11 = ElementGroupsMembers.getInstance<ElementGroupsMembers>(testImodel, r1.id);
     assert.equal(g11.memberPriority, 2, "g11.memberPriority");
+    testImodel.saveChanges("step 1");
 
     // Delete relationship instance property
-    testImodel.linkTableRelationships.deleteInstance(r1);
+    g11.delete();
+    testImodel.saveChanges("step 2");
+    assert.throws(() => ElementGroupsMembers.getInstance(testImodel, r1.id), IModelError);
 
-    // TODO: Do an ECSQL query to verify that 0->1 is gone but 0->2 is still there.
-    testImodel.saveChanges("");
+    const d0 = elements.insertElement(elementProps);
+    const d1 = elements.insertElement(elementProps);
+    const ede1 = ElementDrivesElement.create(testImodel, d0, d1, 0);
+    ede1.insert();
+    testImodel.saveChanges("step 3");
+
+    ede1.delete();
+    testImodel.saveChanges("step 4");
 
   });
 
-  it("should set EC properties of various types", () => {
+  it("should set EC properties of various types", async () => {
 
     const testImodel = imodel1;
     try {
       testImodel.getMetaData("TestBim:TestPhysicalObject");
     } catch (err) {
       const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
+      await testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
       assert.isTrue(testImodel.getMetaData("TestBim:TestPhysicalObject") !== undefined);
     }
 
@@ -1142,10 +1130,10 @@ describe("iModel", () => {
     });
 
     let callbackcount = 0;
-    testPromise.then(() => {
+    testPromise.then(() => { // tslint:disable-line:no-floating-promises
       ++callbackcount;
     });
-    testPromise.then(() => {
+    testPromise.then(() => { // tslint:disable-line:no-floating-promises
       ++callbackcount;
     });
 
@@ -1226,7 +1214,7 @@ describe("iModel", () => {
     assert.equal(lastAutoPushEventType, AutoPushEventType.PushFinished, "event handler should have been called");
 
     // Just verify that this doesn't blow up.
-    autoPush.reserveCodes();
+    await autoPush.reserveCodes();
 
     // Now turn on auto-schedule and verify that we get a few auto-pushes
     lastPushTimeMillis = 0;

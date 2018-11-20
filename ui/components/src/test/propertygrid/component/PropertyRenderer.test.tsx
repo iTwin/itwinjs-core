@@ -18,7 +18,7 @@ describe("PropertyRenderer", () => {
   before(() => {
     propertyRecord = new SamplePropertyRecord("CADID", 0, "0000 0005 00E0 02D8");
 
-    TestUtils.initializeUiComponents();
+    TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
   });
 
   it("triggers selection if property gets clicked once", () => {

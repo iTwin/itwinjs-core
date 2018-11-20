@@ -320,7 +320,7 @@ export class IModelConnection extends IModel {
    * @throws [IModelError]($common) if a Change Cache file has already been attached before.
    * @hidden
    */
-  public async attachChangeCache(): Promise<void> { WipRpcInterface.getClient().attachChangeCache(this.iModelToken); }
+  public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.iModelToken); }
 
   /**
    * WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
@@ -329,7 +329,7 @@ export class IModelConnection extends IModel {
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @hidden
    */
-  public async detachChangeCache(): Promise<void> { WipRpcInterface.getClient().detachChangeCache(this.iModelToken); }
+  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken); }
 
   /**
    * Execute a test by name

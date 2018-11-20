@@ -93,7 +93,7 @@ export class FrontstageLaunchBackstageItemDef extends BackstageItemDef {
 
     const frontstageDef = FrontstageManager.findFrontstageDef(this._frontstageId);
     if (frontstageDef)
-      FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
   }
 
   public get id(): string {
@@ -157,7 +157,7 @@ export class TaskLaunchBackstageItemDef extends BackstageItemDef {
     if (workflow) {
       const task = workflow.getTask(this._taskId);
       if (task) {
-        WorkflowManager.setActiveWorkflowAndTask(workflow, task);
+        WorkflowManager.setActiveWorkflowAndTask(workflow, task); // tslint:disable-line:no-floating-promises
       }
     }
   }

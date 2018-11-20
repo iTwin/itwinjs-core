@@ -394,7 +394,7 @@ export class SelectionTool extends PrimitiveTool {
     if (EventHandled.Yes === await this.selectDecoration(ev, IModelApp.accuSnap.currHit))
       return EventHandled.Yes;
 
-    IModelApp.accuSnap.resetButton();
+    IModelApp.accuSnap.resetButton(); // tslint:disable-line:no-floating-promises
     return EventHandled.Yes;
   }
 
@@ -407,9 +407,9 @@ export class SelectionTool extends PrimitiveTool {
     return (this.isSuspended || this.isSelectByPoints) ? EventHandled.Yes : EventHandled.No;
   }
 
-  public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this.isSelectByPoints) IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
-  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this.isSelectByPoints) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-  public async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this.isSelectByPoints) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
+  public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this.isSelectByPoints) return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
+  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this.isSelectByPoints) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
+  public async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this.isSelectByPoints) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
 
   public decorate(context: DecorateContext): void { this.selectByPointsDecorate(context); }
 

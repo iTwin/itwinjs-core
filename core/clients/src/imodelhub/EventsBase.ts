@@ -110,7 +110,7 @@ export function getEventBaseOperationRequestOptions(handler: IModelBaseHandler, 
   if (requestTimeout)
     options.timeout = requestTimeout * 1500;
 
-  new DefaultRequestOptionsProvider().assignOptions(options);
+  new DefaultRequestOptionsProvider().assignOptions(options); // tslint:disable-line:no-floating-promises
 
   return options;
 }
@@ -193,7 +193,7 @@ export class EventListener {
       existingSubscription = subscription;
       existingSubscription.listeners = new BeEvent<(event: IModelHubBaseEvent) => void>();
       deleteListener = subscription.listeners.addListener(listener);
-      this.getEvents(subscription);
+      this.getEvents(subscription); // tslint:disable-line:no-floating-promises
     } else {
       deleteListener = subscription.listeners.addListener(listener);
     }

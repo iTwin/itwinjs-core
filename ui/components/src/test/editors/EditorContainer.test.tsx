@@ -14,17 +14,17 @@ import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContai
 describe("<EditorContainer />", () => {
   it("should render", () => {
     const propertyRecord = new SamplePropertyRecord("Test1", 0, "my value");
-    mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCommitCancel={() => { }} />);
+    mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
   });
 
   it("renders correctly", () => {
     const propertyRecord = new SamplePropertyRecord("Test1", 0, "my value");
-    shallow(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCommitCancel={() => { }} />).should.matchSnapshot();
+    shallow(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />).should.matchSnapshot();
   });
 
   it("renders editor for 'text' type using TextEditor", () => {
     const propertyRecord = new SamplePropertyRecord("Test1", 0, "my value");
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCommitCancel={() => { }} />);
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(wrapper.find(".components-text-editor").length).to.eq(1);
   });
 
@@ -34,7 +34,7 @@ describe("<EditorContainer />", () => {
     function handleCommit(_commit: PropertyUpdatedArgs): void {
       spyOnCommit();
     }
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCommitCancel={() => { }} />);
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
     const inputNode = wrapper.find("input");
     expect(inputNode.length).to.eq(1);
 
@@ -45,7 +45,7 @@ describe("<EditorContainer />", () => {
   it("calls onCommitCancel for Escape", () => {
     const propertyRecord = new SamplePropertyRecord("Test1", 0, "my value");
     const spyOnCommitCancel = sinon.spy();
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCommitCancel={spyOnCommitCancel} />);
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={spyOnCommitCancel} />);
     const inputNode = wrapper.find("input");
     expect(inputNode.length).to.eq(1);
 
@@ -59,7 +59,7 @@ describe("<EditorContainer />", () => {
     function handleCommit(_commit: PropertyUpdatedArgs): void {
       spyOnCommit();
     }
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCommitCancel={() => { }} />);
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
     const inputNode = wrapper.find("input");
     expect(inputNode.length).to.eq(1);
 
@@ -73,7 +73,7 @@ describe("<EditorContainer />", () => {
     function handleCommit(_commit: PropertyUpdatedArgs): void {
       spyOnCommit();
     }
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCommitCancel={() => { }} />);
+    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
     const inputNode = wrapper.find("input");
     expect(inputNode.length).to.eq(1);
 

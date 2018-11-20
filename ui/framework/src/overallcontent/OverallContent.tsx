@@ -83,7 +83,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
   }
 
   public componentDidMount() {
-    OidcClientWrapper.oidcClient.getAccessToken(new ActivityLoggingContext(""))
+    OidcClientWrapper.oidcClient.getAccessToken(new ActivityLoggingContext("")) // tslint:disable-line:no-floating-promises
       .then(this.setOrClearAccessToken.bind(this));
     OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this.setOrClearAccessToken.bind(this));
   }

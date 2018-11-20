@@ -22,8 +22,8 @@ describe("ModelState", () => {
   });
 
   after(async () => {
-    if (imodel) imodel.closeStandalone();
-    if (imodel2) imodel2.closeStandalone();
+    if (imodel) await imodel.closeStandalone();
+    if (imodel2) await imodel2.closeStandalone();
     MaybeRenderApp.shutdown();
   });
 

@@ -143,8 +143,8 @@ export class SampleAppIModelApp extends IModelApp {
 
     public static async initialize() {
         Presentation.initialize();
-        UiCore.initialize(SampleAppIModelApp.i18n);
-        UiComponents.initialize(SampleAppIModelApp.i18n);
+        UiCore.initialize(SampleAppIModelApp.i18n); // tslint:disable-line:no-floating-promises
+        UiComponents.initialize(SampleAppIModelApp.i18n); // tslint:disable-line:no-floating-promises
 
         let oidcConfiguration: OidcFrontendClientConfiguration;
         if (ElectronRpcConfiguration.isElectron) {
@@ -190,7 +190,7 @@ export class SampleAppIModelApp extends IModelApp {
         // we create a FrontStage that contains the views that we want.
         const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => {
+        FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => { // tslint:disable-line:no-floating-promises
             // Frontstage & ScreenViewports are ready
             // tslint:disable-next-line:no-console
             console.log("Frontstage is ready");
@@ -200,7 +200,7 @@ export class SampleAppIModelApp extends IModelApp {
     public static handleWorkOffline() {
         if (!FrontstageManager.activeFrontstageDef) {
             const frontstageDef = FrontstageManager.findFrontstageDef("Test4");
-            FrontstageManager.setActiveFrontstageDef(frontstageDef);
+            FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
         }
     }
 }
@@ -208,7 +208,7 @@ export class SampleAppIModelApp extends IModelApp {
 SampleAppIModelApp.startup();
 
 // wait for both our i18n namespaces to be read.
-SampleAppIModelApp.initialize().then(() => {
+SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises
     //  create the application icon.
     const applicationIconStyle: CSSProperties = {
         width: "50px",

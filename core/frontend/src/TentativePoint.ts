@@ -77,7 +77,7 @@ export class TentativePoint {
   public showTentative(): void {
     if (this.isSnapped) {
       IModelApp.viewManager.invalidateDecorationsAllViews();
-      IModelApp.accuSnap.displayToolTip(this._viewPoint, this.viewport!, undefined);
+      IModelApp.accuSnap.displayToolTip(this._viewPoint, this.viewport!, undefined); // tslint:disable-line:no-floating-promises
     } else {
       this.viewport!.invalidateDecorations();
     }

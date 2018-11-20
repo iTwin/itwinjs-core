@@ -278,7 +278,7 @@ export abstract class ViewManip extends ViewTool {
       ev.coordsFrom = CoordSource.Precision; // don't want raw point used...
     }
 
-    IModelApp.toolAdmin.processWheelEvent(ev, false);
+    IModelApp.toolAdmin.processWheelEvent(ev, false); // tslint:disable-line:no-floating-promises
     return EventHandled.Yes;
   }
 
@@ -296,7 +296,7 @@ export abstract class ViewManip extends ViewTool {
     this.isDragging = true;
 
     if (0 === this.nPts)
-      this.onDataButtonDown(ev);
+      this.onDataButtonDown(ev); // tslint:disable-line:no-floating-promises
 
     return EventHandled.Yes;
   }
@@ -362,9 +362,9 @@ export abstract class ViewManip extends ViewTool {
 
   public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> { return ev.isSingleTap ? EventHandled.Yes : EventHandled.No; } // Prevent IdleTool from converting single tap into data button down/up...
   public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> { if (!this.inHandleModify && startEv.isSingleTouch) await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev); return this.inHandleModify ? EventHandled.Yes : EventHandled.No; }
-  public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this.inHandleModify) IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
-  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this.inHandleModify) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-  public async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this.inHandleModify) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
+  public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this.inHandleModify) return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
+  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this.inHandleModify) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
+  public async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this.inHandleModify) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
 
   public onPostInstall(): void {
     super.onPostInstall();
@@ -1739,9 +1739,9 @@ export class WindowAreaTool extends ViewTool {
   public async onMouseMotion(ev: BeButtonEvent) { this.doManipulation(ev, true); }
   public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> { return ev.isSingleTap ? EventHandled.Yes : EventHandled.No; } // Prevent IdleTool from converting single tap into data button down/up...
   public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> { if (!this._haveFirstPoint && startEv.isSingleTouch) await IModelApp.toolAdmin.convertTouchMoveStartToButtonDownAndMotion(startEv, ev); return this._haveFirstPoint ? EventHandled.Yes : EventHandled.No; }
-  public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
-  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
-  public async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
+  public async onTouchMove(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchMoveToMotion(ev); }
+  public async onTouchComplete(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev); }
+  public async onTouchCancel(ev: BeTouchEvent): Promise<void> { if (this._haveFirstPoint) return IModelApp.toolAdmin.convertTouchEndToButtonUp(ev, BeButton.Reset); }
 
   private computeWindowCorners(): Point3d[] | undefined {
     const vp = this._viewport;
