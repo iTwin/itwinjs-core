@@ -9,7 +9,7 @@ import { ClipVector, IndexedPolyface, Plane3dByOriginAndUnitNormal, Point2d, Poi
 import {
   AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, Frustum, Gradient,
   HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d,
-  QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags, AnalysisStyle,
+  QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass,
 } from "@bentley/imodeljs-common";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -247,10 +247,14 @@ export class GraphicBranch implements IDisposable {
 export namespace Pixel {
   /** Describes a single pixel within a [[Pixel.Buffer]]. */
   export class Data {
-    public constructor(public readonly elementId?: Id64String,
+    public constructor(public readonly feature?: Feature,
       public readonly distanceFraction: number = -1.0,
       public readonly type: GeometryType = GeometryType.Unknown,
       public readonly planarity: Planarity = Planarity.Unknown) { }
+
+    public get elementId(): Id64String | undefined { return undefined !== this.feature ? this.feature.elementId : undefined; }
+    public get subCategoryId(): Id64String | undefined { return undefined !== this.feature ? this.feature.subCategoryId : undefined; }
+    public get geometryClass(): GeometryClass | undefined { return undefined !== this.feature ? this.feature.geometryClass : undefined; }
   }
 
   /** Describes the foremost type of geometry which produced the [[Pixel.Data]]. */
@@ -287,16 +291,12 @@ export namespace Pixel {
    */
   export const enum Selector {
     None = 0,
-    /** Select the ID of the element which produced each pixel. */
-    ElementId = 1 << 0,
-    /** For each pixel, select the fraction of its distance between the near and far planes. */
-    Distance = 1 << 1,
-    /** Select the type and planarity of geometry which produced each pixel. */
-    Geometry = 1 << 2,
-    /** Select geometry type/planarity and distance fraction associated with each pixel. */
-    GeometryAndDistance = Geometry | Distance,
+    /** Select the [[Feature]] which produced each pixel. */
+    Feature = 1 << 0,
+    /** Select the type and planarity of geometry which produced each pixel as well as the fraction of its distance between the near and far planes. */
+    GeometryAndDistance = 1 << 2,
     /** Select all aspects of each pixel. */
-    All = GeometryAndDistance | ElementId,
+    All = GeometryAndDistance | Feature,
   }
 
   /** A rectangular array of pixels as read from a [[Viewport]]'s frame buffer. Each pixel is represented as a [[Pixel.Data]] object.
@@ -306,6 +306,11 @@ export namespace Pixel {
     /** Retrieve the data associated with the pixel at (x,y) in view coordinates. */
     getPixel(x: number, y: number): Data;
   }
+
+  /** A function which receives the results of a call to [[Viewport.readPixels]].
+   * @note The contents of the buffer become invalid once the Receiver function returns. Do not store a reference to it.
+   */
+  export type Receiver = (pixels: Buffer | undefined) => void;
 }
 
 /**
@@ -519,7 +524,7 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   /** @hidden */
-  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined;
+  public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver): void;
   /** @hidden */
   public abstract readImage(rect: ViewRect, targetSize: Point2d, flipVertically: boolean): ImageBuffer | undefined;
 }

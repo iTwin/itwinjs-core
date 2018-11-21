@@ -72,18 +72,19 @@ const reverseWhiteOnWhite = `
 `;
 
 const computePickBufferOutputs = `
-  float linearDepth = computeLinearDepth(v_eyeSpace.z);
   vec4 output0 = baseColor;
-  vec4 output1 = v_element_id0;
-  vec4 output2 = v_element_id1;
-  vec4 output3 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
+
+  // Fix interpolation errors despite all vertices sending exact same v_feature_id...
+  ivec4 v_feature_id_i = ivec4(v_feature_id * 255.0 + 0.5);
+  vec4 output1 = vec4(v_feature_id_i) / 255.0;
+  float linearDepth = computeLinearDepth(v_eyeSpace.z);
+  vec4 output2 = vec4(u_renderOrder * 0.0625, encodeDepthRgb(linearDepth)); // near=1, far=0
 `;
 
 const assignPickBufferOutputsMRT = computePickBufferOutputs + `
   FragColor0 = output0;
   FragColor1 = output1;
   FragColor2 = output2;
-  FragColor3 = output3;
 `;
 
 const assignPickBufferOutputsMP = computePickBufferOutputs + `
@@ -91,10 +92,8 @@ const assignPickBufferOutputsMP = computePickBufferOutputs + `
     FragColor = output0;
   else if (1 == u_renderTargetIndex)
     FragColor = output1;
-  else if (2 == u_renderTargetIndex)
-    FragColor = output2;
   else
-    FragColor = output3;
+    FragColor = output2;
 `;
 
 export function addPickBufferOutputs(frag: FragmentShaderBuilder): void {

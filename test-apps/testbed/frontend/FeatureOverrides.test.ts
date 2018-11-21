@@ -63,8 +63,6 @@ describe("FeatureOverrides tests", () => {
 
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
 
-    expect(ovr.isUniform).to.be.true; // should be a uniform because only 1 feature in table
-
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;
     const hls = new Set<string>(); hls.add("0x1");
@@ -90,8 +88,6 @@ describe("FeatureOverrides tests", () => {
     ovr.initFromMap(table);
 
     waitUntilTimeHasPassed(); // must wait for time to pass in order for hilite to work
-
-    expect(ovr.isNonUniform).to.be.true; // should be a uniform because 2 features in table
 
     // set something hilited; should be overridden
     expect(ovr.anyHilited).to.be.false;

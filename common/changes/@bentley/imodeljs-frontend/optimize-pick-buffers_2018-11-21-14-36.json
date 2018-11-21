@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Optimize 'pick buffer' portion of renderer.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}
