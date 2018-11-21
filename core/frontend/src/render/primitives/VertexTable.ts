@@ -251,10 +251,25 @@ export class VertexTable implements VertexTableProps {
   }
 
   private fixUpUniformFeatureId(id: number): void {
+    /** NB: NO, this won't work - this.data is a *slice* of a larger array!
     const u32 = new Uint32Array(this.data.buffer);
     for (let i = 0; i < this.numVertices; i++) {
       const rgbaIndex = (i * this.numRgbaPerVertex) + 2;
       u32[rgbaIndex] = id;
+    }
+    */
+    if (0 === id)
+      return; // already set to zero
+
+    const u32 = new Uint32Array(1);
+    u32[0] = id;
+    const u8 = new Uint8Array(u32.buffer);
+    for (let i = 0; i < this.numVertices; i++) {
+      const u32Index = (i * this.numRgbaPerVertex) + 2;
+      const u8Index = u32Index * 4;
+      for (let j = 0; j < 4; j++) {
+        this.data[u8Index + j] = u8[j];
+      }
     }
   }
 
