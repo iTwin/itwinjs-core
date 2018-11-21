@@ -352,9 +352,9 @@ export class GlobalEventHandler extends EventBaseHandler {
 
     let options: RequestOptions;
     if (getOperation === GetEventOperationType.Destructive)
-      options = this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
+      options = await this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
     else if (getOperation === GetEventOperationType.Peek)
-      options = this.getEventRequestOptions(GetEventOperationToRequestType.GetPeek, sasToken, timeout);
+      options = await this.getEventRequestOptions(GetEventOperationToRequestType.GetPeek, sasToken, timeout);
     else // Unknown operation type.
       return undefined;
 

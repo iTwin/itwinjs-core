@@ -1,0 +1,51 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+@import "variables";
+
+.nz-tab-icon {
+  border-width: 0;
+
+  width: 100%;
+  height: 100%;
+  display: grid;
+  align-content: center;
+  justify-content: center;
+  color: $icon-color;
+  filter: $icon-shadow;
+  transition: all 500ms ease;
+
+  svg {
+    filter: $icon-shadow;
+  }
+
+  img {
+    width: 100%;
+    height: 100%;
+  }
+}
+
+.nz-tab-icon:hover {
+  color: $hovered-icon-color;
+  transition-duration: 150ms;
+}
+
+.nz-tab-icon.is-active {
+  color: $active-icon-color;
+  filter: $no-shadow;
+
+  svg {
+    filter: $no-shadow;
+  }
+}
+
+.nz-tab-icon.is-active:hover {
+  color: $hovered-icon-color;
+  filter: $no-shadow;
+
+  svg {
+    filter: $no-shadow;
+  }
+}

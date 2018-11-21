@@ -136,10 +136,10 @@ describe("Constant", () => {
       definition: "testing",
     };
     it("async - should throw for missing phenomenon", async () => {
-      await expect(Schema.fromJson(createSchemaJson(missingPhenomenon))).to.be.rejectedWith(ECObjectsError, `The Constant TestConstant does not have the required 'phenomenon' attribute.`);
+      await expect(Schema.fromJson(createSchemaJson(missingPhenomenon))).to.be.rejectedWith(ECObjectsError, `The Constant TestSchema.TestConstant does not have the required 'phenomenon' attribute.`);
     });
     it("sync - should throw for missing phenomenon", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingPhenomenon)), ECObjectsError, `The Constant TestConstant does not have the required 'phenomenon' attribute.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingPhenomenon)), ECObjectsError, `The Constant TestSchema.TestConstant does not have the required 'phenomenon' attribute.`);
     });
 
     // Invalid phenomenon
@@ -148,10 +148,10 @@ describe("Constant", () => {
       phenomenon: 5,
     };
     it("async - should throw for invalid phenomenon", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidPhenomenon))).to.be.rejectedWith(ECObjectsError, `The Constant TestConstant has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(createSchemaJson(invalidPhenomenon))).to.be.rejectedWith(ECObjectsError, `The Constant TestSchema.TestConstant has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
     });
     it("sync - should throw for invalid phenomenon", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidPhenomenon)), ECObjectsError, `The Constant TestConstant has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidPhenomenon)), ECObjectsError, `The Constant TestSchema.TestConstant has an invalid 'phenomenon' attribute. It should be of type 'string'.`);
     });
 
     // Not found phenomenon
@@ -171,10 +171,10 @@ describe("Constant", () => {
       phenomenon: "TestSchema.TestPhenomenon",
     };
     it("async - should throw for missing definition", async () => {
-      await expect(Schema.fromJson(createSchemaJson(missingDefinition))).to.be.rejectedWith(ECObjectsError, `The Constant TestConstant does not have the required 'definition' attribute.`);
+      await expect(Schema.fromJson(createSchemaJson(missingDefinition))).to.be.rejectedWith(ECObjectsError, `The Constant TestSchema.TestConstant does not have the required 'definition' attribute.`);
     });
     it("sync - should throw for missing definition", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingDefinition)), ECObjectsError, `The Constant TestConstant does not have the required 'definition' attribute.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(missingDefinition)), ECObjectsError, `The Constant TestSchema.TestConstant does not have the required 'definition' attribute.`);
     });
 
     // Invalid definition
@@ -183,10 +183,10 @@ describe("Constant", () => {
       definition: 5,
     };
     it("async - should throw for invalid definition", async () => {
-      await expect(Schema.fromJson(createSchemaJson(invalidDefinition))).to.be.rejectedWith(ECObjectsError, `The Constant TestConstant has an invalid 'definition' attribute. It should be of type 'string'.`);
+      await expect(Schema.fromJson(createSchemaJson(invalidDefinition))).to.be.rejectedWith(ECObjectsError, `The Constant TestSchema.TestConstant has an invalid 'definition' attribute. It should be of type 'string'.`);
     });
     it("sync - should throw for invalid definition", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidDefinition)), ECObjectsError, `The Constant TestConstant has an invalid 'definition' attribute. It should be of type 'string'.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(invalidDefinition)), ECObjectsError, `The Constant TestSchema.TestConstant has an invalid 'definition' attribute. It should be of type 'string'.`);
     });
   });
   describe("toJson", () => {

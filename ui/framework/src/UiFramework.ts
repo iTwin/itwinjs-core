@@ -11,6 +11,7 @@ import { IModelServices } from "./clientservices/IModelServices";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { Store } from "redux";
 import { OidcClientWrapper } from "./oidc/OidcClientWrapper";
+import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 
 /**
  * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
@@ -27,7 +28,12 @@ export class UiFramework {
   public static async initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, projectServices?: ProjectServices, iModelServices?: IModelServices) {
     UiFramework._store = store;
     UiFramework._i18n = i18n;
-    const readFinishedPromise = UiFramework._i18n.registerNamespace("UiFramework").readFinished;
+
+    const frameworkNamespace = UiFramework._i18n.registerNamespace("UiFramework");
+    const readFinishedPromise = frameworkNamespace.readFinished;
+
+    // register UiFramework provided tools
+    AnalysisAnimationTool.register(frameworkNamespace);
 
     UiFramework._projectServices = projectServices ? projectServices : new DefaultProjectServices();
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();

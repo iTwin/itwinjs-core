@@ -67,9 +67,9 @@ export * from "./app/App";
  */
 /**
  * @docs-group-description Widget
- * Classes for working a Widget
+ * Classes for working with a Widget
  */
 /**
  * @docs-group-description Zone
- * Classes for working a Zone
+ * Classes for working with a Zone
  */

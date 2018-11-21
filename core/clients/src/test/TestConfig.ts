@@ -87,7 +87,7 @@ export class TestConfig {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,
     });
-    if (!project)
+    if (!project || !project.wsgId)
       throw new Error(`Project ${projectName} not found for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
 
     return project;
@@ -96,11 +96,11 @@ export class TestConfig {
   public static async queryIModel(accessToken: AccessToken, projectId: GuidString): Promise<HubIModel> {
     const imodelHubClient: IModelClient = new IModelHubClient();
 
-    const iModels = await imodelHubClient.IModel().get(actx, accessToken, projectId);
-    if (iModels.length === 0)
-      throw new Error(`Primary iModel ${projectId} not found for project ${projectId} for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
+    const iModel: HubIModel = await imodelHubClient.IModel().get(actx, accessToken, projectId);
+    if (!iModel || !iModel.wsgId)
+      throw new Error(`Primary iModel not found for project ${projectId} for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
 
-    return iModels[0];
+    return iModel;
   }
 }
 

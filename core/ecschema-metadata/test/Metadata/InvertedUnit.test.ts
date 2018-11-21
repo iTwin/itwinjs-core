@@ -12,11 +12,9 @@ import { ECObjectsError } from "../../src/Exception";
 import { UnitSystem } from "../../src/Metadata/UnitSystem";
 import { Unit } from "../../src/Metadata/Unit";
 import { schemaItemTypeToString, SchemaItemType } from "../../src/ECObjects";
-import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("Inverted Unit tests", () => {
   let testUnit: InvertedUnit;
-  let parser = new JsonParser();
   describe("accept", () => {
     beforeEach(() => {
       const schema = new Schema("TestSchema", 1, 0, 0);
@@ -129,41 +127,6 @@ describe("Inverted Unit tests", () => {
       assert(testInvertedUnit.unitSystem, "TestSchema.INTERNATIONAL");
       assert(testInvertedUnit.invertsUnit, "TestSchema.VERTICAL_PER_HORIZONTAL");
     });
-    it("Label must be string", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "InvertedUnit",
-        name: "HORIZONTAL_PER_VERTICAL",
-        label: 5,
-        description: "A unit representing run over rise",
-        unitSystem: "ExampleSchema.INTERNATIONAL",
-        invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
-      };
-      assert.throws(() => parser.parseSchemaItemProps(json, testUnit.schema.name, testUnit.name), ECObjectsError, `The SchemaItem TestSchema.HORIZONTAL_PER_VERTICAL has an invalid 'label' attribute. It should be of type 'string'.`);
-    });
-    it("Description must be string", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "InvertedUnit",
-        name: "HORIZONTAL_PER_VERTICAL",
-        label: "Horizontal/Vertical",
-        description: 5,
-        unitSystem: "ExampleSchema.INTERNATIONAL",
-        invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
-      };
-      assert.throws(() => parser.parseSchemaItemProps(json, testUnit.schema.name, testUnit.name), ECObjectsError, `The SchemaItem TestSchema.HORIZONTAL_PER_VERTICAL has an invalid 'description' attribute. It should be of type 'string'.`);
-    });
-    it("invertsUnit is required", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "InvertedUnit",
-        name: "HORIZONTAL_PER_VERTICAL",
-        label: "Horizontal/Vertical",
-        description: "A unit representing run over rise",
-        unitSystem: "ExampleSchema.INTERNATIONAL",
-      };
-      assert.throws(() => parser.parseInvertedUnitProps(json, testUnit.name), ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'invertsUnit' attribute.`);
-    });
     it("unitSystem is required", async () => {
       const json = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
@@ -192,7 +155,7 @@ describe("Inverted Unit tests", () => {
           },
         },
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The InvertedUnit TestSchema.HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
     });
     it("Resolve all dependencies for inverts unit and unit system", async () => {
       const json = {
@@ -328,71 +291,6 @@ describe("Inverted Unit tests", () => {
       assert.isDefined(testInvertedUnit);
       assert(testInvertedUnit.unitSystem, "TestSchema.INTERNATIONAL");
       assert(testInvertedUnit.invertsUnit, "TestSchema.VERTICAL_PER_HORIZONTAL");
-    });
-    it("Label must be string", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "InvertedUnit",
-        name: "HORIZONTAL_PER_VERTICAL",
-        label: 5,
-        description: "A unit representing run over rise",
-        unitSystem: "ExampleSchema.INTERNATIONAL",
-        invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
-      };
-      assert.throws(() => parser.parseSchemaItemProps(json, testUnit.schema.name, testUnit.name), ECObjectsError, `The SchemaItem TestSchema.HORIZONTAL_PER_VERTICAL has an invalid 'label' attribute. It should be of type 'string'.`);
-    });
-    it("Description must be string", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "InvertedUnit",
-        name: "HORIZONTAL_PER_VERTICAL",
-        label: "Horizontal/Vertical",
-        description: 5,
-        unitSystem: "ExampleSchema.INTERNATIONAL",
-        invertsUnit: "ExampleSchema.VERTICAL_PER_HORIZONTAL",
-      };
-      assert.throws(() => parser.parseSchemaItemProps(json, testUnit.schema.name, testUnit.name), ECObjectsError, `The SchemaItem TestSchema.HORIZONTAL_PER_VERTICAL has an invalid 'description' attribute. It should be of type 'string'.`);
-    });
-    it("invertsUnit is required", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "InvertedUnit",
-        name: "HORIZONTAL_PER_VERTICAL",
-        label: "Horizontal/Vertical",
-        description: "A unit representing run over rise",
-        unitSystem: "ExampleSchema.INTERNATIONAL",
-      };
-      assert.throws(() => parser.parseInvertedUnitProps(json, testUnit.name), ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'invertsUnit' attribute.`);
-    });
-    it("unitSystem is required", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
-        version: "1.0.0",
-        name: "TestSchema",
-        items: {
-          HORIZONTAL_PER_VERTICAL: {
-            schemaItemType: "InvertedUnit",
-            invertsUnit: "TestSchema.VERTICAL_PER_HORIZONTAL",
-            label: "Horizontal/Vertical",
-          },
-          INTERNATIONAL: {
-            schemaItemType: "UnitSystem",
-            label: "Imperial",
-            description: "Units of measure from the british imperial empire",
-          },
-          VERTICAL_PER_HORIZONTAL: {
-            schemaItemType: "Unit",
-            phenomenon: "TestSchema.Length",
-            unitSystem: "TestSchema.INTERNATIONAL",
-            definition: "Vert/Horizontal",
-          },
-          Length: {
-            schemaItemType: "Phenomenon",
-            definition: "TestSchema.Length",
-          },
-        },
-      };
-      assert.throws(() => Schema.fromJsonSync(json), ECObjectsError, `The InvertedUnit HORIZONTAL_PER_VERTICAL does not have the required 'unitSystem' attribute.`);
     });
     it("Resolve all dependencies for inverts unit and unit system", async () => {
       const json = {

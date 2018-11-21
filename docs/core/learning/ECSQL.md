@@ -7,7 +7,7 @@
 ECSQL is a text-based command language for CRUD (create, read, update, delete) operations against
 the business data in an iModel or ECDb file.
 
-ECSQL is an implementation of SQL — a proven, well-adopted text-based command language. It sticks to
+ECSQL is an implementation of SQL — a proven, well-adopted text-based command language. It adheres to
 standard SQL (SQL-92 and SQL-99) wherever possible.
 
 Especially the SQL-99 standard came with a lot of features ECSchemas have too: boolean, date time, binary

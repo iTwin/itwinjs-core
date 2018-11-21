@@ -132,10 +132,10 @@ describe("Full Schema Deserialization", () => {
 
     it("should throw for invalid references attribute", async () => {
       let json: any = { ...baseJson, references: 0 };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' property. It should be of type 'object[]'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. It should be of type 'object[]'.`);
 
       json = { ...baseJson, references: [0] };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' property. It should be of type 'object[]'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. It should be of type 'object[]'.`);
     });
 
     it("should throw for missing reference name", async () => {
@@ -143,7 +143,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         references: [{ version: "1.0.5" }],
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' property. One of the references is missing the required 'name' property.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references is missing the required 'name' attribute.`);
     });
 
     it("should throw for invalid reference name", async () => {
@@ -151,7 +151,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         references: [{ name: 0, version: "1.0.5" }],
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' property. One of the references has an invalid 'name' property. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references has an invalid 'name' attribute. It should be of type 'string'.`);
     });
 
     it("should throw for missing reference version", async () => {
@@ -159,7 +159,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         references: [{ name: "RefSchema" }],
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' property. One of the references is missing the required 'version' property.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references is missing the required 'version' attribute.`);
     });
 
     it("should throw for invalid reference version", async () => {
@@ -167,7 +167,7 @@ describe("Full Schema Deserialization", () => {
         ...baseJson,
         references: [{ name: "RefSchema", version: 0 }],
       };
-      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' property. One of the references has an invalid 'version' property. It should be of type 'string'.`);
+      await expect(Schema.fromJson(json)).to.be.rejectedWith(ECObjectsError, `The schema TestSchema has an invalid 'references' attribute. One of the references has an invalid 'version' attribute. It should be of type 'string'.`);
     });
   });
 
@@ -267,7 +267,7 @@ describe("Full Schema Deserialization", () => {
         },
       };
       let testSchema = new Schema();
-      const reader = new SchemaReadHelper(new JsonParser(), undefined, mockVisitor);
+      const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
       expect(mockVisitor!.visitEmptySchema!.calledOnce).to.be.true;
@@ -333,7 +333,7 @@ describe("Full Schema Deserialization", () => {
       };
 
       let testSchema = new Schema();
-      const reader = new SchemaReadHelper(new JsonParser(), undefined, mockVisitor);
+      const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
@@ -383,7 +383,7 @@ describe("Full Schema Deserialization", () => {
       };
 
       let testSchema = new Schema();
-      const reader = new SchemaReadHelper(new JsonParser(), undefined, mockVisitor);
+      const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
@@ -455,7 +455,7 @@ describe("Full Schema Deserialization", () => {
       };
 
       let testSchema = new Schema();
-      const reader = new SchemaReadHelper(new JsonParser(), undefined, mockVisitor);
+      const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;
@@ -527,7 +527,7 @@ describe("Full Schema Deserialization", () => {
       };
 
       let testSchema = new Schema();
-      const reader = new SchemaReadHelper(new JsonParser(), undefined, mockVisitor);
+      const reader = new SchemaReadHelper(JsonParser, undefined, mockVisitor);
 
       testSchema = await reader.readSchema(testSchema, schemaJson);
       expect(testSchema).to.exist;

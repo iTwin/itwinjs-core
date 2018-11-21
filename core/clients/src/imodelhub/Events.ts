@@ -434,7 +434,7 @@ export class EventHandler extends EventBaseHandler {
     ArgumentCheck.defined("baseAddress", baseAddress);
     ArgumentCheck.validGuid("subscriptionId", subscriptionId);
 
-    const options = this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
+    const options = await this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
 
     const result = await request(alctx, this.getEventUrl(baseAddress, subscriptionId, timeout), options);
     alctx.enter();

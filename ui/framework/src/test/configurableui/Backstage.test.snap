@@ -3,7 +3,7 @@
 exports[`Backstage <Backstage /> CommandLaunchBackstageItem renders correctly 1`] = `
 <BackstageItem
   icon={
-    <Icon
+    <Unknown
       iconSpec="icon-placeholder"
     />
   }
@@ -16,7 +16,7 @@ exports[`Backstage <Backstage /> CommandLaunchBackstageItem renders correctly 1`
 exports[`Backstage <Backstage /> FrontstageLaunchBackstageItem renders correctly 1`] = `
 <BackstageItem
   icon={
-    <Icon
+    <Unknown
       iconSpec="icon-placeholder"
     />
   }
@@ -37,7 +37,7 @@ exports[`Backstage <Backstage /> SeparatorBackstageItem renders correctly 1`] = 
 exports[`Backstage <Backstage /> TaskLaunchBackstageItem renders correctly 1`] = `
 <BackstageItem
   icon={
-    <Icon
+    <Unknown
       iconSpec="icon-placeholder"
     />
   }
