@@ -112,7 +112,7 @@ class FrameBuffers implements IDisposable {
 
     this.opaqueColor = FrameBuffer.create([boundColor], depth);
     this.opaqueAndCompositeColor = FrameBuffer.create([textures.color!], depth);
-    this.depthAndOrder = FrameBuffer.create([textures.depthAndOrder!]);
+    this.depthAndOrder = FrameBuffer.create([textures.depthAndOrder!], depth);
     this.hilite = FrameBuffer.create([textures.hilite!]);
     this.hiliteUsingStencil = FrameBuffer.create([textures.hilite!], depth);
     if (DepthType.TextureUnsignedInt24Stencil8 === System.instance.capabilities.maxDepthType) {
@@ -805,7 +805,7 @@ abstract class Compositor extends SceneCompositor {
     this.target.techniques.draw(params);
   }
 
-  private getRenderState(pass: RenderPass): RenderState {
+  protected getRenderState(pass: RenderPass): RenderState {
     switch (pass) {
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
@@ -1032,7 +1032,7 @@ class MPFrameBuffers extends FrameBuffers {
 
     this.accumulation = FrameBuffer.create([textures.accumulation!], depth);
     this.revealage = FrameBuffer.create([textures.revealage!], depth);
-    this.featureId = FrameBuffer.create([textures.featureId!]);
+    this.featureId = FrameBuffer.create([textures.featureId!], depth);
     this.featureIdWithDepth = FrameBuffer.create([textures.featureId!], depth);
 
     return undefined !== this.accumulation && undefined !== this.revealage && undefined !== this.featureId && undefined !== this.featureIdWithDepth;
@@ -1071,10 +1071,28 @@ class MPGeometry extends Geometry {
 // The chief use case is iOS.
 class MPCompositor extends Compositor {
   private _currentRenderTargetIndex: number = 0;
+  private readonly _opaqueRenderStateWithEqualDepthFunc = new RenderState();
 
   public constructor(target: Target) {
     super(target, new MPFrameBuffers(), new MPGeometry());
+
+    this._opaqueRenderStateWithEqualDepthFunc.flags.depthTest = true;
+    this._opaqueRenderStateWithEqualDepthFunc.depthFunc = GL.DepthFunc.LessOrEqual;
   }
+
+  protected getRenderState(pass: RenderPass): RenderState {
+    if (this._currentRenderTargetIndex > 0) {
+      switch (pass) {
+        case RenderPass.OpaqueLinear:
+        case RenderPass.OpaquePlanar:
+        case RenderPass.OpaqueGeneral:
+          return this._opaqueRenderStateWithEqualDepthFunc;
+      }
+    }
+
+    return super.getRenderState(pass);
+  }
+
 
   private get _fbos(): MPFrameBuffers { return this._frameBuffers as MPFrameBuffers; }
   private get _geometry(): MPGeometry { return this._geom as MPGeometry; }
