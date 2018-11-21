@@ -1664,7 +1664,7 @@ export class GeometryParams {
    * @note If a valid SubCategory Id is not supplied, the default SubCategory for the parent Category is used. To be considered valid, [[SubCategory.getCategoryId]] must refer to the specified Category Id.
    */
   constructor(public categoryId: Id64String, public subCategoryId = Id64.invalid) {
-    if (Id64.isValid(subCategoryId))
+    if (!Id64.isValid(subCategoryId))
       this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId);
   }
 

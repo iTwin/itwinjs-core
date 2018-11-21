@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { Point3d, YawPitchRollAngles, Arc3d, LineSegment3d, LineString3d, Loop, Transform, Angle, Point2d, Geometry } from "@bentley/geometry-core";
 import { Id64String, Id64 } from "@bentley/bentleyjs-core";
 import {
-  Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeometryStreamIterator, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName, BRepEntity,
+  Code, GeometricElement3dProps, GeometryPartProps, IModel, GeometryStreamBuilder, GeometryStreamIterator, TextString, TextStringProps, LinePixels, FontProps, FontType, FillDisplay, GeometryParams, LineStyle, ColorDef, BackgroundFill, Gradient, AreaPattern, ColorByName, BRepEntity, GeometryStreamProps,
 } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { GeometryPart, IModelDb, LineStyleDefinition, Platform } from "../../backend";
@@ -760,6 +760,59 @@ describe("GeometryStream", () => {
     for (let i = 0; i < geomArrayOut.length; i++) {
       assert.isTrue(geomArrayOut[i].isAlmostEqual(geomArray[i]));
     }
+  });
+
+  it.skip("create GeometricElement3d wireformat appearance check", async () => {
+    // Set up element to be placed in iModel
+    const seedElement = imodel.elements.getElement("0x1d");
+    assert.exists(seedElement);
+    assert.isTrue(seedElement.federationGuid! === "18eb4650-b074-414f-b961-d9cfaa6c8746");
+
+    const builder = new GeometryStreamBuilder();
+    const params = new GeometryParams(seedElement.category);
+    const shape = Loop.create(LineString3d.create(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(1, 1, 0), Point3d.create(0, 1, 0), Point3d.create(0, 0, 0)));
+
+    params.fillDisplay = FillDisplay.ByView;
+    builder.appendGeometryParamsChange(params);
+    builder.appendGeometry(shape);
+
+    const elementProps: GeometricElement3dProps = {
+      classFullName: "Generic:PhysicalObject",
+      iModel: imodel,
+      model: seedElement.model,
+      category: seedElement.category,
+      code: Code.createEmpty(),
+      userLabel: "UserLabel-" + 1,
+      geom: builder.geometryStream,
+    };
+
+    const newId = imodel.elements.insertElement(elementProps);
+    assert.isTrue(Id64.isValidId64(newId));
+    imodel.saveChanges();
+
+    // Extract and test value returned...
+    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    assert.isDefined(value.geom);
+
+    const itLocal = new GeometryStreamIterator(value.geom, value.category);
+    for (const entry of itLocal) {
+      assert.isDefined(entry.geometryQuery);
+      assert.isTrue(FillDisplay.ByView === entry.geomParams.fillDisplay);
+    }
+
+    const geometryStream: GeometryStreamProps = [];
+
+    geometryStream.push({ appearance: {} }); // Native ToJson should add appearance entry with no defined values for this case...
+    geometryStream.push({ fill: { display: FillDisplay.ByView } });
+    geometryStream.push({ loop: [{ lineString: [[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0], [0, 0, 0]] }] });
+
+    const fromBuilder = JSON.stringify(builder.geometryStream);
+    const fromElProps = JSON.stringify(value.geom);
+    const fromScratch = JSON.stringify(geometryStream);
+
+    assert.isTrue(undefined !== builder.geometryStream[0].appearance && builder.geometryStream[0].appearance.subCategory === IModel.getDefaultSubCategoryId(value.category)); // Ensure default sub-category is specified...
+    assert.isTrue(fromElProps !== fromBuilder); // Should not match, default sub-category should not be persisted...
+    assert.isTrue(fromElProps === fromScratch); // TODO### Needs "null" appearance fix from native ToJson...
   });
 
   it("create GeometricElement3d from world coordinate brep data", async () => {
