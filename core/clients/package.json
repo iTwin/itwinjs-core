@@ -20,7 +20,7 @@
     "pretest": "rimraf \"./lib/test/*.log\" && npm run copy:test-assets",
     "test": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep=\"#integration|iModelHub URL Whitelist Validator\" --invert",
     "test:online": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"iModelHub URL Whitelist Validator\" --invert",
-    "test:integration": "npm run test:online & npm run test:url",
+    "test:integration": "npm run test:online && npm run test:url",
     "test:settings": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --grep Setting",
     "test:url": "node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"iModelHub URL Whitelist Validator\"",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
