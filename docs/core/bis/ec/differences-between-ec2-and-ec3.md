@@ -9,7 +9,7 @@ This page if for people who have used ECObjects in Power Platform and want to le
 
 ## Changes to Classes
 
-1. ECClass has been split into 3 discrete sub types, [ECEntityClass](./ec-entity-class.md), [ECStructClass](./ec-sruct-class.md) and [ECCustomAttributeClass](./ec-custom-attribute-class.md).  These three types replace the individual 'isDomainClass', 'isStruct' and 'isCustomAttributeClass' attributes respectively.  A consequence of this is that a class may be of only one type in EC 3, where you could make classes which were domain, struct and custom attribute in EC 2.
+1. ECClass has been split into 3 discrete sub types, [ECEntityClass](./ec-entity-class.md), [ECStructClass](./ec-struct-class.md) and [ECCustomAttributeClass](./ec-custom-attribute-class.md).  These three types replace the individual 'isDomainClass', 'isStruct' and 'isCustomAttributeClass' attributes respectively.  A consequence of this is that a class may be of only one type in EC 3, where you could make classes which were domain, struct and custom attribute in EC 2.
 2. All 4 class types add a 'modifier' flag which can be None (concrete and not sealed/final), Abstract or Sealed.
 3. A class may only have a base class of the same type (e.g. an ECRelationshipClass cannot have an ECEntityClass as a base class)
 4. Multiple base classes are only supported on ECEntityClasses in EC 3 and additional restrictions are applied.
