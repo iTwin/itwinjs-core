@@ -220,7 +220,6 @@ class PixelBuffer implements Pixel.Buffer {
     return dec;
   }
 
-
   private readonly _invalidPixelData = new Pixel.Data();
   public getPixel(x: number, y: number): Pixel.Data {
     const px = this._invalidPixelData;
@@ -1092,7 +1091,6 @@ class MPCompositor extends Compositor {
 
     return super.getRenderState(pass);
   }
-
 
   private get _fbos(): MPFrameBuffers { return this._frameBuffers as MPFrameBuffers; }
   private get _geometry(): MPGeometry { return this._geom as MPGeometry; }

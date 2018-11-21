@@ -390,7 +390,7 @@ function addEdgeWidth(builder: ShaderBuilder) {
   });
 }
 
-export const computeFeatureId = `v_feature_id = addUInt32s(u_batch_id, g_featureIndex) / 255.0;`
+export const computeFeatureId = `v_feature_id = addUInt32s(u_batch_id, g_featureIndex) / 255.0;`;
 
 function addRenderOrderConstants(builder: ShaderBuilder) {
   builder.addConstant("kRenderOrder_None", VariableType.Float, "0.0");
