@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { AbstractParser } from "./AbstractParser";
-import { AnySchemaItemProps, SchemaReferenceProps } from "./JsonProps";
+import { AbstractParser, AbstractParserConstructor } from "./AbstractParser";
+import { SchemaReferenceProps, ClassProps, RelationshipConstraintProps, PropertyProps } from "./JsonProps";
 import { SchemaContext } from "./../Context";
 import { parsePrimitiveType, parseSchemaItemType, SchemaItemType } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
@@ -26,37 +26,35 @@ import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
 
 /**
  * @hidden
- * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaItems from the JSON formats.
+ * The purpose of this class is to properly order the deserialization of ECSchemas and SchemaItems from serialized formats.
  * For example, when deserializing an ECClass most times all base class should be de-serialized before the given class.
  */
-export class SchemaReadHelper {
+export class SchemaReadHelper<T = unknown> {
   private _context: SchemaContext;
   private _visitor?: SchemaDeserializationVisitor;
-  private _parser: AbstractParser<unknown>;
+  private _parserType: AbstractParserConstructor<T, unknown>;
+  private _parser!: AbstractParser<unknown>;
 
   // This is a cache of the schema we are loading. The schema also exists within the _context but in order
   // to not have to go back to the context every time we use this cache.
   private _schema?: Schema;
 
-  private _itemToRead: any; // This will be the json object of the Schema or SchemaItem to deserialize. Not sure if this is the best option.. Going to leave it for now.
-
-  constructor(parser: AbstractParser<unknown>, context?: SchemaContext, visitor?: SchemaDeserializationVisitor) {
+  constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: SchemaDeserializationVisitor) {
     this._context = (undefined !== context) ? context : new SchemaContext();
     this._visitor = visitor;
-    this._parser = parser;
+    this._parserType = parserType;
   }
 
   /**
-   * Populates the given Schema with the JSON.
+   * Populates the given Schema from a serialized representation.
    * @param schema The Schema to populate
-   * @param schemaJson The JSON to use to populate the Schema.
+   * @param rawSchema The serialized data to use to populate the Schema.
    */
-  public async readSchema<T extends Schema>(schema: T, schemaJson: object | string): Promise<T> {
-    this._itemToRead = typeof schemaJson === "string" ? JSON.parse(schemaJson) : schemaJson;
-    const parsedItem = this._parser.parseSchemaProps(this._itemToRead);
+  public async readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U> {
+    this._parser = new this._parserType(rawSchema);
 
     // Loads all of the properties on the Schema object
-    await schema.deserialize(parsedItem);
+    await schema.deserialize(this._parser.parseSchema());
 
     this._schema = schema;
 
@@ -65,29 +63,29 @@ export class SchemaReadHelper {
 
     // Load schema references first
     // Need to figure out if other schemas are present.
-    if (undefined !== parsedItem.references)
-      await this.loadSchemaReferences(parsedItem.references);
+    for (const reference of this._parser.getReferences()) {
+      await this.loadSchemaReference(reference);
+    }
 
     if (this._visitor && this._visitor.visitEmptySchema)
       await this._visitor.visitEmptySchema(schema);
 
     // Load all schema items
-    if (undefined !== parsedItem.items) {
-      for (const itemName in parsedItem.items) {
-        // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
-        // which would be found when adding to the context.
-        if (await schema.getItem(itemName) !== undefined)
-          continue;
+    for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
+      // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
+      // which would be found when adding to the context.
+      if (await schema.getItem(itemName) !== undefined)
+        continue;
 
-        const loadedItem = await this.loadSchemaItem(schema, parsedItem.items[itemName], itemName);
-        if (loadedItem && this._visitor) {
-          await loadedItem.accept(this._visitor);
-        }
+      const loadedItem = await this.loadSchemaItem(schema, itemName, itemType, rawItem);
+      if (loadedItem && this._visitor) {
+        await loadedItem.accept(this._visitor);
       }
     }
 
-    if (undefined !== parsedItem.customAttributes)
-      await this.loadCustomAttributes(parsedItem.customAttributes);
+    for (const customAttribute of this._parser.getCustomAttributes()) {
+      await this.loadCustomAttribute(customAttribute);
+    }
 
     if (this._visitor && this._visitor.visitFullSchema)
       await this._visitor.visitFullSchema(schema);
@@ -96,16 +94,15 @@ export class SchemaReadHelper {
   }
 
   /**
-   * Populates the given Schema with the JSON.
+   * Populates the given Schema from a serialized representation.
    * @param schema The Schema to populate
-   * @param schemaJson The JSON to use to populate the Schema.
+   * @param rawSchema The serialized data to use to populate the Schema.
    */
-  public readSchemaSync<T extends Schema>(schema: T, schemaJson: object | string): T {
-    this._itemToRead = typeof schemaJson === "string" ? JSON.parse(schemaJson) : schemaJson;
-    const parsedItem = this._parser.parseSchemaProps(this._itemToRead);
+  public readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U {
+    this._parser = new this._parserType(rawSchema);
 
     // Loads all of the properties on the Schema object
-    schema.deserializeSync(parsedItem);
+    schema.deserializeSync(this._parser.parseSchema());
 
     this._schema = schema;
 
@@ -114,29 +111,29 @@ export class SchemaReadHelper {
 
     // Load schema references first
     // Need to figure out if other schemas are present.
-    if (undefined !== parsedItem.references)
-      this.loadSchemaReferencesSync(parsedItem.references);
+    for (const reference of this._parser.getReferences()) {
+      this.loadSchemaReferenceSync(reference);
+    }
 
     if (this._visitor && this._visitor.visitEmptySchema)
       this._visitor.visitEmptySchema(schema);
 
     // Load all schema items
-    if (undefined !== parsedItem.items) {
-      for (const itemName in parsedItem.items) {
-        // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
-        // which would be found when adding to the context.
-        if (schema.getItemSync(itemName) !== undefined)
-          continue;
+    for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
+      // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
+      // which would be found when adding to the context.
+      if (schema.getItemSync(itemName) !== undefined)
+        continue;
 
-        const loadedItem = this.loadSchemaItemSync(schema, parsedItem.items[itemName], itemName);
-        if (loadedItem && this._visitor) {
-          loadedItem.accept(this._visitor);
-        }
+      const loadedItem = this.loadSchemaItemSync(schema, itemName, itemType, rawItem);
+      if (loadedItem && this._visitor) {
+        loadedItem.accept(this._visitor);
       }
     }
 
-    if (undefined !== parsedItem.customAttributes)
-      this.loadCustomAttributesSync(parsedItem.customAttributes);
+    for (const customAttribute of this._parser.getCustomAttributes()) {
+      this.loadCustomAttributeSync(customAttribute);
+    }
 
     if (this._visitor && this._visitor.visitFullSchema)
       this._visitor.visitFullSchema(schema);
@@ -146,102 +143,100 @@ export class SchemaReadHelper {
 
   /**
    * Ensures that the SchemaReferences can be located and then loads the references.
-   * @param referencesJson The JSON to read the SchemaReference from.
+   * @param ref The object to read the SchemaReference's props from.
    */
-  private async loadSchemaReferences(schemaRefProps: SchemaReferenceProps[]): Promise<void> {
-    for (const ref of schemaRefProps) {
-      const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
-      const refSchema = await this._context.getSchema(schemaKey);
-      if (!refSchema)
-        throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
+  private async loadSchemaReference(ref: SchemaReferenceProps): Promise<void> {
+    const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
+    const refSchema = await this._context.getSchema(schemaKey);
+    if (undefined === refSchema)
+      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
-      await (this._schema as MutableSchema).addReference(refSchema);
-    }
+    await (this._schema as MutableSchema).addReference(refSchema);
   }
 
   /**
    * Ensures that the SchemaReferences can be located and then loads the references.
-   * @param referencesJson The JSON to read the SchemaReference from.
+   * @param ref The object to read the SchemaReference's props from.
    */
-  private loadSchemaReferencesSync(schemaRefProps: SchemaReferenceProps[]): void {
-    for (const ref of schemaRefProps) {
-      const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
-      const refSchema = this._context.getSchemaSync(schemaKey);
-      if (!refSchema)
-        throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
+  private loadSchemaReferenceSync(ref: SchemaReferenceProps): void {
+    const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
+    const refSchema = this._context.getSchemaSync(schemaKey);
+    if (!refSchema)
+      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
-      (this._schema as MutableSchema).addReferenceSync(refSchema);
-    }
+    (this._schema as MutableSchema).addReferenceSync(refSchema);
   }
 
   /**
    * Given
    * @param schema The Schema to add this SchemaItem to.
-   * @param schemaItemJson The JSON to populate the SchemaItem with.
-   * @param name The name of the SchemaItem, only needed if the SchemaItem is being loaded outside the context of a Schema.
+   * @param name The name of the SchemaItem.
+   * @param itemType The SchemaItemType of the item to load.
+   * @param schemaItemObject The Object to populate the SchemaItem with.
    */
-  private async loadSchemaItem(schema: Schema, schemaItemJson: AnySchemaItemProps, name: string): Promise<SchemaItem | undefined> {
-    const parsedItem = this._parser.parseSchemaItemProps(schemaItemJson, schema.name, name);
+  private async loadSchemaItem(schema: Schema, name: string, itemType: string, schemaItemObject: unknown): Promise<SchemaItem | undefined> {
     let schemaItem: AnySchemaItem | undefined;
 
-    switch (parseSchemaItemType(parsedItem.schemaItemType)) {
+    switch (parseSchemaItemType(itemType)) {
       case SchemaItemType.EntityClass:
         schemaItem = await (schema as MutableSchema).createEntityClass(name);
-        await this.loadEntityClass(schemaItem, schemaItemJson);
+        await this.loadEntityClass(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.StructClass:
         schemaItem = await (schema as MutableSchema).createStructClass(name);
-        await this.loadClass(schemaItem, schemaItemJson);
+        const structProps = this._parser.parseStructClass(schemaItemObject);
+        await this.loadClass(schemaItem, structProps, schemaItemObject);
         break;
       case SchemaItemType.Mixin:
         schemaItem = await (schema as MutableSchema).createMixinClass(name);
-        await this.loadMixin(schemaItem, schemaItemJson);
+        await this.loadMixin(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.CustomAttributeClass:
         schemaItem = await (schema as MutableSchema).createCustomAttributeClass(name);
-        await this.loadClass(schemaItem, schemaItemJson);
+        const caClassProps = this._parser.parseCustomAttributeClass(schemaItemObject);
+        await this.loadClass(schemaItem, caClassProps, schemaItemObject);
         break;
       case SchemaItemType.RelationshipClass:
         schemaItem = await (schema as MutableSchema).createRelationshipClass(name);
-        await this.loadRelationshipClass(schemaItem, schemaItemJson);
+        await this.loadRelationshipClass(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.KindOfQuantity:
         schemaItem = await (schema as MutableSchema).createKindOfQuantity(name);
-        await this.loadKindOfQuantity(schemaItem, schemaItemJson);
+        await this.loadKindOfQuantity(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.Unit:
         schemaItem = await (schema as MutableSchema).createUnit(name);
-        await this.loadUnit(schemaItem, schemaItemJson);
+        await this.loadUnit(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.Constant:
         schemaItem = await (schema as MutableSchema).createConstant(name);
-        await this.loadConstant(schemaItem, schemaItemJson);
+        await this.loadConstant(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.InvertedUnit:
         schemaItem = await (schema as MutableSchema).createInvertedUnit(name);
-        await this.loadInvertedUnit(schemaItem, schemaItemJson);
+        await this.loadInvertedUnit(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.Format:
         schemaItem = await (schema as MutableSchema).createFormat(name);
-        await this.loadFormat(schemaItem, schemaItemJson);
+        await this.loadFormat(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.Phenomenon:
         schemaItem = await (schema as MutableSchema).createPhenomenon(name);
-        const phenomenonProps = this._parser.parsePhenomenonProps(schemaItemJson, name);
+        const phenomenonProps = this._parser.parsePhenomenon(schemaItemObject);
         await schemaItem.deserialize(phenomenonProps);
         break;
       case SchemaItemType.UnitSystem:
         schemaItem = await (schema as MutableSchema).createUnitSystem(name);
-        await schemaItem.deserialize(parsedItem);
+        await schemaItem.deserialize(this._parser.parseUnitSystem(schemaItemObject));
         break;
       case SchemaItemType.PropertyCategory:
         schemaItem = await (schema as MutableSchema).createPropertyCategory(name);
-        const propertyCategoryProps = this._parser.parsePropertyCategoryProps(schemaItemJson, name);
+        const propertyCategoryProps = this._parser.parsePropertyCategory(schemaItemObject);
         await schemaItem.deserialize(propertyCategoryProps);
         break;
       case SchemaItemType.Enumeration:
         schemaItem = await (schema as MutableSchema).createEnumeration(name);
-        const enumerationProps = this._parser.parseEnumerationProps(schemaItemJson, name);
+        const enumerationProps = this._parser.parseEnumeration(schemaItemObject);
         await schemaItem.deserialize(enumerationProps);
         break;
       // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
@@ -253,71 +248,73 @@ export class SchemaReadHelper {
   /**
    * Given
    * @param schema The Schema to add this SchemaItem to.
-   * @param schemaItemJson The JSON to populate the SchemaItem with.
-   * @param name The name of the SchemaItem, only needed if the SchemaItem is being loaded outside the context of a Schema.
+   * @param name The name of the SchemaItem.
+   * @param itemType The SchemaItemType of the item to load.
+   * @param schemaItemObject The Object to populate the SchemaItem with.
    */
-  private loadSchemaItemSync(schema: Schema, schemaItemJson: AnySchemaItemProps, name: string): SchemaItem | undefined {
-    const parsedItem = this._parser.parseSchemaItemProps(schemaItemJson, schema.name, name);
+  private loadSchemaItemSync(schema: Schema, name: string, itemType: string, schemaItemObject: unknown): SchemaItem | undefined {
     let schemaItem: AnySchemaItem | undefined;
 
-    switch (parseSchemaItemType(parsedItem.schemaItemType)) {
+    switch (parseSchemaItemType(itemType)) {
       case SchemaItemType.EntityClass:
         schemaItem = (schema as MutableSchema).createEntityClassSync(name);
-        this.loadEntityClassSync(schemaItem, schemaItemJson);
+        this.loadEntityClassSync(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.StructClass:
         schemaItem = (schema as MutableSchema).createStructClassSync(name);
-        this.loadClassSync(schemaItem, schemaItemJson);
+        const structProps = this._parser.parseStructClass(schemaItemObject);
+        this.loadClassSync(schemaItem, structProps, schemaItemObject);
         break;
       case SchemaItemType.Mixin:
         schemaItem = (schema as MutableSchema).createMixinClassSync(name);
-        this.loadMixinSync(schemaItem, schemaItemJson);
+        this.loadMixinSync(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.CustomAttributeClass:
         schemaItem = (schema as MutableSchema).createCustomAttributeClassSync(name);
-        this.loadClassSync(schemaItem, schemaItemJson);
+        const caClassProps = this._parser.parseCustomAttributeClass(schemaItemObject);
+        this.loadClassSync(schemaItem, caClassProps, schemaItemObject);
         break;
       case SchemaItemType.RelationshipClass:
         schemaItem = (schema as MutableSchema).createRelationshipClassSync(name);
-        this.loadRelationshipClassSync(schemaItem, schemaItemJson);
+        this.loadRelationshipClassSync(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.KindOfQuantity:
         schemaItem = (schema as MutableSchema).createKindOfQuantitySync(name);
-        this.loadKindOfQuantitySync(schemaItem, schemaItemJson);
+        this.loadKindOfQuantitySync(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.Unit:
         schemaItem = (schema as MutableSchema).createUnitSync(name);
-        this.loadUnitSync(schemaItem, schemaItemJson);
+        this.loadUnitSync(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.Constant:
         schemaItem = (schema as MutableSchema).createConstantSync(name);
-        this.loadConstantSync(schemaItem, schemaItemJson);
+        this.loadConstantSync(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.InvertedUnit:
         schemaItem = (schema as MutableSchema).createInvertedUnitSync(name);
-        this.loadInvertedUnitSync(schemaItem, schemaItemJson);
+        this.loadInvertedUnitSync(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.Format:
         schemaItem = (schema as MutableSchema).createFormatSync(name);
-        this.loadFormatSync(schemaItem, schemaItemJson);
+        this.loadFormatSync(schemaItem, schemaItemObject);
         break;
       case SchemaItemType.Phenomenon:
         schemaItem = (schema as MutableSchema).createPhenomenonSync(name);
-        const phenomenonProps = this._parser.parsePhenomenonProps(schemaItemJson, name);
+        const phenomenonProps = this._parser.parsePhenomenon(schemaItemObject);
         schemaItem.deserializeSync(phenomenonProps);
         break;
       case SchemaItemType.UnitSystem:
         schemaItem = (schema as MutableSchema).createUnitSystemSync(name);
-        schemaItem.deserializeSync(parsedItem);
+        schemaItem.deserializeSync(this._parser.parseUnitSystem(schemaItemObject));
         break;
       case SchemaItemType.PropertyCategory:
         schemaItem = (schema as MutableSchema).createPropertyCategorySync(name);
-        const propertyCategoryProps = this._parser.parsePropertyCategoryProps(schemaItemJson, name);
+        const propertyCategoryProps = this._parser.parsePropertyCategory(schemaItemObject);
         schemaItem.deserializeSync(propertyCategoryProps);
         break;
       case SchemaItemType.Enumeration:
         schemaItem = (schema as MutableSchema).createEnumerationSync(name);
-        const enumerationProps = this._parser.parseEnumerationProps(schemaItemJson, name);
+        const enumerationProps = this._parser.parseEnumeration(schemaItemObject);
         schemaItem.deserializeSync(enumerationProps);
         break;
       // NOTE: we are being permissive here and allowing unknown types to silently fail. Not sure if we want to hard fail or just do a basic deserialization
@@ -340,9 +337,9 @@ export class SchemaReadHelper {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${fullName} is invalid without a schema name`);
 
     if (isInThisSchema && undefined === await this._schema!.getItem(itemName)) {
-      const itemJson: object | undefined = this._itemToRead.items[itemName];
-      if (itemJson) {
-        const schemaItem = await this.loadSchemaItem(this._schema!, this._itemToRead.items[itemName], itemName);
+      const foundItem = this._parser.findItem(itemName);
+      if (foundItem) {
+        const schemaItem = await this.loadSchemaItem(this._schema!, ...foundItem);
         if (!skipVisitor && schemaItem && this._visitor) {
           await schemaItem.accept(this._visitor);
         }
@@ -355,121 +352,6 @@ export class SchemaReadHelper {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${fullName}.`);
 
     return undefined;
-  }
-
-  /**
-   * Load dependencies on phenomenon and unitSystem for a Unit object and load the Unit from the json
-   * @param unit the Unit object that we are loading dependencies for
-   * @param unitJson The JSON containing the Unit to be added to the container
-   */
-  private async loadUnit(unit: Unit, unitJson: any): Promise<void> {
-    const unitProps = this._parser.parseUnitProps(unitJson, unit.name);
-
-    await this.findSchemaItem(unitProps.phenomenon, true);
-    await this.findSchemaItem(unitProps.unitSystem, true);
-
-    await unit.deserialize(unitProps);
-  }
-
-  private loadUnitSync(unit: Unit, unitJson: any) {
-    const unitProps = this._parser.parseUnitProps(unitJson, unit.name);
-
-    this.findSchemaItemSync(unitProps.phenomenon, true);
-    this.findSchemaItemSync(unitProps.unitSystem, true);
-
-    unit.deserializeSync(unitProps);
-  }
-
-  /**
-   * Load the persistence unit and presentation unit dependencies for a KindOfQuantity object and load the KoQ from the json
-   * @param koq the kind of quantity object that we are loading the persistence unit and presentation unit dependencies for
-   * @param koqJson The JSON containing the kind of quantity to be added to the container
-   */
-  private async loadKindOfQuantity(koq: KindOfQuantity, koqJson: any): Promise<void> {
-    const koqProps = this._parser.parseKindOfQuantityProps(koqJson, koq.name);
-    await koq.deserialize(koqProps);
-  }
-
-  /**
-   * Load the persistence unit and presentation unit dependencies for a KindOfQuantity object and load the KoQ from the json
-   * @param koq the kind of quantity object that we are loading the persistence unit and presentation unit dependencies for
-   * @param koqJson The JSON containing the kind of quantity to be added to the container
-   */
-  private loadKindOfQuantitySync(koq: KindOfQuantity, koqJson: any) {
-    const koqProps = this._parser.parseKindOfQuantityProps(koqJson, koq.name);
-    koq.deserializeSync(koqProps);
-  }
-
-  /**
-   * Load the phenomenon dependency for a Constant object and load the Constant from the json
-   * @param constant the Constant object that we are loading the phenomenon dependency for
-   * @param constantJson The JSON containing the Constant to be added to the container
-   */
-  private async loadConstant(constant: Constant, constantJson: any): Promise<void> {
-    const constantProps = this._parser.parseConstantProps(constantJson, constant.name);
-
-    await this.findSchemaItem(constantProps.phenomenon, true);
-    await constant.deserialize(constantProps);
-  }
-
-  private loadConstantSync(constant: Constant, constantJson: any) {
-    const constantProps = this._parser.parseConstantProps(constantJson, constant.name);
-
-    this.findSchemaItemSync(constantProps.phenomenon, true);
-    constant.deserializeSync(constantProps);
-  }
-
-  /**
-   * Load the unit system and invertsUnit dependencies for an Inverted Unit object and load the Inverted Unit from the json
-   * @param invertedUnit the inverted unit object that we are loading the unit system and invertsUnit dependencies for
-   * @param invertedUnitJson The JSON containing the InvertedUnit to be added to the container
-   */
-  private async loadInvertedUnit(invertedUnit: InvertedUnit, invertedUnitJson: any): Promise<void> {
-    const invertedUnitProps = this._parser.parseInvertedUnitProps(invertedUnitJson, invertedUnit.name);
-
-    await this.findSchemaItem(invertedUnitProps.invertsUnit, true);
-    await this.findSchemaItem(invertedUnitProps.unitSystem, true);
-
-    await invertedUnit.deserialize(invertedUnitProps);
-  }
-
-  private loadInvertedUnitSync(invertedUnit: InvertedUnit, invertedUnitJson: any) {
-    const invertedUnitProps = this._parser.parseInvertedUnitProps(invertedUnitJson, invertedUnit.name);
-
-    this.findSchemaItemSync(invertedUnitProps.invertsUnit, true);
-    this.findSchemaItemSync(invertedUnitProps.unitSystem, true);
-
-    invertedUnit.deserializeSync(invertedUnitProps);
-  }
-
-  /**
-   * Load the unit dependencies for a Format object and load the Format from the json
-   * @param format the format object that we are loading the unit dependencies for
-   * @param formatJson The JSON containing the Format to be added to the container
-   */
-  private async loadFormat(format: Format, formatJson: any): Promise<void> {
-    const formatProps = this._parser.parseFormatProps(formatJson, format.name);
-
-    if (undefined !== formatProps.composite) {
-      const formatUnits = await formatProps.composite.units!;
-      for (const unit of formatUnits) {
-        await this.findSchemaItem(unit.name, true);
-      }
-    }
-    await format.deserialize(formatProps);
-  }
-
-  private loadFormatSync(format: Format, formatJson: any) {
-    const formatProps = this._parser.parseFormatProps(formatJson, format.name);
-
-    if (undefined !== formatProps.composite) {
-      const formatUnits = formatProps.composite.units!;
-      for (const unit of formatUnits) {
-        this.findSchemaItemSync(unit.name, true);
-      }
-    }
-
-    format.deserializeSync(formatProps);
   }
 
   /*
@@ -487,9 +369,9 @@ export class SchemaReadHelper {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${fullName} is invalid without a schema name`);
 
     if (isInThisSchema && undefined === this._schema!.getItemSync(itemName)) {
-      const itemJson: object | undefined = this._itemToRead.items[itemName];
-      if (itemJson) {
-        const schemaItem = this.loadSchemaItemSync(this._schema!, this._itemToRead.items[itemName], itemName);
+      const foundItem = this._parser.findItem(itemName);
+      if (foundItem) {
+        const schemaItem = this.loadSchemaItemSync(this._schema!, ...foundItem);
         if (!skipVisitor && schemaItem && this._visitor) {
           schemaItem.accept(this._visitor);
         }
@@ -505,36 +387,164 @@ export class SchemaReadHelper {
   }
 
   /**
-   * Given a CustomAttributeContainer and a CustomAttribute JSON it will make sure that all of the the CustomAttribute classes can be found within the context
-   * of the Container.
-   * @param caContainer The CustomAttribute Container to read the customAttributes within the context of.
-   * @param customAttributesJson The JSON containing the customAttributes that are to be added to the container
+   * Load dependencies on phenomenon and unitSystem for a Unit object and load the Unit from its serialized format.
+   * @param unit The Unit object that we are loading dependencies for and "deserializing into".
+   * @param rawUnit The serialized unit data
    */
-  private async loadCustomAttributes(customAttributeProps: CustomAttribute[]): Promise<void> {
-    this.loadCustomAttributesSync(customAttributeProps);
+  private async loadUnit(unit: Unit, rawUnit: unknown): Promise<void> {
+    const unitProps = this._parser.parseUnit(rawUnit);
+
+    await this.findSchemaItem(unitProps.phenomenon, true);
+    await this.findSchemaItem(unitProps.unitSystem, true);
+
+    await unit.deserialize(unitProps);
   }
 
   /**
-   * Given a CustomAttributeContainer and a CustomAttribute JSON it will make sure that all of the the CustomAttribute classes can be found within the context
-   * of the Container.
-   * @param caContainer The CustomAttribute Container to read the customAttributes within the context of.
-   * @param customAttributesJson The JSON containing the customAttributes that are to be added to the container
+   * Load dependencies on phenomenon and unitSystem for a Unit object and load the Unit from its serialized format.
+   * @param unit The Unit object that we are loading dependencies for and "deserializing into".
+   * @param rawUnit The serialized unit data
    */
-  private loadCustomAttributesSync(customAttributeProps: CustomAttribute[]): void {
-    for (const instance of customAttributeProps) {
-      this.findSchemaItem(instance.className);
+  private loadUnitSync(unit: Unit, rawUnit: unknown) {
+    const unitProps = this._parser.parseUnit(rawUnit);
+
+    this.findSchemaItemSync(unitProps.phenomenon, true);
+    this.findSchemaItemSync(unitProps.unitSystem, true);
+
+    unit.deserializeSync(unitProps);
+  }
+
+  /**
+   * Load the persistence unit and presentation unit dependencies for a KindOfQuantity object and load the KoQ from its serialized format.
+   * @param koq The KindOfQuantity object that we are loading dependencies for and "deserializing into".
+   * @param rawKoQ The serialized kind of quantity data
+   */
+  private async loadKindOfQuantity(koq: KindOfQuantity, rawKoQ: unknown): Promise<void> {
+    const koqProps = this._parser.parseKindOfQuantity(rawKoQ);
+    await koq.deserialize(koqProps);
+  }
+
+  /**
+   * Load the persistence unit and presentation unit dependencies for a KindOfQuantity object and load the KoQ from its serialized format.
+   * @param koq The KindOfQuantity object that we are loading dependencies for and "deserializing into".
+   * @param rawKoQ The serialized kind of quantity data
+   */
+  private loadKindOfQuantitySync(koq: KindOfQuantity, rawKoQ: unknown) {
+    const koqProps = this._parser.parseKindOfQuantity(rawKoQ);
+    koq.deserializeSync(koqProps);
+  }
+
+  /**
+   * Load the phenomenon dependency for a Constant object and load the Constant from its serialized format.
+   * @param constant The Constant object that we are loading the phenomenon dependency for
+   * @param rawConstant The serialized constant data
+   */
+  private async loadConstant(constant: Constant, rawConstant: unknown): Promise<void> {
+    const constantProps = this._parser.parseConstant(rawConstant);
+
+    await this.findSchemaItem(constantProps.phenomenon, true);
+    await constant.deserialize(constantProps);
+  }
+
+  /**
+   * Load the phenomenon dependency for a Constant object and load the Constant from its serialized format.
+   * @param constant The Constant object that we are loading dependencies for and "deserializing into".
+   * @param rawConstant The serialized constant data
+   */
+  private loadConstantSync(constant: Constant, rawConstant: unknown) {
+    const constantProps = this._parser.parseConstant(rawConstant);
+
+    this.findSchemaItemSync(constantProps.phenomenon, true);
+    constant.deserializeSync(constantProps);
+  }
+
+  /**
+   * Load the unit system and invertsUnit dependencies for an Inverted Unit object and load the Inverted Unit from its serialized format.
+   * @param invertedUnit The InvertedUnit object that we are loading dependencies for and "deserializing into".
+   * @param rawInvertedUnit The serialized inverted unit data.
+   */
+  private async loadInvertedUnit(invertedUnit: InvertedUnit, rawInvertedUnit: unknown): Promise<void> {
+    const invertedUnitProps = this._parser.parseInvertedUnit(rawInvertedUnit);
+
+    await this.findSchemaItem(invertedUnitProps.invertsUnit, true);
+    await this.findSchemaItem(invertedUnitProps.unitSystem, true);
+
+    await invertedUnit.deserialize(invertedUnitProps);
+  }
+
+  /**
+   * Load the unit system and invertsUnit dependencies for an Inverted Unit object and load the Inverted Unit from its serialized format.
+   * @param invertedUnit The InvertedUnit object that we are loading dependencies for and "deserializing into".
+   * @param rawInvertedUnit The serialized inverted unit data.
+   */
+  private loadInvertedUnitSync(invertedUnit: InvertedUnit, rawInvertedUnit: unknown) {
+    const invertedUnitProps = this._parser.parseInvertedUnit(rawInvertedUnit);
+
+    this.findSchemaItemSync(invertedUnitProps.invertsUnit, true);
+    this.findSchemaItemSync(invertedUnitProps.unitSystem, true);
+
+    invertedUnit.deserializeSync(invertedUnitProps);
+  }
+
+  /**
+   * Load the unit dependencies for a Format object and load the Format from its serialized format.
+   * @param format The Format object that we are loading dependencies for and "deserializing into".
+   * @param rawFormat The serialized format data.
+   */
+  private async loadFormat(format: Format, rawFormat: unknown): Promise<void> {
+    const formatProps = this._parser.parseFormat(rawFormat);
+
+    if (undefined !== formatProps.composite) {
+      const formatUnits = await formatProps.composite.units!;
+      for (const unit of formatUnits) {
+        await this.findSchemaItem(unit.name, true);
+      }
     }
+    await format.deserialize(formatProps);
   }
 
   /**
-   *
-   * @param schemaJson The original json object of the schema.
-   * @param classJson The json object for this class
-   * @param schema The ECSchema this class exists in.
+   * Load the unit dependencies for a Format object and load the Format from its serialized format.
+   * @param format The Format object that we are loading dependencies for and "deserializing into".
+   * @param rawFormat The serialized format data.
    */
-  private async loadClass(classObj: AnyClass, classJson: any): Promise<void> {
+  private loadFormatSync(format: Format, rawFormat: unknown) {
+    const formatProps = this._parser.parseFormat(rawFormat);
+
+    if (undefined !== formatProps.composite) {
+      const formatUnits = formatProps.composite.units!;
+      for (const unit of formatUnits) {
+        this.findSchemaItemSync(unit.name, true);
+      }
+    }
+
+    format.deserializeSync(formatProps);
+  }
+
+  /**
+   * Given a deserialized CustomAttribute object, make sure that the corresponding CustomAttributeClass can be found within the current context.
+   * @param customAttributeProps The deserialized CustomAttribute.
+   */
+  private async loadCustomAttribute(customAttributeProps: CustomAttribute): Promise<void> {
+    await this.findSchemaItem(customAttributeProps.className);
+  }
+
+  /**
+   * Given a deserialized CustomAttribute object, make sure that the corresponding CustomAttributeClass can be found within the current context.
+   * @param customAttributeProps The deserialized CustomAttribute.
+   */
+  private loadCustomAttributeSync(customAttributeProps: CustomAttribute): void {
+    this.findSchemaItemSync(customAttributeProps.className);
+  }
+
+  /**
+   * Load the base class and property type dependencies for an ECClass object and load the ECClass (and its properties) from its serialized format.
+   * @param classObj The ECClass object that we are loading dependencies for and "deserializing into".
+   * @param classProps The parsed class props object.
+   * @param rawClass The serialized class data.
+   */
+  private async loadClass(classObj: AnyClass, classProps: ClassProps, rawClass: unknown): Promise<void> {
     // Load base class first
-    const classProps = this._parser.parseClassProps(classJson, classObj.name);
     let baseClass: undefined | SchemaItem;
     if (undefined !== classProps.baseClass) {
       baseClass = await this.findSchemaItem(classProps.baseClass, true);
@@ -544,10 +554,8 @@ export class SchemaReadHelper {
     // (We need to do this to break Entity -navProp-> Relationship -constraint-> Entity cycle.)
     await (classObj as ECClass).deserialize(classProps);
 
-    if (undefined !== classProps.properties) {
-      for (const property of classProps.properties) {
-        await this.loadPropertyTypes(classObj, property);
-      }
+    for (const [propName, propType, rawProp] of this._parser.getProperties(rawClass)) {
+      await this.loadPropertyTypes(classObj, propName, propType, rawProp);
     }
 
     if (baseClass && this._visitor)
@@ -555,14 +563,13 @@ export class SchemaReadHelper {
   }
 
   /**
-   *
-   * @param schemaJson The original json object of the schema.
-   * @param classJson The json object for this class
-   * @param schema The ECSchema this class exists in.
+   * Load the base class and property type dependencies for an ECClass object and load the ECClass (and its properties) from its serialized format.
+   * @param classObj The ECClass object that we are loading dependencies for and "deserializing into".
+   * @param classProps The parsed class props object.
+   * @param rawClass The serialized class data.
    */
-  private loadClassSync(classObj: AnyClass, classJson: any): void {
+  private loadClassSync(classObj: AnyClass, classProps: ClassProps, rawClass: unknown): void {
     // Load base class first
-    const classProps = this._parser.parseClassProps(classJson, classObj.name);
     let baseClass: undefined | SchemaItem;
     if (undefined !== classProps.baseClass) {
       baseClass = this.findSchemaItemSync(classProps.baseClass, true);
@@ -572,218 +579,259 @@ export class SchemaReadHelper {
     // (We need to do this to break Entity -navProp-> Relationship -constraint-> Entity cycle.)
     (classObj as ECClass).deserializeSync(classProps);
 
-    if (undefined !== classProps.properties) {
-      for (const property of classProps.properties) {
-        this.loadPropertyTypesSync(classObj, property);
-      }
+    for (const [propName, propType, rawProp] of this._parser.getProperties(rawClass)) {
+      this.loadPropertyTypesSync(classObj, propName, propType, rawProp);
     }
 
     if (baseClass && this._visitor)
       baseClass.accept(this._visitor);
   }
 
-  private async loadEntityClass(entity: EntityClass, entityJson: any): Promise<void> {
+  /**
+   * Load the mixin, base class, and property type dependencies for an EntityClass object and load the EntityClass (and properties) from its serialized format.
+   * @param entity The EntityClass that we are loading dependencies for and "deserializing into".
+   * @param rawEntity The serialized entity class data.
+   */
+  private async loadEntityClass(entity: EntityClass, rawEntity: unknown): Promise<void> {
+    const entityClassProps = this._parser.parseEntityClass(rawEntity);
+
     // Load Mixin classes first
-    const entityClassProps = this._parser.parseEntityClassProps(entityJson, entity.name);
     if (undefined !== entityClassProps.mixins) {
-      for (const mixinName of entityClassProps.mixins) {
+      for (const mixinName of entityClassProps.mixins)
         await this.findSchemaItem(mixinName);
-      }
     }
 
-    await this.loadClass(entity, entityJson);
+    await this.loadClass(entity, entityClassProps, rawEntity);
   }
 
-  private loadEntityClassSync(entity: EntityClass, entityJson: any): void {
+  /**
+   * Load the mixin, base class, and property type dependencies for an EntityClass object and load the EntityClass (and properties) from its serialized format.
+   * @param entity The EntityClass that we are loading dependencies for and "deserializing into".
+   * @param rawEntity The serialized entity class data.
+   */
+  private loadEntityClassSync(entity: EntityClass, rawEntity: unknown): void {
+    const entityClassProps = this._parser.parseEntityClass(rawEntity);
+
     // Load Mixin classes first
-    const entityClassProps = this._parser.parseEntityClassProps(entityJson, entity.name);
     if (undefined !== entityClassProps.mixins) {
-      for (const mixinName of entityClassProps.mixins) {
+      for (const mixinName of entityClassProps.mixins)
         this.findSchemaItemSync(mixinName);
-      }
     }
 
-    this.loadClassSync(entity, entityJson);
+    this.loadClassSync(entity, entityClassProps, rawEntity);
   }
 
-  private async loadMixin(mixin: Mixin, mixinJson: any): Promise<void> {
-    const mixinProps = this._parser.parseMixinProps(mixinJson, mixin.name);
-    let appliesToClass: undefined | SchemaItem;
-    appliesToClass = await this.findSchemaItem(mixinProps.appliesTo, true);
+  /**
+   * Load the appliesTo class, base class, and property type dependencies for a Mixin object and load the Mixin (and properties) from its serialized format.
+   * @param mixin The Mixin that we are loading dependencies for and "deserializing into".
+   * @param rawMixin The serialized mixin data.
+   */
+  private async loadMixin(mixin: Mixin, rawMixin: unknown): Promise<void> {
+    const mixinProps = this._parser.parseMixin(rawMixin);
+    const appliesToClass = await this.findSchemaItem(mixinProps.appliesTo, true);
 
-    await this.loadClass(mixin, mixinJson);
+    await this.loadClass(mixin, mixinProps, rawMixin);
     if (appliesToClass && this._visitor)
       await appliesToClass.accept(this._visitor);
   }
 
-  private loadMixinSync(mixin: Mixin, mixinJson: any): void {
-    const mixinProps = this._parser.parseMixinProps(mixinJson, mixin.name);
-    let appliesToClass: undefined | SchemaItem;
-    appliesToClass = this.findSchemaItemSync(mixinProps.appliesTo, true);
+  /**
+   * Load the appliesTo class, base class, and property type dependencies for a Mixin object and load the Mixin (and properties) from its serialized format.
+   * @param mixin The Mixin that we are loading dependencies for and "deserializing into".
+   * @param rawMixin The serialized mixin data.
+   */
+  private loadMixinSync(mixin: Mixin, rawMixin: unknown): void {
+    const mixinProps = this._parser.parseMixin(rawMixin);
+    const appliesToClass = this.findSchemaItemSync(mixinProps.appliesTo, true);
 
-    this.loadClassSync(mixin, mixinJson);
+    this.loadClassSync(mixin, mixinProps, rawMixin);
     if (appliesToClass && this._visitor)
       appliesToClass.accept(this._visitor);
   }
 
-  private async loadRelationshipClass(rel: RelationshipClass, relJson: any): Promise<void> {
-    const relationshipClassProps = this._parser.parseRelationshipClassProps(relJson, rel.name);
-
-    await this.loadClass(rel, relJson);
-
-    await this.loadRelationshipConstraint(rel.name, rel.source.isSource, rel.source, relationshipClassProps.source);
-    await this.loadRelationshipConstraint(rel.name, rel.source.isSource, rel.target, relationshipClassProps.target);
+  /**
+   * Load the relationship constraint, base class, and property type dependencies for a RelationshipClass object and load the RelationshipClass (and properties) from its serialized format.
+   * @param rel The RelationshipClass that we are loading dependencies for and "deserializing into".
+   * @param rawRel The serialized relationship class data.
+   */
+  private async loadRelationshipClass(rel: RelationshipClass, rawRel: unknown): Promise<void> {
+    const relationshipClassProps = this._parser.parseRelationshipClass(rawRel);
+    await this.loadClass(rel, relationshipClassProps, rawRel);
+    await this.loadRelationshipConstraint(rel.source, relationshipClassProps.source);
+    await this.loadRelationshipConstraint(rel.target, relationshipClassProps.target);
   }
 
-  private loadRelationshipClassSync(rel: RelationshipClass, relJson: any): void {
-    const relationshipClassProps = this._parser.parseRelationshipClassProps(relJson, rel.name);
-
-    this.loadClassSync(rel, relJson);
-
-    this.loadRelationshipConstraintSync(rel.name, rel.source.isSource, rel.source, relationshipClassProps.source);
-    this.loadRelationshipConstraintSync(rel.name, rel.target.isSource, rel.target, relationshipClassProps.target);
+  /**
+   * Load the relationship constraint, base class, and property type dependencies for a RelationshipClass object and load the RelationshipClass (and properties) from its serialized format.
+   * @param rel The RelationshipClass that we are loading dependencies for and "deserializing into".
+   * @param rawRel The serialized relationship class data.
+   */
+  private loadRelationshipClassSync(rel: RelationshipClass, rawRel: unknown): void {
+    const relationshipClassProps = this._parser.parseRelationshipClass(rawRel);
+    this.loadClassSync(rel, relationshipClassProps, rawRel);
+    this.loadRelationshipConstraintSync(rel.source, relationshipClassProps.source);
+    this.loadRelationshipConstraintSync(rel.target, relationshipClassProps.target);
   }
 
-  private async loadRelationshipConstraint(relClassName: string, isSource: boolean, relConstraint: RelationshipConstraint, relConstraintJson: any): Promise<void> {
-    const relationshipConstraintProps = this._parser.parseRelationshipConstraintProps(relClassName, relConstraintJson, isSource);
-
-    if (undefined !== relationshipConstraintProps.abstractConstraint) {
-      await this.findSchemaItem(relationshipConstraintProps.abstractConstraint);
+  /**
+   * Load the abstract constraint and constraint class dependencies for a RelationshipConstraint object and load the RelationshipConstraint from its parsed props.
+   * @param relConstraint The RelationshipConstraint that we are loading dependencies for and "deserializing into".
+   * @param props The parsed relationship constraint props.
+   */
+  private async loadRelationshipConstraint(relConstraint: RelationshipConstraint, props: RelationshipConstraintProps): Promise<void> {
+    if (undefined !== props.abstractConstraint) {
+      await this.findSchemaItem(props.abstractConstraint);
     }
-    if (undefined !== relationshipConstraintProps.constraintClasses) { // TODO: this should be required
-      for (const constraintClass of relationshipConstraintProps.constraintClasses) {
+    if (undefined !== props.constraintClasses) { // TODO: this should be required
+      for (const constraintClass of props.constraintClasses) {
         await this.findSchemaItem(constraintClass);
       }
     }
-    await relConstraint.deserialize(relationshipConstraintProps);
+    await relConstraint.deserialize(props);
   }
 
-  private loadRelationshipConstraintSync(relClassName: string, isSource: boolean, relConstraint: RelationshipConstraint, relConstraintJson: any): void {
-    const relationshipConstraintProps = this._parser.parseRelationshipConstraintProps(relClassName, relConstraintJson, isSource);
-
-    if (undefined !== relationshipConstraintProps.abstractConstraint) {
-      this.findSchemaItemSync(relationshipConstraintProps.abstractConstraint);
+  /**
+   * Load the abstract constraint and constraint class dependencies for a RelationshipConstraint object and load the RelationshipConstraint from its parsed props.
+   * @param relConstraint The RelationshipConstraint that we are loading dependencies for and "deserializing into".
+   * @param props The parsed relationship constraint props.
+   */
+  private loadRelationshipConstraintSync(relConstraint: RelationshipConstraint, props: RelationshipConstraintProps): void {
+    if (undefined !== props.abstractConstraint) {
+      this.findSchemaItemSync(props.abstractConstraint);
     }
-    if (undefined !== relationshipConstraintProps.constraintClasses) {
-      for (const constraintClass of relationshipConstraintProps.constraintClasses) {
+    if (undefined !== props.constraintClasses) {
+      for (const constraintClass of props.constraintClasses) {
         this.findSchemaItemSync(constraintClass);
       }
     }
 
-    relConstraint.deserializeSync(relationshipConstraintProps);
+    relConstraint.deserializeSync(props);
   }
 
   /**
-   * Creates the property defined in the JSON in the given class.
-   * @param classObj
-   * @param propertyJson
+   * Load the type dependencies for a serialized property, then creates and deserialized the Property object in the given ECClass.
+   * @param classObj The ECClass that the Property should be created in.
+   * @param propName The name of the Property.
+   * @param propType The (serialized string) kind of property to create.
+   * @param rawProperty The serialized property class data.
    */
-  private async loadPropertyTypes(classObj: AnyClass, propertyJson: any): Promise<void> {
-    const propertyProps = this._parser.parsePropertyTypes(propertyJson, classObj.schema.name, classObj.name);
-    const propName = propertyProps.name;
+  private async loadPropertyTypes(classObj: AnyClass, propName: string, propType: string, rawProperty: unknown): Promise<void> {
 
-    const loadTypeName = async () => {
-      if (undefined === parsePrimitiveType(propertyJson.typeName))
-        await this.findSchemaItem(propertyJson.typeName);
+    const loadTypeName = async (typeName: string) => {
+      if (undefined === parsePrimitiveType(typeName))
+        await this.findSchemaItem(typeName);
     };
 
-    switch (propertyProps.type) {
+    switch (propType) {
       case "PrimitiveProperty":
-        await loadTypeName();
-        const primPropertyProps = this._parser.parsePrimitivePropertyProps(propertyJson, classObj.schema.name, classObj.name);
+        const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
+        await loadTypeName(primPropertyProps.typeName);
         const primProp = await (classObj as MutableClass).createPrimitiveProperty(propName, primPropertyProps.typeName);
-        return this.loadProperty(primProp, propertyJson, classObj.schema.name, classObj.name);
+        return this.loadProperty(primProp, primPropertyProps);
 
       case "StructProperty":
-        await loadTypeName();
-        const structPropertyProps = this._parser.parseStructPropertyProps(propertyJson, classObj.schema.name, classObj.name);
+        const structPropertyProps = this._parser.parseStructProperty(rawProperty);
+        await loadTypeName(structPropertyProps.typeName);
         const structProp = await (classObj as MutableClass).createStructProperty(propName, structPropertyProps.typeName);
-        return this.loadProperty(structProp, propertyJson, classObj.schema.name, classObj.name);
+        return this.loadProperty(structProp, structPropertyProps);
 
       case "PrimitiveArrayProperty":
-        await loadTypeName();
-        const primArrPropertyProps = this._parser.parsePrimitiveArrayPropertyProps(propertyJson, classObj.schema.name, classObj.name);
+        const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
+        await loadTypeName(primArrPropertyProps.typeName);
         const primArrProp = await (classObj as MutableClass).createPrimitiveArrayProperty(propName, primArrPropertyProps.typeName);
-        return this.loadProperty(primArrProp, propertyJson, classObj.schema.name, classObj.name);
+        return this.loadProperty(primArrProp, primArrPropertyProps);
 
       case "StructArrayProperty":
-        await loadTypeName();
-        const structArrPropertyProps = this._parser.parseStructArrayPropertyProps(propertyJson, classObj.schema.name, classObj.name);
+        const structArrPropertyProps = this._parser.parseStructArrayProperty(rawProperty);
+        await loadTypeName(structArrPropertyProps.typeName);
         const structArrProp = await (classObj as MutableClass).createStructArrayProperty(propName, structArrPropertyProps.typeName);
-        return this.loadProperty(structArrProp, propertyJson, classObj.schema.name, classObj.name);
+        return this.loadProperty(structArrProp, structArrPropertyProps);
 
       case "NavigationProperty":
-        const navPropertyProps = this._parser.parseNavigationPropertyProps(propertyJson, propName, classObj);
-        await this.findSchemaItem(propertyJson.relationshipName);
+        if (classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass && classObj.schemaItemType !== SchemaItemType.Mixin)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
+
+        const navPropertyProps = this._parser.parseNavigationProperty(rawProperty);
+        await this.findSchemaItem(navPropertyProps.relationshipName);
         const navProp = await (classObj as MutableEntityClass).createNavigationProperty(propName, navPropertyProps.relationshipName, navPropertyProps.direction);
-        return this.loadProperty(navProp, propertyJson, classObj.schema.name, classObj.name);
+        return this.loadProperty(navProp, navPropertyProps);
     }
   }
 
   /**
-   * Creates the property defined in the JSON in the given class.
-   * @param classObj
-   * @param propertyJson
+   * Load the type dependencies for a serialized property, then creates and deserialized the Property object in the given ECClass.
+   * @param classObj The ECClass that the Property should be created in.
+   * @param propName The name of the Property.
+   * @param propType The (serialized string) kind of property to create.
+   * @param rawProperty The serialized property class data.
    */
-  private loadPropertyTypesSync(classObj: AnyClass, propertyJson: any): void {
-    const propertyProps = this._parser.parsePropertyTypes(propertyJson, classObj.schema.name, classObj.name);
-    const propName = propertyJson.name;
-
-    const loadTypeName = () => {
-      if (undefined === parsePrimitiveType(propertyJson.typeName))
-        this.findSchemaItemSync(propertyJson.typeName);
+  private loadPropertyTypesSync(classObj: AnyClass, propName: string, propType: string, rawProperty: unknown): void {
+    const loadTypeName = (typeName: string) => {
+      if (undefined === parsePrimitiveType(typeName))
+        this.findSchemaItemSync(typeName);
     };
 
-    switch (propertyProps.type) {
+    switch (propType) {
       case "PrimitiveProperty":
-        loadTypeName();
-        const primPropertyProps = this._parser.parsePrimitivePropertyProps(propertyJson, classObj.schema.name, classObj.name);
+        const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
+        loadTypeName(primPropertyProps.typeName);
         const primProp = (classObj as MutableClass).createPrimitivePropertySync(propName, primPropertyProps.typeName);
-        return this.loadPropertySync(primProp, propertyJson, classObj.schema.name, classObj.name);
+        return this.loadPropertySync(primProp, primPropertyProps);
 
       case "StructProperty":
-        loadTypeName();
-        const structPropertyProps = this._parser.parseStructPropertyProps(propertyJson, classObj.schema.name, classObj.name);
+        const structPropertyProps = this._parser.parseStructProperty(rawProperty);
+        loadTypeName(structPropertyProps.typeName);
         const structProp = (classObj as MutableClass).createStructPropertySync(propName, structPropertyProps.typeName);
-        return this.loadPropertySync(structProp, propertyJson, classObj.schema.name, classObj.name);
+        return this.loadPropertySync(structProp, structPropertyProps);
 
       case "PrimitiveArrayProperty":
-        loadTypeName();
-        const primArrPropertyProps = this._parser.parsePrimitiveArrayPropertyProps(propertyJson, classObj.schema.name, classObj.name);
+        const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
+        loadTypeName(primArrPropertyProps.typeName);
         const primArrProp = (classObj as MutableClass).createPrimitiveArrayPropertySync(propName, primArrPropertyProps.typeName);
-        return this.loadPropertySync(primArrProp, propertyJson, classObj.schema.name, classObj.name);
+        return this.loadPropertySync(primArrProp, primArrPropertyProps);
 
       case "StructArrayProperty":
-        loadTypeName();
-        const structArrPropertyProps = this._parser.parseStructArrayPropertyProps(propertyJson, classObj.schema.name, classObj.name);
+        const structArrPropertyProps = this._parser.parseStructArrayProperty(rawProperty);
+        loadTypeName(structArrPropertyProps.typeName);
         const structArrProp = (classObj as MutableClass).createStructArrayPropertySync(propName, structArrPropertyProps.typeName);
-        return this.loadPropertySync(structArrProp, propertyJson, classObj.schema.name, classObj.name);
+        return this.loadPropertySync(structArrProp, structArrPropertyProps);
 
       case "NavigationProperty":
-        const navPropertyProps = this._parser.parseNavigationPropertyProps(propertyJson, propName, classObj);
-        this.findSchemaItemSync(propertyJson.relationshipName);
+        if (classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass && classObj.schemaItemType !== SchemaItemType.Mixin)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${classObj.name}.${propName} is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.`);
+
+        const navPropertyProps = this._parser.parseNavigationProperty(rawProperty);
+        this.findSchemaItemSync(navPropertyProps.relationshipName);
         const navProp = (classObj as MutableEntityClass).createNavigationPropertySync(propName, navPropertyProps.relationshipName, navPropertyProps.direction);
-        return this.loadPropertySync(navProp, propertyJson, classObj.schema.name, classObj.name);
+        return this.loadPropertySync(navProp, navPropertyProps);
     }
   }
 
-  private async loadProperty<T extends Property>(prop: T, propertyJson: any, schemaName: string, className: string): Promise<void> {
-    const propertyProps = this._parser.parsePropertyProps(propertyJson, schemaName, className);
-    if (undefined !== propertyProps.category) {
-      await this.findSchemaItem(propertyProps.category);
+  /**
+   * Load the propertyCategory, kindOfQuantity, and customAttribute dependencies for a Property object and load the Property from its parsed props.
+   * @param propertyObj The Property that we are loading dependencies for and "deserializing into".
+   * @param props The parsed property props.
+   */
+  private async loadProperty<U extends Property>(propertyObj: U, props: PropertyProps): Promise<void> {
+    if (undefined !== props.category) {
+      await this.findSchemaItem(props.category);
     }
 
-    if (undefined !== propertyProps.kindOfQuantity) {
-      await this.findSchemaItem(propertyProps.kindOfQuantity);
+    if (undefined !== props.kindOfQuantity) {
+      await this.findSchemaItem(props.kindOfQuantity);
     }
 
     // TODO Load CustomAttributeClasses
 
-    await prop.deserialize(propertyProps);
+    await propertyObj.deserialize(props);
   }
 
-  private loadPropertySync<T extends Property>(prop: T, propertyJson: any, schemaName: string, className: string): void {
-    const propertyProps = this._parser.parsePropertyProps(propertyJson, schemaName, className);
+  /**
+   * Load the propertyCategory, kindOfQuantity, and customAttribute dependencies for a Property object and load the Property from its parsed props.
+   * @param propertyObj The Property that we are loading dependencies for and "deserializing into".
+   * @param props The parsed property props.
+   */
+  private loadPropertySync<U extends Property>(prop: U, propertyProps: PropertyProps): void {
     if (undefined !== propertyProps.category) {
       this.findSchemaItemSync(propertyProps.category);
     }

@@ -5,12 +5,13 @@
 import { assert, should } from "chai";
 
 import * as fs from "fs";
-import { urllogPath } from "../TestConfig";
+import * as path from "path";
+import { urlLogPath } from "../TestConfig";
 import { IModelBaseHandler } from "../../imodelhub/BaseHandler";
 import { UrlDiscoveryClient } from "../../Client";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
-export const whitelistPath: string = "./lib/test/assets/whitelist.txt";
+export const whitelistRelPath: string = "../assets/whitelist.txt";
 
 should();
 
@@ -57,16 +58,17 @@ describe("iModelHub URL Whitelist Validator", () => {
   }
 
   it("Detect whether new iModelHub APIs have been added to which iModelBank has to react", async () => {
-    assert.isTrue(fs.existsSync(whitelistPath), "Whitelist file is expected to exist in the assets to run this test.");
+    const whitelistPath: string = path.join(__dirname, whitelistRelPath);
+    assert.isTrue(fs.existsSync(whitelistPath), `Whitelist file is expected to exist in the assets to run this test: ${whitelistPath}`);
 
     const whiteListFileContent: string = fs.readFileSync(whitelistPath, "utf8");
     assert.isTrue(whiteListFileContent.length !== 0, `No whitelist URLs found in ${whitelistPath}`);
     // Split into line array
     const whitelistUrls: string[] = whiteListFileContent.split(/\r?\n/);
 
-    assert.isTrue(fs.existsSync(urllogPath), `URL log file ${urllogPath} is expected to exist run this test.`);
-    const logFileContent: string = fs.readFileSync(urllogPath, "utf8");
-    assert.isTrue(logFileContent.length !== 0, `No logged URLs found in ${urllogPath}. Make sure to have run the full suite of integration tests before.`);
+    assert.isTrue(fs.existsSync(urlLogPath), `URL log file ${urlLogPath} is expected to exist run this test.`);
+    const logFileContent: string = fs.readFileSync(urlLogPath, "utf8");
+    assert.isTrue(logFileContent.length !== 0, `No logged URLs found in ${urlLogPath}. Make sure to have run the full suite of integration tests before.`);
     // filter out duplicate URLs by putting the lines in a set and create an array from it again
     const loggedUrls: string[] = Array.from(new Set(logFileContent.split(/\r?\n/)));
 

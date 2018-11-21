@@ -64,3 +64,4 @@
 - [UnitSystem](./ec/ec-unitsystem.md)
 - [Format](./ec/ec-format.md)
 - [ECName](./ec/ec-name.md)
+- [Changes Between ECObjects 2 and 3](./ec/differences-between-ec2-and-ec3.md)

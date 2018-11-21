@@ -12,7 +12,7 @@ import * as aspectMod from "./ElementAspect";
 import * as modelMod from "./Model";
 import * as categoryMod from "./Category";
 import * as viewMod from "./ViewDefinition";
-import * as linkMod from "./LinkTableRelationship";
+import * as linkMod from "./Relationship";
 
 /**
  * The [BisCore]($docs/bis/intro/schemas-domains.md) schema is the lowest level Schema in an iModel.

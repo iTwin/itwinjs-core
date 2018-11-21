@@ -4,7 +4,7 @@ Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 
 The `@bentley/webpack-tools` package includes configuration and scripts for developing, building, and testing TypeScript apps and services.
 It supports building for web, electron, and mobile from the same codebase, and is designed to support the basic backend/frontend architecture
-of [iModelJs apps](#TODO!).
+of [iModel.js apps](#TODO!).
 
 ## Background ########################################################################################################################################
 

@@ -9,6 +9,7 @@ import { IModelHubClient, IModelClient } from "..";
 import { ConnectClient, Project } from "../ConnectClients";
 import { expect } from "chai";
 import * as fs from "fs";
+import * as path from "path";
 
 import { Logger, LogLevel, ActivityLoggingContext, GuidString, Guid } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";
@@ -19,11 +20,12 @@ IModelJsConfig.init(true /* suppress exception */, false /* suppress error messa
 
 const actx = new ActivityLoggingContext(Guid.createValue());
 
-const logFileStream = fs.createWriteStream("./lib/test/iModelClientsTests.log", { flags: "a" });
+const logFileStream = fs.createWriteStream(path.join(__dirname, "./iModelClientsTests.log"), { flags: "a" });
 
 // The Request URLs are captured separate. The log file is used by the Hub URL whitelist validation.
-export const urllogPath = "./lib/test/requesturls.log";
-const urlLogFileStream = fs.createWriteStream(urllogPath, { flags: "a" });
+export const urlLogPath = path.join(__dirname, "./requesturls.log");
+const urlLogFileStream = fs.createWriteStream(urlLogPath, { flags: "a" });
+console.log("URL Log file created at: " + urlLogPath);
 
 function logFunction(logLevel: string, category: string, message: string) {
   if (category === loggingCategoryFullUrl)
@@ -87,7 +89,7 @@ export class TestConfig {
       $select: "*",
       $filter: `Name+eq+'${projectName}'`,
     });
-    if (!project)
+    if (!project || !project.wsgId)
       throw new Error(`Project ${projectName} not found for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
 
     return project;
@@ -96,11 +98,11 @@ export class TestConfig {
   public static async queryIModel(accessToken: AccessToken, projectId: GuidString): Promise<HubIModel> {
     const imodelHubClient: IModelClient = new IModelHubClient();
 
-    const iModels = await imodelHubClient.IModel().get(actx, accessToken, projectId);
-    if (iModels.length === 0)
-      throw new Error(`Primary iModel ${projectId} not found for project ${projectId} for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
+    const iModel: HubIModel = await imodelHubClient.IModel().get(actx, accessToken, projectId);
+    if (!iModel || !iModel.wsgId)
+      throw new Error(`Primary iModel not found for project ${projectId} for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
 
-    return iModels[0];
+    return iModel;
   }
 }
 

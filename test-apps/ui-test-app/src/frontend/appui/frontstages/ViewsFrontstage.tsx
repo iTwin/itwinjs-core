@@ -264,6 +264,7 @@ class FrontstageToolWidget extends React.Component {
           <ActionItemButton actionItem={AppTools.tool1} />
           <ActionItemButton actionItem={AppTools.tool2} />
           <ActionItemButton actionItem={AppTools.measurePoints} />
+          <ActionItemButton actionItem={CoreTools.analysisAnimationCommand} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconSpec="icon-placeholder"

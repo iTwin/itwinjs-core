@@ -99,6 +99,21 @@
         "description": "Turn on/off use of camera in active view",
         "flyover": "Toggle Camera"
       }
+    },
+    "AnalysisAnimation": {
+      "description": "Animate analysis solutions",
+      "flyover": "Analysis Animation",
+      "Prompts": {
+        "SelectView": "Select View and press Play button"
+      },
+      "ToolSettings": {
+        "duration": "Duration:",
+        "seconds": "sec",
+        "loop": "Loop",
+        "play": "Play",
+        "pause": "Pause",
+        "stop": "Stop"
+      }
     }
   }
 }

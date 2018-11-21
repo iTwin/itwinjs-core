@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "",
+      "comment": "Add DrawingViewDefinition.insert",
       "packageName": "@bentley/imodeljs-backend",
       "type": "none"
     }

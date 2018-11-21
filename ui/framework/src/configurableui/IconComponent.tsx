@@ -12,19 +12,18 @@ export interface IconProps {
   iconSpec?: string | React.ReactNode;
 }
 
-/** Icon React component */
-export class Icon extends React.Component<IconProps> {
-  public render(): React.ReactNode {
-    if (!this.props.iconSpec) return null;
+/** Icon Functional component */
+// tslint:disable-next-line:variable-name
+export const Icon: React.FunctionComponent<IconProps> = (props) => {
+  if (!props.iconSpec) return null;
 
-    if (typeof this.props.iconSpec === "string") {
-      const className = "icon " + this.props.iconSpec;
-      return (<i className={className} />);
-    }
-    return (
-      <i className="icon item-svg-icon">
-        {this.props.iconSpec}
-      </i>
-    );
+  if (typeof props.iconSpec === "string") {
+    const className = "icon " + props.iconSpec;
+    return (<i className={className} />);
   }
-}
+  return (
+    <i className="icon item-svg-icon">
+      {props.iconSpec}
+    </i>
+  );
+};

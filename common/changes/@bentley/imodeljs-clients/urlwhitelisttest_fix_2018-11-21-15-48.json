@@ -2,10 +2,10 @@
   "changes": [
     {
       "comment": "",
-      "packageName": "@bentley/imodeljs-backend",
+      "packageName": "@bentley/imodeljs-clients",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/imodeljs-backend",
+  "packageName": "@bentley/imodeljs-clients",
   "email": "Krischan.Eberle@bentley.com"
 }

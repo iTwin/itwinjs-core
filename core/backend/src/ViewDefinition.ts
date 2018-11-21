@@ -5,7 +5,7 @@
 /** @module ViewDefinitions */
 
 import { Id64String, Id64, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
-import { Angle, Matrix3d, Point2d, Point3d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   AnalysisStyleProps,
   BisCodeSpec,
@@ -390,7 +390,7 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
       extents: viewExtents,
       angles,
       cameraOn: false,
-      camera: { eye: [0, 0, 0], lens: 0, focusDist: 0 }, // not used when cameraOn === false
+      camera: new Camera(), // not used when cameraOn === false
     };
     return iModelDb.elements.insertElement(viewDefinitionProps);
   }
@@ -433,6 +433,31 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
 export class DrawingViewDefinition extends ViewDefinition2d {
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
+  }
+  /**
+   * Insert an DrawingViewDefinition
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new DrawingViewDefinition into this [[DefinitionModel]]
+   * @param name The name/CodeValue of the view
+   * @param baseModelId The base [[DrawingModel]]
+   * @param categorySelectorId The [[CategorySelector]] that this view should use
+   * @param displayStyleId The [[DisplayStyle2d]] that this view should use
+   * @param range Defines the view origin and extents
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
+    const viewDefinitionProps: ViewDefinition2dProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      baseModelId,
+      categorySelectorId,
+      displayStyleId,
+      origin: { x: range.low.x, y: range.low.y },
+      delta: range.diagonal(),
+      angle: 0,
+    };
+    return iModelDb.elements.insertElement(viewDefinitionProps);
   }
 }
 

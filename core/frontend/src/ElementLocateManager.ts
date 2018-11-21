@@ -143,45 +143,49 @@ export class ElementPicker {
     const testPointView = new Point2d(Math.floor(pickPointView.x + 0.5), Math.floor(pickPointView.y + 0.5));
     const pixelRadius = Math.floor(pickRadiusView + 0.5);
     const rect = new ViewRect(testPointView.x - pixelRadius, testPointView.y - pixelRadius, testPointView.x + pixelRadius, testPointView.y + pixelRadius);
-    const pixels = vp.readPixels(rect, Pixel.Selector.All);
-    if (undefined === pixels)
-      return 0;
+    let result: number = 0;
+    vp.readPixels(rect, Pixel.Selector.All, (pixels) => {
+      if (undefined === pixels)
+        return;
 
-    const elmHits = new Map<string, Point2d>();
-    const testPoint = Point2d.createZero();
-    for (testPoint.x = testPointView.x - pixelRadius; testPoint.x <= testPointView.x + pixelRadius; ++testPoint.x) {
-      for (testPoint.y = testPointView.y - pixelRadius; testPoint.y <= testPointView.y + pixelRadius; ++testPoint.y) {
-        const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-        if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
-          continue; // no geometry at this location...
-        const distXY = testPointView.distance(testPoint);
-        if (distXY > pixelRadius)
-          continue; // ignore corners. it's a locate circle not square...
-        const oldPoint = elmHits.get(pixel.elementId.toString());
-        if (undefined !== oldPoint) {
-          if (this.comparePixel(pixel, pixels.getPixel(oldPoint.x, oldPoint.y), distXY, testPointView.distance(oldPoint)) < 0)
-            oldPoint.setFrom(testPoint); // new hit is better, update location...
-        } else {
-          elmHits.set(pixel.elementId.toString(), testPoint.clone());
+      const elmHits = new Map<string, Point2d>();
+      const testPoint = Point2d.createZero();
+      for (testPoint.x = testPointView.x - pixelRadius; testPoint.x <= testPointView.x + pixelRadius; ++testPoint.x) {
+        for (testPoint.y = testPointView.y - pixelRadius; testPoint.y <= testPointView.y + pixelRadius; ++testPoint.y) {
+          const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+          if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
+            continue; // no geometry at this location...
+          const distXY = testPointView.distance(testPoint);
+          if (distXY > pixelRadius)
+            continue; // ignore corners. it's a locate circle not square...
+          const oldPoint = elmHits.get(pixel.elementId.toString());
+          if (undefined !== oldPoint) {
+            if (this.comparePixel(pixel, pixels.getPixel(oldPoint.x, oldPoint.y), distXY, testPointView.distance(oldPoint)) < 0)
+              oldPoint.setFrom(testPoint); // new hit is better, update location...
+          } else {
+            elmHits.set(pixel.elementId.toString(), testPoint.clone());
+          }
         }
       }
-    }
-    if (0 === elmHits.size)
-      return 0;
+      if (0 === elmHits.size)
+        return;
 
-    for (const elmPoint of elmHits.values()) {
-      const pixel = pixels.getPixel(elmPoint.x, elmPoint.y);
-      if (undefined === pixel || undefined === pixel.elementId)
-        continue;
-      const hitPointWorld = vp.getPixelDataWorldPoint(pixels, elmPoint.x, elmPoint.y);
-      if (undefined === hitPointWorld)
-        continue;
-      const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId.toString(), this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction);
-      this.hitList!.addHit(hit);
-      if (this.hitList!.hits.length > options.maxHits)
-        this.hitList!.hits.length = options.maxHits; // truncate array...
-    }
-    return this.hitList!.length;
+      for (const elmPoint of elmHits.values()) {
+        const pixel = pixels.getPixel(elmPoint.x, elmPoint.y);
+        if (undefined === pixel || undefined === pixel.elementId)
+          continue;
+        const hitPointWorld = vp.getPixelDataWorldPoint(pixels, elmPoint.x, elmPoint.y);
+        if (undefined === hitPointWorld)
+          continue;
+        const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId.toString(), this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction);
+        this.hitList!.addHit(hit);
+        if (this.hitList!.hits.length > options.maxHits)
+          this.hitList!.hits.length = options.maxHits; // truncate array...
+      }
+      result = this.hitList!.length;
+    });
+
+    return result;
   }
 
   public testHit(hit: HitDetail, vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): boolean {

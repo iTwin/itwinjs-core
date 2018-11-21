@@ -36,7 +36,7 @@ The remaining kinds of elements are also direct members of an ECSchema:
 
 - **[Unit](./ec-unit.md)** defines a unit of measure in terms of other units
 
-- **[InvertedUnit](./ec-unit.md#InvertedUnit)** inverts an existing unit whose dimensional derivation is unitless, like slope.
+- **[InvertedUnit](./ec-unit.md#Inverted-Unit)** inverts an existing unit whose dimensional derivation is unitless, like slope.
 
 - **[Constant](./ec-constant.md)** defines a constant value which can be used in a unit definition
 
@@ -45,5 +45,7 @@ The remaining kinds of elements are also direct members of an ECSchema:
 - **[UnitSystem](./ec-unitsystem.md)** defines a loose grouping of units
 
 - **[Format](./ec-format.md)** defines how to format a numeric value when displaying it to the user or for a report
+
+- **[Changes Between ECObjects 2 and 3](./differences-between-ec2-and-ec3.md)** helpful if you have used EC in PowerPlatform.
 
 The items that are direct members of an ECSchema must have names that are unique among all items that are direct members of an ECSchema, e.g., an ECEntityClass cannot have the same name as an ECStructClass. Uniqueness is determined using case-insensitive comparisons. See [ECName](./ec-name.md) for EC Naming Rules.

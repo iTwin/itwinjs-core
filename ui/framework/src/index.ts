@@ -8,6 +8,7 @@ export * from "./oidc/OidcBrowserClient";
 export * from "./FrameworkState";
 export * from "./SyncUiEventDispatcher";
 export * from "./UiFramework";
+export * from "./tools";
 export * from "./CoreToolDefinitions";
 export * from "./clientservices";
 export * from "./configurableui";

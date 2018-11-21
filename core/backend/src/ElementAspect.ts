@@ -20,6 +20,12 @@ export class ElementAspect extends Entity implements ElementAspectProps {
     super(props, iModel);
     this.element = RelatedElement.fromJSON(props.element)!;
   }
+
+  public toJSON(): ElementAspectProps {
+    const val = super.toJSON() as ElementAspectProps;
+    val.element = this.element;
+    return val;
+  }
 }
 
 /** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element. */

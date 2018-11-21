@@ -13,12 +13,9 @@ import { SchemaContext } from "../../src/Context";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 import { ECClass, MutableClass } from "../../src/Metadata/Class";
 import { ECObjectsError } from "../../src/Exception";
-import { SchemaItemType } from "../../src/ECObjects";
-import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("ECClass", () => {
   let schema: Schema;
-  let parser = new JsonParser();
 
   describe("get properties", () => {
     beforeEach(() => {
@@ -143,6 +140,24 @@ describe("ECClass", () => {
       assert.isDefined(await testClass!.baseClass);
       assert.isTrue(await testClass!.baseClass === refBaseClass);
     });
+
+    it("should throw for missing base class", () => {
+      const schemaJson = {
+        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+        name: "TestSchema",
+        version: "1.2.3",
+        items: {
+          testClass: {
+            schemaItemType: "EntityClass",
+            baseClass: "TestSchema.ClassDoesNotExist",
+          },
+        },
+      };
+
+      const context = new SchemaContext();
+      expect(Schema.fromJson(schemaJson, context)).to.be.rejectedWith(ECObjectsError);
+    });
+
     const oneCustomAttributeJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       name: "TestSchema",
@@ -228,10 +243,10 @@ describe("ECClass", () => {
       },
     };
     it("async - Custom Attributes must be an array", async () => {
-      await expect(Schema.fromJson(mustBeAnArrayJson)).to.be.rejectedWith(ECObjectsError, `The ECClass testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      await expect(Schema.fromJson(mustBeAnArrayJson)).to.be.rejectedWith(ECObjectsError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
     it("sync - Custom Attributes must be an array", async () => {
-      assert.throws(() => Schema.fromJsonSync(mustBeAnArrayJson), ECObjectsError, `The ECClass testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
+      assert.throws(() => Schema.fromJsonSync(mustBeAnArrayJson), ECObjectsError, `The ECClass TestSchema.testClass has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
     });
     it("sync - Deserialize Multiple Custom Attributes with additional properties", () => {
       const classJson = {
@@ -445,36 +460,6 @@ describe("ECClass", () => {
     });
   });
 
-  describe("parseProps", () => {
-    let testClass: ECClass;
-    class MockECClass extends ECClass {
-      public readonly schemaItemType!: SchemaItemType.EntityClass; // tslint:disable-line
-      constructor(newSchema: Schema, name: string) {
-        super(newSchema, name);
-        this.schemaItemType = SchemaItemType.EntityClass;
-      }
-      public async accept() { }
-    }
-
-    beforeEach(() => {
-      testClass = new MockECClass(schema, "TestClass");
-    });
-
-    it("should throw for invalid modifier", async () => {
-      expect(testClass).to.exist;
-      const invalidModifierJson = { schemaItemType: "EntityClass", modifier: 0 };
-      assert.throws(() => parser.parseClassProps(invalidModifierJson, testClass.name), ECObjectsError, `The ECClass TestClass has an invalid 'modifier' attribute. It should be of type 'string'.`);
-    });
-
-    it("should throw for invalid baseClass", async () => {
-      expect(testClass).to.exist;
-      const invalidBaseClassJson = { schemaItemType: "EntityClass", baseClass: 0 };
-      assert.throws(() => parser.parseClassProps(invalidBaseClassJson, testClass.name), ECObjectsError, `The ECClass TestClass has an invalid 'baseClass' attribute. It should be of type 'string'.`);
-
-      const unloadedBaseClassJson = { schemaItemType: "EntityClass", baseClass: "ThisClassDoesNotExist" };
-      await expect(testClass.deserialize(parser.parseClassProps(unloadedBaseClassJson, testClass.name))).to.be.rejectedWith(ECObjectsError);
-    });
-  });
   describe("toJson", () => {
     const schemaJsonOne = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",

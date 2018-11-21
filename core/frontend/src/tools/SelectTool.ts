@@ -192,71 +192,72 @@ export class SelectionTool extends PrimitiveTool {
 
     const rect = new ViewRect();
     rect.initFromRange(range);
-    const pixels = vp.readPixels(rect, Pixel.Selector.ElementId);
-    if (undefined === pixels)
-      return;
+    vp.readPixels(rect, Pixel.Selector.Feature, (pixels) => {
+      if (undefined === pixels)
+        return;
 
-    let contents = new Set<string>();
-    const testPoint = Point2d.createZero();
+      let contents = new Set<string>();
+      const testPoint = Point2d.createZero();
 
-    if (SelectionMethod.Box === method) {
-      const outline = overlap ? undefined : new Set<string>();
-      const offset = range.clone();
-      offset.expandInPlace(-2);
-      for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
-        for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
-          const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-          if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
-            continue; // no geometry at this location...
-          if (undefined !== outline && !offset.containsPoint(testPoint))
-            outline.add(pixel.elementId.toString());
+      if (SelectionMethod.Box === method) {
+        const outline = overlap ? undefined : new Set<string>();
+        const offset = range.clone();
+        offset.expandInPlace(-2);
+        for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
+          for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
+            const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+            if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
+              continue; // no geometry at this location...
+            if (undefined !== outline && !offset.containsPoint(testPoint))
+              outline.add(pixel.elementId.toString());
+            else
+              contents.add(pixel.elementId.toString());
+          }
+        }
+        if (undefined !== outline && 0 !== outline.size) {
+          const inside = new Set<string>();
+          contents.forEach((id) => { if (!outline.has(id)) inside.add(id); });
+          contents = inside;
+        }
+      } else {
+        const closePoint = Point2d.createZero();
+        for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
+          for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
+            const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+            if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
+              continue; // no geometry at this location...
+            const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
+            pts[0].interpolate(fraction, pts[1], closePoint);
+            if (closePoint.distance(testPoint) < 1.5)
+              contents.add(pixel.elementId.toString());
+          }
+        }
+      }
+
+      if (!this.wantPickableDecorations())
+        contents.forEach((id) => { if (Id64.isTransient(id)) contents.delete(id); });
+
+      if (0 === contents.size) {
+        if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev))
+          this.iModel.selectionSet.emptyAll();
+        return;
+      }
+
+      switch (this.getSelectionMode()) {
+        case SelectionMode.Replace:
+          if (!ev.isControlKey)
+            this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement);
           else
-            contents.add(pixel.elementId.toString());
-        }
+            this.processSelection(contents, SelectionProcessing.InvertElementInSelection);
+          break;
+        case SelectionMode.Add:
+          this.processSelection(contents, SelectionProcessing.AddElementToSelection);
+          break;
+        case SelectionMode.Remove:
+          this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection);
+          break;
       }
-      if (undefined !== outline && 0 !== outline.size) {
-        const inside = new Set<string>();
-        contents.forEach((id) => { if (!outline.has(id)) inside.add(id); });
-        contents = inside;
-      }
-    } else {
-      const closePoint = Point2d.createZero();
-      for (testPoint.x = range.low.x; testPoint.x <= range.high.x; ++testPoint.x) {
-        for (testPoint.y = range.low.y; testPoint.y <= range.high.y; ++testPoint.y) {
-          const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-          if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
-            continue; // no geometry at this location...
-          const fraction = testPoint.fractionOfProjectionToLine(pts[0], pts[1], 0.0);
-          pts[0].interpolate(fraction, pts[1], closePoint);
-          if (closePoint.distance(testPoint) < 1.5)
-            contents.add(pixel.elementId.toString());
-        }
-      }
-    }
-
-    if (!this.wantPickableDecorations())
-      contents.forEach((id) => { if (Id64.isTransient(id)) contents.delete(id); });
-
-    if (0 === contents.size) {
-      if (!ev.isControlKey && this.wantSelectionClearOnMiss(ev))
-        this.iModel.selectionSet.emptyAll();
-      return;
-    }
-
-    switch (this.getSelectionMode()) {
-      case SelectionMode.Replace:
-        if (!ev.isControlKey)
-          this.processSelection(contents, SelectionProcessing.ReplaceSelectionWithElement);
-        else
-          this.processSelection(contents, SelectionProcessing.InvertElementInSelection);
-        break;
-      case SelectionMode.Add:
-        this.processSelection(contents, SelectionProcessing.AddElementToSelection);
-        break;
-      case SelectionMode.Remove:
-        this.processSelection(contents, SelectionProcessing.RemoveElementFromSelection);
-        break;
-    }
+    });
   }
 
   protected selectByPointsStart(ev: BeButtonEvent): boolean {

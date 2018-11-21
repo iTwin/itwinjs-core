@@ -1,6 +1,6 @@
 # Key to ECSQL
 
-ECSQL is an implementation of SQL — a proven, well-adopted text-based command language. It sticks to
+ECSQL is an implementation of SQL — a proven, well-adopted text-based command language. It adheres to
 standard SQL (SQL-92 and SQL-99) wherever possible.
 
 ECSQL has two key characteristics which are important to understand. Once understood, you have basically completed this tutorial already successfully.

@@ -95,7 +95,7 @@ describe("iModelHub ChangeSetHandler", () => {
       await utils.createLocks(accessToken, imodelId, briefcase, 1, 2, 2, changesets[0].id, changesets[0].index);
 
       // Create named versions
-      await utils.createVersions(accessToken, imodelId, [changesets[0].id!, changesets[1].id!, changesets[2].id!], // tslint:disable-line:no-floating-promises
+      await utils.createVersions(accessToken, imodelId, [changesets[0].id!, changesets[1].id!, changesets[2].id!],
         ["Version 1", "Version 2", "Version 3"]);
     }
 

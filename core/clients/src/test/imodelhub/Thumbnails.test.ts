@@ -117,7 +117,7 @@ describe("iModelHub ThumbnailHandler", () => {
       params.thumbnails = await imodelHubClient.Thumbnails().get(actx, accessToken, imodelId, params.size);
 
       if (params.thumbnails.length < 3) {
-        utils.deleteIModelByName(accessToken, _projectId, imodelName); // tslint:disable-line:no-floating-promises
+        await utils.deleteIModelByName(accessToken, _projectId, imodelName);
         chai.expect(params.thumbnails.length).to.be.gte(3);
       }
     });
