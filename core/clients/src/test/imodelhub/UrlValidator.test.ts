@@ -5,12 +5,13 @@
 import { assert, should } from "chai";
 
 import * as fs from "fs";
+import * as path from "path";
 import { urllogPath } from "../TestConfig";
 import { IModelBaseHandler } from "../../imodelhub/BaseHandler";
 import { UrlDiscoveryClient } from "../../Client";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
-export const whitelistPath: string = "./lib/test/assets/whitelist.txt";
+export const whitelistRelPath: string = "../assets/whitelist.txt";
 
 should();
 
@@ -57,7 +58,8 @@ describe("iModelHub URL Whitelist Validator", () => {
   }
 
   it("Detect whether new iModelHub APIs have been added to which iModelBank has to react", async () => {
-    assert.isTrue(fs.existsSync(whitelistPath), "Whitelist file is expected to exist in the assets to run this test.");
+    const whitelistPath: string = path.join(__dirname, whitelistRelPath);
+    assert.isTrue(fs.existsSync(whitelistPath), `Whitelist file is expected to exist in the assets to run this test: ${whitelistPath}`);
 
     const whiteListFileContent: string = fs.readFileSync(whitelistPath, "utf8");
     assert.isTrue(whiteListFileContent.length !== 0, `No whitelist URLs found in ${whitelistPath}`);
