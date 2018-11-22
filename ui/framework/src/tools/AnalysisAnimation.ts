@@ -5,7 +5,7 @@
 
 import {
   IModelApp, PrimitiveTool,
-  BeButtonEvent, EventHandled,
+  BeButtonEvent, EventHandled, Viewport,
 } from "@bentley/imodeljs-frontend";
 
 import { Point3d } from "@bentley/geometry-core";
@@ -44,6 +44,13 @@ export class AnalysisAnimationTool extends PrimitiveTool {
     const tool = new AnalysisAnimationTool();
     if (!tool.run())
       this.exitTool();
+  }
+
+  /** Process selected viewport changes. */
+  public onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void {
+    if (current && undefined !== current.view.AnalysisStyle)
+      return;
+    IModelApp.toolAdmin.startDefaultTool();
   }
 }
 

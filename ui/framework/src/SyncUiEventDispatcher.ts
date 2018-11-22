@@ -10,10 +10,12 @@ import { FrontstageManager } from "./configurableui/FrontstageManager";
 import { Backstage } from "./configurableui/Backstage";
 import { WorkflowManager } from "./configurableui/Workflow";
 import { ContentViewManager } from "./configurableui/ContentViewManager";
+import { IModelApp, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend/lib/frontend";
 
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
-// cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating frontstageready
+// cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
+// cSpell:ignore frontstageready activedgnviewportchanged
 /** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control. */
 export const enum SyncUiEventId {
   ActiveContentChanged = "activecontentchanged",
@@ -29,6 +31,7 @@ export const enum SyncUiEventId {
   TaskActivated = "taskactivated",
   WidgetStateChanged = "widgetstatechanged",
   WorkflowActivated = "workflowactivated",
+  ActiveDgnViewportChanged = "activedgnviewportchanged",
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
@@ -166,5 +169,14 @@ export class SyncUiEventDispatcher {
     ContentViewManager.onActiveContentChangedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveContentChanged);
     });
+
+    if (IModelApp && IModelApp.viewManager)
+      IModelApp.viewManager.onSelectedViewportChanged.addListener((args: SelectedViewportChangedArgs) => {
+        SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveDgnViewportChanged);
+
+        // if this is the first view being opened up start the default tool so tool admin is happy.
+        if (undefined === args.previous)
+          IModelApp.toolAdmin.startDefaultTool();
+      });
   }
 }
