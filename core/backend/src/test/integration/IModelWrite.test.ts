@@ -216,9 +216,9 @@ describe("IModelWriteTest (#integration)", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesPushTest";
-    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.IModels().get(actx, adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(actx, adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.imodelClient.IModels().delete(actx, adminAccessToken, testProjectId, iModelTemp.id!);
+      await BriefcaseManager.imodelClient.iModels.delete(actx, adminAccessToken, testProjectId, iModelTemp.id!);
     }
     timer.end();
 
@@ -230,7 +230,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const initialCodes = await BriefcaseManager.imodelClient.Codes().get(actx, adminAccessToken, rwIModelId!);
+    const initialCodes = await BriefcaseManager.imodelClient.codes.get(actx, adminAccessToken, rwIModelId!);
     timer.end();
 
     timer = new Timer("make local changes");
@@ -252,7 +252,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const codes = await BriefcaseManager.imodelClient.Codes().get(actx, adminAccessToken, rwIModelId!);
+    const codes = await BriefcaseManager.imodelClient.codes.get(actx, adminAccessToken, rwIModelId!);
     timer.end();
     expect(codes.length > initialCodes.length);
   });
@@ -262,9 +262,9 @@ describe("IModelWriteTest (#integration)", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesConflictTest";
-    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.IModels().get(actx, adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(actx, adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.imodelClient.IModels().delete(actx, adminAccessToken, testProjectId, iModelTemp.id!);
+      await BriefcaseManager.imodelClient.iModels.delete(actx, adminAccessToken, testProjectId, iModelTemp.id!);
     }
     timer.end();
 
@@ -276,17 +276,17 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     const code = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel");
-    const otherBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(actx, adminAccessToken, rwIModelId!);
+    const otherBriefcase = await BriefcaseManager.imodelClient.briefcases.create(actx, adminAccessToken, rwIModelId!);
     const hubCode = new HubCode();
     hubCode.value = code.value;
     hubCode.codeSpecId = code.spec;
     hubCode.codeScope = code.scope;
     hubCode.briefcaseId = otherBriefcase.briefcaseId;
     hubCode.state = CodeState.Reserved;
-    await BriefcaseManager.imodelClient.Codes().update(actx, adminAccessToken, rwIModelId!, [hubCode]);
+    await BriefcaseManager.imodelClient.codes.update(actx, adminAccessToken, rwIModelId!, [hubCode]);
 
     timer = new Timer("querying codes");
-    const initialCodes = await BriefcaseManager.imodelClient.Codes().get(actx, adminAccessToken, rwIModelId!);
+    const initialCodes = await BriefcaseManager.imodelClient.codes.get(actx, adminAccessToken, rwIModelId!);
     timer.end();
 
     timer = new Timer("make local changes");
@@ -307,7 +307,7 @@ describe("IModelWriteTest (#integration)", () => {
     timer.end();
 
     timer = new Timer("querying codes");
-    const codes = await BriefcaseManager.imodelClient.Codes().get(actx, accessToken, rwIModelId!);
+    const codes = await BriefcaseManager.imodelClient.codes.get(actx, accessToken, rwIModelId!);
     timer.end();
     expect(codes.length === initialCodes.length);
     expect(codes[0].state === CodeState.Reserved);
@@ -319,9 +319,9 @@ describe("IModelWriteTest (#integration)", () => {
     let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the OptimisticConcurrencyTest iModel
     const iModelName = "OptimisticConcurrencyTest";
-    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.IModels().get(actx, adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
+    const iModels: HubIModel[] = await BriefcaseManager.imodelClient.iModels.get(actx, adminAccessToken, testProjectId, new IModelQuery().byName(iModelName));
     for (const iModelTemp of iModels) {
-      await BriefcaseManager.imodelClient.IModels().delete(actx, adminAccessToken, testProjectId, iModelTemp.id!);
+      await BriefcaseManager.imodelClient.iModels.delete(actx, adminAccessToken, testProjectId, iModelTemp.id!);
     }
     timer.end();
 

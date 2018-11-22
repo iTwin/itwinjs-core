@@ -365,7 +365,7 @@ export class EventHandler extends EventBaseHandler {
   /**
    * Get a handler for managing [[EventSubscription]]s.
    */
-  public Subscriptions(): EventSubscriptionHandler {
+  public get subscriptions(): EventSubscriptionHandler {
     if (!this._subscriptionHandler) {
       this._subscriptionHandler = new EventSubscriptionHandler(this._handler);
     }

@@ -98,7 +98,7 @@ export class TestConfig {
   public static async queryIModel(accessToken: AccessToken, projectId: GuidString): Promise<HubIModel> {
     const imodelHubClient: IModelClient = new IModelHubClient();
 
-    const iModel: HubIModel = await imodelHubClient.IModel().get(actx, accessToken, projectId);
+    const iModel: HubIModel = await imodelHubClient.iModel.get(actx, accessToken, projectId);
     if (!iModel || !iModel.wsgId)
       throw new Error(`Primary iModel not found for project ${projectId} for user ${!accessToken.getUserInfo() ? "n/a" : accessToken.getUserInfo()!.email}.`);
 

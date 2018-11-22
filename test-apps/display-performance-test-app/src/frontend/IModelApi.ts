@@ -23,12 +23,12 @@ export class IModelApi {
     const alctx = new ActivityLoggingContext(Guid.createValue());
     const queryOptions = new IModelQuery();
     queryOptions.select("*").top(100).skip(0);
-    const iModels: HubIModel[] = await IModelApi._hubClient.IModels().get(alctx, accessToken, projectId, queryOptions);
+    const iModels: HubIModel[] = await IModelApi._hubClient.iModels.get(alctx, accessToken, projectId, queryOptions);
     if (iModels.length < 1)
       return undefined;
     for (const thisIModel of iModels) {
       if (!!thisIModel.id && thisIModel.name === iModelName) {
-        const versions: Version[] = await IModelApi._hubClient.Versions().get(alctx, accessToken, thisIModel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
+        const versions: Version[] = await IModelApi._hubClient.versions.get(alctx, accessToken, thisIModel.id!, new VersionQuery().select("Name,ChangeSetId").top(1));
         if (versions.length > 0) {
           thisIModel.latestVersionName = versions[0].name;
           thisIModel.latestVersionChangeSetId = versions[0].changeSetId;

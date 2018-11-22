@@ -74,7 +74,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     }
 
     const query = new UserInfoQuery().byId(accessTokens[0].getUserInfo()!.id);
-    const userInfo = (await imodelHubClient.Users().get(actx, accessTokens[0], imodelId, query));
+    const userInfo = (await imodelHubClient.users.get(actx, accessTokens[0], imodelId, query));
     chai.assert(userInfo);
     chai.expect(userInfo.length).to.be.equal(1);
     chai.expect(userInfo[0].id).to.be.equal(accessTokens[0].getUserInfo()!.id);
@@ -91,7 +91,7 @@ describe("iModelHubClient UserInfoHandler", () => {
     const query = new UserInfoQuery().byIds(
       [accessTokens[0].getUserInfo()!.id,
       accessTokens[1].getUserInfo()!.id]);
-    const userInfo = (await imodelHubClient.Users().get(actx, accessTokens[0], imodelId, query));
+    const userInfo = (await imodelHubClient.users.get(actx, accessTokens[0], imodelId, query));
     userInfo.sort((a: HubUserInfo, b: HubUserInfo) => a.id!.localeCompare(b.id!));
     chai.assert(userInfo);
     chai.expect(userInfo.length).to.be.equal(2);
@@ -105,7 +105,7 @@ describe("iModelHubClient UserInfoHandler", () => {
   it("should fail to get users without ids", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await imodelHubClient.Users().get(actx, accessTokens[0], imodelId, new UserInfoQuery().byIds([]));
+      await imodelHubClient.users.get(actx, accessTokens[0], imodelId, new UserInfoQuery().byIds([]));
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;

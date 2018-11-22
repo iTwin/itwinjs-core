@@ -403,7 +403,7 @@ export class CodeHandler {
   }
 
   /** Get handler for querying [[CodeSequence]]s. */
-  public Sequences(): CodeSequenceHandler {
+  public get sequences(): CodeSequenceHandler {
     return new CodeSequenceHandler(this._handler);
   }
 

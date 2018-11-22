@@ -55,3 +55,10 @@ This function would be rewritten using a callback as follows:
 
     return isInRect;
   }`
+
+## Breaking changes to IModelClient
+
+To be consistent with imodeljs code style, [IModelClient]($clients) methods have been changed to properties and start with lower case letter.
+
+For example, querying [Version]($clients)s with an [IModelHubClient]($clients) object `client` should be changed from `client.Versions().get(alctx, token, imodelId)` to `client.versions.get(alctx, token, imodelId)`.
+

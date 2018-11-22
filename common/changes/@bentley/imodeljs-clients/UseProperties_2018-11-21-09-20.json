@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use property getters instead of methods for IModelClient",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Karolis.Dziedzelis@bentley.com"
+}

@@ -119,13 +119,13 @@ export class HubUtility {
     query.selectDownloadUrl();
 
     let perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Get ChangeSet Infos");
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelId, query);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, iModelId, query);
     perfLogger.dispose();
     if (changeSets.length === 0)
       return new Array<ChangeSet>();
 
     perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Download ChangeSets");
-    await BriefcaseManager.imodelClient.ChangeSets().download(actx, changeSets, changeSetsPath);
+    await BriefcaseManager.imodelClient.changeSets.download(actx, changeSets, changeSetsPath);
     perfLogger.dispose();
     return changeSets;
   }
@@ -151,7 +151,7 @@ export class HubUtility {
     // Download the seed file
     const seedPathname = path.join(downloadDir, "seed", iModel.name!.concat(".bim"));
     const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
-    await BriefcaseManager.imodelClient.IModels().download(actx, accessToken, iModelId, seedPathname);
+    await BriefcaseManager.imodelClient.iModels.download(actx, accessToken, iModelId, seedPathname);
     perfLogger.dispose();
 
     // Download the change sets
@@ -184,7 +184,7 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: GuidString = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
 
-    await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, iModelId);
+    await BriefcaseManager.imodelClient.iModels.delete(actx, accessToken, projectId, iModelId);
   }
 
   /** Validate all change set operations by downloading seed files & change sets, creating a standalone iModel,
@@ -245,11 +245,11 @@ export class HubUtility {
     const iModelName = path.basename(pathname, ".bim");
     let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
     if (iModel) {
-      await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, iModel.id!);
+      await BriefcaseManager.imodelClient.iModels.delete(actx, accessToken, projectId, iModel.id!);
     }
 
     // Upload a new iModel
-    iModel = await BriefcaseManager.imodelClient.IModels().create(actx, accessToken, projectId, iModelName, pathname, "", undefined, 2 * 60 * 1000);
+    iModel = await BriefcaseManager.imodelClient.iModels.create(actx, accessToken, projectId, iModelName, pathname, "", undefined, 2 * 60 * 1000);
     return iModel.id!;
   }
 
@@ -261,7 +261,7 @@ export class HubUtility {
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(accessToken, projectId, seedPathname);
 
-    const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(actx, accessToken, iModelId);
+    const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.briefcases.create(actx, accessToken, iModelId);
     if (!briefcase) {
       return Promise.reject(`Could not acquire a briefcase for the iModel ${iModelId}`);
     }
@@ -287,7 +287,7 @@ export class HubUtility {
       changeSet.seedFileId = briefcase.fileId;
       changeSet.briefcaseId = briefcase.briefcaseId;
 
-      await BriefcaseManager.imodelClient.ChangeSets().create(actx, accessToken, iModelId, changeSet, changeSetPathname);
+      await BriefcaseManager.imodelClient.changeSets.create(actx, accessToken, iModelId, changeSet, changeSetPathname);
     }
 
     return iModelId;
@@ -300,13 +300,13 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: GuidString = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
 
-    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, iModelId);
+    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(actx, accessToken, iModelId);
     if (briefcases.length > acquireThreshold) {
       Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
 
       const promises = new Array<Promise<void>>();
       briefcases.forEach((briefcase: HubBriefcase) => {
-        promises.push(BriefcaseManager.imodelClient.Briefcases().delete(actx, accessToken, iModelId, briefcase.briefcaseId!));
+        promises.push(BriefcaseManager.imodelClient.briefcases.delete(actx, accessToken, iModelId, briefcase.briefcaseId!));
       });
       await Promise.all(promises);
     }
@@ -402,15 +402,15 @@ class TestIModelHubProject {
   }
   public async createIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: any): Promise<HubIModel> {
     const client = this.iModelHubClient;
-    return client.IModels().create(actx, accessToken, projectId, params.name, params.seedFile, params.description, params.tracker);
+    return client.iModels.create(actx, accessToken, projectId, params.name, params.seedFile, params.description, params.tracker);
   }
   public async deleteIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: GuidString): Promise<void> {
     const client = this.iModelHubClient;
-    return client.IModels().delete(actx, accessToken, projectId, iModelId);
+    return client.iModels.delete(actx, accessToken, projectId, iModelId);
   }
   public async queryIModels(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
     const client = this.iModelHubClient;
-    return client.IModels().get(actx, accessToken, projectId, query);
+    return client.iModels.get(actx, accessToken, projectId, query);
   }
 }
 

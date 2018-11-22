@@ -455,7 +455,7 @@ describe("BriefcaseManager (#integration)", () => {
 
   const briefcaseExistsOnHub = async (iModelId: GuidString, briefcaseId: number): Promise<boolean> => {
     try {
-      const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId));
+      const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId));
       return (hubBriefcases.length > 0) ? true : false;
     } catch (e) {
       return false;

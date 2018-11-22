@@ -71,7 +71,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
       // ###TODO lock specific code
       // IBriefcaseManager:: Request req;
-      // req.Locks().Insert(db, LockLevel:: Shared);
+      // req.locks.Insert(db, LockLevel:: Shared);
       // if (!db.BriefcaseManager().AreResourcesAvailable(req, nullptr, IBriefcaseManager:: FastQuery:: Yes))
       //   return false;   // another briefcase has locked the db for editing
     }
@@ -94,7 +94,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
     if (this.requireWriteableTarget()) {
       // ###TODO lock specific code
       //   IBriefcaseManager:: Request req;
-      //   req.Locks().Insert(* targetModel, LockLevel:: Shared);
+      //   req.locks.Insert(* targetModel, LockLevel:: Shared);
       //   if (!db.BriefcaseManager().AreResourcesAvailable(req, nullptr, IBriefcaseManager:: FastQuery:: Yes))
       //     return false; // another briefcase has locked the model for editing
     }

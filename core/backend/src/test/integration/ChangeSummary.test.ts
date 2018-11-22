@@ -236,7 +236,7 @@ describe("ChangeSummary (#integration)", () => {
     const testIModelId: GuidString = testIModels[0].id;
     setupTest(testIModelId);
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
@@ -276,7 +276,7 @@ describe("ChangeSummary (#integration)", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     const startChangeSetId: string = changeSets[0].id!;
     const endChangeSetId: string = changeSets[1].id!;
@@ -323,7 +323,7 @@ describe("ChangeSummary (#integration)", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
