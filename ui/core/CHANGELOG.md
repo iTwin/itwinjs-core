@@ -1,6 +1,17 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Tue, 20 Nov 2018 16:17:15 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Nov 2018 19:38:42 GMT and should not be manually modified.
+
+## 0.170.0
+Mon, 26 Nov 2018 19:38:42 GMT
+
+### Updates
+
+- Reduced the amount of unneded event calls in Dialog component and changed it to use Pointer events instead of Mouse+Touch.
+- Added a vertical/horizontal line that is visible when hovered on ElementSeparator component.
+- Renamed expandable block css class from core-property-block to core-expandable-block.
+- Added a way to put Popups in fixed position and cleand up the refs.
+- Added Omit type definition to Utils.
 
 ## 0.169.0
 Tue, 20 Nov 2018 16:17:15 GMT
