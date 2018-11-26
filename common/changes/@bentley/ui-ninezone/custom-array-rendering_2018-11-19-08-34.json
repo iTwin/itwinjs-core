@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changed Omit typedef source from ui/ninezone to ui/core",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "elonas.seviakovas@bentley.com"
+}

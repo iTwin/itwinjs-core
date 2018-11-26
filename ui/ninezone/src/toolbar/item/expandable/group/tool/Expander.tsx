@@ -6,7 +6,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { Omit, NoChildrenProps } from "../../../../../utilities/Props";
+import { Omit } from "@bentley/ui-core/lib/utils";
+import { NoChildrenProps } from "../../../../../utilities/Props";
 import Tool, { ToolProps } from "./Tool";
 import "./Expander.scss";
 

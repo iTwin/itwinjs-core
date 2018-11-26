@@ -4,20 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
 
-import { IPropertyValueRenderer } from "../ValueRendererManager";
-import { PropertyRecord } from "../Record";
-import { PropertyValueFormat, PrimitiveValue } from "../Value";
-import { TypeConverterManager } from "../../converters/TypeConverterManager";
+import { IPropertyValueRenderer } from "../../ValueRendererManager";
+import { PropertyRecord } from "../../Record";
+import { PropertyValueFormat, PrimitiveValue } from "../../Value";
+import { TypeConverterManager } from "../../../converters/TypeConverterManager";
 
-/** Default Primitive Property Renderer */
-export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
+/** Default Navigation Property Renderer */
+export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
 
   public canRender(record: PropertyRecord) {
-    return record.value.valueFormat === PropertyValueFormat.Primitive;
+    return record.value.valueFormat === PropertyValueFormat.Primitive
+      && record.property.typename === "navigation";
   }
 
   public async render(record: PropertyRecord) {
-    const value = (record.value as PrimitiveValue).value;
+    const value = (record.value as PrimitiveValue).displayValue;
 
     if (value !== undefined)
       return TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);

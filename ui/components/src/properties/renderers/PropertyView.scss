@@ -7,39 +7,23 @@
 $text-font-size: $bwc-font-size;
 $text-font-color: $bwc-text-color;
 
-@mixin components-property-record {
-  &:not(.components--selected) {
-    &.components--clickable:hover {
-      background-color: $bwc-blue-highlight;
-    }
-  }
-}
-
 .components-property-record--horizontal {
-  @include components-property-record;
-
+  height: 30px;
   display: grid;
-  margin-top: -1px;
 
   .components-property-record-label {
-    border: 1px solid #ccc;
     font-size: $text-font-size;
     color: $text-font-color;
-    padding-right: 1em;
   }
 
   .components-property-record-value {
-    border: 1px solid #ccc;
     min-height: 20px;
     font-size: $text-font-size;
     color: $text-font-color;
-    margin-left: -2px;
   }
 }
 
 .components-property-record--vertical {
-  @include components-property-record;
-
   .components-property-record-label {
     border-top: 1px solid #ccc;
     font-weight: bold;
@@ -72,7 +56,6 @@ $text-font-color: $bwc-text-color;
 }
 
 @mixin record-cell {
-  padding-left: 0.25em;
   display: flex;
   align-items: center;
 }

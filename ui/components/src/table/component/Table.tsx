@@ -9,7 +9,7 @@ import * as React from "react";
 import ReactDataGrid from "react-data-grid";
 import classnames from "classnames";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { SortDirection } from "@bentley/ui-core";
+import { SortDirection, Dialog, Popup, Position } from "@bentley/ui-core";
 import { TableDataProvider, ColumnDescription, RowItem, CellItem } from "../TableDataProvider";
 import { LocalUiSettings, UiSettings, UiSettingsStatus } from "@bentley/ui-core";
 import { SelectionMode } from "../../common/selection/SelectionModes";
@@ -20,7 +20,7 @@ import {
 
 import "./Grid.scss";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PropertyValueRendererManager, IPropertyValueRendererContext, PropertyContainerType } from "../../properties/ValueRendererManager";
+import { PropertyValueRendererManager, PropertyContainerType, PropertyDialogState, PropertyPopupState, PropertyValueRendererContext } from "../../properties/ValueRendererManager";
 import { PropertyValueFormat, PrimitiveValue } from "../../properties";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { DragDropHeaderCell } from "./DragDropHeaderCell";
@@ -128,6 +128,8 @@ export interface TableState {
   menuX: number;
   menuY: number;
   cellEditorState: TableCellEditorState;
+  dialog?: PropertyDialogState;
+  popup?: PropertyPopupState;
 }
 
 /** ReactDataGrid.Column with additional properties */
@@ -180,6 +182,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _rowItemSelectionHandlers?: Array<SingleSelectionHandler<number>>;
   private _cellItemSelectionHandlers?: Array<Array<SingleSelectionHandler<CellKey>>>;
   private _pressedItemSelected: boolean = false;
+  private _reactPortalRef = React.createRef<HTMLDivElement>();
 
   public readonly state: Readonly<TableState> = initialState;
 
@@ -381,8 +384,7 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   private _columnDescriptionToReactDataGridColumn = (columnDescription: ColumnDescription): ReactDataGridColumn => {
-
-    const editable = (columnDescription.editable !== undefined ? columnDescription.editable : false);
+    const isEditable = !!columnDescription.editable;
 
     const column: ReactDataGridColumn = {
       key: columnDescription.key,
@@ -393,7 +395,7 @@ export class Table extends React.Component<TableProps, TableState> {
       draggable: this.props.reorderableColumns || false,
     };
 
-    if (editable) {
+    if (isEditable) {
       column.events = {
         onClick: this.cellEditOnClick.bind(this, column),
       };
@@ -608,7 +610,13 @@ export class Table extends React.Component<TableProps, TableState> {
     if (column.icon)
       return () => <IconCell value={displayValue} />;
 
-    const rendererContext: IPropertyValueRendererContext = { containerType: PropertyContainerType.Table };
+    const rendererContext: PropertyValueRendererContext = {
+      containerType: PropertyContainerType.Table,
+      onDialogOpen: this._onDialogOpen,
+      onPopupShow: this._onPopupShow,
+      onPopupHide: this._onPopupHide,
+    };
+
     let renderedElement: React.ReactNode;
 
     if (this.props.propertyValueRendererManager)
@@ -757,7 +765,11 @@ export class Table extends React.Component<TableProps, TableState> {
         continue;
       }
       const cell = cellProps.render();
-      const editorCell = this.state.cellEditorState.active && this.state.cellEditorState.rowIndex === rowProps.index && this.state.cellEditorState.colIndex === columnIndex;
+      const isEditorCell =
+        this.state.cellEditorState.active
+        && this.state.cellEditorState.rowIndex === rowProps.index
+        && this.state.cellEditorState.colIndex === columnIndex;
+
       if (this._tableSelectionTarget === TableSelectionTarget.Cell) {
         const cellKey = { rowIndex: rowProps.index, columnKey: column.key };
         const selectionHandler = this.createCellItemSelectionHandler(cellKey);
@@ -776,7 +788,7 @@ export class Table extends React.Component<TableProps, TableState> {
           {cell}
         </div>;
       } else {
-        if (editorCell && cellProps.item.record)
+        if (isEditorCell && cellProps.item.record)
           cells[column.key] = <EditorContainer propertyRecord={cellProps.item.record} title={cellProps.displayValue} onCommit={this._onCellCommit} onCancel={this._deactivateCellEditor} />;
         else
           cells[column.key] = <div className={"cell"} title={cellProps.displayValue}>{cell}</div>;
@@ -844,7 +856,15 @@ export class Table extends React.Component<TableProps, TableState> {
     }
     this.setState({ columns: cols });
   }
+
   private cellEditOnClick(column: ReactDataGridColumn, _ev: React.SyntheticEvent<any>, args: { rowIdx: number, idx: number, name: string }): void {
+    // Prevent editing when property record is not primitive
+    if (this.state.rows[args.rowIdx]) {
+      const record = this._getCellItem(this.state.rows[0].item, column.key).record;
+      if (record && record.value.valueFormat !== PropertyValueFormat.Primitive)
+        return;
+    }
+
     let activate = false;
 
     const isSelected = this._selectedRowIndices.has(args.rowIdx);
@@ -929,37 +949,80 @@ export class Table extends React.Component<TableProps, TableState> {
     return true;
   }
 
+  private _onDialogOpen = (dialogState: PropertyDialogState) => {
+    this.setState({ dialog: dialogState });
+  }
+
+  private _onDialogClose = () => {
+    this.setState({ dialog: undefined });
+  }
+
+  private _onPopupShow = (popupState: PropertyPopupState) => {
+    this.setState({ popup: popupState });
+  }
+
+  private _onPopupHide = () => {
+    this.setState({ popup: undefined });
+  }
+
   public render() {
     const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
 
     const visibleColumns = this._getVisibleColumns();
     return (
-      <div className="react-data-grid-wrapper" onMouseDown={this._onMouseDown} onContextMenu={this.props.togglableColumns ? this._showContextMenu : undefined}>
-        {this.props.togglableColumns &&
-          <ShowHideMenu
-            opened={this.state.menuVisible}
-            items={this.state.columns.map((column) => ({ id: column.key, label: column.name }))}
-            x={this.state.menuX} y={this.state.menuY}
-            initialHidden={this.state.hiddenColumns}
-            onClose={this._hideContextMenu}
-            onShowHideChange={this._handleShowHideChange} />
-        }
-        <ReactDataGrid
-          columns={visibleColumns}
-          rowGetter={this._rowGetter}
-          rowRenderer={rowRenderer}
-          rowsCount={this.state.rowsCount}
-          {...(this.props.reorderableColumns ? {
-            draggableHeaderCell: DragDropHeaderCell,
-            onHeaderDrop: this._onHeaderDrop,
-          } as any : {})}
-          enableCellSelect={true}
-          minHeight={500}
-          headerRowHeight={25}
-          rowHeight={25}
-          onGridSort={this._handleGridSort}
-        />
-      </div>
+      <>
+        <div className="react-data-grid-wrapper" onMouseDown={this._onMouseDown} onContextMenu={this.props.togglableColumns ? this._showContextMenu : undefined}>
+          {this.props.togglableColumns &&
+            <ShowHideMenu
+              opened={this.state.menuVisible}
+              items={this.state.columns.map((column) => ({ id: column.key, label: column.name }))}
+              x={this.state.menuX} y={this.state.menuY}
+              initialHidden={this.state.hiddenColumns}
+              onClose={this._hideContextMenu}
+              onShowHideChange={this._handleShowHideChange}
+            />
+          }
+          <ReactDataGrid
+            columns={visibleColumns}
+            rowGetter={this._rowGetter}
+            rowRenderer={rowRenderer}
+            rowsCount={this.state.rowsCount}
+            {...(this.props.reorderableColumns ? {
+              draggableHeaderCell: DragDropHeaderCell,
+              onHeaderDrop: this._onHeaderDrop,
+            } as any : {})}
+            enableCellSelect={true}
+            minHeight={500}
+            headerRowHeight={25}
+            rowHeight={25}
+            onGridSort={this._handleGridSort}
+          />
+        </div>
+        <div ref={this._reactPortalRef}>
+          {this.state.dialog
+            ?
+            <Dialog
+              opened={true}
+              onClose={this._onDialogClose}
+              title={this.state.dialog.title}
+              height={"50vh"}
+            >
+              {this.state.dialog.content}
+            </Dialog>
+            : undefined}
+          {this.state.popup
+            ?
+            <Popup
+              isShown={true}
+              fixedPosition={this.state.popup.fixedPosition}
+              position={Position.Top}
+            >
+              {this.state.popup.content}
+            </Popup>
+            :
+            undefined}
+        </div>
+      </>
     );
   }
 }

@@ -5,13 +5,17 @@
 import { expect, assert } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import TestUtils from "../../TestUtils";
-import { ArrayPropertyValueRenderer } from "../../../";
-import { PropertyContainerType } from "../../..//properties/ValueRendererManager";
-import { PropertyList } from "../../..//propertygrid/component/PropertyList";
 import { Orientation } from "@bentley/ui-core";
+import TestUtils from "../../../TestUtils";
+import { PropertyContainerType } from "../../../../properties/ValueRendererManager";
+import { ArrayPropertyValueRenderer } from "../../../../properties/renderers/value/ArrayPropertyValueRenderer";
+import { TableNonPrimitiveValueRenderer } from "../../../../properties/renderers/value/table/NonPrimitiveValueRenderer";
 
 describe("ArrayPropertyValueRenderer", () => {
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
   describe("render", () => {
     it("renders non empty array property", async () => {
       const renderer = new ArrayPropertyValueRenderer();
@@ -31,7 +35,7 @@ describe("ArrayPropertyValueRenderer", () => {
       const element = await renderer.render(arrayProperty);
       const elementMount = mount(<div>{element}</div>);
 
-      expect(elementMount.text()).to.be.eq("[]");
+      expect(elementMount.text()).to.be.eq("string[]");
     });
 
     it("renders default way if empty context is provided", async () => {
@@ -41,27 +45,29 @@ describe("ArrayPropertyValueRenderer", () => {
       const element = await renderer.render(arrayProperty, {});
       const elementMount = mount(<div>{element}</div>);
 
-      expect(elementMount.text()).to.be.eq("[]");
+      expect(elementMount.text()).to.be.eq("string[]");
     });
 
-    it("renders array as PropertyList if container type is PropertyPane", async () => {
+    it("renders array with Table renderer if container type is Table", async () => {
       const renderer = new ArrayPropertyValueRenderer();
       const arrayProperty = TestUtils.createArrayProperty("LabelArray");
 
-      const element = await renderer.render(arrayProperty, { containerType: PropertyContainerType.PropertyPane });
+      const element = await renderer.render(arrayProperty, { containerType: PropertyContainerType.Table, orientation: Orientation.Vertical });
       const elementMount = mount(<div>{element}</div>);
 
-      expect(elementMount.find(PropertyList).exists()).to.be.true;
+      expect(elementMount.find(TableNonPrimitiveValueRenderer).exists()).to.be.true;
     });
 
-    it("renders array as a vertical PropertyList if container type is PropertyPane and orientation is set to vertical", async () => {
+    it("defaults to horizontal orientation when rendering for a table without specified orientation", async () => {
       const renderer = new ArrayPropertyValueRenderer();
       const arrayProperty = TestUtils.createArrayProperty("LabelArray");
 
-      const element = await renderer.render(arrayProperty, { containerType: PropertyContainerType.PropertyPane, orientation: Orientation.Vertical });
+      const element = await renderer.render(arrayProperty, { containerType: PropertyContainerType.Table });
       const elementMount = mount(<div>{element}</div>);
 
-      expect(elementMount.find(".components-property-list--vertical").exists()).to.be.true;
+      const dialogContentsMount = mount(<div>{elementMount.find(TableNonPrimitiveValueRenderer).prop("dialogContents")}</div>);
+
+      expect(dialogContentsMount.childAt(0).prop("orientation")).to.be.eq(Orientation.Horizontal);
     });
 
     it("throws when trying to render primitive property", async () => {

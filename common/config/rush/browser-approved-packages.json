@@ -207,6 +207,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "css-element-queries",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "css-loader",
       "allowedCategories": [ "frontend", "tools" ]
     },
@@ -601,6 +605,10 @@
     {
       "name": "redux-oidc",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "resize-observer-polyfill",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "resolve",

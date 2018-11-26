@@ -4,13 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
 
-// import React from "react";
+import React from "react";
+import { Orientation } from "@bentley/ui-core";
 import { PropertyRecord } from "./Record";
 import { PropertyValueFormat } from "./Value";
-import { PrimitivePropertyValueRenderer } from "./renderers/PrimitivePropertyValueRenderer";
-import { ArrayPropertyValueRenderer } from "./renderers/ArrayPropertyValueRenderer";
-import { StructPropertyValueRenderer } from "./renderers/StructPropertyValueRenderer";
-import { Orientation } from "@bentley/ui-core";
+import { PrimitivePropertyValueRenderer } from "./renderers/value/PrimitivePropertyValueRenderer";
+import { ArrayPropertyValueRenderer } from "./renderers/value/ArrayPropertyValueRenderer";
+import { StructPropertyValueRenderer } from "./renderers/value/StructPropertyValueRenderer";
+import { NavigationPropertyValueRenderer } from "./renderers/value/NavigationPropertyValueRenderer";
+import { DoublePropertyValueRenderer } from "./renderers/value/DoublePropertyValueRenderer";
 
 /** Types of property containers */
 export enum PropertyContainerType {
@@ -18,22 +20,38 @@ export enum PropertyContainerType {
   Table = "table",
 }
 
+/** State of the Dialog component in a container which renders properties */
+export interface PropertyDialogState {
+  title: string;
+  content: React.ReactNode;
+}
+
+/** State of the Popup component in a container which renders properties */
+export interface PropertyPopupState {
+  fixedPosition: { top: number, left: number };
+  content: React.ReactNode;
+}
+
 /** Additional parameters to the renderer */
-export interface IPropertyValueRendererContext {
+export interface PropertyValueRendererContext {
   /** Type of container that holds the property */
   containerType?: string;
   /** Orientation of property/container */
   orientation?: Orientation;
-  /** Additional information */
-  extras?: any;
+  /** Callback to request for a Popup to be shown. */
+  onPopupShow?: (popupState: PropertyPopupState) => void;
+  /** Callback to request for a Popup to be hidden. */
+  onPopupHide?: () => void;
+  /** Callback to request for Dialog to be opened. */
+  onDialogOpen?: (dialogState: PropertyDialogState) => void;
 }
 
 /** Custom property value renderer interface */
 export interface IPropertyValueRenderer {
   /** Checks if the renderer can handle given property */
-  canRender: (record: PropertyRecord, context?: IPropertyValueRendererContext) => boolean;
+  canRender: (record: PropertyRecord, context?: PropertyValueRendererContext) => boolean;
   /** Method that returns a JSX representation of PropertyRecord */
-  render: (record: PropertyRecord, context?: IPropertyValueRendererContext) => Promise<React.ReactNode>;
+  render: (record: PropertyRecord, context?: PropertyValueRendererContext) => Promise<React.ReactNode>;
 }
 
 /** Default implementation of property value renderer manager */
@@ -63,7 +81,7 @@ export class PropertyValueRendererManager {
   }
 
   /** Render property into JSX element */
-  public async render(record: PropertyRecord, context?: IPropertyValueRendererContext): Promise<React.ReactNode> {
+  public async render(record: PropertyRecord, context?: PropertyValueRendererContext): Promise<React.ReactNode> {
     const selectedRenderer = this.selectRenderer(record);
 
     if (!selectedRenderer || !selectedRenderer.canRender(record, context))
@@ -99,3 +117,6 @@ export class PropertyValueRendererManager {
     return this._defaultRendererManager;
   }
 }
+
+PropertyValueRendererManager.defaultManager.registerRenderer("navigation", new NavigationPropertyValueRenderer());
+PropertyValueRendererManager.defaultManager.registerRenderer("double", new DoublePropertyValueRenderer());

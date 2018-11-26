@@ -28,6 +28,7 @@ const createArrayValue = (propertyDescription: PropertyDescription, arrayDescrip
   return {
     valueFormat: PropertyValueFormat.Array,
     items: records,
+    itemsTypeName: arrayDescription.memberType.typeName,
   };
 };
 
@@ -147,6 +148,7 @@ const createNestedContentRecord = (field: content.NestedContentField, item: cont
     value = {
       valueFormat: PropertyValueFormat.Array,
       items: nestedContentArray.map((r) => createNestedStructRecord(field, r, path)),
+      itemsTypeName: field.type.typeName,
     };
     // if array contains just one value, replace it with the value
     if (1 === value.items.length)

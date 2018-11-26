@@ -19,7 +19,7 @@
     "lint": "tslint --project . 1>&2",
     "pack": "node ../../scripts/pack.js",
     "pseudolocalize": "node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo",
-    "test": "mocha --opts ../mocha.opts --exit lib/test/**/*.test.js",
+    "test": "mocha --opts ../mocha.opts lib/test/**/*.test.js",
     "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
   },
   "keywords": [
@@ -117,6 +117,7 @@
     "react-dnd-html5-backend": "^5.0.1",
     "react-dnd-test-backend": "^5.0.1",
     "react-virtualized": "^9.21.0",
+    "resize-observer-polyfill": "^1.5.0",
     "ts-key-enum": "^2.0.0"
   },
   "nyc": {

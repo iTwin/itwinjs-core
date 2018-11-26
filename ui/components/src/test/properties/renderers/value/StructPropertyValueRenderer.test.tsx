@@ -5,16 +5,15 @@
 import { expect, assert } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import TestUtils from "../../TestUtils";
-import { StructPropertyValueRenderer } from "../../../";
-import { PropertyContainerType } from "../../..//properties/ValueRendererManager";
-import { PropertyList } from "../../..//propertygrid/component/PropertyList";
-import { Orientation } from "@bentley/ui-core";
-import { PropertyRenderer } from "../../..//propertygrid/component/PropertyRenderer";
+import { Orientation } from "@bentley/ui-core/lib/enums/Orientation";
+import TestUtils from "../../../TestUtils";
+import { StructPropertyValueRenderer } from "../../../../properties/renderers/value/StructPropertyValueRenderer";
+import { PropertyContainerType } from "../../../../properties/ValueRendererManager";
+import { TableNonPrimitiveValueRenderer } from "../../../../properties/renderers/value/table/NonPrimitiveValueRenderer";
 
 describe("StructPropertyValueRenderer", () => {
   before(async () => {
-    await TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
+    await TestUtils.initializeUiComponents();
   });
 
   describe("render", () => {
@@ -38,35 +37,26 @@ describe("StructPropertyValueRenderer", () => {
       expect(elementMount.text()).to.be.eq("{struct}");
     });
 
-    it("renders struct as PropertyList when container type is PropertyPane", async () => {
-      const renderer = new StructPropertyValueRenderer();
-
-      const baseStruct = { value: TestUtils.createPrimitiveStringProperty("Size", "Huge") };
-      const struct = Object.create(baseStruct);
-      struct.label = TestUtils.createPrimitiveStringProperty("Title", "Model");
-
-      const structProperty = TestUtils.createStructProperty("NameStruct", struct);
-
-      const element = await renderer.render(structProperty, { containerType: PropertyContainerType.PropertyPane });
-      const elementMount = mount(<div>{element}</div>);
-
-      await TestUtils.flushAsyncOperations();
-
-      expect(elementMount.find(PropertyList).exists()).to.be.true;
-      const propertyRenderer = elementMount.find(PropertyRenderer);
-      expect(propertyRenderer.length).to.be.eq(1);
-      expect(propertyRenderer.find(".components-property-record-label").text()).to.be.eq("Title");
-      expect(propertyRenderer.find(".components-property-record-value").text()).to.be.eq("Model");
-    });
-
-    it("renders struct as a vertical PropertyList when container type is PropertyPane and orientation is vertical", async () => {
+    it("renders struct with Table renderer if container type is Table", async () => {
       const renderer = new StructPropertyValueRenderer();
       const structProperty = TestUtils.createStructProperty("NameStruct");
 
-      const element = await renderer.render(structProperty, { containerType: PropertyContainerType.PropertyPane, orientation: Orientation.Vertical });
+      const element = await renderer.render(structProperty, { containerType: PropertyContainerType.Table, orientation: Orientation.Vertical });
       const elementMount = mount(<div>{element}</div>);
 
-      expect(elementMount.find(".components-property-list--vertical").exists()).to.be.true;
+      expect(elementMount.find(TableNonPrimitiveValueRenderer).exists()).to.be.true;
+    });
+
+    it("defaults to horizontal orientation when rendering for a table without specified orientation", async () => {
+      const renderer = new StructPropertyValueRenderer();
+      const structProperty = TestUtils.createStructProperty("NameStruct");
+
+      const element = await renderer.render(structProperty, { containerType: PropertyContainerType.Table });
+      const elementMount = mount(<div>{element}</div>);
+
+      const dialogContentsMount = mount(<div>{elementMount.find(TableNonPrimitiveValueRenderer).prop("dialogContents")}</div>);
+
+      expect(dialogContentsMount.childAt(0).prop("orientation")).to.be.eq(Orientation.Horizontal);
     });
 
     it("throws when trying to render primitive property", async () => {

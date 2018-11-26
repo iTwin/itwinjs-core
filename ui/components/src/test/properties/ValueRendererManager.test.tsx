@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { PropertyValueRendererManager, IPropertyValueRenderer } from "../..//properties/ValueRendererManager";
+import { PropertyValueRendererManager, IPropertyValueRenderer } from "../../properties/ValueRendererManager";
 import TestUtils from "../TestUtils";
 
 describe("PropertyValueRendererManager", () => {

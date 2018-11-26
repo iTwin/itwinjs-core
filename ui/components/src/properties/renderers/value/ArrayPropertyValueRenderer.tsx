@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
 
-import { IPropertyValueRenderer, IPropertyValueRendererContext, PropertyContainerType } from "../ValueRendererManager";
-import { PropertyRecord } from "../Record";
-import { PropertyValueFormat, ArrayValue } from "../Value";
 import React from "react";
-import { PropertyList } from "../../propertygrid/component/PropertyList";
+import { IPropertyValueRenderer, PropertyValueRendererContext, PropertyContainerType } from "../../ValueRendererManager";
+import { PropertyRecord } from "../../Record";
+import { PropertyValueFormat, ArrayValue } from "../../Value";
 import { Orientation } from "@bentley/ui-core";
+import { TableArrayValueRenderer } from "./table/ArrayValueRenderer";
 
 /** Default Array Property Renderer */
 export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
@@ -17,24 +17,27 @@ export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
     return record.value.valueFormat === PropertyValueFormat.Array;
   }
 
-  public async render(record: PropertyRecord, context?: IPropertyValueRendererContext) {
+  public async render(record: PropertyRecord, context?: PropertyValueRendererContext) {
     const recordItems = (record.value as ArrayValue).items;
 
     if (context) {
       switch (context.containerType) {
-        case PropertyContainerType.PropertyPane:
+        case PropertyContainerType.Table:
           return (
-            <PropertyList
+            <TableArrayValueRenderer
+              propertyRecord={record}
+              onDialogOpen={context.onDialogOpen}
+              onPopupShow={context.onPopupShow}
+              onPopupHide={context.onPopupHide}
               orientation={context.orientation ? context.orientation : Orientation.Horizontal}
-              properties={recordItems}
             />
           );
       }
     }
 
     if (recordItems.length !== 0)
-      return `${recordItems[0].property.typename}[${recordItems.length}]`;
+      return `${(record.value as ArrayValue).itemsTypeName}[${recordItems.length}]`;
 
-    return "[]";
+    return `${(record.value as ArrayValue).itemsTypeName}[]`;
   }
 }
