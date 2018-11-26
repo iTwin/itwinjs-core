@@ -212,7 +212,7 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   private async performFetch(): Promise<number> {
-    const path = new URL(this.path, window.location.origin);
+    const path = new URL(this.path, location.origin);
     if (this._pathSuffix) {
       path.searchParams.set("parameters", this._pathSuffix);
     }

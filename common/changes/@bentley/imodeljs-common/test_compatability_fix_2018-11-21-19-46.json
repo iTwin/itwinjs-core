@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Remove dependency on 'window'-named global object.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}
