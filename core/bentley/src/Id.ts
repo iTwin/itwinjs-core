@@ -102,7 +102,7 @@ export namespace Id64 {
    * @note if the input is not undefined, the result is the same as that of [[Id64.fromString]].
    */
   export function fromJSON(prop?: string): Id64String {
-    return typeof prop === "string" ? Id64.fromString(prop) : Id64.invalid;
+    return typeof (prop) === "string" ? Id64.fromString(prop) : Id64.invalid;
   }
 
   /** Given a string value, attempt to normalize it into a well-formed Id string.
@@ -114,7 +114,7 @@ export namespace Id64 {
    */
   export function fromString(val: string): Id64String {
     // NB: Yes, we must check the run-time type...
-    if (typeof val !== "string")
+    if (typeof (val) !== "string")
       return invalid;
 
     // Skip the common case in which the input is already a well-formed Id string
@@ -217,12 +217,12 @@ export namespace Id64 {
     if (arg instanceof Set)
       return arg;
 
-    const ids = new Set<string>();
-    if (typeof arg === "string")
+    const ids = new Set<Id64String>();
+    if (typeof (arg) === "string")
       ids.add(arg);
     else if (Array.isArray(arg)) {
-      arg.forEach((id) => {
-        if (typeof id === "string")
+      arg.forEach((id: Id64String) => {
+        if (typeof (id) === "string")
           ids.add(id);
       });
     }
@@ -242,8 +242,7 @@ export namespace Id64 {
    */
   export function isTransient(id: Id64String): boolean {
     // A transient Id is of the format "0xffffffxxxxxxxxxx" where the leading 6 digits indicate an invalid briefcase Id.
-    const str = id.toString();
-    return 18 === str.length && str.startsWith("0xffffff");
+    return 18 === id.length && id.startsWith("0xffffff");
   }
 
   /** Determine if the input is a well-formed [[Id64String]] and represents a transient Id.
