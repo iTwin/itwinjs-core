@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Front end \"read pixels\" can now provide subCategoryId and GeometryClass to backend.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Brien.Bastings@bentley.com"
+}
