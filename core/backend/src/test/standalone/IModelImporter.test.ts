@@ -5,10 +5,10 @@
 import * as path from "path";
 import { assert } from "chai";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
-import { Range3d } from "@bentley/geometry-core";
+import { Range2d, Range3d } from "@bentley/geometry-core";
 import { CodeScopeSpec, ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import {
-  CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
+  CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingViewDefinition,
   IModelDb, IModelJsFs, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SubCategory, Subject,
 } from "../../backend";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -50,6 +50,8 @@ class TestImporter {
     assert.isTrue(Id64.isValidId64(drawingCategoryId));
     const spatialCategorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, definitionModelId, "SpatialCategories", [spatialCategoryId]);
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
+    const drawingCategorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, definitionModelId, "DrawingCategories", [drawingCategoryId]);
+    assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
     const displayStyle2dId: Id64String = DisplayStyle2d.insert(this.iModelDb, definitionModelId, "DisplayStyle2d");
     assert.isTrue(Id64.isValidId64(displayStyle2dId));
     const displayStyle3dId: Id64String = DisplayStyle3d.insert(this.iModelDb, definitionModelId, "DisplayStyle3d");
@@ -58,6 +60,9 @@ class TestImporter {
     const viewId: Id64String = OrthographicViewDefinition.insert(this.iModelDb, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, viewRange);
     assert.isTrue(Id64.isValidId64(viewId));
     this.iModelDb.views.setDefaultViewId(viewId);
+    const drawingViewRange = new Range2d(0, 0, 100, 100);
+    const drawingViewId: Id64String = DrawingViewDefinition.insert(this.iModelDb, definitionModelId, "Drawing View", drawingId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+    assert.isTrue(Id64.isValidId64(drawingViewId));
     this.iModelDb.saveChanges();
   }
 }

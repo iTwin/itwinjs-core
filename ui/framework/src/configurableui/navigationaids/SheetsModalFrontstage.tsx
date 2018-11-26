@@ -110,7 +110,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
 
               if (includeCard) {
                 return (
-                  <SheetCard key={card.label} label={card.label} index={card.index} iconSpec={iconClassName} isActive={card.isActive} onClick={() => this._handleCardSelected(card)} />
+                  <SheetCard key={card.label} label={card.label} index={card.index} iconSpec={iconClassName} isActive={card.isActive} onClick={async () => this._handleCardSelected(card)} />
                 );
               }
 

@@ -38,21 +38,11 @@
       "changehistory"
     ],
     "headerTabs": {
-      "Getting Started": {
-        "docSite": "getting-started"
-      },
-      "BIS": {
-        "docSite": "bis"
-      },
-      "Learning": {
-        "docSite": "learning"
-      },
-      "API Reference": {
-        "docSite": "reference"
-      },
-      "Change History": {
-        "docSite": "changehistory"
-      }
+      "Getting Started": "getting-started",
+      "BIS": "bis",
+      "Learning": "learning",
+      "API Reference": "reference",
+      "v0.169.0": "changehistory"
     },
     "packageAliases": {
       "common": "imodeljs-common",

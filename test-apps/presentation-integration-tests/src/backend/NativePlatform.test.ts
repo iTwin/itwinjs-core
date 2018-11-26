@@ -44,16 +44,19 @@ describe("NativePlatform", () => {
 
   it("throws on empty options", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
+    // tslint:disable-next-line:await-promise
     await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, db, "")).to.eventually.be.rejectedWith(PresentationError, "request");
   });
 
   it("throws on empty request id", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
+    // tslint:disable-next-line:await-promise
     await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, db, JSON.stringify({ requestId: "" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
   });
 
   it("throws on not handled request id", async () => {
     const db = nativePlatform.getImodelAddon(imodel);
+    // tslint:disable-next-line:await-promise
     await expect(nativePlatform.handleRequest(ActivityLoggingContext.current, db, JSON.stringify({ requestId: "Unknown" }))).to.eventually.be.rejectedWith(PresentationError, "request.requestId");
   });
 

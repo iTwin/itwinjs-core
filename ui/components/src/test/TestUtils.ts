@@ -61,6 +61,7 @@ export default class TestUtils {
     const value: ArrayValue = {
       items,
       valueFormat: PropertyValueFormat.Array,
+      itemsTypeName: items.length !== 0 ? items[0].property.typename : "string",
     };
 
     const description: PropertyDescription = {

@@ -87,7 +87,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
 
   // called when this component is first loaded
   public async componentDidMount() {
-    this.startRetrieveViews();
+    this.startRetrieveViews(); // tslint:disable-line:no-floating-promises
   }
 
   private _onClose = () => {

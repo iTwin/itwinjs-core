@@ -243,7 +243,7 @@ export abstract class WsgClient extends Client {
     }
 
     return super.getUrl(alctx)
-      .then((url: string): Promise<string> => {
+      .then(async (url: string): Promise<string> => {
         this._url = url;
         if (!excludeApiVersion) {
           this._url += "/" + this.apiVersion;
@@ -279,7 +279,7 @@ export abstract class WsgClient extends Client {
       options.body.requestOptions = requestOptions;
     }
     await this.setupOptionDefaults(options);
-    return request(alctx, url, options).then(() => Promise.resolve());
+    return request(alctx, url, options).then(async () => Promise.resolve());
   }
 
   /**

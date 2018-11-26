@@ -54,7 +54,7 @@ if (TestbedConfig.cloudRpc) {
       if (req2.method === "GET") {
         handleHttp2Get(req2, res2);
       } else if (req2.method === "POST") {
-        handleHttp2Post(req2, res2);
+        handleHttp2Post(req2, res2); // tslint:disable-line:no-floating-promises
       }
     }).listen(TestbedConfig.serverPort);
   } else {
@@ -69,11 +69,11 @@ if (TestbedConfig.cloudRpc) {
         return;
       }
 
-      TestbedConfig.cloudRpc.protocol.handleOperationPostRequest(req, res);
+      TestbedConfig.cloudRpc.protocol.handleOperationPostRequest(req, res); // tslint:disable-line:no-floating-promises
     });
 
     app.get(/\/imodel\//, (req, res) => {
-      TestbedConfig.cloudRpc.protocol.handleOperationGetRequest(req, res);
+      TestbedConfig.cloudRpc.protocol.handleOperationGetRequest(req, res); // tslint:disable-line:no-floating-promises
     });
 
     app.listen(TestbedConfig.serverPort);
@@ -86,7 +86,7 @@ function handleHttp2Get(req2: http2.Http2ServerRequest, res2: http2.Http2ServerR
   if (req2.url.indexOf("/v3/swagger.json") === 0) {
     TestbedConfig.cloudRpc.protocol.handleOpenApiDescriptionRequest(req, res);
   } else if (req2.url.match(/\/imodel\//)) {
-    TestbedConfig.cloudRpc.protocol.handleOperationGetRequest(req, res);
+    TestbedConfig.cloudRpc.protocol.handleOperationGetRequest(req, res); // tslint:disable-line:no-floating-promises
   } else {
     // serve static assets...
     const p = path.join(__dirname, "/public", req2.url); // FYI: path.join(...req.url) is NOT safe for a production server
@@ -121,13 +121,13 @@ async function handleHttp2Post(req2: http2.Http2ServerRequest, res2: http2.Http2
 
   try {
     req.body = await readHttp2Body(req2);
-    TestbedConfig.cloudRpc.protocol.handleOperationPostRequest(req, res);
+    TestbedConfig.cloudRpc.protocol.handleOperationPostRequest(req, res); // tslint:disable-line:no-floating-promises
   } catch (err) {
     res2.end(`Fatal testbed error: ${err.toString()}`);
   }
 }
 
-function readHttp2Body(req2: http2.Http2ServerRequest) {
+async function readHttp2Body(req2: http2.Http2ServerRequest) {
   return new Promise<string | Buffer>((resolve, reject) => {
     const chunks: Buffer[] = [];
     req2.on("data", (chunk) => {

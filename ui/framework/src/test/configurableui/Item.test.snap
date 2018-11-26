@@ -3,7 +3,7 @@
 exports[`ActionItemButton <ActionItemButton /> disabled renders correctly 1`] = `
 <Icon
   icon={
-    <Icon
+    <Unknown
       iconSpec="icon-placeholder"
     />
   }
@@ -20,7 +20,7 @@ exports[`ActionItemButton <ActionItemButton /> hidden renders correctly 1`] = `"
 exports[`ActionItemButton <ActionItemButton /> renders correctly 1`] = `
 <Icon
   icon={
-    <Icon
+    <Unknown
       iconSpec="icon-placeholder"
     />
   }
@@ -35,7 +35,7 @@ exports[`ActionItemButton <ActionItemButton /> renders correctly 1`] = `
 exports[`ToolButton <ToolButton /> renders correctly 1`] = `
 <Icon
   icon={
-    <Icon
+    <Unknown
       iconSpec="icon-placeholder"
     />
   }

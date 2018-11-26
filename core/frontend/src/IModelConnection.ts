@@ -311,7 +311,7 @@ export class IModelConnection extends IModel {
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    * @hidden
    */
-  public async changeCacheAttached(): Promise<boolean> { return await WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
+  public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
 
   /**
    * WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
@@ -320,7 +320,7 @@ export class IModelConnection extends IModel {
    * @throws [IModelError]($common) if a Change Cache file has already been attached before.
    * @hidden
    */
-  public async attachChangeCache(): Promise<void> { await WipRpcInterface.getClient().attachChangeCache(this.iModelToken); }
+  public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.iModelToken); }
 
   /**
    * WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
@@ -329,7 +329,7 @@ export class IModelConnection extends IModel {
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @hidden
    */
-  public async detachChangeCache(): Promise<void> { await WipRpcInterface.getClient().detachChangeCache(this.iModelToken); }
+  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken); }
 
   /**
    * Execute a test by name

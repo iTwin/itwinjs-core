@@ -589,7 +589,7 @@ export class IModelHandler {
      */
     public async getInitializationState(alctx: ActivityLoggingContext, token: AccessToken, contextId: string): Promise<InitializationState> {
         const imodel = await this.get(alctx, token, contextId);
-        return await this._handler.getInitializationState(alctx, token, imodel.id!);
+        return this._handler.getInitializationState(alctx, token, imodel.id!);
     }
 
     /**
@@ -622,7 +622,7 @@ export class IModelHandler {
         if (imodelExists)
             return Promise.reject(new IModelHubError(IModelHubStatus.iModelAlreadyExists));
 
-        return await this._handler.create(alctx, token, contextId, name, pathName, description, progressCallback, timeOutInMilliseconds);
+        return this._handler.create(alctx, token, contextId, name, pathName, description, progressCallback, timeOutInMilliseconds);
     }
 
     /**
@@ -638,7 +638,7 @@ export class IModelHandler {
      * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
      */
     public async update(alctx: ActivityLoggingContext, token: AccessToken, contextId: string, imodel: HubIModel): Promise<HubIModel> {
-        return await this._handler.update(alctx, token, contextId, imodel);
+        return this._handler.update(alctx, token, contextId, imodel);
     }
 
     /**

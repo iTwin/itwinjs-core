@@ -20,7 +20,7 @@ describe("OpenIModelDbMemoizer (#integration)", () => {
 
   const { memoize: memoizeOpenIModelDb, deleteMemoized: deleteMemoizedOpenIModelDb } = new OpenIModelDbMemoizer();
 
-  const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+  const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();

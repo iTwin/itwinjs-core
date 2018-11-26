@@ -6,8 +6,7 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { SamplePropertyRecord } from "../PropertyTestHelpers";
-import { SelectablePropertyBlock, SelectablePropertyBlockProps, SelectablePropertyBlockState } from "../../..//propertygrid/component/SelectablePropertyBlock";
+import { SelectablePropertyBlock, SelectablePropertyBlockProps, SelectablePropertyBlockState } from "../../../propertygrid/component/SelectablePropertyBlock";
 import TestUtils from "../../TestUtils";
 import { getPropertyKey } from "../../..//propertygrid/component/PropertyList";
 
@@ -15,13 +14,13 @@ describe("SelectablePropertyBlock", () => {
   let props: SelectablePropertyBlockProps;
 
   before(() => {
-    TestUtils.initializeUiComponents();
+    TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
   });
 
   beforeEach(() => {
     props = {
       orientation: Orientation.Horizontal,
-      properties: [new SamplePropertyRecord("CADID", 0, "0000 0005 00E0 02D8")],
+      properties: [TestUtils.createPrimitiveStringProperty("CADID", "0000 0005 00E0 02D8")],
       category: {
         name: "Category1",
         label: "Category 1",
@@ -59,8 +58,8 @@ describe("SelectablePropertyBlock", () => {
     it("returns true if key did match something", () => {
       props.category.name = "miscellaneous";
       props.properties = [
-        new SamplePropertyRecord("label", 0, "0000 0005 00E0 02D8"),
-        new SamplePropertyRecord("model", 0, "0000 0005 00E0 02D8"),
+        TestUtils.createPrimitiveStringProperty("label", "0000 0005 00E0 02D8"),
+        TestUtils.createPrimitiveStringProperty("model", "0000 0005 00E0 02D8"),
       ];
 
       const key = getPropertyKey(props.category, props.properties[1]);
@@ -72,8 +71,8 @@ describe("SelectablePropertyBlock", () => {
     it("returns false if key did not match anything", () => {
       props.category.name = "miscellaneous";
       props.properties = [
-        new SamplePropertyRecord("label", 0, "0000 0005 00E0 02D8"),
-        new SamplePropertyRecord("model", 0, "0000 0005 00E0 02D8"),
+        TestUtils.createPrimitiveStringProperty("label", "0000 0005 00E0 02D8"),
+        TestUtils.createPrimitiveStringProperty("model", "0000 0005 00E0 02D8"),
       ];
 
       const key = "wrongkey";

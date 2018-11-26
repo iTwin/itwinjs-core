@@ -56,7 +56,7 @@ describe("BriefcaseManager (#integration)", () => {
 
   before(async () => {
     if (offline) {
-      MockAssetUtil.setupMockAssets(assetDir);
+      await MockAssetUtil.setupMockAssets(assetDir);
       testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
     } else {
       [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
@@ -209,17 +209,17 @@ describe("BriefcaseManager (#integration)", () => {
     const iModel1: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
     const pathname1 = iModel1.briefcase.pathname;
-    iModel1.close(actx, accessToken, KeepBriefcase.Yes);
+    await iModel1.close(actx, accessToken, KeepBriefcase.Yes);
 
     const iModel2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
     assert.notEqual(iModel2.briefcase.pathname, pathname1);
-    iModel2.close(actx, accessToken, KeepBriefcase.No);
+    await iModel2.close(actx, accessToken, KeepBriefcase.No);
 
     const iModel3: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel3.briefcase.pathname, pathname1);
-    iModel3.close(actx, accessToken, KeepBriefcase.No);
+    await iModel3.close(actx, accessToken, KeepBriefcase.No);
   });
 
   it("should open iModels of specific versions from the Hub", async () => {
@@ -455,7 +455,7 @@ describe("BriefcaseManager (#integration)", () => {
 
   const briefcaseExistsOnHub = async (iModelId: GuidString, briefcaseId: number): Promise<boolean> => {
     try {
-      const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId));
+      const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId));
       return (hubBriefcases.length > 0) ? true : false;
     } catch (e) {
       return false;

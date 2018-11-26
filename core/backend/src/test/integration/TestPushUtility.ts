@@ -14,7 +14,7 @@ import { IModelWriter } from "./IModelWriter";
 import { HubUtility, UserCredentials } from "./HubUtility";
 import { TestUsers } from "../IModelTestUtils";
 
-const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const actx = new ActivityLoggingContext("");
 
 export class TestPushUtility {
@@ -187,7 +187,7 @@ export class TestPushUtility {
 
   private async createNamedVersion() {
     const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, this._accessToken!, this._iModelId!.toString(), BriefcaseManager.imodelClient);
-    await BriefcaseManager.imodelClient.Versions().create(actx, this._accessToken!, this._iModelId!, changeSetId, TestPushUtility.getVersionName(this._currentLevel));
+    await BriefcaseManager.imodelClient.versions.create(actx, this._accessToken!, this._iModelId!, changeSetId, TestPushUtility.getVersionName(this._currentLevel));
   }
 
 }

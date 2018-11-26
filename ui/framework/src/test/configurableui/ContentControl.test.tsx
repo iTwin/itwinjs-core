@@ -58,7 +58,7 @@ describe("ContentControl", () => {
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
       const contentGroup = frontstageDef.contentGroup;
       expect(contentGroup).to.not.be.undefined;
 
@@ -110,7 +110,7 @@ describe("ContentControl", () => {
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
-      FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
       const contentGroup = frontstageDef.contentGroup;
       expect(contentGroup).to.not.be.undefined;
 

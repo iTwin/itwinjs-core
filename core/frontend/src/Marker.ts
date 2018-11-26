@@ -172,7 +172,7 @@ export class Marker implements CanvasDecoration {
    */
   public setImage(image: MarkerImage | Promise<MarkerImage>) {
     if (image instanceof Promise)
-      image.then((resolvedImage) => this.image = resolvedImage);
+      image.then((resolvedImage) => this.image = resolvedImage); // tslint:disable-line:no-floating-promises
     else
       this.image = image;
   }

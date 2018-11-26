@@ -2,6 +2,60 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.169.0",
+      "tag": "@bentley/ui-framework_v0.169.0",
+      "date": "Tue, 20 Nov 2018 16:17:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Include presentation rulesets in package"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.168.0",
+      "tag": "@bentley/ui-framework_v0.168.0",
+      "date": "Sat, 17 Nov 2018 14:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed OidcBrowserClient comparision of redirect path."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.167.0",
+      "tag": "@bentley/ui-framework_v0.167.0",
+      "date": "Fri, 16 Nov 2018 21:45:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Overhaul category/model picker to use presentation rules"
+          },
+          {
+            "comment": "Fixed some content control sizing issues"
+          },
+          {
+            "comment": "Moved most isHidden logic for toolbar items into ui-ninezone"
+          },
+          {
+            "comment": "Hiding items by rendering them conditionally instead of using a CSS class."
+          },
+          {
+            "comment": "Fixed tests"
+          },
+          {
+            "comment": "Tree cell editing unit tests"
+          },
+          {
+            "comment": "ui-framework unit tests & docs"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.166.0",
       "tag": "@bentley/ui-framework_v0.166.0",
       "date": "Mon, 12 Nov 2018 16:42:10 GMT",

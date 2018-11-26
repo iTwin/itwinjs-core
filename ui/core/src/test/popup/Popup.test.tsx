@@ -10,6 +10,16 @@ import { expect } from "chai";
 import { Popup, Position } from "../../index";
 
 describe("Popup", () => {
+  it("renders at fixed position when fixedPosition props are provided", () => {
+    const wrapper = mount(<Popup fixedPosition={{ top: 30, left: 70 }} />);
+
+    const style: React.CSSProperties = wrapper.childAt(0).get(0).props.style;
+
+    expect(style).to.have.property("top", 30);
+    expect(style).to.have.property("left", 70);
+    expect(style).to.have.property("position", "fixed");
+  });
+
   describe("renders", () => {
     it("should render with few props", () => {
       const wrapper = mount(

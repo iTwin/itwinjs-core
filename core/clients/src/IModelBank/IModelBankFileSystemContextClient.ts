@@ -77,7 +77,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
       body,
     };
 
-    return request(alctx, url, options).then(() => Promise.resolve());
+    return request(alctx, url, options).then(async () => Promise.resolve());
   }
 
   public async deleteContext(alctx: ActivityLoggingContext, accessToken: AccessToken, contextId: string): Promise<void> {
@@ -91,6 +91,6 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
       headers: { authorization: accessToken.toTokenString() },
     };
 
-    return request(alctx, url, options).then(() => Promise.resolve());
+    return request(alctx, url, options).then(async () => Promise.resolve());
   }
 }

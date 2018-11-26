@@ -148,11 +148,11 @@ export class IdleTool extends InteractiveTool {
   public async onTouchTap(ev: BeTouchEvent): Promise<EventHandled> {
     if (ev.isSingleTap) {
       // Send data down/up for single finger tap.
-      IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Data);
+      IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Data); // tslint:disable-line:no-floating-promises
       return EventHandled.Yes;
     } else if (ev.isTwoFingerTap) {
       // Send reset down/up for two finger tap.
-      IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Reset);
+      IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev, BeButton.Reset); // tslint:disable-line:no-floating-promises
       return EventHandled.Yes;
     } else if (ev.isDoubleTap) {
       // Fit view on single finger double tap.

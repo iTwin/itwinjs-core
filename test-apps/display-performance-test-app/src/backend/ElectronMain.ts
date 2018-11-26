@@ -29,7 +29,7 @@ const isDevBuild = (process.env.NODE_ENV === "development");
 const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
 const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
 
-(async () => {
+(async () => { // tslint:disable-line:no-floating-promises
   const manager = new IModelJsElectronAppManager(electron);
   if (!isDevBuild)
     manager.frontendURL = url.format({

@@ -48,7 +48,7 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 // __PUBLISH_EXTRACT_END__
 
 async function queryProjectIdByName(activityContext: ActivityLoggingContext, accessToken: AccessToken, projectName: string): Promise<Project> {
-  return await BriefcaseManager.connectClient.getProject(activityContext, accessToken, {
+  return BriefcaseManager.connectClient.getProject(activityContext, accessToken, {
     $select: "*",
     $filter: "Name+eq+'" + projectName + "'",
   });
@@ -56,7 +56,7 @@ async function queryProjectIdByName(activityContext: ActivityLoggingContext, acc
 
 async function queryIModelByName(activityContext: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
   const client = BriefcaseManager.imodelClient as IModelHubClient;
-  const iModels = await client.IModels().get(activityContext, accessToken, projectId, new IModelQuery().byName(iModelName));
+  const iModels = await client.iModels.get(activityContext, accessToken, projectId, new IModelQuery().byName(iModelName));
   if (iModels.length === 0)
     return undefined;
   if (iModels.length > 1)
@@ -68,11 +68,11 @@ async function createIModel(activityContext: ActivityLoggingContext, accessToken
   try {
     const existingid = await queryIModelByName(activityContext, accessToken, projectId, name);
     if (existingid !== undefined && !!existingid.id)
-      BriefcaseManager.imodelClient.IModels().delete(activityContext, accessToken, projectId, existingid.id!);
+      BriefcaseManager.imodelClient.iModels.delete(activityContext, accessToken, projectId, existingid.id!); // tslint:disable-line:no-floating-promises
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code
-  const imodelRepository: HubIModel = await BriefcaseManager.imodelClient.IModels().create(activityContext, accessToken, projectId, name, seedFile);
+  const imodelRepository: HubIModel = await BriefcaseManager.imodelClient.iModels.create(activityContext, accessToken, projectId, name, seedFile);
   // __PUBLISH_EXTRACT_END__
   return imodelRepository;
 }
@@ -174,6 +174,6 @@ describe.skip("Bridge", async () => {
 
   it("should run bridge the first time", async () => {
     const assetsDir = path.join(__dirname, "..", "assets");
-    runBridgeFirstTime(accessToken, imodelRepository.wsgId, testProjectId, assetsDir);
+    await runBridgeFirstTime(accessToken, imodelRepository.wsgId, testProjectId, assetsDir);
   });
 });

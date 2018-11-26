@@ -137,7 +137,7 @@ class RealityModelTileLoader extends TileLoader {
 
     let foundChild = tilesetJson.children[childIndex];
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
-    if (separatorIndex >= 0) { return await this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
+    if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
     if (undefined !== foundChild.content && foundChild.content.url.endsWith("json")) {    // A child may contain a subTree...
       const subTree = await this._tree.client.getTileJson(foundChild.content.url);
       foundChild = subTree.root;

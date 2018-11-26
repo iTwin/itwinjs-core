@@ -84,14 +84,8 @@ const computePosition = `
   float perpDist = weight / 2.0;
   float alongDist = 0.0;
 
-  if (g_quadIndex == 1.0) {
-    perpDist = -perpDist;
-  } else if (g_quadIndex == 2.0) {
-    perpDist = -perpDist;
-    alongDist = distance(rawPos, other);
-  } else if (g_quadIndex == 3.0) {
-    alongDist = distance(rawPos, other);
-  }
+  perpDist *= sign(0.5 - float(g_quadIndex == 1.0 || g_quadIndex == 2.0)); // negate for index 1 and 2
+  alongDist += distance(rawPos, other) * float(g_quadIndex >= 2.0); // index 2 and 3 correspond to 'far' endpoint of segment
 
   pos.x += perp.x * perpDist * 2.0 * pos.w / u_viewport.z;
   pos.y += perp.y * perpDist * 2.0 * pos.w / u_viewport.w;

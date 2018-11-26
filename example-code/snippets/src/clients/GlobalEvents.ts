@@ -41,16 +41,16 @@ async () => {
   const accessToken = new MockAccessToken();
   // __PUBLISH_EXTRACT_START__ GlobalEventSubscriptionsHandler.create.example-code
   const id = "c41580e2-6ac9-473c-9194-2c9a36187dbd";
-  const subscription: GlobalEventSubscription = await imodelHubClient.GlobalEvents()
-    .Subscriptions().create(alctx, token, id, ["iModelCreatedEvent", "NamedVersionCreatedEvent"]);
+  const subscription: GlobalEventSubscription = await imodelHubClient.globalEvents
+    .subscriptions.create(alctx, token, id, ["iModelCreatedEvent", "NamedVersionCreatedEvent"]);
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ GlobalEventHandler.getSASToken.example-code
-  const sasToken: GlobalEventSAS = await imodelHubClient.GlobalEvents().getSASToken(alctx, accessToken);
+  const sasToken: GlobalEventSAS = await imodelHubClient.globalEvents.getSASToken(alctx, accessToken);
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ GlobalEventHandler.getEvent.example-code
-  const globalEvent: IModelHubGlobalEvent | undefined = await imodelHubClient.GlobalEvents()
+  const globalEvent: IModelHubGlobalEvent | undefined = await imodelHubClient.globalEvents
     .getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 60);
   // __PUBLISH_EXTRACT_END__
 
@@ -58,7 +58,7 @@ async () => {
     return;
 
   // __PUBLISH_EXTRACT_START__ GlobalEventHandler.getEvent.lock.example-code
-  const globalEventWithLock: IModelHubGlobalEvent | undefined = await imodelHubClient.GlobalEvents()
+  const globalEventWithLock: IModelHubGlobalEvent | undefined = await imodelHubClient.globalEvents
     .getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 60, GetEventOperationType.Peek);
   // __PUBLISH_EXTRACT_END__
 
@@ -70,7 +70,7 @@ async () => {
   // __PUBLISH_EXTRACT_END__
 
   // __PUBLISH_EXTRACT_START__ GlobalEventHandler.createListener.create.example-code
-  const deleteCallback = await imodelHubClient.GlobalEvents()
+  const deleteCallback = await imodelHubClient.globalEvents // tslint:disable-line:await-promise
     .createListener(alctx, authenticate, subscription.wsgId, processGlobalEvent);
   // __PUBLISH_EXTRACT_END__
 

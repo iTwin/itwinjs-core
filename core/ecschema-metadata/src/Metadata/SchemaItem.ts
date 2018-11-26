@@ -5,7 +5,7 @@
 
 import { Schema } from "./Schema";
 import { SchemaItemProps } from "./../Deserialization/JsonProps";
-import { parseSchemaItemType, SchemaItemType, schemaItemTypeToString } from "./../ECObjects";
+import { SchemaItemType, schemaItemTypeToString } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { SchemaItemVisitor } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
@@ -29,7 +29,7 @@ export abstract class SchemaItem {
 
   get name() { return this.key.name; }
 
-  get fullName() { return this.key.schemaKey ? `${this.key.schemaKey}.${this.name}` : this.name; }
+  get fullName() { return this.key.schemaKey ? `${this.key.schemaName}.${this.name}` : this.name; }
 
   get key() { return this._key; }
 
@@ -55,9 +55,6 @@ export abstract class SchemaItem {
   }
 
   public deserializeSync(schemaItemProps: SchemaItemProps) {
-    if (parseSchemaItemType(schemaItemProps.schemaItemType) !== this.schemaItemType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an incompatible schemaItemType. It must be "${schemaItemTypeToString(this.schemaItemType)}", not "${schemaItemProps.schemaItemType}".`);
-
     if (undefined !== schemaItemProps.label) {
       this._label = schemaItemProps.label;
     }
@@ -76,9 +73,6 @@ export abstract class SchemaItem {
   }
 
   public async deserialize(schemaItemProps: SchemaItemProps) {
-    if (parseSchemaItemType(schemaItemProps.schemaItemType) !== this.schemaItemType)
-      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${this.name} has an incompatible schemaItemType. It must be "${schemaItemTypeToString(this.schemaItemType)}", not "${schemaItemProps.schemaItemType}".`);
-
     if (undefined !== schemaItemProps.label) {
       this._label = schemaItemProps.label;
     }

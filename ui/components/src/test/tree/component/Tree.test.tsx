@@ -11,12 +11,12 @@ import { waitForUpdate } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 import {
   Tree, TreeProps,
-  NodesSelectedCallback, NodesDeselectedCallback, TreeNodeProps,
+  NodesSelectedCallback, NodesDeselectedCallback, TreeNodeProps, TreeCellUpdatedArgs,
 } from "../../../tree/component/Tree";
 import { SelectionMode } from "../../../common";
 import { TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "../../..";
 import { BeInspireTreeNode } from "../../../tree/component/BeInspireTree";
-import HighlightingEngine from "../../../tree/HighlightingEngine";
+import HighlightingEngine, { HighlightableTreeProps } from "../../../tree/HighlightingEngine";
 import { BeEvent } from "@bentley/bentleyjs-core";
 
 describe("Tree", () => {
@@ -54,7 +54,7 @@ describe("Tree", () => {
     return async (parent?: TreeNodeItem) => {
       if (!parent)
         return [
-          { id: "0", label: "0", hasChildren: true, autoExpand: isExpanded("0") },
+          { id: "0", label: "0", hasChildren: true, autoExpand: isExpanded("0"), isEditable: true },
           { id: "1", label: "1", hasChildren: true, autoExpand: isExpanded("1") },
         ];
       return [
@@ -69,7 +69,7 @@ describe("Tree", () => {
   let defaultProps: Partial<TreeProps>;
 
   before(() => {
-    TestUtils.initializeUiComponents();
+    TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
   });
 
   beforeEach(() => {
@@ -78,6 +78,13 @@ describe("Tree", () => {
     defaultProps = {
       onRender: renderSpy,
     };
+
+    // note: this is needed for AutoSizer used by the Tree to
+    // have non-zero size and render the virtualized list
+    Object.defineProperties(HTMLElement.prototype, {
+      offsetHeight: { get: () => 200 },
+      offsetWidth: { get: () => 200 },
+    });
   });
 
   describe("selection", () => {
@@ -127,7 +134,7 @@ describe("Tree", () => {
         expect(getSelectedNodes().length).to.eq(2);
 
         // select node 0
-        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy, 2);
 
         // verify node 0 replaced multi-selection
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
@@ -571,7 +578,7 @@ describe("Tree", () => {
         renderedTree = render(<Tree
           {...defaultProps}
           dataProvider={[]}
-          nodeHighlightingProps={{ activeResultNode: { id: "", index: 0 }, searchText: "test" }}
+          nodeHighlightingProps={{ activeMatch: { nodeId: "", matchIndex: 0 }, searchText: "test" }}
         />);
       }, renderSpy, 2);
       const expectedContent = TestUtils.i18n.translate("Components:tree.noResultsForFilter", { test: "test" });
@@ -624,12 +631,12 @@ describe("Tree", () => {
           nodeHighlightingProps={{ searchText: "test" }}
         />);
       }, renderSpy, 2);
-      expect(renderLabelSpy.calledWith("0", { searchText: "test", activeResultIndex: undefined })).to.be.true;
+      expect(renderLabelSpy.calledWith("0", { searchText: "test", activeMatchIndex: undefined })).to.be.true;
     });
 
     it("rerenders without HighlightingEngine when nodeHighlightingProps are reset to undefined", async () => {
       const renderLabelSpy = sinon.spy(HighlightingEngine, "renderNodeLabel");
-      const dp = [{ id: "0", label: "0", icon: "test-icon" }];
+      const dp: TreeDataProviderRaw = [{ id: "0", label: "0", icon: "test-icon", children: [] }];
       await waitForUpdate(() => {
         renderedTree = render(<Tree
           {...defaultProps}
@@ -659,8 +666,9 @@ describe("Tree", () => {
       }, renderSpy, 2);
       expect(renderedTree.getAllByText("0").length).to.eq(1);
       expect(renderedTree.getAllByText("1").length).to.eq(1);
-      // note: node renderer called 4 times in total - 2 for each render
-      renderMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(4));
+      // note: node renderer called only 2 times, because the first render doesn't render nodes
+      // and the second one renders each node once
+      renderMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(2));
     });
 
   });
@@ -796,28 +804,95 @@ describe("Tree", () => {
 
   describe("scrolling to highlighted nodes", () => {
 
+    const methodOverrides = {
+      scrollTo: Element.prototype.scrollTo,
+      getComputedStyle: window.getComputedStyle,
+    };
+    const scrollToSpy = sinon.spy();
+
+    beforeEach(() => {
+      scrollToSpy.resetHistory();
+      Element.prototype.scrollTo = scrollToSpy;
+      // tslint:disable-next-line:only-arrow-functions
+      window.getComputedStyle = function () {
+        const result = methodOverrides.getComputedStyle.apply(window, arguments);
+        result.overflow = "auto";
+        return result;
+      };
+    });
+
+    afterEach(() => {
+      Element.prototype.scrollTo = methodOverrides.scrollTo;
+      window.getComputedStyle = methodOverrides.getComputedStyle;
+    });
+
     it("scrolls to highlighted node when highlighting props change", async () => {
-      const dp = [{ id: "0", label: "0", icon: "test-icon" }];
+      const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
       }, renderSpy, 2);
-      const scrollSpy = sinon.spy(HighlightingEngine, "scrollToActiveNode");
+      const highlightProps: HighlightableTreeProps = {
+        searchText: "er",
+        activeMatch: {
+          nodeId: "0",
+          matchIndex: 0,
+        },
+      };
       await waitForUpdate(() => {
-        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={{ searchText: "text" }} />);
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} />);
       }, renderSpy, 1);
-      expect(scrollSpy.calledOnce).to.be.true;
+      expect(scrollToSpy).to.be.calledOnce;
     });
 
-    it("doesn't scroll to highlighted node when unrelated props change", async () => {
-      const dp = [{ id: "0", label: "0", icon: "test-icon" }];
+    it("does nothing when there's no active match", async () => {
+      const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
       await waitForUpdate(() => {
-        renderedTree = render(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={{ searchText: "text" }} />);
+        renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
       }, renderSpy, 2);
-      const scrollSpy = sinon.spy(HighlightingEngine, "scrollToActiveNode");
+      const highlightProps: HighlightableTreeProps = {
+        searchText: "er",
+        activeMatch: undefined,
+      };
       await waitForUpdate(() => {
-        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={{ searchText: "text" }} selectionMode={SelectionMode.Multiple} />);
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} />);
       }, renderSpy, 1);
-      expect(scrollSpy.called).to.be.false;
+      expect(scrollToSpy).to.not.be.called;
+    });
+
+    it("does nothing when there's active match element is not found", async () => {
+      const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
+      }, renderSpy, 2);
+      const highlightProps: HighlightableTreeProps = {
+        searchText: "er",
+        activeMatch: {
+          nodeId: "1",
+          matchIndex: 0,
+        },
+      };
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} />);
+      }, renderSpy, 1);
+      expect(scrollToSpy).to.not.be.called;
+    });
+
+    it("does nothing when unrelated props change", async () => {
+      const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
+      const highlightProps: HighlightableTreeProps = {
+        searchText: "er",
+        activeMatch: {
+          nodeId: "0",
+          matchIndex: 0,
+        },
+      };
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} />);
+      }, renderSpy, 2);
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} selectedNodes={[]} />);
+      }, renderSpy, 1);
+      expect(scrollToSpy).to.not.be.called;
     });
 
   });
@@ -850,4 +925,108 @@ describe("Tree", () => {
     expect(spy.calledWith(rootNode, [childNode])).to.be.true;
   });
 
+  describe("cell editing", () => {
+
+    const getSelectedNodes = (): Array<HTMLElement & { label: string }> => {
+      return renderedTree.getAllByTestId(Tree.TestId.Node as any)
+        .filter((node) => node.classList.contains("is-selected"))
+        .map((node) => Object.assign(node, { label: within(node).getByTestId(Tree.TestId.NodeContents).innerHTML }));
+    };
+
+    let defaultSelectionProps: TreeProps;
+    const onCellEditingSpy = sinon.spy();
+    const onCellUpdatedSpy = sinon.spy();
+
+    const handleCellUpdated = async (_args: TreeCellUpdatedArgs): Promise<boolean> => {
+      onCellUpdatedSpy();
+      return true;
+    };
+
+    beforeEach(async () => {
+      onCellEditingSpy.resetHistory();
+      onCellUpdatedSpy.resetHistory();
+
+      defaultSelectionProps = {
+        ...defaultProps,
+        dataProvider: createDataProvider(),
+        onCellEditing: onCellEditingSpy,
+        onCellUpdated: handleCellUpdated,
+        ignoreEditorBlur: true,
+      };
+    });
+
+    describe("with Single selection mode", () => {
+
+      beforeEach(async () => {
+        await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps} selectionMode={SelectionMode.Single} />), renderSpy, 2);
+      });
+
+      it("activates the editor when clicking a selected mode", async () => {
+        // select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+        // click node 0 again
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+
+        // verify
+        expect(getSelectedNodes().length).to.eq(1);
+        expect(onCellEditingSpy.calledOnce).to.be.true;
+      });
+
+      it("does not activate the editor when isEditable is false", async () => {
+        // select node 1
+        await waitForUpdate(() => fireEvent.click(getNode("1").contentArea), renderSpy);
+        // click node 1 again
+        await waitForUpdate(() => fireEvent.click(getNode("1").contentArea), renderSpy);
+
+        // verify
+        expect(getSelectedNodes().length).to.eq(1);
+        expect(onCellEditingSpy.called).to.be.false;
+      });
+
+      it("commits the change on Enter", async () => {
+        // select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+        // click node 0 again
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+
+        // verify
+        expect(onCellEditingSpy.calledOnce).to.be.true;
+
+        // Get editor input element & press Enter
+        const inputNode = renderedTree.queryByTestId("components-text-editor");
+        expect(inputNode).to.exist;
+
+        if (inputNode) {
+          await waitForUpdate(() => fireEvent.keyDown(inputNode, { key: "Enter" }), renderSpy);
+          expect(onCellUpdatedSpy.calledOnce).to.be.true;
+          const inputNode2 = renderedTree.queryByTestId("components-text-editor");
+          expect(inputNode2).to.not.exist;
+        }
+
+      });
+
+      it("cancels the change on Escape", async () => {
+        // select node 0
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+        // click node 0 again
+        await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+
+        // verify
+        expect(onCellEditingSpy.calledOnce).to.be.true;
+
+        // Get editor input element & press Enter
+        const inputNode = renderedTree.queryByTestId("components-text-editor");
+        expect(inputNode).to.exist;
+
+        if (inputNode) {
+          await waitForUpdate(() => fireEvent.keyDown(inputNode, { key: "Escape" }), renderSpy);
+          expect(onCellUpdatedSpy.called).to.be.false;
+          const inputNode2 = renderedTree.queryByTestId("components-text-editor");
+          expect(inputNode2).to.not.exist;
+        }
+
+      });
+
+    });
+  });
 });

@@ -9,8 +9,6 @@ import { render, cleanup, fireEvent, RenderResult, waitForElement } from "react-
 import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../index";
 import { mockRawTreeDataProvider, mockInterfaceTreeDataProvider } from "./mockTreeDataProvider";
 
-afterEach(cleanup);
-
 describe("Breadcrumb", () => {
   let renderSpy: sinon.SinonSpy;
   let renderedComponent: RenderResult;
@@ -18,6 +16,8 @@ describe("Breadcrumb", () => {
     sinon.restore();
     renderSpy = sinon.spy();
   });
+
+  afterEach(cleanup);
 
   describe("<Breadcrumb />", () => {
     it("should render", () => {

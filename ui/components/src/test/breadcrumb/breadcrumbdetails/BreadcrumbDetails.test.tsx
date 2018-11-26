@@ -9,8 +9,6 @@ import { render, cleanup, RenderResult, waitForElement } from "react-testing-lib
 import { BreadcrumbDetails, BreadcrumbPath } from "../../../index";
 import { mockRawTreeDataProvider, mockInterfaceTreeDataProvider } from "../mockTreeDataProvider";
 
-afterEach(cleanup);
-
 describe("BreadcrumbDetails", () => {
   let renderSpy: sinon.SinonSpy;
   let renderedComponent: RenderResult;
@@ -18,6 +16,8 @@ describe("BreadcrumbDetails", () => {
     sinon.restore();
     renderSpy = sinon.spy();
   });
+
+  afterEach(cleanup);
 
   describe("<BreadcrumbDetails />", () => {
     it("should render", () => {

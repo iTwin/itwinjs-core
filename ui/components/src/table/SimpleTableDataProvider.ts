@@ -44,11 +44,11 @@ export class SimpleTableDataProvider implements MutableTableDataProvider {
     }
   }
 
-  public getColumns(): Promise<ColumnDescription[]> {
+  public async getColumns(): Promise<ColumnDescription[]> {
     return Promise.resolve(this._columns);
   }
 
-  public getRowsCount(): Promise<number> {
+  public async getRowsCount(): Promise<number> {
     return Promise.resolve(this._items.length);
   }
 

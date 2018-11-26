@@ -33,7 +33,7 @@ export class NullTarget extends RenderTarget {
   public onResized(): void { }
   public dispose(): void { }
   public updateViewRect(): boolean { return false; }
-  public readPixels() { return undefined; }
+  public readPixels(): void { }
   public readImage() { return undefined; }
 }
 

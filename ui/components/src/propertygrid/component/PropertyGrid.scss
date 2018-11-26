@@ -9,6 +9,9 @@
 
   padding-top: 8px;
   padding-bottom: 8px;
+
+  display: grid;
+  grid-row-gap: 10px;
 }
 
 .components-property-grid-wrapper {
@@ -33,17 +36,25 @@
     cursor: pointer;
   }
 
+  .components--hoverable:hover {
+    background-color: $bwc-blue-highlight;
+  }
+
   .components-cell-editor {
-    border: $bwc-blue solid 1px;
-    background: #F9F9F9 !important;
+    border: #c7ccd1 solid 1px;
+    border-radius: 3px;
+    background: #fff ;
     box-sizing: border-box;
     width: 100%;
     height: 100%;
+    padding: 9px 8px;
   }
 }
 
 .components-property-list--horizontal{
   @include components-property-list;
+  display: grid;
+  grid-row-gap: 10px;
 }
 
 .components-property-list--vertical {

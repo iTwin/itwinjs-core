@@ -28,6 +28,19 @@ describe.skip("DebugHubIssues (#integration)", () => {
     Logger.setLevel("Performance", LogLevel.Info);
   });
 
+  it.skip("should be able to validate change set operations", async () => {
+    const projectName = "iModelJsTest";
+    const iModelName = "ReadOnlyTest";
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
+
+    const link = `https://connect-imodelweb.bentley.com/imodeljs/?projectId=${myProjectId}&iModelId=${myIModelId}`;
+    console.log(`ProjectName: ${projectName}, iModelName: ${iModelName}, URL Link: ${link}`); // tslint:disable-line:no-console
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.validateAllChangeSetOperations(accessToken, myProjectId, myIModelId, iModelDir);
+  });
+
   it.skip("should be able to download the seed files, change sets, for UKRail_EWR2 (EWR_2E) model", async () => {
     const projectName = "UKRail_EWR2";
     const iModelName = "EWR_2E";
@@ -99,7 +112,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
     // Create a named version on the just uploaded change set
     const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, accessToken, iModelId.toString(), BriefcaseManager.imodelClient);
-    await BriefcaseManager.imodelClient.Versions().create(actx, accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
+    await BriefcaseManager.imodelClient.versions.create(actx, accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub", async () => {
@@ -133,7 +146,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
-    iModel.close(actx, accessToken);
+    await iModel.close(actx, accessToken);
   });
 
   it.skip("should be able to create a change set from a standalone iModel)", async () => {
@@ -158,7 +171,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
-    iModel.close(actx, accessToken);
+    await iModel.close(actx, accessToken);
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub in PROD", async () => {

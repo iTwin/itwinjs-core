@@ -3,7 +3,8 @@
     "true": "true",
     "false": "false",
     "loading": "loading",
-    "noData": "No data"
+    "noData": "No data",
+    "length": "Length"
   },
   "button": {
     "label": {

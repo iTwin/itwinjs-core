@@ -236,7 +236,7 @@ describe("ChangeSummary (#integration)", () => {
     const testIModelId: GuidString = testIModels[0].id;
     setupTest(testIModelId);
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // extract summary for second changeset
     const changesetId: string = changeSets[1].wsgId;
@@ -276,7 +276,7 @@ describe("ChangeSummary (#integration)", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     const startChangeSetId: string = changeSets[0].id!;
     const endChangeSetId: string = changeSets[1].id!;
@@ -323,7 +323,7 @@ describe("ChangeSummary (#integration)", () => {
     const testIModelId: string = testIModels[0].id;
     setupTest(testIModelId);
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, testIModelId);
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, testIModelId);
     assert.isAtLeast(changeSets.length, 3);
     // first extraction: just first changeset
     const firstChangesetId: string = changeSets[0].id!;
@@ -394,7 +394,7 @@ describe("ChangeSummary (#integration)", () => {
     let iModel: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModelId, OpenParams.fixedVersion(AccessMode.Exclusive));
     try {
       assert.exists(iModel);
-      using(new DisableNativeAssertions(), async () => {
+      await using(new DisableNativeAssertions(), async () => {
         await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel);
       });
     } catch (e) {
@@ -408,7 +408,7 @@ describe("ChangeSummary (#integration)", () => {
     iModel = await IModelDb.open(actx, accessToken, testProjectId, testIModelId, OpenParams.fixedVersion(AccessMode.Shared));
     try {
       assert.exists(iModel);
-      using(new DisableNativeAssertions(), async () => {
+      await using(new DisableNativeAssertions(), async () => {
         await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel);
       });
     } catch (e) {
@@ -423,7 +423,7 @@ describe("ChangeSummary (#integration)", () => {
     try {
       assert.exists(iModel);
       await iModel.close(actx, accessToken);
-      using(new DisableNativeAssertions(), async () => {
+      await using(new DisableNativeAssertions(), async () => {
         await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel);
       });
     } catch (e) {
@@ -437,7 +437,7 @@ describe("ChangeSummary (#integration)", () => {
     assert.exists(iModel.briefcase);
     assert.isTrue(iModel.briefcase!.isStandalone);
     try {
-      using(new DisableNativeAssertions(), async () => {
+      await using(new DisableNativeAssertions(), async () => {
         await ChangeSummaryManager.extractChangeSummaries(actx, accessToken, iModel);
       });
     } catch (e) {

@@ -13,8 +13,11 @@ import { System, RenderType } from "../System";
 import { assert } from "@bentley/bentleyjs-core";
 import { SurfaceGeometry } from "../Surface";
 
+const extractShaderBit = `
+  float extractShaderBit(float flag) { return extractNthBit(floor(u_shaderFlags + 0.5), flag); }
+`;
 const isShaderBitSet = `
-bool isShaderBitSet(float flag) { return 0.0 != extractNthBit(floor(u_shaderFlags + 0.5), flag); }
+bool isShaderBitSet(float flag) { return 0.0 != extractShaderBit(flag); }
 `;
 
 function addShaderFlagsLookup(shader: ShaderBuilder) {
@@ -24,6 +27,7 @@ function addShaderFlagsLookup(shader: ShaderBuilder) {
   shader.addConstant("kShaderBit_OITScaleOutput", VariableType.Float, "3.0");
 
   shader.addFunction(GLSLCommon.extractNthBit);
+  shader.addFunction(extractShaderBit);
   shader.addFunction(isShaderBitSet);
 }
 
@@ -91,6 +95,17 @@ const computeEyeSpace = "v_eyeSpace = (u_mv * rawPosition);";
 export function addEyeSpace(builder: ProgramBuilder) {
   builder.addInlineComputedVarying("v_eyeSpace", VariableType.Vec4, computeEyeSpace);
 }
+
+export const addUInt32s = `
+  vec4 addUInt32s(vec4 a, vec4 b)
+      {
+      vec4 c = a + b;
+      if (c.x > 255.0) { c.x -= 256.0; c.y += 1.0; }
+      if (c.y > 255.0) { c.y -= 256.0; c.z += 1.0; }
+      if (c.z > 255.0) { c.z -= 256.0; c.w += 1.0; }
+      return c;
+      }
+`;
 
 export namespace GLSLCommon {
   // Expects flags in range [0...256] with no fraction; and bit is [0..31] with no fraction.

@@ -408,7 +408,7 @@ export class QuantityFormatter implements UnitsProvider {
     const activeMap = imperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
     if (activeMap.size === 0) {
       // trigger a load so it will become available
-      this.loadFormatSpecsForQuantityTypes(imperial);
+      this.loadFormatSpecsForQuantityTypes(imperial); // tslint:disable-line:no-floating-promises
       return undefined;
     }
 
@@ -460,7 +460,7 @@ export class QuantityFormatter implements UnitsProvider {
   /** Set the flag to return either metric or imperial formats. This call also makes an async request to refresh the cached formats. */
   public set useImperialFormats(useImperial: boolean) {
     this._activeSystemIsImperial = useImperial;
-    this.loadFormatSpecsForQuantityTypes(useImperial);
+    this.loadFormatSpecsForQuantityTypes(useImperial); // tslint:disable-line:no-floating-promises
   }
 
   public get useImperialFormats(): boolean { return this._activeSystemIsImperial; }

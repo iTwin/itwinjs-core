@@ -6,12 +6,13 @@
 
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyRecord } from "../../properties";
-import { PropertyRenderer } from "./PropertyRenderer";
+import { PropertyRecord, PropertyValueFormat } from "../../properties";
+import { PropertyRenderer } from "../../properties/renderers/PropertyRenderer";
 import { PropertyCategory } from "../PropertyDataProvider";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 
+/** Properties of [[PropertyList]] React component */
 export interface PropertyListProps {
   orientation: Orientation;
   category?: PropertyCategory;
@@ -24,6 +25,8 @@ export interface PropertyListProps {
   editingPropertyKey?: string;
   onEditCommit?: (args: PropertyUpdatedArgs, category: PropertyCategory) => void;
   onEditCancel?: () => void;
+  /** Enables/disables property selection */
+  isPropertySelectionEnabled?: boolean;
 }
 
 /**
@@ -34,11 +37,8 @@ export function getPropertyKey(propertyCategory: PropertyCategory, propertyRecor
   return propertyCategory.name + propertyRecord.property.name;
 }
 
-/**
- * Container component for properties within a category.
- */
+/** A React component that renders multiple properties within a category as a list. */
 export class PropertyList extends React.Component<PropertyListProps> {
-
   private _onEditCommit = (args: PropertyUpdatedArgs) => {
     if (this.props.onEditCommit && this.props.category)
       this.props.onEditCommit(args, this.props.category);
@@ -55,10 +55,11 @@ export class PropertyList extends React.Component<PropertyListProps> {
             <PropertyRenderer
               key={key}
               uniqueKey={key}
+              isSelectable={this.props.isPropertySelectionEnabled}
               isSelected={key === this.props.selectedPropertyKey}
               propertyRecord={propertyRecord}
               orientation={this.props.orientation}
-              onClick={this.props.onPropertyClicked}
+              onClick={propertyRecord.value.valueFormat === PropertyValueFormat.Primitive ? this.props.onPropertyClicked : undefined}
               columnRatio={this.props.columnRatio}
               onColumnRatioChanged={this.props.onColumnChanged}
               propertyValueRendererManager={this.props.propertyValueRendererManager}

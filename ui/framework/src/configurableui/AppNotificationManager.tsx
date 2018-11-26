@@ -56,7 +56,7 @@ export class AppNotificationManager extends NotificationManager {
    * @param icon         The MessageBox icon type.
    * @return the response from the user.
    */
-  public openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
+  public async openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
     return MessageManager.openMessageBox(mbType, message, icon);
   }
 

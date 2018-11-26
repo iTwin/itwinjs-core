@@ -6,6 +6,7 @@
 
 import classnames from "classnames";
 import * as React from "react";
+import { Range2d } from "@bentley/geometry-core";
 
 import "./Tree.scss";
 
@@ -23,23 +24,71 @@ export interface TreeProps {
 export default class Tree extends React.PureComponent<TreeProps> {
   private _treeElement: React.RefObject<HTMLDivElement> = React.createRef();
 
-  /**
-   * @param elementBoundingBox Node DOM Element bounding box relative to viewport
-   */
-  public scrollToElement(elementBoundingBox: ClientRect | DOMRect) {
+  private get _scrollableContainer(): Element | undefined {
     if (!this._treeElement.current)
+      return undefined;
+
+    const isScrollable = (element: Element) => {
+      const style = window.getComputedStyle(element);
+      return style.overflow === "auto" || style.overflow === "scroll"
+        || style.overflowY === "auto" || style.overflowY === "scroll"
+        || style.overflowX === "auto" || style.overflowX === "scroll";
+    };
+    let scrollableContainer: Element | undefined = this._treeElement.current;
+    while (scrollableContainer && !isScrollable(scrollableContainer))
+      scrollableContainer = (scrollableContainer.children.length > 0) ? scrollableContainer.children[0] : undefined;
+
+    return scrollableContainer;
+  }
+
+  public scrollToElement(element: Element) {
+    const container = this._scrollableContainer;
+    if (!container)
       return;
 
-    const treeBox = this._treeElement.current.getBoundingClientRect();
-    const relativeX = elementBoundingBox.left - treeBox.left + this._treeElement.current.scrollLeft;
-    const relativeY = elementBoundingBox.top - treeBox.top + this._treeElement.current.scrollTop;
-    this._treeElement.current.scrollTo(
-      Math.max(0, relativeX - treeBox.width + elementBoundingBox.width + 30),
-      relativeY);
+    if (!Element.prototype.scrollTo) {
+      // workaround for Edge scrollTo issue https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/15534521/
+      element.scrollIntoView();
+      return;
+    }
+
+    const elementBox = element.getBoundingClientRect();
+    const elementRange = Range2d.createXYXY(elementBox.left, elementBox.top, elementBox.right, elementBox.bottom);
+    const containerBox = container.getBoundingClientRect();
+    const containerRange = Range2d.createXYXY(containerBox.left - container.scrollLeft, containerBox.top - container.scrollTop,
+      containerBox.right - container.scrollLeft, containerBox.bottom - container.scrollTop);
+
+    let left: number;
+    if (container.scrollLeft > 0 && elementRange.high.x <= containerRange.high.x) {
+      // always attempt to keep horizontal scroll at 0
+      left = 0;
+    } else if (containerRange.low.x <= elementRange.low.x && containerRange.high.x >= elementRange.high.x) {
+      // already visible - no need to scroll to
+      left = container.scrollLeft;
+    } else {
+      left = elementRange.low.x - containerRange.low.x;
+    }
+
+    let top: number;
+    if (containerRange.low.y <= elementRange.low.y && containerRange.high.y >= elementRange.high.y) {
+      // already visible - no need to scroll to
+      top = container.scrollTop;
+    } else {
+      top = elementRange.low.y - containerRange.low.y;
+    }
+
+    container.scrollTo({ left, top });
   }
 
   public getElementsByClassName(className: string): Element[] {
-    return this._treeElement.current ? [...this._treeElement.current.getElementsByClassName(className)] : [];
+    if (!this._treeElement.current)
+      return [];
+
+    const elems = new Array<Element>();
+    const collection = this._treeElement.current.getElementsByClassName(className);
+    for (let i = 0; i < collection.length; ++i)
+      elems.push(collection.item(i)!);
+    return elems;
   }
 
   public render() {

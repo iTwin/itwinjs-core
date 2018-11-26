@@ -7,7 +7,7 @@ import { NavigationValue } from "@bentley/imodeljs-common";
 import { Id64String } from "@bentley/bentleyjs-core";
 // tslint:disable:no-console
 
-async function executeECSql_Binding(iModel: IModelConnection): Promise<void> {
+async function executeECSql_SampleMethod(iModel: IModelConnection): Promise<void> {
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_Binding_Positional
     const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE CodeValue=? AND LastMod>=?",
@@ -66,9 +66,7 @@ async function executeECSql_Binding(iModel: IModelConnection): Promise<void> {
     // __PUBLISH_EXTRACT_END__
     console.log(rows);
   }
-}
 
-async function executeECSql_QueryResult(iModel: IModelConnection) {
   {
     // __PUBLISH_EXTRACT_START__ ExecuteECSql_IllustrateRowFormat
     const rows: any[] = await iModel.executeQuery("SELECT ECInstanceId,ECClassId,Parent,LastMod FROM bis.Element WHERE Model.Id=?", ["0x113"]);
@@ -95,5 +93,4 @@ async function executeECSql_QueryResult(iModel: IModelConnection) {
 }
 
 const dummyIModel: IModelConnection = {} as IModelConnection;
-executeECSql_Binding(dummyIModel);
-executeECSql_QueryResult(dummyIModel);
+executeECSql_SampleMethod(dummyIModel).catch(() => { });

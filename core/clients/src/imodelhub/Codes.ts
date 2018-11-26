@@ -403,7 +403,7 @@ export class CodeHandler {
   }
 
   /** Get handler for querying [[CodeSequence]]s. */
-  public Sequences(): CodeSequenceHandler {
+  public get sequences(): CodeSequenceHandler {
     return new CodeSequenceHandler(this._handler);
   }
 
@@ -514,7 +514,7 @@ export class CodeHandler {
     ArgumentCheck.nonEmptyArray("codes", codes);
 
     updateOptions = updateOptions || {};
-    this.setupOptionDefaults(updateOptions);
+    await this.setupOptionDefaults(updateOptions);
 
     const result: HubCode[] = [];
     let conflictError: ConflictingCodesError | undefined;

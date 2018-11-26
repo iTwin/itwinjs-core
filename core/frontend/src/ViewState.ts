@@ -113,7 +113,7 @@ export class ViewSubCategories {
    * This function is invoked by ViewState.changeCategoryDisplay() to ensure subcategory information is present for any newly-enabled
    * categories.
    */
-  public update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+  public async update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
     let missing: Set<string> | undefined;
     for (const catId of addedCategoryIds) {
       if (undefined === this._byCategoryId.get(catId)) {
@@ -397,7 +397,7 @@ export abstract class ViewState extends ElementState {
     if (display) {
       this.categorySelector.addCategories(categories);
       const categoryIds = Id64.toIdSet(categories);
-      this.subCategories.update(categoryIds, this.iModel).then(() => {
+      this.subCategories.update(categoryIds, this.iModel).then(() => { // tslint:disable-line:no-floating-promises
         this.setFeatureOverridesDirty();
         if (enableAllSubCategories) {
           for (const categoryId of categoryIds) {

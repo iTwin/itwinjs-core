@@ -49,7 +49,7 @@ export class TextEditor extends React.Component<TextEditorProps, TextEditorState
 
   public componentDidMount() {
     this._isMounted = true;
-    this.getInitialValue();
+    this.getInitialValue(); // tslint:disable-line:no-floating-promises
   }
 
   public componentWillUnmount() {
@@ -88,6 +88,7 @@ export class TextEditor extends React.Component<TextEditorProps, TextEditorState
         className={className}
         defaultValue={this.state.inputValue}
         onChange={this._updateInputValue}
+        data-testid="components-text-editor"
       />
     );
   }

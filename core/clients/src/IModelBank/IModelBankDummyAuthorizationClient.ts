@@ -11,7 +11,7 @@ import { IModelAuthorizationClient } from "../IModelCloudEnvironment";
  * be able to tolerate this dummy token.
  */
 export class IModelBankDummyAuthorizationClient implements IModelAuthorizationClient {
-  public authorizeUser(_actx: ActivityLoggingContext, userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken> {
+  public async authorizeUser(_actx: ActivityLoggingContext, userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken> {
     if (!userInfo)
       userInfo = { id: "", email: { id: userCredentials.email }, profile: { name: "", firstName: "", lastName: "" } };
     const foreignAccessTokenWrapper: any = {};

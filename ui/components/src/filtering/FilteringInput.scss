@@ -21,6 +21,10 @@
     @include bwc-inputs-input;
     box-sizing:border-box;
   }
+
+  input::-ms-clear {
+    display: none;
+  }
 }
 
 .filtering-input-input-components{

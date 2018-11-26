@@ -283,7 +283,7 @@ export class GlobalEventHandler extends EventBaseHandler {
   /**
    * Get a handler for managing [[GlobalEventSubscription]]s.
    */
-  public Subscriptions(): GlobalEventSubscriptionHandler {
+  public get subscriptions(): GlobalEventSubscriptionHandler {
     if (!this._subscriptionHandler) {
       this._subscriptionHandler = new GlobalEventSubscriptionHandler(this._handler);
     }
@@ -352,9 +352,9 @@ export class GlobalEventHandler extends EventBaseHandler {
 
     let options: RequestOptions;
     if (getOperation === GetEventOperationType.Destructive)
-      options = this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
+      options = await this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
     else if (getOperation === GetEventOperationType.Peek)
-      options = this.getEventRequestOptions(GetEventOperationToRequestType.GetPeek, sasToken, timeout);
+      options = await this.getEventRequestOptions(GetEventOperationToRequestType.GetPeek, sasToken, timeout);
     else // Unknown operation type.
       return undefined;
 
@@ -384,9 +384,9 @@ export class GlobalEventHandler extends EventBaseHandler {
     ArgumentCheck.defined("subscriptionInstanceId", subscriptionInstanceId);
     const subscription = new ListenerSubscription();
     subscription.authenticationCallback = authenticationCallback;
-    subscription.getEvent = (sasToken: string, baseAddress: string, id: string, timeout?: number) =>
+    subscription.getEvent = async (sasToken: string, baseAddress: string, id: string, timeout?: number) =>
       this.getEvent(alctx, sasToken, baseAddress, id, timeout);
-    subscription.getSASToken = (token: AccessToken) => this.getSASToken(alctx, token);
+    subscription.getSASToken = async (token: AccessToken) => this.getSASToken(alctx, token);
     subscription.id = subscriptionInstanceId;
     return EventListener.create(subscription, listener);
   }

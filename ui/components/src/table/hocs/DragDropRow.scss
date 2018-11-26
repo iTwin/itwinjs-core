@@ -13,9 +13,7 @@
   color: rgba($bwc-text-color, 0.5);
   font-weight: bold;
 }
-.react-grid-HeaderRow {
-  overflow-x: visible !important; /* May cause unknown issues; However, fixes unnecessary clipping for reorder styling. */
-}
+
 .table-header-drag-drop {
   &.dragging .react-grid-HeaderCell {
     background: $bwc-gray;
@@ -27,6 +25,7 @@
     border-right: solid black 2px;
   }
 }
+
 .table-drop-target {
   border-top: solid transparent 1px;
   border-bottom: solid transparent 1px;

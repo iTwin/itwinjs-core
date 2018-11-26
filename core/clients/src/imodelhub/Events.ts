@@ -365,7 +365,7 @@ export class EventHandler extends EventBaseHandler {
   /**
    * Get a handler for managing [[EventSubscription]]s.
    */
-  public Subscriptions(): EventSubscriptionHandler {
+  public get subscriptions(): EventSubscriptionHandler {
     if (!this._subscriptionHandler) {
       this._subscriptionHandler = new EventSubscriptionHandler(this._handler);
     }
@@ -434,7 +434,7 @@ export class EventHandler extends EventBaseHandler {
     ArgumentCheck.defined("baseAddress", baseAddress);
     ArgumentCheck.validGuid("subscriptionId", subscriptionId);
 
-    const options = this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
+    const options = await this.getEventRequestOptions(GetEventOperationToRequestType.GetDestructive, sasToken, timeout);
 
     const result = await request(alctx, this.getEventUrl(baseAddress, subscriptionId, timeout), options);
     alctx.enter();
@@ -466,9 +466,9 @@ export class EventHandler extends EventBaseHandler {
 
     const subscription = new ListenerSubscription();
     subscription.authenticationCallback = authenticationCallback;
-    subscription.getEvent = (sasToken: string, baseAddress: string, id: string, timeout?: number) =>
+    subscription.getEvent = async (sasToken: string, baseAddress: string, id: string, timeout?: number) =>
       this.getEvent(alctx, sasToken, baseAddress, id, timeout);
-    subscription.getSASToken = (token: AccessToken) => this.getSASToken(alctx, token, imodelId);
+    subscription.getSASToken = async (token: AccessToken) => this.getSASToken(alctx, token, imodelId);
     subscription.id = subscriptionId;
     return EventListener.create(subscription, listener);
   }

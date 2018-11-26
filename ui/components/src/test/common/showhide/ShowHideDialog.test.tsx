@@ -8,12 +8,12 @@ import { render, cleanup, fireEvent } from "react-testing-library";
 import { ShowHideDialog } from "../../../";
 import TestUtils from "../../TestUtils";
 
-afterEach(cleanup);
-
 describe("ShowHideDialog", () => {
   before(async () => {
     await TestUtils.initializeUiComponents();
   });
+
+  afterEach(cleanup);
 
   describe("<ShowHideDialog />", () => {
     const items = [{ id: "0", label: "" }, { id: "1", label: "Item 1" }, { id: "2", label: "Item 2" }, { id: "3", label: "Item 3" }];

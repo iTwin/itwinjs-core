@@ -8,7 +8,7 @@ import * as express from "express";
 // Create Query Agent Web Server
 const app: express.Express = express();
 const queryAgentWebServer = new QueryAgentWebServer(app);
-queryAgentWebServer.start(app);
+queryAgentWebServer.start(app); // tslint:disable-line:no-floating-promises
 
 // queryAgentWebServer.run().then((res) => {
 //     queryAgentWebServer.close();

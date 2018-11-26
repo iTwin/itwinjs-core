@@ -207,6 +207,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "css-element-queries",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "css-loader",
       "allowedCategories": [ "frontend", "tools" ]
     },
@@ -583,6 +587,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "react-virtualized",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "readline",
       "allowedCategories": [ "tools" ]
     },
@@ -597,6 +605,10 @@
     {
       "name": "redux-oidc",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "resize-observer-polyfill",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "resolve",

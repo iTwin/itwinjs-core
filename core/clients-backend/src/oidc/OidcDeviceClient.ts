@@ -73,7 +73,7 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
     if (!this.getIsSignedIn())
       return;
 
-    this.makeRevokeTokenRequest(actx);
+    this.makeRevokeTokenRequest(actx); // tslint:disable-line:no-floating-promises
   }
 
   /** Returns a promise that resolves to the AccessToken if signed in, and undefined otherwise. The token is refreshed if it's possible and necessary. */

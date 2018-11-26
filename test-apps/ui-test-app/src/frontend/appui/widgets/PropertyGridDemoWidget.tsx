@@ -12,7 +12,7 @@ import { ContentControl } from "@bentley/ui-framework";
 import { Orientation } from "@bentley/ui-core";
 import {
   PropertyDescription, PropertyRecord, PropertyValueFormat, PrimitiveValue,
-  PropertyGrid, PropertyDataProvider, SimplePropertyDataProvider, PropertyValue, PropertyUpdatedArgs, PropertyCategory,
+  PropertyGrid, SimplePropertyDataProvider, PropertyValue, PropertyUpdatedArgs, PropertyCategory,
 } from "@bentley/ui-components";
 
 class SamplePropertyRecord extends PropertyRecord {
@@ -202,7 +202,7 @@ export class HorizontalPropertyGridContentControl extends ContentControl {
 }
 
 class HorizontalPropertyGridContent extends React.Component {
-  private _dataProvider: PropertyDataProvider;
+  private _dataProvider: SamplePropertyDataProvider;
 
   constructor(props: any) {
     super(props);
@@ -210,9 +210,33 @@ class HorizontalPropertyGridContent extends React.Component {
     this._dataProvider = new SamplePropertyDataProvider();
   }
 
+  private _updatePropertyRecord(record: PropertyRecord, newValue: string): PropertyRecord {
+    const propertyValue: PropertyValue = {
+      valueFormat: PropertyValueFormat.Primitive,
+      value: newValue,
+      displayValue: newValue.toString(),
+    };
+    return record.copyWithNewValue(propertyValue);
+  }
+
+  private _handlePropertyUpdated = async (args: PropertyUpdatedArgs, category: PropertyCategory): Promise<boolean> => {
+    let updated = false;
+
+    if (args.propertyRecord) {
+      const newRecord = this._updatePropertyRecord(args.propertyRecord, args.newValue);
+      const catIdx = this._dataProvider.findCategoryIndex(category);
+      if (catIdx >= 0)
+        this._dataProvider.replaceProperty(args.propertyRecord, catIdx, newRecord);
+      updated = true;
+    }
+
+    return updated;
+  }
+
   public render(): React.ReactNode {
     return (
-      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal} />
+      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal} isPropertySelectionEnabled={true}
+        isPropertyEditingEnabled={true} onPropertyUpdated={this._handlePropertyUpdated} />
     );
   }
 }

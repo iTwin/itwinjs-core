@@ -9,7 +9,7 @@ import { NodePathElement, NodeKey } from "@bentley/presentation-common";
 import SimpleTreeDataProvider, { SimpleTreeDataProviderHierarchy } from "@bentley/ui-components/lib/tree/SimpleTreeDataProvider";
 import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
 import { PageOptions } from "@bentley/ui-components/lib/common/PageOptions";
-import { ActiveResultNode } from "@bentley/ui-components/lib/tree/HighlightingEngine";
+import { ActiveMatchInfo } from "@bentley/ui-components/lib/tree/HighlightingEngine";
 import { createTreeNodeItem } from "./Utils";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 import { memoize } from "lodash";
@@ -57,24 +57,24 @@ export default class FilteredPresentationTreeDataProvider implements IPresentati
     hierarchy.set(parentId, treeNodes);
   }
 
-  public getActiveResultNode: (index: number) => ActiveResultNode | undefined = memoize((index: number): ActiveResultNode | undefined => {
-    let activeNode: ActiveResultNode | undefined;
+  public getActiveMatch: (index: number) => ActiveMatchInfo | undefined = memoize((index: number): ActiveMatchInfo | undefined => {
+    let activeMatch: ActiveMatchInfo | undefined;
     if (index <= 0)
       return undefined;
 
     let i = 1;
     for (const node of this._filteredResultsOccurances) {
       if (index < i + node.occurances) {
-        activeNode = {
-          id: node.id,
-          index: index - i,
+        activeMatch = {
+          nodeId: node.id,
+          matchIndex: index - i,
         };
         break;
       }
 
       i += node.occurances;
     }
-    return activeNode;
+    return activeMatch;
   });
 
   /** Count filtering results. Including multiple possible matches within node labels */

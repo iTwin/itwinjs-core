@@ -7,3 +7,4 @@
 --check-leaks
 --timeout 60000
 --file lib/test/setup.js
+--exclude lib/test/coverage/**/*

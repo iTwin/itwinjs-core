@@ -19,6 +19,8 @@ import { BisCore } from "./BisCore";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { initializeRpcBackend } from "./RpcBackend";
+import { Generic } from "./domains/Generic";
+import { Functional } from "./domains/Functional";
 
 /**
  * Configuration of imodeljs-backend.
@@ -88,6 +90,8 @@ export class IModelHost {
     WipRpcImpl.register();
 
     BisCore.registerSchema();
+    Generic.registerSchema();
+    Functional.registerSchema();
 
     IModelHost.configuration = configuration;
     IModelHost.onAfterStartup.raiseEvent();

@@ -40,84 +40,84 @@ export abstract class IModelClient {
    * Get the handler for [[HubIModel]] instances.
    * @note Use [[IModelHubClient.IModel]] for the preferred single iModel per [[Project]] workflow.
    */
-  public IModels(): IModelsHandler {
+  public get iModels(): IModelsHandler {
     return new IModelsHandler(this._handler, this._fileHandler);
   }
 
   /**
    * Get the handler for [[HubIModel]].
    */
-  public IModel(): IModelHandler {
+  public get iModel(): IModelHandler {
     return new IModelHandler(new IModelsHandler(this._handler, this._fileHandler));
   }
 
   /**
    * Get the handler for [[Briefcase]]s.
    */
-  public Briefcases(): BriefcaseHandler {
+  public get briefcases(): BriefcaseHandler {
     return new BriefcaseHandler(this._handler, this._fileHandler);
   }
 
   /**
    * Get the handler for [[ChangeSet]]s.
    */
-  public ChangeSets(): ChangeSetHandler {
+  public get changeSets(): ChangeSetHandler {
     return new ChangeSetHandler(this._handler, this._fileHandler);
   }
 
   /**
    * Get the handler for [[Lock]]s.
    */
-  public Locks(): LockHandler {
+  public get locks(): LockHandler {
     return new LockHandler(this._handler);
   }
 
   /**
    * Get the handler for [Code]($common)s.
    */
-  public Codes(): CodeHandler {
+  public get codes(): CodeHandler {
     return new CodeHandler(this._handler);
   }
 
   /**
    * Get the handler for [[UserInfo]].
    */
-  public Users(): UserInfoHandler {
+  public get users(): UserInfoHandler {
     return new UserInfoHandler(this._handler);
   }
 
   /**
    * Get the handler for [[Version]]s.
    */
-  public Versions(): VersionHandler {
+  public get versions(): VersionHandler {
     return new VersionHandler(this._handler);
   }
 
   /**
    * Get the handler for [[Thumbnail]]s.
    */
-  public Thumbnails(): ThumbnailHandler {
+  public get thumbnails(): ThumbnailHandler {
     return new ThumbnailHandler(this._handler);
   }
 
   /**
    * Get the handler for [[IModelHubEvent]]s.
    */
-  public Events(): EventHandler {
+  public get events(): EventHandler {
     return new EventHandler(this._handler);
   }
 
   /**
    * Get the handler for [[IModelHubGlobalEvent]]s.
    */
-  public GlobalEvents(): GlobalEventHandler {
+  public get globalEvents(): GlobalEventHandler {
     return new GlobalEventHandler(this._handler);
   }
 
   /**
    * Get the [CustomRequestOptions]($clients) object for controlling future request options.
    */
-  public RequestOptions(): CustomRequestOptions {
+  public get requestOptions(): CustomRequestOptions {
     return this._handler.getCustomRequestOptions();
   }
 }

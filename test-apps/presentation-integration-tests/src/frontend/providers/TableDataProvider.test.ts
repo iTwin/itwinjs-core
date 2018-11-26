@@ -98,7 +98,7 @@ describe("TableDataProvider", async () => {
       // provide keys so that instances by default aren't sorted in either way
       provider.keys = new KeySet([instances.physicalModel, instances.dictionaryModel, instances.repositoryModel]);
       await provider.sort(0, SortDirection.Ascending); // sort by display label (column index = 0)
-      const rows = await Promise.all([0, 1, 2].map((index: number) => provider.getRow(index)));
+      const rows = await Promise.all([0, 1, 2].map(async (index: number) => provider.getRow(index)));
       // expected order:
       // BisCore.DictionaryModel (dictionary model)
       // DgnV8Bridge (repository model)
@@ -110,7 +110,7 @@ describe("TableDataProvider", async () => {
       // provide keys so that instances by default aren't sorted in either way
       provider.keys = new KeySet([instances.physicalModel, instances.dictionaryModel, instances.repositoryModel]);
       await provider.sort(0, SortDirection.Descending); // sort by display label (column index = 0)
-      const rows = await Promise.all([0, 1, 2].map((index: number) => provider.getRow(index)));
+      const rows = await Promise.all([0, 1, 2].map(async (index: number) => provider.getRow(index)));
       // expected order:
       // Properties_60InstancesWithUrl2 (physical model)
       // DgnV8Bridge (repository model)

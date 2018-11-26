@@ -28,7 +28,9 @@ describe("ViewState", () => {
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
   });
 
-  after(async () => { if (imodel) imodel.closeStandalone(); });
+  after(async () => {
+    if (imodel) await imodel.closeStandalone();
+  });
 
   const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
     const compare = new DeepCompare();

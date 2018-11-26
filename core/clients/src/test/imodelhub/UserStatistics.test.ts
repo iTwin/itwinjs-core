@@ -105,7 +105,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
 
     mockGetUserStatistics(imodelId, generateUsersStatistics(1, [accessTokens[0].getUserInfo()!.id], [user1BriefcasesCount]), textQuery);
 
-    const briefcasesCount = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], imodelId, query))[0];
+    const briefcasesCount = (await imodelHubClient.users.statistics.get(actx, accessTokens[0], imodelId, query))[0];
 
     chai.assert(briefcasesCount);
     chai.expect(briefcasesCount.briefcasesCount).to.be.equal(user1BriefcasesCount);
@@ -118,7 +118,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     mockGetUserStatistics(imodelId, generateUsersStatistics(1, [accessTokens[0].getUserInfo()!.id], undefined,
       [user1OwnedLocksCount]), textQuery);
 
-    const ownedLocksCount = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], imodelId, query))[0];
+    const ownedLocksCount = (await imodelHubClient.users.statistics.get(actx, accessTokens[0], imodelId, query))[0];
 
     chai.assert(ownedLocksCount);
     chai.expect(ownedLocksCount.ownedLocksCount).to.be.equal(user1OwnedLocksCount);
@@ -131,7 +131,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     mockGetUserStatistics(imodelId, generateUsersStatistics(1, [accessTokens[0].getUserInfo()!.id], undefined,
       undefined, [user1PushedChangesetsCount]), textQuery);
 
-    const pushedChangesetsCount = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], imodelId,
+    const pushedChangesetsCount = (await imodelHubClient.users.statistics.get(actx, accessTokens[0], imodelId,
       query))[0];
 
     chai.assert(pushedChangesetsCount);
@@ -145,7 +145,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     mockGetUserStatistics(imodelId, generateUsersStatistics(1, [accessTokens[0].getUserInfo()!.id], undefined,
       undefined, undefined, ["date"]), textQuery);
 
-    const lastChangeSetPushDate = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], imodelId,
+    const lastChangeSetPushDate = (await imodelHubClient.users.statistics.get(actx, accessTokens[0], imodelId,
       query))[0];
 
     chai.assert(lastChangeSetPushDate);
@@ -162,7 +162,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     mockGetUserStatistics(imodelId, generateUsersStatistics(1, [accessTokens[0].getUserInfo()!.id], undefined,
       undefined, [user1PushedChangesetsCount], ["date"]), textQuery);
 
-    const changesetStatistics = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], imodelId,
+    const changesetStatistics = (await imodelHubClient.users.statistics.get(actx, accessTokens[0], imodelId,
       query))[0];
 
     chai.assert(changesetStatistics);
@@ -178,7 +178,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
     mockGetUserStatistics(imodelId, generateUsersStatistics(1, [accessTokens[0].getUserInfo()!.id],
       [user1BriefcasesCount], [user1OwnedLocksCount]), textQuery);
 
-    const briefcasesLocksStatistics = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], imodelId,
+    const briefcasesLocksStatistics = (await imodelHubClient.users.statistics.get(actx, accessTokens[0], imodelId,
       query))[0];
 
     chai.assert(briefcasesLocksStatistics);
@@ -194,7 +194,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
       [accessTokens[0].getUserInfo()!.id, accessTokens[1].getUserInfo()!.id],
       [user1BriefcasesCount, user2BriefcasesCount]), textQuery);
 
-    const iModelStatistics = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], imodelId, query));
+    const iModelStatistics = (await imodelHubClient.users.statistics.get(actx, accessTokens[0], imodelId, query));
 
     chai.assert(iModelStatistics);
     chai.expect(iModelStatistics.length === 2);
@@ -212,7 +212,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
       [accessTokens[0].getUserInfo()!.id, accessTokens[1].getUserInfo()!.id],
       undefined, undefined, [user1PushedChangesetsCount, user2PushedChangesetsCount]));
 
-    const iModelStatistics = (await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], imodelId, query));
+    const iModelStatistics = (await imodelHubClient.users.statistics.get(actx, accessTokens[0], imodelId, query));
 
     chai.assert(iModelStatistics);
     chai.expect(iModelStatistics.length === 2);
@@ -230,7 +230,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
       [user1OwnedLocksCount, user2OwnedLocksCount], [user1PushedChangesetsCount, user2PushedChangesetsCount]),
       textQuery);
 
-    const iModelStatistics = await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], imodelId);
+    const iModelStatistics = await imodelHubClient.users.statistics.get(actx, accessTokens[0], imodelId);
 
     chai.assert(iModelStatistics);
     chai.expect(iModelStatistics.length === 2);
@@ -246,7 +246,7 @@ describe("iModelHubClient UserStatisticsHandler", () => {
   it("should fail to get user statistics without ids", async () => {
     let error: IModelHubClientError | undefined;
     try {
-      await imodelHubClient.Users().Statistics().get(actx, accessTokens[0], imodelId, new UserStatisticsQuery().byIds([]));
+      await imodelHubClient.users.statistics.get(actx, accessTokens[0], imodelId, new UserStatisticsQuery().byIds([]));
     } catch (err) {
       if (err instanceof IModelHubClientError)
         error = err;

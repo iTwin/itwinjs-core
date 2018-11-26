@@ -463,7 +463,7 @@ export class LockHandler {
     ArgumentCheck.nonEmptyArray("locks", locks);
 
     updateOptions = updateOptions || {};
-    this.setupOptionDefaults(updateOptions);
+    await this.setupOptionDefaults(updateOptions);
 
     const result: Lock[] = [];
     let conflictError: ConflictingLocksError | undefined;

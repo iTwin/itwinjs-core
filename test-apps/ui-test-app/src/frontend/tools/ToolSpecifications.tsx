@@ -314,6 +314,7 @@ export class AppTools {
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.openMessageBox",
       execute: () => {
+        // tslint:disable-next-line:no-floating-promises
         IModelApp.notifications.openMessageBox(MessageBoxType.Ok, "This is a box opened using IModelApp.notifications.openMessageBox and using promise/then to process result.", MessageBoxIconType.Information)
           .then((value: MessageBoxValue) => { window.alert("Closing message box ... value is " + value); });
       },

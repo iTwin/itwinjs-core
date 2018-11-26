@@ -61,19 +61,19 @@ export abstract class Element extends Entity implements ElementProps {
   }
 
   public static onInsert(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
-  public static onInserted(_id: string): void { }
   public static onUpdate(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
-  public static onUpdated(_props: ElementProps): void { }
   public static onDelete(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
+  public static onInserted(_props: ElementProps): void { }
+  public static onUpdated(_props: ElementProps): void { }
   public static onDeleted(_props: ElementProps): void { }
+  public static onBeforeOutputsHandled(_id: Id64String): void { }
+  public static onAllInputsHandled(_id: Id64String): void { }
 
   /** Add this Element's properties to an object for serializing to JSON.
    * @hidden
    */
   public toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
-    if (Id64.isValid(this.id))
-      val.id = this.id;
 
     if (Id64.isValid(this.code.spec))
       val.code = this.code;
@@ -124,6 +124,13 @@ export abstract class Element extends Entity implements ElementProps {
     msg.push(addKey("Model") + this.iModel.elements.getElement(this.model).getDisplayLabel());
     return msg;
   }
+
+  /** Insert this Element into the iModel. */
+  public insert() { return this.iModel.elements.insertElement(this); }
+  /** Update this Element in the iModel. */
+  public update() { this.iModel.elements.updateElement(this); }
+  /** Delete this Element from the iModel. */
+  public delete() { this.iModel.elements.deleteElement(this.id); }
 
   /**
    * Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.

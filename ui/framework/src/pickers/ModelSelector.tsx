@@ -49,8 +49,8 @@ export interface ModelSelectorWidgetState {
     filter?: string;
     prevProps?: any;
     filtering?: boolean;
-    activeHighlightedIndex?: number;
-    highlightedCount?: number;
+    activeMatchIndex?: number;
+    matchesCount?: number;
   };
 }
 
@@ -122,7 +122,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     this._initGroups();
     this.state = { expand: false, activeGroup: this._groups[0], showOptions: false };
-    this.updateState();
+    this.updateState(); // tslint:disable-line:no-floating-promises
   }
 
   /** Adds listeners */
@@ -131,7 +131,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
 
-    Presentation.presentation.rulesets().add(require("../../rulesets/Models"))
+    Presentation.presentation.rulesets().add(require("../../rulesets/Models")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
           return;
@@ -143,14 +143,14 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
             filter: "",
             filtering: false,
             prevProps: this.props,
-            activeHighlightedIndex: 0,
-            highlightedCount: 0,
+            activeMatchIndex: 0,
+            matchesCount: 0,
           },
           expand: true,
         });
       });
 
-    Presentation.presentation.rulesets().add(require("../../rulesets/Categories"))
+    Presentation.presentation.rulesets().add(require("../../rulesets/Categories")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
           return;
@@ -163,7 +163,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this._isMounted = false;
 
     if (this.state.treeInfo)
-      Presentation.presentation.rulesets().remove(this.state.treeInfo.ruleset);
+      Presentation.presentation.rulesets().remove(this.state.treeInfo.ruleset); // tslint:disable-line:no-floating-promises
 
     if (this._removeSelectedViewportChanged)
       this._removeSelectedViewportChanged();
@@ -193,7 +193,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
     if (args.current) {
       this._initGroups();
-      this.updateState();
+      this.updateState(); // tslint:disable-line:no-floating-promises
     }
   }
 
@@ -217,8 +217,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         dataProvider: new ModelSelectorDataProvider(this.props.imodel, activeRuleset.id),
         filter: this.state.treeInfo ? this.state.treeInfo.filter : "",
         filtering: this.state.treeInfo ? this.state.treeInfo.filtering : false,
-        activeHighlightedIndex: this.state.treeInfo ? this.state.treeInfo.activeHighlightedIndex : 0,
-        highlightedCount: this.state.treeInfo ? this.state.treeInfo.highlightedCount : 0,
+        activeMatchIndex: this.state.treeInfo ? this.state.treeInfo.activeMatchIndex : 0,
+        matchesCount: this.state.treeInfo ? this.state.treeInfo.matchesCount : 0,
       },
       activeGroup: group,
       expand: true,
@@ -330,7 +330,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     } else if (IModelApp.viewManager.selectedView) {
       updateViewport(IModelApp.viewManager.selectedView);
     }
-    this._updateCategoriesWithViewport(IModelApp.viewManager.selectedView);
+    this._updateCategoriesWithViewport(IModelApp.viewManager.selectedView); // tslint:disable-line:no-floating-promises
   }
 
   /** Add models to current viewport */
@@ -340,7 +340,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     const vp = IModelApp.viewManager.getFirstOpenView();
     if (vp)
-      this._updateModelsWithViewport(vp);
+      this._updateModelsWithViewport(vp); // tslint:disable-line:no-floating-promises
   }
 
   /** Add categories to current viewport */
@@ -350,7 +350,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
-      this._updateCategoriesWithViewport(vp);
+      this._updateCategoriesWithViewport(vp); // tslint:disable-line:no-floating-promises
   }
 
   /** Update state for each group */
@@ -412,24 +412,24 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
   }
 
-  private _onHighlightedCounted = (count: number) => {
-    if (this.state.treeInfo && count !== this.state.treeInfo.highlightedCount)
+  private _onMatchesCounted = (count: number) => {
+    if (this.state.treeInfo && count !== this.state.treeInfo.matchesCount)
       this.setState({
         treeInfo: {
           ...this.state.treeInfo,
-          highlightedCount: count,
+          matchesCount: count,
         },
       });
   }
 
-  private _onFilteringInputSelectedChanged = (index: number) => {
+  private _onSelectedMatchChanged = (index: number) => {
     if (!this.state.treeInfo)
       return;
 
     this.setState({
       treeInfo: {
         ...this.state.treeInfo,
-        activeHighlightedIndex: index,
+        activeMatchIndex: index,
       },
     });
   }
@@ -504,8 +504,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
                 onFilterClear={this._onFilterClear}
                 onFilterStart={this._onFilterStart}
                 resultSelectorProps={{
-                  onSelectedChanged: this._onFilteringInputSelectedChanged,
-                  resultCount: this.state.treeInfo.highlightedCount ? this.state.treeInfo.highlightedCount : 0,
+                  onSelectedChanged: this._onSelectedMatchChanged,
+                  resultCount: this.state.treeInfo.matchesCount ? this.state.treeInfo.matchesCount : 0,
                 }}
               />
               <div className="modelselector-buttons">
@@ -514,15 +514,15 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
                 {/* <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.invert")} /> */}
               </div>
             </div>
-            <div>
+            <div style={{ height: "100%" }}>
               {
                 (this.props.imodel && this.state.treeInfo.dataProvider) ?
                   <CategoryModelTree
                     dataProvider={this.state.treeInfo.dataProvider}
                     filter={this.state.treeInfo.filter}
                     onFilterApplied={this.onFilterApplied}
-                    onHighlightedCounted={this._onHighlightedCounted}
-                    activeHighlightedIndex={this.state.treeInfo.activeHighlightedIndex}
+                    onMatchesCounted={this._onMatchesCounted}
+                    activeMatchIndex={this.state.treeInfo.activeMatchIndex}
                     checkboxEnabled={true}
                     onCheckboxClick={this._onCheckboxClick}
                     isChecked={this._isCheckboxChecked}

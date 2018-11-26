@@ -24,7 +24,7 @@ exports[`Dialog renders renders correctly 1`] = `
       >
         <div
           className="dialog-head"
-          onMouseDown={[Function]}
+          onPointerDown={[Function]}
         >
           <div
             className="dialog-title"
@@ -47,18 +47,17 @@ exports[`Dialog renders renders correctly 1`] = `
       </div>
       <div
         className="dialog-drag dialog-drag-right"
-        onMouseDown={[Function]}
-        onTouchStart={[Function]}
+        onPointerDown={[Function]}
       />
       <div
         className="dialog-drag dialog-drag-bottom-mid"
-        onMouseDown={[Function]}
-        onTouchStart={[Function]}
-      />
+        onPointerDown={[Function]}
+      >
+         
+      </div>
       <div
         className="dialog-drag dialog-drag-bottom-right"
-        onMouseDown={[Function]}
-        onTouchStart={[Function]}
+        onPointerDown={[Function]}
       />
     </div>
   </WithOnOutsideClick>

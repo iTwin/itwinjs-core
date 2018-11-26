@@ -283,7 +283,7 @@ export class UserInfoHandler {
   /**
    * Get the handler for querying [[UserStatistics]].
    */
-  public Statistics(): UserStatisticsHandler {
+  public get statistics(): UserStatisticsHandler {
     return new UserStatisticsHandler(this._handler);
   }
 

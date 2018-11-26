@@ -265,7 +265,7 @@ export abstract class RpcRequest<TResponse = any> {
         throw new IModelError(BentleyStatus.ERROR, `Already resubmitted using this handler.`);
 
       resubmitted = true;
-      this.submit();
+      this.submit(); // tslint:disable-line:no-floating-promises
     }, (reason: any) => this.reject(reason));
     return;
   }

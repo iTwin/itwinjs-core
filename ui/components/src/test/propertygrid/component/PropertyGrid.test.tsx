@@ -8,11 +8,10 @@ import * as moq from "typemoq";
 import sinon from "sinon";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyGrid, PropertyGridCategory } from "../../..//propertygrid/component/PropertyGrid";
-import { PropertyDataProvider, PropertyDataChangeEvent, PropertyCategory } from "../../..//propertygrid/PropertyDataProvider";
-import { SamplePropertyRecord } from "../PropertyTestHelpers";
-import { SimplePropertyDataProvider } from "../../..//propertygrid";
-import { PropertyCategoryBlock } from "../../..//propertygrid/component/PropertyCategoryBlock";
+import { PropertyGrid, PropertyGridCategory } from "../../../propertygrid/component/PropertyGrid";
+import { PropertyDataProvider, PropertyDataChangeEvent, PropertyCategory } from "../../../propertygrid/PropertyDataProvider";
+import { SimplePropertyDataProvider } from "../../../propertygrid";
+import { PropertyCategoryBlock } from "../../../propertygrid/component/PropertyCategoryBlock";
 import TestUtils from "../../TestUtils";
 
 class SamplePropertyDataProvider extends SimplePropertyDataProvider {
@@ -25,29 +24,29 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
     const category2: PropertyCategory = { name: "Group_2", label: "Group 2", expand: false };
     this.addCategory(category2);
 
-    const pr1 = new SamplePropertyRecord("CADID", 0, "0000 0005 00E0 02D8");
+    const pr1 = TestUtils.createPrimitiveStringProperty("CADID", "0000 0005 00E0 02D8");
     this.addProperty(pr1, 0);
 
-    const pr2 = new SamplePropertyRecord("CADID", 0, "0000 0005 00E0 02D8");
+    const pr2 = TestUtils.createPrimitiveStringProperty("CADID", "0000 0005 00E0 02D8");
     this.addProperty(pr2, 1);
   }
 }
 
 describe("PropertyGrid", () => {
 
-  before(() => {
-    TestUtils.initializeUiComponents();
+  before(async () => {
+    await TestUtils.initializeUiComponents(); // tslint:disable-line:no-floating-promises
   });
 
   it("handles onDataChanged event subscriptions when mounting, changing props and unmounting", () => {
     const evt1 = new PropertyDataChangeEvent();
     const providerMock1 = moq.Mock.ofType<PropertyDataProvider>();
-    providerMock1.setup((x) => x.getData()).returns(async () => ({ label: "", categories: [], records: {} }));
+    providerMock1.setup(async (x) => x.getData()).returns(async () => ({ label: "", categories: [], records: {} }));
     providerMock1.setup((x) => x.onDataChanged).returns(() => evt1);
 
     const evt2 = new PropertyDataChangeEvent();
     const providerMock2 = moq.Mock.ofType<PropertyDataProvider>();
-    providerMock2.setup((x) => x.getData()).returns(async () => ({ label: "", categories: [], records: {} }));
+    providerMock2.setup(async (x) => x.getData()).returns(async () => ({ label: "", categories: [], records: {} }));
     providerMock2.setup((x) => x.onDataChanged).returns(() => evt2);
 
     const pane = shallow(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={providerMock1.object} />);
@@ -284,8 +283,70 @@ describe("PropertyGrid", () => {
     const inputNode = wrapper.find("input");
     expect(inputNode.length).to.eq(1);
     inputNode.simulate("keyDown", { key: "Escape" });
+    await TestUtils.flushAsyncOperations();
     wrapper.update();
-    expect(wrapper.find(".components-cell-editor").length).to.eq(0);
+    expect(wrapper.find(".components-cell-editor").length, "Cell editor did not disappear after pressing Escape").to.eq(0);
   });
 
+  it("changes orientation when props change", async () => {
+    const dataProvider = new SamplePropertyDataProvider();
+    const propertyGridMount = mount(
+      <PropertyGrid
+        orientation={Orientation.Horizontal}
+        dataProvider={dataProvider}
+      />);
+
+    await TestUtils.flushAsyncOperations();
+    propertyGridMount.update();
+
+    expect(propertyGridMount.state("orientation")).to.be.eq(Orientation.Horizontal);
+
+    propertyGridMount.setProps({ orientation: Orientation.Vertical });
+
+    expect(propertyGridMount.state("orientation")).to.be.eq(Orientation.Vertical);
+  });
+
+  describe("", () => {
+    const getBoundingClientRect = Element.prototype.getBoundingClientRect;
+
+    after(() => {
+      Element.prototype.getBoundingClientRect = getBoundingClientRect;
+    });
+
+    it("changes orientation when width is lower than 300", async () => {
+      const dataProvider = new SamplePropertyDataProvider();
+      const propertyGridMount = mount(
+        <PropertyGrid
+          dataProvider={dataProvider}
+        />);
+
+      await TestUtils.flushAsyncOperations();
+      propertyGridMount.update();
+
+      const box = {
+        bottom: 0,
+        height: 0,
+        left: 0,
+        right: 0,
+        toJSON: () => { },
+        top: 0,
+        width: 250,
+        x: 0,
+        y: 0,
+      };
+
+      Element.prototype.getBoundingClientRect = () => box;
+      propertyGridMount.unmount();
+      propertyGridMount.mount();
+
+      expect(propertyGridMount.state("orientation")).to.be.eq(Orientation.Vertical);
+
+      box.width = 500;
+      Element.prototype.getBoundingClientRect = () => box;
+      propertyGridMount.unmount();
+      propertyGridMount.mount();
+
+      expect(propertyGridMount.state("orientation")).to.be.eq(Orientation.Horizontal);
+    });
+  });
 });

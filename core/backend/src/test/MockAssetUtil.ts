@@ -140,8 +140,8 @@ export class MockAssetUtil {
     cacheDir = path.normalize(path.join(KnownLocations.tmpdir, "Bentley/IModelJs/offlineCache/"));
     IModelHost.configuration!.briefcaseCacheDir = cacheDir;
 
-    MockAssetUtil.setupConnectClientMock(connectClientMock, assetDir);
-    MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
+    await MockAssetUtil.setupConnectClientMock(connectClientMock, assetDir);
+    await MockAssetUtil.setupIModelHubClientMock(iModelHubClientMock, assetDir);
 
     (BriefcaseManager as any)._defaultHubClient = iModelHubClientMock.object;
 
@@ -155,7 +155,7 @@ export class MockAssetUtil {
 
     // Get test iModelIds from the mocked iModelHub client
     for (const iModelInfo of testIModels) {
-      const iModels = await iModelHubClientMock.object.IModels().get(actx, accessToken as any, testProjectId, new IModelQuery().byName(iModelInfo.name));
+      const iModels = await iModelHubClientMock.object.iModels.get(actx, accessToken as any, testProjectId, new IModelQuery().byName(iModelInfo.name));
       assert(iModels.length > 0, `No IModels returned from iModelHubClient mock for ${iModelInfo.name} iModel`);
       assert(!!iModels[0].id, `No IModelId returned for ${iModelInfo.name} iModel`);
       iModelInfo.id = iModels[0].id!.toString();
@@ -163,13 +163,13 @@ export class MockAssetUtil {
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
       // getChangeSets
-      iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(actx, accessToken as any, iModelInfo.id);
+      iModelInfo.changeSets = await iModelHubClientMock.object.changeSets.get(actx, accessToken as any, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
       assert.exists(iModelInfo.changeSets);
 
       // downloadChangeSets
       // const csetDir = path.join(cacheDir, iModelInfo.id, "csets");
-      // await iModelHubClientMock.object.ChangeSets().download(iModelInfo.changeSets, csetDir);
+      // await iModelHubClientMock.object.changeSets.download(iModelInfo.changeSets, csetDir);
     }
     MockAssetUtil.verifyIModelInfo(testIModels);
     return testProjectId;
@@ -182,8 +182,8 @@ export class MockAssetUtil {
   /** Setup functions for the ConnectClient mock */
   public static async setupConnectClientMock(connectClientMock: TypeMoq.IMock<ConnectClient>, assetDir: string) {
     // For any parameters passed, grab the Sample Project json file from the assets folder and parse it into an instance
-    connectClientMock.setup((f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, query: ConnectRequestQueryOptions) => {
+    connectClientMock.setup(async (f: ConnectClient) => f.getProject(TypeMoq.It.isAny(), TypeMoq.It.isAny(), TypeMoq.It.isAny()))
+      .returns(async (_alctx: ActivityLoggingContext, _tok: AccessToken, query: ConnectRequestQueryOptions) => {
         for (const project of this._projectMap) {
           if (query.$filter!.toLocaleLowerCase().includes(project[1].toLocaleLowerCase())) {
             const assetPath = path.join(assetDir, "Projects", `${project[1]}.json`);
@@ -210,14 +210,14 @@ export class MockAssetUtil {
     const userInfoHandlerMock = TypeMoq.Mock.ofType(UserInfoHandler);
 
     // For any call with the specified iModel name, grab that iModel's json file and parse it into an instance
-    iModelsHandlerMock.setup((f: IModelsHandler) => f.create(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
+    iModelsHandlerMock.setup(async (f: IModelsHandler) => f.create(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAny(),
       TypeMoq.It.isAny(),
       TypeMoq.It.isAnyNumber()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _projId: string, hubName: string, _path: string, _desc: string,
+      .returns(async (_alctx: ActivityLoggingContext, _tok: AccessToken, _projId: string, hubName: string, _path: string, _desc: string,
         _callback: ((progress: any) => void) | undefined, _timeOut: number) => {
         setTimeout(() => { }, 100);
         for (const pair of this._iModelMap) {
@@ -233,10 +233,10 @@ export class MockAssetUtil {
 
     // For any call with request parameters contianing the iModel name, grab that iModel's json file
     // and parse it into an instance
-    iModelsHandlerMock.setup((f: IModelsHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
+    iModelsHandlerMock.setup(async (f: IModelsHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAny()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _projId: string, query: IModelQuery) => {
+      .returns(async (_alctx: ActivityLoggingContext, _tok: AccessToken, _projId: string, query: IModelQuery) => {
         let iModelPath: string = "";
         if (query.getId()) {
           const testCaseName = this._iModelMap.get(query.getId()!.toString());
@@ -262,9 +262,9 @@ export class MockAssetUtil {
 
     // For any call with a specified iModelId, remove the specified iModel from the cache if it currently
     // resides there
-    iModelsHandlerMock.setup((f: IModelsHandler) => f.delete(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
+    iModelsHandlerMock.setup(async (f: IModelsHandler) => f.delete(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _projId: string, iModelId: GuidString) => {
+      .returns(async (_alctx: ActivityLoggingContext, _tok: AccessToken, _projId: string, iModelId: GuidString) => {
         const testCaseName = this._iModelMap.get(iModelId);
         if (testCaseName) {
           const iModelCacheDir = path.join(IModelHost.configuration!.briefcaseCacheDir, iModelId);
@@ -277,9 +277,9 @@ export class MockAssetUtil {
 
     // For any call with a path containing a specified iModel name, grab the correct .bim asset and copy it
     // into the provided cache location
-    iModelsHandlerMock.setup((f: IModelsHandler) => f.download(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
+    iModelsHandlerMock.setup(async (f: IModelsHandler) => f.download(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(), TypeMoq.It.isAnyString()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString, seedPathname: string) => {
+      .returns(async (_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString, seedPathname: string) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const testModelPath = path.join(assetDir, iModelName, `${iModelName}.bim`);
@@ -290,14 +290,14 @@ export class MockAssetUtil {
             body: undefined,
           };
           return Promise.resolve(retResponse)
-            .then(() => Promise.resolve());
+            .then(async () => Promise.resolve());
         }
         return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
-    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.create(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
+    briefcaseHandlerMock.setup(async (f: BriefcaseHandler) => f.create(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString) => {
+      .returns(async (_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const sampleBriefcasePath = path.join(assetDir, iModelName, `${iModelName}Briefcase.json`);
@@ -308,9 +308,9 @@ export class MockAssetUtil {
         return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
-    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
+    briefcaseHandlerMock.setup(async (f: BriefcaseHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString) => {
+      .returns(async (_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const sampleBriefcasePath = path.join(assetDir, iModelName, `${iModelName}Briefcase.json`);
@@ -323,9 +323,9 @@ export class MockAssetUtil {
 
     // For any call with a specified iModelId, return a dummy briefcaseId. If future test cases demand so, we may
     // need to change this to return specific briefcaseIds
-    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.download(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
+    briefcaseHandlerMock.setup(async (f: BriefcaseHandler) => f.download(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString()))
-      .returns((_alctx: ActivityLoggingContext, briefcase: Briefcase, outPath: string) => {
+      .returns(async (_alctx: ActivityLoggingContext, briefcase: Briefcase, outPath: string) => {
         const briefcaseName = briefcase.fileName!.slice(0, briefcase.fileName!.lastIndexOf(".bim"));
         let iModelName = "";
         for (const pair of this._iModelMap) {
@@ -343,18 +343,18 @@ export class MockAssetUtil {
       });
 
     // Since the Hub is being mocked away, no action is necessary when deleting a briefacse
-    briefcaseHandlerMock.setup((f: BriefcaseHandler) => f.delete(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
+    briefcaseHandlerMock.setup(async (f: BriefcaseHandler) => f.delete(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAnyNumber()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _iModelId: GuidString, _briefcaseId: number) => {
+      .returns(async (_alctx: ActivityLoggingContext, _tok: AccessToken, _iModelId: GuidString, _briefcaseId: number) => {
         return Promise.resolve();
       });
 
     // For any call with a specified iModelId, grab the asset file with the associated changeset json objs
     // and parse them into instances
-    changeSetHandlerMock.setup((f: ChangeSetHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
+    changeSetHandlerMock.setup(async (f: ChangeSetHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString, query: ChangeSetQuery) => {
+      .returns(async (_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString, query: ChangeSetQuery) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           const csetPath = path.join(assetDir, iModelName, `${iModelName}ChangeSets.json`);
@@ -386,9 +386,9 @@ export class MockAssetUtil {
 
     // For any call with a path containing a specified iModel name, grab the associated change set files and copy them
     // into the provided cache location
-    changeSetHandlerMock.setup((f: ChangeSetHandler) => f.download(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
+    changeSetHandlerMock.setup(async (f: ChangeSetHandler) => f.download(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString()))
-      .returns((_alctx: ActivityLoggingContext, csets: ChangeSet[], outPath: string) => {
+      .returns(async (_alctx: ActivityLoggingContext, csets: ChangeSet[], outPath: string) => {
         for (const cset of csets) {
           const csetPath = path.join(outPath, cset.fileName!);
           if (!IModelJsFs.existsSync(csetPath))
@@ -400,13 +400,13 @@ export class MockAssetUtil {
           body: undefined,
         };
         return Promise.resolve(retResponse)
-          .then(() => Promise.resolve());
+          .then(async () => Promise.resolve());
       });
 
-    versionHandlerMock.setup((f: VersionHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
+    versionHandlerMock.setup(async (f: VersionHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(),
       TypeMoq.It.isAny()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString, query: VersionQuery) => {
+      .returns(async (_alctx: ActivityLoggingContext, _tok: AccessToken, iModelId: GuidString, query: VersionQuery) => {
         const iModelName = this._iModelMap.get(iModelId);
         if (iModelName) {
           for (const versionName of this._versionNames) {
@@ -422,9 +422,9 @@ export class MockAssetUtil {
         return Promise.reject(`No matching asset found for iModel with id: ${iModelId}`);
       });
 
-    userInfoHandlerMock.setup((f: UserInfoHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
+    userInfoHandlerMock.setup(async (f: UserInfoHandler) => f.get(TypeMoq.It.isAny(), TypeMoq.It.isAny(),
       TypeMoq.It.isAnyString(), TypeMoq.It.isAny()))
-      .returns((_alctx: ActivityLoggingContext, _tok: AccessToken, _iModelId: GuidString, _query: UserInfoQuery) => {
+      .returns(async (_alctx: ActivityLoggingContext, _tok: AccessToken, _iModelId: GuidString, _query: UserInfoQuery) => {
         const user = new HubUserInfo();
         user.firstName = "test";
         user.lastName = "user";
@@ -433,10 +433,10 @@ export class MockAssetUtil {
         return Promise.resolve([user]);
       });
 
-    iModelHubClientMock.setup((f: IModelHubClient) => f.IModels()).returns(() => iModelsHandlerMock.object);
-    iModelHubClientMock.setup((f: IModelHubClient) => f.Briefcases()).returns(() => briefcaseHandlerMock.object);
-    iModelHubClientMock.setup((f: IModelHubClient) => f.ChangeSets()).returns(() => changeSetHandlerMock.object);
-    iModelHubClientMock.setup((f: IModelHubClient) => f.Versions()).returns(() => versionHandlerMock.object);
-    iModelHubClientMock.setup((f: IModelHubClient) => f.Users()).returns(() => userInfoHandlerMock.object);
+    iModelHubClientMock.setup((f: IModelHubClient) => f.iModels).returns(() => iModelsHandlerMock.object);
+    iModelHubClientMock.setup((f: IModelHubClient) => f.briefcases).returns(() => briefcaseHandlerMock.object);
+    iModelHubClientMock.setup((f: IModelHubClient) => f.changeSets).returns(() => changeSetHandlerMock.object);
+    iModelHubClientMock.setup((f: IModelHubClient) => f.versions).returns(() => versionHandlerMock.object);
+    iModelHubClientMock.setup((f: IModelHubClient) => f.users).returns(() => userInfoHandlerMock.object);
   }
 }

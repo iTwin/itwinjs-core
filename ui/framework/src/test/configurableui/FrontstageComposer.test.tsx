@@ -32,7 +32,7 @@ describe("FrontstageComposer", () => {
   });
 
   it("FrontstageComposer support of ModalFrontstage", () => {
-    FrontstageManager.setActiveFrontstageDef(undefined);
+    FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
     const wrapper = mount(<FrontstageComposer />);
 
     const modalFrontstage = new TestModalFrontstage();

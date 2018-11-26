@@ -5,6 +5,7 @@
 /** @module Utilities */
 
 import * as React from "react";
+import { Omit } from "@bentley/ui-core/lib/utils";
 
 /**
  * Common props used by all components.
@@ -23,9 +24,6 @@ export interface ClassNameProps {
 export interface NoChildrenProps {
   children?: undefined;
 }
-
-/** Omit K properties from T */
-export type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
 
 /** Omit children property from T. */
 export type OmitChildrenProp<T extends { children?: any; }> = Omit<T, "children">;

@@ -6,12 +6,9 @@
 import { assert, expect } from "chai";
 import { Schema } from "../../src/Metadata/Schema";
 import { Phenomenon } from "../../src/Metadata/Phenomenon";
-import { ECObjectsError } from "../../src/Exception";
 import * as sinon from "sinon";
-import { JsonParser } from "../../src/Deserialization/JsonParser";
 
 describe("Phenomenon tests", () => {
-  let parser = new JsonParser();
   let testPhenomenon: Phenomenon;
   describe("accept", () => {
     beforeEach(() => {
@@ -45,60 +42,9 @@ describe("Phenomenon tests", () => {
         label: "Area",
         definition: "Units.LENGTH(2)",
       };
-      await testPhenomenon.deserialize(parser.parsePhenomenonProps(json, testPhenomenon.name));
+      await testPhenomenon.deserialize(json);
       assert(testPhenomenon.label, "Area");
       assert(testPhenomenon.definition, "Units.LENGTH(2)");
-    });
-    it("Name must be a valid ECName", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schema: "TestSchema",
-        schemaItemType: "Phenomenon",
-        name: "12AREA",
-        definition: "Units.LENGTH(2)",
-      };
-      assert.throws(() => testPhenomenon.deserialize(parser.parsePhenomenonProps(json, json.name)), ECObjectsError, `The Phenomenon TestSchema.12AREA has an invalid 'name' attribute. '12AREA' is not a valid ECName.`);
-    });
-    it("Label must be a string", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        label: 48,
-        definition: "Units.LENGTH(2)",
-      };
-      assert.throws(() => parser.parseSchemaItemProps(json, testPhenomenon.schema.name, testPhenomenon.name), ECObjectsError, `The SchemaItem ExampleSchema.AREA has an invalid 'label' attribute. It should be of type 'string'.`);
-
-    });
-    it("Description must be a string", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        label: "Area",
-        description: 5,
-        definition: "Units.LENGTH(2)",
-      };
-      assert.throws(() => parser.parseSchemaItemProps(json, testPhenomenon.schema.name, testPhenomenon.name), ECObjectsError, `The SchemaItem ExampleSchema.AREA has an invalid 'description' attribute. It should be of type 'string'.`);
-    });
-    it("Definition is required", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        label: "Area",
-      };
-      assert.throws(() => parser.parsePhenomenonProps(json, testPhenomenon.name), ECObjectsError, `The Phenomenon AREA does not have the required 'definition' attribute.`);
-    });
-    it("Definition must be a string", async () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        label: "Area",
-        definition: 2,
-      };
-      assert.throws(() => parser.parsePhenomenonProps(json, testPhenomenon.name), ECObjectsError, `The Phenomenon AREA has an invalid 'definition' attribute. It should be of type 'string'.`);
     });
   });
   describe("Sync fromJson", () => {
@@ -114,60 +60,9 @@ describe("Phenomenon tests", () => {
         label: "Area",
         definition: "Units.LENGTH(2)",
       };
-      testPhenomenon.deserializeSync(parser.parsePhenomenonProps(json, testPhenomenon.name))
+      testPhenomenon.deserializeSync(json)
       assert(testPhenomenon.label, "Area");
       assert(testPhenomenon.definition, "Units.LENGTH(2)");
-    });
-    it("Name must be a valid ECName", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schema: "TestSchema",
-        schemaItemType: "Phenomenon",
-        name: "12AREA",
-        definition: "Units.LENGTH(2)",
-      };
-      assert.throws(() => testPhenomenon.deserialize(parser.parsePhenomenonProps(json, json.name)), ECObjectsError, `The Phenomenon TestSchema.12AREA has an invalid 'name' attribute. '12AREA' is not a valid ECName.`);
-    });
-    it("Label must be a string", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        label: 48,
-        definition: "Units.LENGTH(2)",
-      };
-      assert.throws(() => parser.parseSchemaItemProps(json, testPhenomenon.schema.name, testPhenomenon.name), ECObjectsError, `The SchemaItem ExampleSchema.AREA has an invalid 'label' attribute. It should be of type 'string'.`);
-
-    });
-    it("Description must be a string", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        label: "Area",
-        description: 5,
-        definition: "Units.LENGTH(2)",
-      };
-      assert.throws(() => parser.parseSchemaItemProps(json, testPhenomenon.schema.name, testPhenomenon.name), ECObjectsError, `The SchemaItem ExampleSchema.AREA has an invalid 'description' attribute. It should be of type 'string'.`);
-    });
-    it("Definition is required", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        label: "Area",
-      };
-      assert.throws(() => parser.parsePhenomenonProps(json, testPhenomenon.name), ECObjectsError, `The Phenomenon AREA does not have the required 'definition' attribute.`);
-    });
-    it("Definition must be a string", () => {
-      const json = {
-        $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/schemaitem",
-        schemaItemType: "Phenomenon",
-        name: "AREA",
-        label: "Area",
-        definition: 2,
-      };
-      assert.throws(() => parser.parsePhenomenonProps(json, testPhenomenon.name), ECObjectsError, `The Phenomenon AREA has an invalid 'definition' attribute. It should be of type 'string'.`);
     });
   });
   describe("toJson", () => {
@@ -182,7 +77,7 @@ describe("Phenomenon tests", () => {
         name: "AREA",
         definition: "Units.LENGTH(2)",
       };
-      await testPhenomenon.deserialize(parser.parsePhenomenonProps(json, testPhenomenon.name));
+      await testPhenomenon.deserialize(json);
       const phenomSerialization = testPhenomenon.toJson(true, true);
       assert(phenomSerialization.definition, "Units.LENGTH(2)");
     });
@@ -193,7 +88,7 @@ describe("Phenomenon tests", () => {
         name: "AREA",
         definition: "Units.LENGTH(2)",
       };
-      testPhenomenon.deserializeSync(parser.parsePhenomenonProps(json, testPhenomenon.name));
+      testPhenomenon.deserializeSync(json);
       const phenomSerialization = testPhenomenon.toJson(true, true);
       assert(phenomSerialization.definition, "Units.LENGTH(2)");
     });

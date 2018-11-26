@@ -35,13 +35,14 @@
 
   .react-grid-HeaderRow {
     width: calc(100% - 28px) !important;
+    overflow-x: visible !important; /* May cause unknown issues; However, fixes unnecessary clipping for reorder styling. */
   }
 
   .react-grid-Main,
   .react-grid-Grid,
   .react-grid-Viewport,
   .react-grid-Canvas,
-  .react-grid-Row * {
+  .react-grid-Row {
     border: none;
     background: #F9F9F9;
     outline: none;
@@ -74,6 +75,12 @@
     outline: none !important;
   }
 
+  .react-grid-Cell__value {
+    position: absolute;
+    width:100%;
+    height:100%;
+  }
+
   .react-grid-Header {
     background: #dce0e3;
   }
@@ -86,18 +93,14 @@
     border: none;
   }
 
-  .react-grid-HeaderCell .react-grid-HeaderCell__draggable {
+  .react-grid-HeaderCell__draggable {
     background: #dce0e3;
     width: 8px !important;
     left: 100%;
     z-index: 2;
   }
 
-  .react-grid-HeaderCell--locked {
-    z-index: 3;
-  }
-
-  .react-grid-HeaderCell .react-grid-HeaderCell__draggable::after {
+  .react-grid-HeaderCell__draggable::after {
     content: ' ';
     background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%225%22 height=%2225%22%3E %3Cg fill=%22#909ba6%22 fill-rule=%22evenodd%22%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 20)%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 10)%22/%3E %3C/g%3E %3C/svg%3E');
     height: 10px;
@@ -111,31 +114,17 @@
     pointer-events: none;
   }
 
-
-  .property-name-cell span {
-    height: 100%;
-    display: inline-block;
-    vertical-align: text-bottom;
-    padding: 0 0 2px 6px;
+  .react-grid-HeaderCell--locked {
+    z-index: 3;
   }
 
-  .property-name-cell be-svg-icon {
-    width: 24px;
-    height: 16px;
-    margin-top: 4px;
-  }
-
-  .angry-text{
-    font-weight: 400;
-    color: red;
-  }
-
+  // row * causes lots of problems down the hierarchy
   .row, .row * {
     width: 100%;
     height: 100%;
   }
 
-  .cell, .cell * {
+  .cell{
     padding-left: 8px;
     padding-right: 8px;
     position: absolute;
@@ -147,20 +136,14 @@
     user-select: none;
     display: flex;
     align-items: center;
-  }
 
-  .cell.is-selected {
-    background-color: #a6d7f5;
-  }
+    &.is-selected {
+      background-color: #a6d7f5;
+    }
 
-  .cell.is-hover-enabled:hover {
-    background: #e4f5fd !important;
-  }
-
-  .react-grid-Cell__value {
-    position: absolute;
-    width:100%;
-    height:100%;
+    &.is-hover-enabled:hover {
+      background: #e4f5fd !important;
+    }
   }
 
   .icon {
