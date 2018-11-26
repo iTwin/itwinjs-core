@@ -106,7 +106,7 @@ export namespace TileIO {
 
     public nextUint32s(numUint32s: number): Uint32Array {
       const numBytes = numUint32s * 4;
-      const uint32s = new Uint32Array(this.arrayBuffer, this.curPos, numBytes);
+      const uint32s = new Uint32Array(this.arrayBuffer, this.curPos, numUint32s);
       this.advance(numBytes);
       return uint32s;
     }
