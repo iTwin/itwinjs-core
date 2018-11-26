@@ -17,7 +17,7 @@ import {
   ScreenViewport,
   SelectedViewportChangedArgs,
 } from "@bentley/imodeljs-frontend/lib/frontend";
-import { SmallLoader } from "@bentley/bwc/lib";
+import { SmallLoader } from "@bentley/bwc";
 
 import "./SheetNavigationAid.scss";
 

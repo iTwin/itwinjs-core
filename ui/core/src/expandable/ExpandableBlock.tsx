@@ -5,7 +5,7 @@
 /** @module Expandable */
 
 import * as React from "react";
-import { ExpandableBlock as BwcExpandableBlock } from "@bentley/bwc/lib/";
+import { ExpandableBlock as BwcExpandableBlock } from "@bentley/bwc";
 import "./ExpandableBlock.scss";
 
 /** Properties for the [[ExpandableBlock]] React component */

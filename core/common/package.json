@@ -34,7 +34,8 @@
     "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API"
   ],
   "dependencies": {
-    "semver": "^5.5.0"
+    "semver": "^5.5.0",
+    "url-search-params": "^1.1.0"
   },
   "//peerDependencies": [
     "NOTE: peerDependencies are a standard way for npm to perform a module compatibility check"
@@ -54,6 +55,7 @@
     "@bentley/geometry-core": "0.170.0",
     "@bentley/imodeljs-clients": "0.170.0",
     "@types/semver": "^5.5.0",
+    "@types/url-search-params": "^0.10.2",
     "cpx": "^1.5.0",
     "rimraf": "^2.6.2",
     "tslint": "^5.11.0",

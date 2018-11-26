@@ -735,6 +735,10 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
+      "name": "url-search-params",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "wdio-chromedriver-service",
       "allowedCategories": [ "tools" ]
     },
