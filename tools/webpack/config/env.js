@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
- * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 "use strict";
 
 const fs = require("fs");
@@ -11,7 +11,7 @@ const paths = require("./paths");
 // Load iModelJS configuration
 if (process.env.IMODELJS_USE_CONFIG_LOADER && process.env.IMODELJS_USE_CONFIG_LOADER.toLowerCase() === "yes") {
   const configLoader = require("@bentley/config-loader/lib/IModelJsConfig")
-  const configEnv = configLoader.IModelJsConfig.init(false /*suppress error*/ );
+  const configEnv = configLoader.IModelJsConfig.init(false /*suppress error*/);
   if (configEnv && process.env) {
     Object.assign(process.env, configEnv);
   } else {
