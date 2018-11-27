@@ -744,15 +744,15 @@ export class IModelDb extends IModel {
   /** Construct an entity (Element or Model) from an iModel.
    * @throws [[IModelError]] if the entity cannot be constructed.
    */
-  public constructEntity(props: EntityProps): Entity {
+  public constructEntity<T extends Entity>(props: EntityProps): T {
     const jsClass = this.getJsClass(props.classFullName);
-    return new jsClass(props, this);
+    return new jsClass(props, this) as T;
   }
 
   /** Get the JavaScript class that handles a given entity class.  */
-  public getJsClass(classFullName: string): typeof Entity {
+  public getJsClass<T extends typeof Entity>(classFullName: string): T {
     try {
-      return ClassRegistry.getClass(classFullName, this);
+      return ClassRegistry.getClass(classFullName, this) as T;
     } catch (err) {
       if (!ClassRegistry.isNotFoundError(err)) {
         Logger.logError(loggingCategory, err.toString());
@@ -760,7 +760,7 @@ export class IModelDb extends IModel {
       }
 
       this.loadMetaData(classFullName);
-      return ClassRegistry.getClass(classFullName, this);
+      return ClassRegistry.getClass(classFullName, this) as T;
     }
   }
 
@@ -811,7 +811,7 @@ export class IModelDb extends IModel {
 
     const val = this.nativeDb.getECClassMetaData(className[0], className[1]);
     if (val.error)
-      throw new IModelError(val.error.status, "Error getting class meta data", Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
+      throw new IModelError(val.error.status, "Error getting class meta data for: " + classFullName, Logger.logError, loggingCategory, () => ({ iModelId: this._token.iModelId, classFullName }));
 
     const metaData = new EntityMetaData(JSON.parse(val.result!));
     this.classMetaDataRegistry.add(classFullName, metaData);
@@ -925,7 +925,7 @@ export namespace IModelDb {
      * @param modelId The Model identifier.
      * @throws [[IModelError]]
      */
-    public getModel<T extends Model>(modelId: Id64String): T { return this._iModel.constructEntity(this.getModelProps(modelId)) as T; }
+    public getModel<T extends Model>(modelId: Id64String): T { return this._iModel.constructEntity<T>(this.getModelProps(modelId)); }
 
     /**
      * Read the properties for a Model as a json string.
@@ -958,7 +958,7 @@ export namespace IModelDb {
      * @param modelProps The properties to use when creating the model.
      * @throws [[IModelError]] if there is a problem creating the model.
      */
-    public createModel(modelProps: ModelProps): Model { return this._iModel.constructEntity(modelProps) as Model; }
+    public createModel(modelProps: ModelProps): Model { return this._iModel.constructEntity<Model>(modelProps); }
 
     /** Insert a new model.
      * @param props The data for the new model.
@@ -966,7 +966,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to insert the model.
      */
     public insertModel(props: ModelProps): Id64String {
-      const jsClass = this._iModel.getJsClass(props.classFullName) as unknown as typeof Model;
+      const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName);
       if (IModelStatus.Success !== jsClass.onInsert(props))
         return Id64.invalid;
 
@@ -984,7 +984,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to update the model.
      */
     public updateModel(props: ModelProps): void {
-      const jsClass = this._iModel.getJsClass(props.classFullName) as unknown as typeof Model;
+      const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName);
       if (IModelStatus.Success !== jsClass.onUpdate(props))
         return;
 
@@ -1002,7 +1002,7 @@ export namespace IModelDb {
     public deleteModel(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
         const props = this.getModelProps(id);
-        const jsClass = this._iModel.getJsClass(props.classFullName) as unknown as typeof Model;
+        const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName);
         if (IModelStatus.Success !== jsClass.onDelete(props))
           return;
 
@@ -1035,7 +1035,7 @@ export namespace IModelDb {
     /** Private implementation details of getElement */
     private _doGetElement(opts: ElementLoadProps): Element {
       const props = this.getElementJson(JSON.stringify(opts)) as ElementProps;
-      return this._iModel.constructEntity(props) as Element;
+      return this._iModel.constructEntity<Element>(props);
     }
 
     /**
@@ -1100,7 +1100,7 @@ export namespace IModelDb {
      * @param elProps The properties of the new element.
      * @throws [[IModelError]] if there is a problem creating the element.
      */
-    public createElement(elProps: ElementProps): Element { return this._iModel.constructEntity(elProps) as Element; }
+    public createElement(elProps: ElementProps): Element { return this._iModel.constructEntity<Element>(elProps); }
 
     /**
      * Insert a new element into the iModel.
@@ -1127,7 +1127,7 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
-      const jsClass = this._iModel.getJsClass(elProps.classFullName) as unknown as typeof Element;
+      const jsClass = this._iModel.getJsClass<typeof Element>(elProps.classFullName);
       if (IModelStatus.Success !== jsClass.onUpdate(elProps))
         return;
 
@@ -1146,7 +1146,7 @@ export namespace IModelDb {
     public deleteElement(ids: Id64Arg): void {
       Id64.toIdSet(ids).forEach((id) => {
         const props = this.getElementProps(id);
-        const jsClass = this._iModel.getJsClass(props.classFullName) as unknown as typeof Element;
+        const jsClass = this._iModel.getJsClass<typeof Element>(props.classFullName);
         if (IModelStatus.Success !== jsClass.onDelete(props))
           return;
 
@@ -1188,8 +1188,7 @@ export namespace IModelDb {
         aspectProps.classFullName = aspectClassName; // add in property required by EntityProps
         aspectProps.className = undefined; // clear property from SELECT * that we don't want in the final instance
 
-        const entity = this._iModel.constructEntity(aspectProps);
-        const aspect = entity as ElementAspect;
+        const aspect = this._iModel.constructEntity<ElementAspect>(aspectProps);
         aspects.push(aspect);
       }
       return aspects;
@@ -1412,7 +1411,7 @@ export class TxnManager {
 
   private get _nativeDb() { return this._iModel.nativeDb!; }
   private _getElementClass(elClassName: string): typeof Element { return this._iModel.getJsClass(elClassName) as unknown as typeof Element; }
-  private _getRelationshipClass(relClassName: string): typeof Relationship { return this._iModel.getJsClass(relClassName) as unknown as typeof Relationship; }
+  private _getRelationshipClass(relClassName: string): typeof Relationship { return this._iModel.getJsClass<typeof Relationship>(relClassName); }
 
   /** @hidden */
   protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void { this._getElementClass(elClassName).onBeforeOutputsHandled(elId); }

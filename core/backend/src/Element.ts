@@ -33,7 +33,7 @@ import {
  * * [Working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
  * * [Creating elements]($docs/learning/backend/CreateElements.md)
  */
-export abstract class Element extends Entity implements ElementProps {
+export class Element extends Entity implements ElementProps {
   /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
   /** The [Code]($docs/bis/intro/codes.md) for this element */

@@ -2,49 +2,49 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext, IModelStatus } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, IModelStatus, Id64String } from "@bentley/bentleyjs-core";
 import { assert } from "chai";
 import * as path from "path";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelDb, SpatialCategory, TxnAction, PhysicalModel } from "../../backend";
 import { GeometricElementProps, Code, IModel, SubCategoryAppearance, ColorByName, IModelError } from "@bentley/imodeljs-common";
 
-// NEEDS_WORK_MERGE: uncomment the following lines when Keith's changes to javascript-domains are merged in
-describe.skip("TxnManager", () => {
+describe.only("TxnManager", () => {
   let imodel: IModelDb;
+  let newModelId: Id64String;
+  let spatialCategoryId: Id64String;
+  let props: GeometricElementProps;
+
   const actx = new ActivityLoggingContext("");
 
-  before(() => imodel = IModelTestUtils.openIModel("test.bim"));
-  after(() => IModelTestUtils.closeIModel(imodel));
+  before(async () => {
+    imodel = IModelTestUtils.openIModel("test.bim");
+    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
+    await imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
 
-  it("Undo/Redo", async () => {
-
-    try {
-      imodel.getMetaData("TestBim:TestPhysicalObject");
-    } catch (err) {
-      const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      await imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
-      assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
-      imodel.saveChanges("schema change");
-    }
-
-    const txns = imodel.txns;
-    imodel.nativeDb.enableTxnTesting();
-    assert.isFalse(txns.hasPendingTxns);
-
-    const newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
+    newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
 
     // create a SpatialCategory
-    const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
+    spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
 
-    const props: GeometricElementProps = {
+    props = {
       classFullName: "TestBim:TestPhysicalObject",
       model: newModelId,
       category: spatialCategoryId,
       code: Code.createEmpty(),
       intProperty: 100,
     };
+    imodel.saveChanges("schema change");
+    imodel.nativeDb.enableTxnTesting();
+  });
+  after(() => IModelTestUtils.closeIModel(imodel));
+
+  it("Undo/Redo", () => {
+    assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
+
+    const txns = imodel.txns;
+    assert.isFalse(txns.hasPendingTxns);
 
     const change1Msg = "change 1";
     const change2Msg = "change 2";
@@ -146,4 +146,44 @@ describe.skip("TxnManager", () => {
     assert.isFalse(txns.hasPendingTxns);
     assert.isFalse(txns.hasLocalChanges);
   });
+
+  it("Element drives element events", () => {
+    const el1 = imodel.elements.insertElement(props);
+    const el2 = imodel.elements.insertElement(props);
+    const ede = TestElementDrivesElement.create(imodel, el1, el2);
+    ede.property1 = "test ede";
+    ede.insert();
+    let beforeOutputsHandled = 0;
+    let allInputsHandled = 0;
+    let rootChanged = 0;
+    let validateOutput = 0;
+    let deletedDependency = 0;
+    TestElementDrivesElement.deletedDependency.addListener((evProps) => {
+      assert.equal(evProps.sourceId, el1);
+      assert.equal(evProps.targetId, el2);
+      ++deletedDependency;
+    });
+    TestElementDrivesElement.rootChanged.addListener((evProps) => {
+      assert.equal(evProps.sourceId, el1);
+      assert.equal(evProps.targetId, el2);
+      ++rootChanged;
+    });
+    TestElementDrivesElement.validateOutput.addListener((_props) => ++validateOutput);
+    TestPhysicalObject.beforeOutputsHandled.addListener((id) => {
+      assert.equal(id, el1);
+      ++beforeOutputsHandled;
+    });
+    TestPhysicalObject.allInputsHandled.addListener((id) => {
+      assert.equal(id, el2);
+      ++allInputsHandled;
+    });
+
+    imodel.saveChanges();
+    assert.equal(1, beforeOutputsHandled);
+    assert.equal(1, allInputsHandled);
+    assert.equal(1, rootChanged);
+    assert.equal(0, validateOutput);
+    assert.equal(0, deletedDependency);
+  });
+
 });

@@ -48,4 +48,18 @@
       </Target>
   </ECRelationshipClass>
 
+  <ECRelationshipClass typeName="TestElementDrivesElement" strength="referencing" modifier="None">
+      <BaseClass>bis:ElementDrivesElement</BaseClass>
+      <ECCustomAttributes>
+          <ClassHasHandler xmlns="BisCore.01.00"/>
+      </ECCustomAttributes>
+      <ECProperty propertyName="Property1" typeName="string"/>
+      <Source multiplicity="(0..1)" roleLabel="Source Element" polymorphic="true">
+          <Class class="bis:Element"/>
+      </Source>
+      <Target multiplicity="(0..1)" roleLabel="Target Element move" polymorphic="true">
+          <Class class="bis:Element"/>
+      </Target>
+  </ECRelationshipClass>
+
 </ECSchema>

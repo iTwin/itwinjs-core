@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext, BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
 import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
@@ -16,6 +16,10 @@ import { TestIModelInfo } from "./MockAssetUtil";
 import { HubUtility, UserCredentials } from "./integration/HubUtility";
 import { TestConfig } from "./TestConfig";
 import * as path from "path";
+import { Schema, Schemas } from "../Schema";
+import { ElementDrivesElement, RelationshipProps } from "../Relationship";
+import { PhysicalElement } from "../Element";
+import { ClassRegistry } from "../ClassRegistry";
 
 const actx = new ActivityLoggingContext("");
 
@@ -118,6 +122,25 @@ export class DisableNativeAssertions implements IDisposable {
     this._native!.dispose();
     this._native = undefined;
   }
+}
+
+export class TestBim extends Schema { }
+export interface TestRelationshipProps extends RelationshipProps {
+  property1: string;
+}
+export class TestElementDrivesElement extends ElementDrivesElement {
+  public static rootChanged = new BeEvent<(_props: RelationshipProps) => void>();
+  public static validateOutput = new BeEvent<(_props: RelationshipProps) => void>();
+  public static deletedDependency = new BeEvent<(_props: RelationshipProps) => void>();
+  public static onRootChanged(props: RelationshipProps): void { this.rootChanged.raiseEvent(props); }
+  public static onValidateOutput(props: RelationshipProps): void { this.validateOutput.raiseEvent(props); }
+  public static onDeletedDependency(props: RelationshipProps): void { this.deletedDependency.raiseEvent(props); }
+}
+export class TestPhysicalObject extends PhysicalElement {
+  public static beforeOutputsHandled = new BeEvent<(_id: Id64String) => void>();
+  public static allInputsHandled = new BeEvent<(_id: Id64String) => void>();
+  public static onBeforeOutputsHandled(id: Id64String): void { this.beforeOutputsHandled.raiseEvent(id); }
+  public static onAllInputsHandled(id: Id64String): void { this.allInputsHandled.raiseEvent(id); }
 }
 
 export class IModelTestUtils {
@@ -316,6 +339,9 @@ export class IModelTestUtils {
   public static startBackend() {
     const config = new IModelHostConfiguration();
     IModelHost.startup(config);
+    Schemas.registerSchema(TestBim);
+    ClassRegistry.register(TestPhysicalObject, TestBim);
+    ClassRegistry.register(TestElementDrivesElement, TestBim);
   }
 }
 
