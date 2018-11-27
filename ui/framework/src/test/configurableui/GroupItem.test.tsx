@@ -65,7 +65,7 @@ describe("GroupItem", () => {
         />,
       );
 
-      const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
+      const buttonDiv = wrapper.find("button.nz-toolbar-item-icon");
       expect(buttonDiv.length).to.eq(1);
 
       buttonDiv.simulate("click");
@@ -94,7 +94,7 @@ describe("GroupItem", () => {
         />,
       );
 
-      const buttonDiv = wrapper.find("button.nz-toolbar-item-item");
+      const buttonDiv = wrapper.find("button.nz-toolbar-item-icon");
       expect(buttonDiv.length).to.eq(1);
 
       buttonDiv.simulate("click");

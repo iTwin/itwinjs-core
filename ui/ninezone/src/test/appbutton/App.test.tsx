@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Item from "../../..//toolbar/item/Item";
+import AppButton from "../../app/button/App";
 
-describe("<Item />", () => {
+describe("<AppButton />", () => {
   it("should render", () => {
-    mount(<Item />);
+    mount(<AppButton />);
   });
 
   it("renders correctly", () => {
-    shallow(<Item />).should.matchSnapshot();
+    shallow(<AppButton />).should.matchSnapshot();
   });
 });

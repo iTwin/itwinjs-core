@@ -14,7 +14,7 @@ exports[`ListPickerBase should render correctly 1`] = `
   setEnabled={[Function]}
   title="Test"
 >
-  <Icon
+  <Item
     icon={
       <i
         className="icon icon-list"
