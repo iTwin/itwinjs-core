@@ -151,14 +151,11 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
                   renderPanelTo={[Function]}
                   title="tools.AnalysisAnimation.ToolSettings.play"
                 >
-                  <div
-                    className="nz-toolbar-item-item nz-toolbar-item-icon"
+                  <button
+                    className="nz-toolbar-item-item nz-gradient nz-toolbar-item-icon"
                     onClick={[Function]}
                     title="tools.AnalysisAnimation.ToolSettings.play"
                   >
-                    <div
-                      className="nz-gradient"
-                    />
                     <div
                       className="nz-icon"
                     >
@@ -170,7 +167,7 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
                         />
                       </Component>
                     </div>
-                  </div>
+                  </button>
                 </Item>
               </Icon>
               <Icon
@@ -199,14 +196,11 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
                   renderPanelTo={[Function]}
                   title="tools.AnalysisAnimation.ToolSettings.pause"
                 >
-                  <div
-                    className="nz-toolbar-item-item nz-toolbar-item-icon"
+                  <button
+                    className="nz-toolbar-item-item nz-gradient nz-toolbar-item-icon"
                     onClick={[Function]}
                     title="tools.AnalysisAnimation.ToolSettings.pause"
                   >
-                    <div
-                      className="nz-gradient"
-                    />
                     <div
                       className="nz-icon"
                     >
@@ -218,7 +212,7 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
                         />
                       </Component>
                     </div>
-                  </div>
+                  </button>
                 </Item>
               </Icon>
               <Icon
@@ -247,14 +241,11 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
                   renderPanelTo={[Function]}
                   title="tools.AnalysisAnimation.ToolSettings.stop"
                 >
-                  <div
-                    className="nz-toolbar-item-item nz-is-active nz-toolbar-item-icon"
+                  <button
+                    className="nz-toolbar-item-item nz-is-active nz-gradient nz-toolbar-item-icon"
                     onClick={[Function]}
                     title="tools.AnalysisAnimation.ToolSettings.stop"
                   >
-                    <div
-                      className="nz-gradient"
-                    />
                     <div
                       className="nz-icon"
                     >
@@ -266,7 +257,7 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
                         />
                       </Component>
                     </div>
-                  </div>
+                  </button>
                 </Item>
               </Icon>
             </div>

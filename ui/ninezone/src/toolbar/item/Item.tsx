@@ -30,18 +30,18 @@ export default class Item extends React.Component<ItemProps> {
       "nz-toolbar-item-item",
       this.props.isActive && "nz-is-active",
       this.props.isDisabled && "nz-is-disabled",
+      "nz-gradient",
       this.props.className);
 
     return (
-      <div
+      <button
         onClick={this._handleClick}
         className={className}
         style={this.props.style}
         title={this.props.title}
       >
-        <div className="nz-gradient"></div>
         {this.props.children}
-      </div>
+      </button>
     );
   }
 
