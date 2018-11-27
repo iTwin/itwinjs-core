@@ -50,6 +50,7 @@
     "cover:bentley": "cd core/bentley && npm run cover",
     "cover:backend:integration": "cd core/backend && npm run cover:integration",
     "cover:clients": "cd core/clients && npm run cover",
+    "cover:common": "cd core/common && npm run cover",
     "cover:testbed": "cd test-apps/testbed && npm run cover",
     "cover:ecschema-metadata": "cd core/ecschema-metadata && npm run cover",
     "module:backend": "cd core/backend && node ../../node_modules/@bentley/build-tools/scripts/mastermodule --includes=../common --recursively=true",

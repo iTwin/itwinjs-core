@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { ColorDef, ColorIndex } from "@bentley/imodeljs-common";
-
+import { ColorDef } from "../ColorDef";
+import { ColorIndex } from "../FeatureIndex";
 describe("ColorIndex", () => {
   it("should create, store and retrieve from ColorIndex", () => {
     const ci: ColorIndex = new ColorIndex();

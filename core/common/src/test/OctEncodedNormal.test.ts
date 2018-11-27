@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { OctEncodedNormal } from "@bentley/imodeljs-common";
+import { OctEncodedNormal } from "../OctEncodedNormal";
 import { XYZ, Vector3d } from "@bentley/geometry-core";
 
 function _expectSignsEqual(a: number, b: number) {
