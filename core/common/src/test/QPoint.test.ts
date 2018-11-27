@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { QParams3d, QPoint3d } from "@bentley/imodeljs-common";
+import { QParams3d, QPoint3d } from "../QPoint";
 import { Point3d, Range3d } from "@bentley/geometry-core";
 
 function expectPointsEqual(lhs: Point3d, rhs: Point3d, tolerance: number) {
