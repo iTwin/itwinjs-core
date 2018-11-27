@@ -31,6 +31,12 @@ export default class TestUtils {
     }
   }
 
+  public static terminateUiComponents() {
+    UiCore.terminate();
+    UiComponents.terminate();
+    TestUtils._uiComponentsInitialized = false;
+  }
+
   /** Waits until all async operations finish */
   public static async flushAsyncOperations() {
     return new Promise((resolve) => setImmediate(resolve));

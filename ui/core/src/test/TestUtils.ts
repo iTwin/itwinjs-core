@@ -27,4 +27,9 @@ export default class TestUtils {
       TestUtils._uiCoreInitialized = true;
     }
   }
+
+  public static terminateUiCore() {
+    UiCore.terminate();
+    TestUtils._uiCoreInitialized = false;
+  }
 }

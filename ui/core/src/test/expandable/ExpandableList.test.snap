@@ -5,3 +5,9 @@ exports[`ExpandableList <ExpandableList /> renders correctly 1`] = `
   className="BwcExpandableBlocksList"
 />
 `;
+
+exports[`ExpandableList renders correctly 1`] = `
+<div
+  className="BwcExpandableBlocksList"
+/>
+`;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { SplitButton } from "../..//index";
+import { SplitButton } from "../../index";
 
 describe("<SplitButton />", () => {
   it("should render", () => {
@@ -22,9 +22,9 @@ describe("<SplitButton />", () => {
   it("handles keydown correctly", () => {
     const wrapper = mount(<SplitButton label="test" />);
     // does not yet have expects, but does test that the onKeyUp code runs.
-    wrapper.find(".split-button-arrow").at(0).simulate("keyup", {keyCode: 13});
-    wrapper.find(".split-button-arrow").at(0).simulate("keyup", {keyCode: 40});
-    wrapper.find(".split-button-arrow").at(0).simulate("keyup", {keyCode: 0});
+    wrapper.find(".split-button-arrow").at(0).simulate("keyup", { keyCode: 13 });
+    wrapper.find(".split-button-arrow").at(0).simulate("keyup", { keyCode: 40 });
+    wrapper.find(".split-button-arrow").at(0).simulate("keyup", { keyCode: 0 });
   });
 
   it("handles keydown correctly", () => {
@@ -37,6 +37,6 @@ describe("<SplitButton />", () => {
     const wrapper = mount(<SplitButton label="test" />);
     // does not yet have expects, but does test that the onClose code runs.
     wrapper.find(".context-menu").at(0).simulate("click");
-    wrapper.find(".context-menu").at(0).simulate("click", {target: document.getElementsByClassName("split-button-arrow")[0]});
+    wrapper.find(".context-menu").at(0).simulate("click", { target: document.getElementsByClassName("split-button-arrow")[0] });
   });
 });

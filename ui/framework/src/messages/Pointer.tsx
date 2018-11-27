@@ -139,9 +139,6 @@ export class PointerMessage extends React.Component<PointerMessageProps> {
   private _adjustTooltipPosition(): any {
     let tooltipAdjustment = offsetAndContainInContainer();
 
-    if (!this.state)
-      return tooltipAdjustment;
-
     const adjustmentOffset = 50;
     switch (this.state.relativePosition) {
       case RelativePosition.Top:
