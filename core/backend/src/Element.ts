@@ -9,6 +9,7 @@ import { Transform } from "@bentley/geometry-core";
 import { DrawingModel } from "./Model";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
+import { SubjectOwnsSubjects } from "./NavigationRelationship";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
@@ -359,6 +360,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
     const subjectProps: SubjectProps = {
       classFullName: this.classFullName,
       model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(parentSubjectId),
       code: this.createCode(iModelDb, parentSubjectId, name),
       description,
     };
