@@ -202,7 +202,7 @@ vec4 getSurfaceColor() { return v_color; }
 // If a glyph texture, must mix getSurfaceColor() with texture color so texture color alpha is applied 100% and
 // surface color rgb is scaled by texture color rgb (latter is full white originally but stretched via mipmapping).
 const computeBaseColor = `
-  g_surfaceTexel = TEXTURE(s_texture, v_texCoord);
+  g_surfaceTexel = sampleSurfaceTexture();
   vec4 surfaceColor = getSurfaceColor();
 
   // Compute color for raster glyph.
