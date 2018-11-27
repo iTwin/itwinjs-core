@@ -53,6 +53,7 @@ export interface ButtonCluster {
   /** Which bwc button style to decorate button width */
   buttonStyle?: ButtonStyle;
 }
+
 /** Property interface for Dialog */
 export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title"> {
   /** whether to show dialog or not */
@@ -118,7 +119,7 @@ export interface DialogState {
  * Dialog component with optional resizing and dragging functionality
  */
 export class Dialog extends React.Component<DialogProps, DialogState> {
-  private _containerElement: HTMLElement | null = null;
+  private _containerRef = React.createRef<HTMLDivElement>();
   public static defaultProps: Partial<DialogProps> = {
     alignment: DialogAlignment.Center,
     minWidth: 400,
@@ -174,12 +175,71 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         containerStyle.height = this.state.height;
     }
 
-    const buttons: JSX.Element[] = [];
-    if (this.props.buttonCluster) {
-      this.props.buttonCluster.forEach((button: ButtonCluster, index: number) => {
+    const buttons = this.getFooterButtons(this.props);
+
+    const footerElement = footer || (<div className={"dialog-buttons"}>{buttons}</div>);
+
+    return (
+      <div
+        className={classnames(
+          "dialog",
+          { "dialog-hidden": !modal },
+        )}
+        style={this.props.backgroundStyle}
+        data-testid="dialog-root"
+        {...props}
+      >
+        {opened &&
+          <DivWithOutsideClick onOutsideClick={this.props.onOutsideClick}>
+            <div
+              className={classnames("dialog-container", alignment)}
+              style={containerStyle}
+              data-testid="dialog-container"
+            >
+              <div className={"dialog-area"} ref={this._containerRef}>
+                <div className={classnames(
+                  "dialog-head",
+                  { "dialog-movable": this.props.movable })}
+                  onPointerDown={this._handleStartMove}>
+                  <div className={"dialog-title"}>{this.props.title}</div>
+                  <span
+                    className={"dialog-close icon icon-close"}
+                    data-testid="dialog-close"
+                    onClick={this.props.onClose}
+                  />
+                </div>
+                <div className={"dialog-content"} style={this.props.style}>
+                  {this.props.children}
+                </div>
+                <div className={"dialog-footer"} style={this.props.footerStyle}>
+                  {footerElement}
+                </div>
+              </div>
+              <div
+                className={classnames("dialog-drag", "dialog-drag-right", { "dialog-drag-enabled": this.props.resizable })}
+                onPointerDown={this._handleStartResizeRight}
+              ></div>
+              <div
+                className={classnames("dialog-drag", "dialog-drag-bottom-mid", { "dialog-drag-enabled": this.props.resizable })}
+                onPointerDown={this._handleStartResizeDown}
+              > </div>
+              <div
+                className={classnames("dialog-drag", "dialog-drag-bottom-right", { "dialog-drag-enabled": this.props.resizable })}
+                onPointerDown={this._handleStartResizeDownRight}
+              ></div>
+            </div>
+          </DivWithOutsideClick>
+        }
+      </div>
+    );
+  }
+
+  private getFooterButtons(props: DialogProps) {
+    const buttons: React.ReactNode[] = [];
+    if (props.buttonCluster) {
+      props.buttonCluster.forEach((button: ButtonCluster, index: number) => {
         let buttonText = "";
         let buttonClass = classnames("dialog-button", button.type ? `dialog-button-${button.type}` : "");
-
         switch (button.type) {
           case ButtonType.OK:
             buttonText = UiCore.i18n.translate("UiCore:dialog.ok");
@@ -206,110 +266,55 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
             buttonClass = classnames(buttonClass, button.buttonStyle || "bwc-buttons-hollow");
             break;
         }
-
-        buttons.push(
-          <button className={buttonClass} key={index.toString()} onClick={button.onClick}>{buttonText}</button>);
+        buttons.push(<button className={buttonClass} key={index.toString()} onClick={button.onClick}>{buttonText}</button>);
       });
     }
-
-    const footerElement = footer || (<div className={"dialog-buttons"}>{buttons}</div>);
-
-    return (
-      <div {...props} data-testid="dialog-root" className={classnames(
-        "dialog",
-        { "dialog-hidden": !modal },
-      )} style={this.props.backgroundStyle}>
-        {opened &&
-          <DivWithOutsideClick onOutsideClick={this.props.onOutsideClick}>
-            <div data-testid="dialog-container"
-              className={classnames("dialog-container", alignment)} style={containerStyle}>
-              <div className={"dialog-area"} ref={this._containerRef}>
-                <div className={classnames(
-                  "dialog-head",
-                  { "dialog-movable": this.props.movable })}
-                  onMouseDown={this._handleStartMove}>
-                  <div className={"dialog-title"}>{this.props.title}</div>
-                  <span
-                    className={"dialog-close icon icon-close"}
-                    data-testid="dialog-close"
-                    onClick={this.props.onClose}
-                  />
-                </div>
-                <div className={"dialog-content"} style={this.props.style}>
-                  {this.props.children}
-                </div>
-                <div className={"dialog-footer"} style={this.props.footerStyle}>
-                  {footerElement}
-                </div>
-              </div>
-              <div
-                className={classnames("dialog-drag", "dialog-drag-right", { "dialog-drag-enabled": this.props.resizable })}
-                onTouchStart={this._handleStartResizeRight}
-                onMouseDown={this._handleStartResizeRight}></div>
-              <div
-                className={classnames("dialog-drag", "dialog-drag-bottom-mid", { "dialog-drag-enabled": this.props.resizable })}
-                onTouchStart={this._handleStartResizeDown}
-                onMouseDown={this._handleStartResizeDown}></div>
-              <div
-                className={classnames("dialog-drag", "dialog-drag-bottom-right", { "dialog-drag-enabled": this.props.resizable })}
-                onTouchStart={this._handleStartResizeDownRight}
-                onMouseDown={this._handleStartResizeDownRight}></div>
-            </div>
-          </DivWithOutsideClick>
-        }
-      </div>
-    );
-  }
-
-  private _containerRef = (el: HTMLDivElement) => {
-    this._containerElement = el;
+    return buttons;
   }
 
   public componentDidMount(): void {
-    document.addEventListener("mouseup", this._handleMouseUp, true);
-    document.addEventListener("touchend", this._handleMouseUp, true);
-
-    document.addEventListener("mousemove", this._handleMouseMove, true);
-    document.addEventListener("touchmove", this._handleMouseMove, true);
+    window.addEventListener("pointerup", this._handlePointerUp, true);
+    window.addEventListener("pointermove", this._handlePointerMove, true);
 
     document.addEventListener("keyup", this._handleKeyUp, true);
   }
 
   public componentWillUnmount(): void {
-    document.removeEventListener("mouseup", this._handleMouseUp, true);
-    document.removeEventListener("touchend", this._handleMouseUp, true);
+    window.removeEventListener("pointerup", this._handlePointerUp, true);
 
-    document.removeEventListener("mousemove", this._handleMouseMove, true);
-    document.removeEventListener("touchmove", this._handleMouseMove, true);
+    window.removeEventListener("pointermove", this._handlePointerMove, true);
 
     document.removeEventListener("keyup", this._handleKeyUp, true);
   }
 
-  private _handleKeyUp = (event: any) => {
+  private _handleKeyUp = (event: KeyboardEvent) => {
     if (event.key === "Escape" && this.props.opened && this.props.onEscape) {
       this.props.onEscape();
     }
   }
 
-  private _handleStartResizeRight = (event: any): void => {
+  private _handleStartResizeRight = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ rightResizing: true });
   }
 
-  private _handleStartResizeDown = (event: any): void => {
+  private _handleStartResizeDown = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ downResizing: true });
   }
 
-  private _handleStartResizeDownRight = (event: any): void => {
+  private _handleStartResizeDownRight = (event: React.PointerEvent): void => {
     event.preventDefault();
     this.setState({ downResizing: true, rightResizing: true });
   }
 
-  private _handleStartMove = (event: any): void => {
+  private _handleStartMove = (event: React.PointerEvent): void => {
+    if (!this.props.movable)
+      return;
+
     event.preventDefault();
-    if (this._containerElement) {
-      const rect = this._containerElement.getBoundingClientRect();
+    if (this._containerRef.current) {
+      const rect = this._containerRef.current.getBoundingClientRect();
       const grabOffsetX = event.clientX - rect.left;
       const grabOffsetY = event.clientY - rect.top;
       this.setState({
@@ -320,13 +325,14 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     }
   }
 
-  private _handleMouseMove = (event: any): void => {
-    if (!this._containerElement)
+  private _handlePointerMove = (event: PointerEvent): void => {
+    if ((!this.props.resizable && !this.props.movable) || !this._containerRef.current)
       return;
+
     const { minWidth, maxWidth, minHeight, maxHeight, movable } = this.props;
     let { x, y, width, height } = this.state;
     if (x === undefined || y === undefined || width === undefined || height === undefined) {
-      const rect = this._containerElement!.getBoundingClientRect();
+      const rect = this._containerRef.current.getBoundingClientRect();
       width = rect.width, height = rect.height, x = rect.left, y = rect.top;
     }
     if (this.props.resizable) {
@@ -355,7 +361,10 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     }
   }
 
-  private _handleMouseUp = (_event: any): void => {
+  private _handlePointerUp = (_event: PointerEvent): void => {
+    if (!this.props.movable && !this.props.resizable)
+      return;
+
     this.setState({
       rightResizing: false,
       downResizing: false,

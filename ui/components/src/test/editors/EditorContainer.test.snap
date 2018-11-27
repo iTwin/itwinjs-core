@@ -12,12 +12,11 @@ exports[`<EditorContainer /> renders correctly 1`] = `
   <TextEditor
     onBlur={[Function]}
     value={
-      SamplePropertyRecord {
-        "description": "Test1 - description",
+      PropertyRecord {
         "isReadonly": false,
         "property": Object {
           "displayLabel": "Test1",
-          "name": "Test10",
+          "name": "Test1",
           "typename": "string",
         },
         "value": Object {

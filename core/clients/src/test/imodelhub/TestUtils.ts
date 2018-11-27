@@ -101,7 +101,7 @@ function getImodelHubClient() {
     return _imodelHubClient;
   _imodelHubClient = new IModelHubClient(new AzureFileHandler());
   if (!TestConfig.enableMocks) {
-    _imodelHubClient.RequestOptions().setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
+    _imodelHubClient.requestOptions.setCustomOptions(requestBehaviorOptions.toCustomRequestOptions());
   }
   return _imodelHubClient;
 }
@@ -210,10 +210,10 @@ export async function deleteIModelByName(accessToken: AccessToken, projectId: st
     return;
 
   const client = getDefaultClient();
-  const imodels = await client.IModels().get(actx, accessToken, projectId, new IModelQuery().byName(imodelName));
+  const imodels = await client.iModels.get(actx, accessToken, projectId, new IModelQuery().byName(imodelName));
 
   for (const imodel of imodels) {
-    await client.IModels().delete(actx, accessToken, projectId, imodel.id!);
+    await client.iModels.delete(actx, accessToken, projectId, imodel.id!);
   }
 }
 
@@ -224,7 +224,7 @@ export async function getIModelId(accessToken: AccessToken, imodelName: string):
   const projectId = await getProjectId(accessToken);
 
   const client = getDefaultClient();
-  const imodels = await client.IModels().get(actx, accessToken, projectId, new IModelQuery().byName(imodelName));
+  const imodels = await client.iModels.get(actx, accessToken, projectId, new IModelQuery().byName(imodelName));
 
   if (!imodels[0] || !imodels[0].id)
     return Promise.reject(`iModel with name ${imodelName} doesn't exist.`);
@@ -263,12 +263,12 @@ export async function getBriefcases(accessToken: AccessToken, imodelId: GuidStri
   }
 
   const client = getDefaultClient();
-  let briefcases = await client.Briefcases().get(actx, accessToken, imodelId);
+  let briefcases = await client.briefcases.get(actx, accessToken, imodelId);
   if (briefcases.length < count) {
     for (let i = 0; i < count - briefcases.length; ++i) {
-      await client.Briefcases().create(actx, accessToken, imodelId);
+      await client.briefcases.create(actx, accessToken, imodelId);
     }
-    briefcases = await client.Briefcases().get(actx, accessToken, imodelId);
+    briefcases = await client.briefcases.get(actx, accessToken, imodelId);
   }
   return briefcases;
 }
@@ -443,7 +443,7 @@ export async function getLastLockObjectId(accessToken: AccessToken, imodelId: Gu
     return Id64.fromString("0x0");
 
   const client = getDefaultClient();
-  const locks = await client.Locks().get(actx, accessToken, imodelId);
+  const locks = await client.locks.get(actx, accessToken, imodelId);
 
   locks.sort((lock1, lock2) => (parseInt(lock1.objectId!.toString(), 16) > parseInt(lock2.objectId!.toString(), 16) ? -1 : 1));
 
@@ -638,17 +638,17 @@ export async function createIModel(accessToken: AccessToken, name: string, proje
 
   const client = getDefaultClient();
 
-  const imodels = await client.IModels().get(actx, accessToken, projectId, new IModelQuery().byName(name));
+  const imodels = await client.iModels.get(actx, accessToken, projectId, new IModelQuery().byName(name));
 
   if (imodels.length > 0) {
     if (deleteIfExists) {
-      await client.IModels().delete(actx, accessToken, projectId, imodels[0].id!);
+      await client.iModels.delete(actx, accessToken, projectId, imodels[0].id!);
     } else {
       return;
     }
   }
 
-  return client.IModels().create(actx, accessToken, projectId, name, getMockSeedFilePath(), "");
+  return client.iModels.create(actx, accessToken, projectId, name, getMockSeedFilePath(), "");
 }
 
 export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
@@ -686,14 +686,14 @@ export async function createChangeSets(accessToken: AccessToken, imodelId: GuidS
 
   const client = getDefaultClient();
 
-  const currentCount = (await client.ChangeSets().get(actx, accessToken, imodelId)).length;
+  const currentCount = (await client.changeSets.get(actx, accessToken, imodelId)).length;
 
   const changeSets = getMockChangeSets(briefcase);
 
   const result: ChangeSet[] = [];
   for (let i = currentCount; i < startingId + count; ++i) {
     const changeSetPath = getMockChangeSetPath(i, changeSets[i].id!);
-    const changeSet = await client.ChangeSets().create(actx, accessToken, imodelId, changeSets[i], changeSetPath);
+    const changeSet = await client.changeSets.create(actx, accessToken, imodelId, changeSets[i], changeSetPath);
     result.push(changeSet);
   }
   return result;
@@ -715,7 +715,7 @@ export async function createLocks(accessToken: AccessToken, imodelId: GuidString
       releasedWithChangeSet, releasedWithChangeSetIndex));
   }
 
-  await client.Locks().update(actx, accessToken, imodelId, generatedLocks);
+  await client.locks.update(actx, accessToken, imodelId, generatedLocks);
 }
 
 export async function createVersions(accessToken: AccessToken, imodelId: GuidString, changesetIds: string[], versionNames: string[]) {
@@ -725,9 +725,9 @@ export async function createVersions(accessToken: AccessToken, imodelId: GuidStr
   const client = getDefaultClient();
   for (let i = 0; i < changesetIds.length; i++) {
     // check if changeset does not have version
-    const version = await client.Versions().get(actx, accessToken, imodelId, new VersionQuery().byChangeSet(changesetIds[i]));
+    const version = await client.versions.get(actx, accessToken, imodelId, new VersionQuery().byChangeSet(changesetIds[i]));
     if (!version || version.length === 0) {
-      await client.Versions().create(actx, accessToken, imodelId, changesetIds[i], versionNames[i]);
+      await client.versions.create(actx, accessToken, imodelId, changesetIds[i], versionNames[i]);
     }
   }
 }

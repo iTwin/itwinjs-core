@@ -3,13 +3,17 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import React from "react";
+import _ from "lodash";
+import { Omit } from "@bentley/ui-core/lib/utils";
 import { PropertyCategoryBlock, PropertyCategoryBlockProps } from "./PropertyCategoryBlock";
 import { PropertyList, PropertyListProps, getPropertyKey } from "./PropertyList";
+import { PropertyCategory } from "../PropertyDataProvider";
 
-type Omit<T, K extends keyof T> = Pick<T, Exclude<keyof T, K>>;
+type ReducedPropertyListProps = Omit<Omit<PropertyListProps, "onColumnChanged">, "columnRatio">;
 
 /** @hidden */
-export interface SelectablePropertyBlockProps extends PropertyCategoryBlockProps, Omit<PropertyListProps, "category"> {
+export interface SelectablePropertyBlockProps extends PropertyCategoryBlockProps, ReducedPropertyListProps {
+  category: PropertyCategory;
 }
 
 /** @hidden */
@@ -70,21 +74,14 @@ export class SelectablePropertyBlock extends React.Component<SelectablePropertyB
   }
 
   public render() {
+    const listProps = {
+      ...(_.omit(this.props, ["onExpansionToggled"])),
+      onColumnChanged: this._onRatioChanged,
+      columnRatio: this.state.columnRatio,
+    };
     return (
       <PropertyCategoryBlock category={this.props.category} onExpansionToggled={this.props.onExpansionToggled}>
-        <PropertyList
-          category={this.props.category}
-          orientation={this.props.orientation}
-          properties={this.props.properties}
-          selectedPropertyKey={this.props.selectedPropertyKey}
-          onPropertyClicked={this.props.onPropertyClicked}
-          columnRatio={this.state.columnRatio}
-          onColumnChanged={this._onRatioChanged}
-          propertyValueRendererManager={this.props.propertyValueRendererManager}
-          editingPropertyKey={this.props.editingPropertyKey}
-          onEditCommit={this.props.onEditCommit}
-          onEditCancel={this.props.onEditCancel}
-        />
+        <PropertyList {...listProps} />
       </PropertyCategoryBlock>
     );
   }

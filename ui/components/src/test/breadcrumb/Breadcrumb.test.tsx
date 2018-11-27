@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -9,8 +10,6 @@ import { render, cleanup, fireEvent, RenderResult, waitForElement } from "react-
 import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../index";
 import { mockRawTreeDataProvider, mockInterfaceTreeDataProvider } from "./mockTreeDataProvider";
 
-afterEach(cleanup);
-
 describe("Breadcrumb", () => {
   let renderSpy: sinon.SinonSpy;
   let renderedComponent: RenderResult;
@@ -18,6 +17,8 @@ describe("Breadcrumb", () => {
     sinon.restore();
     renderSpy = sinon.spy();
   });
+
+  afterEach(cleanup);
 
   describe("<Breadcrumb />", () => {
     it("should render", () => {

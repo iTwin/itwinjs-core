@@ -54,7 +54,7 @@ export class TestData {
 
   public static async getTestIModelId(accessToken: AccessToken, projectId: string, iModelName: string): Promise<string> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    const iModels = await TestData.imodelClient.IModels().get(alctx, accessToken, projectId, new IModelQuery().byName(iModelName));
+    const iModels = await TestData.imodelClient.iModels.get(alctx, accessToken, projectId, new IModelQuery().byName(iModelName));
     assert(iModels.length > 0);
     assert(iModels[0].wsgId);
 

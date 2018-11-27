@@ -2,7 +2,7 @@
 
 exports[`ExpandableBlock <ExpandableBlock /> renders correctly collapsed 1`] = `
 <ExpandableBlock
-  className="core-property-block"
+  className="core-expandable-block"
   isExpanded={false}
   onClick={[Function]}
   title="Test"
@@ -15,7 +15,7 @@ exports[`ExpandableBlock <ExpandableBlock /> renders correctly collapsed 1`] = `
 
 exports[`ExpandableBlock <ExpandableBlock /> renders correctly expanded 1`] = `
 <ExpandableBlock
-  className="core-property-block"
+  className="core-expandable-block"
   isExpanded={true}
   onClick={[Function]}
   title="Test"

@@ -155,7 +155,7 @@ export class MockAssetUtil {
 
     // Get test iModelIds from the mocked iModelHub client
     for (const iModelInfo of testIModels) {
-      const iModels = await iModelHubClientMock.object.IModels().get(actx, accessToken as any, testProjectId, new IModelQuery().byName(iModelInfo.name));
+      const iModels = await iModelHubClientMock.object.iModels.get(actx, accessToken as any, testProjectId, new IModelQuery().byName(iModelInfo.name));
       assert(iModels.length > 0, `No IModels returned from iModelHubClient mock for ${iModelInfo.name} iModel`);
       assert(!!iModels[0].id, `No IModelId returned for ${iModelInfo.name} iModel`);
       iModelInfo.id = iModels[0].id!.toString();
@@ -163,13 +163,13 @@ export class MockAssetUtil {
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
       // getChangeSets
-      iModelInfo.changeSets = await iModelHubClientMock.object.ChangeSets().get(actx, accessToken as any, iModelInfo.id);
+      iModelInfo.changeSets = await iModelHubClientMock.object.changeSets.get(actx, accessToken as any, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
       assert.exists(iModelInfo.changeSets);
 
       // downloadChangeSets
       // const csetDir = path.join(cacheDir, iModelInfo.id, "csets");
-      // await iModelHubClientMock.object.ChangeSets().download(iModelInfo.changeSets, csetDir);
+      // await iModelHubClientMock.object.changeSets.download(iModelInfo.changeSets, csetDir);
     }
     MockAssetUtil.verifyIModelInfo(testIModels);
     return testProjectId;
@@ -433,10 +433,10 @@ export class MockAssetUtil {
         return Promise.resolve([user]);
       });
 
-    iModelHubClientMock.setup((f: IModelHubClient) => f.IModels()).returns(() => iModelsHandlerMock.object);
-    iModelHubClientMock.setup((f: IModelHubClient) => f.Briefcases()).returns(() => briefcaseHandlerMock.object);
-    iModelHubClientMock.setup((f: IModelHubClient) => f.ChangeSets()).returns(() => changeSetHandlerMock.object);
-    iModelHubClientMock.setup((f: IModelHubClient) => f.Versions()).returns(() => versionHandlerMock.object);
-    iModelHubClientMock.setup((f: IModelHubClient) => f.Users()).returns(() => userInfoHandlerMock.object);
+    iModelHubClientMock.setup((f: IModelHubClient) => f.iModels).returns(() => iModelsHandlerMock.object);
+    iModelHubClientMock.setup((f: IModelHubClient) => f.briefcases).returns(() => briefcaseHandlerMock.object);
+    iModelHubClientMock.setup((f: IModelHubClient) => f.changeSets).returns(() => changeSetHandlerMock.object);
+    iModelHubClientMock.setup((f: IModelHubClient) => f.versions).returns(() => versionHandlerMock.object);
+    iModelHubClientMock.setup((f: IModelHubClient) => f.users).returns(() => userInfoHandlerMock.object);
   }
 }

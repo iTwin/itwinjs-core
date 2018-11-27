@@ -283,7 +283,7 @@ export class GlobalEventHandler extends EventBaseHandler {
   /**
    * Get a handler for managing [[GlobalEventSubscription]]s.
    */
-  public Subscriptions(): GlobalEventSubscriptionHandler {
+  public get subscriptions(): GlobalEventSubscriptionHandler {
     if (!this._subscriptionHandler) {
       this._subscriptionHandler = new GlobalEventSubscriptionHandler(this._handler);
     }

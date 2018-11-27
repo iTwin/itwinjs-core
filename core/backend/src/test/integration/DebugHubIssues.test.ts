@@ -112,7 +112,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
     // Create a named version on the just uploaded change set
     const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, accessToken, iModelId.toString(), BriefcaseManager.imodelClient);
-    await BriefcaseManager.imodelClient.Versions().create(actx, accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
+    await BriefcaseManager.imodelClient.versions.create(actx, accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub", async () => {

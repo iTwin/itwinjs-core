@@ -40,20 +40,20 @@ async () => {
   const alctx: ActivityLoggingContext = new ActivityLoggingContext("b0f0808d-e76f-4615-acf4-95aa1b78eba5");
   const accessToken = new MockAccessToken();
   // __PUBLISH_EXTRACT_START__ EventSubscriptionsHandler.create.example-code
-  const subscription: EventSubscription = await imodelHubClient.Events()
-    .Subscriptions().create(alctx, accessToken, imodelId, ["ChangeSetPostPushEvent", "VersionEvent"]);
+  const subscription: EventSubscription = await imodelHubClient.events
+    .subscriptions.create(alctx, accessToken, imodelId, ["ChangeSetPostPushEvent", "VersionEvent"]);
   // __PUBLISH_EXTRACT_END__
   // __PUBLISH_EXTRACT_START__ EventHandler.getSASToken.example-code
-  const sasToken: EventSAS = await imodelHubClient.Events().getSASToken(alctx, accessToken, imodelId);
+  const sasToken: EventSAS = await imodelHubClient.events.getSASToken(alctx, accessToken, imodelId);
   // __PUBLISH_EXTRACT_END__
   // __PUBLISH_EXTRACT_START__ EventHandler.getEvent.example-code
-  const event: IModelHubEvent | undefined = await imodelHubClient.Events()
+  const event: IModelHubEvent | undefined = await imodelHubClient.events
     .getEvent(alctx, sasToken.sasToken!, sasToken.baseAddress!, subscription.wsgId, 60);
   // __PUBLISH_EXTRACT_END__
   if (!event)
     return;
   // __PUBLISH_EXTRACT_START__ EventHandler.createListener.create.example-code
-  const deleteCallback = await imodelHubClient.Events()  // tslint:disable-line:await-promise
+  const deleteCallback = await imodelHubClient.events  // tslint:disable-line:await-promise
     .createListener(alctx, authenticate, subscription.wsgId, imodelId, processEvent);
   // __PUBLISH_EXTRACT_END__
 

@@ -450,6 +450,8 @@ export class AccuSnap implements Decorator {
       snapModes,
       snapAperture: thisHit.viewport.pixelsFromInches(hotDistanceInches),
       snapDivisor: keypointDivisor,
+      subCategoryId: thisHit.subCategoryId,
+      geometryClass: thisHit.geometryClass,
     };
 
     if (!thisHit.isElementHit) {
@@ -493,50 +495,11 @@ export class AccuSnap implements Decorator {
       }
     }
 
-    let result = await thisHit.viewport.iModel.requestSnap(requestProps);
+    const result = await thisHit.viewport.iModel.requestSnap(requestProps);
 
     if (out) out.snapStatus = result.status;
     if (result.status !== SnapStatus.Success)
       return undefined;
-
-    if (undefined !== result.category && undefined !== result.subCategory) {
-      const viewState = thisHit.viewport.view;
-      const appearance = viewState.getSubCategoryAppearance(result.subCategory);
-
-      if (appearance.invisible) {
-        const subCategories = viewState.subCategories.getSubCategories(result.category);
-        if (undefined !== subCategories) {
-          requestProps.offSubCategories = [result.subCategory];
-          for (const thisSub of subCategories) {
-            if (thisSub !== result.subCategory && viewState.getSubCategoryAppearance(thisSub).invisible)
-              requestProps.offSubCategories.push(thisSub);
-          }
-        }
-
-        if (undefined === requestProps.offSubCategories) {
-          if (out) out.snapStatus = SnapStatus.NoSnapPossible;
-          return undefined;
-        }
-
-        result = await thisHit.viewport.iModel.requestSnap(requestProps); // Retry snap with list of unacceptable subcategories...
-
-        if (result.status === SnapStatus.Success && undefined !== result.subCategory) {
-          const appearanceRetry = viewState.getSubCategoryAppearance(result.subCategory);
-          if (appearanceRetry.invisible)
-            result.status = SnapStatus.NoSnapPossible;
-          else if (appearanceRetry.dontSnap)
-            result.status = SnapStatus.NotSnappable;
-        }
-
-        if (out) out.snapStatus = result.status;
-        if (result.status !== SnapStatus.Success)
-          return undefined;
-
-      } else if (appearance.dontSnap) {
-        if (out) out.snapStatus = SnapStatus.NotSnappable;
-        return undefined;
-      }
-    }
 
     const snap = new SnapDetail(thisHit, result.snapMode!, result.heat!, result.snapPoint!);
     snap.setCurvePrimitive(undefined !== result.curve ? GeomJson.Reader.parse(result.curve) : undefined, undefined, result.geomType);

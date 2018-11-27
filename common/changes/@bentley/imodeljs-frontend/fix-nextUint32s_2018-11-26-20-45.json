@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix incorrect length used to create Uint32Array from Uint8Array.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

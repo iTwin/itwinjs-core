@@ -125,10 +125,10 @@ export class IModelTestUtils {
   // public static async createIModel(accessToken: AccessToken, projectId: string, name: string, seedFile: string) {
   //   try {
   //     const existingid = await HubUtility.queryIModelIdByName(accessToken, projectId, name);
-  //     BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, existingid);
+  //     BriefcaseManager.imodelClient.iModels.delete(actx, accessToken, projectId, existingid);
   //   } catch (_err) {
   //   }
-  //   return BriefcaseManager.imodelClient.IModels().create(actx, accessToken, projectId, name, seedFile);
+  //   return BriefcaseManager.imodelClient.iModels.create(actx, accessToken, projectId, name, seedFile);
   // }
 
   public static async setupIntegratedFixture(testIModels: TestIModelInfo[]): Promise<any> {
@@ -141,7 +141,7 @@ export class IModelTestUtils {
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
       iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-      iModelInfo.changeSets = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelInfo.id);
+      iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, iModelInfo.id);
       iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
 
       iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");

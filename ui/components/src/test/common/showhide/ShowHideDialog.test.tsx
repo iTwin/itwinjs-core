@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -8,12 +9,12 @@ import { render, cleanup, fireEvent } from "react-testing-library";
 import { ShowHideDialog } from "../../../";
 import TestUtils from "../../TestUtils";
 
-afterEach(cleanup);
-
 describe("ShowHideDialog", () => {
   before(async () => {
     await TestUtils.initializeUiComponents();
   });
+
+  afterEach(cleanup);
 
   describe("<ShowHideDialog />", () => {
     const items = [{ id: "0", label: "" }, { id: "1", label: "Item 1" }, { id: "2", label: "Item 2" }, { id: "3", label: "Item 3" }];

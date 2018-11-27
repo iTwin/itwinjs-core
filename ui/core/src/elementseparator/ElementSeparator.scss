@@ -3,6 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+@function background-line($orientation) {
+  @return linear-gradient(
+    $orientation,
+    transparent calc(50% - 3px),
+     #c7ccd1 /*background.5*/ calc(50%),
+     transparent calc(50% + 3px));
+}
+
 .core-element-separator {
   touch-action: none;
   display: inline-block;
@@ -10,8 +18,26 @@
   border-style: none;
   padding: 0px;
   z-index: 1000;
-}
 
-.core-element-separator:focus {
-  outline: none;
+  &--vertical {
+    width: 100%;
+    cursor: row-resize;
+
+    &:hover {
+      background: background-line(to bottom);
+    }
+  }
+
+  &--horizontal {
+    height: 100%;
+    cursor: col-resize;
+
+    &:hover {
+      background: background-line(to right);
+    }
+  }
+
+  &:focus {
+    outline: none;
+  }
 }

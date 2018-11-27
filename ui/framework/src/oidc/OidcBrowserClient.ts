@@ -36,9 +36,12 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
 
     // Listen to redirect path (happens if a redirect causes app to reinitialize)
     if (window.location.pathname === this._redirectPath) {
-      this._userManager!.signinRedirectCallback().then(() => {
-        window.location.replace("/");
-      }, this._onError);
+      try {
+        await this._userManager!.signinRedirectCallback();
+      } catch (err) {
+        this._onError(err);
+      }
+      window.location.replace("/");
     }
   }
 

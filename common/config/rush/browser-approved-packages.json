@@ -207,6 +207,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "css-element-queries",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "css-loader",
       "allowedCategories": [ "frontend", "tools" ]
     },
@@ -603,6 +607,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "resize-observer-polyfill",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "resolve",
       "allowedCategories": [ "internal" ]
     },
@@ -725,6 +733,10 @@
     {
       "name": "url-loader",
       "allowedCategories": [ "frontend", "tools" ]
+    },
+    {
+      "name": "url-search-params",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "wdio-chromedriver-service",

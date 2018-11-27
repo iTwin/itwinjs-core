@@ -20,7 +20,7 @@ initializeBackend();
 
 // Set up logging (by default, no logging is enabled)
 const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
-const logLevel = undefined !== logLevelEnv ? Logger.ParseLogLevel(logLevelEnv) : LogLevel.None;
+const logLevel = undefined !== logLevelEnv ? Logger.parseLogLevel(logLevelEnv) : LogLevel.None;
 Logger.setLevelDefault(logLevel);
 
 // --------------------------------------------------------------------------------------

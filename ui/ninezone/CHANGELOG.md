@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Tue, 20 Nov 2018 16:17:15 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Nov 2018 19:38:42 GMT and should not be manually modified.
+
+## 0.170.0
+Mon, 26 Nov 2018 19:38:42 GMT
+
+### Updates
+
+- Changed Omit typedef source from ui/ninezone to ui/core
 
 ## 0.169.0
 Tue, 20 Nov 2018 16:17:15 GMT

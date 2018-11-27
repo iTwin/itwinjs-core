@@ -23,15 +23,21 @@ export interface State {
   currentViewDefinitionId?: Id64String;
   rightPaneRatio: number;
   rightPaneHeight?: number;
+  contentRatio: number;
+  contentWidth?: number;
 }
 
 export default class App extends React.Component<{}, State> {
   private readonly _minRightPaneRatio = 0.3;
   private readonly _maxRightPaneRatio = 0.7;
+  private readonly _minContentRatio = 0.2;
+  private readonly _maxContentRatio = 0.9;
   private _rightPaneRef = React.createRef<HTMLDivElement>();
+  private _contentRef = React.createRef<HTMLDivElement>();
 
   public readonly state: State = {
     rightPaneRatio: 0.5,
+    contentRatio: 0.7,
   };
 
   // tslint:disable-next-line:naming-convention
@@ -62,9 +68,22 @@ export default class App extends React.Component<{}, State> {
     this.setState({ rightPaneRatio: ratio });
   }
 
+  private _onContentRatioChanged = (ratio: number) => {
+    if (ratio < this._minContentRatio)
+      ratio = this._minContentRatio;
+    if (ratio > this._maxContentRatio)
+      ratio = this._maxContentRatio;
+    this.setState({ contentRatio: ratio });
+  }
+
   private renderIModelComponents(imodel: IModelConnection, rulesetId: string, viewDefinitionId: Id64String) {
     return (
-      <div className="app-content">
+      <div
+        className="app-content"
+        ref={this._contentRef}
+        style={{
+          gridTemplateColumns: `${this.state.contentRatio * 100}% 1px calc(${(1 - this.state.contentRatio) * 100}% - 1px)`,
+        }}>
         <div className="app-content-left">
           <div className="app-content-left-top">
             <ViewportContentControl imodel={imodel} rulesetId={rulesetId} viewDefinitionId={viewDefinitionId} />
@@ -73,11 +92,18 @@ export default class App extends React.Component<{}, State> {
             <GridWidget imodel={imodel} rulesetId={rulesetId} />
           </div>
         </div>
+        <ElementSeparator
+          orientation={Orientation.Horizontal}
+          ratio={this.state.contentRatio}
+          movableArea={this.state.contentWidth}
+          separatorSize={10}
+          onRatioChanged={this._onContentRatioChanged}
+        />
         <div
           ref={this._rightPaneRef}
           className="app-content-right"
           style={{
-            gridTemplateRows: `${this.state.rightPaneRatio * 100}% 30px ${(1 - this.state.rightPaneRatio) * 100}%`,
+            gridTemplateRows: `${this.state.rightPaneRatio * 100}% 30px calc(${(1 - this.state.rightPaneRatio) * 100}% - 30px)`,
           }}>
           <TreeWidget imodel={imodel} rulesetId={rulesetId} />
           <div className="app-content-right-separator">
@@ -95,11 +121,16 @@ export default class App extends React.Component<{}, State> {
   }
 
   private afterRender() {
-    if (!this._rightPaneRef.current)
-      return;
-    const height = this._rightPaneRef.current.getBoundingClientRect().height;
-    if (height !== this.state.rightPaneHeight)
-      this.setState({ rightPaneHeight: height });
+    if (this._rightPaneRef.current) {
+      const height = this._rightPaneRef.current.getBoundingClientRect().height;
+      if (height !== this.state.rightPaneHeight)
+        this.setState({ rightPaneHeight: height });
+    }
+    if (this._contentRef.current) {
+      const width = this._contentRef.current.getBoundingClientRect().width;
+      if (width !== this.state.contentWidth)
+        this.setState({ contentWidth: width });
+    }
   }
 
   public componentDidMount() {

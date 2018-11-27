@@ -20,11 +20,11 @@ const imodelId: GuidString = Guid.createValue();
 async () => {
   // __PUBLISH_EXTRACT_START__ VersionHandler.create.example-code
   // Query all ChangeSets
-  const changeSets: ChangeSet[] = await imodelHubClient.ChangeSets().get(alctx, token, imodelId);
+  const changeSets: ChangeSet[] = await imodelHubClient.changeSets.get(alctx, token, imodelId);
   // Select one of the resulting ChangeSets
   const changeSetId: string = changeSets[0].id!;
   // Create a Named Version for that ChangeSet
-  const createdVersion: Version = await imodelHubClient.Versions().create(alctx, token, imodelId, changeSetId, "Version name", "Version description");
+  const createdVersion: Version = await imodelHubClient.versions.create(alctx, token, imodelId, changeSetId, "Version name", "Version description");
   // __PUBLISH_EXTRACT_END__
   if (!createdVersion)
     return;
@@ -33,10 +33,10 @@ async () => {
 async () => {
   // __PUBLISH_EXTRACT_START__ VersionHandler.get.example-code
   // Query all Named Versions
-  const allVersions: Version[] = await imodelHubClient.Versions().get(alctx, token, imodelId);
+  const allVersions: Version[] = await imodelHubClient.versions.get(alctx, token, imodelId);
   // Query a single Named Version by its name
   const queryByName: VersionQuery = new VersionQuery().byName("Version name");
-  const versionByName: Version[] = await imodelHubClient.Versions().get(alctx, token, imodelId, queryByName);
+  const versionByName: Version[] = await imodelHubClient.versions.get(alctx, token, imodelId, queryByName);
   // __PUBLISH_EXTRACT_END__
 
   if (!allVersions || !versionByName)
@@ -47,11 +47,11 @@ async () => {
   // __PUBLISH_EXTRACT_START__ VersionHandler.thumbnail.example-code
   // Query Named Version with its Thumbnail Id
   const thumbnailIdQuery: VersionQuery = new VersionQuery().byName("Version name").selectThumbnailId("Small");
-  const versionWithThumbnailId: Version[] = await imodelHubClient.Versions().get(alctx, token, imodelId, thumbnailIdQuery);
+  const versionWithThumbnailId: Version[] = await imodelHubClient.versions.get(alctx, token, imodelId, thumbnailIdQuery);
   // Download the Thumbnail
   const thumbnail: SmallThumbnail = new SmallThumbnail();
   thumbnail.id = versionWithThumbnailId[0].smallThumbnailId!;
-  const thumbnailContents: string = await imodelHubClient.Thumbnails().download(alctx, token, imodelId, thumbnail);
+  const thumbnailContents: string = await imodelHubClient.thumbnails.download(alctx, token, imodelId, thumbnail);
   // __PUBLISH_EXTRACT_END__
   if (!thumbnailContents)
     return;

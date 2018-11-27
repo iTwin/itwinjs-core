@@ -42,7 +42,7 @@
       "BIS": "bis",
       "Learning": "learning",
       "API Reference": "reference",
-      "v0.169.0": "changehistory"
+      "0.170.0": "changehistory"
     },
     "packageAliases": {
       "common": "imodeljs-common",

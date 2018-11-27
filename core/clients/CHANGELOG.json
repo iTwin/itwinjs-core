@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.170.0",
+      "tag": "@bentley/imodeljs-clients_v0.170.0",
+      "date": "Mon, 26 Nov 2018 19:38:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed floating promises in iModelHub client"
+          },
+          {
+            "comment": "Fix for integration tests"
+          },
+          {
+            "comment": "Use property getters instead of methods for IModelClient"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.169.0",
       "tag": "@bentley/imodeljs-clients_v0.169.0",
       "date": "Tue, 20 Nov 2018 16:17:15 GMT",

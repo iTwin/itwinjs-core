@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "@bentley/imodeljs-backend";
 import { GeometryStreamBuilder, GeometryStreamProps, Gradient, Code, GeometricElement3dProps, ViewFlags, ColorDef, RenderMode, AnalysisStyleProps } from "@bentley/imodeljs-common";
 import { Id64, Id64String, Id64Array } from "@bentley/bentleyjs-core";

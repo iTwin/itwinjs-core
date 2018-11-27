@@ -14,6 +14,7 @@ import { RpcSerializedValue, MarshalingBinaryMarker } from "../core/RpcMarshalin
 import { RpcMultipart } from "./RpcMultipart";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
 import { RpcResponseCacheControl, RpcContentType, RpcProtocolEvent, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
+import URLSearchParams = require("url-search-params");
 
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
@@ -212,9 +213,11 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   private async performFetch(): Promise<number> {
-    const path = new URL(this.path, window.location.origin);
+    const path = new URL(this.path, location.origin);
     if (this._pathSuffix) {
-      path.searchParams.set("parameters", this._pathSuffix);
+      const params = new URLSearchParams();
+      params.set("parameters", this._pathSuffix);
+      path.search = `?${params.toString()}`;
     }
 
     const request = new Request(path.toString(), this._request);

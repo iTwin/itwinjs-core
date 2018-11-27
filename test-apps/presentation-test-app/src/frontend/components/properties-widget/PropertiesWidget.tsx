@@ -6,7 +6,6 @@
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { PresentationPropertyDataProvider, withUnifiedSelection } from "@bentley/presentation-components/lib/propertygrid";
-import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid, PropertyData, PropertyCategory } from "@bentley/ui-components";
 import "./PropertiesWidget.css";
 
@@ -40,7 +39,6 @@ export default class PropertiesWidget extends React.Component<Props, State> {
     let pane;
     if (this.state.show) {
       pane = (<SamplePropertyGrid
-        orientation={Orientation.Horizontal}
         dataProvider={this.state.dataProvider}
       />);
     }

@@ -2,6 +2,30 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "0.170.0",
+      "tag": "@bentley/ui-core_v0.170.0",
+      "date": "Mon, 26 Nov 2018 19:38:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Reduced the amount of unneded event calls in Dialog component and changed it to use Pointer events instead of Mouse+Touch."
+          },
+          {
+            "comment": "Added a vertical/horizontal line that is visible when hovered on ElementSeparator component."
+          },
+          {
+            "comment": "Renamed expandable block css class from core-property-block to core-expandable-block."
+          },
+          {
+            "comment": "Added a way to put Popups in fixed position and cleand up the refs."
+          },
+          {
+            "comment": "Added Omit type definition to Utils."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.169.0",
       "tag": "@bentley/ui-core_v0.169.0",
       "date": "Tue, 20 Nov 2018 16:17:15 GMT",

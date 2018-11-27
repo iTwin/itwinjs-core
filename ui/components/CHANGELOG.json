@@ -2,6 +2,30 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.170.0",
+      "tag": "@bentley/ui-components_v0.170.0",
+      "date": "Mon, 26 Nov 2018 19:38:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added property value renderers for double and navigation primitive types."
+          },
+          {
+            "comment": "Added specialized property value renderers for nonprimitive types when their container is a table."
+          },
+          {
+            "comment": "Refactored PropertyRenderer into smaller pieces and added isSelectable and indentation prop"
+          },
+          {
+            "comment": "Changed the way PropertyCategoryBlock looks."
+          },
+          {
+            "comment": "Enabled table to contain popups and dialog and slightly cleaned up it's CSS."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.169.0",
       "tag": "@bentley/ui-components_v0.169.0",
       "date": "Tue, 20 Nov 2018 16:17:15 GMT",

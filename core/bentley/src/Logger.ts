@@ -117,7 +117,7 @@ export class Logger {
   }
 
   /** Interpret a string as the name of a LogLevel */
-  public static ParseLogLevel(str: string): LogLevel {
+  public static parseLogLevel(str: string): LogLevel {
     switch (str.toUpperCase()) {
       case "EXCEPTION": return LogLevel.Error;
       case "FATAL": return LogLevel.Error;
@@ -134,11 +134,11 @@ export class Logger {
   public static configureLevels(cfg: LoggerLevelsConfig) {
     Logger.validateProps(cfg);
     if (cfg.defaultLevel !== undefined) {
-      this.setLevelDefault(Logger.ParseLogLevel(cfg.defaultLevel));
+      this.setLevelDefault(Logger.parseLogLevel(cfg.defaultLevel));
     }
     if (cfg.categoryLevels !== undefined) {
       for (const cl of cfg.categoryLevels) {
-        this.setLevel(cl.category, Logger.ParseLogLevel(cl.logLevel));
+        this.setLevel(cl.category, Logger.parseLogLevel(cl.logLevel));
       }
     }
   }

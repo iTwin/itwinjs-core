@@ -10,7 +10,7 @@ import { IModelApp } from "./IModelApp";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { DecorateContext } from "./ViewContext";
 import { GraphicType } from "./render/GraphicBuilder";
-import { LinePixels } from "@bentley/imodeljs-common";
+import { LinePixels, GeometryClass } from "@bentley/imodeljs-common";
 
 export const enum SnapMode {
   Nearest = 1,
@@ -98,17 +98,20 @@ export class HitDetail {
    * @param priority The hit geometry priority/classification.
    * @param distXY The xy distance to hit in view coordinates.
    * @param distFraction The near plane distance fraction to hit.
+   * @param subCategoryId The SubCategory for a persistent element hit.
+   * @param geometryClass The GeometryClass for a persistent element hit.
    */
   public constructor(public readonly testPoint: Point3d, public readonly viewport: ScreenViewport, public readonly hitSource: HitSource,
-    public readonly hitPoint: Point3d, public readonly sourceId: string, public readonly priority: HitPriority, public readonly distXY: number, public readonly distFraction: number) { }
+    public readonly hitPoint: Point3d, public readonly sourceId: string, public readonly priority: HitPriority, public readonly distXY: number, public readonly distFraction: number,
+    public readonly subCategoryId?: string, public readonly geometryClass?: GeometryClass) { }
 
   /** Get the type of HitDetail.
    * @returns HitDetailType.Hit if this is a HitDetail, HitDetailType.Snap if it is a SnapDetail
    */
   public getHitType(): HitDetailType { return HitDetailType.Hit; }
 
-  /** Get the *hit point* for this HitDetail. If this is a HitDetail, it returns the approximate point on the element that cause the hit.
-   * If this is a SnapDetail, and if the snap is *hot*, returns the *exact* point on the Element for the snap mode.
+  /** Get the *hit point* for this HitDetail. Returns the approximate point on the element that caused the hit when not a SnapDetail or IntersectDetail.
+   * For a snap that is *hot*, the *exact* point on the Element for the snap mode is returned, otherwise the close point on the hit geometry is returned.
    */
   public getPoint(): Point3d { return this.hitPoint; }
 
@@ -119,7 +122,7 @@ export class HitDetail {
   // return whether the sourceId is for a model (reality models etc.)
   public get isModelHit(): boolean { return this.viewport.iModel.models.getLoaded(this.sourceId) !== undefined; }
   /** Create a deep copy of this HitDetail */
-  public clone(): HitDetail { const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction); return val; }
+  public clone(): HitDetail { const val = new HitDetail(this.testPoint, this.viewport, this.hitSource, this.hitPoint, this.sourceId, this.priority, this.distXY, this.distFraction, this.subCategoryId, this.geometryClass); return val; }
 
   /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */
   public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId, 0.25); }
@@ -167,7 +170,7 @@ export class SnapDetail extends HitDetail {
    * @param snapPoint The snapped point in the element
    */
   public constructor(from: HitDetail, public snapMode: SnapMode = SnapMode.Nearest, public heat: SnapHeat = SnapHeat.None, snapPoint?: XYZProps) {
-    super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction);
+    super(from.testPoint, from.viewport, from.hitSource, from.hitPoint, from.sourceId, from.priority, from.distXY, from.distFraction, from.subCategoryId, from.geometryClass);
     this.snapPoint = Point3d.fromJSON(snapPoint ? snapPoint : from.hitPoint);
     this.adjustedPoint = this.snapPoint.clone();
     this.sprite = IconSprites.getSpriteFromUrl(SnapDetail.getSnapSpriteUrl(snapMode));

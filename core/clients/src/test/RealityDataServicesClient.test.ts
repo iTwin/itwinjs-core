@@ -29,7 +29,7 @@ describe.skip("RealityDataServicesClient", () => {
     accessToken = await realityDataServiceClient.getAccessToken(actx, authToken);
 
     const imodelHubToken = await imodelHubClient.getAccessToken(actx, authToken);
-    const versions: Version[] = await imodelHubClient.Versions().get(actx, imodelHubToken, iModelId);
+    const versions: Version[] = await imodelHubClient.versions.get(actx, imodelHubToken, iModelId);
     chai.expect(versions);
     versionId = versions[0].wsgId;
     chai.expect(versionId);
