@@ -221,7 +221,7 @@ describe("iModel", () => {
     };
 
     const styleId = imodel2.elements.insertElement(props);
-    let style = imodel2.elements.getElement(styleId) as DisplayStyle3d;
+    let style = imodel2.elements.getElement<DisplayStyle3d>(styleId);
     expect(style instanceof DisplayStyle3d).to.be.true;
 
     expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SolidFill);
@@ -235,7 +235,7 @@ describe("iModel", () => {
     expect(style.jsonProperties.styles.viewflags.renderMode).to.equal(RenderMode.SmoothShade);
 
     imodel2.elements.updateElement(style.toJSON());
-    style = imodel2.elements.getElement(styleId) as DisplayStyle3d;
+    style = imodel2.elements.getElement<DisplayStyle3d>(styleId);
     expect(style instanceof DisplayStyle3d).to.be.true;
 
     expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SmoothShade);

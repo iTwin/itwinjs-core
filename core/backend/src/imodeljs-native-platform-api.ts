@@ -6,6 +6,7 @@ import {
   IModelStatus, StatusCodeWithMessage, RepositoryStatus, BentleyStatus, ChangeSetApplyOption, DbResult, DbOpcode, OpenMode, IDisposable, ChangeSetStatus, Id64String, GuidString,
 } from "@bentley/bentleyjs-core";
 import { IModelDb } from "./IModelDb";
+import { ElementProps } from "@bentley/imodeljs-common";
 
 /**
  * @hidden
@@ -88,7 +89,7 @@ export declare class NativeDgnDb {
   public getCurrentTxnId(): TxnIdString;
   public getDbGuid(): GuidString;
   public getECClassMetaData(schema: string, className: string): ErrorStatusOrResult<IModelStatus, string>;
-  public getElement(opts: string): ErrorStatusOrResult<IModelStatus, any>;
+  public getElement(opts: string): ErrorStatusOrResult<IModelStatus, ElementProps>;
   public getElementPropertiesForDisplay(id: string): ErrorStatusOrResult<IModelStatus, string>;
   public getIModelProps(): string;
   public getModel(opts: string): ErrorStatusOrResult<IModelStatus, string>;

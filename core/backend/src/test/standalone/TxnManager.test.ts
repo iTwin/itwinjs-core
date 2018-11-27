@@ -2,19 +2,17 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext, IModelStatus, Id64String } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, IModelStatus } from "@bentley/bentleyjs-core";
 import { assert } from "chai";
 import * as path from "path";
-import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject } from "../IModelTestUtils";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelDb, SpatialCategory, TxnAction, PhysicalModel } from "../../backend";
-import { GeometricElementProps, Code, IModel, SubCategoryAppearance, ColorByName, IModelError } from "@bentley/imodeljs-common";
+import { Code, IModel, SubCategoryAppearance, ColorByName, IModelError } from "@bentley/imodeljs-common";
 
-describe.only("TxnManager", () => {
+describe("TxnManager", () => {
   let imodel: IModelDb;
-  let newModelId: Id64String;
-  let spatialCategoryId: Id64String;
-  let props: GeometricElementProps;
+  let props: TestPhysicalObjectProps;
 
   const actx = new ActivityLoggingContext("");
 
@@ -23,15 +21,10 @@ describe.only("TxnManager", () => {
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     await imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
 
-    newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
-
-    // create a SpatialCategory
-    spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
-
     props = {
       classFullName: "TestBim:TestPhysicalObject",
-      model: newModelId,
-      category: spatialCategoryId,
+      model: PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel"),
+      category: SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })),
       code: Code.createEmpty(),
       intProperty: 100,
     };
@@ -66,7 +59,7 @@ describe.only("TxnManager", () => {
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
 
-    let element = imodel.elements.getElement(elementId);
+    let element = imodel.elements.getElement<TestPhysicalObject>(elementId);
     assert.equal(element.intProperty, 100, "int property should be 100");
 
     assert.isTrue(txns.isUndoPossible);  // we have an undoable Txn, but nothing undone.
@@ -150,7 +143,7 @@ describe.only("TxnManager", () => {
   it("Element drives element events", () => {
     const el1 = imodel.elements.insertElement(props);
     const el2 = imodel.elements.insertElement(props);
-    const ede = TestElementDrivesElement.create(imodel, el1, el2);
+    const ede = TestElementDrivesElement.create<TestElementDrivesElement>(imodel, el1, el2);
     ede.property1 = "test ede";
     ede.insert();
     let beforeOutputsHandled = 0;
@@ -163,25 +156,40 @@ describe.only("TxnManager", () => {
       assert.equal(evProps.targetId, el2);
       ++deletedDependency;
     });
-    TestElementDrivesElement.rootChanged.addListener((evProps) => {
+    TestElementDrivesElement.rootChanged.addListener((evProps, im) => {
+      const ede2 = im.relationships.getInstance<TestElementDrivesElement>(evProps.classFullName, evProps.id!);
+      assert.equal(ede2.property1, ede.property1);
       assert.equal(evProps.sourceId, el1);
       assert.equal(evProps.targetId, el2);
       ++rootChanged;
     });
     TestElementDrivesElement.validateOutput.addListener((_props) => ++validateOutput);
-    TestPhysicalObject.beforeOutputsHandled.addListener((id) => {
+    TestPhysicalObject.beforeOutputsHandled.addListener((id, im) => {
+      const e1 = im.elements.getElement<TestPhysicalObject>(id);
+      assert.equal(e1.intProperty, props.intProperty);
       assert.equal(id, el1);
       ++beforeOutputsHandled;
     });
-    TestPhysicalObject.allInputsHandled.addListener((id) => {
+    TestPhysicalObject.allInputsHandled.addListener((id, im) => {
+      const e2 = im.elements.getElement<TestPhysicalObject>(id);
+      assert.equal(e2.intProperty, props.intProperty);
       assert.equal(id, el2);
       ++allInputsHandled;
     });
 
-    imodel.saveChanges();
+    imodel.saveChanges("step 1");
     assert.equal(1, beforeOutputsHandled);
     assert.equal(1, allInputsHandled);
     assert.equal(1, rootChanged);
+    assert.equal(0, validateOutput);
+    assert.equal(0, deletedDependency);
+
+    const element2 = imodel.elements.getElement<TestPhysicalObject>(el2);
+    element2.update();
+    imodel.saveChanges("step 2");
+    assert.equal(2, beforeOutputsHandled);
+    assert.equal(2, allInputsHandled);
+    assert.equal(2, rootChanged);
     assert.equal(0, validateOutput);
     assert.equal(0, deletedDependency);
   });

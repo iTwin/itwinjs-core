@@ -916,9 +916,9 @@ export namespace IModelDb {
      * @param modelId The Model identifier.
      * @throws [[IModelError]]
      */
-    public getModelProps(modelId: Id64String): ModelProps {
+    public getModelProps<T extends ModelProps>(modelId: Id64String): T {
       const json = this.getModelJson(JSON.stringify({ id: modelId.toString() }));
-      return JSON.parse(json) as ModelProps;
+      return JSON.parse(json) as T;
     }
 
     /** Get the Model with the specified identifier.
@@ -945,12 +945,12 @@ export namespace IModelDb {
      * @param modeledElementId Identifies the modeled element.
      * @throws [[IModelError]]
      */
-    public getSubModel(modeledElementId: Id64String | GuidString | Code): Model {
+    public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code): T {
       const modeledElement = this._iModel.elements.getElement(modeledElementId);
       if (modeledElement.id === IModel.rootSubjectId)
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model", Logger.logWarning, loggingCategory);
 
-      return this.getModel(modeledElement.id);
+      return this.getModel<T>(modeledElement.id);
     }
 
     /** Create a new model in memory.
@@ -958,7 +958,7 @@ export namespace IModelDb {
      * @param modelProps The properties to use when creating the model.
      * @throws [[IModelError]] if there is a problem creating the model.
      */
-    public createModel(modelProps: ModelProps): Model { return this._iModel.constructEntity<Model>(modelProps); }
+    public createModel<T extends Model>(modelProps: ModelProps): T { return this._iModel.constructEntity<T>(modelProps); }
 
     /** Insert a new model.
      * @param props The data for the new model.
@@ -1025,30 +1025,24 @@ export namespace IModelDb {
      * @param elementIdArg a json string with the identity of the element to load. Must have one of "id", "federationGuid", or "code".
      * @return a json string with the properties of the element.
      */
-    public getElementJson(elementIdArg: string): any {
+    public getElementJson<T extends ElementProps>(elementIdArg: string): T {
       const val = this._iModel.nativeDb.getElement(elementIdArg);
       if (val.error)
         throw new IModelError(val.error.status, "reading element=" + elementIdArg, Logger.logWarning, loggingCategory);
-      return val.result!;
-    }
-
-    /** Private implementation details of getElement */
-    private _doGetElement(opts: ElementLoadProps): Element {
-      const props = this.getElementJson(JSON.stringify(opts)) as ElementProps;
-      return this._iModel.constructEntity<Element>(props);
+      return val.result! as T;
     }
 
     /**
      * Get properties of an Element by Id, FederationGuid, or Code
      * @throws [[IModelError]] if the element is not found.
      */
-    public getElementProps(elementId: Id64String | GuidString | Code | ElementLoadProps): ElementProps {
+    public getElementProps<T extends ElementProps>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
       if (typeof elementId === "string")
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       else if (elementId instanceof Code)
         elementId = { code: elementId };
 
-      return this.getElementJson(JSON.stringify(elementId)) as ElementProps;
+      return this.getElementJson<T>(JSON.stringify(elementId));
     }
 
     /**
@@ -1056,13 +1050,13 @@ export namespace IModelDb {
      * @param elementId either the element's Id, Code, or FederationGuid, or an ElementLoadProps
      * @throws [[IModelError]] if the element is not found.
      */
-    public getElement(elementId: Id64String | GuidString | Code | ElementLoadProps): Element {
+    public getElement<T extends Element>(elementId: Id64String | GuidString | Code | ElementLoadProps): T {
       if (typeof elementId === "string")
         elementId = Id64.isId64(elementId) ? { id: elementId } : { federationGuid: elementId };
       else if (elementId instanceof Code)
         elementId = { code: elementId };
 
-      return this._doGetElement(elementId);
+      return this._iModel.constructEntity<T>(this.getElementJson(JSON.stringify(elementId)));
     }
 
     /**
@@ -1100,7 +1094,7 @@ export namespace IModelDb {
      * @param elProps The properties of the new element.
      * @throws [[IModelError]] if there is a problem creating the element.
      */
-    public createElement(elProps: ElementProps): Element { return this._iModel.constructEntity<Element>(elProps); }
+    public createElement<T extends Element>(elProps: ElementProps): T { return this._iModel.constructEntity<T>(elProps); }
 
     /**
      * Insert a new element into the iModel.
@@ -1109,16 +1103,17 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to insert the element.
      */
     public insertElement(elProps: ElementProps): Id64String {
-      const jsClass = this._iModel.getJsClass(elProps.classFullName) as unknown as typeof Element;
-      if (IModelStatus.Success !== jsClass.onInsert(elProps))
+      const iModel = this._iModel;
+      const jsClass = iModel.getJsClass(elProps.classFullName) as unknown as typeof Element;
+      if (IModelStatus.Success !== jsClass.onInsert(elProps, iModel))
         return Id64.invalid;
 
-      const val = this._iModel.nativeDb.insertElement(JSON.stringify(elProps));
+      const val = iModel.nativeDb.insertElement(JSON.stringify(elProps));
       if (val.error)
         throw new IModelError(val.error.status, "Problem inserting element", Logger.logWarning, loggingCategory);
 
       elProps.id = Id64.fromJSON(JSON.parse(val.result!).id);
-      jsClass.onInserted(elProps);
+      jsClass.onInserted(elProps, iModel);
       return elProps.id;
     }
 
@@ -1127,15 +1122,16 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to update the element.
      */
     public updateElement(elProps: ElementProps): void {
-      const jsClass = this._iModel.getJsClass<typeof Element>(elProps.classFullName);
-      if (IModelStatus.Success !== jsClass.onUpdate(elProps))
+      const iModel = this._iModel;
+      const jsClass = iModel.getJsClass<typeof Element>(elProps.classFullName);
+      if (IModelStatus.Success !== jsClass.onUpdate(elProps, iModel))
         return;
 
-      const error = this._iModel.nativeDb.updateElement(JSON.stringify(elProps));
+      const error = iModel.nativeDb.updateElement(JSON.stringify(elProps));
       if (error !== IModelStatus.Success)
         throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
-      jsClass.onUpdated(elProps);
+      jsClass.onUpdated(elProps, iModel);
     }
 
     /**
@@ -1144,17 +1140,18 @@ export namespace IModelDb {
      * @throws [[IModelError]]
      */
     public deleteElement(ids: Id64Arg): void {
+      const iModel = this._iModel;
       Id64.toIdSet(ids).forEach((id) => {
         const props = this.getElementProps(id);
-        const jsClass = this._iModel.getJsClass<typeof Element>(props.classFullName);
-        if (IModelStatus.Success !== jsClass.onDelete(props))
+        const jsClass = iModel.getJsClass<typeof Element>(props.classFullName);
+        if (IModelStatus.Success !== jsClass.onDelete(props, iModel))
           return;
 
-        const error = this._iModel.nativeDb.deleteElement(id);
+        const error = iModel.nativeDb.deleteElement(id);
         if (error !== IModelStatus.Success)
           throw new IModelError(error, "", Logger.logWarning, loggingCategory);
 
-        jsClass.onDeleted(props);
+        jsClass.onDeleted(props, iModel);
       });
     }
 
@@ -1248,7 +1245,7 @@ export namespace IModelDb {
       const imodel = this._iModel;
       ids.forEach((id) => {
         try {
-          props.push(imodel.elements.getElementProps(id) as ViewDefinitionProps);
+          props.push(imodel.elements.getElementProps<ViewDefinitionProps>(id));
         } catch (err) { }
       });
 
@@ -1288,14 +1285,14 @@ export namespace IModelDb {
     public getViewStateData(viewDefinitionId: string): ViewStateData {
       const viewStateData: ViewStateData = {} as any;
       const elements = this._iModel.elements;
-      const viewDefinitionElement = elements.getElement(viewDefinitionId) as ViewDefinition;
+      const viewDefinitionElement = elements.getElement<ViewDefinition>(viewDefinitionId);
       viewStateData.viewDefinitionProps = viewDefinitionElement.toJSON();
-      viewStateData.categorySelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.categorySelectorId) as CategorySelectorProps;
-      viewStateData.displayStyleProps = elements.getElementProps(viewStateData.viewDefinitionProps.displayStyleId) as DisplayStyleProps;
+      viewStateData.categorySelectorProps = elements.getElementProps<CategorySelectorProps>(viewStateData.viewDefinitionProps.categorySelectorId);
+      viewStateData.displayStyleProps = elements.getElementProps<DisplayStyleProps>(viewStateData.viewDefinitionProps.displayStyleId);
       if (viewStateData.viewDefinitionProps.modelSelectorId !== undefined)
-        viewStateData.modelSelectorProps = elements.getElementProps(viewStateData.viewDefinitionProps.modelSelectorId) as ModelSelectorProps;
+        viewStateData.modelSelectorProps = elements.getElementProps<ModelSelectorProps>(viewStateData.viewDefinitionProps.modelSelectorId);
       else if (viewDefinitionElement instanceof SheetViewDefinition) {
-        viewStateData.sheetProps = elements.getElementProps(viewDefinitionElement.baseModelId) as SheetProps;
+        viewStateData.sheetProps = elements.getElementProps<SheetProps>(viewDefinitionElement.baseModelId);
         viewStateData.sheetAttachments = Array.from(this._iModel.queryEntityIds({
           from: "BisCore.ViewAttachment",
           where: "Model.Id=" + viewDefinitionElement.baseModelId,
@@ -1414,16 +1411,16 @@ export class TxnManager {
   private _getRelationshipClass(relClassName: string): typeof Relationship { return this._iModel.getJsClass<typeof Relationship>(relClassName); }
 
   /** @hidden */
-  protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void { this._getElementClass(elClassName).onBeforeOutputsHandled(elId); }
+  protected _onBeforeOutputsHandled(elClassName: string, elId: Id64String): void { this._getElementClass(elClassName).onBeforeOutputsHandled(elId, this._iModel); }
   /** @hidden */
-  protected _onAllInputsHandled(elClassName: string, elId: Id64String): void { this._getElementClass(elClassName).onAllInputsHandled(elId); }
+  protected _onAllInputsHandled(elClassName: string, elId: Id64String): void { this._getElementClass(elClassName).onAllInputsHandled(elId, this._iModel); }
 
   /** @hidden */
-  protected _onRootChanged(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onRootChanged(props); }
+  protected _onRootChanged(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onRootChanged(props, this._iModel); }
   /** @hidden */
-  protected _onValidateOutput(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onValidateOutput(props); }
+  protected _onValidateOutput(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onValidateOutput(props, this._iModel); }
   /** @hidden */
-  protected _onDeletedDependency(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onDeletedDependency(props); }
+  protected _onDeletedDependency(props: RelationshipProps): void { this._getRelationshipClass(props.classFullName).onDeletedDependency(props, this._iModel); }
 
   /** @hidden */
   protected _onBeginValidate() { this.validationErrors.length = 0; }

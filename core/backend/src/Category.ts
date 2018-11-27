@@ -67,7 +67,7 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
    */
   public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props): Id64String {
     const elements = iModelDb.elements;
-    const parentCategory = elements.getElement(parentCategoryId) as Category;
+    const parentCategory = elements.getElement<Category>(parentCategoryId);
     const subCategoryProps: SubCategoryProps = {
       classFullName: this.classFullName,
       model: parentCategory.model,
@@ -104,7 +104,7 @@ export class Category extends DefinitionElement implements CategoryProps {
 
   /** Set the appearance of the default SubCategory for this Category */
   public setDefaultAppearance(props: SubCategoryAppearance.Props): void {
-    const subCat = this.iModel.elements.getElement(this.myDefaultSubCategoryId()) as SubCategory;
+    const subCat = this.iModel.elements.getElement<SubCategory>(this.myDefaultSubCategoryId());
     subCat.appearance = new SubCategoryAppearance(props);
     this.iModel.elements.updateElement(subCat);
   }
@@ -157,7 +157,7 @@ export class DrawingCategory extends Category {
     };
     const elements = iModelDb.elements;
     const categoryId = elements.insertElement(categoryProps);
-    const category = elements.getElement(categoryId) as DrawingCategory;
+    const category = elements.getElement<DrawingCategory>(categoryId);
     category.setDefaultAppearance(defaultAppearance);
     return categoryId;
   }
@@ -224,7 +224,7 @@ export class SpatialCategory extends Category {
     };
     const elements = iModelDb.elements;
     const categoryId = elements.insertElement(categoryProps);
-    const category = elements.getElement(categoryId) as SpatialCategory;
+    const category = elements.getElement<SpatialCategory>(categoryId);
     category.setDefaultAppearance(defaultAppearance);
     return categoryId;
   }

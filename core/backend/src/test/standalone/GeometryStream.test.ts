@@ -78,10 +78,10 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned...
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
     assert.isDefined(value.geom);
 
-    const itNextCheck = new GeometryStreamIterator(value.geom, value.category);
+    const itNextCheck = new GeometryStreamIterator(value.geom!, value.category);
     assert.isFalse(itNextCheck.next().done);
     assert.isFalse(itNextCheck.next().done);
     assert.isFalse(itNextCheck.next().done);
@@ -93,7 +93,7 @@ describe("GeometryStream", () => {
     assert.isTrue(itNextCheck.next().done);
 
     const lsStylesUsed: Id64String[] = [];
-    const it = new GeometryStreamIterator(value.geom, value.category);
+    const it = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of it) {
       assert.isDefined(entry.geometryQuery);
       lsStylesUsed.push(entry.geomParams.styleInfo ? entry.geomParams.styleInfo.styleId : Id64.invalid);
@@ -169,12 +169,12 @@ describe("GeometryStream", () => {
     imodel.saveChanges();
 
     // Extract and test value returned...
-    const value = imodel.elements.getElementProps({ id: newId, wantGeometry: true });
+    const value = imodel.elements.getElementProps<GeometricElement3dProps>({ id: newId, wantGeometry: true });
     assert.isDefined(value.geom);
 
     const stylesUsed: Id64String[] = [];
     const widthsUsed: number[] = [];
-    const it = new GeometryStreamIterator(value.geom, value.category);
+    const it = new GeometryStreamIterator(value.geom!, value.category);
     for (const entry of it) {
       assert.isDefined(entry.geometryQuery);
       assert.isDefined(entry.geomParams.styleInfo);

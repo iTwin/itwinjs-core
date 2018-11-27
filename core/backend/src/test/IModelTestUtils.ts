@@ -128,19 +128,24 @@ export class TestBim extends Schema { }
 export interface TestRelationshipProps extends RelationshipProps {
   property1: string;
 }
-export class TestElementDrivesElement extends ElementDrivesElement {
-  public static rootChanged = new BeEvent<(_props: RelationshipProps) => void>();
-  public static validateOutput = new BeEvent<(_props: RelationshipProps) => void>();
-  public static deletedDependency = new BeEvent<(_props: RelationshipProps) => void>();
-  public static onRootChanged(props: RelationshipProps): void { this.rootChanged.raiseEvent(props); }
-  public static onValidateOutput(props: RelationshipProps): void { this.validateOutput.raiseEvent(props); }
-  public static onDeletedDependency(props: RelationshipProps): void { this.deletedDependency.raiseEvent(props); }
+export class TestElementDrivesElement extends ElementDrivesElement implements TestRelationshipProps {
+  public property1!: string;
+  public static rootChanged = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
+  public static validateOutput = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
+  public static deletedDependency = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
+  public static onRootChanged(props: RelationshipProps, imodel: IModelDb): void { this.rootChanged.raiseEvent(props, imodel); }
+  public static onValidateOutput(props: RelationshipProps, imodel: IModelDb): void { this.validateOutput.raiseEvent(props, imodel); }
+  public static onDeletedDependency(props: RelationshipProps, imodel: IModelDb): void { this.deletedDependency.raiseEvent(props, imodel); }
 }
-export class TestPhysicalObject extends PhysicalElement {
-  public static beforeOutputsHandled = new BeEvent<(_id: Id64String) => void>();
-  public static allInputsHandled = new BeEvent<(_id: Id64String) => void>();
-  public static onBeforeOutputsHandled(id: Id64String): void { this.beforeOutputsHandled.raiseEvent(id); }
-  public static onAllInputsHandled(id: Id64String): void { this.allInputsHandled.raiseEvent(id); }
+export interface TestPhysicalObjectProps extends GeometricElementProps {
+  intProperty: number;
+}
+export class TestPhysicalObject extends PhysicalElement implements TestPhysicalObjectProps {
+  public intProperty!: number;
+  public static beforeOutputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
+  public static allInputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
+  public static onBeforeOutputsHandled(id: Id64String, imodel: IModelDb): void { this.beforeOutputsHandled.raiseEvent(id, imodel); }
+  public static onAllInputsHandled(id: Id64String, imodel: IModelDb): void { this.allInputsHandled.raiseEvent(id, imodel); }
 }
 
 export class IModelTestUtils {

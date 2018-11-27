@@ -43,9 +43,9 @@ export class Relationship extends Entity implements RelationshipProps {
     return val;
   }
 
-  public static onRootChanged(_props: RelationshipProps): void { }
-  public static onValidateOutput(_props: RelationshipProps): void { }
-  public static onDeletedDependency(_props: RelationshipProps): void { }
+  public static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void { }
+  public static onValidateOutput(_props: RelationshipProps, _iModel: IModelDb): void { }
+  public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void { }
 
   /** Insert this Relationship into the iModel. */
   public insert(): Id64String { return this.iModel.relationships.insertInstance(this); }

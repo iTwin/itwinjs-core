@@ -273,10 +273,10 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   public isDrawingView(): this is DrawingViewDefinition { return this instanceof DrawingViewDefinition; }
 
   /** Load this view's DisplayStyle from the IModelDb. */
-  public loadDisplayStyle(): DisplayStyle { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle; }
+  public loadDisplayStyle(): DisplayStyle { return this.iModel.elements.getElement<DisplayStyle>(this.displayStyleId); }
 
   /** Load this view's CategorySelector from the IModelDb. */
-  public loadCategorySelector(): CategorySelector { return this.iModel.elements.getElement(this.categorySelectorId) as CategorySelector; }
+  public loadCategorySelector(): CategorySelector { return this.iModel.elements.getElement<CategorySelector>(this.categorySelectorId); }
 
   /** Create a Code for a ViewDefinition given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -324,7 +324,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   }
 
   /** Load this view's DisplayStyle3d from the IModelDb. */
-  public loadDisplayStyle3d(): DisplayStyle3d { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle3d; }
+  public loadDisplayStyle3d(): DisplayStyle3d { return this.iModel.elements.getElement<DisplayStyle3d>(this.displayStyleId); }
 }
 
 /**
@@ -352,7 +352,7 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
   }
 
   /** Load this view's ModelSelector from the IModelDb. */
-  public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement(this.modelSelectorId) as ModelSelector; }
+  public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
@@ -426,7 +426,7 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
   }
 
   /** Load this view's DisplayStyle2d from the IModelDb. */
-  public loadDisplayStyle2d(): DisplayStyle2d { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle2d; }
+  public loadDisplayStyle2d(): DisplayStyle2d { return this.iModel.elements.getElement<DisplayStyle2d>(this.displayStyleId); }
 }
 
 /** Defines a view of a [[DrawingModel]]. */

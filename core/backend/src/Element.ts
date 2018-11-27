@@ -60,14 +60,14 @@ export class Element extends Entity implements ElementProps {
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 
-  public static onInsert(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
-  public static onUpdate(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
-  public static onDelete(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
-  public static onInserted(_props: ElementProps): void { }
-  public static onUpdated(_props: ElementProps): void { }
-  public static onDeleted(_props: ElementProps): void { }
-  public static onBeforeOutputsHandled(_id: Id64String): void { }
-  public static onAllInputsHandled(_id: Id64String): void { }
+  public static onInsert(_props: ElementProps, _iModel: IModelDb): IModelStatus { return IModelStatus.Success; }
+  public static onUpdate(_props: ElementProps, _iModel: IModelDb): IModelStatus { return IModelStatus.Success; }
+  public static onDelete(_props: ElementProps, _iModel: IModelDb): IModelStatus { return IModelStatus.Success; }
+  public static onInserted(_props: ElementProps, _iModel: IModelDb): void { }
+  public static onUpdated(_props: ElementProps, _iModel: IModelDb): void { }
+  public static onDeleted(_props: ElementProps, _iModel: IModelDb): void { }
+  public static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
+  public static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
   /** Add this Element's properties to an object for serializing to JSON.
    * @hidden
