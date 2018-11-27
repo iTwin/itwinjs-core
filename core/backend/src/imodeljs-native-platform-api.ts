@@ -66,8 +66,10 @@ export declare class NativeDgnDb {
   public buildBriefcaseManagerResourcesRequestForModel(req: NativeBriefcaseManagerResourcesRequest, modelId: string, opcode: DbOpcode): RepositoryStatus;
   public cancelTo(txnId: TxnIdString): IModelStatus;
   public closeIModel(): void;
+  public closeIModelFile(): void;
   public createChangeCache(changeCacheFile: NativeECDb, changeCachePath: string): DbResult;
-  public createIModel(fileName: string, props: string): DbResult;
+  public createIModel(accessToken: string, projectId: GuidString, fileName: string, props: string): DbResult;
+  public createStandaloneIModel(fileName: string, props: string): DbResult;
   public deleteElement(elemIdJson: string): IModelStatus;
   public deleteElementAspect(aspectIdJson: string): IModelStatus;
   public deleteLinkTableRelationship(props: string): DbResult;
@@ -118,7 +120,8 @@ export declare class NativeDgnDb {
   public isTxnIdValid(txnId: TxnIdString): boolean;
   public isUndoPossible(): boolean;
   public logTxnError(fatal: boolean): void;
-  public openIModel(dbName: string, mode: OpenMode): DbResult;
+  public openIModel(accessToken: string, projectId: GuidString, dbName: string, mode: OpenMode): DbResult;
+  public openIModelFile(dbName: string, mode: OpenMode): DbResult;
   public queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
   public queryFirstTxnId(): TxnIdString;
   public queryModelExtents(options: string): ErrorStatusOrResult<IModelStatus, string>;
