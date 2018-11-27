@@ -28,8 +28,9 @@ export class OidcClientWrapper {
     return this._oidcClient;
   }
 
-  public static async initialize(config: OidcFrontendClientConfiguration) {
+  public static async initialize(actx: ActivityLoggingContext, config: OidcFrontendClientConfiguration) {
+    actx.enter();
     this._oidcClient = new OidcClient(config);
-    await this._oidcClient.initialize(new ActivityLoggingContext(""));
+    await this._oidcClient.initialize(actx);
   }
 }

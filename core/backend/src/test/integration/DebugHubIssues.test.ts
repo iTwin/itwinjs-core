@@ -25,7 +25,42 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Warning);
-    Logger.setLevel("Performance", LogLevel.Info);
+    // Logger.setLevel("Performance", LogLevel.Info);
+    // Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
+    // Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
+    // Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
+    // Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
+    // Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
+  });
+
+  it.skip("should be able to upload required test files to the Hub", async () => {
+    const projectName = "iModelJsTest";
+
+    let iModelName = "ReadOnlyTest";
+    let iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
+
+    iModelName = "ReadWriteTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
+
+    iModelName = "NoVersionsTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
+  });
+
+  it.skip("should be able to open ReadOnlyTest model", async () => {
+    const projectName = "iModelJsTest";
+    const iModelName = "ReadOnlyTest";
+
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
+
+    const iModel: IModelDb = await IModelDb.open(actx, accessToken, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    assert.exists(iModel);
+    assert(iModel.openParams.openMode === OpenMode.Readonly);
+
+    await iModel.close(actx, accessToken);
   });
 
   it.skip("should be able to validate change set operations", async () => {

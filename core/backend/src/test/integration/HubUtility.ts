@@ -284,6 +284,7 @@ export class HubUtility {
       changeSet.id = changeSetJson.id;
       changeSet.parentId = changeSetJson.parentId;
       changeSet.fileSize = changeSetJson.fileSize;
+      changeSet.changesType = changeSetJson.changesType;
       changeSet.seedFileId = briefcase.fileId;
       changeSet.briefcaseId = briefcase.briefcaseId;
 

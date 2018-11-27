@@ -190,12 +190,11 @@ class BriefcaseCache {
     const key = briefcase.getKey();
 
     if (this._briefcases.get(key)) {
-      const msg = `Briefcase ${key} already exists in the cache.`;
-      Logger.logError(loggingCategory, msg);
-      throw new IModelError(DbResult.BE_SQLITE_ERROR, msg);
+      Logger.logError(loggingCategory, "Briefcase already exists in the cache.", () => ({ key, ...briefcase }));
+      throw new IModelError(DbResult.BE_SQLITE_ERROR, `Briefcase ${key} already exists in the cache.`);
     }
 
-    Logger.logTrace(loggingCategory, `Added briefcase ${key} (${briefcase.pathname}) to the cache`);
+    Logger.logTrace(loggingCategory, "Added briefcase to the cache", () => ({ key, ...briefcase }));
     this._briefcases.set(key, briefcase);
   }
 
@@ -211,7 +210,7 @@ class BriefcaseCache {
       throw new IModelError(DbResult.BE_SQLITE_ERROR, msg);
     }
 
-    Logger.logTrace(loggingCategory, `Removed briefcase ${key} (${briefcase.pathname}) from the cache`);
+    Logger.logTrace(loggingCategory, "Removed briefcase from the cache", () => ({ key, ...briefcase }));
     this._briefcases.delete(key);
   }
 
@@ -497,7 +496,7 @@ export class BriefcaseManager {
     let briefcase = BriefcaseManager.findCachedBriefcaseToOpen(accessToken, iModelId, changeSetIndex, openParams);
 
     if (briefcase && briefcase.isOpen && briefcase.currentChangeSetIndex === changeSetIndex) {
-      Logger.logTrace(loggingCategory, `Reused briefcase ${briefcase.pathname} without changes`);
+      Logger.logTrace(loggingCategory, "Reused briefcase without changes", () => ({ ...briefcase }));
       return briefcase;
     }
     perfLogger.dispose();
@@ -506,7 +505,7 @@ export class BriefcaseManager {
     let isNewBriefcase: boolean = false;
     const tempOpenParams = new OpenParams(OpenMode.ReadWrite, openParams.accessMode, openParams.syncMode, openParams.exclusiveAccessOption); // Open ReadWrite to allow applying changes
     if (briefcase) {
-      Logger.logTrace(loggingCategory, `Reused briefcase ${briefcase.pathname} after upgrades (if necessary)`);
+      Logger.logTrace(loggingCategory, "Reopening existing briefcase for reuse after upgrades", () => ({ ...briefcase }));
       BriefcaseManager.reopenBriefcase(accessToken, briefcase, tempOpenParams);
     } else {
       perfLogger = new PerfLogger("BriefcaseManager.open -> BriefcaseManager.createBriefcase");
@@ -517,7 +516,7 @@ export class BriefcaseManager {
     }
 
     if (changeSetIndex < briefcase.changeSetIndex! && openParams.syncMode === SyncMode.PullAndPush) {
-      Logger.logError(loggingCategory, `No support to open an older version when opening an IModel to push changes (SyncMode.PullAndPush). Cannot open briefcase ${briefcase.iModelId}:${briefcase.briefcaseId}.`);
+      Logger.logError(loggingCategory, "No support to open an older version when opening an IModel to push changes (SyncMode.PullAndPush). Cannot open briefcase", () => ({ ...briefcase }));
       await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
       actx.enter();
       return Promise.reject(new IModelError(BriefcaseStatus.CannotApplyChanges, "Cannot merge when there are reversed changes"));
@@ -528,7 +527,7 @@ export class BriefcaseManager {
       await BriefcaseManager.processChangeSets(actx, accessToken, briefcase, version);
     } catch (error) {
       actx.enter();
-      Logger.logWarning(loggingCategory, `Error applying changes to briefcase  ${briefcase.iModelId}:${briefcase.briefcaseId}. Deleting it so that it can be re-fetched again.`);
+      Logger.logWarning(loggingCategory, "Error applying changes to briefcase. Deleting it so that it can be re-fetched again.", () => ({ ...briefcase }));
       await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
       actx.enter();
       return Promise.reject(error);
@@ -646,13 +645,13 @@ export class BriefcaseManager {
 
     let res: DbResult = nativeDb.openIModel(briefcase.pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res) {
-      Logger.logError(loggingCategory, `Unable to open briefcase at ${briefcase.pathname}`);
+      Logger.logError(loggingCategory, "Unable to open briefcase.", () => ({ ...briefcase }));
       return res;
     }
 
     res = nativeDb.setBriefcaseId(briefcase.briefcaseId);
     if (DbResult.BE_SQLITE_OK !== res) {
-      Logger.logError(loggingCategory, `Unable to setup briefcase id for ${briefcase.pathname}`);
+      Logger.logError(loggingCategory, "Unable to setup briefcase id.", () => ({ ...briefcase }));
       return res;
     }
     assert(nativeDb.getParentChangeSetId() === briefcase.changeSetId);
@@ -662,7 +661,7 @@ export class BriefcaseManager {
     briefcase.isOpen = true;
     briefcase.isStandalone = false;
 
-    Logger.logTrace(loggingCategory, `Created briefcase ${briefcase.pathname}`);
+    Logger.logTrace(loggingCategory, "Created briefcase.", () => ({ ...briefcase }));
     return DbResult.BE_SQLITE_OK;
   }
 
@@ -702,7 +701,7 @@ export class BriefcaseManager {
 
     const res: DbResult = BriefcaseManager.setupBriefcase(briefcase, openParams);
     if (DbResult.BE_SQLITE_OK !== res) {
-      Logger.logWarning(loggingCategory, `Unable to create briefcase ${briefcase.pathname}. Deleting any remnants of it`);
+      Logger.logWarning(loggingCategory, "Unable to create briefcase. Deleting any remnants of it", () => ({ ...briefcase }));
       await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
       actx.enter();
       throw new IModelError(res, briefcase.pathname);
@@ -747,6 +746,7 @@ export class BriefcaseManager {
 
   /** Deletes a briefcase from the local disk (if it exists) */
   private static deleteBriefcaseFromLocalDisk(briefcase: BriefcaseEntry) {
+    assert(!briefcase.isOpen);
     const dirName = path.dirname(briefcase.pathname);
     BriefcaseManager.deleteFolderRecursive(dirName);
   }
@@ -769,7 +769,7 @@ export class BriefcaseManager {
     await BriefcaseManager.imodelClient.briefcases.delete(actx, accessToken, briefcase.iModelId, briefcase.briefcaseId)
       .catch(() => {
         actx.enter();
-        Logger.logError(loggingCategory, "Could not delete the acquired briefcase"); // Could well be that the current user does not have the appropriate access
+        Logger.logError(loggingCategory, "Could not delete the acquired briefcase", () => ({ ...briefcase })); // Could well be that the current user does not have the appropriate access
       });
   }
 
@@ -784,6 +784,9 @@ export class BriefcaseManager {
   /** Deletes a briefcase, and releases its references in iModelHub if necessary */
   private static async deleteBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry): Promise<void> {
     actx.enter();
+    if (briefcase.isOpen)
+      BriefcaseManager.closeBriefcase(briefcase);
+
     BriefcaseManager.deleteBriefcaseFromCache(briefcase);
     await BriefcaseManager.deleteBriefcaseFromServer(actx, accessToken, briefcase);
     actx.enter();
@@ -1106,17 +1109,17 @@ export class BriefcaseManager {
 
     // Reverse, reinstate and merge as necessary
     if (typeof reverseToId !== "undefined") {
-      Logger.logTrace(loggingCategory, `Reversing briefcase to ${reverseToId}`);
+      Logger.logTrace(loggingCategory, `Reversing briefcase to ${reverseToId}`, () => ({ ...briefcase }));
       await BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, reverseToId, reverseToIndex!, ChangeSetApplyOption.Reverse);
       actx.enter();
     }
     if (typeof reinstateToId !== "undefined") {
-      Logger.logTrace(loggingCategory, `Reinstating briefcase to ${reinstateToId}`);
+      Logger.logTrace(loggingCategory, `Reinstating briefcase to ${reinstateToId}`, () => ({ ...briefcase }));
       await BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, reinstateToId, reinstateToIndex!, ChangeSetApplyOption.Reinstate);
       actx.enter();
     }
     if (typeof mergeToId !== "undefined") {
-      Logger.logTrace(loggingCategory, `Merging briefcase to ${mergeToId}`);
+      Logger.logTrace(loggingCategory, `Merging briefcase to ${mergeToId}`, () => ({ ...briefcase }));
       await BriefcaseManager.applyChangeSets(actx, accessToken, briefcase, mergeToId, mergeToIndex!, ChangeSetApplyOption.Merge);
       actx.enter();
     }
@@ -1334,8 +1337,7 @@ export class BriefcaseManager {
     } catch (error) {
       actx.enter();
       if (error instanceof ConflictingCodesError) {
-        const msg = `Found conflicting codes when pushing briefcase ${briefcase.iModelId}:${briefcase.briefcaseId} changes.`;
-        Logger.logError(loggingCategory, msg);
+        Logger.logError(loggingCategory, "Found conflicting codes when pushing briefcase changes", () => ({ ...briefcase }));
         briefcase.conflictError = error;
       } else {
         failedUpdating = true;
@@ -1351,8 +1353,7 @@ export class BriefcaseManager {
       }
     } catch (error) {
       actx.enter();
-      const msg = `Relinquishing codes or locks has failed with: ${error}`;
-      Logger.logError(loggingCategory, msg);
+      Logger.logError(loggingCategory, "`Relinquishing codes or locks has failed with: ${error}`", () => ({ ...briefcase }));
     }
 
     // Remove ChangeSet id if it succeeded or failed with conflicts

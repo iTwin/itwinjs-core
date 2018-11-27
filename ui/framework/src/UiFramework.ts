@@ -5,6 +5,7 @@
 /** @module Utilities */
 import { OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { I18N } from "@bentley/imodeljs-i18n";
+import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { ProjectServices } from "./clientservices/ProjectServices";
 import { DefaultProjectServices } from "./clientservices/DefaultProjectServices";
 import { IModelServices } from "./clientservices/IModelServices";
@@ -37,7 +38,7 @@ export class UiFramework {
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
 
     if (oidcConfig) {
-      const initOidcPromise = OidcClientWrapper.initialize(oidcConfig);
+      const initOidcPromise = OidcClientWrapper.initialize(new ActivityLoggingContext(Guid.createValue()), oidcConfig);
       return Promise.all([readFinishedPromise, initOidcPromise]);
     }
     return readFinishedPromise;
