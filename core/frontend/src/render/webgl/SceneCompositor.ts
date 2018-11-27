@@ -76,11 +76,12 @@ class Textures implements IDisposable {
       }
     }
 
-    // NB: All 3 of these must be of the same type, because they are borrowed by pingpong and bound to the same frame buffer.
-    // Otherwise there would be no reason to use FLOAT for hilite texture.
+    // NB: Both of these must be of the same type, because they are borrowed by pingpong and bound to the same frame buffer.
     this.accumulation = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, pixelDataType);
     this.revealage = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, pixelDataType);
-    this.hilite = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, pixelDataType);
+
+    // Hilite texture is a simple on-off, but the smallest texture format WebGL allows us to use as output is RGBA with a byte per component.
+    this.hilite = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
     this.color = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
