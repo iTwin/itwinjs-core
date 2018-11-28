@@ -354,38 +354,6 @@ class PointStringTechnique extends VariedTechnique {
   }
 }
 
-/** ###TODO PointCloud to support feature overrides, locate, and hilite */
-export class WipPointCloudTechnique extends VariedTechnique {
-  private static readonly _kHilite = numFeatureVariants(1);
-
-  public constructor(gl: WebGLRenderingContext) {
-    super(numFeatureVariants(1) + numHiliteVariants);
-
-    const flags = scratchTechniqueFlags;
-    this.addHiliteShader(gl, createPointCloudHiliter);
-    for (const feature of featureModes) {
-      flags.reset(feature);
-      const builder = createPointCloudBuilder();
-      const opts = /* FeatureMode.Overrides === feature ? FeatureSymbologyOptions.PointCloud : */ FeatureSymbologyOptions.None;
-      addFeatureSymbology(builder, feature, opts);
-      this.addFeatureId(builder, feature);
-      this.addShader(builder, flags, gl);
-    }
-  }
-
-  protected get _debugDescription() { return "PointCloud"; }
-
-  public computeShaderIndex(flags: TechniqueFlags): number {
-    let index: number;
-    if (flags.isHilite)
-      index = WipPointCloudTechnique._kHilite;
-    else
-      index = flags.featureMode;
-
-    return index;
-  }
-}
-
 class PointCloudTechnique extends VariedTechnique {
   private static readonly _kHilite = 1;
   private static readonly _kFeature = 2;
