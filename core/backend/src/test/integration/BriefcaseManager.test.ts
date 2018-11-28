@@ -22,7 +22,6 @@ describe("BriefcaseManager (#integration)", () => {
     new TestIModelInfo("ReadOnlyTest"),
     new TestIModelInfo("ReadWriteTest"),
     new TestIModelInfo("NoVersionsTest"),
-    new TestIModelInfo("ConnectionReadTest"),
   ];
   const testVersionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
   const testElementCounts = [27, 28, 29];
@@ -46,10 +45,6 @@ describe("BriefcaseManager (#integration)", () => {
       assert.strictEqual<string>(briefcase.getKey(), key, `Cached key ${key} doesn't match the current generated key ${briefcase.getKey()}`);
       if (briefcase.isOpen) {
         assert.strictEqual<string>(briefcase.nativeDb.getParentChangeSetId(), briefcase.changeSetId, `Parent change set id of Db doesn't match what's cached in memory`);
-        if (briefcase.openParams!.accessMode === AccessMode.Shared) {
-          assert.isTrue(!briefcase.reversedChangeSetId, "Found a shared briefcase that was reversed!");
-          assert.isTrue(!briefcase.nativeDb.getReversedChangeSetId(), "Found a shared briefcase that was reversed!");
-        }
       }
     });
   };
