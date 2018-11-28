@@ -399,7 +399,7 @@ describe("ChangeSummary (#integration)", () => {
       });
     } catch (e) {
       assert.isDefined(e.errorNumber);
-      assert.equal(e.errorNumber, ChangeSetStatus.CannotMergeIntoReadonly);
+      assert.equal(e.errorNumber, ChangeSetStatus.ApplyError);
     } finally {
       await iModel.close(actx, accessToken);
     }
