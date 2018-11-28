@@ -40,7 +40,6 @@ export const enum FeatureSymbologyOptions {
   Surface = HasOverrides | Color | Alpha,
   Point = HasOverrides | Color | Weight | Alpha,
   Linear = HasOverrides | Color | Weight | LineCode | Alpha,
-  PointCloud = HasOverrides | Color,
 }
 
 function addFlagConstants(builder: ShaderBuilder): void {
@@ -452,10 +451,7 @@ const scratchBytes = new Uint8Array(4);
 const scratchBatchId = new Uint32Array(scratchBytes.buffer);
 const scratchBatchComponents = [0, 0, 0, 0];
 
-export function addFeatureId(builder: ProgramBuilder) {
-  const vert = builder.vert;
-  vert.addFunction(addUInt32s);
-  builder.addInlineComputedVarying("v_feature_id", VariableType.Vec4, computeFeatureId);
+function addBatchId(vert: VertexShaderBuilder) {
   vert.addUniform("u_batch_id", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_batch_id", (uniform, params) => {
       const batchId = params.target.currentBatchId;
@@ -467,6 +463,13 @@ export function addFeatureId(builder: ProgramBuilder) {
       uniform.setUniform4fv(scratchBatchComponents);
     });
   }, VariablePrecision.High);
+}
+
+export function addFeatureId(builder: ProgramBuilder) {
+  const vert = builder.vert;
+  vert.addFunction(addUInt32s);
+  builder.addInlineComputedVarying("v_feature_id", VariableType.Vec4, computeFeatureId);
+  addBatchId(vert);
 }
 
 // For hidden line + solid fill modes...translucent + opaque passes only.
@@ -565,9 +568,14 @@ const applyFeatureColor = `
   return mix(color, adjustPreMultipliedAlpha(color, v_feature_alpha_flashed.x), step(0.0, v_feature_alpha_flashed.x));
 `;
 
-// u_hilite_color.a is 1.0 for lit geometry, 0.0 for unlit. Lit gets brightened; unlit gets tweened.
 const applyFlash = `
   float flashHilite = floor(v_feature_alpha_flashed.y + 0.5);
+  return doApplyFlash(flashHilite, baseColor);
+`;
+
+// u_hilite_color.a is 1.0 for lit geometry, 0.0 for unlit. Lit gets brightened; unlit gets tweened.
+const doApplyFlash = `
+vec4 doApplyFlash(float flashHilite, vec4 baseColor) {
   float isFlashed = (flashHilite == 1.0 || flashHilite == 3.0) ? 1.0 : 0.0;
   float isHilited = (flashHilite >= 2.0) ? 1.0 : 0.0;
 
@@ -586,7 +594,24 @@ const applyFlash = `
 
   vec4 color = vec4(mix(tweenRgb, brightRgb, u_hilite_color.a), baseColor.a);
   return applyPreMultipliedAlpha(color);
+}
 `;
+
+function addApplyFlash(frag: FragmentShaderBuilder) {
+  addHiliteSettings(frag);
+
+  frag.addFunction(GLSLFragment.revertPreMultipliedAlpha);
+  frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
+  frag.addFunction(GLSLFragment.adjustPreMultipliedAlpha);
+  frag.addFunction(doApplyFlash);
+  frag.set(FragmentShaderComponent.ApplyFlash, applyFlash);
+
+  frag.addUniform("u_flash_intensity", VariableType.Float, (prog) => {
+    prog.addProgramUniform("u_flash_intensity", (uniform, params) => {
+      uniform.setUniform1f(params.target.flashIntensity);
+    });
+  });
+}
 
 export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, opts: FeatureSymbologyOptions): void {
   if (!addCommon(builder, feat, opts) || FeatureSymbologyOptions.None === opts)
@@ -601,18 +626,45 @@ export function addFeatureSymbology(builder: ProgramBuilder, feat: FeatureMode, 
   vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureOverrides);
 
   const frag = builder.frag;
-  addHiliteSettings(frag);
-  frag.addFunction(GLSLCommon.floatToBool);
+  addApplyFlash(frag);
   frag.set(FragmentShaderComponent.ApplyFeatureColor, applyFeatureColor);
+}
 
-  frag.addFunction(GLSLFragment.revertPreMultipliedAlpha);
-  frag.addFunction(GLSLFragment.applyPreMultipliedAlpha);
-  frag.addFunction(GLSLFragment.adjustPreMultipliedAlpha);
-  frag.set(FragmentShaderComponent.ApplyFlash, applyFlash);
+// If we're running the hilite shader for a uniform feature, it follows that the feature must be hilited.
+// So the hilite shader simply needs to output '1' for every fragment.
+export function addUniformHiliter(builder: ProgramBuilder): void {
+  builder.frag.set(FragmentShaderComponent.ComputeBaseColor, `return vec4(1.0);`);
+  builder.frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
+}
 
-  frag.addUniform("u_flash_intensity", VariableType.Float, (prog) => {
-    prog.addProgramUniform("u_flash_intensity", (uniform, params) => {
-      uniform.setUniform1f(params.target.flashIntensity);
+// For a uniform feature table, the feature ID output to pick buffers is equal to the batch ID.
+// The following symbology overrides are supported:
+//  - Visibility - implcitly, because if the feature is invisible its geometry will never be drawn.
+//  - Flash
+//  - Hilite
+// In future we may find a reason to support color and/or transparency.
+// This shader could be simplified, but want to share code with the non-uniform versions...hence uniforms/globals with "v_" prefix typically used for varyings...
+export function addUniformFeatureSymbology(builder: ProgramBuilder): void {
+  // addFeatureIndex()
+  builder.vert.addGlobal("g_featureIndex", VariableType.Vec4, "vec4(0.0)", true);
+
+  // addFeatureSymbology()
+  builder.frag.addUniform("v_feature_alpha_flashed", VariableType.Vec2, (prog) => {
+    prog.addGraphicUniform("v_feature_alpha_flashed", (uniform, params) => {
+      // only the 'y' component is used. first bit = flashed, second = hilited.
+      let value = 0;
+      const ovr = params.target.currentOverrides;
+      if (undefined !== ovr) {
+        if (ovr.anyHilited) // any hilited implies all hilited.
+          value = 2;
+
+        if (ovr.isUniformFlashed)
+          value += 1;
+      }
+
+      uniform.setUniform2fv([0.0, value]);
     });
   });
+
+  addApplyFlash(builder.frag);
 }
