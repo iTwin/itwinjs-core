@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+@import "@bentley/ui-core/lib/_z-index";
 @import "_variables";
 
 @mixin scrollTransition {
@@ -16,6 +17,11 @@
 
   position: relative;
 
+  > .nz-expanded {
+    pointer-events: none;
+    position: absolute;
+  }
+
   > .nz-items-viewport {
     height: 100%;
     width: 100%;
@@ -27,7 +33,9 @@
     }
   }
 
-  > .nz-history {
+  > .nz-histories {
+    @include nz-z-index(toolbarHistories);
+
     > .nz-viewport {
       overflow: hidden;
       position: relative;
@@ -36,50 +44,12 @@
         position: relative;
 
         @include scrollTransition;
-
-        > .nz-item {
-          position: relative;
-
-          > div > * {
-            pointer-events: auto;
-          }
-        }
       }
     }
   }
 
   > .nz-panels {
     @include scrollTransition;
-  }
-
-  &.nz-vertical {
-    > .nz-history {
-      > .nz-viewport {
-        > .nz-container {
-          > .nz-item {
-            height: $nz-desktop-item-height;
-            margin-top: $nz-desktop-space-between-toolbar-items;
-          }
-        }
-      }
-    }
-  }
-
-  &.nz-horizontal {
-    > .nz-history {
-      > .nz-viewport {
-        > .nz-container {
-          display: grid;
-          grid-auto-flow: column;
-          left: 1px;
-
-          > .nz-item {
-            width: $nz-desktop-item-width;
-            margin-left: $nz-desktop-space-between-toolbar-items;
-          }
-        }
-      }
-    }
   }
 
   > .nz-items-viewport {
@@ -94,6 +64,25 @@
 
   &.nz-vertical {
     width: $nz-desktop-item-height;
+
+    > .nz-expanded {
+      > * {
+        display: grid;
+        height: $nz-desktop-item-height;
+        margin-top: $nz-desktop-space-between-toolbar-items;
+      }
+    }
+
+    > .nz-histories {
+      > .nz-viewport {
+        > .nz-container {
+          > * {
+            height: $nz-desktop-item-height;
+            margin-top: $nz-desktop-space-between-toolbar-items;
+          }
+        }
+      }
+    }
 
     &.nz-scroll-indicator-left-only {
       > .nz-items-viewport {
@@ -128,17 +117,19 @@
   &.nz-horizontal {
     height: $nz-desktop-item-height;
 
-    &.nz-scroll-indicator-left-only {
-      > .nz-items-viewport {
-        > .nz-left {
-          width: $nz-desktop-item-width - $nz-items-border-width - $desktop-space-between-toolbar-items;
-        }
-      }
-    }
+    > .nz-histories {
+      > .nz-viewport {
+        > .nz-container {
+          display: grid;
+          grid-auto-flow: column;
+          grid-auto-columns: min-content;
+          left: 1px;
 
-    &.nz-scroll-indicator-right-only {
-      > .nz-right {
-        width: $nz-desktop-item-width - $nz-items-border-width - $desktop-space-between-toolbar-items;
+          > * {
+            width: $nz-desktop-item-width;
+            margin-left: $nz-desktop-space-between-toolbar-items;
+          }
+        }
       }
     }
 
@@ -160,6 +151,57 @@
       > .nz-items {
         display: inline-flex;
       }
+    }
+
+    &.nz-scroll-indicator-left-only {
+      > .nz-items-viewport {
+        > .nz-left {
+          width: $nz-desktop-item-width - $nz-items-border-width - $desktop-space-between-toolbar-items;
+        }
+      }
+    }
+
+    &.nz-scroll-indicator-right-only {
+      > .nz-right {
+        width: $nz-desktop-item-width - $nz-items-border-width - $desktop-space-between-toolbar-items;
+      }
+    }
+
+    &.nz-panel-alignment-start {
+      > .nz-panels {
+        > * {
+          justify-content: start;
+        }
+      }
+    }
+
+    &.nz-panel-alignment-end {
+      > .nz-panels {
+        > * {
+          justify-content: end;
+        }
+      }
+    }
+  }
+
+  &.nz-direction-left {
+    > .nz-expanded {
+      left: $nz-items-border-width;
+      transform: translateX(-100%);
+    }
+  }
+
+  &.nz-direction-right {
+    > .nz-expanded {
+      left: 100%;
+      transform: translateX(-$nz-items-border-width);
+    }
+  }
+
+  &.nz-direction-bottom {
+    > .nz-expanded {
+      top: 100%;
+      transform: translateY(-$nz-items-border-width);
     }
   }
 }

@@ -11,21 +11,11 @@
   position: relative;
 
   > .nz-panels {
-    pointer-events: none;
-
-    @include uicore-z-index(toolbarPanel);
-
-    > .nz-item {
-      > * {
-        pointer-events: auto;
-      }
-    }
+    @include nz-z-index(toolbarPanel);
   }
 
-  > .nz-history {
-    pointer-events: none;
-
-    @include uicore-z-index(toolbarHistory);
+  > .nz-histories {
+    @include nz-z-index(toolbarHistories);
 
     > .nz-item > div {
       > * {
@@ -35,12 +25,13 @@
   }
 
   > .nz-expanded {
+    pointer-events: none;
     position: absolute;
   }
 
   &.nz-vertical {
     > .nz-expanded {
-      > .nz-item {
+      > * {
         display: grid;
         height: $nz-desktop-item-height;
         margin-top: $nz-desktop-space-between-toolbar-items;
@@ -49,7 +40,7 @@
 
     &.nz-panel-alignment-start {
       > .nz-panels {
-        > .nz-item {
+        > * {
           align-content: start;
         }
       }
@@ -57,7 +48,7 @@
 
     &.nz-panel-alignment-end {
       > .nz-panels {
-        > .nz-item {
+        > * {
           align-content: end;
         }
       }
@@ -68,7 +59,7 @@
     > .nz-expanded {
       display: flex;
 
-      > .nz-item {
+      > * {
         width: $nz-desktop-item-width;
         margin-left: $nz-desktop-space-between-toolbar-items;
         display: grid;
@@ -77,7 +68,7 @@
     }
 
     > .nz-panels {
-      > .nz-item {
+      > * {
         > * {
           float: left;
         }
@@ -86,7 +77,7 @@
 
     &.nz-panel-alignment-start {
       > .nz-panels {
-        > .nz-item {
+        > * {
           justify-content: start;
         }
       }
@@ -94,7 +85,7 @@
 
     &.nz-panel-alignment-end {
       > .nz-panels {
-        > .nz-item {
+        > * {
           justify-content: end;
         }
       }

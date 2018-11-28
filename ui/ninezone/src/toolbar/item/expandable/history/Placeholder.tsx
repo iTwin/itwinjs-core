@@ -6,20 +6,13 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { CommonProps } from "../../../../utilities/Props";
-import "./Panel.scss";
+import CommonProps from "../../../../utilities/Props";
 
-/** Properties of [[Panel]] component. */
-export interface PanelProps extends CommonProps {
-  /** Panel content. */
-  children?: React.ReactNode;
-}
-
-/** Basic panel used in [[PanelPlaceholder]]. Used as base in [[Group]] and [[NestedGroup]] components. */
-export class Panel extends React.PureComponent<PanelProps> {
+/** History placeholder used in [[Toolbar]] component. */
+export default class HistoryPlaceholder extends React.PureComponent<CommonProps> {
   public render() {
     const className = classnames(
-      "nz-toolbar-item-expandable-group-panel",
+      "nz-toolbar-item-expandable-history-placeholder",
       this.props.className);
 
     return (
