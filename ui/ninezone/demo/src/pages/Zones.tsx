@@ -253,7 +253,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           icon: "icon-placeholder",
         } as ToolGroup,
         "angle": {
-          icon: "icon-placeholder",
+          icon: "icon-app-1",
         } as SimpleTool,
         "attach": {
           icon: "icon-placeholder",
@@ -1867,6 +1867,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 <>
                   {this.state.showAllItems && this.getToolbarItem("2d")}
                   <ToolbarIcon
+                    isActive={this.state.showAllItems}
                     key={"angle"}
                     icon={
                       <i className={`icon ${this.state.tools.angle.icon}`} />

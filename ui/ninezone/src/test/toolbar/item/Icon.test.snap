@@ -2,7 +2,7 @@
 
 exports[`<Icon /> renders correctly 1`] = `
 <button
-  className="nz-toolbar-item-icon nz-gradient"
+  className="nz-toolbar-item-icon"
   onClick={[Function]}
 >
   <div
