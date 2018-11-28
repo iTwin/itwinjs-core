@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import BackButton from "@bentley/ui-ninezone/lib/toolbar/button/Back";
+import BackButton from "@bentley/ui-ninezone/lib/app/button/Back";
 import "./ModalFrontstage.scss";
 
 /**

@@ -12,8 +12,6 @@ import { I18N } from "@bentley/imodeljs-i18n";
  */
 export default class UiComponents {
 
-  private constructor() { }
-
   private static _i18n?: I18N;
 
   public static async initialize(i18n: I18N): Promise<void> {
@@ -23,6 +21,8 @@ export default class UiComponents {
   }
 
   public static terminate() {
+    if (UiComponents._i18n)
+      UiComponents._i18n.unregisterNamespace("UiComponents");
     UiComponents._i18n = undefined;
   }
 

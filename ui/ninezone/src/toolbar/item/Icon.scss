@@ -3,12 +3,21 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+@import "../_variables";
 @import "_variables";
 
 .nz-toolbar-item-icon {
   border-width: 0;
+  background: $background-1;
+  background-origin: border-box;
+  border-color: $background-5;
+  border-style: solid;
+  cursor: pointer;
+  transition: all 500ms ease;
+  position: relative;
 
   >.nz-icon {
+    font-size: $icon-size;
     width: 100%;
     height: 100%;
     display: grid;
@@ -25,6 +34,21 @@
     img {
       width: 100%;
       height: 100%;
+    }
+  }
+
+  &.nz-gradient {
+    background: $background-1 linear-gradient(to bottom, rgba($gradient-dark, 0), rgba($gradient-dark, 0.22));
+    position: realtive;
+    width: 100%;
+    height: 100%;
+
+    &.nz-is-active {
+      background: $background-1;
+    }
+
+    &:active:not(.nz-is-disabled) {
+      background: $primary-tone;
     }
   }
 
@@ -46,8 +70,17 @@
     }
   }
 
+  &:active:not(.nz-is-disabled) {
+    background: $primary-tone;
+    color: rgba($text-light, 0.88);
+    transition-duration: 150ms;
+    transition-timing-function: cubic-bezier(1, 0.1, 1, 0.5);
+  }
+
   &.nz-is-active {
     &:not(:active):not(.nz-is-disabled) {
+      transition-duration: 0s;
+
       >.nz-icon {
         color: $primary-base;
         filter: $no-shadow;
@@ -58,6 +91,19 @@
           filter: $no-shadow;
         }
       }
+
+      &:after {
+        content: '';
+        display: block;
+        position: absolute;
+        background: $primary-base;
+        left: 3px;
+        top: ($nz-desktop-item-height - $desktop-tool-stripe-height) / 2;
+        border-radius: 2px;
+        width: $desktop-tool-stripe-width;
+        height: $desktop-tool-stripe-height;
+      }
+
     }
   }
 

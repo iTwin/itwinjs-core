@@ -2,17 +2,18 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
 import * as React from "react";
+import { mount, shallow } from "enzyme";
+import { BeDragDropContext } from "../..";
 
-import BackButton from "../../..//toolbar/button/Back";
+describe("BeDragDropContext", () => {
 
-describe("<BackButton />", () => {
   it("should render", () => {
-    mount(<BackButton />);
+    mount(<BeDragDropContext />);
   });
 
-  it("renders correctly", () => {
-    shallow(<BackButton />).should.matchSnapshot();
+  it("should render correctly", () => {
+    shallow(<BeDragDropContext />).should.matchSnapshot();
   });
+
 });

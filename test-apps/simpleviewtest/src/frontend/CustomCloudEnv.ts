@@ -11,7 +11,7 @@ import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 // A connection to a non-Connect-hosted project and iModel
 export async function initializeCustomCloudEnv(state: SimpleViewState, url: string): Promise<void> {
-  const id = state.projectConfig!.userName;
+  const id = "user";
   const email = { id: "email@organization.org" };
   const profile = { firstName: "first", lastName: "last" };
   const organization = { id: "organizationId", name: "organization" };

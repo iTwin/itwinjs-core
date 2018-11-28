@@ -23,7 +23,10 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     this._redirectPath = redirectUri.pathname;
   }
 
-  /** Used to initialize the client - must be awaited before any other methods are called */
+  /** Used to initialize the client - must be awaited before any other methods are called
+   * The application should use this method whenever a redirection happens - redirection typically causes
+   * the re-initialization of a Single Page Application.
+   */
   public async initialize(actx: ActivityLoggingContext): Promise<void> {
     await this.createUserManager(actx);
 
@@ -34,15 +37,31 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
     else
       this._onUserExpired();
 
-    // Listen to redirect path (happens if a redirect causes app to reinitialize)
-    if (window.location.pathname === this._redirectPath) {
-      try {
-        await this._userManager!.signinRedirectCallback();
-      } catch (err) {
-        this._onError(err);
-      }
-      window.location.replace("/");
+    // Handle any redirection if necessary
+    await this.handleRedirectCallback();
+  }
+
+  /** Used to handle the redirection that happens as part of an orchestrated SignIn.
+   * If the current pathname is the redirect path, it triggers the redirect call back and completes
+   * the SignIn. The returned promise evaluates to true, and the browser is redirected back to the
+   * root path.
+   * If the current pathname is NOT the redirect path, the returned promise resolves right away with
+   * a false value.
+   * The application should use this method whenever a redirection happens - redirection typically causes
+   * the re-initialization of a Single Page Application.
+   */
+  private async handleRedirectCallback(): Promise<boolean> {
+    if (window.location.pathname !== this._redirectPath)
+      return false;
+
+    try {
+      await this._userManager!.signinRedirectCallback();
+    } catch (err) {
+      this._onError(err);
     }
+
+    window.location.replace("/");
+    return true;
   }
 
   /**

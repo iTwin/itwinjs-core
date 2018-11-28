@@ -14,8 +14,6 @@ export interface SVTConfiguration {
 }
 
 export interface ConnectProjectConfiguration {
-  userName: string;
-  password: string;
   projectName: string;
   iModelName: string;
 }

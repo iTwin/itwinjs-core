@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { JsonUtils, OpenMode } from "@bentley/bentleyjs-core";
+import { JsonUtils, OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d } from "@bentley/geometry-core";
 import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
 import {
@@ -10,6 +10,8 @@ import {
   IModelTileRpcInterface, IModelToken, LinePixels, ModelProps, ModelQueryParams, RenderMode, RgbColor, RpcConfiguration,
   RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName, GeometryStreamProps, BackgroundMapType, ContextRealityModelProps,
 } from "@bentley/imodeljs-common";
+import { AccessToken, Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { OidcClientWrapper } from "@bentley/ui-framework/lib/oidc";
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 import {
   AccuDraw, AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, BeButtonEvent, Cluster, CoordinateLockOverrides, DecorateContext,
@@ -105,8 +107,10 @@ async function openIModel(state: SimpleViewState) {
   configuration.iModelName = activeViewState.projectConfig!.iModelName;
   if (configuration.customOrchestratorUri)
     await initializeCustomCloudEnv(state, configuration.customOrchestratorUri);
-  else
+  else {
     await initializeIModelHub(state);
+  }
+
   state.iModel = await IModelApi.getIModelByName(state.accessToken!, state.project!.wsgId, configuration.iModelName!);
   if (state.iModel === undefined)
     throw new Error(`${configuration.iModelName} - IModel not found in project ${state.project!.name}`);
@@ -1843,8 +1847,29 @@ async function retrieveProjectConfiguration(): Promise<void> {
   });
 }
 
+async function initializeOidc(actx: ActivityLoggingContext) {
+  actx.enter();
+
+  const clientId = Config.App.get("imjs_browser_test_client_id");
+  const redirectUri = Config.App.getString("imjs_browser_test_redirect_uri"); // must be set in config
+  const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri };
+
+  await OidcClientWrapper.initialize(actx, oidcConfig);
+  actx.enter();
+
+  OidcClientWrapper.oidcClient.onUserStateChanged.addListener((accessToken: AccessToken | undefined) => {
+    activeViewState.accessToken = accessToken;
+  });
+
+  activeViewState.accessToken = await OidcClientWrapper.oidcClient.getAccessToken(actx);
+  actx.enter();
+}
+
 // main entry point.
 async function main() {
+  const actx = new ActivityLoggingContext(Guid.createValue());
+  actx.enter();
+
   if (!MobileRpcConfiguration.isMobileFrontend) {
     // retrieve, set, and output the global configuration variable
     await retrieveConfiguration(); // (does a fetch)
@@ -1873,18 +1898,33 @@ async function main() {
 
   // while the browser is loading stuff, start work on logging in and downloading the imodel, etc.
   try {
+    // Standalone
     if (configuration.standalone) {
       await openStandaloneIModel(activeViewState, configuration.iModelName!);
-    } else {
+      await uiReady; // Now wait for the HTML UI to finish loading.
+      await initView();
+      return;
+    }
+
+    // Connected to hub
+    await initializeOidc(actx);
+    actx.enter();
+
+    if (!activeViewState.accessToken)
+      OidcClientWrapper.oidcClient.signIn(actx);
+    else {
       await openIModel(activeViewState);
+      await uiReady; // Now, wait for the HTML UI to finish loading.
+      await initView();
     }
   } catch (reason) {
     alert(reason);
     return;
   }
 
-  await uiReady; // Now wait for the HTML UI to finish loading.
+}
 
+async function initView() {
   // open the specified view
   showStatus("opening View", configuration.viewName);
   await buildViewList(activeViewState, configuration);

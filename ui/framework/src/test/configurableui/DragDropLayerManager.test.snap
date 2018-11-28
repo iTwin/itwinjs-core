@@ -1,0 +1,114 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`DragDropLayerManager DragDropLayerRenderer renders correctly 1`] = `
+<ContextProvider
+  value={
+    Object {
+      "dragDropManager": DragDropManagerImpl {
+        "backend": HTML5Backend {
+          "actions": Object {
+            "beginDrag": [Function],
+            "drop": [Function],
+            "endDrag": [Function],
+            "hover": [Function],
+            "publishDragSource": [Function],
+          },
+          "altKeyPressed": false,
+          "asyncEndDragFrameId": null,
+          "context": Object {},
+          "currentDragSourceNode": null,
+          "currentDragSourceNodeOffset": null,
+          "currentDragSourceNodeOffsetChanged": false,
+          "currentNativeHandle": null,
+          "currentNativeSource": null,
+          "dragEnterTargetIds": Array [],
+          "dragOverTargetIds": null,
+          "dragStartSourceIds": null,
+          "dropTargetIds": Array [],
+          "enterLeaveCounter": EnterLeaveCounter {
+            "entered": Array [],
+          },
+          "monitor": DragDropMonitorImpl {
+            "registry": HandlerRegistryImpl {
+              "dragSources": Map {},
+              "dropTargets": Map {},
+              "pinnedSource": null,
+              "pinnedSourceId": null,
+              "store": Object {
+                "@@observable": [Function],
+                "dispatch": [Function],
+                "getState": [Function],
+                "replaceReducer": [Function],
+                "subscribe": [Function],
+              },
+              "types": Map {},
+            },
+            "store": Object {
+              "@@observable": [Function],
+              "dispatch": [Function],
+              "getState": [Function],
+              "replaceReducer": [Function],
+              "subscribe": [Function],
+            },
+          },
+          "mouseMoveTimeoutTimer": null,
+          "registry": HandlerRegistryImpl {
+            "dragSources": Map {},
+            "dropTargets": Map {},
+            "pinnedSource": null,
+            "pinnedSourceId": null,
+            "store": Object {
+              "@@observable": [Function],
+              "dispatch": [Function],
+              "getState": [Function],
+              "replaceReducer": [Function],
+              "subscribe": [Function],
+            },
+            "types": Map {},
+          },
+          "sourceNodeOptions": Map {},
+          "sourceNodes": Map {},
+          "sourcePreviewNodeOptions": Map {},
+          "sourcePreviewNodes": Map {},
+        },
+        "context": Object {},
+        "isSetUp": false,
+        "monitor": DragDropMonitorImpl {
+          "registry": HandlerRegistryImpl {
+            "dragSources": Map {},
+            "dropTargets": Map {},
+            "pinnedSource": null,
+            "pinnedSourceId": null,
+            "store": Object {
+              "@@observable": [Function],
+              "dispatch": [Function],
+              "getState": [Function],
+              "replaceReducer": [Function],
+              "subscribe": [Function],
+            },
+            "types": Map {},
+          },
+          "store": Object {
+            "@@observable": [Function],
+            "dispatch": [Function],
+            "getState": [Function],
+            "replaceReducer": [Function],
+            "subscribe": [Function],
+          },
+        },
+        "store": Object {
+          "@@observable": [Function],
+          "dispatch": [Function],
+          "getState": [Function],
+          "replaceReducer": [Function],
+          "subscribe": [Function],
+        },
+      },
+    }
+  }
+>
+  <BeDragDropContextComponent>
+    <DragLayer(DragDropLayerRendererComponent) />
+  </BeDragDropContextComponent>
+</ContextProvider>
+`;

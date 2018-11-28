@@ -115,8 +115,11 @@ class DragDropLayerRendererComponent extends React.Component<DragDropLayerRender
     if (!this._dragging || !LayerElement)
       return null;
 
-    if (clientOffset) dragSourceArgs.clientOffset = clientOffset;
-    if (initialClientOffset) dragSourceArgs.initialClientOffset = initialClientOffset;
+    if (clientOffset)
+      dragSourceArgs.clientOffset = clientOffset;
+    if (initialClientOffset)
+      dragSourceArgs.initialClientOffset = initialClientOffset;
+
     dragSourceArgs.sourceClientOffset = sourceClientOffset;
     dragSourceArgs.initialSourceClientOffset = initialSourceClientOffset;
 

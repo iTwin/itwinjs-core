@@ -5,6 +5,7 @@
 /** @module Utilities */
 import { OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { I18N } from "@bentley/imodeljs-i18n";
+import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { ProjectServices } from "./clientservices/ProjectServices";
 import { DefaultProjectServices } from "./clientservices/DefaultProjectServices";
 import { IModelServices } from "./clientservices/IModelServices";
@@ -17,13 +18,11 @@ import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
  * Manages the Redux store, I18N service and iModel, Project and Login services for the ui-framework package.
  */
 export class UiFramework {
-  private constructor() { }
-
   private static _projectServices?: ProjectServices;
   private static _iModelServices?: IModelServices;
   private static _i18n?: I18N;
-  private static _store: Store<any>;
-  private static _complaint: string = UiFramework._complaint;
+  private static _store?: Store<any>;
+  private static _complaint = "UiFramework not initialized";
 
   public static async initialize(store: Store<any>, i18n: I18N, oidcConfig?: OidcFrontendClientConfiguration, projectServices?: ProjectServices, iModelServices?: IModelServices) {
     UiFramework._store = store;
@@ -39,10 +38,19 @@ export class UiFramework {
     UiFramework._iModelServices = iModelServices ? iModelServices : new DefaultIModelServices();
 
     if (oidcConfig) {
-      const initOidcPromise = OidcClientWrapper.initialize(oidcConfig);
+      const initOidcPromise = OidcClientWrapper.initialize(new ActivityLoggingContext(Guid.createValue()), oidcConfig);
       return Promise.all([readFinishedPromise, initOidcPromise]);
     }
     return readFinishedPromise;
+  }
+
+  public static terminate() {
+    UiFramework._store = undefined;
+    if (UiFramework._i18n)
+      UiFramework._i18n.unregisterNamespace("UiFramework");
+    UiFramework._i18n = undefined;
+    UiFramework._projectServices = undefined;
+    UiFramework._iModelServices = undefined;
   }
 
   public static get store(): Store<any> {

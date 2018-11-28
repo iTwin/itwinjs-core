@@ -171,6 +171,9 @@ export class ViewManager {
 
     this.notifySelectedViewportChanged(previousVp, vp);
 
+    if (undefined === previousVp)
+      IModelApp.toolAdmin.startDefaultTool();
+
     return BentleyStatus.SUCCESS;
   }
 

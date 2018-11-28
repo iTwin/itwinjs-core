@@ -5,11 +5,11 @@
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { BlueButton, HollowButton } from "@bentley/bwc/lib/index";
+import { BlueButton, HollowButton } from "@bentley/bwc/lib/bwc";
 import { Timer, withTimeout } from "@bentley/ui-core";
 import App from "@src/app/App";
 import Content from "@src/app/Content";
-import AppButton from "@src/toolbar/button/App";
+import AppButton from "@src/app/button/App";
 import MouseTracker from "@src/context/MouseTracker";
 import Footer from "@src/footer/Footer";
 import MessageCenter, { MessageCenterButton } from "@src/footer/message-center/MessageCenter";

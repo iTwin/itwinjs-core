@@ -75,7 +75,7 @@ export class ToolSettings {
 /** @hidden */
 export class ToolState {
   public coordLockOvr = CoordinateLockOverrides.None;
-  public locateCircleOn = true;
+  public locateCircleOn = false;
   public setFrom(other: ToolState) { this.coordLockOvr = other.coordLockOvr; this.locateCircleOn = other.locateCircleOn; }
   public clone(): ToolState { const val = new ToolState(); val.setFrom(this); return val; }
 }

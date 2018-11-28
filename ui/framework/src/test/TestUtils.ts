@@ -75,4 +75,11 @@ export default class TestUtils {
       TestUtils._uiFrameworkInitialized = true;
     }
   }
+
+  public static terminateUiFramework() {
+    UiCore.terminate();
+    UiComponents.terminate();
+    UiFramework.terminate();
+    TestUtils._uiFrameworkInitialized = false;
+  }
 }

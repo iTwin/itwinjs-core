@@ -10,7 +10,7 @@ import TestUtils from "../TestUtils";
 import { ConfigurableUiManager, ZoneState, WidgetState, FrontstageDefProps, FrontstageManager, AnalysisAnimationTool } from "../../index";
 // import { ConfigurableCreateInfo } from "../../index";
 // import { ToolUiProvider } from "../../index";
-import { AnalysisAnimationToolSettings } from "../..//index";
+import { AnalysisAnimationToolSettings } from "../../index";
 
 // import AssistanceItem from "@bentley/ui-ninezone/lib/footer/tool-assistance/Item";
 
