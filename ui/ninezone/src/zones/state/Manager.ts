@@ -290,13 +290,6 @@ export class StateManager {
       return {
         ...state,
         draggingWidget: undefined,
-        zones: {
-          ...state.zones,
-          [state.draggingWidget.id]: {
-            ...state.zones[state.draggingWidget.id],
-            floating: undefined,
-          },
-        },
       };
     }
 
