@@ -238,6 +238,14 @@ export class ElementLocateManager {
       return LocateFilterStatus.Reject;
     }
 
+    if (undefined !== hit.subCategoryId) {
+      const appearance = hit.viewport.view.getSubCategoryAppearance(hit.subCategoryId);
+      if (appearance.dontLocate) {
+        out.reason = ElementLocateManager.getFailureMessageKey("NotLocatable");
+        return LocateFilterStatus.Reject;
+      }
+    }
+
     const tool = IModelApp.toolAdmin.activeTool;
     if (!(tool && tool instanceof InteractiveTool))
       return LocateFilterStatus.Accept;

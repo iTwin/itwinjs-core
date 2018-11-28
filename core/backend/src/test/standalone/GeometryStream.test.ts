@@ -762,7 +762,7 @@ describe("GeometryStream", () => {
     }
   });
 
-  it.skip("create GeometricElement3d wireformat appearance check", async () => {
+  it("create GeometricElement3d wireformat appearance check", async () => {
     // Set up element to be placed in iModel
     const seedElement = imodel.elements.getElement("0x1d");
     assert.exists(seedElement);
@@ -812,7 +812,7 @@ describe("GeometryStream", () => {
 
     assert.isTrue(undefined !== builder.geometryStream[0].appearance && builder.geometryStream[0].appearance.subCategory === IModel.getDefaultSubCategoryId(value.category)); // Ensure default sub-category is specified...
     assert.isTrue(fromElProps !== fromBuilder); // Should not match, default sub-category should not be persisted...
-    assert.isTrue(fromElProps === fromScratch); // TODO### Needs "null" appearance fix from native ToJson...
+    assert.isTrue(fromElProps === fromScratch);
   });
 
   it("create GeometricElement3d from world coordinate brep data", async () => {
