@@ -257,7 +257,8 @@ Property | Description
 `TargetECInstanceId` | ECInstanceId of the instance on the *target* end of the relationship
 `TargetECClassId` | ECClassId of the instance on the *target* end of the relationship
 
-> If the ECRelationshipClass is backed by a [Navigation property](#navigation-properties), it is usually much easier to use the navigation property in your ECSQL than the ECRelationshipClass.
+> - If the ECRelationshipClass is backed by a [Navigation property](#navigation-properties), it is usually much easier to use the navigation property in your ECSQL than the ECRelationshipClass.
+> - `SourceECClassId` and `TargetECClassId` are skipped when performing a `SELECT * FROM` statement or an `INSERT INTO` statement without a property name list.
 
 ### Examples
 
