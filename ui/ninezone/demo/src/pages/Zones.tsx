@@ -51,17 +51,19 @@ import Tooltip from "@src/widget/tool-settings/Tooltip";
 import ToolSettingsWidgetTab from "@src/widget/tool-settings/Tab";
 import ToolSettingsWidget from "@src/widget/ToolSettings";
 import ExpandableItem from "@src/toolbar/item/expandable/Expandable";
-import OverflowItem from "@src/toolbar/item/Overflow";
+// import OverflowItem from "@src/toolbar/item/Overflow";
 import GroupColumn from "@src/toolbar/item/expandable/group/Column";
 import GroupTool from "@src/toolbar/item/expandable/group/tool/Tool";
 import ToolGroupExpander from "@src/toolbar/item/expandable/group/tool/Expander";
-import { GroupWithContainIn as ToolGroupComponent } from "@src/toolbar/item/expandable/group/Group";
-import { NestedWithContainIn as NestedToolGroup } from "@src/toolbar/item/expandable/group/Nested";
+import ToolGroupComponent from "@src/toolbar/item/expandable/group/Group";
+import NestedToolGroup from "@src/toolbar/item/expandable/group/Nested";
+import PanelPlaceholder from "@src/toolbar/item/expandable/group/Placeholder";
 import HistoryIcon from "@src/toolbar/item/expandable/history/Icon";
 import HistoryTray, { History, DefaultHistoryManager } from "@src/toolbar/item/expandable/history/Tray";
-import Item from "@src/toolbar/item/Icon";
-import Toolbar, { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
-import ScrollableToolbar from "@src/toolbar/Scrollable";
+import HistoryPlaceholder from "@src/toolbar/item/expandable/history/Placeholder";
+import ToolbarIcon from "@src/toolbar/item/Icon";
+import Toolbar, { /*ToolbarPanelAlignment*/ } from "@src/toolbar/Toolbar";
+// import ScrollableToolbar from "@src/toolbar/Scrollable";
 import Direction from "@src/utilities/Direction";
 import { PointProps } from "@src/utilities/Point";
 import Size from "@src/utilities/Size";
@@ -70,14 +72,14 @@ import WidgetTab from "@src/widget/rectangular/tab/Draggable";
 import TabSeparator from "@src/widget/rectangular/tab/Separator";
 import WidgetTabGroup, { VisibilityMode } from "@src/widget/rectangular/tab/Group";
 import { TabMode } from "@src/widget/rectangular/tab/Tab";
-import StackedWidget, { HorizontalAnchor } from "@src/widget/Stacked";
+import StackedWidget, { HorizontalAnchor, VerticalAnchor } from "@src/widget/Stacked";
 import ToolsWidget from "@src/widget/tools/Tools";
 import FooterZone from "@src/zones/Footer";
 import NineZone, { getDefaultProps as getDefaultNineZone, NineZoneProps, WidgetZoneIndex } from "@src/zones/state/NineZone";
 import NineZoneManager from "@src/zones/state/Manager";
-import { WidgetProps } from "@src/zones/state/Widget";
-import { TargetType } from "@src/zones/state/Target";
-import { ZoneProps, DropTarget } from "@src/zones/state/Zone";
+import { WidgetProps, DraggingWidgetProps } from "@src/zones/state/Widget";
+import { TargetType, TargetProps } from "@src/zones/state/Target";
+import { ZoneProps, DropTarget, StatusZone } from "@src/zones/state/Zone";
 import TargetContainer from "@src/zones/target/Container";
 import MergeTarget from "@src/zones/target/Merge";
 import BackTarget from "@src/zones/target/Back";
@@ -87,44 +89,86 @@ import GhostOutline from "@src/zones/GhostOutline";
 import ThemeContext, { ThemeContextProps } from "@src/theme/Context";
 import Theme, { DarkTheme, PrimaryTheme, LightTheme } from "@src/theme/Theme";
 import { offsetAndContainInContainer } from "@src/popup/tooltip/Tooltip";
+import { RectangleProps } from "@src/utilities/Rectangle";
 import "./Zones.scss";
+import withContainInViewport from "@src/base/WithContainInViewport";
 
 const adjustTooltipPosition = offsetAndContainInContainer();
 // tslint:disable-next-line:variable-name
 const TooltipWithTimeout = withTimeout(Tooltip);
+// tslint:disable-next-line:variable-name
+const ToolGroupContained = withContainInViewport(ToolGroupComponent);
+// tslint:disable-next-line:variable-name
+const NestedToolGroupContained = withContainInViewport(NestedToolGroup);
 
-export interface State {
-  tools: Tools;
-  activeTab: MessageCenterActiveTab;
-  isPopoverOpen: boolean;
-  isNestedPopoverOpen: boolean;
-  isTooltipVisible: boolean;
-  visibleMessage: Message;
-  mousePosition: PointProps;
-  temporaryMessageX: number;
-  temporaryMessageY: number;
-  isTemporaryMessageVisible: boolean;
-  toastMessageStage: ToastMessageStage;
-  openWidget: FooterWidget;
-  secondZoneContent: SecondZoneContent;
-  nineZone: NineZoneProps;
-  isOverflowItemOpen: boolean;
-  themeContext: ThemeContextProps;
-  showAllItems: boolean;
+interface State {
+  readonly isNestedPopoverOpen: boolean;
+  readonly isOverflowItemOpen: boolean;
+  readonly isPopoverOpen: boolean;
+  readonly isTemporaryMessageVisible: number;
+  readonly isTooltipVisible: boolean;
+  readonly message: Message;
+  readonly nineZone: NineZoneProps;
+  readonly openWidget: FooterWidget;
+  readonly secondZoneContent: SecondZoneContent;
+  readonly tools: ZoneTools;
+  readonly themeContext: ThemeContextProps;
+  readonly toastMessageKey: number;
 }
 
-export enum MessageCenterActiveTab {
+interface ZoneTools {
+  1: DirectionTools<Zone1HorizontalTools, Zone1VerticalTools>;
+  3: DirectionTools<Zone2HorizontalTools, Zone2VerticalTools>;
+}
+
+interface DirectionTools<THorizontal extends Tools = Tools, TVertical extends Tools = Tools> {
+  horizontal: THorizontal;
+  vertical: TVertical;
+}
+
+interface Zone1HorizontalTools extends Tools {
+  d2: ToolGroup;
+  toggleItems: SimpleTool;
+}
+
+interface Zone1VerticalTools extends Tools {
+  cube: ToolGroup;
+  disableItems: SimpleTool;
+  validate: ToolGroup;
+}
+
+interface Zone2HorizontalTools extends Tools {
+  overflow: SimpleTool;
+  toolSettings: SimpleTool;
+}
+
+interface Zone2VerticalTools extends Tools {
+  channel: ToolGroup;
+  chat1: SimpleTool;
+  browse: SimpleTool;
+  clipboard: ToolGroup;
+  calendar: ToolGroup;
+  chat2: SimpleTool;
+  document: SimpleTool;
+}
+
+interface ToolLocation {
+  zoneKey: keyof (ZoneTools);
+  directionKey: keyof (DirectionTools);
+}
+
+enum MessageCenterActiveTab {
   AllMessages,
   Problems,
 }
 
-export enum SecondZoneContent {
+enum SecondZoneContent {
   None,
   Minimized,
   ToolSettings,
 }
 
-export enum Message {
+enum Message {
   None,
   Activity,
   Modal,
@@ -132,49 +176,47 @@ export enum Message {
   Sticky,
 }
 
-export enum FooterWidget {
+enum FooterWidget {
   None,
   ToolAssistance,
   Messages,
   SnapMode,
 }
 
-export interface HistoryItem {
-  toolKey: string;
-  trayKey: string;
-  columnKey: string;
-  itemKey: string;
+interface HistoryItem {
+  toolId: string;
+  trayId: string;
+  columnId: string;
+  itemId: string;
 }
 
-export interface ToolGroupItem {
+interface ToolGroupItem {
   icon: string;
   trayId: string | undefined;
   isDisabled?: boolean;
 }
 
-export interface ToolGroupColumn {
-  items: { [key: string]: ToolGroupItem };
+interface ToolGroupColumn {
+  items: { [id: string]: ToolGroupItem };
 }
 
-export interface ToolGroupTray {
+interface ToolGroupTray {
   title: string;
-  columns: { [key: string]: ToolGroupColumn };
+  columns: { [id: string]: ToolGroupColumn };
 }
 
-export interface Tools {
-  [key: string]: SimpleTool | ToolGroup;
-}
-
-export interface SimpleTool {
+interface SimpleTool {
+  id: string;
   icon: string;
   isDisabled?: boolean;
 }
 
-export interface ToolGroup {
+interface ToolGroup {
+  id: string;
   icon: string;
   trayId: string;
   backTrays: ReadonlyArray<string>;
-  trays: { [key: string]: ToolGroupTray };
+  trays: { [id: string]: ToolGroupTray };
   direction: Direction;
   history: History<HistoryItem>;
   isExtended: boolean;
@@ -182,7 +224,13 @@ export interface ToolGroup {
   isDisabled?: boolean;
 }
 
-const isToolGroup = (toolState: SimpleTool | ToolGroup): toolState is ToolGroup => {
+type Tool = SimpleTool | ToolGroup;
+
+interface Tools {
+  [id: string]: Tool;
+}
+
+const isToolGroup = (toolState: Tool): toolState is ToolGroup => {
   return (toolState as ToolGroup).trays !== undefined;
 };
 
@@ -190,23 +238,1695 @@ const customTheme: Theme = {
   name: "custom",
 };
 
-export default class ZonesExample extends React.PureComponent<{}, State> {
+interface MessageExampleProps {
+  onHideMessage: () => void;
+}
+
+class ActivityMessageExample extends React.PureComponent<MessageExampleProps> {
+  public render() {
+    return (
+      <ActivityMessage>
+        <StatusMessage
+          status={Status.Information}
+          icon={
+            <i className="icon icon-activity" />
+          }
+        >
+          <StatusLayout
+            label={
+              <MessageLabel text="Rendering 'big-image.png'" />
+            }
+            buttons={
+              <MessageHyperlink
+                onClick={this.props.onHideMessage}
+                text="Ok"
+              />
+            }
+            progress={
+              <MessageProgress status={Status.Information} progress={33.33} />
+            }
+          />
+        </StatusMessage>
+      </ActivityMessage>
+    );
+  }
+}
+
+interface ModalMessageExampleProps extends MessageExampleProps {
+  renderTo: () => HTMLElement;
+}
+
+class ModalMessageExample extends React.PureComponent<ModalMessageExampleProps> {
+  public render() {
+    return (
+      <ModalMessage
+        renderTo={this.props.renderTo}
+        dialog={
+          <MessageDialog
+            titleBar={
+              <MessageTitleBar
+                title={
+                  <MessageTitle text="Dialog" />
+                }
+                buttons={
+                  <MessageDialogButton onClick={this.props.onHideMessage}>
+                    <i className="icon icon-close" />
+                  </MessageDialogButton>
+                }
+              />
+            }
+            content={
+              <MessageDialogButtonsContent
+                buttons={
+                  <>
+                    <BlueButton
+                      onClick={this.props.onHideMessage}
+                    >
+                      Yes
+                        </BlueButton>
+                    <HollowButton
+                      onClick={this.props.onHideMessage}
+                    >
+                      No
+                        </HollowButton>
+                  </>
+                }
+                content={
+                  <MessageDialogScrollableContent
+                    content={
+                      <>
+                        Lorem ipsum dolor sit amet, consectetur adipiscing elit.Integer vehicula viverra ante a finibus.Suspendisse tristique neque volutpat ex auctor, a consectetur nunc convallis.Nullam condimentum imperdiet elit vitae vulputate.Praesent ornare tellus luctus sem cursus, sed porta ligula pulvinar.In fringilla tellus sem, id sollicitudin leo condimentum sed.Quisque tempor sed risus gravida tincidunt.Nulla id hendrerit sapien.
+                          <br />
+                        <br />
+                        In vestibulum ipsum lorem.Aliquam accumsan tortor sit amet facilisis lacinia.Nam quis lacus a urna eleifend finibus.Donec id purus id turpis viverra faucibus.Lorem ipsum dolor sit amet, consectetur adipiscing elit.Sed finibus dui ut efficitur interdum.Donec a congue mauris.Praesent ornare egestas accumsan.Pellentesque malesuada diam nisl, a elementum turpis commodo quis.Suspendisse vitae diam accumsan, ullamcorper ante in, porttitor turpis.Phasellus scelerisque tristique imperdiet.
+                          <br />
+                        <br />
+                        Aenean interdum nulla ex, sed molestie lectus pulvinar ac.Mauris sagittis tempor justo ac imperdiet.Fusce iaculis cursus lectus sit amet semper.Quisque at volutpat magna, vitae lacinia nunc.Suspendisse a ipsum orci.Duis in mi sit amet purus blandit mattis porttitor mollis enim.Curabitur dictum nisi massa, eu luctus sapien viverra quis.
+                          <br />
+                        <br />
+                        Ut sed pellentesque diam.Integer non pretium nibh.Nulla scelerisque ipsum ac porttitor lobortis.Suspendisse eu egestas felis, sit amet facilisis neque.In sit amet fermentum nisl.Proin volutpat ex et ligula auctor, id cursus elit fringilla.Nulla facilisi.Proin dictum a lectus a elementum.Mauris ultricies dapibus libero ut interdum.
+                          <br />
+                        <br />
+                        Suspendisse blandit mauris metus, in accumsan magna venenatis pretium.Ut ante odio, tempor non quam at, scelerisque pulvinar dui.Duis in magna ut leo fermentum pellentesque venenatis vitae sapien.Suspendisse potenti.Nunc quis ex ac mi porttitor euismod.Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.Nunc tincidunt nunc id sem varius imperdiet.Phasellus congue orci vitae lorem malesuada, vel tempor tortor molestie.Nullam gravida tempus ornare.
+                        </>
+                    }
+                  />
+                }
+              />
+            }
+            resizeHandle={< DialogResizeHandle />}
+          />
+        }
+      />
+    );
+  }
+}
+
+class StickyMessageExample extends React.PureComponent<MessageExampleProps> {
+  public render() {
+    return (
+      <StickyMessage>
+        <StatusMessage
+          status={Status.Error}
+          icon={
+            <i className="icon icon-status-error-hollow" />
+          }
+        >
+          <StatusLayout
+            label={
+              <MessageLabel text="Unable to load 3 fonts, replaced with Arial." />
+            }
+            buttons={
+              <MessageButton onClick={this.props.onHideMessage}>
+                <i className="icon icon-close" />
+              </MessageButton>
+            }
+          />
+        </StatusMessage>
+      </StickyMessage>
+    );
+  }
+}
+
+interface ToastMessageExampleProps extends MessageExampleProps {
+  animateOutTo: React.ReactInstance | undefined;
+}
+
+interface ToastMessageExampleState {
+  stage: ToastMessageStage;
+}
+
+class ToastMessageExample extends React.PureComponent<ToastMessageExampleProps, ToastMessageExampleState> {
+  public constructor(props: ToastMessageExampleProps) {
+    super(props);
+
+    this.state = {
+      stage: ToastMessageStage.Visible,
+    };
+  }
+
+  public render() {
+    return (
+      <ToastMessage
+        animateOutTo={this.props.animateOutTo}
+        content={
+          <StatusMessage
+            status={Status.Success}
+            icon={
+              <i className="icon icon-status-success-hollow" />
+            }
+          >
+            <StatusLayout
+              label={
+                <MessageLabel text="Image 'big.png' saved." />
+              }
+            />
+          </StatusMessage>
+        }
+        onAnimatedOut={this.props.onHideMessage}
+        onStageChange={this._handleToastStageChange}
+        stage={this.state.stage}
+        timeout={2500}
+      />
+    );
+  }
+
+  private _handleToastStageChange = (stage: ToastMessageStage) => {
+    this.setState(() => ({
+      stage,
+    }));
+  }
+}
+
+interface FooterMessageExampleProps {
+  readonly toastMessageKey: React.Key;
+  readonly message: Message;
+  readonly renderModalMessageTo: () => HTMLElement;
+  readonly animateToastMessageTo: React.ReactInstance | undefined;
+  readonly onHideMessage: () => void;
+}
+
+class FooterMessageExample extends React.PureComponent<FooterMessageExampleProps> {
+  public render() {
+    switch (this.props.message) {
+      case (Message.Activity): {
+        return (
+          <ActivityMessageExample
+            onHideMessage={this.props.onHideMessage}
+          />
+        );
+      }
+      case (Message.Modal): {
+        return (
+          <ModalMessageExample
+            onHideMessage={this.props.onHideMessage}
+            renderTo={this.props.renderModalMessageTo}
+          />
+        );
+      }
+      case (Message.Toast): {
+        return (
+          <ToastMessageExample
+            key={this.props.toastMessageKey}
+            onHideMessage={this.props.onHideMessage}
+            animateOutTo={this.props.animateToastMessageTo}
+          />
+        );
+      }
+      case (Message.Sticky): {
+        return (
+          <StickyMessageExample
+            onHideMessage={this.props.onHideMessage}
+          />
+        );
+      }
+    }
+    return null;
+  }
+}
+
+interface StatusZoneExampleProps extends MessageExampleProps {
+  readonly bounds: RectangleProps;
+  readonly dropTarget: DropTarget;
+  readonly isInWidgetMode: boolean;
+  readonly message: Message;
+  readonly onHideMessage: () => void;
+  readonly onTargetChanged: TargetChangedHandler;
+  readonly onWidgetChange: (widget: FooterWidget) => void;
+  readonly openWidget: FooterWidget;
+  readonly outlineBounds: RectangleProps | undefined;
+  readonly renderModalMessageTo: () => HTMLElement;
+  readonly targetBounds: RectangleProps;
+  readonly toastMessageKey: React.Key;
+}
+
+interface StatusZoneExampleState {
+  messageCenterTab: MessageCenterActiveTab;
+}
+
+class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, StatusZoneExampleState> {
+  private _footerMessages = React.createRef<MessageCenterIndicator>();
+
+  public constructor(props: StatusZoneExampleProps) {
+    super(props);
+
+    this.state = {
+      messageCenterTab: MessageCenterActiveTab.AllMessages,
+    };
+  }
+
+  public render() {
+    return (
+      <React.Fragment>
+        <FooterZone
+          isInFooterMode={!this.props.isInWidgetMode}
+          bounds={this.props.bounds}
+        >
+          <Footer
+            isInWidgetMode={this.props.isInWidgetMode}
+            message={
+              <FooterMessageExample
+                toastMessageKey={this.props.toastMessageKey}
+                animateToastMessageTo={this._footerMessages.current || undefined}
+                onHideMessage={this.props.onHideMessage}
+                message={this.props.message}
+                renderModalMessageTo={this.props.renderModalMessageTo}
+              />
+            }
+            indicators={
+              <>
+                <ToolAssistanceIndicator
+                  dialog={
+                    this.props.openWidget !== FooterWidget.ToolAssistance ? undefined :
+                      <ToolAssistanceDialog
+                        title="Trim Multiple - Tool Assistance"
+                        items={
+                          <>
+                            <ToolAssistanceItem>
+                              <i className="icon icon-cursor" />
+                              Identify piece to trim
+                              </ToolAssistanceItem>
+                            <ToolAssistanceSeparator label="Inputs" />
+                            <ToolAssistanceItem>
+                              <i className="icon icon-cursor-click" />
+                              Clink on element
+                              </ToolAssistanceItem>
+                            <ToolAssistanceItem>
+                              <i className="icon  icon-placeholder" />
+                              Drag across elements
+                              </ToolAssistanceItem>
+                            <ToolAssistanceSeparator />
+                            <ToolAssistanceItem>
+                              <input type="checkbox" />
+                              Show prompt @ cursor
+                              </ToolAssistanceItem>
+                          </>
+                        }
+                      />
+                  }
+                  icons={
+                    <>
+                      <i className="icon icon-cursor" />
+                      <i className="icon icon-add" />
+                    </>
+                  }
+                  isStepStringVisible={!this.props.isInWidgetMode}
+                  onClick={this._handleToggleToolAssistanceDialog}
+                  stepString="Start Point"
+                />
+                <MessageCenterIndicator
+                  ref={this._footerMessages}
+                  label="Message(s):"
+                  isLabelVisible={!this.props.isInWidgetMode}
+                  balloonLabel="9+"
+                  onClick={this._handleToggleMessageCenterDialog}
+                  dialog={
+                    this.props.openWidget !== FooterWidget.Messages ? undefined :
+                      <MessageCenter
+                        title="Messages"
+                        buttons={
+                          <>
+                            <MessageCenterButton>
+                              <i className={"icon icon-placeholder"} />
+                            </MessageCenterButton>
+                            <MessageCenterButton onClick={this._handleCloseMessageCenter}>
+                              <i className={"icon icon-close"} />
+                            </MessageCenterButton>
+                          </>
+                        }
+                        tabs={
+                          <>
+                            <MessageCenterTab
+                              isOpen={this.state.messageCenterTab === MessageCenterActiveTab.AllMessages}
+                              onClick={this._handleAllMessagesTabClick}
+                            >
+                              All
+                          </MessageCenterTab>
+                            <MessageCenterTab
+                              isOpen={this.state.messageCenterTab === MessageCenterActiveTab.Problems}
+                              onClick={this._handleProblemsTabClick}
+                            >
+                              Problems
+                          </MessageCenterTab>
+                          </>
+                        }
+                        messages={this.state.messageCenterTab === MessageCenterActiveTab.AllMessages ?
+                          <>
+                            <MessageCenterMessage
+                              icon={<i className={"icon icon-status-success nzdemo-success"} />}
+                              content={"Document saved successfully."}
+                            />
+                            <MessageCenterMessage
+                              icon={<i className={"icon icon-clock nzdemo-progress"} />}
+                              content={
+                                <>
+                                  <span>Downloading required assets.</span>
+                                  <br />
+                                  <i><small>75% complete</small></i>
+                                </>
+                              }
+                            />
+                            <MessageCenterMessage
+                              icon={<i className={"icon icon-status-rejected nzdemo-error"} />}
+                              content={
+                                <>
+                                  <span>Cannot attach reference.</span>
+                                  <br />
+                                  <i><u><small>Details...</small></u></i>
+                                </>
+                              }
+                            />
+                            <MessageCenterMessage
+                              icon={<i className={"icon icon-status-warning nzdemo-warning"} />}
+                              content={"Missing 10 fonts. Replaces with Arial."}
+                            />
+                            <MessageCenterMessage
+                              icon={<i className={"icon icon-star nzdemo-favorite"} />}
+                              content={"Your document has been favorited by 5 people in the..."}
+                            />
+                            <MessageCenterMessage
+                              icon={<i className={"icon icon-status-success nzdemo-success"} />}
+                              content={"Navigator has successfully updated"}
+                            />
+                          </> :
+                          <>
+                            <MessageCenterMessage
+                              icon={<i className={"icon icon-status-rejected"} style={{ color: "red" }} />}
+                              content={"Missing 10 fonts. Replaced with Arial."}
+                            />
+                            <MessageCenterMessage
+                              content={"Cannot attach reference"}
+                            />
+                            <MessageCenterMessage
+                              content={"Problem1"}
+                            />
+                            <MessageCenterMessage
+                              content={"Problem2"}
+                            />
+                            <MessageCenterMessage
+                              content={"Problem3"}
+                            />
+                            <MessageCenterMessage
+                              content={"Problem4"}
+                            />
+                            <MessageCenterMessage
+                              content={"Problem5"}
+                            />
+                            <MessageCenterMessage
+                              content={"Problem6"}
+                            />
+                          </>
+                        }
+                        prompt="No messages."
+                      />
+                  }
+                />
+                <SnapModeIndicator
+                  label="Snap Mode"
+                  isLabelVisible={!this.props.isInWidgetMode}
+                  onClick={this._handleToggleSnapModeDialog}
+                  icon={
+                    <SnapModeIcon text="k" />
+                  }
+                  dialog={
+                    this.props.openWidget !== FooterWidget.SnapMode ? undefined :
+                      <SnapModeDialog
+                        title="Snap Mode"
+                        snaps={
+                          <>
+                            <SnapRow
+                              key="1"
+                              isActive
+                              label="Keypoint"
+                              icon={
+                                <SnapModeIcon isActive text="k" />
+                              }
+                            />
+                            <SnapRow
+                              key="2"
+                              label="Intersection"
+                              icon={
+                                <SnapModeIcon text="i" />
+                              }
+                            />
+                            <SnapRow
+                              key="3"
+                              label="Center"
+                              icon={
+                                <SnapModeIcon text="c" />
+                              }
+                            />
+                            <SnapRow
+                              key="4"
+                              label="Nearest"
+                              icon={
+                                <SnapModeIcon text="n" />
+                              }
+                            />
+                          </>
+                        }
+                      />
+                  }
+                />
+              </>
+            }
+          />
+        </FooterZone>
+        <Zone bounds={this.props.targetBounds}>
+          <TargetExample
+            zoneIndex={StatusZone.id}
+            dropTarget={this.props.dropTarget}
+            onTargetChanged={this.props.onTargetChanged}
+          />
+        </Zone>
+        {!this.props.outlineBounds ? undefined :
+          <GhostOutline bounds={this.props.outlineBounds} />
+        }
+      </React.Fragment>
+    );
+  }
+
+  private _handleAllMessagesTabClick = () => {
+    this.setState(() => ({
+      messageCenterTab: MessageCenterActiveTab.AllMessages,
+    }));
+  }
+
+  private _handleProblemsTabClick = () => {
+    this.setState(() => ({
+      messageCenterTab: MessageCenterActiveTab.Problems,
+    }));
+  }
+
+  private _handleCloseMessageCenter = () => {
+    this.props.onWidgetChange(FooterWidget.None);
+  }
+
+  private _handleToggleMessageCenterDialog = () => {
+    this.props.onWidgetChange(this.props.openWidget === FooterWidget.Messages ? FooterWidget.None : FooterWidget.Messages);
+  }
+
+  private _handleToggleToolAssistanceDialog = () => {
+    this.props.onWidgetChange(this.props.openWidget === FooterWidget.ToolAssistance ? FooterWidget.None : FooterWidget.ToolAssistance);
+  }
+
+  private _handleToggleSnapModeDialog = () => {
+    this.props.onWidgetChange(this.props.openWidget === FooterWidget.SnapMode ? FooterWidget.None : FooterWidget.SnapMode);
+  }
+}
+
+interface FloatingZoneProps extends Widget6Tab1ContentProps, Widget7Tab1ContentProps {
+  bounds: RectangleProps;
+  draggingWidget: DraggingWidgetProps | undefined;
+  dropTarget: DropTarget;
+  horizontalAnchor: HorizontalAnchor;
+  onResize: (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
+  onTabClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
+  onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetOffset: PointProps) => void;
+  onTabDragEnd: () => void;
+  onTabDrag: (dragged: PointProps) => void;
+  onTargetChanged: TargetChangedHandler;
+  outlineBounds: RectangleProps | undefined;
+  targetBounds: RectangleProps;
+  verticalAnchor: VerticalAnchor;
+  zone: ZoneProps;
+}
+
+class FloatingZone extends React.PureComponent<FloatingZoneProps> {
+  public render() {
+    return (
+      <>
+        <Zone bounds={this.props.bounds}>
+          {this.props.zone.widgets.length > 0 &&
+            <FloatingZoneWidget
+              draggingWidget={this.props.draggingWidget}
+              horizontalAnchor={this.props.horizontalAnchor}
+              onChangeTheme={this.props.onChangeTheme}
+              onResize={this.props.onResize}
+              onOpenActivityMessage={this.props.onOpenActivityMessage}
+              onOpenModalMessage={this.props.onOpenModalMessage}
+              onOpenToastMessage={this.props.onOpenToastMessage}
+              onOpenStickyMessage={this.props.onOpenStickyMessage}
+              onShowTooltip={this.props.onShowTooltip}
+              onToggleFooterMode={this.props.onToggleFooterMode}
+              onTabClick={this.props.onTabClick}
+              onTabDragStart={this.props.onTabDragStart}
+              onTabDragEnd={this.props.onTabDragEnd}
+              onTabDrag={this.props.onTabDrag}
+              verticalAnchor={this.props.verticalAnchor}
+              zone={this.props.zone}
+            />
+          }
+        </Zone>
+        <Zone bounds={this.props.targetBounds}>
+          <TargetExample
+            dropTarget={this.props.dropTarget}
+            zoneIndex={this.props.zone.id}
+            onTargetChanged={this.props.onTargetChanged}
+          />
+        </Zone>
+        {this.props.outlineBounds &&
+          <GhostOutline bounds={this.props.outlineBounds} />
+        }
+      </>
+    );
+  }
+}
+
+interface FloatingZoneWidgetProps extends Widget6Tab1ContentProps, Widget7Tab1ContentProps {
+  draggingWidget: DraggingWidgetProps | undefined;
+  horizontalAnchor: HorizontalAnchor;
+  onResize: (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
+  onTabClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
+  onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetOffset: PointProps) => void;
+  onTabDragEnd: () => void;
+  onTabDrag: (dragged: PointProps) => void;
+  verticalAnchor: VerticalAnchor;
+  zone: ZoneProps;
+}
+
+class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
+  public render() {
+    const isOpen = this.props.zone.widgets.some((w) => w.tabIndex !== -1);
+    const activeWidget = this.props.zone.widgets.find((widget) => widget.tabIndex !== -1);
+    const isDragged = this.props.draggingWidget && this.props.draggingWidget.id === this.props.zone.id;
+    return (
+      <StackedWidget
+        content={
+          activeWidget &&
+          <WidgetContent
+            widgetId={activeWidget.id}
+            tabIndex={activeWidget.tabIndex}
+            onChangeTheme={this.props.onChangeTheme}
+            onOpenActivityMessage={this.props.onOpenActivityMessage}
+            onOpenModalMessage={this.props.onOpenModalMessage}
+            onOpenToastMessage={this.props.onOpenToastMessage}
+            onOpenStickyMessage={this.props.onOpenStickyMessage}
+            onShowTooltip={this.props.onShowTooltip}
+            onToggleFooterMode={this.props.onToggleFooterMode}
+          />
+        }
+        fillZone={this.props.zone.isLayoutChanged}
+        horizontalAnchor={this.props.horizontalAnchor}
+        isDragged={isDragged}
+        isFloating={this.props.zone.floating ? true : false}
+        isOpen={isOpen}
+        onResize={this._handleWidgetResize}
+        tabs={
+          <FloatingZoneTabs
+            anchor={this.props.horizontalAnchor}
+            draggingWidget={this.props.draggingWidget}
+            isOpen={isOpen}
+            onTabClick={this.props.onTabClick}
+            onTabDragStart={this.props.onTabDragStart}
+            onTabDragEnd={this.props.onTabDragEnd}
+            onTabDrag={this.props.onTabDrag}
+            zone={this.props.zone}
+          />
+        }
+        verticalAnchor={this.props.verticalAnchor}
+      />
+    );
+  }
+
+  private _handleWidgetResize = (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
+    this.props.onResize(this.props.zone.id, x, y, handle, filledHeightDiff);
+  }
+}
+
+interface FloatingZoneTabsProps {
+  anchor: HorizontalAnchor;
+  draggingWidget: DraggingWidgetProps | undefined;
+  isOpen: boolean;
+  onTabClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
+  onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetOffset: PointProps) => void;
+  onTabDragEnd: () => void;
+  onTabDrag: (dragged: PointProps) => void;
+  zone: ZoneProps;
+}
+
+class FloatingZoneTabs extends React.PureComponent<FloatingZoneTabsProps> {
+  public render() {
+    const tabs: JSX.Element[] = [];
+    let i = -1;
+
+    for (const widget of this.props.zone.widgets) {
+      i++;
+      const widgetTabs = (
+        <FloatingZoneWidgetTabs
+          key={widget.id}
+          anchor={this.props.anchor}
+          draggingWidget={this.props.draggingWidget}
+          isOpen={this.props.isOpen}
+          isStacked={this.props.zone.widgets.length > 1}
+          onTabClick={this.props.onTabClick}
+          onTabDragStart={this.props.onTabDragStart}
+          onTabDragEnd={this.props.onTabDragEnd}
+          onTabDrag={this.props.onTabDrag}
+          widget={widget}
+        />
+      );
+
+      if (i !== 0)
+        tabs.push(<TabSeparator key={`separator_${i}`} />);
+      tabs.push(widgetTabs);
+    }
+
+    return tabs;
+  }
+}
+
+interface FloatingZoneWidgetTabsProps {
+  anchor: HorizontalAnchor;
+  draggingWidget: DraggingWidgetProps | undefined;
+  isOpen: boolean;
+  isStacked: boolean;
+  onTabClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
+  onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetOffset: PointProps) => void;
+  onTabDragEnd: () => void;
+  onTabDrag: (dragged: PointProps) => void;
+  widget: WidgetProps;
+}
+
+class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsProps> {
+  private getTabHandleMode() {
+    if (this.props.draggingWidget && this.props.draggingWidget.id === this.props.widget.id && this.props.draggingWidget.isUnmerge)
+      return VisibilityMode.Visible;
+
+    if (this.props.isStacked)
+      return VisibilityMode.OnHover;
+
+    return VisibilityMode.Timeout;
+  }
+
+  private getTab(tabId: number, icon: string, mode: TabMode, lastPosition: PointProps | undefined) {
+    return (
+      <FloatingZoneWidgetTab
+        anchor={this.props.anchor}
+        icon={icon}
+        lastPosition={lastPosition}
+        mode={mode}
+        onClick={this.props.onTabClick}
+        onDragStart={this.props.onTabDragStart}
+        onDragEnd={this.props.onTabDragEnd}
+        onDrag={this.props.onTabDrag}
+        tabId={tabId}
+        widgetId={this.props.widget.id}
+      />
+    );
+  }
+
+  public render() {
+    const lastPosition = this.props.draggingWidget && this.props.draggingWidget.id === this.props.widget.id ?
+      this.props.draggingWidget.lastPosition : undefined;
+    const tabIndex = this.props.draggingWidget ? this.props.draggingWidget.tabIndex : -1;
+    const mode1 = !this.props.isOpen ? TabMode.Closed : this.props.widget.tabIndex === 1 ? TabMode.Active : TabMode.Open;
+    const mode2 = !this.props.isOpen ? TabMode.Closed : this.props.widget.tabIndex === 2 ? TabMode.Active : TabMode.Open;
+    const lastPosition1 = tabIndex === 1 ? lastPosition : undefined;
+    const lastPosition2 = tabIndex === 2 ? lastPosition : undefined;
+    const handleMode = this.getTabHandleMode();
+    switch (this.props.widget.id) {
+      case 4: {
+        return (
+          <WidgetTabGroup
+            anchor={this.props.anchor}
+            handleMode={handleMode}
+          >
+            {this.getTab(1, "icon-settings", mode1, lastPosition1)}
+            {this.getTab(2, "icon-help", mode2, lastPosition2)}
+          </WidgetTabGroup >
+        );
+      }
+      case 6: {
+        return this.getTab(1, "icon-placeholder", mode1, lastPosition1);
+      }
+      case 7: {
+        return this.getTab(1, "icon-placeholder", mode1, lastPosition1);
+      }
+      case 8: {
+        return this.getTab(1, "icon-placeholder", mode1, lastPosition1);
+      }
+      case 9: {
+        return (
+          <WidgetTabGroup
+            anchor={this.props.anchor}
+            handleMode={handleMode}
+          >
+            {this.getTab(1, "icon-settings", mode1, lastPosition1)}
+            {this.getTab(2, "icon-help", mode2, lastPosition2)}
+          </WidgetTabGroup>
+        );
+      }
+    }
+    return null;
+  }
+}
+
+interface FloatingZoneWidgetTabProps {
+  anchor: HorizontalAnchor;
+  icon: string;
+  lastPosition: PointProps | undefined;
+  mode: TabMode;
+  onClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
+  onDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetOffset: PointProps) => void;
+  onDragEnd: () => void;
+  onDrag: (dragged: PointProps) => void;
+  tabId: number;
+  widgetId: WidgetZoneIndex;
+}
+
+class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabProps> {
+  public render() {
+    return (
+      <WidgetTab
+        key="3_1"
+        mode={this.props.mode}
+        onClick={this._handleOnClick}
+        lastPosition={this.props.lastPosition}
+        onDragStart={this._handleOnDragStart}
+        onDragEnd={this.props.onDragEnd}
+        onDrag={this.props.onDrag}
+        anchor={this.props.anchor}
+      >
+        <i className={`icon ${this.props.icon}`} />
+      </WidgetTab>
+    );
+  }
+
+  private _handleOnClick = () => {
+    this.props.onClick(this.props.widgetId, this.props.tabId);
+  }
+
+  private _handleOnDragStart = (initialPosition: PointProps, widgetOffset: PointProps) => {
+    this.props.onDragStart(this.props.widgetId, this.props.tabId, initialPosition, widgetOffset);
+  }
+}
+
+type TargetChangedHandler = (target: TargetProps | undefined) => void;
+
+interface TargetExampleProps {
+  dropTarget: DropTarget;
+  zoneIndex: WidgetZoneIndex;
+  onTargetChanged: TargetChangedHandler;
+}
+
+class TargetExample extends React.PureComponent<TargetExampleProps> {
+  public render() {
+    return (
+      <TargetContainer>
+        {this.props.dropTarget === DropTarget.Merge &&
+          <MergeTarget
+            onTargetChanged={this._handleMergeTargetChanged}
+          />
+        }
+        {this.props.dropTarget === DropTarget.Back &&
+          <BackTarget
+            onTargetChanged={this._handleBackTargetChanged}
+            zoneIndex={this.props.zoneIndex}
+          />
+        }
+      </TargetContainer>
+    );
+  }
+
+  private _handleMergeTargetChanged = (isTargeted: boolean) => {
+    this.onTargetChanged(isTargeted, TargetType.Merge);
+  }
+
+  private _handleBackTargetChanged = (isTargeted: boolean) => {
+    this.onTargetChanged(isTargeted, TargetType.Back);
+  }
+
+  private onTargetChanged(isTargeted: boolean, type: TargetType) {
+    isTargeted ?
+      this.props.onTargetChanged({
+        zoneId: this.props.zoneIndex,
+        type,
+      }) :
+      this.props.onTargetChanged(undefined);
+  }
+}
+
+interface TooltipExampleProps {
+  readonly isTooltipVisible: boolean;
+  readonly isTemporaryMessageVisible: number;
+  readonly onMessageHidden: () => void;
+  readonly onTooltipTimeout: () => void;
+}
+
+interface TooltipExampleState {
+  readonly mousePosition: PointProps;
+  readonly temporaryMessageStyle: React.CSSProperties;
+}
+
+class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExampleState> {
   private _temporaryMessageTimer = new Timer(2000);
-  private _zones: React.RefObject<Zones>;
-  private _app: React.RefObject<App>;
-  private _footerMessages: React.RefObject<MessageCenterIndicator>;
-  private _dialogContainer: HTMLDivElement;
+
+  public componentDidMount(): void {
+    this._temporaryMessageTimer.setOnExecute(this.props.onMessageHidden);
+
+    if (this.props.isTemporaryMessageVisible !== 0)
+      this._temporaryMessageTimer.start();
+  }
+
+  public componentWillUnmount(): void {
+    this._temporaryMessageTimer.stop();
+  }
+
+  public componentDidUpdate(prevProps: TooltipExampleProps): void {
+    if (this.props.isTemporaryMessageVisible !== 0 && this.props.isTemporaryMessageVisible !== prevProps.isTemporaryMessageVisible) {
+      this._temporaryMessageTimer.start();
+      this.setState((prevState) => ({
+        temporaryMessageStyle: {
+          left: prevState.mousePosition.x,
+          top: prevState.mousePosition.y,
+        },
+      }));
+    }
+  }
+
+  public constructor(props: TooltipExampleProps) {
+    super(props);
+
+    this.state = {
+      mousePosition: {
+        x: 0,
+        y: 0,
+      },
+      temporaryMessageStyle: {},
+    };
+  }
+
+  public render() {
+    return (
+      <>
+        <MouseTracker onPositionChange={this._handlePositionChange} />
+        {
+          this.props.isTooltipVisible && (
+            <TooltipWithTimeout
+              stepString="Start Point"
+              timeout={2000}
+              onTimeout={this.props.onTooltipTimeout}
+              position={this.state.mousePosition}
+              adjustPosition={adjustTooltipPosition}
+            >
+              <i className="icon icon-placeholder" />
+            </TooltipWithTimeout>
+          )
+        }
+        {this.props.isTemporaryMessageVisible !== 0 &&
+          <TemporaryMessage>
+            Text element required.
+          </TemporaryMessage>
+        }
+      </>
+    );
+  }
+
+  private _handlePositionChange = (mousePosition: PointProps) => {
+    this.setState(() => ({
+      mousePosition,
+    }));
+  }
+}
+
+interface ContentExampleProps {
+  onClick: () => void;
+}
+
+class ContentExample extends React.PureComponent<ContentExampleProps> {
+  private _canvas = React.createRef<HTMLCanvasElement>();
+  private _ctx?: CanvasRenderingContext2D;
+
+  public componentDidMount() {
+    if (!this._canvas.current)
+      return;
+
+    const ctx = this._canvas.current.getContext("2d");
+    if (!ctx)
+      return;
+
+    this._canvas.current.width = window.innerWidth;
+    this._canvas.current.height = window.innerHeight;
+    this.drawRandomCircles(ctx, this._canvas.current.width, this._canvas.current.height);
+
+    this._ctx = ctx;
+    window.addEventListener("resize", this._handleWindowResize);
+  }
+
+  public componentWillUnmount() {
+    window.removeEventListener("resize", this._handleWindowResize, true);
+  }
+
+  public render() {
+    return (
+      <canvas
+        className="content"
+        ref={this._canvas}
+        onClick={this.props.onClick}
+      />
+    );
+  }
+
+  private drawRandomCircles(ctx: CanvasRenderingContext2D, width: number, height: number) {
+    ctx.fillStyle = "#333333DD";
+    for (let i = 0; i < 20; i++) {
+      const x = Math.floor(Math.random() * width);
+      const y = Math.floor(Math.random() * height);
+      const radius = Math.floor(Math.random() * 50) + 10;
+
+      ctx.beginPath();
+      ctx.arc(x, y, radius, 0, 2 * Math.PI);
+      ctx.fill();
+    }
+  }
+
+  private _handleWindowResize = () => {
+    if (!this._canvas.current)
+      return;
+
+    if (!this._ctx)
+      return;
+
+    const width = window.innerWidth;
+    const height = window.innerHeight;
+    this._canvas.current.width = width;
+    this._canvas.current.height = height;
+    this.drawRandomCircles(this._ctx, width, height);
+  }
+}
+
+interface Widget6Tab1ContentProps {
+  onChangeTheme: (themeContext: ThemeContextProps) => void;
+}
+
+class Widget6Tab1Content extends React.PureComponent<Widget6Tab1ContentProps> {
+  public render() {
+    return (
+      <ThemeContext.Consumer>
+        {
+          (context) => (
+            <BlueButton
+              onClick={this._handleButtonClick(context)}
+            >
+              Theme: {context.theme.name}
+            </BlueButton>
+          )
+        }
+      </ThemeContext.Consumer>
+    );
+  }
+
+  private _handleButtonClick = (context: ThemeContextProps) => () => {
+    this.props.onChangeTheme(context);
+  }
+}
+
+interface Widget7Tab1ContentProps {
+  onOpenActivityMessage: () => void;
+  onOpenModalMessage: () => void;
+  onOpenToastMessage: () => void;
+  onOpenStickyMessage: () => void;
+  onShowTooltip: () => void;
+  onToggleFooterMode: () => void;
+}
+
+class Widget7Tab1Content extends React.PureComponent<Widget7Tab1ContentProps> {
+  public render() {
+    return (
+      <>
+        <BlueButton onClick={this.props.onOpenActivityMessage}>
+          Show Activity Message
+        </BlueButton>
+        <span style={{ background: "#cebbbb", width: "800px", height: "50px", display: "block" }}></span>
+        <br />
+        <BlueButton onClick={this.props.onOpenModalMessage}>
+          Show Modal Message
+            </BlueButton>
+        <br />
+        <BlueButton onClick={this.props.onOpenToastMessage}>
+          Show Toast Message
+        </BlueButton>
+        <br />
+        <BlueButton onClick={this.props.onOpenStickyMessage}>
+          Show Sticky Message
+        </BlueButton>
+        <br />
+        <br />
+        <BlueButton
+          onClick={this.props.onShowTooltip}
+        >
+          Show Tooltip
+        </BlueButton>
+        <br />
+        <br />
+        <BlueButton
+          onClick={this.props.onToggleFooterMode}
+        >
+          Change Footer Mode
+        </BlueButton>
+      </>
+    );
+  }
+}
+
+class Widget9Tab1Content extends React.PureComponent {
+  public render() {
+    return (
+      <>
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        <span style={{ background: "#cebbbb", width: "800px", height: "50px", display: "block" }} />
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+        Hello world 1!
+        <br />
+      </>
+    );
+  }
+}
+
+interface WidgetContentProps extends Widget6Tab1ContentProps, Widget7Tab1ContentProps {
+  widgetId: WidgetZoneIndex;
+  tabIndex: number;
+}
+
+class WidgetContent extends React.PureComponent<WidgetContentProps> {
+  public render() {
+    switch (this.props.widgetId) {
+      case 4: {
+        return `Hello world from zone4! (${this.props.tabIndex})`;
+      }
+      case 6: {
+        return (
+          <Widget6Tab1Content
+            onChangeTheme={this.props.onChangeTheme} />
+        );
+      }
+      case 7: {
+        return (
+          <Widget7Tab1Content
+            onOpenActivityMessage={this.props.onOpenActivityMessage}
+            onOpenModalMessage={this.props.onOpenModalMessage}
+            onOpenStickyMessage={this.props.onOpenStickyMessage}
+            onOpenToastMessage={this.props.onOpenToastMessage}
+            onShowTooltip={this.props.onShowTooltip}
+            onToggleFooterMode={this.props.onToggleFooterMode} />
+        );
+      }
+      case 8: {
+        return "Footer :)";
+      }
+      case 9: {
+        switch (this.props.tabIndex) {
+          case 1: {
+            return (
+              <Widget9Tab1Content />
+            );
+          }
+          case 2: {
+            return "Hello world 2!";
+          }
+        }
+      }
+    }
+    return undefined;
+  }
+}
+
+interface ToolbarItemProps {
+  onClick: (toolId: string) => void;
+  onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
+  tool: Tool;
+}
+
+class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
+  public render() {
+    if (isToolGroup(this.props.tool)) {
+      return (
+        <ExpandableItem
+          onIsHistoryExtendedChange={this._handleOnIsHistoryExtendedChange}
+          isDisabled={this.props.tool.isDisabled}
+        >
+          <ToolbarIcon
+            icon={
+              <i className={`icon ${this.props.tool.icon}`} />
+            }
+            onClick={this._handleOnClick}
+            isDisabled={this.props.tool.isDisabled}
+          />
+        </ExpandableItem>
+      );
+    }
+
+    return (
+      <ToolbarIcon
+        icon={
+          <i className={`icon ${this.props.tool.icon}`} />
+        }
+        isDisabled={this.props.tool.isDisabled}
+        onClick={this._handleOnClick}
+      />
+    );
+  }
+
+  private _handleOnClick = () => {
+    this.props.onClick(this.props.tool.id);
+  }
+
+  private _handleOnIsHistoryExtendedChange = (isExtended: boolean) => {
+    this.props.onIsHistoryExtendedChange(this.props.tool.id, isExtended);
+  }
+}
+
+interface ToolbarItemHistoryTrayProps {
+  onHistoryItemClick: (item: HistoryItem) => void;
+  onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
+  tool: ToolGroup;
+}
+
+class ToolbarItemHistoryTray extends React.PureComponent<ToolbarItemHistoryTrayProps> {
+  public render() {
+    return (
+      <HistoryTray
+        direction={this.props.tool.direction}
+        isExtended={this.props.tool.isExtended}
+        onIsHistoryExtendedChange={this._handleOnIsHistoryExtendedChange}
+        items={
+          this.props.tool.history.map((entry) => {
+            const tray = this.props.tool.trays[entry.item.trayId];
+            return (
+              <ToolbarItemHistoryItem
+                history={entry.item}
+                icon={tray.columns[entry.item.columnId].items[entry.item.itemId].icon}
+                key={entry.key}
+                onClick={this._handleOnHistoryItemClick}
+              />
+            );
+          })
+        }
+      />
+    );
+  }
+
+  private _handleOnHistoryItemClick = (item: HistoryItem) => {
+    this.props.onHistoryItemClick(item);
+  }
+
+  private _handleOnIsHistoryExtendedChange = (isExtended: boolean) => {
+    this.props.onIsHistoryExtendedChange(this.props.tool.id, isExtended);
+  }
+}
+
+interface ToolbarItemHistoryItemProps {
+  history: HistoryItem;
+  icon: string;
+  onClick: (history: HistoryItem) => void;
+}
+
+class ToolbarItemHistoryItem extends React.PureComponent<ToolbarItemHistoryItemProps> {
+  public render() {
+    return (
+      <HistoryIcon
+        onClick={this._handleOnClick}
+      >
+        <i className={`icon ${this.props.icon}`} />
+      </HistoryIcon>
+    );
+  }
+
+  private _handleOnClick = () => {
+    this.props.onClick(this.props.history);
+  }
+}
+
+interface ToolbarItemPanelProps {
+  onExpandGroup: (toolId: string, trayId: string | undefined) => void;
+  onToolClick: (args: ToolbarItemGroupToolClickArgs) => void;
+  onBack: (toolId: string) => void;
+  tool: ToolGroup;
+}
+
+interface ToolbarItemGroupToolClickArgs extends GroupColumnToolClickArgs {
+  toolId: string;
+}
+
+class ToolbarItemPanel extends React.PureComponent<ToolbarItemPanelProps> {
+  public render() {
+    const tray = this.props.tool.trays[this.props.tool.trayId];
+    const columns = (
+      Object.keys(tray.columns).map((columnId) => {
+        const column = tray.columns[columnId];
+        return (
+          <GroupColumn key={columnId}>
+            {Object.keys(column.items).map((itemId) => {
+              const item = column.items[itemId];
+              if (item.trayId)
+                return (
+                  <GroupColumnExpander
+                    key={itemId}
+                    icon={item.icon}
+                    isDisabled={item.isDisabled || false}
+                    label={itemId}
+                    onClick={this._handleExpanderClick}
+                    trayId={item.trayId}
+                  />
+                );
+              return (
+                <GroupColumnTool
+                  columnId={columnId}
+                  icon={item.icon}
+                  isDisabled={item.isDisabled || false}
+                  itemId={itemId}
+                  key={itemId}
+                  label={itemId}
+                  onClick={this._handleGroupColumnToolClick}
+                  trayId={(this.props.tool as ToolGroup).trayId}
+                />
+              );
+            })}
+          </GroupColumn>
+        );
+      })
+    );
+
+    if (this.props.tool.backTrays.length > 0)
+      return (
+        <NestedToolGroupContained
+          title={tray.title}
+          columns={columns}
+          onBack={this._handleOnBack}
+        />
+      );
+
+    return (
+      <ToolGroupContained
+        title={tray.title}
+        columns={columns}
+      />
+    );
+  }
+
+  private _handleOnBack = () => {
+    this.props.onBack(this.props.tool.id);
+  }
+
+  private _handleGroupColumnToolClick = (args: GroupColumnToolClickArgs) => {
+    this.props.onToolClick({ ...args, toolId: this.props.tool.id });
+  }
+
+  private _handleExpanderClick = (trayId: string) => {
+    this.props.onExpandGroup(this.props.tool.id, trayId);
+  }
+}
+
+interface GroupColumnExpanderProps {
+  icon: string;
+  isDisabled: boolean;
+  label: string;
+  onClick: (trayId: string) => void;
+  trayId: string;
+}
+
+class GroupColumnExpander extends React.PureComponent<GroupColumnExpanderProps> {
+  public render() {
+    return (
+      <ToolGroupExpander
+        label={this.props.label}
+        icon={
+          <i className={`icon ${this.props.icon}`} />
+        }
+        onClick={this._handleOnClick}
+        isDisabled={this.props.isDisabled}
+      />
+    );
+  }
+
+  private _handleOnClick = () => {
+    this.props.onClick(this.props.trayId);
+  }
+}
+
+interface GroupColumnToolProps {
+  columnId: string;
+  icon: string;
+  isDisabled: boolean;
+  itemId: string;
+  label: string;
+  onClick: (args: GroupColumnToolClickArgs) => void;
+  trayId: string;
+}
+
+interface GroupColumnToolClickArgs {
+  columnId: string;
+  itemId: string;
+  trayId: string;
+}
+
+class GroupColumnTool extends React.PureComponent<GroupColumnToolProps> {
+  public render() {
+    return (
+      <GroupTool
+        label={this.props.label}
+        onClick={this._handleOnClick}
+        icon={
+          <i className={`icon ${this.props.icon}`} />
+        }
+        isDisabled={this.props.isDisabled}
+      />
+    );
+  }
+
+  private _handleOnClick = () => {
+    const args: GroupColumnToolClickArgs = {
+      columnId: this.props.columnId,
+      itemId: this.props.itemId,
+      trayId: this.props.trayId,
+    };
+    this.props.onClick(args);
+  }
+}
+
+interface Zone1Props {
+  bounds: RectangleProps;
+  horizontalTools: Tools;
+  onHistoryItemClick: (item: HistoryItem) => void;
+  onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
+  onOpenPanelGroup: (toolId: string, trayId: string | undefined) => void;
+  onPanelBack: (toolId: string) => void;
+  onPanelToolClick: (args: ToolbarItemGroupToolClickArgs) => void;
+  onToolClick: (toolId: string) => void;
+  verticalTools: Tools;
+}
+
+class Zone1 extends React.PureComponent<Zone1Props> {
+  private _appButton = (
+    <AppButton
+      icon={
+        <i className="icon icon-home" />
+      }
+    />
+  );
+
+  public render() {
+    return (
+      <Zone
+        bounds={this.props.bounds}
+      >
+        <ToolsWidget
+          button={this._appButton}
+          horizontalToolbar={
+            <ToolZoneToolbar
+              expandsTo={Direction.Bottom}
+              onHistoryItemClick={this.props.onHistoryItemClick}
+              onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
+              onOpenPanelGroup={this.props.onOpenPanelGroup}
+              onPanelBack={this.props.onPanelBack}
+              onPanelToolClick={this.props.onPanelToolClick}
+              onToolClick={this.props.onToolClick}
+              tools={this.props.horizontalTools}
+            />
+          }
+          verticalToolbar={
+            <ToolZoneToolbar
+              expandsTo={Direction.Right}
+              onHistoryItemClick={this.props.onHistoryItemClick}
+              onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
+              onOpenPanelGroup={this.props.onOpenPanelGroup}
+              onPanelBack={this.props.onPanelBack}
+              onPanelToolClick={this.props.onPanelToolClick}
+              onToolClick={this.props.onToolClick}
+              tools={this.props.verticalTools}
+            />
+          }
+        />
+      </Zone>
+    );
+  }
+}
+
+type Zone3Props = Zone1Props;
+
+class Zone3 extends React.PureComponent<Zone3Props> {
+  public render() {
+    return (
+      <Zone
+        bounds={this.props.bounds}
+      >
+        <ToolsWidget
+          isNavigation
+          horizontalToolbar={
+            <ToolZoneToolbar
+              expandsTo={Direction.Bottom}
+              onHistoryItemClick={this.props.onHistoryItemClick}
+              onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
+              onOpenPanelGroup={this.props.onOpenPanelGroup}
+              onPanelBack={this.props.onPanelBack}
+              onPanelToolClick={this.props.onPanelToolClick}
+              onToolClick={this.props.onToolClick}
+              tools={this.props.horizontalTools}
+            />
+          }
+          verticalToolbar={
+            <ToolZoneToolbar
+              expandsTo={Direction.Left}
+              onHistoryItemClick={this.props.onHistoryItemClick}
+              onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
+              onOpenPanelGroup={this.props.onOpenPanelGroup}
+              onPanelBack={this.props.onPanelBack}
+              onPanelToolClick={this.props.onPanelToolClick}
+              onToolClick={this.props.onToolClick}
+              tools={this.props.verticalTools}
+            />
+          }
+        />
+      </Zone>
+    );
+    /*return (
+      <Zone
+        bounds={zone.props.floating ? zone.props.floating.bounds : this.state.nineZone.zones[zoneId].bounds}
+        key={zoneId}
+      >
+        <ToolsWidget
+          isNavigation
+          preserveSpace
+          horizontalToolbar={
+            <Toolbar
+              items={
+                <>
+                  {this.state.showAllItems &&
+                    <OverflowItem
+                      key="0"
+                      onClick={this._handleToggleOverflowItemOpen}
+                    />
+                  }
+                  {this.getToolbarItemWithToolSettings("chat")}
+                </>
+              }
+              panels={
+                this.state.isOverflowItemOpen &&
+                <ToolGroupContained
+                  title={"Overflow Button"}
+                  columns={
+                    <GroupColumn>
+                      <GroupTool
+                        onClick={this._handleToggleOverflowItemOpen}
+                      >
+                        Tool1
+                      </GroupTool>
+                    </GroupColumn>
+                  }
+                />
+              }
+              panelAlignment={ToolbarPanelAlignment.End}
+            />
+          }
+          verticalToolbar={
+            <ScrollableToolbar
+              expandsTo={Direction.Left}
+              onScroll={this._handleOnScrollableToolbarScroll}
+              items={
+                <>
+                  {this.state.showAllItems && this.getToolbarItem("channel")}
+                  {this.getToolbarItem("chat")}
+                  {this.state.showAllItems && this.getToolbarItem("browse")}
+                  {this.getToolbarItem("clipboard")}
+                  {this.state.showAllItems && this.getToolbarItem("calendar")}
+                  {this.getToolbarItem("chat1")}
+                  {this.getToolbarItem("document")}
+                </>
+              }
+              panels={
+                <>
+                  {this.state.showAllItems && this.getToolbarItemPanel("channel")}
+                  {this.getToolbarItemPanel("chat")}
+                  {this.state.showAllItems && this.getToolbarItemPanel("browse")}
+                  {this.getToolbarItemPanel("clipboard")}
+                  {this.state.showAllItems && this.getToolbarItemPanel("calendar")}
+                  {this.getToolbarItemPanel("chat1")}
+                  {this.getToolbarItemPanel("document")}
+                </>
+              }
+              histories={
+                <>
+                  {this.state.showAllItems ? this.getToolbarItemHistory("channel") : <HistoryPlaceholder />}
+                  {this.getToolbarItemHistory("chat")}
+                  {this.state.showAllItems ? this.getToolbarItemHistory("browse") : <HistoryPlaceholder />}
+                  {this.getToolbarItemHistory("clipboard")}
+                  {this.state.showAllItems ? this.getToolbarItemHistory("calendar") : <HistoryPlaceholder />}
+                  {this.getToolbarItemHistory("chat1")}
+                  {this.getToolbarItemHistory("document")}
+                </>
+              }
+            />
+          }
+        />
+      </Zone>
+    );*/
+  }
+}
+
+interface ToolZoneToolbarProps {
+  expandsTo: Direction;
+  onHistoryItemClick: (item: HistoryItem) => void;
+  onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
+  onOpenPanelGroup: (toolId: string, trayId: string | undefined) => void;
+  onPanelBack: (toolId: string) => void;
+  onPanelToolClick: (args: ToolbarItemGroupToolClickArgs) => void;
+  onToolClick: (toolId: string) => void;
+  tools: Tools;
+}
+
+class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
+  public render() {
+    const iph = Object.keys(this.props.tools).reduce((acc, toolId) => {
+      const tool = this.props.tools[toolId];
+
+      const item = (
+        <ToolbarItem
+          tool={tool}
+          onClick={this.props.onToolClick}
+          onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
+        />
+      );
+
+      const panel = isToolGroup(tool) && tool.isToolGroupOpen ? (
+        <PanelPlaceholder>
+          <ToolbarItemPanel
+            onExpandGroup={this.props.onOpenPanelGroup}
+            onToolClick={this.props.onPanelToolClick}
+            onBack={this.props.onPanelBack}
+            tool={tool}
+          />
+        </PanelPlaceholder>
+      ) : <PanelPlaceholder />;
+
+      const history = isToolGroup(tool) &&
+        !tool.isToolGroupOpen &&
+        tool.history.length > 0 ? (
+          <HistoryPlaceholder>
+            <ToolbarItemHistoryTray
+              onHistoryItemClick={this.props.onHistoryItemClick}
+              onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
+              tool={tool}
+            />
+          </HistoryPlaceholder>
+        ) : <HistoryPlaceholder />;
+
+      acc.items.push(item);
+      acc.panels.push(panel);
+      acc.histories.push(history);
+      return acc;
+    }, {
+        items: new Array<React.ReactNode>(),
+        panels: new Array<React.ReactNode>(),
+        histories: new Array<React.ReactNode>(),
+      },
+    );
+    return (
+      <Toolbar
+        expandsTo={this.props.expandsTo}
+        items={iph.items}
+        panels={iph.panels}
+        histories={iph.histories}
+      />
+    );
+  }
+}
+
+export default class ZonesExample extends React.PureComponent<{}, State> {
+  private _app = React.createRef<App>();
+  private _dialogContainer = document.createElement("div");
 
   public readonly state: Readonly<State>;
 
   public constructor(p: {}) {
     super(p);
-
-    this._app = React.createRef();
-    this._zones = React.createRef();
-    this._footerMessages = React.createRef();
-
-    this._dialogContainer = document.createElement("div");
 
     const nineZone =
       NineZoneManager.mergeZone(9, 6,
@@ -218,250 +1938,275 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     this.state = {
       isNestedPopoverOpen: false,
       isPopoverOpen: false,
-      isTemporaryMessageVisible: false,
+      isTemporaryMessageVisible: 0,
       isTooltipVisible: false,
+      toastMessageKey: 0,
       nineZone,
-      activeTab: MessageCenterActiveTab.AllMessages,
       openWidget: FooterWidget.None,
       secondZoneContent: SecondZoneContent.None,
-      temporaryMessageX: 0,
-      temporaryMessageY: 0,
-      toastMessageStage: ToastMessageStage.Visible,
+      message: Message.None,
       tools: {
-        "2d": {
-          trayId: "3d",
-          backTrays: [],
-          trays: {
-            "3d": {
-              title: "3D Tools",
-              columns: {
-                0: {
-                  items: {
-                    "3D#1": {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                    "3D#2": {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
+        1: {
+          horizontal: {
+            d2: {
+              id: "d2",
+              trayId: "3d",
+              backTrays: [],
+              trays: {
+                "3d": {
+                  title: "3D Tools",
+                  columns: {
+                    0: {
+                      items: {
+                        "3D#1": {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                        "3D#2": {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                      },
                     },
                   },
                 },
               },
+              direction: Direction.Bottom,
+              history: [],
+              isExtended: false,
+              isToolGroupOpen: false,
+              icon: "icon-placeholder",
+            } as ToolGroup,
+            toggleItems: {
+              id: "toggleItems",
+              icon: "icon-placeholder",
+            } as SimpleTool,
+          },
+          vertical: {
+            cube: {
+              id: "cube",
+              icon: "icon-placeholder",
+              trayId: "tray1",
+              backTrays: [],
+              trays: {
+                tray1: {
+                  title: "Tools",
+                  columns: {
+                    0: {
+                      items: {
+                        Test1: {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                        Test2123123: {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                          isDisabled: true,
+                        },
+                        Test3: {
+                          icon: "icon-placeholder",
+                          trayId: "tray2",
+                        },
+                        Test4: {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                        Test5: {
+                          icon: "icon-placeholder",
+                          trayId: "disabled",
+                          isDisabled: true,
+                        },
+                        Test6: {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                        Test7: {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                      },
+                    },
+                    1: {
+                      items: {
+                        Test5: {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                      },
+                    },
+                    2: {
+                      items: {
+                        ":)": {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                      },
+                    },
+                  },
+                },
+                tray2: {
+                  title: "Test3",
+                  columns: {
+                    0: {
+                      items: {
+                        Test1: {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              direction: Direction.Right,
+              history: [],
+              isExtended: false,
+              isToolGroupOpen: false,
+            } as ToolGroup,
+            disableItems: {
+              id: "disableItems",
+              icon: "icon-placeholder",
+            } as SimpleTool,
+            validate: {
+              id: "validate",
+              trayId: "tray1",
+              backTrays: [],
+              trays: {
+                tray1: {
+                  title: "Tools",
+                  columns: {
+                    0: {
+                      items: {
+                        Validate: {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              direction: Direction.Right,
+              history: [],
+              icon: "icon-placeholder",
+              isExtended: false,
+              isToolGroupOpen: false,
+            } as ToolGroup,
+          },
+        },
+        3: {
+          horizontal: {
+            overflow: {
+              id: "overflow",
+              icon: "icon-placeholder",
+            },
+            toolSettings: {
+              id: "toolSettings",
+              icon: "icon-placeholder",
             },
           },
-          direction: Direction.Bottom,
-          history: [],
-          isExtended: false,
-          isToolGroupOpen: false,
-          icon: "icon-placeholder",
-        } as ToolGroup,
-        "angle": {
-          icon: "icon-app-1",
-        } as SimpleTool,
-        "attach": {
-          icon: "icon-placeholder",
-        } as SimpleTool,
-        "browse": {
-          icon: "icon-placeholder",
-        } as SimpleTool,
-        "calendar": {
-          trayId: "tray1",
-          backTrays: [],
-          trays: {
-            tray1: {
-              title: "3D Tools",
-              columns: {
-                0: {
-                  items: {
-                    "3D#1": {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                    "3D#2": {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
+          vertical: {
+            channel: {
+              id: "channel",
+              icon: "icon-placeholder",
+              trayId: "tray1",
+              backTrays: [],
+              trays: {
+                tray1: {
+                  title: "Tools",
+                  columns: {
+                    0: {
+                      items: {
+                        Test1: {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                      },
                     },
                   },
                 },
               },
+              direction: Direction.Left,
+              history: [],
+              isExtended: false,
+              isToolGroupOpen: false,
+            } as ToolGroup,
+            chat1: {
+              id: "chat1",
+              icon: "icon-placeholder",
+            },
+            browse: {
+              id: "browse",
+              icon: "icon-placeholder",
+            },
+            clipboard: {
+              id: "clipboard",
+              trayId: "tray1",
+              backTrays: [],
+              trays: {
+                tray1: {
+                  title: "Tools",
+                  columns: {
+                    0: {
+                      items: {
+                        "3D#1": {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                        "3D#2": {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              direction: Direction.Left,
+              history: [],
+              icon: "icon-placeholder",
+              isExtended: false,
+              isToolGroupOpen: false,
+            } as ToolGroup,
+            calendar: {
+              id: "calendar",
+              trayId: "tray1",
+              backTrays: [],
+              trays: {
+                tray1: {
+                  title: "3D Tools",
+                  columns: {
+                    0: {
+                      items: {
+                        "3D#1": {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                        "3D#2": {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              direction: Direction.Left,
+              history: [],
+              icon: "icon-placeholder",
+              isExtended: false,
+              isToolGroupOpen: false,
+            } as ToolGroup,
+            chat2: {
+              id: "chat2",
+              icon: "icon-placeholder",
+            },
+            document: {
+              id: "document",
+              icon: "icon-document",
             },
           },
-          direction: Direction.Left,
-          history: [],
-          icon: "icon-placeholder",
-          isExtended: false,
-          isToolGroupOpen: false,
-        } as ToolGroup,
-        "channel": {
-          icon: "icon-placeholder",
-          trayId: "tray1",
-          backTrays: [],
-          trays: {
-            tray1: {
-              title: "Tools",
-              columns: {
-                0: {
-                  items: {
-                    Test1: {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          direction: Direction.Left,
-          history: [],
-          isExtended: false,
-          isToolGroupOpen: false,
-        } as ToolGroup,
-        "chat": {
-          icon: "icon-placeholder",
-        } as SimpleTool,
-        "clipboard": {
-          trayId: "tray1",
-          backTrays: [],
-          trays: {
-            tray1: {
-              title: "Tools",
-              columns: {
-                0: {
-                  items: {
-                    "3D#1": {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                    "3D#2": {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          direction: Direction.Left,
-          history: [],
-          icon: "icon-placeholder",
-          isExtended: false,
-          isToolGroupOpen: false,
-        } as ToolGroup,
-        "cube": {
-          icon: "icon-placeholder",
-          trayId: "tray1",
-          backTrays: [],
-          trays: {
-            tray1: {
-              title: "Tools",
-              columns: {
-                0: {
-                  items: {
-                    Test1: {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                    Test2123123: {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                      isDisabled: true,
-                    },
-                    Test3: {
-                      icon: "icon-placeholder",
-                      trayId: "tray2",
-                    },
-                    Test4: {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                    Test5: {
-                      icon: "icon-placeholder",
-                      trayId: "disabled",
-                      isDisabled: true,
-                    },
-                    Test6: {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                    Test7: {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                  },
-                },
-                1: {
-                  items: {
-                    Test5: {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                  },
-                },
-                2: {
-                  items: {
-                    ":)": {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                  },
-                },
-              },
-            },
-            tray2: {
-              title: "Test3",
-              columns: {
-                0: {
-                  items: {
-                    Test1: {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          direction: Direction.Right,
-          history: [],
-          isExtended: false,
-          isToolGroupOpen: false,
-        } as ToolGroup,
-        "document": {
-          icon: "icon-document",
-        } as SimpleTool,
-        "validate": {
-          trayId: "tray1",
-          backTrays: [],
-          trays: {
-            tray1: {
-              title: "Tools",
-              columns: {
-                0: {
-                  items: {
-                    Validate: {
-                      icon: "icon-placeholder",
-                      trayId: undefined,
-                    },
-                  },
-                },
-              },
-            },
-          },
-          direction: Direction.Right,
-          history: [],
-          icon: "icon-placeholder",
-          isExtended: false,
-          isToolGroupOpen: false,
-        } as ToolGroup,
-        "chat1": {
-          icon: "icon-placeholder",
-        } as SimpleTool,
-      },
-      visibleMessage: Message.None,
-      mousePosition: {
-        x: 0,
-        y: 0,
+        },
       },
       isOverflowItemOpen: false,
       themeContext: {
@@ -477,7 +2222,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
           });
         },
       },
-      showAllItems: true,
     };
   }
 
@@ -493,16 +2237,10 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }
 
     window.addEventListener("resize", this._handleWindowResize, true);
-    this._temporaryMessageTimer.setOnExecute(() => {
-      this.setState(() => ({
-        isTemporaryMessageVisible: false,
-      }));
-    });
   }
 
   public componentWillUnmount(): void {
     document.removeEventListener("resize", this._handleWindowResize, true);
-    this._temporaryMessageTimer.stop();
   }
 
   public render() {
@@ -538,28 +2276,13 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         return z1.floating.stackId - z2.floating.stackId;
       });
     return (
-      <Zones ref={this._zones}>
-        <MouseTracker onPositionChange={this._handlePositionChange} />
-        {this.state.isTooltipVisible && (
-          <TooltipWithTimeout
-            stepString="Start Point"
-            timeout={2000}
-            onTimeout={this._handleTooltipTimeout}
-            position={this.state.mousePosition}
-            adjustPosition={adjustTooltipPosition}
-          >
-            <i className="icon icon-placeholder" />
-          </TooltipWithTimeout>
-        )}
-        <TemporaryMessage
-          style={{
-            display: this.state.isTemporaryMessageVisible ? "block" : "none",
-            left: this.state.temporaryMessageX,
-            top: this.state.temporaryMessageY,
-          }}
-        >
-          Text element required.
-        </TemporaryMessage>
+      <Zones>
+        <TooltipExample
+          isTemporaryMessageVisible={this.state.isTemporaryMessageVisible}
+          isTooltipVisible={this.state.isTooltipVisible}
+          onMessageHidden={this._handleTemporaryMessageHidden}
+          onTooltipTimeout={this._handleTooltipTimeout}
+        />
         {zones.map((z) => this.getZone(z))}
       </Zones>
     );
@@ -571,89 +2294,20 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private getContent() {
     return (
-      <Content
-        onClick={this._handleContentClick}
-      >
-        <iframe
-          // tslint:disable-next-line:max-line-length
-          src={"https://www.google.com/maps/embed?pb=!1m18!1m12!1m3!1d2306.95083449288!2d25.264306416368!3d54.67529368027896!2m3!1f0!2f0!3f0!3m2!1i1024!2i768!4f13.1!3m3!1m2!1s0x46dd946df3a90077%3A0x9d89f71caeeef028!2sBentley+Systems+Europe+B.V.+Lithuanian+Branch!5e0!3m2!1sen!2slt!4v1523433316117"}
-          width="100%"
-          height="100%"
-          frameBorder="0"
-          style={{ border: 0 }}
-          allowFullScreen
-        >
-        </iframe>
+      <Content>
+        <ContentExample
+          onClick={this._handleContentClick}
+        />
       </Content>
     );
   }
 
-  private getHistoryTray(toolKey: string): React.ReactNode {
-    const tool = this.state.tools[toolKey] as ToolGroup;
-    if (tool.isToolGroupOpen)
-      return undefined;
-    if (tool.history.length <= 0)
-      return undefined;
-
-    return (
-      <HistoryTray
-        direction={tool.direction}
-        isExtended={tool.isExtended}
-        items={
-          tool.history.map((entry) => {
-            const tray = tool.trays[entry.item.trayKey];
-            return (
-              <HistoryIcon
-                key={entry.key}
-                onClick={this._handleOnHistoryItemClick(entry.item)}
-              >
-                <i className={`icon ${tray.columns[entry.item.columnKey].items[entry.item.itemKey].icon}`} />
-              </HistoryIcon>
-            );
-          })
-        }
-      />
-    );
-  }
-
-  private getToolbarItem(toolKey: string) {
-    const tool = this.state.tools[toolKey];
-    if (isToolGroup(tool)) {
-      return (
-        <ExpandableItem
-          history={this.getHistoryTray(toolKey)}
-          key={toolKey}
-          onIsHistoryExtendedChange={this._handleOnIsHistoryExtendedChange(toolKey)}
-          panel={this.getToolGroup(toolKey)}
-          isDisabled={tool.isDisabled}
-        >
-          <ToolbarIcon
-            icon={
-              <i className={`icon ${tool.icon}`} />
-            }
-            onClick={this._handleOnExpandableItemClick(toolKey)}
-            isDisabled={tool.isDisabled}
-          />
-        </ExpandableItem>
-      );
-    }
-
+  /*
+  private getToolbarItemWithToolSettings(toolId: string) {
+    const tool = this.state.tools[toolId];
     return (
       <ToolbarIcon
-        key={toolKey}
-        icon={
-          <i className={`icon ${tool.icon}`} />
-        }
-        isDisabled={tool.isDisabled}
-      />
-    );
-  }
-
-  private getToolbarItemWithToolSettings(toolKey: string) {
-    const tool = this.state.tools[toolKey];
-    return (
-      <ToolbarIcon
-        key={toolKey}
+        key={toolId}
         isActive={this.state.secondZoneContent !== SecondZoneContent.None}
         icon={
           <i className={`icon ${tool.icon}`} />
@@ -662,70 +2316,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       />
     );
   }
-
-  private getToolGroup(toolKey: string) {
-    const tool = this.state.tools[toolKey] as ToolGroup;
-    if (!tool.isToolGroupOpen)
-      return undefined;
-
-    const tray = tool.trays[tool.trayId];
-    const columns = (
-      Object.keys(tray.columns).map((columnKey) => {
-        const column = tray.columns[columnKey];
-        return (
-          <GroupColumn key={columnKey}>
-            {Object.keys(column.items).map((itemKey) => {
-              const item = column.items[itemKey];
-              const trayId = item.trayId;
-              if (trayId)
-                return (
-                  <ToolGroupExpander
-                    key={itemKey}
-                    ref={itemKey}
-                    label={itemKey}
-                    icon={
-                      <i className={`icon ${item.icon}`} />
-                    }
-                    onClick={this._handleExpandToolGroup(toolKey, trayId)}
-                    isDisabled={item.isDisabled}
-                  />
-                );
-              return (
-                <GroupTool
-                  key={itemKey}
-                  ref={itemKey}
-                  label={itemKey}
-                  onClick={this._handleToolGroupItemClicked(toolKey, tool.trayId, columnKey, itemKey)}
-                  icon={
-                    <i className={`icon ${item.icon}`} />
-                  }
-                  isDisabled={item.isDisabled}
-                />
-              );
-            })}
-          </GroupColumn>
-        );
-      })
-    );
-
-    if (tool.backTrays.length > 0)
-      return (
-        <NestedToolGroup
-          title={tray.title}
-          container={this._zones}
-          columns={columns}
-          onBack={this._handleNestedToolGroupBack(toolKey)}
-        />
-      );
-
-    return (
-      <ToolGroupComponent
-        title={tray.title}
-        container={this._zones}
-        columns={columns}
-      />
-    );
-  }
+  */
 
   private getToolSettingsWidget() {
     const tab = (
@@ -814,374 +2405,18 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     return undefined;
   }
 
-  private getTarget(zoneId: WidgetZoneIndex, nineZone: NineZone) {
-    const zone = nineZone.getWidgetZone(zoneId);
-    const dropTarget = zone.getDropTarget();
+  /*
+  private getToolbarItem(toolId: string) {
+    const tool = this.state.tools[toolId];
     return (
-      <TargetContainer>
-        {dropTarget === DropTarget.Merge ? (
-          <MergeTarget
-            onTargetChanged={this._handleTargetChanged(zoneId, TargetType.Merge)}
-          />
-        ) : undefined}
-        {dropTarget === DropTarget.Back ? (
-          <BackTarget
-            onTargetChanged={this._handleTargetChanged(zoneId, TargetType.Back)}
-            zoneIndex={zoneId}
-          />
-        ) : undefined}
-      </TargetContainer>
-    );
-  }
-
-  private getTabHandleMode(zone: ZoneProps, widget: WidgetProps) {
-    const draggingWidget = this.state.nineZone.draggingWidget;
-    if (draggingWidget && draggingWidget.id === widget.id && draggingWidget.isUnmerge)
-      return VisibilityMode.Visible;
-
-    if (zone.widgets.length > 1)
-      return VisibilityMode.OnHover;
-
-    return VisibilityMode.Timeout;
-  }
-
-  private getWidgetTabs(zone: ZoneProps, widget: WidgetProps, isOpen: boolean, anchor: HorizontalAnchor) {
-    const draggingWidget = this.state.nineZone.draggingWidget;
-    const lastPosition = draggingWidget && draggingWidget.id === widget.id ?
-      draggingWidget.lastPosition : undefined;
-    const tabIndex = draggingWidget ? draggingWidget.tabIndex : -1;
-    const mode1 = !isOpen ? TabMode.Closed : widget.tabIndex === 1 ? TabMode.Active : TabMode.Open;
-    const mode2 = !isOpen ? TabMode.Closed : widget.tabIndex === 2 ? TabMode.Active : TabMode.Open;
-    const handleMode = this.getTabHandleMode(zone, widget);
-    switch (widget.id) {
-      case 3: {
-        return (
-          <WidgetTab
-            key="3_1"
-            mode={mode1}
-            onClick={this._handleWidgetTabClick(widget.id, 1)}
-            lastPosition={tabIndex === 1 ? lastPosition : undefined}
-            onDragStart={this._handleWidgetTabDragStart(widget.id, 1)}
-            onDragEnd={this._handleWidgetTabDragEnd}
-            onDrag={this._handleWidgetTabDrag}
-            anchor={anchor}
-          >
-            <i className="icon icon-tools" />
-          </WidgetTab>
-        );
-      }
-      case 4: {
-        return (
-          <WidgetTabGroup
-            key="4"
-            anchor={anchor}
-            handleMode={handleMode}
-          >
-            <WidgetTab
-              mode={mode1}
-              onClick={this._handleWidgetTabClick(widget.id, 1)}
-              lastPosition={tabIndex === 1 ? lastPosition : undefined}
-              onDragStart={this._handleWidgetTabDragStart(widget.id, 1)}
-              onDragEnd={this._handleWidgetTabDragEnd}
-              onDrag={this._handleWidgetTabDrag}
-              anchor={anchor}
-            >
-              <i className="icon icon-settings" />
-            </WidgetTab>
-            <WidgetTab
-              mode={mode2}
-              onClick={this._handleWidgetTabClick(widget.id, 2)}
-              lastPosition={tabIndex === 2 ? lastPosition : undefined}
-              onDragStart={this._handleWidgetTabDragStart(widget.id, 2)}
-              onDragEnd={this._handleWidgetTabDragEnd}
-              onDrag={this._handleWidgetTabDrag}
-              anchor={anchor}
-            >
-              <i className="icon icon-help" />
-            </WidgetTab>
-          </WidgetTabGroup >
-        );
-      }
-      case 6: {
-        return (
-          <WidgetTab
-            key="6_1"
-            mode={mode1}
-            onClick={this._handleWidgetTabClick(widget.id, 1)}
-            lastPosition={tabIndex === 1 ? lastPosition : undefined}
-            onDragStart={this._handleWidgetTabDragStart(widget.id, 1)}
-            onDragEnd={this._handleWidgetTabDragEnd}
-            onDrag={this._handleWidgetTabDrag}
-            anchor={anchor}
-          >
-            <i className="icon icon-placeholder" />
-          </WidgetTab>
-        );
-      }
-      case 7: {
-        return (
-          <WidgetTab
-            key="7_1"
-            mode={mode1}
-            onClick={this._handleWidgetTabClick(widget.id, 1)}
-            lastPosition={tabIndex === 1 ? lastPosition : undefined}
-            onDragStart={this._handleWidgetTabDragStart(widget.id, 1)}
-            onDragEnd={this._handleWidgetTabDragEnd}
-            onDrag={this._handleWidgetTabDrag}
-            anchor={anchor}
-          >
-            <i className="icon icon-placeholder" />
-          </WidgetTab>
-        );
-      }
-      case 8: {
-        return (
-          <WidgetTab
-            key="8_1"
-            mode={mode1}
-            onClick={this._handleWidgetTabClick(widget.id, 1)}
-            lastPosition={tabIndex === 1 ? lastPosition : undefined}
-            onDragStart={this._handleStatusWidgetTabDragStart(widget.id, 1)}
-            onDragEnd={this._handleWidgetTabDragEnd}
-            onDrag={this._handleWidgetTabDrag}
-            anchor={anchor}
-          >
-            <i className="icon icon-placeholder" />
-          </WidgetTab>
-        );
-      }
-      case 9: {
-        return (
-          <WidgetTabGroup
-            key="9"
-            anchor={anchor}
-            handleMode={handleMode}
-          >
-            <WidgetTab
-              mode={mode1}
-              onClick={this._handleWidgetTabClick(widget.id, 1)}
-              lastPosition={tabIndex === 1 ? lastPosition : undefined}
-              onDragStart={this._handleWidgetTabDragStart(widget.id, 1)}
-              onDragEnd={this._handleWidgetTabDragEnd}
-              onDrag={this._handleWidgetTabDrag}
-              anchor={anchor}
-            >
-              <i className="icon icon-settings" />
-            </WidgetTab>
-            <WidgetTab
-              mode={mode2}
-              onClick={this._handleWidgetTabClick(widget.id, 2)}
-              lastPosition={tabIndex === 2 ? lastPosition : undefined}
-              onDragStart={this._handleWidgetTabDragStart(widget.id, 2)}
-              onDragEnd={this._handleWidgetTabDragEnd}
-              onDrag={this._handleWidgetTabDrag}
-              anchor={anchor}
-            >
-              <i className="icon icon-help" />
-            </WidgetTab>
-          </WidgetTabGroup>
-        );
-      }
-    }
-    return undefined;
-  }
-
-  private getWidgetContent(widgetId: number, tabIndex: number) {
-    switch (widgetId) {
-      case 3: {
-        return (
-          <Toolbar
-            items={
-              <>
-                {this.getToolbarItem("document")}
-                {this.getToolbarItem("browse")}
-                {this.getToolbarItem("channel")}
-                {this.getToolbarItem("chat")}
-                {this.getToolbarItem("clipboard")}
-                {this.getToolbarItem("calendar")}
-              </>
-            }
-            panelAlignment={ToolbarPanelAlignment.End}
-          />
-        );
-      }
-      case 4: {
-        return `Hello world from zone4! (${tabIndex})`;
-      }
-      case 6: {
-        return (
-          <ThemeContext.Consumer>
-            {
-              ({ theme, change }) => (
-                <BlueButton
-                  onClick={this._handleToggleTheme(theme, change)}
-                >
-                  Theme: {theme.name}
-                </BlueButton>
-              )
-            }
-          </ThemeContext.Consumer>
-        );
-      }
-      case 7: {
-        return (
-          <>
-            <BlueButton onClick={this._handleOpenActivityMessage}>
-              Show Activity Message
-            </BlueButton>
-            <span style={{ background: "#cebbbb", width: "800px", height: "50px", display: "block" }}></span>
-            <br />
-            <BlueButton onClick={this._handleOpenModalMessage}>
-              Show Modal Message
-            </BlueButton>
-            <br />
-            <BlueButton onClick={this._handleOpenToastMessage}>
-              Show Toast Message
-            </BlueButton>
-            <br />
-            <BlueButton onClick={this._handleOpenStickyMessage}>
-              Show Sticky Message
-            </BlueButton>
-            <br />
-            <br />
-            <BlueButton
-              onClick={this._handleShowTooltip}
-            >
-              Show Tooltip
-            </BlueButton>
-            <br />
-            <br />
-            <BlueButton
-              onClick={this._handleToggleFooterMode}
-            >
-              Change Footer Mode
-            </BlueButton>
-          </>
-        );
-      }
-      case 8: {
-        return "Footer :)";
-      }
-      case 9: {
-        switch (tabIndex) {
-          case 1: {
-            return (
-              <>
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                <span style={{ background: "#cebbbb", width: "800px", height: "50px", display: "block" }}></span>
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-                Hello world 1!
-                <br />
-              </>
-            );
-          }
-          case 2: {
-            return "Hello world 2!";
-          }
-        }
-      }
-    }
-    return undefined;
-  }
-
-  private getTabs(zoneId: WidgetZoneIndex, isOpen: boolean, anchor: HorizontalAnchor) {
-    const tabs: JSX.Element[] = [];
-    let i = -1;
-
-    const zone = this.state.nineZone.zones[zoneId];
-    for (const widget of zone.widgets) {
-      i++;
-      const widgetTabs = this.getWidgetTabs(zone, widget, isOpen, anchor);
-      if (!widgetTabs)
-        continue;
-
-      if (i !== 0)
-        tabs.push(<TabSeparator key={i} />);
-      tabs.push(widgetTabs);
-    }
-
-    return tabs;
-  }
-
-  private getZoneContent(zoneId: WidgetZoneIndex) {
-    const zone = this.state.nineZone.zones[zoneId];
-    const activeWidget = zone.widgets.find((widget) => widget.tabIndex !== -1);
-
-    if (activeWidget)
-      return this.getWidgetContent(activeWidget.id, activeWidget.tabIndex);
-
-    return undefined;
-  }
-
-  private getWidget(zoneId: WidgetZoneIndex, nineZone: NineZone) {
-    const zone = nineZone.getWidgetZone(zoneId);
-    if (zone.props.widgets.length === 0)
-      return undefined;
-
-    const isOpen = zone.props.widgets.some((w) => w.tabIndex !== -1);
-    const isDragged = this.state.nineZone.draggingWidget && this.state.nineZone.draggingWidget.id === zoneId;
-    return (
-      <StackedWidget
-        content={this.getZoneContent(zoneId)}
-        fillZone={zone.props.isLayoutChanged}
-        horizontalAnchor={zone.horizontalAnchor}
-        isDragged={isDragged}
-        isFloating={zone.props.floating ? true : false}
-        isOpen={isOpen}
-        onResize={this._handleWidgetResize(zoneId)}
-        tabs={this.getTabs(zoneId, isOpen, zone.horizontalAnchor)}
-        verticalAnchor={zone.verticalAnchor}
+      <ToolbarItem
+        tool={tool}
+        onClick={this._handleOnToolbarItemClick}
+        onIsHistoryExtendedChange={this._handleOnIsHistoryExtendedChange}
       />
     );
   }
-
+*/
   private getZone(zoneId: WidgetZoneIndex) {
     switch (zoneId) {
       case 1:
@@ -1198,83 +2433,30 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }
   }
 
-  private getFloatingZone(zoneId: WidgetZoneIndex) {
-    const nineZone = new NineZone(this.state.nineZone);
-    const zone = nineZone.getWidgetZone(zoneId);
-    const outlineBounds = zone.getGhostOutlineBounds();
-    return (
-      <React.Fragment key={zoneId}>
-        <Zone bounds={zone.props.floating ? zone.props.floating.bounds : zone.props.bounds}>
-          {this.getWidget(zoneId, nineZone)}
-        </Zone>
-        <Zone bounds={zone.props.bounds}>
-          {this.getTarget(zoneId, nineZone)}
-        </Zone>
-        {!outlineBounds ? undefined :
-          <GhostOutline bounds={outlineBounds} />
-        }
-      </React.Fragment>
-    );
-  }
-
   private getZone1() {
+    const zoneId = 1;
     return (
-      <Zone
-        bounds={this.state.nineZone.zones[1].bounds}
-        key={1}
-      >
-        <ToolsWidget
-          button={
-            <AppButton
-              icon={
-                <i className="icon icon-home" />
-              }
-            />
-          }
-          horizontalToolbar={
-            <Toolbar
-              items={
-                <>
-                  {this.state.showAllItems && this.getToolbarItem("2d")}
-                  <ToolbarIcon
-                    key={"angle"}
-                    icon={
-                      <i className={`icon ${this.state.tools.angle.icon}`} />
-                    }
-                    onClick={this._handleToggleShowAllItems}
-                  />
-                </>
-              }
-            />
-          }
-          verticalToolbar={
-            <Toolbar
-              expandsTo={Direction.Right}
-              items={
-                <>
-                  {this.state.showAllItems && this.getToolbarItem("cube")}
-                  <ToolbarIcon
-                    key={"attach"}
-                    icon={
-                      <i className={`icon ${this.state.tools.attach.icon}`} />
-                    }
-                    onClick={this._handleDisableItemsClick}
-                  />
-                  {this.state.showAllItems && this.getToolbarItem("validate")}
-                </>
-              }
-            />
-          }
-        />
-      </Zone>
+      <Zone1
+        bounds={this.state.nineZone.zones[zoneId].bounds}
+        horizontalTools={this.state.tools[zoneId].horizontal}
+        key={zoneId}
+        onHistoryItemClick={this._handleOnHistoryItemClick}
+        onIsHistoryExtendedChange={this._handleOnIsToolHistoryExtendedChange}
+        onOpenPanelGroup={this._handleOnExpandPanelGroup}
+        onPanelBack={this._handleOnPanelBack}
+        onPanelToolClick={this._handlePanelToolClick}
+        onToolClick={this._handleOnToolClick}
+        verticalTools={this.state.tools[zoneId].vertical}
+      />
     );
   }
 
   private getZone2() {
+    const zoneId = 2;
     return (
       <Zone
-        bounds={this.state.nineZone.zones[2].bounds}
-        key={2}
+        bounds={this.state.nineZone.zones[zoneId].bounds}
+        key={zoneId}
       >
         {this.getToolSettingsWidget()}
       </Zone>
@@ -1283,471 +2465,119 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private getZone3() {
     const zoneId = 3;
+    return (
+      <Zone3
+        bounds={this.state.nineZone.zones[zoneId].bounds}
+        horizontalTools={this.state.tools[zoneId].horizontal}
+        key={zoneId}
+        onHistoryItemClick={this._handleOnHistoryItemClick}
+        onIsHistoryExtendedChange={this._handleOnIsToolHistoryExtendedChange}
+        onOpenPanelGroup={this._handleOnExpandPanelGroup}
+        onPanelBack={this._handleOnPanelBack}
+        onPanelToolClick={this._handlePanelToolClick}
+        onToolClick={this._handleOnToolClick}
+        verticalTools={this.state.tools[zoneId].vertical}
+      />
+    );
+  }
+
+  private getFloatingZone(zoneId: WidgetZoneIndex) {
     const nineZone = new NineZone(this.state.nineZone);
     const zone = nineZone.getWidgetZone(zoneId);
+    const bounds = zone.props.floating ? zone.props.floating.bounds : zone.props.bounds;
+    const outlineBounds = zone.getGhostOutlineBounds();
+    const dropTarget = zone.getDropTarget();
+    const draggingWidget = nineZone.draggingWidget && nineZone.draggingWidget.zone.id === zone.id ? nineZone.draggingWidget.props : undefined;
     return (
-      <Zone
-        bounds={zone.props.floating ? zone.props.floating.bounds : this.state.nineZone.zones[zoneId].bounds}
+      <FloatingZone
+        draggingWidget={draggingWidget}
+        dropTarget={dropTarget}
+        horizontalAnchor={zone.horizontalAnchor}
         key={zoneId}
-      >
-        <ToolsWidget
-          isNavigation
-          preserveSpace
-          horizontalToolbar={
-            <Toolbar
-              items={
-                <>
-                  {this.state.showAllItems &&
-                    <OverflowItem
-                      key="0"
-                      onClick={this._handleToggleOverflowItemOpen}
-                      panel={
-                        !this.state.isOverflowItemOpen ? undefined :
-                          (
-                            <ToolGroupComponent
-                              title={"Overflow Button"}
-                              container={this._zones}
-                              columns={
-                                <GroupColumn>
-                                  <GroupTool
-                                    onClick={this._handleToggleOverflowItemOpen}
-                                  >
-                                    Tool1
-                                </GroupTool>
-                                </GroupColumn>
-                              }
-                            />
-                          )
-
-                      }
-                    />
-                  }
-                  {this.getToolbarItemWithToolSettings("chat")}
-                </>
-              }
-              panelAlignment={ToolbarPanelAlignment.End}
-            />
-          }
-          verticalToolbar={
-            <ScrollableToolbar
-              expandsTo={Direction.Left}
-              onScroll={this._handleOnScrollableToolbarScroll}
-              items={
-                <>
-                  {this.state.showAllItems && this.getToolbarItem("channel")}
-                  {this.getToolbarItem("chat")}
-                  {this.state.showAllItems && this.getToolbarItem("browse")}
-                  {this.getToolbarItem("clipboard")}
-                  {this.state.showAllItems && this.getToolbarItem("calendar")}
-                  {this.getToolbarItem("chat1")}
-                  {this.getToolbarItem("document")}
-                </>
-              }
-            />
-          }
-        />
-      </Zone>
+        bounds={bounds}
+        outlineBounds={outlineBounds}
+        targetBounds={zone.props.bounds}
+        onChangeTheme={this._handleChangeTheme}
+        onOpenActivityMessage={this._handleOpenActivityMessage}
+        onOpenModalMessage={this._handleOpenModalMessage}
+        onOpenToastMessage={this._handleOpenToastMessage}
+        onOpenStickyMessage={this._handleOpenStickyMessage}
+        onResize={this._handleWidgetResize}
+        onShowTooltip={this._handleShowTooltip}
+        onTabClick={this._handleWidgetTabClick}
+        onTabDragStart={this._handleWidgetTabDragStart}
+        onTabDragEnd={this._handleWidgetTabDragEnd}
+        onTabDrag={this._handleWidgetTabDrag}
+        onTargetChanged={this._handleTargetChanged}
+        onToggleFooterMode={this._handleToggleFooterMode}
+        verticalAnchor={zone.verticalAnchor}
+        zone={zone.props}
+      />
     );
   }
 
   private getStatusZone() {
+    const zoneId = StatusZone.id;
     const nineZone = new NineZone(this.state.nineZone);
     const statusZone = nineZone.getStatusZone();
-    const outlineBounds = statusZone.getGhostOutlineBounds();
+    const isRectangularWidget = statusZone.props.widgets.length > 1;
+    if (isRectangularWidget)
+      return this.getFloatingZone(zoneId);
 
-    if (statusZone.props.widgets.length === 1 && statusZone.props.widgets[0].id === 8)
-      return (
-        <React.Fragment key={statusZone.id}>
-          <FooterZone
-            isInFooterMode={statusZone.props.isInFooterMode}
-            bounds={statusZone.props.bounds}
-          >
-            <Footer
-              isInWidgetMode={!statusZone.props.isInFooterMode}
-              message={this.getFooterMessage()}
-              indicators={
-                <>
-                  <ToolAssistanceIndicator
-                    dialog={
-                      this.state.openWidget !== FooterWidget.ToolAssistance ? undefined :
-                        <ToolAssistanceDialog
-                          title="Trim Multiple - Tool Assistance"
-                          items={
-                            <>
-                              <ToolAssistanceItem>
-                                <i className="icon icon-cursor" />
-                                Identify piece to trim
-                              </ToolAssistanceItem>
-                              <ToolAssistanceSeparator label="Inputs" />
-                              <ToolAssistanceItem>
-                                <i className="icon icon-cursor-click" />
-                                Clink on element
-                              </ToolAssistanceItem>
-                              <ToolAssistanceItem>
-                                <i className="icon  icon-placeholder" />
-                                Drag across elements
-                              </ToolAssistanceItem>
-                              <ToolAssistanceSeparator />
-                              <ToolAssistanceItem>
-                                <input type="checkbox" />
-                                Show prompt @ cursor
-                              </ToolAssistanceItem>
-                            </>
-                          }
-                        />
-                    }
-                    icons={
-                      <>
-                        <i className="icon icon-cursor" />
-                        <i className="icon icon-add" />
-                      </>
-                    }
-                    isStepStringVisible={statusZone.props.isInFooterMode}
-                    onClick={this._handleToolAssistanceIndicatorIsDialogOpenChange}
-                    stepString="Start Point"
-                  />
-                  <MessageCenterIndicator
-                    ref={this._footerMessages}
-                    label="Message(s):"
-                    isLabelVisible={statusZone.props.isInFooterMode}
-                    balloonLabel="9+"
-                    onClick={this._handleMessageIndicatorIsDialogOpenChange}
-                    dialog={
-                      this.state.openWidget !== FooterWidget.Messages ? undefined :
-                        <MessageCenter
-                          title="Messages"
-                          buttons={
-                            <>
-                              <MessageCenterButton>
-                                <i className={"icon icon-placeholder"} />
-                              </MessageCenterButton>
-                              <MessageCenterButton onClick={this._handleCloseMessageCenter}>
-                                <i className={"icon icon-close"} />
-                              </MessageCenterButton>
-                            </>
-                          }
-                          tabs={
-                            <>
-                              <MessageCenterTab
-                                isOpen={this.state.activeTab === MessageCenterActiveTab.AllMessages}
-                                onClick={this._handleOnAllMessagesTabClick}
-                              >
-                                All
-                          </MessageCenterTab>
-                              <MessageCenterTab
-                                isOpen={this.state.activeTab === MessageCenterActiveTab.Problems}
-                                onClick={this._handleOnProblemsTabClick}
-                              >
-                                Problems
-                          </MessageCenterTab>
-                            </>
-                          }
-                          messages={this.state.activeTab === MessageCenterActiveTab.AllMessages ?
-                            <>
-                              <MessageCenterMessage
-                                icon={<i className={"icon icon-status-success nzdemo-success"} />}
-                                content={"Document saved successfully."}
-                              />
-                              <MessageCenterMessage
-                                icon={<i className={"icon icon-clock nzdemo-progress"} />}
-                                content={
-                                  <>
-                                    <span>Downloading required assets.</span>
-                                    <br />
-                                    <i><small>75% complete</small></i>
-                                  </>
-                                }
-                              />
-                              <MessageCenterMessage
-                                icon={<i className={"icon icon-status-rejected nzdemo-error"} />}
-                                content={
-                                  <>
-                                    <span>Cannot attach reference.</span>
-                                    <br />
-                                    <i><u><small>Details...</small></u></i>
-                                  </>
-                                }
-                              />
-                              <MessageCenterMessage
-                                icon={<i className={"icon icon-status-warning nzdemo-warning"} />}
-                                content={"Missing 10 fonts. Replaces with Arial."}
-                              />
-                              <MessageCenterMessage
-                                icon={<i className={"icon icon-star nzdemo-favorite"} />}
-                                content={"Your document has been favorited by 5 people in the..."}
-                              />
-                              <MessageCenterMessage
-                                icon={<i className={"icon icon-status-success nzdemo-success"} />}
-                                content={"Navigator has successfully updated"}
-                              />
-                            </> :
-                            <>
-                              <MessageCenterMessage
-                                icon={<i className={"icon icon-status-rejected"} style={{ color: "red" }} />}
-                                content={"Missing 10 fonts. Replaced with Arial."}
-                              />
-                              <MessageCenterMessage
-                                content={"Cannot attach reference"}
-                              />
-                              <MessageCenterMessage
-                                content={"Problem1"}
-                              />
-                              <MessageCenterMessage
-                                content={"Problem2"}
-                              />
-                              <MessageCenterMessage
-                                content={"Problem3"}
-                              />
-                              <MessageCenterMessage
-                                content={"Problem4"}
-                              />
-                              <MessageCenterMessage
-                                content={"Problem5"}
-                              />
-                              <MessageCenterMessage
-                                content={"Problem6"}
-                              />
-                            </>
-                          }
-                          prompt="No messages."
-                        />
-                    }
-                  />
-                  <SnapModeIndicator
-                    label="Snap Mode"
-                    isLabelVisible={statusZone.props.isInFooterMode}
-                    onClick={this._handleSnapModeIndicatorIsDialogOpenChange}
-                    icon={
-                      <SnapModeIcon text="k" />
-                    }
-                    dialog={
-                      this.state.openWidget !== FooterWidget.SnapMode ? undefined :
-                        <SnapModeDialog
-                          title="Snap Mode"
-                          snaps={
-                            <>
-                              <SnapRow
-                                key="1"
-                                isActive
-                                label="Keypoint"
-                                icon={
-                                  <SnapModeIcon isActive text="k" />
-                                }
-                              />
-                              <SnapRow
-                                key="2"
-                                label="Intersection"
-                                icon={
-                                  <SnapModeIcon text="i" />
-                                }
-                              />
-                              <SnapRow
-                                key="3"
-                                label="Center"
-                                icon={
-                                  <SnapModeIcon text="c" />
-                                }
-                              />
-                              <SnapRow
-                                key="4"
-                                label="Nearest"
-                                icon={
-                                  <SnapModeIcon text="n" />
-                                }
-                              />
-                            </>
-                          }
-                        />
-                    }
-                  />
-                </>
-              }
-            />
-          </FooterZone>
-          <Zone bounds={statusZone.props.bounds}>
-            {this.getTarget(statusZone.id, nineZone)}
-          </Zone>
-          {!outlineBounds ? undefined :
-            <GhostOutline bounds={outlineBounds} />
-          }
-        </React.Fragment>
-      );
+    const outlineBounds = statusZone.getGhostOutlineBounds();
+    const dropTarget = statusZone.getDropTarget();
+    const bounds = statusZone.props.floating ? statusZone.props.floating.bounds : statusZone.props.bounds;
 
     return (
-      <React.Fragment key={statusZone.id}>
-        <Zone bounds={statusZone.props.floating ? statusZone.props.floating.bounds : statusZone.props.bounds}>
-          {this.getWidget(statusZone.id, nineZone)}
-        </Zone>
-        <Zone bounds={statusZone.props.bounds}>
-          {this.getTarget(statusZone.id, nineZone)}
-        </Zone>
-        {!outlineBounds ? undefined :
-          <GhostOutline bounds={outlineBounds} />
-        }
-      </React.Fragment>
+      <StatusZoneExample
+        bounds={bounds}
+        dropTarget={dropTarget}
+        isInWidgetMode={!statusZone.props.isInFooterMode}
+        key={zoneId}
+        onTargetChanged={this._handleTargetChanged}
+        outlineBounds={outlineBounds}
+        renderModalMessageTo={this._handleRenderModalMessageTo}
+        message={this.state.message}
+        onHideMessage={this._handleHideMessage}
+        onWidgetChange={this._handleWidgetChange}
+        openWidget={this.state.openWidget}
+        targetBounds={statusZone.props.bounds}
+        toastMessageKey={this.state.toastMessageKey}
+      />
     );
   }
 
-  private getFooterMessage() {
-    switch (this.state.visibleMessage) {
-      case (Message.Activity): {
-        return (
-          <ActivityMessage>
-            <StatusMessage
-              status={Status.Information}
-              icon={
-                <i className="icon icon-activity" />
-              }
-            >
-              <StatusLayout
-                label={
-                  <MessageLabel text="Rendering 'big-image.png'" />
-                }
-                buttons={
-                  <MessageHyperlink
-                    onClick={this._handleHideMessage}
-                    text="Ok"
-                  />
-                }
-                progress={
-                  <MessageProgress status={Status.Information} progress={33.33} />
-                }
-              />
-            </StatusMessage>
-          </ActivityMessage>
-        );
-      }
-      case (Message.Modal): {
-        return (
-          <ModalMessage
-            renderTo={this._handleRenderToModalMessage}
-            dialog={
-              <MessageDialog
-                titleBar={
-                  <MessageTitleBar
-                    title={
-                      <MessageTitle text="Dialog" />
-                    }
-                    buttons={
-                      <MessageDialogButton onClick={this._handleHideMessage}>
-                        <i className="icon icon-close" />
-                      </MessageDialogButton>
-                    }
-                  />
-                }
-                content={
-                  <MessageDialogButtonsContent
-                    buttons={
-                      <>
-                        <BlueButton
-                          onClick={this._handleHideMessage}
-                        >
-                          Yes
-                        </BlueButton>
-                        <HollowButton
-                          onClick={this._handleHideMessage}
-                        >
-                          No
-                        </HollowButton>
-                      </>
-                    }
-                    content={
-                      <MessageDialogScrollableContent
-                        content={
-                          <>
-                            Lorem ipsum dolor sit amet, consectetur adipiscing elit.Integer vehicula viverra ante a finibus.Suspendisse tristique neque volutpat ex auctor, a consectetur nunc convallis.Nullam condimentum imperdiet elit vitae vulputate.Praesent ornare tellus luctus sem cursus, sed porta ligula pulvinar.In fringilla tellus sem, id sollicitudin leo condimentum sed.Quisque tempor sed risus gravida tincidunt.Nulla id hendrerit sapien.
-                          <br />
-                            <br />
-                            In vestibulum ipsum lorem.Aliquam accumsan tortor sit amet facilisis lacinia.Nam quis lacus a urna eleifend finibus.Donec id purus id turpis viverra faucibus.Lorem ipsum dolor sit amet, consectetur adipiscing elit.Sed finibus dui ut efficitur interdum.Donec a congue mauris.Praesent ornare egestas accumsan.Pellentesque malesuada diam nisl, a elementum turpis commodo quis.Suspendisse vitae diam accumsan, ullamcorper ante in, porttitor turpis.Phasellus scelerisque tristique imperdiet.
-                          <br />
-                            <br />
-                            Aenean interdum nulla ex, sed molestie lectus pulvinar ac.Mauris sagittis tempor justo ac imperdiet.Fusce iaculis cursus lectus sit amet semper.Quisque at volutpat magna, vitae lacinia nunc.Suspendisse a ipsum orci.Duis in mi sit amet purus blandit mattis porttitor mollis enim.Curabitur dictum nisi massa, eu luctus sapien viverra quis.
-                          <br />
-                            <br />
-                            Ut sed pellentesque diam.Integer non pretium nibh.Nulla scelerisque ipsum ac porttitor lobortis.Suspendisse eu egestas felis, sit amet facilisis neque.In sit amet fermentum nisl.Proin volutpat ex et ligula auctor, id cursus elit fringilla.Nulla facilisi.Proin dictum a lectus a elementum.Mauris ultricies dapibus libero ut interdum.
-                          <br />
-                            <br />
-                            Suspendisse blandit mauris metus, in accumsan magna venenatis pretium.Ut ante odio, tempor non quam at, scelerisque pulvinar dui.Duis in magna ut leo fermentum pellentesque venenatis vitae sapien.Suspendisse potenti.Nunc quis ex ac mi porttitor euismod.Class aptent taciti sociosqu ad litora torquent per conubia nostra, per inceptos himenaeos.Nunc tincidunt nunc id sem varius imperdiet.Phasellus congue orci vitae lorem malesuada, vel tempor tortor molestie.Nullam gravida tempus ornare.
-                        </>
-                        }
-                      />
-                    }
-                  />
-                }
-                resizeHandle={< DialogResizeHandle />}
-              />
-            }
-          />
-        );
-      }
-      case (Message.Toast): {
-        return (
-          <ToastMessage
-            stage={this.state.toastMessageStage}
-            animateOutTo={this._footerMessages.current || undefined}
-            onAnimatedOut={this._handleHideMessage}
-            timeout={2500}
-            onStageChange={this._handleToastStageChange}
-            content={
-              <StatusMessage
-                status={Status.Success}
-                icon={
-                  <i className="icon icon-status-success-hollow" />
-                }
-              >
-                <StatusLayout
-                  label={
-                    <MessageLabel text="Image 'big.png' saved." />
-                  }
-                />
-              </StatusMessage>
-            }
-          />
-        );
-      }
-      case (Message.Sticky): {
-        return (
-          <StickyMessage>
-            <StatusMessage
-              status={Status.Error}
-              icon={
-                <i className="icon icon-status-error-hollow" />
-              }
-            >
-              <StatusLayout
-                label={
-                  <MessageLabel text="Unable to load 3 fonts, replaced with Arial." />
-                }
-                buttons={
-                  <MessageButton onClick={this._handleHideMessage}>
-                    <i className="icon icon-close" />
-                  </MessageButton>
-                }
-              />
-            </StatusMessage>
-          </StickyMessage>
-        );
+  private findTool(toolId: string, state: State): ToolLocation {
+    const zoneKeys: Array<keyof ZoneTools> = [1, 3];
+    const directionKeys: Array<keyof DirectionTools> = ["horizontal", "vertical"];
+    for (const zoneKey of zoneKeys) {
+      for (const directionKey of directionKeys) {
+        const tools = state.tools[zoneKey][directionKey];
+        if (Object.keys(tools).some((id) => id === toolId))
+          return {
+            zoneKey,
+            directionKey,
+          };
       }
     }
-
-    return undefined;
+    throw new Error();
   }
 
-  private _handlePositionChange = (mousePosition: PointProps) => {
-    this.setState(() => ({
-      mousePosition,
+  private toggleToolSettings() {
+    this.setState((prevState) => ({
+      secondZoneContent: prevState.secondZoneContent === SecondZoneContent.None ? SecondZoneContent.ToolSettings : SecondZoneContent.None,
     }));
   }
 
-  private _handleContentClick = (e: React.MouseEvent<HTMLElement>) => {
-    if (e.target !== e.currentTarget)
-      return;
-
-    this._temporaryMessageTimer.start();
+  private _handleContentClick = () => {
     this.setState((prevState) => ({
-      isTemporaryMessageVisible: true,
-      temporaryMessageX: prevState.mousePosition.x,
-      temporaryMessageY: prevState.mousePosition.y,
+      isTemporaryMessageVisible: prevState.isTemporaryMessageVisible + 1,
+    }));
+  }
+
+  private _handleTemporaryMessageHidden = () => {
+    this.setState(() => ({
+      isTemporaryMessageVisible: 0,
     }));
   }
 
@@ -1757,112 +2587,149 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
-  private _handleOnExpandableItemClick = (toolKey: string) => () => {
-    this.setState((prevState) => ({
-      tools: {
-        ...Object.keys(prevState.tools).reduce<Tools>((previous, current) => {
-          const tool = prevState.tools[current];
-          if (isToolGroup(tool)) {
-            previous[current] = {
-              ...tool,
-              isToolGroupOpen: (toolKey === current) ? !tool.isToolGroupOpen : false,
-            };
-          } else {
-            previous[current] = { ...tool };
-          }
-          return previous;
-        }, {}),
-      },
-    }));
-  }
+  private _handleOnToolClick = (toolId: string) => {
+    if (toolId === "toolSettings")
+      return this.toggleToolSettings();
 
-  private _handleOnIsHistoryExtendedChange = (toolKey: string) => (isExtended: boolean) => {
-    this.setState((prevState) => ({
-      tools: {
-        ...prevState.tools,
-        [toolKey]: {
-          ...prevState.tools[toolKey],
-          isExtended,
-        },
-      },
-    }));
-  }
-
-  private _handleToolGroupItemClicked = (toolKey: string, trayKey: string, columnKey: string, itemKey: string) => () => {
     this.setState((prevState) => {
-      const tool = prevState.tools[toolKey];
-      if (!isToolGroup(tool))
-        return null;
-
-      const key = columnKey + "-" + itemKey;
-      const item = { toolKey, trayKey, columnKey, itemKey };
+      const location = this.findTool(toolId, prevState);
+      const prevDirections = prevState.tools[location.zoneKey];
+      const prevTools = prevDirections[location.directionKey];
       return {
         tools: {
           ...prevState.tools,
-          [toolKey]: {
-            ...prevState.tools[toolKey],
-            isExtended: false,
-            isToolGroupOpen: false,
-            history: DefaultHistoryManager.addItem(key, item, tool.history),
+          [location.zoneKey]: {
+            ...prevDirections,
+            [location.directionKey]: {
+              ...Object.keys(prevTools).reduce<Tools>((previous, prevToolId) => {
+                const prevTool = prevTools[prevToolId];
+                if (isToolGroup(prevTool)) {
+                  previous[prevToolId] = {
+                    ...prevTool,
+                    isToolGroupOpen: (prevToolId === toolId) ? !prevTool.isToolGroupOpen : false,
+                  };
+                } else {
+                  previous[prevToolId] = prevTool;
+                }
+                return previous;
+              }, {}),
+            },
           },
         },
       };
     });
   }
 
-  private _handleOnHistoryItemClick = (item: HistoryItem) => () => {
+  private _handleOnIsToolHistoryExtendedChange = (toolId: string, isExtended: boolean) => {
     this.setState((prevState) => {
-      const tool = prevState.tools[item.toolKey];
-      if (!isToolGroup(tool))
-        return null;
+      const location = this.findTool(toolId, prevState);
+      const prevDirections = prevState.tools[location.zoneKey];
+      const prevTools = prevDirections[location.directionKey];
       return {
         tools: {
           ...prevState.tools,
-          [item.toolKey]: {
-            ...prevState.tools[item.toolKey],
-            isExtended: false,
-            history: DefaultHistoryManager.addItem(item.columnKey + "-" + item.itemKey, item, tool.history),
+          [location.zoneKey]: {
+            ...prevDirections,
+            [location.directionKey]: {
+              ...prevTools,
+              [toolId]: {
+                ...prevTools[toolId],
+                isExtended,
+              },
+            },
           },
         },
       };
     });
   }
 
-  private _handleOnScrollableToolbarScroll = () => {
-    this.setState((prevState) => ({
-      tools:
-        Object.keys(prevState.tools).reduce<Tools>((previous, current) => {
-          const tool = prevState.tools[current];
-          if (isToolGroup(tool)) {
-            previous[current] = {
-              ...tool,
-              isToolGroupOpen: false,
-            };
-          } else {
-            previous[current] = { ...tool };
-          }
-          return previous;
-        }, {}),
-    }));
+  private _handlePanelToolClick = ({ toolId, trayId, columnId, itemId }: ToolbarItemGroupToolClickArgs) => {
+    this.setState((prevState) => {
+      const location = this.findTool(toolId, prevState);
+      const prevDirections = prevState.tools[location.zoneKey];
+      const prevTools = prevDirections[location.directionKey];
+      const tool = prevTools[toolId];
+      if (!isToolGroup(tool))
+        throw new TypeError();
+
+      const key = columnId + "-" + itemId;
+      const item: HistoryItem = { toolId, trayId, columnId, itemId };
+      return {
+        tools: {
+          ...prevState.tools,
+          [location.zoneKey]: {
+            ...prevDirections,
+            [location.directionKey]: {
+              ...prevTools,
+              [toolId]: {
+                ...prevTools[toolId],
+                isExtended: false,
+                isToolGroupOpen: false,
+                history: DefaultHistoryManager.addItem(key, item, tool.history),
+              },
+            },
+          },
+        },
+      };
+    });
   }
 
-  private _handleMessageIndicatorIsDialogOpenChange = () => {
-    this.setState((prevState) => ({
-      openWidget: prevState.openWidget === FooterWidget.Messages ? FooterWidget.None : FooterWidget.Messages,
-    }));
+  private _handleOnHistoryItemClick = (item: HistoryItem) => {
+    this.setState((prevState) => {
+      const location = this.findTool(item.toolId, prevState);
+      const prevDirections = prevState.tools[location.zoneKey];
+      const prevTools = prevDirections[location.directionKey];
+      const tool = prevTools[item.toolId];
+      if (!isToolGroup(tool))
+        throw new TypeError();
+
+      return {
+        tools: {
+          ...prevState.tools,
+          [location.zoneKey]: {
+            ...prevDirections,
+            [location.directionKey]: {
+              ...prevTools,
+              [item.toolId]: {
+                ...prevTools[item.toolId],
+                isExtended: false,
+                history: DefaultHistoryManager.addItem(item.columnId + "-" + item.toolId, item, tool.history),
+              },
+            },
+          },
+        },
+      };
+    });
   }
 
-  private _handleToolAssistanceIndicatorIsDialogOpenChange = () => {
-    this.setState((prevState) => ({
-      openWidget: prevState.openWidget === FooterWidget.ToolAssistance ? FooterWidget.None : FooterWidget.ToolAssistance,
-    }));
-  }
-
-  private _handleSnapModeIndicatorIsDialogOpenChange = () => {
-    this.setState((prevState) => ({
-      openWidget: prevState.openWidget === FooterWidget.SnapMode ? FooterWidget.None : FooterWidget.SnapMode,
-    }));
-  }
+  /*private _handleOnScrollableToolbarScroll = () => {
+    this.setState((prevState) => {
+      return {
+        tools: Object.keys(prevState.tools).reduce<ZoneTools>((zoneAcc, zoneKeyStr) => {
+          const zoneKey = Number(zoneKeyStr) as keyof ZoneTools;
+          const prevDirections = prevState.tools[zoneKey];
+          (zoneAcc[zoneKey] as DirectionTools) = Object.keys(prevDirections).reduce<DirectionTools>((directionAcc, directionKeyStr) => {
+            const directionKey = directionKeyStr as keyof DirectionTools;
+            const prevTools = prevDirections[directionKey];
+            (zoneAcc[zoneKey][directionKey] as Tools) = Object.keys(prevTools).reduce<Tools>((toolsAcc, toolId) => {
+              const prevTool = prevTools[toolId];
+              if (isToolGroup(prevTool)) {
+                toolsAcc[toolId] = {
+                  ...prevTool,
+                  isToolGroupOpen: false,
+                };
+              } else {
+                toolsAcc[toolId] = prevTool;
+              }
+              return toolsAcc;
+            }, {} as Tools);
+            return directionAcc;
+          }, {} as DirectionTools);
+          return zoneAcc;
+        }, {} as ZoneTools),
+      };
+    });
+  }*/
 
   private _handlePopoverToggleClick = () => {
     this.setState((prevState) => ({
@@ -1889,27 +2756,25 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
-  private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => () => {
+  private _handleWidgetTabClick = (widgetId: WidgetZoneIndex, tabIndex: number) => {
     this.setState((prevState) => ({
       nineZone: NineZoneManager.handleTabClick(widgetId, tabIndex, prevState.nineZone),
     }));
   }
 
-  private _handleWidgetResize = (zoneId: WidgetZoneIndex) => (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
+  private _handleWidgetResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
     this.setState((prevState) => ({
       nineZone: NineZoneManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone),
     }));
   }
 
-  private _handleWidgetTabDragStart = (widgetId: WidgetZoneIndex, tabId: number) => (initialPosition: PointProps, offset: PointProps) => {
+  private _handleWidgetTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
     this.setState((prevState) => ({
       nineZone: NineZoneManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone),
     }));
-  }
 
-  private _handleStatusWidgetTabDragStart = (widgetId: WidgetZoneIndex, tabId: number) => (initialPosition: PointProps, offset: PointProps) => {
-    this._handleWidgetTabDragStart(widgetId, tabId)(initialPosition, offset);
-    this._handleWidgetTabDragEnd();
+    if (widgetId === StatusZone.id)
+      this._handleWidgetTabDragEnd();
   }
 
   private _handleWidgetTabDragEnd = () => {
@@ -1924,93 +2789,60 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
-  private _handleTargetChanged = (zoneId: WidgetZoneIndex, type: TargetType) => (isTargeted: boolean) => {
+  private _handleTargetChanged = (target: TargetProps | undefined) => {
     this.setState((prevState) => ({
-      nineZone: isTargeted ? NineZoneManager.handleTargetChanged({ zoneId, type }, prevState.nineZone) :
-        NineZoneManager.handleTargetChanged(undefined, prevState.nineZone),
+      nineZone: NineZoneManager.handleTargetChanged(target, prevState.nineZone),
     }));
   }
 
-  private _handleOnAllMessagesTabClick = () => {
-    this.setState(() => ({
-      activeTab: MessageCenterActiveTab.AllMessages,
-    }));
-  }
-
-  private _handleOnProblemsTabClick = () => {
-    this.setState(() => ({
-      activeTab: MessageCenterActiveTab.Problems,
-    }));
-  }
-
-  private _handleDisableItemsClick = () => {
+  /*private _handleDisableToolsClick = () => {
     this.setState((prevState) => ({
       tools: {
         ...prevState.tools,
-        cube: {
-          ...prevState.tools.cube,
-          isDisabled: !prevState.tools.cube.isDisabled,
-          isToolGroupOpen: false,
+        1: {
+          ...prevState.tools[1],
+          vertical: {
+            ...prevState.tools[1].vertical,
+            cube: {
+              ...prevState.tools[1].vertical.cube,
+              isDisabled: !prevState.tools[1].vertical.cube.isDisabled,
+              isToolGroupOpen: false,
+            },
+            validate: {
+              ...prevState.tools[1].vertical.validate,
+              isDisabled: !prevState.tools[1].vertical.validate.isDisabled,
+              isToolGroupOpen: false,
+            },
+          },
         },
-        validate: {
-          ...prevState.tools.validate,
-          isDisabled: !prevState.tools.validate.isDisabled,
-          isToolGroupOpen: false,
-        },
-        channel: {
-          ...prevState.tools.channel,
-          isDisabled: !prevState.tools.channel.isDisabled,
-          isToolGroupOpen: false,
-        },
-        chat: {
-          ...prevState.tools.chat,
-          isDisabled: !prevState.tools.chat.isDisabled,
-          isToolGroupOpen: false,
-        },
-        browse: {
-          ...prevState.tools.browse,
-          isDisabled: !prevState.tools.browse.isDisabled,
-          isToolGroupOpen: false,
-        },
-        chat1: {
-          ...prevState.tools.chat1,
-          isDisabled: !prevState.tools.chat1.isDisabled,
-          isToolGroupOpen: false,
+        3: {
+          ...prevState.tools[3],
+          horizontal: {
+            ...prevState.tools[3].horizontal,
+            chat: {
+              ...prevState.tools[3].horizontal.chat,
+              isDisabled: !prevState.tools[3].horizontal.chat.isDisabled,
+              isToolGroupOpen: false,
+            },
+
+          },
+          vertical: {
+            ...prevState.tools[3].vertical,
+            browse: {
+              ...prevState.tools[3].vertical.browse,
+              isDisabled: !prevState.tools[3].vertical.browse.isDisabled,
+              isToolGroupOpen: false,
+            },
+            chat1: {
+              ...prevState.tools[3].vertical.chat1,
+              isDisabled: !prevState.tools[3].vertical.chat1.isDisabled,
+              isToolGroupOpen: false,
+            },
+          },
         },
       },
     }));
-  }
-
-  private _handleHideMessage = () => {
-    this.setState(() => ({
-      visibleMessage: Message.None,
-    }));
-  }
-
-  private _handleOpenActivityMessage = () => {
-    this.setState(() => ({
-      visibleMessage: Message.Activity,
-    }));
-  }
-
-  private _handleOpenModalMessage = () => {
-    this.setState(() => ({
-      visibleMessage: Message.Modal,
-    }));
-  }
-
-  private _handleOpenToastMessage = () => {
-    this.setState(() => ({
-      visibleMessage: Message.Toast,
-      toastMessageStage: ToastMessageStage.Visible,
-    }));
-  }
-
-  private _handleOpenStickyMessage = () => {
-    this.setState(() => ({
-      visibleMessage: Message.Sticky,
-    }));
-  }
+  }*/
 
   private _handleShowTooltip = () => {
     this.setState(() => ({
@@ -2018,37 +2850,43 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
-  private _handleCloseMessageCenter = () => {
-    this.setState(() => ({
-      openWidget: FooterWidget.None,
-    }));
-  }
-
-  private _handleToggleToolSettings = () => {
-    this.setState((prevState) => ({
-      secondZoneContent: prevState.secondZoneContent === SecondZoneContent.None ? SecondZoneContent.ToolSettings : SecondZoneContent.None,
-    }));
-  }
-
-  private _handleExpandToolGroup = (toolKey: string, trayId: string | undefined) => () => {
+  private _handleOnExpandPanelGroup = (toolId: string, trayId: string | undefined) => {
     this.setState((prevState) => {
-      const toolGroup = prevState.tools[toolKey] as ToolGroup;
+      const location = this.findTool(toolId, prevState);
+      const prevDirections = prevState.tools[location.zoneKey];
+      const prevTools = prevDirections[location.directionKey];
+      const tool = prevTools[toolId];
+      if (!isToolGroup(tool))
+        throw new TypeError();
+
       return {
         tools: {
           ...prevState.tools,
-          [toolKey]: {
-            ...prevState.tools[toolKey],
-            trayId,
-            backTrays: [...toolGroup.backTrays, toolGroup.trayId],
+          [location.zoneKey]: {
+            ...prevState.tools[location.zoneKey],
+            [location.directionKey]: {
+              ...prevState.tools[location.zoneKey][location.directionKey],
+              [toolId]: {
+                ...prevState.tools[location.zoneKey][location.directionKey][toolId],
+                trayId,
+                backTrays: [...tool.backTrays, tool.trayId],
+              },
+            },
           },
         },
       };
     });
   }
 
-  private _handleNestedToolGroupBack = (toolKey: string) => () => {
+  private _handleOnPanelBack = (toolId: string) => {
     this.setState((prevState) => {
-      const tool = prevState.tools[toolKey] as ToolGroup;
+      const location = this.findTool(toolId, prevState);
+      const prevDirections = prevState.tools[location.zoneKey];
+      const prevTools = prevDirections[location.directionKey];
+      const tool = prevTools[toolId];
+      if (!isToolGroup(tool))
+        throw new TypeError();
+
       let trayId = tool.trayId;
       if (tool.backTrays.length > 0)
         trayId = tool.backTrays[tool.backTrays.length - 1];
@@ -2057,34 +2895,40 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       return {
         tools: {
           ...prevState.tools,
-          [toolKey]: {
-            ...prevState.tools[toolKey],
-            trayId,
-            backTrays,
+          [location.zoneKey]: {
+            ...prevState.tools[location.zoneKey],
+            [location.directionKey]: {
+              ...prevState.tools[location.zoneKey][location.directionKey],
+              [toolId]: {
+                ...prevState.tools[location.zoneKey][location.directionKey][toolId],
+                trayId,
+                backTrays,
+              },
+            },
           },
         },
       };
     });
   }
 
-  private _handleRenderToModalMessage = () => this._dialogContainer;
+  private _handleRenderModalMessageTo = () => this._dialogContainer;
 
-  private _handleToggleTheme = (theme: Theme, changeTheme?: (_: Theme) => void) => () => {
+  private _handleChangeTheme = ({ theme, change }: ThemeContextProps) => {
     switch (theme) {
       case PrimaryTheme: {
-        changeTheme && changeTheme(LightTheme);
+        change && change(LightTheme);
         break;
       }
       case LightTheme: {
-        changeTheme && changeTheme(DarkTheme);
+        change && change(DarkTheme);
         break;
       }
       case DarkTheme: {
-        changeTheme && changeTheme(customTheme);
+        change && change(customTheme);
         break;
       }
       case customTheme: {
-        changeTheme && changeTheme(PrimaryTheme);
+        change && change(PrimaryTheme);
         break;
       }
     }
@@ -2092,24 +2936,51 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private _handleToggleFooterMode = () => {
     this.setState((prevState) => ({
-      nineZone: NineZoneManager.setIsInFooterMode(!prevState.nineZone.zones[8].isInFooterMode, prevState.nineZone),
+      nineZone: NineZoneManager.setIsInFooterMode(!prevState.nineZone.zones[StatusZone.id].isInFooterMode, prevState.nineZone),
       openWidget: FooterWidget.None,
     }));
   }
 
-  private _handleToggleShowAllItems = () => {
-    this.setState((prevState) => ({ showAllItems: !prevState.showAllItems }));
-  }
-
-  private _handleToggleOverflowItemOpen = () => {
+  /*private _handleToggleOverflowItemOpen = () => {
     this.setState((prevState) => ({
       isOverflowItemOpen: !prevState.isOverflowItemOpen,
     }));
+  }*/
+
+  private _handleHideMessage = () => {
+    this.setState(() => ({
+      message: Message.None,
+    }));
   }
 
-  private _handleToastStageChange = (toastMessageStage: ToastMessageStage) => {
+  private _handleOpenActivityMessage = () => {
     this.setState(() => ({
-      toastMessageStage,
+      message: Message.Activity,
+    }));
+  }
+
+  private _handleOpenModalMessage = () => {
+    this.setState(() => ({
+      message: Message.Modal,
+    }));
+  }
+
+  private _handleOpenToastMessage = () => {
+    this.setState((prevState) => ({
+      message: Message.Toast,
+      toastMessageKey: prevState.toastMessageKey + 1,
+    }));
+  }
+
+  private _handleOpenStickyMessage = () => {
+    this.setState(() => ({
+      message: Message.Sticky,
+    }));
+  }
+
+  private _handleWidgetChange = (openWidget: FooterWidget) => {
+    this.setState(() => ({
+      openWidget,
     }));
   }
 }
