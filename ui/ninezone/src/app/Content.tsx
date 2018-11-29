@@ -10,7 +10,7 @@ import { CommonProps } from "../utilities/Props";
 import "./Content.scss";
 
 /** Properties of [[Content]] component. */
-export interface ContentProps extends CommonProps, React.HTMLAttributes<HTMLDivElement> {
+export interface ContentProps extends CommonProps {
   /** Actual app content here (i.e. viewport). */
   children?: React.ReactNode;
 }
@@ -18,17 +18,14 @@ export interface ContentProps extends CommonProps, React.HTMLAttributes<HTMLDivE
 /** Content component of 9-Zone UI app. */
 export class Content extends React.PureComponent<ContentProps> {
   public render() {
-    const { className, ...props } = this.props;
-
-    const contentClassName = classnames(
+    const className = classnames(
       "nz-app-content",
       this.props.className);
 
     return (
       <div
-        className={contentClassName}
+        className={className}
         style={this.props.style}
-        {...props}
       >
         {this.props.children}
       </div>
