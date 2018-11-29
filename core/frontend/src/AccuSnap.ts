@@ -300,7 +300,6 @@ export class AccuSnap implements Decorator {
     const vp = ev.viewport!;
     let errorSprite: Sprite | undefined;
     switch (out.snapStatus) {
-      case SnapStatus.FilteredByUser:
       case SnapStatus.FilteredByApp:
         errorSprite = IconSprites.getSpriteFromUrl("SnapAppFiltered.png");
         break;
@@ -312,11 +311,6 @@ export class AccuSnap implements Decorator {
       case SnapStatus.NotSnappable:
         errorSprite = IconSprites.getSpriteFromUrl("SnapNotSnappable.png");
         this.errorKey = ElementLocateManager.getFailureMessageKey("NotSnappable");
-        break;
-
-      case SnapStatus.ModelNotSnappable:
-        errorSprite = IconSprites.getSpriteFromUrl("SnapNotSnappable.png");
-        this.errorKey = ElementLocateManager.getFailureMessageKey("ModelNotAllowed");
         break;
     }
 

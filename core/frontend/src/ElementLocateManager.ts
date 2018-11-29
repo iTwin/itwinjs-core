@@ -34,9 +34,6 @@ export const enum SnapStatus {
   Disabled = 100,
   NoSnapPossible = 200,
   NotSnappable = 300,
-  ModelNotSnappable = 301,
-  FilteredByCategory = 400,
-  FilteredByUser = 500,
   FilteredByApp = 600,
   FilteredByAppQuietly = 700,
 }
@@ -252,7 +249,7 @@ export class ElementLocateManager {
 
     const status = await tool.filterHit(hit, out);
     if (LocateFilterStatus.Reject === status)
-      out.reason = ElementLocateManager.getFailureMessageKey("ByCommand");
+      out.reason = ElementLocateManager.getFailureMessageKey("ByApp");
 
     return status;
   }
