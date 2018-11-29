@@ -10,10 +10,9 @@ import { IModelVersion, IModelStatus, ChangeOpCode, ChangedValueState } from "@b
 import { ChangeSummaryManager, ChangeSummary } from "../../ChangeSummaryManager";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { IModelDb, OpenParams, AccessMode } from "../../IModelDb";
-import { IModelTestUtils, DisableNativeAssertions, TestUsers } from "../IModelTestUtils";
+import { IModelTestUtils, DisableNativeAssertions, TestUsers, TestIModelInfo } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { IModelJsFs } from "../../IModelJsFs";
-import { TestIModelInfo } from "../MockAssetUtil";
 import { HubUtility } from "./HubUtility";
 
 function setupTest(iModelId: string): void {

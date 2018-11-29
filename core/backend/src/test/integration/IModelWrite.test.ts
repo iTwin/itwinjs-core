@@ -6,11 +6,10 @@
 import { expect, assert } from "chai";
 import { Id64String, DbOpcode, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
-import { IModelTestUtils, TestUsers, Timer } from "../IModelTestUtils";
+import { IModelTestUtils, TestUsers, Timer, TestIModelInfo } from "../IModelTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
 import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
-import { TestIModelInfo } from "../MockAssetUtil";
 import { AccessToken, CodeState, HubIModel, HubCode, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";
 

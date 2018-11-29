@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { AccessToken, Config } from "@bentley/imodeljs-clients";
+import { AccessToken, Config, ChangeSet } from "@bentley/imodeljs-clients";
 import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
@@ -12,7 +12,6 @@ import {
 } from "../backend";
 import { DisableNativeAssertions as NativeDisableNativeAssertions } from "../imodeljs-native-platform-api";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { TestIModelInfo } from "./MockAssetUtil";
 import { HubUtility, UserCredentials } from "./integration/HubUtility";
 import * as path from "path";
 
@@ -30,6 +29,33 @@ export class Timer {
     // tslint:disable-next-line:no-console
     console.timeEnd(this._label);
   }
+}
+
+export class TestIModelInfo {
+  private _name: string;
+  private _id: string;
+  private _localReadonlyPath: string;
+  private _localReadWritePath: string;
+  private _changeSets: ChangeSet[];
+
+  constructor(name: string) {
+    this._name = name;
+    this._id = "";
+    this._localReadonlyPath = "";
+    this._localReadWritePath = "";
+    this._changeSets = [];
+  }
+
+  get name(): string { return this._name; }
+  set name(name: string) { this._name = name; }
+  get id(): string { return this._id; }
+  set id(id: string) { this._id = id; }
+  get localReadonlyPath(): string { return this._localReadonlyPath; }
+  set localReadonlyPath(localReadonlyPath: string) { this._localReadonlyPath = localReadonlyPath; }
+  get localReadWritePath(): string { return this._localReadWritePath; }
+  set localReadWritePath(localReadWritePath: string) { this._localReadWritePath = localReadWritePath; }
+  get changeSets(): ChangeSet[] { return this._changeSets; }
+  set changeSets(changeSets: ChangeSet[]) { this._changeSets = changeSets; }
 }
 
 RpcConfiguration.developmentMode = true;
