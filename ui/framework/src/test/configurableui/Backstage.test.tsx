@@ -17,7 +17,10 @@ import {
   ConfigurableUiManager,
   TaskPropsList,
   WorkflowPropsList,
-} from "../..//index";
+  FrontstageProvider,
+  Frontstage,
+  FrontstageProps,
+} from "../../index";
 import TestUtils from "../TestUtils";
 import NZ_BackstageItem from "@bentley/ui-ninezone/lib/backstage/Item";
 
@@ -82,14 +85,21 @@ describe("Backstage", () => {
 
     it("FrontstageLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
-      const frontstageProps = {
-        id: "Test1",
-        defaultToolId: "PlaceLine",
-        defaultLayout: "TwoHalvesVertical",
-        contentGroup: "TestContentGroup1",
-        defaultContentId: "TestContent1",
-      };
-      ConfigurableUiManager.loadFrontstage(frontstageProps);
+
+      class Frontstage1 extends FrontstageProvider {
+        public get frontstage(): React.ReactElement<FrontstageProps> {
+          return (
+            <Frontstage
+              id="Test1"
+              defaultToolId="PlaceLine"
+              defaultLayout="TwoHalvesVertical"
+              contentGroup="TestContentGroup1"
+            />
+          );
+        }
+      }
+      ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
+
       const remove = FrontstageManager.onFrontstageActivatedEvent.addListener((_args: FrontstageActivatedEventArgs) => spyMethod());
       const wrapper = mount(<FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="UiFramework:tests.label" iconSpec="icon-placeholder" />);
       const backstageItem = wrapper.find(NZ_BackstageItem);
@@ -105,15 +115,20 @@ describe("Backstage", () => {
     });
 
     it("TaskLaunchBackstageItem should render & execute", () => {
-      const frontstageProps = {
-        id: "Test1",
-        defaultToolId: "PlaceLine",
-        defaultLayout: "TwoHalvesVertical",
-        contentGroup: "TestContentGroup1",
-        defaultContentId: "TestContent1",
-      };
-
-      ConfigurableUiManager.loadFrontstage(frontstageProps);
+      class Frontstage1 extends FrontstageProvider {
+        public get frontstage(): React.ReactElement<FrontstageProps> {
+          return (
+            <Frontstage
+              id="Test1"
+              defaultToolId="PlaceLine"
+              defaultLayout="TwoHalvesVertical"
+              contentGroup="TestContentGroup1"
+            />
+          );
+        }
+      }
+      const frontstageProvider = new Frontstage1();
+      ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
 
       const taskPropsList: TaskPropsList = {
         tasks: [

@@ -24,6 +24,7 @@ export class ToolInformation {
           throw Error("ToolInformation.toolUiProvider error: toolId '" + this.toolId + "' is registered to a control that is NOT a ToolUiProvider");
         }
 
+        toolUiProvider.initialize();
         this._toolUiProvider = toolUiProvider;
       }
     }

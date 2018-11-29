@@ -43,7 +43,7 @@ export type NodesDeselectedCallback = OnItemsDeselectedCallback<TreeNodeItem>;
 /** Type for node renderer */
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
-/** Props for the [[Tree]] component  */
+/** Properties for the [[Tree]] component  */
 export interface TreeProps {
   dataProvider: TreeDataProvider;
 
@@ -599,6 +599,7 @@ export namespace Tree {
   }
 }
 
+/** Properties related to a Tree node cell editor */
 export interface TreeNodeCellEditorProps {
   cellEditorState: TreeCellEditorState;
   onCellEditCommit: (args: PropertyUpdatedArgs) => void;

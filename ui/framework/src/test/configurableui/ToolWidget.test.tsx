@@ -21,6 +21,7 @@ import {
 } from "../../index";
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { ItemList } from "../../configurableui";
 
 describe("ToolWidget", () => {
 
@@ -134,6 +135,22 @@ describe("ToolWidget", () => {
         verticalToolbar={verticalToolbar}
       />,
     ).should.matchSnapshot();
+  });
+
+  it("ToolWidget should render with an item list", () => {
+    const hItemList = new ItemList();
+    hItemList.addItem(CoreTools.selectElementCommand);
+    const vItemList = new ItemList();
+    vItemList.addItem(CoreTools.fitViewCommand);
+
+    const wrapper = mount(
+      <ToolWidget
+        appButton={backstageToggleCommand}
+        horizontalItems={hItemList}
+        verticalItems={hItemList}
+      />,
+    );
+    wrapper.unmount();
   });
 
 });

@@ -7,42 +7,38 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 
 import TestUtils from "../TestUtils";
-import { ConfigurableUiManager, ZoneState, WidgetState, FrontstageDefProps, FrontstageManager, AnalysisAnimationTool } from "../../index";
-// import { ConfigurableCreateInfo } from "../../index";
-// import { ToolUiProvider } from "../../index";
+import { ConfigurableUiManager, ZoneState, WidgetState, FrontstageManager, AnalysisAnimationTool, FrontstageProvider, FrontstageProps, Frontstage, Zone, Widget, ToolWidget } from "../../index";
 import { AnalysisAnimationToolSettings } from "../../index";
-
-// import AssistanceItem from "@bentley/ui-ninezone/lib/footer/tool-assistance/Item";
 
 describe("AnalysisAnimationToolUiProvider", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    const frontstageProps: FrontstageDefProps = {
-      id: "ToolUiProvider-TestFrontstage",
-      defaultToolId: "PlaceLine",
-      defaultLayout: "FourQuadrants",
-      contentGroup: "TestContentGroup4",
-      defaultContentId: "TestContent1",
+    class Frontstage1 extends FrontstageProvider {
+      public get frontstage(): React.ReactElement<FrontstageProps> {
+        return (
+          <Frontstage
+            id="ToolUiProvider-TestFrontstage"
+            defaultToolId="PlaceLine"
+            defaultLayout="FourQuadrants"
+            contentGroup="TestContentGroup4"
+            topLeft={
+              <Zone defaultState={ZoneState.Open}
+                widgets={[
+                  <Widget id="widget1" defaultState={WidgetState.Open} iconSpec="icon-home" labelKey="SampleApp:Test.my-label"
+                    element={<ToolWidget />}
+                  />,
+                ]}
+              />
+            }
+          />
+        );
+      }
+    }
 
-      topLeft: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            classId: "ToolWidget",
-            defaultState: WidgetState.Open,
-            isFreeform: true,
-            iconSpec: "icon-home",
-            labelKey: "SampleApp:Test.my-label",
-            appButton: undefined,
-          },
-        ],
-      },
-    };
-
-    ConfigurableUiManager.loadFrontstage(frontstageProps);
+    const frontstageProvider = new Frontstage1();
+    ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
   });
 
   it("starting a tool with tool settings", () => {

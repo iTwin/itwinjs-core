@@ -45,7 +45,7 @@ export enum ZoneLocation {
   BottomRight = 9,
 }
 
-/** Properties for a Frontstage.
+/** Properties for a [[Frontstage]] component.
  */
 export interface FrontstageProps {
   /** Id for the Frontstage */

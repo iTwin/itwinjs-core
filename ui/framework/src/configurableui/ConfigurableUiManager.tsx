@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ConfigurableUi */
 
-import { FrontstageDef, FrontstageDefProps } from "./FrontstageDef";
+import { FrontstageDef } from "./FrontstageDef";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableCreateInfo, ConfigurableUiElement, ConfigurableUiControlConstructor } from "./ConfigurableUiControl";
 import { ContentGroupManager, ContentGroupProps } from "./ContentGroup";
@@ -40,17 +40,6 @@ export class ConfigurableUiManager {
 
     // Initialize the FrontstageManager
     FrontstageManager.initialize();
-  }
-
-  /** Finds a FrontstageDef, given its id.
-   * @param id  the id of the FrontstageDef to find
-   * @returns the FrontstageDef with the given id, or undefined if not found
-   */
-  public static findFrontstageDef(id?: string): FrontstageDef | undefined {
-    const frontstageDef = FrontstageManager.findFrontstageDef(id);
-    if (frontstageDef && frontstageDef instanceof FrontstageDef)
-      return frontstageDef;
-    return undefined;
   }
 
   /** Registers a control implementing the [[ConfigurableUiElement]] interface.
@@ -106,32 +95,22 @@ export class ConfigurableUiManager {
     return control;
   }
 
-  /** Loads one or more Frontstages into the [[FrontstageManager]].
-   * @param frontstagePropsList  the list of Frontstages to load
-   */
-  public static loadFrontstages(frontstagePropsList: FrontstageDefProps[]): void {
-    FrontstageManager.loadFrontstages(frontstagePropsList);
-  }
-
-  /** Loads a Frontstage into the [[FrontstageManager]].
-   * @param frontstageProps  the properties of the Frontstage to load
-   */
-  public static loadFrontstage(frontstageProps: FrontstageDefProps): void {
-    FrontstageManager.loadFrontstage(frontstageProps);
-  }
-
-  /** Add a Frontstage via a definition into the [[FrontstageManager]].
-   * @param frontstageDef  Definition of the Frontstage to add
-   */
-  public static addFrontstage(frontstageDef: FrontstageDef): void {
-    FrontstageManager.addFrontstageDef(frontstageDef);
-  }
-
   /** Add a Frontstage via a provider into the [[FrontstageManager]].
    * @param frontstageProvider  Provider of the Frontstage to add
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
     FrontstageManager.addFrontstageProvider(frontstageProvider);
+  }
+
+  /** Finds a FrontstageDef, given its id.
+   * @param id  the id of the FrontstageDef to find
+   * @returns the FrontstageDef with the given id, or undefined if not found
+   */
+  public static findFrontstageDef(id?: string): FrontstageDef | undefined {
+    const frontstageDef = FrontstageManager.findFrontstageDef(id);
+    if (frontstageDef && frontstageDef instanceof FrontstageDef)
+      return frontstageDef;
+    return undefined;
   }
 
   /** Loads one or more ContentGroups into the [[ContentGroupManager]].

@@ -58,19 +58,19 @@ export interface ITreeDataProvider {
 /** Type definition for all BeInspireTree data providers */
 export type TreeDataProvider = TreeDataProviderRaw | TreeDataProviderPromise | TreeDataProviderMethod | ITreeDataProvider;
 
-/** checks if [[TreeDataProvider]] is a [[TreeDataProviderRaw]] */
+/** Checks if [[TreeDataProvider]] is a [[TreeDataProviderRaw]] */
 export const isTreeDataProviderRaw = (provider: TreeDataProvider): provider is TreeDataProviderRaw => {
   return Array.isArray(provider);
 };
-/** checks if [[TreeDataProvider]] is a [[TreeDataProviderPromise]] */
+/** Checks if [[TreeDataProvider]] is a [[TreeDataProviderPromise]] */
 export const isTreeDataProviderPromise = (provider: TreeDataProvider): provider is TreeDataProviderPromise => {
   return (undefined !== (provider as TreeDataProviderPromise).then);
 };
-/** checks if [[TreeDataProvider]] is a [[TreeDataProviderMethod]] */
+/** Checks if [[TreeDataProvider]] is a [[TreeDataProviderMethod]] */
 export const isTreeDataProviderMethod = (provider: TreeDataProvider): provider is TreeDataProviderMethod => {
   return (typeof provider === "function");
 };
-/** checks if [[TreeDataProvider]] is a [[ITreeDataProvider]] */
+/** Checks if [[TreeDataProvider]] is an [[ITreeDataProvider]] */
 export const isTreeDataProviderInterface = (provider: TreeDataProvider): provider is ITreeDataProvider => {
   const candidate = provider as ITreeDataProvider;
   return undefined !== candidate.getNodes && undefined !== candidate.getNodesCount;

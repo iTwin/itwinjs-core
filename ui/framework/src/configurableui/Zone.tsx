@@ -28,7 +28,7 @@ import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
 export interface ZoneProps {
   /** Default Zone state. Controls how the Zone is initially displayed. Defaults to ZoneState.Open. */
   defaultState?: ZoneState;
-  /** Indicates if other Zones may be merged with this Zone. Defaults to true.  */
+  /** Indicates if other Zones may be merged with this Zone. Defaults to false.  */
   allowsMerging?: boolean;
   /** Any application data to attach to this Zone. */
   applicationData?: any;

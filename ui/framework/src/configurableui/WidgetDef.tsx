@@ -15,6 +15,7 @@ import { CommandItemDef } from "../configurableui/Item";
 import { ItemDefBase } from "./ItemDefBase";
 
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { ItemList } from "./ItemMap";
 
 // -----------------------------------------------------------------------------
 // WidgetDef and sub-interfaces
@@ -67,6 +68,9 @@ export interface WidgetDefProps extends ItemProps {
 export interface ToolbarWidgetProps extends WidgetDefProps {
   horizontalDirection?: Direction;
   verticalDirection?: Direction;
+
+  horizontalItems?: ItemList;
+  verticalItems?: ItemList;
 }
 
 /** Properties for a Tool Widget.
@@ -166,6 +170,7 @@ export class WidgetDef extends ItemDefBase {
           if (this._widgetControl.getType() !== type) {
             throw Error("WidgetDef.widgetControl error: classId '" + this.classId + "' is registered to a control that is NOT a Widget");
           }
+          this._widgetControl.initialize();
         }
       } else {
         const info = new ConfigurableCreateInfo(this.classId.name, this.id, this.id);
