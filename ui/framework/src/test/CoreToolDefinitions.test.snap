@@ -237,6 +237,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
   toolWidgetDef={
     ToolWidgetDef {
       "_appButton": undefined,
+      "_handleSyncUiEvent": [Function],
+      "_isVisible": true,
       "classId": undefined,
       "featureId": "",
       "horizontalDirection": 3,

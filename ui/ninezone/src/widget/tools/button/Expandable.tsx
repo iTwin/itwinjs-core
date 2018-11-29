@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import ExpandableComponent, { ExpandableProps as ExpandableComponentProps } from "../../base/Expandable";
+import ExpandableComponent, { ExpandableProps as ExpandableComponentProps } from "../../../base/Expandable";
 import "./Expandable.scss";
 
 /** Properties of [[ExpandableButton]] component. */

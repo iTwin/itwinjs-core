@@ -101,6 +101,8 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
         "stateSyncIds": Array [],
         "tooltip": "",
       },
+      "_handleSyncUiEvent": [Function],
+      "_isVisible": true,
       "classId": undefined,
       "featureId": "",
       "horizontalDirection": 3,

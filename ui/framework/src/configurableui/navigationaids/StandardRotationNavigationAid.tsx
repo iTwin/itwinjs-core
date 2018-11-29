@@ -7,8 +7,8 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import NZ_Expandable from "@bentley/ui-ninezone/lib/app/button/Expandable";
-import NZ_Icon from "@bentley/ui-ninezone/lib/app/button/Icon";
+import NZ_Expandable from "@bentley/ui-ninezone/lib/widget/tools/button/Expandable";
+import NZ_Icon from "@bentley/ui-ninezone/lib/widget/tools/button/Icon";
 import NZ_Column from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Column";
 import NZ_Item from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/tool/Tool";
 import NZ_Tray from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Group";

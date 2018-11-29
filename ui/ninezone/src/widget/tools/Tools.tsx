@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../utilities/Props";
+import CommonProps, { NoChildrenProps } from "../../utilities/Props";
 import "./Tools.scss";
 
 /** Properties of [[Tools]] component. */
