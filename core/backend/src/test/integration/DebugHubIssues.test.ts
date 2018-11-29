@@ -47,6 +47,30 @@ describe.skip("DebugHubIssues (#integration)", () => {
     iModelName = "NoVersionsTest";
     iModelDir = path.join(iModelRootDir, iModelName);
     await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
+
+    iModelName = "ConnectionReadTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
+  });
+
+  it.skip("should be able to download and backup required test files from the Hub", async () => {
+    const projectName = "iModelJsIntegrationTest";
+
+    let iModelName = "ReadOnlyTest";
+    let iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+
+    iModelName = "ReadWriteTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+
+    iModelName = "NoVersionsTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+
+    iModelName = "ConnectionReadTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
   });
 
   it.skip("should be able to open ReadOnlyTest model", async () => {
@@ -150,24 +174,8 @@ describe.skip("DebugHubIssues (#integration)", () => {
     await BriefcaseManager.imodelClient.versions.create(actx, accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
   });
 
-  it.skip("should be able to download the seed files, change sets, for any iModel on the Hub", async () => {
-    const projectName = "NodeJsTestProject";
-    const iModelName = "TestModel";
-
-    const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
-  });
-
   it.skip("should be able to delete any iModel on the Hub", async () => {
     await HubUtility.deleteIModel(accessToken, "NodeJsTestProject", "TestModel");
-  });
-
-  it.skip("should be able to upload seed files, change sets, for any iModel on the Hub", async () => {
-    const projectName = "iModelJsTest";
-    const iModelName = "ReadWriteTest";
-
-    const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
   });
 
   it.skip("should be able to open any iModel on the Hub", async () => {

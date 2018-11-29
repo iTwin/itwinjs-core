@@ -55,6 +55,7 @@ describe("BriefcaseManager (#integration)", () => {
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadOnlyTest");
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "NoVersionsTest");
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadWriteTest");
+    await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ConnectionReadTest");
 
     // Logger.initializeToConsole();
     // Logger.setLevelDefault(LogLevel.Warning);

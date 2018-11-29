@@ -7,7 +7,6 @@ import { Id64, OpenMode, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { XYAndZ, Range3d, Transform } from "@bentley/geometry-core";
 import { BisCodeSpec, CodeSpec, NavigationValue, RelatedElement, IModelVersion } from "@bentley/imodeljs-common";
 import { TestData } from "./TestData";
-import { TestRpcInterface } from "../common/TestRpcInterface";
 import {
   DrawingViewState, OrthographicViewState, ViewState, IModelConnection,
   ModelSelectorState, DisplayStyle3dState, DisplayStyle2dState, CategorySelectorState,
@@ -121,7 +120,7 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to open an IModel with no versions", async () => {
-    const projectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsTest");
+    const projectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsIntegrationTest");
     const iModelId = await TestData.getTestIModelId(TestData.accessToken, projectId, "NoVersionsTest");
     const noVersionsIModel = await IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
     assert.isNotNull(noVersionsIModel);
@@ -134,7 +133,7 @@ describe("IModelConnection (#integration)", () => {
   });
 
   it("should be able to open the same IModel many times", async () => {
-    const projectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsTest");
+    const projectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsIntegrationTest");
     const iModelId = await TestData.getTestIModelId(TestData.accessToken, projectId, "ReadOnlyTest");
 
     const readOnlyTest = await IModelConnection.open(TestData.accessToken, projectId, iModelId, OpenMode.Readonly, IModelVersion.latest());
@@ -260,39 +259,6 @@ describe("IModelConnection (#integration)", () => {
       { id: expectedRow.id, origin: expectedRow.origin });
     assert.equal(actualRows.length, 1);
   }).timeout(99999);
-
-  it("Change cache file generation when attaching change cache", async () => {
-    assert.exists(iModel);
-    await TestRpcInterface.getClient().deleteChangeCache(iModel.iModelToken);
-    await iModel.attachChangeCache();
-    const changeSummaryRows: any[] = await iModel.executeQuery("SELECT count(*) cnt FROM change.ChangeSummary");
-    assert.equal(changeSummaryRows.length, 1);
-    assert.equal(changeSummaryRows[0].cnt, 0);
-    const changeSetRows = await iModel.executeQuery("SELECT count(*) cnt FROM imodelchange.ChangeSet");
-    assert.equal(changeSetRows.length, 1);
-    assert.equal(changeSetRows[0].cnt, 0);
-  }).timeout(99999);
-
-  it("Change cache file generation during change summary extraction", async () => {
-    assert.exists(iModel);
-    // for now, imodel must be open readwrite for changesummary extraction
-    await iModel.close(TestData.accessToken);
-
-    const testIModel: IModelConnection = await IModelConnection.open(TestData.accessToken, TestData.testProjectId, TestData.testIModelId, OpenMode.ReadWrite);
-    try {
-      await TestRpcInterface.getClient().deleteChangeCache(testIModel.iModelToken);
-      await TestRpcInterface.getClient().extractChangeSummaries(TestData.accessToken, testIModel.iModelToken, { currentChangeSetOnly: true });
-      await testIModel.attachChangeCache();
-
-      const changeSummaryRows: any[] = await testIModel.executeQuery("SELECT count(*) cnt FROM change.ChangeSummary");
-      assert.equal(changeSummaryRows.length, 1);
-      const changeSetRows = await testIModel.executeQuery("SELECT count(*) cnt FROM imodelchange.ChangeSet");
-      assert.equal(changeSetRows.length, 1);
-      assert.equal(changeSetRows[0].cnt, changeSummaryRows[0].cnt);
-    } finally {
-      await testIModel.close(TestData.accessToken);
-    }
-  }); // .timeout(99999);
 
   it("should generate unique transient IDs", () => {
     for (let i = 1; i < 40; i++) {
