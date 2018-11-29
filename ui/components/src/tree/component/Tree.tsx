@@ -9,7 +9,7 @@ import * as React from "react";
 import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedListRowProps } from "react-virtualized";
 // bentley imports
 import { using } from "@bentley/bentleyjs-core";
-import { Tree as TreeBase, TreeNode as TreeNodeBase, shallowDiffers } from "@bentley/ui-core";
+import { Tree as TreeBase, TreeNode as TreeNodeBase, shallowDiffers, CheckBoxState } from "@bentley/ui-core";
 // tree-related imports
 import {
   BeInspireTree, BeInspireTreeNode, BeInspireTreeNodes, BeInspireTreeNodeConfig,
@@ -69,9 +69,7 @@ export interface TreeProps {
   /** @hidden */
   ignoreEditorBlur?: boolean;
 
-  checkboxEnabled?: true;
   onCheckboxClick?: (label: string) => void;
-  isChecked?: (label: string) => boolean;
 }
 
 /** State for the [[Tree]] component  */
@@ -229,12 +227,13 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     }
 
     // otherwise, render when any of the following props / state change
-    return this.props.selectedNodes !== nextProps.selectedNodes
+    const change = this.props.selectedNodes !== nextProps.selectedNodes
       || this.props.renderNode !== nextProps.renderNode
       || this.props.dataProvider !== nextProps.dataProvider
       || this.props.nodeHighlightingProps !== nextProps.nodeHighlightingProps
       || this.state.cellEditorState !== nextState.cellEditorState
       || this.state.model.nodes().some((n) => n.isDirty());
+    return change;
   }
 
   public componentDidUpdate(prevProps: TreeProps) {
@@ -399,7 +398,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         },
       },
     };
-    if (item.displayCheckBox && item.isCheckBoxEnabled && item.checkBoxState)
+    if (item.checkBoxState === CheckBoxState.On)
       node.itree!.state!.checked = true;
     if (item.icon)
       node.itree!.icon = item.icon;
@@ -514,7 +513,12 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   // tslint:disable-next-line:naming-convention
   private renderNode = (node: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps): React.ReactNode => {
     return (
-      <TreeNode key={node.id} {...props} />
+      <TreeNode
+        key={node.id}
+        isChecked={node.payload.checkBoxState && node.payload.checkBoxState === CheckBoxState.On ? true : false}
+        isCheckboxEnabled={node.payload.displayCheckBox}
+        {...props}
+      />
     );
   }
 
@@ -545,9 +549,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       const props: TreeNodeProps = {
         node,
         highlightProps: this.state.highlightingEngine ? this.state.highlightingEngine.createRenderProps(node) : undefined,
-        checkboxEnabled: this.props.checkboxEnabled,
         onCheckboxClick: this.props.onCheckboxClick,
-        isChecked: this.props.isChecked,
+        isChecked: node.payload.checkBoxState === CheckBoxState.On ? true : false,
         renderLabel: Tree.renderLabelComponent,
         onClick: (e: React.MouseEvent) => {
           onNodeSelectionChanged(e.shiftKey, e.ctrlKey);
@@ -612,9 +615,9 @@ export interface TreeNodeCellEditorProps {
 export interface TreeNodeProps {
   node: BeInspireTreeNode<TreeNodeItem>;
   highlightProps?: HighlightableTreeNodeProps;
-  checkboxEnabled?: boolean;
   onCheckboxClick?: (label: string) => void;
-  isChecked?: (label: string) => boolean;
+  isChecked?: boolean;
+  isCheckboxEnabled?: boolean;
   cellEditorProps?: TreeNodeCellEditorProps;
   renderLabel: (node: BeInspireTreeNode<TreeNodeItem>, highlightProps?: HighlightableTreeNodeProps, cellEditorProps?: TreeNodeCellEditorProps) => React.ReactNode;
   onClick?: (e: React.MouseEvent) => void;
@@ -642,9 +645,9 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         isLeaf={!this.props.node.hasOrWillHaveChildren()}
         label={this.props.renderLabel(this.props.node, this.props.highlightProps, this.props.cellEditorProps)}
         icon={this.props.node.itree && this.props.node.itree.icon ? <span className={this.props.node.itree.icon} /> : undefined}
-        // checkboxEnabled={this.props.checkboxEnabled}
         onCheckboxClick={this.props.onCheckboxClick}
         isChecked={this.props.isChecked}
+        isCheckboxEnabled={this.props.isCheckboxEnabled}
         level={this.props.node.getParents().length}
         onClick={this.props.onClick}
         onMouseMove={this.props.onMouseMove}

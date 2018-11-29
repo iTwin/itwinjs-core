@@ -47,13 +47,8 @@
     position: relative;
     z-index: 2;
 
-    .chk-listbox {
-      display: inline-block;
-    }
-
-    .chk-listboxitem-checkbox {
-      display: inline-block;
-      margin-top: 0;
+    > .bwc-inputs-checkbox {
+      display: inline;
     }
 
     .icon {

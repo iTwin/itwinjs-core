@@ -118,7 +118,7 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={[
               <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget} />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
+              <Widget iconSpec="icon-layers" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} />,
             ]}
           />

@@ -201,10 +201,14 @@
 
     .nz-tree-tree  {
 
-      > .nz-tree-node {
+      .nz-tree-node {
         @include bwc-text( leading );
         padding: 5px 0;
         background-color: $background-1;
+
+        > .contents {
+         margin: 11px 0;
+        }
       }
     }
 
