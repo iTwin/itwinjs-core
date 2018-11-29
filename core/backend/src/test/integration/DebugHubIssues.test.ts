@@ -21,7 +21,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
-    accessToken = await HubUtility.login(TestUsers.super);
+    accessToken = await HubUtility.login(TestUsers.manager);
 
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Warning);
@@ -34,7 +34,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {
-    const projectName = "iModelJsTest";
+    const projectName = "iModelJsIntegrationTest";
 
     let iModelName = "ReadOnlyTest";
     let iModelDir = path.join(iModelRootDir, iModelName);

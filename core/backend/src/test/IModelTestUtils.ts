@@ -14,7 +14,6 @@ import { DisableNativeAssertions as NativeDisableNativeAssertions } from "../imo
 import { KnownTestLocations } from "./KnownTestLocations";
 import { TestIModelInfo } from "./MockAssetUtil";
 import { HubUtility, UserCredentials } from "./integration/HubUtility";
-import { TestConfig } from "./TestConfig";
 import * as path from "path";
 
 const actx = new ActivityLoggingContext("");
@@ -121,38 +120,16 @@ export class DisableNativeAssertions implements IDisposable {
 }
 
 export class IModelTestUtils {
+  public static async getTestModelInfo(accessToken: AccessToken, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
+    const iModelInfo = new TestIModelInfo(iModelName);
+    iModelInfo.id = await HubUtility.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name);
 
-  // public static async createIModel(accessToken: AccessToken, projectId: string, name: string, seedFile: string) {
-  //   try {
-  //     const existingid = await HubUtility.queryIModelIdByName(accessToken, projectId, name);
-  //     BriefcaseManager.imodelClient.iModels.delete(actx, accessToken, projectId, existingid);
-  //   } catch (_err) {
-  //   }
-  //   return BriefcaseManager.imodelClient.iModels.create(actx, accessToken, projectId, name, seedFile);
-  // }
-
-  public static async setupIntegratedFixture(testIModels: TestIModelInfo[]): Promise<any> {
-    const accessToken = await IModelTestUtils.getTestUserAccessToken();
-    const testProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
+    iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
+    iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-    for (const iModelInfo of testIModels) {
-      iModelInfo.id = (await HubUtility.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name)).toString();
-      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
-      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
-
-      iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, iModelInfo.id);
-      iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
-
-      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
-      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
-
-      // Purge briefcases that are close to reaching the acquire limit
-      const superAccessToken: AccessToken = await HubUtility.login(TestUsers.super);
-      await HubUtility.purgeAcquiredBriefcases(superAccessToken, TestConfig.projectName, iModelInfo.name);
-    }
-
-    return [accessToken, testProjectId, cacheDir];
+    iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, iModelInfo.id);
+    return iModelInfo;
   }
 
   public static async getTestUserAccessToken(userCredentials: any = TestUsers.regular): Promise<AccessToken> {
