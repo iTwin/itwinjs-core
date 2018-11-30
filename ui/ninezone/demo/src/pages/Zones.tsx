@@ -63,7 +63,7 @@ import HistoryTray, { History, DefaultHistoryManager } from "@src/toolbar/item/e
 import HistoryPlaceholder from "@src/toolbar/item/expandable/history/Placeholder";
 import ToolbarIcon from "@src/toolbar/item/Icon";
 import Toolbar, { /*ToolbarPanelAlignment*/ } from "@src/toolbar/Toolbar";
-// import ScrollableToolbar from "@src/toolbar/Scrollable";
+import ScrollableToolbar from "@src/toolbar/Scrollable";
 import Direction from "@src/utilities/Direction";
 import { PointProps } from "@src/utilities/Point";
 import Size from "@src/utilities/Size";
@@ -92,6 +92,7 @@ import { offsetAndContainInContainer } from "@src/popup/tooltip/Tooltip";
 import { RectangleProps } from "@src/utilities/Rectangle";
 import "./Zones.scss";
 import withContainInViewport from "@src/base/WithContainInViewport";
+import { OmitChildrenProp } from "@src/utilities/Props";
 
 const adjustTooltipPosition = offsetAndContainInContainer();
 // tslint:disable-next-line:variable-name
@@ -118,7 +119,7 @@ interface State {
 
 interface ZoneTools {
   1: DirectionTools<Zone1HorizontalTools, Zone1VerticalTools>;
-  3: DirectionTools<Zone2HorizontalTools, Zone2VerticalTools>;
+  3: DirectionTools<Zone3HorizontalTools, Zone3VerticalTools>;
 }
 
 interface DirectionTools<THorizontal extends Tools = Tools, TVertical extends Tools = Tools> {
@@ -137,12 +138,12 @@ interface Zone1VerticalTools extends Tools {
   validate: ToolGroup;
 }
 
-interface Zone2HorizontalTools extends Tools {
+interface Zone3HorizontalTools extends Tools {
   overflow: SimpleTool;
   toolSettings: SimpleTool;
 }
 
-interface Zone2VerticalTools extends Tools {
+interface Zone3VerticalTools extends Tools {
   channel: ToolGroup;
   chat1: SimpleTool;
   browse: SimpleTool;
@@ -1473,24 +1474,26 @@ interface ToolbarItemHistoryTrayProps {
 class ToolbarItemHistoryTray extends React.PureComponent<ToolbarItemHistoryTrayProps> {
   public render() {
     return (
-      <HistoryTray
-        direction={this.props.tool.direction}
-        isExtended={this.props.tool.isExtended}
-        onIsHistoryExtendedChange={this._handleOnIsHistoryExtendedChange}
-        items={
-          this.props.tool.history.map((entry) => {
-            const tray = this.props.tool.trays[entry.item.trayId];
-            return (
-              <ToolbarItemHistoryItem
-                history={entry.item}
-                icon={tray.columns[entry.item.columnId].items[entry.item.itemId].icon}
-                key={entry.key}
-                onClick={this._handleOnHistoryItemClick}
-              />
-            );
-          })
-        }
-      />
+      <HistoryPlaceholder>
+        <HistoryTray
+          direction={this.props.tool.direction}
+          isExtended={this.props.tool.isExtended}
+          onIsHistoryExtendedChange={this._handleOnIsHistoryExtendedChange}
+          items={
+            this.props.tool.history.map((entry) => {
+              const tray = this.props.tool.trays[entry.item.trayId];
+              return (
+                <ToolbarItemHistoryItem
+                  history={entry.item}
+                  icon={tray.columns[entry.item.columnId].items[entry.item.itemId].icon}
+                  key={entry.key}
+                  onClick={this._handleOnHistoryItemClick}
+                />
+              );
+            })
+          }
+        />
+      </HistoryPlaceholder>
     );
   }
 
@@ -1577,18 +1580,22 @@ class ToolbarItemPanel extends React.PureComponent<ToolbarItemPanelProps> {
 
     if (this.props.tool.backTrays.length > 0)
       return (
-        <NestedToolGroupContained
-          title={tray.title}
-          columns={columns}
-          onBack={this._handleOnBack}
-        />
+        <PanelPlaceholder>
+          <NestedToolGroupContained
+            title={tray.title}
+            columns={columns}
+            onBack={this._handleOnBack}
+          />
+        </PanelPlaceholder>
       );
 
     return (
-      <ToolGroupContained
-        title={tray.title}
-        columns={columns}
-      />
+      <PanelPlaceholder>
+        <ToolGroupContained
+          title={tray.title}
+          columns={columns}
+        />
+      </PanelPlaceholder>
     );
   }
 
@@ -1730,7 +1737,9 @@ class Zone1 extends React.PureComponent<Zone1Props> {
   }
 }
 
-type Zone3Props = Zone1Props;
+interface Zone3Props extends Zone1Props {
+  onToolbarScroll: () => void;
+}
 
 class Zone3 extends React.PureComponent<Zone3Props> {
   public render() {
@@ -1740,6 +1749,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
       >
         <ToolsWidget
           isNavigation
+          preserveSpace
           horizontalToolbar={
             <ToolZoneToolbar
               expandsTo={Direction.Bottom}
@@ -1753,13 +1763,14 @@ class Zone3 extends React.PureComponent<Zone3Props> {
             />
           }
           verticalToolbar={
-            <ToolZoneToolbar
+            <ToolZoneScrollableToolbar
               expandsTo={Direction.Left}
               onHistoryItemClick={this.props.onHistoryItemClick}
               onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
               onOpenPanelGroup={this.props.onOpenPanelGroup}
               onPanelBack={this.props.onPanelBack}
               onPanelToolClick={this.props.onPanelToolClick}
+              onScroll={this.props.onToolbarScroll}
               onToolClick={this.props.onToolClick}
               tools={this.props.verticalTools}
             />
@@ -1767,91 +1778,44 @@ class Zone3 extends React.PureComponent<Zone3Props> {
         />
       </Zone>
     );
-    /*return (
-      <Zone
-        bounds={zone.props.floating ? zone.props.floating.bounds : this.state.nineZone.zones[zoneId].bounds}
-        key={zoneId}
-      >
-        <ToolsWidget
-          isNavigation
-          preserveSpace
-          horizontalToolbar={
-            <Toolbar
-              items={
-                <>
-                  {this.state.showAllItems &&
-                    <OverflowItem
-                      key="0"
-                      onClick={this._handleToggleOverflowItemOpen}
-                    />
-                  }
-                  {this.getToolbarItemWithToolSettings("chat")}
-                </>
-              }
-              panels={
-                this.state.isOverflowItemOpen &&
-                <ToolGroupContained
-                  title={"Overflow Button"}
-                  columns={
-                    <GroupColumn>
-                      <GroupTool
-                        onClick={this._handleToggleOverflowItemOpen}
-                      >
-                        Tool1
-                      </GroupTool>
-                    </GroupColumn>
-                  }
-                />
-              }
-              panelAlignment={ToolbarPanelAlignment.End}
-            />
-          }
-          verticalToolbar={
-            <ScrollableToolbar
-              expandsTo={Direction.Left}
-              onScroll={this._handleOnScrollableToolbarScroll}
-              items={
-                <>
-                  {this.state.showAllItems && this.getToolbarItem("channel")}
-                  {this.getToolbarItem("chat")}
-                  {this.state.showAllItems && this.getToolbarItem("browse")}
-                  {this.getToolbarItem("clipboard")}
-                  {this.state.showAllItems && this.getToolbarItem("calendar")}
-                  {this.getToolbarItem("chat1")}
-                  {this.getToolbarItem("document")}
-                </>
-              }
-              panels={
-                <>
-                  {this.state.showAllItems && this.getToolbarItemPanel("channel")}
-                  {this.getToolbarItemPanel("chat")}
-                  {this.state.showAllItems && this.getToolbarItemPanel("browse")}
-                  {this.getToolbarItemPanel("clipboard")}
-                  {this.state.showAllItems && this.getToolbarItemPanel("calendar")}
-                  {this.getToolbarItemPanel("chat1")}
-                  {this.getToolbarItemPanel("document")}
-                </>
-              }
-              histories={
-                <>
-                  {this.state.showAllItems ? this.getToolbarItemHistory("channel") : <HistoryPlaceholder />}
-                  {this.getToolbarItemHistory("chat")}
-                  {this.state.showAllItems ? this.getToolbarItemHistory("browse") : <HistoryPlaceholder />}
-                  {this.getToolbarItemHistory("clipboard")}
-                  {this.state.showAllItems ? this.getToolbarItemHistory("calendar") : <HistoryPlaceholder />}
-                  {this.getToolbarItemHistory("chat1")}
-                  {this.getToolbarItemHistory("document")}
-                </>
-              }
-            />
+    /*
+    <ToolsWidget
+      panelAlignment={ToolbarPanelAlignment.End}
+      panels={
+        this.state.isOverflowItemOpen &&
+        <ToolGroupContained
+          title={"Overflow Button"}
+          columns={
+            <GroupColumn>
+              <GroupTool
+                onClick={this._handleToggleOverflowItemOpen}
+              >
+                Tool1
+              </GroupTool>
+            </GroupColumn>
           }
         />
-      </Zone>
-    );*/
+      }
+      horizontalToolbar={
+        <Toolbar
+          items={
+            <>
+              {this.state.showAllItems &&
+                <OverflowItem
+                  key="0"
+                  onClick={this._handleToggleOverflowItemOpen}
+                />
+              }
+              {this.getToolbarItemWithToolSettings("chat")}
+            </>
+          }
+    />
+    */
   }
 }
 
 interface ToolZoneToolbarProps {
+  children: (items: React.ReactNode, panels: React.ReactNode, histories: React.ReactNode) => React.ReactNode;
   expandsTo: Direction;
   onHistoryItemClick: (item: HistoryItem) => void;
   onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
@@ -1863,6 +1827,21 @@ interface ToolZoneToolbarProps {
 }
 
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
+  public static readonly defaultProps: Partial<ToolZoneToolbarProps> = {
+    // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
+    children: function(this: ToolZoneToolbarProps,
+      items: React.ReactNode, panels: React.ReactNode, histories: React.ReactNode) {
+      return (
+        <Toolbar
+          expandsTo={this.expandsTo}
+          items={items}
+          panels={panels}
+          histories={histories}
+        />
+      );
+    },
+  };
+
   public render() {
     const iph = Object.keys(this.props.tools).reduce((acc, toolId) => {
       const tool = this.props.tools[toolId];
@@ -1876,26 +1855,22 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
       );
 
       const panel = isToolGroup(tool) && tool.isToolGroupOpen ? (
-        <PanelPlaceholder>
-          <ToolbarItemPanel
-            onExpandGroup={this.props.onOpenPanelGroup}
-            onToolClick={this.props.onPanelToolClick}
-            onBack={this.props.onPanelBack}
-            tool={tool}
-          />
-        </PanelPlaceholder>
+        <ToolbarItemPanel
+          onExpandGroup={this.props.onOpenPanelGroup}
+          onToolClick={this.props.onPanelToolClick}
+          onBack={this.props.onPanelBack}
+          tool={tool}
+        />
       ) : <PanelPlaceholder />;
 
       const history = isToolGroup(tool) &&
         !tool.isToolGroupOpen &&
         tool.history.length > 0 ? (
-          <HistoryPlaceholder>
-            <ToolbarItemHistoryTray
-              onHistoryItemClick={this.props.onHistoryItemClick}
-              onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
-              tool={tool}
-            />
-          </HistoryPlaceholder>
+          <ToolbarItemHistoryTray
+            onHistoryItemClick={this.props.onHistoryItemClick}
+            onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
+            tool={tool}
+          />
         ) : <HistoryPlaceholder />;
 
       acc.items.push(item);
@@ -1908,12 +1883,34 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
         histories: new Array<React.ReactNode>(),
       },
     );
+    return this.props.children(iph.items, iph.panels, iph.histories);
+  }
+}
+
+interface ScrollableToolbarProps extends OmitChildrenProp<ToolZoneToolbarProps> {
+  onScroll: () => void;
+}
+
+class ToolZoneScrollableToolbar extends React.PureComponent<ScrollableToolbarProps> {
+  public render() {
+    const { expandsTo, ...props } = this.props;
     return (
-      <Toolbar
+      <ToolZoneToolbar
+        {...props}
+      >
+        {this._renderScrollableToolbar}
+      </ToolZoneToolbar>
+    );
+  }
+
+  private _renderScrollableToolbar = (items: React.ReactNode, panels: React.ReactNode, histories: React.ReactNode): React.ReactNode => {
+    return (
+      <ScrollableToolbar
         expandsTo={this.props.expandsTo}
-        items={iph.items}
-        panels={iph.panels}
-        histories={iph.histories}
+        onScroll={this.props.onScroll}
+        items={items}
+        panels={panels}
+        histories={histories}
       />
     );
   }
@@ -2475,6 +2472,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         onOpenPanelGroup={this._handleOnExpandPanelGroup}
         onPanelBack={this._handleOnPanelBack}
         onPanelToolClick={this._handlePanelToolClick}
+        onToolbarScroll={this._handleOnToolbarScroll}
         onToolClick={this._handleOnToolClick}
         verticalTools={this.state.tools[zoneId].vertical}
       />
@@ -2702,8 +2700,18 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     });
   }
 
-  /*private _handleOnScrollableToolbarScroll = () => {
+  private _handleOnToolbarScroll = () => {
     this.setState((prevState) => {
+      const newZoneTools: ZoneTools = {
+        1: {
+          horizontal: {} as Zone1HorizontalTools,
+          vertical: {} as Zone1VerticalTools,
+        },
+        3: {
+          horizontal: {} as Zone3HorizontalTools,
+          vertical: {} as Zone3VerticalTools,
+        },
+      };
       return {
         tools: Object.keys(prevState.tools).reduce<ZoneTools>((zoneAcc, zoneKeyStr) => {
           const zoneKey = Number(zoneKeyStr) as keyof ZoneTools;
@@ -2722,14 +2730,14 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                 toolsAcc[toolId] = prevTool;
               }
               return toolsAcc;
-            }, {} as Tools);
+            }, newZoneTools[zoneKey][directionKey]);
             return directionAcc;
-          }, {} as DirectionTools);
+          }, newZoneTools[zoneKey]);
           return zoneAcc;
-        }, {} as ZoneTools),
+        }, newZoneTools),
       };
     });
-  }*/
+  }
 
   private _handlePopoverToggleClick = () => {
     this.setState((prevState) => ({
