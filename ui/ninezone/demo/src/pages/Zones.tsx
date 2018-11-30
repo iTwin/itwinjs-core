@@ -112,7 +112,7 @@ interface State {
   readonly nineZone: NineZoneProps;
   readonly openWidget: FooterWidget;
   readonly secondZoneContent: SecondZoneContent;
-  readonly tools: ZoneTools;
+  readonly tools: ZoneTools | HiddenZoneTools;
   readonly themeContext: ThemeContextProps;
   readonly toastMessageKey: number;
 }
@@ -120,6 +120,11 @@ interface State {
 interface ZoneTools {
   1: DirectionTools<Zone1HorizontalTools, Zone1VerticalTools>;
   3: DirectionTools<Zone3HorizontalTools, Zone3VerticalTools>;
+}
+
+interface HiddenZoneTools {
+  1: DirectionTools<Zone1HorizontalTools, HiddenZone1VerticalTools>;
+  3: DirectionTools<Tools, HiddenZone3VerticalTools>;
 }
 
 interface DirectionTools<THorizontal extends Tools = Tools, TVertical extends Tools = Tools> {
@@ -132,8 +137,11 @@ interface Zone1HorizontalTools extends Tools {
   toggleTools: SimpleTool;
 }
 
-interface Zone1VerticalTools extends Tools {
+interface HiddenZone1VerticalTools extends Tools {
   cube: ToolGroup;
+}
+
+interface Zone1VerticalTools extends HiddenZone1VerticalTools {
   validate: ToolGroup;
 }
 
@@ -143,10 +151,13 @@ interface Zone3HorizontalTools extends Tools {
   toolSettings: SimpleTool;
 }
 
-interface Zone3VerticalTools extends Tools {
+interface HiddenZone3VerticalTools extends Tools {
   channel: ToolGroup;
   chat: SimpleTool;
   browse: SimpleTool;
+}
+
+interface Zone3VerticalTools extends HiddenZone3VerticalTools {
   clipboard: ToolGroup;
   calendar: ToolGroup;
   chat2: SimpleTool;
@@ -1688,6 +1699,7 @@ class Zone1 extends React.PureComponent<Zone1Props> {
         <ToolsWidget
           button={this._appButton}
           horizontalToolbar={
+            Object.keys(this.props.horizontalTools).length > 0 &&
             <ToolZoneToolbar
               expandsTo={Direction.Bottom}
               onHistoryItemClick={this.props.onHistoryItemClick}
@@ -1701,6 +1713,7 @@ class Zone1 extends React.PureComponent<Zone1Props> {
             />
           }
           verticalToolbar={
+            Object.keys(this.props.verticalTools).length > 0 &&
             <ToolZoneToolbar
               expandsTo={Direction.Right}
               onHistoryItemClick={this.props.onHistoryItemClick}
@@ -1733,6 +1746,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
           isNavigation
           preserveSpace
           horizontalToolbar={
+            Object.keys(this.props.horizontalTools).length > 0 &&
             <ToolZoneToolbar
               expandsTo={Direction.Bottom}
               onHistoryItemClick={this.props.onHistoryItemClick}
@@ -1746,6 +1760,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
             />
           }
           verticalToolbar={
+            Object.keys(this.props.verticalTools).length > 0 &&
             <ToolZoneScrollableToolbar
               expandsTo={Direction.Left}
               onHistoryItemClick={this.props.onHistoryItemClick}
@@ -1905,6 +1920,247 @@ const placeholderIcon = (
   <i className="icon icon-placeholder" />
 );
 
+const hiddenZoneTools: HiddenZoneTools = {
+  1: {
+    horizontal: {
+      disableTools: {
+        id: "disableTools",
+      },
+      toggleTools: {
+        id: "toggleTools",
+      },
+    },
+    vertical: {
+      cube: {
+        id: "cube",
+        trayId: "tray1",
+        backTrays: [],
+        trays: {
+          tray1: {
+            title: "Tools",
+            columns: {
+              0: {
+                items: {
+                  Test1: {
+                  },
+                  Test2123123: {
+                    isDisabled: true,
+                  },
+                  Test3: {
+                    trayId: "tray2",
+                  },
+                  Test4: {
+                  },
+                  Test5: {
+                    trayId: "disabled",
+                    isDisabled: true,
+                  },
+                  Test6: {
+                  },
+                  Test7: {
+                  },
+                },
+              },
+              1: {
+                items: {
+                  Test5: {
+                  },
+                },
+              },
+              2: {
+                items: {
+                  ":)": {
+                  },
+                },
+              },
+            },
+          },
+          tray2: {
+            title: "Test3",
+            columns: {
+              0: {
+                items: {
+                  Test1: {
+                  },
+                },
+              },
+            },
+          },
+        },
+        direction: Direction.Right,
+        history: [],
+        isExtended: false,
+        isToolGroupOpen: false,
+      },
+    },
+  },
+  3: {
+    horizontal: {
+    },
+    vertical: {
+      channel: {
+        id: "channel",
+        trayId: "tray1",
+        backTrays: [],
+        trays: {
+          tray1: {
+            title: "Tools",
+            columns: {
+              0: {
+                items: {
+                  Test1: {
+                  },
+                },
+              },
+            },
+          },
+        },
+        direction: Direction.Left,
+        history: [],
+        isExtended: false,
+        isToolGroupOpen: false,
+      },
+      chat: {
+        id: "chat",
+      },
+      browse: {
+        id: "browse",
+      },
+    },
+  },
+};
+
+const zoneTools: ZoneTools = {
+  ...hiddenZoneTools,
+  1: {
+    ...hiddenZoneTools[1],
+    vertical: {
+      ...hiddenZoneTools[1].vertical,
+      validate: {
+        id: "validate",
+        trayId: "tray1",
+        backTrays: [],
+        trays: {
+          tray1: {
+            title: "Tools",
+            columns: {
+              0: {
+                items: {
+                  Validate: {
+                  },
+                },
+              },
+            },
+          },
+        },
+        direction: Direction.Right,
+        history: [],
+        isExtended: false,
+        isToolGroupOpen: false,
+      },
+    },
+  },
+  3: {
+    ...hiddenZoneTools[3],
+    horizontal: {
+      ...hiddenZoneTools[3].horizontal,
+      d2: {
+        id: "d2",
+        trayId: "3d",
+        backTrays: [],
+        trays: {
+          "3d": {
+            title: "3D Tools",
+            columns: {
+              0: {
+                items: {
+                  "3D#1": {
+                  },
+                  "3D#2": {
+                  },
+                },
+              },
+            },
+          },
+        },
+        direction: Direction.Bottom,
+        history: [],
+        isExtended: false,
+        isToolGroupOpen: false,
+      },
+      overflow: {
+        id: "overflow",
+      },
+      toolSettings: {
+        id: "toolSettings",
+      },
+    },
+    vertical: {
+      ...hiddenZoneTools[3].vertical,
+      clipboard: {
+        id: "clipboard",
+        trayId: "tray1",
+        backTrays: [],
+        trays: {
+          tray1: {
+            title: "Tools",
+            columns: {
+              0: {
+                items: {
+                  "3D#1": {
+                  },
+                  "3D#2": {
+                  },
+                },
+              },
+            },
+          },
+        },
+        direction: Direction.Left,
+        history: [],
+        isExtended: false,
+        isToolGroupOpen: false,
+      },
+      calendar: {
+        id: "calendar",
+        trayId: "tray1",
+        backTrays: [],
+        trays: {
+          tray1: {
+            title: "3D Tools",
+            columns: {
+              0: {
+                items: {
+                  "3D#1": {
+                  },
+                  "3D#2": {
+                  },
+                },
+              },
+            },
+          },
+        },
+        direction: Direction.Left,
+        history: [],
+        isExtended: false,
+        isToolGroupOpen: false,
+      },
+      chat2: {
+        id: "chat2",
+      },
+      document: {
+        id: "document",
+      },
+    },
+  },
+};
+
+const isHiddenTools = (tools: HiddenZoneTools | ZoneTools): tools is HiddenZoneTools => {
+  if (tools[1].vertical.validate)
+    return false;
+  return true;
+};
+
 export default class ZonesExample extends React.PureComponent<{}, State> {
   private _app = React.createRef<App>();
   private _dialogContainer = document.createElement("div");
@@ -1931,229 +2187,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       openWidget: FooterWidget.None,
       secondZoneContent: SecondZoneContent.None,
       message: Message.None,
-      tools: {
-        1: {
-          horizontal: {
-            disableTools: {
-              id: "disableTools",
-            },
-            toggleTools: {
-              id: "toggleTools",
-            },
-          },
-          vertical: {
-            cube: {
-              id: "cube",
-              trayId: "tray1",
-              backTrays: [],
-              trays: {
-                tray1: {
-                  title: "Tools",
-                  columns: {
-                    0: {
-                      items: {
-                        Test1: {
-                        },
-                        Test2123123: {
-                          isDisabled: true,
-                        },
-                        Test3: {
-                          trayId: "tray2",
-                        },
-                        Test4: {
-                        },
-                        Test5: {
-                          trayId: "disabled",
-                          isDisabled: true,
-                        },
-                        Test6: {
-                        },
-                        Test7: {
-                        },
-                      },
-                    },
-                    1: {
-                      items: {
-                        Test5: {
-                        },
-                      },
-                    },
-                    2: {
-                      items: {
-                        ":)": {
-                        },
-                      },
-                    },
-                  },
-                },
-                tray2: {
-                  title: "Test3",
-                  columns: {
-                    0: {
-                      items: {
-                        Test1: {
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              direction: Direction.Right,
-              history: [],
-              isExtended: false,
-              isToolGroupOpen: false,
-            },
-            validate: {
-              id: "validate",
-              trayId: "tray1",
-              backTrays: [],
-              trays: {
-                tray1: {
-                  title: "Tools",
-                  columns: {
-                    0: {
-                      items: {
-                        Validate: {
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              direction: Direction.Right,
-              history: [],
-              isExtended: false,
-              isToolGroupOpen: false,
-            },
-          },
-        },
-        3: {
-          horizontal: {
-            d2: {
-              id: "d2",
-              trayId: "3d",
-              backTrays: [],
-              trays: {
-                "3d": {
-                  title: "3D Tools",
-                  columns: {
-                    0: {
-                      items: {
-                        "3D#1": {
-                        },
-                        "3D#2": {
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              direction: Direction.Bottom,
-              history: [],
-              isExtended: false,
-              isToolGroupOpen: false,
-            },
-            overflow: {
-              id: "overflow",
-            },
-            toolSettings: {
-              id: "toolSettings",
-            },
-          },
-          vertical: {
-            channel: {
-              id: "channel",
-              icon: "icon-placeholder",
-              trayId: "tray1",
-              backTrays: [],
-              trays: {
-                tray1: {
-                  title: "Tools",
-                  columns: {
-                    0: {
-                      items: {
-                        Test1: {
-                          icon: "icon-placeholder",
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              direction: Direction.Left,
-              history: [],
-              isExtended: false,
-              isToolGroupOpen: false,
-            } as ToolGroup,
-            chat: {
-              id: "chat",
-            },
-            browse: {
-              id: "browse",
-            },
-            clipboard: {
-              id: "clipboard",
-              trayId: "tray1",
-              backTrays: [],
-              trays: {
-                tray1: {
-                  title: "Tools",
-                  columns: {
-                    0: {
-                      items: {
-                        "3D#1": {
-                          icon: "icon-placeholder",
-                        },
-                        "3D#2": {
-                          icon: "icon-placeholder",
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              direction: Direction.Left,
-              history: [],
-              icon: "icon-placeholder",
-              isExtended: false,
-              isToolGroupOpen: false,
-            } as ToolGroup,
-            calendar: {
-              id: "calendar",
-              trayId: "tray1",
-              backTrays: [],
-              trays: {
-                tray1: {
-                  title: "3D Tools",
-                  columns: {
-                    0: {
-                      items: {
-                        "3D#1": {
-                          icon: "icon-placeholder",
-                        },
-                        "3D#2": {
-                          icon: "icon-placeholder",
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              direction: Direction.Left,
-              history: [],
-              icon: "icon-placeholder",
-              isExtended: false,
-              isToolGroupOpen: false,
-            } as ToolGroup,
-            chat2: {
-              id: "chat2",
-            },
-            document: {
-              id: "document",
-            },
-          },
-        },
-      },
+      tools: zoneTools,
       isOverflowItemOpen: false,
       themeContext: {
         theme: PrimaryTheme,
@@ -2505,51 +2539,48 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   private toggleIsDisabledForSomeTools() {
-    this.setState((prevState) => ({
-      tools: {
-        ...prevState.tools,
-        1: {
-          ...prevState.tools[1],
-          vertical: {
-            ...prevState.tools[1].vertical,
-            cube: {
-              ...prevState.tools[1].vertical.cube,
-              isDisabled: !prevState.tools[1].vertical.cube.isDisabled,
-              isToolGroupOpen: false,
+    this.setState((prevState) => {
+      return {
+        tools: {
+          ...prevState.tools,
+          1: {
+            ...prevState.tools[1],
+            vertical: {
+              ...prevState.tools[1].vertical,
+              cube: {
+                ...prevState.tools[1].vertical.cube,
+                isDisabled: !prevState.tools[1].vertical.cube.isDisabled,
+                isToolGroupOpen: false,
+              },
             },
-            validate: {
-              ...prevState.tools[1].vertical.validate,
-              isDisabled: !prevState.tools[1].vertical.validate.isDisabled,
-              isToolGroupOpen: false,
+          },
+          3: {
+            ...prevState.tools[3],
+            vertical: {
+              ...prevState.tools[3].vertical,
+              browse: {
+                ...prevState.tools[3].vertical.browse,
+                isDisabled: !prevState.tools[3].vertical.browse.isDisabled,
+                isToolGroupOpen: false,
+              },
+              chat: {
+                ...prevState.tools[3].vertical.chat,
+                isDisabled: !prevState.tools[3].vertical.chat.isDisabled,
+                isToolGroupOpen: false,
+              },
             },
           },
         },
-        3: {
-          ...prevState.tools[3],
-          horizontal: {
-            ...prevState.tools[3].horizontal,
-            toolSettings: {
-              ...prevState.tools[3].horizontal.toolSettings,
-              isDisabled: !prevState.tools[3].horizontal.toolSettings.isDisabled,
-              isToolGroupOpen: false,
-            },
-          },
-          vertical: {
-            ...prevState.tools[3].vertical,
-            browse: {
-              ...prevState.tools[3].vertical.browse,
-              isDisabled: !prevState.tools[3].vertical.browse.isDisabled,
-              isToolGroupOpen: false,
-            },
-            chat: {
-              ...prevState.tools[3].vertical.chat,
-              isDisabled: !prevState.tools[3].vertical.chat.isDisabled,
-              isToolGroupOpen: false,
-            },
-          },
-        },
-      },
-    }));
+      };
+    });
+  }
+
+  private toggleTools() {
+    this.setState((prevState) => {
+      return {
+        tools: isHiddenTools(prevState.tools) ? zoneTools : hiddenZoneTools,
+      };
+    });
   }
 
   private _handleContentClick = () => {
@@ -2575,6 +2606,8 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       return this.toggleToolSettings();
     else if (toolId === "disableTools")
       return this.toggleIsDisabledForSomeTools();
+    else if (toolId === "toggleTools")
+      return this.toggleTools();
 
     this.setState((prevState) => {
       const location = this.findTool(toolId, prevState);
