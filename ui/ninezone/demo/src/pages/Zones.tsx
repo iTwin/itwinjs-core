@@ -62,7 +62,7 @@ import HistoryIcon from "@src/toolbar/item/expandable/history/Icon";
 import HistoryTray, { History, DefaultHistoryManager } from "@src/toolbar/item/expandable/history/Tray";
 import HistoryPlaceholder from "@src/toolbar/item/expandable/history/Placeholder";
 import ToolbarIcon from "@src/toolbar/item/Icon";
-import Toolbar, { /*ToolbarPanelAlignment*/ } from "@src/toolbar/Toolbar";
+import Toolbar, { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import ScrollableToolbar from "@src/toolbar/Scrollable";
 import Direction from "@src/utilities/Direction";
 import { PointProps } from "@src/utilities/Point";
@@ -192,8 +192,7 @@ interface HistoryItem {
 }
 
 interface ToolGroupItem {
-  icon: string;
-  trayId: string | undefined;
+  trayId?: string;
   isDisabled?: boolean;
 }
 
@@ -208,13 +207,11 @@ interface ToolGroupTray {
 
 interface SimpleTool {
   id: string;
-  icon: string;
   isDisabled?: boolean;
 }
 
 interface ToolGroup {
   id: string;
-  icon: string;
   trayId: string;
   backTrays: ReadonlyArray<string>;
   trays: { [id: string]: ToolGroupTray };
@@ -940,11 +937,10 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
     return VisibilityMode.Timeout;
   }
 
-  private getTab(tabId: number, icon: string, mode: TabMode, lastPosition: PointProps | undefined) {
+  private getTab(tabId: number, mode: TabMode, lastPosition: PointProps | undefined) {
     return (
       <FloatingZoneWidgetTab
         anchor={this.props.anchor}
-        icon={icon}
         lastPosition={lastPosition}
         mode={mode}
         onClick={this.props.onTabClick}
@@ -973,19 +969,19 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
             anchor={this.props.anchor}
             handleMode={handleMode}
           >
-            {this.getTab(1, "icon-settings", mode1, lastPosition1)}
-            {this.getTab(2, "icon-help", mode2, lastPosition2)}
+            {this.getTab(1, mode1, lastPosition1)}
+            {this.getTab(2, mode2, lastPosition2)}
           </WidgetTabGroup >
         );
       }
       case 6: {
-        return this.getTab(1, "icon-placeholder", mode1, lastPosition1);
+        return this.getTab(1, mode1, lastPosition1);
       }
       case 7: {
-        return this.getTab(1, "icon-placeholder", mode1, lastPosition1);
+        return this.getTab(1, mode1, lastPosition1);
       }
       case 8: {
-        return this.getTab(1, "icon-placeholder", mode1, lastPosition1);
+        return this.getTab(1, mode1, lastPosition1);
       }
       case 9: {
         return (
@@ -993,8 +989,8 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
             anchor={this.props.anchor}
             handleMode={handleMode}
           >
-            {this.getTab(1, "icon-settings", mode1, lastPosition1)}
-            {this.getTab(2, "icon-help", mode2, lastPosition2)}
+            {this.getTab(1, mode1, lastPosition1)}
+            {this.getTab(2, mode2, lastPosition2)}
           </WidgetTabGroup>
         );
       }
@@ -1005,7 +1001,6 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
 
 interface FloatingZoneWidgetTabProps {
   anchor: HorizontalAnchor;
-  icon: string;
   lastPosition: PointProps | undefined;
   mode: TabMode;
   onClick: (widgetId: WidgetZoneIndex, tabId: number) => void;
@@ -1029,7 +1024,7 @@ class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabPro
         onDrag={this.props.onDrag}
         anchor={this.props.anchor}
       >
-        <i className={`icon ${this.props.icon}`} />
+        {placeholderIcon}
       </WidgetTab>
     );
   }
@@ -1151,7 +1146,7 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
               position={this.state.mousePosition}
               adjustPosition={adjustTooltipPosition}
             >
-              <i className="icon icon-placeholder" />
+              {placeholderIcon}
             </TooltipWithTimeout>
           )
         }
@@ -1435,9 +1430,7 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
           isDisabled={this.props.tool.isDisabled}
         >
           <ToolbarIcon
-            icon={
-              <i className={`icon ${this.props.tool.icon}`} />
-            }
+            icon={placeholderIcon}
             onClick={this._handleOnClick}
             isDisabled={this.props.tool.isDisabled}
           />
@@ -1447,9 +1440,7 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
 
     return (
       <ToolbarIcon
-        icon={
-          <i className={`icon ${this.props.tool.icon}`} />
-        }
+        icon={placeholderIcon}
         isDisabled={this.props.tool.isDisabled}
         onClick={this._handleOnClick}
       />
@@ -1481,11 +1472,9 @@ class ToolbarItemHistoryTray extends React.PureComponent<ToolbarItemHistoryTrayP
           onIsHistoryExtendedChange={this._handleOnIsHistoryExtendedChange}
           items={
             this.props.tool.history.map((entry) => {
-              const tray = this.props.tool.trays[entry.item.trayId];
               return (
                 <ToolbarItemHistoryItem
                   history={entry.item}
-                  icon={tray.columns[entry.item.columnId].items[entry.item.itemId].icon}
                   key={entry.key}
                   onClick={this._handleOnHistoryItemClick}
                 />
@@ -1508,7 +1497,6 @@ class ToolbarItemHistoryTray extends React.PureComponent<ToolbarItemHistoryTrayP
 
 interface ToolbarItemHistoryItemProps {
   history: HistoryItem;
-  icon: string;
   onClick: (history: HistoryItem) => void;
 }
 
@@ -1518,7 +1506,7 @@ class ToolbarItemHistoryItem extends React.PureComponent<ToolbarItemHistoryItemP
       <HistoryIcon
         onClick={this._handleOnClick}
       >
-        <i className={`icon ${this.props.icon}`} />
+        {placeholderIcon}
       </HistoryIcon>
     );
   }
@@ -1553,7 +1541,6 @@ class ToolbarItemPanel extends React.PureComponent<ToolbarItemPanelProps> {
                 return (
                   <GroupColumnExpander
                     key={itemId}
-                    icon={item.icon}
                     isDisabled={item.isDisabled || false}
                     label={itemId}
                     onClick={this._handleExpanderClick}
@@ -1563,7 +1550,6 @@ class ToolbarItemPanel extends React.PureComponent<ToolbarItemPanelProps> {
               return (
                 <GroupColumnTool
                   columnId={columnId}
-                  icon={item.icon}
                   isDisabled={item.isDisabled || false}
                   itemId={itemId}
                   key={itemId}
@@ -1613,7 +1599,6 @@ class ToolbarItemPanel extends React.PureComponent<ToolbarItemPanelProps> {
 }
 
 interface GroupColumnExpanderProps {
-  icon: string;
   isDisabled: boolean;
   label: string;
   onClick: (trayId: string) => void;
@@ -1625,9 +1610,7 @@ class GroupColumnExpander extends React.PureComponent<GroupColumnExpanderProps> 
     return (
       <ToolGroupExpander
         label={this.props.label}
-        icon={
-          <i className={`icon ${this.props.icon}`} />
-        }
+        icon={placeholderIcon}
         onClick={this._handleOnClick}
         isDisabled={this.props.isDisabled}
       />
@@ -1641,7 +1624,6 @@ class GroupColumnExpander extends React.PureComponent<GroupColumnExpanderProps> 
 
 interface GroupColumnToolProps {
   columnId: string;
-  icon: string;
   isDisabled: boolean;
   itemId: string;
   label: string;
@@ -1661,9 +1643,7 @@ class GroupColumnTool extends React.PureComponent<GroupColumnToolProps> {
       <GroupTool
         label={this.props.label}
         onClick={this._handleOnClick}
-        icon={
-          <i className={`icon ${this.props.icon}`} />
-        }
+        icon={placeholderIcon}
         isDisabled={this.props.isDisabled}
       />
     );
@@ -1716,6 +1696,7 @@ class Zone1 extends React.PureComponent<Zone1Props> {
               onPanelBack={this.props.onPanelBack}
               onPanelToolClick={this.props.onPanelToolClick}
               onToolClick={this.props.onToolClick}
+              panelAlignment={ToolbarPanelAlignment.Start}
               tools={this.props.horizontalTools}
             />
           }
@@ -1728,6 +1709,7 @@ class Zone1 extends React.PureComponent<Zone1Props> {
               onPanelBack={this.props.onPanelBack}
               onPanelToolClick={this.props.onPanelToolClick}
               onToolClick={this.props.onToolClick}
+              panelAlignment={ToolbarPanelAlignment.Start}
               tools={this.props.verticalTools}
             />
           }
@@ -1759,6 +1741,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
               onPanelBack={this.props.onPanelBack}
               onPanelToolClick={this.props.onPanelToolClick}
               onToolClick={this.props.onToolClick}
+              panelAlignment={ToolbarPanelAlignment.Start}
               tools={this.props.horizontalTools}
             />
           }
@@ -1772,6 +1755,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
               onPanelToolClick={this.props.onPanelToolClick}
               onScroll={this.props.onToolbarScroll}
               onToolClick={this.props.onToolClick}
+              panelAlignment={ToolbarPanelAlignment.End}
               tools={this.props.verticalTools}
             />
           }
@@ -1780,7 +1764,6 @@ class Zone3 extends React.PureComponent<Zone3Props> {
     );
     /*
     <ToolsWidget
-      panelAlignment={ToolbarPanelAlignment.End}
       panels={
         this.state.isOverflowItemOpen &&
         <ToolGroupContained
@@ -1823,11 +1806,12 @@ interface ToolZoneToolbarProps {
   onPanelBack: (toolId: string) => void;
   onPanelToolClick: (args: ToolbarItemGroupToolClickArgs) => void;
   onToolClick: (toolId: string) => void;
+  panelAlignment: ToolbarPanelAlignment;
   tools: Tools;
 }
 
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
-  public static readonly defaultProps: Partial<ToolZoneToolbarProps> = {
+  public static readonly defaultProps = {
     // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
     children: function(this: ToolZoneToolbarProps,
       items: React.ReactNode, panels: React.ReactNode, histories: React.ReactNode) {
@@ -1836,6 +1820,7 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
           expandsTo={this.expandsTo}
           items={items}
           panels={panels}
+          panelAlignment={this.panelAlignment}
           histories={histories}
         />
       );
@@ -1893,7 +1878,7 @@ interface ScrollableToolbarProps extends OmitChildrenProp<ToolZoneToolbarProps> 
 
 class ToolZoneScrollableToolbar extends React.PureComponent<ScrollableToolbarProps> {
   public render() {
-    const { expandsTo, ...props } = this.props;
+    const { onScroll, ...props } = this.props;
     return (
       <ToolZoneToolbar
         {...props}
@@ -1915,6 +1900,10 @@ class ToolZoneScrollableToolbar extends React.PureComponent<ScrollableToolbarPro
     );
   }
 }
+
+const placeholderIcon = (
+  <i className="icon icon-placeholder" />
+);
 
 export default class ZonesExample extends React.PureComponent<{}, State> {
   private _app = React.createRef<App>();
@@ -1947,17 +1936,14 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
           horizontal: {
             disableTools: {
               id: "disableTools",
-              icon: "icon-placeholder",
-            } as SimpleTool,
+            },
             toggleTools: {
               id: "toggleTools",
-              icon: "icon-placeholder",
-            } as SimpleTool,
+            },
           },
           vertical: {
             cube: {
               id: "cube",
-              icon: "icon-placeholder",
               trayId: "tray1",
               backTrays: [],
               trays: {
@@ -1967,50 +1953,34 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                     0: {
                       items: {
                         Test1: {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                         Test2123123: {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
                           isDisabled: true,
                         },
                         Test3: {
-                          icon: "icon-placeholder",
                           trayId: "tray2",
                         },
                         Test4: {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                         Test5: {
-                          icon: "icon-placeholder",
                           trayId: "disabled",
                           isDisabled: true,
                         },
                         Test6: {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                         Test7: {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                       },
                     },
                     1: {
                       items: {
                         Test5: {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                       },
                     },
                     2: {
                       items: {
                         ":)": {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                       },
                     },
@@ -2022,8 +1992,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                     0: {
                       items: {
                         Test1: {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                       },
                     },
@@ -2034,7 +2002,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
               history: [],
               isExtended: false,
               isToolGroupOpen: false,
-            } as ToolGroup,
+            },
             validate: {
               id: "validate",
               trayId: "tray1",
@@ -2046,8 +2014,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                     0: {
                       items: {
                         Validate: {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                       },
                     },
@@ -2056,10 +2022,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
               },
               direction: Direction.Right,
               history: [],
-              icon: "icon-placeholder",
               isExtended: false,
               isToolGroupOpen: false,
-            } as ToolGroup,
+            },
           },
         },
         3: {
@@ -2075,12 +2040,8 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                     0: {
                       items: {
                         "3D#1": {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                         "3D#2": {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                       },
                     },
@@ -2091,15 +2052,12 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
               history: [],
               isExtended: false,
               isToolGroupOpen: false,
-              icon: "icon-placeholder",
-            } as ToolGroup,
+            },
             overflow: {
               id: "overflow",
-              icon: "icon-placeholder",
             },
             toolSettings: {
               id: "toolSettings",
-              icon: "icon-placeholder",
             },
           },
           vertical: {
@@ -2116,7 +2074,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                       items: {
                         Test1: {
                           icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                       },
                     },
@@ -2130,11 +2087,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
             } as ToolGroup,
             chat: {
               id: "chat",
-              icon: "icon-placeholder",
             },
             browse: {
               id: "browse",
-              icon: "icon-placeholder",
             },
             clipboard: {
               id: "clipboard",
@@ -2148,11 +2103,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                       items: {
                         "3D#1": {
                           icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                         "3D#2": {
                           icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                       },
                     },
@@ -2177,11 +2130,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                       items: {
                         "3D#1": {
                           icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                         "3D#2": {
                           icon: "icon-placeholder",
-                          trayId: undefined,
                         },
                       },
                     },
@@ -2196,11 +2147,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
             } as ToolGroup,
             chat2: {
               id: "chat2",
-              icon: "icon-placeholder",
             },
             document: {
               id: "document",
-              icon: "icon-document",
             },
           },
         },
@@ -2327,7 +2276,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
           }
         }
       >
-        <i className="icon icon-tools" />
+        {placeholderIcon}
       </ToolSettingsWidgetTab>
     );
     switch (this.state.secondZoneContent) {
