@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext, BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken, Config, ChangeSet } from "@bentley/imodeljs-clients";
 import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
@@ -14,6 +14,10 @@ import { DisableNativeAssertions as NativeDisableNativeAssertions } from "../imo
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubUtility, UserCredentials } from "./integration/HubUtility";
 import * as path from "path";
+import { Schema, Schemas } from "../Schema";
+import { ElementDrivesElement, RelationshipProps } from "../Relationship";
+import { PhysicalElement } from "../Element";
+import { ClassRegistry } from "../ClassRegistry";
 
 const actx = new ActivityLoggingContext("");
 
@@ -143,6 +147,30 @@ export class DisableNativeAssertions implements IDisposable {
     this._native!.dispose();
     this._native = undefined;
   }
+}
+
+export class TestBim extends Schema { }
+export interface TestRelationshipProps extends RelationshipProps {
+  property1: string;
+}
+export class TestElementDrivesElement extends ElementDrivesElement implements TestRelationshipProps {
+  public property1!: string;
+  public static rootChanged = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
+  public static validateOutput = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
+  public static deletedDependency = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
+  public static onRootChanged(props: RelationshipProps, imodel: IModelDb): void { this.rootChanged.raiseEvent(props, imodel); }
+  public static onValidateOutput(props: RelationshipProps, imodel: IModelDb): void { this.validateOutput.raiseEvent(props, imodel); }
+  public static onDeletedDependency(props: RelationshipProps, imodel: IModelDb): void { this.deletedDependency.raiseEvent(props, imodel); }
+}
+export interface TestPhysicalObjectProps extends GeometricElementProps {
+  intProperty: number;
+}
+export class TestPhysicalObject extends PhysicalElement implements TestPhysicalObjectProps {
+  public intProperty!: number;
+  public static beforeOutputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
+  public static allInputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
+  public static onBeforeOutputsHandled(id: Id64String, imodel: IModelDb): void { this.beforeOutputsHandled.raiseEvent(id, imodel); }
+  public static onAllInputsHandled(id: Id64String, imodel: IModelDb): void { this.allInputsHandled.raiseEvent(id, imodel); }
 }
 
 export class IModelTestUtils {
@@ -319,6 +347,9 @@ export class IModelTestUtils {
   public static startBackend() {
     const config = new IModelHostConfiguration();
     IModelHost.startup(config);
+    Schemas.registerSchema(TestBim);
+    ClassRegistry.register(TestPhysicalObject, TestBim);
+    ClassRegistry.register(TestElementDrivesElement, TestBim);
   }
 }
 

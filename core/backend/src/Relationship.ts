@@ -29,7 +29,7 @@ export class Relationship extends Entity implements RelationshipProps {
   public readonly targetId: Id64String;
 
   /** @hidden */
-  protected constructor(props: RelationshipProps, iModel: IModelDb) {
+  constructor(props: RelationshipProps, iModel: IModelDb) {
     super(props, iModel);
     this.sourceId = Id64.fromJSON(props.sourceId);
     this.targetId = Id64.fromJSON(props.targetId);
@@ -43,9 +43,9 @@ export class Relationship extends Entity implements RelationshipProps {
     return val;
   }
 
-  public static onRootChanged(_props: RelationshipProps): void { }
-  public static onValidateOutput(_props: RelationshipProps): void { }
-  public static onDeletedDependency(_props: RelationshipProps): void { }
+  public static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void { }
+  public static onValidateOutput(_props: RelationshipProps, _iModel: IModelDb): void { }
+  public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void { }
 
   /** Insert this Relationship into the iModel. */
   public insert(): Id64String { return this.iModel.relationships.insertInstance(this); }
@@ -135,14 +135,14 @@ export class Relationships {
   private _iModel: IModelDb;
 
   /** @hidden */
-  public constructor(iModel: IModelDb) { this._iModel = iModel; }
+  constructor(iModel: IModelDb) { this._iModel = iModel; }
 
   /**
    * Create a new instance of a Relationship.
    * @param props The properties of the new Relationship.
    * @throws [[IModelError]] if there is a problem creating the Relationship.
    */
-  public createInstance(props: RelationshipProps): Relationship { return this._iModel.constructEntity(props) as Relationship; }
+  public createInstance(props: RelationshipProps): Relationship { return this._iModel.constructEntity<Relationship>(props); }
 
   /**
    * Insert a new relationship instance into the iModel.
@@ -207,6 +207,6 @@ export class Relationships {
 
   /** Get a Relationship instance */
   public getInstance<T extends Relationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T {
-    return this._iModel.constructEntity(this.getInstanceProps(relClassSqlName, criteria)) as T;
+    return this._iModel.constructEntity<T>(this.getInstanceProps(relClassSqlName, criteria));
   }
 }

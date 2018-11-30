@@ -1,0 +1,8 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Item /> renders correctly 1`] = `
+<button
+  className="nz-toolbar-item-item nz-gradient"
+  onClick={[Function]}
+/>
+`;
