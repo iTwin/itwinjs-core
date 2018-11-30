@@ -13,6 +13,9 @@ type HttpServer = import("http").Server;
 // tslint:enable:whitespace
 /**
  * An express web server with some reasonable defaults for web applications built with @bentley/webpack-tools.
+ * @note This server is not designed to be a hardened, secure endpoint on the public internet.
+ *       It is intended to participate in a private HTTP exchange with a public-facing routing and provisioning infrastructure
+ *       that should be supplied by the application's deployment environment.
  */
 export class IModelJsExpressServer {
   private _protocol: WebAppRpcProtocol;

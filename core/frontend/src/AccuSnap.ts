@@ -292,13 +292,14 @@ export class AccuSnap implements Decorator {
   }
 
   /** try to indicate what's wrong with the current point (why we're not snapping). */
-  private showSnapError(status: SnapStatus, ev: BeButtonEvent) {
+  private showSnapError(out: LocateResponse, ev: BeButtonEvent) {
+    this.explanation = out.explanation;
+    this.errorKey = out.reason;
     this.errorIcon.deactivate();
 
     const vp = ev.viewport!;
     let errorSprite: Sprite | undefined;
-    switch (status) {
-      case SnapStatus.FilteredByUser:
+    switch (out.snapStatus) {
       case SnapStatus.FilteredByApp:
         errorSprite = IconSprites.getSpriteFromUrl("SnapAppFiltered.png");
         break;
@@ -310,11 +311,6 @@ export class AccuSnap implements Decorator {
       case SnapStatus.NotSnappable:
         errorSprite = IconSprites.getSpriteFromUrl("SnapNotSnappable.png");
         this.errorKey = ElementLocateManager.getFailureMessageKey("NotSnappable");
-        break;
-
-      case SnapStatus.ModelNotSnappable:
-        errorSprite = IconSprites.getSpriteFromUrl("SnapNotSnappable.png");
-        this.errorKey = ElementLocateManager.getFailureMessageKey("ModelNotAllowed");
         break;
     }
 
@@ -441,6 +437,14 @@ export class AccuSnap implements Decorator {
   }
 
   public static async requestSnap(thisHit: HitDetail, snapModes: SnapMode[], hotDistanceInches: number, keypointDivisor: number, hitList?: HitList<HitDetail>, out?: LocateResponse): Promise<SnapDetail | undefined> {
+    if (undefined !== thisHit.subCategoryId) {
+      const appearance = thisHit.viewport.view.getSubCategoryAppearance(thisHit.subCategoryId);
+      if (appearance.dontSnap) {
+        if (out) out.snapStatus = SnapStatus.NotSnappable;
+        return undefined;
+      }
+    }
+
     const requestProps: SnapRequestProps = {
       id: thisHit.sourceId,
       testPoint: thisHit.testPoint,
@@ -529,6 +533,12 @@ export class AccuSnap implements Decorator {
     if (undefined === thisHit)
       return undefined;
 
+    const filterStatus = (this.isLocateEnabled ? IModelApp.locateManager.filterHit(thisHit, LocateAction.AutoLocate, out) : LocateFilterStatus.Accept);
+    if (LocateFilterStatus.Accept !== filterStatus) {
+      out.snapStatus = SnapStatus.FilteredByApp;
+      return undefined;
+    }
+
     let snapModes: SnapMode[];
     if (IModelApp.tentativePoint.isActive) {
       snapModes = [];
@@ -537,16 +547,9 @@ export class AccuSnap implements Decorator {
       snapModes = this.getActiveSnapModes(); // Get the list of point snap modes to consider
     }
 
-    this.explanation = "";
     const thisSnap = await AccuSnap.requestSnap(thisHit, snapModes, this._hotDistanceInches, this.keypointDivisor, hitList, out);
     if (undefined === thisSnap)
       return undefined;
-
-    const filterStatus = (this.isLocateEnabled ? IModelApp.locateManager.filterHit(thisSnap, LocateAction.AutoLocate, out) : LocateFilterStatus.Accept);
-    if (LocateFilterStatus.Accept !== filterStatus) {
-      out.snapStatus = SnapStatus.FilteredByApp;
-      return undefined;
-    }
 
     if (IModelApp.tentativePoint.isActive) {
       const tpSnap = IModelApp.tentativePoint.getCurrSnap();
@@ -669,7 +672,7 @@ export class AccuSnap implements Decorator {
       this.setCurrHit(hit);
 
     // indicate errors
-    this.showSnapError(out.snapStatus, ev);
+    this.showSnapError(out, ev);
     return out.snapStatus;
   }
 
@@ -694,7 +697,7 @@ export class AccuSnap implements Decorator {
       this.setCurrHit(hit);
 
     // indicate errors
-    this.showSnapError(out.snapStatus, ev);
+    this.showSnapError(out, ev);
   }
 
   public onMotionStopped(_ev: BeButtonEvent): void { this._motionStopTime = Date.now(); }

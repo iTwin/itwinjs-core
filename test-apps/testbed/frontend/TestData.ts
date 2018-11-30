@@ -24,7 +24,7 @@ export class TestData {
 
   public static async load() {
     TestData.accessToken = await TestData.getTestUserAccessToken();
-    TestData.testProjectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsTest");
+    TestData.testProjectId = await TestData.getTestProjectId(TestData.accessToken, "iModelJsIntegrationTest");
     TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "ConnectionReadTest");
   }
 

@@ -6,7 +6,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { addModelViewProjectionMatrix } from "./Vertex";
-import { addHiliter } from "./FeatureSymbology";
+import { addUniformHiliter } from "./FeatureSymbology";
 import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent, VariableType } from "../ShaderBuilder";
 import { PointCloudGeometry } from "../PointCloud";
 import { GL } from "../GL";
@@ -44,6 +44,6 @@ export function createPointCloudBuilder(): ProgramBuilder {
 
 export function createPointCloudHiliter(): ProgramBuilder {
   const builder = createBuilder();
-  addHiliter(builder, false);
+  addUniformHiliter(builder);
   return builder;
 }

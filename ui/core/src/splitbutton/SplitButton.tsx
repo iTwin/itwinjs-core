@@ -18,7 +18,7 @@ export enum SplitButtonActionType {
   List,
 }
 
-/** Property interface for SplitButton */
+/** Property interface for [[SplitButton]] */
 export interface SplitButtonProps {
   /** Label to display in click area. */
   label: string | React.ReactNode;

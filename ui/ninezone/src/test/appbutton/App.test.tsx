@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import AppButton from "../../app/button/App";
+import AppButton from "../../widget/tools/button/App";
 
 describe("<AppButton />", () => {
   it("should render", () => {

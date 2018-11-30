@@ -47,14 +47,14 @@
     box-sizing: border-box;
     width: 100%;
     height: 100%;
-    padding: 9px 8px;
+    padding: 5px 8px;
   }
 }
 
 .components-property-list--horizontal{
   @include components-property-list;
   display: grid;
-  grid-row-gap: 10px;
+  grid-row-gap: 1px;    // A gap of 10px is too wasteful
 }
 
 .components-property-list--vertical {

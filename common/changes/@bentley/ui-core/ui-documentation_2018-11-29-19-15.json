@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "dan.east@bentley.com"
+}

@@ -98,7 +98,10 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
 
   public render(): JSX.Element | undefined {
     let element: JSX.Element | undefined;
-    if (!this.props.accessToken && OverallContentPage.OfflinePage !== this.props.currentPage) {
+
+    const currentPage = navigator.onLine ? this.props.currentPage : OverallContentPage.OfflinePage;
+
+    if (!this.props.accessToken && OverallContentPage.OfflinePage !== currentPage) {
       const appHeaderProps: ApplicationHeaderProps = {
         icon: this.props.appHeaderIcon,
         message: this.props.appHeaderMessage,
@@ -111,15 +114,15 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
           <SignIn onSignIn={() => OidcClientWrapper.oidcClient.signIn(new ActivityLoggingContext(""))} onOffline={this._onOffline.bind(this)} />
         </React.Fragment>
       );
-    } else if (OverallContentPage.SelectIModelPage === this.props.currentPage) {
+    } else if (navigator.onLine && OverallContentPage.SelectIModelPage === currentPage) {
       element = <IModelOpen accessToken={this.props.accessToken} onOpenIModel={this._onOpenIModel.bind(this)} />;
-    } else if (OverallContentPage.ConfigurableUiPage === this.props.currentPage || OverallContentPage.OfflinePage === this.props.currentPage) {
+    } else if (OverallContentPage.ConfigurableUiPage === currentPage || OverallContentPage.OfflinePage === currentPage) {
       const configurableUiContentProps = {
         appBackstage: this.props.appBackstage,
       };
       element = <ConfigurableUiContent {...configurableUiContentProps} />;
-    } else if (React.Children.count(this.props.children) > this.props.currentPage) {
-      element = React.Children.toArray(this.props.children)[this.props.currentPage] as React.ReactElement<any>;
+    } else if (React.Children.count(this.props.children) > currentPage) {
+      element = React.Children.toArray(this.props.children)[currentPage] as React.ReactElement<any>;
     }
 
     return (

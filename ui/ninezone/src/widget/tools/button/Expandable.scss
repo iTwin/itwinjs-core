@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-@import "../../_geometry";
+@import "../../../_geometry";
 @import "_variables";
 
 .nz-toolbar-button-expandable {
@@ -14,8 +14,8 @@
 
   position: relative;
 
-  > .nz-button {
-    > .nz-triangle {
+  >.nz-button {
+    >.nz-triangle {
       border-radius: 0;
       position: absolute;
       right: $margin-from-triangle-to-stroke;
@@ -27,13 +27,13 @@
     }
 
     &:hover {
-      > .nz-triangle {
+      >.nz-triangle {
         @include triangle-bottom-right-color($hovered-icon-color);
       }
     }
 
     &:active {
-      > .nz-triangle {
+      >.nz-triangle {
         filter: $no-shadow;
 
         @include triangle-bottom-right-color($pressed-icon-color);

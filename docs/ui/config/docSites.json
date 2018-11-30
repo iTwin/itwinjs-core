@@ -13,8 +13,9 @@
   },
   "metadata": {
     "home": "getting-started",
-    "logo": "getting-started/imodeljs.ico",
-    "favicon": "getting-started/imodeljs.ico",
+    "logo": "getting-started/assets/imodeljs-logo.svg",
+    "smallLogo": "getting-started/assets/imodeljs-icon.svg",
+    "favicon": "getting-started/assets/imodeljs_16.png",
     "docSiteOrder": [
       "getting-started",
       "learning",

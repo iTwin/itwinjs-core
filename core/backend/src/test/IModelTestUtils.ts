@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext, BeEvent } from "@bentley/bentleyjs-core";
-import { AccessToken, Config } from "@bentley/imodeljs-clients";
+import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { AccessToken, Config, ChangeSet } from "@bentley/imodeljs-clients";
 import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
@@ -12,9 +12,7 @@ import {
 } from "../backend";
 import { DisableNativeAssertions as NativeDisableNativeAssertions } from "../imodeljs-native-platform-api";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { TestIModelInfo } from "./MockAssetUtil";
 import { HubUtility, UserCredentials } from "./integration/HubUtility";
-import { TestConfig } from "./TestConfig";
 import * as path from "path";
 import { Schema, Schemas } from "../Schema";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
@@ -35,6 +33,33 @@ export class Timer {
     // tslint:disable-next-line:no-console
     console.timeEnd(this._label);
   }
+}
+
+export class TestIModelInfo {
+  private _name: string;
+  private _id: string;
+  private _localReadonlyPath: string;
+  private _localReadWritePath: string;
+  private _changeSets: ChangeSet[];
+
+  constructor(name: string) {
+    this._name = name;
+    this._id = "";
+    this._localReadonlyPath = "";
+    this._localReadWritePath = "";
+    this._changeSets = [];
+  }
+
+  get name(): string { return this._name; }
+  set name(name: string) { this._name = name; }
+  get id(): string { return this._id; }
+  set id(id: string) { this._id = id; }
+  get localReadonlyPath(): string { return this._localReadonlyPath; }
+  set localReadonlyPath(localReadonlyPath: string) { this._localReadonlyPath = localReadonlyPath; }
+  get localReadWritePath(): string { return this._localReadWritePath; }
+  set localReadWritePath(localReadWritePath: string) { this._localReadWritePath = localReadWritePath; }
+  get changeSets(): ChangeSet[] { return this._changeSets; }
+  set changeSets(changeSets: ChangeSet[]) { this._changeSets = changeSets; }
 }
 
 RpcConfiguration.developmentMode = true;
@@ -149,38 +174,16 @@ export class TestPhysicalObject extends PhysicalElement implements TestPhysicalO
 }
 
 export class IModelTestUtils {
+  public static async getTestModelInfo(accessToken: AccessToken, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
+    const iModelInfo = new TestIModelInfo(iModelName);
+    iModelInfo.id = await HubUtility.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name);
 
-  // public static async createIModel(accessToken: AccessToken, projectId: string, name: string, seedFile: string) {
-  //   try {
-  //     const existingid = await HubUtility.queryIModelIdByName(accessToken, projectId, name);
-  //     BriefcaseManager.imodelClient.iModels.delete(actx, accessToken, projectId, existingid);
-  //   } catch (_err) {
-  //   }
-  //   return BriefcaseManager.imodelClient.iModels.create(actx, accessToken, projectId, name, seedFile);
-  // }
-
-  public static async setupIntegratedFixture(testIModels: TestIModelInfo[]): Promise<any> {
-    const accessToken = await IModelTestUtils.getTestUserAccessToken();
-    const testProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
+    iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
+    iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-    for (const iModelInfo of testIModels) {
-      iModelInfo.id = (await HubUtility.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name)).toString();
-      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
-      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
-
-      iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, iModelInfo.id);
-      iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
-
-      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
-      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
-
-      // Purge briefcases that are close to reaching the acquire limit
-      const superAccessToken: AccessToken = await HubUtility.login(TestUsers.super);
-      await HubUtility.purgeAcquiredBriefcases(superAccessToken, TestConfig.projectName, iModelInfo.name);
-    }
-
-    return [accessToken, testProjectId, cacheDir];
+    iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, iModelInfo.id);
+    return iModelInfo;
   }
 
   public static async getTestUserAccessToken(userCredentials: any = TestUsers.regular): Promise<AccessToken> {

@@ -22,7 +22,7 @@ export enum MessageSeverity {
   Fatal = 5,
 }
 
-/** Property interface for MessageBox */
+/** Property interface for [[MessageBox]] */
 export interface MessageBoxProps {
   /** Severity of MessageBox */
   severity: MessageSeverity;
@@ -81,7 +81,7 @@ export class MessageBox extends React.Component<MessageBoxProps> {
   }
 }
 
-/** Property interface for MessageContainer */
+/** Property interface for [[MessageContainer]] */
 export interface MessageContainerProps {
   severity: MessageSeverity;
 }

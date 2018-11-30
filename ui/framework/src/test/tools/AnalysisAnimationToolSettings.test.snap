@@ -139,7 +139,7 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
                 title="tools.AnalysisAnimation.ToolSettings.play"
               >
                 <button
-                  className="nz-toolbar-item-icon nz-gradient"
+                  className="nz-toolbar-item-icon"
                   onClick={[Function]}
                   title="tools.AnalysisAnimation.ToolSettings.play"
                 >
@@ -170,7 +170,7 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
                 title="tools.AnalysisAnimation.ToolSettings.pause"
               >
                 <button
-                  className="nz-toolbar-item-icon nz-gradient"
+                  className="nz-toolbar-item-icon"
                   onClick={[Function]}
                   title="tools.AnalysisAnimation.ToolSettings.pause"
                 >
@@ -201,7 +201,7 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
                 title="tools.AnalysisAnimation.ToolSettings.stop"
               >
                 <button
-                  className="nz-toolbar-item-icon nz-is-active nz-gradient"
+                  className="nz-toolbar-item-icon nz-is-active"
                   onClick={[Function]}
                   title="tools.AnalysisAnimation.ToolSettings.stop"
                 >
