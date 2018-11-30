@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** Parameters for starting SimpleViewTest with a specified initial configuration */
+/** Parameters for starting display-test-app with a specified initial configuration */
 export interface SVTConfiguration {
   customOrchestratorUri?: string;
   viewName?: string;

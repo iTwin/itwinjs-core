@@ -1,6 +1,6 @@
 {
-  "name": "simpleviewtest",
-  "description": "Simple View Testing interactive application.",
+  "name": "display-test-app",
+  "description": "Internal app for testing features of display system",
   "license": "UNLICENSED",
   "author": {
     "name": "Bentley Systems, Inc.",

@@ -189,8 +189,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "simpleviewtest",
-      "projectFolder": "test-apps/simpleviewtest",
+      "packageName": "display-test-app",
+      "projectFolder": "test-apps/display-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

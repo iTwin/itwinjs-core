@@ -64,7 +64,7 @@ if (serverConfig === undefined) {
 Logger.logTrace("SVT", `config = ${JSON.stringify(serverConfig)}`);
 
 // Set up the ability to serve the supported rpcInterfaces via web requests
-const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "SimpleViewApp", version: "v1.0" } }, getRpcInterfaces());
+const cloudConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "display-test-app", version: "v1.0" } }, getRpcInterfaces());
 
 const app = express();
 app.use(bodyParser.text());
@@ -92,7 +92,7 @@ app.get("/signin-callback", (_req, res) => {
 // ---------------------------------------------
 app.set("port", serverConfig.port);
 
-const announce = () => console.log(`***** SimpleViewTest listening on ${serverConfig.baseUrl}:${app.get("port")}`);
+const announce = () => console.log(`***** display-test-app listening on ${serverConfig.baseUrl}:${app.get("port")}`);
 
 if (serverOptions === undefined) {
   app.listen(app.get("port"), announce);

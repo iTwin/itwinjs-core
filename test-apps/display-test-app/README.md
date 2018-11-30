@@ -1,4 +1,4 @@
-# SimpleViewTest Application
+# display-test-app Application
 
 ## About this Application
 
@@ -23,38 +23,38 @@ The application may be ran as an Electron app, Mobile app or within a browser. T
 
 * To get started, follow the instructions to setup the entire repository, located [here](../../README.md#Build\ Instructions).
 
-* Before starting SimpleViewTest, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, see [here](#Environment\ Variables).
+* Before starting display-test-app, there are optional environment variables that may be set to be recognized by the application upon startup. For a full list, see [here](#Environment\ Variables).
 
-* To start the application in Electron, navigate to the root of SimpleViewTest, and use the command:
+* To start the application in Electron, navigate to the root of display-test-app, and use the command:
   ```
   npm run start:electron
   ```
 
-* To start the application in a browser, run the following command, and then navigate to the URL for SimpleViewTest that prints to the console:
+* To start the application in a browser, run the following command, and then navigate to the URL for display-test-app that prints to the console:
   ```
   npm run start:web
   ```
 
-## Using SimpleViewTest
+## Using display-test-app
 
-* Upon starting SimpleViewTest, an initial iModel will automatically be loaded from the Hub (unless a local one was specified via an environment variable). From here, there are many tools in the top banner of the application that may be used.
+* Upon starting display-test-app, an initial iModel will automatically be loaded from the Hub (unless a local one was specified via an environment variable). From here, there are many tools in the top banner of the application that may be used.
 * Users may open a new iModel by clicking the briefcase icon and navigating to a local file location.
 * Users can switch between stored views via the view dropdown menu.
 * The remaining tools contain ways to rotate the model, select parts of the view, undo and redo actions, and toggle on/off the camera as well as other view state settings.
 
 ## Debugging
 
-Debugging SimpleViewTest can be accomplished using the following procedures, depending on which packages of iModel.js you would like to step through:
+Debugging display-test-app can be accomplished using the following procedures, depending on which packages of iModel.js you would like to step through:
 
 * frontend
   * The frontend and common iModel.js core packages may be debugged simply by starting the addon using the steps listed in [Getting Started](#Getting\ Started), and then setting breakpoints within the Chrome developer tools window which will open automatically.
 * backend
-  * Calls to the imodeljs-backend functionality may be debugged by opening Visual Studio Code to the root of this repository, navigating to the debug tab, and selecting either 'SimpleViewTest Electron (backend)' or 'SimpleViewTest Browser (backend)' from the launch configuration dropdown. Note that in the browser configuration, only the web server will be started, and you must still manually navigate to the URL of the application in the browser (which is printed to the debug console). Any breakpoints for backend functionality set in Visual Studio Code will now be hit.
+  * Calls to the imodeljs-backend functionality may be debugged by opening Visual Studio Code to the root of this repository, navigating to the debug tab, and selecting either 'display-test-app Electron (backend)' or 'display-test-app Browser (backend)' from the launch configuration dropdown. Note that in the browser configuration, only the web server will be started, and you must still manually navigate to the URL of the application in the browser (which is printed to the debug console). Any breakpoints for backend functionality set in Visual Studio Code will now be hit.
 
 ## Dependencies
 
-* Installed dependencies for SimpleViewTest may be found in the generated node_modules directory. Since SimpleViewTest is but a part of a larger monorepo, the dependencies here are provided as symlinks into a master node_modules directory managed by the build tool Rush.
-* Any changes made to imodeljs-core files outside of this directory will not immediately be reflected in SimpleViewTest. The entire imodeljs-core monorepo must be rebuilt in order for changes to take effect.
+* Installed dependencies for display-test-app may be found in the generated node_modules directory. Since display-test-app is but a part of a larger monorepo, the dependencies here are provided as symlinks into a master node_modules directory managed by the build tool Rush.
+* Any changes made to imodeljs-core files outside of this directory will not immediately be reflected in display-test-app. The entire imodeljs-core monorepo must be rebuilt in order for changes to take effect.
 * If dependencies have changed after pulling the most recent version of imodeljs-core, it is often necessary to do a clean reinstall of all dependencies in order to avoid build errors.
   ```
   rush install -c
@@ -73,4 +73,4 @@ Debugging SimpleViewTest can be accomplished using the following procedures, dep
 * SVT_NO_DEVTOOLS
   * If defined, do not open the electron dev tools on startup
 * SVT_LOG_LEVEL
-  * If defined, the minimum logging level will be set to this value. Log messages are output to the terminal from which SimpleViewTest was run. Example log levels include "debug", "error", "warning", etc - see Logger.ParseLogLevel() for the complete list.
+  * If defined, the minimum logging level will be set to this value. Log messages are output to the terminal from which display-test-app was run. Example log levels include "debug", "error", "warning", etc - see Logger.ParseLogLevel() for the complete list.

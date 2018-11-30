@@ -8,7 +8,7 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { showStatus } from "./Utils";
 import { SimpleViewState } from "./SimpleViewState";
 
-/** Parameters for starting SimpleViewTest with a specified initial configuration */
+/** Parameters for starting display-test-app with a specified initial configuration */
 
 export enum ProjectScope {
   Favorites,
