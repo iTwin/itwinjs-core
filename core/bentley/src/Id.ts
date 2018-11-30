@@ -37,9 +37,7 @@ function isLowerCaseNonZeroHexDigit(str: string, index: number) {
 function isLowerCaseHexDigit(str: string, index: number, allowZero: boolean = true): boolean {
   const charCode = str.charCodeAt(index);
   const minDecimalDigit = allowZero ? 0x30 : 0x31; // '0' or '1'...
-  if (charCode >= minDecimalDigit && charCode <= 0x39) // ...to '9'
-    return true;
-  return charCode >= 0x61 && charCode <= 0x66; // 'a' to 'f'
+  return (charCode >= minDecimalDigit && charCode <= 0x39) || (charCode >= 0x61 && charCode <= 0x66); //  '0'-'9, 'a' -'f'
 }
 
 function isValidHexString(id: string, startIndex: number, len: number) {
@@ -102,7 +100,7 @@ export namespace Id64 {
    * @note if the input is not undefined, the result is the same as that of [[Id64.fromString]].
    */
   export function fromJSON(prop?: string): Id64String {
-    return typeof (prop) === "string" ? Id64.fromString(prop) : Id64.invalid;
+    return typeof prop === "string" ? Id64.fromString(prop) : Id64.invalid;
   }
 
   /** Given a string value, attempt to normalize it into a well-formed Id string.
@@ -113,8 +111,8 @@ export namespace Id64 {
    * For a description of "well-formed", see [Working with Ids]($docs/learning/common/Id64.md).
    */
   export function fromString(val: string): Id64String {
-    // NB: Yes, we must check the run-time type...
-    if (typeof (val) !== "string")
+    // NB: in case this is called from JavaScript, we must check the run-time type...
+    if (typeof val !== "string")
       return invalid;
 
     // Skip the common case in which the input is already a well-formed Id string
@@ -218,11 +216,11 @@ export namespace Id64 {
       return arg;
 
     const ids = new Set<Id64String>();
-    if (typeof (arg) === "string")
+    if (typeof arg === "string")
       ids.add(arg);
     else if (Array.isArray(arg)) {
       arg.forEach((id: Id64String) => {
-        if (typeof (id) === "string")
+        if (typeof id === "string")
           ids.add(id);
       });
     }
