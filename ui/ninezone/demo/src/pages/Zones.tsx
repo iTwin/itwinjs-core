@@ -128,24 +128,24 @@ interface DirectionTools<THorizontal extends Tools = Tools, TVertical extends To
 }
 
 interface Zone1HorizontalTools extends Tools {
-  d2: ToolGroup;
-  toggleItems: SimpleTool;
+  disableTools: SimpleTool;
+  toggleTools: SimpleTool;
 }
 
 interface Zone1VerticalTools extends Tools {
   cube: ToolGroup;
-  disableItems: SimpleTool;
   validate: ToolGroup;
 }
 
 interface Zone3HorizontalTools extends Tools {
+  d2: ToolGroup;
   overflow: SimpleTool;
   toolSettings: SimpleTool;
 }
 
 interface Zone3VerticalTools extends Tools {
   channel: ToolGroup;
-  chat1: SimpleTool;
+  chat: SimpleTool;
   browse: SimpleTool;
   clipboard: ToolGroup;
   calendar: ToolGroup;
@@ -1945,37 +1945,12 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       tools: {
         1: {
           horizontal: {
-            d2: {
-              id: "d2",
-              trayId: "3d",
-              backTrays: [],
-              trays: {
-                "3d": {
-                  title: "3D Tools",
-                  columns: {
-                    0: {
-                      items: {
-                        "3D#1": {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
-                        },
-                        "3D#2": {
-                          icon: "icon-placeholder",
-                          trayId: undefined,
-                        },
-                      },
-                    },
-                  },
-                },
-              },
-              direction: Direction.Bottom,
-              history: [],
-              isExtended: false,
-              isToolGroupOpen: false,
+            disableTools: {
+              id: "disableTools",
               icon: "icon-placeholder",
-            } as ToolGroup,
-            toggleItems: {
-              id: "toggleItems",
+            } as SimpleTool,
+            toggleTools: {
+              id: "toggleTools",
               icon: "icon-placeholder",
             } as SimpleTool,
           },
@@ -2060,10 +2035,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
               isExtended: false,
               isToolGroupOpen: false,
             } as ToolGroup,
-            disableItems: {
-              id: "disableItems",
-              icon: "icon-placeholder",
-            } as SimpleTool,
             validate: {
               id: "validate",
               trayId: "tray1",
@@ -2093,6 +2064,35 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         },
         3: {
           horizontal: {
+            d2: {
+              id: "d2",
+              trayId: "3d",
+              backTrays: [],
+              trays: {
+                "3d": {
+                  title: "3D Tools",
+                  columns: {
+                    0: {
+                      items: {
+                        "3D#1": {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                        "3D#2": {
+                          icon: "icon-placeholder",
+                          trayId: undefined,
+                        },
+                      },
+                    },
+                  },
+                },
+              },
+              direction: Direction.Bottom,
+              history: [],
+              isExtended: false,
+              isToolGroupOpen: false,
+              icon: "icon-placeholder",
+            } as ToolGroup,
             overflow: {
               id: "overflow",
               icon: "icon-placeholder",
@@ -2128,8 +2128,8 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
               isExtended: false,
               isToolGroupOpen: false,
             } as ToolGroup,
-            chat1: {
-              id: "chat1",
+            chat: {
+              id: "chat",
               icon: "icon-placeholder",
             },
             browse: {
@@ -2402,18 +2402,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     return undefined;
   }
 
-  /*
-  private getToolbarItem(toolId: string) {
-    const tool = this.state.tools[toolId];
-    return (
-      <ToolbarItem
-        tool={tool}
-        onClick={this._handleOnToolbarItemClick}
-        onIsHistoryExtendedChange={this._handleOnIsHistoryExtendedChange}
-      />
-    );
-  }
-*/
   private getZone(zoneId: WidgetZoneIndex) {
     switch (zoneId) {
       case 1:
@@ -2567,6 +2555,54 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
+  private toggleIsDisabledForSomeTools() {
+    this.setState((prevState) => ({
+      tools: {
+        ...prevState.tools,
+        1: {
+          ...prevState.tools[1],
+          vertical: {
+            ...prevState.tools[1].vertical,
+            cube: {
+              ...prevState.tools[1].vertical.cube,
+              isDisabled: !prevState.tools[1].vertical.cube.isDisabled,
+              isToolGroupOpen: false,
+            },
+            validate: {
+              ...prevState.tools[1].vertical.validate,
+              isDisabled: !prevState.tools[1].vertical.validate.isDisabled,
+              isToolGroupOpen: false,
+            },
+          },
+        },
+        3: {
+          ...prevState.tools[3],
+          horizontal: {
+            ...prevState.tools[3].horizontal,
+            toolSettings: {
+              ...prevState.tools[3].horizontal.toolSettings,
+              isDisabled: !prevState.tools[3].horizontal.toolSettings.isDisabled,
+              isToolGroupOpen: false,
+            },
+          },
+          vertical: {
+            ...prevState.tools[3].vertical,
+            browse: {
+              ...prevState.tools[3].vertical.browse,
+              isDisabled: !prevState.tools[3].vertical.browse.isDisabled,
+              isToolGroupOpen: false,
+            },
+            chat: {
+              ...prevState.tools[3].vertical.chat,
+              isDisabled: !prevState.tools[3].vertical.chat.isDisabled,
+              isToolGroupOpen: false,
+            },
+          },
+        },
+      },
+    }));
+  }
+
   private _handleContentClick = () => {
     this.setState((prevState) => ({
       isTemporaryMessageVisible: prevState.isTemporaryMessageVisible + 1,
@@ -2588,6 +2624,8 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   private _handleOnToolClick = (toolId: string) => {
     if (toolId === "toolSettings")
       return this.toggleToolSettings();
+    else if (toolId === "disableTools")
+      return this.toggleIsDisabledForSomeTools();
 
     this.setState((prevState) => {
       const location = this.findTool(toolId, prevState);
@@ -2803,55 +2841,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
-  /*private _handleDisableToolsClick = () => {
-    this.setState((prevState) => ({
-      tools: {
-        ...prevState.tools,
-        1: {
-          ...prevState.tools[1],
-          vertical: {
-            ...prevState.tools[1].vertical,
-            cube: {
-              ...prevState.tools[1].vertical.cube,
-              isDisabled: !prevState.tools[1].vertical.cube.isDisabled,
-              isToolGroupOpen: false,
-            },
-            validate: {
-              ...prevState.tools[1].vertical.validate,
-              isDisabled: !prevState.tools[1].vertical.validate.isDisabled,
-              isToolGroupOpen: false,
-            },
-          },
-        },
-        3: {
-          ...prevState.tools[3],
-          horizontal: {
-            ...prevState.tools[3].horizontal,
-            chat: {
-              ...prevState.tools[3].horizontal.chat,
-              isDisabled: !prevState.tools[3].horizontal.chat.isDisabled,
-              isToolGroupOpen: false,
-            },
-
-          },
-          vertical: {
-            ...prevState.tools[3].vertical,
-            browse: {
-              ...prevState.tools[3].vertical.browse,
-              isDisabled: !prevState.tools[3].vertical.browse.isDisabled,
-              isToolGroupOpen: false,
-            },
-            chat1: {
-              ...prevState.tools[3].vertical.chat1,
-              isDisabled: !prevState.tools[3].vertical.chat1.isDisabled,
-              isToolGroupOpen: false,
-            },
-          },
-        },
-      },
-    }));
-  }*/
-
   private _handleShowTooltip = () => {
     this.setState(() => ({
       isTooltipVisible: true,
@@ -2950,10 +2939,10 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   /*private _handleToggleOverflowItemOpen = () => {
-    this.setState((prevState) => ({
-      isOverflowItemOpen: !prevState.isOverflowItemOpen,
-    }));
-  }*/
+        this.setState((prevState) => ({
+          isOverflowItemOpen: !prevState.isOverflowItemOpen,
+        }));
+      }*/
 
   private _handleHideMessage = () => {
     this.setState(() => ({
