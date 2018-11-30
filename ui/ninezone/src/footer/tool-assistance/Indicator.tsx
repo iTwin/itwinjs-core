@@ -42,7 +42,7 @@ export class ToolAssistanceIndicator extends React.PureComponent<ToolAssistanceI
       >
         <div
           className="nz-indicator"
-          onClick={this._handleOnIndicatorClick}
+          onClick={this.props.onClick}
         >
           <div className="nz-icons">
             {this.props.icons}
@@ -53,9 +53,5 @@ export class ToolAssistanceIndicator extends React.PureComponent<ToolAssistanceI
         {this.props.dialog}
       </div>
     );
-  }
-
-  private _handleOnIndicatorClick = () => {
-    this.props.onClick && this.props.onClick();
   }
 }

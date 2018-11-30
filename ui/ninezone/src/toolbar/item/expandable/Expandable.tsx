@@ -30,8 +30,8 @@ export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
 
     return (
       <div
-        onMouseEnter={this._handleOnMouseEnter}
-        onMouseLeave={this._handleOnMouseLeave}
+        onMouseEnter={this._handleMouseEnter}
+        onMouseLeave={this._handleMouseLeave}
         className={className}
         style={this.props.style}
       >
@@ -41,11 +41,11 @@ export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
     );
   }
 
-  private _handleOnMouseEnter = () => {
+  private _handleMouseEnter = () => {
     this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(true);
   }
 
-  private _handleOnMouseLeave = () => {
+  private _handleMouseLeave = () => {
     this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(false);
   }
 }

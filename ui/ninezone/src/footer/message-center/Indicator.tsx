@@ -47,7 +47,7 @@ export class MessageCenterIndicator extends React.PureComponent<MessageCenterInd
           </div>
           <div
             className="nz-balloon"
-            onClick={this._handleOnIndicatorClick}
+            onClick={this.props.onClick}
           >
             <div className="nz-arrow" />
             <div className="nz-content">
@@ -57,9 +57,5 @@ export class MessageCenterIndicator extends React.PureComponent<MessageCenterInd
         </div>
       </div>
     );
-  }
-
-  private _handleOnIndicatorClick = () => {
-    this.props.onClick && this.props.onClick();
   }
 }

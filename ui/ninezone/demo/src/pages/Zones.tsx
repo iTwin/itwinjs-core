@@ -481,7 +481,7 @@ interface StatusZoneExampleProps extends MessageExampleProps {
   readonly message: Message;
   readonly onHideMessage: () => void;
   readonly onTargetChanged: TargetChangedHandler;
-  readonly onWidgetChange: (widget: FooterWidget) => void;
+  readonly onOpenWidgetChange: (widget: FooterWidget) => void;
   readonly openWidget: FooterWidget;
   readonly outlineBounds: RectangleProps | undefined;
   readonly renderModalMessageTo: () => HTMLElement;
@@ -748,19 +748,19 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
   }
 
   private _handleCloseMessageCenter = () => {
-    this.props.onWidgetChange(FooterWidget.None);
+    this.props.onOpenWidgetChange(FooterWidget.None);
   }
 
   private _handleToggleMessageCenterDialog = () => {
-    this.props.onWidgetChange(this.props.openWidget === FooterWidget.Messages ? FooterWidget.None : FooterWidget.Messages);
+    this.props.onOpenWidgetChange(this.props.openWidget === FooterWidget.Messages ? FooterWidget.None : FooterWidget.Messages);
   }
 
   private _handleToggleToolAssistanceDialog = () => {
-    this.props.onWidgetChange(this.props.openWidget === FooterWidget.ToolAssistance ? FooterWidget.None : FooterWidget.ToolAssistance);
+    this.props.onOpenWidgetChange(this.props.openWidget === FooterWidget.ToolAssistance ? FooterWidget.None : FooterWidget.ToolAssistance);
   }
 
   private _handleToggleSnapModeDialog = () => {
-    this.props.onWidgetChange(this.props.openWidget === FooterWidget.SnapMode ? FooterWidget.None : FooterWidget.SnapMode);
+    this.props.onOpenWidgetChange(this.props.openWidget === FooterWidget.SnapMode ? FooterWidget.None : FooterWidget.SnapMode);
   }
 }
 
@@ -860,7 +860,7 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
         isDragged={isDragged}
         isFloating={this.props.zone.floating ? true : false}
         isOpen={isOpen}
-        onResize={this._handleWidgetResize}
+        onResize={this._handleResize}
         tabs={
           <FloatingZoneTabs
             anchor={this.props.horizontalAnchor}
@@ -878,7 +878,7 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
     );
   }
 
-  private _handleWidgetResize = (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
+  private _handleResize = (x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
     this.props.onResize(this.props.zone.id, x, y, handle, filledHeightDiff);
   }
 }
@@ -1028,9 +1028,9 @@ class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabPro
       <WidgetTab
         key="3_1"
         mode={this.props.mode}
-        onClick={this._handleOnClick}
+        onClick={this._handleClick}
         lastPosition={this.props.lastPosition}
-        onDragStart={this._handleOnDragStart}
+        onDragStart={this._handleDragStart}
         onDragEnd={this.props.onDragEnd}
         onDrag={this.props.onDrag}
         anchor={this.props.anchor}
@@ -1040,11 +1040,11 @@ class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabPro
     );
   }
 
-  private _handleOnClick = () => {
+  private _handleClick = () => {
     this.props.onClick(this.props.widgetId, this.props.tabId);
   }
 
-  private _handleOnDragStart = (initialPosition: PointProps, widgetOffset: PointProps) => {
+  private _handleDragStart = (initialPosition: PointProps, widgetOffset: PointProps) => {
     this.props.onDragStart(this.props.widgetId, this.props.tabId, initialPosition, widgetOffset);
   }
 }
@@ -1437,12 +1437,12 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
     if (isToolGroup(this.props.tool)) {
       return (
         <ExpandableItem
-          onIsHistoryExtendedChange={this._handleOnIsHistoryExtendedChange}
+          onIsHistoryExtendedChange={this._handleIsHistoryExtendedChange}
           isDisabled={this.props.tool.isDisabled}
         >
           <ToolbarIcon
             icon={placeholderIcon}
-            onClick={this._handleOnClick}
+            onClick={this._handleClick}
             isDisabled={this.props.tool.isDisabled}
           />
         </ExpandableItem>
@@ -1453,16 +1453,16 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
       <ToolbarIcon
         icon={placeholderIcon}
         isDisabled={this.props.tool.isDisabled}
-        onClick={this._handleOnClick}
+        onClick={this._handleClick}
       />
     );
   }
 
-  private _handleOnClick = () => {
+  private _handleClick = () => {
     this.props.onClick(this.props.tool.id);
   }
 
-  private _handleOnIsHistoryExtendedChange = (isExtended: boolean) => {
+  private _handleIsHistoryExtendedChange = (isExtended: boolean) => {
     this.props.onIsHistoryExtendedChange(this.props.tool.id, isExtended);
   }
 }
@@ -1480,14 +1480,14 @@ class ToolbarItemHistoryTray extends React.PureComponent<ToolbarItemHistoryTrayP
         <HistoryTray
           direction={this.props.tool.direction}
           isExtended={this.props.tool.isExtended}
-          onIsHistoryExtendedChange={this._handleOnIsHistoryExtendedChange}
+          onIsHistoryExtendedChange={this._handleIsHistoryExtendedChange}
           items={
             this.props.tool.history.map((entry) => {
               return (
                 <ToolbarItemHistoryItem
                   history={entry.item}
                   key={entry.key}
-                  onClick={this._handleOnHistoryItemClick}
+                  onClick={this._handleHistoryItemClick}
                 />
               );
             })
@@ -1497,11 +1497,11 @@ class ToolbarItemHistoryTray extends React.PureComponent<ToolbarItemHistoryTrayP
     );
   }
 
-  private _handleOnHistoryItemClick = (item: HistoryItem) => {
+  private _handleHistoryItemClick = (item: HistoryItem) => {
     this.props.onHistoryItemClick(item);
   }
 
-  private _handleOnIsHistoryExtendedChange = (isExtended: boolean) => {
+  private _handleIsHistoryExtendedChange = (isExtended: boolean) => {
     this.props.onIsHistoryExtendedChange(this.props.tool.id, isExtended);
   }
 }
@@ -1515,14 +1515,14 @@ class ToolbarItemHistoryItem extends React.PureComponent<ToolbarItemHistoryItemP
   public render() {
     return (
       <HistoryIcon
-        onClick={this._handleOnClick}
+        onClick={this._handleClick}
       >
         {placeholderIcon}
       </HistoryIcon>
     );
   }
 
-  private _handleOnClick = () => {
+  private _handleClick = () => {
     this.props.onClick(this.props.history);
   }
 }
@@ -1581,7 +1581,7 @@ class ToolbarItemPanel extends React.PureComponent<ToolbarItemPanelProps> {
           <NestedToolGroupContained
             title={tray.title}
             columns={columns}
-            onBack={this._handleOnBack}
+            onBack={this._handleBack}
           />
         </PanelPlaceholder>
       );
@@ -1596,7 +1596,7 @@ class ToolbarItemPanel extends React.PureComponent<ToolbarItemPanelProps> {
     );
   }
 
-  private _handleOnBack = () => {
+  private _handleBack = () => {
     this.props.onBack(this.props.tool.id);
   }
 
@@ -1622,13 +1622,13 @@ class GroupColumnExpander extends React.PureComponent<GroupColumnExpanderProps> 
       <ToolGroupExpander
         label={this.props.label}
         icon={placeholderIcon}
-        onClick={this._handleOnClick}
+        onClick={this._handleClick}
         isDisabled={this.props.isDisabled}
       />
     );
   }
 
-  private _handleOnClick = () => {
+  private _handleClick = () => {
     this.props.onClick(this.props.trayId);
   }
 }
@@ -1653,14 +1653,14 @@ class GroupColumnTool extends React.PureComponent<GroupColumnToolProps> {
     return (
       <GroupTool
         label={this.props.label}
-        onClick={this._handleOnClick}
+        onClick={this._handleClick}
         icon={placeholderIcon}
         isDisabled={this.props.isDisabled}
       />
     );
   }
 
-  private _handleOnClick = () => {
+  private _handleClick = () => {
     const args: GroupColumnToolClickArgs = {
       columnId: this.props.columnId,
       itemId: this.props.itemId,
@@ -2260,7 +2260,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         <TooltipExample
           isTemporaryMessageVisible={this.state.isTemporaryMessageVisible}
           isTooltipVisible={this.state.isTooltipVisible}
-          onMessageHidden={this._handleTemporaryMessageHidden}
+          onMessageHidden={this._handleTooltipMessageHidden}
           onTooltipTimeout={this._handleTooltipTimeout}
         />
         {zones.map((z) => this.getZone(z))}
@@ -2302,13 +2302,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     const tab = (
       <ToolSettingsWidgetTab
         isActive={this.state.secondZoneContent === SecondZoneContent.ToolSettings}
-        onClick={
-          () => {
-            this.setState((prevState) => ({
-              secondZoneContent: prevState.secondZoneContent === SecondZoneContent.Minimized ? SecondZoneContent.ToolSettings : SecondZoneContent.Minimized,
-            }));
-          }
-        }
+        onClick={this._handleToolSettingsWidgetTabClick}
       >
         {placeholderIcon}
       </ToolSettingsWidgetTab>
@@ -2342,7 +2336,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                                 label="Nested"
                                 backButton={
                                   <HollowButton
-                                    onClick={this._handleNestedToolSettingsBackButtonClick}
+                                    onClick={this._handleNestedToolSettingsBackClick}
                                     style={{ padding: "5px", lineHeight: "0" }}
                                   >
                                     <i className="icon icon-progress-backward-2" />
@@ -2408,12 +2402,12 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         bounds={this.state.nineZone.zones[zoneId].bounds}
         horizontalTools={this.state.tools[zoneId].horizontal}
         key={zoneId}
-        onHistoryItemClick={this._handleOnHistoryItemClick}
-        onIsHistoryExtendedChange={this._handleOnIsToolHistoryExtendedChange}
-        onOpenPanelGroup={this._handleOnExpandPanelGroup}
-        onPanelBack={this._handleOnPanelBack}
+        onHistoryItemClick={this._handleHistoryItemClick}
+        onIsHistoryExtendedChange={this._handleIsToolHistoryExtendedChange}
+        onOpenPanelGroup={this._handleExpandPanelGroup}
+        onPanelBack={this._handlePanelBack}
         onPanelToolClick={this._handlePanelToolClick}
-        onToolClick={this._handleOnToolClick}
+        onToolClick={this._handleToolClick}
         verticalTools={this.state.tools[zoneId].vertical}
       />
     );
@@ -2438,13 +2432,13 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         bounds={this.state.nineZone.zones[zoneId].bounds}
         horizontalTools={this.state.tools[zoneId].horizontal}
         key={zoneId}
-        onHistoryItemClick={this._handleOnHistoryItemClick}
-        onIsHistoryExtendedChange={this._handleOnIsToolHistoryExtendedChange}
-        onOpenPanelGroup={this._handleOnExpandPanelGroup}
-        onPanelBack={this._handleOnPanelBack}
+        onHistoryItemClick={this._handleHistoryItemClick}
+        onIsHistoryExtendedChange={this._handleIsToolHistoryExtendedChange}
+        onOpenPanelGroup={this._handleExpandPanelGroup}
+        onPanelBack={this._handlePanelBack}
         onPanelToolClick={this._handlePanelToolClick}
-        onToolbarScroll={this._handleOnToolbarScroll}
-        onToolClick={this._handleOnToolClick}
+        onToolbarScroll={this._handleToolbarScroll}
+        onToolClick={this._handleToolClick}
         verticalTools={this.state.tools[zoneId].vertical}
       />
     );
@@ -2471,7 +2465,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         onOpenModalMessage={this._handleOpenModalMessage}
         onOpenToastMessage={this._handleOpenToastMessage}
         onOpenStickyMessage={this._handleOpenStickyMessage}
-        onResize={this._handleWidgetResize}
+        onResize={this._handleZoneResize}
         onShowTooltip={this._handleShowTooltip}
         onTabClick={this._handleWidgetTabClick}
         onTabDragStart={this._handleWidgetTabDragStart}
@@ -2505,10 +2499,10 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         key={zoneId}
         onTargetChanged={this._handleTargetChanged}
         outlineBounds={outlineBounds}
-        renderModalMessageTo={this._handleRenderModalMessageTo}
+        renderModalMessageTo={this._renderModalMessageTo}
         message={this.state.message}
         onHideMessage={this._handleHideMessage}
-        onWidgetChange={this._handleWidgetChange}
+        onOpenWidgetChange={this._handleOpenWidgetChange}
         openWidget={this.state.openWidget}
         targetBounds={statusZone.props.bounds}
         toastMessageKey={this.state.toastMessageKey}
@@ -2589,7 +2583,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
-  private _handleTemporaryMessageHidden = () => {
+  private _handleTooltipMessageHidden = () => {
     this.setState(() => ({
       isTemporaryMessageVisible: 0,
     }));
@@ -2601,7 +2595,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
-  private _handleOnToolClick = (toolId: string) => {
+  private _handleToolClick = (toolId: string) => {
     if (toolId === "toolSettings")
       return this.toggleToolSettings();
     else if (toolId === "disableTools")
@@ -2638,7 +2632,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     });
   }
 
-  private _handleOnIsToolHistoryExtendedChange = (toolId: string, isExtended: boolean) => {
+  private _handleIsToolHistoryExtendedChange = (toolId: string, isExtended: boolean) => {
     this.setState((prevState) => {
       const location = this.findTool(toolId, prevState);
       const prevDirections = prevState.tools[location.zoneKey];
@@ -2692,7 +2686,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     });
   }
 
-  private _handleOnHistoryItemClick = (item: HistoryItem) => {
+  private _handleHistoryItemClick = (item: HistoryItem) => {
     this.setState((prevState) => {
       const location = this.findTool(item.toolId, prevState);
       const prevDirections = prevState.tools[location.zoneKey];
@@ -2720,7 +2714,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     });
   }
 
-  private _handleOnToolbarScroll = () => {
+  private _handleToolbarScroll = () => {
     this.setState((prevState) => {
       const newZoneTools: ZoneTools = {
         1: {
@@ -2772,7 +2766,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
-  private _handleNestedToolSettingsBackButtonClick = () => {
+  private _handleNestedToolSettingsBackClick = () => {
     this.setState(() => ({
       isNestedPopoverOpen: false,
     }));
@@ -2790,7 +2784,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
-  private _handleWidgetResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
+  private _handleZoneResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
     this.setState((prevState) => ({
       nineZone: NineZoneManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone),
     }));
@@ -2829,7 +2823,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
-  private _handleOnExpandPanelGroup = (toolId: string, trayId: string | undefined) => {
+  private _handleExpandPanelGroup = (toolId: string, trayId: string | undefined) => {
     this.setState((prevState) => {
       const location = this.findTool(toolId, prevState);
       const prevDirections = prevState.tools[location.zoneKey];
@@ -2857,7 +2851,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     });
   }
 
-  private _handleOnPanelBack = (toolId: string) => {
+  private _handlePanelBack = (toolId: string) => {
     this.setState((prevState) => {
       const location = this.findTool(toolId, prevState);
       const prevDirections = prevState.tools[location.zoneKey];
@@ -2890,7 +2884,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     });
   }
 
-  private _handleRenderModalMessageTo = () => this._dialogContainer;
+  private _renderModalMessageTo = () => this._dialogContainer;
 
   private _handleChangeTheme = ({ theme, change }: ThemeContextProps) => {
     switch (theme) {
@@ -2957,9 +2951,15 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     }));
   }
 
-  private _handleWidgetChange = (openWidget: FooterWidget) => {
+  private _handleOpenWidgetChange = (openWidget: FooterWidget) => {
     this.setState(() => ({
       openWidget,
+    }));
+  }
+
+  private _handleToolSettingsWidgetTabClick = () => {
+    this.setState((prevState) => ({
+      secondZoneContent: prevState.secondZoneContent === SecondZoneContent.Minimized ? SecondZoneContent.ToolSettings : SecondZoneContent.Minimized,
     }));
   }
 }

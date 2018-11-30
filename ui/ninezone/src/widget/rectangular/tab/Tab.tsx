@@ -49,14 +49,10 @@ export class Tab extends React.PureComponent<TabProps> {
         title={this.props.title}
         className={className}
         style={this.props.style}
-        onClick={this._handleOnClick}
+        onClick={this.props.onClick}
       >
         {this.props.children}
       </div>
     );
-  }
-
-  private _handleOnClick = () => {
-    this.props.onClick && this.props.onClick();
   }
 }

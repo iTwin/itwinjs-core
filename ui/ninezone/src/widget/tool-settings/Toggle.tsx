@@ -38,7 +38,7 @@ export class Toggle extends React.PureComponent<ToggleProps> {
       >
         <div
           className="nz-toggle"
-          onClick={this._handleOnClick}
+          onClick={this.props.onClick}
         >
           <div className="nz-content">
             {this.props.content}
@@ -54,9 +54,5 @@ export class Toggle extends React.PureComponent<ToggleProps> {
         }
       </div>
     );
-  }
-
-  private _handleOnClick = () => {
-    this.props.onClick && this.props.onClick();
   }
 }
