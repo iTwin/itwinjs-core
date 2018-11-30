@@ -130,9 +130,17 @@ export class ViewSubCategories {
       return Promise.resolve();
   }
 
+  private static createSubCategoryAppearance(json?: any) {
+    let props: SubCategoryAppearance | undefined;
+    if ("string" === typeof(json) && 0 < json.length)
+      props = JSON.parse(json);
+
+    return new SubCategoryAppearance(props);
+  }
+
   private loadFromRows(rows: any[]): void {
     for (const row of rows)
-      this.add(row.parentId as string, row.id as string, new SubCategoryAppearance(JSON.parse(row.appearance)));
+      this.add(row.parentId as string, row.id as string, ViewSubCategories.createSubCategoryAppearance(row.appearance));
   }
 
   private add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
