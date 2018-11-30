@@ -8,7 +8,7 @@
 .dialog {
   @include bwc-font-family;
 
-  display: block;
+  display: none;
   position: fixed;
 
   @include uicore-z-index(dialog);
@@ -19,6 +19,10 @@
   height: 100%;
   overflow: auto;
   background: rgba(0, 0, 0, 0.4);
+
+  &.opened {
+    display: block;
+  }
 
   &.dialog-hidden {
     width: 0;

@@ -183,7 +183,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       <div
         className={classnames(
           "dialog",
-          { "dialog-hidden": !modal },
+          { "dialog-hidden": !modal, opened },
         )}
         style={this.props.backgroundStyle}
         data-testid="dialog-root"

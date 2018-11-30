@@ -571,6 +571,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "react-resize-detector",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-router-dom",
       "allowedCategories": [ "frontend" ]
     },

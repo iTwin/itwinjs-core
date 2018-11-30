@@ -75,6 +75,20 @@ export const isTreeDataProviderInterface = (provider: TreeDataProvider): provide
   const candidate = provider as ITreeDataProvider;
   return undefined !== candidate.getNodes && undefined !== candidate.getNodesCount;
 };
+/**
+ * Determines whether node has children
+ * @param node node to check
+ * @returns whether node has children
+ */
+export const hasChildren = (node: TreeNodeItem) => {
+  const nodeAsImmediate = node as ImmediatelyLoadedTreeNodeItem;
+  if ("children" in nodeAsImmediate && nodeAsImmediate.children && nodeAsImmediate.children.length > 0)
+    return true;
+  const nodeAsDelayed = node as DelayLoadedTreeNodeItem;
+  if ("hasChildren" in nodeAsDelayed && nodeAsDelayed.hasChildren)
+    return true;
+  return false;
+};
 
 /** An interface tree data change listeners */
 export type TreeDataChangesListener = (node?: TreeNodeItem[]) => void;

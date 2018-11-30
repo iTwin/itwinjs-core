@@ -2,7 +2,7 @@
 
 exports[`Dialog renders renders correctly 1`] = `
 <div
-  className="dialog"
+  className="dialog opened"
   data-testid="dialog-root"
 >
   <WithOnOutsideClick>

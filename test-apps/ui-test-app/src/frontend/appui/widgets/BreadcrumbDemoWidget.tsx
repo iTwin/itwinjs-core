@@ -73,14 +73,12 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
         <input id="receives_row" type="checkbox" onChange={(event) => {
           this.setState({ checked: event.target.checked });
         }} />
-        <DragDropBreadcrumb path={path} dataProvider={demoMutableTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} delimiter={"\\"}
-          dragProps={dragProps}
-          dropProps={dropProps}
-        />
-        <DragDropBreadcrumbDetails path={path}
-          dragProps={dragProps}
-          dropProps={dropProps}
-        />
+        <div style={{ height: "calc(100% - 22px)" }}>
+          <DragDropBreadcrumb path={path} dataProvider={demoMutableTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} delimiter={"\\"}
+            dragProps={dragProps} dropProps={dropProps} />
+          <DragDropBreadcrumbDetails path={path}
+            dragProps={dragProps} dropProps={dropProps} />
+        </div>
       </div>
     );
     return null;

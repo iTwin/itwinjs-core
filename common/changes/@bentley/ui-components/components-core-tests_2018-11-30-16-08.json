@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added tests to Breadcrumb, updated Table and fixed Table Resize issues.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "Simeon.McGraw@bentley.com"
+}
