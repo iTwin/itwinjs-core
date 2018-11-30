@@ -351,6 +351,11 @@ export class IModelTestUtils {
     ClassRegistry.register(TestPhysicalObject, TestBim);
     ClassRegistry.register(TestElementDrivesElement, TestBim);
   }
+
+  public static shutdownBackend() {
+    Schemas.unregisterSchema(TestBim.name);
+    IModelHost.shutdown();
+  }
 }
 
 // Start the backend

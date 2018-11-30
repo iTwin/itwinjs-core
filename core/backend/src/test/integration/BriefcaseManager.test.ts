@@ -394,7 +394,7 @@ describe("BriefcaseManager (#integration)", () => {
   it("should be able to gracefully error out if a bad cache dir is specified", async () => {
     const config = new IModelHostConfiguration();
     config.briefcaseCacheDir = "\\\\blah\\blah\\blah";
-    IModelHost.shutdown();
+    IModelTestUtils.shutdownBackend();
     IModelHost.startup(config);
 
     let exceptionThrown = false;
