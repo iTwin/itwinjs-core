@@ -51,7 +51,7 @@ import Tooltip from "@src/widget/tool-settings/Tooltip";
 import ToolSettingsWidgetTab from "@src/widget/tool-settings/Tab";
 import ToolSettingsWidget from "@src/widget/ToolSettings";
 import ExpandableItem from "@src/toolbar/item/expandable/Expandable";
-// import OverflowItem from "@src/toolbar/item/Overflow";
+import OverflowItem from "@src/toolbar/item/Overflow";
 import GroupColumn from "@src/toolbar/item/expandable/group/Column";
 import GroupTool from "@src/toolbar/item/expandable/group/tool/Tool";
 import ToolGroupExpander from "@src/toolbar/item/expandable/group/tool/Expander";
@@ -104,7 +104,6 @@ const NestedToolGroupContained = withContainInViewport(NestedToolGroup);
 
 interface State {
   readonly isNestedPopoverOpen: boolean;
-  readonly isOverflowItemOpen: boolean;
   readonly isPopoverOpen: boolean;
   readonly isTemporaryMessageVisible: number;
   readonly isTooltipVisible: boolean;
@@ -147,7 +146,7 @@ interface Zone1VerticalTools extends HiddenZone1VerticalTools {
 
 interface Zone3HorizontalTools extends Tools {
   d2: ToolGroup;
-  overflow: SimpleTool;
+  overflow: ToolGroup;
   toolSettings: SimpleTool;
 }
 
@@ -221,8 +220,7 @@ interface SimpleTool {
   isDisabled?: boolean;
 }
 
-interface ToolGroup {
-  id: string;
+interface ToolGroup extends SimpleTool {
   trayId: string;
   backTrays: ReadonlyArray<string>;
   trays: { [id: string]: ToolGroupTray };
@@ -230,7 +228,7 @@ interface ToolGroup {
   history: History<HistoryItem>;
   isExtended: boolean;
   isToolGroupOpen: boolean;
-  isDisabled?: boolean;
+  isOverflow?: boolean;
 }
 
 type Tool = SimpleTool | ToolGroup;
@@ -239,8 +237,8 @@ interface Tools {
   [id: string]: Tool;
 }
 
-const isToolGroup = (toolState: Tool): toolState is ToolGroup => {
-  return (toolState as ToolGroup).trays !== undefined;
+const isToolGroup = (tool: Tool): tool is ToolGroup => {
+  return (tool as ToolGroup).trays !== undefined;
 };
 
 const customTheme: Theme = {
@@ -1434,27 +1432,34 @@ interface ToolbarItemProps {
 
 class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
   public render() {
-    if (isToolGroup(this.props.tool)) {
+    if (!isToolGroup(this.props.tool))
       return (
-        <ExpandableItem
-          onIsHistoryExtendedChange={this._handleIsHistoryExtendedChange}
+        <ToolbarIcon
+          icon={placeholderIcon}
           isDisabled={this.props.tool.isDisabled}
-        >
-          <ToolbarIcon
-            icon={placeholderIcon}
-            onClick={this._handleClick}
-            isDisabled={this.props.tool.isDisabled}
-          />
-        </ExpandableItem>
+          onClick={this._handleClick}
+        />
       );
-    }
+
+    if (this.props.tool.isOverflow)
+      return (
+        <OverflowItem
+          isDisabled={this.props.tool.isDisabled}
+          onClick={this._handleClick}
+        />
+      );
 
     return (
-      <ToolbarIcon
-        icon={placeholderIcon}
+      <ExpandableItem
+        onIsHistoryExtendedChange={this._handleIsHistoryExtendedChange}
         isDisabled={this.props.tool.isDisabled}
-        onClick={this._handleClick}
-      />
+      >
+        <ToolbarIcon
+          icon={placeholderIcon}
+          onClick={this._handleClick}
+          isDisabled={this.props.tool.isDisabled}
+        />
+      </ExpandableItem>
     );
   }
 
@@ -1755,7 +1760,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
               onPanelBack={this.props.onPanelBack}
               onPanelToolClick={this.props.onPanelToolClick}
               onToolClick={this.props.onToolClick}
-              panelAlignment={ToolbarPanelAlignment.Start}
+              panelAlignment={ToolbarPanelAlignment.End}
               tools={this.props.horizontalTools}
             />
           }
@@ -1770,45 +1775,13 @@ class Zone3 extends React.PureComponent<Zone3Props> {
               onPanelToolClick={this.props.onPanelToolClick}
               onScroll={this.props.onToolbarScroll}
               onToolClick={this.props.onToolClick}
-              panelAlignment={ToolbarPanelAlignment.End}
+              panelAlignment={ToolbarPanelAlignment.Start}
               tools={this.props.verticalTools}
             />
           }
         />
       </Zone>
     );
-    /*
-    <ToolsWidget
-      panels={
-        this.state.isOverflowItemOpen &&
-        <ToolGroupContained
-          title={"Overflow Button"}
-          columns={
-            <GroupColumn>
-              <GroupTool
-                onClick={this._handleToggleOverflowItemOpen}
-              >
-                Tool1
-              </GroupTool>
-            </GroupColumn>
-          }
-        />
-      }
-      horizontalToolbar={
-        <Toolbar
-          items={
-            <>
-              {this.state.showAllItems &&
-                <OverflowItem
-                  key="0"
-                  onClick={this._handleToggleOverflowItemOpen}
-                />
-              }
-              {this.getToolbarItemWithToolSettings("chat")}
-            </>
-          }
-    />
-    */
   }
 }
 
@@ -1904,13 +1877,13 @@ class ToolZoneScrollableToolbar extends React.PureComponent<ScrollableToolbarPro
   }
 
   private _renderScrollableToolbar = (items: React.ReactNode, panels: React.ReactNode, histories: React.ReactNode): React.ReactNode => {
+    const { children, ...props } = this.props;
     return (
       <ScrollableToolbar
-        expandsTo={this.props.expandsTo}
-        onScroll={this.props.onScroll}
         items={items}
         panels={panels}
         histories={histories}
+        {...props}
       />
     );
   }
@@ -2065,9 +2038,13 @@ const zoneTools: ZoneTools = {
     horizontal: {
       ...hiddenZoneTools[3].horizontal,
       d2: {
-        id: "d2",
-        trayId: "3d",
         backTrays: [],
+        direction: Direction.Bottom,
+        history: [],
+        isExtended: false,
+        id: "d2",
+        isToolGroupOpen: false,
+        trayId: "3d",
         trays: {
           "3d": {
             title: "3D Tools",
@@ -2083,16 +2060,34 @@ const zoneTools: ZoneTools = {
             },
           },
         },
-        direction: Direction.Bottom,
-        history: [],
-        isExtended: false,
-        isToolGroupOpen: false,
-      },
-      overflow: {
-        id: "overflow",
       },
       toolSettings: {
         id: "toolSettings",
+      },
+      overflow: {
+        backTrays: [],
+        direction: Direction.Bottom,
+        history: [],
+        isExtended: false,
+        id: "overflow",
+        isToolGroupOpen: false,
+        isOverflow: true,
+        trayId: "root",
+        trays: {
+          root: {
+            title: "Overflow Tools",
+            columns: {
+              0: {
+                items: {
+                  Tool1: {
+                  },
+                  Tool2: {
+                  },
+                },
+              },
+            },
+          },
+        },
       },
     },
     vertical: {
@@ -2188,7 +2183,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       secondZoneContent: SecondZoneContent.None,
       message: Message.None,
       tools: zoneTools,
-      isOverflowItemOpen: false,
       themeContext: {
         theme: PrimaryTheme,
         change: (theme: Theme) => {
@@ -2913,12 +2907,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       openWidget: FooterWidget.None,
     }));
   }
-
-  /*private _handleToggleOverflowItemOpen = () => {
-        this.setState((prevState) => ({
-          isOverflowItemOpen: !prevState.isOverflowItemOpen,
-        }));
-      }*/
 
   private _handleHideMessage = () => {
     this.setState(() => ({
