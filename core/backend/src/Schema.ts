@@ -52,4 +52,6 @@ export class Schemas {
    * @returns the previously registered schema or undefined if not registered.
    */
   public static getRegisteredSchema(schemaName: string): Schema | undefined { return Schemas._registeredSchemas[schemaName.toLowerCase()]; }
+
+  public static isRegistered(schema: Schema) { return undefined !== this.getRegisteredSchema(schema.name.toLowerCase()); }
 }
