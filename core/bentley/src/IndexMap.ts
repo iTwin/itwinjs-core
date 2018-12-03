@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
-import { defaultClone, lowerBound } from "./SortedArray";
+import { CloneFunction, shallowClone, lowerBound } from "./SortedArray";
+import { OrderedComparator } from "./Compare";
 
 /** Associates a value of type T with an index representing its insertion order in an IndexMap<T> */
 export class IndexedValue<T> {
@@ -24,20 +25,17 @@ export class IndexedValue<T> {
  */
 export class IndexMap<T> {
   protected _array: Array<IndexedValue<T>> = [];
-  protected readonly _compareValues: (lhs: T, rhs: T) => number;
-  protected readonly _clone: (src: T) => T;
+  protected readonly _compareValues: OrderedComparator<T>;
+  protected readonly _clone: CloneFunction<T>;
   protected readonly _maximumSize: number;
 
   /**
    * Construct a new IndexMap<T>.
-   * @param compare A function accepting two values of type T and returning a negative value if lhs < rhs,
-   *        zero if lhs == rhs, and a positive value otherwise.
+   * @param compare The function used to compare elements within the map.
    * @param maximumSize The maximum number of elements permitted in the IndexMap. The maximum index of an element is maximumSize-1.
-   * @param clone A function that, given a value of type T, returns an equivalent value of type T.
-   *        This function is invoked when a new element is inserted into the array.
-   *        The default implementation simply returns its input.
+   * @param clone The function invoked to clone a new element for insertion into the array. The default implementation simply returns its input.
    */
-  public constructor(compare: (lhs: T, rhs: T) => number, maximumSize: number = Number.MAX_SAFE_INTEGER, clone: (src: T) => T = defaultClone) {
+  public constructor(compare: OrderedComparator<T>, maximumSize: number = Number.MAX_SAFE_INTEGER, clone: CloneFunction<T> = shallowClone) {
     this._compareValues = compare;
     this._clone = clone;
     this._maximumSize = maximumSize;

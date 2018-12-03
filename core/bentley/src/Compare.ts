@@ -5,7 +5,22 @@
 /** @module Utils */
 
 /**
- * Basic comparison routine for numbers which treats two numbers as equal if the absolute value of their difference is less than the specified tolerance.
+ * A function that returns a numerical value indicating how two objects are ordered in relation to one another.
+ * Such functions are used by various collection classes in the iModel.js library.
+ * Given values `lhs` and `rhs`, the function returns:
+ *  - Zero if lhs == rhs
+ *  - A negative number if lhs < rhs
+ *  - A positive number if lhs > rhs
+ *
+ * @see SortedArray
+ * @see Dictionary
+ * @see IndexMap
+ * @see PriorityQueue
+ */
+export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
+
+/**
+ * An [[OrderedComparator]] for numbers that treats two numbers as equal if the absolute value of their difference is less than a specified tolerance.
  * @hidden
  */
 export function compareWithTolerance(a: number, b: number, tolerance = 0.1): number {

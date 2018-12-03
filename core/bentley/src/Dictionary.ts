@@ -4,12 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utils */
 
-import { defaultClone, lowerBound } from "./SortedArray";
+import { CloneFunction, shallowClone, lowerBound } from "./SortedArray";
+import { OrderedComparator } from "./Compare";
 
 /**
  * Maintains a mapping of keys to values.
  * Unlike the standard Map<K, V>, a Dictionary<K, V> supports custom comparison logic for keys of object type (and for any other type).
- * The user supplies a key comparison function to the constructor, which must meet the following criteria given 'lhs' and 'rhs' of type K:
+ * The user supplies a key comparison function to the constructor, that must meet the following criteria given 'lhs' and 'rhs' of type K:
  *  - If lhs is equal to rhs, returns 0
  *  - If lhs is less than rhs, returns a negative value
  *  - If lhs is greater than rhs, returns a positive value
@@ -21,21 +22,18 @@ import { defaultClone, lowerBound } from "./SortedArray";
  */
 export class Dictionary<K, V> {
   protected _keys: K[] = [];
-  protected readonly _compareKeys: (lhs: K, rhs: K) => number;
-  protected readonly _cloneKey: (key: K) => K;
+  protected readonly _compareKeys: OrderedComparator<K>;
+  protected readonly _cloneKey: CloneFunction<K>;
   protected _values: V[] = [];
-  protected readonly _cloneValue: (src: V) => V;
+  protected readonly _cloneValue: CloneFunction<V>;
 
   /**
    * Construct a new Dictionary<K, V>.
-   * @param compareKeys A function accepting two values of type K and returning a negative value if lhs < rhs,
-   *        zero if lhs == rhs, and a positive value otherwise.
-   * @param cloneKey A function that, given a value of type K, returns an equivalent value of type K.
-   *        This function is invoked when a new key is inserted into the dictionary. The default implementation simply returns its input.
-   * @param cloneValue A function that, given a value of type V, returns an equivalent value of type V.
-   *        This function is invoked when a new value is inserted into the dictionary. The default implementation simply returns its input.
+   * @param compareKeys The function used to compare keys within the dictionary.
+   * @param cloneKey The function invoked to clone a key for insertion into the dictionary. The default implementation simply returns its input.
+   * @param cloneValue The function invoked to clone a value for insertion into the dictionary. The default implementation simply returns its input.
    */
-  public constructor(compareKeys: (lhs: K, rhs: K) => number, cloneKey: (src: K) => K = defaultClone, cloneValue: (src: V) => V = defaultClone) {
+  public constructor(compareKeys: OrderedComparator<K>, cloneKey: CloneFunction<K> = shallowClone, cloneValue: CloneFunction<V> = shallowClone) {
     this._compareKeys = compareKeys;
     this._cloneKey = cloneKey;
     this._cloneValue = cloneValue;
