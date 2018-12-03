@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Id64, Id64String, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils, assert, IndexMap, IndexedValue, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
@@ -1846,7 +1846,7 @@ export namespace Hilite {
  *
  * @see [[FeatureSymbology]] for mechanisms for controlling or overriding the symbology of individual features within a [[ViewState]].
  */
-export class Feature implements Comparable<Feature> {
+export class Feature {
   public readonly elementId: string;
   public readonly subCategoryId: string;
   public readonly geometryClass: GeometryClass;
@@ -1907,7 +1907,7 @@ export class FeatureTable extends IndexMap<Feature> {
 
   /** Construct an empty FeatureTable. */
   public constructor(maxFeatures: number, modelId: Id64String = Id64.invalid, type: BatchType = BatchType.Primary) {
-    super(compare, maxFeatures);
+    super((lhs, rhs) => lhs.compare(rhs), maxFeatures);
     this.modelId = modelId;
     this.type = type;
   }

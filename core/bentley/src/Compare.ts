@@ -26,28 +26,6 @@ export function compareBooleans(a: boolean, b: boolean): number { return a !== b
 /** @hidden */
 export function compareStrings(a: string, b: string): number { return a === b ? 0 : (a < b ? -1 : 1); }
 
-/** Interface adopted by a type T which supports ordered comparison. */
-export interface Comparable<T> {
-  /** Determine whether this object is considered equivalent to another object.
-   * @param rhs The object to which to compare
-   * @returns true if the objects are considered equivalent.
-   */
-  equals(rhs: T): boolean;
-
-  /** Determine ordering of this object relative to another object.
-   * Ordering is specified as a numerical value for which only the sign is meaningful.
-   * A negative result indicates this object is ordered before the other object.
-   * A positive result indicates this object is ordered after the other object.
-   * A result of zero indicates the two objects are considered equivalent.
-   * @param rhs The object to which to compare
-   * @returns A numeric value for which the sign indicates the ordering of this object relative to the other object.
-   */
-  compare(rhs: T): number;
-}
-
-/** @hidden */
-export function compare<T extends Comparable<T>>(lhs: T, rhs: T): number { return lhs.compare(rhs); }
-
 /** @hidden */
 export function comparePossiblyUndefined<T>(compareDefined: (lhs: T, rhs: T) => number, lhs?: T, rhs?: T): number {
   if (undefined === lhs)
