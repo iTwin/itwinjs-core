@@ -10,14 +10,17 @@ import * as React from "react";
 import ExpansionToggle from "./ExpansionToggle";
 import "./Node.scss";
 import { Checkbox } from "@bentley/bwc/lib/inputs/Checkbox";
+import { CheckBoxState } from "../enums";
 
 /** Properties for the [[TreeNode]] React component */
 export interface NodeProps {
   label: React.ReactNode;
   level: number;
   icon?: React.ReactChild;
+  item?: any;
   isCheckboxEnabled?: boolean;
-  onCheckboxClick?: (label: string) => void;
+  checkboxState?: CheckBoxState;
+  onCheckboxClick?: (item: any) => void;
   isChecked?: boolean;
   isLeaf?: boolean;
   isLoading?: boolean;
@@ -50,7 +53,7 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
     const offset = this.props.level * 20;
     const loader = this.props.isLoading ? (<div className="loader"><i></i><i></i><i></i><i></i><i></i><i></i></div>) : undefined;
     const checkbox = this.props.isCheckboxEnabled ?
-      <Checkbox label="" /> :
+      <Checkbox label="" onClick={this.props.onCheckboxClick} /> :
       undefined;
     const icon = this.props.icon ? (<div className="icon">{this.props.icon}</div>) : undefined;
     const toggle = (this.props.isLoading || this.props.isLeaf) ? undefined : (
@@ -87,11 +90,6 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
       </div>
     );
   }
-
-  // private _onCheckboxClick = () => {
-  //   if (this.props.onCheckboxClick)
-  //     this.props.onCheckboxClick(this.props.label as string);
-  // }
 
   private createSubComponentTestId(subId: string): string | undefined {
     if (!this.props["data-testid"])

@@ -69,7 +69,7 @@ export interface TreeProps {
   /** @hidden */
   ignoreEditorBlur?: boolean;
 
-  onCheckboxClick?: (label: string) => void;
+  onCheckboxClick?: (item: TreeNodeItem) => void;
 }
 
 /** State for the [[Tree]] component  */
@@ -496,18 +496,51 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
   // tslint:disable-next-line:naming-convention
   private static renderLabelComponent = (node: BeInspireTreeNode<TreeNodeItem>, highlightProps?: HighlightableTreeNodeProps, cellEditorProps?: TreeNodeCellEditorProps) => {
+    const labelForeColor = node.payload.labelForeColor ? node.payload.labelForeColor.toString(16) : undefined;
+    const labelBackColor = node.payload.labelBackColor ? node.payload.labelBackColor.toString(16) : undefined;
+    const labelBold = node.payload.labelBold ? "bold" : undefined;
+    const labelItalic = node.payload.labelItalic ? "italic" : undefined;
+
     if (cellEditorProps) {
       if (cellEditorProps.cellEditorState.active && node === cellEditorProps.cellEditorState.node) {
         const record = new CellEditorPropertyRecord(node.text);
-        return <EditorContainer propertyRecord={record} title={record.description}
-          onCommit={cellEditorProps.onCellEditCommit} onCancel={cellEditorProps.onCellEditCancel} ignoreEditorBlur={cellEditorProps.ignoreEditorBlur} />;
+        return (
+          <span style={{
+            color: labelForeColor,
+            backgroundColor: labelBackColor,
+            fontWeight: labelBold,
+            fontStyle: labelItalic,
+          }}>
+            <EditorContainer propertyRecord={record} title={record.description}
+              onCommit={cellEditorProps.onCellEditCommit} onCancel={cellEditorProps.onCellEditCancel} ignoreEditorBlur={cellEditorProps.ignoreEditorBlur} />
+          </span>
+        );
       }
     }
 
     if (highlightProps) {
-      return HighlightingEngine.renderNodeLabel(node.text, highlightProps);
+      return (
+        <span style={{
+          color: labelForeColor,
+          backgroundColor: labelBackColor,
+          fontWeight: labelBold,
+          fontStyle: labelItalic,
+        }}>
+          {HighlightingEngine.renderNodeLabel(node.text, highlightProps)}
+        </span>
+      );
     }
-    return node.text;
+
+    return (
+      <span style={{
+        color: labelForeColor,
+        backgroundColor: labelBackColor,
+        fontWeight: labelBold,
+        fontStyle: labelItalic,
+      }}>
+        {node.text}
+      </span>
+    );
   }
 
   // tslint:disable-next-line:naming-convention
@@ -615,7 +648,7 @@ export interface TreeNodeCellEditorProps {
 export interface TreeNodeProps {
   node: BeInspireTreeNode<TreeNodeItem>;
   highlightProps?: HighlightableTreeNodeProps;
-  onCheckboxClick?: (label: string) => void;
+  onCheckboxClick?: (item: TreeNodeItem) => void;
   isChecked?: boolean;
   isCheckboxEnabled?: boolean;
   cellEditorProps?: TreeNodeCellEditorProps;
@@ -645,6 +678,7 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         isLeaf={!this.props.node.hasOrWillHaveChildren()}
         label={this.props.renderLabel(this.props.node, this.props.highlightProps, this.props.cellEditorProps)}
         icon={this.props.node.itree && this.props.node.itree.icon ? <span className={this.props.node.itree.icon} /> : undefined}
+        item={this.props.node.payload as TreeNodeItem}
         onCheckboxClick={this.props.onCheckboxClick}
         isChecked={this.props.isChecked}
         isCheckboxEnabled={this.props.isCheckboxEnabled}
