@@ -109,6 +109,11 @@ export class PriorityQueue<T> {
     return this._pop(0);
   }
 
+  /** Removes all values from the queue. */
+  public clear(): void {
+    this._array.length = 0;
+  }
+
   /**
    * Removes the value at the specified index from the queue and reorders the queue.
    * @param index The index of the value to remove
