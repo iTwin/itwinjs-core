@@ -394,6 +394,14 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
     };
     return iModelDb.elements.insertElement(viewDefinitionProps);
   }
+  /** Set a new viewed range without changing the rotation or any other properties. */
+  public setRange(range: Range3d): void {
+    const rotation = this.angles.toMatrix3d();
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
+    const rotatedRange = rotationTransform.multiplyRange(range);
+    this.origin = Point3d.createFrom(rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z));
+    this.extents = rotatedRange.diagonal();
+  }
 }
 
 /** Defines a view of a single 2d model. Each 2d model has its own coordinate system, so only one may appear per view. */
