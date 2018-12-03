@@ -12,6 +12,12 @@
  *  - A negative number if lhs < rhs
  *  - A positive number if lhs > rhs
  *
+ * An OrderedComparator `must` implement [strict weak ordering](https://en.wikipedia.org/wiki/Weak_ordering#Strict_weak_orderings), which can be summarized by the following rules:
+ *  - `compare(x, x)` returns zero.
+ *  - If `compare(x, y)` returns zero, then so does `compare(y, x)` (i.e., `x == y` implies `y == x`).
+ *  - If `compare(x, y)` returns non-zero, then `compare(y, x)` returns a value with an opposite sign (i.e., `x < y` implies `y > x`).
+ *  - If `compare(x, y)` and `compare(y, z)` return non-zero values with the same sign, then `compare(x, z)` returns a value with the same sign (i.e., `x < y < z` implies `x < z`).
+ *
  * @see SortedArray
  * @see Dictionary
  * @see IndexMap
