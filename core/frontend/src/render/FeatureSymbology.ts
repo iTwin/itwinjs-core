@@ -64,6 +64,8 @@ export namespace FeatureSymbology {
         transparency: color.colors.t / 255,
       });
     }
+    /** Create an Appearance that overrides only the transparency */
+    public static fromTransparency(transparencyValue: number) { return this.fromJSON({ transparency: transparencyValue }); }
 
     /** Create an Appearance with overrides corresponding to those defined by the supplied SubCategoryOverride. */
     public static fromSubCategoryOverride(ovr: SubCategoryOverride): Appearance {
@@ -401,6 +403,11 @@ export namespace FeatureSymbology {
                 this.subCategoryOverrides.set(subCategoryId, app);
             }
           }
+        }
+        if (view.scheduleScript) {
+          view.scheduleScript.getSymbologyOverrides(view.scheduleTime).forEach((override, elementID) => {
+            this.overrideElement(elementID, Appearance.fromJSON(override));
+          });
         }
       }
     }

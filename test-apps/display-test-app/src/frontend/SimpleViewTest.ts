@@ -285,6 +285,7 @@ async function buildCategoryMenu(state: SimpleViewState) {
   let html = '<input id="cbxCatToggleAll" type="checkbox"> Toggle All\n<br>\n';
 
   const view = state.viewState!;
+  if (undefined === view) return;
   const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM " + (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory");
   const rows = await view.iModel.executeQuery(ecsql);
 

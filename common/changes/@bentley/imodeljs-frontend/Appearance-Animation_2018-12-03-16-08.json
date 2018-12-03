@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "WIP: add support for schedule animation (symbology).",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}
