@@ -146,36 +146,37 @@ describe("TxnManager", () => {
     const ede = TestElementDrivesElement.create<TestElementDrivesElement>(imodel, el1, el2);
     ede.property1 = "test ede";
     ede.insert();
+    const removals: VoidFunction[] = [];
     let beforeOutputsHandled = 0;
     let allInputsHandled = 0;
     let rootChanged = 0;
     let validateOutput = 0;
     let deletedDependency = 0;
-    TestElementDrivesElement.deletedDependency.addListener((evProps) => {
+    removals.push(TestElementDrivesElement.deletedDependency.addListener((evProps) => {
       assert.equal(evProps.sourceId, el1);
       assert.equal(evProps.targetId, el2);
       ++deletedDependency;
-    });
-    TestElementDrivesElement.rootChanged.addListener((evProps, im) => {
+    }));
+    removals.push(TestElementDrivesElement.rootChanged.addListener((evProps, im) => {
       const ede2 = im.relationships.getInstance<TestElementDrivesElement>(evProps.classFullName, evProps.id!);
       assert.equal(ede2.property1, ede.property1);
       assert.equal(evProps.sourceId, el1);
       assert.equal(evProps.targetId, el2);
       ++rootChanged;
-    });
-    TestElementDrivesElement.validateOutput.addListener((_props) => ++validateOutput);
+    }));
+    removals.push(TestElementDrivesElement.validateOutput.addListener((_props) => ++validateOutput));
     TestPhysicalObject.beforeOutputsHandled.addListener((id, im) => {
       const e1 = im.elements.getElement<TestPhysicalObject>(id);
       assert.equal(e1.intProperty, props.intProperty);
       assert.equal(id, el1);
       ++beforeOutputsHandled;
     });
-    TestPhysicalObject.allInputsHandled.addListener((id, im) => {
+    removals.push(TestPhysicalObject.allInputsHandled.addListener((id, im) => {
       const e2 = im.elements.getElement<TestPhysicalObject>(id);
       assert.equal(e2.intProperty, props.intProperty);
       assert.equal(id, el2);
       ++allInputsHandled;
-    });
+    }));
 
     imodel.saveChanges("step 1");
     assert.equal(1, beforeOutputsHandled);
@@ -192,6 +193,7 @@ describe("TxnManager", () => {
     assert.equal(2, rootChanged);
     assert.equal(0, validateOutput);
     assert.equal(0, deletedDependency);
+    removals.forEach((drop) => drop());
   });
 
 });

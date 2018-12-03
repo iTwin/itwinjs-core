@@ -36,6 +36,7 @@ describe("iModel", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
+    IModelTestUtils.registerTestBim();
     imodel1 = IModelTestUtils.openIModel("test.bim");
     imodel2 = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
     imodel3 = IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
