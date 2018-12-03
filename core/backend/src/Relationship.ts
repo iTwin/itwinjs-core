@@ -76,6 +76,16 @@ export class ElementRefersToElements extends Relationship {
   public static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T {
     return iModel.relationships.createInstance({ sourceId, targetId, classFullName: this.classFullName }) as T;
   }
+  /** Insert a new instance of the Relationship.
+   * @param iModel The iModel that will contain the relationship
+   * @param sourceId The sourceId of the relationship, that is, the driver element
+   * @param targetId The targetId of the relationship, that is, the driven element
+   * @return The Id of the inserted Relationship.
+   */
+  public static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String {
+    const relationship: T = this.create(iModel, sourceId, targetId);
+    return iModel.relationships.insertInstance(relationship);
+  }
 }
 
 /** Relates a [[DrawingGraphic]] to the [[Element]] that it represents */
