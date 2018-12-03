@@ -228,7 +228,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     }
   }
 
-  private _onTreeNodeChanged = (items?: TreeNodeItem[]) => {
+  private _onTreeNodeChanged = (items: Array<TreeNodeItem | undefined>) => {
     using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
       // istanbul ignore else
       if (items) {

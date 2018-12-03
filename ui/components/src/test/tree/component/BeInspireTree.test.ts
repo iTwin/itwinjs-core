@@ -14,6 +14,7 @@ import {
   toNode,
   BeInspireTreeDataProvider,
 } from "../../../tree/component/BeInspireTree";
+import { PageOptions } from "../../../common/PageOptions";
 
 interface Node {
   id: string;
@@ -22,11 +23,11 @@ interface Node {
 }
 
 interface RenderedNode {
+  level: number;
   id: string;
-  isExpanded: boolean;
-  isSelected: boolean;
-  isChecked: boolean;
-  children: RenderedNode[];
+  isExpanded?: boolean;
+  isSelected?: boolean;
+  isChecked?: boolean;
 }
 
 describe("BeInspireTree", () => {
@@ -81,26 +82,36 @@ describe("BeInspireTree", () => {
 
   const createDataProviderInterface = (h: Node[]): BeInspireTreeDataProviderInterface<Node> => {
     const m = createDataProviderMethod(h);
+    const p = async (nodesPromise: Promise<Node[]>, page?: PageOptions): Promise<Node[]> => {
+      const nodes = await nodesPromise;
+      if (!page)
+        return nodes;
+      const end = (page.size !== undefined && page.size !== 0) ? (page.size + (page.start || 0)) : undefined;
+      return nodes.slice(page.start, end);
+    };
     return {
       getNodesCount: async (parent?: Node) => (await m(parent)).length,
-      getNodes: async (parent?: Node) => (await m(parent)), // tslint:disable-line:no-return-await
+      getNodes: async (parent?: Node, page?: PageOptions) => p(m(parent), page),
     };
   };
 
   const handleNodeRender = (renderList: RenderedNode[], node: BeInspireTreeNode<Node>) => {
     if (node.available()) {
-      const children: RenderedNode[] = [];
-      if (node.expanded() && node.hasChildren()) {
-        node.getChildren().forEach((n) => handleNodeRender(children, toNode(n)));
+      if (node.payload) {
+        const { autoExpand, children, ...nodeProps } = node.payload;
+        renderList.push({
+          level: node.getParents().length,
+          ...nodeProps,
+          isChecked: node.checked(),
+          isSelected: node.selected(),
+          isExpanded: node.expanded(),
+        });
+      } else {
+        renderList.push({
+          level: node.getParents().length,
+          id: "<not loaded>",
+        });
       }
-      const { autoExpand, ...nodeProps } = node.payload;
-      renderList.push({
-        ...nodeProps,
-        isChecked: node.checked(),
-        isSelected: node.selected(),
-        isExpanded: node.expanded(),
-        children,
-      });
     }
     node.setDirty(false);
   };
@@ -130,8 +141,7 @@ describe("BeInspireTree", () => {
     renderedTree = [];
     rendererMock.reset();
     rendererMock.setup((x) => x(moq.It.isAny())).callback((_flatNodes: BeInspireTreeNodes<Node>) => {
-      const rootNodes = tree.nodes();
-      if (!rootNodes.some((n) => n.isDirty())) {
+      if (!tree.visible().some((n) => n.isDirty())) {
         // the Tree component has this check to avoid re-rendering non-dirty
         // trees - have it here as well to catch any places we don't dirty the
         // tree when we should
@@ -139,7 +149,7 @@ describe("BeInspireTree", () => {
       }
 
       renderedTree = [];
-      rootNodes.forEach((n) => {
+      tree.visible().forEach((n) => {
         handleNodeRender(renderedTree, n);
       });
     });
@@ -147,10 +157,10 @@ describe("BeInspireTree", () => {
 
   // run tests for every type of supported provider
   const providers = [
-    { name: "with raw data provider", createProvider: (h: Node[]) => h, isDelayLoaded: false },
-    { name: "with promise data provider", createProvider: async (h: Node[]) => Promise.resolve(h), isDelayLoaded: false },
-    { name: "with method data provider", createProvider: (h: Node[]) => createDataProviderMethod(h), isDelayLoaded: true },
-    { name: "with interface data provider", createProvider: (h: Node[]) => createDataProviderInterface(h), isDelayLoaded: true },
+    { name: "with raw data provider", createProvider: (h: Node[]) => h, isDelayLoaded: false, supportsPagination: false },
+    { name: "with promise data provider", createProvider: async (h: Node[]) => Promise.resolve(h), isDelayLoaded: false, supportsPagination: false },
+    { name: "with method data provider", createProvider: (h: Node[]) => createDataProviderMethod(h), isDelayLoaded: true, supportsPagination: false },
+    { name: "with interface data provider", createProvider: (h: Node[]) => createDataProviderInterface(h), isDelayLoaded: true, supportsPagination: true },
   ];
   providers.forEach((entry) => {
 
@@ -364,6 +374,72 @@ describe("BeInspireTree", () => {
           expect(rootNode.getChildren()[0].expanded()).to.be.true;
           expect(rootNode.getChildren()[0].getChildren().length).to.eq(1);
         });
+
+        if (entry.supportsPagination) {
+
+          it("expands paginated root node", async () => {
+            const h = createHierarchy(2, 1);
+            h[1].autoExpand = true;
+
+            tree = new BeInspireTree<Node>({
+              dataProvider: entry.createProvider(h),
+              mapPayloadToInspireNodeConfig,
+              renderer: rendererMock.object,
+              pageSize: 1,
+            });
+            await tree.ready;
+            await tree.requestNodeLoad(undefined, 1);
+
+            const rootNode = tree.node(h[1].id)!;
+            expect(rootNode.expanded()).to.be.true;
+            expect(rootNode.getChildren().length).to.eq(2);
+          });
+
+          it("expands paginated child node", async () => {
+            const h = createHierarchy(2, 2);
+            h[0].children[1].autoExpand = true;
+
+            tree = new BeInspireTree<Node>({
+              dataProvider: entry.createProvider(h),
+              mapPayloadToInspireNodeConfig,
+              renderer: rendererMock.object,
+              pageSize: 1,
+            });
+            await tree.ready;
+
+            const rootNode = tree.node(h[0].id)!;
+            await rootNode.expand();
+            await tree.requestNodeLoad(rootNode, 1);
+
+            const childNode = tree.node(h[0].children[1].id)!;
+            expect(childNode.expanded()).to.be.true;
+            expect(childNode.getChildren().length).to.eq(2);
+          });
+
+          it("expands paginated root and child node", async () => {
+            const h = createHierarchy(2, 2);
+            h[1].autoExpand = true;
+            h[1].children[0].autoExpand = true;
+
+            tree = new BeInspireTree<Node>({
+              dataProvider: entry.createProvider(h),
+              mapPayloadToInspireNodeConfig,
+              renderer: rendererMock.object,
+              pageSize: 1,
+            });
+            await tree.ready;
+            await tree.requestNodeLoad(undefined, 1);
+
+            const rootNode = tree.node(h[1].id)!;
+            expect(rootNode.expanded()).to.be.true;
+            expect(rootNode.getChildren().length).to.eq(2);
+
+            const childNode = tree.node(h[1].children[0].id)!;
+            expect(childNode.expanded()).to.be.true;
+            expect(childNode.getChildren().length).to.eq(2);
+          });
+
+        }
 
       });
 
@@ -608,24 +684,51 @@ describe("BeInspireTree", () => {
 
       });
 
+      describe("disposeChildrenOnCollapse", () => {
+
+        if (entry.isDelayLoaded) {
+
+          beforeEach(async () => {
+            tree = new BeInspireTree({
+              dataProvider,
+              renderer: rendererMock.object,
+              mapPayloadToInspireNodeConfig,
+              disposeChildrenOnCollapse: true,
+            });
+            await tree.ready;
+          });
+
+          it("resets node children", async () => {
+            const node = tree.node("0")!;
+
+            await node.expand();
+            expect(node.getChildren().length).to.not.eq(0);
+
+            node.collapse();
+            expect(node.getChildren().length).to.eq(0);
+
+            await node.expand();
+            expect(node.getChildren().length).to.not.eq(0);
+          });
+
+        } else {
+
+          it("throws", async () => {
+            const ctor = () => new BeInspireTree({
+              dataProvider,
+              renderer: rendererMock.object,
+              mapPayloadToInspireNodeConfig,
+              disposeChildrenOnCollapse: true,
+            });
+            expect(ctor).to.throw();
+          });
+
+        }
+
+      });
+
     });
 
-  });
-
-  it("loads children only once when trying to load children for same node multiple times", async () => {
-    const dataProvider = sinon.spy(createDataProviderMethod(hierarchy));
-    tree = new BeInspireTree({
-      dataProvider,
-      renderer: rendererMock.object,
-      mapPayloadToInspireNodeConfig: mapDelayLoadedNodeToInspireNodeConfig,
-    });
-    await tree.ready;
-    const node = tree.node("0")!;
-
-    dataProvider.resetHistory();
-
-    await Promise.all([node.loadChildren(), node.loadChildren()]);
-    expect(dataProvider.callCount).to.eq(1);
   });
 
   describe("events", () => {
@@ -738,6 +841,155 @@ describe("BeInspireTree", () => {
       rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.once());
       pausedRendering.dispose();
       rendererMock.verify((x) => x(moq.It.isAny()), moq.Times.once());
+    });
+
+  });
+
+  describe("pagination", () => {
+
+    let dataProvider: BeInspireTreeDataProviderInterface<Node>;
+    let getNodesSpy: sinon.SinonSpy;
+
+    beforeEach(async () => {
+      hierarchy = createHierarchy(5, 2);
+      dataProvider = createDataProviderInterface(hierarchy);
+      getNodesSpy = sinon.spy(dataProvider, "getNodes");
+      tree = new BeInspireTree({
+        dataProvider,
+        renderer: rendererMock.object,
+        mapPayloadToInspireNodeConfig: mapDelayLoadedNodeToInspireNodeConfig,
+        disposeChildrenOnCollapse: true,
+        pageSize: 2,
+      });
+      await tree.ready;
+    });
+
+    it("immediately loads first page for root nodes", async () => {
+      expect(getNodesSpy).to.be.calledOnceWith(undefined, { start: 0, size: 2 });
+      expect(renderedTree).to.matchSnapshot();
+    });
+
+    it("loads additional pages when root nodes are loaded sequentially", async () => {
+      await Promise.all(hierarchy.map(async (_n, i) => tree.requestNodeLoad(undefined, i)));
+      expect(getNodesSpy).to.be.calledThrice;
+      expect(getNodesSpy.firstCall).to.be.calledWith(undefined, { start: 0, size: 2 });
+      expect(getNodesSpy.secondCall).to.be.calledWith(undefined, { start: 2, size: 2 });
+      expect(getNodesSpy.thirdCall).to.be.calledWith(undefined, { start: 4, size: 2 });
+      expect(renderedTree).to.matchSnapshot();
+    });
+
+    it("loads necessary pages when root nodes are loaded arbitrarily", async () => {
+      await tree.requestNodeLoad(undefined, 4);
+      await tree.requestNodeLoad(undefined, 3);
+      expect(getNodesSpy).to.be.calledThrice;
+      expect(getNodesSpy.firstCall).to.be.calledWith(undefined, { start: 0, size: 2 });
+      expect(getNodesSpy.secondCall).to.be.calledWith(undefined, { start: 4, size: 2 });
+      expect(getNodesSpy.thirdCall).to.be.calledWith(undefined, { start: 2, size: 2 });
+      expect(renderedTree).to.matchSnapshot();
+    });
+
+    it("immediately loads first page for child nodes", async () => {
+      getNodesSpy.resetHistory();
+      const node = tree.node("0")!;
+      await node.expand();
+      expect(getNodesSpy).to.be.calledOnceWith(node.payload, { start: 0, size: 2 });
+      expect(renderedTree).to.matchSnapshot();
+    });
+
+    it("loads additional pages when child nodes are loaded sequentially", async () => {
+      getNodesSpy.resetHistory();
+      const node = tree.node("0")!;
+      await node.expand();
+      await Promise.all(hierarchy.map(async (_n, i) => tree.requestNodeLoad(node, i)));
+      expect(getNodesSpy).to.be.calledThrice;
+      expect(getNodesSpy.firstCall).to.be.calledWith(node.payload, { start: 0, size: 2 });
+      expect(getNodesSpy.secondCall).to.be.calledWith(node.payload, { start: 2, size: 2 });
+      expect(getNodesSpy.thirdCall).to.be.calledWith(node.payload, { start: 4, size: 2 });
+      expect(renderedTree).to.matchSnapshot();
+    });
+
+    it("loads additional pages when child nodes are loaded arbitrarily", async () => {
+      getNodesSpy.resetHistory();
+      const node = tree.node("0")!;
+      await node.expand();
+      await tree.requestNodeLoad(node, 4);
+      await tree.requestNodeLoad(node, 3);
+      expect(getNodesSpy).to.be.calledThrice;
+      expect(getNodesSpy.firstCall).to.be.calledWith(node.payload, { start: 0, size: 2 });
+      expect(getNodesSpy.secondCall).to.be.calledWith(node.payload, { start: 4, size: 2 });
+      expect(getNodesSpy.thirdCall).to.be.calledWith(node.payload, { start: 2, size: 2 });
+      expect(renderedTree).to.matchSnapshot();
+    });
+
+    it("calls render callback when child node is loaded for not rendered parent", async () => {
+      tree = new BeInspireTree({
+        dataProvider: createDataProviderInterface(createHierarchy(2, 3)),
+        renderer: rendererMock.object,
+        mapPayloadToInspireNodeConfig: mapDelayLoadedNodeToInspireNodeConfig,
+        pageSize: 1,
+      });
+      await tree.ready;
+
+      const node0 = tree.node("0")!;
+      await node0.expand();
+
+      const node00 = tree.node("0-0")!;
+      await node00.expand();
+
+      // create a situation where node0 is rendered but node00 is not
+      node00.setDirty(true);
+      node0.setDirty(false);
+
+      await tree.requestNodeLoad(node00, 1);
+      expect(renderedTree).to.matchSnapshot();
+    });
+
+    it("throws when `requestNodeLoad` is called on tree with non-paginating data provider", async () => {
+      tree = new BeInspireTree({
+        dataProvider: hierarchy,
+        renderer: rendererMock.object,
+        mapPayloadToInspireNodeConfig: mapDelayLoadedNodeToInspireNodeConfig,
+      });
+      await tree.ready;
+      await expect(tree.requestNodeLoad(undefined, 0)).to.eventually.be.rejected;
+    });
+
+    it("throws when `requestNodeLoad` is called on non-paginated tree", async () => {
+      dataProvider = createDataProviderInterface(hierarchy);
+      tree = new BeInspireTree({
+        dataProvider,
+        renderer: rendererMock.object,
+        mapPayloadToInspireNodeConfig: mapDelayLoadedNodeToInspireNodeConfig,
+      });
+      await tree.ready;
+      await expect(tree.requestNodeLoad(undefined, 0)).to.eventually.be.rejected;
+    });
+
+    it("handles children disposal during page load", async () => {
+      const node = tree.node("0")!;
+      await node.expand();
+      getNodesSpy.resetHistory();
+
+      const p = tree.requestNodeLoad(node, 2);
+      node.collapse();
+      await p;
+
+      // expect `getNodes` to be called
+      expect(getNodesSpy).to.be.calledOnce;
+      // but expect children to be `true` because it was reset on collapse
+      expect(node.children).to.be.true;
+    });
+
+    it("doesn't request nodes when loadChildren is called", async () => {
+      const node = tree.node("0")!;
+      await node.expand();
+      const renderedTreeBefore = renderedTree;
+      getNodesSpy.resetHistory();
+
+      await node.loadChildren();
+
+      expect(getNodesSpy).to.not.be.called;
+      expect(renderedTree).to.deep.eq(renderedTreeBefore); // expect children to not change
     });
 
   });

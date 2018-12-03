@@ -127,6 +127,10 @@
       "allowedCategories": [ "internal", "tools" ]
     },
     {
+      "name": "callable-instance2",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "case-sensitive-paths-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },

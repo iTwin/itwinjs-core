@@ -33,12 +33,12 @@ export default class IModelSelector extends React.Component<Props, State> {
 
   // tslint:disable-next-line:naming-convention
   private onImodelSelected = async (e: any) => {
+    const imodelPath = e.target.value;
     if (MyAppFrontend.iModel) {
       await MyAppFrontend.iModel.closeStandalone();
     }
 
     let imodel: IModelConnection | undefined;
-    const imodelPath = e.target.value;
     if (!imodelPath || "" === imodelPath) {
       this.setState((prev: State) => ({ ...prev, imodel: undefined, error: undefined }));
     } else {

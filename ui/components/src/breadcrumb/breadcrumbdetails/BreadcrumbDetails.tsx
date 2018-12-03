@@ -149,7 +149,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
       this.setState({ modelReady: true });
   }
 
-  private _onTreeNodeChanged = (items?: TreeNodeItem[]) => {
+  private _onTreeNodeChanged = (items: Array<TreeNodeItem | undefined>) => {
     using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
       if (items) {
         for (const item of items) {

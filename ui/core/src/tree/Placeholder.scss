@@ -1,0 +1,20 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+@import "@bentley/bwc/lib/mixins";
+@import "../colors.scss";
+
+.nz-tree-placeholder {
+  display: block;
+  box-sizing: border-box;
+  height: 24px;
+  margin-left: $bwc-l;
+  padding-top: 3px;
+  padding-bottom: 3px;
+  > .contents {
+    height: 18px;
+    background-color: $background-2;
+  }
+}

@@ -46,13 +46,13 @@ export type TreeDataProviderRaw = ImmediatelyLoadedTreeNodeItem[];
 export type TreeDataProviderPromise = Promise<TreeDataProviderRaw>;
 
 /** Signature for a method that returns TreeDataProviderPromise for supplied parent node */
-export type TreeDataProviderMethod = (node?: TreeNodeItem, options?: PageOptions) => Promise<DelayLoadedTreeNodeItem[]>;
+export type TreeDataProviderMethod = (node?: TreeNodeItem) => Promise<DelayLoadedTreeNodeItem[]>;
 
 /** Interface for a tree data provider class */
 export interface ITreeDataProvider {
   onTreeNodeChanged?: BeEvent<TreeDataChangesListener>;
   getNodesCount(parent?: TreeNodeItem): Promise<number>;
-  getNodes(parent?: TreeNodeItem, options?: PageOptions): Promise<DelayLoadedTreeNodeItem[]>;
+  getNodes(parent?: TreeNodeItem, page?: PageOptions): Promise<DelayLoadedTreeNodeItem[]>;
 }
 
 /** Type definition for all BeInspireTree data providers */
@@ -90,8 +90,11 @@ export const hasChildren = (node: TreeNodeItem) => {
   return false;
 };
 
-/** An interface tree data change listeners */
-export type TreeDataChangesListener = (node?: TreeNodeItem[]) => void;
+/**
+ * An interface tree data change listeners.
+ * Contains a list of nodes that changed or undefined if root level changed.
+ */
+export type TreeDataChangesListener = (nodes: Array<TreeNodeItem | undefined>) => void;
 
 /**
  * EditableTreeDataProvider provides cell editing processing for the Tree.
