@@ -2,6 +2,42 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "0.171.0",
+      "tag": "@bentley/ui-core_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed Dialog modal backdrop show/hide"
+          },
+          {
+            "comment": "Reduced the amount of unneded event calls in Dialog component and changed it to use Pointer events instead of Mouse+Touch."
+          },
+          {
+            "comment": "Added a vertical/horizontal line that is visible when hovered on ElementSeparator component."
+          },
+          {
+            "comment": "Renamed expandable block css class from core-property-block to core-expandable-block."
+          },
+          {
+            "comment": "Added a way to put Popups in fixed position and cleand up the refs."
+          },
+          {
+            "comment": "Added Omit type definition to Utils."
+          },
+          {
+            "comment": "Unit tests"
+          },
+          {
+            "comment": "Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components"
+          },
+          {
+            "comment": "Add Placeholder that can be displayed instead of tree node while it's being loaded"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.170.0",
       "tag": "@bentley/ui-core_v0.170.0",
       "date": "Mon, 26 Nov 2018 19:38:42 GMT",

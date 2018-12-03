@@ -2,6 +2,42 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.171.0",
+      "tag": "@bentley/ui-components_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added tests to Breadcrumb, updated Table and fixed Table Resize issues."
+          },
+          {
+            "comment": "Added property value renderers for double and navigation primitive types."
+          },
+          {
+            "comment": "Added specialized property value renderers for nonprimitive types when their container is a table."
+          },
+          {
+            "comment": "Refactored PropertyRenderer into smaller pieces and added isSelectable and indentation prop"
+          },
+          {
+            "comment": "Changed the way PropertyCategoryBlock looks."
+          },
+          {
+            "comment": "Enabled table to contain popups and dialog and slightly cleaned up it's CSS."
+          },
+          {
+            "comment": "Unit tests"
+          },
+          {
+            "comment": "Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components"
+          },
+          {
+            "comment": "Implement pagination in Tree component"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.170.0",
       "tag": "@bentley/ui-components_v0.170.0",
       "date": "Mon, 26 Nov 2018 19:38:42 GMT",

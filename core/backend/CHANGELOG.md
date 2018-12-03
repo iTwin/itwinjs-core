@@ -1,6 +1,23 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 26 Nov 2018 19:38:42 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Dec 2018 18:52:58 GMT and should not be manually modified.
+
+## 0.171.0
+Mon, 03 Dec 2018 18:52:58 GMT
+
+### Updates
+
+- More information logged from BriefcaseManager.\nFixed deletion/cleanup of invalid briefcases.\nAdded OIDC support for simpleviewtest application. 
+- Add ElementRefersToElements.insert
+- Fixed front end integration tests. 
+- Document the intended purpose of IModelJsExpressServer within a deployment environment.
+- Fixed integration tests. 
+- added tests for ElementDrivesElement handlers
+- Fixes to integration tests. 
+- Add OrthographicViewDefinition.setRange
+- Cleaned up use of mocks in core tests. 
+- Enable test now that addon was updated.
+- Fix Subject.insert to set parent
 
 ## 0.170.0
 Mon, 26 Nov 2018 19:38:42 GMT

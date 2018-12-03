@@ -2,6 +2,24 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.171.0",
+      "tag": "@bentley/ui-framework_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "More information logged from BriefcaseManager.\\nFixed deletion/cleanup of invalid briefcases.\\nAdded OIDC support for simpleviewtest application. "
+          },
+          {
+            "comment": "Unit tests"
+          },
+          {
+            "comment": "Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.170.0",
       "tag": "@bentley/ui-framework_v0.170.0",
       "date": "Mon, 26 Nov 2018 19:38:42 GMT",

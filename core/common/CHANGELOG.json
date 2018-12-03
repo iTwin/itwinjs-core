@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.171.0",
+      "tag": "@bentley/imodeljs-common_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Polyfill URLSearchParams for edge."
+          },
+          {
+            "comment": "Front end \"read pixels\" can now provide subCategoryId and GeometryClass to backend."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.170.0",
       "tag": "@bentley/imodeljs-common_v0.170.0",
       "date": "Mon, 26 Nov 2018 19:38:42 GMT",

@@ -2,6 +2,54 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.171.0",
+      "tag": "@bentley/imodeljs-frontend_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "WIP: add support for schedule animation (symbology)."
+          },
+          {
+            "comment": "geometry coverage"
+          },
+          {
+            "comment": "geometry coverage"
+          },
+          {
+            "comment": "Fix incorrect length used to create Uint32Array from Uint8Array."
+          },
+          {
+            "comment": "Fix incorrect display of raster text."
+          },
+          {
+            "comment": "Fix bug in which the frustum of a spatial view was always expanded to include the ground plane even if the ground plane was not displayed."
+          },
+          {
+            "comment": "Fix exception when attempting to create a SubCategoryAppearance from an empty string."
+          },
+          {
+            "comment": "Locate circle should be initialized to off."
+          },
+          {
+            "comment": "Enable locate and hilite for point clouds."
+          },
+          {
+            "comment": "Rename SimpleViewTest to display-test-app"
+          },
+          {
+            "comment": "SnapStatus and LocateFailure cleanup"
+          },
+          {
+            "comment": "Front end \"read pixels\" can now provide subCategoryId and GeometryClass to backend."
+          },
+          {
+            "comment": "Check SubCategoryAppearance dontLocate and dontSnap now that HitDetail has subCategoryId."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.170.0",
       "tag": "@bentley/imodeljs-frontend_v0.170.0",
       "date": "Mon, 26 Nov 2018 19:38:42 GMT",

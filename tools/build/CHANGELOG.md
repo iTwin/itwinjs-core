@@ -1,6 +1,13 @@
 # Change Log - @bentley/build-tools
 
-This log was last generated on Mon, 26 Nov 2018 19:38:42 GMT and should not be manually modified.
+This log was last generated on Mon, 03 Dec 2018 18:52:58 GMT and should not be manually modified.
+
+## 0.171.0
+Mon, 03 Dec 2018 18:52:58 GMT
+
+### Updates
+
+- Specify PromisedAssertion as a valid type to await on
 
 ## 0.170.0
 Mon, 26 Nov 2018 19:38:42 GMT

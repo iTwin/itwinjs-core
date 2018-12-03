@@ -2,6 +2,18 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "0.171.0",
+      "tag": "@bentley/ui-ninezone_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed Omit typedef source from ui/ninezone to ui/core"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.170.0",
       "tag": "@bentley/ui-ninezone_v0.170.0",
       "date": "Mon, 26 Nov 2018 19:38:42 GMT",
