@@ -71,7 +71,20 @@ export class KnotVector {
   }
   /** @returns Return the total knot distance from beginning to end. */
   public get knotLength01(): number { return this._knot1 - this._knot0; }
-
+  /** @returns true if all numeric values have wraparound conditions for "closed" knotVector. */
+  public testClosable(): boolean {
+    const leftKnotIndex = this.leftKnotIndex;
+    const rightKnotIndex = this.rightKnotIndex;
+    const period = this.rightKnot - this.leftKnot;
+    const degree = this.degree;
+    const indexDelta = rightKnotIndex - leftKnotIndex;
+    for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree - 1; k0++) {
+      const k1 = k0 + indexDelta;
+      if (!Geometry.isSameCoordinate(this.knots[k0] + period, this.knots[k1]))
+        return false;
+    }
+    return true;
+  }
   public isAlmostEqual(other: KnotVector): boolean {
     if (this.degree !== other.degree) return false;
     return NumberArray.isAlmostEqual(this.knots, other.knots, KnotVector.knotTolerance);
@@ -108,6 +121,23 @@ export class KnotVector {
     knots.setupFixedValues();
     return knots;
   }
+  /**
+   * Create knot vector with {degree-1} replicated knots at start and end, and uniform knots between.
+   * @param  numInterval number of intervals in knot space.  (NOT POLE COUNT)
+   * @param degree degree of polynomial
+   * @param a0 left knot value for active interval
+   * @param a1 right knot value for active interval
+   */
+  public static createUniformWrapped(numInterval: number, degree: number, a0: number, a1: number): KnotVector {
+    const knots = new KnotVector(numInterval + 2 * degree - 1, degree);
+    const du = 1.0 / numInterval;
+    for (let i = 1 - degree, k = 0; i < numInterval + degree; i++ , k++) {
+      knots.knots[k] = Geometry.interpolate(a0, i * du, a1);
+    }
+    knots.setupFixedValues();
+    return knots;
+  }
+
   /**
    * Create knot vector with given knot values and degree.
    * @param knotArray knot values
@@ -276,11 +306,11 @@ export class KnotVector {
     const k = this.spanIndexToLeftKnotIndex(spanIndex);
     return this.knots[k + 1] - this.knots[k];
   }
-/**
- * Given a span index, test if it is withn range and has nonzero length.
- * * note that a false return does not imply there are no more spans.  This may be a double knot (zero length span) followed by more real spans
- * @param spanIndex index of span to test.
- */
+  /**
+   * Given a span index, test if it is withn range and has nonzero length.
+   * * note that a false return does not imply there are no more spans.  This may be a double knot (zero length span) followed by more real spans
+   * @param spanIndex index of span to test.
+   */
   public isIndexOfRealSpan(spanIndex: number): boolean {
     if (spanIndex >= 0 && spanIndex < this.knots.length - this.degree)
       return !Geometry.isSmallMetricDistance(this.spanIndexToSpanLength(spanIndex));
@@ -300,12 +330,28 @@ export class KnotVector {
    * in classic over-clamped manner
    */
   public copyKnots(includeExtraEndKnot: boolean): number[] {
+    const wrap = this.wrappable && this.testClosable();
+    const leftIndex = this.leftKnotIndex;
+    const rightIndex = this.rightKnotIndex;
+    const a0 = this.leftKnot;
+    const a1 = this.rightKnot;
+    const delta = a1 - a0;
+    const degree = this.degree;
     const values: number[] = [];
-    if (includeExtraEndKnot)
-      values.push(this.knots[0]);
+    if (includeExtraEndKnot) {
+      if (wrap) {
+        values.push(this.knots[rightIndex - degree] - delta);
+      } else {
+        values.push(this.knots[0]);
+      }
+    }
     for (const u of this.knots) values.push(u);
-    if (includeExtraEndKnot)
-      values.push(values[values.length - 1]);
+    if (includeExtraEndKnot) {
+      if (wrap) {
+        values.push(this.knots[leftIndex + degree] + delta);
+      } else
+        values.push(values[values.length - 1]);
+    }
     return values;
   }
 }

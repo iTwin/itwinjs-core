@@ -18,7 +18,7 @@ import { PolygonOps } from "../geometry3d/PointHelpers";
 function checkHullRaysFromCentroid(hull: ConvexPolygon2d, ck: Checker) {
   const hullPoints = hull.points;
   const centroid = new Point2d();
-  ck.testTrue(PolygonOps.centroidAndArea(hullPoints, centroid) !== undefined, "CentroidAndArea call is not undefined");
+  ck.testTrue(PolygonOps.centroidAndAreaXY(hullPoints, centroid) !== undefined, "CentroidAndArea call is not undefined");
 
   const fractions: number[] = [0.0, 0.43, 0.96, 1.08, 2.5];
   for (const i of hullPoints) {

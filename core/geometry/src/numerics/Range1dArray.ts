@@ -161,7 +161,7 @@ export class Range1dArray {
       retVal.push(range.clone());
 
     // Sort the array
-    retVal.sort(compareRange1d);
+    retVal.sort(compareRange1dLexicalLowHigh);
 
     Range1dArray.simplifySortParity(retVal, true);
     return retVal;
@@ -169,7 +169,7 @@ export class Range1dArray {
 
   /** Uses the Range1d specific compare function for sorting the array of ranges */
   public static sort(data: Range1d[]) {
-    data.sort(compareRange1d);
+    data.sort(compareRange1dLexicalLowHigh);
   }
 
   /** Cleans up the array, compressing any overlapping ranges. If removeZeroLengthRanges is set to true, will also remove any Ranges in the form (x, x) */
@@ -177,7 +177,7 @@ export class Range1dArray {
     if (data.length < 2)
       return;
 
-    data.sort(compareRange1d);
+    data.sort(compareRange1dLexicalLowHigh);
 
     let currIdx = 0;
     let toInsert = false;
@@ -245,11 +245,7 @@ export class Range1dArray {
    * * This considers all intervals-- i.e. does not expect or take advantage of sorting.
    */
   public static testUnion(data: Range1d[], value: number): boolean {
-    for (const range of data) {
-      if (range.containsX(value))
-        return true;
-    }
-    return false;
+    return this.countContainingRanges(data, value) > 0;
   }
   /** test if value is "in" by parity rules.
    * * This considers all intervals-- i.e. does not expect or take advantage of sorting.
@@ -262,15 +258,35 @@ export class Range1dArray {
     }
     return inside;
   }
-  /** return an array with all the low and high values of all the ranges.
-   * * the coordinates are not sorted.
+
+  /** linear search to count number of intervals which contain `value`.
    */
-  public static getBreaks(data: Range1d[], result?: GrowableFloat64Array): GrowableFloat64Array {
+  public static countContainingRanges(data: Range1d[], value: number): number {
+    let n = 0;
+    for (const range of data) {
+      if (range.containsX(value))
+        n++;
+    }
+    return n;
+  }
+
+  /** return an array with all the low and high values of all the ranges.
+   * @param data array of ranges.
+   * @param sort optionally request immediate sort.
+   * @param compress optionally request removal of duplicates.
+   */
+  public static getBreaks(data: Range1d[], result?: GrowableFloat64Array, sort: boolean = false, compress: boolean = false): GrowableFloat64Array {
     if (!result) result = new GrowableFloat64Array(2 * data.length);
+    result.clear();
     for (const range of data) {
       result.push(range.low);
       result.push(range.high);
     }
+    if (sort)
+      result.sort();
+    if (compress)
+      result.compressAdjcentDuplicates();
+
     return result;
   }
   /** sum the lengths of all ranges */
@@ -305,7 +321,7 @@ export class Range1dArray {
 }
 
 /** Checks low's first, then high's */
-function compareRange1d(a: Range1d, b: Range1d): number {
+export function compareRange1dLexicalLowHigh(a: Range1d, b: Range1d): number {
   if (a.low < b.low) return -1;
   if (a.low > b.low) return 1;
   if (a.high < b.high) return -1;

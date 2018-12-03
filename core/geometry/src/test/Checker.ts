@@ -328,9 +328,18 @@ export class Checker {
     return this.announceError("Expect perpendicular", dataA, dataB, params);
   }
 
-  // return true if dataA is strictly before dataB as a signed toleranced coordinate value.
+  // return true for exact numeric equality
   public testExactNumber(dataA: number, dataB: number, ...params: any[]): boolean {
     if (dataA === dataB)
+      return this.announceOK();
+    return this.announceError("Expect exact number", dataA, dataB, params);
+  }
+
+  // return true if numbers are nearly identical, tolerance e * (1 + abs(dataA) + abs (dataB)) for e = 8e-16
+  public testTightNumber(dataA: number, dataB: number, ...params: any[]): boolean {
+    const d = Math.abs(dataB - dataA);
+    const tol = 8.0e-16 * (1.0 + Math.abs(dataA) + Math.abs(dataB));
+    if (d < tol)
       return this.announceOK();
     return this.announceError("Expect exact number", dataA, dataB, params);
   }

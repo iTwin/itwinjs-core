@@ -195,6 +195,7 @@ export * from "./bspline/BSplineCurve3dH";
 export * from "./bspline/BSplineSurface";
 export * from "./bspline/KnotVector";
 export * from "./polyface/BoxTopology";
+export * from "./polyface/PolyfaceData";
 export * from "./polyface/Polyface";
 export * from "./polyface/PolyfaceBuilder";
 export * from "./polyface/PolyfaceQuery";

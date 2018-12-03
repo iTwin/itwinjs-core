@@ -316,7 +316,7 @@ function multipleDegreeRotationsByAxisOrder(xDegrees: number, yDegrees: number, 
     axisOrder);
 }
 
-/** This function only compares the angle values for rotations around x, y, and z. It does not care about order for going back to a matrix. */
+/** Compare the matrix images of two ordered rotations. */
 function testEqualOrderedRotationAngles(ck: Checker, a: OrderedRotationAngles, b: OrderedRotationAngles) {
   const matrixA = a.toMatrix3d();
   const matrixB = b.toMatrix3d();
@@ -345,6 +345,18 @@ function testMultiAngleEquivalence(ck: Checker, xDegrees: number, yDegrees: numb
     [AxisOrder.ZXY, AxisOrder.YXZ],
     [AxisOrder.ZYX, AxisOrder.XYZ]]) {
     const angles = OrderedRotationAngles.createDegrees(xDegrees, yDegrees, zDegrees, orderPair[0]);
+    const angles1 = OrderedRotationAngles.createDegrees(0, 0, 0, orderPair[0]);
+    const angles2 = OrderedRotationAngles.createDegrees(xDegrees, yDegrees, zDegrees, orderPair[0], angles1);
+    testEqualOrderedRotationAngles(ck, angles, angles2);
+    ck.testTrue(angles1 === angles2, "reuse prior object");
+    ck.testTightNumber(xDegrees, angles.xDegrees, " x degrees");
+    ck.testTightNumber(yDegrees, angles.yDegrees, " y degrees");
+    ck.testTightNumber(zDegrees, angles.zDegrees, " z degrees");
+
+    ck.testTightNumber(Angle.degreesToRadians(xDegrees), angles.xRadians, "x radians");
+    ck.testTightNumber(Angle.degreesToRadians(yDegrees), angles.yRadians, "y radians");
+    ck.testTightNumber(Angle.degreesToRadians(zDegrees), angles.zRadians, "Z radians");
+
     const matrixA = angles.toMatrix3d();
     const matrixB = multipleDegreeRotationsByAxisOrder(-xDegrees, -yDegrees, -zDegrees, orderPair[1]);
     ck.testMatrix3d(matrixA, matrixB, "Compound rotation pair with order and sign reversal");

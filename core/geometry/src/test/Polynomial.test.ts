@@ -548,5 +548,17 @@ describe("LinearSystems", () => {
     ck.checkpoint("LinearSystems.lineSegment3dXYTransverseIntersectionUnbounded");
     expect(ck.getNumErrors()).equals(0);
   });
-
+  it("cubeRoot", () => {
+    const ck = new Checker();
+    ck.testExactNumber(0, AnalyticRoots.cbrt(0.0));
+    ck.testExactNumber(0, AnalyticRoots.cbrt(-0.0));
+    for (const a of [1000, 100, 2.234234, 0.347297, 1.0e-18]) {
+      const r0 = AnalyticRoots.cbrt(a);
+      const r1 = AnalyticRoots.cbrt(-a);
+      ck.testCoordinate(r0, -r1);
+      ck.testCoordinate(a, r0 * r0 * r0);
+      ck.testCoordinate(-a, r1 * r1 * r1);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

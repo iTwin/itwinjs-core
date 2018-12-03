@@ -52,8 +52,19 @@ export abstract class BezierCurveBase extends CurvePrimitive {
   /** reverse the poles in place */
   public reverseInPlace(): void { this._polygon.reverseInPlace(); }
   /** saturate the pole in place, using knot intervals from `spanIndex` of the `knotVector` */
-  public saturateInPlace(knotVector: KnotVector, spanIndex: number): boolean { return this._polygon.saturateInPlace(knotVector, spanIndex); }
-  public get degree(): number { return this._polygon.order - 1; }
+  public saturateInPlace(knotVector: KnotVector, spanIndex: number): boolean {
+    const boolstat = this._polygon.saturateInPlace(knotVector, spanIndex);
+    if (boolstat) {
+      this.setInterval(
+        knotVector.spanFractionToFraction(spanIndex, 0.0),
+        knotVector.spanFractionToFraction(spanIndex, 1.0));
+    }
+    return boolstat;
+  }
+
+  public get degree(): number {
+    return this._polygon.order - 1;
+  }
   public get order(): number { return this._polygon.order; }
   public get numPoles(): number { return this._polygon.order; }
   /** Get pole `i` as a Point3d.
@@ -99,7 +110,7 @@ export abstract class BezierCurveBase extends CurvePrimitive {
       if (!point)
         return true;
       if (!plane.isPointInPlane(point))
-        return false;
+        break;    // which gets to return false, which isotherwise unreachable . . .
     }
     return false;
   }
@@ -116,30 +127,17 @@ export abstract class BezierCurveBase extends CurvePrimitive {
   }
 
   public startPoint(): Point3d {
-    const result = this.getPolePoint3d(0);
-    if (!result) return Point3d.createZero();
+    const result = this.getPolePoint3d(0)!;   // ASSUME non-trivial pole set -- if null comes back, it bubbles out
     return result;
   }
   public endPoint(): Point3d {
-    const result = this.getPolePoint3d(this.order - 1);
-    if (!result) return Point3d.createZero();
+    const result = this.getPolePoint3d(this.order - 1)!;    // ASSUME non-trivial pole set
     return result;
   }
 
   public quickLength(): number { return this.polygonLength(); }
-  /** Extend range by all poles.  */
-  public extendRange(rangeToExtend: Range3d, transform?: Transform): void {
-    let i = 0;
-    if (transform) {
-      while (this.getPolePoint3d(i++, this._workPoint0)) {
-        rangeToExtend.extendTransformedPoint(transform, this._workPoint0);
-      }
-    } else {
-      while (this.getPolePoint3d(i++, this._workPoint0)) {
-        rangeToExtend.extend(this._workPoint0);
-      }
-    }
-  }
+  /** Concrete classes must implement extendRange . . .  */
+  public abstract extendRange(rangeToExtend: Range3d, transform?: Transform): void;
   protected _workBezier?: UnivariateBezier; // available for bezier logic within a method
   protected _workCoffsA?: Float64Array;
   protected _workCoffsB?: Float64Array;

@@ -269,6 +269,8 @@ describe("Polyface.Box", () => {
     ck.testBoolean(true, polyface.isAlmostEqual(polyfaceB), "polyface round trip");
     polyfaceB.data.pointIndex[0] += 1;
     ck.testBoolean(false, polyface.isAlmostEqual(polyfaceB), "index change detection");
+    polyfaceB.data.pointIndex[0] -= 1;
+    ck.testTrue(polyface.isAlmostEqual(polyfaceB), "index change undo");
     // console.log(polyfaceB);
     expect(ck.getNumErrors()).equals(0);
   });

@@ -329,14 +329,19 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   public copyKnots(includeExtraEndKnot: boolean): number[] { return this._bcurve.knots.copyKnots(includeExtraEndKnot); }
 
   /** Create a bspline with uniform knots. */
-  public static createUniformKnots(poles: Point3d[], order: number): BSplineCurve3d | undefined {
-    const numPoles = poles.length;
+  public static createUniformKnots(poles: Point3d[] | Float64Array, order: number): BSplineCurve3d | undefined {
+    const numPoles = poles instanceof Float64Array ? poles.length / 3 : poles.length;
     if (order < 1 || numPoles < order)
       return undefined;
     const knots = KnotVector.createUniformClamped(poles.length, order - 1, 0.0, 1.0);
-    const curve = new BSplineCurve3d(poles.length, order, knots);
-    let i = 0;
-    for (const p of poles) { curve._bcurve.packedData[i++] = p.x; curve._bcurve.packedData[i++] = p.y; curve._bcurve.packedData[i++] = p.z; }
+    const curve = new BSplineCurve3d(numPoles, order, knots);
+    if (poles instanceof Float64Array) {
+      for (let i = 0; i < 3 * numPoles; i++)
+        curve._bcurve.packedData[i] = poles[i];
+    } else {
+      let i = 0;
+      for (const p of poles) { curve._bcurve.packedData[i++] = p.x; curve._bcurve.packedData[i++] = p.y; curve._bcurve.packedData[i++] = p.z; }
+    }
     return curve;
   }
   /** Create a bspline with given knots.
@@ -454,7 +459,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return Point3dArray.isCloseToPlane(this._bcurve.packedData, plane);
   }
 
-  public quickLength(): number { return Point3dArray.sumLengths(this._bcurve.packedData); }
+  public quickLength(): number { return Point3dArray.sumEdgeLengths(this._bcurve.packedData); }
   public emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void {
     const needBeziers = handler.announceBezierCurve !== undefined;
     const workBezier = this.initializeWorkBezier();
@@ -497,22 +502,10 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   public get isClosable(): boolean {
     if (!this._bcurve.knots.wrappable)
       return false;
-    const degree = this.degree;
-    const leftKnotIndex = this._bcurve.knots.leftKnotIndex;
-    const rightKnotIndex = this._bcurve.knots.rightKnotIndex;
-    const period = this._bcurve.knots.rightKnot - this._bcurve.knots.leftKnot;
-    const indexDelta = rightKnotIndex - leftKnotIndex;
-    for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree - 1; k0++) {
-      const k1 = k0 + indexDelta;
-      if (!Geometry.isSameCoordinate(this._bcurve.knots.knots[k0] + period, this._bcurve.knots.knots[k1]))
-        return false;
-    }
-    const poleIndexDelta = this.numPoles - this.degree;
-    for (let p0 = 0; p0 + 1 < degree; p0++) {
-      const p1 = p0 + poleIndexDelta;
-      if (!Geometry.isSamePoint3d(this.getPolePoint3d(p0) as Point3d, this.getPolePoint3d(p1) as Point3d))
-        return false;
-    }
+    if (!this._bcurve.knots.testClosable())
+      return false;
+    if (!this._bcurve.testCloseablePolygon())
+      return false;
     return true;
   }
   /**
