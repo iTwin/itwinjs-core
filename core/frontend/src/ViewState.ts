@@ -1548,7 +1548,7 @@ export abstract class ViewState3d extends ViewState {
   public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
     const displayStyle = this.getDisplayStyle3d();
     const extents = new AxisAlignedBox3d();
-    if (undefined !== vp && !displayStyle.environment.ground.display)
+    if (!displayStyle.environment.ground.display)
       return extents; // Ground plane is not enabled
 
     const elevation = this.getGroundElevation();
