@@ -1162,7 +1162,9 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
           )
         }
         {this.props.isTemporaryMessageVisible !== 0 &&
-          <TemporaryMessage>
+          <TemporaryMessage
+            style={this.state.temporaryMessageStyle}
+          >
             Text element required.
           </TemporaryMessage>
         }
@@ -1838,6 +1840,7 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
 
       const item = (
         <ToolbarItem
+          key={tool.id}
           onClick={this.props.onToolClick}
           onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
           tool={tool}
@@ -1846,22 +1849,32 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
 
       const panel = isToolGroup(tool) && tool.isPanelOpen ? (
         <ToolbarItemPanel
+          key={tool.id}
           onBack={this.props.onPanelBack}
           onExpandGroup={this.props.onOpenPanelGroup}
           onToolClick={this.props.onPanelToolClick}
           tool={tool}
         />
-      ) : <PanelPlaceholder />;
+      ) : (
+          <PanelPlaceholder
+            key={tool.id}
+          />
+        );
 
       const history = isToolGroup(tool) &&
         !tool.isPanelOpen &&
         tool.history.length > 0 ? (
           <ToolbarItemHistoryTray
+            key={tool.id}
             onHistoryItemClick={this.props.onHistoryItemClick}
             onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
             tool={tool}
           />
-        ) : <HistoryPlaceholder />;
+        ) : (
+          <HistoryPlaceholder
+            key={tool.id}
+          />
+        );
 
       acc.items.push(item);
       acc.panels.push(panel);
@@ -2877,7 +2890,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
               [item.toolId]: {
                 ...prevTools[item.toolId],
                 isExtended: false,
-                history: DefaultHistoryManager.addItem(item.columnId + "-" + item.toolId, item, tool.history),
+                history: DefaultHistoryManager.addItem(item.columnId + "-" + item.itemId, item, tool.history),
               },
             },
           },
