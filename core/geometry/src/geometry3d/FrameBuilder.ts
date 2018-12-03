@@ -232,9 +232,9 @@ export class FrameBuilder {
     if (points.length > 2) {
       const origin = points[0].clone();
       const vector01 = Vector3d.create();
-      Point3dArray.vectorToMostDistantPoint(points, points[0], vector01);
+      Point3dArray.indexOfMostDistantPoint(points, points[0], vector01);
       const vector02 = Vector3d.create();
-      Point3dArray.vectorToPointWithMaxCrossProductMangitude(points, origin, vector01, vector02);
+      Point3dArray.indexOfPointWithMaxCrossProductMagnitude(points, origin, vector01, vector02);
       const matrix = Matrix3d.createRigidFromColumns(vector01, vector02, AxisOrder.XYZ);
       if (matrix)
         return Transform.createRefs(origin, matrix);

@@ -130,9 +130,17 @@ export class ViewSubCategories {
             return Promise.resolve();
     }
 
+    private static createSubCategoryAppearance(json?: any) {
+        let props: SubCategoryAppearance | undefined;
+        if ("string" === typeof (json) && 0 < json.length)
+            props = JSON.parse(json);
+
+        return new SubCategoryAppearance(props);
+    }
+
     private loadFromRows(rows: any[]): void {
         for (const row of rows)
-            this.add(row.parentId as string, row.id as string, new SubCategoryAppearance(JSON.parse(row.appearance)));
+            this.add(row.parentId as string, row.id as string, ViewSubCategories.createSubCategoryAppearance(row.appearance));
     }
 
     private add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
@@ -1552,7 +1560,7 @@ export abstract class ViewState3d extends ViewState {
     public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
         const displayStyle = this.getDisplayStyle3d();
         const extents = new AxisAlignedBox3d();
-        if (undefined !== vp && !displayStyle.environment.ground.display)
+        if (!displayStyle.environment.ground.display)
             return extents; // Ground plane is not enabled
 
         const elevation = this.getGroundElevation();

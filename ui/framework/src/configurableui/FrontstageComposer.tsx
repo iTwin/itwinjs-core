@@ -9,7 +9,6 @@ import * as ReactDOM from "react-dom";
 
 import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageChangedEventArgs } from "./FrontstageManager";
 import { FrontstageDef } from "./FrontstageDef";
-import { FrameworkFrontstage } from "./FrameworkFrontstage";
 import { ZoneDef, ZoneState } from "./ZoneDef";
 import { ModalFrontstage } from "./ModalFrontstage";
 
@@ -210,15 +209,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
         };
         content = React.cloneElement(this._frontstageDef.frontstageProvider.frontstage, { runtimeProps: frontstageRuntimeProps });
       } else {
-        content = (
-          <FrameworkFrontstage
-            frontstageDef={this._frontstageDef}
-            nineZoneProps={this.state.nineZoneProps}
-            widgetChangeHandler={this}
-            targetChangeHandler={this}
-            zoneDefProvider={this}
-          />
-        );
+        throw Error("FrontstageDef has no FrontstageProvider.");
       }
     }
 

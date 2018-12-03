@@ -24,7 +24,7 @@ import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter, addMaterial, addSurfaceDiscardByAlpha } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
-import { addFeatureId, addFeatureSymbology, addRenderOrder, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
+import { addFeatureId, addFeatureSymbology, addUniformFeatureSymbology, addRenderOrder, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
 import { GLSLFragment, addPickBufferOutputs } from "./glsl/Fragment";
 import { addFrustum, addEyeSpace } from "./glsl/Common";
 import { addModelViewMatrix } from "./glsl/Vertex";
@@ -354,21 +354,24 @@ class PointStringTechnique extends VariedTechnique {
   }
 }
 
-/** ###TODO PointCloud to support feature overrides, locate, and hilite */
-export class WipPointCloudTechnique extends VariedTechnique {
-  private static readonly _kHilite = numFeatureVariants(1);
+class PointCloudTechnique extends VariedTechnique {
+  private static readonly _kHilite = 1;
+  private static readonly _kFeature = 2;
 
   public constructor(gl: WebGLRenderingContext) {
-    super(numFeatureVariants(1) + numHiliteVariants);
+    super(3);
+
+    this.addHiliteShader(gl, createPointCloudHiliter);
 
     const flags = scratchTechniqueFlags;
-    this.addHiliteShader(gl, createPointCloudHiliter);
-    for (const feature of featureModes) {
-      flags.reset(feature);
+    const pointCloudFeatureModes = [ FeatureMode.None, FeatureMode.Overrides ];
+    for (const featureMode of pointCloudFeatureModes) {
+      flags.reset(featureMode);
       const builder = createPointCloudBuilder();
-      const opts = FeatureMode.Overrides === feature ? FeatureSymbologyOptions.PointCloud : FeatureSymbologyOptions.None;
-      addFeatureSymbology(builder, feature, opts);
-      this.addFeatureId(builder, feature);
+      if (FeatureMode.Overrides === featureMode)
+        addUniformFeatureSymbology(builder);
+
+      this.addFeatureId(builder, featureMode);
       this.addShader(builder, flags, gl);
     }
   }
@@ -376,31 +379,13 @@ export class WipPointCloudTechnique extends VariedTechnique {
   protected get _debugDescription() { return "PointCloud"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    let index: number;
     if (flags.isHilite)
-      index = WipPointCloudTechnique._kHilite;
+      return PointCloudTechnique._kHilite;
+    else if (FeatureMode.None !== flags.featureMode)
+      return PointCloudTechnique._kFeature;
     else
-      index = flags.featureMode;
-
-    return index;
+      return 0;
   }
-}
-
-class PointCloudTechnique extends VariedTechnique {
-  public constructor(gl: WebGLRenderingContext) {
-    super(1);
-    const flags = scratchTechniqueFlags;
-    flags.reset(FeatureMode.None);
-    const builder = createPointCloudBuilder();
-    const opts = FeatureSymbologyOptions.None;
-    addFeatureSymbology(builder, FeatureMode.None, opts);
-    this.addFeatureId(builder, FeatureMode.None);
-    this.addShader(builder, flags, gl);
-  }
-
-  protected get _debugDescription() { return "PointCloud"; }
-
-  public computeShaderIndex(_flags: TechniqueFlags): number { return 0; }
 }
 
 // A collection of rendering techniques accessed by ID.

@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 
 import "@bentley/bwc/lib/buttons/classes.scss";
 import "./MessageBox.scss";
-import { Dialog, ButtonCluster, DialogProps } from "../dialog/Dialog";
+import { Dialog, ButtonCluster } from "../dialog/Dialog";
 
 /** Message Severity enum.
  */
@@ -22,7 +22,7 @@ export enum MessageSeverity {
   Fatal = 5,
 }
 
-/** Property interface for MessageBox */
+/** Property interface for [[MessageBox]] */
 export interface MessageBoxProps {
   /** Severity of MessageBox */
   severity: MessageSeverity;
@@ -51,15 +51,18 @@ export interface MessageBoxProps {
    * Default: ""
    */
   height?: string | number;
+  /** Whether to show background overlay. Default: true */
+  modal?: boolean;
 }
 
 /** Message Box React component.
  */
 export class MessageBox extends React.Component<MessageBoxProps> {
-  public static defaultProps: Partial<DialogProps> = {
+  public static defaultProps: Partial<MessageBoxProps> = {
     minWidth: 400,
     minHeight: 400,
     width: "512px",
+    modal: true,
   };
 
   public render(): JSX.Element {
@@ -71,8 +74,7 @@ export class MessageBox extends React.Component<MessageBoxProps> {
         width={this.props.width}
         onClose={this.props.onClose}
         onEscape={this.props.onEscape}
-        modal={true}
-      >
+        modal={this.props.modal} >
         <MessageContainer severity={this.props.severity}>
           {this.props.children}
         </MessageContainer>
@@ -81,7 +83,7 @@ export class MessageBox extends React.Component<MessageBoxProps> {
   }
 }
 
-/** Property interface for MessageContainer */
+/** Property interface for [[MessageContainer]] */
 export interface MessageContainerProps {
   severity: MessageSeverity;
 }

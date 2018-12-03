@@ -5,7 +5,7 @@
   ],
   "jsRules": {},
   "rules": {
-    "await-promise": true,
+    "await-promise": [true, "PromisedAssertion"],
     "no-return-await": true,
     "promise-function-async": true,
     "no-floating-promises": true,

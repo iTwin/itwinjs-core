@@ -68,11 +68,13 @@ class TreeDemoWidget extends React.Component<Props, State> {
         <input id="receives_row" type="checkbox" onChange={(event) => {
           this.setState({ checked: event.target.checked });
         }} />
-        <DragDropTree
-          dataProvider={demoMutableTreeDataProvider}
-          dragProps={dragProps}
-          dropProps={dropProps}
-        />
+        <div style={{ height: "calc(100% - 20px)" }}>
+          <DragDropTree
+            dataProvider={demoMutableTreeDataProvider}
+            dragProps={dragProps}
+            dropProps={dropProps}
+          />
+        </div>
       </div>
     );
   }

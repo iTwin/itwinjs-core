@@ -172,7 +172,7 @@ export class BeTouchEvent extends BeButtonEvent {
           points.push(this.getTouchPosition(list[i], vp));
         }
         const centroid = Point2d.createZero();
-        PolygonOps.centroidAndArea(points, centroid);
+        PolygonOps.centroidAndAreaXY(points, centroid);
         return centroid;
       }
     }

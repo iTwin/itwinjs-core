@@ -167,7 +167,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
             < option value={TableSelectionTarget.Cell} > Cell </option>
           </select>
         </div>
-        <div style={{ flex: "1" }}>
+        <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
           <Table
             dataProvider={this.state.dataProvider}
             tableSelectionTarget={this.state.tableSelectionTarget}

@@ -9,7 +9,7 @@ import { BlueButton, HollowButton } from "@bentley/bwc/lib/bwc";
 import { Timer, withTimeout } from "@bentley/ui-core";
 import App from "@src/app/App";
 import Content from "@src/app/Content";
-import AppButton from "@src/app/button/App";
+import AppButton from "@src/widget/tools/button/App";
 import MouseTracker from "@src/context/MouseTracker";
 import Footer from "@src/footer/Footer";
 import MessageCenter, { MessageCenterButton } from "@src/footer/message-center/MessageCenter";
@@ -71,7 +71,7 @@ import TabSeparator from "@src/widget/rectangular/tab/Separator";
 import WidgetTabGroup, { VisibilityMode } from "@src/widget/rectangular/tab/Group";
 import { TabMode } from "@src/widget/rectangular/tab/Tab";
 import StackedWidget, { HorizontalAnchor } from "@src/widget/Stacked";
-import ToolsWidget from "@src/widget/Tools";
+import ToolsWidget from "@src/widget/tools/Tools";
 import FooterZone from "@src/zones/Footer";
 import NineZone, { getDefaultProps as getDefaultNineZone, NineZoneProps, WidgetZoneIndex } from "@src/zones/state/NineZone";
 import NineZoneManager from "@src/zones/state/Manager";
@@ -253,7 +253,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           icon: "icon-placeholder",
         } as ToolGroup,
         "angle": {
-          icon: "icon-placeholder",
+          icon: "icon-app-1",
         } as SimpleTool,
         "attach": {
           icon: "icon-placeholder",
@@ -1867,6 +1867,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 <>
                   {this.state.showAllItems && this.getToolbarItem("2d")}
                   <ToolbarIcon
+                    isActive={this.state.showAllItems}
                     key={"angle"}
                     icon={
                       <i className={`icon ${this.state.tools.angle.icon}`} />

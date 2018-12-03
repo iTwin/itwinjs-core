@@ -7,7 +7,7 @@
 import * as React from "react";
 import Timer from "../utils/Timer";
 
-/** Properties for [[withTimeout]] HOC. */
+/** Properties for [[withTimeout]] React higher-order component */
 export interface WithTimeoutProps {
   /** Timeout duration in milliseconds */
   timeout: number;

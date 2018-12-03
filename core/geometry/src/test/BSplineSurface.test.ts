@@ -14,6 +14,7 @@ import { Transform } from "../geometry3d/Transform";
 import { BSplineSurface3dQuery, BSplineSurface3dH } from "../bspline/BSplineSurface";
 import { expect } from "chai";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 /* tslint:disable:no-console */
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
   let s = 0.0; for (const a of data) s += a;
@@ -110,22 +111,22 @@ function testBSplineSurface(ck: Checker, surfaceA: BSplineSurface3dQuery) {
           const uknot = surfaceA.spanFractionToKnot(0, i, f);
           const vknot = surfaceA.spanFractionToKnot(1, j, f);
           const knotPoint4d = surfaceA.knotToPoint4d(uknot, vknot);
-          const point3d = surfaceA.knotToPoint (uknot, vknot);
+          const point3d = surfaceA.knotToPoint(uknot, vknot);
           const uFraction = uKnots.spanFractionToFraction(i, f);
           const vFraction = vKnots.spanFractionToFraction(j, f);
           const fractionPoint = surfaceA.fractionToPoint(uFraction, vFraction);
-          const fractionPoint4d = surfaceA.fractionToPoint4d (uFraction, vFraction);
-          const fractionPoint4dto3d = fractionPoint4d.realPointDefault000 ();
+          const fractionPoint4d = surfaceA.fractionToPoint4d(uFraction, vFraction);
+          const fractionPoint4dto3d = fractionPoint4d.realPointDefault000();
           const knotPoint4dto3d = knotPoint4d.realPointDefault000();
           ck.testPoint3d(knotPoint4dto3d, fractionPoint);
           ck.testPoint3d(fractionPoint4dto3d, fractionPoint);
-          ck.testPoint3d (point3d, knotPoint4dto3d);
-          surfaceA.spanFractionsToBasisFunctions (0, i, f, uBasis, duBasis);
-          testBasisValues (ck, uBasis, 1.0);
-          testBasisValues (ck, duBasis, 0.0);
-          surfaceA.spanFractionsToBasisFunctions (1, j, f, vBasis, dvBasis);
-          testBasisValues (ck, vBasis, 1.0);
-          testBasisValues (ck, dvBasis, 0.0);
+          ck.testPoint3d(point3d, knotPoint4dto3d);
+          surfaceA.spanFractionsToBasisFunctions(0, i, f, uBasis, duBasis);
+          testBasisValues(ck, uBasis, 1.0);
+          testBasisValues(ck, duBasis, 0.0);
+          surfaceA.spanFractionsToBasisFunctions(1, j, f, vBasis, dvBasis);
+          testBasisValues(ck, vBasis, 1.0);
+          testBasisValues(ck, dvBasis, 0.0);
         }
       }
     }
@@ -141,6 +142,7 @@ describe("BSplineSurface", () => {
       surfaceA.setWrappable(1, true);
       testBSplineSurface(ck, surfaceA);
       ck.testFalse(surfaceA.isClosable(1));
+      ck.testFalse(surfaceA.isClosable(0));
     }
     // A rational surface with unit weigths ... This is just a plane
     const surfaceAH1 = Sample.createWeightedXYGridBsplineSurface(4, 3, 3, 2);
@@ -154,4 +156,34 @@ describe("BSplineSurface", () => {
     ck.checkpoint("BSplineSurface.Hello");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("Wrapped", () => {
+    const ck = new Checker();
+    const allGeometry = [];
+    let dx = 0.0;
+    let dy = 0.0;
+    for (const orderU of [2, 3, 4, 5]) {
+      dy = 0.0;
+      for (const orderV of [2, 3, 4, 5]) {
+        const bsurf = Sample.createPseudoTorusBsplineSurface(
+          4.0, 1.0, // radii
+          Math.max(12, orderU + 1), Math.max(6, orderV + 1),    // grid edges
+          orderU, orderV);    // order}
+        if (ck.testPointer(bsurf) && bsurf) {
+
+          ck.testTrue(bsurf.isClosable(0));
+          ck.testTrue(bsurf.isClosable(1));
+
+          bsurf.tryTranslateInPlace(dx, dy);
+          allGeometry.push(bsurf);
+        }
+        dy += 20.0;
+      }
+      dx += 20.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineSurface", "Wrapped");
+    ck.checkpoint("BSplineSurface.Wrapped");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

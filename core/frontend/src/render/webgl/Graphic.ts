@@ -33,6 +33,16 @@ export class FeatureOverrides implements IDisposable {
   public anyOpaque: boolean = true;
   public anyHilited: boolean = true;
 
+  public get isUniform() { return 2 === this.lutParams.width && 1 === this.lutParams.height; }
+  public get isUniformFlashed() {
+    if (!this.isUniform || undefined === this.lut)
+      return false;
+
+    const lut = this.lut as Texture2DHandle;
+    const flags = lut.dataBytes![0];
+    return 0 !== (flags & OvrFlags.Flashed);
+  }
+
   private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashedElemId: Id64String): TextureHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims: LUTDimensions = LUTDimensions.computeWidthAndHeight(nFeatures, 2);

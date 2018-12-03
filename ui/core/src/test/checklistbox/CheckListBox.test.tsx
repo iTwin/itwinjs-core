@@ -11,7 +11,7 @@ import { CheckListBox, CheckListBoxItem, CheckListBoxSeparator } from "../..//in
 describe("<CheckListBox />", () => {
   it("should render", () => {
     const wrapper = mount(
-      <CheckListBox opened={true} >
+      <CheckListBox>
         <CheckListBoxItem label="label" />
         <CheckListBoxSeparator />
       </CheckListBox>);
@@ -20,7 +20,7 @@ describe("<CheckListBox />", () => {
 
   it("renders correctly", () => {
     shallow(
-      <CheckListBox opened={true} >
+      <CheckListBox>
         <CheckListBoxItem label="label" />
         <CheckListBoxSeparator />
       </CheckListBox>,

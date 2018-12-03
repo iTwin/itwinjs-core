@@ -87,4 +87,15 @@ describe("<Node />", () => {
     wrapper.simulate("click", new MouseEvent("click"));
     expander.simulate("click", new MouseEvent("click"));
   });
+
+  it("sets data-testid", () => {
+    const wrapper = shallow(<Node label="a" level={0} data-testid="test" />);
+    const elementsWithDataTestId = wrapper.find("[data-testid]");
+    const dataTestIds = elementsWithDataTestId.map((w) => w.prop("data-testid"));
+    dataTestIds.length.should.eq(3);
+    dataTestIds.indexOf("test").should.not.eq(-1);
+    dataTestIds.indexOf("test-expansion-toggle").should.not.eq(-1);
+    dataTestIds.indexOf("test-contents").should.not.eq(-1);
+  });
+
 });

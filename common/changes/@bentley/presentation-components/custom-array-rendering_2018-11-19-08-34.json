@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "PropertyRecord of type Array now also returns itemsTypeName under value property.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "elonas.seviakovas@bentley.com"
+}

@@ -44,7 +44,7 @@ export enum DialogAlignment {
   BottomLeft = "bottom-left", Bottom = "bottom", BottomRight = "bottom-right",
 }
 
-/** interface for a given button in a button cluster */
+/** Interface for a given button in a button cluster */
 export interface ButtonCluster {
   /** type of button */
   type: ButtonType;
@@ -54,7 +54,7 @@ export interface ButtonCluster {
   buttonStyle?: ButtonStyle;
 }
 
-/** Property interface for Dialog */
+/** Property interface for [[Dialog]] */
 export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title"> {
   /** whether to show dialog or not */
   opened: boolean;
@@ -116,7 +116,7 @@ export interface DialogState {
 }
 
 /**
- * Dialog component with optional resizing and dragging functionality
+ * Dialog React component with optional resizing and dragging functionality
  */
 export class Dialog extends React.Component<DialogProps, DialogState> {
   private _containerRef = React.createRef<HTMLDivElement>();
@@ -183,7 +183,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       <div
         className={classnames(
           "dialog",
-          { "dialog-hidden": !modal },
+          { "dialog-hidden": !modal, opened },
         )}
         style={this.props.backgroundStyle}
         data-testid="dialog-root"

@@ -10,7 +10,7 @@ import classnames from "classnames";
 import "./Breadcrumb.scss";
 import * as _ from "lodash";
 import { using } from "@bentley/bentleyjs-core";
-import { SplitButton, withOnOutsideClick } from "@bentley/ui-core";
+import { SplitButton, withOnOutsideClick, MessageSeverity, ButtonType, MessageBox } from "@bentley/ui-core";
 import { TreeDataProvider, TreeNodeItem, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface } from "../tree";
 import { ContextMenu, ContextMenuItem } from "@bentley/ui-core";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
@@ -26,6 +26,8 @@ export interface BreadcrumbProps {
   path?: BreadcrumbPath;
   /** Data provider for tree content  */
   dataProvider: TreeDataProvider;
+  /** Initial current node */
+  initialCurrent?: TreeNodeItem;
   /** Character used to separate discrete tree nodes in Breadcrumb text mode. Default: "\\" */
   delimiter?: string;
   /** Width in pixels, if number, and in specified css units, if string. Default: "15em" */
@@ -61,9 +63,10 @@ export enum BreadcrumbMode {
 /** @hidden */
 export interface BreadcrumbState {
   width: number | string;
-  current?: BeInspireTreeNode<TreeNodeItem>;
+  current?: TreeNodeItem;
   currentMode: BreadcrumbMode;
   modelReady: boolean;
+  pathString: string;
 }
 
 /**
@@ -95,6 +98,8 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
       modelReady: isTreeDataProviderInterface(props.dataProvider) ? false : true,
       width: props.width!,
       currentMode: props.initialBreadcrumbMode!,
+      current: props.initialCurrent,
+      pathString: "",
     };
     this._recreateTree();
   }
@@ -129,10 +134,11 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
 
   private _handleUpdate = (args: BreadcrumbUpdateEventArgs) => {
     if (args.currentNode && this._mounted) {
-      const node = this._tree.node(args.currentNode.id);
-      this.setState({ current: node });
+      const current = this._tree.node(args.currentNode.id);
+      const p = current ? current.getTextualHierarchy().join(this.props.delimiter) : "";
+      this.setState({ current: args.currentNode, pathString: p });
     } else {
-      this.setState({ current: undefined });
+      this.setState({ current: undefined, pathString: "" });
     }
   }
 
@@ -154,6 +160,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
       return true;
     }
 
+    // istanbul ignore if
     if (!nextState.modelReady) {
       // if we got here and model is not ready - don't render
       return false;
@@ -162,7 +169,12 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     // otherwise, render when any of the following props / state change
     return this.props.renderNode !== nextProps.renderNode
       || this.props.dataProvider !== nextProps.dataProvider
+      || this.props.background !== nextProps.background
+      || this.props.dropdownOnly !== nextProps.dropdownOnly
+      || this.props.parentsOnly !== nextProps.parentsOnly
+      || this.props.showUpDir !== nextProps.showUpDir
       || this.state.current !== nextState.current
+      || this.state.pathString !== nextState.pathString
       || this.state.currentMode !== nextState.currentMode;
   }
 
@@ -189,35 +201,42 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   private _onModelLoaded = (rootNodes: BeInspireTreeNodes<TreeNodeItem>) => {
     if (this.props.onRootNodesLoaded)
       this.props.onRootNodesLoaded(rootNodes.map((n) => n.payload));
-    const current = this.state.current ? this._tree.node(this.state.current.payload.id) : undefined;
-    if (current !== this.state.current)
-      this.setState({ current });
+    const current = this.state.current ? this._tree.node(this.state.current.id) : undefined;
+    const p = current ? current.getTextualHierarchy().join(this.props.delimiter) : "";
+    if (p !== this.state.pathString)
+      this.setState({ pathString: p });
   }
 
   private _onChildrenLoaded = (parentNode: BeInspireTreeNode<TreeNodeItem>) => {
     const children = parentNode.getChildren();
     if (this.props.onChildrenLoaded)
       this.props.onChildrenLoaded(parentNode.payload, toNodes<TreeNodeItem>(children).map((c) => c.payload));
-    const current = this.state.current ? this._tree.node(this.state.current.payload.id) : undefined;
-    if (current !== this.state.current)
-      this.setState({ current });
+    const current = this.state.current ? this._tree.node(this.state.current.id) : undefined;
+    const p = current ? current.getTextualHierarchy().join(this.props.delimiter) : "";
+    if (p !== this.state.pathString)
+      this.setState({ pathString: p });
   }
 
   private _onModelChanged = (_visibleNodes: Array<BeInspireTreeNode<TreeNodeItem>>) => {
   }
 
   private _onModelReady = () => {
-    if (this._mounted)
-      this.setState({ modelReady: true });
+    // istanbul ignore else
+    if (this._mounted) {
+      const current = this.state.current ? this._tree.node(this.state.current.id) : undefined;
+      this.setState({ modelReady: true, pathString: current ? current.getTextualHierarchy().join(this.props.delimiter) : "" });
+    }
   }
 
-  private _onTreeNodeChanged = (items?: TreeNodeItem[]) => {
+  private _onTreeNodeChanged = (items: Array<TreeNodeItem | undefined>) => {
     using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
+      // istanbul ignore else
       if (items) {
         for (const item of items) {
           if (item) {
             // specific node needs to be reloaded
             const node = this._tree.node(item.id);
+            // istanbul ignore else
             if (node) {
               node.assign(Breadcrumb.inspireNodeFromTreeNodeItem(item, Breadcrumb.inspireNodeFromTreeNodeItem.bind(this)));
               await node.loadChildren();
@@ -250,72 +269,60 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 
   public render(): React.ReactNode {
+    const node = this.state.current ? this._tree.node(this.state.current.id) : undefined;
     return (
-      <React.StrictMode>
-        <div
-          className={classnames("breadcrumb", { background: this.props.background })}>
-          <div className="breadcrumb-head"
-            data-testid="breadcrumb-dropdown-input-parent">
-            {this.props.dropdownOnly || this.props.staticOnly ?
-              <BreadcrumbDropdown
-                tree={this._tree}
-                node={this.state.current}
-                onNodeSelected={this._handleNodeSelected}
-                renderNode={this.props.renderNode}
-                staticOnly={this.props.staticOnly}
-                showUpDir={this.props.showUpDir}
-                parentsOnly={this.props.parentsOnly}
-                width={this.props.width!} /> :
-              <InputSwitch
-                tree={this._tree}
-                node={this.state.current}
-                currentMode={this.state.currentMode}
-                onInputStart={this._handleInputStart}
-                onInputSubmit={this._handleInputSubmit}
-                onInputCancel={this._handleInputCancel}
-                onNodeSelected={this._handleNodeSelected}
-                width={this.props.width!}
-                showUpDir={this.props.showUpDir}
-                parentsOnly={this.props.parentsOnly}
-                delimiter={this.props.delimiter!}
-                onOutsideClick={this._handleOutsideClick}
-                renderNode={this.props.renderNode} />
-            }
-          </div>
+      <div
+        className={classnames("breadcrumb", { background: this.props.background })}>
+        <div className="breadcrumb-head"
+          data-testid="breadcrumb-dropdown-input-parent">
+          {this.props.dropdownOnly || this.props.staticOnly ?
+            <BreadcrumbDropdown
+              tree={this._tree}
+              node={node}
+              onNodeChange={this._handleNodeChange}
+              onInputStart={this._setInput}
+              renderNode={this.props.renderNode}
+              staticOnly={this.props.staticOnly}
+              showUpDir={this.props.showUpDir}
+              parentsOnly={this.props.parentsOnly}
+              width={this.props.width!} /> :
+            <InputSwitch
+              tree={this._tree}
+              node={node}
+              pathString={this.state.pathString}
+              currentMode={this.state.currentMode}
+              onInputStart={this._setInput}
+              onInputCancel={this._setDropdown}
+              onNodeChange={this._handleNodeChange}
+              width={this.props.width!}
+              showUpDir={this.props.showUpDir}
+              parentsOnly={this.props.parentsOnly}
+              delimiter={this.props.delimiter!}
+              onOutsideClick={this._setDropdown}
+              renderNode={this.props.renderNode} />
+          }
         </div>
-      </React.StrictMode>
+      </div>
     );
   }
 
-  private _handleOutsideClick = () => {
-    this.setState({ currentMode: BreadcrumbMode.Dropdown });
-  }
+  private _setDropdown = () => this.setState({ currentMode: BreadcrumbMode.Dropdown });
+  private _setInput = () => this.setState({ currentMode: BreadcrumbMode.Input });
 
-  private _handleInputCancel = () => {
-    this.setState({ currentMode: BreadcrumbMode.Dropdown });
-  }
-
-  private _handleInputSubmit = (node?: TreeNodeItem) => {
+  private _handleNodeChange = (node: TreeNodeItem | undefined) => {
     if (this.props.path)
       this.props.path.setCurrentNode(node);
     else {
       if (!node) {
-        this.setState({ current: undefined });
+        this.setState({ current: undefined, pathString: "" });
       } else {
-        const iNode = this._tree.node(node.id);
-        this.setState({ current: iNode });
+        const current = this.state.current ? this._tree.node(this.state.current.id) : undefined;
+        const p = current ? current.getTextualHierarchy().join(this.props.delimiter) : "";
+        this.setState({ current: node, pathString: p });
       }
     }
-    this.setState({ currentMode: BreadcrumbMode.Dropdown });
-  }
-
-  private _handleNodeSelected = (node?: TreeNodeItem) => {
-    if (this.props.path)
-      this.props.path.setCurrentNode(node);
-  }
-
-  private _handleInputStart = () => {
-    this.setState({ currentMode: BreadcrumbMode.Input });
+    if (this.state.currentMode !== BreadcrumbMode.Dropdown)
+      this._setDropdown();
   }
 }
 
@@ -323,11 +330,11 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
 export interface InputSwitchProps {
   tree: BeInspireTree<TreeNodeItem>;
   node?: BeInspireTreeNode<TreeNodeItem>;
+  pathString: string;
   currentMode: BreadcrumbMode;
   onInputStart?: () => void;
-  onInputSubmit?: (node?: TreeNodeItem) => void;
-  onInputCancel?: () => void;
-  onNodeSelected?: (node?: TreeNodeItem) => void;
+  onInputCancel: () => void;
+  onNodeChange: (node?: TreeNodeItem) => void;
   showUpDir?: boolean;
   parentsOnly?: boolean;
   renderNode?: BreadcrumbNodeRenderer;
@@ -338,14 +345,14 @@ export interface InputSwitchProps {
 /** @hidden */
 export class InputSwitchComponent extends React.PureComponent<InputSwitchProps> {
   public render(): React.ReactNode {
-    const { currentMode, tree, node, onInputStart, onInputSubmit, onInputCancel, onNodeSelected, renderNode, width, showUpDir, delimiter } = this.props;
+    const { currentMode, tree, node, onInputStart, onInputCancel, onNodeChange, renderNode, width, showUpDir, delimiter } = this.props;
     switch (currentMode) {
       case BreadcrumbMode.Dropdown:
-        return <BreadcrumbDropdown tree={tree} node={node} onNodeSelected={onNodeSelected} renderNode={renderNode} onInputStart={onInputStart} parentsOnly={this.props.parentsOnly} showUpDir={showUpDir} width={width} />;
+        return <BreadcrumbDropdown tree={tree} node={node} onNodeChange={onNodeChange} renderNode={renderNode} onInputStart={onInputStart} parentsOnly={this.props.parentsOnly} showUpDir={showUpDir} width={width} />;
       case BreadcrumbMode.Input:
-        return <BreadcrumbInput tree={tree} node={node} onSubmit={onInputSubmit} onCancel={onInputCancel} parentsOnly={this.props.parentsOnly} delimiter={delimiter} width={width} />;
+        return <BreadcrumbInput tree={tree} node={node} onNodeChange={onNodeChange} onCancel={onInputCancel} parentsOnly={this.props.parentsOnly} delimiter={delimiter} width={width} pathString={this.props.pathString} />;
       default:
-        throw new Error("Invalid Prop: currentMode. Must be of type BreadcrumbMode.");
+        return <div data-testid="breadcrumb-error-unknown-mode">{UiComponents.i18n.translate("UiComponents:breadcrumb.errorUnknownMode")}</div>;
     }
   }
 }
@@ -357,29 +364,34 @@ export interface BreadcrumbInputProps {
   width: number | string;
   delimiter?: string;
 
-  onCancel?: () => void;
-  onSubmit?: (path?: TreeNodeItem) => void;
+  onCancel: () => void;
+  onNodeChange: (node: TreeNodeItem | undefined) => void;
   parentsOnly?: boolean;
 
   tree: BeInspireTree<TreeNodeItem>;
   node?: BeInspireTreeNode<TreeNodeItem>;
+
+  pathString: string;
 }
 
 /** @hidden */
 export interface BreadcrumbInputState {
   autocompleting: boolean;
   autocompleteList: string[];
+  messageBoxOpened: boolean;
 }
 
 /** @hidden */
 export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, BreadcrumbInputState> {
   private _inputElement: HTMLInputElement | null = null;
   private _autocomplete: ContextMenu | null = null;
+  private _mounted: boolean = false;
 
   /** @hidden */
   public readonly state: Readonly<BreadcrumbInputState> = {
     autocompleting: false,
     autocompleteList: [],
+    messageBoxOpened: false,
   };
 
   public render(): JSX.Element {
@@ -387,6 +399,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
       <div className="breadcrumb-input-root" data-testid="breadcrumb-input-root">
         <input
           className="breadcrumb-input"
+          data-testid="breadcrumb-input"
           type="text"
           ref={(e) => { this._inputElement = e; }}
           style={{ width: this.props.width }}
@@ -400,10 +413,15 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
           opened={this.state.autocompleting}
           edgeLimit={false}
           selectedIndex={0} floating={false} autoflip={false}
-          onEsc={() => { if (this._inputElement) this._inputElement.focus(); }}
+          onEsc={() => {
+            // istanbul ignore else
+            if (this._inputElement)
+              this._inputElement.focus();
+          }}
         >
           {this.state.autocompleteList.map((listItem, index) => {
             let l = 0;
+            // istanbul ignore else
             if (this._inputElement) {
               l = this._inputElement.value.length;
             }
@@ -411,6 +429,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
               <ContextMenuItem
                 key={index}
                 onSelect={(event) => {
+                  // istanbul ignore else
                   if (this._inputElement) {
                     this._inputElement.value = listItem;
                     this._inputElement.focus();
@@ -418,10 +437,11 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
 
                     const autocompleteStr = this._inputElement.value.substring(0, this._inputElement.selectionEnd!);
                     this._getAutocompleteList(autocompleteStr).then((list) => { // tslint:disable-line:no-floating-promises
-                      this.setState({
-                        autocompleting: false,
-                        autocompleteList: list,
-                      });
+                      if (this._mounted)
+                        this.setState({
+                          autocompleting: false,
+                          autocompleteList: list,
+                        });
                     });
                     event.stopPropagation();
                   }
@@ -431,15 +451,24 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
             );
           })}
         </ContextMenu>
+        <MessageBox opened={this.state.messageBoxOpened} modal={false} severity={MessageSeverity.Warning} buttonCluster={[{ type: ButtonType.OK, onClick: this._handleMessageBoxClose }]}>
+          {UiComponents.i18n.translate("UiComponents:breadcrumb.invalidBreadcrumbPath")}
+        </MessageBox>
       </div>
     );
   }
 
+  private _handleMessageBoxClose = () => {
+    this.setState({ messageBoxOpened: false });
+  }
+
   /** @hidden */
   public componentDidMount() {
+    this._mounted = true;
     window.addEventListener("click", this._handleClick);
+    // istanbul ignore else
     if (this._inputElement) {
-      this._inputElement.value = this.props.node ? this.props.node.getTextualHierarchy().join(this.props.delimiter) : "";
+      this._inputElement.value = this.props.pathString;
       this._inputElement.focus();
     }
   }
@@ -447,34 +476,48 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   /** @hidden */
   public componentWillUnmount() {
     window.removeEventListener("click", this._handleClick);
+    this._mounted = false;
   }
 
   private _handleClose = () => {
-    if (this.props.onCancel)
-      this.props.onCancel();
+    this.props.onCancel();
     this.setState({ autocompleting: false });
   }
 
   private _getAutocompleteList = async (path: string) => {
-    const node = await this._findChild(path);
+    const node = await this._findChildParentPartial(path);
     if (node) {
       const baseString = node.getTextualHierarchy().join(this.props.delimiter!);
-      const children = typeof node.getChildren() === "boolean" ? await node.loadChildren() : node.getChildren();
+      const children = node.getChildren();
       const parentChildren = this.props.parentsOnly ? children.filter((child) => child.hasOrWillHaveChildren()) : children;
-      return parentChildren.map((n) => baseString + this.props.delimiter! + n.toString());
+      const strList = parentChildren.map((n) => baseString + this.props.delimiter! + n.toString());
+      return strList.filter((e) => e.substr(0, path.length) === path);
     } else {
       const nodes = this.props.tree.nodes();
       const parentRoots = this.props.parentsOnly ? nodes.filter((child) => child.hasOrWillHaveChildren()) : nodes;
-      return parentRoots.map((n) => n.toString() + this.props.delimiter!);
+      const strList = parentRoots.map((n) => n.toString() + this.props.delimiter!);
+      return strList.filter((e) => e.substr(0, path.length) === path);
     }
-    return [];
   }
 
-  private _findChild = async (p: string): Promise<BeInspireTreeNode<TreeNodeItem> | undefined> => {
+  private _findChildUserInput = async (p: string): Promise<BeInspireTreeNode<TreeNodeItem> | undefined> => {
     const delimiter = this.props.delimiter!;
-    if (p.lastIndexOf(delimiter) === p.length - delimiter.length)
+    if (p.lastIndexOf(delimiter) === p.length - delimiter.length) // strip last delimiter if at end
       p = p.substr(0, p.length - delimiter.length);
-    if (p.length === 0)
+    const root = this.props.tree.nodes();
+    for (const node of root) {
+      const found = await this._find(node, p);
+      if (found)
+        return found;
+    }
+    return undefined;
+  }
+  private _findChildParentPartial = async (p: string): Promise<BeInspireTreeNode<TreeNodeItem> | undefined> => {
+    const delimiter = this.props.delimiter!;
+    const lastDel = p.lastIndexOf(delimiter);
+    if (lastDel !== -1) // strip last delimiter and everything after
+      p = p.substring(0, lastDel);
+    else
       return undefined;
     const root = this.props.tree.nodes();
     for (const node of root) {
@@ -494,7 +537,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
       return node;
     }
     if (p.indexOf(text) === 0 && node.hasOrWillHaveChildren()) {
-      const children = typeof node.getChildren() === "boolean" ? await node.loadChildren() : node.getChildren();
+      const children = node.getChildren();
       for (const child of children) {
         const n = await this._find(child as BeInspireTreeNode<TreeNodeItem>, p.substr(text.length));
         if (n)
@@ -506,6 +549,7 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
 
   private _handleClick = (event: any): void => {
     if (this._autocomplete) {
+      // istanbul ignore else
       if (this._inputElement && event.target === this._inputElement) {
         this.setState({ autocompleting: false });
         this._inputElement.focus();
@@ -523,33 +567,36 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   private _handleKeyUp = async (event: any) => {
     switch (event.keyCode) {
       case 27: /*<Esc>*/
-        this.setState({ autocompleting: false });
+        if (this._mounted)
+          this.setState({ autocompleting: false });
         break;
       case 38: /*<Up>*/
       case 40: /*<Down>*/
         event.preventDefault();
         if (this._autocomplete && this.state.autocompleteList.length > 0) {
           this._autocomplete.focus();
-          this.setState({ autocompleting: true });
-        } else if (this._inputElement) {
+          if (this._mounted)
+            this.setState({ autocompleting: true });
+        } else /* istanbul ignore else */ if (this._inputElement) {
           this._inputElement.focus();
         }
         break;
       case 13: /*<Return>*/
+        // istanbul ignore else
         if (this._inputElement) {
-          if (this.props.onSubmit) {
-            const path = this._inputElement.value;
-            if (path === "" || path === this.props.delimiter!) {
-              this.props.onSubmit(undefined);
+          const path = this._inputElement.value;
+          if (path === "" || path === this.props.delimiter!) {
+            this.props.onNodeChange(undefined);
+            if (this._mounted)
               this.setState({ autocompleting: false });
-            } else {
-              const node = await this._findChild(path);
-              if (node === undefined)
-                alert(UiComponents.i18n.translate("UiComponents:breadcrumb.invalidBreadcrumbPath"));
-              else {
-                this.props.onSubmit(node.payload);
+          } else {
+            const node = await this._findChildUserInput(path);
+            if (node === undefined)
+              this.setState({ messageBoxOpened: true });
+            else {
+              this.props.onNodeChange(node.payload);
+              if (this._mounted)
                 this.setState({ autocompleting: false });
-              }
             }
           }
         }
@@ -558,13 +605,15 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   }
 
   private _handleChange = (): void => {
+    // istanbul ignore else
     if (this._inputElement) {
       const autocompleteStr = this._inputElement.value.substring(0, this._inputElement.selectionEnd!);
       this._getAutocompleteList(autocompleteStr).then((list) => { // tslint:disable-line:no-floating-promises
-        this.setState({
-          autocompleting: list.length > 0,
-          autocompleteList: list,
-        });
+        if (this._mounted)
+          this.setState({
+            autocompleting: list.length > 0,
+            autocompleteList: list,
+          });
       });
     }
   }
@@ -575,7 +624,7 @@ export interface BreadcrumbDropdownProps {
   tree: BeInspireTree<TreeNodeItem>;
   node?: BeInspireTreeNode<TreeNodeItem>;
   onInputStart?: () => void;
-  onNodeSelected?: (node: TreeNodeItem | undefined) => void;
+  onNodeChange: (node: TreeNodeItem | undefined) => void;
   staticOnly?: boolean;
   parentsOnly?: boolean;
   delimiter?: string;
@@ -589,8 +638,6 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
 
   /** @hidden */
   public componentDidMount() {
-    if (this.props.node && this.props.node.hasOrWillHaveChildren() && !(this.props.node as any).hasLoadedChildren())
-      this.props.node.loadChildren(); // tslint:disable-line:no-floating-promises
     this.props.tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     this.props.tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
   }
@@ -616,7 +663,7 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
       (nextProps.node && nextProps.node.isDirty()) ||
       this.props.onInputStart !== nextProps.onInputStart ||
       this.props.delimiter !== nextProps.delimiter ||
-      this.props.width !== nextProps.delimiter ||
+      this.props.width !== nextProps.width ||
       this.props.renderNode !== nextProps.renderNode;
   }
 
@@ -634,7 +681,7 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
         data-testid="breadcrumb-dropdown-background"
         style={{ width: this.props.width! }}
         onClick={this._focusInput}>
-        {!this.props.staticOnly && this.props.showUpDir ? <div className={classnames("breadcrumb-up-dir", "icon", "icon-sort-up", {
+        {!this.props.staticOnly && this.props.showUpDir ? <div data-testid="breadcrumb-up-dir" className={classnames("breadcrumb-up-dir", "icon", "icon-sort-up", {
           root: this.props.node === undefined,
         })
         } onClick={this._handleUpClick} /> : undefined}
@@ -644,7 +691,7 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
             key={-1}
             tree={this.props.tree}
             node={undefined}
-            onNodeSelected={this.props.onNodeSelected}
+            onNodeSelected={this.props.onNodeChange}
             staticOnly={this.props.staticOnly}
             parentsOnly={this.props.parentsOnly}
             last={!nodes || nodes.length === 0}
@@ -655,7 +702,7 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
                 key={i}
                 tree={this.props.tree}
                 node={n}
-                onNodeSelected={this.props.onNodeSelected}
+                onNodeSelected={this.props.onNodeChange}
                 staticOnly={this.props.staticOnly}
                 parentsOnly={this.props.parentsOnly}
                 last={i === nodes!.length - 1}
@@ -668,14 +715,14 @@ export class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps>
   }
 
   private _handleUpClick = () => {
-    if (this.props.onNodeSelected) {
+    if (this.props.onNodeChange) {
       let parent: TreeNodeItem | undefined;
       if (this.props.node) {
         const p = (this.props.node.getParent()) as BeInspireTreeNode<TreeNodeItem>;
         if (p)
           parent = p.payload;
       }
-      this.props.onNodeSelected(parent);
+      this.props.onNodeChange(parent);
     }
   }
 
@@ -721,7 +768,7 @@ export class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNo
       nodeChildren = nodeChildren.filter((child) => child.hasOrWillHaveChildren());
     if (nodeChildren.length > 0) {
       if (this.props.staticOnly) {
-        return <span className="breadcrumb-split-button static">
+        return <span data-testid="breadcrumb-static-button" className="breadcrumb-split-button static">
           {renderNode({ label, icon }, n, parent)}
           {!this.props.last ? <span className="static-arrow-icon icon icon-chevron-right" /> : undefined}
         </span>;
@@ -778,6 +825,6 @@ export interface BreadcrumbNodeProps {
 export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
   public render(): React.ReactNode {
     const { icon, label } = this.props;
-    return <span><span className={classnames("icon", icon || "")} /> {label}</span>;
+    return <span data-testid="breadcrumb-node"><span className={classnames("icon", icon || "")} /> {label}</span>;
   }
 }

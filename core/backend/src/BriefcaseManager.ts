@@ -98,13 +98,11 @@ export class BriefcaseEntry {
   /** Id of the user that acquired the briefcase. This is not set if it is a standalone briefcase */
   public userId?: string;
 
-  /** In-memory handle fo the IModelDb that corresponds with this briefcase. This is only set if an IModelDb wrapper has been created for this briefcase */
+  /** The IModelDb for this briefcase. */
   private _iModelDb?: IModelDb;
   public get iModelDb(): IModelDb | undefined { return this._iModelDb; }
   public set iModelDb(iModelDb: IModelDb | undefined) {
-    // NEEDS_WORK_MERGE: uncomment the following lines when Keith's changes to javascript-domains are merged in
-    // if (iModelDb)
-    //   this.nativeDb.setIModelDb(iModelDb); // store a pointer to this IModelDb on the native object so we can send it callbacks
+    this.nativeDb.setIModelDb(iModelDb); // store a pointer to this IModelDb on the native object so we can send it callbacks
     this._iModelDb = iModelDb;
   }
 
@@ -1196,7 +1194,8 @@ export class BriefcaseManager {
   }
 
   public static async reinstateChanges(actx: ActivityLoggingContext, accessToken: AccessToken, briefcase: BriefcaseEntry, reinstateToVersion?: IModelVersion): Promise<void> {
-    assert(briefcase.openParams!.accessMode !== AccessMode.Shared, "Cannot reinstate. If a Db has shared access, we should NOT have allowed to reverse in the first place!");
+    if (briefcase.openParams!.accessMode === AccessMode.Shared)
+      return Promise.reject(new IModelError(ChangeSetStatus.ApplyError, "Cannot reinstate (or reverse) changes when the Db allows shared access - open with AccessMode.Exclusive"));
     const targetVersion: IModelVersion = reinstateToVersion || IModelVersion.asOfChangeSet(briefcase.changeSetId);
     return BriefcaseManager.processChangeSets(actx, accessToken, briefcase, targetVersion);
   }

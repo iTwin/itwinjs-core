@@ -9,14 +9,12 @@ import { SnapMode } from "@bentley/imodeljs-frontend";
 
 /** The portion of state managed by the ConfigurableUiReducer. */
 export interface ConfigurableUiState {
-  placeHolder: string;
   snapMode: number;
   toolPrompt: string;
 }
 
 /** used on first call of ConfigurableUiReducer */
 const initialState: ConfigurableUiState = {
-  placeHolder: "placeholder",
   snapMode: SnapMode.NearestKeypoint as number,
   toolPrompt: "",
 };

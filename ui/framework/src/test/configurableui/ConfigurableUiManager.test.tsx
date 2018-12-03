@@ -19,7 +19,10 @@ import {
   TaskManager,
   WorkflowManager,
   WorkflowPropsList,
-} from "../..//index";
+  Frontstage,
+  FrontstageProvider,
+  FrontstageProps,
+} from "../../index";
 
 describe("ConfigurableUiManager", () => {
 
@@ -28,37 +31,29 @@ describe("ConfigurableUiManager", () => {
     ConfigurableUiManager.initialize();
   });
 
-  it("loadFrontstages & findFrontstageDef", () => {
-    const frontstagePropsList = [
-      {
-        id: "TestFrontstage1",
-        defaultToolId: "PlaceLine",
-        defaultLayout: "TwoHalvesVertical",
-        contentGroup: "TestContentGroup1",
-        defaultContentId: "TestContent1",
-      },
-    ];
-    ConfigurableUiManager.loadFrontstages(frontstagePropsList);
-    expect(ConfigurableUiManager.findFrontstageDef("TestFrontstage1")).to.not.be.undefined;
-  });
-
   it("findFrontstageDef passed no argument", () => {
     FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
     expect(ConfigurableUiManager.findFrontstageDef()).to.be.undefined;
   });
 
-  it("loadFrontstage", () => {
-    const frontstageProps = {
-      id: "TestFrontstage2",
-      defaultToolId: "PlaceLine",
-      defaultLayout: "TwoHalvesVertical",
-      contentGroup: "TestContentGroup2",
-      defaultContentId: "TestContent2",
-    };
-    ConfigurableUiManager.loadFrontstage(frontstageProps);
-    const frontstageDef = ConfigurableUiManager.findFrontstageDef("TestFrontstage2");
-    expect(frontstageDef).to.not.be.undefined;
-    FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+  it("addFrontstageProvider & findFrontstageDef", () => {
+    class Frontstage1 extends FrontstageProvider {
+      public get frontstage(): React.ReactElement<FrontstageProps> {
+        return (
+          <Frontstage
+            id="TestFrontstage2"
+            defaultToolId="PlaceLine"
+            defaultLayout="TwoHalvesVertical"
+            contentGroup="TestContentGroup2"
+          />
+        );
+      }
+    }
+    ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
+
+    const frontstageDef2 = ConfigurableUiManager.findFrontstageDef("TestFrontstage2");
+    expect(frontstageDef2).to.not.be.undefined;
+    FrontstageManager.setActiveFrontstageDef(frontstageDef2); // tslint:disable-line:no-floating-promises
   });
 
   class TestWidget extends WidgetControl {

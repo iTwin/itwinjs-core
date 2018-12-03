@@ -17,6 +17,7 @@ import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
   OnItemsSelectedCallback, OnItemsDeselectedCallback,
 } from "../../common/selection/SelectionHandler";
+import ReactResizeDetector from "react-resize-detector";
 
 import "./Grid.scss";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
@@ -133,7 +134,7 @@ export interface TableState {
 }
 
 /** ReactDataGrid.Column with additional properties */
-export interface ReactDataGridColumn extends ReactDataGrid.Column {
+export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
   icon?: boolean;
 }
 
@@ -307,14 +308,19 @@ export class Table extends React.Component<TableProps, TableState> {
     let columns = columnDescriptions.map(this._columnDescriptionToReactDataGridColumn);
     if (this.props.settingsIdentifier) {
       const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
-      const result = uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
-      if (result.status === UiSettingsStatus.Success) {
-        const setting = result.setting as string[];
+      const reorderResult = uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
+      if (reorderResult.status === UiSettingsStatus.Success) {
+        const setting = reorderResult.setting as string[];
         // map columns according to the keys in columns, in the order of the loaded array of keys
         columns = setting.map((key) => columns.filter((col) => col.key === key)[0]);
-      } else if (result.status === UiSettingsStatus.NotFound) {
+      } else if (reorderResult.status === UiSettingsStatus.NotFound) {
         const keys = columnDescriptions.map((col) => col.key);
         uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
+      }
+      const showhideResult = uiSettings.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
+      if (showhideResult.status === UiSettingsStatus.Success) {
+        const hiddenColumns = showhideResult.setting as string[];
+        this.setState({ hiddenColumns });
       }
     }
     this.setState({ columns });
@@ -854,7 +860,9 @@ export class Table extends React.Component<TableProps, TableState> {
       const keys = cols.map((col) => col.key);
       uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
     }
-    this.setState({ columns: cols });
+    this.setState({ columns: [] }, () => { // fix react-data-grid update issues
+      this.setState({ columns: cols });
+    });
   }
 
   private cellEditOnClick(column: ReactDataGridColumn, _ev: React.SyntheticEvent<any>, args: { rowIdx: number, idx: number, name: string }): void {
@@ -946,6 +954,10 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _handleShowHideChange = (cols: string[]) => {
     this.setState({ hiddenColumns: cols });
+    if (this.props.settingsIdentifier) {
+      const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
+      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols);
+    }
     return true;
   }
 
@@ -979,24 +991,26 @@ export class Table extends React.Component<TableProps, TableState> {
               x={this.state.menuX} y={this.state.menuY}
               initialHidden={this.state.hiddenColumns}
               onClose={this._hideContextMenu}
-              onShowHideChange={this._handleShowHideChange}
-            />
+              onShowHideChange={this._handleShowHideChange} />
           }
-          <ReactDataGrid
-            columns={visibleColumns}
-            rowGetter={this._rowGetter}
-            rowRenderer={rowRenderer}
-            rowsCount={this.state.rowsCount}
-            {...(this.props.reorderableColumns ? {
-              draggableHeaderCell: DragDropHeaderCell,
-              onHeaderDrop: this._onHeaderDrop,
-            } as any : {})}
-            enableCellSelect={true}
-            minHeight={500}
-            headerRowHeight={25}
-            rowHeight={25}
-            onGridSort={this._handleGridSort}
-          />
+          <ReactResizeDetector handleWidth handleHeight >
+            {(width: number, height: number) => <ReactDataGrid
+              columns={visibleColumns}
+              rowGetter={this._rowGetter}
+              rowRenderer={rowRenderer}
+              rowsCount={this.state.rowsCount}
+              {...(this.props.reorderableColumns ? {
+                draggableHeaderCell: DragDropHeaderCell,
+                onHeaderDrop: this._onHeaderDrop,
+              } as any : {})}
+              enableCellSelect={true}
+              minHeight={height}
+              minWidth={width}
+              headerRowHeight={25}
+              rowHeight={25}
+              onGridSort={this._handleGridSort}
+            />}
+          </ReactResizeDetector>
         </div>
         <div ref={this._reactPortalRef}>
           {this.state.dialog

@@ -34,7 +34,7 @@ See [rush.json](./rush.json) for the list of packages. These packages are descri
   * Comprehensive ECSchema library
 * `example-code`
   * Example code snippets are extracted from these packages
-* `test-apps/simpleviewtest/package.json`
+* `test-apps/display-test-app/package.json`
   * Private, not published
   * Test application for graphics visualization
 * `test-apps/testbed/package.json`

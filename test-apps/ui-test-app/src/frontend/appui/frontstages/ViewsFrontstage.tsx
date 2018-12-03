@@ -38,6 +38,9 @@ import {
   Widget,
   GroupItemDef,
   CoreTools,
+  SyncUiEventId,
+  BaseItemState,
+  ContentViewManager,
 } from "@bentley/ui-framework";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
@@ -117,7 +120,18 @@ export class ViewsFrontstage extends FrontstageProvider {
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
               <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget} />,
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl}
+                stateSyncIds={[SyncUiEventId.ActiveContentChanged]}
+                stateFunc={(currentState: Readonly<BaseItemState>): BaseItemState => {
+                  const returnState: BaseItemState = { ...currentState };
+                  const activeContentControl = ContentViewManager.getActiveContentControl();
+                  if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
+                    returnState.isVisible = true;
+                  else
+                    returnState.isVisible = false;
+                  return returnState;
+                }}
+              />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} />,
             ]}

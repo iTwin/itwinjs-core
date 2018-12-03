@@ -26,6 +26,9 @@
    */
   .ReactVirtualized__Grid {
     overflow: auto !important;
+    &:focus {
+      outline: none;
+    }
     > .ReactVirtualized__Grid__innerScrollContainer {
       overflow: visible !important;
       width: fit-content !important;

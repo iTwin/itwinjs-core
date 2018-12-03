@@ -3,13 +3,6 @@
     "NoPreviousViewOps": "No previous viewing operations",
     "NoPreviousUndos": "Only valid after 'View Previous'"
   },
-  "Manipulator": {
-    "ModifyHandle": "Handle: %s",
-    "ModifyHandleAngle": "SHIFT - Tap to change action = ",
-    "ModifyHandleAction": "SHIFT - Tap for preserve angle on/off = ",
-    "ProjectExtents": "Project Extents",
-    "ModifyProjectExtents": "Modify Project Extents"
-  },
   "Viewing": {
     "InvalidWindow": "Invalid window",
     "MinWindow": "Minimum window",
@@ -31,16 +24,10 @@
   },
   "LocateFailure": {
     "NoElements": "No Elements Found",
-    "LockedModel": "Element is in a model with locate turned off",
-    "LockedElem": "Element is locked",
     "ByApp": "Element not valid for tool",
-    "ByCommand": "Element rejected by tool",
-    "ByType": "Element type not valid for this tool",
-    "ByProperties": "Element properties not valid for this tool",
-    "Transient": "Element is a transient element",
-    "ModelNotAllowed": "Element is in a model that is not allowed by this tool",
-    "NotSnappable": "Element is not snappable",
-    "RejectedByElement": "Element does not allow this operation"
+    "Transient": "Decoration is not valid for this tool",
+    "NotSnappable": "SubCategory has snapping turned off",
+    "NotLocatable": "SubCategory has locate turned off"
   },
   "Element": {
     "Id": "Id",

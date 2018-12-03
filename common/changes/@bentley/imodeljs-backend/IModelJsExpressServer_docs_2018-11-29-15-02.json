@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Document the intended purpose of IModelJsExpressServer within a deployment environment.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "steve.wilson@bentley.com"
+}

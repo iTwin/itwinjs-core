@@ -9,11 +9,11 @@ import * as React from "react";
 import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedListRowProps } from "react-virtualized";
 // bentley imports
 import { using } from "@bentley/bentleyjs-core";
-import { Tree as TreeBase, TreeNode as TreeNodeBase, shallowDiffers } from "@bentley/ui-core";
+import { Tree as TreeBase, TreeNode as TreeNodeBase, TreeNodePlaceholder, shallowDiffers } from "@bentley/ui-core";
 // tree-related imports
 import {
   BeInspireTree, BeInspireTreeNode, BeInspireTreeNodes, BeInspireTreeNodeConfig,
-  BeInspireTreeEvent, MapPayloadToInspireNodeCallback, toNodes,
+  BeInspireTreeEvent, MapPayloadToInspireNodeCallback, toNode, toNodes,
 } from "./BeInspireTree";
 import {
   TreeDataProvider, TreeNodeItem,
@@ -43,9 +43,23 @@ export type NodesDeselectedCallback = OnItemsDeselectedCallback<TreeNodeItem>;
 /** Type for node renderer */
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
-/** Props for the [[Tree]] component  */
+/** Properties for the [[Tree]] component  */
 export interface TreeProps {
+  /** Nodes provider */
   dataProvider: TreeDataProvider;
+
+  /**
+   * Size of a single page that's requested from `dataProvider` (only
+   * applies when the provider is `ITreeDataProvider`). Defaults to
+   * disabled pagination.
+   */
+  pageSize?: number;
+
+  /**
+   * Should child nodes be disposed when parent node is collapsed. Saves some
+   * memory in exchange of performance. Disabled by default.
+   */
+  disposeChildrenOnCollapse?: boolean;
 
   selectedNodes?: string[] | ((node: TreeNodeItem) => boolean);
   selectionMode?: SelectionMode;
@@ -148,6 +162,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       dataProvider: this.props.dataProvider,
       renderer: this._onModelChanged,
       mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem,
+      pageSize: this.props.pageSize,
+      disposeChildrenOnCollapse: this.props.disposeChildrenOnCollapse,
     });
     this._tree.on(BeInspireTreeEvent.NodeExpanded, this._onNodeExpanded);
     this._tree.on(BeInspireTreeEvent.NodeCollapsed, this._onNodeCollapsed);
@@ -234,7 +250,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       || this.props.dataProvider !== nextProps.dataProvider
       || this.props.nodeHighlightingProps !== nextProps.nodeHighlightingProps
       || this.state.cellEditorState !== nextState.cellEditorState
-      || this.state.model.nodes().some((n) => n.isDirty());
+      || this.state.model.visible().some((n) => n.isDirty());
   }
 
   public componentDidUpdate(prevProps: TreeProps) {
@@ -339,27 +355,21 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       this.setState({ modelReady: true });
   }
 
-  private _onTreeNodeChanged = (items?: TreeNodeItem[]) => {
+  private _onTreeNodeChanged = (items: Array<TreeNodeItem | undefined>) => {
     using((this._tree.pauseRendering() as any), async () => { // tslint:disable-line:no-floating-promises
-      // istanbul ignore else
-      if (items) {
-        for (const item of items) {
-          if (item) {
-            // specific node needs to be reloaded
-            const node = this._tree.node(item.id);
-            // istanbul ignore else
-            if (node) {
-              const wasExpanded = node.expanded();
-              node.assign(Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem.bind(this), node));
-              if (wasExpanded)
-                await node.loadChildren();
-            }
-          } else {
-            // all root nodes need to be reloaded
-            const expandedNodeIds = this._tree.expanded().map((n) => n.id!);
-            await this._tree.reload();
-            await Promise.all(this._tree.nodes(expandedNodeIds).map(async (n) => n.loadChildren()));
+      for (const item of items) {
+        if (item) {
+          // specific node needs to be reloaded
+          const node = this._tree.node(item.id);
+          if (node) {
+            const wasExpanded = node.expanded();
+            node.assign(Tree.inspireNodeFromTreeNodeItem(item, Tree.inspireNodeFromTreeNodeItem.bind(this), node));
+            if (wasExpanded)
+              await node.loadChildren();
           }
+        } else {
+          // all root nodes need to be reloaded
+          await this._tree.reload();
         }
       }
     });
@@ -417,14 +427,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       preselect: () => {
         this._pressedItemSelected = node.selected();
       },
-      select: () => {
-        if (!node.selected())
-          node.select();
-      },
-      deselect: () => {
-        if (node.selected())
-          node.deselect();
-      },
+      select: () => node.select(),
+      deselect: () => node.deselect(),
       isSelected: () => node.selected(),
       item: () => node,
     };
@@ -539,8 +543,19 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     }
 
     const baseRenderNode = this.props.renderNode ? this.props.renderNode : this.renderNode;
-    const renderNode = ({ index, key, style }: VirtualizedListRowProps) => {
+    const renderNode = ({ index, key, style, isScrolling }: VirtualizedListRowProps) => {
       const node = nodes[index];
+      if (!node.payload) {
+        if (!isScrolling) {
+          // tslint:disable-next-line:no-floating-promises
+          this.state.model.requestNodeLoad(toNode(node.getParent()), node.placeholderIndex!);
+        }
+        return (
+          <div key={key} className="node-wrapper" style={style}>
+            <PlaceholderNode node={node} />
+          </div>
+        );
+      }
       const onNodeSelectionChanged = this._selectionHandler.createSelectionFunction(this._multiSelectionHandler, this._createItemSelectionHandler(node));
       const props: TreeNodeProps = {
         node,
@@ -599,6 +614,7 @@ export namespace Tree {
   }
 }
 
+/** Properties related to a Tree node cell editor */
 export interface TreeNodeCellEditorProps {
   cellEditorState: TreeCellEditorState;
   onCellEditCommit: (args: PropertyUpdatedArgs) => void;
@@ -652,6 +668,21 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         onClickExpansionToggle={() => this.props.node.toggleCollapse()}
       />
     );
+  }
+}
+
+/**
+ * Default component for rendering a node for the [[Tree]]
+ */
+class PlaceholderNode extends React.Component<{ node: BeInspireTreeNode<TreeNodeItem> }> {
+  public shouldComponentUpdate(nextProps: TreeNodeProps) {
+    return this.props.node.id !== nextProps.node.id;
+  }
+  public render() {
+    // note: props get mutated here
+    this.props.node.setDirty(false);
+    const level = this.props.node.getParents().length;
+    return <TreeNodePlaceholder level={level} />;
   }
 }
 

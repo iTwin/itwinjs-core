@@ -89,7 +89,9 @@ export default class TreeWidget extends React.Component<Props, State> {
               resultCount: this.state.matchesCount,
             }} />
         </div>
-        <SampleTree dataProvider={this.state.dataProvider} filter={this.state.filter}
+        <SampleTree dataProvider={this.state.dataProvider}
+          pageSize={5} disposeChildrenOnCollapse={true}
+          filter={this.state.filter}
           onFilterApplied={this.onFilterApplied}
           onMatchesCounted={this._onMatchesCounted}
           activeMatchIndex={this.state.activeMatchIndex} />

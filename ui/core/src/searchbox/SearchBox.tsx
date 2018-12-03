@@ -10,7 +10,7 @@ import UiCore from "../UiCore";
 
 import "./SearchBox.scss";
 
-/** Property interface for SearchBox */
+/** Property interface for [[SearchBox]] */
 export interface SearchBoxProps {
   /** value to set SearchBox to initially */
   initialValue?: string;

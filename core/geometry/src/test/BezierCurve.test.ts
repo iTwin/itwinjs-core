@@ -16,6 +16,7 @@ import { GeometryQuery } from "../curve/GeometryQuery";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { LineString3d } from "../curve/LineString3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 
 function exercise1dNdBase(ck: Checker, curve: Bezier1dNd) {
   ck.testLE(1, curve.order, "Bezier1dNd has nontrivial order");
@@ -45,9 +46,13 @@ describe("BsplineCurve", () => {
     const bezierCurves = [BezierCurve3d.create(allPoints)!, BezierCurve3dH.create(allPoints)!];
     ck.testFalse(bezierCurves[0].isAlmostEqual(bezierCurves[1]));
     ck.testFalse(bezierCurves[1].isAlmostEqual(bezierCurves[0]));
+    const plane0 = Plane3dByOriginAndUnitNormal.createXYPlane();
+    const plane1 = Plane3dByOriginAndUnitNormal.createZXPlane();
     for (const bezier of bezierCurves) {
       ck.testUndefined(bezier.getPolePoint3d(100));
       ck.testUndefined(bezier.getPolePoint4d(100));
+      ck.testTrue(bezier.isInPlane(plane0));
+      ck.testFalse(bezier.isInPlane(plane1));
       for (let i = 0; i < allPoints.length; i++) {
         const pole3d = bezier.getPolePoint3d(i);
         const pole4d = bezier.getPolePoint4d(i);

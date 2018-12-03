@@ -13,8 +13,11 @@ import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
 import { CommandItemDef } from "../configurableui/Item";
 import { ItemDefBase } from "./ItemDefBase";
+import { BaseItemState } from "./ItemDefBase";
+import { SyncUiEventDispatcher, SyncUiEventArgs } from "../SyncUiEventDispatcher";
 
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { ItemList } from "./ItemMap";
 
 // -----------------------------------------------------------------------------
 // WidgetDef and sub-interfaces
@@ -67,6 +70,9 @@ export interface WidgetDefProps extends ItemProps {
 export interface ToolbarWidgetProps extends WidgetDefProps {
   horizontalDirection?: Direction;
   verticalDirection?: Direction;
+
+  horizontalItems?: ItemList;
+  verticalItems?: ItemList;
 }
 
 /** Properties for a Tool Widget.
@@ -106,13 +112,36 @@ export class WidgetDef extends ItemDefBase {
   public isToolSettings: boolean = false;
   public isStatusBar: boolean = false;
   public stateChanged: boolean = false;
-
+  public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
+  public stateSyncIds: string[] = [];
   public widgetType: WidgetType = WidgetType.Rectangular;
-
   public applicationData?: any;
 
   private _widgetReactNode: React.ReactNode;
   private _widgetControl!: WidgetControl;
+  private _isVisible = true;
+
+  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    let refreshState = false;
+
+    if (this.stateSyncIds && this.stateSyncIds.length > 0)
+      refreshState = this.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+    if (refreshState) {
+      let newState: BaseItemState = {
+        isVisible: this._isVisible,
+        isEnabled: true,
+        isActive: false,
+      };
+
+      if (this.stateFunc)
+        newState = this.stateFunc(newState);
+
+      if (undefined !== newState.isVisible && this._isVisible !== newState.isVisible) {
+        this._isVisible = newState.isVisible;
+        this.setWidgetState(this.widgetState);
+      }
+    }
+  }
 
   constructor(widgetProps?: WidgetDefProps) {
     super(widgetProps);
@@ -149,8 +178,17 @@ export class WidgetDef extends ItemDefBase {
       if (widgetProps.applicationData !== undefined)
         this.applicationData = widgetProps.applicationData;
 
+      if (widgetProps.isVisible !== undefined)
+        this._isVisible = widgetProps.isVisible;
+
       if (widgetProps.reactElement !== undefined)
         this._widgetReactNode = widgetProps.reactElement;
+
+      if (widgetProps.stateFunc && widgetProps.stateSyncIds && widgetProps.stateSyncIds.length > 0) {
+        this.stateSyncIds = widgetProps.stateSyncIds;
+        this.stateFunc = widgetProps.stateFunc;
+        SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+      }
     }
   }
 
@@ -166,6 +204,7 @@ export class WidgetDef extends ItemDefBase {
           if (this._widgetControl.getType() !== type) {
             throw Error("WidgetDef.widgetControl error: classId '" + this.classId + "' is registered to a control that is NOT a Widget");
           }
+          this._widgetControl.initialize();
         }
       } else {
         const info = new ConfigurableCreateInfo(this.classId.name, this.id, this.id);
@@ -198,12 +237,12 @@ export class WidgetDef extends ItemDefBase {
   public setWidgetState(state: WidgetState): void {
     const oldWidgetState = this.widgetState;
     this.widgetState = state;
-    this.stateChanged = true;
+    this.stateChanged = oldWidgetState !== state;
     FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, oldWidgetState, newWidgetState: state });
   }
 
   public canShow(): boolean {
-    return (this.widgetState !== WidgetState.Off && this.widgetState !== WidgetState.Hidden);
+    return (this._isVisible && this.widgetState !== WidgetState.Off && this.widgetState !== WidgetState.Hidden);
   }
 
   public canOpen(): boolean {

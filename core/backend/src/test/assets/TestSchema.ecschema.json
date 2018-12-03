@@ -1,1116 +1,1079 @@
 {
-  "$schema":"https://dev.bentley.com/json_schemas/ec/31/draft-01/ecschema",
-  "alias":"ts",
-  "items":{
-    "AbstractDerivedAbstract":{
-      "baseClass":"TestSchema.AbstractEntityClass",
-      "description":"An abstract class derived from an abstract class",
-      "modifier":"abstract",
-      "schemaItemType":"EntityClass"
+  "$schema": "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
+  "alias": "ts",
+  "items": {
+    "AbstractDerivedAbstract": {
+      "baseClass": "TestSchema.AbstractEntityClass",
+      "description": "An abstract class derived from an abstract class",
+      "modifier": "Abstract",
+      "schemaItemType": "EntityClass"
     },
-    "AbstractEntityClass":{
-      "description":"Abstract class, cannot be instantiated",
-      "modifier":"abstract",
-      "properties":[
+    "AbstractEntityClass": {
+      "description": "Abstract class, cannot be instantiated",
+      "modifier": "Abstract",
+      "properties": [
         {
-          "name":"AbstractClassProperty1",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"dateTime"
+          "name": "AbstractClassProperty1",
+          "type": "PrimitiveProperty",
+          "typeName": "dateTime"
         },
         {
-          "direction":"backward",
-          "name":"FromAbstractToNormalClass",
-          "propertyType":"NavigationProperty",
-          "relationshipName":"TestSchema.NormalReferAbstractForward"
+          "direction": "Backward",
+          "name": "FromAbstractToNormalClass",
+          "type": "NavigationProperty",
+          "relationshipName": "TestSchema.NormalReferAbstractForward"
         }
       ],
-      "schemaItemType":"EntityClass"
+      "schemaItemType": "EntityClass"
     },
-    "BaseEntity":{
-      "description":"Base Entity Description",
-      "label":"Base Entity",
-      "mixins":[
+    "BaseEntity": {
+      "description": "Base Entity Description",
+      "label": "Base Entity",
+      "mixins": [
         "TestSchema.MixinClass"
       ],
-      "modifier":"abstract",
-      "properties":[
+      "modifier": "Abstract",
+      "properties": [
         {
-          "name":"InheritedProperty",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"string"
+          "name": "InheritedProperty",
+          "type": "PrimitiveProperty",
+          "typeName": "string"
         }
       ],
-      "schemaItemType":"EntityClass"
+      "schemaItemType": "EntityClass"
     },
-    "BaseEntityReferNormal":{
-      "modifier":"abstract",
-      "schemaItemType":"RelationshipClass",
-      "source":{
-        "constraintClasses":[
+    "BaseEntityReferNormal": {
+      "modifier": "Abstract",
+      "schemaItemType": "RelationshipClass",
+      "source": {
+        "constraintClasses": [
           "TestSchema.BaseEntity"
         ],
-        "multiplicity":"(0..*)",
-        "polymorphic":true,
-        "roleLabel":"refers to"
+        "multiplicity": "(0..*)",
+        "polymorphic": true,
+        "roleLabel": "refers to"
       },
-      "strength":"referencing",
-      "strengthDirection":"forward",
-      "target":{
-        "constraintClasses":[
+      "strength": "Referencing",
+      "strengthDirection": "Forward",
+      "target": {
+        "constraintClasses": [
           "TestSchema.NormalEntityClass"
         ],
-        "multiplicity":"(0..1)",
-        "polymorphic":true,
-        "roleLabel":"is referred to by"
+        "multiplicity": "(0..1)",
+        "polymorphic": true,
+        "roleLabel": "is referred to by"
       }
     },
-    "ClassCustomAttribute":{
-      "appliesTo":"AnyClass",
-      "description":"Custom Attribute that can only be applied to classes.",
-      "properties":[
+    "ClassCustomAttribute": {
+      "appliesTo": "AnyClass",
+      "description": "Custom Attribute that can only be applied to classes.",
+      "properties": [
         {
-          "name":"Primitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"string"
+          "name": "Primitive",
+          "type": "PrimitiveProperty",
+          "typeName": "string"
         }
       ],
-      "schemaItemType":"CustomAttributeClass"
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomAnyClassAttribute":{
-      "appliesTo":"AnyClass",
-      "description":"Custom Attribute that can be applied to relationshipConstraint.",
-      "schemaItemType":"CustomAttributeClass"
+    "CustomAnyClassAttribute": {
+      "appliesTo": "AnyClass",
+      "description": "Custom Attribute that can be applied to relationshipConstraint.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomAnyPropertyAttribute":{
-      "appliesTo":"AnyProperty",
-      "description":"Custom Attribute that can be applied to any of the property types.",
-      "schemaItemType":"CustomAttributeClass"
+    "CustomAnyPropertyAttribute": {
+      "appliesTo": "AnyProperty",
+      "description": "Custom Attribute that can be applied to any of the property types.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomArrayPropertyAttribute":{
-      "appliesTo":"ArrayProperty",
-      "description":"Custom Attribute that can be applied to an ECArrayProperty.",
-      "schemaItemType":"CustomAttributeClass"
+    "CustomArrayPropertyAttribute": {
+      "appliesTo": "ArrayProperty",
+      "description": "Custom Attribute that can be applied to an ECArrayProperty.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomCustomAttributeClassAttribute":{
-      "appliesTo":"CustomAttributeClass",
-      "description":"Custom Attribute that can be applied to an ECCustomAttributeClass.",
-      "schemaItemType":"CustomAttributeClass"
+    "CustomCustomAttributeClassAttribute": {
+      "appliesTo": "CustomAttributeClass",
+      "description": "Custom Attribute that can be applied to an ECCustomAttributeClass.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomEntityClassAttribute":{
-      "appliesTo":"EntityClass",
-      "description":"Custom Attribute that can be applied to an ECEntityClass.",
-      "properties":[
+    "CustomEntityClassAttribute": {
+      "appliesTo": "EntityClass",
+      "description": "Custom Attribute that can be applied to an ECEntityClass.",
+      "properties": [
         {
-          "name":"EntityClassStringPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"string"
+          "name": "EntityClassStringPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "string"
         },
         {
-          "name":"EntityClassBinaryPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "readOnly":true,
-          "typeName":"binary"
+          "name": "EntityClassBinaryPrimitive",
+          "type": "PrimitiveProperty",
+          "isReadOnly": true,
+          "typeName": "binary"
         },
         {
-          "name":"EntityClassDateTimePrimitive",
-          "propertyType":"PrimitiveProperty",
-          "readOnly":true,
-          "typeName":"dateTime"
+          "name": "EntityClassDateTimePrimitive",
+          "type": "PrimitiveProperty",
+          "isReadOnly": true,
+          "typeName": "dateTime"
         },
         {
-          "name":"EntityClassDoublePrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"double"
+          "name": "EntityClassDoublePrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "double"
         },
         {
-          "name":"EntityClassIGeometryPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"Bentley.Geometry.Common.IGeometry"
+          "name": "EntityClassIGeometryPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "Bentley.Geometry.Common.IGeometry"
         },
         {
-          "name":"EntityClassIntPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"int"
+          "name": "EntityClassIntPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "int"
         },
         {
-          "name":"EntityClassLongPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"long"
+          "name": "EntityClassLongPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "long"
         },
         {
-          "name":"EntityClassPoint2dPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"point2d"
+          "name": "EntityClassPoint2dPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "point2d"
         },
         {
-          "name":"EntityClassPoint3dPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"point3d"
+          "name": "EntityClassPoint3dPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "point3d"
         },
         {
-          "name":"EntityClassIntEnumerationPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"TestSchema.IntEnumeration"
+          "name": "EntityClassIntEnumerationPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "TestSchema.IntEnumeration"
         },
         {
-          "name":"EntityClassStringEnumerationPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"TestSchema.StringEnumeration"
+          "name": "EntityClassStringEnumerationPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "TestSchema.StringEnumeration"
         },
         {
-          "name":"CAStructProperty",
-          "propertyType":"StructProperty",
-          "typeName":"TestSchema.DerivedStruct"
+          "name": "CAStructProperty",
+          "type": "StructProperty",
+          "typeName": "TestSchema.DerivedStruct"
         },
         {
-          "minOccurs":0,
-          "name":"CAPrimitiveArrayProperty",
-          "propertyType":"PrimitiveArrayProperty",
-          "typeName":"string"
+          "minOccurs": 0,
+          "name": "CAPrimitiveArrayProperty",
+          "type": "PrimitiveArrayProperty",
+          "typeName": "string"
         },
         {
-          "minOccurs":0,
-          "name":"CAStructArrayProperty",
-          "propertyType":"StructArrayProperty",
-          "typeName":"TestSchema.Struct"
+          "minOccurs": 0,
+          "name": "CAStructArrayProperty",
+          "type": "StructArrayProperty",
+          "typeName": "TestSchema.Struct"
         }
       ],
-      "schemaItemType":"CustomAttributeClass"
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomNavigationPropertyAttribute":{
-      "appliesTo":"NavigationProperty",
-      "description":"Custom Attribute that can be applied to an ECNavigationProperty.",
-      "schemaItemType":"CustomAttributeClass"
+    "CustomNavigationPropertyAttribute": {
+      "appliesTo": "NavigationProperty",
+      "description": "Custom Attribute that can be applied to an ECNavigationProperty.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomPrimitivePropertyAttribute":{
-      "appliesTo":"PrimitiveProperty",
-      "description":"Custom Attribute that can be applied to an ECProperty.",
-      "schemaItemType":"CustomAttributeClass"
+    "CustomPrimitivePropertyAttribute": {
+      "appliesTo": "PrimitiveProperty",
+      "description": "Custom Attribute that can be applied to an ECProperty.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomRelationshipClassAttribute":{
-      "appliesTo":"RelationshipClass",
-      "description":"Custom Attribute that can be applied to an ECRelationshipClass.",
-      "schemaItemType":"CustomAttributeClass"
+    "CustomRelationshipClassAttribute": {
+      "appliesTo": "RelationshipClass",
+      "description": "Custom Attribute that can be applied to an ECRelationshipClass.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomRelationshipConstraintAttribute":{
-      "appliesTo":"AnyRelationshipConstraint",
-      "description":"Custom Attribute that can be applied to relationshipConstraint.",
-      "schemaItemType":"CustomAttributeClass"
+    "CustomRelationshipConstraintAttribute": {
+      "appliesTo": "AnyRelationshipConstraint",
+      "description": "Custom Attribute that can be applied to relationshipConstraint.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomRelationshipConstraintAttributeSecond":{
-      "appliesTo":"AnyRelationshipConstraint",
-      "description":"Custom Attribute that can be applied to relationshipConstraint.",
-      "schemaItemType":"CustomAttributeClass"
+    "CustomRelationshipConstraintAttributeSecond": {
+      "appliesTo": "AnyRelationshipConstraint",
+      "description": "Custom Attribute that can be applied to relationshipConstraint.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomStructArrayPropertyAttribute":{
-      "appliesTo":"StructArrayProperty",
-      "description":"Custom Attribute that can be applied to an ECStructArrayProperty.",
-      "schemaItemType":"CustomAttributeClass"
+    "CustomStructArrayPropertyAttribute": {
+      "appliesTo": "StructArrayProperty",
+      "description": "Custom Attribute that can be applied to an ECStructArrayProperty.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomStructClassAttribute":{
-      "appliesTo":"StructClass",
-      "description":"Custom Attribute that can be applied to an ECStructClass.",
-      "schemaItemType":"CustomAttributeClass"
+    "CustomStructClassAttribute": {
+      "appliesTo": "StructClass",
+      "description": "Custom Attribute that can be applied to an ECStructClass.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "CustomStructPropertyAttribute":{
-      "appliesTo":"StructProperty",
-      "description":"Custom Attribute that can be applied to an ECStructProperty.",
-      "schemaItemType":"CustomAttributeClass"
+    "CustomStructPropertyAttribute": {
+      "appliesTo": "StructProperty",
+      "description": "Custom Attribute that can be applied to an ECStructProperty.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "DerivedAbstract":{
-      "baseClass":"TestSchema.AbstractEntityClass",
-      "description":"A class derived from an abstract class",
-      "schemaItemType":"EntityClass"
+    "DerivedAbstract": {
+      "baseClass": "TestSchema.AbstractEntityClass",
+      "description": "A class derived from an abstract class",
+      "schemaItemType": "EntityClass"
     },
-    "DerivedAbstractSecond":{
-      "baseClass":"TestSchema.AbstractEntityClass",
-      "description":"A class derived from an abstract class",
-      "schemaItemType":"EntityClass"
+    "DerivedAbstractSecond": {
+      "baseClass": "TestSchema.AbstractEntityClass",
+      "description": "A class derived from an abstract class",
+      "schemaItemType": "EntityClass"
     },
-    "DerivedMixin":{
-      "appliesTo":"TestSchema.Entity",
-      "baseClass":"TestSchema.MixinClass",
-      "description":"A Mixin class derived from a Mixin class",
-      "properties":[
+    "DerivedMixin": {
+      "appliesTo": "TestSchema.Entity",
+      "baseClass": "TestSchema.MixinClass",
+      "description": "A Mixin class derived from a Mixin class",
+      "properties": [
         {
-          "name":"DerivedMixinStringPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"string"
+          "name": "DerivedMixinStringPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "string"
         },
         {
-          "name":"DerivedMixinBinaryPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "readOnly":true,
-          "typeName":"binary"
+          "name": "DerivedMixinBinaryPrimitive",
+          "type": "PrimitiveProperty",
+          "isReadOnly": true,
+          "typeName": "binary"
         },
         {
-          "name":"DerivedMixinDateTimePrimitive",
-          "propertyType":"PrimitiveProperty",
-          "readOnly":true,
-          "typeName":"dateTime"
+          "name": "DerivedMixinDateTimePrimitive",
+          "type": "PrimitiveProperty",
+          "isReadOnly": true,
+          "typeName": "dateTime"
         },
         {
-          "name":"DerivedMixinDoublePrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"double"
+          "name": "DerivedMixinDoublePrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "double"
         },
         {
-          "name":"DerivedMixinIGeometryPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"Bentley.Geometry.Common.IGeometry"
+          "name": "DerivedMixinIGeometryPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "Bentley.Geometry.Common.IGeometry"
         },
         {
-          "name":"DerivedMixinIntPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"int"
+          "name": "DerivedMixinIntPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "int"
         },
         {
-          "name":"DerivedMixinLongPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"long"
+          "name": "DerivedMixinLongPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "long"
         },
         {
-          "name":"DerivedMixinPoint2dPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"point2d"
+          "name": "DerivedMixinPoint2dPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "point2d"
         },
         {
-          "name":"DerivedMixinPoint3dPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"point3d"
+          "name": "DerivedMixinPoint3dPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "point3d"
         }
       ],
-      "schemaItemType":"Mixin"
+      "schemaItemType": "Mixin"
     },
-    "DerivedNormal":{
-      "baseClass":"TestSchema.NormalEntityClass",
-      "description":"A class derived from a normal class",
-      "properties":[
+    "DerivedNormal": {
+      "baseClass": "TestSchema.NormalEntityClass",
+      "description": "A class derived from a normal class",
+      "properties": [
         {
-          "name":"DerivedProperty1",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"string"
+          "name": "DerivedProperty1",
+          "type": "PrimitiveProperty",
+          "typeName": "string"
         }
       ],
-      "schemaItemType":"EntityClass"
+      "schemaItemType": "EntityClass"
     },
-    "DerivedNormalSecond":{
-      "baseClass":"TestSchema.NormalEntityClass",
-      "description":"A class derived from a normal class",
-      "properties":[
+    "DerivedNormalSecond": {
+      "baseClass": "TestSchema.NormalEntityClass",
+      "description": "A class derived from a normal class",
+      "properties": [
         {
-          "name":"DerivedProperty2",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"long"
+          "name": "DerivedProperty2",
+          "type": "PrimitiveProperty",
+          "typeName": "long"
         }
       ],
-      "schemaItemType":"EntityClass"
+      "schemaItemType": "EntityClass"
     },
-    "DerivedRelationshipClass":{
-      "baseClass":"TestSchema.NormalReferMixinForward",
-      "modifier":"sealed",
-      "schemaItemType":"RelationshipClass",
-      "source":{
-        "constraintClasses":[
+    "DerivedRelationshipClass": {
+      "baseClass": "TestSchema.NormalReferMixinForward",
+      "modifier": "Sealed",
+      "schemaItemType": "RelationshipClass",
+      "source": {
+        "constraintClasses": [
           "TestSchema.DerivedNormal"
         ],
-        "multiplicity":"(1..1)",
-        "polymorphic":true,
-        "roleLabel":"references"
+        "multiplicity": "(1..1)",
+        "polymorphic": true,
+        "roleLabel": "references"
       },
-      "strength":"referencing",
-      "strengthDirection":"forward",
-      "target":{
-        "abstractConstraint":"TestSchema.MixinClass",
-        "constraintClasses":[
+      "strength": "Referencing",
+      "strengthDirection": "Forward",
+      "target": {
+        "abstractConstraint": "TestSchema.MixinClass",
+        "constraintClasses": [
           "TestSchema.DerivedMixin"
         ],
-        "multiplicity":"(0..1)",
-        "polymorphic":false,
-        "roleLabel":"is referenced by"
+        "multiplicity": "(0..1)",
+        "polymorphic": false,
+        "roleLabel": "is referenced by"
       }
     },
-    "DerivedStruct":{
-      "baseClass":"TestSchema.Struct",
-      "label":"A Struct derived from a Struct",
-      "schemaItemType":"StructClass"
+    "DerivedStruct": {
+      "baseClass": "TestSchema.Struct",
+      "label": "A Struct derived from a Struct",
+      "schemaItemType": "StructClass"
     },
-    "Entity":{
-      "baseClass":"TestSchema.BaseEntity",
-      "mixins":[
+    "Entity": {
+      "baseClass": "TestSchema.BaseEntity",
+      "mixins": [
         "TestSchema.DerivedMixin"
       ],
-      "properties":[
+      "properties": [
         {
-          "description":"A property override.",
-          "name":"InheritedProperty",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"string"
+          "description": "A property override.",
+          "name": "InheritedProperty",
+          "type": "PrimitiveProperty",
+          "typeName": "string"
         }
       ],
-      "schemaItemType":"EntityClass"
+      "schemaItemType": "EntityClass"
     },
-    "EntityEmbedNormalBackward":{
-      "modifier":"abstract",
-      "schemaItemType":"RelationshipClass",
-      "source":{
-        "constraintClasses":[
+    "EntityEmbedNormalBackward": {
+      "modifier": "Abstract",
+      "schemaItemType": "RelationshipClass",
+      "source": {
+        "constraintClasses": [
           "TestSchema.Entity"
         ],
-        "multiplicity":"(0..1)",
-        "polymorphic":true,
-        "roleLabel":"is embedded by"
+        "multiplicity": "(0..1)",
+        "polymorphic": true,
+        "roleLabel": "is embedded by"
       },
-      "strength":"embedding",
-      "strengthDirection":"backward",
-      "target":{
-        "constraintClasses":[
+      "strength": "Embedding",
+      "strengthDirection": "Backward",
+      "target": {
+        "constraintClasses": [
           "TestSchema.NormalEntityClass"
         ],
-        "customAttributes":[
+        "customAttributes": [
           {
-            "className":"TestSchema.CustomRelationshipConstraintAttribute"
+            "className": "TestSchema.CustomRelationshipConstraintAttribute"
           },
           {
-            "className":"TestSchema.CustomRelationshipConstraintAttributeSecond"
+            "className": "TestSchema.CustomRelationshipConstraintAttributeSecond"
           }
         ],
-        "multiplicity":"(1..*)",
-        "polymorphic":true,
-        "roleLabel":"embeds"
+        "multiplicity": "(1..*)",
+        "polymorphic": true,
+        "roleLabel": "embeds"
       }
     },
-    "EntityReferDerivedNormal":{
-      "baseClass":"TestSchema.BaseEntityReferNormal",
-      "modifier":"sealed",
-      "schemaItemType":"RelationshipClass",
-      "source":{
-        "constraintClasses":[
+    "EntityReferDerivedNormal": {
+      "baseClass": "TestSchema.BaseEntityReferNormal",
+      "modifier": "Sealed",
+      "schemaItemType": "RelationshipClass",
+      "source": {
+        "constraintClasses": [
           "TestSchema.Entity"
         ],
-        "multiplicity":"(0..*)",
-        "polymorphic":true,
-        "roleLabel":"refers to"
+        "multiplicity": "(0..*)",
+        "polymorphic": true,
+        "roleLabel": "refers to"
       },
-      "strength":"referencing",
-      "strengthDirection":"forward",
-      "target":{
-        "constraintClasses":[
+      "strength": "Referencing",
+      "strengthDirection": "Forward",
+      "target": {
+        "constraintClasses": [
           "TestSchema.DerivedNormal"
         ],
-        "multiplicity":"(0..1)",
-        "polymorphic":true,
-        "roleLabel":"is referred to by"
+        "multiplicity": "(0..1)",
+        "polymorphic": true,
+        "roleLabel": "is referred to by"
       }
     },
-    "EntityReferEntity":{
-      "modifier":"sealed",
-      "properties":[
+    "EntityReferEntity": {
+      "modifier": "Sealed",
+      "properties": [
         {
-          "name":"RelationshipProperty",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"string"
+          "name": "RelationshipProperty",
+          "type": "PrimitiveProperty",
+          "typeName": "string"
         }
       ],
-      "schemaItemType":"RelationshipClass",
-      "source":{
-        "constraintClasses":[
+      "schemaItemType": "RelationshipClass",
+      "source": {
+        "constraintClasses": [
           "TestSchema.Entity"
         ],
-        "multiplicity":"(0..1)",
-        "polymorphic":true,
-        "roleLabel":"references"
+        "multiplicity": "(0..1)",
+        "polymorphic": true,
+        "roleLabel": "references"
       },
-      "strength":"referencing",
-      "strengthDirection":"forward",
-      "target":{
-        "constraintClasses":[
+      "strength": "Referencing",
+      "strengthDirection": "Forward",
+      "target": {
+        "constraintClasses": [
           "TestSchema.Entity"
         ],
-        "multiplicity":"(0..1)",
-        "polymorphic":true,
-        "roleLabel":"is referenced by"
+        "multiplicity": "(0..1)",
+        "polymorphic": true,
+        "roleLabel": "is referenced by"
       }
     },
-    "GeneralCustomAttribute":{
-      "appliesTo":"Any",
-      "description":"Custom Attribute that can be applied to anything.",
-      "schemaItemType":"CustomAttributeClass"
+    "GeneralCustomAttribute": {
+      "appliesTo": "Any",
+      "description": "Custom Attribute that can be applied to anything.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "IntEnumeration":{
-      "backingTypeName":"int",
-      "description":"Int Enumeration",
-      "enumerators":[
+    "IntEnumeration": {
+      "type": "int",
+      "description": "Int Enumeration",
+      "enumerators": [
         {
-          "label":"First",
-          "value":1
+          "name": "First",
+          "value": 1
         },
         {
-          "label":"Second",
-          "value":2
+          "name": "Second",
+          "value": 2
         },
         {
-          "label":"Third",
-          "value":3
+          "name": "Third",
+          "value": 3
         }
       ],
-      "isStrict":true,
-      "label":"This is a display label.",
-      "schemaItemType":"Enumeration"
+      "isStrict": true,
+      "label": "This is a display label.",
+      "schemaItemType": "Enumeration"
     },
-    "KindOfQuantity":{
-      "description":"Kind of Quantity Description",
-      "label":"Kind of Quantity",
-      "persistenceUnit":{
-        "format":"DefaultReal",
-        "unit":"CM"
-      },
-      "precision":0.001,
-      "presentationUnits":[
+    "MixinClass": {
+      "appliesTo": "TestSchema.BaseEntity",
+      "description": "A Mixin is designed to avoid issues with multiple inheritance",
+      "properties": [
         {
-          "format":"DefaultReal",
-          "unit":"FT"
+          "name": "MixinStringPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "string"
         },
         {
-          "format":"DefaultReal",
-          "unit":"IN"
+          "name": "MixinBinaryPrimitive",
+          "type": "PrimitiveProperty",
+          "isReadOnly": true,
+          "typeName": "binary"
+        },
+        {
+          "name": "MixinDateTimePrimitive",
+          "type": "PrimitiveProperty",
+          "isReadOnly": true,
+          "typeName": "dateTime"
+        },
+        {
+          "name": "MixinDoublePrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "double"
+        },
+        {
+          "name": "MixinIGeometryPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "Bentley.Geometry.Common.IGeometry"
+        },
+        {
+          "name": "MixinIntPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "int"
+        },
+        {
+          "name": "MixinLongPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "long"
+        },
+        {
+          "name": "MixinPoint2dPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "point2d"
+        },
+        {
+          "name": "MixinPoint3dPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "point3d"
+        },
+        {
+          "name": "MixinIntEnumerationPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "TestSchema.IntEnumeration"
+        },
+        {
+          "name": "MixinStringEnumerationPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "TestSchema.StringEnumeration"
         }
       ],
-      "schemaItemType":"KindOfQuantity"
+      "schemaItemType": "Mixin"
     },
-    "MixinClass":{
-      "appliesTo":"TestSchema.BaseEntity",
-      "description":"A Mixin is designed to avoid issues with multiple inheritance",
-      "properties":[
+    "NormalEntityClass": {
+      "customAttributes": [
         {
-          "name":"MixinStringPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"string"
+          "className": "TestSchema.CustomEntityClassAttribute"
         },
         {
-          "name":"MixinBinaryPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "readOnly":true,
-          "typeName":"binary"
-        },
-        {
-          "name":"MixinDateTimePrimitive",
-          "propertyType":"PrimitiveProperty",
-          "readOnly":true,
-          "typeName":"dateTime"
-        },
-        {
-          "name":"MixinDoublePrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"double"
-        },
-        {
-          "name":"MixinIGeometryPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"Bentley.Geometry.Common.IGeometry"
-        },
-        {
-          "name":"MixinIntPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"int"
-        },
-        {
-          "name":"MixinLongPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"long"
-        },
-        {
-          "name":"MixinPoint2dPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"point2d"
-        },
-        {
-          "name":"MixinPoint3dPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"point3d"
-        },
-        {
-          "name":"MixinIntEnumerationPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"TestSchema.IntEnumeration"
-        },
-        {
-          "name":"MixinStringEnumerationPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"TestSchema.StringEnumeration"
+          "className": "TestSchema.GeneralCustomAttribute"
         }
       ],
-      "schemaItemType":"Mixin"
-    },
-    "NormalEntityClass":{
-      "customAttributes":[
+      "description": "Normal class with no modifier",
+      "properties": [
         {
-          "className":"TestSchema.CustomEntityClassAttribute"
-        },
-        {
-          "className":"TestSchema.GeneralCustomAttribute"
+          "name": "Property1",
+          "type": "PrimitiveProperty",
+          "typeName": "int"
         }
       ],
-      "description":"Normal class with no modifier",
-      "properties":[
-        {
-          "name":"Property1",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"int"
-        }
-      ],
-      "schemaItemType":"EntityClass"
+      "schemaItemType": "EntityClass"
     },
-    "NormalReferAbstractBackward":{
-      "modifier":"abstract",
-      "schemaItemType":"RelationshipClass",
-      "source":{
-        "constraintClasses":[
+    "NormalReferAbstractBackward": {
+      "modifier": "Abstract",
+      "schemaItemType": "RelationshipClass",
+      "source": {
+        "constraintClasses": [
           "TestSchema.NormalEntityClass"
         ],
-        "multiplicity":"(1..*)",
-        "polymorphic":true,
-        "roleLabel":"is referred to by"
+        "multiplicity": "(1..*)",
+        "polymorphic": true,
+        "roleLabel": "is referred to by"
       },
-      "strength":"referencing",
-      "strengthDirection":"backward",
-      "target":{
-        "abstractConstraint":"TestSchema.AbstractEntityClass",
-        "constraintClasses":[
+      "strength": "Referencing",
+      "strengthDirection": "Backward",
+      "target": {
+        "abstractConstraint": "TestSchema.AbstractEntityClass",
+        "constraintClasses": [
           "TestSchema.AbstractEntityClass",
           "TestSchema.AbstractDerivedAbstract",
           "TestSchema.DerivedAbstract",
           "TestSchema.DerivedAbstractSecond"
         ],
-        "multiplicity":"(0..1)",
-        "polymorphic":false,
-        "roleLabel":"refers to"
+        "multiplicity": "(0..1)",
+        "polymorphic": false,
+        "roleLabel": "refers to"
       }
     },
-    "NormalReferAbstractForward":{
-      "customAttributes":[
+    "NormalReferAbstractForward": {
+      "customAttributes": [
         {
-          "className":"TestSchema.GeneralCustomAttribute"
+          "className": "TestSchema.GeneralCustomAttribute"
         },
         {
-          "className":"TestSchema.CustomRelationshipClassAttribute"
+          "className": "TestSchema.CustomRelationshipClassAttribute"
         }
       ],
-      "modifier":"abstract",
-      "schemaItemType":"RelationshipClass",
-      "source":{
-        "abstractConstraint":"TestSchema.NormalEntityClass",
-        "constraintClasses":[
+      "modifier": "Abstract",
+      "schemaItemType": "RelationshipClass",
+      "source": {
+        "abstractConstraint": "TestSchema.NormalEntityClass",
+        "constraintClasses": [
           "TestSchema.DerivedNormal",
           "TestSchema.NormalEntityClass",
           "TestSchema.SealedDerivedNormal"
         ],
-        "multiplicity":"(1..1)",
-        "polymorphic":true,
-        "roleLabel":"refers to"
+        "multiplicity": "(1..1)",
+        "polymorphic": true,
+        "roleLabel": "refers to"
       },
-      "strength":"referencing",
-      "strengthDirection":"forward",
-      "target":{
-        "abstractConstraint":"TestSchema.AbstractEntityClass",
-        "constraintClasses":[
+      "strength": "Referencing",
+      "strengthDirection": "Forward",
+      "target": {
+        "abstractConstraint": "TestSchema.AbstractEntityClass",
+        "constraintClasses": [
           "TestSchema.AbstractEntityClass"
         ],
-        "multiplicity":"(0..*)",
-        "polymorphic":false,
-        "roleLabel":"is referred to by"
+        "multiplicity": "(0..*)",
+        "polymorphic": false,
+        "roleLabel": "is referred to by"
       }
     },
-    "NormalReferMixinForward":{
-      "modifier":"abstract",
-      "schemaItemType":"RelationshipClass",
-      "source":{
-        "constraintClasses":[
+    "NormalReferMixinForward": {
+      "modifier": "Abstract",
+      "schemaItemType": "RelationshipClass",
+      "source": {
+        "constraintClasses": [
           "TestSchema.NormalEntityClass"
         ],
-        "multiplicity":"(0..*)",
-        "polymorphic":true,
-        "roleLabel":"references"
+        "multiplicity": "(0..*)",
+        "polymorphic": true,
+        "roleLabel": "references"
       },
-      "strength":"referencing",
-      "strengthDirection":"forward",
-      "target":{
-        "abstractConstraint":"TestSchema.MixinClass",
-        "constraintClasses":[
+      "strength": "Referencing",
+      "strengthDirection": "Forward",
+      "target": {
+        "abstractConstraint": "TestSchema.MixinClass",
+        "constraintClasses": [
           "TestSchema.DerivedMixin"
         ],
-        "multiplicity":"(0..1)",
-        "polymorphic":true,
-        "roleLabel":"is referenced by"
+        "multiplicity": "(0..1)",
+        "polymorphic": true,
+        "roleLabel": "is referenced by"
       }
     },
-    "PropertyCollection":{
-      "customAttributes":[
+    "PropertyCollection": {
+      "customAttributes": [
         {
-          "Primitive":"General Value on Class",
-          "className":"TestSchema.ClassCustomAttribute"
+          "Primitive": "General Value on Class",
+          "className": "TestSchema.ClassCustomAttribute"
         },
         {
-          "className":"TestSchema.CustomAnyClassAttribute"
+          "className": "TestSchema.CustomAnyClassAttribute"
         }
       ],
-      "modifier":"sealed",
-      "properties":[
+      "modifier": "Sealed",
+      "properties": [
         {
-          "label":"Property Display Label",
-          "name":"PropCollectionBinaryPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"binary"
+          "label": "Property Display Label",
+          "name": "PropCollectionBinaryPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "binary"
         },
         {
-          "description":"Property Description",
-          "name":"PropCollectionBooleanPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"boolean"
+          "description": "Property Description",
+          "name": "PropCollectionBooleanPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "boolean"
         },
         {
-          "name":"PropCollectionDateTimePrimitive",
-          "propertyType":"PrimitiveProperty",
-          "readOnly":true,
-          "typeName":"dateTime"
+          "name": "PropCollectionDateTimePrimitive",
+          "type": "PrimitiveProperty",
+          "isReadOnly": true,
+          "typeName": "dateTime"
         },
         {
-          "maxValue":9.6,
-          "minValue":2.3,
-          "name":"PropCollectionDoublePrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"double"
+          "maxValue": 9.6,
+          "minValue": 2.3,
+          "name": "PropCollectionDoublePrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "double"
         },
         {
-          "name":"PropCollectionIGeometryPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"Bentley.Geometry.Common.IGeometry"
+          "name": "PropCollectionIGeometryPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "Bentley.Geometry.Common.IGeometry"
         },
         {
-          "kindOfQuantity":"TestSchema.KindOfQuantity",
-          "maxValue":10000,
-          "minValue":0,
-          "name":"PropCollectionIntPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"int"
+          "maxValue": 10000,
+          "minValue": 0,
+          "name": "PropCollectionIntPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "int"
         },
         {
-          "name":"PropCollectionLongPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"long"
+          "name": "PropCollectionLongPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "long"
         },
         {
-          "name":"PropCollectionPoint2dPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"point2d"
+          "name": "PropCollectionPoint2dPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "point2d"
         },
         {
-          "name":"PropCollectionPoint3dPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"point3d"
+          "name": "PropCollectionPoint3dPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "point3d"
         },
         {
-          "name":"PropCollectionStringPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"string"
+          "name": "PropCollectionStringPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "string"
         },
         {
-          "name":"IntEnumerationPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"TestSchema.IntEnumeration"
+          "name": "IntEnumerationPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "TestSchema.IntEnumeration"
         },
         {
-          "name":"StringEnumerationPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"TestSchema.StringEnumeration"
+          "name": "StringEnumerationPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "TestSchema.StringEnumeration"
         },
         {
-          "customAttributes":[
+          "customAttributes": [
             {
-              "className":"TestSchema.CustomPrimitivePropertyAttribute"
+              "className": "TestSchema.CustomPrimitivePropertyAttribute"
             },
             {
-              "className":"TestSchema.CustomAnyPropertyAttribute"
+              "className": "TestSchema.CustomAnyPropertyAttribute"
             },
             {
-              "className":"TestSchema.GeneralCustomAttribute"
+              "className": "TestSchema.GeneralCustomAttribute"
             }
           ],
-          "name":"PropertyWithCustomAttribute",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"string"
+          "name": "PropertyWithCustomAttribute",
+          "type": "PrimitiveProperty",
+          "typeName": "string"
         },
         {
-          "customAttributes":[
+          "minOccurs": 0,
+          "name": "LongArray",
+          "type": "PrimitiveArrayProperty",
+          "typeName": "long"
+        },
+        {
+          "minOccurs": 1,
+          "name": "BinaryArray",
+          "type": "PrimitiveArrayProperty",
+          "typeName": "binary"
+        },
+        {
+          "customAttributes": [
             {
-              "ECExpression":"\"Primitve 10=\" & this.Primitive10",
-              "className":"Bentley_Standard_CustomAttributes.CalculatedECPropertySpecification"
+              "className": "TestSchema.CustomArrayPropertyAttribute"
+            },
+            {
+              "className": "TestSchema.CustomAnyPropertyAttribute"
+            },
+            {
+              "className": "TestSchema.GeneralCustomAttribute"
             }
           ],
-          "name":"Calculated",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"string"
+          "maxOccurs": 10,
+          "minOccurs": 0,
+          "name": "BooleanArray",
+          "type": "PrimitiveArrayProperty",
+          "isReadOnly": true,
+          "typeName": "boolean"
         },
         {
-          "minOccurs":0,
-          "name":"LongArray",
-          "propertyType":"PrimitiveArrayProperty",
-          "typeName":"long"
+          "maxOccurs": 10,
+          "minOccurs": 1,
+          "name": "DateTimeArray",
+          "type": "PrimitiveArrayProperty",
+          "isReadOnly": true,
+          "typeName": "dateTime"
         },
         {
-          "minOccurs":1,
-          "name":"BinaryArray",
-          "propertyType":"PrimitiveArrayProperty",
-          "typeName":"binary"
+          "maxOccurs": 5,
+          "minOccurs": 5,
+          "name": "DoubleArray",
+          "type": "PrimitiveArrayProperty",
+          "typeName": "double"
         },
         {
-          "customAttributes":[
+          "maxOccurs": 100,
+          "minOccurs": 2,
+          "name": "IGeometryArray",
+          "type": "PrimitiveArrayProperty",
+          "typeName": "Bentley.Geometry.Common.IGeometry"
+        },
+        {
+          "minOccurs": 0,
+          "name": "IntArray",
+          "type": "PrimitiveArrayProperty",
+          "isReadOnly": true,
+          "typeName": "int"
+        },
+        {
+          "maxOccurs": 3,
+          "minOccurs": 3,
+          "name": "Point2dArray",
+          "type": "PrimitiveArrayProperty",
+          "typeName": "point2d"
+        },
+        {
+          "minOccurs": 0,
+          "name": "Point3dArray",
+          "type": "PrimitiveArrayProperty",
+          "isReadOnly": true,
+          "typeName": "point3d"
+        },
+        {
+          "maxOccurs": 15,
+          "minOccurs": 1,
+          "name": "StringArray",
+          "type": "PrimitiveArrayProperty",
+          "isReadOnly": true,
+          "typeName": "string"
+        },
+        {
+          "customAttributes": [
             {
-              "className":"TestSchema.CustomArrayPropertyAttribute"
+              "className": "TestSchema.CustomStructPropertyAttribute"
             },
             {
-              "className":"TestSchema.CustomAnyPropertyAttribute"
+              "className": "TestSchema.CustomAnyPropertyAttribute"
             },
             {
-              "className":"TestSchema.GeneralCustomAttribute"
+              "className": "TestSchema.GeneralCustomAttribute"
             }
           ],
-          "maxOccurs":10,
-          "minOccurs":0,
-          "name":"BooleanArray",
-          "propertyType":"PrimitiveArrayProperty",
-          "readOnly":true,
-          "typeName":"boolean"
+          "name": "Struct1",
+          "type": "StructProperty",
+          "typeName": "TestSchema.Struct"
         },
         {
-          "maxOccurs":10,
-          "minOccurs":1,
-          "name":"DateTimeArray",
-          "propertyType":"PrimitiveArrayProperty",
-          "readOnly":true,
-          "typeName":"dateTime"
-        },
-        {
-          "maxOccurs":5,
-          "minOccurs":5,
-          "name":"DoubleArray",
-          "propertyType":"PrimitiveArrayProperty",
-          "typeName":"double"
-        },
-        {
-          "maxOccurs":100,
-          "minOccurs":2,
-          "name":"IGeometryArray",
-          "propertyType":"PrimitiveArrayProperty",
-          "typeName":"Bentley.Geometry.Common.IGeometry"
-        },
-        {
-          "kindOfQuantity":"TestSchema.KindOfQuantity",
-          "minOccurs":0,
-          "name":"IntArray",
-          "propertyType":"PrimitiveArrayProperty",
-          "readOnly":true,
-          "typeName":"int"
-        },
-        {
-          "maxOccurs":3,
-          "minOccurs":3,
-          "name":"Point2dArray",
-          "propertyType":"PrimitiveArrayProperty",
-          "typeName":"point2d"
-        },
-        {
-          "minOccurs":0,
-          "name":"Point3dArray",
-          "propertyType":"PrimitiveArrayProperty",
-          "readOnly":true,
-          "typeName":"point3d"
-        },
-        {
-          "maxOccurs":15,
-          "minOccurs":1,
-          "name":"StringArray",
-          "propertyType":"PrimitiveArrayProperty",
-          "readOnly":true,
-          "typeName":"string"
-        },
-        {
-          "customAttributes":[
+          "customAttributes": [
             {
-              "className":"TestSchema.CustomStructPropertyAttribute"
+              "className": "TestSchema.CustomStructArrayPropertyAttribute"
             },
             {
-              "className":"TestSchema.CustomAnyPropertyAttribute"
+              "className": "TestSchema.CustomAnyPropertyAttribute"
             },
             {
-              "className":"TestSchema.GeneralCustomAttribute"
+              "className": "TestSchema.GeneralCustomAttribute"
             }
           ],
-          "name":"Struct1",
-          "propertyType":"StructProperty",
-          "typeName":"TestSchema.Struct"
+          "minOccurs": 0,
+          "name": "StructArray",
+          "type": "StructArrayProperty",
+          "typeName": "TestSchema.Struct"
         },
         {
-          "customAttributes":[
-            {
-              "className":"TestSchema.CustomStructArrayPropertyAttribute"
-            },
-            {
-              "className":"TestSchema.CustomAnyPropertyAttribute"
-            },
-            {
-              "className":"TestSchema.GeneralCustomAttribute"
-            }
-          ],
-          "minOccurs":0,
-          "name":"StructArray",
-          "propertyType":"StructArrayProperty",
-          "typeName":"TestSchema.Struct"
+          "maxOccurs": 100,
+          "minOccurs": 1,
+          "name": "StructArraySecond",
+          "type": "StructArrayProperty",
+          "typeName": "TestSchema.Struct"
         },
         {
-          "maxOccurs":100,
-          "minOccurs":1,
-          "name":"StructArraySecond",
-          "propertyType":"StructArrayProperty",
-          "typeName":"TestSchema.Struct"
-        },
-        {
-          "maxOccurs":4,
-          "minOccurs":4,
-          "name":"StructArrayThird",
-          "propertyType":"StructArrayProperty",
-          "typeName":"TestSchema.Struct"
+          "maxOccurs": 4,
+          "minOccurs": 4,
+          "name": "StructArrayThird",
+          "type": "StructArrayProperty",
+          "typeName": "TestSchema.Struct"
         }
       ],
-      "schemaItemType":"EntityClass"
+      "schemaItemType": "EntityClass"
     },
-    "SchemaCustomAttribute":{
-      "appliesTo":"Schema",
-      "description":"Custom Attribute that can be applied to a schema.",
-      "schemaItemType":"CustomAttributeClass"
+    "SchemaCustomAttribute": {
+      "appliesTo": "Schema",
+      "description": "Custom Attribute that can be applied to a schema.",
+      "schemaItemType": "CustomAttributeClass"
     },
-    "SealedDerivedAbstract":{
-      "baseClass":"TestSchema.AbstractEntityClass",
-      "description":"A sealed class derived from an abstract class",
-      "modifier":"sealed",
-      "schemaItemType":"EntityClass"
+    "SealedDerivedAbstract": {
+      "baseClass": "TestSchema.AbstractEntityClass",
+      "description": "A sealed class derived from an abstract class",
+      "modifier": "Sealed",
+      "schemaItemType": "EntityClass"
     },
-    "SealedDerivedNormal":{
-      "baseClass":"TestSchema.NormalEntityClass",
-      "description":"A sealed class derived from a normal class",
-      "modifier":"sealed",
-      "schemaItemType":"EntityClass"
+    "SealedDerivedNormal": {
+      "baseClass": "TestSchema.NormalEntityClass",
+      "description": "A sealed class derived from a normal class",
+      "modifier": "Sealed",
+      "schemaItemType": "EntityClass"
     },
-    "SealedEntityClass":{
-      "description":"Instantiable, but cannot be used as base class",
-      "modifier":"sealed",
-      "properties":[
+    "SealedEntityClass": {
+      "description": "Instantiable, but cannot be used as base class",
+      "modifier": "Sealed",
+      "properties": [
         {
-          "name":"SealedClassProperty1",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"boolean"
+          "name": "SealedClassProperty1",
+          "type": "PrimitiveProperty",
+          "typeName": "boolean"
         }
       ],
-      "schemaItemType":"EntityClass"
+      "schemaItemType": "EntityClass"
     },
-    "SealedHoldNormalBackward":{
-      "modifier":"abstract",
-      "schemaItemType":"RelationshipClass",
-      "source":{
-        "constraintClasses":[
+    "SealedHoldNormalBackward": {
+      "modifier": "Abstract",
+      "schemaItemType": "RelationshipClass",
+      "source": {
+        "constraintClasses": [
           "TestSchema.SealedEntityClass"
         ],
-        "multiplicity":"(0..1)",
-        "polymorphic":false,
-        "roleLabel":"is held by"
+        "multiplicity": "(0..1)",
+        "polymorphic": false,
+        "roleLabel": "is held by"
       },
-      "strength":"holding",
-      "strengthDirection":"backward",
-      "target":{
-        "constraintClasses":[
+      "strength": "Holding",
+      "strengthDirection": "Backward",
+      "target": {
+        "constraintClasses": [
           "TestSchema.NormalEntityClass"
         ],
-        "customAttributes":[
+        "customAttributes": [
           {
-            "className":"TestSchema.CustomRelationshipConstraintAttribute"
+            "className": "TestSchema.CustomRelationshipConstraintAttribute"
           },
           {
-            "className":"TestSchema.CustomRelationshipConstraintAttributeSecond"
+            "className": "TestSchema.CustomRelationshipConstraintAttributeSecond"
           }
         ],
-        "multiplicity":"(0..1)",
-        "polymorphic":true,
-        "roleLabel":"holds"
+        "multiplicity": "(0..1)",
+        "polymorphic": true,
+        "roleLabel": "holds"
       }
     },
-    "SealedHoldNormalForward":{
-      "modifier":"sealed",
-      "schemaItemType":"RelationshipClass",
-      "source":{
-        "constraintClasses":[
+    "SealedHoldNormalForward": {
+      "modifier": "Sealed",
+      "schemaItemType": "RelationshipClass",
+      "source": {
+        "constraintClasses": [
           "TestSchema.SealedEntityClass"
         ],
-        "multiplicity":"(1..1)",
-        "polymorphic":true,
-        "roleLabel":"holds"
+        "multiplicity": "(1..1)",
+        "polymorphic": true,
+        "roleLabel": "holds"
       },
-      "strength":"holding",
-      "strengthDirection":"forward",
-      "target":{
-        "abstractConstraint":"TestSchema.NormalEntityClass",
-        "constraintClasses":[
+      "strength": "Holding",
+      "strengthDirection": "Forward",
+      "target": {
+        "abstractConstraint": "TestSchema.NormalEntityClass",
+        "constraintClasses": [
           "TestSchema.NormalEntityClass",
           "TestSchema.DerivedNormal",
           "TestSchema.SealedDerivedNormal"
         ],
-        "customAttributes":[
+        "customAttributes": [
           {
-            "className":"TestSchema.CustomRelationshipConstraintAttribute"
+            "className": "TestSchema.CustomRelationshipConstraintAttribute"
           },
           {
-            "className":"TestSchema.CustomRelationshipConstraintAttributeSecond"
+            "className": "TestSchema.CustomRelationshipConstraintAttributeSecond"
           }
         ],
-        "multiplicity":"(0..*)",
-        "polymorphic":true,
-        "roleLabel":"is held by"
+        "multiplicity": "(0..*)",
+        "polymorphic": true,
+        "roleLabel": "is held by"
       }
     },
-    "StringEnumeration":{
-      "backingTypeName":"string",
-      "description":"String Enumeration",
-      "enumerators":[
+    "StringEnumeration": {
+      "type": "string",
+      "description": "String Enumeration",
+      "enumerators": [
         {
-          "label":"FirstSeason",
-          "value":"spring"
+          "name": "FirstSeason",
+          "value": "spring"
         },
         {
-          "label":"SecondSeason",
-          "value":"summer"
+          "name": "SecondSeason",
+          "value": "summer"
         },
         {
-          "label":"ThirdSeason",
-          "value":"fall"
+          "name": "ThirdSeason",
+          "value": "fall"
         },
         {
-          "label":"FourthSeason",
-          "value":"winter"
+          "name": "FourthSeason",
+          "value": "winter"
         }
       ],
-      "isStrict":true,
-      "schemaItemType":"Enumeration"
+      "isStrict": true,
+      "schemaItemType": "Enumeration"
     },
-    "Struct":{
-      "customAttributes":[
+    "Struct": {
+      "customAttributes": [
         {
-          "className":"TestSchema.GeneralCustomAttribute"
+          "className": "TestSchema.GeneralCustomAttribute"
         },
         {
-          "className":"TestSchema.CustomStructClassAttribute"
+          "className": "TestSchema.CustomStructClassAttribute"
         },
         {
-          "className":"TestSchema.CustomAnyClassAttribute"
+          "className": "TestSchema.CustomAnyClassAttribute"
         }
       ],
-      "label":"Struct Class",
-      "properties":[
+      "label": "Struct Class",
+      "properties": [
         {
-          "name":"StructStringPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"string"
+          "name": "StructStringPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "string"
         },
         {
-          "name":"StructBinaryPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "readOnly":true,
-          "typeName":"binary"
+          "name": "StructBinaryPrimitive",
+          "type": "PrimitiveProperty",
+          "isReadOnly": true,
+          "typeName": "binary"
         },
         {
-          "name":"StructDateTimePrimitive",
-          "propertyType":"PrimitiveProperty",
-          "readOnly":true,
-          "typeName":"dateTime"
+          "name": "StructDateTimePrimitive",
+          "type": "PrimitiveProperty",
+          "isReadOnly": true,
+          "typeName": "dateTime"
         },
         {
-          "name":"StructDoublePrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"double"
+          "name": "StructDoublePrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "double"
         },
         {
-          "name":"StructIGeometryPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"Bentley.Geometry.Common.IGeometry"
+          "name": "StructIGeometryPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "Bentley.Geometry.Common.IGeometry"
         },
         {
-          "name":"StructIntPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"int"
+          "name": "StructIntPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "int"
         },
         {
-          "name":"StructLongPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"long"
+          "name": "StructLongPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "long"
         },
         {
-          "name":"StructPoint2dPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"point2d"
+          "name": "StructPoint2dPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "point2d"
         },
         {
-          "name":"StructPoint3dPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"point3d"
+          "name": "StructPoint3dPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "point3d"
         },
         {
-          "name":"StructIntEnumerationPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"TestSchema.IntEnumeration"
+          "name": "StructIntEnumerationPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "TestSchema.IntEnumeration"
         },
         {
-          "name":"StructStringEnumerationPrimitive",
-          "propertyType":"PrimitiveProperty",
-          "typeName":"TestSchema.StringEnumeration"
+          "name": "StructStringEnumerationPrimitive",
+          "type": "PrimitiveProperty",
+          "typeName": "TestSchema.StringEnumeration"
         }
       ],
-      "schemaItemType":"StructClass"
+      "schemaItemType": "StructClass"
     },
-    "UsingCustomAttributeClass":{
-      "appliesTo":"Any",
-      "customAttributes":[
+    "UsingCustomAttributeClass": {
+      "appliesTo": "Any",
+      "customAttributes": [
         {
-          "className":"TestSchema.GeneralCustomAttribute"
+          "className": "TestSchema.GeneralCustomAttribute"
         },
         {
-          "className":"TestSchema.CustomCustomAttributeClassAttribute"
+          "className": "TestSchema.CustomCustomAttributeClassAttribute"
         },
         {
-          "className":"TestSchema.CustomAnyClassAttribute"
+          "className": "TestSchema.CustomAnyClassAttribute"
         }
       ],
-      "description":"Custom Attribute class that use an ECCustomAttributeClass",
-      "schemaItemType":"CustomAttributeClass"
+      "description": "Custom Attribute class that use an ECCustomAttributeClass",
+      "schemaItemType": "CustomAttributeClass"
     }
   },
-  "customAttributes":[
+  "customAttributes": [
     {
-      "className":"TestSchema.GeneralCustomAttribute"
+      "className": "TestSchema.GeneralCustomAttribute"
     },
     {
-      "className":"TestSchema.SchemaCustomAttribute"
+      "className": "TestSchema.SchemaCustomAttribute"
     }
   ],
-  "description":"Comprehensive Schema to demonstrate use of all ECSchema concepts.",
-  "label":"Comprehensive Schema",
-  "name":"TestSchema",
-  "references":[
+  "description": "Comprehensive Schema to demonstrate use of all ECSchema concepts.",
+  "label": "Comprehensive Schema",
+  "name": "TestSchema",
+  "references": [
     {
-      "name":"Bentley_Standard_CustomAttributes",
-      "version":"01.00.13"
-    },
-    {
-      "name":"CoreCustomAttributes",
-      "version":"01.00.00"
+      "name": "CoreCustomAttributes",
+      "version": "01.00.01"
     }
   ],
-  "version":"01.00.00"
+  "version": "01.00.00"
 }

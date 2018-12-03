@@ -44,17 +44,17 @@ describe("ApplyChangeSets (#integration)", () => {
 
     const accessToken = await IModelTestUtils.getTestUserAccessToken();
 
-    let projectName = "iModelJsTest"; let iModelName = "ReadOnlyTest";
+    let projectName = "iModelJsIntegrationTest"; let iModelName = "ReadOnlyTest";
     let projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     let iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
     await testAllOperations(accessToken, projectId, iModelId);
 
-    projectName = "iModelJsTest"; iModelName = "ReadWriteTest";
+    projectName = "iModelJsIntegrationTest"; iModelName = "ReadWriteTest";
     projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
     await testAllOperations(accessToken, projectId, iModelId);
 
-    projectName = "iModelJsTest"; iModelName = "NoVersionsTest";
+    projectName = "iModelJsIntegrationTest"; iModelName = "NoVersionsTest";
     projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
     await testAllOperations(accessToken, projectId, iModelId);

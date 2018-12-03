@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Cleaned up use of mocks in core tests. ",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

@@ -13,7 +13,8 @@
     }
   },
   "breadcrumb": {
-    "invalidBreadcrumbPath": "Path not found."
+    "invalidBreadcrumbPath": "Path not found.",
+    "errorUnknownMode": "Error: Unknown Breadcrumb mode."
   },
   "tree": {
     "noResultsForFilter": "0 matches found for \"{{searchText}}\""

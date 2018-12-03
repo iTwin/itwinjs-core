@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Geometry } from "../Geometry";
 import { Range1d } from "../geometry3d/Range";
-import { Range1dArray } from "../numerics/Range1dArray";
+import { Range1dArray, compareRange1dLexicalLowHigh } from "../numerics/Range1dArray";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
@@ -51,31 +51,39 @@ function testUnionSimplify(ck: Checker, dataA: Range1d[]): void {
   const dataB = cloneRanges(dataA);
   Range1dArray.simplifySortUnion(dataB, true);
   ck.testTrue(Range1dArray.isSorted(dataB), "Disjoint after Union fix");
-  const breakData = Range1dArray.getBreaks(dataB);
-  const interiorData = constructGapPoints(breakData, -0.5, 0.4, 0.5);
-  for (let i = 0; i < interiorData.length; i++) {
-    const value = interiorData.at(i);
-    const inA = Range1dArray.testUnion(dataA, value);
-    const inB = Range1dArray.testUnion(dataB, value);
-    ck.testBoolean(inA, inB, "Union simplification agrees");
-  }
+  const breakDataB = Range1dArray.getBreaks(dataB, undefined, true, true);
+  const testPointsB = constructGapPoints(breakDataB, -0.5, 0.4, 0.5);
+  const breakDataA = Range1dArray.getBreaks(dataA, undefined, true, true);
+  const testPointsA = constructGapPoints(breakDataA, -0.5, 0.4, 0.5);
+  for (const testPoints of [testPointsA, testPointsB])
+    for (let i = 0; i < testPoints.length; i++) {
+      {
+        const value = testPoints.at(i);
+        const inA = Range1dArray.testUnion(dataA, value);
+        const inB = Range1dArray.testUnion(dataB, value);
+        ck.testBoolean(inA, inB, "Union simplification agrees");
+      }
+    }
 }
 
 /* test that the ranges in dataA are properly simplified by parity rules */
 function testParitySimplify(ck: Checker, dataA: Range1d[]): void {
   const dataB = cloneRanges(dataA);
   Range1dArray.simplifySortParity(dataB, true);
-  // simplified array should be sorted ....
-  ck.testTrue(Range1dArray.isSorted(dataB), "Disjoint after Parity fix");
-  const breakData = Range1dArray.getBreaks(dataB);
-  const interiorData = constructGapPoints(breakData, -0.5, 0.4, 0.5);
-  // all points should get same parity evaluation whether in sorted or unsorted array ....
-  for (let i = 0; i < interiorData.length; i++) {
-    const value = interiorData.at(i);
-    const inA = Range1dArray.testParity(dataA, value);
-    const inB = Range1dArray.testParity(dataB, value);
-    ck.testBoolean(inA, inB, "Parity simplification agrees");
-  }
+  ck.testTrue(Range1dArray.isSorted(dataB), "Disjoint after Union fix");
+  const breakDataB = Range1dArray.getBreaks(dataB, undefined, true, true);
+  const testPointsB = constructGapPoints(breakDataB, -0.5, 0.4, 0.5);
+  const breakDataA = Range1dArray.getBreaks(dataA, undefined, true, true);
+  const testPointsA = constructGapPoints(breakDataA, -0.5, 0.4, 0.5);
+  for (const testPoints of [testPointsA, testPointsB])
+    for (let i = 0; i < testPoints.length; i++) {
+      {
+        const value = testPoints.at(i);
+        const inA = Range1dArray.testParity(dataA, value);
+        const inB = Range1dArray.testParity(dataB, value);
+        ck.testBoolean(inA, inB, "Union simplification agrees");
+      }
+    }
 }
 
 /** Returns an array of values that fall inside both sorted range arrays.
@@ -162,51 +170,56 @@ function getParityArrayData(dataA: Range1d[], dataB: Range1d[]): any {
   return { insideParity: inResult, outsideParity: outResult };
 }
 
-describe("Range1dArray", () => {
-  let ck: Checker;
-  let rangeArr: Range1d[];
+// return an array of ranges with each range
+// {low: cos (omega * i), high: cos (omega * i * i + alpha)}
+function range1dSamples(numRange: number, omega: number = 3.0, alpha: number = 0.2): Range1d[] {
+  const result = [];
+  for (let i = 0; i < numRange; i++) {
+    const a = Math.cos(omega * i);
+    const b = Math.cos(omega * i * i + alpha);
+    result.push(Range1d.createXX(a, b));
+  }
+  return result;
+}
 
-  before (() => {
-    ck = new Checker();
-    rangeArr = [];
-    const omega = 3.0;
-    const alpha = 0.2;
-    for (let i = 0; i < 10; i++) {
-      const a = Math.cos(omega * i);
-      const b = Math.cos(omega * i * i + alpha);
-      rangeArr.push(Range1d.createXX(a, b));
-    }
+describe("Range1dArray", () => {
+
+  it("compareRange1dLexicalLowHigh", () => {
+    const ck = new Checker();
+    ck.testExactNumber(-1, compareRange1dLexicalLowHigh(Range1d.createXX(0, 1), Range1d.createXX(0, 2)));
+    ck.testExactNumber(1, compareRange1dLexicalLowHigh(Range1d.createXX(0, 3), Range1d.createXX(0, 2)));
+
+    ck.testExactNumber(-1, compareRange1dLexicalLowHigh(Range1d.createXX(-1, 1), Range1d.createXX(0, 1)));
+    ck.testExactNumber(1, compareRange1dLexicalLowHigh(Range1d.createXX(2, 3), Range1d.createXX(0, 2)));
+    ck.testExactNumber(0, compareRange1dLexicalLowHigh(Range1d.createXX(2, 3), Range1d.createXX(2, 3)));
+    expect(ck.getNumErrors()).equals(0);
+
   });
 
   it("UnionParitySimplification", () => {
+    const ck = new Checker();
     const range0 = [Range1d.createXX(0, 0), Range1d.createXX(0, 4), Range1d.createXX(2, 7), Range1d.createXX(8, 10), Range1d.createXX(9, 10)];
     const range1 = [Range1d.createXX(0, 0), Range1d.createXX(0, 4), Range1d.createXX(2, 7), Range1d.createXX(8, 10), Range1d.createXX(9, 10)];
     const range2 = [Range1d.createXX(0, 5), Range1d.createXX(3, 6), Range1d.createXX(7, 20), Range1d.createXX(8, 21)];
-    const range3 = cloneRanges(rangeArr);
+    const range3 = range1dSamples(10, 3.0, 0.2);
+    const range4 = [Range1d.createXX(0, 4), Range1d.createXX(0, 3), Range1d.createXX(2, 7), Range1d.createXX(2, 10)];
 
-    // confirm that all of these are messy to start ....
-    ck.testFalse(Range1dArray.isSorted(range0), "Expect messy input", range0);
-    ck.testFalse(Range1dArray.isSorted(range1), "Expect messy input", range1);
-    ck.testFalse(Range1dArray.isSorted(range2), "Expect messy input", range2);
-    ck.testFalse(Range1dArray.isSorted(range3), "Expect messy input", range3);
-
-    testParitySimplify(ck, range0);
-    testParitySimplify(ck, range1);
-    testParitySimplify(ck, range2);
-    testParitySimplify(ck, range3);
-
-    testUnionSimplify(ck, range0);
-    testUnionSimplify(ck, range1);
-    testUnionSimplify(ck, range2);
-    testUnionSimplify(ck, range3);
+    for (const ranges of [range0, range1, range2, range3, range4]) {
+      ck.testFalse(Range1dArray.isSorted(ranges), "Expect messy input", ranges);
+      const workA = cloneRanges(ranges);
+      const workB = cloneRanges(ranges);
+      testParitySimplify(ck, workA);
+      testUnionSimplify(ck, workB);
+    }
 
     ck.checkpoint("Range1dArray.UnionParitySimplification");
     expect(ck.getNumErrors()).equals(0);
   });
 
   it("IntersectDifferenceUnionParity", () => {
+    const ck = new Checker();
     // Set up the arrays
-    const range0 = cloneRanges(rangeArr);
+    const range0 = range1dSamples(10, 3.0, 0.2);
     Range1dArray.simplifySortParity(range0);
     const range1 = [Range1d.createXX(-.9, -.75), Range1d.createXX(-.5, -.3), Range1d.createXX(0, .4), Range1d.createXX(.8, 1)];
 
@@ -249,4 +262,17 @@ describe("Range1dArray", () => {
     ck.checkpoint("Range1dArray.IntersectDifferenceUnionParity");
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("UnionParitySimplificationA", () => {
+    const ck = new Checker();
+    for (const allRanges of [
+      range1dSamples(3, 2.0, 0.5),
+      range1dSamples(20, 2.94, 0.34234),
+    ]) {
+      testUnionSimplify(ck, allRanges);
+      testParitySimplify(ck, allRanges);
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
 });

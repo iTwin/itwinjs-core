@@ -6,7 +6,7 @@ import * as React from "react";
 import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
-import { ConfigurableUiManager, ZoneState, WidgetState, FrontstageDefProps, FrontstageManager } from "../../index";
+import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps } from "../../index";
 import { ConfigurableCreateInfo } from "../../index";
 import { ToolUiProvider } from "../../index";
 
@@ -65,31 +65,30 @@ describe("ToolUiProvider", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    const frontstageProps: FrontstageDefProps = {
-      id: "ToolUiProvider-TestFrontstage",
-      defaultToolId: "PlaceLine",
-      defaultLayout: "FourQuadrants",
-      contentGroup: "TestContentGroup4",
-      defaultContentId: "TestContent1",
+    class Frontstage1 extends FrontstageProvider {
+      public get frontstage(): React.ReactElement<FrontstageProps> {
+        return (
+          <Frontstage
+            id="ToolUiProvider-TestFrontstage"
+            defaultToolId="PlaceLine"
+            defaultLayout="FourQuadrants"
+            contentGroup="TestContentGroup4"
+            topCenter={
+              <Zone
+                widgets={[
+                  <Widget isToolSettings={true} />,
+                ]}
+              />
+            }
+          />
+        );
+      }
+    }
 
-      topLeft: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            classId: "ToolWidget",
-            defaultState: WidgetState.Open,
-            isFreeform: true,
-            iconSpec: "icon-home",
-            labelKey: "SampleApp:Test.my-label",
-            appButton: undefined,
-          },
-        ],
-      },
-    };
+    const frontstageProvider = new Frontstage1();
+    ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
 
     ConfigurableUiManager.registerControl(testToolId, Tool2UiProvider);
-    ConfigurableUiManager.loadFrontstage(frontstageProps);
   });
 
   it("starting a tool with tool settings", () => {

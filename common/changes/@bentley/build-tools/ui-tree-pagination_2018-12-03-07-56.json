@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Specify PromisedAssertion as a valid type to await on",
+      "packageName": "@bentley/build-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/build-tools",
+  "email": "grigas.petraitis@bentley.com"
+}

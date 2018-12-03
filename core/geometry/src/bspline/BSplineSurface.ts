@@ -138,6 +138,17 @@ export abstract class BSpline2dNd extends GeometryQuery {
   public numPolesTotal(): number { return this.coffs.length / this.poleDimension; }
   public numPolesUV(select: UVSelect): number { return this._numPoles[select]; }
   public poleStepUV(select: UVSelect): number { return select === 0 ? 1 : this._numPoles[0]; }
+
+  public static validOrderAndPoleCounts(orderU: number, numPolesU: number, orderV: number, numPolesV: number, numUV: number): boolean {
+    if (orderU < 2 || numPolesU < orderU)
+      return false;
+    if (orderV < 2 || numPolesV < orderV)
+      return false;
+    if (numPolesU * numPolesV !== numUV)
+      return false;
+    return true;
+  }
+
   public getPoint3dPole(i: number, j: number, result?: Point3d): Point3d | undefined {
     return Point3d.createFromPacked(this.coffs, i + j * this._numPoles[0], result);
   }
@@ -378,6 +389,45 @@ export abstract class BSpline2dNd extends GeometryQuery {
   public setWrappable(select: UVSelect, value: boolean) {
     this.knots[select].wrappable = value;
   }
+  /**
+   * Test if `degree` leading and trailing (one of U or V) blocks match, as if the data is an unwrapped closed spline in the slected direction.
+   * @param select select U or V direction
+   * @returns true if coordinates matched.
+   */
+  public isClosable(select: UVSelect): boolean {
+    if (!this.knots[select].wrappable)
+      return false;
+    if (!this.knots[select].testClosable())
+      return false;
+
+    const numU = this.numPolesUV(0);
+    const numV = this.numPolesUV(1);
+    const blockSize = this.poleDimension;
+    const rowToRowStep = numU * blockSize;
+    const degreeU = this.degreeUV(0);
+    const degreeV = this.degreeUV(1);
+    const data = this.coffs;
+    if (select === 0) {
+      const numTest = blockSize * degreeU;  // degreeU contiguous poles.
+      for (let row = 0; row < numV; row++) {
+        const i0 = row * rowToRowStep;
+        const i1 = i0 + rowToRowStep - numTest;
+        for (let i = 0; i < numTest; i++) {
+          if (!Geometry.isSameCoordinate(data[i0 + i], data[i1 + i]))
+            return false;
+        }
+      }
+    } else {
+      // Test the entire multi-row contiguous block in one loop . ..
+      const numTest = degreeV * rowToRowStep;
+      const i1 = blockSize * numU * numV - numTest;
+      for (let i = 0; i < numTest; i++) {
+        if (!Geometry.isSameCoordinate(data[i], data[i1 + i]))
+          return false;
+      }
+    }
+    return true;
+  }
 }
 
 /**  BSplineSurface3d is a parametric surface in xyz space.
@@ -460,14 +510,13 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     let numPoles = controlPointArray.length;
     if (controlPointArray instanceof Float64Array)
       numPoles /= 3;
-    if (numPolesU * numPolesV !== numPoles) return undefined;
+    if (!this.validOrderAndPoleCounts(orderU, numPolesU, orderV, numPolesV, numPoles))
+      return undefined;
     // shift knots-of-interest limits for overclampled case ...
     const numKnotsU = knotArrayU ? knotArrayU.length : numPolesU + orderU - 2;
     const numKnotsV = knotArrayV ? knotArrayV.length : numPolesV + orderV - 2;
     const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);
     const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);
-    if (orderU < 1 || numPolesU < orderU) return undefined;
-    if (orderV < 1 || numPolesV < orderV) return undefined;
 
     const knotsU = knotArrayU ?
       KnotVector.create(knotArrayU, orderU - 1, skipFirstAndLastU) :
@@ -511,14 +560,14 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     knotArrayV: number[] | Float64Array | undefined): BSplineSurface3d | undefined {
     const numPolesV = points.length;
     const numPolesU = points[0].length;
-
+    const numPoles = numPolesU * numPolesV;
     // shift knots-of-interest limits for overclampled case ...
     const numKnotsU = knotArrayU ? knotArrayU.length : numPolesU + orderU - 2;
     const numKnotsV = knotArrayV ? knotArrayV.length : numPolesV + orderV - 2;
     const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);
     const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);
-    if (orderU < 1 || numPolesU < orderU) return undefined;
-    if (orderV < 1 || numPolesV < orderV) return undefined;
+    if (!this.validOrderAndPoleCounts(orderU, numPolesU, orderV, numPolesV, numPoles))
+      return undefined;
 
     const knotsU = knotArrayU ?
       KnotVector.create(knotArrayU, orderU - 1, skipFirstAndLastU) :
@@ -526,9 +575,6 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
     const knotsV = knotArrayV ?
       KnotVector.create(knotArrayV, orderV - 1, skipFirstAndLastV) :
       KnotVector.createUniformClamped(numPolesU, orderU - 1, 0.0, 1.0);
-
-    if (orderU < 1 || numPolesU < orderU) return undefined;
-    if (orderV < 1 || numPolesV < orderV) return undefined;
 
     const surface = new BSplineSurface3d(numPolesU, numPolesV, knotsU, knotsV);
     let i = 0;
@@ -610,42 +656,6 @@ export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQue
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return Point3dArray.isCloseToPlane(this.coffs, plane);
   }
-  /**
-   * return true if the spline is (a) unclamped with (degree-1) matching knot intervals,
-   * (b) (degree-1) wrapped points,
-   * (c) marked wrappable from construction time.
-   */
-  public isClosable(select: UVSelect): boolean {
-    if (!this.knots[select].wrappable)
-      return false;
-    const degree = this.degreeUV(select);
-    const knots = this.knots[select];
-    const leftKnotIndex = knots.leftKnotIndex;
-    const rightKnotIndex = knots.rightKnotIndex;
-    const period = knots.rightKnot - knots.leftKnot;
-    const indexDelta = rightKnotIndex - leftKnotIndex;
-    for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree - 1; k0++) {
-      const k1 = k0 + indexDelta;
-      if (!Geometry.isSameCoordinate(knots.knots[k0] + period, knots.knots[k1]))
-        return false;
-    }
-    const poleIndexDelta = this.numPolesUV(select) - this.degreeUV(select); // index jump between equal wrapped poles.
-    const numStringer = select === 0 ? this.numPolesUV(1) : this.numPolesUV(0);
-    const i0Step = select === 0 ? 0 : 1;  // to advance stringer
-    const j0Step = select === 0 ? 1 : 0;  // to advance stringer
-    const iStep = 1 - i0Step; // to advance within stringer
-    const jStep = 1 - j0Step; // to advance within stringer
-    for (let stringer = 0, i0 = 0, j0 = 0; stringer < numStringer; stringer++ , i0 += i0Step, j0 += j0Step) {
-      for (let p0 = 0; p0 < degree; p0++) {
-        const p1 = p0 + poleIndexDelta;
-        if (!Geometry.isSamePoint3d(
-          this.getPole(i0 + p0 * iStep, j0 + p0 * jStep) as Point3d,
-          this.getPole(i0 + p1 * iStep, j0 + p1 * jStep) as Point3d))
-          return false;
-      }
-    }
-    return true;
-  }
 
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleBSplineSurface3d(this);
@@ -716,13 +726,13 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     knotArrayV: number[] | undefined): BSplineSurface3dH | undefined {
     const numPoles = controlPointArray.length;
     if (numPolesU * numPolesV !== numPoles) return undefined;
+    if (!this.validOrderAndPoleCounts(orderU, numPolesU, orderV, numPolesV, numPoles))
+      return undefined;
 
     const numKnotsU = knotArrayU ? knotArrayU.length : numPolesU + orderU - 2;
     const numKnotsV = knotArrayV ? knotArrayV.length : numPolesV + orderV - 2;
     const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);
     const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);
-    if (orderU < 1 || numPolesU < orderU) return undefined;
-    if (orderV < 1 || numPolesV < orderV) return undefined;
 
     const knotsU = knotArrayU ?
       KnotVector.create(knotArrayU, orderU - 1, skipFirstAndLastU) :
@@ -730,9 +740,6 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     const knotsV = knotArrayV ?
       KnotVector.create(knotArrayV, orderV - 1, skipFirstAndLastV) :
       KnotVector.createUniformClamped(numPolesV, orderV - 1, 0.0, 1.0);
-
-    if (orderU < 1 || numPolesU < orderU) return undefined;
-    if (orderV < 1 || numPolesV < orderV) return undefined;
 
     const surface = new BSplineSurface3dH(numPolesU, numPolesV, knotsU, knotsV);
     Point4dArray.packPointsAndWeightsToFloat64Array(controlPointArray, weightArray, surface.coffs);
@@ -757,14 +764,16 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
     knotArrayV: number[]): BSplineSurface3dH | undefined {
     const numPolesV = xyzwGrid.length;
     const numPolesU = xyzwGrid[0].length;
+    const numPoles = numPolesU * numPolesV;
+    if (!this.validOrderAndPoleCounts(orderU, numPolesU, orderV, numPolesV, numPoles))
+      return undefined;
+
     // const numPoles = numPolesU * numPolesV;
     // shift knots-of-interest limits for overclampled case ...
     const numKnotsU = knotArrayU.length;
     const numKnotsV = knotArrayV.length;
     const skipFirstAndLastU = (numPolesU + orderU === numKnotsU);
     const skipFirstAndLastV = (numPolesV + orderV === numKnotsV);
-    if (orderU < 1 || numPolesU < orderU) return undefined;
-    if (orderV < 1 || numPolesV < orderV) return undefined;
 
     const knotsU = KnotVector.create(knotArrayU, orderU - 1, skipFirstAndLastU);
     const knotsV = KnotVector.create(knotArrayV, orderV - 1, skipFirstAndLastV);
@@ -882,42 +891,6 @@ export class BSplineSurface3dH extends BSpline2dNd implements BSplineSurface3dQu
   }
   public isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean {
     return Point4dArray.isCloseToPlane(this.coffs, plane);
-  }
-  /**
-   * return true if the spline is (a) unclamped with (degree-1) matching knot intervals,
-   * (b) (degree-1) wrapped points,
-   * (c) marked wrappable from construction time.
-   */
-  public isClosable(select: UVSelect): boolean {
-    if (!this.knots[select].wrappable)
-      return false;
-    const degree = this.degreeUV(select);
-    const knots = this.knots[select];
-    const leftKnotIndex = knots.leftKnotIndex;
-    const rightKnotIndex = knots.rightKnotIndex;
-    const period = knots.rightKnot - knots.leftKnot;
-    const indexDelta = rightKnotIndex - leftKnotIndex;
-    for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree - 1; k0++) {
-      const k1 = k0 + indexDelta;
-      if (!Geometry.isSameCoordinate(knots.knots[k0] + period, knots.knots[k1]))
-        return false;
-    }
-    const poleIndexDelta = this.numPolesUV(select) - this.degreeUV(select); // index jump between equal wrapped poles.
-    const numStringer = select === 0 ? this.numPolesUV(1) : this.numPolesUV(0);
-    const i0Step = select === 0 ? 0 : 1;  // to advance stringer
-    const j0Step = select === 0 ? 0 : 1;  // to advance stringer
-    const iStep = 1 - i0Step; // to advance within stringer
-    const jStep = 1 - j0Step; // to advance within stringer
-    for (let stringer = 0, i0 = 0, j0 = 0; stringer < numStringer; stringer++ , i0 += i0Step, j0 += j0Step) {
-      for (let p0 = 0; p0 + 1 < degree; p0++) {
-        const p1 = p0 + poleIndexDelta;
-        if (!Geometry.isSamePoint3d(
-          this.getPole(i0 + p0 * iStep, j0 + p0 * jStep) as Point3d,
-          this.getPole(i0 + p1 * iStep, j0 + p1 * jStep) as Point3d))
-          return false;
-      }
-    }
-    return true;
   }
   /**
    * Pass `this` (strongly typed) to `handler.handleBsplineSurface3dH(this)`.

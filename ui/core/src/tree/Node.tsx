@@ -11,6 +11,9 @@ import ExpansionToggle from "./ExpansionToggle";
 import "./Node.scss";
 import { CheckListBox, CheckListBoxItem } from "../checklistbox";
 
+/** Number of pixels the node gets offset per each hierarchy level */
+export const LEVEL_OFFSET = 20;
+
 /** Properties for the [[TreeNode]] React component */
 export interface NodeProps {
   label: React.ReactNode;
@@ -47,7 +50,7 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
       this.props.isSelected && "is-selected",
       this.props.isHoverDisabled && "is-hover-disabled",
       this.props.className);
-    const offset = this.props.level * 20;
+    const offset = this.props.level * LEVEL_OFFSET;
     const loader = this.props.isLoading ? (<div className="loader"><i></i><i></i><i></i><i></i><i></i><i></i></div>) : undefined;
     const checkbox = this.props.checkboxEnabled ?
       <CheckListBox>

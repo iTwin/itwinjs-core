@@ -12,8 +12,8 @@ import { CommandItemDef } from "./Item";
 import { Icon } from "./IconComponent";
 import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
 
-import NZ_AppButton from "@bentley/ui-ninezone/lib/app/button/App";
-import NZ_ToolsWidget from "@bentley/ui-ninezone/lib/widget/Tools";
+import NZ_AppButton from "@bentley/ui-ninezone/lib/widget/tools/button/App";
+import NZ_ToolsWidget from "@bentley/ui-ninezone/lib/widget/tools/Tools";
 
 /** A Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  */

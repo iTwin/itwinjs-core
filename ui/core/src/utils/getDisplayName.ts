@@ -6,6 +6,7 @@
 
 import * as React from "react";
 
+/** Gets the display name for a React component. */
 export const getDisplayName = (component: React.ComponentType<any>): string => {
   if (component.displayName)
     return component.displayName;

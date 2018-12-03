@@ -30,11 +30,11 @@ export default class Item extends React.Component<ItemProps> {
       "nz-toolbar-item-icon",
       this.props.isActive && "nz-is-active",
       this.props.isDisabled && "nz-is-disabled",
-      "nz-gradient",
       this.props.className);
 
     return (
       <button
+        disabled={this.props.isDisabled}  // this is needed to prevent focusing/keyboard access to disabled buttons
         onClick={this._handleClick}
         className={className}
         style={this.props.style}

@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import { AnyWidgetProps, WidgetDef } from "./WidgetDef";
-import { WidgetDefFactory } from "./WidgetFactory";
+import { WidgetDef } from "./WidgetDef";
 import { ZoneLocation } from "./Frontstage";
 
 // -----------------------------------------------------------------------------
@@ -22,33 +21,14 @@ export enum ZoneState {
   Floating,
 }
 
-/** Properties of a Zone
- */
-export interface ZoneDefProps {
-  /** Default Zone state. Controls how the Zone is initially displayed. */
-  defaultState: ZoneState;
-  /** Indicates if other Zones may be merged with this Zone. */
-  allowsMerging: boolean;
-  /** Properties for the Widgets in this Zone. */
-  widgetProps: AnyWidgetProps[];
-  /** Any application data to attach to this Zone. */
-  applicationData?: any;
-  /** Indicates with which other zone to merge. */
-  mergeWithZone?: ZoneLocation;
-}
-
-// -----------------------------------------------------------------------------
-// ZoneDef
-// -----------------------------------------------------------------------------
-
 /**
  * A ZoneDef represents each zone within a Frontstage.
  */
 export class ZoneDef {
   /** Zone state.  Defaults to ZoneState.Open. */
   public zoneState: ZoneState = ZoneState.Open;
-  /** Indicates if other Zones may be merged with this Zone. Defaults to true.  */
-  public allowsMerging: boolean = true;
+  /** Indicates if other Zones may be merged with this Zone. Defaults to false.  */
+  public allowsMerging: boolean = false;
   /** Any application data to attach to this Zone. */
   public applicationData?: any;
   /** Indicates with which other zone to merge. */
@@ -57,28 +37,8 @@ export class ZoneDef {
   private _widgetDefs: WidgetDef[] = new Array<WidgetDef>();
 
   /** Constructor for ZoneDef.
-   * @param zoneProps Properties for the Zone
    */
-  constructor(zoneProps?: ZoneDefProps) {
-    if (zoneProps) {
-      this.zoneState = zoneProps.defaultState;
-      this.allowsMerging = zoneProps.allowsMerging;
-
-      if (zoneProps.applicationData !== undefined)
-        this.applicationData = zoneProps.applicationData;
-      if (zoneProps.mergeWithZone !== undefined)
-        this.mergeWithZone = zoneProps.mergeWithZone;
-
-      if (zoneProps.widgetProps) {
-        zoneProps.widgetProps.map((widgetProps, _index) => {
-          const widgetDef = WidgetDefFactory.create(widgetProps);
-          if (widgetDef) {
-            this.addWidgetDef(widgetDef);
-          }
-        });
-      }
-    }
-  }
+  constructor() { }
 
   /** Adds a WidgetDef to the list of Widgets.
    * @param widgetDef  Definition of the Widget to add
@@ -127,20 +87,5 @@ export class ZoneDef {
     if (this.widgetCount === 1)
       return this._widgetDefs[0].isStatusBar;
     return false;
-  }
-}
-
-/** Factory class to create a ZoneDef based on ZoneProps.
- */
-export class ZoneDefFactory {
-  /** Creates a ZoneDef based on Zone properties
-   * @param zoneProps Properties for the Zone
-   */
-  public static Create(zoneProps?: ZoneDefProps): ZoneDef | undefined {
-    if (zoneProps) {
-      return new ZoneDef(zoneProps);
-    }
-
-    return undefined;
   }
 }

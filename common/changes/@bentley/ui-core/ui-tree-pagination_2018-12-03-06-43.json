@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add Placeholder that can be displayed instead of tree node while it's being loaded",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "grigas.petraitis@bentley.com"
+}

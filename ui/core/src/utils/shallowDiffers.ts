@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
+/** Performs a shallow difference check on two objects. */
 export const shallowDiffers = (a: { [key: string]: any } | undefined, b: { [key: string]: any } | undefined): boolean => {
   if (a === b)
     return false;
