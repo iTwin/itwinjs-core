@@ -6,15 +6,14 @@
 
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Range1d } from "@bentley/geometry-core";
-import { RgbColor, ColorDef } from "./ColorDef";
+import { RgbColor } from "./ColorDef";
 
 export namespace RenderSchedule {
 
   export class SymbologyOverride {
-    public elementID: Id64String;
-    public color?: RgbColor;
+    public rgb?: RgbColor;
     public transparency?: number;
-    constructor(elementId: Id64String, color?: RgbColor, transparency?: number) { this.elementID = elementId; this.color = color; this.transparency = transparency; }
+    constructor(rgb?: RgbColor, transparency?: number) { this.rgb = rgb; this.transparency = transparency; }
   }
   class Interval {
     constructor(public index0: number = 0, public index1: number = 0, public fraction: number = 0.0) { }
@@ -57,6 +56,9 @@ export namespace RenderSchedule {
     elementID: Id64String;
     visibilityTimeline?: VisibilityEntryProps[];
     colorTimeline?: ColorEntryProps[];
+  }
+  function interpolate(value0: number, value1: number, fraction: number) {
+    return value0 + fraction * (value1 - value0);
   }
   export class ElementTimeline implements ElementTimelineProps {
     public elementID: Id64String;
@@ -109,21 +111,22 @@ export namespace RenderSchedule {
         }
       return true;
     }
-    public getSymbologyOverrides(overrides: SymbologyOverride[], time: number) {
+
+    public getSymbologyOverrides(overrides: Map<Id64String, SymbologyOverride>, time: number) {
       const interval = new Interval();
+      let override;
+      if (ElementTimeline.findTimelineInterval(interval, time, this.colorTimeline)) {
+        const entry0 = this.colorTimeline![interval.index0], entry1 = this.colorTimeline![interval.index1];
+        const color = new RgbColor(interpolate(entry0.value.red, entry1.value.red, interval.fraction), interpolate(entry0.value.green, entry1.value.green, interval.fraction), interpolate(entry0.value.blue, entry1.value.blue, interval.fraction));
+        override = new SymbologyOverride(color);
+      }
       if (ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline)) {
         const timeline = this.visibilityTimeline!;
-        let visiblePercent = timeline[interval.index0].value;
-        if (interval.fraction > 0.0)
-          visiblePercent += interval.fraction * (timeline[interval.index1].value - timeline[interval.index0].value);
-        overrides.push(new SymbologyOverride(this.elementID, undefined, 1.0 - visiblePercent / 100.0));
+        if (!override) override = new SymbologyOverride();
+        override.transparency = 1.0 - interpolate(timeline[interval.index0].value, timeline[interval.index1].value, interval.fraction) / 100.0;
       }
-      if (ElementTimeline.findTimelineInterval(interval, time, this.colorTimeline)) {
-        const timeline = this.colorTimeline!;
-        let color =
-          visiblePercent += interval.fraction * (timeline[interval.index1].value - timeline[interval.index0].value);
-        overrides.push(new SymbologyOverride(this.elementID, undefined, 1.0 - visiblePercent / 100.0));
-      }
+      if (override)
+        overrides.set(this.elementID, override);
     }
   }
 
@@ -150,7 +153,7 @@ export namespace RenderSchedule {
     }
 
     public getSymbologyOverrides(time: number) {
-      const overrides: SymbologyOverride[] = [];
+      const overrides: Map<Id64String, SymbologyOverride> = new Map<Id64String, SymbologyOverride>();
       if (this.elementTimelines)
         this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
 
