@@ -347,9 +347,13 @@ export class IModelTestUtils {
   public static startBackend() {
     const config = new IModelHostConfiguration();
     IModelHost.startup(config);
-    Schemas.registerSchema(TestBim);
-    ClassRegistry.register(TestPhysicalObject, TestBim);
-    ClassRegistry.register(TestElementDrivesElement, TestBim);
+  }
+  public static registerTestBim() {
+    if (!Schemas.isRegistered(TestBim)) {
+      Schemas.registerSchema(TestBim);
+      ClassRegistry.register(TestPhysicalObject, TestBim);
+      ClassRegistry.register(TestElementDrivesElement, TestBim);
+    }
   }
 
   public static shutdownBackend() {
