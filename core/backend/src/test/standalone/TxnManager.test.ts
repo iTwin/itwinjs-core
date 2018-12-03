@@ -165,12 +165,12 @@ describe("TxnManager", () => {
       ++rootChanged;
     }));
     removals.push(TestElementDrivesElement.validateOutput.addListener((_props) => ++validateOutput));
-    TestPhysicalObject.beforeOutputsHandled.addListener((id, im) => {
+    removals.push(TestPhysicalObject.beforeOutputsHandled.addListener((id, im) => {
       const e1 = im.elements.getElement<TestPhysicalObject>(id);
       assert.equal(e1.intProperty, props.intProperty);
       assert.equal(id, el1);
       ++beforeOutputsHandled;
-    });
+    }));
     removals.push(TestPhysicalObject.allInputsHandled.addListener((id, im) => {
       const e2 = im.elements.getElement<TestPhysicalObject>(id);
       assert.equal(e2.intProperty, props.intProperty);
