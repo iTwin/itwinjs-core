@@ -103,17 +103,17 @@ const ToolGroupContained = withContainInViewport(ToolGroupComponent);
 const NestedToolGroupContained = withContainInViewport(NestedToolGroup);
 
 interface State {
-  readonly isNestedPopoverOpen: boolean;
-  readonly isPopoverOpen: boolean;
-  readonly isTemporaryMessageVisible: number;
-  readonly isTooltipVisible: boolean;
-  readonly message: Message;
-  readonly nineZone: NineZoneProps;
-  readonly openWidget: FooterWidget;
-  readonly secondZoneContent: SecondZoneContent;
-  readonly tools: ZoneTools | HiddenZoneTools;
-  readonly themeContext: ThemeContextProps;
-  readonly toastMessageKey: number;
+  isNestedPopoverOpen?: boolean;
+  isPopoverOpen?: boolean;
+  isTemporaryMessageVisible: number;
+  isTooltipVisible?: boolean;
+  message: Message;
+  nineZone: NineZoneProps;
+  openWidget: FooterWidget;
+  toolSettingsWidget: ToolSettingsWidgetMode;
+  tools: ZoneTools | HiddenZoneTools;
+  themeContext: ThemeContextProps;
+  toastMessageKey: number;
 }
 
 interface ZoneTools {
@@ -134,6 +134,7 @@ interface DirectionTools<THorizontal extends Tools = Tools, TVertical extends To
 interface Zone1HorizontalTools extends Tools {
   disableTools: SimpleTool;
   toggleTools: SimpleTool;
+  toolSettings: SimpleTool;
 }
 
 interface HiddenZone1VerticalTools extends Tools {
@@ -147,7 +148,6 @@ interface Zone1VerticalTools extends HiddenZone1VerticalTools {
 interface Zone3HorizontalTools extends Tools {
   d2: ToolGroup;
   overflow: ToolGroup;
-  toolSettings: SimpleTool;
 }
 
 interface HiddenZone3VerticalTools extends Tools {
@@ -166,6 +166,7 @@ interface Zone3VerticalTools extends HiddenZone3VerticalTools {
 interface ToolLocation {
   zoneKey: keyof (ZoneTools);
   directionKey: keyof (DirectionTools);
+  toolId: string;
 }
 
 enum MessageCenterActiveTab {
@@ -173,10 +174,9 @@ enum MessageCenterActiveTab {
   Problems,
 }
 
-enum SecondZoneContent {
-  None,
+enum ToolSettingsWidgetMode {
   Minimized,
-  ToolSettings,
+  Open,
 }
 
 enum Message {
@@ -217,7 +217,9 @@ interface ToolGroupTray {
 
 interface SimpleTool {
   id: string;
+  isActive?: boolean;
   isDisabled?: boolean;
+  isHidden?: boolean;
 }
 
 interface ToolGroup extends SimpleTool {
@@ -226,9 +228,9 @@ interface ToolGroup extends SimpleTool {
   trays: { [id: string]: ToolGroupTray };
   direction: Direction;
   history: History<HistoryItem>;
-  isExtended: boolean;
-  isToolGroupOpen: boolean;
+  isExtended?: boolean;
   isOverflow?: boolean;
+  isPanelOpen?: boolean;
 }
 
 type Tool = SimpleTool | ToolGroup;
@@ -426,11 +428,11 @@ class ToastMessageExample extends React.PureComponent<ToastMessageExampleProps, 
 }
 
 interface FooterMessageExampleProps {
-  readonly toastMessageKey: React.Key;
-  readonly message: Message;
-  readonly renderModalMessageTo: () => HTMLElement;
-  readonly animateToastMessageTo: React.ReactInstance | undefined;
-  readonly onHideMessage: () => void;
+  toastMessageKey: React.Key;
+  message: Message;
+  renderModalMessageTo: () => HTMLElement;
+  animateToastMessageTo: React.ReactInstance | undefined;
+  onHideMessage: () => void;
 }
 
 class FooterMessageExample extends React.PureComponent<FooterMessageExampleProps> {
@@ -473,18 +475,18 @@ class FooterMessageExample extends React.PureComponent<FooterMessageExampleProps
 }
 
 interface StatusZoneExampleProps extends MessageExampleProps {
-  readonly bounds: RectangleProps;
-  readonly dropTarget: DropTarget;
-  readonly isInWidgetMode: boolean;
-  readonly message: Message;
-  readonly onHideMessage: () => void;
-  readonly onTargetChanged: TargetChangedHandler;
-  readonly onOpenWidgetChange: (widget: FooterWidget) => void;
-  readonly openWidget: FooterWidget;
-  readonly outlineBounds: RectangleProps | undefined;
-  readonly renderModalMessageTo: () => HTMLElement;
-  readonly targetBounds: RectangleProps;
-  readonly toastMessageKey: React.Key;
+  bounds: RectangleProps;
+  dropTarget: DropTarget;
+  isInWidgetMode: boolean;
+  message: Message;
+  onHideMessage: () => void;
+  onTargetChanged: TargetChangedHandler;
+  onOpenWidgetChange: (widget: FooterWidget) => void;
+  openWidget: FooterWidget;
+  outlineBounds: RectangleProps | undefined;
+  renderModalMessageTo: () => HTMLElement;
+  targetBounds: RectangleProps;
+  toastMessageKey: React.Key;
 }
 
 interface StatusZoneExampleState {
@@ -1093,15 +1095,15 @@ class TargetExample extends React.PureComponent<TargetExampleProps> {
 }
 
 interface TooltipExampleProps {
-  readonly isTooltipVisible: boolean;
-  readonly isTemporaryMessageVisible: number;
-  readonly onMessageHidden: () => void;
-  readonly onTooltipTimeout: () => void;
+  isTooltipVisible: boolean;
+  isTemporaryMessageVisible: number;
+  onMessageHidden: () => void;
+  onTooltipTimeout: () => void;
 }
 
 interface TooltipExampleState {
-  readonly mousePosition: PointProps;
-  readonly temporaryMessageStyle: React.CSSProperties;
+  mousePosition: PointProps;
+  temporaryMessageStyle: React.CSSProperties;
 }
 
 class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExampleState> {
@@ -1436,6 +1438,7 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
       return (
         <ToolbarIcon
           icon={placeholderIcon}
+          isActive={this.props.tool.isActive}
           isDisabled={this.props.tool.isDisabled}
           onClick={this._handleClick}
         />
@@ -1444,6 +1447,7 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
     if (this.props.tool.isOverflow)
       return (
         <OverflowItem
+          isActive={this.props.tool.isActive}
           isDisabled={this.props.tool.isDisabled}
           onClick={this._handleClick}
         />
@@ -1451,13 +1455,15 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
 
     return (
       <ExpandableItem
-        onIsHistoryExtendedChange={this._handleIsHistoryExtendedChange}
+        isActive={this.props.tool.isActive}
         isDisabled={this.props.tool.isDisabled}
+        onIsHistoryExtendedChange={this._handleIsHistoryExtendedChange}
       >
         <ToolbarIcon
           icon={placeholderIcon}
-          onClick={this._handleClick}
+          isActive={this.props.tool.isActive}
           isDisabled={this.props.tool.isDisabled}
+          onClick={this._handleClick}
         />
       </ExpandableItem>
     );
@@ -1687,6 +1693,15 @@ interface Zone1Props {
   verticalTools: Tools;
 }
 
+const getNumberOfVisibleTools = (tools: Tools) => {
+  return Object.keys(tools).reduce<number>((acc, toolId) => {
+    const tool = tools[toolId];
+    if (tool.isHidden)
+      return acc;
+    return acc + 1;
+  }, 0);
+};
+
 class Zone1 extends React.PureComponent<Zone1Props> {
   private _appButton = (
     <AppButton
@@ -1704,7 +1719,7 @@ class Zone1 extends React.PureComponent<Zone1Props> {
         <ToolsWidget
           button={this._appButton}
           horizontalToolbar={
-            Object.keys(this.props.horizontalTools).length > 0 &&
+            getNumberOfVisibleTools(this.props.horizontalTools) > 0 &&
             <ToolZoneToolbar
               expandsTo={Direction.Bottom}
               onHistoryItemClick={this.props.onHistoryItemClick}
@@ -1718,7 +1733,7 @@ class Zone1 extends React.PureComponent<Zone1Props> {
             />
           }
           verticalToolbar={
-            Object.keys(this.props.verticalTools).length > 0 &&
+            getNumberOfVisibleTools(this.props.verticalTools) > 0 &&
             <ToolZoneToolbar
               expandsTo={Direction.Right}
               onHistoryItemClick={this.props.onHistoryItemClick}
@@ -1751,7 +1766,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
           isNavigation
           preserveSpace
           horizontalToolbar={
-            Object.keys(this.props.horizontalTools).length > 0 &&
+            getNumberOfVisibleTools(this.props.horizontalTools) > 0 &&
             <ToolZoneToolbar
               expandsTo={Direction.Bottom}
               onHistoryItemClick={this.props.onHistoryItemClick}
@@ -1765,7 +1780,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
             />
           }
           verticalToolbar={
-            Object.keys(this.props.verticalTools).length > 0 &&
+            getNumberOfVisibleTools(this.props.verticalTools) > 0 &&
             <ToolZoneScrollableToolbar
               expandsTo={Direction.Left}
               onHistoryItemClick={this.props.onHistoryItemClick}
@@ -1818,26 +1833,28 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
   public render() {
     const iph = Object.keys(this.props.tools).reduce((acc, toolId) => {
       const tool = this.props.tools[toolId];
+      if (tool.isHidden)
+        return acc;
 
       const item = (
         <ToolbarItem
-          tool={tool}
           onClick={this.props.onToolClick}
           onIsHistoryExtendedChange={this.props.onIsHistoryExtendedChange}
+          tool={tool}
         />
       );
 
-      const panel = isToolGroup(tool) && tool.isToolGroupOpen ? (
+      const panel = isToolGroup(tool) && tool.isPanelOpen ? (
         <ToolbarItemPanel
+          onBack={this.props.onPanelBack}
           onExpandGroup={this.props.onOpenPanelGroup}
           onToolClick={this.props.onPanelToolClick}
-          onBack={this.props.onPanelBack}
           tool={tool}
         />
       ) : <PanelPlaceholder />;
 
       const history = isToolGroup(tool) &&
-        !tool.isToolGroupOpen &&
+        !tool.isPanelOpen &&
         tool.history.length > 0 ? (
           <ToolbarItemHistoryTray
             onHistoryItemClick={this.props.onHistoryItemClick}
@@ -1902,6 +1919,9 @@ const hiddenZoneTools: HiddenZoneTools = {
       toggleTools: {
         id: "toggleTools",
       },
+      toolSettings: {
+        id: "toolSettings",
+      },
     },
     vertical: {
       cube: {
@@ -1962,8 +1982,6 @@ const hiddenZoneTools: HiddenZoneTools = {
         },
         direction: Direction.Right,
         history: [],
-        isExtended: false,
-        isToolGroupOpen: false,
       },
     },
   },
@@ -1990,8 +2008,6 @@ const hiddenZoneTools: HiddenZoneTools = {
         },
         direction: Direction.Left,
         history: [],
-        isExtended: false,
-        isToolGroupOpen: false,
       },
       chat: {
         id: "chat",
@@ -2028,8 +2044,6 @@ const zoneTools: ZoneTools = {
         },
         direction: Direction.Right,
         history: [],
-        isExtended: false,
-        isToolGroupOpen: false,
       },
     },
   },
@@ -2041,9 +2055,7 @@ const zoneTools: ZoneTools = {
         backTrays: [],
         direction: Direction.Bottom,
         history: [],
-        isExtended: false,
         id: "d2",
-        isToolGroupOpen: false,
         trayId: "3d",
         trays: {
           "3d": {
@@ -2061,16 +2073,11 @@ const zoneTools: ZoneTools = {
           },
         },
       },
-      toolSettings: {
-        id: "toolSettings",
-      },
       overflow: {
         backTrays: [],
         direction: Direction.Bottom,
         history: [],
-        isExtended: false,
         id: "overflow",
-        isToolGroupOpen: false,
         isOverflow: true,
         trayId: "root",
         trays: {
@@ -2113,8 +2120,6 @@ const zoneTools: ZoneTools = {
         },
         direction: Direction.Left,
         history: [],
-        isExtended: false,
-        isToolGroupOpen: false,
       },
       calendar: {
         id: "calendar",
@@ -2137,8 +2142,6 @@ const zoneTools: ZoneTools = {
         },
         direction: Direction.Left,
         history: [],
-        isExtended: false,
-        isToolGroupOpen: false,
       },
       chat2: {
         id: "chat2",
@@ -2150,11 +2153,8 @@ const zoneTools: ZoneTools = {
   },
 };
 
-const isHiddenTools = (tools: HiddenZoneTools | ZoneTools): tools is HiddenZoneTools => {
-  if (tools[1].vertical.validate)
-    return false;
-  return true;
-};
+const zoneKeys: Array<keyof ZoneTools> = [1, 3];
+const directionKeys: Array<keyof DirectionTools> = ["horizontal", "vertical"];
 
 export default class ZonesExample extends React.PureComponent<{}, State> {
   private _app = React.createRef<App>();
@@ -2173,14 +2173,11 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       );
 
     this.state = {
-      isNestedPopoverOpen: false,
-      isPopoverOpen: false,
       isTemporaryMessageVisible: 0,
-      isTooltipVisible: false,
       toastMessageKey: 0,
       nineZone,
       openWidget: FooterWidget.None,
-      secondZoneContent: SecondZoneContent.None,
+      toolSettingsWidget: ToolSettingsWidgetMode.Open,
       message: Message.None,
       tools: zoneTools,
       themeContext: {
@@ -2253,7 +2250,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
       <Zones>
         <TooltipExample
           isTemporaryMessageVisible={this.state.isTemporaryMessageVisible}
-          isTooltipVisible={this.state.isTooltipVisible}
+          isTooltipVisible={this.state.isTooltipVisible || false}
           onMessageHidden={this._handleTooltipMessageHidden}
           onTooltipTimeout={this._handleTooltipTimeout}
         />
@@ -2276,40 +2273,24 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     );
   }
 
-  /*
-  private getToolbarItemWithToolSettings(toolId: string) {
-    const tool = this.state.tools[toolId];
-    return (
-      <ToolbarIcon
-        key={toolId}
-        isActive={this.state.secondZoneContent !== SecondZoneContent.None}
-        icon={
-          <i className={`icon ${tool.icon}`} />
-        }
-        onClick={this._handleToggleToolSettings}
-      />
-    );
-  }
-  */
-
   private getToolSettingsWidget() {
     const tab = (
       <ToolSettingsWidgetTab
-        isActive={this.state.secondZoneContent === SecondZoneContent.ToolSettings}
+        isActive={this.state.toolSettingsWidget === ToolSettingsWidgetMode.Open}
         onClick={this._handleToolSettingsWidgetTabClick}
       >
         {placeholderIcon}
       </ToolSettingsWidgetTab>
     );
-    switch (this.state.secondZoneContent) {
-      case SecondZoneContent.Minimized: {
+    switch (this.state.toolSettingsWidget) {
+      case ToolSettingsWidgetMode.Minimized: {
         return (
           <ToolSettingsWidget
             tab={tab}
           />
         );
       }
-      case SecondZoneContent.ToolSettings: {
+      case ToolSettingsWidgetMode.Open: {
         return (
           <ToolSettingsWidget
             tab={tab}
@@ -2370,7 +2351,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         );
       }
     }
-    return undefined;
   }
 
   private getZone(zoneId: WidgetZoneIndex) {
@@ -2414,7 +2394,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         bounds={this.state.nineZone.zones[zoneId].bounds}
         key={zoneId}
       >
-        {this.getToolSettingsWidget()}
+        {this.state.tools[1].horizontal.toolSettings.isActive && this.getToolSettingsWidget()}
       </Zone>
     );
   }
@@ -2504,71 +2484,283 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     );
   }
 
-  private findTool(toolId: string, state: State): ToolLocation {
-    const zoneKeys: Array<keyof ZoneTools> = [1, 3];
-    const directionKeys: Array<keyof DirectionTools> = ["horizontal", "vertical"];
+  private locateTool(location: ToolLocation, state: State): Tool {
+    return state.tools[location.zoneKey][location.directionKey][location.toolId];
+  }
+
+  private findToolLocation(predicate: (tool: Tool) => boolean, state: State): ToolLocation | undefined {
     for (const zoneKey of zoneKeys) {
       for (const directionKey of directionKeys) {
         const tools = state.tools[zoneKey][directionKey];
-        if (Object.keys(tools).some((id) => id === toolId))
+        const found = Object.keys(tools).find((id) => {
+          const tool = state.tools[zoneKey][directionKey][id];
+          return predicate(tool);
+        });
+        if (found)
           return {
             zoneKey,
             directionKey,
+            toolId: found,
           };
       }
     }
-    throw new Error();
+    return undefined;
   }
 
-  private toggleToolSettings() {
-    this.setState((prevState) => ({
-      secondZoneContent: prevState.secondZoneContent === SecondZoneContent.None ? SecondZoneContent.ToolSettings : SecondZoneContent.None,
-    }));
+  private findTool(predicate: (tool: Tool) => boolean, state: State): Tool | undefined {
+    const location = this.findToolLocation(predicate, state);
+    if (!location)
+      return undefined;
+    return this.locateTool(location, state);
   }
 
-  private toggleIsDisabledForSomeTools() {
-    this.setState((prevState) => {
-      return {
-        tools: {
-          ...prevState.tools,
-          1: {
-            ...prevState.tools[1],
-            vertical: {
-              ...prevState.tools[1].vertical,
-              cube: {
-                ...prevState.tools[1].vertical.cube,
-                isDisabled: !prevState.tools[1].vertical.cube.isDisabled,
-                isToolGroupOpen: false,
-              },
+  private getToolLocation(toolId: string, state: State): ToolLocation {
+    const toolLocation = this.findToolLocation((tool) => tool.id === toolId, state);
+    if (!toolLocation)
+      throw new ReferenceError();
+    return toolLocation;
+  }
+
+  private getLocationOfToolWithOpenPanel(state: State) {
+    return this.findToolLocation((tool) => {
+      if (isToolGroup(tool) && tool.isPanelOpen)
+        return true;
+      return false;
+    }, state);
+  }
+
+  private getActiveTool(state: State): Tool | undefined {
+    return this.findTool((tool) => {
+      if (tool.isActive)
+        return true;
+      return false;
+    }, state);
+  }
+
+  private getToolWithOpenPanel(state: State): Tool | undefined {
+    const location = this.getLocationOfToolWithOpenPanel(state);
+    if (!location)
+      return undefined;
+    return this.locateTool(location, state);
+  }
+
+  private getTool(toolId: string, state: State): Tool {
+    const location = this.getToolLocation(toolId, state);
+    return this.locateTool(location, state);
+  }
+
+  private toggleIsDisabledForSomeTools(isDisabled: boolean, state: State): State {
+    return {
+      ...state,
+      tools: {
+        ...state.tools,
+        1: {
+          ...state.tools[1],
+          vertical: {
+            ...state.tools[1].vertical,
+            cube: {
+              ...state.tools[1].vertical.cube,
+              isDisabled,
             },
           },
-          3: {
-            ...prevState.tools[3],
-            vertical: {
-              ...prevState.tools[3].vertical,
-              browse: {
-                ...prevState.tools[3].vertical.browse,
-                isDisabled: !prevState.tools[3].vertical.browse.isDisabled,
-                isToolGroupOpen: false,
-              },
-              chat: {
-                ...prevState.tools[3].vertical.chat,
-                isDisabled: !prevState.tools[3].vertical.chat.isDisabled,
-                isToolGroupOpen: false,
+        },
+        3: {
+          ...state.tools[3],
+          vertical: {
+            ...state.tools[3].vertical,
+            browse: {
+              ...state.tools[3].vertical.browse,
+              isDisabled,
+            },
+            chat: {
+              ...state.tools[3].vertical.chat,
+              isDisabled,
+            },
+          },
+        },
+      },
+    };
+  }
+
+  private toggleIsHiddenForSomeTools(isHidden: boolean, state: State): State {
+    return {
+      ...state,
+      tools: {
+        ...state.tools,
+        1: {
+          ...state.tools[1],
+          vertical: {
+            ...state.tools[1].vertical,
+            validate: {
+              ...state.tools[1].vertical.validate,
+              isHidden,
+            },
+          },
+        },
+        3: {
+          ...state.tools[3],
+          horizontal: {
+            ...state.tools[3].horizontal,
+            d2: {
+              ...state.tools[3].horizontal.d2,
+              isHidden,
+            },
+            overflow: {
+              ...state.tools[3].horizontal.overflow,
+              isHidden,
+            },
+          },
+          vertical: {
+            ...state.tools[3].vertical,
+            clipboard: {
+              ...state.tools[3].vertical.clipboard,
+              isHidden,
+            },
+            calendar: {
+              ...state.tools[3].vertical.calendar,
+              isHidden,
+            },
+            chat2: {
+              ...state.tools[3].vertical.chat2,
+              isHidden,
+            },
+            document: {
+              ...state.tools[3].vertical.document,
+              isHidden,
+            },
+          },
+        },
+      },
+    };
+  }
+
+  private deactivateTool(toolId: string, state: State): State {
+    const tool = this.getTool(toolId, state);
+    if (!tool.isActive)
+      return state;
+
+    const location = this.getToolLocation(toolId, state);
+    state = {
+      ...state,
+      tools: {
+        ...state.tools,
+        [location.zoneKey]: {
+          ...state.tools[location.zoneKey],
+          [location.directionKey]: {
+            ...state.tools[location.zoneKey][location.directionKey],
+            [toolId]: {
+              ...tool,
+              isActive: false,
+            },
+          },
+        },
+      },
+    };
+
+    switch (toolId) {
+      case "toggleTools": {
+        return this.toggleIsHiddenForSomeTools(false, state);
+      }
+      case "disableTools": {
+        return this.toggleIsDisabledForSomeTools(false, state);
+      }
+    }
+    return state;
+  }
+
+  private activateTool(toolId: string, state: State): State {
+    const location = this.getToolLocation(toolId, state);
+    const tool = this.locateTool(location, state);
+    if (!isToolGroup(tool)) {
+      state = {
+        ...state,
+        tools: {
+          ...state.tools,
+          [location.zoneKey]: {
+            ...state.tools[location.zoneKey],
+            [location.directionKey]: {
+              ...state.tools[location.zoneKey][location.directionKey],
+              [toolId]: {
+                ...tool,
+                isActive: true,
               },
             },
           },
         },
       };
-    });
+    }
+
+    switch (toolId) {
+      case "toggleTools": {
+        return this.toggleIsHiddenForSomeTools(true, state);
+      }
+      case "toolSettings": {
+        return {
+          ...state,
+          toolSettingsWidget: ToolSettingsWidgetMode.Open,
+        };
+      }
+      case "disableTools": {
+        return this.toggleIsDisabledForSomeTools(true, state);
+      }
+    }
+    return state;
   }
 
-  private toggleTools() {
-    this.setState((prevState) => {
-      return {
-        tools: isHiddenTools(prevState.tools) ? zoneTools : hiddenZoneTools,
-      };
-    });
+  private closePanel(toolId: string, state: State): State {
+    const tool = this.getTool(toolId, state);
+    if (!isToolGroup(tool))
+      return state;
+
+    if (!tool.isPanelOpen)
+      return state;
+
+    const location = this.getToolLocation(toolId, state);
+    state = {
+      ...state,
+      tools: {
+        ...state.tools,
+        [location.zoneKey]: {
+          ...state.tools[location.zoneKey],
+          [location.directionKey]: {
+            ...state.tools[location.zoneKey][location.directionKey],
+            [location.toolId]: {
+              ...state.tools[location.zoneKey][location.directionKey][location.toolId],
+              isPanelOpen: false,
+            },
+          },
+        },
+      },
+    };
+
+    return state;
+  }
+
+  private openPanel(toolId: string, state: State): State {
+    const tool = this.getTool(toolId, state);
+    if (!isToolGroup(tool))
+      return state;
+
+    if (tool.isPanelOpen)
+      return state;
+
+    const location = this.getToolLocation(toolId, state);
+    return {
+      ...state,
+      tools: {
+        ...state.tools,
+        [location.zoneKey]: {
+          ...state.tools[location.zoneKey],
+          [location.directionKey]: {
+            ...state.tools[location.zoneKey][location.directionKey],
+            [toolId]: {
+              ...tool,
+              isPanelOpen: true,
+            },
+          },
+        },
+      },
+    };
   }
 
   private _handleContentClick = () => {
@@ -2590,45 +2782,31 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   private _handleToolClick = (toolId: string) => {
-    if (toolId === "toolSettings")
-      return this.toggleToolSettings();
-    else if (toolId === "disableTools")
-      return this.toggleIsDisabledForSomeTools();
-    else if (toolId === "toggleTools")
-      return this.toggleTools();
-
     this.setState((prevState) => {
-      const location = this.findTool(toolId, prevState);
-      const prevDirections = prevState.tools[location.zoneKey];
-      const prevTools = prevDirections[location.directionKey];
-      return {
-        tools: {
-          ...prevState.tools,
-          [location.zoneKey]: {
-            ...prevDirections,
-            [location.directionKey]: {
-              ...Object.keys(prevTools).reduce<Tools>((previous, prevToolId) => {
-                const prevTool = prevTools[prevToolId];
-                if (isToolGroup(prevTool)) {
-                  previous[prevToolId] = {
-                    ...prevTool,
-                    isToolGroupOpen: (prevToolId === toolId) ? !prevTool.isToolGroupOpen : false,
-                  };
-                } else {
-                  previous[prevToolId] = prevTool;
-                }
-                return previous;
-              }, {}),
-            },
-          },
-        },
-      };
+      const tool = this.getTool(toolId, prevState);
+      const activeTool = this.getActiveTool(prevState);
+      const toolWithOpenPanel = this.getToolWithOpenPanel(prevState);
+
+      let state = prevState;
+      if (toolWithOpenPanel) {
+        state = this.closePanel(toolWithOpenPanel.id, prevState);
+      }
+      if (isToolGroup(tool) && !tool.isPanelOpen) {
+        state = this.openPanel(toolId, state);
+      }
+
+      if (activeTool)
+        state = this.deactivateTool(activeTool.id, state);
+      if (!activeTool || activeTool.id !== toolId)
+        state = this.activateTool(toolId, state);
+
+      return state;
     });
   }
 
   private _handleIsToolHistoryExtendedChange = (toolId: string, isExtended: boolean) => {
     this.setState((prevState) => {
-      const location = this.findTool(toolId, prevState);
+      const location = this.getToolLocation(toolId, prevState);
       const prevDirections = prevState.tools[location.zoneKey];
       const prevTools = prevDirections[location.directionKey];
       return {
@@ -2651,7 +2829,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private _handlePanelToolClick = ({ toolId, trayId, columnId, itemId }: ToolbarItemGroupToolClickArgs) => {
     this.setState((prevState) => {
-      const location = this.findTool(toolId, prevState);
+      const location = this.getToolLocation(toolId, prevState);
       const prevDirections = prevState.tools[location.zoneKey];
       const prevTools = prevDirections[location.directionKey];
       const tool = prevTools[toolId];
@@ -2670,7 +2848,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
               [toolId]: {
                 ...prevTools[toolId],
                 isExtended: false,
-                isToolGroupOpen: false,
+                isPanelOpen: false,
                 history: DefaultHistoryManager.addItem(key, item, tool.history),
               },
             },
@@ -2682,7 +2860,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private _handleHistoryItemClick = (item: HistoryItem) => {
     this.setState((prevState) => {
-      const location = this.findTool(item.toolId, prevState);
+      const location = this.getToolLocation(item.toolId, prevState);
       const prevDirections = prevState.tools[location.zoneKey];
       const prevTools = prevDirections[location.directionKey];
       const tool = prevTools[item.toolId];
@@ -2732,7 +2910,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
               if (isToolGroup(prevTool)) {
                 toolsAcc[toolId] = {
                   ...prevTool,
-                  isToolGroupOpen: false,
+                  isPanelOpen: false,
                 };
               } else {
                 toolsAcc[toolId] = prevTool;
@@ -2819,7 +2997,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private _handleExpandPanelGroup = (toolId: string, trayId: string | undefined) => {
     this.setState((prevState) => {
-      const location = this.findTool(toolId, prevState);
+      const location = this.getToolLocation(toolId, prevState);
       const prevDirections = prevState.tools[location.zoneKey];
       const prevTools = prevDirections[location.directionKey];
       const tool = prevTools[toolId];
@@ -2847,7 +3025,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private _handlePanelBack = (toolId: string) => {
     this.setState((prevState) => {
-      const location = this.findTool(toolId, prevState);
+      const location = this.getToolLocation(toolId, prevState);
       const prevDirections = prevState.tools[location.zoneKey];
       const prevTools = prevDirections[location.directionKey];
       const tool = prevTools[toolId];
@@ -2947,7 +3125,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private _handleToolSettingsWidgetTabClick = () => {
     this.setState((prevState) => ({
-      secondZoneContent: prevState.secondZoneContent === SecondZoneContent.Minimized ? SecondZoneContent.ToolSettings : SecondZoneContent.Minimized,
+      toolSettingsWidget: prevState.toolSettingsWidget === ToolSettingsWidgetMode.Minimized ? ToolSettingsWidgetMode.Open : ToolSettingsWidgetMode.Minimized,
     }));
   }
 }
