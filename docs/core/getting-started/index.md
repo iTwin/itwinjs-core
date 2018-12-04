@@ -1,5 +1,5 @@
 # Getting Started With iModel.js
-<iframe width="672" height="378" style="margin-top: -36px;" src="https://www.youtube.com/embed/SPyN8w1XEAE&rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
+<iframe width="672" height="378" style="margin-top: -36px;" src="https://www.youtube.com/embed/SPyN8w1XEAE?rel=0" frameborder="0" allow="accelerometer; autoplay; encrypted-media; gyroscope; picture-in-picture" allowfullscreen></iframe>
 
 ## Required Tools
 
