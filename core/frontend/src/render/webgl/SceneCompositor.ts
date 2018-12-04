@@ -7,7 +7,7 @@
 import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { Target } from "./Target";
-import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry, CachedGeometry } from "./CachedGeometry";
+import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry, CachedGeometry, AmbientOcclusionGeometry, AmbientOcclusionBlurGeometry } from "./CachedGeometry";
 import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
@@ -44,6 +44,8 @@ class Textures implements IDisposable {
   public featureId?: TextureHandle;
   public depthAndOrder?: TextureHandle;
   public hilite?: TextureHandle;
+  public occlusion?: TextureHandle;
+  public occlusionBlur?: TextureHandle;
 
   public dispose() {
     this.accumulation = dispose(this.accumulation);
@@ -52,6 +54,8 @@ class Textures implements IDisposable {
     this.featureId = dispose(this.featureId);
     this.depthAndOrder = dispose(this.depthAndOrder);
     this.hilite = dispose(this.hilite);
+    this.occlusion = dispose(this.occlusion);
+    this.occlusionBlur = dispose(this.occlusionBlur);
   }
 
   public init(width: number, height: number): boolean {
@@ -88,12 +92,17 @@ class Textures implements IDisposable {
     this.featureId = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
     this.depthAndOrder = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
 
+    this.occlusion = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+    this.occlusionBlur = TextureHandle.createForAttachment(width, height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
+
     return undefined !== this.accumulation
       && undefined !== this.revealage
       && undefined !== this.color
       && undefined !== this.featureId
       && undefined !== this.depthAndOrder
-      && undefined !== this.hilite;
+      && undefined !== this.hilite
+      && undefined !== this.occlusion
+      && undefined !== this.occlusionBlur;
   }
 }
 
@@ -105,6 +114,8 @@ class FrameBuffers implements IDisposable {
   public hilite?: FrameBuffer;
   public hiliteUsingStencil?: FrameBuffer;
   public stencilSet?: FrameBuffer;
+  public occlusion?: FrameBuffer;
+  public occlusionBlur?: FrameBuffer;
 
   public init(textures: Textures, depth: DepthBuffer): boolean {
     const boundColor = System.instance.frameBufferStack.currentColorBuffer;
@@ -119,12 +130,16 @@ class FrameBuffers implements IDisposable {
     if (DepthType.TextureUnsignedInt24Stencil8 === System.instance.capabilities.maxDepthType) {
       this.stencilSet = FrameBuffer.create([], depth);
     }
+    this.occlusion = FrameBuffer.create([textures.occlusion!]);
+    this.occlusionBlur = FrameBuffer.create([textures.occlusionBlur!]);
 
     return undefined !== this.opaqueColor
       && undefined !== this.opaqueAndCompositeColor
       && undefined !== this.depthAndOrder
       && undefined !== this.hilite
-      && undefined !== this.hiliteUsingStencil;
+      && undefined !== this.hiliteUsingStencil
+      && undefined !== this.occlusion
+      && undefined !== this.occlusionBlur;
   }
 
   public dispose() {
@@ -134,6 +149,8 @@ class FrameBuffers implements IDisposable {
     this.hilite = dispose(this.hilite);
     this.hiliteUsingStencil = dispose(this.hiliteUsingStencil);
     this.stencilSet = dispose(this.stencilSet);
+    this.occlusion = dispose(this.occlusion);
+    this.occlusionBlur = dispose(this.occlusionBlur);
   }
 }
 
@@ -141,17 +158,25 @@ class FrameBuffers implements IDisposable {
 class Geometry implements IDisposable {
   public composite?: CompositeGeometry;
   public stencilCopy?: ViewportQuadGeometry;
+  public occlusion?: AmbientOcclusionGeometry;
+  public occlusionBlur?: AmbientOcclusionBlurGeometry;
 
   public init(textures: Textures): boolean {
     assert(undefined === this.composite);
-    this.composite = CompositeGeometry.createGeometry(textures.color!.getHandle()!, textures.accumulation!.getHandle()!, textures.revealage!.getHandle()!, textures.hilite!.getHandle()!);
+    this.composite = CompositeGeometry.createGeometry(textures.color!.getHandle()!, textures.accumulation!.getHandle()!, textures.revealage!.getHandle()!, textures.hilite!.getHandle()!, textures.occlusionBlur!.getHandle()!);
+    // ###TODO: ###TEST: this.composite = CompositeGeometry.createGeometry(textures.color!.getHandle()!, textures.accumulation!.getHandle()!, textures.revealage!.getHandle()!, textures.hilite!.getHandle()!, textures.occlusion!.getHandle()!);
     this.stencilCopy = ViewportQuadGeometry.create(TechniqueId.CopyStencil);
+    assert(textures.depthAndOrder !== undefined);
+    this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder!.getHandle()!);
+    this.occlusionBlur = AmbientOcclusionBlurGeometry.createGeometry(textures.occlusion!.getHandle()!);
     return undefined !== this.composite;
   }
 
   public dispose() {
     this.composite = dispose(this.composite);
     this.stencilCopy = dispose(this.stencilCopy);
+    this.occlusion = dispose(this.occlusion);
+    this.occlusionBlur = dispose(this.occlusionBlur);
   }
 }
 
@@ -353,6 +378,28 @@ abstract class Compositor extends SceneCompositor {
   protected abstract renderTranslucent(_commands: RenderCommands): void;
   protected abstract getBackgroundFbo(_needComposite: boolean): FrameBuffer;
   protected abstract pingPong(): void;
+
+  /** This function generates a texture that contains ambient occlusion information to be applied later. */
+  protected renderAmbientOcclusion() {
+    const system = System.instance;
+
+    // Render unblurred ambient occlusion based on depth buffer
+    let fbo = this._frameBuffers.occlusion!;
+    system.frameBufferStack.execute(fbo, true, () => {
+      System.instance.applyRenderState(RenderState.defaults);
+      const params = getDrawParams(this.target, this._geom.occlusion!);
+      this.target.techniques.draw(params);
+
+    });
+
+    // Render the blurred ambient occlusion based on unblurred ambient occlusion
+    fbo = this._frameBuffers.occlusionBlur!;
+    system.frameBufferStack.execute(fbo, true, () => {
+      System.instance.applyRenderState(RenderState.defaults);
+      const params = getDrawParams(this.target, this._geom.occlusionBlur!);
+      this.target.techniques.draw(params);
+    });
+  }
 
   protected constructor(target: Target, fbos: FrameBuffers, geometry: Geometry) {
     super(target);
@@ -960,18 +1007,21 @@ class MRTCompositor extends Compositor {
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
     this._readPickDataFromPingPong = true;
 
+    const testDoAO = true;
+
     let fbStack = System.instance.frameBufferStack;
     fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, () => {
       this.drawPass(commands, RenderPass.OpaqueLinear);
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
-      if (renderForReadPixels) {
+      if (testDoAO || renderForReadPixels) {
         this.drawPass(commands, RenderPass.OpaqueGeneral, true);
+        this.renderAmbientOcclusion();
       }
     });
     this._readPickDataFromPingPong = false;
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
-    if (!renderForReadPixels) {
+    if (!renderForReadPixels && !testDoAO) {
       fbStack = System.instance.frameBufferStack;
       fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, () => {
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);

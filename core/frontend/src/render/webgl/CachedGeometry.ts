@@ -514,21 +514,74 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
   }
 }
 
-// Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
-export class CompositeGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture) {
+// Geometry used when rendering ambient occlusion information to an output texture
+export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
+  private _noise?: TextureHandle;
+
+  private static getRandomNumber(min: number, max: number) {
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+  }
+
+  public static createGeometry(depthAndOrder: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
     }
 
-    return new CompositeGeometry(params, [opaque, accum, reveal, hilite]);
+    // Will derive positions and normals from depthAndOrder.
+    return new AmbientOcclusionGeometry(params, [depthAndOrder]);
+  }
+
+  public get depthAndOrder() { return this._textures[0]; }
+  public get noise() { return this._noise!.getHandle()!; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
+    super(params, TechniqueId.AmbientOcclusion, textures);
+
+    // Generate random noise texture
+    const noiseDim = 4;
+    const noiseArr = new Uint8Array(noiseDim * noiseDim * 3);
+    for (let i = 0; i < noiseDim * noiseDim * 3; i++) {
+      noiseArr[i] = AmbientOcclusionGeometry.getRandomNumber(0, 255);
+    }
+    this._noise = TextureHandle.createForData(4, 4, noiseArr, false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Rgb);
+  }
+
+  // ###TODO: Dispose noise texture - better place to store this than here?
+}
+
+export class AmbientOcclusionBlurGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(occlusion: WebGLTexture) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params) {
+      return undefined;
+    }
+    return new AmbientOcclusionBlurGeometry(params, [occlusion]);
+  }
+
+  public get occlusion() { return this._textures[0]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
+    super(params, TechniqueId.AmbientOcclusionBlur, textures);
+  }
+}
+
+// Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
+export class CompositeGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture, occlusion: WebGLTexture) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params) {
+      return undefined;
+    }
+
+    return new CompositeGeometry(params, [opaque, accum, reveal, hilite, occlusion]);
   }
 
   public get opaque() { return this._textures[0]; }
   public get accum() { return this._textures[1]; }
   public get reveal() { return this._textures[2]; }
   public get hilite() { return this._textures[3]; }
+  public get occlusion() { return this._textures[4]; }
 
   // Invoked each frame to determine the appropriate Technique to use.
   public update(flags: CompositeFlags): void { this._techniqueId = this.determineTechnique(flags); }
@@ -542,7 +595,7 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.CompositeHilite, textures);
-    assert(4 === this._textures.length);
+    assert(5 === this._textures.length);
   }
 }
 

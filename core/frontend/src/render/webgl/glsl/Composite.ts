@@ -61,7 +61,9 @@ vec4 computeColor() {
   vec4 opaque = TEXTURE(u_opaque, v_texCoord);
   vec4 accum = TEXTURE(u_accumulation, v_texCoord);
   float r = TEXTURE(u_revealage, v_texCoord).r;
+  float ao = TEXTURE(u_occlusion, v_texCoord).r;
 
+  opaque.rgb *= ao;
   vec4 transparent = vec4(accum.rgb / clamp(r, 1e-4, 5e4), accum.a);
   return (1.0 - transparent.a) * transparent + transparent.a * opaque;
 }
@@ -74,6 +76,7 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
 
   const wantHilite = CompositeFlags.None !== (flags & CompositeFlags.Hilite);
   const wantTranslucent = CompositeFlags.None !== (flags & CompositeFlags.Translucent);
+  const wantOcclusion = true;
 
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
@@ -120,6 +123,14 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
     if (!wantHilite) {
       frag.set(FragmentShaderComponent.ComputeBaseColor, computeTranslucentBaseColor);
     }
+  }
+
+  if (wantOcclusion) {
+    frag.addUniform("u_occlusion", VariableType.Sampler2D, (prog) => {
+      prog.addGraphicUniform("u_occlusion", (uniform, params) => {
+        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).occlusion, TextureUnit.Four);
+      });
+    });
   }
 
   return builder.buildProgram(context);

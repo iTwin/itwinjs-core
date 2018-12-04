@@ -309,7 +309,7 @@ function addSamplers(frag: FragmentShaderBuilder, testFeatureId: boolean) {
   }, VariablePrecision.High);
 }
 
-const readDepthAndOrder = `
+export const readDepthAndOrder = `
 vec2 readDepthAndOrder(vec2 tc) {
   vec4 pdo = TEXTURE(u_pickDepthAndOrder, tc);
   float order = floor(pdo.x * 16.0 + 0.5);

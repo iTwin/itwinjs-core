@@ -32,6 +32,7 @@ import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import { createEdgeBuilder } from "./glsl/Edge";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
+import { createAmbientOcclusionProgram, createAmbientOcclusionBlurProgram } from "./glsl/AmbientOcclusion";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -542,6 +543,8 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
     this._list[TechniqueId.SkySphereGradient] = new SingularTechnique(createSkySphereProgram(gl, true));
     this._list[TechniqueId.SkySphereTexture] = new SingularTechnique(createSkySphereProgram(gl, false));
+    this._list[TechniqueId.AmbientOcclusion] = new SingularTechnique(createAmbientOcclusionProgram(gl));
+    this._list[TechniqueId.AmbientOcclusionBlur] = new SingularTechnique(createAmbientOcclusionBlurProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
     this._list[TechniqueId.Edge] = new EdgeTechnique(gl, false);
     this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, true);
