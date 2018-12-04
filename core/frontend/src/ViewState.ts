@@ -12,7 +12,7 @@ import {
 import {
     AxisAlignedBox3d, Camera, ColorDef, Frustum, GraphicParams, Npc, RenderMaterial, SpatialViewDefinitionProps,
     SubCategoryAppearance, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps,
-    ViewFlags, ViewStateData, AnalysisStyle, RenderSchedule,
+    ViewFlags, ViewStateData, AnalysisStyle,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -22,6 +22,7 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { GeometricModel2dState, GeometricModelState, TileTreeModelState } from "./ModelState";
+import { RenderScheduleState } from "./RenderScheduleState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
 import { StandardView, StandardViewId } from "./StandardView";
@@ -207,10 +208,10 @@ export abstract class ViewState extends ElementState {
         }
     }
     /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
-    public get AnalysisStyle(): AnalysisStyle | undefined { return this.displayStyle.settings.analysisStyle; }
+    public get AnalysisStyle(): AnalysisStyle | undefined { return this.displayStyle.analysisStyle; }
 
     /** Get the RenderSchedule.Script from the displayStyle ofthis viewState */
-    public get scheduleScript(): RenderSchedule.Script | undefined { return this.displayStyle.settings.scheduleScript; }
+    public get scheduleScript(): RenderScheduleState.Script | undefined { return this.displayStyle.scheduleScript; }
     public get scheduleTime() { return this._scheduleTime; }
     public set scheduleTime(time: number) {
         if (this.scheduleTime !== time) {
@@ -1736,6 +1737,7 @@ export class SpatialViewState extends ViewState3d {
     public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void {
         this.forEachModel((model: GeometricModelState) => func(model));
         this.displayStyle.forEachContextRealityModel((model: TileTreeModelState) => func(model));
+        if (this.scheduleScript) this.scheduleScript.forEachAnimationModel((model: TileTreeModelState) => func(model));
     }
 }
 
