@@ -58,7 +58,7 @@ export class KindOfQuantity extends SchemaItem {
    * Parses
    * @param formatString
    */
-  private parseFormatString(formatString: string) {
+  private parseFormatString(formatString: string): OverrideFormat {
     const match = formatString.split(formatStringRgx); // split string based on regex groups
     if (undefined === match[1])
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
@@ -143,6 +143,40 @@ export class KindOfQuantity extends SchemaItem {
     return new OverrideFormat(parent, name, precision, unitLabelOverrides);
   }
 
+  private async processPresentationUnits(presentationUnitsJson: string | string[]) {
+    const presUnitsArr = (Array.isArray(presentationUnitsJson)) ? presentationUnitsJson : presentationUnitsJson.split(";");
+    for (const formatString of presUnitsArr) {
+      const presFormatOverride = this.parseFormatString(formatString);
+
+      const format = await this.schema.lookupItem<Format>(presFormatOverride.name);
+      if (undefined === format)
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate format '${presFormatOverride.name}' for the presentation unit on KindOfQuantity ${this.fullName}.`);
+
+      if (undefined === presFormatOverride.precision && undefined === presFormatOverride.units) {
+        this.addPresentationFormat(format);
+        continue;
+      }
+
+      let unitAndLabels: Array<[Unit | InvertedUnit, string | undefined]> | undefined;
+      if (undefined !== presFormatOverride.units) {
+        if (4 < presFormatOverride.units.length)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+
+        unitAndLabels = [];
+        for (const unitOverride of presFormatOverride.units) {
+          const unit = await this.schema.lookupItem<Unit | InvertedUnit>(unitOverride[0].name);
+          if (undefined === unit)
+            throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `Unable to locate SchemaItem ${unitOverride[0].name}.`);
+
+          unitAndLabels.push([unit!, unitOverride[1]]);
+        }
+      }
+
+      const overrideFormat: OverrideFormat = this.createFormatOverride(format, formatString, presFormatOverride.precision, unitAndLabels);
+      this.addPresentationFormat(overrideFormat);
+    }
+  }
+
   private processPresentationUnitsSync(presentationUnitsJson: string | string[]) {
     const presUnitsArr = (Array.isArray(presentationUnitsJson)) ? presentationUnitsJson : presentationUnitsJson.split(";");
     for (const formatString of presUnitsArr) {
@@ -200,26 +234,22 @@ export class KindOfQuantity extends SchemaItem {
     else
       this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
 
-    if (undefined !== kindOfQuantityProps.presentationUnits) {
-      for (const formatString of kindOfQuantityProps.presentationUnits) {
-        const match = formatString.split(formatStringRgx);
-        this.schema.lookupItemSync(match[1]); // will throw ECObjectsError if it cant find the FormatName
-
-        let index = 4;
-        while (index < match.length - 1) { // index 0 and 21 are empty strings
-          if (match[index] !== undefined)
-            this.schema.lookupItemSync(match[index + 1]); // find unit by name
-          else
-            break;
-          index += 4;
-        }
-      }
+    if (kindOfQuantityProps.presentationUnits)
       this.processPresentationUnitsSync(kindOfQuantityProps.presentationUnits);
-    }
   }
 
   public async deserialize(kindOfQuantityProps: KindOfQuantityProps) {
-    this.deserializeSync(kindOfQuantityProps);
+    await super.deserialize(kindOfQuantityProps);
+    this._relativeError = kindOfQuantityProps.relativeError;
+
+    const persistenceUnit = await this.schema.lookupItem<Unit>(kindOfQuantityProps.persistenceUnit);
+    if (undefined === persistenceUnit)
+      throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The SchemaItem ${kindOfQuantityProps.persistenceUnit} does not exist.`);
+    else
+      this._persistenceUnit = new DelayedPromiseWithProps(persistenceUnit.key, async () => persistenceUnit);
+
+    if (kindOfQuantityProps.presentationUnits)
+      await this.processPresentationUnits(kindOfQuantityProps.presentationUnits);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

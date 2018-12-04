@@ -23,6 +23,7 @@ import { Schema, MutableSchema } from "./../Metadata/Schema";
 import { SchemaItem } from "./../Metadata/SchemaItem";
 import { Unit } from "./../Metadata/Unit";
 import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
+import { getItemNamesFromFormatString } from "../utils/FormatEnums";
 
 /**
  * @hidden
@@ -421,6 +422,16 @@ export class SchemaReadHelper<T = unknown> {
    */
   private async loadKindOfQuantity(koq: KindOfQuantity, rawKoQ: unknown): Promise<void> {
     const koqProps = this._parser.parseKindOfQuantity(rawKoQ);
+    await this.findSchemaItem(koqProps.persistenceUnit);
+
+    if (undefined !== koqProps.presentationUnits) {
+      for (const formatString of koqProps.presentationUnits) {
+        for (const name of getItemNamesFromFormatString(formatString)) {
+          await this.findSchemaItem(name);
+        }
+      }
+    }
+
     await koq.deserialize(koqProps);
   }
 
@@ -431,6 +442,15 @@ export class SchemaReadHelper<T = unknown> {
    */
   private loadKindOfQuantitySync(koq: KindOfQuantity, rawKoQ: unknown) {
     const koqProps = this._parser.parseKindOfQuantity(rawKoQ);
+    this.findSchemaItemSync(koqProps.persistenceUnit);
+
+    if (undefined !== koqProps.presentationUnits) {
+      for (const formatString of koqProps.presentationUnits) {
+        for (const name of getItemNamesFromFormatString(formatString)) {
+          this.findSchemaItemSync(name);
+        }
+      }
+    }
     koq.deserializeSync(koqProps);
   }
 
