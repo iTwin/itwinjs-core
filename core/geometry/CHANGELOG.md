@@ -1,6 +1,11 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Mon, 03 Dec 2018 18:52:58 GMT and should not be manually modified.
+This log was last generated on Tue, 04 Dec 2018 17:24:39 GMT and should not be manually modified.
+
+## 0.172.0
+Tue, 04 Dec 2018 17:24:39 GMT
+
+*Version update only*
 
 ## 0.171.0
 Mon, 03 Dec 2018 18:52:58 GMT
