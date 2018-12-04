@@ -53,7 +53,7 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
     const offset = this.props.level * 20;
     const loader = this.props.isLoading ? (<div className="loader"><i></i><i></i><i></i><i></i><i></i><i></i></div>) : undefined;
     const checkbox = this.props.isCheckboxEnabled ?
-      <Checkbox label="" onClick={this.props.onCheckboxClick} /> :
+      <Checkbox label="" checked={this.props.isChecked} onClick={this.props.onCheckboxClick} /> :
       undefined;
     const icon = this.props.icon ? (<div className="icon">{this.props.icon}</div>) : undefined;
     const toggle = (this.props.isLoading || this.props.isLeaf) ? undefined : (
