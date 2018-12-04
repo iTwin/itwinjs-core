@@ -57,7 +57,6 @@ _BIS naming convention is deliberately more restrictive than EC naming: All BIS 
 | Rec. | Don't include the primitive datatype (int, string) with the name | **Exception:** Dates. Since `Date` is both a data type and a more meaningful noun, something like `DateAdded` would be acceptable but `NoteBlob` would not be. |
 | Rule | Don't include the attribute owner name in the attribute name | E.g. `Document.Id` not `Document.DocumentId` and `Person.Name` not `Person.PersonName` |
 | Rule | Prefix Boolean names with `Is`, `Has`, `Can`, `May` | E.g. `IsUnderChange`, `HasOtherRevision`, `MayChange` |
-| Rule | Prefix Boolean names with `Is`, `Has`, `Can`, `May` | E.g. `IsUnderChange`, `HasOtherRevision`, `MayChange` |
 | Rule | When the field represents a bit mask, use the plural form of the word|E.g. `StateHints`, `HasFlags` |
 | Rule | For `NavigationProperties`, prefer to use the name of the related `ECClass` as the property name | If further qualification is needed, consider prefixing words from the role label. |
 
