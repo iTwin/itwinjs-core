@@ -38,4 +38,4 @@ The purpose of the iModel.js library is to make iModels accessible to everyone, 
 
 ## ECSQL is the query language of iModels
 
-An iModel is an SQLite database. SQLite has extensive support for SQL, including indexing and comprehensive query planning. However, due to the mapping of BIS classes to database tables, direct use of SQL with iModels is not straightforward. Therefore, iModel.js includes [ECSQL](../learning/ecsql) to form qeuries of iModels in terms of classes and property names, rather than table and column names. Internally ECSQL is converted to SQL and passed to SQLite to achieve outstanding performance.
+An iModel is an SQLite database. SQLite has extensive support for SQL, including indexing and comprehensive query planning. However, due to the mapping of BIS classes to database tables, direct use of SQL with iModels is not straightforward. Therefore, iModel.js includes [ECSQL](../learning/ecsql) to form queries of iModels in terms of classes and property names, rather than table and column names. Internally ECSQL is converted to SQL and passed to SQLite to achieve outstanding performance.
