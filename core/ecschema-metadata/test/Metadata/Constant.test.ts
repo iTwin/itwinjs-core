@@ -10,7 +10,7 @@ import { ECObjectsError } from "../../src/Exception";
 import * as sinon from "sinon";
 import { Phenomenon } from "../../src/Metadata/Phenomenon";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-import { SchemaItemType } from "../../src/ecschema-metadata";
+import { SchemaItemType } from "../../src/ECObjects";
 
 describe("Constant", () => {
   describe("accept", () => {
