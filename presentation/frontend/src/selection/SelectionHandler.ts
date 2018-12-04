@@ -40,7 +40,7 @@ export default class SelectionHandler implements IDisposable {
     this.rulesetId = rulesetId;
     this.imodel = imodel;
     this.onSelect = onSelect;
-    this._disposables.add(this._manager.selectionChange.addListener(this.onSelectionChanged, this));
+    this._disposables.add(this._manager.selectionChange.addListener(this.onSelectionChanged));
   }
 
   /**
@@ -55,7 +55,7 @@ export default class SelectionHandler implements IDisposable {
    * Called when the selection changes. Handles this callback by first checking whether
    * the event should be handled at all (using the `shouldHandle` method) and then calling `onSelect`
    */
-  protected onSelectionChanged(evt: SelectionChangeEventArgs, provider: ISelectionProvider): void {
+  protected onSelectionChanged = (evt: SelectionChangeEventArgs, provider: ISelectionProvider): void => {
     if (!this.onSelect || !this.shouldHandle(evt))
       return;
 

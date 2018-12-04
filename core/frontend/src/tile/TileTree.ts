@@ -43,7 +43,6 @@ import { PntsTileIO } from "./PntsTileIO";
 import { DgnTileIO } from "./DgnTileIO";
 import { IModelTileIO } from "./IModelTileIO";
 import { ViewFrustum } from "../Viewport";
-import { SpatialModelState } from "../ModelState";
 
 function compareMissingTiles(lhs: Tile, rhs: Tile): number {
   const diff = compareNumbers(lhs.depth, rhs.depth);
@@ -303,7 +302,7 @@ export class Tile implements IDisposable {
     }
     if (Tile.Visibility.Visible === vis) {
       // This tile is of appropriate resolution to draw. If need loading or refinement, enqueue.
-      if (!this.isReady && !this.isQueued) {
+      if (!this.isReady) {
         args.insertMissing(this);
       }
 
@@ -670,7 +669,7 @@ export class TileTree implements IDisposable {
 
   public requestTiles(missing: Tile[]): void {
     // TBD - cancel any loaded/queued tiles which are no longer needed.
-    this.loader.loadTileContents(missing);
+    this.loader.loadTileContents(missing); // tslint:disable-line:no-floating-promises
   }
 
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {
@@ -744,7 +743,7 @@ export abstract class TileLoader {
 
     const read = reader.read();
     read.catch((_err) => tile.setNotFound());
-    read.then((result) => {
+    read.then((result) => { // tslint:disable-line:no-floating-promises
       // Make sure we still want this tile - may been unloaded, imodel may have been closed, IModelApp may have shut down taking render system with it, etc.
       if (tile.isLoading) {
         tile.setGraphic(result.renderGraphic, result.isLeaf, result.contentRange, result.sizeMultiplier);
@@ -898,11 +897,11 @@ export namespace TileTree {
 export class TileTreeState {
   public tileTree?: TileTree;
   public loadStatus: TileTree.LoadStatus = TileTree.LoadStatus.NotLoaded;
-  public get iModel() { return this._modelState.iModel; }
+  public get iModel() { return this._iModel; }
 
-  constructor(private _modelState: SpatialModelState) { }
+  constructor(private _iModel: IModelConnection, private _is3d: boolean, private _modelId: Id64String) { }
   public setTileTree(props: TileTreeProps, loader: TileLoader) {
-    this.tileTree = new TileTree(TileTree.Params.fromJSON(props, this._modelState.iModel, this._modelState.is3d, loader, this._modelState.id));
+    this.tileTree = new TileTree(TileTree.Params.fromJSON(props, this._iModel, this._is3d, loader, this._modelId));
     this.loadStatus = TileTree.LoadStatus.Loaded;
   }
 }

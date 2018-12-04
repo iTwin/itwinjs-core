@@ -28,14 +28,14 @@ export abstract class PropertyEditorBase implements DataController {
 
   public applyEditorParams(_property: PropertyDescription, _record: PropertyRecord): void { }
 
-  public commitValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+  public async commitValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult> {
     if (this.customDataController)
       return this.customDataController.commitValue(newValue, record);
 
     return Promise.resolve({ encounteredError: false });
   }
 
-  public validateValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+  public async validateValue(newValue: PropertyValue, record: PropertyRecord): Promise<AsyncValueProcessingResult> {
     if (this.customDataController)
       return this.customDataController.validateValue(newValue, record);
 
@@ -47,11 +47,11 @@ export abstract class PropertyEditorBase implements DataController {
 /** DataControllerBase is the base class for all Data Controllers.
  */
 export abstract class DataControllerBase implements DataController {
-  public commitValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+  public async commitValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
     return Promise.resolve({ encounteredError: false });
   }
 
-  public validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+  public async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
     return Promise.resolve({ encounteredError: false });
   }
 }
@@ -81,7 +81,7 @@ export class PropertyEditorManager {
     PropertyEditorManager._dataControllers[controllerName] = controller;
   }
 
-  public static createEditor(editType: string, editorName?: string, dataContollerName?: string): PropertyEditorBase | null {
+  public static createEditor(editType: string, editorName?: string, dataControllerName?: string): PropertyEditorBase | null {
     let fullEditorName = editType;
     if (editorName)
       fullEditorName += ":" + editorName;
@@ -94,9 +94,9 @@ export class PropertyEditorManager {
     else
       editor = new BasicPropertyEditor();
 
-    if (dataContollerName) {
-      if (PropertyEditorManager._dataControllers.hasOwnProperty(dataContollerName))
-        editor.customDataController = new PropertyEditorManager._dataControllers[dataContollerName]();
+    if (dataControllerName) {
+      if (PropertyEditorManager._dataControllers.hasOwnProperty(dataControllerName))
+        editor.customDataController = new PropertyEditorManager._dataControllers[dataControllerName]();
     }
 
     return editor;

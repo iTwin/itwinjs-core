@@ -12,20 +12,33 @@ import { ViewQueryParams } from "@bentley/imodeljs-common/lib/ViewProps";
 import { UiFramework } from "../UiFramework";
 import { ViewDefinitionProps, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 
+/** Properties for the [[ViewSelector]] component */
+export interface ViewSelectorProps {
+  imodel?: IModelConnection;
+}
+
+/** Properties for the [[ViewSelector]] component */
+export interface ViewSelectorState {
+  items: ListItem[];
+  selectedViewId: string | null;
+  title: string;
+  initialized: boolean;
+}
+
 /** View Selector React component */
-export class ViewSelector extends React.Component<any, any> {
+export class ViewSelector extends React.Component<ViewSelectorProps, ViewSelectorState> {
   /** Creates a ViewSelector */
-  constructor(props: any) {
+  constructor(props: ViewSelectorProps) {
     super(props);
 
     this.state = {
-      items: [],
+      items: new Array<ListItem>(),
       selectedViewId: null,
       title: UiFramework.i18n.translate("UiFramework:savedViews.views"),
       initialized: false,
     };
 
-    this.loadViews();
+    this.loadViews(); // tslint:disable-line:no-floating-promises
   }
 
   private setStateContainers(views3d: ListItem[], views2d: ListItem[], sheets: ListItem[], unknown?: ListItem[]) {
@@ -143,10 +156,10 @@ export class ViewSelector extends React.Component<any, any> {
       return;
 
     // Query views and add them to state
-    const views3d: ListItem[] = this.state.items[0].children;
-    const views2d: ListItem[] = this.state.items[1].children;
-    const sheets: ListItem[] = this.state.items[2].children;
-    const unknown: ListItem[] = this.state.items.length > 3 ? this.state.items[3].children : [];
+    const views3d: ListItem[] = this.state.items[0].children!;
+    const views2d: ListItem[] = this.state.items[1].children!;
+    const sheets: ListItem[] = this.state.items[2].children!;
+    const unknown: ListItem[] = this.state.items.length > 3 ? this.state.items[3].children! : [];
 
     const updateChildren = (item: ListItem) => {
       if (item.key === viewId)
@@ -163,7 +176,7 @@ export class ViewSelector extends React.Component<any, any> {
    */
   public render() {
     if (!this.state.initialized)
-      this.updateState(this.state.selectedViewId);
+      this.updateState(this.state.selectedViewId); // tslint:disable-line:no-floating-promises
 
     // enable/disable the models
     const setEnabled = async (item: ListItem, _enabled: boolean) => {
@@ -198,12 +211,12 @@ export class ViewSelector extends React.Component<any, any> {
       const viewState = await this.props.imodel!.views.load(item.key);
       vp.changeView(viewState);
       // Set state to show enabled the view that got selected
-      this.updateState(item.key);
+      this.updateState(item.key); // tslint:disable-line:no-floating-promises
     };
 
     // Hook on the category selector being expanded so that we may initialize if needed
     const onExpanded = (_expand: boolean) => {
-      this.updateState(this.state.selectedViewId);
+      this.updateState(this.state.selectedViewId); // tslint:disable-line:no-floating-promises
     };
 
     return (
@@ -212,7 +225,7 @@ export class ViewSelector extends React.Component<any, any> {
         title={this.state.title}
         setEnabled={setEnabled}
         items={this.state.items}
-        iconClass={"icon-saved-view"}
+        iconSpec={"icon-saved-view"}
         onExpanded={onExpanded}
       />
     );

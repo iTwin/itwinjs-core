@@ -54,7 +54,7 @@ export class TechniqueFlags {
 
       if (undefined !== target.currentOverrides) {
         this.featureMode = FeatureMode.Overrides;
-      } else if (undefined !== target.currentPickTable) {
+      } else if (0 !== target.currentBatchId) {
         this.featureMode = FeatureMode.Pick;
       } else {
         this.featureMode = FeatureMode.None;

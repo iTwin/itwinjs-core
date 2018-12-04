@@ -2,9 +2,9 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, UserProfile, IModelHubClient } from "@bentley/imodeljs-clients";
+import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, HubUserInfo, IModelHubClient } from "@bentley/imodeljs-clients";
 import { HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType } from "@bentley/imodeljs-clients";
-import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
 import * as path from "path";
 
@@ -118,14 +118,21 @@ export class HubUtility {
     const query = new ChangeSetQuery();
     query.selectDownloadUrl();
 
-    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelId, query);
+    let perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Get ChangeSet Infos");
+    const changeSets: ChangeSet[] = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, iModelId, query);
+    perfLogger.dispose();
     if (changeSets.length === 0)
       return new Array<ChangeSet>();
 
-    await BriefcaseManager.imodelClient.ChangeSets().download(actx, changeSets, changeSetsPath);
+    perfLogger = new PerfLogger("HubUtility.downloadChangeSets -> Download ChangeSets");
+    await BriefcaseManager.imodelClient.changeSets.download(actx, changeSets, changeSetsPath);
+    perfLogger.dispose();
     return changeSets;
   }
 
+  /** Download an IModel's seed files and change sets from the Hub.
+   *  A standard hierarchy of folders is created below the supplied downloadDir
+   */
   public static async downloadIModelById(accessToken: AccessToken, projectId: string, iModelId: GuidString, downloadDir: string): Promise<void> {
     // Recreate the download folder if necessary
     if (IModelJsFs.existsSync(downloadDir))
@@ -143,7 +150,9 @@ export class HubUtility {
 
     // Download the seed file
     const seedPathname = path.join(downloadDir, "seed", iModel.name!.concat(".bim"));
-    await BriefcaseManager.imodelClient.IModels().download(actx, accessToken, iModelId, seedPathname);
+    const perfLogger = new PerfLogger("HubUtility.downloadIModelById -> Download Seed File");
+    await BriefcaseManager.imodelClient.iModels.download(actx, accessToken, iModelId, seedPathname);
+    perfLogger.dispose();
 
     // Download the change sets
     const changeSetDir = path.join(downloadDir, "changeSets//");
@@ -154,7 +163,9 @@ export class HubUtility {
     IModelJsFs.writeFileSync(changeSetsJsonPathname, changeSetsJsonStr);
   }
 
-  /** Download an IModel's seed files and change sets from the Hub */
+  /** Download an IModel's seed files and change sets from the Hub.
+   *  A standard hierarchy of folders is created below the supplied downloadDir
+   */
   public static async downloadIModelByName(accessToken: AccessToken, projectName: string, iModelName: string, downloadDir: string): Promise<void> {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
 
@@ -173,7 +184,48 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: GuidString = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
 
-    await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, iModelId);
+    await BriefcaseManager.imodelClient.iModels.delete(actx, accessToken, projectId, iModelId);
+  }
+
+  /** Validate all change set operations by downloading seed files & change sets, creating a standalone iModel,
+   * merging the change sets, reversing them, and finally reinstating them. The method also logs the necessary performance
+   * metrics with these operations.
+   */
+  public static async validateAllChangeSetOperations(accessToken: AccessToken, projectId: string, iModelId: GuidString, iModelDir: string) {
+    Logger.logInfo(HubUtility.logCategory, "Downloading seed file and all available change sets");
+    await HubUtility.downloadIModelById(accessToken, projectId, iModelId, iModelDir);
+
+    const seedPathname = HubUtility.getSeedPathname(iModelDir);
+    const iModelPathname = path.join(iModelDir, path.basename(seedPathname));
+
+    Logger.logInfo(HubUtility.logCategory, "Creating standalone iModel");
+    HubUtility.createStandaloneIModel(iModelPathname, iModelDir);
+    const iModel: IModelDb = IModelDb.openStandalone(iModelPathname, OpenMode.ReadWrite);
+
+    const changeSets: ChangeSetToken[] = HubUtility.readChangeSets(iModelDir);
+
+    let status: ChangeSetStatus;
+
+    // Logger.logInfo(HubUtility.logCategory, "Dumping all available change sets");
+    // HubUtility.dumpStandaloneChangeSets(iModel, changeSets);
+
+    Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
+    status = HubUtility.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Merge);
+
+    if (status === ChangeSetStatus.Success) {
+      Logger.logInfo(HubUtility.logCategory, "Reversing all available change sets");
+      changeSets.reverse();
+      status = HubUtility.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Reverse);
+    }
+
+    if (status === ChangeSetStatus.Success) {
+      Logger.logInfo(HubUtility.logCategory, "Reinstating all available change sets");
+      changeSets.reverse();
+      status = HubUtility.applyStandaloneChangeSets(iModel, changeSets, ChangeSetApplyOption.Reinstate);
+    }
+
+    iModel.closeStandalone();
+    assert(status === ChangeSetStatus.Success, "Error applying change sets");
   }
 
   public static getSeedPathname(iModelDir: string) {
@@ -193,23 +245,23 @@ export class HubUtility {
     const iModelName = path.basename(pathname, ".bim");
     let iModel: HubIModel | undefined = await HubUtility.queryIModelByName(accessToken, projectId, iModelName);
     if (iModel) {
-      await BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, iModel.id!);
+      await BriefcaseManager.imodelClient.iModels.delete(actx, accessToken, projectId, iModel.id!);
     }
 
     // Upload a new iModel
-    iModel = await BriefcaseManager.imodelClient.IModels().create(actx, accessToken, projectId, iModelName, pathname, "", undefined, 2 * 60 * 1000);
+    iModel = await BriefcaseManager.imodelClient.iModels.create(actx, accessToken, projectId, iModelName, pathname, "", undefined, 2 * 60 * 1000);
     return iModel.id!;
   }
 
   /** Upload an IModel's seed files and change sets to the hub
-   *  @hidden
+   * It's assumed that the uploadDir contains a standard hierarchy of seed files and change sets.
    */
   public static async pushIModelAndChangeSets(accessToken: AccessToken, projectName: string, uploadDir: string): Promise<GuidString> {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(accessToken, projectId, seedPathname);
 
-    const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.Briefcases().create(actx, accessToken, iModelId);
+    const briefcase: HubBriefcase = await BriefcaseManager.imodelClient.briefcases.create(actx, accessToken, iModelId);
     if (!briefcase) {
       return Promise.reject(`Could not acquire a briefcase for the iModel ${iModelId}`);
     }
@@ -232,10 +284,11 @@ export class HubUtility {
       changeSet.id = changeSetJson.id;
       changeSet.parentId = changeSetJson.parentId;
       changeSet.fileSize = changeSetJson.fileSize;
+      changeSet.changesType = changeSetJson.changesType;
       changeSet.seedFileId = briefcase.fileId;
       changeSet.briefcaseId = briefcase.briefcaseId;
 
-      await BriefcaseManager.imodelClient.ChangeSets().create(actx, accessToken, iModelId, changeSet, changeSetPathname);
+      await BriefcaseManager.imodelClient.changeSets.create(actx, accessToken, iModelId, changeSet, changeSetPathname);
     }
 
     return iModelId;
@@ -248,13 +301,13 @@ export class HubUtility {
     const projectId: string = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const iModelId: GuidString = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
 
-    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, iModelId);
+    const briefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(actx, accessToken, iModelId);
     if (briefcases.length > acquireThreshold) {
       Logger.logInfo(HubUtility.logCategory, `Reached limit of maximum number of briefcases for ${projectName}:${iModelName}. Purging all briefcases.`);
 
       const promises = new Array<Promise<void>>();
       briefcases.forEach((briefcase: HubBriefcase) => {
-        promises.push(BriefcaseManager.imodelClient.Briefcases().delete(actx, accessToken, iModelId, briefcase.briefcaseId!));
+        promises.push(BriefcaseManager.imodelClient.briefcases.delete(actx, accessToken, iModelId, briefcase.briefcaseId!));
       });
       await Promise.all(promises);
     }
@@ -300,6 +353,8 @@ export class HubUtility {
 
   /** Applies change sets one by one (for debugging) */
   public static applyStandaloneChangeSets(iModel: IModelDb, changeSets: ChangeSetToken[], applyOption: ChangeSetApplyOption): ChangeSetStatus {
+    const perfLogger = new PerfLogger(`Applying change sets for operation ${ChangeSetApplyOption[applyOption]}`);
+
     // Apply change sets one by one to debug any issues
     for (const changeSet of changeSets) {
       const tempChangeSets = [changeSet];
@@ -314,6 +369,7 @@ export class HubUtility {
         return status;
     }
 
+    perfLogger.dispose();
     return ChangeSetStatus.Success;
   }
 
@@ -327,8 +383,8 @@ export class HubUtility {
 }
 
 class ImsUserMgr {
-  public async authorizeUser(_actx: ActivityLoggingContext, _userProfile: UserProfile | undefined, userCredentials: any): Promise<AccessToken> {
-    return await doImsLogin(userCredentials);
+  public async authorizeUser(_actx: ActivityLoggingContext, _userInfo: HubUserInfo | undefined, userCredentials: any): Promise<AccessToken> {
+    return doImsLogin(userCredentials);
   }
 }
 
@@ -347,15 +403,15 @@ class TestIModelHubProject {
   }
   public async createIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, params: any): Promise<HubIModel> {
     const client = this.iModelHubClient;
-    return client.IModels().create(actx, accessToken, projectId, params.name, params.seedFile, params.description, params.tracker);
+    return client.iModels.create(actx, accessToken, projectId, params.name, params.seedFile, params.description, params.tracker);
   }
-  public deleteIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: GuidString): Promise<void> {
+  public async deleteIModel(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, iModelId: GuidString): Promise<void> {
     const client = this.iModelHubClient;
-    return client.IModels().delete(actx, accessToken, projectId, iModelId);
+    return client.iModels.delete(actx, accessToken, projectId, iModelId);
   }
   public async queryIModels(_actx: ActivityLoggingContext, accessToken: AccessToken, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
     const client = this.iModelHubClient;
-    return client.IModels().get(actx, accessToken, projectId, query);
+    return client.iModels.get(actx, accessToken, projectId, query);
   }
 }
 

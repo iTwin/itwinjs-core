@@ -5,17 +5,16 @@
 /** @module Rendering */
 
 import { Id64, Id64String, JsonUtils, assert, IndexMap, IndexedValue, Comparable, compare, compareNumbers, compareStrings, IDisposable } from "@bentley/bentleyjs-core";
-import { ColorDef, ColorDefProps } from "./ColorDef";
+import { ColorDef, ColorDefProps, ColorByName } from "./ColorDef";
 import { Light } from "./Lighting";
 import { IModel } from "./IModel";
 import { Point3d, XYAndZ, Transform, Angle, AngleProps, Vector3d, ClipPlane, Point2d, IndexedPolyfaceVisitor, PolyfaceVisitor, Range1d } from "@bentley/geometry-core";
 import { LineStyle } from "./geometry/LineStyle";
-import { CameraProps } from "./ViewProps";
+import { CameraProps, ViewFlagProps, GroundPlaneProps } from "./ViewProps";
 import { OctEncodedNormalPair } from "./OctEncodedNormal";
 import { AreaPattern } from "./geometry/AreaPattern";
 import { Frustum } from "./Frustum";
 import { ImageBuffer, ImageBufferFormat } from "./Image";
-import { ViewFlagProps } from "./ViewProps";
 
 /** Flags indicating whether and how the interiors of closed planar regions is displayed within a view. */
 export enum FillFlags {
@@ -240,7 +239,7 @@ export abstract class RenderTexture implements IDisposable {
   }
 
   /** Releases any WebGL resources owned by this texture.
-   * If [[RenderTexture.isOwned]] is true, then whatever object claims ownership of the texture is reponsible for disposing of it when it is no longer needed.
+   * If [[RenderTexture.isOwned]] is true, then whatever object claims ownership of the texture is responsible for disposing of it when it is no longer needed.
    * Otherwise, imodeljs will handle its disposal.
    */
   public abstract dispose(): void;
@@ -457,10 +456,20 @@ export class Camera implements CameraProps {
     this.focusDist = rhs.focusDist;
     this.eye.setFrom(rhs.eye);
   }
-  public constructor(json: CameraProps) {
-    this.lens = Angle.fromJSON(json.lens);
-    this.focusDist = JsonUtils.asDouble(json.focusDist);
-    this.eye = Point3d.fromJSON(json.eye);
+
+  /** Construct a Camera
+   * @param props The properties of the new camera. If undefined, create a camera with eye at {0,0,0}, 90 degree lens, 1 meter focus distance.
+   */
+  public constructor(props?: CameraProps) {
+    if (props !== undefined) {
+      this.lens = Angle.fromJSON(props.lens);
+      this.focusDist = JsonUtils.asDouble(props.focusDist);
+      this.eye = Point3d.fromJSON(props.eye);
+      return;
+    }
+    this.lens = Angle.createRadians(Math.PI / 2.0);
+    this.focusDist = 1;
+    this.eye = new Point3d();
   }
 }
 
@@ -1618,7 +1627,7 @@ export class GeometryParams {
    */
   public backgroundFill?: BackgroundFill;
   /** Optional fill specification that determines when and if a region interior will display using [[gradient]], [[backgroundFill]], or [[fillColor]] in that order of preference.
-   * Fill only applies to [[RenderMode.Wireframe]] views. In a [[RenderMode.SmoothShade]] or [[RenderMode.SolidFill]] view, regions will always display as surfaces prefering [[fillColor]] when present over [[lineColor]].
+   * Fill only applies to [[RenderMode.Wireframe]] views. In a [[RenderMode.SmoothShade]] or [[RenderMode.SolidFill]] view, regions will always display as surfaces preferring [[fillColor]] when present over [[lineColor]].
    * Default is [[FillDisplay.Never]].
    */
   public fillDisplay?: FillDisplay;
@@ -1655,7 +1664,7 @@ export class GeometryParams {
    * @note If a valid SubCategory Id is not supplied, the default SubCategory for the parent Category is used. To be considered valid, [[SubCategory.getCategoryId]] must refer to the specified Category Id.
    */
   constructor(public categoryId: Id64String, public subCategoryId = Id64.invalid) {
-    if (Id64.isValid(subCategoryId))
+    if (!Id64.isValid(subCategoryId))
       this.subCategoryId = IModel.getDefaultSubCategoryId(categoryId);
   }
 
@@ -2149,13 +2158,14 @@ export namespace TextureMapping {
     }
   }
 }
+
 /** Properties for display of analysis data */
 export interface AnalysisStyleProps {
   inputName?: string;
   displacementChannelName?: string;
   scalarChannelName?: string;
   normalChannelName?: string;
-  displacementScale: number;
+  displacementScale?: number;
   scalarRange?: Range1d;
   scalarThematicSettings?: Gradient.ThematicSettingsProps;
   inputRange?: Range1d;
@@ -2166,7 +2176,7 @@ export class AnalysisStyle implements AnalysisStyleProps {
   public displacementChannelName?: string;
   public scalarChannelName?: string;
   public normalChannelName?: string;
-  public displacementScale: number = 1.0;
+  public displacementScale?: number;
   public scalarRange?: Range1d;
   public scalarThematicSettings?: Gradient.ThematicSettings;
   public inputRange?: Range1d;
@@ -2204,5 +2214,68 @@ export class AnalysisStyle implements AnalysisStyleProps {
     const result = undefined !== out ? out : new AnalysisStyle();
     result.copyFrom(this);
     return result;
+  }
+}
+
+/** A circle drawn at a Z elevation, whose diameter is the the XY diagonal of the project extents, used to represent the ground as a reference point within a spatial view. */
+export class GroundPlane implements GroundPlaneProps {
+  /** Whether the ground plane should be displayed. */
+  public display: boolean = false;
+  /** The Z height at which to draw the plane. */
+  public elevation: number = 0.0;
+  /** The color in which to draw the ground plane when viewed from above. */
+  public aboveColor: ColorDef;
+  /** The color in which to draw the ground plane when viewed from below. */
+  public belowColor: ColorDef;
+  private _aboveSymb?: Gradient.Symb;
+  private _belowSymb?: Gradient.Symb;
+
+  public constructor(ground?: GroundPlaneProps) {
+    ground = ground ? ground : {};
+    this.display = JsonUtils.asBool(ground.display, false);
+    this.elevation = JsonUtils.asDouble(ground.elevation, -.01);
+    this.aboveColor = (undefined !== ground.aboveColor) ? ColorDef.fromJSON(ground.aboveColor) : new ColorDef(ColorByName.darkGreen);
+    this.belowColor = (undefined !== ground.belowColor) ? ColorDef.fromJSON(ground.belowColor) : new ColorDef(ColorByName.darkBrown);
+  }
+
+  public toJSON(): GroundPlaneProps {
+    return {
+      display: this.display,
+      elevation: this.elevation,
+      aboveColor: this.aboveColor.toJSON(),
+      belowColor: this.belowColor.toJSON(),
+    };
+  }
+
+  /**
+   * Returns and locally stores gradient symbology for the ground plane texture depending on whether we are looking from above or below.
+   * Will store the ground colors used in the optional ColorDef array provided.
+   * @hidden
+   */
+  public getGroundPlaneGradient(aboveGround: boolean): Gradient.Symb {
+    let gradient = aboveGround ? this._aboveSymb : this._belowSymb;
+    if (undefined !== gradient)
+      return gradient;
+
+    const values = [0, .25, .5];   // gradient goes from edge of rectangle (0.0) to center (1.0)...
+    const color = aboveGround ? this.aboveColor : this.belowColor;
+    const alpha = aboveGround ? 0x80 : 0x85;
+    const groundColors = [color.clone(), color.clone(), color.clone()];
+    groundColors[0].setTransparency(0xff);
+    groundColors[1].setTransparency(alpha);
+    groundColors[2].setTransparency(alpha);
+
+    // Get the possibly cached gradient from the system, specific to whether or not we want ground from above or below.
+    gradient = new Gradient.Symb();
+    gradient.mode = Gradient.Mode.Spherical;
+    gradient.keys = [{ color: groundColors[0], value: values[0] }, { color: groundColors[1], value: values[1] }, { color: groundColors[2], value: values[2] }];
+
+    // Store the gradient for possible future use
+    if (aboveGround)
+      this._aboveSymb = gradient;
+    else
+      this._belowSymb = gradient;
+
+    return gradient;
   }
 }

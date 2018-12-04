@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { StandaloneIModelRpcInterface, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import { PhysicalModel } from "@bentley/imodeljs-backend";
+import { StandaloneIModelRpcInterface, IModel, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { KnownTestLocations } from "./KnownTestLocations";
@@ -33,7 +34,7 @@ async function setUpTest() {
   cc.saveChanges();
   cc.closeStandalone();
   cc = IModelTestUtils.openIModelFromOut(bimName, { openMode: OpenMode.ReadWrite });
-  IModelTestUtils.createNewModel(cc.elements.getRootSubject(), "test", true);
+  PhysicalModel.insert(cc, IModel.rootSubjectId, "test");
   cc.saveChanges();
   cc.closeStandalone();
 }
@@ -99,7 +100,7 @@ describe("RobotWorldRpc", () => {
     //  |                   V
     //  +-- -- -- -- -- -- --
     if (true) {
-      roWrite.moveRobot(iToken, robot1Id, barrier1.placement.origin);
+      await roWrite.moveRobot(iToken, robot1Id, barrier1.placement.origin);
       await iModel.saveChanges();
       const r1 = (await iModel.elements.getProps(robot1Id))[0];
       assert.deepEqual(r1.placement.origin, barrier1.placement.origin);

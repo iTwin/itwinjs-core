@@ -27,24 +27,24 @@ describe("TreeDataProvider", async () => {
   });
 
   it("returns root nodes count", async () => {
-    const count = await provider.getRootNodesCount();
+    const count = await provider.getNodesCount();
     expect(count).to.eq(1);
   });
 
   it("returns root nodes", async () => {
-    const nodes = await provider.getRootNodes();
+    const nodes = await provider.getNodes();
     expect(nodes).to.matchSnapshot();
   });
 
   it("returns child nodes count", async () => {
-    const rootNodes = await provider.getRootNodes();
-    const count = await provider.getChildNodesCount(rootNodes[0]);
+    const rootNodes = await provider.getNodes();
+    const count = await provider.getNodesCount(rootNodes[0]);
     expect(count).to.eq(1);
   });
 
   it("returns child nodes", async () => {
-    const rootNodes = await provider.getRootNodes();
-    const childNodes = await provider.getChildNodes(rootNodes[0]);
+    const rootNodes = await provider.getNodes();
+    const childNodes = await provider.getNodes(rootNodes[0]);
     expect(childNodes).to.matchSnapshot();
   });
 

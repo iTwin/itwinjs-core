@@ -94,7 +94,7 @@ export class IModelApp {
    * MyApp.startup();
    * ```
    */
-  public static startup(imodelClient?: IModelClient) {
+  public static startup(imodelClient?: IModelClient): void {
     if (IModelApp._initialized)
       throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
 

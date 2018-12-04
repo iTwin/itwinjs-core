@@ -66,7 +66,7 @@ export abstract class IModelHubBaseEvent {
    */
   public async delete(alctx: ActivityLoggingContext): Promise<boolean> {
     if (this._handler && this._lockUrl && this._sasToken) {
-      const options = getEventBaseOperationRequestOptions(this._handler, ModifyEventOperationToRequestType.Delete, this._sasToken);
+      const options = await getEventBaseOperationRequestOptions(this._handler, ModifyEventOperationToRequestType.Delete, this._sasToken);
       const result = await request(alctx, this._lockUrl, options);
 
       if (result.status === 200)
@@ -98,7 +98,7 @@ export enum GetEventOperationToRequestType {
  * @param requestTimeout Timeout for the request.
  * @return Event if it exists.
  */
-export function getEventBaseOperationRequestOptions(handler: IModelBaseHandler, method: string, sasToken: string, requestTimeout?: number): RequestOptions {
+export async function getEventBaseOperationRequestOptions(handler: IModelBaseHandler, method: string, sasToken: string, requestTimeout?: number): Promise<RequestOptions> {
   const options: RequestOptions = {
     method,
     headers: { authorization: sasToken },
@@ -110,7 +110,7 @@ export function getEventBaseOperationRequestOptions(handler: IModelBaseHandler, 
   if (requestTimeout)
     options.timeout = requestTimeout * 1500;
 
-  new DefaultRequestOptionsProvider().assignOptions(options);
+  await new DefaultRequestOptionsProvider().assignOptions(options);
 
   return options;
 }
@@ -160,8 +160,8 @@ export abstract class EventBaseHandler {
    * @return Event if it exists.
    * @hidden
    */
-  protected getEventRequestOptions(operation: GetEventOperationToRequestType, sasToken: string, requestTimeout?: number): RequestOptions {
-    const options = getEventBaseOperationRequestOptions(this._handler, operation, sasToken, requestTimeout);
+  protected async getEventRequestOptions(operation: GetEventOperationToRequestType, sasToken: string, requestTimeout?: number): Promise<RequestOptions> {
+    const options = await getEventBaseOperationRequestOptions(this._handler, operation, sasToken, requestTimeout);
 
     this.setServiceBusOptions(options);
 
@@ -193,7 +193,7 @@ export class EventListener {
       existingSubscription = subscription;
       existingSubscription.listeners = new BeEvent<(event: IModelHubBaseEvent) => void>();
       deleteListener = subscription.listeners.addListener(listener);
-      this.getEvents(subscription);
+      this.getEvents(subscription); // tslint:disable-line:no-floating-promises
     } else {
       deleteListener = subscription.listeners.addListener(listener);
     }

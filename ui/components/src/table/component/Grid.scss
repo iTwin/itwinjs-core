@@ -2,11 +2,9 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
+@import "@bentley/bwc/lib/mixins";
 
 .react-data-grid-wrapper {
-
-  /* padding: 0 55px 0 0; */
   height: 100%;
   width: 100%;
   user-select: none;
@@ -23,8 +21,7 @@
   .react-grid-Container,
   .react-grid-Grid,
   .react-grid-Main,
-  .react-grid-Viewport
-  {
+  .react-grid-Viewport {
     min-height: 100% !important;
     height: 100% !important;
   }
@@ -36,13 +33,14 @@
 
   .react-grid-HeaderRow {
     width: calc(100% - 28px) !important;
+    overflow-x: visible !important; /* May cause unknown issues; However, fixes unnecessary clipping for reorder styling. */
   }
 
   .react-grid-Main,
   .react-grid-Grid,
   .react-grid-Viewport,
   .react-grid-Canvas,
-  .react-grid-Row * {
+  .react-grid-Row {
     border: none;
     background: #F9F9F9;
     outline: none;
@@ -53,7 +51,7 @@
     width: fit-content;
   }
 
-  .is-hover-enabled .react-grid-Row:hover,.is-hover-enabled .react-grid-Row:hover * {
+  .is-hover-enabled .react-grid-Row:hover, .is-hover-enabled .react-grid-Row:hover * {
     background: #e4f5fd !important;
   }
 
@@ -75,6 +73,12 @@
     outline: none !important;
   }
 
+  .react-grid-Cell__value {
+    position: absolute;
+    width: 100%;
+    height: 100%;
+  }
+
   .react-grid-Header {
     background: #dce0e3;
   }
@@ -87,20 +91,16 @@
     border: none;
   }
 
-  .react-grid-HeaderCell .react-grid-HeaderCell__draggable {
+  .react-grid-HeaderCell__draggable {
     background: #dce0e3;
     width: 8px !important;
     left: 100%;
     z-index: 2;
   }
 
-  .react-grid-HeaderCell--locked {
-    z-index: 3;
-  }
-
-  .react-grid-HeaderCell .react-grid-HeaderCell__draggable::after {
+  .react-grid-HeaderCell__draggable::after {
     content: ' ';
-    background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%225%22 height=%2225%22%3E %3Cg fill=%22#909ba6%22 fill-rule=%22evenodd%22%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 20)%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 10)%22/%3E %3C/g%3E %3C/svg%3E');
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%225%22 height=%2225%22%3E %3Cg fill=%22#909ba6%22 fill-rule=%22evenodd%22%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 20)%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 10)%22/%3E %3C/g%3E %3C/svg%3E");
     height: 10px;
     width: 2px;
     position: relative;
@@ -111,7 +111,6 @@
     left: calc(50% - 1px);
     pointer-events: none;
   }
-
 
   .property-name-cell span {
     height: 100%;
@@ -126,42 +125,47 @@
     margin-top: 4px;
   }
 
-  .angry-text{
+  .angry-text {
     font-weight: 400;
     color: red;
   }
 
+  .react-grid-HeaderCell--locked {
+    z-index: 3;
+  }
+
+  // row * causes lots of problems down the hierarchy
   .row, .row * {
     width: 100%;
     height: 100%;
   }
 
-  .cell, .cell * {
+  .cell {
     padding-left: 8px;
     padding-right: 8px;
     position: absolute;
     width: 100%;
     height: 100%;
-    top:0px;
-    left:0px;
+    top: 0px;
+    left: 0px;
     background-color: #F9F9F9;
     user-select: none;
     display: flex;
     align-items: center;
-  }
 
-  .cell.is-selected {
-    background-color: #a6d7f5;
-  }
-
-  .cell.is-hover-enabled:hover {
-    background: #e4f5fd !important;
+    &.is-selected {
+      background-color: #a6d7f5;
+    }
   }
 
   .react-grid-Cell__value {
     position: absolute;
-    width:100%;
-    height:100%;
+    width: 100%;
+    height: 100%;
+
+    &.is-hover-enabled:hover {
+      background: #e4f5fd !important;
+    }
   }
 
   .icon {
@@ -169,10 +173,14 @@
     background: inherit;
   }
 
-  .cell-editor {
+  .components-cell-editor {
     border: $bwc-blue solid 2px;
     background: #F9F9F9 !important;
     box-sizing: border-box;
     height: 100%;
   }
+}
+
+.table-header-drag-drop .react-grid-HeaderCell {
+  height: 100%;
 }

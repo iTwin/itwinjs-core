@@ -7,21 +7,21 @@
 import StyleHelper from "../common/StyleHelper";
 import { CheckBoxState } from "@bentley/ui-core/lib/enums/CheckBoxState";
 import { Node } from "@bentley/presentation-common";
-import { TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
+import { DelayLoadedTreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
 import { PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
 import { PageOptions as UiPageOptions } from "@bentley/ui-components/lib/common/PageOptions";
 
 /** @hidden */
-export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string): TreeNodeItem[] => {
-  const list = new Array<TreeNodeItem>();
+export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string): DelayLoadedTreeNodeItem[] => {
+  const list = new Array<DelayLoadedTreeNodeItem>();
   for (const node of nodes)
     list.push(createTreeNodeItem(node, parentId));
   return list;
 };
 
 /** @hidden */
-export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): TreeNodeItem => {
-  const item: TreeNodeItem = {
+export const createTreeNodeItem = (node: Readonly<Node>, parentId?: string): DelayLoadedTreeNodeItem => {
+  const item: DelayLoadedTreeNodeItem = {
     id: [...node.key.pathFromRoot].reverse().join("/"),
     label: node.label,
     description: node.description || "",

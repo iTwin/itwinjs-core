@@ -6,19 +6,19 @@ import * as chai from "chai";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { BIMReviewShareClient, Content } from "../BIMReviewShareClient";
-import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, Guid, GuidString } from "@bentley/bentleyjs-core";
 
 describe("BIMReviewShareClient", () => {
 
   let accessToken: AccessToken;
   let actx: ActivityLoggingContext;
   const bimReviewShareClient: BIMReviewShareClient = new BIMReviewShareClient();
-  let projectId: string = "";
+  let projectId: GuidString = "";
   const moduleName = "BIMREVIEWSHARE_TEST_SavedViewsModule";
 
   before(async function (this: Mocha.IHookCallbackContext) {
     this.enableTimeouts(false);
-    actx = new ActivityLoggingContext("");
+    actx = new ActivityLoggingContext(Guid.createValue());
     if (TestConfig.enableMocks)
       return;
 
@@ -26,8 +26,7 @@ describe("BIMReviewShareClient", () => {
     const authToken: AuthorizationToken = await TestConfig.login();
     accessToken = await bimReviewShareClient.getAccessToken(actx, authToken);
 
-    const testCase = await TestConfig.queryTestCase(accessToken, TestConfig.projectName);
-    projectId = testCase.project.wsgId;
+    projectId = (await TestConfig.queryProject(accessToken, TestConfig.projectName)).wsgId;
 
     // Try to pre-emptively clean-up instances that may have stayed in the service after a failed run of this test
     try {
@@ -43,8 +42,8 @@ describe("BIMReviewShareClient", () => {
 
   it("should be able to post, retrieve, update and delete Content instance and data (#integration)", async function (this: Mocha.ITestCallbackContext) {
     // Test with fabricated "User ID"
-    const userGuidTest = Guid.createValue();
-    const userGuidTest2 = Guid.createValue();
+    const userGuidTest: GuidString = Guid.createValue();
+    const userGuidTest2: GuidString = Guid.createValue();
     // Test data to post in content's blob data
     let testData = { varA: 1, varB: 2, str1: "Test1", str2: "Test2" };
     // Post content using a randomly generated user GUIDs

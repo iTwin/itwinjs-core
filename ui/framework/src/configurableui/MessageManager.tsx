@@ -15,11 +15,9 @@ import {
   MessageBoxValue,
 } from "@bentley/imodeljs-frontend";
 import { UiEvent, MessageContainer, MessageSeverity } from "@bentley/ui-core";
-import UiFramework from "../UiFramework";
+import { UiFramework } from "../UiFramework";
 import { ModalDialogManager } from "./ModalDialogManager";
 import { StandardMessageBox } from "./StandardMessageBox";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
-import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 class MessageBoxCallbacks {
   constructor(
@@ -92,29 +90,22 @@ class OngoingActivityMessage {
 export class MessageManager {
   private static _maxCachedMessages = 500;
   private static _messages: NotifyMessageDetails[] = new Array<NotifyMessageDetails>();
-  private static _MessageAddedEvent: MessageAddedEvent = new MessageAddedEvent();
-
-  private static _ActivityMessageUpdatedEvent: ActivityMessageUpdatedEvent = new ActivityMessageUpdatedEvent();
-  private static _ActivityMessageCancelledEvent: ActivityMessageCancelledEvent = new ActivityMessageCancelledEvent();
   private static _OngoingActivityMessage: OngoingActivityMessage = new OngoingActivityMessage();
 
-  private static _InputFieldMessageAddedEvent: InputFieldMessageAddedEvent = new InputFieldMessageAddedEvent();
-  private static _InputFieldMessageRemovedEvent: InputFieldMessageRemovedEvent = new InputFieldMessageRemovedEvent();
-
   /** The MessageAddedEvent is fired when a message is added via IModelApp.notifications.outputMessage(). */
-  public static get onMessageAddedEvent(): MessageAddedEvent { return this._MessageAddedEvent; }
+  public static readonly onMessageAddedEvent = new MessageAddedEvent();
 
   /** The ActivityMessageUpdatedEvent is fired when an Activity message updates via IModelApp.notifications.outputActivityMessage(). */
-  public static get onActivityMessageUpdatedEvent(): ActivityMessageUpdatedEvent { return this._ActivityMessageUpdatedEvent; }
+  public static readonly onActivityMessageUpdatedEvent = new ActivityMessageUpdatedEvent();
 
   /** The ActivityMessageCancelledEvent is fired when an Activity message is cancelled via
    * IModelApp.notifications.endActivityMessage(ActivityMessageEndReason.Cancelled) or
    * by the user clicking the 'Cancel' link.
    */
-  public static get onActivityMessageCancelledEvent(): ActivityMessageCancelledEvent { return this._ActivityMessageCancelledEvent; }
+  public static readonly onActivityMessageCancelledEvent = new ActivityMessageCancelledEvent();
 
-  public static get onInputFieldMessageAddedEvent(): InputFieldMessageAddedEvent { return this._InputFieldMessageAddedEvent; }
-  public static get onInputFieldMessageRemovedEvent(): InputFieldMessageRemovedEvent { return this._InputFieldMessageRemovedEvent; }
+  public static readonly onInputFieldMessageAddedEvent = new InputFieldMessageAddedEvent();
+  public static readonly onInputFieldMessageRemovedEvent = new InputFieldMessageRemovedEvent();
 
   /** List of messages as NotifyMessageDetails. */
   public static get messages(): Readonly<NotifyMessageDetails[]> { return this._messages; }
@@ -136,7 +127,6 @@ export class MessageManager {
     }
 
     this.onMessageAddedEvent.emit({ message });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.NotificationMessageAdded);
   }
 
   /**
@@ -169,7 +159,6 @@ export class MessageManager {
       details: this._OngoingActivityMessage.details,
       restored: (restored !== undefined) ? restored : this._OngoingActivityMessage.isRestored,
     });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ActivityMessageUpdated);
 
     this._OngoingActivityMessage.isRestored = false;
 
@@ -184,7 +173,6 @@ export class MessageManager {
   public static endActivityMessage(isCompleted: boolean): boolean {
     this.endActivityProcessing(isCompleted);
     this.onActivityMessageCancelledEvent.emit({});
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ActivityMessageCancelled);
     return true;
   }
 
@@ -210,7 +198,6 @@ export class MessageManager {
       target,
       messageText,
     });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.InputFieldMessageAdded);
   }
 
   /**
@@ -218,12 +205,11 @@ export class MessageManager {
    */
   public static hideInputFieldMessage() {
     this.onInputFieldMessageRemovedEvent.emit({});
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.InputFieldMessageRemoved);
   }
 
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */
-  public static outputPrompt(_prompt: string): void {
-    UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: _prompt });
+  public static outputPrompt(prompt: string): void {
+    UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: prompt });
   }
 
   /** Gets an icon CSS class name based on a given NotifyMessageDetails. */
@@ -263,7 +249,7 @@ export class MessageManager {
    * @param icon         The MessageBox icon type.
    * @return the response from the user.
    */
-  public static openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
+  public static async openMessageBox(mbType: MessageBoxType, message: string, icon: MessageBoxIconType): Promise<MessageBoxValue> {
     const title = UiFramework.i18n.translate("UiFramework:general.alert");
 
     return new Promise((onFulfilled: (result: MessageBoxValue) => void, onRejected: (reason: any) => void) => {

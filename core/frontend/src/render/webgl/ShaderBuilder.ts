@@ -420,7 +420,6 @@ export class ShaderBuilder extends ShaderVariables {
         src.addline("#define FragColor0 gl_FragData[0]");
         src.addline("#define FragColor1 gl_FragData[1]");
         src.addline("#define FragColor2 gl_FragData[2]");
-        src.addline("#define FragColor3 gl_FragData[3]");
       }
 
       if (isLit) {
@@ -464,9 +463,6 @@ export const enum VertexShaderComponent {
   // (Required) Return this vertex's position in clip space.
   // vec4 computePosition(vec4 rawPos)
   ComputePosition,
-  // (Optional) Add the element id to the vertex shader.
-  // void computeElementId()
-  AddComputeElementId,
   // (Optional) After all output (varying) values have been computed, return true if this vertex should be discarded.
   // bool checkForLateDiscard()
   CheckForLateDiscard,
@@ -518,7 +514,7 @@ export class VertexShaderBuilder extends ShaderBuilder {
 
     main.addline("  vec4 rawPosition = unquantizeVertexPosition(a_pos, u_qOrigin, u_qScale);");
     if (this._isAnimated)
-      main.addline("  rawPosition.xyz += computeAnimationDisplacement(u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);");
+      main.addline("  rawPosition.xyz += computeAnimationDisplacement(g_vertexLUTIndex, u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);");
 
     const checkForEarlyDiscard = this.get(VertexShaderComponent.CheckForEarlyDiscard);
     if (undefined !== checkForEarlyDiscard) {
@@ -536,11 +532,6 @@ export class VertexShaderBuilder extends ShaderBuilder {
     if (undefined !== checkForDiscard) {
       prelude.addFunction("bool checkForDiscard()", checkForDiscard);
       main.add(GLSLVertex.discard);
-    }
-
-    const compElemId = this.get(VertexShaderComponent.AddComputeElementId);
-    if (undefined !== compElemId) {
-      main.addline("  computeElementId();");
     }
 
     main.addline("  gl_Position = computePosition(rawPosition);");

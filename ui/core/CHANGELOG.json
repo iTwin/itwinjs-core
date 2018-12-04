@@ -2,6 +2,138 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "0.171.0",
+      "tag": "@bentley/ui-core_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed Dialog modal backdrop show/hide"
+          },
+          {
+            "comment": "Reduced the amount of unneded event calls in Dialog component and changed it to use Pointer events instead of Mouse+Touch."
+          },
+          {
+            "comment": "Added a vertical/horizontal line that is visible when hovered on ElementSeparator component."
+          },
+          {
+            "comment": "Renamed expandable block css class from core-property-block to core-expandable-block."
+          },
+          {
+            "comment": "Added a way to put Popups in fixed position and cleand up the refs."
+          },
+          {
+            "comment": "Added Omit type definition to Utils."
+          },
+          {
+            "comment": "Unit tests"
+          },
+          {
+            "comment": "Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components"
+          },
+          {
+            "comment": "Add Placeholder that can be displayed instead of tree node while it's being loaded"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.170.0",
+      "tag": "@bentley/ui-core_v0.170.0",
+      "date": "Mon, 26 Nov 2018 19:38:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Reduced the amount of unneded event calls in Dialog component and changed it to use Pointer events instead of Mouse+Touch."
+          },
+          {
+            "comment": "Added a vertical/horizontal line that is visible when hovered on ElementSeparator component."
+          },
+          {
+            "comment": "Renamed expandable block css class from core-property-block to core-expandable-block."
+          },
+          {
+            "comment": "Added a way to put Popups in fixed position and cleand up the refs."
+          },
+          {
+            "comment": "Added Omit type definition to Utils."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.169.0",
+      "tag": "@bentley/ui-core_v0.169.0",
+      "date": "Tue, 20 Nov 2018 16:17:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Base Tree component improvements to allow virtualization"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.168.0",
+      "tag": "@bentley/ui-core_v0.168.0",
+      "date": "Sat, 17 Nov 2018 14:20:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.167.0",
+      "tag": "@bentley/ui-core_v0.167.0",
+      "date": "Fri, 16 Nov 2018 21:45:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed some content control sizing issues"
+          },
+          {
+            "comment": "Fixed Dialog movable prop and ContextMenu autoFlip."
+          },
+          {
+            "comment": "ui-framework unit tests & docs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.166.0",
+      "tag": "@bentley/ui-core_v0.166.0",
+      "date": "Mon, 12 Nov 2018 16:42:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.165.0",
+      "tag": "@bentley/ui-core_v0.165.0",
+      "date": "Mon, 12 Nov 2018 15:47:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.164.0",
+      "tag": "@bentley/ui-core_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "PropertyGrid property editing and unit tests"
+          },
+          {
+            "comment": "Updated to TypeScript 3.1"
+          },
+          {
+            "comment": "ui-core unit tests. Fixed backstage open issue."
+          },
+          {
+            "comment": "Make Tree-related components pure."
+          },
+          {
+            "comment": "Zone & Widget initial state, more ui-core unit tests, cleaned up ui-framework index.ts files."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.163.0",
       "tag": "@bentley/ui-core_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",

@@ -1,0 +1,200 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ToolWidget ToolWidget should render correctly 1`] = `
+<ToolWidgetWithDef
+  horizontalToolbar={
+    <Toolbar
+      expandsTo={3}
+      items={
+        <UNDEFINED>
+          <ActionItemButton
+            actionItem={
+              ToolItemDef {
+                "_commandHandler": Object {
+                  "execute": [Function],
+                  "getCommandArgs": undefined,
+                  "parameters": undefined,
+                },
+                "execute": [Function],
+                "featureId": "",
+                "iconSpec": "icon-cursor",
+                "isActive": false,
+                "isEnabled": true,
+                "isPressed": false,
+                "isVisible": true,
+                "label": "tools.Select.flyover",
+                "stateSyncIds": Array [],
+                "toolId": "Select",
+                "tooltip": "tools.Select.description",
+              }
+            }
+          />
+          <ToolButton
+            iconSpec="icon-placeholder"
+            labelKey="SampleApp:buttons.tool1"
+            toolId="tool1"
+          />
+          <ToolButton
+            iconSpec="icon-placeholder"
+            labelKey="SampleApp:buttons.tool2"
+            toolId="tool2"
+          />
+          <GroupButton
+            direction={3}
+            iconSpec="icon-placeholder"
+            items={
+              Array [
+                CommandItemDef {
+                  "commandId": "tool1",
+                  "execute": [Function],
+                  "featureId": "",
+                  "iconSpec": "icon-placeholder",
+                  "isActive": false,
+                  "isEnabled": true,
+                  "isPressed": false,
+                  "isVisible": true,
+                  "label": "",
+                  "stateSyncIds": Array [],
+                  "tooltip": "",
+                },
+                CommandItemDef {
+                  "applicationData": Object {
+                    "key": "value",
+                  },
+                  "commandId": "tool2",
+                  "execute": [Function],
+                  "featureId": "",
+                  "iconSpec": "icon-placeholder",
+                  "isActive": false,
+                  "isEnabled": true,
+                  "isPressed": false,
+                  "isVisible": true,
+                  "label": "",
+                  "stateSyncIds": Array [],
+                  "tooltip": "",
+                },
+              ]
+            }
+            itemsInColumn={7}
+          />
+        </UNDEFINED>
+      }
+    />
+  }
+  toolWidgetDef={
+    ToolWidgetDef {
+      "_appButton": CommandItemDef {
+        "_commandHandler": Object {
+          "execute": [Function],
+          "getCommandArgs": undefined,
+          "parameters": undefined,
+        },
+        "commandId": "SampleApp.BackstageToggle",
+        "execute": [Function],
+        "featureId": "",
+        "iconSpec": "icon-home",
+        "isActive": false,
+        "isEnabled": true,
+        "isPressed": false,
+        "isVisible": true,
+        "label": "",
+        "stateSyncIds": Array [],
+        "tooltip": "",
+      },
+      "_handleSyncUiEvent": [Function],
+      "_isVisible": true,
+      "classId": undefined,
+      "featureId": "",
+      "horizontalDirection": 3,
+      "horizontalItems": undefined,
+      "id": "toolWidget",
+      "isEnabled": true,
+      "isFloatingStateSupported": false,
+      "isFloatingStateWindowResizable": true,
+      "isFreeform": false,
+      "isPressed": false,
+      "isStatusBar": false,
+      "isToolSettings": false,
+      "isVisible": true,
+      "label": "",
+      "priority": 0,
+      "renderHorizontalToolbar": [Function],
+      "renderVerticalToolbar": [Function],
+      "stateChanged": false,
+      "stateSyncIds": Array [],
+      "tooltip": "",
+      "verticalDirection": 2,
+      "verticalItems": undefined,
+      "widgetState": 1,
+      "widgetType": 0,
+    }
+  }
+  verticalToolbar={
+    <Toolbar
+      expandsTo={2}
+      items={
+        <UNDEFINED>
+          <ToolButton
+            iconSpec="icon-placeholder"
+            labelKey="SampleApp:buttons.tool1"
+            toolId="tool1"
+          />
+          <ToolButton
+            iconSpec="icon-placeholder"
+            labelKey="SampleApp:buttons.tool2"
+            toolId="tool2"
+          />
+          <ToolButton
+            iconSpec="icon-placeholder"
+            isEnabled={false}
+            labelKey="SampleApp:buttons.tool1"
+            toolId="tool1"
+          />
+          <ToolButton
+            iconSpec="icon-placeholder"
+            isVisible={false}
+            labelKey="SampleApp:buttons.tool2"
+            toolId="tool2"
+          />
+          <GroupButton
+            iconSpec="icon-placeholder"
+            items={
+              Array [
+                CommandItemDef {
+                  "commandId": "tool1",
+                  "execute": [Function],
+                  "featureId": "",
+                  "iconSpec": "icon-placeholder",
+                  "isActive": false,
+                  "isEnabled": true,
+                  "isPressed": false,
+                  "isVisible": true,
+                  "label": "",
+                  "stateSyncIds": Array [],
+                  "tooltip": "",
+                },
+                CommandItemDef {
+                  "applicationData": Object {
+                    "key": "value",
+                  },
+                  "commandId": "tool2",
+                  "execute": [Function],
+                  "featureId": "",
+                  "iconSpec": "icon-placeholder",
+                  "isActive": false,
+                  "isEnabled": true,
+                  "isPressed": false,
+                  "isVisible": true,
+                  "label": "",
+                  "stateSyncIds": Array [],
+                  "tooltip": "",
+                },
+              ]
+            }
+          />
+        </UNDEFINED>
+      }
+    />
+  }
+/>
+`;

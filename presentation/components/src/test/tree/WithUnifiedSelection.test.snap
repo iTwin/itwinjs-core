@@ -1,0 +1,22 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Tree withUnifiedSelection renders correctly 1`] = `
+<Tree
+  dataProvider={
+    proxy {
+      "___id": "BCDF5CE5-F0DF-40B7-8BA0-69DF395033C8",
+      "connection": null,
+      "getFilteredNodePaths": [Function],
+      "getNodeKey": [Function],
+      "getNodes": [Function],
+      "getNodesCount": [Function],
+      "onTreeNodeChanged": undefined,
+      "rulesetId": "24/7",
+    }
+  }
+  onNodesDeselected={[Function]}
+  onNodesSelected={[Function]}
+  selectedNodes={[Function]}
+  selectionMode={1}
+/>
+`;

@@ -119,13 +119,13 @@ export default abstract class ContentDataProvider {
    */
   protected invalidateCache(props: CacheInvalidationProps): void {
     if (props.descriptor && this.getDefaultContentDescriptor)
-      this.getDefaultContentDescriptor.cache.clear();
+      this.getDefaultContentDescriptor.cache.clear!();
     if (props.descriptorConfiguration && this.getContentDescriptor)
-      this.getContentDescriptor.cache.clear();
+      this.getContentDescriptor.cache.clear!();
     if (props.size && this.getContentSetSize)
-      this.getContentSetSize.cache.clear();
+      this.getContentSetSize.cache.clear!();
     if (props.content && this.getContent)
-      this.getContent.cache.clear();
+      this.getContent.cache.clear!();
   }
 
   private createRequestOptions(): ContentRequestOptions<IModelConnection> {

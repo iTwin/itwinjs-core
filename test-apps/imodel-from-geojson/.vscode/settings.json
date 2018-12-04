@@ -1,0 +1,13 @@
+{
+  "files.exclude": {
+    "**/node_modules": true,
+    "**/lib": true
+  },
+  "cSpell.words": [
+    "backend",
+    "bentleyjs",
+    "geojson",
+    "guid",
+    "imodeljs"
+  ]
+}

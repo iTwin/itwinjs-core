@@ -2,6 +2,165 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.171.0",
+      "tag": "@bentley/imodeljs-frontend_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "WIP: add support for schedule animation (symbology)."
+          },
+          {
+            "comment": "geometry coverage"
+          },
+          {
+            "comment": "geometry coverage"
+          },
+          {
+            "comment": "Fix incorrect length used to create Uint32Array from Uint8Array."
+          },
+          {
+            "comment": "Fix incorrect display of raster text."
+          },
+          {
+            "comment": "Fix bug in which the frustum of a spatial view was always expanded to include the ground plane even if the ground plane was not displayed."
+          },
+          {
+            "comment": "Fix exception when attempting to create a SubCategoryAppearance from an empty string."
+          },
+          {
+            "comment": "Locate circle should be initialized to off."
+          },
+          {
+            "comment": "Enable locate and hilite for point clouds."
+          },
+          {
+            "comment": "Rename SimpleViewTest to display-test-app"
+          },
+          {
+            "comment": "SnapStatus and LocateFailure cleanup"
+          },
+          {
+            "comment": "Front end \"read pixels\" can now provide subCategoryId and GeometryClass to backend."
+          },
+          {
+            "comment": "Check SubCategoryAppearance dontLocate and dontSnap now that HitDetail has subCategoryId."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.170.0",
+      "tag": "@bentley/imodeljs-frontend_v0.170.0",
+      "date": "Mon, 26 Nov 2018 19:38:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix missing uniform error in Edge browser."
+          },
+          {
+            "comment": "Optimize 'pick buffer' portion of renderer."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.169.0",
+      "tag": "@bentley/imodeljs-frontend_v0.169.0",
+      "date": "Tue, 20 Nov 2018 16:17:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.168.0",
+      "tag": "@bentley/imodeljs-frontend_v0.168.0",
+      "date": "Sat, 17 Nov 2018 14:20:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.167.0",
+      "tag": "@bentley/imodeljs-frontend_v0.167.0",
+      "date": "Fri, 16 Nov 2018 21:45:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for finding reality models that overlap project extent."
+          },
+          {
+            "comment": "Refactor ContextRealityModelState"
+          },
+          {
+            "comment": "Numerous shader program optimizations."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.166.0",
+      "tag": "@bentley/imodeljs-frontend_v0.166.0",
+      "date": "Mon, 12 Nov 2018 16:42:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Hydrated briefcases for ReadOnly cases from the latest checkpoint, rather than the seed files. This significantly improves performance of IModelDb/IModelConnection.open() for typical cases. "
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.165.0",
+      "tag": "@bentley/imodeljs-frontend_v0.165.0",
+      "date": "Mon, 12 Nov 2018 15:47:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix SelectionSet broadcasting excessive selection change events"
+          },
+          {
+            "comment": "Add support for Context Reality Models"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.164.0",
+      "tag": "@bentley/imodeljs-frontend_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "AccuDraw/AccuSnap markdown/examples"
+          },
+          {
+            "comment": "Fix edge animation of PolyfaceAuxData"
+          },
+          {
+            "comment": "Updated frontend performance testing"
+          },
+          {
+            "comment": "Change filterHit on InteractiveTool to async to support backend queries"
+          },
+          {
+            "comment": "Fix JSON representation of DisplayStyleState."
+          },
+          {
+            "comment": "Fix links in tool docs"
+          },
+          {
+            "comment": "Added an option to Viewport.readImage() to flip the resultant image vertically."
+          },
+          {
+            "comment": "PrimitiveTool isValidLocation shouldn't require write, want check for measure tools too"
+          },
+          {
+            "comment": "Add Comments"
+          },
+          {
+            "comment": "Updated to TypeScript 3.1"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.163.0",
       "tag": "@bentley/imodeljs-frontend_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",

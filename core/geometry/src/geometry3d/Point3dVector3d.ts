@@ -211,13 +211,13 @@ export class XYZ implements XYAndZ {
   /** Freeze this XYZ */
   public freeze() { Object.freeze(this); }
 }
-/** 3D vector with x,y,z properties */
+/** 3D point with x,y,z properties */
 export class Point3d extends XYZ {
   /** Constructor for Point3d */
   constructor(x: number = 0, y: number = 0, z: number = 0) { super(x, y, z); }
   public static fromJSON(json?: XYZProps): Point3d { const val = new Point3d(); val.setFromJSON(json); return val; }
   /** Return a new Point3d with the same coordinates */
-  public clone(): Point3d { return new Point3d(this.x, this.y, this.z); }
+  public clone(result?: Point3d): Point3d { return Point3d.create(this.x, this.y, this.z, result); }
   /** Create a new Point3d with given coordinates
    * @param x x part
    * @param y y part
@@ -366,7 +366,10 @@ export class Point3d extends XYZ {
   }
   /** Return point + vectorA * scalarA + vectorB * scalarB + vectorC * scalarC */
   public plus3Scaled(vectorA: XYAndZ, scalarA: number, vectorB: XYAndZ, scalarB: number, vectorC: XYAndZ, scalarC: number, result?: Point3d): Point3d {
-    return Point3d.create(this.x + vectorA.x * scalarA + vectorB.x * scalarB + vectorC.x * scalarC, this.y + vectorA.y * scalarA + vectorB.y * scalarB + vectorC.y * scalarC, this.z + vectorA.z * scalarA + vectorB.z * scalarB + vectorC.z * scalarC, result);
+    return Point3d.create(
+      this.x + vectorA.x * scalarA + vectorB.x * scalarB + vectorC.x * scalarC,
+      this.y + vectorA.y * scalarA + vectorB.y * scalarB + vectorC.y * scalarC,
+      this.z + vectorA.z * scalarA + vectorB.z * scalarB + vectorC.z * scalarC, result);
   }
   /**
    * Return a point that is scaled from the source point.
@@ -420,7 +423,18 @@ export class Point3d extends XYZ {
 /** 3D vector with x,y,z properties */
 export class Vector3d extends XYZ {
   constructor(x: number = 0, y: number = 0, z: number = 0) { super(x, y, z); }
-  public clone(): Vector3d { return new Vector3d(this.x, this.y, this.z); }
+  /**
+   * Copy xyz from this instance to a new (or optionally resused) Vector3d
+   * @param result optional instance to reuse.
+   */
+  public clone(result?: Vector3d): Vector3d { return Vector3d.create(this.x, this.y, this.z, result); }
+  /**
+   * return a Vector3d (new or reused from optional result)
+   * @param x x component
+   * @param y y component
+   * @param z z component
+   * @param result optional instance to reuse
+   */
   public static create(x: number = 0, y: number = 0, z: number = 0, result?: Vector3d): Vector3d {
     if (result) {
       result.x = x;
@@ -790,20 +804,36 @@ export class Vector3d extends XYZ {
     }
     return undefined;
   }
-  // products
-  public crossProductMagnitudeSquared(vectorB: Vector3d): number {
+  /**
+   * Compute the squared magnitude of a cross product (without allocating a temporary vector object)
+   * @param vectorB second vector of cross product
+   * @returns the squared magnitude of the cross product of this instance with vectorB.
+   */
+  public crossProductMagnitudeSquared(vectorB: XYAndZ): number {
     const xx = this.y * vectorB.z - this.z * vectorB.y;
     const yy = this.z * vectorB.x - this.x * vectorB.z;
     const zz = this.x * vectorB.y - this.y * vectorB.x;
     return xx * xx + yy * yy + zz * zz;
   }
-  public crossProductMagnitude(vectorB: Vector3d): number {
+  /**
+   * Compute the  magnitude of a cross product (without allocating a temporary vector object)
+   * @param vectorB second vector of cross product
+   * @returns the  magnitude of the cross product of this instance with vectorB.
+   */
+  public crossProductMagnitude(vectorB: XYAndZ): number {
     return Math.sqrt(this.crossProductMagnitudeSquared(vectorB));
   }
+  /**
+   * @param vectorB second vector of cross product
+   * @returns the dot product of this instance with vectorB
+   */
   public dotProduct(vectorB: XYAndZ): number {
     return this.x * vectorB.x + this.y * vectorB.y + this.z * vectorB.z;
   }
-  /** Dot product with vector from pointA to pointB */
+  /** @returns the dot product of this instance with the with vector from pointA to pointB
+   * @param pointA start point of second vector of dot product
+   * @param pointB end point of second vector of dot product
+   */
   public dotProductStartEnd(pointA: Point3d, pointB: Point3d): number {
     return this.x * (pointB.x - pointA.x)
       + this.y * (pointB.y - pointA.y)

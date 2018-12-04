@@ -87,7 +87,7 @@ export class IModelVersion {
    * version was already specified as of a ChangeSet, the method simply returns
    * that Id without any validation.
    */
-  public evaluateChangeSet(alctx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string, imodelClient: IModelClient): Promise<string> {
+  public async evaluateChangeSet(alctx: ActivityLoggingContext, accessToken: AccessToken, iModelId: string, imodelClient: IModelClient): Promise<string> {
     if (this._first)
       return Promise.resolve("");
 
@@ -108,7 +108,7 @@ export class IModelVersion {
 
   /** Gets the last change set that was applied to the imodel */
   private static async getLatestChangeSetId(alctx: ActivityLoggingContext, imodelClient: IModelClient, accessToken: AccessToken, iModelId: GuidString): Promise<string> {
-    const changeSets: ChangeSet[] = await imodelClient.ChangeSets().get(alctx, accessToken, iModelId, new ChangeSetQuery().top(1).latest());
+    const changeSets: ChangeSet[] = await imodelClient.changeSets.get(alctx, accessToken, iModelId, new ChangeSetQuery().top(1).latest());
     // todo: Need a more efficient iModel Hub API to get this information from the Hub.
 
     return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
@@ -116,7 +116,7 @@ export class IModelVersion {
 
   /** Get the change set from the specified named version */
   private static async getChangeSetFromNamedVersion(alctx: ActivityLoggingContext, imodelClient: IModelClient, accessToken: AccessToken, iModelId: string, versionName: string): Promise<string> {
-    const versions = await imodelClient.Versions().get(alctx, accessToken, iModelId, new VersionQuery().select("ChangeSetId").byName(versionName));
+    const versions = await imodelClient.versions.get(alctx, accessToken, iModelId, new VersionQuery().select("ChangeSetId").byName(versionName));
 
     if (!versions[0] || !versions[0].changeSetId) {
       return Promise.reject(new IModelError(BentleyStatus.ERROR, "Problem getting versions"));

@@ -103,7 +103,7 @@ export class IModelBaseHandler extends WsgClient {
    * Get the URL of the service. This method attempts to discover and cache the URL from the URL Discovery Service. If not found uses the default URL provided by client implementations. Note that for consistency sake, the URL is stripped of any trailing "/"
    * @returns URL for the service
    */
-  public getUrl(alctx: ActivityLoggingContext): Promise<string> {
+  public async getUrl(alctx: ActivityLoggingContext): Promise<string> {
     return super.getUrl(alctx);
   }
 
@@ -123,7 +123,7 @@ export class IModelBaseHandler extends WsgClient {
    * @param relativeUrlPath Relative path to the REST resource.
    * @returns Promise resolves after successfully deleting REST resource at the specified path.
    */
-  public delete(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string): Promise<void> {
+  public async delete(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string): Promise<void> {
     return super.delete(alctx, token, relativeUrlPath);
   }
 
@@ -135,7 +135,7 @@ export class IModelBaseHandler extends WsgClient {
    * @param requestOptions WSG options for the request.
    * @returns Promise resolves after successfully deleting instance.
    */
-  public deleteInstance<T extends WsgInstance>(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
+  public async deleteInstance<T extends WsgInstance>(alctx: ActivityLoggingContext, token: AccessToken, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void> {
     if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
@@ -154,7 +154,7 @@ export class IModelBaseHandler extends WsgClient {
    * @param requestOptions WSG options for the request.
    * @returns The posted instance that's returned back from the server.
    */
-  public postInstance<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
+  public async postInstance<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions): Promise<T> {
     if (this._customRequestOptions.isSet) {
       if (!requestOptions) {
         requestOptions = {};
@@ -173,7 +173,7 @@ export class IModelBaseHandler extends WsgClient {
    * @param requestOptions WSG options for the request.
    * @returns The posted instances that's returned back from the server.
    */
-  public postInstances<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]> {
+  public async postInstances<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions): Promise<T[]> {
     return super.postInstances(alctx, typedConstructor, token, relativeUrlPath, instances, requestOptions);
   }
 
@@ -185,7 +185,7 @@ export class IModelBaseHandler extends WsgClient {
    * @param queryOptions Query options.
    * @returns Array of strongly typed instances.
    */
-  public getInstances<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]> {
+  public async getInstances<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions?: RequestQueryOptions): Promise<T[]> {
     return super.getInstances(alctx, typedConstructor, token, relativeUrlPath, queryOptions);
   }
 
@@ -197,7 +197,7 @@ export class IModelBaseHandler extends WsgClient {
    * @param queryOptions Query options.
    * @returns Array of strongly typed instances.
    */
-  public postQuery<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
+  public async postQuery<T extends WsgInstance>(alctx: ActivityLoggingContext, typedConstructor: new () => T, token: AccessToken, relativeUrlPath: string, queryOptions: RequestQueryOptions): Promise<T[]> {
     return super.postQuery(alctx, typedConstructor, token, relativeUrlPath, queryOptions);
   }
 

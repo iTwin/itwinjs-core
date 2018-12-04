@@ -3,19 +3,21 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { AccessToken, Config } from "@bentley/imodeljs-clients";
-import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration } from "@bentley/imodeljs-common";
+import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext, BeEvent } from "@bentley/bentleyjs-core";
+import { AccessToken, Config, ChangeSet } from "@bentley/imodeljs-clients";
+import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, NativePlatformRegistry,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, NativePlatformRegistry, SubjectOwnsPartitionElements,
 } from "../backend";
 import { DisableNativeAssertions as NativeDisableNativeAssertions } from "../imodeljs-native-platform-api";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { TestIModelInfo } from "./MockAssetUtil";
 import { HubUtility, UserCredentials } from "./integration/HubUtility";
-import { TestConfig } from "./TestConfig";
 import * as path from "path";
+import { Schema, Schemas } from "../Schema";
+import { ElementDrivesElement, RelationshipProps } from "../Relationship";
+import { PhysicalElement } from "../Element";
+import { ClassRegistry } from "../ClassRegistry";
 
 const actx = new ActivityLoggingContext("");
 
@@ -31,6 +33,33 @@ export class Timer {
     // tslint:disable-next-line:no-console
     console.timeEnd(this._label);
   }
+}
+
+export class TestIModelInfo {
+  private _name: string;
+  private _id: string;
+  private _localReadonlyPath: string;
+  private _localReadWritePath: string;
+  private _changeSets: ChangeSet[];
+
+  constructor(name: string) {
+    this._name = name;
+    this._id = "";
+    this._localReadonlyPath = "";
+    this._localReadWritePath = "";
+    this._changeSets = [];
+  }
+
+  get name(): string { return this._name; }
+  set name(name: string) { this._name = name; }
+  get id(): string { return this._id; }
+  set id(id: string) { this._id = id; }
+  get localReadonlyPath(): string { return this._localReadonlyPath; }
+  set localReadonlyPath(localReadonlyPath: string) { this._localReadonlyPath = localReadonlyPath; }
+  get localReadWritePath(): string { return this._localReadWritePath; }
+  set localReadWritePath(localReadWritePath: string) { this._localReadWritePath = localReadWritePath; }
+  get changeSets(): ChangeSet[] { return this._changeSets; }
+  set changeSets(changeSets: ChangeSet[]) { this._changeSets = changeSets; }
 }
 
 RpcConfiguration.developmentMode = true;
@@ -120,38 +149,41 @@ export class DisableNativeAssertions implements IDisposable {
   }
 }
 
+export class TestBim extends Schema { }
+export interface TestRelationshipProps extends RelationshipProps {
+  property1: string;
+}
+export class TestElementDrivesElement extends ElementDrivesElement implements TestRelationshipProps {
+  public property1!: string;
+  public static rootChanged = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
+  public static validateOutput = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
+  public static deletedDependency = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
+  public static onRootChanged(props: RelationshipProps, imodel: IModelDb): void { this.rootChanged.raiseEvent(props, imodel); }
+  public static onValidateOutput(props: RelationshipProps, imodel: IModelDb): void { this.validateOutput.raiseEvent(props, imodel); }
+  public static onDeletedDependency(props: RelationshipProps, imodel: IModelDb): void { this.deletedDependency.raiseEvent(props, imodel); }
+}
+export interface TestPhysicalObjectProps extends GeometricElementProps {
+  intProperty: number;
+}
+export class TestPhysicalObject extends PhysicalElement implements TestPhysicalObjectProps {
+  public intProperty!: number;
+  public static beforeOutputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
+  public static allInputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
+  public static onBeforeOutputsHandled(id: Id64String, imodel: IModelDb): void { this.beforeOutputsHandled.raiseEvent(id, imodel); }
+  public static onAllInputsHandled(id: Id64String, imodel: IModelDb): void { this.allInputsHandled.raiseEvent(id, imodel); }
+}
+
 export class IModelTestUtils {
+  public static async getTestModelInfo(accessToken: AccessToken, testProjectId: string, iModelName: string): Promise<TestIModelInfo> {
+    const iModelInfo = new TestIModelInfo(iModelName);
+    iModelInfo.id = await HubUtility.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name);
 
-  // public static async createIModel(accessToken: AccessToken, projectId: string, name: string, seedFile: string) {
-  //   try {
-  //     const existingid = await HubUtility.queryIModelIdByName(accessToken, projectId, name);
-  //     BriefcaseManager.imodelClient.IModels().delete(actx, accessToken, projectId, existingid);
-  //   } catch (_err) {
-  //   }
-  //   return BriefcaseManager.imodelClient.IModels().create(actx, accessToken, projectId, name, seedFile);
-  // }
-
-  public static async setupIntegratedFixture(testIModels: TestIModelInfo[]): Promise<any> {
-    const accessToken = await IModelTestUtils.getTestUserAccessToken();
-    const testProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
     const cacheDir = IModelHost.configuration!.briefcaseCacheDir;
+    iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
+    iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
 
-    for (const iModelInfo of testIModels) {
-      iModelInfo.id = (await HubUtility.queryIModelIdByName(accessToken, testProjectId, iModelInfo.name)).toString();
-      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
-      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
-
-      iModelInfo.changeSets = await BriefcaseManager.imodelClient.ChangeSets().get(actx, accessToken, iModelInfo.id);
-      iModelInfo.changeSets.shift(); // The first change set is a schema change that was not named
-
-      iModelInfo.localReadonlyPath = path.join(cacheDir, iModelInfo.id, "readOnly");
-      iModelInfo.localReadWritePath = path.join(cacheDir, iModelInfo.id, "readWrite");
-
-      // Purge briefcases that are close to reaching the acquire limit
-      await HubUtility.purgeAcquiredBriefcases(accessToken, TestConfig.projectName, iModelInfo.name);
-    }
-
-    return [accessToken, testProjectId, cacheDir];
+    iModelInfo.changeSets = await BriefcaseManager.imodelClient.changeSets.get(actx, accessToken, iModelInfo.id);
+    return iModelInfo;
   }
 
   public static async getTestUserAccessToken(userCredentials: any = TestUsers.regular): Promise<AccessToken> {
@@ -243,14 +275,12 @@ export class IModelTestUtils {
     }
   }
 
-  //
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  //
-  public static createAndInsertPhysicalPartition(testImodel: IModelDb, newModelCode: Code): Id64String {
+  public static createAndInsertPhysicalPartition(testImodel: IModelDb, newModelCode: CodeProps): Id64String {
     const modeledElementProps: ElementProps = {
       classFullName: PhysicalPartition.classFullName,
       iModel: testImodel,
-      parent: { id: IModel.rootSubjectId, relClassName: "BisCore:SubjectOwnsPartitionElements" },
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
       model: IModel.repositoryModelId,
       code: newModelCode,
     };
@@ -258,9 +288,7 @@ export class IModelTestUtils {
     return testImodel.elements.insertElement(modeledElement);
   }
 
-  //
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
-  //
   public static createAndInsertPhysicalModel(testImodel: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
 
     const newModel = testImodel.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
@@ -277,7 +305,7 @@ export class IModelTestUtils {
   // Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
   // @return [modeledElementId, modelId]
   //
-  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: Code, privateModel: boolean = false): Id64String[] {
+  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false): Id64String[] {
     const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode);
     const modeledElementRef = new RelatedElement({ id: eid });
     const mid = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef, privateModel);
@@ -319,6 +347,14 @@ export class IModelTestUtils {
   public static startBackend() {
     const config = new IModelHostConfiguration();
     IModelHost.startup(config);
+    Schemas.registerSchema(TestBim);
+    ClassRegistry.register(TestPhysicalObject, TestBim);
+    ClassRegistry.register(TestElementDrivesElement, TestBim);
+  }
+
+  public static shutdownBackend() {
+    Schemas.unregisterSchema(TestBim.name);
+    IModelHost.shutdown();
   }
 }
 

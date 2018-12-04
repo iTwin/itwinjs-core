@@ -48,7 +48,7 @@ vec4 unquantizeVertexPosition(vec3 encodedIndex, vec3 origin, vec3 scale) {
 `;
 
 const computeAnimationFrameDisplacement = `
-vec3 computeAnimationFrameDisplacement(float frameIndex, vec3 origin, vec3 scale) {
+vec3 computeAnimationFrameDisplacement(float vertexLUTIndex, float frameIndex, vec3 origin, vec3 scale) {
   vec2 tc = computeLUTCoords(frameIndex + g_vertexLUTIndex * 2.0, u_vertParams.xy, g_vert_center, 1.0);
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
@@ -58,12 +58,12 @@ vec3 computeAnimationFrameDisplacement(float frameIndex, vec3 origin, vec3 scale
 }`;
 
 const computeAnimationDisplacement = `
-vec3 computeAnimationDisplacement(float frameIndex0, float frameIndex1, float fraction, vec3 origin, vec3 scale) {
+vec3 computeAnimationDisplacement(float vertexLUTIndex, float frameIndex0, float frameIndex1, float fraction, vec3 origin, vec3 scale) {
 if (frameIndex0 < 0.0)
   return vec3(0.0, 0.0, 0.0);
-vec3 displacement = computeAnimationFrameDisplacement(frameIndex0, origin, scale);
+vec3 displacement = computeAnimationFrameDisplacement(vertexLUTIndex, frameIndex0, origin, scale);
 if (fraction > 0.0) {
-  vec3 displacement1 = computeAnimationFrameDisplacement(frameIndex1, origin, scale);
+  vec3 displacement1 = computeAnimationFrameDisplacement(vertexLUTIndex, frameIndex1, origin, scale);
   displacement += fraction * (displacement1 - displacement);
   }
 return displacement;
@@ -176,7 +176,7 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
 
   vert.addUniform("u_animDispParams", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_animDispParams", (uniform, params) => {
-      scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = .0;
+      scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = 0.0;
       const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
       const analysisStyle = params.target.analysisStyle;
       let channel: any;
@@ -191,25 +191,27 @@ export function addAnimation(vert: VertexShaderBuilder, includeTexture: boolean,
       const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
       const analysisStyle = params.target.analysisStyle;
       let channel: any;
-      if (lutGeom.lut.auxDisplacements && analysisStyle && analysisStyle.displacementChannelName && undefined !== (channel = lutGeom.lut.auxDisplacements.get(analysisStyle.displacementChannelName)))
-        uniform.setUniform3fv(channel.qScale);
-      else {
-        scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = .0;
-        uniform.setUniform3fv(scratchAnimDisplacementParams);
+      scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = 0.0;
+      if (lutGeom.lut.auxDisplacements && analysisStyle && analysisStyle.displacementChannelName && undefined !== (channel = lutGeom.lut.auxDisplacements.get(analysisStyle.displacementChannelName))) {
+        const displacementScale = analysisStyle.displacementScale ? analysisStyle.displacementScale : 1.0;
+        for (let i = 0; i < 3; i++)
+          scratchAnimDisplacementParams[i] = channel.qScale[i] * displacementScale; // Apply displacement scale.
       }
+      uniform.setUniform3fv(scratchAnimDisplacementParams);
     });
   });
   vert.addUniform("u_qAnimDispOrigin", VariableType.Vec3, (prog) => {
     prog.addGraphicUniform("u_qAnimDispOrigin", (uniform, params) => {
       const lutGeom: LUTGeometry = params.geometry as LUTGeometry;
       const analysisStyle = params.target.analysisStyle;
+      scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = 0.0;
       let channel: any;
-      if (lutGeom.lut.auxDisplacements && analysisStyle && analysisStyle.displacementChannelName && undefined !== (channel = lutGeom.lut.auxDisplacements.get(analysisStyle.displacementChannelName)))
-        uniform.setUniform3fv(channel.qOrigin);
-      else {
-        scratchAnimDisplacementParams[0] = scratchAnimDisplacementParams[1] = scratchAnimDisplacementParams[2] = .0;
-        uniform.setUniform3fv(scratchAnimDisplacementParams);
+      if (lutGeom.lut.auxDisplacements && analysisStyle && analysisStyle.displacementChannelName && undefined !== (channel = lutGeom.lut.auxDisplacements.get(analysisStyle.displacementChannelName))) {
+        const displacementScale = analysisStyle.displacementScale ? analysisStyle.displacementScale : 1.0;
+        for (let i = 0; i < 3; i++)
+          scratchAnimDisplacementParams[i] = channel.qOrigin[i] * displacementScale;   // Apply displacement scale
       }
+      uniform.setUniform3fv(scratchAnimDisplacementParams);
     });
   });
   if (includeNormal) {

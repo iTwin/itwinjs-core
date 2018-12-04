@@ -16,6 +16,7 @@ export interface DivProps extends React.DetailedHTMLProps<React.HTMLAttributes<H
 
 /** Div React component is a wrapper for the HTML div element */
 export class Div extends React.Component<DivProps> {
+  /** Renders the component */
   public render() {
     return (
       <div

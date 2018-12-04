@@ -12,9 +12,9 @@ import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
 import { System } from "./System";
-import { BranchStack, BranchState } from "./BranchState";
+import { BranchStack, BranchState, BatchState } from "./BranchState";
 import { ShaderFlags, ShaderProgramExecutor } from "./ShaderProgram";
-import { Branch, WorldDecorations, FeatureOverrides, PickTable, Batch } from "./Graphic";
+import { Branch, WorldDecorations, FeatureOverrides, Batch } from "./Graphic";
 import { EdgeOverrides } from "./EdgeOverrides";
 import { ViewRect } from "../../Viewport";
 import { RenderCommands, DrawParams, ShaderProgramParams } from "./DrawCommand";
@@ -30,7 +30,6 @@ import { ShaderLights } from "./Lighting";
 import { Pixel } from "../System";
 import { ClipDef } from "./TechniqueFlags";
 import { ClipMaskVolume, ClipPlanesVolume } from "./ClipVolume";
-import { AttributeHandle } from "./Handle";
 
 export const enum FrustumUniformType {
   TwoDee,
@@ -165,9 +164,16 @@ export class PerformanceMetrics {
   }
 }
 
+function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
+  const tmp = image.data[i0];
+  image.data[i0] = image.data[i1];
+  image.data[i1] = tmp;
+}
+
 export abstract class Target extends RenderTarget {
   protected _decorations?: Decorations;
   private _stack = new BranchStack();
+  private _batchState = new BatchState();
   private _scene: GraphicList = [];
   private _terrain: GraphicList = [];
   private _dynamics?: GraphicList;
@@ -210,13 +216,12 @@ export abstract class Target extends RenderTarget {
   public analysisStyle?: AnalysisStyle;
   public analysisTexture?: RenderTexture;
   private _currentOverrides?: FeatureOverrides;
-  public currentPickTable?: PickTable;
   private _batches: Batch[] = [];
   public plan?: RenderPlan;
 
   protected constructor(rect?: ViewRect) {
     super();
-    this._renderCommands = new RenderCommands(this, this._stack);
+    this._renderCommands = new RenderCommands(this, this._stack, this._batchState);
     this._overlayRenderState = new RenderState();
     this._overlayRenderState.flags.depthMask = false;
     this._overlayRenderState.flags.blend = true;
@@ -243,7 +248,6 @@ export abstract class Target extends RenderTarget {
   public get flashIntensity(): number { return this._flashIntensity; }
 
   public get overridesUpdateTime(): BeTimePoint { return this._overridesUpdateTime; }
-  public get areDecorationOverridesActive(): boolean { return false; } // ###TODO
 
   public get fStop(): number { return this._fStop; }
   public get ambientLight(): Float32Array { return this._ambientLight; }
@@ -340,6 +344,17 @@ export abstract class Target extends RenderTarget {
       this._activeClipVolume.pop(this);
   }
 
+  public get batchState(): BatchState { return this._batchState; }
+  public get currentBatchId(): number { return this._batchState.currentBatchId; }
+  public pushBatch(batch: Batch) {
+    this._batchState.push(batch, false);
+    this.currentOverrides = batch.getOverrides(this);
+  }
+  public popBatch() {
+    this.currentOverrides = undefined;
+    this._batchState.pop();
+  }
+
   public addBatch(batch: Batch) {
     assert(this._batches.indexOf(batch) < 0);
     this._batches.push(batch);
@@ -362,7 +377,6 @@ export abstract class Target extends RenderTarget {
   public changeDecorations(decs: Decorations): void {
     this._decorations = dispose(this._decorations);
     this._decorations = decs;
-    AttributeHandle.disableAll();
   }
   public changeScene(scene: GraphicList, _activeVolume: ClipPlanesVolume | ClipMaskVolume) {
     this._scene = scene;
@@ -712,6 +726,9 @@ export abstract class Target extends RenderTarget {
       if (this.performanceMetrics) this.performanceMetrics.recordTime("Overlay Draws");
     }
 
+    // Reset the batch IDs in all batches drawn for this call.
+    this._batchState.reset();
+
     this._endPaint();
     if (this.performanceMetrics) this.performanceMetrics.recordTime("End Paint");
 
@@ -771,13 +788,15 @@ export abstract class Target extends RenderTarget {
     return this._dcAssigned;
   }
 
-  public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver): void {
     // We can't reuse the previous frame's data for a variety of reasons, chief among them that some types of geometry (surfaces, translucent stuff) don't write
     // to the pick buffers and others we don't want - such as non-pickable decorations - do.
     // Render to an offscreen buffer so that we don't destroy the current color buffer.
     const texture = TextureHandle.createForAttachment(rect.width, rect.height, GL.Texture.Format.Rgba, GL.Texture.DataType.UnsignedByte);
-    if (undefined === texture)
-      return undefined;
+    if (undefined === texture) {
+      receiver(undefined);
+      return;
+    }
 
     let result: Pixel.Buffer | undefined;
     const fbo = FrameBuffer.create([texture]);
@@ -790,7 +809,10 @@ export abstract class Target extends RenderTarget {
     }
     dispose(texture);
 
-    return result;
+    receiver(result);
+
+    // Reset the batch IDs in all batches drawn for this call.
+    this._batchState.reset();
   }
 
   private readonly _scratchTmpFrustum = new Frustum();
@@ -816,7 +838,6 @@ export abstract class Target extends RenderTarget {
     this.pushState(state);
 
     // Create a culling frustum based on the input rect.
-    // NB: C++ BSIRect => TypeScript ViewRect...
     const viewRect = this.viewRect;
     const leftScale = (rect.left - viewRect.left) / (viewRect.right - viewRect.left);
     const rightScale = (viewRect.right - rect.right) / (viewRect.right - viewRect.left);
@@ -845,7 +866,6 @@ export abstract class Target extends RenderTarget {
     interpolateFrustumPoint(rectFrust, tmpFrust, Npc._111, topScale, Npc._101);
 
     // Repopulate the command list, omitting non-pickable decorations and putting transparent stuff into the opaque passes.
-    // ###TODO: Handle pickable decorations.
     this._renderCommands.clear();
     this._renderCommands.setCheckRange(rectFrust);
     this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics, true);
@@ -896,7 +916,7 @@ export abstract class Target extends RenderTarget {
     return true;
   }
 
-  public readImage(wantRectIn: ViewRect, targetSizeIn: Point2d): ImageBuffer | undefined {
+  public readImage(wantRectIn: ViewRect, targetSizeIn: Point2d, flipVertically: boolean): ImageBuffer | undefined {
     // Determine capture rect and validate
     const actualViewRect = this.renderRect;
 
@@ -957,6 +977,24 @@ export abstract class Target extends RenderTarget {
     }
     if (isEmptyImage)
       return undefined;
+
+    if (flipVertically) {
+      const halfHeight = Math.floor(image.height / 2);
+      const numBytesPerRow = image.width * 4;
+      for (let loY = 0; loY < halfHeight; loY++) {
+        for (let x = 0; x < image.width; x++) {
+          const hiY = (image.height - 1) - loY;
+          const loIdx = loY * numBytesPerRow + x * 4;
+          const hiIdx = hiY * numBytesPerRow + x * 4;
+
+          swapImageByte(image, loIdx, hiIdx);
+          swapImageByte(image, loIdx + 1, hiIdx + 1);
+          swapImageByte(image, loIdx + 2, hiIdx + 2);
+          swapImageByte(image, loIdx + 3, hiIdx + 3);
+        }
+      }
+    }
+
     return image;
   }
 

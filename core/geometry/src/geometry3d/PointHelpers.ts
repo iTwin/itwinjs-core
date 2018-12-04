@@ -132,7 +132,11 @@ export class Point2dArray {
   public static clonePoint2dArray(data: Point2d[]): Point2d[] {
     return data.map((p: Point2d) => p.clone());
   }
-  public static lengthWithoutWraparound(data: XAndY[]): number {
+  /**
+   * Return the number of points when trailing points that match point 0 are excluded.
+   * @param data array of XAndY points.
+   */
+  public static pointCountExcludingTrailingWraparound(data: XAndY[]): number {
     let n = data.length;
     if (n < 2)
       return n;
@@ -385,9 +389,9 @@ export class Point3dArray {
   }
 
   /** Return the index of the point most distant from spacePoint */
-  public static vectorToMostDistantPoint(points: Point3d[], spacePoint: XYZ, farVector: Vector3d): number {
+  public static indexOfMostDistantPoint(points: Point3d[], spacePoint: XYZ, farVector: Vector3d): number | undefined {
     if (points.length === 0)
-      return -1;
+      return undefined;
     let dMax = -1;
     let d;
     let result = -1;
@@ -402,9 +406,9 @@ export class Point3dArray {
     return result;
   }
   /** return the index of the point whose vector from space point has the largest magnitude of cross product with given vector. */
-  public static vectorToPointWithMaxCrossProductMangitude(points: Point3d[], spacePoint: Point3d, vector: Vector3d, farVector: Vector3d): number {
+  public static indexOfPointWithMaxCrossProductMagnitude(points: Point3d[], spacePoint: Point3d, vector: Vector3d, farVector: Vector3d): number | undefined {
     if (points.length === 0)
-      return -1;
+      return undefined;
     let dMax = -1;
     let d;
     let result = -1;
@@ -455,18 +459,30 @@ export class Point3dArray {
     }
     return true;
   }
-
-  public static sumLengths(data: Point3d[] | Float64Array): number {
+  /**
+   * Sum lengths of edges.
+   * @param data points.
+   */
+  public static sumEdgeLengths(data: Point3d[] | Float64Array, addClosureEdge: boolean = false): number {
     let sum = 0.0;
     if (Array.isArray(data)) {
       const n = data.length - 1;
       for (let i = 0; i < n; i++) sum += data[i].distance(data[i + 1]);
+      if (addClosureEdge && n > 0)
+        sum += data[0].distance(data[n]);
+
     } else if (data instanceof Float64Array) {
       const numXYZ = data.length;
-      for (let i = 0; i + 5 < numXYZ; i += 3) {
-        sum += Math.hypot(data[i + 3] - data[i],
+      let i = 0;
+      for (; i + 5 < numXYZ; i += 3) {  // final i points at final point x
+        sum += Geometry.hypotenuseXYZ(data[i + 3] - data[i],
           data[i + 4] - data[i + 1],
           data[i + 5] - data[i + 2]);
+      }
+      if (addClosureEdge && i >= 3) {
+        sum += Geometry.hypotenuseXYZ(data[0] - data[i],
+          data[1] - data[i + 1],
+          data[2] - data[i + 2]);
       }
     }
     return sum;
@@ -634,7 +650,7 @@ export class PolygonOps {
 
   // Has the potential to be combined with centroidAreaNormal for point3d array and Ray3d return listed above...
   // Returns undefined if given point array less than 3 or if not safe to divide at any point
-  public static centroidAndArea(points: Point2d[], centroid: Point2d): number | undefined {
+  public static centroidAndAreaXY(points: Point2d[], centroid: Point2d): number | undefined {
     let area = 0.0;
     centroid.set(0, 0);
     if (points.length < 3)

@@ -18,11 +18,11 @@ import Icon from "@src/toolbar/item/Icon";
 import Toolbar from "@src/toolbar/Toolbar";
 import Scrollable from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
-import Button from "@src/toolbar/button/Button";
-import App from "@src/toolbar/button/App";
-import Back from "@src/toolbar/button/Back";
-import ExpandableButton from "@src/toolbar/button/Expandable";
-import IconButton from "@src/toolbar/button/Icon";
+import Button from "@src/widget/tools/button/Button";
+import App from "@src/widget/tools/button/App";
+import Back from "@src/widget/tools/button/Back";
+import ExpandableButton from "@src/widget/tools/button/Expandable";
+import IconButton from "@src/widget/tools/button/Icon";
 
 export interface State {
   onBackCount: number;

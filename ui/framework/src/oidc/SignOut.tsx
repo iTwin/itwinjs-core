@@ -2,35 +2,37 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module OpenIModel */
+/** @module OIDC */
 
 import * as React from "react";
 import { FrontstageManager, ModalFrontstageInfo } from "../configurableui/FrontstageManager";
-import { UserProfile, AccessToken } from "@bentley/imodeljs-clients";
-import { getUserColor } from "@bentley/bwc/lib/index";
+import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
+import { getUserColor } from "@bentley/bwc";
 import { UiFramework } from "../UiFramework";
 import "./SignOut.scss";
+import { OidcClientWrapper } from "./OidcClientWrapper";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Modal frontstage displaying sign out form. */
 export class SignOutModalFrontstage implements ModalFrontstageInfo {
   public title: string = UiFramework.i18n.translate("UiFramework:userProfile.userprofile");
   private _signOut = UiFramework.i18n.translate("UiFramework:userProfile.signout");
   private _signOutPrompt = UiFramework.i18n.translate("UiFramework:userProfile.signoutprompt");
-  private _userProfile: UserProfile | undefined = undefined;
+  private _userInfo: UserInfo | undefined = undefined;
 
   constructor(accessToken?: AccessToken) {
     if (accessToken) {
-      this._userProfile = accessToken.getUserProfile();
+      this._userInfo = accessToken.getUserInfo();
     }
   }
 
   private _getInitials(): string {
     let initials: string = "";
-    if (this._userProfile) {
-      if (this._userProfile.firstName.length > 0)
-        initials += this._userProfile.firstName[0];
-      if (this._userProfile.lastName.length > 0)
-        initials += this._userProfile.lastName[0];
+    if (this._userInfo && this._userInfo.profile) {
+      if (this._userInfo.profile.firstName.length > 0)
+        initials += this._userInfo.profile.firstName[0];
+      if (this._userInfo.profile.lastName.length > 0)
+        initials += this._userInfo.profile.lastName[0];
     }
 
     return initials;
@@ -38,8 +40,8 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
 
   private _getFullName(): string {
     let name: string = "";
-    if (this._userProfile) {
-      name = this._userProfile.firstName + " " + this._userProfile.lastName;
+    if (this._userInfo) {
+      name = this._userInfo.profile!.firstName + " " + this._userInfo.profile!.lastName;
     }
 
     return name;
@@ -47,14 +49,14 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
 
   private _onSignOut = () => {
     FrontstageManager.closeModalFrontstage();
-    UiFramework.userManager.removeUser();
+    OidcClientWrapper.oidcClient.signOut(new ActivityLoggingContext(""));
   }
 
   public get content(): React.ReactNode {
     const initials = this._getInitials();
     const fullName = this._getFullName();
-    const email = (this._userProfile) ? this._userProfile.email : "";
-    const organization = (this._userProfile) ? this._userProfile.organization : "";
+    const email = (this._userInfo && this._userInfo.email) ? this._userInfo.email.id : "";
+    const organization = (this._userInfo && this._userInfo.organization) ? this._userInfo.organization.name : "";
     const color = getUserColor(email);
     return (
       <div className="user-profile">

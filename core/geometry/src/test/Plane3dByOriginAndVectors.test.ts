@@ -8,6 +8,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { Checker } from "./Checker";
 import { expect } from "chai";
+import { Transform } from "../geometry3d/Transform";
 
 describe("Plane3dByOriginAndVectors", () => {
   it("HelloWorld", () => {
@@ -71,8 +72,36 @@ describe("Plane3dByOriginAndVectors", () => {
       new Float64Array([1, 1, 1, 0]),  // weight 0 at origin fails !!!
       new Float64Array([2, 1, 3, 0]),
       new Float64Array([4, 9, 1, 1]));
-    ck.testTrue (errorPlane1.isAlmostEqual (Plane3dByOriginAndVectors.createXYPlane ()));
+    ck.testTrue(errorPlane1.isAlmostEqual(Plane3dByOriginAndVectors.createXYPlane()));
     ck.checkpoint("Plane3dByOriginAndVectors.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
+  });
+  it("CreateFromTransform", () => {
+    const ck = new Checker();
+    const transform = Transform.createRowValues(
+      20, 1, 2, 4,
+      3, 10, 5, 9,
+      -1.5, 0.2, 30, 7);
+    const plane0 = Plane3dByOriginAndVectors.createXYPlane();    // to be reused.
+    const a = 1.5;
+    const b = 3.9;
+    const plane1 = Plane3dByOriginAndVectors.createFromTransformColumnsXYAndLengths(transform, a, b);
+    const plane2 = Plane3dByOriginAndVectors.createFromTransformColumnsXYAndLengths(transform, a, b, plane0);
+    ck.testTrue(plane2 === plane0, "reused plane expected");
+    ck.testFalse(plane1 === plane0, "new plane expected");
+    ck.testTrue(plane1.isAlmostEqual(plane2), "matching planes");
+    ck.testTrue(plane1.vectorU.isParallelTo(transform.matrix.columnX(), false, false));
+    ck.testCoordinate(a, plane1.vectorU.magnitude(), "vectorU magnitude");
+
+    ck.testTrue(plane1.vectorV.isParallelTo(transform.matrix.columnY(), false, false));
+    ck.testCoordinate(b, plane1.vectorV.magnitude(), "vectorV magnitude");
+
+    ck.testPoint3d(plane1.origin, transform.getOrigin());
+
+    const plane3 = Plane3dByOriginAndVectors.createFromTransformColumnsXYAndLengths(transform, undefined, undefined);
+    ck.testVector3d(plane3.vectorU, transform.matrix.columnX());
+    ck.testVector3d(plane3.vectorV, transform.matrix.columnY());
+    expect(ck.getNumErrors()).equals(0);
+
   });
 });

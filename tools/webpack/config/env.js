@@ -73,15 +73,17 @@ process.env.NODE_PATH = (process.env.NODE_PATH || "")
 const REACT_APP = /^REACT_APP_/i;
 // Grab all the imjs_* var for core and test
 const IMJS = /^imjs_/i;
+
 function getClientEnvironment(publicUrl) {
   const raw = Object.keys(process.env)
-    .filter((key) => { return REACT_APP.test(key) || IMJS.test(key); })
+    .filter((key) => {
+      return REACT_APP.test(key) || IMJS.test(key);
+    })
     .reduce(
       (env, key) => {
         env[key] = process.env[key];
         return env;
-      },
-      {
+      }, {
         // Useful for determining whether we’re running in production mode.
         // Most importantly, it switches React into the correct mode.
         NODE_ENV: process.env.NODE_ENV || "development",
@@ -112,7 +114,11 @@ function getClientEnvironment(publicUrl) {
     return env;
   }, {});
 
-  return { raw, frontendStringified, backendStringified };
+  return {
+    raw,
+    frontendStringified,
+    backendStringified
+  };
 }
 
 module.exports = getClientEnvironment;

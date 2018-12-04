@@ -1,0 +1,12 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<Icon /> renders correctly 1`] = `
+<button
+  className="nz-toolbar-item-icon"
+  onClick={[Function]}
+>
+  <div
+    className="nz-icon"
+  />
+</button>
+`;

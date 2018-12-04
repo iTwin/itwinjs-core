@@ -17,6 +17,8 @@ export interface ElementSeparatorProps {
   ratio: number;
   /** Area width or height (depending on orientation) in pixels */
   movableArea?: number;
+  /** Separator width or height in pixels. 30 by default */
+  separatorSize?: number;
   /** Callback to ratio changed event */
   onRatioChanged: (ratio: number) => void;
 }
@@ -27,8 +29,10 @@ export class ElementSeparator extends React.PureComponent<ElementSeparatorProps>
   private _initialGlobalPosition = 0;
   // How big must ratio difference be to trigger a rerender
   private readonly _updateThreshold = 0.025;
-  // Width or height of the separator
-  private readonly _separatorSize = 30;
+
+  public static defaultProps: Partial<ElementSeparatorProps> = {
+    separatorSize: 30,
+  };
 
   private getCurrentGlobalPosition(e: PointerEvent | React.PointerEvent) {
     return this.props.orientation === Orientation.Horizontal ? e.clientX : e.clientY;
@@ -81,24 +85,26 @@ export class ElementSeparator extends React.PureComponent<ElementSeparatorProps>
   private getStyle(orientation: Orientation): React.CSSProperties {
     if (orientation === Orientation.Horizontal)
       return {
-        width: this._separatorSize,
-        height: "100%",
-        margin: `1px ${-Math.floor(this._separatorSize / 2)}px`,
-        cursor: "col-resize",
+        width: this.props.separatorSize,
+        margin: `1px ${-Math.floor(this.props.separatorSize! / 2)}px`,
       };
     return {
-      width: "100%",
-      height: this._separatorSize,
-      margin: `${-Math.floor(this._separatorSize / 2)}px 1px`,
-      cursor: "row-resize",
+      height: this.props.separatorSize,
+      margin: `${-Math.floor(this.props.separatorSize! / 2)}px 1px`,
     };
   }
 
   public render() {
+    let className = "core-element-separator";
+    if (this.props.orientation === Orientation.Horizontal)
+      className += " core-element-separator--horizontal";
+    else
+      className += " core-element-separator--vertical";
+
     return (
       <button
         style={this.getStyle(this.props.orientation)}
-        className="core-element-separator"
+        className={className}
         onPointerDown={this._onPointerDown}
       />
     );

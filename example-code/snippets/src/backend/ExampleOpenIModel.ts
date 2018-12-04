@@ -68,7 +68,7 @@ function configureIModel() {
 
 // Call the above functions, to avoid lint errors.
 const cred = { email: Config.App.getString("imjs_test_regular_user_name"), password: Config.App.getString("imjs_test_regular_user_password") };
-getUserAccessToken(cred).then((_accessToken: AccessToken) => {
+getUserAccessToken(cred).then((_accessToken: AccessToken) => { // tslint:disable-line:no-floating-promises
 });
 
 configureIModel();

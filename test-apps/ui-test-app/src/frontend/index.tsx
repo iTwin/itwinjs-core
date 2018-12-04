@@ -10,12 +10,13 @@ import { CSSProperties } from "react";
 import { createStore, combineReducers, Store } from "redux";
 import { Provider } from "react-redux";
 import {
-    RpcConfiguration, RpcOperation, IModelToken, IModelReadRpcInterface, IModelTileRpcInterface,
+    RpcConfiguration, RpcOperation, IModelToken,
     ElectronRpcManager, ElectronRpcConfiguration, BentleyCloudRpcManager,
 } from "@bentley/imodeljs-common";
 import { IModelApp, IModelConnection, SnapMode, AccuSnap } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
+import { Presentation } from "@bentley/presentation-frontend";
 
 import { WebFontIcon } from "@bentley/ui-core";
 import { UiCore } from "@bentley/ui-core";
@@ -32,14 +33,17 @@ import {
 } from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
 
+import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
-import AppBackstage, { BackstageShow, BackstageHide, BackstageToggle } from "./appui/AppBackstage";
+import AppBackstage, { BackstageShow, BackstageHide } from "./appui/AppBackstage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { MeasurePointsTool } from "./tools/MeasurePoints";
+import { Tool1 } from "./tools/Tool1";
+import { Tool2 } from "./tools/Tool2";
 
 // Initialize my application gateway configuration for the frontend
 let rpcConfiguration: RpcConfiguration;
-const rpcInterfaces = [IModelTileRpcInterface, IModelReadRpcInterface];
+const rpcInterfaces = getSupportedRpcs();
 if (ElectronRpcConfiguration.isElectron)
     rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
 else
@@ -137,24 +141,38 @@ export class SampleAppIModelApp extends IModelApp {
             Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:${process.env.CORS_PROXY_PORT}`); // By default, this will run on port 3001
     }
 
-    private static getOidcConfig(): OidcFrontendClientConfiguration {
-        const clientId = Config.App.get("imjs_test_oidc_client_id");
-        const baseUri = `${window.location.protocol}//${window.location.hostname}${window.location.port ? `:${window.location.port}` : ``}`;
-        const redirectUri = `${baseUri}${Config.App.get("imjs_test_oidc_redirect_path")}`;
-        return { clientId, redirectUri };
-    }
-
     public static async initialize() {
-        UiCore.initialize(SampleAppIModelApp.i18n);
-        UiComponents.initialize(SampleAppIModelApp.i18n);
+        Presentation.initialize();
+        UiCore.initialize(SampleAppIModelApp.i18n); // tslint:disable-line:no-floating-promises
+        UiComponents.initialize(SampleAppIModelApp.i18n); // tslint:disable-line:no-floating-promises
 
-        await UiFramework.initialize(SampleAppIModelApp.store, SampleAppIModelApp.i18n, SampleAppIModelApp.getOidcConfig());
+        let oidcConfiguration: OidcFrontendClientConfiguration;
+        if (ElectronRpcConfiguration.isElectron) {
+            const clientId = Config.App.get("imjs_browser_test_client_id");
+            const redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
+            // TODO: WIP Switch desktop clients to a different OIDC workflow.
+            // const clientId = Config.App.get("imjs_device_test_client_id");
+            // const redirectUri = Config.App.get("imjs_device_test_redirect_uri");
+            oidcConfiguration = { clientId, redirectUri };
+        } else {
+            const clientId = Config.App.get("imjs_browser_test_client_id");
+            const redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
+            oidcConfiguration = { clientId, redirectUri };
+        }
+
+        await UiFramework.initialize(SampleAppIModelApp.store, SampleAppIModelApp.i18n, oidcConfiguration);
+
+        // initialize Presentation
+        Presentation.initialize({
+            activeLocale: IModelApp.i18n.languageList()[0],
+        });
 
         // Register tools.
         BackstageShow.register(this.sampleAppNamespace);
         BackstageHide.register(this.sampleAppNamespace);
-        BackstageToggle.register(this.sampleAppNamespace);
         MeasurePointsTool.register(this.sampleAppNamespace);
+        Tool1.register(this.sampleAppNamespace);
+        Tool2.register(this.sampleAppNamespace);
     }
 
     public static async handleIModelViewsSelected(iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) {
@@ -172,7 +190,7 @@ export class SampleAppIModelApp extends IModelApp {
         // we create a FrontStage that contains the views that we want.
         const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);
         FrontstageManager.addFrontstageProvider(frontstageProvider);
-        FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => {
+        FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => { // tslint:disable-line:no-floating-promises
             // Frontstage & ScreenViewports are ready
             // tslint:disable-next-line:no-console
             console.log("Frontstage is ready");
@@ -182,7 +200,7 @@ export class SampleAppIModelApp extends IModelApp {
     public static handleWorkOffline() {
         if (!FrontstageManager.activeFrontstageDef) {
             const frontstageDef = FrontstageManager.findFrontstageDef("Test4");
-            FrontstageManager.setActiveFrontstageDef(frontstageDef);
+            FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
         }
     }
 }
@@ -190,7 +208,7 @@ export class SampleAppIModelApp extends IModelApp {
 SampleAppIModelApp.startup();
 
 // wait for both our i18n namespaces to be read.
-SampleAppIModelApp.initialize().then(() => {
+SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises
     //  create the application icon.
     const applicationIconStyle: CSSProperties = {
         width: "50px",

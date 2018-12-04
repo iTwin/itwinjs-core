@@ -3,34 +3,27 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import * as TypeMoq from "typemoq";
 import { assert } from "chai";
 import { IModelJsFs } from "../../IModelJsFs";
 import { OpenMode, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils, TestUsers, TestIModelInfo } from "../IModelTestUtils";
 import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../backend";
-import { TestIModelInfo, MockAssetUtil, MockAccessToken } from "../MockAssetUtil";
+import { AccessToken, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";
-import { AccessToken, ConnectClient, IModelHubClient, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
+// import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
-describe.skip("BriefcaseManager", () => {
-  const index = process.argv.indexOf("--offline");
-  const offline: boolean = process.argv[index + 1] === "mock";
+describe("BriefcaseManager (#integration)", () => {
+  let accessToken: AccessToken;
   let testProjectId: string;
-  const testIModels: TestIModelInfo[] = [
-    new TestIModelInfo("ReadOnlyTest"),
-    new TestIModelInfo("ReadWriteTest"),
-    new TestIModelInfo("NoVersionsTest"),
-  ];
-  const testVersionNames = ["FirstVersion", "SecondVersion", "ThirdVersion"];
-  const testElementCounts = [27, 28, 29];
 
-  const assetDir = "./src/test/assets/_mocks_";
-  let cacheDir: string = "";
-  let accessToken: AccessToken = new MockAccessToken();
-  const iModelHubClientMock = TypeMoq.Mock.ofType(IModelHubClient);
-  const connectClientMock = TypeMoq.Mock.ofType(ConnectClient);
+  let readOnlyTestIModel: TestIModelInfo;
+  const readOnlyTestVersions = ["FirstVersion", "SecondVersion", "ThirdVersion"];
+  const readOnlyTestElementCounts = [27, 28, 29];
+
+  let readWriteTestIModel: TestIModelInfo;
+  let noVersionsTestIModel: TestIModelInfo;
+
   const actx = new ActivityLoggingContext("");
 
   const getElementCount = (iModel: IModelDb): number => {
@@ -45,30 +38,28 @@ describe.skip("BriefcaseManager", () => {
       assert.strictEqual<string>(briefcase.getKey(), key, `Cached key ${key} doesn't match the current generated key ${briefcase.getKey()}`);
       if (briefcase.isOpen) {
         assert.strictEqual<string>(briefcase.nativeDb.getParentChangeSetId(), briefcase.changeSetId, `Parent change set id of Db doesn't match what's cached in memory`);
-        if (briefcase.openParams!.accessMode === AccessMode.Shared) {
-          assert.isTrue(!briefcase.reversedChangeSetId, "Found a shared briefcase that was reversed!");
-          assert.isTrue(!briefcase.nativeDb.getReversedChangeSetId(), "Found a shared briefcase that was reversed!");
-        }
       }
     });
   };
 
   before(async () => {
-    if (offline) {
-      MockAssetUtil.setupMockAssets(assetDir);
-      testProjectId = await MockAssetUtil.setupOfflineFixture(accessToken, iModelHubClientMock, connectClientMock, assetDir, cacheDir, testIModels);
-    } else {
-      [accessToken, testProjectId, cacheDir] = await IModelTestUtils.setupIntegratedFixture(testIModels);
+    accessToken = await HubUtility.login(TestUsers.regular);
 
-      // Clearing the briefcases for frontend tests here since the frontend is not setup with the CORS proxy.
-      await HubUtility.purgeAcquiredBriefcases(accessToken, "iModelJsTest", "ConnectionReadTest");
-    }
+    testProjectId = await HubUtility.queryProjectIdByName(accessToken, "iModelJsIntegrationTest");
+    readOnlyTestIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, "ReadOnlyTest");
+    noVersionsTestIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, "NoVersionsTest");
+    readWriteTestIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, "ReadWriteTest");
 
-  });
+    // Purge briefcases that are close to reaching the acquire limit
+    const managerAccessToken: AccessToken = await HubUtility.login(TestUsers.manager);
+    await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadOnlyTest");
+    await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "NoVersionsTest");
+    await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadWriteTest");
+    await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ConnectionReadTest");
 
-  after(() => {
-    if (offline)
-      MockAssetUtil.tearDownOfflineFixture();
+    // Logger.initializeToConsole();
+    // Logger.setLevelDefault(LogLevel.Warning);
+    // Logger.setLevel("Performance", LogLevel.Info);
   });
 
   afterEach(() => {
@@ -86,7 +77,7 @@ describe.skip("BriefcaseManager", () => {
       onOpenCalled = true;
       assert.deepEqual(accessTokenIn, accessToken);
       assert.equal(contextIdIn, testProjectId);
-      assert.equal(iModelIdIn, testIModels[0].id);
+      assert.equal(iModelIdIn, readOnlyTestIModel.id);
       assert.equal(openParams.openMode, OpenMode.Readonly);
     };
     IModelDb.onOpen.addListener(onOpenListener);
@@ -94,7 +85,7 @@ describe.skip("BriefcaseManager", () => {
     let onOpenedCalled: boolean = false;
     const onOpenedListener = (iModelDb: IModelDb) => {
       onOpenedCalled = true;
-      assert.equal(iModelDb.iModelToken.iModelId, testIModels[0].id);
+      assert.equal(iModelDb.iModelToken.iModelId, readOnlyTestIModel.id);
     };
     IModelDb.onOpened.addListener(onOpenedListener);
 
@@ -104,7 +95,7 @@ describe.skip("BriefcaseManager", () => {
     };
 
     try {
-      const iModel: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.latest());
+      const iModel: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
       assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
 
       iModel.onBeforeClose.addListener(onBeforeCloseListener);
@@ -112,7 +103,7 @@ describe.skip("BriefcaseManager", () => {
       // Validate that the IModelDb is readonly
       assert(iModel.openParams.openMode === OpenMode.Readonly, "iModel not set to Readonly mode");
 
-      const expectedChangeSetId = await IModelVersion.latest().evaluateChangeSet(actx, accessToken, testIModels[0].id, BriefcaseManager.imodelClient);
+      const expectedChangeSetId = await IModelVersion.latest().evaluateChangeSet(actx, accessToken, readOnlyTestIModel.id, BriefcaseManager.imodelClient);
       assert.strictEqual<string>(iModel.briefcase.changeSetId, expectedChangeSetId);
       assert.strictEqual<string>(iModel.iModelToken.changeSetId!, expectedChangeSetId);
 
@@ -133,14 +124,14 @@ describe.skip("BriefcaseManager", () => {
   });
 
   it("should reuse briefcases", async () => {
-    const iModel1: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("FirstVersion"));
+    const iModel1: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("FirstVersion"));
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
-    const iModel2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("FirstVersion"));
+    const iModel2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("FirstVersion"));
     assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel1, iModel2, "previously open briefcase was expected to be shared");
 
-    const iModel3: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("SecondVersion"));
+    const iModel3: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("SecondVersion"));
     assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
     assert.notEqual(iModel3, iModel2, "opening two different versions should not cause briefcases to be shared when the older one is open");
     assert.notEqual(iModel3.briefcase, iModel2.briefcase, "opening two different versions should not cause briefcases to be shared when the older one is open");
@@ -157,11 +148,11 @@ describe.skip("BriefcaseManager", () => {
     assert.equal(iModel3.briefcase, undefined);
     assert.isTrue(IModelJsFs.existsSync(pathname3));
 
-    const iModel4: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("FirstVersion"));
+    const iModel4: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("FirstVersion"));
     assert.exists(iModel4, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel4.briefcase, briefcase2, "previously closed briefcase was expected to be shared");
 
-    const iModel5: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("SecondVersion"));
+    const iModel5: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.named("SecondVersion"));
     assert.exists(iModel5, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel5.briefcase, briefcase3, "previously closed briefcase was expected to be shared");
 
@@ -174,25 +165,25 @@ describe.skip("BriefcaseManager", () => {
 
   it("should optionally reuse open briefcases for exclusive access (#integration)", async () => {
     // Note: Compare this with a similar test on the frontend
-    const iModel1: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.TryReuseOpenBriefcase), IModelVersion.latest());
+    const iModel1: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.TryReuseOpenBriefcase), IModelVersion.latest());
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
-    const iModel2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.TryReuseOpenBriefcase), IModelVersion.latest());
+    const iModel2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.TryReuseOpenBriefcase), IModelVersion.latest());
     assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
 
-    const iModel3: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    const iModel3: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
     assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
 
     assert.equal(iModel1, iModel2);
     assert.notEqual(iModel1.briefcase.pathname, iModel3.briefcase.pathname);
 
-    const iModel4: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(ExclusiveAccessOption.TryReuseOpenBriefcase), IModelVersion.latest());
+    const iModel4: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(ExclusiveAccessOption.TryReuseOpenBriefcase), IModelVersion.latest());
     assert.exists(iModel4, "No iModel returned from call to BriefcaseManager.open");
 
-    const iModel5: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(ExclusiveAccessOption.TryReuseOpenBriefcase), IModelVersion.latest());
+    const iModel5: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(ExclusiveAccessOption.TryReuseOpenBriefcase), IModelVersion.latest());
     assert.exists(iModel5, "No iModel returned from call to BriefcaseManager.open");
 
-    const iModel6: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    const iModel6: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
     assert.exists(iModel6, "No iModel returned from call to BriefcaseManager.open");
 
     assert.equal(iModel4, iModel5);
@@ -205,58 +196,48 @@ describe.skip("BriefcaseManager", () => {
   });
 
   it("should not reuse exclusive read-only briefcases for read-write purposes (#integration)", async () => {
-    const iModel1: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
+    const iModel1: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
     const pathname1 = iModel1.briefcase.pathname;
-    iModel1.close(actx, accessToken, KeepBriefcase.Yes);
+    await iModel1.close(actx, accessToken, KeepBriefcase.Yes);
 
-    const iModel2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModel2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModel2, "No iModel returned from call to BriefcaseManager.open");
     assert.notEqual(iModel2.briefcase.pathname, pathname1);
-    iModel2.close(actx, accessToken, KeepBriefcase.No);
+    await iModel2.close(actx, accessToken, KeepBriefcase.No);
 
-    const iModel3: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
+    const iModel3: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(AccessMode.Exclusive), IModelVersion.latest());
     assert.exists(iModel3, "No iModel returned from call to BriefcaseManager.open");
     assert.equal(iModel3.briefcase.pathname, pathname1);
-    iModel3.close(actx, accessToken, KeepBriefcase.No);
+    await iModel3.close(actx, accessToken, KeepBriefcase.No);
   });
 
   it("should open iModels of specific versions from the Hub", async () => {
-    const iModelFirstVersion: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.first());
+    const iModelFirstVersion: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.first());
     assert.exists(iModelFirstVersion);
-    assert.strictEqual<string>(iModelFirstVersion.briefcase.changeSetId, "");
-    assert.equal(+iModelFirstVersion.briefcase.nativeDb.getParentChangeSetId(), 0);
-    assert.isNotTrue(!!iModelFirstVersion.briefcase.reversedChangeSetId);
-    assert.isNotTrue(!!iModelFirstVersion.briefcase.nativeDb.getReversedChangeSetId());
+    assert.strictEqual<string>(iModelFirstVersion.briefcase.currentChangeSetId, "");
 
-    for (const [arrayIndex, versionName] of testVersionNames.entries()) {
-      const iModelFromVersion = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(testIModels[0].changeSets[arrayIndex].wsgId));
+    for (const [arrayIndex, versionName] of readOnlyTestVersions.entries()) {
+      const iModelFromVersion = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.asOfChangeSet(readOnlyTestIModel.changeSets[arrayIndex + 1].wsgId));
       assert.exists(iModelFromVersion);
+      assert.strictEqual<string>(iModelFromVersion.briefcase.currentChangeSetId, readOnlyTestIModel.changeSets[arrayIndex + 1].wsgId);
 
-      assert.strictEqual<string>(iModelFromVersion.briefcase.changeSetId, testIModels[0].changeSets[arrayIndex].wsgId);
-      assert.strictEqual<string>(iModelFromVersion.briefcase.nativeDb.getParentChangeSetId(), testIModels[0].changeSets[arrayIndex].wsgId);
-      assert.isNotTrue(!!iModelFromVersion.briefcase.reversedChangeSetId);
-      assert.isNotTrue(!!iModelFromVersion.briefcase.nativeDb.getReversedChangeSetId());
-
-      const iModelFromChangeSet = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.named(versionName));
+      const iModelFromChangeSet = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.named(versionName));
       assert.exists(iModelFromChangeSet);
-
       assert.strictEqual(iModelFromChangeSet, iModelFromVersion);
-      assert.strictEqual<string>(iModelFromChangeSet.briefcase.changeSetId, testIModels[0].changeSets[arrayIndex].wsgId);
-      assert.strictEqual<string>(iModelFromChangeSet.briefcase.nativeDb.getParentChangeSetId(), testIModels[0].changeSets[arrayIndex].wsgId);
-      assert.isNotTrue(!!iModelFromChangeSet.briefcase.reversedChangeSetId);
-      assert.isNotTrue(!!iModelFromChangeSet.briefcase.nativeDb.getReversedChangeSetId());
+      assert.strictEqual<string>(iModelFromChangeSet.briefcase.currentChangeSetId, readOnlyTestIModel.changeSets[arrayIndex + 1].wsgId);
 
       const elementCount = getElementCount(iModelFromVersion);
-      assert.equal(elementCount, testElementCounts[arrayIndex], `Count isn't what's expected for ${iModelFromVersion.briefcase.pathname}, version ${versionName}`);
+      assert.equal(elementCount, readOnlyTestElementCounts[arrayIndex], `Count isn't what's expected for ${iModelFromVersion.briefcase.pathname}, version ${versionName}`);
 
       await iModelFromVersion.close(actx, accessToken, KeepBriefcase.Yes);
     }
 
-    const iModelLatestVersion: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(), IModelVersion.latest());
+    const iModelLatestVersion: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(), IModelVersion.latest());
     assert.exists(iModelLatestVersion);
-    assert.strictEqual<string>(iModelLatestVersion.briefcase.changeSetId, testIModels[0].changeSets[2].wsgId);
-    assert.strictEqual<string>(iModelLatestVersion.briefcase.nativeDb.getParentChangeSetId(), testIModels[0].changeSets[2].wsgId);
+    assert.isUndefined(iModelLatestVersion.briefcase.reversedChangeSetId);
+    assert.strictEqual<string>(iModelLatestVersion.briefcase.changeSetId, readOnlyTestIModel.changeSets[3].wsgId);
+    assert.strictEqual<string>(iModelLatestVersion.briefcase.nativeDb.getParentChangeSetId(), readOnlyTestIModel.changeSets[3].wsgId);
     assert.isNotTrue(!!iModelLatestVersion.briefcase.reversedChangeSetId);
 
     await iModelFirstVersion.close(actx, accessToken, KeepBriefcase.No);
@@ -264,28 +245,28 @@ describe.skip("BriefcaseManager", () => {
   });
 
   it("should open an iModel with no versions", async () => {
-    const iModelNoVer: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[2].id, OpenParams.fixedVersion());
+    const iModelNoVer: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, noVersionsTestIModel.id, OpenParams.fixedVersion());
     assert.exists(iModelNoVer);
-    assert(iModelNoVer.iModelToken.iModelId && iModelNoVer.iModelToken.iModelId === testIModels[2].id, "Correct iModel not found");
+    assert(iModelNoVer.iModelToken.iModelId && iModelNoVer.iModelToken.iModelId === noVersionsTestIModel.id, "Correct iModel not found");
   });
 
   it("should be able to pull or reverse changes only if allowed", async () => {
-    const secondChangeSetId = testIModels[0].changeSets[1].wsgId;
+    const secondChangeSetId = readOnlyTestIModel.changeSets[1].wsgId;
 
-    const iModelFixed: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.asOfChangeSet(secondChangeSetId));
+    const iModelFixed: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.asOfChangeSet(secondChangeSetId));
     assert.exists(iModelFixed);
-    assert.strictEqual<string>(iModelFixed.briefcase.changeSetId, secondChangeSetId);
+    assert.strictEqual<string>(iModelFixed.briefcase.currentChangeSetId, secondChangeSetId);
 
-    const iModelPullOnly: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Shared), IModelVersion.asOfChangeSet(secondChangeSetId));
+    const iModelPullOnly: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(AccessMode.Shared), IModelVersion.asOfChangeSet(secondChangeSetId));
     assert.exists(iModelPullOnly);
-    assert.strictEqual<string>(iModelPullOnly.briefcase.changeSetId, secondChangeSetId);
+    assert.strictEqual<string>(iModelPullOnly.briefcase.currentChangeSetId, secondChangeSetId);
 
     assert.notStrictEqual<string>(iModelPullOnly.briefcase.pathname, iModelFixed.briefcase.pathname, "pull only and fixed versions should not share the same briefcase");
 
-    const thirdChangeSetId = testIModels[0].changeSets[2].wsgId;
+    const thirdChangeSetId = readOnlyTestIModel.changeSets[2].wsgId;
 
     await iModelPullOnly.pullAndMergeChanges(actx, accessToken, IModelVersion.asOfChangeSet(thirdChangeSetId));
-    assert.strictEqual<string>(iModelPullOnly.briefcase.changeSetId, thirdChangeSetId);
+    assert.strictEqual<string>(iModelPullOnly.briefcase.currentChangeSetId, thirdChangeSetId);
 
     let exceptionThrown = false;
     try {
@@ -294,10 +275,10 @@ describe.skip("BriefcaseManager", () => {
       exceptionThrown = true;
     }
     assert.isTrue(exceptionThrown);
-    assert.strictEqual<string>(iModelFixed.briefcase.changeSetId, secondChangeSetId);
+    assert.strictEqual<string>(iModelFixed.briefcase.currentChangeSetId, secondChangeSetId);
 
     try {
-      const firstChangeSetId = testIModels[0].changeSets[1].wsgId;
+      const firstChangeSetId = readOnlyTestIModel.changeSets[0].wsgId;
       await iModelFixed.reverseChanges(actx, accessToken, IModelVersion.asOfChangeSet(firstChangeSetId));
     } catch (error) {
       exceptionThrown = true;
@@ -309,14 +290,14 @@ describe.skip("BriefcaseManager", () => {
   });
 
   it("should be able to edit and push only if it's allowed (#integration)", async () => {
-    const iModelFixed: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
+    const iModelFixed: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readWriteTestIModel.id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
     assert.exists(iModelFixed);
 
     let rootEl: Element = iModelFixed.elements.getRootSubject();
     rootEl.userLabel = rootEl.userLabel + "changed";
     assert.throws(() => iModelFixed.elements.updateElement(rootEl));
 
-    const iModelPullOnly: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[1].id, OpenParams.pullOnly(AccessMode.Shared), IModelVersion.latest());
+    const iModelPullOnly: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readWriteTestIModel.id, OpenParams.pullOnly(AccessMode.Shared), IModelVersion.latest());
     assert.exists(iModelPullOnly);
 
     rootEl = iModelPullOnly.elements.getRootSubject();
@@ -332,7 +313,7 @@ describe.skip("BriefcaseManager", () => {
     }
     assert.isTrue(exceptionThrown);
 
-    const iModelPullAndPush: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[1].id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModelPullAndPush: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelPullAndPush);
 
     rootEl = iModelPullAndPush.elements.getRootSubject();
@@ -347,27 +328,27 @@ describe.skip("BriefcaseManager", () => {
   });
 
   it("should be able to allow exclusive access to iModels (#integration)", async () => {
-    const iModelShared: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
+    const iModelShared: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readWriteTestIModel.id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
     assert.exists(iModelShared);
 
-    const iModelFixed: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    const iModelFixed: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readWriteTestIModel.id, OpenParams.fixedVersion(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
     assert.exists(iModelFixed);
     assert.notStrictEqual(iModelFixed.briefcase.pathname, iModelShared.briefcase.pathname);
 
-    const iModelFixed2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[1].id, OpenParams.fixedVersion(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    const iModelFixed2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readWriteTestIModel.id, OpenParams.fixedVersion(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
     assert.exists(iModelFixed);
     assert.notStrictEqual(iModelFixed.briefcase.pathname, iModelFixed2.briefcase.pathname);
 
-    const iModelPullOnly: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[1].id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    const iModelPullOnly: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readWriteTestIModel.id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
     assert.exists(iModelPullOnly);
     assert.notStrictEqual(iModelPullOnly.briefcase.pathname, iModelShared.briefcase.pathname);
     assert.notStrictEqual(iModelPullOnly.briefcase.pathname, iModelFixed.briefcase.pathname);
 
-    const iModelPullOnly2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[1].id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    const iModelPullOnly2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readWriteTestIModel.id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
     assert.exists(iModelPullOnly2);
     assert.notStrictEqual(iModelPullOnly2.briefcase.pathname, iModelPullOnly.briefcase.pathname);
 
-    const iModelPullAndPush: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[1].id, OpenParams.pullAndPush(), IModelVersion.latest());
+    const iModelPullAndPush: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readWriteTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelPullAndPush);
     assert.notStrictEqual(iModelPullAndPush.briefcase.pathname, iModelShared.briefcase.pathname);
     assert.notStrictEqual(iModelPullAndPush.briefcase.pathname, iModelFixed.briefcase.pathname);
@@ -380,11 +361,11 @@ describe.skip("BriefcaseManager", () => {
   });
 
   it("should be able to reuse existing briefcases from a previous session (#integration)", async () => {
-    let iModelShared: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
+    let iModelShared: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
     assert.exists(iModelShared);
     const sharedPathname = iModelShared.briefcase.pathname;
 
-    let iModelExclusive: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(), IModelVersion.latest());
+    let iModelExclusive: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelExclusive);
     const exclusivePathname = iModelExclusive.briefcase.pathname;
 
@@ -398,11 +379,11 @@ describe.skip("BriefcaseManager", () => {
 
     IModelHost.startup();
 
-    iModelShared = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
+    iModelShared = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
     assert.exists(iModelShared);
     assert.strictEqual<string>(iModelShared.briefcase.pathname, sharedPathname);
 
-    iModelExclusive = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(), IModelVersion.latest());
+    iModelExclusive = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(), IModelVersion.latest());
     assert.exists(iModelExclusive);
     assert.strictEqual<string>(iModelExclusive.briefcase.pathname, exclusivePathname);
 
@@ -413,12 +394,12 @@ describe.skip("BriefcaseManager", () => {
   it("should be able to gracefully error out if a bad cache dir is specified", async () => {
     const config = new IModelHostConfiguration();
     config.briefcaseCacheDir = "\\\\blah\\blah\\blah";
-    IModelHost.shutdown();
+    IModelTestUtils.shutdownBackend();
     IModelHost.startup(config);
 
     let exceptionThrown = false;
     try {
-      const iModelShared: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
+      const iModelShared: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Shared), IModelVersion.latest());
       assert.notExists(iModelShared);
     } catch (error) {
       exceptionThrown = true;
@@ -432,8 +413,8 @@ describe.skip("BriefcaseManager", () => {
 
   // The test fails matching access tokens - needs investigation.
   it.skip("Should track the AccessTokens that are used to open IModels (#integration)", async () => {
-    await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.fixedVersion(AccessMode.Exclusive));
-    assert.deepEqual(IModelDb.getAccessToken(testIModels[0].id), accessToken);
+    await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Exclusive));
+    assert.deepEqual(IModelDb.getAccessToken(readOnlyTestIModel.id), accessToken);
 
     try {
       IModelDb.getAccessToken("--invalidid--");
@@ -444,19 +425,19 @@ describe.skip("BriefcaseManager", () => {
   });
 
   it("should be able to reverse and reinstate changes (#integration)", async () => {
-    const iModel: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(), IModelVersion.latest());
+    const iModel: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(), IModelVersion.latest());
 
     let arrayIndex: number;
-    for (arrayIndex = testVersionNames.length - 1; arrayIndex >= 0; arrayIndex--) {
-      await iModel.reverseChanges(actx, accessToken, IModelVersion.named(testVersionNames[arrayIndex]));
-      assert.equal(testElementCounts[arrayIndex], getElementCount(iModel));
+    for (arrayIndex = readOnlyTestVersions.length - 1; arrayIndex >= 0; arrayIndex--) {
+      await iModel.reverseChanges(actx, accessToken, IModelVersion.named(readOnlyTestVersions[arrayIndex]));
+      assert.equal(readOnlyTestElementCounts[arrayIndex], getElementCount(iModel));
     }
 
     await iModel.reverseChanges(actx, accessToken, IModelVersion.first());
 
-    for (arrayIndex = 0; arrayIndex < testVersionNames.length; arrayIndex++) {
-      await iModel.reinstateChanges(actx, accessToken, IModelVersion.named(testVersionNames[arrayIndex]));
-      assert.equal(testElementCounts[arrayIndex], getElementCount(iModel));
+    for (arrayIndex = 0; arrayIndex < readOnlyTestVersions.length; arrayIndex++) {
+      await iModel.reinstateChanges(actx, accessToken, IModelVersion.named(readOnlyTestVersions[arrayIndex]));
+      assert.equal(readOnlyTestElementCounts[arrayIndex], getElementCount(iModel));
     }
 
     await iModel.reinstateChanges(actx, accessToken, IModelVersion.latest());
@@ -464,7 +445,7 @@ describe.skip("BriefcaseManager", () => {
 
   const briefcaseExistsOnHub = async (iModelId: GuidString, briefcaseId: number): Promise<boolean> => {
     try {
-      const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.Briefcases().get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId));
+      const hubBriefcases: HubBriefcase[] = await BriefcaseManager.imodelClient.briefcases.get(actx, accessToken, iModelId, new BriefcaseQuery().byId(briefcaseId));
       return (hubBriefcases.length > 0) ? true : false;
     } catch (e) {
       return false;
@@ -472,25 +453,25 @@ describe.skip("BriefcaseManager", () => {
   };
 
   it("should allow purging the cache and delete any acquired briefcases from the hub (#integration)", async () => {
-    const iModel1: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    const iModel1: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullOnly(AccessMode.Exclusive, ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
     assert.exists(iModel1, "No iModel returned from call to BriefcaseManager.open");
 
-    const iModel2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    const iModel2: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
     const briefcaseId2: number = iModel2.briefcase.briefcaseId;
-    let exists = await briefcaseExistsOnHub(testIModels[0].id, briefcaseId2);
+    let exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId2);
     assert.isTrue(exists);
 
-    const iModel3: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, testIModels[0].id, OpenParams.pullAndPush(ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
+    const iModel3: IModelDb = await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.pullAndPush(ExclusiveAccessOption.CreateNewBriefcase), IModelVersion.latest());
     const briefcaseId3: number = iModel3.briefcase.briefcaseId;
-    exists = await briefcaseExistsOnHub(testIModels[0].id, briefcaseId3);
+    exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId3);
     assert.isTrue(exists);
 
     await BriefcaseManager.purgeCache(actx, accessToken);
 
-    exists = await briefcaseExistsOnHub(testIModels[0].id, briefcaseId2);
+    exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId2);
     assert.isFalse(exists);
 
-    exists = await briefcaseExistsOnHub(testIModels[0].id, briefcaseId3);
+    exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId3);
     assert.isFalse(exists);
   });
 

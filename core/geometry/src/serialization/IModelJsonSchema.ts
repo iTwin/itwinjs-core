@@ -45,11 +45,12 @@ import { Point4d } from "../geometry4d/Point4d";
 import { CurveCollection } from "../curve/CurveCollection";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
+
 /* tslint:disable: object-literal-key-quotes no-console*/
 
 export namespace IModelJson {
 
-  export interface GeometryProps extends CurvePrimitiveProps, SolidPrimitiveProps {
+  export interface GeometryProps extends CurvePrimitiveProps, SolidPrimitiveProps, CurveCollectionProps {
     indexedMesh?: IndexedMeshProps;
     point?: XYZProps;
     bsurf?: BSplineSurfaceProps;
@@ -254,6 +255,7 @@ export namespace IModelJson {
     startRadius?: number;
     endRadius?: number;
     curveLength?: number;
+    fractionInterval?: number[];
     /** TransitionSpiral type.   Default is `"clothoid"` */
     type?: string; //   one of:   "clothoid" | "biquadratic" | "bloss" | "cosine" | "sine";
     /** A fractional portion of the spiral may be selected.
@@ -719,7 +721,11 @@ export namespace IModelJson {
           outChannels.push(new AuxChannel(outChannelData, inChannel.dataType as AuxChannelDataType, inChannel.name, inChannel.inputName));
         }
       }
-      return new PolyfaceAuxData(outChannels, data.indices);
+
+      const auxData = new PolyfaceAuxData(outChannels, []);
+      Reader.addZeroBasedIndicesFromSignedOneBased(data.indices, (x: number) => { auxData.indices.push(x); });
+
+      return auxData;
     }
 
     public static parseIndexedMesh(data?: any): any | undefined {
@@ -1139,7 +1145,8 @@ export namespace IModelJson {
       Writer.insertOrientationFromMatrix(value, data.localToWorld.matrix, true);
 
       if (!data.activeFractionInterval.isExact01)
-        Object.defineProperty(value, "fractionInterval", [data.activeFractionInterval.x0, data.activeFractionInterval.x1]);
+        value.fractionInterval = [data.activeFractionInterval.x0, data.activeFractionInterval.x1];
+      // Object.defineProperty(value, "fractionInterval", { value: [data.activeFractionInterval.x0, data.activeFractionInterval.x1] });
 
       // if possible, do selective output of defining data (omit exactly one out of the 5, matching original definition)
       if (originalProperties !== undefined && originalProperties.numDefinedProperties() === 4) {
@@ -1380,10 +1387,18 @@ export namespace IModelJson {
       return out;
     }
 
-    private handlePolyfaceAuxData(auxData: PolyfaceAuxData): any {
+    private handlePolyfaceAuxData(auxData: PolyfaceAuxData, pf: IndexedPolyface): any {
       const contents: { [k: string]: any } = {};
+      contents.indices = [];
+      const visitor = pf.createVisitor(0);
+      if (!visitor.auxData) return;
 
-      contents.indices = auxData.indices.slice(0);
+      while (visitor.moveToNextFacet()) {
+        for (let i = 0; i < visitor.indexCount; i++) {
+          contents.indices.push(visitor.auxData.indices[i] + 1);
+        }
+        contents.indices.push(0);  // facet terminator.
+      }
       contents.channels = [];
       for (const inChannel of auxData.channels) {
         const outChannel: { [k: string]: any } = {};
@@ -1461,7 +1476,7 @@ export namespace IModelJson {
       const contents: { [k: string]: any } = {};
 
       if (pf.data.auxData)
-        contents.auxData = this.handlePolyfaceAuxData(pf.data.auxData);
+        contents.auxData = this.handlePolyfaceAuxData(pf.data.auxData, pf);
 
       if (pf.data.color) contents.color = colors;
       if (pf.data.colorIndex) contents.colorIndex = colorIndex;
@@ -1564,9 +1579,34 @@ export namespace IModelJson {
     public handleBSplineSurface3d(surface: BSplineSurface3d): any {
       // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
       // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
-      if (surface.isClosable(0)
-        || surface.isClosable(1)) {
-        // TODO
+      const periodicU = surface.isClosable(0);
+      const periodicV = surface.isClosable(1);
+      if (periodicU || periodicV) {
+        let numUPoles = surface.numPolesUV(0);
+        let numVPoles = surface.numPolesUV(1);
+        if (periodicU) numUPoles -= surface.degreeUV(0);
+        if (periodicV) numVPoles -= surface.degreeUV(1);
+        const xyz = Point3d.create();
+        const grid = [];
+        for (let j = 0; j < numVPoles; j++) {
+          const stringer = [];
+          for (let i = 0; i < numUPoles; i++) {
+            surface.getPoint3dPole(i, j, xyz)!;
+            stringer.push([xyz.x, xyz.y, xyz.z]);
+          }
+          grid.push(stringer);
+        }
+        return {
+          "bsurf": {
+            "points": grid,
+            "uKnots": surface.copyKnots(0, true),
+            "vKnots": surface.copyKnots(1, true),
+            "orderU": surface.orderUV(0),
+            "orderV": surface.orderUV(1),
+            "closedU": periodicU,
+            "closedV": periodicV,
+          },
+        };
       } else {
         return {
           "bsurf": {

@@ -2,6 +2,102 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "0.171.0",
+      "tag": "@bentley/geometry-core_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Geometry Coverage"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.170.0",
+      "tag": "@bentley/geometry-core_v0.170.0",
+      "date": "Mon, 26 Nov 2018 19:38:42 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.169.0",
+      "tag": "@bentley/geometry-core_v0.169.0",
+      "date": "Tue, 20 Nov 2018 16:17:15 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.168.0",
+      "tag": "@bentley/geometry-core_v0.168.0",
+      "date": "Sat, 17 Nov 2018 14:20:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.167.0",
+      "tag": "@bentley/geometry-core_v0.167.0",
+      "date": "Fri, 16 Nov 2018 21:45:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Coverage"
+          },
+          {
+            "comment": "AnalyticRoots and Polynomial coverage"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.166.0",
+      "tag": "@bentley/geometry-core_v0.166.0",
+      "date": "Mon, 12 Nov 2018 16:42:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.165.0",
+      "tag": "@bentley/geometry-core_v0.165.0",
+      "date": "Mon, 12 Nov 2018 15:47:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "bspline docs.    Add bezier curve left and right subdivision methods\""
+          },
+          {
+            "comment": "Correct return value (undefined is right!) for LineString3d.pointAt (index)"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.164.0",
+      "tag": "@bentley/geometry-core_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Complete analysis import test application"
+          },
+          {
+            "comment": "Add support for PolyfaceAuxData to PolyfaceVisitor"
+          },
+          {
+            "comment": "implement curve method \"moveSignedDistanceFromFraction\""
+          },
+          {
+            "comment": "polyface.compress performance problem -- extraneous reallocations"
+          },
+          {
+            "comment": "CurveChainWithDistanceIndex derivative and distance methods"
+          },
+          {
+            "comment": "PolyfaceAuxData documentation"
+          },
+          {
+            "comment": "Updated to TypeScript 3.1"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.163.0",
       "tag": "@bentley/geometry-core_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",

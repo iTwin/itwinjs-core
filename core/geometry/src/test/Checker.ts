@@ -10,7 +10,7 @@ import { Segment1d } from "../geometry3d/Segment1d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 
-import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Range3d } from "../geometry3d/Range";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Arc3d } from "../curve/Arc3d";
@@ -147,7 +147,25 @@ export class Checker {
     }
     return this.announceOK();
   }
-
+  /**
+   * Test if number arrays (either or  both possibly undefined) match.
+   */
+  public testNumberArrayGG(dataA: GrowableFloat64Array | undefined, dataB: GrowableFloat64Array | undefined, ...params: any[]): boolean {
+    const numA = dataA === undefined ? 0 : dataA.length;
+    const numB = dataB === undefined ? 0 : dataB.length;
+    if (numA !== numB)
+      return this.announceError("array length mismatch", dataA, dataB, params);
+    if (dataA && dataB) {
+      let numError = 0;
+      for (let i = 0; i < dataA.length; i++) {
+        if (!Geometry.isSameCoordinate(dataA.at(i), dataB.at(i)))
+          numError++;
+      }
+      if (numError !== 0)
+        return this.announceError("contents different", dataA, dataB, params);
+    }
+    return this.announceOK();
+  }
   public testRange3d(dataA: Range3d, dataB: Range3d, ...params: any[]): boolean {
     if (dataA.isAlmostEqual(dataB))
       return this.announceOK();
@@ -310,9 +328,18 @@ export class Checker {
     return this.announceError("Expect perpendicular", dataA, dataB, params);
   }
 
-  // return true if dataA is strictly before dataB as a signed toleranced coordinate value.
+  // return true for exact numeric equality
   public testExactNumber(dataA: number, dataB: number, ...params: any[]): boolean {
     if (dataA === dataB)
+      return this.announceOK();
+    return this.announceError("Expect exact number", dataA, dataB, params);
+  }
+
+  // return true if numbers are nearly identical, tolerance e * (1 + abs(dataA) + abs (dataB)) for e = 8e-16
+  public testTightNumber(dataA: number, dataB: number, ...params: any[]): boolean {
+    const d = Math.abs(dataB - dataA);
+    const tol = 8.0e-16 * (1.0 + Math.abs(dataA) + Math.abs(dataB));
+    if (d < tol)
       return this.announceOK();
     return this.announceError("Expect exact number", dataA, dataB, params);
   }

@@ -9,7 +9,7 @@ import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 // import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";
-import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { OptionalGrowableFloat64Array, GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Point4d } from "../geometry4d/Point4d";
 // import { Arc3d } from "../curve/Arc3d";
 
@@ -334,14 +334,12 @@ export class SphereImplicit {
     return x * x + y * y + z * z - this.radius * this.radius;
   }
 
-  // Evaluate the implicit function at weighted space point (wx/w, wy/w, wz/w)
+  // Evaluate the implicit function at weighted space point (wx, wy, wz, w)
   // @param [in] wx (preweighted) x coordinate
   // @param [in] wy (preweighted) y coordinate
   // @param [in] wz (preweighted) z coordinate
   // @param [in] w  weight
   public evaluateImplicitFunctionXYZW(wx: number, wy: number, wz: number, w: number): number {
-    if (w === 0.0)
-      return 0.0;
     return (wx * wx + wy * wy + wz * wz) - this.radius * this.radius * w * w;
   }
 
@@ -459,7 +457,11 @@ export class AnalyticRoots {
   }
   // @returns the principal (always real) cube root of x.
   public static cbrt(x: number): number {
-    return ((x) > 0.0 ? Math.pow((x), 1.0 / 3.0) : ((x) < 0.0 ? -Math.pow(-(x), 1.0 / 3.0) : 0.0));
+    return ((x) > 0.0
+      ? Math.pow((x), 1.0 / 3.0)
+      : ((x) < 0.0
+        ? -Math.pow(-(x), 1.0 / 3.0)
+        : 0.0));
   }
   /**
    * Try to divide `numerator/denominator` and place the result (or defaultValue) in `values[offset]`
@@ -567,7 +569,7 @@ export class AnalyticRoots {
     AnalyticRoots.appendSolution(Geometry.conditionalDivideFraction(-c0, c1), values);
   }
   // Search an array for the value which is farthest from the average of all the values.
-  private static mostDistantFromMean(data: GrowableFloat64Array | undefined): number {
+  public static mostDistantFromMean(data: GrowableFloat64Array | undefined): number {
     if (!data || data.length === 0) return 0;
     let a = 0.0;  // to become the sum and finally the average.
     for (let i = 0; i < data.length; i++) a += data.at(i);
@@ -576,7 +578,7 @@ export class AnalyticRoots {
     let result = data.at(0);
     for (let i = 0; i < data.length; i++) {
       const d = Math.abs(data.at(i) - a);
-      if (d < dMax) {
+      if (d > dMax) {
         dMax = d;
         result = data.at(i);
       }
@@ -686,12 +688,15 @@ export class AnalyticRoots {
       results.push(origin + t * Math.cos(phi));
       results.push(origin - t * Math.cos(phi + Math.PI / 3));
       results.push(origin - t * Math.cos(phi - Math.PI / 3));
+      this.improveSortedRoots(c, 3, results);
+
       return;
     } else {    // One real solution
       const sqrt_D = Math.sqrt(D);
       const u = this.cbrt(sqrt_D - q);
       const v = -(this.cbrt(sqrt_D + q));
       results.push(origin + u + v);
+      this.improveSortedRoots(c, 3, results);
       return;
     }
   }
@@ -1011,7 +1016,7 @@ export class TrigPolynomial {
     }
     const coffTol = relTol * maxCoff;
     let degree = nominalDegree;
-    while (degree > 0 && (Math.abs(coff[degree - 1]) <= coffTol)) {
+    while (degree > 0 && (Math.abs(coff[degree]) <= coffTol)) {
       degree--;
     }
     // let bstat = false;

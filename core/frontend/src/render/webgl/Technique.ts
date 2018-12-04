@@ -8,7 +8,7 @@ import { assert, using, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
 import { TechniqueId } from "./TechniqueId";
 import { TechniqueFlags, FeatureMode, ClipDef } from "./TechniqueFlags";
-import { ProgramBuilder, VertexShaderComponent, FragmentShaderComponent, ClippingShaders } from "./ShaderBuilder";
+import { ProgramBuilder, FragmentShaderComponent, ClippingShaders } from "./ShaderBuilder";
 import { DrawParams, DrawCommands } from "./DrawCommand";
 import { Target } from "./Target";
 import { RenderPass, CompositeFlags } from "./RenderFlags";
@@ -24,7 +24,7 @@ import { addMonochrome } from "./glsl/Monochrome";
 import { createSurfaceBuilder, createSurfaceHiliter, addMaterial, addSurfaceDiscardByAlpha } from "./glsl/Surface";
 import { createPointStringBuilder, createPointStringHiliter } from "./glsl/PointString";
 import { createPointCloudBuilder, createPointCloudHiliter } from "./glsl/PointCloud";
-import { addElementId, addFeatureSymbology, addRenderOrder, computeElementId, computeUniformElementId, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
+import { addFeatureId, addFeatureSymbology, addUniformFeatureSymbology, addRenderOrder, FeatureSymbologyOptions } from "./glsl/FeatureSymbology";
 import { GLSLFragment, addPickBufferOutputs } from "./glsl/Fragment";
 import { addFrustum, addEyeSpace } from "./glsl/Common";
 import { addModelViewMatrix } from "./glsl/Vertex";
@@ -127,18 +127,17 @@ export abstract class VariedTechnique implements Technique {
     this.addShader(builder, flags, gl);
   }
 
-  protected addElementId(builder: ProgramBuilder, feat: FeatureMode, alwaysUniform: boolean = false) {
+  protected addFeatureId(builder: ProgramBuilder, feat: FeatureMode) {
     const frag = builder.frag;
     if (FeatureMode.None === feat)
       frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
     else {
       const vert = builder.vert;
-      vert.set(VertexShaderComponent.AddComputeElementId, alwaysUniform ? computeUniformElementId : computeElementId);
       addFrustum(builder);
       addEyeSpace(builder);
       addModelViewMatrix(vert);
       addRenderOrder(frag);
-      addElementId(builder, alwaysUniform);
+      addFeatureId(builder);
       addPickBufferOutputs(frag);
     }
   }
@@ -239,7 +238,7 @@ class PolylineTechnique extends VariedTechnique {
         this.addTranslucentShader(builderTrans, flags, gl);
         addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
       }
-      this.addElementId(builder, featureMode);
+      this.addFeatureId(builder, featureMode);
       flags.reset(featureMode);
       this.addShader(builder, flags, gl);
     }
@@ -289,7 +288,7 @@ class EdgeTechnique extends VariedTechnique {
           this.addTranslucentShader(builderTrans, flags, gl);
           addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
         }
-        this.addElementId(builder, featureMode);
+        this.addFeatureId(builder, featureMode);
         flags.reset(featureMode);
         this.addShader(builder, flags, gl);
       }
@@ -335,7 +334,7 @@ class PointStringTechnique extends VariedTechnique {
         this.addTranslucentShader(builderTrans, flags, gl);
         addFeatureSymbology(builder, featureMode, FeatureSymbologyOptions.None);
       }
-      this.addElementId(builder, featureMode);
+      this.addFeatureId(builder, featureMode);
       flags.reset(featureMode);
       this.addShader(builder, flags, gl);
     }
@@ -356,19 +355,23 @@ class PointStringTechnique extends VariedTechnique {
 }
 
 class PointCloudTechnique extends VariedTechnique {
-  private static readonly _kHilite = numFeatureVariants(1);
+  private static readonly _kHilite = 1;
+  private static readonly _kFeature = 2;
 
   public constructor(gl: WebGLRenderingContext) {
-    super(numFeatureVariants(1) + numHiliteVariants);
+    super(3);
+
+    this.addHiliteShader(gl, createPointCloudHiliter);
 
     const flags = scratchTechniqueFlags;
-    this.addHiliteShader(gl, createPointCloudHiliter);
-    for (const feature of featureModes) {
-      flags.reset(feature);
+    const pointCloudFeatureModes = [ FeatureMode.None, FeatureMode.Overrides ];
+    for (const featureMode of pointCloudFeatureModes) {
+      flags.reset(featureMode);
       const builder = createPointCloudBuilder();
-      const opts = FeatureMode.Overrides === feature ? FeatureSymbologyOptions.PointCloud : FeatureSymbologyOptions.None;
-      addFeatureSymbology(builder, feature, opts, true);
-      this.addElementId(builder, feature, true);
+      if (FeatureMode.Overrides === featureMode)
+        addUniformFeatureSymbology(builder);
+
+      this.addFeatureId(builder, featureMode);
       this.addShader(builder, flags, gl);
     }
   }
@@ -376,13 +379,12 @@ class PointCloudTechnique extends VariedTechnique {
   protected get _debugDescription() { return "PointCloud"; }
 
   public computeShaderIndex(flags: TechniqueFlags): number {
-    let index: number;
     if (flags.isHilite)
-      index = PointCloudTechnique._kHilite;
+      return PointCloudTechnique._kHilite;
+    else if (FeatureMode.None !== flags.featureMode)
+      return PointCloudTechnique._kFeature;
     else
-      index = flags.featureMode;
-
-    return index;
+      return 0;
   }
 }
 

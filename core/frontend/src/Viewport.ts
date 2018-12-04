@@ -1070,34 +1070,38 @@ export abstract class Viewport implements IDisposable {
     if (undefined === readRect)
       return undefined;
 
-    const pixels = this.readPixels(readRect, Pixel.Selector.Distance);
-    if (!pixels)
-      return undefined;
+    let retVal: DepthRangeNpc | undefined;
+    this.readPixels(readRect, Pixel.Selector.GeometryAndDistance, (pixels) => {
+      if (!pixels)
+        return;
 
-    let maximum = 0;
-    let minimum = 1;
-    const npc = Point3d.create();
-    const testPoint = Point2d.create();
-    for (testPoint.x = readRect.left; testPoint.x < readRect.right; ++testPoint.x) {
-      for (testPoint.y = readRect.top; testPoint.y < readRect.bottom; ++testPoint.y) {
-        if (this.getPixelDataNpcPoint(pixels, testPoint.x, testPoint.y, npc) !== undefined) {
-          minimum = Math.min(minimum, npc.z);
-          maximum = Math.max(maximum, npc.z);
+      let maximum = 0;
+      let minimum = 1;
+      const npc = Point3d.create();
+      const testPoint = Point2d.create();
+      for (testPoint.x = readRect.left; testPoint.x < readRect.right; ++testPoint.x) {
+        for (testPoint.y = readRect.top; testPoint.y < readRect.bottom; ++testPoint.y) {
+          if (this.getPixelDataNpcPoint(pixels, testPoint.x, testPoint.y, npc) !== undefined) {
+            minimum = Math.min(minimum, npc.z);
+            maximum = Math.max(maximum, npc.z);
+          }
         }
       }
-    }
 
-    if (maximum <= 0)
-      return undefined;
+      if (maximum <= 0)
+        return;
 
-    if (undefined === result) {
-      result = new DepthRangeNpc(minimum, maximum);
-    } else {
-      result.minimum = minimum;
-      result.maximum = maximum;
-    }
+      if (undefined === result) {
+        result = new DepthRangeNpc(minimum, maximum);
+      } else {
+        result.minimum = minimum;
+        result.maximum = maximum;
+      }
 
-    return result;
+      retVal = result;
+    });
+
+    return retVal;
   }
 
   /** Turn the camera on if it is currently off. If the camera is already on, adjust it to use the supplied lens angle.
@@ -1687,6 +1691,9 @@ export abstract class Viewport implements IDisposable {
       target.animationFraction = this.animationFraction;
       isRedrawNeeded = true;
       sync.setValidAnimationFraction();
+      const scheduleScript = view.displayStyle.settings.scheduleScript;
+      if (scheduleScript)
+        view.scheduleTime = scheduleScript.duration.fractionToPoint(target.animationFraction);
     }
 
     if (this.processFlash()) {
@@ -1709,24 +1716,27 @@ export abstract class Viewport implements IDisposable {
    * Read selected data about each pixel within a rectangular region of this Viewport.
    * @param rect The area of the viewport's contents to read. The origin specifies the upper-left corner. Must lie entirely within the viewport's dimensions.
    * @param selector Specifies which aspect(s) of data to read.
-   * @returns a [[Pixel.Buffer]] object from which the selected data can be retrieved, or undefined in the viewport is not active, the rect is out of bounds, or some other error.
+   * @param receiver A function accepting a [[Pixel.Buffer]] object from which the selected data can be retrieved, or receiving undefined if the viewport is not active, the rect is out of bounds, or some other error.
+   * @note The [[Pixel.Buffer]] supplied to the `receiver` function becomes invalid once that function exits. Do not store a reference to it.
    */
-  public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+  public readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver): void {
     const viewRect = this.viewRect;
     if (!rect.isContained(viewRect))
-      return undefined;
-
-    return this.target.readPixels(rect, selector);
+      receiver(undefined);
+    else
+      this.target.readPixels(rect, selector, receiver);
   }
 
   /**
    * Read the current image from this viewport from the rendering system. If a view rectangle outside the actual view is specified, the entire view is captured.
    * @param rect The area of the view to read. The origin of a viewRect must specify the upper left corner.
    * @param targetSize The size of the image to be returned. The size can be larger or smaller than the original view.
+   * @param flipVertically If true, the image is flipped along the x-axis.
    * @returns The contents of the viewport within the specified rectangle as a bitmap image, or undefined if the image could not be read.
+   * @note By default the image is returned upside-down. Pass `true` for `flipVertically` to flip it along the x-axis.
    */
-  public readImage(rect: ViewRect = new ViewRect(0, 0, -1, -1), targetSize: Point2d = Point2d.createZero()): ImageBuffer | undefined {
-    return this.target.readImage(rect, targetSize);
+  public readImage(rect: ViewRect = new ViewRect(0, 0, -1, -1), targetSize: Point2d = Point2d.createZero(), flipVertically: boolean = false): ImageBuffer | undefined {
+    return this.target.readImage(rect, targetSize, flipVertically);
   }
 
   /** Get the point at the specified x and y location in the pixel buffer in npc coordinates */

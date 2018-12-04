@@ -6,11 +6,11 @@
 
 import * as deepAssign from "deep-assign";
 
-import { ECJsonTypeMap, WsgInstance, Id64Serializer, PropertySerializer } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 
 import { ResponseError } from "./../Request";
 import { AccessToken } from "../Token";
-import { Logger, IModelHubStatus, ActivityLoggingContext, Id64, Id64String, GuidString } from "@bentley/bentleyjs-core";
+import { Logger, IModelHubStatus, ActivityLoggingContext, Id64String, GuidString } from "@bentley/bentleyjs-core";
 import { AggregateResponseError, Query } from "./index";
 import { IModelHubError, ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -184,30 +184,8 @@ export class LockBase extends WsgInstance {
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Lock", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Lock extends LockBase {
   /** Id of the locked object. */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.ObjectId", new Id64Serializer())
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ObjectId")
   public objectId?: Id64String;
-}
-
-class Id64ArraySerializer implements PropertySerializer {
-  public serialize(value: any): any {
-    if (!(value instanceof Array))
-      return undefined;
-    return value.map((v) => {
-      if (typeof v === "string")
-        return v;
-      return undefined;
-    });
-  }
-
-  public deserialize(value: any): any {
-    if (!(value instanceof Array))
-      return undefined;
-    return value.map((v) => {
-      if (typeof v === "string")
-        return Id64.fromString(v);
-      return undefined;
-    });
-  }
 }
 
 /**
@@ -217,7 +195,7 @@ class Id64ArraySerializer implements PropertySerializer {
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.MultiLock", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class MultiLock extends LockBase {
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.ObjectIds", new Id64ArraySerializer())
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ObjectIds")
   public objectIds?: Id64String[];
 }
 
@@ -485,7 +463,7 @@ export class LockHandler {
     ArgumentCheck.nonEmptyArray("locks", locks);
 
     updateOptions = updateOptions || {};
-    this.setupOptionDefaults(updateOptions);
+    await this.setupOptionDefaults(updateOptions);
 
     const result: Lock[] = [];
     let conflictError: ConflictingLocksError | undefined;

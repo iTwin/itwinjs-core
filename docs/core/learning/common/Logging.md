@@ -26,7 +26,7 @@ If a category name has a "." in it, then the part to the left is interpreted as 
 ## Controlling the Destination of Logging Messages
 The app controls how to handle log messages by supplying to [Logger.initialize]($bentleyjs-core) the functions that handle messages for each log level. These functions are called "streams". See the convenience method [Logger.initializeToConsole]($bentleyjs-core) for a simple way to direct logging output to the console.
 [BunyanLoggerConfig]($bentleyjs-core) will direct logging to the Bunyan logging system.
-[SeqLoggerConfig]($bentleyjs-core) will direct logging to the seq logging server.
+[SeqLoggerConfig]($bentleyjs-core) will direct logging to the seq logging server. [FluentdBunyanLoggerConfig]($bentleyjs-core) will direct loging to fluentd.
 
 ## Controlling What is Logged
 The app that produces logging output can apply filters at runtime to control which messages are actually sent to the destination.

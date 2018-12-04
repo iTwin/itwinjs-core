@@ -51,7 +51,7 @@ describe("Disposable", () => {
       const disposable = new CallbackDisposable(() => {
         disposed = true;
       });
-      await using(disposable, () => {
+      await using(disposable, async () => {
         return new Promise<void>((resolve: () => void, _reject: () => void) => {
           setTimeout(() => {
             resolve();
@@ -67,7 +67,7 @@ describe("Disposable", () => {
       const disposable = new CallbackDisposable(() => {
         disposed = true;
       });
-      const result = using(disposable, () => {
+      const result = using(disposable, async () => {
         return new Promise<void>((_resolve: () => void, reject: () => void) => {
           setTimeout(() => {
             reject();

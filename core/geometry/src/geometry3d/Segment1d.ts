@@ -50,6 +50,13 @@ export class Segment1d {
    */
   public clone(): Segment1d { return new Segment1d(this.x0, this.x1); }
   /**
+   * @returns true if both coordinates (`x0` and `x1`) are in the 0..1 range.
+   */
+  public get isIn01() {
+    return Geometry.isIn01(this.x0) && Geometry.isIn01(this.x1);
+
+  }
+  /**
    * Evalauate the segment at fractional position
    * @returns position within the segment
    * @param fraction fractional position within this segment

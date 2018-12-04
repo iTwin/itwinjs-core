@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken } from "../Token";
-import { UserProfile } from "../UserProfile";
+import { UserInfo } from "../UserInfo";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelAuthorizationClient } from "../IModelCloudEnvironment";
 
@@ -11,11 +11,11 @@ import { IModelAuthorizationClient } from "../IModelCloudEnvironment";
  * be able to tolerate this dummy token.
  */
 export class IModelBankDummyAuthorizationClient implements IModelAuthorizationClient {
-  public authorizeUser(_actx: ActivityLoggingContext, userProfile: UserProfile | undefined, userCredentials: any): Promise<AccessToken> {
-    if (!userProfile)
-      userProfile = { email: userCredentials.email, userId: "", firstName: "", lastName: "", organization: "", ultimateSite: "", organizationId: "", usageCountryIso: "" };
+  public async authorizeUser(_actx: ActivityLoggingContext, userInfo: UserInfo | undefined, userCredentials: any): Promise<AccessToken> {
+    if (!userInfo)
+      userInfo = { id: "", email: { id: userCredentials.email }, profile: { name: "", firstName: "", lastName: "" } };
     const foreignAccessTokenWrapper: any = {};
-    foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userProfile };
+    foreignAccessTokenWrapper[AccessToken.foreignProjectAccessTokenJsonProperty] = { userInfo };
     return Promise.resolve(AccessToken.fromForeignProjectAccessTokenJson(JSON.stringify(foreignAccessTokenWrapper))!);
   }
 }

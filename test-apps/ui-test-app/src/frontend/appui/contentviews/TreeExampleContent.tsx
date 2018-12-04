@@ -8,11 +8,14 @@ import { ConfigurableUiManager } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { ContentControl } from "@bentley/ui-framework";
 import {
-  SelectionMode, TreeNodeItem, TreeDataProvider,
-  SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy, Tree,
+  SelectionMode, DelayLoadedTreeNodeItem,
+  SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
+  Tree, TreeCellEditorState, TreeCellUpdatedArgs, TreeNodeItem, EditableTreeDataProvider,
 } from "@bentley/ui-components";
 
-class TreeExampleContentControl extends ContentControl {
+// import { demoMutableTreeDataProvider } from "../widgets/demodataproviders/demoTreeDataProvider";
+
+export class TreeExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
@@ -20,8 +23,19 @@ class TreeExampleContentControl extends ContentControl {
   }
 }
 
+class EditableSimpleTreeDataProvider extends SimpleTreeDataProvider implements EditableTreeDataProvider {
+  constructor(hierarchy: SimpleTreeDataProviderHierarchy) {
+    super(hierarchy);
+  }
+
+  public updateLabel(nodeItem: TreeNodeItem, newLabel: string): void {
+    nodeItem.label = newLabel;
+    this.onTreeNodeChanged.raiseEvent([nodeItem]);
+  }
+}
+
 interface TreeExampleState {
-  dataProvider: TreeDataProvider;
+  dataProvider: EditableSimpleTreeDataProvider;
   selectionMode: SelectionMode;
 }
 
@@ -31,21 +45,22 @@ class TreeExampleContent extends React.Component<{}, TreeExampleState> {
     super(props);
     const hierarchy = new Map();
     this._createNodes(5, "A", 3, hierarchy);
-    this.state = { dataProvider: new SimpleTreeDataProvider(hierarchy), selectionMode: SelectionMode.Single };
+    this.state = { dataProvider: new EditableSimpleTreeDataProvider(hierarchy), selectionMode: SelectionMode.Single };
   }
 
   private _createNodes = (n: number, label: string, levels: number, hierarchy: SimpleTreeDataProviderHierarchy, parentId?: string) => {
     if (levels < 0)
       return;
-    const nodes: TreeNodeItem[] = [];
+    const nodes: DelayLoadedTreeNodeItem[] = [];
     for (let i = 0; i < n; i++) {
       const nodeLabel = label + "-" + i.toString();
       nodes[i] = {
         id: nodeLabel,
         label: nodeLabel,
         hasChildren: levels > 1,
-        description: nodeLabel + "description",
+        description: nodeLabel + " description",
         parentId,
+        isEditable: true,
       };
 
       this._createNodes(n, nodeLabel, levels - 1, hierarchy, nodeLabel);
@@ -74,19 +89,28 @@ class TreeExampleContent extends React.Component<{}, TreeExampleState> {
     this.setState({ selectionMode });
   }
 
+  private _onCellEditing = (_cellEditorState: TreeCellEditorState): void => {
+  }
+
+  private _onCellUpdated = async (args: TreeCellUpdatedArgs): Promise<boolean> => {
+    const nodeItem: TreeNodeItem = args.node.payload;
+    this.state.dataProvider.updateLabel(nodeItem, args.newValue);
+    return true;
+  }
+
   public render() {
     return (
-      <div style={{ width: "100%", height: "100%" }}>
-        <div style={{ width: "100%", height: "10%" }}>
+      <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
+        <div style={{ marginBottom: "4px" }}>
           <select onChange={this._onChangeSelectionMode}>
             <option value={SelectionMode.Single}> Single </option>
-            < option value={SelectionMode.SingleAllowDeselect} > SingleAllowDeselect </option>
-            < option value={SelectionMode.Multiple} > Multiple </option>
-            < option value={SelectionMode.Extended} > Extended </option>
+            <option value={SelectionMode.SingleAllowDeselect} > SingleAllowDeselect </option>
+            <option value={SelectionMode.Multiple} > Multiple </option>
+            <option value={SelectionMode.Extended} > Extended </option>
           </select>
         </div>
-        <div style={{ width: "100%", height: "90%", overflow: "scroll" }}>
-          <Tree dataProvider={this.state.dataProvider} selectionMode={this.state.selectionMode} />
+        <div style={{ flex: "1", height: "100%" }}>
+          <Tree dataProvider={this.state.dataProvider} selectionMode={this.state.selectionMode} onCellEditing={this._onCellEditing} onCellUpdated={this._onCellUpdated} />
         </div>
       </div >
     );

@@ -37,18 +37,18 @@ import { TestbedConfig } from "../common/TestbedConfig";
 import { CONSTANTS } from "../common/Testbed";
 import * as semver from "semver";
 
-const timeout = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 
 describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
     public static version = "0.0.0";
     public static types = () => [];
-    public op(): Promise<void> { return this.forward.apply(this, arguments); }
+    public async op(): Promise<void> { return this.forward.apply(this, arguments); }
   }
 
   const initializeLocalInterface = () => {
     RpcManager.registerImpl(LocalInterface, class extends RpcInterface {
-      public op(): Promise<void> { return undefined as any; }
+      public async op(): Promise<void> { return undefined as any; }
     });
 
     RpcManager.initializeInterface(LocalInterface);
@@ -210,7 +210,7 @@ describe("RpcInterface", () => {
     assert(TestbedConfig.sendToMainSync({ name: CONSTANTS.UNREGISTER_TEST_RPCIMPL2_CLASS_MESSAGE, value: undefined }));
   });
 
-  it("should allow access to request and invocation objects and allow a custom request id", () => {
+  it("should allow access to request and invocation objects and allow a custom request id", async () => {
     const op9 = RpcOperation.lookup(TestRpcInterface, "op9");
 
     const customId = "customId";
@@ -351,7 +351,7 @@ describe("RpcInterface", () => {
     const realVersion = TestRpcInterface.version;
     const realVersionZ = ZeroMajorRpcInterface.version;
 
-    const test = (code: string | null, expectValid: boolean, c: TestRpcInterface | ZeroMajorRpcInterface) => {
+    const test = async (code: string | null, expectValid: boolean, c: TestRpcInterface | ZeroMajorRpcInterface) => {
       return new Promise(async (resolve, reject) => {
         if (code === null) {
           reject();
@@ -476,7 +476,7 @@ describe("RpcInterface", () => {
     const oneZero = new Uint8Array([1, 0, 1, 0]);
     const zeroOne = new Uint8Array([0, 1, 0, 1]);
 
-    function exercise(client: RpcTransportTest) {
+    async function exercise(client: RpcTransportTest) {
       return new Promise(async (resolve, reject) => {
         try {
           assert.equal(await client.primitive(abc), RpcTransportTestImpl.mutateString(abc));
@@ -500,6 +500,33 @@ describe("RpcInterface", () => {
     await exercise(RpcWebTransportTest.getClient());
     await exercise(RpcElectronTransportTest.getClient());
     await exercise(RpcMobileTransportTest.getClient());
+
+    async function stress(client: RpcTransportTest) {
+      return new Promise((resolve, reject) => {
+        let c = 0;
+        for (let i = 0; i !== 100; ++i) {
+          client.nested({ a: { x: oneZero, y: one }, b: abc, c: zeroOne }).then((nested) => {
+            ++c;
+
+            assert(compareBytes(nested.a.x, RpcTransportTestImpl.mutateBits(oneZero)));
+            assert.equal(nested.a.y, RpcTransportTestImpl.mutateNumber(one));
+            assert.equal(nested.b, RpcTransportTestImpl.mutateString(abc));
+            assert(compareBytes(nested.c, RpcTransportTestImpl.mutateBits(zeroOne)));
+
+            if (c === 99) {
+              resolve();
+            }
+          }).catch((reason) => {
+            reject(reason);
+          });
+        }
+      });
+    }
+
+    await stress(RpcDirectTransportTest.getClient());
+    await stress(RpcWebTransportTest.getClient());
+    await stress(RpcElectronTransportTest.getClient());
+    await stress(RpcMobileTransportTest.getClient());
   });
 
   it("should support cachable responses", async () => {

@@ -278,7 +278,7 @@ export class Schema implements CustomAttributeContainerProps {
   // This method is private at the moment, but there is really no reason it can't be public... Need to make sure this is the way we want to handle this
   private createClass<T extends AnyClass>(type: (new (schema: Schema, name: string, modifier?: ECClassModifier) => T), name: string, modifier?: ECClassModifier): T {
     const item = new type(this, name, modifier);
-    this.addItemSync(item);
+    this.addItem(item);
     return item;
   }
 
@@ -321,7 +321,7 @@ export class Schema implements CustomAttributeContainerProps {
     }
 
     if (!schemaName || schemaName.toUpperCase() === this.name.toUpperCase()) {
-      return await this.getItem<T>(itemName);
+      return this.getItem<T>(itemName);
       // this._context.
     }
 
@@ -330,7 +330,7 @@ export class Schema implements CustomAttributeContainerProps {
       return undefined;
 
     // TODO: use the context and not get the full schema here
-    return await refSchema.getItem<T>(itemName);
+    return refSchema.getItem<T>(itemName);
   }
 
   /**
@@ -359,15 +359,7 @@ export class Schema implements CustomAttributeContainerProps {
     return refSchema.getItemSync<T>(itemName);
   }
 
-  /**
-   *
-   * @param item
-   */
-  protected async addItem<T extends SchemaItem>(item: T): Promise<void> {
-    this.addItemSync(item);
-  }
-
-  protected addItemSync<T extends SchemaItem>(item: T): void {
+  protected addItem<T extends SchemaItem>(item: T): void {
     if (undefined !== this.getItemSync(item.name))
       throw new ECObjectsError(ECObjectsStatus.DuplicateItem, `The SchemaItem ${item.name} cannot be added to the schema ${this.name} because it already exists`);
 
@@ -452,31 +444,29 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   public deserializeSync(schemaProps: SchemaProps) {
-    if (SCHEMAURL3_2 !== schemaProps.$schema)
-      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `Schema namespace '${schemaProps.$schema}' is not supported.`);
+    if (SCHEMAURL3_2 !== schemaProps.$schema) // TODO: Allow for 3.x URI versions to allow the API to read newer specs. (Start at 3.2 though)
+      throw new ECObjectsError(ECObjectsStatus.MissingSchemaUrl, `The Schema ${this.name} has an unsupported namespace '${schemaProps.$schema}'.`);
 
-    if (!this._schemaKey) {
+    if (undefined === this._schemaKey) {
       const schemaName = schemaProps.name;
       const version = ECVersion.fromString(schemaProps.version);
       this._schemaKey = new SchemaKey(schemaName, version);
     } else {
       if (schemaProps.name.toLowerCase() !== this.name.toLowerCase())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} does not match the provided name, '${schemaProps.name}'.`);
       if (schemaProps.version !== this.schemaKey.version.toString())
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this.name} has the version '${this.schemaKey.version}' that does not match the provided version '${schemaProps.version}'.`);
     }
 
-    if (undefined !== schemaProps.alias) {
+    if (undefined !== schemaProps.alias)
       this._alias = schemaProps.alias;
-    }
 
-    if (undefined !== schemaProps.label) {
+    if (undefined !== schemaProps.label)
       this._label = schemaProps.label;
-    }
 
-    if (undefined !== schemaProps.description) {
+    if (undefined !== schemaProps.description)
       this._description = schemaProps.description;
-    }
+
     this._customAttributes = processCustomAttributes(schemaProps.customAttributes, this.name, CustomAttributeContainerType.Schema);
   }
 
@@ -487,8 +477,9 @@ export class Schema implements CustomAttributeContainerProps {
   public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<Schema> {
     let schema: Schema = new Schema();
 
-    const reader = new SchemaReadHelper(new JsonParser(), context);
-    schema = await reader.readSchema(schema, jsonObj);
+    const reader = new SchemaReadHelper(JsonParser, context);
+    const rawSchema = typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;
+    schema = await reader.readSchema(schema, rawSchema);
 
     return schema;
   }
@@ -496,8 +487,9 @@ export class Schema implements CustomAttributeContainerProps {
   public static fromJsonSync(jsonObj: object | string, context?: SchemaContext): Schema {
     let schema: Schema = new Schema();
 
-    const reader = new SchemaReadHelper(new JsonParser(), context);
-    schema = reader.readSchemaSync(schema, jsonObj);
+    const reader = new SchemaReadHelper(JsonParser, context);
+    const rawSchema = typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;
+    schema = reader.readSchemaSync(schema, rawSchema);
 
     return schema;
   }
@@ -538,8 +530,7 @@ export abstract class MutableSchema extends Schema {
   public abstract createUnitSystemSync(name: string): UnitSystem;
   public abstract async createPropertyCategory(name: string): Promise<PropertyCategory>;
   public abstract createPropertyCategorySync(name: string): PropertyCategory;
-  public abstract async addItem<T extends SchemaItem>(item: T): Promise<void>;
-  public abstract addItemSync<T extends SchemaItem>(item: T): void;
+  public abstract addItem<T extends SchemaItem>(item: T): void;
   public abstract async addReference(refSchema: Schema): Promise<void>;
   public abstract addReferenceSync(refSchema: Schema): void;
 }

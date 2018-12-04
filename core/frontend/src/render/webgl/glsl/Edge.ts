@@ -22,14 +22,16 @@ import { addNormalMatrix } from "./Vertex";
 import { octDecodeNormal } from "./Surface";
 
 const decodeEndPointAndQuadIndices = `
-  float index = decodeUInt32(a_endPointAndQuadIndices.xyz);
-  vec2 tc = computeLUTCoords(index, u_vertParams.xy, g_vert_center, u_vertParams.z);
+  g_otherIndex = decodeUInt32(a_endPointAndQuadIndices.xyz);
+  vec2 tc = computeLUTCoords(g_otherIndex, u_vertParams.xy, g_vert_center, u_vertParams.z);
   vec4 enc1 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   tc.x += g_vert_stepX;
   vec4 enc2 = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
   vec3 qpos = vec3(decodeUInt16(enc1.xy), decodeUInt16(enc1.zw), decodeUInt16(enc2.xy));
   g_otherPos = unquantizePosition(qpos, u_qOrigin, u_qScale);
   g_quadIndex = a_endPointAndQuadIndices.w;
+`;
+const animateEndPoint = `g_otherPos.xyz += computeAnimationDisplacement(g_otherIndex, u_animDispParams.x, u_animDispParams.y, u_animDispParams.z, u_qAnimDispOrigin, u_qAnimDispScale);
 `;
 
 const checkForSilhouetteDiscard = `
@@ -82,14 +84,8 @@ const computePosition = `
   float perpDist = weight / 2.0;
   float alongDist = 0.0;
 
-  if (g_quadIndex == 1.0) {
-    perpDist = -perpDist;
-  } else if (g_quadIndex == 2.0) {
-    perpDist = -perpDist;
-    alongDist = distance(rawPos, other);
-  } else if (g_quadIndex == 3.0) {
-    alongDist = distance(rawPos, other);
-  }
+  perpDist *= sign(0.5 - float(g_quadIndex == 1.0 || g_quadIndex == 2.0)); // negate for index 1 and 2
+  alongDist += distance(rawPos, other) * float(g_quadIndex >= 2.0); // index 2 and 3 correspond to 'far' endpoint of segment
 
   pos.x += perp.x * perpDist * 2.0 * pos.w / u_viewport.z;
   pos.y += perp.y * perpDist * 2.0 * pos.w / u_viewport.w;
@@ -109,8 +105,11 @@ function createBase(isSilhouette: boolean, isAnimated: boolean): ProgramBuilder 
   vert.addGlobal("g_quadIndex", VariableType.Float);
   vert.addGlobal("g_windowPos", VariableType.Vec4);
   vert.addGlobal("g_windowDir", VariableType.Vec2);
+  vert.addGlobal("g_otherIndex", VariableType.Float);
 
   vert.addInitializer(decodeEndPointAndQuadIndices);
+  if (isAnimated)
+    vert.addInitializer(animateEndPoint);
 
   vert.addGlobal("lineCodeEyePos", VariableType.Vec4);
   vert.addGlobal("lineCodeDist", VariableType.Float, "0.0");

@@ -171,7 +171,8 @@ export class ViewManager {
 
     this.notifySelectedViewportChanged(previousVp, vp);
 
-    IModelApp.toolAdmin.startDefaultTool(); // ###TODO not in native, where should defaultTool be called?
+    if (undefined === previousVp)
+      IModelApp.toolAdmin.startDefaultTool();
 
     return BentleyStatus.SUCCESS;
   }

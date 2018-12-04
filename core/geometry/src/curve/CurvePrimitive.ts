@@ -17,7 +17,7 @@ import { Quadrature } from "../numerics/Quadrature";
 import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { LineString3d } from "./LineString3d";
 import { Clipper } from "../clipping/ClipUtils";
-import { CurveLocationDetail } from "./CurveLocationDetail";
+import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
 /** Type for callback function which announces a pair of numbers, such as a fractional interval, along with a containing CurvePrimitive. */
 export type AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: CurvePrimitive) => void;
@@ -106,16 +106,171 @@ export abstract class CurvePrimitive extends GeometryQuery {
    *
    * * Curve length is always positive.
    * @returns Returns a (high accuracy) length of the curve between fractional positions
-   * @returns Returns the length of the curve.
    */
   public curveLengthBetweenFractions(fraction0: number, fraction1: number): number {
     if (fraction0 === fraction1)
       return 0.0;
+    const scale = this.getFractionToDistanceScale();
+    if (scale !== undefined) {
+      // We are in luck! simple proportions determine it all  !!!
+      // (for example, a LineSegment3d or a circular arc)
+      const totalLength = this.curveLength();
+      return Math.abs((fraction1 - fraction0) * totalLength);
+    }
     const context = new CurveLengthContext(fraction0, fraction1);
     this.emitStrokableParts(context);
-    return context.getSum();
+    return Math.abs(context.getSum());
   }
 
+  /**
+   *
+   * * Run an integration (with a default gaussian quadrature) with a fixed fractional step
+   * * This is typically called by specific curve type implementations of curveLengthBetweenFrations.
+   *   * For example, in Arc3d implementation of curveLengthBetweenFrations:
+   *     * If the Arc3d is true circular, it the arc is true circular, use the direct `arcLength = radius * sweepRadians`
+   *     * If the Arc3d is not true circular, call this method with an interval count appropriate to eccentricity and sweepRadians.
+   * @returns Returns an integral estimated by numerical quadrature between the fractional positions.
+   * @param fraction0 start fraction for integration
+   * @param fraction1 end fraction for integration
+   * @param numInterval number of quadrature intervals
+   */
+  public curveLengthWithFixedIntervalCountQuadrature(fraction0: number, fraction1: number, numInterval: number, numGauss: number = 5): number {
+    if (fraction0 > fraction1) {
+      const fSave = fraction0;
+      fraction0 = fraction1;
+      fraction1 = fSave;
+    }
+    const context = new CurveLengthContext(fraction0, fraction1, numGauss);
+    context.announceIntervalForUniformStepStrokes(this, numInterval, fraction0, fraction1);
+    return Math.abs(context.getSum());
+  }
+
+  /**
+   *
+   * * (Attempt to) find a position on the curve at a signed distance from start fraction.
+   * * Return the postion as a CurveLocationDetail.
+   * * In the `CurveLocationDetail`, record:
+   *   * `fractional` position
+   *   * `fraction` = coordinates of the point
+   *   * `search
+   *   * `a` = (signed!) distance moved.   If `allowExtension` is false and the move reached the start or end of the curve, this distance is smaller than the requested signedDistance.
+   *   * `curveSearchStatus` indicates one of:
+   *     * `error` (unusual) computation failed not supported for this curve.
+   *     * `success` full movement completed
+   *     * `stoppedAtBoundary` partial movement completed. This can be due to either
+   *        * `allowExtendsion` parameter sent as `false`
+   *        * the curve type (e.g. bspline) does not support extended range.
+   * * if `allowExtension` is true, movement may still end at the startpoint or endpoint for curves that do not support extended geometry (specifically bsplines)
+   * * if the curve returns a value (i.e. not `undefined`) for `curve.getFractionToDistanceScale()`, the base class carries out the computation
+   *    and returns a final location.
+   *   * LineSegment3d relies on this.
+   * * If the curve does not implement the computation or the curve has zero length, the returned `CurveLocationDetail` has
+   *    * `fraction` = the value of `startFraction`
+   *    * `point` = result of `curve.fractionToPoint(startFraction)`
+   *    * `a` = 0
+   *    * `curveStartState` = `CurveSearchStatus.error`
+   * @param startFraction fractional position where the move starts
+   * @param signedDistance distance to move.   Negative distance is backwards in the fraction space
+   * @param allowExtension if true, all the move to go beyond the startpoint or endpoint of the curve.  If false, do not allow movement beyond the startpoint or endpoint
+   * @param result optional result.
+   * @returns A CurveLocationDetail annotated as above.  Note that if the curve does not support the calculation, there is still a result which contains the point at the input startFraction, with failure indicated in the `curveStartState` member
+   */
+  public moveSignedDistanceFromFraction(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail {
+    const scale = this.getFractionToDistanceScale();
+    if (scale !== undefined) {
+      // We are in luck! simple proportions determine it all  !!!
+      // (for example, a LineSegment3d or a circular arc)
+      const totalLength = this.curveLength();
+      const signedFractionMove = Geometry.conditionalDivideFraction(signedDistance, totalLength);
+      if (signedFractionMove === undefined) {
+        return CurveLocationDetail.createCurveFractionPointDistanceCurveSearchStatus(
+          this, startFraction, this.fractionToPoint(startFraction), 0.0, CurveSearchStatus.error);
+      }
+      return CurveLocationDetail.createConditionalMoveSignedDistance(
+        allowExtension,
+        this,
+        startFraction,
+        startFraction + signedFractionMove,
+        signedDistance,
+        result);
+    }
+    return this.moveSignedDistanceFromFractionGeneric(startFraction, signedDistance, allowExtension, result);
+  }
+  /**
+   * Generic algorithm to search for point at signed distance from a fractional start point.
+   * * This will work for well for smooth curves.
+   * * Curves with tangent or other low-order-derivative discontinuities may need to implement specialized algorithms.
+   * * We need to find an endFraction which is the end-of-interval (usually upper) limit of integration of the tangent magnitude from startFraction to endFraction
+   * * That integral is a function of endFraction.
+   * * The derivative of that integral with respect to end fraction is the tangent magnitude at end fraction.
+   * * Use that function and (easily evaluated!) derivative for a Newton iteration
+   * * TO ALL WHO HAVE FUZZY MEMORIES OF CALCULUS CLASS: "The derivative of the integral wrt upper limit is the value of the integrand there" is the
+   *       fundamental theorem of integral calculus !!! The fundeamental theorem is not just an abstraction !!! It is being used
+   *       here in its barest possible form !!!
+   * * See https://en.wikipedia.org/wiki/Fundamental_theorem_of_calculus
+   * @param startFraction
+   * @param signedDistance
+   * @param _allowExtension
+   * @param result
+   */
+  protected moveSignedDistanceFromFractionGeneric(startFraction: number, signedDistance: number, allowExtension: boolean, result?: CurveLocationDetail): CurveLocationDetail {
+    const limitFraction = signedDistance > 0.0 ? 1.0 : 0.0;
+    const absDistance = Math.abs(signedDistance);
+    const directionFactor = signedDistance < 0.0 ? -1.0 : 1.0;
+    const availableLength = this.curveLengthBetweenFractions(startFraction, limitFraction);    // that is always positive
+    if (availableLength < absDistance && !allowExtension)
+      return CurveLocationDetail.createConditionalMoveSignedDistance(allowExtension, this, startFraction, limitFraction, signedDistance, result);
+    const fractionStep = absDistance / availableLength;
+    let fractionB = Geometry.interpolate(startFraction, fractionStep, limitFraction);
+    let fractionA = startFraction;
+    let distanceA = 0.0;
+    const tol = 1.0e-12 * availableLength;
+    let numConverged = 0;
+    const tangent = Ray3d.createXAxis();
+    // on each loop entry:
+    // fractionA is the most recent endOfInterval.  (It may have been reached by a mixtrueo forward and backward step.)
+    // distanceA is the distance to (the point at) fractionA
+    // fractionB is the next end fraction
+    for (let iterations = 0; iterations < 10; iterations++) {
+      const distanceAB = this.curveLengthBetweenFractions(fractionA, fractionB);
+      const directionAB = fractionB > fractionA ? directionFactor : -directionFactor;
+      const distance0B = distanceA + directionAB * distanceAB;
+      const distanceError = absDistance - distance0B;
+      if (Math.abs(distanceError) < tol) {
+        numConverged++;
+        if (numConverged > 1)
+          break;
+      } else {
+        numConverged = 0;
+      }
+      this.fractionToPointAndDerivative(fractionB, tangent);
+      const tangentMagnitude = tangent.direction.magnitude();
+      fractionA = fractionB;
+      fractionB = fractionA + directionFactor * distanceError / tangentMagnitude;
+      if (fractionA === fractionB) { // YES -- that is an exact equality test.   When it happens, there's no need for confirming with another iteration.
+        numConverged = 100;
+        break;
+      }
+      distanceA = distance0B;
+    }
+    if (numConverged > 1)
+      return CurveLocationDetail.createConditionalMoveSignedDistance(false, this, startFraction, fractionB, signedDistance, result);
+
+    result = CurveLocationDetail.createCurveEvaluatedFraction(this, startFraction, result);
+    result.a = 0.0;
+    result.curveSearchStatus = CurveSearchStatus.error;
+    return result;
+  }
+
+  /**
+   * * Returns true if the curve's fraction queries extend beyond 0..1.
+   * * Base class default implementation returns false.
+   * * These class (and perhaps others in the future) will return true:
+   *   * LineSegment3d
+   *   * LineString3d
+   *   * Arc3d
+   */
+  public get isExtensibleFractionSpace(): boolean { return false; }
   /**
    * Compute a length which may be an fast approximation to the true length.
    * This is expected to be either (a) exact or (b) larger than the actual length, but by no more than
@@ -374,7 +529,7 @@ class CurveLengthContext implements IStrokeHandler {
   }
   public getSum() { return this._summedLength; }
 
-  public constructor(fraction0: number = 0.0, fraction1: number = 1.0) {
+  public constructor(fraction0: number = 0.0, fraction1: number = 1.0, numGaussPoints: number = 5) {
     this.startCurvePrimitive(undefined);
     this._summedLength = 0.0;
     this._ray = Ray3d.createZero();
@@ -385,11 +540,20 @@ class CurveLengthContext implements IStrokeHandler {
       this._fraction0 = fraction1;
       this._fraction1 = fraction0;
     }
-
-    const maxGauss = 7;
+    const maxGauss = 7;  // (As of Nov 2 2018, 7 is a fluffy overallocation-- the quadrature class only handles up to 5.)
     this._gaussX = new Float64Array(maxGauss);
     this._gaussW = new Float64Array(maxGauss);
-    this._gaussMapper = Quadrature.setupGauss5;
+    // This sets the number of gauss points.  This intgetes exactly for polynomials of (degree 2*numGauss - 1).
+    if (numGaussPoints > 5 || numGaussPoints < 1)
+      numGaussPoints = 5;
+    switch (numGaussPoints) {
+      case 1: this._gaussMapper = Quadrature.setupGauss1; break;
+      case 2: this._gaussMapper = Quadrature.setupGauss2; break;
+      case 3: this._gaussMapper = Quadrature.setupGauss3; break;
+      case 4: this._gaussMapper = Quadrature.setupGauss4; break;
+      default: this._gaussMapper = Quadrature.setupGauss5; break;
+    }
+
   }
   public startCurvePrimitive(curve: CurvePrimitive | undefined) {
     this._curve = curve;

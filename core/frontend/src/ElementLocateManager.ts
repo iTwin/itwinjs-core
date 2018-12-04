@@ -34,9 +34,6 @@ export const enum SnapStatus {
   Disabled = 100,
   NoSnapPossible = 200,
   NotSnappable = 300,
-  ModelNotSnappable = 301,
-  FilteredByCategory = 400,
-  FilteredByUser = 500,
   FilteredByApp = 600,
   FilteredByAppQuietly = 700,
 }
@@ -143,45 +140,49 @@ export class ElementPicker {
     const testPointView = new Point2d(Math.floor(pickPointView.x + 0.5), Math.floor(pickPointView.y + 0.5));
     const pixelRadius = Math.floor(pickRadiusView + 0.5);
     const rect = new ViewRect(testPointView.x - pixelRadius, testPointView.y - pixelRadius, testPointView.x + pixelRadius, testPointView.y + pixelRadius);
-    const pixels = vp.readPixels(rect, Pixel.Selector.All);
-    if (undefined === pixels)
-      return 0;
+    let result: number = 0;
+    vp.readPixels(rect, Pixel.Selector.All, (pixels) => {
+      if (undefined === pixels)
+        return;
 
-    const elmHits = new Map<string, Point2d>();
-    const testPoint = Point2d.createZero();
-    for (testPoint.x = testPointView.x - pixelRadius; testPoint.x <= testPointView.x + pixelRadius; ++testPoint.x) {
-      for (testPoint.y = testPointView.y - pixelRadius; testPoint.y <= testPointView.y + pixelRadius; ++testPoint.y) {
-        const pixel = pixels.getPixel(testPoint.x, testPoint.y);
-        if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
-          continue; // no geometry at this location...
-        const distXY = testPointView.distance(testPoint);
-        if (distXY > pixelRadius)
-          continue; // ignore corners. it's a locate circle not square...
-        const oldPoint = elmHits.get(pixel.elementId.toString());
-        if (undefined !== oldPoint) {
-          if (this.comparePixel(pixel, pixels.getPixel(oldPoint.x, oldPoint.y), distXY, testPointView.distance(oldPoint)) < 0)
-            oldPoint.setFrom(testPoint); // new hit is better, update location...
-        } else {
-          elmHits.set(pixel.elementId.toString(), testPoint.clone());
+      const elmHits = new Map<string, Point2d>();
+      const testPoint = Point2d.createZero();
+      for (testPoint.x = testPointView.x - pixelRadius; testPoint.x <= testPointView.x + pixelRadius; ++testPoint.x) {
+        for (testPoint.y = testPointView.y - pixelRadius; testPoint.y <= testPointView.y + pixelRadius; ++testPoint.y) {
+          const pixel = pixels.getPixel(testPoint.x, testPoint.y);
+          if (undefined === pixel || undefined === pixel.elementId || Id64.isInvalid(pixel.elementId))
+            continue; // no geometry at this location...
+          const distXY = testPointView.distance(testPoint);
+          if (distXY > pixelRadius)
+            continue; // ignore corners. it's a locate circle not square...
+          const oldPoint = elmHits.get(pixel.elementId);
+          if (undefined !== oldPoint) {
+            if (this.comparePixel(pixel, pixels.getPixel(oldPoint.x, oldPoint.y), distXY, testPointView.distance(oldPoint)) < 0)
+              oldPoint.setFrom(testPoint); // new hit is better, update location...
+          } else {
+            elmHits.set(pixel.elementId, testPoint.clone());
+          }
         }
       }
-    }
-    if (0 === elmHits.size)
-      return 0;
+      if (0 === elmHits.size)
+        return;
 
-    for (const elmPoint of elmHits.values()) {
-      const pixel = pixels.getPixel(elmPoint.x, elmPoint.y);
-      if (undefined === pixel || undefined === pixel.elementId)
-        continue;
-      const hitPointWorld = vp.getPixelDataWorldPoint(pixels, elmPoint.x, elmPoint.y);
-      if (undefined === hitPointWorld)
-        continue;
-      const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId.toString(), this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction);
-      this.hitList!.addHit(hit);
-      if (this.hitList!.hits.length > options.maxHits)
-        this.hitList!.hits.length = options.maxHits; // truncate array...
-    }
-    return this.hitList!.length;
+      for (const elmPoint of elmHits.values()) {
+        const pixel = pixels.getPixel(elmPoint.x, elmPoint.y);
+        if (undefined === pixel || undefined === pixel.elementId)
+          continue;
+        const hitPointWorld = vp.getPixelDataWorldPoint(pixels, elmPoint.x, elmPoint.y);
+        if (undefined === hitPointWorld)
+          continue;
+        const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId, this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction, pixel.subCategoryId, pixel.geometryClass);
+        this.hitList!.addHit(hit);
+        if (this.hitList!.hits.length > options.maxHits)
+          this.hitList!.hits.length = options.maxHits; // truncate array...
+      }
+      result = this.hitList!.length;
+    });
+
+    return result;
   }
 
   public testHit(hit: HitDetail, vp: ScreenViewport, pickPointWorld: Point3d, pickRadiusView: number, options: LocateOptions): boolean {
@@ -227,20 +228,28 @@ export class ElementLocateManager {
     return preLocated;
   }
 
-  public filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): LocateFilterStatus {
+  public async filterHit(hit: HitDetail, _action: LocateAction, out: LocateResponse): Promise<LocateFilterStatus> {
     // Tools must opt-in to locate of transient geometry as it requires special treatment.
     if (!this.options.allowDecorations && !hit.isElementHit) {
       out.reason = ElementLocateManager.getFailureMessageKey("Transient");
       return LocateFilterStatus.Reject;
     }
 
+    if (undefined !== hit.subCategoryId) {
+      const appearance = hit.viewport.view.getSubCategoryAppearance(hit.subCategoryId);
+      if (appearance.dontLocate) {
+        out.reason = ElementLocateManager.getFailureMessageKey("NotLocatable");
+        return LocateFilterStatus.Reject;
+      }
+    }
+
     const tool = IModelApp.toolAdmin.activeTool;
     if (!(tool && tool instanceof InteractiveTool))
       return LocateFilterStatus.Accept;
 
-    const status = tool.filterHit(hit, out);
+    const status = await tool.filterHit(hit, out);
     if (LocateFilterStatus.Reject === status)
-      out.reason = ElementLocateManager.getFailureMessageKey("ByCommand");
+      out.reason = ElementLocateManager.getFailureMessageKey("ByApp");
 
     return status;
   }
@@ -253,7 +262,7 @@ export class ElementLocateManager {
     IModelApp.tentativePoint.clear(true);
   }
 
-  private _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: ScreenViewport | undefined, source: InputSource, filterHits: boolean): HitDetail | undefined {
+  private async _doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, vp: ScreenViewport | undefined, source: InputSource, filterHits: boolean): Promise<HitDetail | undefined> {
     if (!vp)
       return;
 
@@ -263,7 +272,7 @@ export class ElementLocateManager {
 
       // if we're snapped to something, that path has the highest priority and becomes the active hit.
       if (hit) {
-        if (!filterHits || LocateFilterStatus.Accept === this.filterHit(hit, LocateAction.Identify, response))
+        if (!filterHits || LocateFilterStatus.Accept === await this.filterHit(hit, LocateAction.Identify, response))
           return hit;
 
         response = new LocateResponse(); // we have the reason and explanation we want.
@@ -278,7 +287,7 @@ export class ElementLocateManager {
 
     let newHit: HitDetail | undefined;
     while (undefined !== (newHit = this.getNextHit())) {
-      if (!filterHits || LocateFilterStatus.Accept === this.filterHit(newHit, LocateAction.Identify, response))
+      if (!filterHits || LocateFilterStatus.Accept === await this.filterHit(newHit, LocateAction.Identify, response))
         return newHit;
       response = new LocateResponse(); // we have the reason and explanation we want.
     }
@@ -286,11 +295,11 @@ export class ElementLocateManager {
     return undefined;
   }
 
-  public doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: ScreenViewport | undefined, source: InputSource, filterHits = true): HitDetail | undefined {
+  public async doLocate(response: LocateResponse, newSearch: boolean, testPoint: Point3d, view: ScreenViewport | undefined, source: InputSource, filterHits = true): Promise<HitDetail | undefined> {
     response.reason = ElementLocateManager.getFailureMessageKey("NoElements");
     response.explanation = "";
 
-    const hit = this._doLocate(response, newSearch, testPoint, view, source, filterHits);
+    const hit = await this._doLocate(response, newSearch, testPoint, view, source, filterHits);
     this.setCurrHit(hit);
 
     // if we found a hit, remove it from the list of remaining hits near the current search point.

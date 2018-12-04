@@ -4,11 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Models */
 
-import { Id64String, Id64, DbOpcode, JsonUtils } from "@bentley/bentleyjs-core";
-import { AxisAlignedBox3d, GeometricModel2dProps, IModelError, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
+import { Id64String, Id64, DbOpcode, JsonUtils, IModelStatus } from "@bentley/bentleyjs-core";
+import { AxisAlignedBox3d, GeometricModel2dProps, IModel, IModelError, InformationPartitionElementProps, ModelProps, RelatedElement } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
+import { DefinitionPartition, DocumentPartition, PhysicalPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
+import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
 
 /**
  * A Model is a container for persisting a collection of related elements within an iModel.
@@ -52,6 +54,13 @@ export class Model extends Entity implements ModelProps {
       val.jsonProperties = this.jsonProperties;
     return val;
   }
+
+  public static onInsert(_props: ModelProps): IModelStatus { return IModelStatus.Success; }
+  public static onInserted(_id: string): void { }
+  public static onUpdate(_props: ModelProps): IModelStatus { return IModelStatus.Success; }
+  public static onUpdated(_props: ModelProps): void { }
+  public static onDelete(_props: ModelProps): IModelStatus { return IModelStatus.Success; }
+  public static onDeleted(_props: ModelProps): void { }
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 
@@ -116,7 +125,29 @@ export abstract class SpatialModel extends GeometricModel3d {
  * A container for persisting physical elements that model physical space.
  */
 export class PhysicalModel extends SpatialModel {
+  /**
+   * Insert a PhysicalPartition and a PhysicalModel that breaks it down.
+   * @param iModelDb Insert into this iModel
+   * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
+   * @param name The name of the PhysicalPartition that the new PhysicalModel will break down.
+   * @returns The Id of the newly inserted PhysicalPartition and PhysicalModel (same value).
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const partitionProps: InformationPartitionElementProps = {
+      classFullName: PhysicalPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(parentSubjectId),
+      code: PhysicalPartition.createCode(iModelDb, parentSubjectId, name),
+    };
+    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    return iModelDb.models.insertModel({
+      classFullName: this.classFullName,
+      modeledElement: { id: partitionId },
+    });
+  }
 }
+
 /**
  * A container for persisting spatial location elements.
  */
@@ -171,6 +202,27 @@ export class InformationRecordModel extends InformationModel {
  * A container for persisting definition elements.
  */
 export class DefinitionModel extends InformationModel {
+  /**
+   * Insert a DefinitionPartition and a DefinitionModel that breaks it down.
+   * @param iModelDb Insert into this iModel
+   * @param parentSubjectId The DefinitionPartition will be inserted as a child of this Subject element.
+   * @param name The name of the DefinitionPartition that the new DefinitionModel will break down.
+   * @returns The Id of the newly inserted DefinitionModel.
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const partitionProps: InformationPartitionElementProps = {
+      classFullName: DefinitionPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(parentSubjectId),
+      code: DefinitionPartition.createCode(iModelDb, parentSubjectId, name),
+    };
+    const partitionId = iModelDb.elements.insertElement(partitionProps);
+    return iModelDb.models.insertModel({
+      classFullName: this.classFullName,
+      modeledElement: { id: partitionId },
+    });
+  }
 }
 
 /**
@@ -183,6 +235,27 @@ export class RepositoryModel extends DefinitionModel {
  * Contains a list of document elements.
  */
 export class DocumentListModel extends InformationModel {
+  /**
+   * Insert a DocumentPartition and a DocumentListModel that breaks it down.
+   * @param iModelDb Insert into this iModel
+   * @param parentSubjectId The DocumentPartition will be inserted as a child of this Subject element.
+   * @param name The name of the DocumentPartition that the new DocumentListModel will break down.
+   * @returns The Id of the newly inserted DocumentPartition and DocumentListModel (same value)
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(iModelDb: IModelDb, parentSubjectId: Id64String, name: string): Id64String {
+    const partitionProps: InformationPartitionElementProps = {
+      classFullName: DocumentPartition.classFullName,
+      model: IModel.repositoryModelId,
+      parent: new SubjectOwnsPartitionElements(parentSubjectId),
+      code: DocumentPartition.createCode(iModelDb, parentSubjectId, name),
+    };
+    const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);
+    return iModelDb.models.insertModel({
+      classFullName: this.classFullName,
+      modeledElement: { id: partitionId },
+    });
+  }
 }
 
 /**

@@ -32,7 +32,7 @@ export abstract class RpcInterface {
   public readonly configuration = RpcConfiguration.supply(this);
 
   /** Obtains the implementation result for an RPC operation. */
-  public forward<T>(operation: string, ...parameters: any[]): Promise<T> {
+  public async forward<T>(operation: string, ...parameters: any[]): Promise<T> {
     const request = new (this.configuration.protocol.requestType as any)(this, operation, parameters);
     request.submit();
     (this as any)[CURRENT_REQUEST] = request;

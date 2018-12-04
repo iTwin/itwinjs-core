@@ -6,11 +6,16 @@
 
 import * as React from "react";
 import classnames from "classnames";
+import { PropertyRecord } from "../properties/Record";
+import { PropertyValueFormat, PrimitiveValue } from "../properties/Value";
+import { TypeConverterManager } from "../converters/TypeConverterManager";
+
+import "./TextEditor.scss";
 
 /** Properties for [[TextEditor]] component */
 export interface TextEditorProps {
   onBlur?: (event: any) => void;
-  text?: string;
+  value?: PropertyRecord;
 }
 
 interface TextEditorState {
@@ -20,6 +25,7 @@ interface TextEditorState {
 /** TextEditor React component that is a property editor with text input  */
 export class TextEditor extends React.Component<TextEditorProps, TextEditorState> {
   private _input: HTMLInputElement | null = null;
+  private _isMounted = false;
 
   /** @hidden */
   public readonly state: Readonly<TextEditorState> = {
@@ -35,29 +41,44 @@ export class TextEditor extends React.Component<TextEditorProps, TextEditorState
   }
 
   private _updateInputValue = (e: React.ChangeEvent<HTMLInputElement>) => {
-    this.setState({
-      inputValue: e.target.value,
-    });
+    if (this._isMounted)
+      this.setState({
+        inputValue: e.target.value,
+      });
   }
 
   public componentDidMount() {
-    this.getInitialValue();
+    this._isMounted = true;
+    this.getInitialValue(); // tslint:disable-line:no-floating-promises
+  }
+
+  public componentWillUnmount() {
+    this._isMounted = false;
   }
 
   private async getInitialValue() {
-    this.setState(
-      () => ({ inputValue: this.props.text ? this.props.text : "" }),
-      () => {
-        if (this._input) {
-          this._input.focus();
-          this._input.select();
-        }
-      },
-    );
+    const record = this.props.value;
+    let initialValue = "";
+
+    if (record && record.value.valueFormat === PropertyValueFormat.Primitive) {
+      const value = (record.value as PrimitiveValue).value;
+      initialValue = await TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);
+    }
+
+    if (this._isMounted)
+      this.setState(
+        () => ({ inputValue: initialValue }),
+        () => {
+          if (this._input) {
+            this._input.focus();
+            this._input.select();
+          }
+        },
+      );
   }
 
   public render() {
-    const className = classnames("cell", "cell-editor" /*, "bwc-inputs-input", "form-control"*/);
+    const className = classnames("cell", "components-cell-editor", "components-text-editor");
 
     return (
       <input
@@ -67,6 +88,7 @@ export class TextEditor extends React.Component<TextEditorProps, TextEditorState
         className={className}
         defaultValue={this.state.inputValue}
         onChange={this._updateInputValue}
+        data-testid="components-text-editor"
       />
     );
   }

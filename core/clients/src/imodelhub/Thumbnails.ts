@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 
 import { request, RequestOptions } from "./../Request";
 import { AccessToken } from "../Token";
@@ -20,7 +20,7 @@ export type ThumbnailSize = "Small" | "Large";
 
 /** Base class for Thumbnails. */
 export abstract class Thumbnail extends WsgInstance {
-  @ECJsonTypeMap.propertyToJson("wsg", "instanceId", new GuidSerializer())
+  @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
   public id?: GuidString;
 }
 
@@ -197,7 +197,7 @@ export class ThumbnailHandler {
     ArgumentCheck.validGuid("imodelId", imodelId);
 
     if (this.isTipThumbnail(thumbnail)) {
-      return await this.downloadTipThumbnail(alctx, token, thumbnail.projectId, imodelId, thumbnail.size);
+      return this.downloadTipThumbnail(alctx, token, thumbnail.projectId, imodelId, thumbnail.size);
     }
 
     const size: ThumbnailSize = thumbnail instanceof SmallThumbnail ? "Small" : "Large";

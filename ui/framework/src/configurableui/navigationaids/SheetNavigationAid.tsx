@@ -17,7 +17,7 @@ import {
   ScreenViewport,
   SelectedViewportChangedArgs,
 } from "@bentley/imodeljs-frontend/lib/frontend";
-import { SmallLoader } from "@bentley/bwc/lib";
+import { SmallLoader } from "@bentley/bwc";
 
 import "./SheetNavigationAid.scss";
 
@@ -158,12 +158,12 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
 
   /** Updates view to the next lowest index in sheetData */
   private _handleOnClickLeftArrow = () => {
-    this.setState({ index: this.state.index <= 0 ? this.state.sheetData.length - 1 : this.state.index - 1 }, () => this._updateView());
+    this.setState({ index: this.state.index <= 0 ? this.state.sheetData.length - 1 : this.state.index - 1 }, async () => this._updateView());
   }
 
   /** Updates view to next highest index in sheetData */
   private _handleOnClickRightArrow = () => {
-    this.setState({ index: (this.state.index + 1) % this.state.sheetData.length }, () => this._updateView());
+    this.setState({ index: (this.state.index + 1) % this.state.sheetData.length }, async () => this._updateView());
   }
 
   /** Handles a Viewport change & synchs the index */

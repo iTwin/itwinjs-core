@@ -14,6 +14,7 @@ import { RpcSerializedValue, MarshalingBinaryMarker } from "../core/RpcMarshalin
 import { RpcMultipart } from "./RpcMultipart";
 import { RpcMultipartParser } from "./multipart/RpcMultipartParser";
 import { RpcResponseCacheControl, RpcContentType, RpcProtocolEvent, WEB_RPC_CONSTANTS } from "../core/RpcConstants";
+import URLSearchParams = require("url-search-params");
 
 export type HttpMethod_T = "get" | "put" | "post" | "delete" | "options" | "head" | "patch" | "trace";
 
@@ -42,7 +43,7 @@ export class WebAppRpcRequest extends RpcRequest {
 
   /** Parses a request. */
   public static async parseRequest(protocol: WebAppRpcProtocol, req: HttpServerRequest): Promise<SerializedRpcRequest> {
-    const operation = protocol.getOperationFromPath(req.path);
+    const operation = protocol.getOperationFromPath(req.url!);
 
     const request = {
       id: req.header(protocol.requestIdHeaderName) || "",
@@ -53,7 +54,7 @@ export class WebAppRpcRequest extends RpcRequest {
         interfaceVersion: operation.interfaceVersion,
       },
       method: req.method,
-      path: req.path,
+      path: req.url!,
       parameters: operation.encodedRequest ? WebAppRpcRequest.parseFromPath(operation) : await WebAppRpcRequest.parseFromBody(req),
       caching: operation.encodedRequest ? RpcResponseCacheControl.Immutable : RpcResponseCacheControl.None,
     };
@@ -104,11 +105,11 @@ export class WebAppRpcRequest extends RpcRequest {
   }
 
   /** Sends the request. */
-  protected send(): Promise<number> {
+  protected async send(): Promise<number> {
     this._loading = true;
     this.setupTransport();
 
-    return new Promise(async (resolve, reject) => {
+    return new Promise<number>(async (resolve, reject) => {
       try {
         resolve(await this.performFetch());
       } catch (reason) {
@@ -117,8 +118,8 @@ export class WebAppRpcRequest extends RpcRequest {
     });
   }
 
-  protected load(): Promise<RpcSerializedValue> {
-    return new Promise(async (resolve, reject) => {
+  protected async load(): Promise<RpcSerializedValue> {
+    return new Promise<RpcSerializedValue>(async (resolve, reject) => {
       try {
         if (!this._loading)
           return;
@@ -196,7 +197,7 @@ export class WebAppRpcRequest extends RpcRequest {
     return RpcSerializedValue.create(decoded);
   }
 
-  private static async parseFromBody(req: HttpServerRequest) {
+  private static async parseFromBody(req: HttpServerRequest): Promise<RpcSerializedValue> {
     const contentType = WebAppRpcProtocol.computeContentType(req.header(WEB_RPC_CONSTANTS.CONTENT));
     if (contentType === RpcContentType.Text) {
       return RpcSerializedValue.create(req.body as string);
@@ -205,19 +206,21 @@ export class WebAppRpcRequest extends RpcRequest {
       const data = [req.body as Buffer];
       return RpcSerializedValue.create(objects, data);
     } else if (contentType === RpcContentType.Multipart) {
-      return await RpcMultipart.parseRequest(req);
+      return RpcMultipart.parseRequest(req);
     } else {
       throw new IModelError(BentleyStatus.ERROR, `Unknown content type.`);
     }
   }
 
   private async performFetch(): Promise<number> {
-    let path = this.path;
+    const path = new URL(this.path, location.origin);
     if (this._pathSuffix) {
-      path += `/${this._pathSuffix}`;
+      const params = new URLSearchParams();
+      params.set("parameters", this._pathSuffix);
+      path.search = `?${params.toString()}`;
     }
 
-    const request = new Request(path, this._request);
+    const request = new Request(path.toString(), this._request);
     const response = await fetch(request);
     this._response = response;
     this.metadata.status = response.status;

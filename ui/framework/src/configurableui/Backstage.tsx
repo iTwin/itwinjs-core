@@ -11,10 +11,8 @@ import { SignOutModalFrontstage } from "../oidc/SignOut";
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemProps, CommandHandler } from "./ItemProps";
 import { FrontstageManager } from "./FrontstageManager";
-import { Icon } from "./IconLabelSupport";
+import { Icon } from "./IconComponent";
 import { WorkflowManager } from "./Workflow";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
-import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 import { UiEvent } from "@bentley/ui-core";
 
@@ -44,9 +42,8 @@ export interface FrontstageLaunchBackstageItemProps extends BackstageItemProps {
 
 /** Properties for a Command launch Backstage item.
  */
-export interface CommandLaunchBackstageItemProps extends BackstageItemProps {
+export interface CommandLaunchBackstageItemProps extends BackstageItemProps, CommandHandler {
   commandId: string;
-  commandHandler: CommandHandler;
 }
 
 /** Properties for a Task launch Backstage item.
@@ -64,13 +61,13 @@ export interface TaskLaunchBackstageItemProps extends BackstageItemProps {
  */
 export abstract class BackstageItemDef extends ItemDefBase {
   public subtitle: string = "";
+  public abstract execute(): void;
 
   constructor(backstageItemDef: BackstageItemProps) {
     super(backstageItemDef);
 
     if (backstageItemDef) {
       this.subtitle = (backstageItemDef.subtitleId !== undefined) ? UiFramework.i18n.translate(backstageItemDef.subtitleId) : "";
-      // subtitleExpr?: string;
     }
 
     this.execute = this.execute.bind(this);
@@ -96,7 +93,7 @@ export class FrontstageLaunchBackstageItemDef extends BackstageItemDef {
 
     const frontstageDef = FrontstageManager.findFrontstageDef(this._frontstageId);
     if (frontstageDef)
-      FrontstageManager.setActiveFrontstageDef(frontstageDef);
+      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
   }
 
   public get id(): string {
@@ -117,17 +114,20 @@ export class CommandLaunchBackstageItemDef extends BackstageItemDef {
   constructor(commandBackstageItemProps: CommandLaunchBackstageItemProps) {
     super(commandBackstageItemProps);
 
-    if (commandBackstageItemProps) {
-      this._commandId = commandBackstageItemProps.commandId;
-      this._commandHandler = commandBackstageItemProps.commandHandler;
+    if (commandBackstageItemProps && commandBackstageItemProps.execute) {
+      this._commandHandler = { execute: commandBackstageItemProps.execute, parameters: commandBackstageItemProps.parameters, getCommandArgs: commandBackstageItemProps.getCommandArgs };
     }
   }
 
   public execute(): void {
     Backstage.hide();
 
-    if (this._commandHandler)
-      this._commandHandler.execute(this._commandHandler.parameters);
+    if (this._commandHandler && this._commandHandler.execute) {
+      if (this._commandHandler.getCommandArgs)
+        this._commandHandler.execute(this._commandHandler.getCommandArgs());
+      else
+        this._commandHandler.execute(this._commandHandler.parameters);
+    }
   }
 
   public get id(): string {
@@ -157,7 +157,7 @@ export class TaskLaunchBackstageItemDef extends BackstageItemDef {
     if (workflow) {
       const task = workflow.getTask(this._taskId);
       if (task) {
-        WorkflowManager.setActiveWorkflowAndTask(workflow, task);
+        WorkflowManager.setActiveWorkflowAndTask(workflow, task); // tslint:disable-line:no-floating-promises
       }
     }
   }
@@ -195,7 +195,10 @@ export class FrontstageLaunchBackstageItem extends React.Component<FrontstageLau
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconInfo={this._backstageItem.iconInfo} />;
+    if (!this._backstageItem.isVisible)
+      return null;
+
+    const icon = <Icon iconSpec={this._backstageItem.iconSpec} />;
     return (
       <NZ_BackstageItem key={this._backstageItem.id}
         isActive={this._backstageItem.isActive}
@@ -212,14 +215,17 @@ export class FrontstageLaunchBackstageItem extends React.Component<FrontstageLau
 export class CommandLaunchBackstageItem extends React.Component<CommandLaunchBackstageItemProps> {
   private _backstageItem: CommandLaunchBackstageItemDef;
 
-  constructor(commandBackstageItemDef: CommandLaunchBackstageItemProps) {
-    super(commandBackstageItemDef);
+  constructor(commandBackstageItemProps: CommandLaunchBackstageItemProps) {
+    super(commandBackstageItemProps);
 
-    this._backstageItem = new CommandLaunchBackstageItemDef(commandBackstageItemDef);
+    this._backstageItem = new CommandLaunchBackstageItemDef(commandBackstageItemProps);
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconInfo={this._backstageItem.iconInfo} />;
+    if (!this._backstageItem.isVisible)
+      return null;
+
+    const icon = <Icon iconSpec={this._backstageItem.iconSpec} />;
     return (
       <NZ_BackstageItem key={this._backstageItem.id} label={this._backstageItem.label} icon={icon} onClick={this._backstageItem.execute} />
     );
@@ -231,14 +237,17 @@ export class CommandLaunchBackstageItem extends React.Component<CommandLaunchBac
 export class TaskLaunchBackstageItem extends React.Component<TaskLaunchBackstageItemProps> {
   private _backstageItem: TaskLaunchBackstageItemDef;
 
-  constructor(taskLaunchBackstageItemDef: TaskLaunchBackstageItemProps) {
-    super(taskLaunchBackstageItemDef);
+  constructor(taskLaunchBackstageProps: TaskLaunchBackstageItemProps) {
+    super(taskLaunchBackstageProps);
 
-    this._backstageItem = new TaskLaunchBackstageItemDef(taskLaunchBackstageItemDef);
+    this._backstageItem = new TaskLaunchBackstageItemDef(taskLaunchBackstageProps);
   }
 
   public render(): React.ReactNode {
-    const icon = <Icon iconInfo={this._backstageItem.iconInfo} />;
+    if (!this._backstageItem.isVisible)
+      return null;
+
+    const icon = <Icon iconSpec={this._backstageItem.iconSpec} />;
     return (
       <NZ_BackstageItem key={this._backstageItem.id} label={this._backstageItem.label} icon={icon} onClick={this._backstageItem.execute} />
     );
@@ -264,6 +273,9 @@ export class SeparatorBackstageItem extends React.Component<BackstageItemProps> 
   }
 
   public render(): React.ReactNode {
+    if (!this._backstageItem.isVisible)
+      return null;
+
     return (
       <NZ_BackstageSeparator key={this._key} />
     );
@@ -282,7 +294,6 @@ export class BackstageCloseEventEvent extends UiEvent<BackstageCloseEventArgs> {
 
 function closeBackStage() {
   Backstage.onBackstageCloseEventEvent.emit({ isVisible: false });
-  SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.BackstageCloseEvent);
 }
 
 /** Properties for the [[Backstage]] React component.
@@ -315,12 +326,12 @@ export class Backstage extends React.Component<BackstageProps> {
     FrontstageManager.openModalFrontstage(new SignOutModalFrontstage(this.props.accessToken));
   }
 
-  private _getUserProfile(): React.ReactNode | undefined {
+  private _getUserInfo(): React.ReactNode | undefined {
     if (this.props.accessToken) {
-      const userProfile = this.props.accessToken.getUserProfile();
-      if (userProfile) {
+      const userInfo = this.props.accessToken.getUserInfo();
+      if (userInfo) {
         return (
-          <NZ_UserProfile firstName={userProfile.firstName} lastName={userProfile.lastName} email={userProfile.email}
+          <NZ_UserProfile firstName={userInfo.profile!.firstName} lastName={userInfo.profile!.lastName} email={userInfo.email!.id}
             onClick={this._onSignOut.bind(this)} />
         );
       }
@@ -336,7 +347,7 @@ export class Backstage extends React.Component<BackstageProps> {
           isOpen={this.props.isVisible}
           showOverlay={this.props.showOverlay}
           onClose={closeBackStage}
-          header={this._getUserProfile()}
+          header={this._getUserInfo()}
           items={this.props.children}
         />
       </>

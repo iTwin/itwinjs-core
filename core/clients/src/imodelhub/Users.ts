@@ -16,7 +16,7 @@ const loggingCategory = "imodeljs-clients.imodelhub";
 
 /** Information about the user, allowing to identify them based on their id. */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.UserInfo", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class UserInfo extends WsgInstance {
+export class HubUserInfo extends WsgInstance {
   /** Id of the user. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Id")
   public id?: string;
@@ -36,7 +36,7 @@ export class UserInfo extends WsgInstance {
 
 /** Statistics of user created and owned instances on the iModel. */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.UserInfo", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class UserStatistics extends UserInfo {
+export class UserStatistics extends HubUserInfo {
   /** Number of [[Briefcase]]s the user currently owns. */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasStatistics].relatedInstance[Statistics].properties.BriefcasesCount")
   public briefcasesCount?: number;
@@ -208,7 +208,7 @@ export class UserStatisticsHandler {
 }
 
 /**
- * Query object for getting [[UserInfo]]. You can use this to modify the [[UserInfoHandler.get]] results.
+ * Query object for getting [[HubUserInfo]]. You can use this to modify the [[UserInfoHandler.get]] results.
  */
 export class UserInfoQuery extends Query {
   private _queriedByIds = false;
@@ -266,7 +266,7 @@ export class UserInfoQuery extends Query {
 }
 
 /**
- * Handler for querying [[UserInfo]]. Use [[IModelClient.Users]] to get an instance of this class.
+ * Handler for querying [[HubUserInfo]]. Use [[IModelClient.Users]] to get an instance of this class.
  */
 export class UserInfoHandler {
   private _handler: IModelBaseHandler;
@@ -283,7 +283,7 @@ export class UserInfoHandler {
   /**
    * Get the handler for querying [[UserStatistics]].
    */
-  public Statistics(): UserStatisticsHandler {
+  public get statistics(): UserStatisticsHandler {
     return new UserStatisticsHandler(this._handler);
   }
 
@@ -304,17 +304,17 @@ export class UserInfoHandler {
    * @param query Optional query object to filter the queried users or select different data from them.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
    */
-  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query: UserInfoQuery = new UserInfoQuery()): Promise<UserInfo[]> {
+  public async get(alctx: ActivityLoggingContext, token: AccessToken, imodelId: GuidString, query: UserInfoQuery = new UserInfoQuery()): Promise<HubUserInfo[]> {
     alctx.enter();
     Logger.logInfo(loggingCategory, `Querying users for iModel ${imodelId}`);
     ArgumentCheck.defined("token", token);
     ArgumentCheck.validGuid("imodelId", imodelId);
 
-    let users: UserInfo[];
+    let users: HubUserInfo[];
     if (query.isQueriedByIds) {
-      users = await this._handler.postQuery<UserInfo>(alctx, UserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
+      users = await this._handler.postQuery<HubUserInfo>(alctx, HubUserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
     } else {
-      users = await this._handler.getInstances<UserInfo>(alctx, UserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
+      users = await this._handler.getInstances<HubUserInfo>(alctx, HubUserInfo, token, this.getRelativeUrl(imodelId, query.getId()), query.getQueryOptions());
     }
     alctx.enter();
     Logger.logTrace(loggingCategory, `Queried users for iModel ${imodelId}`);

@@ -68,7 +68,7 @@ export function disposeArray(list?: IDisposable[]): undefined {
  * of this function is equal to return value of func. If func throws, this function also throws (after
  * disposing the resource).
  */
-export function using<TDisposable extends IDisposable, TResult>(resources: TDisposable | TDisposable[], func: (...resources: TDisposable[]) => TResult): TResult {
+export function using<TDisposable extends IDisposable, TResult, TArg = TDisposable>(resources: TDisposable | TDisposable[], func: (...resources: TArg[]) => TResult): TResult {
   if (!Array.isArray(resources))
     return using([resources], func);
 

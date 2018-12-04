@@ -9,8 +9,7 @@ import * as ReactDOM from "react-dom";
 
 import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageChangedEventArgs } from "./FrontstageManager";
 import { FrontstageDef } from "./FrontstageDef";
-import { FrameworkFrontstage } from "./FrameworkFrontstage";
-import { ZoneDef } from "./ZoneDef";
+import { ZoneDef, ZoneState } from "./ZoneDef";
 import { ModalFrontstage } from "./ModalFrontstage";
 
 import ResizeHandle from "@bentley/ui-ninezone/lib/widget/rectangular/ResizeHandle";
@@ -20,6 +19,9 @@ import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
 import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
 import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
 import { TargetType } from "@bentley/ui-ninezone/lib/zones/state/Target";
+
+import { WidgetProps as NZ_WidgetProps } from "@bentley/ui-ninezone/lib/zones/state/Widget";
+import { WidgetDef } from "./WidgetDef";
 
 /** Interface defining callbacks for widget changes */
 export interface WidgetChangeHandler {
@@ -72,7 +74,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
 
   private _frontstageDef: FrontstageDef | undefined;
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<FrontstageComposerState>;
 
   constructor(props: FrontstageComposerProps, context?: any) {
@@ -81,8 +83,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     const activeFrontstageId = FrontstageManager.activeFrontstageId;
     this._frontstageDef = FrontstageManager.findFrontstageDef(activeFrontstageId);
 
-    const isInFooterMode = (this._frontstageDef) ? this._frontstageDef.isInFooterMode : false;
-    const nineZoneProps = NineZoneStateManager.setIsInFooterMode(isInFooterMode, getDefaultNineZoneState());
+    const nineZoneProps = this.determineNineZoneProps(this._frontstageDef);
     this.state = {
       nineZoneProps,
       frontstageId: activeFrontstageId,
@@ -90,18 +91,73 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     };
   }
 
-  private _handleFrontstageActivatedEvent = (args: FrontstageActivatedEventArgs) => {
-    this._frontstageDef = FrontstageManager.findFrontstageDef(args.frontstageId);
+  private determineNineZoneProps(frontstageDef?: FrontstageDef): NineZoneProps {
+    let nineZoneProps: NineZoneProps;
 
-    this.setState((prevState, _props) => {
-      const frontstageId = args.frontstageId;
-      const isInFooterMode = (this._frontstageDef) ? this._frontstageDef.isInFooterMode : false;
-      const nineZoneProps = FrontstageManager.NineZoneStateManager.setIsInFooterMode(isInFooterMode, prevState.nineZoneProps);
-      return {
-        frontstageId,
-        nineZoneProps,
-      };
+    if (frontstageDef && frontstageDef.nineZoneProps)
+      nineZoneProps = { ...frontstageDef.nineZoneProps };
+    else {
+      const isInFooterMode = frontstageDef ? frontstageDef.isInFooterMode : false;
+      nineZoneProps = NineZoneStateManager.setIsInFooterMode(isInFooterMode, getDefaultNineZoneState());
+    }
+
+    return nineZoneProps;
+  }
+
+  private _handleFrontstageActivatedEvent = (args: FrontstageActivatedEventArgs) => {
+    // Save the nineZoneProps into the former FrontstageDef
+    if (this._frontstageDef)
+      this._frontstageDef.nineZoneProps = { ...this.state.nineZoneProps };
+
+    this._frontstageDef = args.frontstageDef;
+
+    const frontstageId = args.frontstageId;
+    const nineZoneProps = this.determineNineZoneProps(this._frontstageDef);
+    const needLayout = (this._frontstageDef && this._frontstageDef.nineZoneProps) ? false : true;
+
+    // Get the id and nineZoneProps for the current FrontstageDef
+    this.setState({
+      frontstageId,
+      nineZoneProps,
+    }, () => {
+      if (needLayout) {
+        this.initializeFrontstageLayout(nineZoneProps);
+      }
     });
+  }
+
+  private initializeFrontstageLayout(nineZoneProps: NineZoneProps) {
+    this.layout();
+
+    const zones = Object.keys(nineZoneProps.zones);
+    zones
+      .map((key) => Number(key) as WidgetZoneIndex)
+      .forEach((zoneId: WidgetZoneIndex) => {
+        const zoneDef = this.getZoneDef(zoneId);
+        if (!zoneDef || zoneDef.zoneState !== ZoneState.Open)
+          return;
+
+        if (!zoneDef.allowsMerging)
+          this.setZoneAllowsMerging(zoneId, false);
+
+        if (zoneDef.mergeWithZone)
+          this.mergeZones(zoneId, zoneDef.mergeWithZone);
+
+        const zoneProps = nineZoneProps.zones[zoneId];
+        if (zoneProps.widgets.length >= 1) {
+          zoneProps.widgets.forEach((widget: NZ_WidgetProps) => {
+            zoneDef.widgetDefs
+              .filter((widgetDef: WidgetDef) => {
+                return widgetDef.canShow() && !widgetDef.isToolSettings && !widgetDef.isStatusBar && !widgetDef.isFreeform;
+              })
+              .forEach((widgetDef: WidgetDef, tabIndex: number) => {
+                if (widgetDef.canOpen()) {
+                  this.handleWidgetStateChange(widget.id, tabIndex, true);
+                }
+              });
+          });
+        }
+      });
   }
 
   private _handleModalFrontstageChangedEvent = (_args: ModalFrontstageChangedEventArgs) => {
@@ -153,15 +209,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
         };
         content = React.cloneElement(this._frontstageDef.frontstageProvider.frontstage, { runtimeProps: frontstageRuntimeProps });
       } else {
-        content = (
-          <FrameworkFrontstage
-            frontstageDef={this._frontstageDef}
-            nineZone={this.state.nineZoneProps}
-            widgetChangeHandler={this}
-            targetChangeHandler={this}
-            zoneDefProvider={this}
-          />
-        );
+        throw Error("FrontstageDef has no FrontstageProvider.");
       }
     }
 
@@ -182,7 +230,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
   }
 
   public componentWillUnmount(): void {
-    document.removeEventListener("resize", this._handleWindowResize, true);
+    window.removeEventListener("resize", this._handleWindowResize, true);
     FrontstageManager.onFrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
     FrontstageManager.onModalFrontstageChangedEvent.removeListener(this._handleModalFrontstageChangedEvent);
   }
@@ -269,6 +317,24 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
   public getGhostOutlineBounds(zoneId: WidgetZoneIndex): RectangleProps | undefined {
     const nineZone = new NineZone(this.state.nineZoneProps);
     return nineZone.getWidgetZone(zoneId).getGhostOutlineBounds();
+  }
+
+  public setZoneAllowsMerging(zoneId: WidgetZoneIndex, allowsMerging: boolean): void {
+    this.setState((prevState) => {
+      const nineZoneProps = FrontstageManager.NineZoneStateManager.setAllowsMerging(zoneId, allowsMerging, prevState.nineZoneProps);
+      return {
+        nineZoneProps,
+      };
+    });
+  }
+
+  public mergeZones(toMergeId: WidgetZoneIndex, targetId: WidgetZoneIndex): void {
+    this.setState((prevState) => {
+      const nineZoneProps = FrontstageManager.NineZoneStateManager.mergeZone(toMergeId, targetId, prevState.nineZoneProps);
+      return {
+        nineZoneProps,
+      };
+    });
   }
 
   private layout() {

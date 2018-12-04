@@ -1,0 +1,16 @@
+# dependencies
+node_modules
+
+# build output
+.nyc_output
+lib
+
+# rush-specific
+/common/temp
+package-deps.json
+*.build.log
+*.build.error.log
+
+# docs
+/public
+

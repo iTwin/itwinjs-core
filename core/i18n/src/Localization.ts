@@ -107,13 +107,19 @@ export class I18N {
     return thisNamespace;
   }
 
-  public waitForAllRead(): Promise<void[]> {
+  public async waitForAllRead(): Promise<void[]> {
     const namespacePromises = new Array<Promise<void>>();
     for (const thisNamespace of this._namespaceRegistry.values()) {
       namespacePromises.push(thisNamespace.readFinished);
     }
     return Promise.all(namespacePromises);
   }
+
+  /** @hidden */
+  public unregisterNamespace(name: string): void {
+    this._namespaceRegistry.delete(name);
+  }
+
 }
 
 export class I18NNamespace {

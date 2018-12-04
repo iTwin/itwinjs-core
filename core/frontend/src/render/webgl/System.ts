@@ -428,6 +428,8 @@ export class System extends RenderSystem {
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _textureStats?: TextureStats;
   private readonly _textureBindings: TextureBinding[] = [];
+  private readonly _curVertexAttribStates: boolean[] = [ false, false, false, false ];
+  private readonly _nextVertexAttribStates: boolean[] = [ false, false, false, false ];
 
   // The following are initialized immediately after the System is constructed.
   private _lineCodeTexture?: TextureHandle;
@@ -787,6 +789,30 @@ export class System extends RenderSystem {
         this._textureBindings[i] = undefined;
         break;
       }
+    }
+  }
+
+  // System keeps track of current enabled state of vertex attribute arrays.
+  // This prevents errors caused by leaving a vertex attrib array enabled after disposing of the buffer bound to it;
+  // also prevents unnecessarily 'updating' the enabled state of a vertex attrib array when it hasn't actually changed.
+  public enableVertexAttribArray(id: number): void { this._nextVertexAttribStates[id] = true; }
+  public updateVertexAttribArrays(): void {
+    const cur = this._curVertexAttribStates;
+    const next = this._nextVertexAttribStates;
+    const context = this.context;
+    for (let i = 0; i < next.length; i++) {
+      const wasEnabled = cur[i];
+      const nowEnabled = next[i];
+      if (wasEnabled !== nowEnabled) {
+        if (wasEnabled)
+          context.disableVertexAttribArray(i);
+        else
+          context.enableVertexAttribArray(i);
+
+        cur[i] = nowEnabled;
+      }
+
+      next[i] = false;
     }
   }
 }

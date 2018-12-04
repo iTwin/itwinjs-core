@@ -245,7 +245,7 @@ describe("Disposal of WebGL Resources (#integration)", () => {
     assert.exists(viewState);
 
     const viewport = ScreenViewport.create(viewDiv, viewState);
-    await viewport.changeView(viewState);
+    viewport.changeView(viewState);
     viewport.viewFlags.grid = true;   // force a decoration to be turned on
     viewport.renderFrame(); // force a frame to be rendered
 

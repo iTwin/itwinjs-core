@@ -20,57 +20,66 @@
 .sheets-flex-container {
   display: flex;
   flex-wrap: wrap;
-}
 
-.sheets-flex-container > .sheet-card {
-  position: relative;
-  background-color: #f1f1f1;
-  width: 200px;
-  height: 250px;
-  margin: 10px;
-  padding: $sheets-modal-padding;
-  text-align: center;
-  font-size: 16px;
-  font-weight: bold;
-  border-color: #f1f1f1;
-  border-width: 8px;
-  border-radius: 12px;
-  border-style: solid;
-  box-sizing: border-box;
-}
+  > .sheet-card {
+    position: relative;
+    background-color: #f1f1f1;
+    width: 200px;
+    height: 250px;
+    margin: 10px;
+    padding: $sheets-modal-padding;
+    text-align: center;
+    font-size: 16px;
+    font-weight: bold;
+    border-color: #f1f1f1;
+    border-width: 8px;
+    border-radius: 12px;
+    border-style: solid;
+    box-sizing: border-box;
+    user-select: none;
 
-.sheets-flex-container > .sheet-card:hover {
-  cursor: pointer;
-}
+    &:hover {
+      cursor: pointer;
+    }
 
-.sheets-flex-container .is-active {
-  border-color: $bwc-blue;
-}
+    .sheet-image-container {
+      position: absolute;
+      top: 0;
+      left: 0;
+      width: 100%;
+      height: 100%;
+      display: flex;
+      justify-content: center;
+      align-items: center;
 
-.sheets-flex-container .is-hover {
-  border-color: $bwc-blue-a;
-}
+      .icon {
+        width: 50px;
+        height: 50px;
+        font-size: 50px;
+      }
+    }
 
-.sheet-card .sheet-image-container {
-  position: absolute;
-  top: 0;
-  left: 0;
-  width: 100%;
-  height: 100%;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-}
+    .sheet-index {
+      position: absolute;
+      width: 100%;
+      bottom: $sheets-modal-padding;
+      left: 0;
+    }
 
-.sheet-card .sheet-image-container .icon {
-  width: 50px;
-  height: 50px;
-  font-size: 50px;
-}
+    &.is-active {
+      border-color: $bwc-blue;
+    }
 
-.sheet-card .sheet-index {
-  position: absolute;
-  width: 100%;
-  bottom: $sheets-modal-padding;
-  left: 0;
+    &.is-pressed {
+      border-color: $bwc-blue;
+    }
+
+    &:not(.is-active) {
+      &:not(.is-pressed) {
+        &:hover {
+          border-color: $bwc-blue-a;
+        }
+      }
+    }
+  }
 }

@@ -18,83 +18,83 @@ export interface Props {
 }
 
 export interface State {
-  filter: string;
-  filtering: boolean;
+  dataProvider: PresentationTreeDataProvider;
   prevProps: Props;
-  highlightedCount: number;
-  activeHighlightedIndex: number;
+  filter: string;
+  isFiltering: boolean;
+  matchesCount: number;
+  activeMatchIndex: number;
 }
 
 export default class TreeWidget extends React.Component<Props, State> {
-  private _dataProvider: PresentationTreeDataProvider;
 
   constructor(props: Props) {
     super(props);
-    this._dataProvider = new PresentationTreeDataProvider(props.imodel, props.rulesetId);
     this.state = {
-      filter: "",
-      filtering: false,
+      dataProvider: new PresentationTreeDataProvider(props.imodel, props.rulesetId),
       prevProps: props,
-      activeHighlightedIndex: 0,
-      highlightedCount: 0,
+      filter: "",
+      isFiltering: false,
+      matchesCount: 0,
+      activeMatchIndex: 0,
     };
   }
 
   public static getDerivedStateFromProps(nextProps: Props, state: State) {
+    const base = { ...state, prevProps: nextProps };
     if (nextProps.imodel !== state.prevProps.imodel || nextProps.rulesetId !== state.prevProps.rulesetId)
-      return { ...state, prevProps: nextProps, filtering: true };
-    return state;
+      return { ...base, dataProvider: new PresentationTreeDataProvider(nextProps.imodel, nextProps.rulesetId) };
+    return base;
   }
 
   // tslint:disable-next-line:naming-convention
   private onFilterApplied = (_filter?: string): void => {
-    if (this.state.filtering)
-      this.setState({ filtering: false });
+    if (this.state.isFiltering)
+      this.setState({ isFiltering: false });
   }
 
   private _onFilterStart = (filter: string) => {
-    this.setState({ filter, filtering: true });
+    this.setState({ filter, isFiltering: true });
   }
 
   private _onFilterCancel = () => {
-    this.setState({ filter: "", filtering: false });
+    this.setState({ filter: "", isFiltering: false });
   }
 
   private _onFilterClear = () => {
-    this.setState({ filter: "", filtering: false });
+    this.setState({ filter: "", isFiltering: false });
   }
 
-  private _onHighlightedCounted = (count: number) => {
-    if (count !== this.state.highlightedCount)
-      this.setState({ highlightedCount: count });
+  private _onMatchesCounted = (count: number) => {
+    if (count !== this.state.matchesCount)
+      this.setState({ matchesCount: count });
   }
 
-  private _onFilteringInputSelectedChanged = (index: number) => {
-    this.setState({ activeHighlightedIndex: index });
+  private _onActiveMatchChanged = (index: number) => {
+    this.setState({ activeMatchIndex: index });
   }
 
   public render() {
-    if (this.props.imodel !== this.state.prevProps.imodel || this.props.rulesetId !== this.state.prevProps.rulesetId)
-      this._dataProvider = new PresentationTreeDataProvider(this.props.imodel, this.props.rulesetId);
-
     return (
       <div className="treewidget">
         <div className="treewidget-header">
           <h3>{IModelApp.i18n.translate("Sample:controls.tree")}</h3>
           <FilteringInput
-            filteringInProgress={this.state.filtering}
+            filteringInProgress={this.state.isFiltering}
             onFilterCancel={this._onFilterCancel}
             onFilterClear={this._onFilterClear}
             onFilterStart={this._onFilterStart}
             resultSelectorProps={{
-              onSelectedChanged: this._onFilteringInputSelectedChanged,
-              resultCount: this.state.highlightedCount,
+              onSelectedChanged: this._onActiveMatchChanged,
+              resultCount: this.state.matchesCount,
             }} />
         </div>
-        <SampleTree dataProvider={this._dataProvider} filter={this.state.filter}
+        <SampleTree dataProvider={this.state.dataProvider}
+          pageSize={5} disposeChildrenOnCollapse={true}
+          filter={this.state.filter}
           onFilterApplied={this.onFilterApplied}
-          onHighlightedCounted={this._onHighlightedCounted}
-          activeHighlightedIndex={this.state.activeHighlightedIndex} />
+          onMatchesCounted={this._onMatchesCounted}
+          activeMatchIndex={this.state.activeMatchIndex} />
       </div>
     );
   }

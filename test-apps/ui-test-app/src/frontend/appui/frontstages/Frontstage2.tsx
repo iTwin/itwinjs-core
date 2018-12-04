@@ -16,22 +16,61 @@ import {
   FrontstageProvider,
   WidgetState,
   FrontstageProps,
+  ContentGroup,
+  ContentLayoutDef,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
-import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
+import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl, HorizontalPropertyGridContentControl } from "../widgets/PropertyGridDemoWidget";
+import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
 
 import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
 import { AppUi } from "../AppUi";
+import { AppTools } from "../../tools/ToolSpecifications";
 
 export class Frontstage2 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
+    const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
+      { // Four Views, two stacked on the left, two stacked on the right.
+        descriptionKey: "SampleApp:ContentLayoutDef.FourQuadrants",
+        priority: 85,
+        verticalSplit: {
+          percentage: 0.50,
+          left: { horizontalSplit: { percentage: 0.50, top: 0, bottom: 1 } },
+          right: { horizontalSplit: { percentage: 0.50, top: 2, bottom: 3 } },
+        },
+      },
+    );
+
+    const myContentGroup: ContentGroup = new ContentGroup(
+      {
+        contents: [
+          {
+            classId: "IModelViewport",
+            applicationData: { label: "Content 1a", bgColor: "black" },
+          },
+          {
+            classId: TreeExampleContentControl,
+            applicationData: { label: "Content 2a", bgColor: "black" },
+          },
+          {
+            classId: "IModelViewport",
+            applicationData: { label: "Content 3a", bgColor: "black" },
+          },
+          {
+            classId: HorizontalPropertyGridContentControl,
+            applicationData: { label: "Content 4a", bgColor: "black" },
+          },
+        ],
+      },
+    );
+
     return (
       <Frontstage id="Test2"
-        defaultToolId="Select" defaultLayout="TwoHalvesHorizontal" contentGroup="TestContentGroup1" defaultContentId="TestContent1"
+        defaultToolId="Select" defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
         isInFooterMode={true} applicationData={{ key: "value" }}
 
         topLeft={
@@ -56,24 +95,24 @@ export class Frontstage2 extends FrontstageProvider {
           />
         }
         centerRight={
-          <Zone allowsMerging={true}
+          <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
             widgets={[
-              <Widget iconClass="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
+              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
             ]}
           />
         }
         bottomCenter={
           <Zone defaultState={ZoneState.Open}
             widgets={[
-              <Widget isStatusBar={true} iconClass="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
+              <Widget isStatusBar={true} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.StatusBar" control={AppStatusBarWidgetControl} />,
             ]}
           />
         }
         bottomRight={
-          <Zone allowsMerging={true}
+          <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
             widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconClass="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
-              <Widget defaultState={WidgetState.Open} iconClass="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
+              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
+              <Widget defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
             ]}
           />
         }
@@ -90,12 +129,12 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId="tool1" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={AppUi.tool1} />
-          <ToolButton toolId="tool2" iconClass="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={AppUi.tool2} />
+          <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={AppUi.tool1} />
+          <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={AppUi.tool2} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
-            iconClass="icon-placeholder"
-            items={["tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8", "tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+            iconSpec="icon-placeholder"
+            items={[AppTools.tool1, AppTools.tool2]}
             direction={Direction.Bottom}
             itemsInColumn={7}
           />
@@ -110,8 +149,9 @@ class FrontstageToolWidget extends React.Component {
         <>
           <GroupButton
             labelKey="SampleApp:buttons.anotherGroup"
-            iconClass="icon-placeholder"
-            items={["tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8"]}
+            iconSpec="icon-placeholder"
+            items={[AppTools.item3, AppTools.item4, AppTools.item5,
+            AppTools.item6, AppTools.item7, AppTools.item8]}
           />
         </>
       }
@@ -120,7 +160,7 @@ class FrontstageToolWidget extends React.Component {
   public render() {
     return (
       <ToolWidget
-        appButtonId="SampleApp.BackstageToggle"
+        appButton={AppTools.backstageToggleCommand}
         horizontalToolbar={this._horizontalToolbar}
         verticalToolbar={this._verticalToolbar}
       />
@@ -137,9 +177,9 @@ class FrontstageNavigationWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId="item5" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item5" />
-          <ToolButton toolId="item6" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item6" />
-          <ToolButton toolId="item7" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item7" />
+          <ToolButton toolId="item5" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.item5" />
+          <ToolButton toolId="item6" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.item6" />
+          <ToolButton toolId="item7" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.item7" />
         </>
       }
     />;
@@ -149,7 +189,7 @@ class FrontstageNavigationWidget extends React.Component {
       expandsTo={Direction.Right}
       items={
         <>
-          <ToolButton toolId="item8" iconClass="icon-placeholder" labelKey="SampleApp:buttons.item8" />
+          <ToolButton toolId="item8" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.item8" />
         </>
       }
     />;

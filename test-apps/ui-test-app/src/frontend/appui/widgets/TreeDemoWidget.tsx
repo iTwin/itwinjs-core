@@ -8,24 +8,29 @@ import { SampleAppIModelApp } from "../..";
 
 import {
   ConfigurableCreateInfo,
-  WidgetControl, WidgetComponentProps,
+  WidgetControl,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
-import { Tree } from "@bentley/ui-components";
+import { Tree, TreeProps } from "@bentley/ui-components";
+import withDragDrop from "@bentley/ui-components/lib/tree/hocs/withDragDrop";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { demoMutableTreeDataProvider, treeDropTargetDropCallback, treeDragSourceEndCallback, treeCanDropTargetDropCallback } from "./demoTreeDataProvider";
-import { ChildDragLayer } from "./ChildDragLayer";
-import { RootDragLayer } from "./ParentDragLayer";
+import { demoMutableTreeDataProvider, treeDragProps, treeDropProps, TreeDragTypes, DemoTreeDragDropType } from "./demodataproviders/demoTreeDataProvider";
+import { TableDragTypes } from "./demodataproviders/demoTableDataProvider";
+import { ParentDragLayer } from "./draglayers/ParentDragLayer";
+import { ChildDragLayer } from "./draglayers/ChildDragLayer";
+
+// tslint:disable-next-line:variable-name
+const DragDropTree = withDragDrop<TreeProps, DemoTreeDragDropType>(Tree);
 
 export class TreeDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <TreeDemoWidget widgetControl={this} iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />;
+    this.reactElement = <TreeDemoWidget iModelConnection={SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection} />;
   }
 }
 
-interface Props extends WidgetComponentProps {
+interface Props {
   iModelConnection?: IModelConnection;
 }
 
@@ -38,40 +43,38 @@ class TreeDemoWidget extends React.Component<Props, State> {
     checked: false,
   };
   public render() {
-    const objectType = (data: any) => {
-      if (data !== undefined && "type" in data && data.type)
-        return data.type;
-      return "";
-    };
+    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Parent, ParentDragLayer);
+    DragDropLayerManager.registerTypeLayer(TreeDragTypes.Child, ChildDragLayer);
 
-    const objectTypes = ["root", "child", ...(this.state.checked ? ["row"] : [])];
-    DragDropLayerManager.registerTypeLayer("root", RootDragLayer);
-    DragDropLayerManager.registerTypeLayer("child", ChildDragLayer);
+    let objectTypes: Array<string | symbol> = [];
+    if (treeDropProps.objectTypes) {
+      if (typeof treeDropProps.objectTypes !== "function")
+        objectTypes = treeDropProps.objectTypes;
+      else
+        objectTypes = treeDropProps.objectTypes();
+    }
+    if (this.state.checked)
+      objectTypes.push(TableDragTypes.Row);
 
-    const dragProps = {
-      onDragSourceEnd: treeDragSourceEndCallback,
-      objectType,
-    };
+    const dragProps = treeDragProps;
     const dropProps = {
-      onDropTargetDrop: treeDropTargetDropCallback,
-      canDropTargetDrop: treeCanDropTargetDropCallback,
+      ...treeDropProps,
       objectTypes,
     };
 
     return (
-      <div>
+      <div style={{ height: "100%" }}>
         <label htmlFor="receives_row">Can accept rows: </label>
-        <input id="receives_row" type="checkbox" checked={this.state.checked} onClick={() => {
-          this.setState((prevState) => ({ checked: !prevState.checked }), () => {
-            demoMutableTreeDataProvider.onTreeNodeChanged &&
-              demoMutableTreeDataProvider.onTreeNodeChanged.raiseEvent();
-          });
+        <input id="receives_row" type="checkbox" onChange={(event) => {
+          this.setState({ checked: event.target.checked });
         }} />
-        <Tree
-          dataProvider={demoMutableTreeDataProvider}
-          dragProps={dragProps}
-          dropProps={dropProps}
-        />
+        <div style={{ height: "calc(100% - 20px)" }}>
+          <DragDropTree
+            dataProvider={demoMutableTreeDataProvider}
+            dragProps={dragProps}
+            dropProps={dropProps}
+          />
+        </div>
       </div>
     );
   }

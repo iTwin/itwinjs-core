@@ -10,7 +10,7 @@ import {
   ThumbnailQuery, ThumbnailSize,
 } from "../../";
 
-import { TestConfig } from "../TestConfig";
+import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
@@ -56,35 +56,35 @@ describe("iModelHub VersionHandler", () => {
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");
     }
 
-    accessToken = await utils.login();
+    accessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     await utils.createIModel(accessToken, imodelName);
     imodelId = await utils.getIModelId(accessToken, imodelName);
     iModelClient = utils.getDefaultClient();
     briefcase = (await utils.getBriefcases(accessToken, imodelId, 1))[0];
     if (!TestConfig.enableMocks) {
-      iModelClient.RequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
-      const changeSetCount = (await iModelClient.ChangeSets().get(actx, accessToken, imodelId)).length;
+      iModelClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+      const changeSetCount = (await iModelClient.changeSets.get(actx, accessToken, imodelId)).length;
       if (changeSetCount > 9) {
         // Recreate iModel if can't create any new changesets
         await utils.createIModel(accessToken, imodelName, undefined, true);
         imodelId = await utils.getIModelId(accessToken, imodelName);
         briefcase = (await utils.getBriefcases(accessToken, imodelId, 1))[0];
       }
-      const versionsCount = (await iModelClient.Versions().get(actx, accessToken, imodelId)).length;
+      const versionsCount = (await iModelClient.versions.get(actx, accessToken, imodelId)).length;
       if (versionsCount === 0) {
         // Create at least 1 named version
         let changeSet: ChangeSet;
         if (changeSetCount === 0 || changeSetCount > 9) {
           changeSet = (await utils.createChangeSets(accessToken, imodelId, briefcase, 0, 1))[0];
         } else {
-          changeSet = (await iModelClient.ChangeSets().get(actx, accessToken, imodelId))[0];
+          changeSet = (await iModelClient.changeSets.get(actx, accessToken, imodelId))[0];
         }
-        const version: Version = await iModelClient.Versions().create(actx, accessToken, imodelId, changeSet.id!, "Version 1");
+        const version: Version = await iModelClient.versions.create(actx, accessToken, imodelId, changeSet.id!, "Version 1");
 
         if (utils.getCloudEnv().isIModelHub) {
           // Wait for large thumbnail.
           for (let i = 0; i < 5; i++) {
-            const largeThumbnails = (await iModelClient.Thumbnails().get(actx, accessToken, imodelId, "Large", new ThumbnailQuery().byVersionId(version.id!)));
+            const largeThumbnails = (await iModelClient.thumbnails.get(actx, accessToken, imodelId, "Large", new ThumbnailQuery().byVersionId(version.id!)));
             if (largeThumbnails.length > 0)
               break;
             await utils.delay(6000);
@@ -97,7 +97,7 @@ describe("iModelHub VersionHandler", () => {
   after(() => {
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().resetDefaultBehaviorOptions();
-      iModelClient.RequestOptions().setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
+      iModelClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
     }
   });
 
@@ -108,14 +108,14 @@ describe("iModelHub VersionHandler", () => {
   it("should create named version", async function (this: Mocha.ITestCallbackContext) {
     const mockedChangeSets = Array(1).fill(0).map(() => utils.generateChangeSet());
     utils.mockGetChangeSet(imodelId, false, undefined, ...mockedChangeSets);
-    const changeSetsCount = (await iModelClient.ChangeSets().get(actx, accessToken, imodelId)).length;
+    const changeSetsCount = (await iModelClient.changeSets.get(actx, accessToken, imodelId)).length;
 
     // creating changeset for new named version
     const changeSet = (await utils.createChangeSets(accessToken, imodelId, briefcase, changeSetsCount, 1))[0];
 
     const versionName = `Version ${changeSetsCount + 1}`;
     utils.mockCreateVersion(imodelId, versionName, changeSet.id);
-    const version: Version = await iModelClient.Versions().create(actx, accessToken, imodelId, changeSet.id!, versionName);
+    const version: Version = await iModelClient.versions.create(actx, accessToken, imodelId, changeSet.id!, versionName);
 
     chai.assert(!!version);
     chai.expect(!!version.id);
@@ -127,12 +127,12 @@ describe("iModelHub VersionHandler", () => {
     const mockedVersions = Array(3).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
     // Needs to create before expecting more than 0
-    const versions: Version[] = await iModelClient.Versions().get(actx, accessToken, imodelId);
+    const versions: Version[] = await iModelClient.versions.get(actx, accessToken, imodelId);
 
     let i = 0;
     for (const expectedVersion of versions) {
       utils.mockGetVersionById(imodelId, mockedVersions[i++]);
-      const actualVersion: Version = (await iModelClient.Versions().get(actx, accessToken, imodelId, new VersionQuery().byId(expectedVersion.id!)))[0];
+      const actualVersion: Version = (await iModelClient.versions.get(actx, accessToken, imodelId, new VersionQuery().byId(expectedVersion.id!)))[0];
       chai.assert(!!actualVersion);
       chai.expect(actualVersion.changeSetId).to.be.equal(expectedVersion.changeSetId);
     }
@@ -143,10 +143,10 @@ describe("iModelHub VersionHandler", () => {
     utils.mockGetVersions(imodelId, undefined, mockedVersion);
     utils.mockGetVersions(imodelId, `?$filter=ChangeSetId+eq+%27${mockedVersion.changeSetId!}%27`, mockedVersion);
 
-    const expectedVersion: Version = (await iModelClient.Versions().get(actx, accessToken, imodelId))[0];
+    const expectedVersion: Version = (await iModelClient.versions.get(actx, accessToken, imodelId))[0];
     chai.assert(expectedVersion);
 
-    const version: Version[] = await iModelClient.Versions().get(actx, accessToken, imodelId, new VersionQuery().byChangeSet(expectedVersion.changeSetId!));
+    const version: Version[] = await iModelClient.versions.get(actx, accessToken, imodelId, new VersionQuery().byChangeSet(expectedVersion.changeSetId!));
     chai.assert(version);
     chai.expect(version.length).to.be.equal(1);
     chai.expect(version[0].changeSetId).to.be.equal(expectedVersion.changeSetId);
@@ -155,7 +155,7 @@ describe("iModelHub VersionHandler", () => {
   it("should get named versions with thumbnail id", async () => {
     let mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
-    let versions: Version[] = await iModelClient.Versions().get(actx, accessToken, imodelId, new VersionQuery());
+    let versions: Version[] = await iModelClient.versions.get(actx, accessToken, imodelId, new VersionQuery());
     chai.expect(versions.length >= 1);
     const firstVersion = versions[versions.length - 1];
     chai.expect(firstVersion.smallThumbnailId).to.be.undefined;
@@ -163,15 +163,15 @@ describe("iModelHub VersionHandler", () => {
 
     const mockedSmallThumbnail = utils.generateThumbnail("Small");
     utils.mockGetThumbnailsByVersionId(imodelId, "Small", firstVersion.id!, mockedSmallThumbnail);
-    const smallThumbnail: Thumbnail = (await iModelClient.Thumbnails().get(actx, accessToken, imodelId, "Small", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
+    const smallThumbnail: Thumbnail = (await iModelClient.thumbnails.get(actx, accessToken, imodelId, "Small", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
 
     const mockedLargeThumbnail = utils.generateThumbnail("Large");
     utils.mockGetThumbnailsByVersionId(imodelId, "Large", firstVersion.id!, mockedLargeThumbnail);
-    const largeThumbnail: Thumbnail = (await iModelClient.Thumbnails().get(actx, accessToken, imodelId, "Large", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
+    const largeThumbnail: Thumbnail = (await iModelClient.thumbnails.get(actx, accessToken, imodelId, "Large", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
 
     mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, mockedSmallThumbnail.id!, mockedLargeThumbnail.id!));
     mockGetVersionsByIdWithThumbnails(imodelId, firstVersion.id!, ["Small", "Large"], ...mockedVersions);
-    versions = await iModelClient.Versions().get(actx, accessToken, imodelId, new VersionQuery().byId(firstVersion.id!).selectThumbnailId("Small", "Large"));
+    versions = await iModelClient.versions.get(actx, accessToken, imodelId, new VersionQuery().byId(firstVersion.id!).selectThumbnailId("Small", "Large"));
     chai.expect(versions.length === 1);
     chai.assert(!!versions[0].smallThumbnailId);
     chai.expect(versions[0].smallThumbnailId!.toString()).to.be.equal(smallThumbnail.id!.toString());
@@ -180,7 +180,7 @@ describe("iModelHub VersionHandler", () => {
 
     mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, undefined, mockedLargeThumbnail.id!));
     mockGetVersionsByNameWithThumbnails(imodelId, firstVersion.name!, ["Large"], ...mockedVersions);
-    versions = await iModelClient.Versions().get(actx, accessToken, imodelId, new VersionQuery().byName(firstVersion.name!).selectThumbnailId("Large"));
+    versions = await iModelClient.versions.get(actx, accessToken, imodelId, new VersionQuery().byName(firstVersion.name!).selectThumbnailId("Large"));
     chai.expect(versions.length === 1);
     chai.expect(versions[0].smallThumbnailId).to.be.undefined;
     chai.assert(!!versions[0].largeThumbnailId);
@@ -193,7 +193,7 @@ describe("iModelHub VersionHandler", () => {
     const mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
     utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
 
-    let version: Version = (await iModelClient.Versions().get(actx, accessToken, imodelId))[0];
+    let version: Version = (await iModelClient.versions.get(actx, accessToken, imodelId))[0];
     chai.assert(!!version);
     chai.assert(!!version.id);
     chai.expect(version.changeSetId).to.be.equal(version.changeSetId!);
@@ -201,7 +201,7 @@ describe("iModelHub VersionHandler", () => {
 
     version.name += " updated";
     utils.mockUpdateVersion(imodelId, version);
-    version = await iModelClient.Versions().update(actx, accessToken, imodelId, version);
+    version = await iModelClient.versions.update(actx, accessToken, imodelId, version);
 
     chai.assert(!!version);
     chai.expect(!!version.id);

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WorkflowTask */
 
-import ItemDefBase from "./ItemDefBase";
+import { ItemDefBase } from "./ItemDefBase";
 import { ItemProps } from "./ItemProps";
 import { WorkflowManager } from "./Workflow";
 import { FrontstageManager } from "./FrontstageManager";

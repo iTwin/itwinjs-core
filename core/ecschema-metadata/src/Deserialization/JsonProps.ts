@@ -20,9 +20,6 @@ export interface SchemaProps {
   description?: string;
   references?: SchemaReferenceProps[];
   customAttributes?: CustomAttribute[];
-  items?: {
-    [key: string]: AnySchemaItemProps,
-  };
 }
 
 export interface SchemaReferenceProps {
@@ -31,10 +28,10 @@ export interface SchemaReferenceProps {
 }
 
 export interface SchemaItemProps {
-  $schema?: string; // conditionally required
+  // NEEDSWORK: Still need to clarify how single-item deserialization works...
   schema?: string;  // conditionally required
   schemaVersion?: string;
-  schemaItemType: string;
+  schemaItemType?: string;
   label?: string;
   description?: string;
 }
@@ -42,7 +39,6 @@ export interface SchemaItemProps {
 export interface ClassProps extends SchemaItemProps {
   modifier?: string;
   baseClass?: string;
-  properties?: AnyPropertyProps[];
   customAttributes?: object[];
 }
 
@@ -53,6 +49,8 @@ export interface EntityClassProps extends ClassProps {
 export interface MixinProps extends ClassProps {
   appliesTo: string;
 }
+
+export type StructClassProps = ClassProps;
 
 export interface CustomAttributeClassProps extends ClassProps {
   appliesTo: string;
@@ -170,7 +168,7 @@ export interface FormatProps extends SchemaItemProps {
   composite?: {
     spacer?: string;
     includeZero?: boolean;
-    units?: Array<{
+    units: Array<{
       name: string;
       label?: string;
     }>
@@ -185,6 +183,8 @@ export interface InvertedUnitProps extends SchemaItemProps {
 export interface PhenomenonProps extends SchemaItemProps {
   definition: string;
 }
+
+export type UnitSystemProps = SchemaItemProps;
 
 export interface UnitProps extends SchemaItemProps {
   phenomenon: string;

@@ -156,11 +156,11 @@ export class RbacClient extends WsgClient {
    * @returns Resolves to an array of projects.
    */
   public async getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: RbacRequestQueryOptions): Promise<RbacProject[]> {
-    const userProfile = token.getUserProfile();
-    if (!userProfile)
+    const userInfo = token.getUserInfo();
+    if (!userInfo)
       return Promise.reject(new Error("Invalid access token"));
 
-    const url: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userProfile.userId + "/Project";
+    const url: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userInfo.id + "/Project";
     return this.getInstances<RbacProject>(alctx, RbacProject, token, url, queryOptions);
   }
 
@@ -183,11 +183,11 @@ export class RbacClient extends WsgClient {
    */
   public async getIModelHubPermissions(alctx: ActivityLoggingContext, token: AccessToken, projectId: string): Promise<IModelHubPermissions> {
     alctx.enter();
-    const userProfile = token.getUserProfile();
-    if (!userProfile)
+    const userInfo = token.getUserInfo();
+    if (!userInfo)
       return Promise.reject(new Error("Invalid access token"));
 
-    const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userProfile.userId + "/Project";
+    const relativeUrlPath: string = "/Repositories/BentleyCONNECT--Main/RBAC/User/" + userInfo.id + "/Project";
     const url: string = await this.getUrl(alctx) + relativeUrlPath;
     alctx.enter();
 

@@ -7,7 +7,7 @@
 
 // import { Angle, AngleSweep, Geometry } from "../Geometry";
 import { Geometry } from "../Geometry";
-import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { PascalCoefficients } from "./PascalCoefficients";
 import { Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, AnalyticRoots } from "./Polynomials";
 /* tslint:disable:variable-name*/
@@ -385,7 +385,7 @@ export class UnivariateBezier extends BezierCoffs {
     if (!result)
       result = new UnivariateBezier(order);
     else if (result.order !== order)
-      result.allocateToOrder (order);
+      result.allocateToOrder(order);
     for (let i = 0; i < order; i++)result.coffs[i] = coffs[index0 + i];
     return result;
   }

@@ -1,0 +1,101 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Backstage <Backstage /> CommandLaunchBackstageItem renders correctly 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  key=""
+  label="tests.label"
+  onClick={[Function]}
+/>
+`;
+
+exports[`Backstage <Backstage /> FrontstageLaunchBackstageItem renders correctly 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={true}
+  isDisabled={false}
+  key="Test1"
+  label="tests.label"
+  onClick={[Function]}
+/>
+`;
+
+exports[`Backstage <Backstage /> SeparatorBackstageItem renders correctly 1`] = `
+<BackstageSeparator
+  key="NaN"
+/>
+`;
+
+exports[`Backstage <Backstage /> TaskLaunchBackstageItem renders correctly 1`] = `
+<BackstageItem
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  key="ExampleWorkflow:Task1"
+  label="tests.label"
+  onClick={[Function]}
+/>
+`;
+
+exports[`Backstage <Backstage /> renders correctly - !isVisible 1`] = `
+<Fragment>
+  <Backstage
+    isOpen={false}
+    onClose={[Function]}
+    showOverlay={true}
+  />
+</Fragment>
+`;
+
+exports[`Backstage <Backstage /> renders correctly - isVisible 1`] = `
+<Fragment>
+  <Backstage
+    isOpen={true}
+    onClose={[Function]}
+    showOverlay={true}
+  />
+</Fragment>
+`;
+
+exports[`Backstage <Backstage /> with child items 1`] = `
+<Fragment>
+  <Backstage
+    isOpen={true}
+    items={
+      Array [
+        <CommandLaunchBackstageItem
+          commandId="my-command-id"
+          execute={[Function]}
+          iconSpec="icon-placeholder"
+          labelKey="UiFramework:tests.label"
+        />,
+        <SeparatorBackstageItem />,
+        <FrontstageLaunchBackstageItem
+          frontstageId="Test1"
+          iconSpec="icon-placeholder"
+          labelKey="UiFramework:tests.label"
+        />,
+        <SeparatorBackstageItem />,
+        <TaskLaunchBackstageItem
+          iconSpec="icon-placeholder"
+          labelKey="UiFramework:tests.label"
+          taskId="Task1"
+          workflowId="ExampleWorkflow"
+        />,
+      ]
+    }
+    onClose={[Function]}
+    showOverlay={true}
+  />
+</Fragment>
+`;

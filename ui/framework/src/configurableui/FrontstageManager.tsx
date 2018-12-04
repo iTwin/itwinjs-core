@@ -6,14 +6,12 @@
 
 import { UiEvent } from "@bentley/ui-core";
 
-import { FrontstageDef, FrontstageDefProps } from "./FrontstageDef";
+import { FrontstageDef } from "./FrontstageDef";
 import { ContentControl } from "./ContentControl";
 import { ContentLayoutDef } from "./ContentLayout";
 import { ContentGroup } from "./ContentGroup";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 import { ContentViewManager } from "./ContentViewManager";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
-import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
 import { IModelConnection, IModelApp, Tool, StartOrResume } from "@bentley/imodeljs-frontend";
@@ -34,6 +32,17 @@ export interface FrontstageActivatedEventArgs {
 /** Frontstage Activated Event class.
  */
 export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventArgs> { }
+
+/** Frontstage Ready Event Args interface.
+ */
+export interface FrontstageReadyEventArgs {
+  frontstageId: string;
+  frontstageDef?: FrontstageDef;
+}
+
+/** Frontstage Ready Event class.
+ */
+export class FrontstageReadyEvent extends UiEvent<FrontstageReadyEventArgs> { }
 
 /** Modal Frontstage Changed Event Args interface.
  */
@@ -124,14 +133,6 @@ export class FrontstageManager {
   private static _activeToolId: string = "";
   private static _toolInformationMap: Map<string, ToolInformation> = new Map<string, ToolInformation>();
 
-  private static _frontstageActivatedEvent: FrontstageActivatedEvent = new FrontstageActivatedEvent();
-  private static _modalFrontstageChangedEvent: ModalFrontstageChangedEvent = new ModalFrontstageChangedEvent();
-  private static _toolActivatedEvent: ToolActivatedEvent = new ToolActivatedEvent();
-  private static _contentLayoutActivatedEvent: ContentLayoutActivatedEvent = new ContentLayoutActivatedEvent();
-  private static _contentControlActivatedEvent: ContentControlActivatedEvent = new ContentControlActivatedEvent();
-  private static _navigationAidActivatedEvent: NavigationAidActivatedEvent = new NavigationAidActivatedEvent();
-  private static _widgetStateChangedEvent: WidgetStateChangedEvent = new WidgetStateChangedEvent();
-
   /** Initializes the FrontstageManager */
   public static initialize() {
 
@@ -146,56 +147,40 @@ export class FrontstageManager {
   public static get isLoading(): boolean { return this._isLoading; }
 
   /** Get Frontstage Activated event. */
-  public static get onFrontstageActivatedEvent(): FrontstageActivatedEvent { return this._frontstageActivatedEvent; }
+  public static readonly onFrontstageActivatedEvent = new FrontstageActivatedEvent();
+
+  /** Get Frontstage Activated event. */
+  public static readonly onFrontstageReadyEvent = new FrontstageReadyEvent();
 
   /** Get Modal Frontstage Changed event. */
-  public static get onModalFrontstageChangedEvent(): ModalFrontstageChangedEvent { return this._modalFrontstageChangedEvent; }
+  public static readonly onModalFrontstageChangedEvent = new ModalFrontstageChangedEvent();
 
   /** Get Tool Activated event. */
-  public static get onToolActivatedEvent(): ToolActivatedEvent { return this._toolActivatedEvent; }
+  public static readonly onToolActivatedEvent = new ToolActivatedEvent();
 
   /** Get Content Layout Activated event. */
-  public static get onContentLayoutActivatedEvent(): ContentLayoutActivatedEvent { return this._contentLayoutActivatedEvent; }
+  public static readonly onContentLayoutActivatedEvent = new ContentLayoutActivatedEvent();
 
   /** Get Content Control Activated event. */
-  public static get onContentControlActivatedEvent(): ContentControlActivatedEvent { return this._contentControlActivatedEvent; }
+  public static readonly onContentControlActivatedEvent = new ContentControlActivatedEvent();
 
   /** Get Navigation Aid Activated event. */
-  public static get onNavigationAidActivatedEvent(): NavigationAidActivatedEvent { return this._navigationAidActivatedEvent; }
+  public static readonly onNavigationAidActivatedEvent = new NavigationAidActivatedEvent();
 
   /** Get Widget State Changed event. */
-  public static get onWidgetStateChangedEvent(): WidgetStateChangedEvent { return this._widgetStateChangedEvent; }
+  public static readonly onWidgetStateChangedEvent = new WidgetStateChangedEvent();
 
   /** Get  Nine-zone State Manager. */
   public static get NineZoneStateManager() { return NineZoneStateManager; }
 
-  /** Load one or more Frontstages via properties.
-   * @param frontstagePropsList  List of Frontstage properties
-   */
-  public static loadFrontstages(frontstagePropsList: FrontstageDefProps[]): void {
-    frontstagePropsList.map((frontstageProps, _index) => {
-      FrontstageManager.loadFrontstage(frontstageProps);
-    });
-  }
-
-  /** Load a Frontstage via properties.
-   * @param frontstageProps  Properties of the Frontstage to load
-   */
-  public static loadFrontstage(frontstageProps: FrontstageDefProps): void {
-    const frontstageDef = new FrontstageDef(frontstageProps);
-    if (frontstageDef) {
-      FrontstageManager.addFrontstageDef(frontstageDef);
-    }
-  }
-
   /** Add a Frontstage via a definition.
    * @param frontstageDef  Definition of the Frontstage to add
    */
-  public static addFrontstageDef(frontstageDef: FrontstageDef): void {
+  private static addFrontstageDef(frontstageDef: FrontstageDef): void {
     this._frontstageDefs.set(frontstageDef.id, frontstageDef);
   }
 
-  /** Add a Frontstage via a [[FrontstageElement]].
+  /** Add a Frontstage via a [[FrontstageProvider]].
    * @param frontstageProvider  FrontstageProvider representing the Frontstage to add
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
@@ -259,7 +244,7 @@ export class FrontstageManager {
       this.onFrontstageActivatedEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
       await frontstageDef.waitUntilReady();
       this._isLoading = false;
-      SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.FrontstageActivated);
+      this.onFrontstageReadyEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
       if (frontstageDef.contentControls.length >= 0) {
         // TODO: get content control to activate from state info
         const contentControl = frontstageDef.contentControls[0];
@@ -286,7 +271,6 @@ export class FrontstageManager {
         this._toolInformationMap.set(toolId, new ToolInformation(toolId));
 
       FrontstageManager.onToolActivatedEvent.emit({ toolId });
-      SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ToolActivated);
     }
   }
 
@@ -331,7 +315,6 @@ export class FrontstageManager {
   private static pushModalFrontstage(modalFrontstage: ModalFrontstageInfo): void {
     this._modalFrontstages.push(modalFrontstage);
     this.emitModalFrontstageChangedEvent();
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ModalFrontstageChanged);
   }
 
   /** Closes the top-most modal Frontstage.
@@ -343,19 +326,16 @@ export class FrontstageManager {
   private static popModalFrontstage(): void {
     this._modalFrontstages.pop();
     this.emitModalFrontstageChangedEvent();
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ModalFrontstageChanged);
   }
 
   private static emitModalFrontstageChangedEvent(): void {
     this.onModalFrontstageChangedEvent.emit({ modalFrontstageCount: this.modalFrontstageCount });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ModalFrontstageChanged);
   }
 
   /** Updates the top-most modal Frontstage.
    */
   public static updateModalFrontstage(): void {
     this.emitModalFrontstageChangedEvent();
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ModalFrontstageChanged);
   }
 
   /** Gets the top-most modal Frontstage.
@@ -381,7 +361,6 @@ export class FrontstageManager {
    */
   public static setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection) {
     this.onNavigationAidActivatedEvent.emit({ navigationAidId, iModelConnection });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.NavigationAidActivated);
   }
 
   /** Sets the state of the widget with the given id

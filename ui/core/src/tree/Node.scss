@@ -6,6 +6,8 @@
 @import "@bentley/bwc/lib/mixins";
 @import "../colors.scss";
 
+$node-font-size: $bwc-font-size;
+
 /* FIXME: Without this, the loader animation is broken...
  * I guess we'd need to fix BWC's animations to support CSS modules?
  * (I mean, we should probably just be using the loader component anyway...)
@@ -20,15 +22,15 @@
 .nz-tree-node {
   /* Rules applied to the <be-tree-node> itself */
   display: block;
+  box-sizing: border-box;
   width: fit-content;
   min-width: 100%;
   line-height: 24px;
   font-family: $bwc-sans;
-  font-size: 13px;
+  font-size: $node-font-size;
   color: $text-dark;
   white-space: nowrap;
   text-overflow: ellipsis;
-  clear: both;
 
   * {
     vertical-align: top;
@@ -37,8 +39,7 @@
   > .loader {
     @include bwc-loaders-small;
     margin: 4px;
-    display: block;
-    float: left;
+    position: absolute;
     z-index: 2;
   }
 
@@ -48,7 +49,16 @@
     position: relative;
     z-index: 2;
 
-    > .icon {
+    .chk-listbox {
+      display: inline-block;
+    }
+
+    .chk-listboxitem-checkbox {
+      display: inline-block;
+      margin-top: 0;
+    }
+
+    .icon {
       width: 16px;
       height: 24px;
       display: inline-block;
@@ -59,8 +69,7 @@
   }
 
   > .expansion-toggle {
-    position: relative;
-    float: left;
+    position: absolute;
     z-index: 2;
   }
 
@@ -82,10 +91,12 @@
   }
 
   &:not(.is-hover-disabled) {
-    *:hover + * + .whole-row,
-    *:hover + .whole-row,
-    .whole-row:hover {
-      background: $bwc-blue-highlight;
+    &:not(.is-selected) {
+      *:hover + * + .whole-row,
+      *:hover + .whole-row,
+      .whole-row:hover {
+        background: $bwc-blue-highlight;
+      }
     }
   }
 

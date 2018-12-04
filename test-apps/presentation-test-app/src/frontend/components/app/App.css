@@ -19,20 +19,16 @@
 
 .app-content {
   display: grid;
-  grid-template-columns: calc(100% - 540px) 540px;
 }
 
 .app-content-left {
-  grid-column: 1;
   display: grid;
   grid-template-rows: calc(100% - 300px) 300px;
 }
 
 .app-content-right {
-  grid-column: 2;
   display: grid;
   min-height: 0px;
-  /* grid-template-rows: 50% 1px 50%; */
 }
 
 .app-content-right-separator {

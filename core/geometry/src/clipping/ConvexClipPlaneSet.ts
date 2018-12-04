@@ -14,7 +14,7 @@ import { Matrix4d } from "../geometry4d/Matrix4d";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { PolygonOps } from "../geometry3d/PointHelpers";
-import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { Arc3d } from "../curve/Arc3d";
 import { ClipPlane } from "./ClipPlane";
 import { ClipPlaneContainment, Clipper, ClipUtilities } from "./ClipUtils";

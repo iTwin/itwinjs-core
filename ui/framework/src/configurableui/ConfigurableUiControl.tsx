@@ -97,7 +97,7 @@ export abstract class ConfigurableUiControl extends ConfigurableBase {
 
   /** Returns the ID of this ConfigurableUiControl.
    */
-  public getConfigurableUiControlId(): string { return this._cid; }
+  public get controlId(): string { return this._cid; }
 
   /** Get the type of this control.
    */

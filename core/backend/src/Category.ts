@@ -9,9 +9,10 @@ import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, SubCategoryA
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 import { DefinitionModel } from "./Model";
+import { CategoryOwnsSubCategories } from "./NavigationRelationship";
 
 /** Defines the appearance for graphics in Geometric elements */
-export class SubCategory extends DefinitionElement {
+export class SubCategory extends DefinitionElement implements SubCategoryProps {
   /** The Appearance parameters for this SubCategory */
   public appearance: SubCategoryAppearance;
   /** Optional description of this SubCategory. */
@@ -45,6 +46,37 @@ export class SubCategory extends DefinitionElement {
   public getCategoryId(): Id64String { return this.parent ? this.parent.id : Id64.invalid; }
   /** Check if this is the default SubCategory of its parent Category. */
   public get isDefaultSubCategory(): boolean { return IModelDb.getDefaultSubCategoryId(this.getCategoryId()) === this.getSubCategoryId(); }
+
+  /** Create a Code for a SubCategory given a name that is meant to be unique within the scope of the specified parent Category.
+   * @param iModel  The IModel
+   * @param parentCategoryId The Id of the parent Category that owns the SubCategory and provides the scope for its name.
+   * @param codeValue The name of the SubCategory
+   */
+  public static createCode(iModel: IModelDb, parentCategoryId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.subCategory);
+    return new Code({ spec: codeSpec.id, scope: parentCategoryId, value: codeValue });
+  }
+
+  /** Insert a new SubCategory
+   * @param iModelDb Insert into this iModel
+   * @param parentCategoryId Insert the new SubCategory as a child of this Category
+   * @param name The name of the SubCategory
+   * @param appearance The appearance settings to use for this SubCategory
+   * @returns The Id of the newly inserted SubCategory element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props): Id64String {
+    const elements = iModelDb.elements;
+    const parentCategory = elements.getElement<Category>(parentCategoryId);
+    const subCategoryProps: SubCategoryProps = {
+      classFullName: this.classFullName,
+      model: parentCategory.model,
+      parent: new CategoryOwnsSubCategories(parentCategoryId),
+      code: this.createCode(iModelDb, parentCategoryId, name),
+      appearance,
+    };
+    return elements.insertElement(subCategoryProps);
+  }
 }
 
 /** A Category element is the target of the `category` member of [[GeometricElement]]. */
@@ -71,9 +103,9 @@ export class Category extends DefinitionElement implements CategoryProps {
   public myDefaultSubCategoryId(): Id64String { return IModelDb.getDefaultSubCategoryId(this.id); }
 
   /** Set the appearance of the default SubCategory for this Category */
-  public setDefaultAppearance(app: SubCategoryAppearance): void {
-    const subCat: SubCategory = this.iModel.elements.getElement(this.myDefaultSubCategoryId()).clone();
-    subCat.appearance = app;
+  public setDefaultAppearance(props: SubCategoryAppearance.Props): void {
+    const subCat = this.iModel.elements.getElement<SubCategory>(this.myDefaultSubCategoryId());
+    subCat.appearance = new SubCategoryAppearance(props);
     this.iModel.elements.updateElement(subCat);
   }
 }
@@ -105,6 +137,29 @@ export class DrawingCategory extends Category {
   public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(DrawingCategory.getCodeSpecName());
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
+
+  /**
+   * Insert a new DrawingCategory
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new DrawingCategory into this DefinitionModel
+   * @param name The name of the DrawingCategory
+   * @param defaultAppearance The appearance settings to use for the default SubCategory of this DrawingCategory
+   * @returns The Id of the newly inserted DrawingCategory element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props): Id64String {
+    const categoryProps: CategoryProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      isPrivate: false,
+    };
+    const elements = iModelDb.elements;
+    const categoryId = elements.insertElement(categoryProps);
+    const category = elements.getElement<DrawingCategory>(categoryId);
+    category.setDefaultAppearance(defaultAppearance);
+    return categoryId;
   }
 }
 
@@ -149,5 +204,28 @@ export class SpatialCategory extends Category {
       model: scopeModel.id,
       code: SpatialCategory.createCode(scopeModel.iModel, scopeModel.id, categoryName),
     }) as SpatialCategory;
+  }
+
+  /**
+   * Insert a new SpatialCategory
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new SpatialCategory into this DefinitionModel
+   * @param name The name of the SpatialCategory
+   * @param defaultAppearance The appearance settings to use for the default SubCategory of this SpatialCategory
+   * @returns The Id of the newly inserted SpatialCategory element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props): Id64String {
+    const categoryProps: CategoryProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      isPrivate: false,
+    };
+    const elements = iModelDb.elements;
+    const categoryId = elements.insertElement(categoryProps);
+    const category = elements.getElement<SpatialCategory>(categoryId);
+    category.setDefaultAppearance(defaultAppearance);
+    return categoryId;
   }
 }

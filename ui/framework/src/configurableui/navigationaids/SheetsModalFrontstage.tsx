@@ -18,7 +18,7 @@ import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend/lib/fron
 export interface CardInfo {
   index: number;
   label: string;
-  iconClass: string;
+  iconSpec: string;
   isActive: boolean;
   viewId: any;
 }
@@ -57,7 +57,7 @@ export class SheetsModalFrontstage implements ModalFrontstageInfo {
    */
   private _storeSheetsAsCards(sheets: SheetData[]) {
     sheets.forEach((sheet: SheetData, index: number) => {
-      this._cards.push({ index, label: sheet.name, iconClass: "icon-document", viewId: sheet.viewId, isActive: index === this._currentIndex });
+      this._cards.push({ index, label: sheet.name, iconSpec: "icon-document", viewId: sheet.viewId, isActive: index === this._currentIndex });
     });
   }
 
@@ -102,6 +102,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
           {
             this.props.cards.map((card: CardInfo, _index: number) => {
               let includeCard = true;
+              const iconClassName = (typeof card.iconSpec === "string") ? card.iconSpec : "icon-placeholder";
 
               if (this.props.searchValue) {
                 includeCard = this.contains(card.label, this.props.searchValue, false);
@@ -109,7 +110,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
 
               if (includeCard) {
                 return (
-                  <SheetCard key={card.label} label={card.label} index={card.index} iconClass={card.iconClass} isActive={card.isActive} onClick={() => this._handleCardSelected(card)} />
+                  <SheetCard key={card.label} label={card.label} index={card.index} iconSpec={iconClassName} isActive={card.isActive} onClick={async () => this._handleCardSelected(card)} />
                 );
               }
 
@@ -146,11 +147,11 @@ export class CardContainer extends React.Component<CardContainerProps> {
    * @param card Data about the sheet card selected.
    */
   private async _handleCardSelected(card: CardInfo) {
-    const vp = IModelApp.viewManager.selectedView;
-    if (!vp)
-      return;
-    const viewState = await this.props.connection.views.load(card.viewId);
-    vp.changeView(viewState);
+    if (IModelApp.viewManager && IModelApp.viewManager.selectedView) {
+      const vp = IModelApp.viewManager.selectedView;
+      const viewState = await this.props.connection.views.load(card.viewId);
+      vp.changeView(viewState);
+    }
 
     card.isActive = true;
     FrontstageManager.closeModalFrontstage();
@@ -162,7 +163,7 @@ export class CardContainer extends React.Component<CardContainerProps> {
 export interface SheetCardProps {
   label: string;
   index: number;
-  iconClass: string;
+  iconSpec: string;
   isActive: boolean;
   onClick: () => void;
 }
@@ -170,42 +171,46 @@ export interface SheetCardProps {
 /** State for [[SheetCard]] */
 export interface SheetCardState {
   isActive: boolean;
-  isHover: boolean;
+  isPressed: boolean;
 }
 
 /** Displays information about an individual sheet */
 export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
   constructor(props: SheetCardProps) {
     super(props);
-    this.state = { isActive: this.props.isActive, isHover: false };
+    this.state = { isActive: this.props.isActive, isPressed: false };
   }
 
   private _onClick = () => {
-    this.setState({ isActive: true, isHover: false }, () => this.props.onClick());
+    this.setState({ isActive: true }, () => this.props.onClick());
   }
 
-  private _onMouseEnter = () => {
-    this.setState({ isHover: !this.state.isActive });
+  private _onMouseDown = () => {
+    this.setState({ isPressed: true });
   }
 
   private _onMouseLeave = () => {
-    this.setState({ isHover: false });
+    if (this.state.isPressed)
+      this.setState({ isPressed: false });
   }
 
   /** @hidden */
   public render() {
-    const { label, index, iconClass } = this.props;
+    const { label, index, iconSpec } = this.props;
 
     const className = classnames(
       "sheet-card",
       this.state.isActive && "is-active",
-      this.state.isHover && "is-hover",
+      this.state.isPressed && "is-pressed",
     );
 
-    const iconClassName = "icon " + iconClass;
+    const iconClassName = classnames(
+      "icon",
+      (typeof iconSpec === "string") ? iconSpec : "icon-placeholder",
+    );
 
     return (
-      <div className={className} onClick={this._onClick} onMouseEnter={this._onMouseEnter} onMouseLeave={this._onMouseLeave}>
+      <div className={className} onClick={this._onClick} onMouseDown={this._onMouseDown} onMouseLeave={this._onMouseLeave} >
         {label}
         <div className="sheet-image-container">
           <div className={iconClassName} />

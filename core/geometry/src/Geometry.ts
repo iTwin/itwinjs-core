@@ -566,5 +566,22 @@ export class Geometry {
    * @param apply01 if false, accept all x.
    */
   public static isIn01WithTolerance(x: number, tolerance: number): boolean { return x + tolerance >= 0.0 && x - tolerance <= 1.0; }
+  /**
+   * restrict x so it is in the interval `[a,b]`, allowing a,b to be in either order.
+   * @param x
+   * @param a (usually the lower) interval limit
+   * @param b (usually the upper) interval limit
+   */
+  public static restrictToInterval(x: number, a: number, b: number): number {
+    if (a <= b) {
+      if (x < a) return a;
+      if (x > b) return b;
+      return x;
+    }
+    // reversed interval ....
+    if (x < b) return b;
+    if (x > a) return a;
+    return x;
+  }
 
 }

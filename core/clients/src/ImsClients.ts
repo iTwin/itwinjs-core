@@ -69,7 +69,7 @@ export class ImsActiveSecureTokenClient extends Client {
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
-    options.useCorsProxy = true;
+    options.useCorsProxy = false;
   }
 
   /**
@@ -98,7 +98,7 @@ export class ImsActiveSecureTokenClient extends Client {
     await this.setupOptionDefaults(options);
 
     return request(alctx, url, options)
-      .then((res: Response): Promise<AuthorizationToken> => {
+      .then(async (res: Response): Promise<AuthorizationToken> => {
         if (!res.body.RequestedSecurityToken)
           return Promise.reject(new Error("Authorization token not in expected format " + JSON.stringify(res)));
 
@@ -136,7 +136,7 @@ export class ImsDelegationSecureTokenClient extends Client {
 
   protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
-    options.useCorsProxy = true;
+    options.useCorsProxy = false;
   }
 
   /**
@@ -172,7 +172,7 @@ export class ImsDelegationSecureTokenClient extends Client {
     await this.setupOptionDefaults(options);
 
     return request(alctx, url, options)
-      .then((res: Response): Promise<AccessToken> => {
+      .then(async (res: Response): Promise<AccessToken> => {
         if (!res.body.RequestedSecurityToken)
           return Promise.reject(new Error("Authorization token not in expected format " + JSON.stringify(res)));
 

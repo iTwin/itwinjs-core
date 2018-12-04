@@ -38,6 +38,7 @@ export interface StructValue extends BasePropertyValue {
 export interface ArrayValue extends BasePropertyValue {
   valueFormat: PropertyValueFormat.Array;
   items: PropertyRecord[];
+  itemsTypeName: string;
 }
 
 /** Type for all property values */

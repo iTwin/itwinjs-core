@@ -7,8 +7,6 @@
 import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "./FrontstageManager";
 import { ContentControl } from "./ContentControl";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
-import { ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
 
 /** [[MouseDownChangedEvent]] Args interface.
  */
@@ -35,12 +33,10 @@ export class ActiveContentChangedEvent extends UiEvent<ActiveContentChangedEvent
  */
 export class ContentViewManager {
   private static _mouseDown: boolean = false;
-  private static _mouseDownChangedEvent: MouseDownChangedEvent = new MouseDownChangedEvent();
   private static _activeContent?: React.ReactNode;
-  private static _activeContentChangedEvent: ActiveContentChangedEvent = new ActiveContentChangedEvent();
 
   /** Gets the [[MouseDownChangedEvent]] */
-  public static get onMouseDownChangedEvent(): MouseDownChangedEvent { return this._mouseDownChangedEvent; }
+  public static readonly onMouseDownChangedEvent = new MouseDownChangedEvent();
 
   /** Determines if the mouse is down in a content view */
   public static get isMouseDown(): boolean {
@@ -54,8 +50,9 @@ export class ContentViewManager {
   }
 
   /** Gets the [[ActiveContentChangedEvent]] */
-  public static get onActiveContentChangedEvent(): ActiveContentChangedEvent { return this._activeContentChangedEvent; }
+  public static readonly onActiveContentChangedEvent = new ActiveContentChangedEvent();
 
+  /** Gets the active content as a React.ReactNode. */
   public static getActiveContent(): React.ReactNode | undefined {
     return this._activeContent;
   }
@@ -91,8 +88,6 @@ export class ContentViewManager {
           if (activeContentControl)
             activeFrontstageDef.setActiveView(activeContentControl, oldContentControl);
         }
-
-        SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.ActiveContentChanged);
       }
     }
   }

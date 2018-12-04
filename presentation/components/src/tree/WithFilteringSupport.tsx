@@ -5,8 +5,8 @@
 /** @module Tree */
 
 import * as React from "react";
-import { Subtract } from "@bentley/presentation-common";
-import { DataTreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/DataTree";
+import { TreeProps } from "@bentley/ui-components/lib/tree/component/Tree";
+import { ActiveMatchInfo, HighlightableTreeProps } from "@bentley/ui-components/lib/tree/HighlightingEngine";
 import { getDisplayName } from "../common/Utils";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 import FilteredPresentationTreeDataProvider from "./FilteredDataProvider";
@@ -19,18 +19,12 @@ export interface Props {
   filter?: string;
   /** The data provider used by the tree. */
   dataProvider: IPresentationTreeDataProvider;
-  /**
-   * Called once filter is applied.
-   */
+  /** Called when filter is applied. */
   onFilterApplied?: (filter?: string) => void;
-  /**
-   * Called once FilteredDataProvider counts how many results there are
-   */
-  onHighlightedCounted?: (count: number) => void;
-  /**
-   * Index of current active highlighted node in a filtered tree
-   */
-  activeHighlightedIndex?: number;
+  /** Called when FilteredDataProvider counts the number of matches */
+  onMatchesCounted?: (count: number) => void;
+  /** Index of the active match */
+  activeMatchIndex?: number;
 }
 
 interface State {
@@ -48,9 +42,9 @@ const defaultState: State = {
  * **Note:** it is required for the tree to use [[IPresentationTreeDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function withFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props & Pick<TreeProps, "expandedNodes">> & Props> {
+export default function withFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
 
-  type CombinedProps = Subtract<P, Props & Pick<TreeProps, "expandedNodes">> & Props;
+  type CombinedProps = P & Props;
 
   return class WithFilteringSupport extends React.Component<CombinedProps, State> {
     public static get displayName() { return `WithFilteringSupport(${getDisplayName(TreeComponent)})`; }
@@ -83,7 +77,7 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
         return;
       }
 
-      await this.loadDataProvider(this.props.filter!);
+      await this.loadDataProvider(this.props.filter as string);
     }
 
     public async componentDidMount(): Promise<void> {
@@ -92,7 +86,7 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
           this.props.onFilterApplied(this.props.filter);
         return;
       }
-      await this.loadDataProvider(this.props.filter!);
+      await this.loadDataProvider(this.props.filter as string);
     }
 
     private async loadDataProvider(filter: string): Promise<void> {
@@ -102,8 +96,8 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
 
       const filteredDataProvider = new FilteredPresentationTreeDataProvider(this.props.dataProvider, filter, nodePaths);
 
-      if (this.props.onHighlightedCounted)
-        this.props.onHighlightedCounted(filteredDataProvider.countFilteringResults(nodePaths));
+      if (this.props.onMatchesCounted)
+        this.props.onMatchesCounted(filteredDataProvider.countFilteringResults(nodePaths));
 
       this.setState({ filteredDataProvider });
     }
@@ -135,22 +129,28 @@ export default function withFilteringSupport<P extends TreeProps>(TreeComponent:
 
     public render() {
       const {
-        filter, dataProvider, onFilterApplied,
+        filter, dataProvider, onFilterApplied, onMatchesCounted, activeMatchIndex,
         ...props /* tslint:disable-line: trailing-comma */
       } = this.props as any;
 
       const overlay = this.shouldDisplayOverlay ? <div className="filteredTreeOverlay" /> : undefined;
+
+      let nodeHighlightingProps: HighlightableTreeProps | undefined;
+      if (filter) {
+        let activeMatch: ActiveMatchInfo | undefined;
+        if (this.state.filteredDataProvider && undefined !== activeMatchIndex)
+          activeMatch = this.state.filteredDataProvider.getActiveMatch(activeMatchIndex);
+        nodeHighlightingProps = {
+          searchText: filter,
+          activeMatch,
+        };
+      }
+
       return (
         <div className="filteredTree">
           <TreeComponent
             dataProvider={this.state.filteredDataProvider ? this.state.filteredDataProvider : this.props.dataProvider}
-            expandedNodes={this.state.filteredDataProvider ? this.state.filteredDataProvider.getAllNodeIds() : []}
-            nodeHighlightingProps={{
-              searchText: this.props.filter,
-              activeResultNode: this.state.filteredDataProvider && this.props.activeHighlightedIndex ?
-                this.state.filteredDataProvider.getActiveResultNode(this.props.activeHighlightedIndex!) :
-                undefined,
-            }}
+            nodeHighlightingProps={nodeHighlightingProps}
             {...props}
           />
           {overlay}

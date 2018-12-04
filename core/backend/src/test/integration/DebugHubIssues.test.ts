@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
-import { IModelVersion } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration } from "../../backend";
+import { IModel, IModelVersion } from "@bentley/imodeljs-common";
+import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration, PhysicalModel } from "../../backend";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { IModelWriter } from "./IModelWriter";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BriefcaseManager } from "../../BriefcaseManager";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe.skip("DebugHubIssues (#integration)", () => {
@@ -21,7 +21,135 @@ describe.skip("DebugHubIssues (#integration)", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
-    accessToken = await HubUtility.login(TestUsers.super);
+    accessToken = await HubUtility.login(TestUsers.manager);
+
+    Logger.initializeToConsole();
+    Logger.setLevelDefault(LogLevel.Warning);
+    // Logger.setLevel("Performance", LogLevel.Info);
+    // Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
+    // Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
+    // Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
+    // Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
+    // Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
+  });
+
+  it.skip("should be able to upload required test files to the Hub", async () => {
+    const projectName = "iModelJsIntegrationTest";
+
+    let iModelName = "ReadOnlyTest";
+    let iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
+
+    iModelName = "ReadWriteTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
+
+    iModelName = "NoVersionsTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
+
+    iModelName = "ConnectionReadTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
+  });
+
+  it.skip("should be able to download and backup required test files from the Hub", async () => {
+    const projectName = "iModelJsIntegrationTest";
+
+    let iModelName = "ReadOnlyTest";
+    let iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+
+    iModelName = "ReadWriteTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+
+    iModelName = "NoVersionsTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+
+    iModelName = "ConnectionReadTest";
+    iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+  });
+
+  it.skip("should be able to open ReadOnlyTest model", async () => {
+    const projectName = "iModelJsTest";
+    const iModelName = "ReadOnlyTest";
+
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
+
+    const iModel: IModelDb = await IModelDb.open(actx, accessToken, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    assert.exists(iModel);
+    assert(iModel.openParams.openMode === OpenMode.Readonly);
+
+    await iModel.close(actx, accessToken);
+  });
+
+  it.skip("should be able to validate change set operations", async () => {
+    const projectName = "iModelJsTest";
+    const iModelName = "ReadOnlyTest";
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
+
+    const link = `https://connect-imodelweb.bentley.com/imodeljs/?projectId=${myProjectId}&iModelId=${myIModelId}`;
+    console.log(`ProjectName: ${projectName}, iModelName: ${iModelName}, URL Link: ${link}`); // tslint:disable-line:no-console
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.validateAllChangeSetOperations(accessToken, myProjectId, myIModelId, iModelDir);
+  });
+
+  it.skip("should be able to download the seed files, change sets, for UKRail_EWR2 (EWR_2E) model", async () => {
+    const projectName = "UKRail_EWR2";
+    const iModelName = "EWR_2E";
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+  });
+
+  it.skip("should be able to download the seed files, change sets, for 1MWCCN01 - North Project (SECTION_08_IM01) model", async () => {
+    const projectName = "1MWCCN01 - North Project";
+    const iModelName = "SECTION_08_IM01";
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+  });
+
+  it.skip("should be able to open UKRail_EWR2 (EWR_2E) model", async () => {
+    const projectName = "UKRail_EWR2";
+    const iModelName = "EWR_2E";
+
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
+
+    const perfLogger = new PerfLogger("EWR_2E");
+
+    const iModel: IModelDb = await IModelDb.open(actx, accessToken, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    assert.exists(iModel);
+    assert(iModel.openParams.openMode === OpenMode.Readonly);
+
+    perfLogger.dispose();
+
+    await iModel.close(actx, accessToken);
+  });
+
+  it.skip("should be able to open 1MWCCN01 - North Project (SECTION_08_IM01) model", async () => {
+    const projectName = "1MWCCN01 - North Project";
+    const iModelName = "SECTION_08_IM01";
+
+    const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
+    const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
+
+    const perfLogger = new PerfLogger("SECTION_08_IM01");
+
+    const iModel: IModelDb = await IModelDb.open(actx, accessToken, myProjectId, myIModelId.toString(), OpenParams.fixedVersion());
+    assert.exists(iModel);
+    assert(iModel.openParams.openMode === OpenMode.Readonly);
+
+    perfLogger.dispose();
+
+    await iModel.close(actx, accessToken);
   });
 
   it.skip("create a test case on the Hub with a named version from a standalone iModel", async () => {
@@ -36,34 +164,18 @@ describe.skip("DebugHubIssues (#integration)", () => {
     assert(!!iModelDb);
 
     // Create and upload a dummy change set to the Hub
-    const modelId = IModelWriter.insertPhysicalModel(iModelDb, "DummyTestModel");
+    const modelId = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "DummyTestModel");
     assert(!!modelId);
     iModelDb.saveChanges("Dummy change set");
     await iModelDb.pushChanges(actx, accessToken!);
 
     // Create a named version on the just uploaded change set
     const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, accessToken, iModelId.toString(), BriefcaseManager.imodelClient);
-    await BriefcaseManager.imodelClient.Versions().create(actx, accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
-  });
-
-  it.skip("should be able to download the seed files, change sets, for any iModel on the Hub", async () => {
-    const projectName = "NodeJsTestProject";
-    const iModelName = "TestModel";
-
-    const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.downloadIModelByName(accessToken, projectName, iModelName, iModelDir);
+    await BriefcaseManager.imodelClient.versions.create(actx, accessToken, iModelId, changeSetId, "DummyVersion", "Just a dummy version for testing with web navigator");
   });
 
   it.skip("should be able to delete any iModel on the Hub", async () => {
     await HubUtility.deleteIModel(accessToken, "NodeJsTestProject", "TestModel");
-  });
-
-  it.skip("should be able to upload seed files, change sets, for any iModel on the Hub", async () => {
-    const projectName = "iModelJsTest";
-    const iModelName = "ReadWriteTest";
-
-    const iModelDir = path.join(iModelRootDir, iModelName);
-    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
   });
 
   it.skip("should be able to open any iModel on the Hub", async () => {
@@ -77,7 +189,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
-    iModel.close(actx, accessToken);
+    await iModel.close(actx, accessToken);
   });
 
   it.skip("should be able to create a change set from a standalone iModel)", async () => {
@@ -102,7 +214,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
     assert.exists(iModel);
     assert(iModel.openParams.openMode === OpenMode.Readonly);
 
-    iModel.close(actx, accessToken);
+    await iModel.close(actx, accessToken);
   });
 
   it.skip("should be able to download the seed files, change sets, for any iModel on the Hub in PROD", async () => {

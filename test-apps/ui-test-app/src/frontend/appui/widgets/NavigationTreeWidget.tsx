@@ -6,36 +6,42 @@ import * as React from "react";
 
 import { SampleAppIModelApp } from "../..";
 
-import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { WidgetControl, WidgetComponentProps } from "@bentley/ui-framework";
-import { ConfigurableCreateInfo } from "@bentley/ui-framework";
+import {
+  ConfigurableUiManager,
+  ConfigurableCreateInfo,
+  WidgetControl,
+} from "@bentley/ui-framework";
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { Tree } from "@bentley/ui-components";
+import { PresentationTreeDataProvider, withUnifiedSelection } from "@bentley/presentation-components/lib/tree";
+
+// create a HOC tree component that supports unified selection
+// tslint:disable-next-line:variable-name
+const UnifiedSelectionTree = withUnifiedSelection(Tree);
 
 export class NavigationTreeWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = (
-      <NavigationTreeWidget
-        widgetControl={this}
-      />
-    );
+    if (options && options.iModelConnection && options.rulesetId)
+      this.reactElement = <NavigationTreeWidget iModelConnection={options.iModelConnection} rulesetId={options.rulesetId} />;
+    else
+      this.reactElement = <NavigationTreeWidget />;
   }
 }
 
-interface NavigationTreeProps extends WidgetComponentProps {
+interface NavigationTreeWidgetProps {
   iModelConnection?: IModelConnection;
+  rulesetId?: string;
 }
 
-class NavigationTreeWidget extends React.Component<NavigationTreeProps> {
+class NavigationTreeWidget extends React.Component<NavigationTreeWidgetProps> {
   constructor(props?: any, context?: any) {
     super(props, context);
   }
 
   private renderVariousControls() {
-    const imodel = SampleAppIModelApp.store.getState().sampleAppState!.currentIModelConnection;
-
     return (
       <div>
         <table>
@@ -45,8 +51,8 @@ class NavigationTreeWidget extends React.Component<NavigationTreeProps> {
               <th>Input</th>
             </tr>
             <tr>
-              <td>iModelConnection</td>
-              <td>{imodel ? imodel.name : ""}</td>
+              <td>iModel Name</td>
+              <td>{this.props.iModelConnection ? this.props.iModelConnection.name : ""}</td>
             </tr>
             <tr>
               <td>{SampleAppIModelApp.i18n.translate("SampleApp:zone6.month")}</td>
@@ -87,7 +93,10 @@ class NavigationTreeWidget extends React.Component<NavigationTreeProps> {
   }
 
   public render(): React.ReactNode {
-    return this.renderVariousControls();
+    if (this.props.iModelConnection && this.props.rulesetId)
+      return <UnifiedSelectionTree dataProvider={new PresentationTreeDataProvider(this.props.iModelConnection, this.props.rulesetId)} />;
+    else
+      return this.renderVariousControls();
   }
 }
 

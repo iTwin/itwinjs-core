@@ -70,6 +70,8 @@ describe("Tools", () => {
       lastType = _evType;
       ++numCalls;
     });
+
+    // add an id
     selSet.add(ids[0]);
     assert.equal(selSet.size, 1, "add with Id64");
     assert.isTrue(selSet.isSelected(ids[0]), "is selected");
@@ -77,40 +79,80 @@ describe("Tools", () => {
     assert.isFalse(selSet.isSelected(ids[1]), "not selected");
     assert.equal(numCalls, 1, "listener called");
     assert.equal(lastType, SelectEventType.Add, "add event type1");
+    // ids in set: [0]
+
+    // add a list of ids
     selSet.add([ids[0], ids[1]]);
     assert.equal(numCalls, 2, "listener called again");
     assert.equal(lastType, SelectEventType.Add, "add event type again");
     assert.equal(selSet.size, 2, "add with array");
+    // ids in set: [0, 1]
+
+    // add the same ids - should do nothing
     selSet.add([ids[0], ids[1]]);
+    assert.equal(selSet.size, 2, "size not changed");
     assert.equal(numCalls, 2, "added ones that are already present should not invoke callback");
+    // ids in set: [0, 1]
+
+    // add using a Set
     const idsSet = new Set([ids[0], ids[1], ids[2], ids[3]]);
     selSet.add(idsSet, false);
-    assert.equal(numCalls, 2, "no callback");
+    assert.equal(numCalls, 2, "no callback (sendEvent = false)");
     assert.equal(selSet.size, 4, "add with IdSet");
     ids.forEach((id) => assert.isTrue(selSet.has(id)));
+    // ids in set: [0, 1, 2, 3]
+
+    // remove an id
     selSet.remove(ids[1]);
     assert.equal(lastType, SelectEventType.Remove, "remove event type");
     assert.equal(numCalls, 3, "remove callback");
     assert.equal(selSet.size, 3, "removed one");
     assert.isFalse(selSet.isSelected(ids[1]), "removed from selected");
+    // ids in set: [0, 2, 3]
+
+    // invert
     selSet.invert(idsSet);
-    assert.equal(numCalls, 5, "invert callback");
+    assert.equal(numCalls, 4, "invert callback");
     assert.equal(selSet.size, 1, "inverted one");
     assert.isTrue(selSet.isSelected(ids[1]), "inverted selection");
+    // ids in set: [1]
+
+    // invert empty list - does nothing
+    selSet.invert([]);
+    assert.equal(numCalls, 4, "invert callback not called");
+    assert.equal(selSet.size, 1, "selection size not changed");
+    // ids in set: [1]
+
+    // replace
     selSet.replace(idsSet);
-    assert.equal(numCalls, 6, "replace");
+    assert.equal(numCalls, 5, "replace callback");
     assert.equal(lastType, SelectEventType.Replace, "replace event type");
     assert.equal(selSet.size, 4, "replaced with whole set");
+    // ids in set: [0, 1, 2, 3]
+
+    // replace with same set - does nothing
+    selSet.replace(idsSet);
+    assert.equal(numCalls, 5, "replace callback not called");
+    assert.equal(selSet.size, 4, "selection size not changed");
+    // ids in set: [0, 1, 2, 3]
+
+    // empty all
     selSet.emptyAll();
-    assert.equal(numCalls, 7, "emptyAll");
+    assert.equal(numCalls, 6, "emptyAll");
     assert.equal(lastType, SelectEventType.Clear, "clear event type");
     assert.isFalse(selSet.isActive, "not active after emptyAll");
+    // ids in set: []
+
+    // empty all again - does nothing
     selSet.emptyAll();
-    assert.equal(numCalls, 7, "already empty, should not invoke callback");
+    assert.equal(numCalls, 6, "already empty, should not invoke callback");
+    // ids in set: []
+
     removeMe(); // remove listener
     assert.equal(selSet.onChanged.numberOfListeners, originalNumListeners, "listener removed");
+
     selSet.add(ids[0]);
     assert.equal(selSet.size, 1, "add with no listener");
-    assert.equal(numCalls, 7, "listener was removed");
+    assert.equal(numCalls, 6, "listener was removed");
   });
 });

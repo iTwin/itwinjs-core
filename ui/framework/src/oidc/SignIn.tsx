@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module OpenIModel */
+/** @module OIDC */
 
 import * as React from "react";
 import * as classnames from "classnames";
@@ -12,6 +12,7 @@ import "./SignIn.scss";
  * SignInDialog - OIDC sign-in dialog.
  ***********************************************************************/
 
+/** Properties for the [[SignIn]] component */
 export interface SignInProps {
   onSignIn?: () => void;
   onOffline?: () => void;
@@ -22,7 +23,7 @@ interface SignInState {
 }
 
 /**
- * SignIn component
+ * SignIn React component
  */
 export class SignIn extends React.Component<SignInProps, SignInState> {
   constructor(props: SignInProps, context?: any) {

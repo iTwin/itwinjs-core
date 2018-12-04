@@ -17,7 +17,7 @@ export class ElectronRpcRequest extends RpcRequest {
   public readonly protocol: ElectronRpcProtocol = this.client.configuration.protocol as any;
 
   /** Sends the request. */
-  protected send() {
+  protected async send() {
     try {
       this.protocol.requests.set(this.id, this);
       const request = this.protocol.serialize(this);
@@ -30,7 +30,7 @@ export class ElectronRpcRequest extends RpcRequest {
   }
 
   /** Loads the request. */
-  protected load() {
+  protected async load() {
     const fulfillment = this._fulfillment;
     if (!fulfillment) {
       return Promise.reject("No request fulfillment available.");

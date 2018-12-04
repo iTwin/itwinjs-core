@@ -14,8 +14,6 @@ import { Schema } from "../../src/Metadata/Schema";
 import { Format } from "../../src/Metadata/Format";
 import { SchemaContext } from "../../src/Context";
 import { DecimalPrecision } from "../../src/utils/FormatEnums";
-import { JsonParser } from "../../src/Deserialization/JsonParser";
-import { KindOfQuantityProps } from "../../src/Deserialization/JsonProps";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
 
@@ -36,7 +34,6 @@ function createSchemaJson(koq: any) {
 }
 
 describe("KindOfQuantity", () => {
-  let parser = new JsonParser();
   const baseJson = {
     schemaItemType: "KindOfQuantity",
     name: "TestKindOfQuantity",
@@ -75,7 +72,7 @@ describe("KindOfQuantity", () => {
       context.addLocater(new TestSchemaLocater());
     });
     it("should successfully deserialize valid JSON", async () => {
-      const koqJson = {
+      const koqProps = {
         ...baseJson,
         relativeError: 1.234,
         persistenceUnit: "Formats.DefaultReal",
@@ -84,9 +81,8 @@ describe("KindOfQuantity", () => {
           "Formats.DefaultReal",
         ],
       };
-      const koqProps: KindOfQuantityProps = parser.parseKindOfQuantityProps(koqJson, koqJson.name);
       schema = await Schema.fromJson(createSchemaJson(koqProps), context);
-      const testKoq = await schema.getItem<KindOfQuantity>(koqJson.name);
+      const testKoq = await schema.getItem<KindOfQuantity>(koqProps.name);
 
       expect(testKoq!).to.exist;
       expect(testKoq!.name).to.eql("TestKindOfQuantity");
@@ -124,41 +120,6 @@ describe("KindOfQuantity", () => {
       expect(testKoq!.persistenceUnit!.fullName).to.eql(testUnit!.key.fullName); // Formats.IN === Formats.IN
     });
 
-    async function testInvalidAttribute(attributeName: string, expectedType: string, value: any) {
-      const json: any = {
-        ...baseJson,
-        relativeError: 0,
-        presentationUnits: ["Formats.CM"],
-        persistenceUnit: "Formats.DefaultReal",
-        [attributeName]: value, // will overwrite previously defined objects
-      };
-      assert.throws(() => parser.parseKindOfQuantityProps(json, json.name), ECObjectsError, `The KindOfQuantity TestKindOfQuantity has an invalid '${attributeName}' attribute. It should be of type '${expectedType}'.`);
-    }
-
-    it("should throw for invalid relativeError", () => { testInvalidAttribute("relativeError", "number", false); });
-    it("should throw for invalid presentationUnits", () => { testInvalidAttribute("presentationUnits", `string' or 'string[]`, false); });
-    it("should throw for invalid persistenceUnit", () => { testInvalidAttribute("persistenceUnit", "string", false); });
-
-    // should throw for missing relativeError
-    const missingRelativeError = {
-      ...baseJson,
-      presentationUnits: ["Formats.IN"],
-      persistenceUnit: "Formats.IN",
-    };
-    it("should throw for missing relativeError", () => {
-      assert.throws(() => parser.parseKindOfQuantityProps(missingRelativeError, missingRelativeError.name), ECObjectsError, `The KindOfQuantity TestKindOfQuantity is missing the required 'relativeError' attribute.`);
-    });
-
-    // should throw for missing persistenceUnit
-    const missingPersistenceUnit = {
-      ...baseJson,
-      relativeError: 1.234,
-      presentationUnits: ["Formats.IN"],
-    };
-    it("should throw for missing persistenceUnit", () => {
-      assert.throws(() => parser.parseKindOfQuantityProps(missingPersistenceUnit, missingPersistenceUnit.name), ECObjectsError, `The KindOfQuantity TestKindOfQuantity is missing the required 'persistenceUnit' attribute.`);
-    });
-
     // should throw for presentationUnit with non-existent format
     const presentationUnitsNonExistentFormat = {
       ...baseJson,
@@ -169,10 +130,10 @@ describe("KindOfQuantity", () => {
       ],
     };
     it("async - should throw for presentationUnit having a non-existent format", async () => {
-      await expect(Schema.fromJson(createSchemaJson(presentationUnitsNonExistentFormat), context)).to.be.rejectedWith(ECObjectsError, `Unable to locate format 'TestSchema.NonexistentFormat' for the presentation unit on KindOfQuantity TestSchema.1.2.3.TestKindOfQuantity.`);
+      await expect(Schema.fromJson(createSchemaJson(presentationUnitsNonExistentFormat), context)).to.be.rejectedWith(ECObjectsError, `Unable to locate format 'TestSchema.NonexistentFormat' for the presentation unit on KindOfQuantity TestSchema.TestKindOfQuantity.`);
     });
     it("sync - should throw for presentationUnit having a non-existent format", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(presentationUnitsNonExistentFormat), context), ECObjectsError, `Unable to locate format 'TestSchema.NonexistentFormat' for the presentation unit on KindOfQuantity TestSchema.1.2.3.TestKindOfQuantity.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(presentationUnitsNonExistentFormat), context), ECObjectsError, `Unable to locate format 'TestSchema.NonexistentFormat' for the presentation unit on KindOfQuantity TestSchema.TestKindOfQuantity.`);
     });
 
     // should throw for persistenceUnit with non-existent format

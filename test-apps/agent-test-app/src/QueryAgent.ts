@@ -15,7 +15,7 @@ import * as path from "path";
 const actx = new ActivityLoggingContext("");
 
 /** Sleep for ms */
-const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /** Agent for querying changesets. Contains backend iModel.js engine. */
 export class QueryAgent {
     private _tokenStore?: OpenIdConnectTokenStore;
@@ -49,8 +49,8 @@ export class QueryAgent {
         // Subscribe to change set and named version events
         const imodelId: GuidString = this._iModelId!;
         Logger.logTrace(QueryAgentConfig.loggingCategory, "Setting up changeset and named version listeners...");
-        const changeSetSubscription = await this._hubUtility!.getHubClient().Events().Subscriptions().create(actx, accessToken, imodelId, ["ChangeSetPostPushEvent"]);
-        const deleteChangeSetListener = this._hubUtility!.getHubClient().Events().createListener(actx, async () => accessToken, changeSetSubscription!.wsgId, imodelId,
+        const changeSetSubscription = await this._hubUtility!.getHubClient().events.subscriptions.create(actx, accessToken, imodelId, ["ChangeSetPostPushEvent"]);
+        const deleteChangeSetListener = this._hubUtility!.getHubClient().events.createListener(actx, async () => accessToken, changeSetSubscription!.wsgId, imodelId,
             async (receivedEvent: ChangeSetPostPushEvent) => {
                 Logger.logTrace(QueryAgentConfig.loggingCategory, `Received notification that change set "${receivedEvent.changeSetId}" was just posted on the Hub`);
                 try {
@@ -59,8 +59,8 @@ export class QueryAgent {
                     Logger.logError(QueryAgentConfig.loggingCategory, `Error while extracting changeset summary: ${error}`);
                 }
             });
-        const namedVersionSubscription = await this._hubUtility!.getHubClient().Events().Subscriptions().create(actx, accessToken, imodelId, ["VersionEvent"]);
-        const deleteNamedVersionListener = this._hubUtility!.getHubClient().Events().createListener(actx, async () => accessToken, namedVersionSubscription!.wsgId, imodelId,
+        const namedVersionSubscription = await this._hubUtility!.getHubClient().events.subscriptions.create(actx, accessToken, imodelId, ["VersionEvent"]);
+        const deleteNamedVersionListener = this._hubUtility!.getHubClient().events.createListener(actx, async () => accessToken, namedVersionSubscription!.wsgId, imodelId,
             async (receivedEvent: NamedVersionCreatedEvent) => {
                 Logger.logTrace(QueryAgentConfig.loggingCategory, `Received notification that named version "${receivedEvent.versionName}" was just created on the Hub`);
             });

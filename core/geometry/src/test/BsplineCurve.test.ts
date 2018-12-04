@@ -21,11 +21,47 @@ import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Sample } from "../serialization/GeometrySamples";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { Path } from "../curve/Path";
-import { prettyPrint } from "./testFunctions";
+// import { prettyPrint } from "./testFunctions";
 import { CurveLocationDetail } from "../curve/CurveLocationDetail";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
+import { Range3d } from "../geometry3d/Range";
+import { Point4d } from "../geometry4d/Point4d";
+/** return knots [0,0,0, step, 2*step, ... N,N,N]
+ * where there are:
+ *  * (order-1) leading and trailing clamp values.
+ *  * internal knots with given step.
+ */
+function buildClampedSteppedKnots(numPoints: number, order: number, step: number): number[] {
+  const knots = [];
+  const degree = order - 1;
+  // left clamp always at 0 . . .
+  for (let i = 0; i < degree; i++) knots.push(0);
+  let b = step;
+  // true internal knots
+  for (let i = 1; i + order <= numPoints; i++) {
+    b = i * step;
+    knots.push(b);
+  }
+  // right clamp
+  b = (numPoints - order + 1) * step;
+  for (let i = 0; i < degree; i++) knots.push(b);
+  return knots;
+}
+/** return knots [-K*step, -(K-1)*step, .. 0, step,  ....N, N+step, N+2*step]
+ * where there are:
+ *  * (order-1) leading and trailing values, uniformly stepped
+ *  * internal knots with given step.
+ *  * traling values wrap with period N
+ */
+function buildWrappableSteppedKnots(numInterval: number, order: number, step: number): number[] {
+  const knots = [];
+  const knot0 = - step * (order - 2);
+  for (let i = 0; i < numInterval + order - 2; i++)
+    knots.push(knot0 + i * step);
+  return knots;
+}
 
 function translateAndPush(allGeometry: GeometryQuery[], g: GeometryQuery | undefined, dx: number, dy: number) {
   if (g) {
@@ -221,18 +257,26 @@ describe("BsplineCurve", () => {
   });
 
   it("DoubleKnots", () => {
+    // stroke a bcurve with double knots .. bug was that the double knot intervals generated 0 or undefined stroke coordinates.
+    // Be sure the curve is all in one quadrant so 00 is NOT in the storke range.
     const ck = new Checker();
     const bcurve = BSplineCurve3d.create(
-      [Point3d.create(0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0),
+      [Point3d.create(1, 0),
+      Point3d.create(2, 0, 0),
       Point3d.create(2, 1, 0),
-      Point3d.create(3, 0, 0),
-      Point3d.create(4, 1, 0)],
+      Point3d.create(3, 1, 0),
+      Point3d.create(4, 0, 0),
+      Point3d.create(5, 1, 0)],
       [0, 0, 0.5, 0.5, 0.75, 1, 1], 3)!;
     const path = Path.create(bcurve);
     const strokes = path.getPackedStrokes()!;
-    console.log(prettyPrint(strokes));
+    // console.log(prettyPrint(strokes));
+    const strokeRange = Range3d.create();
+    strokes.extendRange(strokeRange);
+    const curveRange = bcurve.range();
+    curveRange.expandInPlace(0.00001);
+    ck.testTrue(curveRange.containsRange(strokeRange));
+    ck.testFalse(strokeRange.containsXYZ(0, 0, 0));
     expect(ck.getNumErrors()).equals(0);
   });
   it("SaturateBspline", () => {
@@ -316,4 +360,173 @@ describe("BsplineCurve", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
+  it("BsplineCurve3dHCoverage", () => {
+    const ck = new Checker();
+    const poleBuffer = new Float64Array([
+      0, 0, 0, 1,
+      1, 0, 0, 1,
+      1, 1, 0, 2,    // weights vary !!
+      0, 1, 1, 1,    // non planar
+      0, 2, 2, 1]);
+    const myKnots = [0, 0, 0, 1, 2, 2, 2];
+    const bcurve = BSplineCurve3dH.create(poleBuffer, myKnots, 4)!;
+    const bcurveB = BSplineCurve3dH.createUniformKnots(poleBuffer, 4);
+
+    ck.testFalse(bcurve.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane()));
+
+    ck.testUndefined(BSplineCurve3dH.createUniformKnots(poleBuffer, 10));
+    ck.testUndefined(BSplineCurve3dH.create(poleBuffer, myKnots, 10));
+    ck.testPointer(bcurveB);
+    const poleBufferA = bcurve.copyPointsFloat64Array();
+    const poleArray = bcurve.copyPoints();
+    if (ck.testExactNumber(poleArray.length * 4, poleBufferA.length)) {
+      for (let i = 0, k = 0; i < poleArray.length; i++) {
+        ck.testExactNumber(poleArray[i][0], poleBufferA[k++]);
+        ck.testExactNumber(poleArray[i][1], poleBufferA[k++]);
+        ck.testExactNumber(poleArray[i][2], poleBufferA[k++]);
+        ck.testExactNumber(poleArray[i][3], poleBufferA[k++]);
+      }
+    }
+
+    let n = 0;
+    const myPole = Point3d.create();
+    const myPoleH = Point4d.create();
+    ck.testUndefined(bcurve.getPolePoint4d(100));
+    for (; bcurve.getPolePoint3d(n, myPole) !== undefined; n++) {
+      const q = bcurve.getPolePoint4d(n, myPoleH);
+      if (ck.testPointer(q) && q) {
+        const w = myPoleH.w;
+        ck.testTrue(myPoleH.isAlmostEqualXYZW(myPole.x * w, myPole.y * w, myPole.z * w, w));
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("BsplineCurve3dCoverage", () => {
+    const ck = new Checker();
+    const poleBuffer = new Float64Array([
+      0, 0, 0,
+      1, 0, 0,
+      1, 1, 0,
+      0, 1, 1,
+      0, 2, 2]);
+    const myKnots = [0, 0, 0, 1, 2, 2, 2];
+    const bcurve = BSplineCurve3d.create(poleBuffer, myKnots, 4)!;
+    const bcurveB = BSplineCurve3d.createUniformKnots(poleBuffer, 4);
+    ck.testFalse(bcurve.isInPlane(Plane3dByOriginAndUnitNormal.createXYPlane()));
+    ck.testUndefined(BSplineCurve3d.createUniformKnots(poleBuffer, 10));
+    ck.testUndefined(BSplineCurve3d.create(poleBuffer, myKnots, 10));
+    ck.testPointer(bcurveB);
+    const poleBufferA = bcurve.copyPointsFloat64Array();
+    const poleArray = bcurve.copyPoints();
+    if (ck.testExactNumber(poleArray.length * 3, poleBufferA.length)) {
+      for (let i = 0, k = 0; i < poleArray.length; i++) {
+        ck.testExactNumber(poleArray[i][0], poleBufferA[k++]);
+        ck.testExactNumber(poleArray[i][1], poleBufferA[k++]);
+        ck.testExactNumber(poleArray[i][2], poleBufferA[k++]);
+      }
+    }
+
+    let n = 0;
+    const myPole = Point3d.create();
+    const myPoleH = Point4d.create();
+    ck.testUndefined(bcurve.getPolePoint4d(100));
+    ck.testUndefined(bcurve.getPolePoint3d(100));
+    for (; bcurve.getPolePoint3d(n, myPole) !== undefined; n++) {
+      const q = bcurve.getPolePoint4d(n, myPoleH);
+      if (ck.testPointer(q) && q) {
+        const w = myPoleH.w;
+        ck.testTrue(myPoleH.isAlmostEqualXYZW(myPole.x * w, myPole.y * w, myPole.z * w, w));
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("WeightedCurveMatch", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const poleArray = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(1, 1, 0),
+      Point3d.create(0, 1, 1),
+      Point3d.create(0, 2, 2)];
+    for (const order of [3, 4, 5]) {
+      const myKnots = buildClampedSteppedKnots(poleArray.length, order, 1.0);
+      const bcurve3d = BSplineCurve3d.create(poleArray, myKnots, order)!;
+      const bcurve4d = BSplineCurve3dH.create(poleArray, myKnots, order)!;
+      allGeometry.push(bcurve3d);
+      allGeometry.push(bcurve4d);
+      for (const u of [0.2, 0.4, 0.5, 0.65, 1.0]) {
+        const point3d = bcurve3d.fractionToPoint(u);
+        const point4d = bcurve4d.fractionToPoint(u);
+        if (!ck.testPoint3d(point3d, point4d, u)) {
+          bcurve3d.fractionToPoint(u);
+          bcurve4d.fractionToPoint(u);
+        }
+
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "WeightedCurveMatch");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("WrappedCurves", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const xStep = 10.0;
+    const poleArray = [
+      Point3d.create(0, 0, 0),
+      Point3d.create(1, 0, 0),
+      Point3d.create(1, 1, 0),
+      Point3d.create(0, 1, 1),
+      Point3d.create(0, 2, 2)];
+    for (const order of [2, 3, 4, 5]) {
+      // wrap the points
+      const wrappedPoleArray = [];
+      for (const p of poleArray) wrappedPoleArray.push(p.clone());
+      for (let i = 0; i + 1 < order; i++) wrappedPoleArray.push(poleArray[i].clone());
+      const myKnots = buildWrappableSteppedKnots(poleArray.length, order, 1.0);
+      const bcurve3d = BSplineCurve3d.create(wrappedPoleArray, myKnots, order)!;
+      bcurve3d.setWrappable(true);
+      const bcurve4d = BSplineCurve3dH.create(wrappedPoleArray, myKnots, order)!;
+      ck.testUndefined(bcurve3d.getSaturatedBezierSpan3d(100));
+      ck.testUndefined(bcurve4d.getSaturatedBezierSpan3dH(100));
+
+      bcurve4d.setWrappable(true);
+      GeometryCoreTestIO.captureGeometry(allGeometry, bcurve3d.clone(), (order - 2) * xStep, 0, 0);
+      GeometryCoreTestIO.captureGeometry(allGeometry, bcurve4d.clone(), (order - 2) * xStep, xStep, 0);
+      ck.testTrue(bcurve3d.isClosable);
+      ck.testTrue(bcurve4d.isClosable);
+      ck.testFalse(bcurve3d.isAlmostEqual(bcurve4d));
+      ck.testFalse(bcurve4d.isAlmostEqual(bcurve3d));
+      for (const u of [0.2, 0.4, 0.5, 0.65, 1.0]) {
+        const point3d = bcurve3d.fractionToPoint(u);
+        const point4d = bcurve4d.fractionToPoint(u);
+        if (!ck.testPoint3d(point3d, point4d, u)) {
+          bcurve3d.fractionToPoint(u);
+          bcurve4d.fractionToPoint(u);
+        }
+        // mess up poles first, then knots to reach failure branchs in closure tests ...
+        wrappedPoleArray[0].x += 0.1;
+        const bcurve3dA = BSplineCurve3d.create(wrappedPoleArray, myKnots, order)!;
+        bcurve3dA.setWrappable(true);
+        ck.testFalse(bcurve3dA.isClosable);
+        const bcurve4dA = BSplineCurve3dH.create(wrappedPoleArray, myKnots, order)!;
+        bcurve4dA.setWrappable(true);
+        ck.testFalse(bcurve4dA.isClosable);
+
+        // mess up knots.  The knot test precedes the pole test, so this failure gets hit before the poles (which are already altered)
+        myKnots[order - 2] -= 0.1;
+        const bcurve3dB = BSplineCurve3d.create(wrappedPoleArray, myKnots, order)!;
+        bcurve3dB.setWrappable(true);
+        ck.testFalse(bcurve3dB.isClosable);
+        const bcurve4dB = BSplineCurve3dH.create(wrappedPoleArray, myKnots, order)!;
+        bcurve4dB.setWrappable(true);
+        ck.testFalse(bcurve4dB.isClosable);
+      }
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BSplineCurve", "WeightedCurveMatch");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

@@ -31,13 +31,13 @@ export const ToolSettingsTab: React.StatelessComponent<ToolSettingsTabProps> = (
     props.className);
 
   return (
-    <div
+    <button
       className={className}
       style={props.style}
       onClick={props.onClick}
     >
       {props.children}
-    </div>
+    </button>
   );
 };
 

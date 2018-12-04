@@ -16,13 +16,13 @@ import "./Pointer.scss";
 import Tooltip, { offsetAndContainInContainer } from "@bentley/ui-ninezone/lib/popup/tooltip/Tooltip";
 import { RelativePosition, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
 
-/** Properties of [[Pointer]] component. */
-export interface PointerProps extends CommonProps {
+/** Properties of [[PointerMessage]] component. */
+export interface PointerMessageProps extends CommonProps {
   /** Text to display */
   message?: string;
 }
 
-/** [[Pointer]] state.
+/** [[PointerMessage]] state.
  */
 export interface PointerMessageState {
   isVisible: boolean;
@@ -44,18 +44,18 @@ export interface PointerMessageChangedEventArgs {
   pt?: XAndY;
 }
 
-/** Pointer Message Changed Event emitted by the [[Pointer]] component
+/** Pointer Message Changed Event emitted by the [[PointerMessage]] component
  */
 export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEventArgs> { }
 
 /** Pointer message pops up near pointer when attempting an invalid interaction. */
-export class Pointer extends React.Component<PointerProps> {
+export class PointerMessage extends React.Component<PointerMessageProps> {
   private static _pointerMessageChangedEvent: PointerMessageChangedEvent = new PointerMessageChangedEvent();
 
-  public static get onPointerMessageChangedEvent(): PointerMessageChangedEvent { return Pointer._pointerMessageChangedEvent; }
+  public static get onPointerMessageChangedEvent(): PointerMessageChangedEvent { return PointerMessage._pointerMessageChangedEvent; }
 
   public static showMessage(message: NotifyMessageDetails): void {
-    Pointer.onPointerMessageChangedEvent.emit({
+    PointerMessage.onPointerMessageChangedEvent.emit({
       isVisible: true,
       message: message.briefMessage,
       detailedMessage: message.detailedMessage,
@@ -66,7 +66,7 @@ export class Pointer extends React.Component<PointerProps> {
   }
 
   public static hideMessage(): void {
-    Pointer.onPointerMessageChangedEvent.emit({
+    PointerMessage.onPointerMessageChangedEvent.emit({
       isVisible: false,
       message: "",
     });
@@ -112,11 +112,11 @@ export class Pointer extends React.Component<PointerProps> {
   }
 
   public componentDidMount(): void {
-    Pointer.onPointerMessageChangedEvent.addListener(this._handlePointerMessageChangedEvent);
+    PointerMessage.onPointerMessageChangedEvent.addListener(this._handlePointerMessageChangedEvent);
   }
 
   public componentWillUnmount(): void {
-    Pointer.onPointerMessageChangedEvent.removeListener(this._handlePointerMessageChangedEvent);
+    PointerMessage.onPointerMessageChangedEvent.removeListener(this._handlePointerMessageChangedEvent);
   }
 
   private _handleContainIn = (message: HTMLElement) => {
@@ -138,9 +138,6 @@ export class Pointer extends React.Component<PointerProps> {
 
   private _adjustTooltipPosition(): any {
     let tooltipAdjustment = offsetAndContainInContainer();
-
-    if (!this.state)
-      return tooltipAdjustment;
 
     const adjustmentOffset = 50;
     switch (this.state.relativePosition) {
@@ -173,4 +170,4 @@ export class Pointer extends React.Component<PointerProps> {
   }
 }
 
-export default Pointer;
+export default PointerMessage;

@@ -6,15 +6,9 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
 import { ConfigurableUiManager, FrontstageManager, WidgetState } from "@bentley/ui-framework";
 import { ContentGroupProps, ViewClass } from "@bentley/ui-framework";
-import { ItemPropsList, GroupItemProps } from "@bentley/ui-framework";
 import { TaskPropsList } from "@bentley/ui-framework";
 import { WorkflowPropsList } from "@bentley/ui-framework";
 import { ContentLayoutProps } from "@bentley/ui-framework";
-import { GroupItemDef } from "@bentley/ui-framework";
-import { ToolItemDef } from "@bentley/ui-framework";
-
-import { Direction } from "@bentley/ui-ninezone/lib/utilities/Direction";
-
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 
 /** Include application registered Controls in Webpack
@@ -38,6 +32,7 @@ import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
+import IModelViewportControl from "./contentviews/IModelViewport";
 
 /** Example Ui Configuration for an iModelJS App
  */
@@ -47,7 +42,6 @@ export class AppUi {
     ConfigurableUiManager.initialize();
 
     AppUi.defineFrontstages();
-    AppUi.defineCommonItems();
     AppUi.defineContentGroups();
     AppUi.defineContentLayouts();
     AppUi.defineTasksAndWorkflows();
@@ -83,86 +77,6 @@ export class AppUi {
     }
   }
 
-  /** Define Common Items used in different Frontstages.
-   */
-  private static defineCommonItems() {
-
-    const myToolItem1 = new ToolItemDef({
-      toolId: "tool1",
-      iconClass: "icon-placeholder",
-      labelKey: "SampleApp:buttons.tool1",
-      execute: AppUi.tool1,
-      applicationData: { key: "value" },
-    });
-    ConfigurableUiManager.addCommonItem(myToolItem1);
-
-    const myGroupItem1 = new GroupItemDef({
-      groupId: "my-group1",
-      labelKey: "SampleApp:buttons.toolGroup",
-      iconClass: "icon-placeholder",
-      items: [myToolItem1, "tool2", "item3", "item4", "item5", "item6", "item7", "item8", "tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8"],
-      direction: Direction.Bottom,
-      itemsInColumn: 7,
-    });
-    ConfigurableUiManager.addCommonItem(myGroupItem1);
-
-    const myGroupItemProps2: GroupItemProps = {
-      groupId: "my-group2",
-      labelKey: "SampleApp:buttons.anotherGroup",
-      iconClass: "icon-placeholder",
-      items: ["tool1", "tool2", "item3", "item4", "item5", "item6", "item7", "item8", myGroupItem1],
-      direction: Direction.Right,
-    };
-    ConfigurableUiManager.addCommonItem(new GroupItemDef(myGroupItemProps2));
-
-    const commonItemsList: ItemPropsList = {
-      items: [
-        {
-          toolId: "tool2",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.tool2",
-          execute: AppUi.tool2,
-        },
-        {
-          toolId: "SampleApp.BackstageToggle",
-          iconClass: "icon-home",
-        },
-        {
-          toolId: "item3",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.item3",
-        },
-        {
-          toolId: "item4",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.item4",
-        },
-        {
-          toolId: "item5",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.item5",
-        },
-        {
-          toolId: "item6",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.item6",
-        },
-        {
-          toolId: "item7",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.item7",
-        },
-        {
-          toolId: "item8",
-          iconClass: "icon-placeholder",
-          labelKey: "SampleApp:buttons.item8",
-        },
-      ],
-    };
-
-    ConfigurableUiManager.loadCommonItems(commonItemsList);
-  }
-
   /** Define Content Groups referenced by Frontstages.
    */
   private static defineContentGroups() {
@@ -170,7 +84,7 @@ export class AppUi {
       id: "one2dIModelViewport",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
           defaultViewSpec: {
             viewDefinitionClass: ViewClass.Drawing,
@@ -184,7 +98,7 @@ export class AppUi {
       id: "DrawingAndSheetViewports",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
           defaultViewSpec: {
             viewDefinitionClass: ViewClass.Drawing,
@@ -192,7 +106,7 @@ export class AppUi {
           },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
           defaultViewSpec: {
             viewDefinitionClass: ViewClass.Sheet,
@@ -206,7 +120,7 @@ export class AppUi {
       id: "ThreeIModelViewportsWithItemsTable",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
           defaultViewSpec: {
             viewDefinitionClass: ViewClass.Camera,
@@ -214,7 +128,7 @@ export class AppUi {
           },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
           defaultViewSpec: {
             viewDefinitionClass: ViewClass.Orthographic,
@@ -225,7 +139,7 @@ export class AppUi {
           classId: "TablePane",
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           backgroundColor: { r: 0, g: 0, b: 0, a: 255 },
           defaultViewSpec: {
             viewDefinitionClass: ViewClass.Orthographic,
@@ -239,11 +153,11 @@ export class AppUi {
       id: "TestContentGroup1",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 1a", bgColor: "black" },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 2a", bgColor: "black" },
         },
         {
@@ -261,11 +175,11 @@ export class AppUi {
       id: "TestContentGroup2",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 1b", bgColor: "black" },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 2b", bgColor: "black" },
         },
         {
@@ -273,7 +187,7 @@ export class AppUi {
           applicationData: { label: "Content 3b", bgColor: "black" },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 4b", bgColor: "black" },
         },
       ],
@@ -283,7 +197,7 @@ export class AppUi {
       id: "TestContentGroup3",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 1a", bgColor: "black" },
         },
         {
@@ -295,7 +209,7 @@ export class AppUi {
           applicationData: { label: "Content 3a", bgColor: "black" },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 4a", bgColor: "black" },
         },
       ],
@@ -305,11 +219,11 @@ export class AppUi {
       id: "TestContentGroup4",
       contents: [
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 1a", bgColor: "black" },
         },
         {
-          classId: "IModelViewport",
+          classId: IModelViewportControl,
           applicationData: { label: "Content 2a", bgColor: "black" },
         },
         {
@@ -401,13 +315,13 @@ export class AppUi {
         {
           id: "Task1",
           primaryStageId: "Test1",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "SampleApp:backstage.task1",
         },
         {
           id: "Task2",
           primaryStageId: "Test2",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "SampleApp:backstage.task2",
         },
       ],
@@ -420,13 +334,13 @@ export class AppUi {
       defaultWorkflowId: "default-workflow",
       taskPicker: {
         classId: "taskpicker-class",
-        iconClass: "taskpicker-icon",
+        iconSpec: "taskpicker-icon",
         labelKey: "taskpicker-label",
       },
       workflows: [
         {
           id: "ExampleWorkflow",
-          iconClass: "icon-placeholder",
+          iconSpec: "icon-placeholder",
           labelKey: "SampleApp:Test.my-label",
           defaultTaskId: "task1",
           tasks: ["Task1", "Task2"],

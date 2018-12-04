@@ -2,9 +2,9 @@
 
 Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
 
-The [iModel.js](http://imodeljs.org) library is an open source library for creating and accessing iModels.
+The [iModel.js](http://imodeljs.org) library is an open source library for creating, querying, modifying, and displaying iModels.
 
-If you have questions, or want to contribute to iModel.js, see our [Contributing guide](./CONTRIBUTING.md).
+If you have questions, or wish to contribute to iModel.js, see our [Contributing guide](./CONTRIBUTING.md).
 
 ## About this Repository
 
@@ -34,7 +34,7 @@ See [rush.json](./rush.json) for the list of packages. These packages are descri
   * Comprehensive ECSchema library
 * `example-code`
   * Example code snippets are extracted from these packages
-* `test-apps/simpleviewtest/package.json`
+* `test-apps/display-test-app/package.json`
   * Private, not published
   * Test application for graphics visualization
 * `test-apps/testbed/package.json`
@@ -89,7 +89,7 @@ Note that it is a good idea to `rush install` after each `git pull` as dependenc
 6. Follow prompts to enter a change description or press ENTER if the change does not warrant a changelog entry. If multiple packages have changed, multiple sets of prompts will be presented. If the changes are only to non-published packages (like **testbed**), then `rush change` will indicate that a changelog entry is not needed.
 7. Completing the `rush change` prompts will cause new changelog entry JSON files to be created.
 8. To keep the Git history clean, amend the prior commit using the **Commit Staged (Amend)** menu item in Visual Studio Code or use the command line: `git commit --amend --no-edit`
-10. Push changes
+9. Push changes
 
 If using the command line, steps 5 through 9 above can be completed in one step by running `rushchange.bat` from the imodeljs-core root directory.
 > Note: The CI build will break if changes are pushed without running `rush change`. The fix will be to run `rush change` (as above) and push those changes as a separate commit.

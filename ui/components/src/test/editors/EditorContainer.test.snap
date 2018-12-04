@@ -1,0 +1,31 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<EditorContainer /> renders correctly 1`] = `
+<span
+  className="components-editor-container"
+  onBlur={[Function]}
+  onClick={[Function]}
+  onContextMenu={[Function]}
+  onKeyDown={[Function]}
+  title="abc"
+>
+  <TextEditor
+    onBlur={[Function]}
+    value={
+      PropertyRecord {
+        "isReadonly": false,
+        "property": Object {
+          "displayLabel": "Test1",
+          "name": "Test1",
+          "typename": "string",
+        },
+        "value": Object {
+          "displayValue": "my value",
+          "value": "my value",
+          "valueFormat": 0,
+        },
+      }
+    }
+  />
+</span>
+`;

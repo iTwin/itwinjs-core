@@ -46,4 +46,4 @@ class Tool2Settings extends React.Component {
   }
 }
 
-ConfigurableUiManager.registerControl("tool2", Tool2UiProvider);
+ConfigurableUiManager.registerControl("Tool2", Tool2UiProvider);

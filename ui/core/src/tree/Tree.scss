@@ -8,7 +8,6 @@
   box-sizing: border-box;
   width: 100%;
   height: 100%;
-  overflow: auto;
 
   &:focus {
     outline: none;
@@ -20,4 +19,3 @@
     padding: 0;
   }
 }
-

@@ -15,7 +15,7 @@ import { NavigationAidControl } from "./NavigationAidControl";
 import { FrontstageManager, ToolActivatedEventArgs, NavigationAidActivatedEventArgs, ContentControlActivatedEventArgs } from "./FrontstageManager";
 import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
-import ToolsWidget from "@bentley/ui-ninezone/lib/widget/Tools";
+import NZ_ToolsWidget from "@bentley/ui-ninezone/lib/widget/tools/Tools";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 /** A Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
@@ -50,6 +50,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
       if (this._navigationAidControl.getType() !== ConfigurableUiControlType.NavigationAid) {
         throw Error("NavigationWidgetDef.renderCornerItem error: navigationAidId '" + this._navigationAidId + "' is registered to a control that is NOT a NavigationAid");
       }
+      this._navigationAidControl.initialize();
     }
 
     if (this._navigationAidControl) {
@@ -95,7 +96,7 @@ export interface NavigationWidgetState {
  */
 export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> {
 
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<NavigationWidgetState>;
 
   constructor(props: NavigationWidgetPropsEx, context?: any) {
@@ -130,8 +131,6 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
   }
 
   public render(): React.ReactNode {
-    this.state.navigationWidgetDef.resolveItems();
-
     return (
       <NavigationWidgetWithDef
         navigationWidgetDef={this.state.navigationWidgetDef}
@@ -178,14 +177,12 @@ class NavigationWidgetWithDef extends React.Component<Props> {
   }
 
   public render(): React.ReactNode {
-    this.props.navigationWidgetDef.resolveItems();
-
     const navigationAid = this.props.navigationWidgetDef.renderCornerItem();
     const horizontalToolbar = (this.props.horizontalToolbar) ? this.props.horizontalToolbar : this.props.navigationWidgetDef.renderHorizontalToolbar();
     const verticalToolbar = (this.props.verticalToolbar) ? this.props.verticalToolbar : this.props.navigationWidgetDef.renderVerticalToolbar();
 
     return (
-      <ToolsWidget isNavigation
+      <NZ_ToolsWidget isNavigation
         button={navigationAid}
         horizontalToolbar={horizontalToolbar}
         verticalToolbar={verticalToolbar}

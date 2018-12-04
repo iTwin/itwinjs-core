@@ -34,34 +34,8 @@ export class RpcMultipart {
   }
 
   /** Obtains the RPC value from a multipart HTTP request. */
-  public static parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue> {
+  public static async parseRequest(_req: HttpServerRequest): Promise<RpcSerializedValue> {
     throw new IModelError(BentleyStatus.ERROR, "Not implemented.");
-  }
-
-  /** Obtains the RPC value from a multipart form object. */
-  public static parseForm(form: FormData) {
-    return new Promise<RpcSerializedValue>(async (resolve, reject) => {
-      const value = RpcSerializedValue.create(form.get("objects") as string, []);
-
-      let i = 0;
-      for (; ;) {
-        const data = form.get(`data-${i}`);
-        if (!data) {
-          break;
-        }
-
-        try {
-          const buffer = await RpcMultipart.readFormBlob(data as Blob);
-          value.data.push(new Uint8Array(buffer));
-        } catch (err) {
-          reject(err);
-        }
-
-        ++i;
-      }
-
-      resolve(value);
-    });
   }
 
   /** @hidden */
@@ -76,22 +50,5 @@ export class RpcMultipart {
         form.append(`data-${i}`, Buffer.from(buf.buffer, buf.byteOffset, buf.byteLength));
       }
     }
-  }
-
-  /** @hidden */
-  public static readFormBlob(data: Blob) {
-    return new Promise<ArrayBuffer>((resolve, reject) => {
-      const reader = new FileReader();
-
-      reader.addEventListener("load", () => {
-        resolve(reader.result as ArrayBuffer);
-      });
-
-      reader.addEventListener("error", () => {
-        reject(reader.error);
-      });
-
-      reader.readAsArrayBuffer(data as Blob);
-    });
   }
 }

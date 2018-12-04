@@ -338,9 +338,11 @@ export class TransitionSpiral3d extends CurvePrimitive {
   public setFrom(other: TransitionSpiral3d): TransitionSpiral3d {
     this.localToWorld.setFrom(other.localToWorld);
     this.radius01.setFrom(other.radius01);
-    this.radius01.setFrom(other.radius01);
+    this._curvature01.setFrom(other._curvature01);
     this.bearing01.setFrom(other.bearing01);
     this.localToWorld.setFrom(other.localToWorld);
+    this.activeFractionInterval.setFrom(other.activeFractionInterval);
+    this._arcLength01 = other._arcLength01;
     return this;
   }
   public clone(): TransitionSpiral3d {
@@ -443,6 +445,7 @@ export class TransitionSpiral3d extends CurvePrimitive {
         && this.bearing01.isAlmostEqualAllowPeriodShift(other.bearing01)
         && this.localToWorld.isAlmostEqual(other.localToWorld)
         && Geometry.isSameCoordinate(this._arcLength01, other._arcLength01)
+        && this.activeFractionInterval.isAlmostEqual(other.activeFractionInterval)
         && this._curvature01.isAlmostEqual(other._curvature01);
     }
     return false;

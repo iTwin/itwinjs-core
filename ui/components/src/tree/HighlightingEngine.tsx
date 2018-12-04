@@ -6,75 +6,86 @@
 
 import Highlighter from "react-highlight-words";
 import * as React from "react";
-import { InspireTreeNode } from "./component/BeInspireTree";
+import { BeInspireTreeNode } from "./component/BeInspireTree";
 import "./HighlightingEngine.scss";
 
 /** @hidden */
-export interface ActiveResultNode {
-  id: string;
-  index: number;
-}
-
-/** @hidden */
-export interface IScrollableElement {
-  scrollToElement: (elementBoundingBox: ClientRect | DOMRect) => void;
+export interface ActiveMatchInfo {
+  nodeId: string;
+  matchIndex: number;
 }
 
 /** @hidden */
 export interface HighlightableTreeProps {
   searchText: string;
-  activeResultNode?: ActiveResultNode;
+  activeMatch?: ActiveMatchInfo;
+}
+
+/** @hidden */
+export interface HighlightableTreeNodeProps {
+  searchText: string;
+  activeMatchIndex?: number;
 }
 
 /** @hidden */
 export default class HighlightingEngine {
   private _searchText: string;
-  private _activeResultNode?: ActiveResultNode;
-  private _activeResultReactDom: React.RefObject<HTMLSpanElement> = React.createRef();
+  private _activeMatch?: ActiveMatchInfo;
+  public static readonly ACTIVE_CLASS_NAME = "ui-components-activehighlight";
 
   constructor(props: HighlightableTreeProps) {
     this._searchText = props.searchText;
-    this._activeResultNode = props.activeResultNode;
+    this._activeMatch = props.activeMatch;
   }
 
-  public isNodeActive(node: InspireTreeNode) {
-    return this._activeResultNode && node.id === this._activeResultNode.id;
+  public isNodeActive(node: BeInspireTreeNode<any>) {
+    return this._activeMatch && node.id === this._activeMatch.nodeId;
   }
 
-  public getActiveNodeIndex(node: InspireTreeNode) {
-    return this.isNodeActive(node) ? this._activeResultNode!.index : undefined;
+  public getActiveMatchIndex(node: BeInspireTreeNode<any>) {
+    return this.isNodeActive(node) ? this._activeMatch!.matchIndex : undefined;
   }
 
-  public scrollToActiveNode(scrollableContainer: IScrollableElement) {
-    if (this._activeResultReactDom.current) {
-      // Workaround for edge scrollTo issue https://developer.microsoft.com/en-us/microsoft-edge/platform/issues/15534521/
-      if (!Element.prototype.scrollTo) {
-        this._activeResultReactDom.current.scrollIntoView();
-        return;
-      }
-      const highlightedElement = this._activeResultReactDom.current.getElementsByClassName("ui-components-activehighlight")[0];
-
-      if (highlightedElement)
-        scrollableContainer.scrollToElement(highlightedElement.getBoundingClientRect());
-    }
+  public createRenderProps(node: BeInspireTreeNode<any>): HighlightableTreeNodeProps {
+    return {
+      searchText: this._searchText,
+      activeMatchIndex: this.getActiveMatchIndex(node),
+    };
   }
 
-  public getNodeLabelComponent(node: InspireTreeNode) {
-    if (node.text && this._searchText) {
-      const activeIndex = this.getActiveNodeIndex(node);
-
-      return (
-        <span ref={activeIndex !== undefined ? this._activeResultReactDom : undefined}>
-          <Highlighter
-            searchWords={[this._searchText]}
-            activeIndex={activeIndex as any} // .d.ts file seems to be wrong, doesn't work if it's a string
-            activeClassName="ui-components-activehighlight"
-            autoEscape={true}
-            textToHighlight={node.text}
-          />
-        </span>
-      );
-    }
-    return node.text;
+  public static renderNodeLabel(text: string, props: HighlightableTreeNodeProps): React.ReactNode {
+    return (
+      <Highlighter
+        searchWords={[props.searchText]}
+        findChunks={findChunksNoRegex as any} // .d.ts declaration wrong
+        activeIndex={props.activeMatchIndex as any} // .d.ts file seems to be wrong, doesn't work if it's a string
+        activeClassName={HighlightingEngine.ACTIVE_CLASS_NAME}
+        autoEscape={true}
+        textToHighlight={text}
+      />
+    );
   }
 }
+
+interface HighlighterChunk {
+  highlight: boolean;
+  start: number;
+  end: number;
+}
+interface FindChunksArgs {
+  autoEscape?: boolean;
+  caseSensitive?: boolean;
+  searchWords: string[];
+  textToHighlight: string;
+}
+const findChunksNoRegex = (args: FindChunksArgs): HighlighterChunk[] => {
+  const text = args.caseSensitive ? args.textToHighlight : args.textToHighlight.toUpperCase();
+  const term = args.caseSensitive ? args.searchWords[0] : args.searchWords[0].toUpperCase();
+  const chunks: HighlighterChunk[] = [];
+  let index = text.indexOf(term);
+  while (index !== -1) {
+    chunks.push({ start: index, end: index + term.length, highlight: true });
+    index = text.indexOf(term, index + 1);
+  }
+  return chunks;
+};

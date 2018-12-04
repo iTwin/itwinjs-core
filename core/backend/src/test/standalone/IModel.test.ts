@@ -2,52 +2,25 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+import { ActivityLoggingContext, BeEvent, DbResult, Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Angle, Matrix4d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import {
+  AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
+  FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
+  ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec,
+} from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
-import { DbResult, Guid, Id64String, Id64, BeEvent, OpenMode, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { Point3d, Transform, Range3d, Angle, Matrix4d } from "@bentley/geometry-core";
 import {
-  ClassRegistry,
-  BisCore,
-  Element,
-  GeometricElement2d,
-  GeometricElement3d,
-  GeometricModel,
-  InformationPartitionElement,
-  DefinitionPartition,
-  LinkPartition,
-  PhysicalPartition,
-  GroupInformationPartition,
-  DocumentPartition,
-  Subject,
-  ElementPropertyFormatter,
-  IModelDb,
-  ECSqlStatement,
-  SqliteStatement,
-  SqliteValue,
-  SqliteValueType,
-  Entity,
-  Model,
-  DictionaryModel,
-  Category,
-  SubCategory,
-  SpatialCategory,
-  ElementGroupsMembers,
-  LightLocation,
-  PhysicalModel,
-  AutoPushEventType,
-  AutoPush,
-  AutoPushState,
-  AutoPushEventHandler,
-  ViewDefinition,
+  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCore, Category, ClassRegistry, DefinitionPartition,
+  DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementPropertyFormatter, Entity,
+  GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
+  LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, SpatialCategory, SqliteStatement, SqliteValue,
+  SqliteValueType, SubCategory, Subject, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
 } from "../../backend";
-import {
-  GeometricElementProps, Code, CodeSpec, CodeScopeSpec, EntityProps, IModelError, IModelStatus, ModelProps, ViewDefinitionProps,
-  AxisAlignedBox3d, SubCategoryAppearance, IModel, FontType, FontMap, ColorByName, FilePropertyProps, RelatedElement, EntityMetaData, PrimitiveTypeCode,
-} from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { AccessToken } from "@bentley/imodeljs-clients";
 
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
@@ -62,12 +35,15 @@ describe("iModel", () => {
   let imodel5: IModelDb;
   const actx = new ActivityLoggingContext("");
 
-  before(() => {
+  before(async () => {
     imodel1 = IModelTestUtils.openIModel("test.bim");
     imodel2 = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
     imodel3 = IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
     imodel4 = IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
     imodel5 = IModelTestUtils.openIModel("mirukuru.ibim");
+
+    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
+    await imodel1.importSchema(actx, schemaPathname); // will throw an exception if import fails
   });
 
   after(() => {
@@ -113,7 +89,7 @@ describe("iModel", () => {
   });
 
   it("FontMap", () => {
-    const fonts1 = imodel1.getFontMap();
+    const fonts1 = imodel1.fontMap;
     assert.equal(fonts1.fonts.size, 4, "font map size should be 4");
     assert.equal(FontType.TrueType, fonts1.getFont(1)!.type, "get font 1 type is TrueType");
     assert.equal("Arial", fonts1.getFont(1)!.name, "get Font 1 name");
@@ -221,7 +197,50 @@ describe("iModel", () => {
       const elementId: Id64String = imodel2.elements.insertElement(element);
       assert.isTrue(Id64.isValidId64(elementId));
     }
+  });
 
+  it("should insert a DisplayStyle", () => {
+    const model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    expect(model).not.to.be.undefined;
+
+    const settings: DisplayStyleSettingsProps = {
+      backgroundColor: ColorDef.blue,
+      viewflags: ViewFlags.fromJSON({
+        renderMode: RenderMode.SolidFill,
+      }),
+    };
+
+    const props: DisplayStyleProps = {
+      classFullName: DisplayStyle3d.classFullName,
+      model: IModel.dictionaryId,
+      code: { spec: BisCodeSpec.displayStyle, scope: IModel.dictionaryId },
+      isPrivate: false,
+      jsonProperties: {
+        styles: settings,
+      },
+    };
+
+    const styleId = imodel2.elements.insertElement(props);
+    let style = imodel2.elements.getElement<DisplayStyle3d>(styleId);
+    expect(style instanceof DisplayStyle3d).to.be.true;
+
+    expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SolidFill);
+    expect(style.settings.backgroundColor.equals(ColorDef.blue)).to.be.true;
+
+    const newFlags = style.settings.viewFlags.clone();
+    newFlags.renderMode = RenderMode.SmoothShade;
+    style.settings.viewFlags = newFlags;
+    style.settings.backgroundColor = ColorDef.red;
+    style.settings.monochromeColor = ColorDef.green;
+    expect(style.jsonProperties.styles.viewflags.renderMode).to.equal(RenderMode.SmoothShade);
+
+    imodel2.elements.updateElement(style.toJSON());
+    style = imodel2.elements.getElement<DisplayStyle3d>(styleId);
+    expect(style instanceof DisplayStyle3d).to.be.true;
+
+    expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SmoothShade);
+    expect(style.settings.backgroundColor.equals(ColorDef.red)).to.be.true;
+    expect(style.settings.monochromeColor.equals(ColorDef.green)).to.be.true;
   });
 
   it("should have a valid root subject element", () => {
@@ -570,28 +589,6 @@ describe("iModel", () => {
     }
   });
 
-  it("should set auto-handled number property with value of zero", () => {
-    const testImodel: IModelDb = imodel1;
-    try {
-      testImodel.getMetaData("TestBim:TestPhysicalObject");
-    } catch (err) {
-      const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
-      assert.isDefined(testImodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
-    }
-
-    const props: GeometricElementProps = {
-      classFullName: "TestBim:TestPhysicalObject",
-      model: "0",
-      category: "0",
-      code: Code.createEmpty(),
-      intProperty: 0,
-    };
-
-    const element = testImodel.elements.createElement(props);
-    assert.equal(element.intProperty, 0, "int property should be zero");
-  });
-
   function checkElementMetaData(obj: EntityMetaData) {
     assert.isNotNull(obj);
     assert.equal(obj.ecclass, Element.classFullName);
@@ -838,16 +835,9 @@ describe("iModel", () => {
     const worldToView = Matrix4d.createIdentity();
     const response = await imodel2.requestSnap(actx, "0x222", { testPoint: { x: 1, y: 2, z: 3 }, closePoint: { x: 1, y: 2, z: 3 }, id: "0x111", worldToView: worldToView.toJSON() });
     assert.isDefined(response.status);
-
-    // make sure we can read native asset files.
-    const sprite = IModelDb.loadNativeAsset("decorators/dgncore/SnapNone.png");
-    assert.isDefined(sprite);
   });
 
-  it("should import schemas", () => {
-    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    imodel1.importSchema(actx, schemaPathname); // will throw an exception if import fails
-
+  it("should import schemas", async () => {
     const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
     assert.isDefined(classMetaData.properties.testDocumentProperty);
     assert.isTrue(classMetaData.properties.testDocumentProperty.primitiveType === PrimitiveTypeCode.Integer);
@@ -869,28 +859,19 @@ describe("iModel", () => {
     assert.deepEqual(newModelPersist.modeledElement.id, modeledElementId);
 
     // Update the model
-    const changedModelProps: ModelProps = Object.assign({}, newModelPersist);
-    changedModelProps.isPrivate = false;
-    testImodel.models.updateModel(changedModelProps);
+    newModelPersist.isPrivate = false;
+    testImodel.models.updateModel(newModelPersist);
     //  ... and check that it updated the model in the db
-    const newModelPersist2: Model = testImodel.models.getModel(newModelId);
+    const newModelPersist2 = testImodel.models.getModel(newModelId);
     assert.isFalse(newModelPersist2.isPrivate);
 
     // Delete the model
-    testImodel.models.deleteModel(newModelPersist);
-    try {
-      assert.fail();
-    } catch (err) {
-      // this is expected
-    }
+    testImodel.models.deleteModel(newModelId);
   });
 
-  it("should create model with custom relationship to modeled element", () => {
-    const testBimName = "should-create-models-with-custom-relationship.bim";
-    let testImodel: IModelDb = IModelTestUtils.openIModel("test.bim", { copyFilename: testBimName });
+  it("should create model with custom relationship to modeled element", async () => {
+    const testImodel = imodel1;
 
-    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
     assert.isDefined(testImodel.getMetaData("TestBim:TestModelModelsElement"), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
 
     let newModelId1: Id64String;
@@ -912,9 +893,6 @@ describe("iModel", () => {
       relClassName2 = newModel2.modeledElement.relClassName;
     }
 
-    IModelTestUtils.closeIModel(testImodel);
-    testImodel = IModelTestUtils.openIModelFromOut(testBimName);
-
     const model1 = testImodel.models.getModel(newModelId1);
     const model2 = testImodel.models.getModel(newModelId2);
 
@@ -926,40 +904,42 @@ describe("iModel", () => {
   });
 
   it("should create link table relationship instances", () => {
-    const testImodel: IModelDb = imodel1;
+    const testImodel = imodel1;
+    const elements = testImodel.elements;
+
+    testImodel.nativeDb.enableTxnTesting();
 
     // Create a new physical model
-    let newModelId: Id64String;
-    [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
+    const newModelId = PhysicalModel.insert(testImodel, IModel.rootSubjectId, "TestModel");
 
-    // Find or create a SpatialCategory
-    const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-    let spatialCategoryId: Id64String | undefined = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
-    if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
-
-      const updated = testImodel.elements.getElement(IModelDb.getDefaultSubCategoryId(spatialCategoryId)) as SubCategory;
-      assert.equal(updated.appearance.color.tbgr, ColorByName.darkRed, "SubCategory appearance should be updated");
-    }
+    // create a SpatialCategory
+    const spatialCategoryId = SpatialCategory.insert(testImodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
 
     // Create a couple of physical elements.
-    const id0 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
-    const id1 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
-    const id2 = testImodel.elements.insertElement(IModelTestUtils.createPhysicalObject(testImodel, newModelId, spatialCategoryId));
+    const elementProps: GeometricElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      iModel: testImodel,
+      model: newModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+    };
 
-    const geometricModel = testImodel.models.getModel(newModelId) as GeometricModel;
+    const id0 = elements.insertElement(elementProps);
+    const id1 = elements.insertElement(elementProps);
+    const id2 = elements.insertElement(elementProps);
+
+    const geometricModel = testImodel.models.getModel<GeometricModel>(newModelId);
     assert.throws(() => geometricModel.queryExtents()); // no geometry
 
     // Create grouping relationships from 0 to 1 and from 0 to 2
-    const r1: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id1);
-    r1.memberPriority = 1;
-    testImodel.linkTableRelationships.insertInstance(r1);
-    const r2: ElementGroupsMembers = ElementGroupsMembers.create(testImodel, id0, id2);
-    testImodel.linkTableRelationships.insertInstance(r2);
+    const r1 = ElementGroupsMembers.create(testImodel, id0, id1, 1);
+    r1.insert();
+    const r2 = ElementGroupsMembers.create(testImodel, id0, id2);
+    r2.insert();
 
     // Look up by id
-    const g1 = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, r1.id) as ElementGroupsMembers;
-    const g2 = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, r2.id) as ElementGroupsMembers;
+    const g1 = ElementGroupsMembers.getInstance<ElementGroupsMembers>(testImodel, r1.id);
+    const g2 = ElementGroupsMembers.getInstance<ElementGroupsMembers>(testImodel, r2.id);
 
     assert.deepEqual(g1.id, r1.id);
     assert.equal(g1.classFullName, ElementGroupsMembers.classFullName);
@@ -969,36 +949,37 @@ describe("iModel", () => {
     assert.equal(g2.memberPriority, 0, "g2.memberPriority");  // The memberPriority parameter defaults to 0 in ElementGroupsMembers.create
 
     // Look up by source and target
-    const g1byst: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, { sourceId: r1.sourceId, targetId: r1.targetId }) as ElementGroupsMembers;
+    const g1byst = ElementGroupsMembers.getInstance<ElementGroupsMembers>(testImodel, { sourceId: r1.sourceId, targetId: r1.targetId });
     assert.deepEqual(g1byst, g1);
-
-    // TODO: Do an ECSQL query to verify that 0->1 and 0->2 relationships can be found
 
     // Update relationship instance property
     r1.memberPriority = 2;
-    testImodel.linkTableRelationships.updateInstance(r1);
+    r1.update();
 
-    const g11: ElementGroupsMembers = testImodel.linkTableRelationships.getInstance(ElementGroupsMembers.classFullName, r1.id) as ElementGroupsMembers;
+    const g11 = ElementGroupsMembers.getInstance<ElementGroupsMembers>(testImodel, r1.id);
     assert.equal(g11.memberPriority, 2, "g11.memberPriority");
+    testImodel.saveChanges("step 1");
 
     // Delete relationship instance property
-    testImodel.linkTableRelationships.deleteInstance(r1);
+    g11.delete();
+    testImodel.saveChanges("step 2");
+    assert.throws(() => ElementGroupsMembers.getInstance(testImodel, r1.id), IModelError);
 
-    // TODO: Do an ECSQL query to verify that 0->1 is gone but 0->2 is still there.
-    testImodel.saveChanges("");
+    const d0 = elements.insertElement(elementProps);
+    const d1 = elements.insertElement(elementProps);
+    const ede1 = ElementDrivesElement.create(testImodel, d0, d1, 0);
+    ede1.insert();
+    testImodel.saveChanges("step 3");
+
+    ede1.delete();
+    testImodel.saveChanges("step 4");
 
   });
 
-  it("should set EC properties of various types", () => {
+  it("should set EC properties of various types", async () => {
 
     const testImodel = imodel1;
-    try {
-      testImodel.getMetaData("TestBim:TestPhysicalObject");
-    } catch (err) {
-      const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
-      assert.isTrue(testImodel.getMetaData("TestBim:TestPhysicalObject") !== undefined);
-    }
+    testImodel.getMetaData("TestBim:TestPhysicalObject");
 
     // Create a new physical model
     let newModelId: Id64String;
@@ -1136,10 +1117,10 @@ describe("iModel", () => {
     });
 
     let callbackcount = 0;
-    testPromise.then(() => {
+    testPromise.then(() => { // tslint:disable-line:no-floating-promises
       ++callbackcount;
     });
-    testPromise.then(() => {
+    testPromise.then(() => { // tslint:disable-line:no-floating-promises
       ++callbackcount;
     });
 
@@ -1220,7 +1201,7 @@ describe("iModel", () => {
     assert.equal(lastAutoPushEventType, AutoPushEventType.PushFinished, "event handler should have been called");
 
     // Just verify that this doesn't blow up.
-    autoPush.reserveCodes();
+    await autoPush.reserveCodes();
 
     // Now turn on auto-schedule and verify that we get a few auto-pushes
     lastPushTimeMillis = 0;

@@ -4,17 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
-import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Point3d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion, CodeScopeSpec, Code, ColorDef, IModel, GeometricElement3dProps, AxisAlignedBox3d } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams, BriefcaseManager } from "../../backend";
+import { IModelDb, OpenParams, BriefcaseManager, CategorySelector, DisplayStyle3d, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "../../backend";
 import * as path from "path";
 import * as fs from "fs";
 import { IModelWriter } from "./IModelWriter";
 import { HubUtility, UserCredentials } from "./HubUtility";
 import { TestUsers } from "../IModelTestUtils";
 
-const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 const actx = new ActivityLoggingContext("");
 
 export class TestPushUtility {
@@ -66,17 +66,17 @@ export class TestPushUtility {
     this._iModelDb = IModelDb.createStandalone(pathname, { rootSubject: { name: this.iModelName! } });
 
     const definitionModelId: Id64String = IModel.dictionaryId;
-    this._physicalModelId = IModelWriter.insertPhysicalModel(this._iModelDb, "TestModel");
-    this._codeSpecId = IModelWriter.insertCodeSpec(this._iModelDb, "TestCodeSpec", CodeScopeSpec.Type.Model);
-    this._categoryId = IModelWriter.insertSpatialCategory(this._iModelDb, definitionModelId, "TestCategory", new ColorDef("blanchedAlmond"));
+    this._physicalModelId = PhysicalModel.insert(this._iModelDb, IModel.rootSubjectId, "TestModel");
+    this._codeSpecId = this._iModelDb.codeSpecs.insert("TestCodeSpec", CodeScopeSpec.Type.Model);
+    this._categoryId = SpatialCategory.insert(this._iModelDb, definitionModelId, "TestCategory", { color: new ColorDef("blanchedAlmond") });
 
     // Insert a ViewDefinition for the PhysicalModel
-    const modelSelectorId: Id64String = IModelWriter.insertModelSelector(this._iModelDb, definitionModelId, [this._physicalModelId.toString()]);
-    const categorySelectorId: Id64String = IModelWriter.insertCategorySelector(this._iModelDb, definitionModelId, [this._categoryId.toString()]);
-    const displayStyleId: Id64String = IModelWriter.insertDisplayStyle3d(this._iModelDb, definitionModelId);
-    const physicalViewOrigin = new Point3d(0, 0, 0);
-    const physicalViewExtents = new Point3d(50, 50, 50);
-    IModelWriter.insertOrthographicViewDefinition(this._iModelDb, definitionModelId, "Physical View", modelSelectorId, categorySelectorId, displayStyleId, physicalViewOrigin, physicalViewExtents);
+    const viewName = "Physical View";
+    const modelSelectorId: Id64String = ModelSelector.insert(this._iModelDb, definitionModelId, viewName, [this._physicalModelId]);
+    const categorySelectorId: Id64String = CategorySelector.insert(this._iModelDb, definitionModelId, viewName, [this._categoryId]);
+    const displayStyleId: Id64String = DisplayStyle3d.insert(this._iModelDb, definitionModelId, viewName);
+    const viewRange = new Range3d(0, 0, 0, 50, 50, 50);
+    OrthographicViewDefinition.insert(this._iModelDb, definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, viewRange);
 
     this._iModelDb.updateProjectExtents(new AxisAlignedBox3d(new Point3d(-1000, -1000, -1000), new Point3d(1000, 1000, 1000)));
 
@@ -187,7 +187,7 @@ export class TestPushUtility {
 
   private async createNamedVersion() {
     const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, this._accessToken!, this._iModelId!.toString(), BriefcaseManager.imodelClient);
-    await BriefcaseManager.imodelClient.Versions().create(actx, this._accessToken!, this._iModelId!, changeSetId, TestPushUtility.getVersionName(this._currentLevel));
+    await BriefcaseManager.imodelClient.versions.create(actx, this._accessToken!, this._iModelId!, changeSetId, TestPushUtility.getVersionName(this._currentLevel));
   }
 
 }

@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { ActivityLoggingContext, Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
-// import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Code, CodeSpec, CodeScopeSpec, FunctionalElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
-import { BriefcaseManager, Functional, FunctionalModel, FunctionalPartition, IModelDb } from "../../backend";
+import { ActivityLoggingContext, DbResult, Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
+import { Code, CodeSpec, CodeScopeSpec, FunctionalElementProps, IModel } from "@bentley/imodeljs-common";
+import { BriefcaseManager, ECSqlStatement, Functional, FunctionalModel, IModelDb, SqliteStatement } from "../../backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {
@@ -16,6 +16,7 @@ describe("Functional Domain", () => {
   before(() => {
     // Logger.initializeToConsole();
     // Logger.setLevelDefault(LogLevel.Warning);
+    // Logger.setLevel("FunctionalDomain.test", LogLevel.Info);
     // Logger.setLevel("imodeljs-addon", LogLevel.Warning);
     // Logger.setLevel("imodeljs-backend", LogLevel.Warning);
     // Logger.setLevel("DgnCore", LogLevel.Warning);
@@ -35,34 +36,31 @@ describe("Functional Domain", () => {
     // Import the Functional schema
     await Functional.importSchema(activityLoggingContext, iModelDb);
     Functional.registerSchema();
+
+    let commits = 0;
+    let committed = 0;
+    const dropCommit = iModelDb.txns.onCommit.addListener(() => commits++);
+    const dropCommitted = iModelDb.txns.onCommitted.addListener(() => committed++);
     iModelDb.saveChanges("Import Functional schema");
+
+    assert.equal(commits, 1);
+    assert.equal(committed, 1);
+    dropCommit();
+    dropCommitted();
 
     BriefcaseManager.createStandaloneChangeSet(iModelDb.briefcase); // importSchema below will fail if this is not called to flush local changes
 
     await iModelDb.importSchema(activityLoggingContext, path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
+
     iModelDb.saveChanges("Import TestFunctional schema");
+    assert.equal(commits, 1);
+    assert.equal(committed, 1);
 
     const codeSpec = new CodeSpec(iModelDb, Id64.invalid, "Test Functional Elements", CodeScopeSpec.Type.Model);
     iModelDb.codeSpecs.insert(codeSpec);
     assert.isTrue(Id64.isValidId64(codeSpec.id));
 
-    // Create and populate a FunctionalModel
-    const partitionProps: InformationPartitionElementProps = {
-      classFullName: FunctionalPartition.classFullName,
-      model: IModel.repositoryModelId,
-      parent: {
-        id: IModel.rootSubjectId,
-        relClassName: "BisCore:SubjectOwnsPartitionElements",
-      },
-      code: FunctionalPartition.createCode(iModelDb, IModel.rootSubjectId, "Test Functional Model"),
-    };
-    const partitionId: Id64String = iModelDb.elements.insertElement(partitionProps);
-    assert.isTrue(Id64.isValidId64(partitionId));
-    const model: FunctionalModel = iModelDb.models.createModel({
-      classFullName: FunctionalModel.classFullName,
-      modeledElement: { id: partitionId },
-    }) as FunctionalModel;
-    const modelId: Id64String = iModelDb.models.insertModel(model);
+    const modelId: Id64String = FunctionalModel.insert(iModelDb, IModel.rootSubjectId, "Test Functional Model");
     assert.isTrue(Id64.isValidId64(modelId));
 
     const breakdownProps: FunctionalElementProps = {
@@ -82,6 +80,29 @@ describe("Functional Domain", () => {
     assert.isTrue(Id64.isValidId64(componentId));
 
     iModelDb.saveChanges("Insert Functional elements");
+
+    iModelDb.withPreparedStatement("SELECT ECInstanceId AS id FROM ECDbMeta.ECSchemaDef WHERE Name='TestFunctional' LIMIT 1", (schemaStatement: ECSqlStatement) => {
+      while (DbResult.BE_SQLITE_ROW === schemaStatement.step()) {
+        const schemaRow: any = schemaStatement.getRow();
+        Logger.logInfo("FunctionalDomain.test", `${schemaRow.id}`);
+        iModelDb.withPreparedStatement("SELECT ECInstanceId AS id FROM ECDbMeta.ECClassDef WHERE ECClassDef.Schema.Id=? AND Name='PlaceholderForSchemaHasBehavior' LIMIT 1", (classStatement: ECSqlStatement) => {
+          classStatement.bindId(1, schemaRow.id);
+          while (DbResult.BE_SQLITE_ROW === classStatement.step()) {
+            const classRow: any = classStatement.getRow();
+            Logger.logInfo("FunctionalDomain.test", `${classRow.id}`);
+            iModelDb.withPreparedSqliteStatement("SELECT Id AS id, Instance AS xml FROM ec_CustomAttribute WHERE ClassId=? AND ContainerId=?", (customAttributeStatement: SqliteStatement) => {
+              customAttributeStatement.bindValue(1, { id: classRow.id });
+              customAttributeStatement.bindValue(2, { id: schemaRow.id });
+              while (DbResult.BE_SQLITE_ROW === customAttributeStatement.step()) {
+                const customAttributeRow: any = customAttributeStatement.getRow();
+                Logger.logInfo("FunctionalDomain.test", `${customAttributeRow.id}, ${customAttributeRow.xml}`);
+              }
+            });
+          }
+        });
+      }
+    });
+
     iModelDb.closeStandalone();
   });
 });

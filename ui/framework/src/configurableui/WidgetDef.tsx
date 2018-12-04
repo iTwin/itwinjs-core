@@ -6,14 +6,18 @@
 
 import * as React from "react";
 
-import { IconLabelProps, IconLabelSupport, IconInfo } from "./IconLabelSupport";
-import { ConfigurableUiManager, ConfigurableSyncUiEventId } from "./ConfigurableUiManager";
+import { ItemProps } from "./ItemProps";
+import { ConfigurableUiManager } from "./ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
+import { CommandItemDef } from "../configurableui/Item";
+import { ItemDefBase } from "./ItemDefBase";
+import { BaseItemState } from "./ItemDefBase";
+import { SyncUiEventDispatcher, SyncUiEventArgs } from "../SyncUiEventDispatcher";
 
 import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { ItemList } from "./ItemMap";
 
 // -----------------------------------------------------------------------------
 // WidgetDef and sub-interfaces
@@ -42,7 +46,7 @@ export enum WidgetType {
 
 /** Properties for a Widget.
  */
-export interface WidgetDefProps extends IconLabelProps {
+export interface WidgetDefProps extends ItemProps {
   id?: string;
 
   classId?: string | ConfigurableUiControlConstructor;
@@ -64,16 +68,17 @@ export interface WidgetDefProps extends IconLabelProps {
 /** Properties for a Toolbar Widget.
  */
 export interface ToolbarWidgetProps extends WidgetDefProps {
-  horizontalIds?: string[];  // Item Ids
   horizontalDirection?: Direction;
-  verticalIds?: string[];    // Item Ids
   verticalDirection?: Direction;
+
+  horizontalItems?: ItemList;
+  verticalItems?: ItemList;
 }
 
 /** Properties for a Tool Widget.
  */
 export interface ToolWidgetProps extends ToolbarWidgetProps {
-  appButtonId?: string;
+  appButton?: CommandItemDef;
 }
 
 /** Properties for a Navigation Widget.
@@ -92,7 +97,7 @@ export type AnyWidgetProps = WidgetDefProps | ToolWidgetProps | NavigationWidget
 
 /** A Widget Definition in the 9-Zone Layout system.
  */
-export class WidgetDef {
+export class WidgetDef extends ItemDefBase {
   private static _sId = 0;
 
   public id: string;
@@ -107,24 +112,45 @@ export class WidgetDef {
   public isToolSettings: boolean = false;
   public isStatusBar: boolean = false;
   public stateChanged: boolean = false;
-
+  public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
+  public stateSyncIds: string[] = [];
   public widgetType: WidgetType = WidgetType.Rectangular;
-
   public applicationData?: any;
 
-  private _iconLabelSupport: IconLabelSupport;
   private _widgetReactNode: React.ReactNode;
   private _widgetControl!: WidgetControl;
+  private _isVisible = true;
+
+  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    let refreshState = false;
+
+    if (this.stateSyncIds && this.stateSyncIds.length > 0)
+      refreshState = this.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+    if (refreshState) {
+      let newState: BaseItemState = {
+        isVisible: this._isVisible,
+        isEnabled: true,
+        isActive: false,
+      };
+
+      if (this.stateFunc)
+        newState = this.stateFunc(newState);
+
+      if (undefined !== newState.isVisible && this._isVisible !== newState.isVisible) {
+        this._isVisible = newState.isVisible;
+        this.setWidgetState(this.widgetState);
+      }
+    }
+  }
 
   constructor(widgetProps?: WidgetDefProps) {
+    super(widgetProps);
     if (widgetProps && widgetProps.id !== undefined)
       this.id = widgetProps.id;
     else {
       WidgetDef._sId++;
       this.id = "Widget-" + WidgetDef._sId;
     }
-
-    this._iconLabelSupport = new IconLabelSupport();
 
     if (widgetProps) {
       if (widgetProps.classId !== undefined)
@@ -152,23 +178,22 @@ export class WidgetDef {
       if (widgetProps.applicationData !== undefined)
         this.applicationData = widgetProps.applicationData;
 
-      this._iconLabelSupport = new IconLabelSupport(widgetProps);
+      if (widgetProps.isVisible !== undefined)
+        this._isVisible = widgetProps.isVisible;
 
       if (widgetProps.reactElement !== undefined)
         this._widgetReactNode = widgetProps.reactElement;
+
+      if (widgetProps.stateFunc && widgetProps.stateSyncIds && widgetProps.stateSyncIds.length > 0) {
+        this.stateSyncIds = widgetProps.stateSyncIds;
+        this.stateFunc = widgetProps.stateFunc;
+        SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+      }
     }
   }
 
-  public get label(): string { return this._iconLabelSupport.label; }
-  public get tooltip(): string { return this._iconLabelSupport.tooltip; }
-  public get iconInfo(): IconInfo { return this._iconLabelSupport.iconInfo; }
-
   public get widgetControl(): WidgetControl | undefined {
     return this._widgetControl;
-  }
-
-  public set iconLabelSupport(iconLabelSupport: IconLabelSupport) {
-    this._iconLabelSupport = iconLabelSupport;
   }
 
   public getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined {
@@ -179,6 +204,7 @@ export class WidgetDef {
           if (this._widgetControl.getType() !== type) {
             throw Error("WidgetDef.widgetControl error: classId '" + this.classId + "' is registered to a control that is NOT a Widget");
           }
+          this._widgetControl.initialize();
         }
       } else {
         const info = new ConfigurableCreateInfo(this.classId.name, this.id, this.id);
@@ -211,13 +237,12 @@ export class WidgetDef {
   public setWidgetState(state: WidgetState): void {
     const oldWidgetState = this.widgetState;
     this.widgetState = state;
-    this.stateChanged = true;
+    this.stateChanged = oldWidgetState !== state;
     FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, oldWidgetState, newWidgetState: state });
-    SyncUiEventDispatcher.dispatchSyncUiEvent(ConfigurableSyncUiEventId.WidgetStateChanged);
   }
 
   public canShow(): boolean {
-    return (this.widgetState !== WidgetState.Off && this.widgetState !== WidgetState.Hidden);
+    return (this._isVisible && this.widgetState !== WidgetState.Off && this.widgetState !== WidgetState.Hidden);
   }
 
   public canOpen(): boolean {

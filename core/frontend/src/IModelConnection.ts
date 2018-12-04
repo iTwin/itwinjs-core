@@ -48,7 +48,7 @@ export class IModelConnection extends IModel {
   /** A unique Id of this IModelConnection. */
   public readonly connectionId = Guid.createValue();
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
-  private static _connectionTimeout: number = 5 * 60 * 1000;
+  private static _connectionTimeout: number = 10 * 60 * 1000;
   private _openAccessToken?: AccessToken;
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
@@ -166,7 +166,7 @@ export class IModelConnection extends IModel {
 
       const connectionTimeElapsed = Date.now() - startTime;
       if (connectionTimeElapsed > IModelConnection._connectionTimeout) {
-        Logger.logTrace(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection._connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
+        Logger.logError(loggingCategory, `Timed out opening connection in IModelConnection.open (took longer than ${IModelConnection._connectionTimeout} milliseconds)`, () => ({ ...iModelToken, openMode }));
         throw new IModelError(BentleyStatus.ERROR, "Opening a connection was timed out"); // NEEDS_WORK: More specific error status
       }
 
@@ -311,7 +311,7 @@ export class IModelConnection extends IModel {
    * @returns Returns true if the *Change Cache file* is attached to the iModel. false otherwise
    * @hidden
    */
-  public async changeCacheAttached(): Promise<boolean> { return await WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
+  public async changeCacheAttached(): Promise<boolean> { return WipRpcInterface.getClient().isChangeCacheAttached(this.iModelToken); }
 
   /**
    * WIP - Attaches the *Change Cache file* to this iModel if it hasn't been attached yet.
@@ -320,7 +320,7 @@ export class IModelConnection extends IModel {
    * @throws [IModelError]($common) if a Change Cache file has already been attached before.
    * @hidden
    */
-  public async attachChangeCache(): Promise<void> { await WipRpcInterface.getClient().attachChangeCache(this.iModelToken); }
+  public async attachChangeCache(): Promise<void> { return WipRpcInterface.getClient().attachChangeCache(this.iModelToken); }
 
   /**
    * WIP - Detaches the *Change Cache file* to this iModel if it had been attached before.
@@ -329,7 +329,7 @@ export class IModelConnection extends IModel {
    * See also [Change Summary Overview]($docs/learning/ChangeSummaries)
    * @hidden
    */
-  public async detachChangeCache(): Promise<void> { await WipRpcInterface.getClient().detachChangeCache(this.iModelToken); }
+  public async detachChangeCache(): Promise<void> { return WipRpcInterface.getClient().detachChangeCache(this.iModelToken); }
 
   /**
    * Execute a test by name

@@ -6,9 +6,9 @@
 const path = require("path");
 const glob = require("glob");
 const webpack = require("webpack");
-const UglifyJSPlugin = require('uglifyjs-webpack-plugin');
-const raw = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig.init(true /*suppress error*/, true /* suppress message */);
+const raw = require("@bentley/config-loader/lib/IModelJsConfig").IModelJsConfig.init(true /*suppress error*/, true);
 module.exports = {
+  mode: "development",
   entry: glob.sync(path.resolve(__dirname, "lib/frontend/performance/*.test.js")),
   output: {
     path: path.resolve(__dirname, "lib/dist"),
@@ -31,13 +31,7 @@ module.exports = {
   },
   stats: "errors-only",
   optimization: {
-    minimizer: [
-      new UglifyJSPlugin({
-        uglifyOptions: {
-          keep_classnames: true,
-        },
-      })
-    ],
+    nodeEnv: "production"
   },
   externals: {
     fs: "require('fs')"

@@ -1,5 +1,5 @@
 --require ../../presentation/scripts/copy-test-setup.js
---require ts-node/register
+--require ../../common/scripts/mocha-reporter-tweaks.js
 --require source-map-support/register
 --check-leaks
 --no-timeouts

@@ -5,14 +5,14 @@
 import * as React from "react";
 
 import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { WidgetControl, WidgetComponentProps } from "@bentley/ui-framework";
+import { WidgetControl } from "@bentley/ui-framework";
 import { ConfigurableCreateInfo } from "@bentley/ui-framework";
 import { ContentControl } from "@bentley/ui-framework";
 
 import { Orientation } from "@bentley/ui-core";
 import {
   PropertyDescription, PropertyRecord, PropertyValueFormat, PrimitiveValue,
-  PropertyGrid, PropertyDataProvider, SimplePropertyDataProvider,
+  PropertyGrid, SimplePropertyDataProvider, PropertyValue, PropertyUpdatedArgs, PropertyCategory,
 } from "@bentley/ui-components";
 
 class SamplePropertyRecord extends PropertyRecord {
@@ -50,7 +50,7 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
     for (let i = 0; i < categoryCount; i++) {
       for (let iVolume = 0; iVolume < 10; iVolume++) {
 
-        const enumPropertyRecord = new SamplePropertyRecord("Enum", iVolume, 0, "", "enum");
+        const enumPropertyRecord = new SamplePropertyRecord("Enum", iVolume, 0, "enum");
         enumPropertyRecord.property.enum = { choices: [], isStrict: false };
         enumPropertyRecord.property.enum.choices = [
           { label: "Yellow", value: 0 },
@@ -59,14 +59,14 @@ class SamplePropertyDataProvider extends SimplePropertyDataProvider {
           { label: "Blue", value: 3 },
         ];
 
-        const booleanPropertyRecord = new SamplePropertyRecord("Boolean", iVolume, true, "boolean", "boolean");
+        const booleanPropertyRecord = new SamplePropertyRecord("Boolean", iVolume, true, "boolean");
         // booleanPropertyRecord.editorLabel = "Optional CheckBox Label";
 
         const propData = [
           [
             new SamplePropertyRecord("CADID", iVolume, "0000 0005 00E0 02D8"),
             new SamplePropertyRecord("ID_Attribute", iVolume, "34B72774-E885-4FB7-B031-64D040E37322"),
-            new SamplePropertyRecord("Name", iVolume, "DT1002", ""),
+            new SamplePropertyRecord("Name", iVolume, "DT1002"),
             enumPropertyRecord,
           ],
           [
@@ -97,22 +97,46 @@ export class VerticalPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    super.reactElement = <VerticalPropertyGridWidget widgetControl={this} />;
+    super.reactElement = <VerticalPropertyGridWidget />;
   }
 }
 
-class VerticalPropertyGridWidget extends React.Component<WidgetComponentProps> {
-  private _dataProvider: PropertyDataProvider;
+class VerticalPropertyGridWidget extends React.Component {
+  private _dataProvider: SamplePropertyDataProvider;
 
-  constructor(props: WidgetComponentProps) {
+  constructor(props: any) {
     super(props);
 
     this._dataProvider = new SamplePropertyDataProvider();
   }
 
+  private _updatePropertyRecord(record: PropertyRecord, newValue: string): PropertyRecord {
+    const propertyValue: PropertyValue = {
+      valueFormat: PropertyValueFormat.Primitive,
+      value: newValue,
+      displayValue: newValue.toString(),
+    };
+    return record.copyWithNewValue(propertyValue);
+  }
+
+  private _handlePropertyUpdated = async (args: PropertyUpdatedArgs, category: PropertyCategory): Promise<boolean> => {
+    let updated = false;
+
+    if (args.propertyRecord) {
+      const newRecord = this._updatePropertyRecord(args.propertyRecord, args.newValue);
+      const catIdx = this._dataProvider.findCategoryIndex(category);
+      if (catIdx >= 0)
+        this._dataProvider.replaceProperty(args.propertyRecord, catIdx, newRecord);
+      updated = true;
+    }
+
+    return updated;
+  }
+
   public render() {
     return (
-      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Vertical} />
+      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Vertical} isPropertySelectionEnabled={true}
+        isPropertyEditingEnabled={true} onPropertyUpdated={this._handlePropertyUpdated} />
     );
   }
 }
@@ -123,38 +147,12 @@ export class HorizontalPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <HorizontalPropertyGridWidget widgetControl={this} />;
+    this.reactElement = <HorizontalPropertyGridWidget />;
   }
 }
 
-class HorizontalPropertyGridWidget extends React.Component<WidgetComponentProps> {
-  private _dataProvider: PropertyDataProvider;
-
-  constructor(props: WidgetComponentProps) {
-    super(props);
-
-    this._dataProvider = new SamplePropertyDataProvider();
-  }
-
-  public render() {
-    return (
-      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal} />
-    );
-  }
-}
-
-ConfigurableUiManager.registerControl("HorizontalPropertyGridDemoWidget", HorizontalPropertyGridWidgetControl);
-
-class HorizontalPropertyGridContentControl extends ContentControl {
-  constructor(info: ConfigurableCreateInfo, options: any) {
-    super(info, options);
-
-    this.reactElement = <HorizontalPropertyGridContent />;
-  }
-}
-
-export class HorizontalPropertyGridContent extends React.Component {
-  private _dataProvider: PropertyDataProvider;
+class HorizontalPropertyGridWidget extends React.Component {
+  private _dataProvider: SamplePropertyDataProvider;
 
   constructor(props: any) {
     super(props);
@@ -162,9 +160,83 @@ export class HorizontalPropertyGridContent extends React.Component {
     this._dataProvider = new SamplePropertyDataProvider();
   }
 
+  private _updatePropertyRecord(record: PropertyRecord, newValue: string): PropertyRecord {
+    const propertyValue: PropertyValue = {
+      valueFormat: PropertyValueFormat.Primitive,
+      value: newValue,
+      displayValue: newValue.toString(),
+    };
+    return record.copyWithNewValue(propertyValue);
+  }
+
+  private _handlePropertyUpdated = async (args: PropertyUpdatedArgs, category: PropertyCategory): Promise<boolean> => {
+    let updated = false;
+
+    if (args.propertyRecord) {
+      const newRecord = this._updatePropertyRecord(args.propertyRecord, args.newValue);
+      const catIdx = this._dataProvider.findCategoryIndex(category);
+      if (catIdx >= 0)
+        this._dataProvider.replaceProperty(args.propertyRecord, catIdx, newRecord);
+      updated = true;
+    }
+
+    return updated;
+  }
+
+  public render() {
+    return (
+      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal}
+        isPropertyEditingEnabled={true} onPropertyUpdated={this._handlePropertyUpdated} />
+    );
+  }
+}
+
+ConfigurableUiManager.registerControl("HorizontalPropertyGridDemoWidget", HorizontalPropertyGridWidgetControl);
+
+export class HorizontalPropertyGridContentControl extends ContentControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    this.reactElement = <HorizontalPropertyGridContent />;
+  }
+}
+
+class HorizontalPropertyGridContent extends React.Component {
+  private _dataProvider: SamplePropertyDataProvider;
+
+  constructor(props: any) {
+    super(props);
+
+    this._dataProvider = new SamplePropertyDataProvider();
+  }
+
+  private _updatePropertyRecord(record: PropertyRecord, newValue: string): PropertyRecord {
+    const propertyValue: PropertyValue = {
+      valueFormat: PropertyValueFormat.Primitive,
+      value: newValue,
+      displayValue: newValue.toString(),
+    };
+    return record.copyWithNewValue(propertyValue);
+  }
+
+  private _handlePropertyUpdated = async (args: PropertyUpdatedArgs, category: PropertyCategory): Promise<boolean> => {
+    let updated = false;
+
+    if (args.propertyRecord) {
+      const newRecord = this._updatePropertyRecord(args.propertyRecord, args.newValue);
+      const catIdx = this._dataProvider.findCategoryIndex(category);
+      if (catIdx >= 0)
+        this._dataProvider.replaceProperty(args.propertyRecord, catIdx, newRecord);
+      updated = true;
+    }
+
+    return updated;
+  }
+
   public render(): React.ReactNode {
     return (
-      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal} />
+      <PropertyGrid dataProvider={this._dataProvider} orientation={Orientation.Horizontal} isPropertySelectionEnabled={true}
+        isPropertyEditingEnabled={true} onPropertyUpdated={this._handlePropertyUpdated} />
     );
   }
 }

@@ -4,9 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module ViewDefinitions */
 
-import { Id64String, Id64, JsonUtils } from "@bentley/bentleyjs-core";
-import { Vector3d, Point3d, Point2d, YawPitchRollAngles, Angle } from "@bentley/geometry-core";
+import { Id64String, Id64, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
+import { Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
+  AnalysisStyleProps,
   BisCodeSpec,
   Code,
   CodeScopeProps,
@@ -23,10 +24,12 @@ import {
   AuxCoordSystem2dProps,
   AuxCoordSystem3dProps,
   ViewAttachmentProps,
+  ViewFlags,
   LightLocationProps,
   RelatedElement,
   DisplayStyleProps,
-  ViewFlags,
+  DisplayStyleSettings,
+  DisplayStyle3dSettings,
 } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
 import { IModelDb } from "./IModelDb";
@@ -35,59 +38,12 @@ import { IModelDb } from "./IModelDb";
  * Internally a DisplayStyle consists of a dictionary of several named 'styles' describing specific aspects of the display style as a whole.
  * Many ViewDefinitions may share the same DisplayStyle.
  */
-export class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
-  private readonly _viewFlags: ViewFlags;
-  private readonly _background: ColorDef;
-  private readonly _monochrome: ColorDef;
+export abstract class DisplayStyle extends DefinitionElement implements DisplayStyleProps {
+  public abstract get settings(): DisplayStyleSettings;
 
-  public constructor(props: DisplayStyleProps, iModel: IModelDb) {
+  protected constructor(props: DisplayStyleProps, iModel: IModelDb) {
     super(props, iModel);
-
-    this._viewFlags = ViewFlags.fromJSON(this.getStyle("viewflags"));
-    this._background = ColorDef.fromJSON(this.getStyle("backgroundColor"));
-    const monoName = "monochromeColor"; // because tslint: "object access via string literals is disallowed"...
-    const monoJson = this.styles[monoName];
-    this._monochrome = undefined !== monoJson ? ColorDef.fromJSON(monoJson) : ColorDef.white.clone();
   }
-
-  /** Get the flags controlling how aspects of graphics are rendered using this display style. */
-  public get viewFlags(): ViewFlags { return this._viewFlags; }
-  /** Set the flags controlling how aspects of graphics are rendered using this display style. */
-  public set viewFlags(flags: ViewFlags) {
-    flags.clone(this._viewFlags);
-    this.setStyle("viewflags", flags);
-  }
-
-  /** Get the dictionary of named styles. */
-  public get styles(): any {
-    const p = this.jsonProperties as any;
-    if (undefined === p.styles)
-      p.styles = new Object();
-
-    return p.styles;
-  }
-
-  /** Get a named style from the dictionary. */
-  public getStyle(name: string): any {
-    const style: object = this.styles[name];
-    return style ? style : {};
-  }
-
-  /** change the value of a named style on this DisplayStyle */
-  public setStyle(name: string, value: any): void { this.styles[name] = value; }
-
-  /** Remove a style from this DisplayStyle. */
-  public removeStyle(name: string) { delete this.styles[name]; }
-
-  /** Get the background color for this DisplayStyle */
-  public get backgroundColor(): ColorDef { return this._background; }
-  /** Set the background color for this DisplayStyle */
-  public set backgroundColor(val: ColorDef) { this._background.setFrom(val); this.setStyle("backgroundColor", val); }
-
-  /** Get the color with which graphics are rendered by this DisplayStyle when the monochrome view flag is enabled. */
-  public get monochromeColor(): ColorDef { return this._monochrome; }
-  /** Set the color with which graphics are rendered by this DisplayStyle when the monochrome view flag is enabled. */
-  public set monochromeColor(val: ColorDef) { this._monochrome.setFrom(val); this.setStyle("monochromeColor", val); }
 
   /** Create a Code for a DisplayStyle given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -102,14 +58,79 @@ export class DisplayStyle extends DefinitionElement implements DisplayStyleProps
 
 /** A DisplayStyle for 2d views. */
 export class DisplayStyle2d extends DisplayStyle {
-  public constructor(props: DisplayStyleProps, iModel: IModelDb) { super(props, iModel); }
+  private readonly _settings: DisplayStyleSettings;
+
+  public get settings(): DisplayStyleSettings { return this._settings; }
+
+  public constructor(props: DisplayStyleProps, iModel: IModelDb) {
+    super(props, iModel);
+    this._settings = new DisplayStyleSettings(this.jsonProperties);
+  }
+
+  /**
+   * Insert a DisplayStyle2d for use by a ViewDefinition.
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new DisplayStyle2d into this DefinitionModel
+   * @param name The name of the DisplayStyle2d
+   * @returns The Id of the newly inserted DisplayStyle2d element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string): Id64String {
+    const displayStyleProps: DisplayStyleProps = {
+      classFullName: this.classFullName,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      model: definitionModelId,
+      isPrivate: false,
+      backgroundColor: new ColorDef(),
+      monochromeColor: ColorDef.white,
+      viewFlags: ViewFlags.createFrom(),
+    };
+    return iModelDb.elements.insertElement(displayStyleProps);
+  }
 }
 
 /** A DisplayStyle for 3d views.
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
  */
 export class DisplayStyle3d extends DisplayStyle {
-  public constructor(props: DisplayStyleProps, iModel: IModelDb) { super(props, iModel); }
+  private readonly _settings: DisplayStyle3dSettings;
+
+  public get settings(): DisplayStyle3dSettings { return this._settings; }
+
+  public constructor(props: DisplayStyleProps, iModel: IModelDb) {
+    super(props, iModel);
+    this._settings = new DisplayStyle3dSettings(this.jsonProperties);
+  }
+
+  /**
+   * Insert a DisplayStyle3d for use by a ViewDefinition.
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new DisplayStyle3d into this DefinitionModel
+   * @param name The name of the DisplayStyle3d
+   * @returns The Id of the newly inserted DisplayStyle3d element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, viewFlagsIn?: ViewFlags, backgroundColor?: ColorDef, analysisStyle?: AnalysisStyleProps): Id64String {
+    const stylesIn: { [k: string]: any } = { viewflags: viewFlagsIn ? viewFlagsIn : new ViewFlags() };
+
+    if (analysisStyle)
+      stylesIn.analysisStyle = analysisStyle;
+
+    if (backgroundColor)
+      stylesIn.backgroundColor = backgroundColor;
+
+    const displayStyleProps: DisplayStyleProps = {
+      classFullName: this.classFullName,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      model: definitionModelId,
+      jsonProperties: { styles: stylesIn },
+      isPrivate: false,
+      backgroundColor: new ColorDef(),
+      monochromeColor: ColorDef.white,
+      viewFlags: ViewFlags.createFrom(),
+    };
+    return iModelDb.elements.insertElement(displayStyleProps);
+  }
 }
 
 /**
@@ -138,6 +159,26 @@ export class ModelSelector extends DefinitionElement implements ModelSelectorPro
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.modelSelector);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
   }
+
+  /**
+   * Insert a ModelSelector which is used to select which Models are displayed by a ViewDefinition.
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new ModelSelector into this DefinitionModel
+   * @param name The name of the ModelSelector
+   * @param models Array of models to select for display
+   * @returns The Id of the newly inserted ModelSelector element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, models: Id64Array): Id64String {
+    const modelSelectorProps: ModelSelectorProps = {
+      classFullName: this.classFullName,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      model: definitionModelId,
+      models,
+      isPrivate: false,
+    };
+    return iModelDb.elements.insertElement(modelSelectorProps);
+  }
 }
 
 /**
@@ -165,6 +206,26 @@ export class CategorySelector extends DefinitionElement implements CategorySelec
   public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
     const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.categorySelector);
     return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
+
+  /**
+   * Insert a CategorySelector which is used to select which categories are displayed by a ViewDefinition.
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new CategorySelector into this DefinitionModel
+   * @param name The name of the CategorySelector
+   * @param categories Array of categories to select for display
+   * @returns The Id of the newly inserted CategorySelector element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, categories: Id64Array): Id64String {
+    const categorySelectorProps: CategorySelectorProps = {
+      classFullName: this.classFullName,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      model: definitionModelId,
+      categories,
+      isPrivate: false,
+    };
+    return iModelDb.elements.insertElement(categorySelectorProps);
   }
 }
 
@@ -212,10 +273,10 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   public isDrawingView(): this is DrawingViewDefinition { return this instanceof DrawingViewDefinition; }
 
   /** Load this view's DisplayStyle from the IModelDb. */
-  public loadDisplayStyle(): DisplayStyle { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle; }
+  public loadDisplayStyle(): DisplayStyle { return this.iModel.elements.getElement<DisplayStyle>(this.displayStyleId); }
 
   /** Load this view's CategorySelector from the IModelDb. */
-  public loadCategorySelector(): CategorySelector { return this.iModel.elements.getElement(this.categorySelectorId) as CategorySelector; }
+  public loadCategorySelector(): CategorySelector { return this.iModel.elements.getElement<CategorySelector>(this.categorySelectorId); }
 
   /** Create a Code for a ViewDefinition given a name that is meant to be unique within the scope of the specified DefinitionModel.
    * @param iModel  The IModelDb
@@ -263,7 +324,7 @@ export abstract class ViewDefinition3d extends ViewDefinition implements ViewDef
   }
 
   /** Load this view's DisplayStyle3d from the IModelDb. */
-  public loadDisplayStyle3d(): DisplayStyle3d { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle3d; }
+  public loadDisplayStyle3d(): DisplayStyle3d { return this.iModel.elements.getElement<DisplayStyle3d>(this.displayStyleId); }
 }
 
 /**
@@ -291,7 +352,7 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
   }
 
   /** Load this view's ModelSelector from the IModelDb. */
-  public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement(this.modelSelectorId) as ModelSelector; }
+  public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection.
@@ -299,6 +360,48 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
  */
 export class OrthographicViewDefinition extends SpatialViewDefinition {
   constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); }
+  /**
+   * Insert an OrthographicViewDefinition
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new OrthographicViewDefinition into this DefinitionModel
+   * @param name The name/CodeValue of the view
+   * @param modelSelectorId The [[ModelSelector]] that this view should use
+   * @param categorySelectorId The [[CategorySelector]] that this view should use
+   * @param displayStyleId The [[DisplayStyle3d]] that this view should use
+   * @param range Defines the view origin and extents
+   * @param standardView Optionally defines the view's rotation
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, modelSelectorId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range3d, standardView = StandardViewIndex.Iso): Id64String {
+    const rotation = Matrix3d.createStandardWorldToView(standardView);
+    const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
+    const rotatedRange = rotationTransform.multiplyRange(range);
+    const viewOrigin = rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z);
+    const viewExtents = rotatedRange.diagonal();
+    const viewDefinitionProps: SpatialViewDefinitionProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      modelSelectorId,
+      categorySelectorId,
+      displayStyleId,
+      origin: viewOrigin,
+      extents: viewExtents,
+      angles,
+      cameraOn: false,
+      camera: new Camera(), // not used when cameraOn === false
+    };
+    return iModelDb.elements.insertElement(viewDefinitionProps);
+  }
+  /** Set a new viewed range without changing the rotation or any other properties. */
+  public setRange(range: Range3d): void {
+    const rotation = this.angles.toMatrix3d();
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
+    const rotatedRange = rotationTransform.multiplyRange(range);
+    this.origin = Point3d.createFrom(rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z));
+    this.extents = rotatedRange.diagonal();
+  }
 }
 
 /** Defines a view of a single 2d model. Each 2d model has its own coordinate system, so only one may appear per view. */
@@ -331,13 +434,38 @@ export class ViewDefinition2d extends ViewDefinition implements ViewDefinition2d
   }
 
   /** Load this view's DisplayStyle2d from the IModelDb. */
-  public loadDisplayStyle2d(): DisplayStyle2d { return this.iModel.elements.getElement(this.displayStyleId) as DisplayStyle2d; }
+  public loadDisplayStyle2d(): DisplayStyle2d { return this.iModel.elements.getElement<DisplayStyle2d>(this.displayStyleId); }
 }
 
 /** Defines a view of a [[DrawingModel]]. */
 export class DrawingViewDefinition extends ViewDefinition2d {
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
+  }
+  /**
+   * Insert an DrawingViewDefinition
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new DrawingViewDefinition into this [[DefinitionModel]]
+   * @param name The name/CodeValue of the view
+   * @param baseModelId The base [[DrawingModel]]
+   * @param categorySelectorId The [[CategorySelector]] that this view should use
+   * @param displayStyleId The [[DisplayStyle2d]] that this view should use
+   * @param range Defines the view origin and extents
+   * @throws [[IModelError]] if there is an insert problem.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, baseModelId: Id64String, categorySelectorId: Id64String, displayStyleId: Id64String, range: Range2d): Id64String {
+    const viewDefinitionProps: ViewDefinition2dProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      baseModelId,
+      categorySelectorId,
+      displayStyleId,
+      origin: { x: range.low.x, y: range.low.y },
+      delta: range.diagonal(),
+      angle: 0,
+    };
+    return iModelDb.elements.insertElement(viewDefinitionProps);
   }
 }
 
@@ -379,6 +507,16 @@ export class AuxCoordSystem2d extends AuxCoordSystem implements AuxCoordSystem2d
   public origin?: Point2d;
   public angle!: number;
   public constructor(props: AuxCoordSystem2dProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a Code for a AuxCoordSystem2d element given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystem2d element and provides the scope for its name.
+   * @param codeValue The AuxCoordSystem2d name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystem2d);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /**
@@ -390,12 +528,31 @@ export class AuxCoordSystem3d extends AuxCoordSystem implements AuxCoordSystem3d
   public pitch!: number;
   public roll!: number;
   public constructor(props: AuxCoordSystem3dProps, iModel: IModelDb) { super(props, iModel); }
+
+  /** Create a Code for a AuxCoordSystem3d element given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystem3d element and provides the scope for its name.
+   * @param codeValue The AuxCoordSystem3d name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystem3d);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /**
  * A spatial auxiliary coordinate system.
  */
 export class AuxCoordSystemSpatial extends AuxCoordSystem3d {
+  /** Create a Code for a AuxCoordSystemSpatial element given a name that is meant to be unique within the scope of the specified DefinitionModel.
+   * @param iModel  The IModelDb
+   * @param scopeModelId The Id of the DefinitionModel that contains the AuxCoordSystemSpatial element and provides the scope for its name.
+   * @param codeValue The AuxCoordSystemSpatial name
+   */
+  public static createCode(iModel: IModelDb, scopeModelId: CodeScopeProps, codeValue: string): Code {
+    const codeSpec: CodeSpec = iModel.codeSpecs.getByName(BisCodeSpec.auxCoordSystemSpatial);
+    return new Code({ spec: codeSpec.id, scope: scopeModelId, value: codeValue });
+  }
 }
 
 /**

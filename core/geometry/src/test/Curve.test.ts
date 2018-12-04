@@ -30,10 +30,10 @@ import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { Point4d } from "../geometry4d/Point4d";
-import { CurveLocationDetail, CurveIntervalRole } from "../curve/CurveLocationDetail";
+import { CurveLocationDetail, CurveIntervalRole, CurveSearchStatus } from "../curve/CurveLocationDetail";
 import { CoordinateXYZ } from "../curve/CoordinateXYZ";
 import { Path } from "../curve/Path";
-import { CurveChainWithDistanceIndex } from "../curve/PathWithDistanceIndex";
+import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
 /* tslint:disable:no-console */
 
 class ExerciseCurve {
@@ -55,10 +55,11 @@ class ExerciseCurve {
       ck.testCoordinate(scaleFactor * pointA0.distance(pointA1), pointB0.distance(pointB1));
       const frameA0 = curveA.fractionToFrenetFrame(u0);
       const frameB0 = curveB.fractionToFrenetFrame(u0);
-      if (ck.testPointer(frameA0)
+      if (frameA0 && frameB0
+        /* ck.testPointer(frameA0)
         && ck.testPointer(frameB0)
         && frameA0
-        && frameB0) {
+        && frameB0*/ ) {
         ck.testTransform(frameA0, frameB0);
         const frameA0Inverse = frameA0.inverse();
         if (ck.testPointer(frameA0Inverse) && frameA0Inverse) {
@@ -91,9 +92,9 @@ class ExerciseCurve {
     if (curve instanceof BSplineCurve3d) return;  // TODO
     // if (curve instanceof TransitionSpiral3d) return;  // TODO
     for (const fractionA of [0.421, 0.421, 0.45, 0.45]) {
-      const frameA = curve.fractionToFrenetFrame(fractionA)!; // just point and tangent needed, but exercise this . .
-      if (ck.testPointer(frameA) && frameA) {
-        const plane = Plane3dByOriginAndUnitNormal.create(frameA.getOrigin(), frameA.matrix.columnX())!;
+      const tangentA = curve.fractionToPointAndDerivative(fractionA)!;
+      if (ck.testPointer(tangentA) && tangentA) {
+        const plane = Plane3dByOriginAndUnitNormal.create(tangentA.origin, tangentA.direction)!;
         const intersections: CurveLocationDetail[] = [];
         curve.appendPlaneIntersectionPoints(plane!, intersections);
         const foundAt = intersections.filter(
@@ -107,6 +108,49 @@ class ExerciseCurve {
       }
     }
   }
+
+  public static exerciseMoveSignedDistance(ck: Checker, curve: CurvePrimitive) {
+    for (const segment of [
+      Segment1d.create(0.0, 0.5),
+      Segment1d.create(0.5, 1.0),
+      Segment1d.create(0.1, 0.35),
+      Segment1d.create(0.38, 0.92),
+      Segment1d.create(-0.1, 0.2),
+      Segment1d.create(-0.1, 0.2),
+      Segment1d.create(0.9, 1.2),
+      Segment1d.create(0.9, 1.2)]) {
+      const a = segment.x0;
+      const b = segment.x1;
+      const distanceAB = curve.curveLengthBetweenFractions(a, b);
+      const distanceBA = curve.curveLengthBetweenFractions(b, a);
+      if (!ck.testCoordinate(distanceAB, distanceBA)) {
+        curve.curveLengthBetweenFractions(a, b);
+        curve.curveLengthBetweenFractions(b, a);
+      }
+      let detailAtoB = curve.moveSignedDistanceFromFraction(a, distanceAB, true);
+      let detailBtoA = curve.moveSignedDistanceFromFraction(b, -distanceAB, true);
+      if (!segment.isIn01 &&
+        (detailAtoB.curveSearchStatus === CurveSearchStatus.stoppedAtBoundary
+          || detailBtoA.curveSearchStatus === CurveSearchStatus.stoppedAtBoundary)) {
+        // um .. not sure what to test for
+      } else if (detailAtoB.curveSearchStatus === undefined
+        || detailBtoA.curveSearchStatus === undefined
+        || detailAtoB.curveSearchStatus !== CurveSearchStatus.success
+        || detailBtoA.curveSearchStatus !== CurveSearchStatus.success) {
+        detailAtoB = curve.moveSignedDistanceFromFraction(a, distanceAB, true);
+        detailBtoA = curve.moveSignedDistanceFromFraction(b, -distanceAB, true);
+        ck.announceError("Incomplete moveSignedDistanceFromFraction", a, b, curve);
+      } else {
+        if (curve.isExtensibleFractionSpace || segment.isIn01) {
+          ck.testCoordinate(b, detailAtoB.fraction);
+          ck.testCoordinate(a, detailBtoA.fraction);
+        } else {
+
+        }
+      }
+    }
+  }
+
   public static exerciseFractionToPoint(ck: Checker, curve: CurvePrimitive | undefined, expectProportionalDistance: boolean, expectEqualChordLength: boolean) {
     if (!curve) {
       ck.announceError("Null CurvePrimitive provided to exerciseFractionAndPoint");
@@ -152,14 +196,23 @@ class ExerciseCurve {
         const approximateDerivative2 = delta012.scale(1.0 / (derivativeIncrement * derivativeIncrement));
         ck.testTrue(aproximateDerivative.distance(ray1.direction) < derivativeTolerance * (1 + ray1.direction.magnitude()),
           "approximate derivative", ray1.direction, aproximateDerivative, curve, fraction);
-        if (plane1 && !(curve instanceof BSplineCurve3d)) { //  curve instanceof TransitionSpiral3d
+        if (plane1) { //  curve instanceof TransitionSpiral3d
           ck.testPoint3d(ray1.origin, plane1.origin, "points with derivatives");
           if (!(curve instanceof TransitionSpiral3d)) {
             // TransitionSpiral has wierd derivative behavior?
-            ck.testTrue(approximateDerivative2.distance(plane1.vectorV) < derivative2Tolerance * (1 + plane1.vectorV.magnitude()),
-              "approximate 2nd derivative", plane1.vectorV, approximateDerivative2, curve, fraction);
-            ck.testTrue(approximateDerivative2.distance(plane1.vectorV) < derivative2Tolerance * (1 + plane1.vectorV.magnitude()),
-              "approximate 2nd derivative", plane1.vectorV, approximateDerivative2, curve, fraction);
+            // if (!ck.testTrue(approximateDerivative2.distance(plane1.vectorV) < derivative2Tolerance * (1 + plane1.vectorV.magnitude())))
+            //  curve.fractionToPointAnd2Derivatives(fraction);
+            const radians = approximateDerivative2.angleTo(plane1.vectorV).radians;
+            if (!ck.testLE(radians, 0.001))
+              curve.fractionToPointAnd2Derivatives(fraction);
+            if (!ck.testTrue(approximateDerivative2.distance(plane1.vectorV) < derivative2Tolerance * (1 + plane1.vectorV.magnitude()))) {
+              const magU = plane1.vectorU.magnitude();
+              const magV = plane1.vectorV.magnitude();
+              const magV2 = approximateDerivative2.magnitude();
+              const ratio = magV / magV2;
+              console.log(" (magU " + magU + ") (magV " + magV + ") (magV2 " + magV2 + ") (magV/magV2 " + ratio + ") (L " + curve.curveLength() + ") (radians " + radians + ")");
+              curve.fractionToPointAnd2Derivatives(fraction);
+            }
           }
         }
       }
@@ -193,7 +246,8 @@ class ExerciseCurve {
       if (detail.curve === curve) {
         if (!ck.testCoordinate(fractionA, detail.fraction, "fraction round trip")
           || !ck.testPoint3d(pointA, detail.point, "round trip point")) {
-          detail = curve.closestPoint(pointA, false);
+          const pointB = curve.fractionToPoint(fractionA);
+          detail = curve.closestPoint(pointB, false);
         } else {
           // The search tunneled into a contained curve.   Only verify the point.
           if (!ck.testPoint3d(pointA, detail.point, "round trip point")
@@ -236,39 +290,67 @@ class ExerciseCurve {
   }
   public static RunTest(ck: Checker) {
 
-    const segment = LineSegment3d.create(Point3d.create(1, 2, 3), Point3d.create(4, 5, 10));
-    ExerciseCurve.exerciseFractionToPoint(ck, segment, true, true);
-    ExerciseCurve.exerciseStroke(ck, segment);
-    ExerciseCurve.exerciseClosestPoint(ck, segment, 0.1);
-    ExerciseCurve.exerciseCloneAndTransform(ck, segment);
-
-    const arc = Arc3d.create(Point3d.create(1, 2, 3),
-      Vector3d.create(2, 0, 0),
-      Vector3d.create(0, 2, 0),
-      AngleSweep.createStartEndDegrees(0, 180));
-    if (arc) {
-      ExerciseCurve.exerciseFractionToPoint(ck, arc, false, true);
-      ExerciseCurve.exerciseClosestPoint(ck, arc, 0.1);
-      ExerciseCurve.exerciseStroke(ck, arc);
-      ExerciseCurve.exerciseCloneAndTransform(ck, arc);
+    {
+      const segment = LineSegment3d.create(Point3d.create(1, 2, 3), Point3d.create(4, 5, 10));
+      ExerciseCurve.exerciseFractionToPoint(ck, segment, true, true);
+      ExerciseCurve.exerciseMoveSignedDistance(ck, segment);
+      ExerciseCurve.exerciseStroke(ck, segment);
+      ExerciseCurve.exerciseClosestPoint(ck, segment, 0.1);
+      ExerciseCurve.exerciseCloneAndTransform(ck, segment);
     }
-    let linestring = LineString3d.createPoints([
-      Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0)]);
-    ExerciseCurve.exerciseFractionToPoint(ck, linestring, false, false);
-    ExerciseCurve.exerciseStroke(ck, linestring);
-    ExerciseCurve.exerciseCloneAndTransform(ck, linestring);
+    { // a circular arc . . .
+      const arc = Arc3d.create(Point3d.create(1, 2, 3),
+        Vector3d.create(2, 0, 0),
+        Vector3d.create(0, 2, 0),
+        AngleSweep.createStartEndDegrees(0, 180));
+      if (arc) {
+        ExerciseCurve.exerciseFractionToPoint(ck, arc, false, true);
+        ExerciseCurve.exerciseMoveSignedDistance(ck, arc);
+        ExerciseCurve.exerciseClosestPoint(ck, arc, 0.1);
+        ExerciseCurve.exerciseStroke(ck, arc);
+        ExerciseCurve.exerciseCloneAndTransform(ck, arc);
+      }
+    }
 
-    linestring = LineString3d.create(
-      Point3d.create(0, 0, 0),
-      Point3d.create(1, 0, 0),
-      Point3d.create(1, 1, 0));
-    ExerciseCurve.exerciseFractionToPoint(ck, linestring, false, false);
-    ExerciseCurve.exerciseCloneAndTransform(ck, linestring);
+    { // a non-circular arc . . .  (much harder computations!!)
+      const arc = Arc3d.create(Point3d.create(1, 2, 3),
+        Vector3d.create(3, 0, 0),
+        Vector3d.create(0, 2, 0),
+        AngleSweep.createStartEndDegrees(0, 180));
+      if (arc) {
+        ExerciseCurve.exerciseFractionToPoint(ck, arc, false, false);
+        ExerciseCurve.exerciseMoveSignedDistance(ck, arc);
+        ExerciseCurve.exerciseClosestPoint(ck, arc, 0.1);
+        ExerciseCurve.exerciseStroke(ck, arc);
+        ExerciseCurve.exerciseCloneAndTransform(ck, arc);
+      }
+    }
 
-    linestring = LineString3d.create();
+    {
+      const linestring = LineString3d.createPoints([
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(1, 1, 0)]);
+      ExerciseCurve.exerciseFractionToPoint(ck, linestring, false, false);
+      ExerciseCurve.exerciseMoveSignedDistance(ck, linestring);
+      ExerciseCurve.exerciseStroke(ck, linestring);
+      ExerciseCurve.exerciseCloneAndTransform(ck, linestring);
+    }
+    {
+      const linestring = LineString3d.create(
+        Point3d.create(0, 0, 0),
+        Point3d.create(1, 0, 0),
+        Point3d.create(2, 1, 0));
+      ExerciseCurve.exerciseFractionToPoint(ck, linestring, false, false);
+      ExerciseCurve.exerciseMoveSignedDistance(ck, linestring);
+      ExerciseCurve.exerciseStroke(ck, linestring);
+      ExerciseCurve.exerciseCloneAndTransform(ck, linestring);
+    }
 
+    {
+      const linestring = LineString3d.create();
+      ck.testExactNumber(0, linestring.points.length);
+    }
     const bcurve = BSplineCurve3d.createUniformKnots(
       [Point3d.create(0, 0, 0), Point3d.create(5, 0, 0), Point3d.create(10, 4, 0)],
       3);
@@ -299,6 +381,7 @@ class ExerciseCurve {
       if (ck.testPointer(bcurveH) && bcurveH) {
         ExerciseCurve.exerciseFractionToPoint(ck, bcurveH, false, false);
         ExerciseCurve.exerciseStroke(ck, bcurveH);
+        ExerciseCurve.exerciseMoveSignedDistance(ck, bcurveH);
         ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.1);
         ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.48);
         ExerciseCurve.exerciseClosestPoint(ck, bcurveH, 0.82);
@@ -308,11 +391,13 @@ class ExerciseCurve {
     const bezierCurve0 = BezierCurve3d.create([
       Point2d.create(0, 0), Point2d.create(0.5, 0.0), Point2d.create(1, 1)])!;
     ExerciseCurve.exerciseFractionToPoint(ck, bezierCurve0, false, false);
+    ExerciseCurve.exerciseMoveSignedDistance(ck, bezierCurve0);
     ExerciseCurve.exerciseStroke(ck, bezierCurve0);
     ExerciseCurve.exerciseClosestPoint(ck, bezierCurve0, 0.1);
 
     const bezierCurve = BezierCurve3dH.create([
       Point2d.create(0, 0), Point2d.create(0.5, 0.0), Point2d.create(1, 1)])!;
+    ExerciseCurve.exerciseMoveSignedDistance(ck, bezierCurve);
     ExerciseCurve.exerciseFractionToPoint(ck, bezierCurve, false, false);
     ExerciseCurve.exerciseStroke(ck, bezierCurve);
     ExerciseCurve.exerciseClosestPoint(ck, bezierCurve, 0.1);
@@ -320,6 +405,7 @@ class ExerciseCurve {
     const bezierCurve3d = BezierCurve3dH.create([
       Point3d.create(0, 0), Point3d.create(0.5, 0.0), Point3d.create(1, 1), Point3d.create(2, 1, 1)])!;
     ExerciseCurve.exerciseFractionToPoint(ck, bezierCurve, false, false);
+    ExerciseCurve.exerciseMoveSignedDistance(ck, bezierCurve3d);
     ExerciseCurve.exerciseStroke(ck, bezierCurve3d);
     ExerciseCurve.exerciseClosestPoint(ck, bezierCurve3d, 0.1);
 
@@ -335,13 +421,12 @@ class ExerciseCurve {
         ExerciseCurve.exerciseClosestPoint(ck, spiral, 0.3);
       }
     }
-    ck.testExactNumber(0, linestring.points.length);
 
   }
 }
 
-describe("CurvePrimitive.Evaluations", () => {
-  it("Create and exercise curves", () => {
+describe("CurveChainWithDistanceIndex", () => {
+  it("Exercise", () => {
     const ck = new Checker();
     ExerciseCurve.RunTest(ck);
     ck.checkpoint("End CurvePrimitive.Evaluations");
@@ -360,6 +445,7 @@ describe("CurvePrimitive.Evaluations", () => {
       ExerciseCurve.exerciseStroke(ck, p);
       ExerciseCurve.exerciseClosestPoint(ck, p, 0.1);
       ExerciseCurve.exerciseCloneAndTransform(ck, p);
+      ExerciseCurve.exerciseMoveSignedDistance(ck, p);
     }
 
     ck.checkpoint("CurvePrimitive.Create and exercise distanceIndex");

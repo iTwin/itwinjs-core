@@ -14,7 +14,7 @@ import { Point4d } from "../geometry4d/Point4d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Geometry } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
-import { GrowableFloat64Array } from "../geometry3d/GrowableArray";
+import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
 import { AnalyticRoots } from "../numerics/Polynomials";
 import { Arc3d } from "../curve/Arc3d";
 import { Clipper, ClipUtilities } from "./ClipUtils";

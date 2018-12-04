@@ -99,7 +99,7 @@ export default class PresentationTableDataProvider extends ContentDataProvider i
 
     if (props.descriptor || props.descriptorConfiguration) {
       if (this.getColumns)
-        this.getColumns.cache.clear();
+        this.getColumns.cache.clear!();
       if (this.onColumnsChanged)
         this.onColumnsChanged.raiseEvent();
     }

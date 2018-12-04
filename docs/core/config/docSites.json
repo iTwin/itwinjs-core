@@ -19,9 +19,14 @@
     "docSiteId": 5,
     "displayName": "Learning"
   },
+  "changehistory": {
+    "docSiteId": 6,
+    "displayName": "Change History"
+  },
   "metadata": {
     "home": "landing-page",
     "logo": "landing-page/assets/imodeljs-logo.svg",
+    "smallLogo": "landing-page/assets/imodeljs-icon.svg",
     "sponsoredByLogo": "landing-page/assets/bentley.svg",
     "favicon": "landing-page/assets/imodeljs_16.png",
     "docSiteOrder": [
@@ -29,21 +34,15 @@
       "getting-started",
       "learning",
       "bis",
-      "reference"
+      "reference",
+      "changehistory"
     ],
     "headerTabs": {
-      "Getting Started": {
-        "docSite": "getting-started"
-      },
-      "BIS": {
-        "docSite": "bis"
-      },
-      "Learning": {
-        "docSite": "learning"
-      },
-      "API Reference": {
-        "docSite": "reference"
-      }
+      "Getting Started": "getting-started",
+      "BIS": "bis",
+      "Learning": "learning",
+      "API Reference": "reference",
+      "0.171.0": "changehistory"
     },
     "packageAliases": {
       "common": "imodeljs-common",

@@ -7,10 +7,6 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
-      "name": "@bentley/bentleyjs-tools",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
-    },
-    {
       "name": "@bentley/build-tools",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
@@ -43,6 +39,10 @@
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
+      "name": "@bentley/imodeljs-clients-backend",
+      "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
       "name": "@bentley/imodeljs-common",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
@@ -72,7 +72,7 @@
     },
     {
       "name": "@bentley/presentation-components",
-      "allowedCategories": [ "internal" ]
+      "allowedCategories": [ "frontend", "internal" ]
     },
     {
       "name": "@bentley/presentation-frontend",
@@ -99,6 +99,10 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "@openid/appauth",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "app-root-path",
       "allowedCategories": [ "tools" ]
     },
@@ -123,6 +127,10 @@
       "allowedCategories": [ "internal", "tools" ]
     },
     {
+      "name": "callable-instance2",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "case-sensitive-paths-webpack-plugin",
       "allowedCategories": [ "tools" ]
     },
@@ -141,6 +149,10 @@
     {
       "name": "chai-spies",
       "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+    },
+    {
+      "name": "chai-string",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "chalk",
@@ -199,6 +211,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "css-element-queries",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "css-loader",
       "allowedCategories": [ "frontend", "tools" ]
     },
@@ -231,8 +247,16 @@
       "allowedCategories": [ "backend", "internal" ]
     },
     {
+      "name": "electron-builder",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "electron-chromedriver",
       "allowedCategories": [ "internal", "tools" ]
+    },
+    {
+      "name": "electron-devtools-installer",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "enzyme",
@@ -551,6 +575,10 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "react-resize-detector",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-router-dom",
       "allowedCategories": [ "frontend" ]
     },
@@ -564,6 +592,10 @@
     },
     {
       "name": "react-testing-library",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-virtualized",
       "allowedCategories": [ "frontend" ]
     },
     {
@@ -581,6 +613,10 @@
     {
       "name": "redux-oidc",
       "allowedCategories": [ "frontend", "internal" ]
+    },
+    {
+      "name": "resize-observer-polyfill",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "resolve",
@@ -604,11 +640,11 @@
     },
     {
       "name": "sinon",
-      "allowedCategories": [ "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "sinon-chai",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "source-map-loader",
@@ -649,6 +685,10 @@
     {
       "name": "tree-kill",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "ts-key-enum",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "ts-loader",
@@ -701,6 +741,10 @@
     {
       "name": "url-loader",
       "allowedCategories": [ "frontend", "tools" ]
+    },
+    {
+      "name": "url-search-params",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "wdio-chromedriver-service",
@@ -780,7 +824,7 @@
     },
     {
       "name": "yargs",
-      "allowedCategories": [ "common", "tools" ]
+      "allowedCategories": [ "common", "internal", "tools" ]
     }
   ]
 }

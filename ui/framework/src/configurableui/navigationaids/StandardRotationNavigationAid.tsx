@@ -7,8 +7,8 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import NZ_Expandable from "@bentley/ui-ninezone/lib/toolbar/button/Expandable";
-import NZ_Icon from "@bentley/ui-ninezone/lib/toolbar/button/Icon";
+import NZ_Expandable from "@bentley/ui-ninezone/lib/widget/tools/button/Expandable";
+import NZ_Icon from "@bentley/ui-ninezone/lib/widget/tools/button/Icon";
 import NZ_Column from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Column";
 import NZ_Item from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/tool/Tool";
 import NZ_Tray from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Group";
@@ -40,13 +40,13 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
   }
 }
 
-/** Rotation data used in the [[StandardRotationNavigationAid]] component */
+/** @hidden */
 export interface RotationData {
   label: string;
-  iconClass: string;
+  iconClassName: string;
 }
 
-/** State for the [[StandardRotationNavigationAid]] component */
+/** @hidden */
 export interface StandardRotationNavigationAidState {
   list: RotationData[];
   selected: StandardViewId;
@@ -56,6 +56,7 @@ export interface StandardRotationNavigationAidState {
 /** A 3D orientation Navigation Aid.
  */
 export class StandardRotationNavigationAid extends React.Component<{}, StandardRotationNavigationAidState> {
+  /** @hidden */
   public readonly state: Readonly<StandardRotationNavigationAidState>;
 
   constructor(props: any) {
@@ -66,56 +67,56 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
       list = [
         {
           label: UiFramework.i18n.translate("UiFramework:rotations.top"),
-          iconClass: "icon-cube-faces-top",
+          iconClassName: "icon-cube-faces-top",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.bottom"),
-          iconClass: "icon-cube-faces-bottom",
+          iconClassName: "icon-cube-faces-bottom",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.left"),
-          iconClass: "icon-cube-faces-left",
+          iconClassName: "icon-cube-faces-left",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.right"),
-          iconClass: "icon-cube-faces-right",
+          iconClassName: "icon-cube-faces-right",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.front"),
-          iconClass: "icon-cube-faces-front",
+          iconClassName: "icon-cube-faces-front",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.rear"),
-          iconClass: "icon-cube-faces-rear",
+          iconClassName: "icon-cube-faces-rear",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.isoLeft"),
-          iconClass: "icon-cube-faces-iso-left",
+          iconClassName: "icon-cube-faces-iso-left",
         }, {
           label: UiFramework.i18n.translate("UiFramework:rotations.isoRight"),
-          iconClass: "icon-cube-faces-iso-right",
+          iconClassName: "icon-cube-faces-iso-right",
         },
       ];
     } catch (e) {
       list = [
         {
           label: "Top",
-          iconClass: "icon-cube-faces-top",
+          iconClassName: "icon-cube-faces-top",
         }, {
           label: "Bottom",
-          iconClass: "icon-cube-faces-bottom",
+          iconClassName: "icon-cube-faces-bottom",
         }, {
           label: "Left",
-          iconClass: "icon-cube-faces-left",
+          iconClassName: "icon-cube-faces-left",
         }, {
           label: "Right",
-          iconClass: "icon-cube-faces-right",
+          iconClassName: "icon-cube-faces-right",
         }, {
           label: "Front",
-          iconClass: "icon-cube-faces-front",
+          iconClassName: "icon-cube-faces-front",
         }, {
           label: "Rear",
-          iconClass: "icon-cube-faces-rear",
+          iconClassName: "icon-cube-faces-rear",
         }, {
           label: "Iso Left",
-          iconClass: "icon-cube-faces-iso-left",
+          iconClassName: "icon-cube-faces-iso-left",
         }, {
           label: "Iso Right",
-          iconClass: "icon-cube-faces-iso-right",
+          iconClassName: "icon-cube-faces-iso-right",
         },
       ];
     }
@@ -140,7 +141,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
             <NZ_Icon
               className={"icon-button"}
               icon={
-                <span className={"three-d-icon icon " + this.state.list[this.state.selected].iconClass} />
+                <span className={"three-d-icon icon " + this.state.list[this.state.selected].iconClassName} />
               }
               onClick={this._toggleIsExpanded}
             >
@@ -184,7 +185,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
                   key={itemIndex.toString()}
                   ref={itemIndex.toString()}
                   label={item.label}
-                  icon={<span className={"icon " + item.iconClass} />}
+                  icon={<span className={"icon " + item.iconClassName} />}
                   isActive={this.state.selected === itemIndex}
                   onClick={() => this._handleListItemClicked(itemIndex)}
                 >

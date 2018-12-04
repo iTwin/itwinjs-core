@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModelHub */
 
-import { ECJsonTypeMap, WsgInstance, GuidSerializer } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { IModelHubClientError } from "./Errors";
 import { AccessToken } from "../Token";
 import { Logger, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
@@ -45,7 +45,7 @@ export class Briefcase extends WsgInstance {
   public fileSize?: string;
 
   /** FileId of the master file. See [BriefcaseEntry.fileId]($backend). */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.FileId", new GuidSerializer())
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.FileId")
   public fileId?: GuidString;
 
   /** Id of the briefcase. See [BriefcaseId]($backend) */
@@ -84,7 +84,7 @@ export class Briefcase extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("ecdb", "lastAccessedAt")
   public lastAccessedAt?: Date;
 
-  @ECJsonTypeMap.propertyToJson("ecdb", "iModelId", new GuidSerializer())
+  @ECJsonTypeMap.propertyToJson("ecdb", "iModelId")
   public iModelId?: GuidString;
 }
 

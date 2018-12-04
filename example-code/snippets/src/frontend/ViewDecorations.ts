@@ -187,7 +187,7 @@ export class IncidentMarkerDemo {
   private static _decorator?: IncidentMarkerDemo; // static variable just so we can tell if the demo is active.
 
   public constructor(iModel: IModelConnection) {
-    const makerIcons = [
+    const markerIcons = [
       imageElementFromUrl("Hazard_biological.svg"),
       imageElementFromUrl("Hazard_electric.svg"),
       imageElementFromUrl("Hazard_flammable.svg"),
@@ -196,7 +196,7 @@ export class IncidentMarkerDemo {
     ];
 
     if (undefined === IncidentMarkerDemo.warningSign)
-      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image);
+      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image); // tslint:disable-line:no-floating-promises
 
     const extents = iModel!.projectExtents;
     const pos = new Point3d();
@@ -204,7 +204,7 @@ export class IncidentMarkerDemo {
       pos.x = extents.low.x + (Math.random() * extents.xLength());
       pos.y = extents.low.y + (Math.random() * extents.yLength());
       pos.z = extents.low.z + (Math.random() * extents.zLength());
-      this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, makerIcons[i % makerIcons.length]));
+      this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, markerIcons[i % markerIcons.length]));
     }
   }
 

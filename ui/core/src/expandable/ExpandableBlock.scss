@@ -5,7 +5,7 @@
 @import "../colors.scss";
 @import "@bentley/bwc/lib/mixins";
 
-.core-property-block {
+.core-expandable-block {
   @include bwc-expandable-blocks-block;
   background-color: $background-1;
 

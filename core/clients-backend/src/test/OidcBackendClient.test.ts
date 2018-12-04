@@ -42,7 +42,7 @@ describe("OidcBackendClient (#integration)", () => {
 
   const getIModelId = async (accessToken: AccessToken, iModelName: string, projectId: string): Promise<string> => {
     const hubClient = new IModelHubClient();
-    const imodel: HubIModel = (await hubClient.IModels().get(actx, accessToken, projectId, new IModelQuery().byName(testIModelName)))[0];
+    const imodel: HubIModel = (await hubClient.iModels.get(actx, accessToken, projectId, new IModelQuery().byName(testIModelName)))[0];
     chai.expect(imodel.name).to.be.equal(iModelName);
     return imodel.wsgId;
   };

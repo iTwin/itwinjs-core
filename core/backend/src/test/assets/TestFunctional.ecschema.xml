@@ -3,6 +3,22 @@
 
     <ECSchemaReference name="Functional" version="1.0" alias="func" />
 
+    <!-- WIP: waiting for BisCore:SchemaHasBehavior -->
+    <ECCustomAttributeClass typeName="PlaceholderForSchemaHasBehavior" appliesTo="Schema">
+        <ECArrayProperty propertyName="Restrictions" typeName="string" minOccurs="0" maxOccurs="unbounded"/>
+    </ECCustomAttributeClass>
+
+    <ECCustomAttributes>
+        <!-- WIP: waiting for BisCore:SchemaHasBehavior -->
+        <PlaceholderForSchemaHasBehavior>
+            <Restrictions>
+                <string>Restriction1</string>
+                <string>Restriction2</string>
+                <string>Restriction3</string>
+            </Restrictions>
+        </PlaceholderForSchemaHasBehavior>
+    </ECCustomAttributes>
+
     <ECEntityClass typeName="Breakdown" displayLabel="Test Functional Breakdown">
         <BaseClass>func:FunctionalBreakdownElement</BaseClass>
         <ECProperty propertyName="StringProperty" typeName="string"/>

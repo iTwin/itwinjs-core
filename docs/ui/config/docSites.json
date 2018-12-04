@@ -13,23 +13,18 @@
   },
   "metadata": {
     "home": "getting-started",
-    "logo": "getting-started/imodeljs.ico",
-    "favicon": "getting-started/imodeljs.ico",
+    "logo": "getting-started/assets/imodeljs-logo.svg",
+    "smallLogo": "getting-started/assets/imodeljs-icon.svg",
+    "favicon": "getting-started/assets/imodeljs_16.png",
     "docSiteOrder": [
       "getting-started",
       "learning",
       "reference"
     ],
     "headerTabs": {
-      "Getting Started": {
-        "docSite": "getting-started"
-      },
-      "Learning": {
-        "docSite": "learning"
-      },
-      "API Reference": {
-        "docSite": "reference"
-      }
+      "Getting Started": "getting-started",
+      "Learning": "learning",
+      "API Reference": "reference"
     },
     "packageAliases": {
       "components": "ui-components",

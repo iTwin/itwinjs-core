@@ -64,7 +64,7 @@
   bottom: 0;
 }
 
-.content-overlay-div {
+.contentlayout-overlay-div {
   position: absolute;
   top: 0;
   left: 0;
@@ -76,11 +76,11 @@
   pointer-events: none;
   z-index: 5;   // TODO - fix for Grid column resizers, which have a z-index of 2
 
-  &.content-overlay-active {
+  &.contentlayout-overlay-active {
     border-color: $bwc-orange;
   }
 
-  &.content-overlay-inactive {
+  &.contentlayout-overlay-inactive {
     border-color: transparent;
   }
 

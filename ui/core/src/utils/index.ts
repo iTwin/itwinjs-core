@@ -3,3 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 export { default as Timer } from "./Timer";
+export * from "./getDisplayName";
+export * from "./shallowDiffers";
+export * from "./typeUtils";

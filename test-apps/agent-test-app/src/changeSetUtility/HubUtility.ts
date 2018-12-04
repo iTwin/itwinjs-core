@@ -40,7 +40,7 @@ export class HubUtility {
     public async createNamedVersion(accessToken: AccessToken, iModelId: string, name: string, description: string): Promise<Version> {
         const changeSetId: string = await IModelVersion.latest().evaluateChangeSet(actx, accessToken, iModelId, this._hubClient);
         Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, `Creating named version "${name}" on the Hub`);
-        return await this._hubClient.Versions().create(actx, accessToken, iModelId, changeSetId, name, description);
+        return this._hubClient.versions.create(actx, accessToken, iModelId, changeSetId, name, description);
     }
     /** Push an iModel to the Hub */
     public async pushIModel(accessToken: AccessToken, projectId: string, pathname: string): Promise<string> {
@@ -48,11 +48,11 @@ export class HubUtility {
         const iModelName = path.basename(pathname, ".bim");
         let iModel: HubIModel | undefined = await this._queryIModelByName(accessToken, projectId, iModelName);
         if (iModel && !!iModel.id)
-            await this._hubClient.IModels().delete(actx, accessToken, projectId, iModel.id!);
+            await this._hubClient.iModels.delete(actx, accessToken, projectId, iModel.id!);
 
         // Upload a new iModel
         Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, `Started pushing test iModel "${iModelName}" to the Hub`);
-        iModel = await this._hubClient.IModels().create(actx, accessToken, projectId, iModelName, pathname, "", undefined, 2 * 60 * 1000);
+        iModel = await this._hubClient.iModels.create(actx, accessToken, projectId, iModelName, pathname, "", undefined, 2 * 60 * 1000);
         Logger.logTrace(ChangeSetUtilityConfig.loggingCategory, `Finished pushing test iModel "${iModelName} (id:${iModel.wsgId})" to the Hub`);
         return iModel.wsgId;
     }
@@ -91,7 +91,7 @@ export class HubUtility {
     }
 
     private async _queryIModelByName(accessToken: AccessToken, projectId: string, iModelName: string): Promise<HubIModel | undefined> {
-        const iModels = await this._hubClient.IModels().get(actx, accessToken, projectId, new IModelQuery().byName(iModelName));
+        const iModels = await this._hubClient.iModels.get(actx, accessToken, projectId, new IModelQuery().byName(iModelName));
         if (iModels.length === 0)
             return undefined;
         if (iModels.length > 1)

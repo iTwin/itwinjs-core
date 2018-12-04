@@ -132,7 +132,7 @@ export class FormDataManagementClient extends WsgClient {
    * @param filter [optional] can either supply a string or an array of property names and values which are then unioned together as a string and inserted into the url to exclude definitions
    * @param format either xml or json, this corresponds to the actual form definition which will be returned a string property, but can be parse into the format specified
    */
-  public getFormDefinitions(token: AccessToken, alctx: ActivityLoggingContext, projectId: string, filter?: string | Array<{ name: string, value: string }>, format: "json" | "xml" = "json"): Promise<FormDefinition[]> {
+  public async getFormDefinitions(token: AccessToken, alctx: ActivityLoggingContext, projectId: string, filter?: string | Array<{ name: string, value: string }>, format: "json" | "xml" = "json"): Promise<FormDefinition[]> {
     let url = `/Repositories/Bentley.Forms--${projectId}/Forms_EC_Mapping/FormDefinition`;
 
     if (filter !== undefined) {
@@ -151,7 +151,7 @@ export class FormDataManagementClient extends WsgClient {
    * @param alctx the ActivityLoggingContext to track this request by
    * @param projectId the project associated with the form definitions
    */
-  public getRiskIssueFormDefinitions(token: AccessToken, alctx: ActivityLoggingContext, projectId: string): Promise<FormDefinition[]> {
+  public async getRiskIssueFormDefinitions(token: AccessToken, alctx: ActivityLoggingContext, projectId: string): Promise<FormDefinition[]> {
     const filters = [
       { name: "Classification", value: "Risk" },
       { name: "Discipline", value: "Issue" },
@@ -172,7 +172,7 @@ export class FormDataManagementClient extends WsgClient {
    * @param top the maximum number of instances to return
    * @param filter [optional] can either supply a string or an array of property names and values which are then unioned together as a string and inserted into the url to exclude data instances
    */
-  public getFormData(token: AccessToken, alctx: ActivityLoggingContext, projectId: string, className: string, skip: number = 0, top: number = 50, filter?: string | Array<{ name: string, value: string }>): Promise<FormInstanceData[]> {
+  public async getFormData(token: AccessToken, alctx: ActivityLoggingContext, projectId: string, className: string, skip: number = 0, top: number = 50, filter?: string | Array<{ name: string, value: string }>): Promise<FormInstanceData[]> {
     let url = `/Repositories/Bentley.Forms--${projectId}/DynamicSchema/${className}?$select=*,Forms_EC_Mapping.Form.*&$skip=${skip}&$top=${top}`;
 
     if (filter !== undefined) {
@@ -207,7 +207,7 @@ export class FormDataManagementClient extends WsgClient {
    * @param skip the starting index of instances to fetch (accomodates paging to reduce the request payload)
    * @param top the maximum number of instances to return
    */
-  public getRiskIssueFormData(token: AccessToken, alctx: ActivityLoggingContext, projectId: string, iModelId: string, className: string = "Issue", skip: number = 0, top: number = 50): Promise<FormInstanceData[]> {
+  public async getRiskIssueFormData(token: AccessToken, alctx: ActivityLoggingContext, projectId: string, iModelId: string, className: string = "Issue", skip: number = 0, top: number = 50): Promise<FormInstanceData[]> {
     const filters = [
       { name: "_Classification", value: "Risk" },
       { name: "_Discipline", value: "Issue" },
@@ -225,7 +225,7 @@ export class FormDataManagementClient extends WsgClient {
    * @param className the name of the class that owns the properties for which each instance binds data to (note this is dynamic, ie a user can create/destroy classes)
    * @param instanceId [optional] if provided the data is used to update an existing form data instance, otherwise a new instance is created
    */
-  public postFormData(token: AccessToken, alctx: ActivityLoggingContext, formData: FormInstanceData, projectId: string, className: string = "Issue", instanceId?: string): Promise<FormInstanceData> {
+  public async postFormData(token: AccessToken, alctx: ActivityLoggingContext, formData: FormInstanceData, projectId: string, className: string = "Issue", instanceId?: string): Promise<FormInstanceData> {
     formData.changeState = instanceId === undefined ? "new" : "modified";
     formData.formDataDirection = "forward";
     formData.formSchemaName = "Forms_EC_Mapping";
@@ -250,7 +250,7 @@ export class FormDataManagementClient extends WsgClient {
    * @param className the name of the class that owns the properties for which each instance binds data to (note this is dynamic, ie a user can create/destroy classes)
    * @param instanceId [optional] if provided the data is used to update an existing form data instance, otherwise a new instance is created
    */
-  public postRiskIssueFormData(token: AccessToken, alctx: ActivityLoggingContext, properties: any, projectId: string, iModelId: string, elementId: string, formId: string, className: string = "Issue", instanceId?: string): Promise<FormInstanceData> {
+  public async postRiskIssueFormData(token: AccessToken, alctx: ActivityLoggingContext, properties: any, projectId: string, iModelId: string, elementId: string, formId: string, className: string = "Issue", instanceId?: string): Promise<FormInstanceData> {
     const formData = new FormInstanceData();
     formData.formId = formId;
     formData.properties = properties;

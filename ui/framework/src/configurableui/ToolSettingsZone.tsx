@@ -6,7 +6,6 @@
 
 import * as React from "react";
 import { CSSProperties } from "react";
-
 import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
 
 import ToolSettingsWidget from "@bentley/ui-ninezone/lib/widget/ToolSettings";
@@ -14,9 +13,9 @@ import ToolSettingsTab from "@bentley/ui-ninezone/lib/widget/tool-settings/Tab";
 import ToolSettings from "@bentley/ui-ninezone/lib/widget/tool-settings/Settings";
 import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";
 import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
-import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
+import { TabIcon } from "@bentley/ui-ninezone/lib/widget/TabIcon";
+
 import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
-import UiFramework from "../UiFramework";
 
 /** State for the ToolSettingsZone content.
  */
@@ -44,9 +43,7 @@ export interface ToolSettingsZoneProps extends CommonProps {
  */
 export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, ToolSettingsZoneState> {
 
-  private _title: string;
-
-  /** hidden */
+  /** @hidden */
   public readonly state: Readonly<ToolSettingsZoneState> = {
     toolSettingsZoneContent: ToolSettingsZoneContent.Closed,
     isPopoverOpen: false,
@@ -56,8 +53,6 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
   constructor(props: ToolSettingsZoneProps) {
     super(props);
-
-    this._title = UiFramework.i18n.translate("UiFramework:general.toolSettings");
   }
 
   public componentDidMount(): void {
@@ -94,9 +89,22 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     return null;
   }
 
+  private _processClick = () => {
+    this.setState((prevState) => {
+      let toolSettingsZoneContent = ToolSettingsZoneContent.Closed;
+
+      if (prevState.toolSettingsZoneContent === ToolSettingsZoneContent.Closed)
+        toolSettingsZoneContent = ToolSettingsZoneContent.ToolSettings;
+      return {
+        toolSettingsZoneContent,
+      };
+    });
+  }
+
   private getToolSettingsWidget() {
     const tab = (
       <ToolSettingsTab
+        onClick={this._processClick}
         isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings}
       >
         {this.getToolSettingsButton()}
@@ -172,29 +180,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
   private getToolSettingsButton() {
     if (FrontstageManager.activeToolSettingsNode) {
       return (
-        <ToolbarIcon
-          title={this._title}
-          key="0"
-          isActive={
-            this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings
-          }
-          onClick={
-            () => {
-              this.setState((prevState) => {
-                let toolSettingsZoneContent = ToolSettingsZoneContent.Closed;
-
-                if (prevState.toolSettingsZoneContent === ToolSettingsZoneContent.Closed)
-                  toolSettingsZoneContent = ToolSettingsZoneContent.ToolSettings;
-                return {
-                  toolSettingsZoneContent,
-                };
-              });
-            }
-          }
-          icon={
-            <i className="icon icon-settings" />
-          }
-        />
+        <TabIcon iconSpec="icon-settings" isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolSettings} />
       );
     }
 

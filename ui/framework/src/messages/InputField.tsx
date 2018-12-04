@@ -18,8 +18,8 @@ import StatusMessageLayout from "@bentley/ui-ninezone/lib/footer/message/content
 // tslint:disable-next-line:variable-name
 const DivWithOnOutsideClick = withOnOutsideClick(Div);
 
-/** Properties of [[InputField]] component. */
-export interface InputFieldProps extends CommonProps {
+/** Properties of [[InputFieldMessage]] component. */
+export interface InputFieldMessageProps extends CommonProps {
   /** Parent of message. */
   target: Element;
   /** Message content. */
@@ -29,7 +29,7 @@ export interface InputFieldProps extends CommonProps {
 }
 
 /** InputField message is a popup error message that appears under invalid user input. */
-export class InputField extends React.Component<InputFieldProps> {
+export class InputFieldMessage extends React.Component<InputFieldMessageProps> {
   public render(): React.ReactNode {
     return ReactDOM.createPortal(this._getErrorMessage(), this.props.target);
   }
@@ -71,4 +71,4 @@ export class InputField extends React.Component<InputFieldProps> {
   }
 }
 
-export default InputField;
+export default InputFieldMessage;

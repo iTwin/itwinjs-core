@@ -6,7 +6,7 @@
 
 import * as deepAssign from "deep-assign";
 
-import { ECJsonTypeMap, WsgInstance, Id64Serializer } from "./../ECJsonTypeMap";
+import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { ResponseError } from "./../Request";
 import { WsgRequestOptions } from "./../WsgClient";
 
@@ -36,7 +36,7 @@ export enum CodeState {
 /** Base class for [Code]($common)s. */
 export class CodeBase extends WsgInstance {
   /** Code specification Id. */
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeSpecId", new Id64Serializer())
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.CodeSpecId")
   public codeSpecId?: Id64String;
 
   /** Code scope. */
@@ -403,7 +403,7 @@ export class CodeHandler {
   }
 
   /** Get handler for querying [[CodeSequence]]s. */
-  public Sequences(): CodeSequenceHandler {
+  public get sequences(): CodeSequenceHandler {
     return new CodeSequenceHandler(this._handler);
   }
 
@@ -514,7 +514,7 @@ export class CodeHandler {
     ArgumentCheck.nonEmptyArray("codes", codes);
 
     updateOptions = updateOptions || {};
-    this.setupOptionDefaults(updateOptions);
+    await this.setupOptionDefaults(updateOptions);
 
     const result: HubCode[] = [];
     let conflictError: ConflictingCodesError | undefined;

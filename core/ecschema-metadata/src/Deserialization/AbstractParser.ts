@@ -4,38 +4,46 @@
 *--------------------------------------------------------------------------------------------*/
 
 import {
-  ClassProps, ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps,
-  MixinProps, NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps, PrimitivePropertyProps, PropertyCategoryProps,
-  PropertyProps, RelationshipClassProps, RelationshipConstraintProps, SchemaItemProps, SchemaProps, StructArrayPropertyProps, StructPropertyProps, UnitProps,
+  ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationPropertyProps, EnumerationProps, FormatProps, InvertedUnitProps, KindOfQuantityProps,
+  MixinProps, NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitivePropertyProps, PropertyCategoryProps,
+  RelationshipClassProps, SchemaProps, StructArrayPropertyProps, StructPropertyProps, UnitProps, SchemaReferenceProps, StructClassProps, UnitSystemProps,
 } from "./../Deserialization/JsonProps";
-import { AnyClass } from "./../Interfaces";
+import { CustomAttribute } from "../Metadata/CustomAttribute";
+
+type SchemaItemTuple<T> = [string /** Name */, string /** SchemaItemType */, T];
+type PropertyTuple<T> = [string /** Name */, string /** Property */, T];
 
 /** @hidden */
-export abstract class AbstractParser<T> {
-  public abstract parseSchemaProps(obj: T): SchemaProps;
-  public abstract parseSchemaItemProps(obj: T, schemaName: string, name: string): SchemaItemProps;
-  public abstract parseClassProps(obj: T, name: string): ClassProps;
-  public abstract parseEntityClassProps(obj: T, name: string): EntityClassProps;
-  public abstract parseMixinProps(obj: T, name: string): MixinProps;
-  public abstract parseCustomAttributeClassProps(obj: T, name: string): CustomAttributeClassProps;
-  public abstract parseRelationshipClassProps(obj: T, name: string): RelationshipClassProps;
-  public abstract parseRelationshipConstraintProps(relClassName: string, obj: T, isSource?: boolean): RelationshipConstraintProps;
-  public abstract parseEnumerationProps(obj: T, name: string): EnumerationProps;
-  public abstract parseKindOfQuantityProps(obj: T, name: string): KindOfQuantityProps;
-  public abstract parsePropertyCategoryProps(obj: T, name: string): PropertyCategoryProps;
-  public abstract parseUnitProps(obj: T, name: string): UnitProps;
-  public abstract parseInvertedUnitProps(obj: T, name: string): InvertedUnitProps;
-  public abstract parseConstantProps(obj: T, name: string): ConstantProps;
-  public abstract parsePhenomenonProps(obj: T, name: string): PhenomenonProps;
-  public abstract parseFormatProps(obj: T, name: string): FormatProps;
-  public abstract parsePropertyProps(obj: T, schemaName: string, className: string): PropertyProps;
-  public abstract parsePrimitiveOrEnumPropertyBaseProps(obj: T, schemaName: string, className: string): PrimitiveOrEnumPropertyBaseProps;
-  public abstract parsePrimitivePropertyProps(obj: T, schemaName: string, className: string): PrimitivePropertyProps;
-  public abstract parseStructPropertyProps(obj: T, schemaName: string, className: string): StructPropertyProps;
-  public abstract parseEnumerationPropertyProps(obj: T, schemaName: string, className: string): EnumerationPropertyProps;
-  public abstract parsePrimitiveArrayPropertyProps(obj: T, schemaName: string, className: string): PrimitiveArrayPropertyProps;
-  public abstract parseStructArrayPropertyProps(obj: T, schemaName: string, className: string): StructArrayPropertyProps;
-  public abstract parseNavigationPropertyProps(obj: T, name: string, classObj: AnyClass): NavigationPropertyProps;
-  public abstract parsePropertyTypes(obj: T, schemaName: string, className: string): PropertyProps;
+export abstract class AbstractParser<TItem = any, TProperty = TItem> {
+  public abstract parseSchema(): SchemaProps;
+  public abstract getReferences(): Iterable<SchemaReferenceProps>;
+  public abstract getCustomAttributes(): Iterable<CustomAttribute>;
 
+  public abstract getItems(): Iterable<SchemaItemTuple<TItem>>;
+  public abstract findItem(itemName: string): SchemaItemTuple<TItem> | undefined;
+
+  public abstract parseEntityClass(data: TItem): EntityClassProps;
+  public abstract parseMixin(data: TItem): MixinProps;
+  public abstract parseStructClass(data: TItem): StructClassProps;
+  public abstract parseCustomAttributeClass(data: TItem): CustomAttributeClassProps;
+  public abstract parseRelationshipClass(data: TItem): RelationshipClassProps;
+  public abstract parseEnumeration(data: TItem): EnumerationProps;
+  public abstract parseKindOfQuantity(data: TItem): KindOfQuantityProps;
+  public abstract parsePropertyCategory(data: TItem): PropertyCategoryProps;
+  public abstract parseUnit(data: TItem): UnitProps;
+  public abstract parseInvertedUnit(data: TItem): InvertedUnitProps;
+  public abstract parseConstant(data: TItem): ConstantProps;
+  public abstract parsePhenomenon(data: TItem): PhenomenonProps;
+  public abstract parseFormat(data: TItem): FormatProps;
+  public abstract parseUnitSystem(data: TItem): UnitSystemProps;
+
+  public abstract getProperties(data: TItem): Iterable<PropertyTuple<TProperty>>;
+  public abstract parsePrimitiveProperty(data: TProperty): PrimitivePropertyProps;
+  public abstract parseStructProperty(data: TProperty): StructPropertyProps;
+  public abstract parseEnumerationProperty(data: TProperty): EnumerationPropertyProps;
+  public abstract parsePrimitiveArrayProperty(data: TProperty): PrimitiveArrayPropertyProps;
+  public abstract parseStructArrayProperty(data: TProperty): StructArrayPropertyProps;
+  public abstract parseNavigationProperty(data: TProperty): NavigationPropertyProps;
 }
+
+export interface AbstractParserConstructor<TSchema, TItem = any, TProperty = TItem> { new(obj: TSchema): AbstractParser<TItem, TProperty>; }

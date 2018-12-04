@@ -6,7 +6,7 @@
     "build": "tsc --rootDir ./src 1>&2",
     "clean": "rimraf lib",
     "docs": "",
-    "lint": "tslint --project .",
+    "lint": "tslint --project . 1>&2",
     "test": "",
     "test:integration": "",
     "cover": "",
@@ -22,11 +22,12 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "0.163.0",
-    "@bentley/geometry-core": "0.163.0",
-    "@bentley/imodeljs-backend": "0.163.0",
-    "@bentley/imodeljs-clients": "0.163.0",
-    "@bentley/imodeljs-common": "0.163.0",
+    "@bentley/bentleyjs-core": "0.171.0",
+    "@bentley/geometry-core": "0.171.0",
+    "@bentley/imodeljs-backend": "0.171.0",
+    "@bentley/imodeljs-clients": "0.171.0",
+    "@bentley/imodeljs-clients-backend": "0.171.0",
+    "@bentley/imodeljs-common": "0.171.0",
     "body-parser": "^1.18.2",
     "cookie-parser": "^1.4.3",
     "express": "^4.16.3",
@@ -38,8 +39,8 @@
     "react": "^16.4.2"
   },
   "devDependencies": {
-    "@bentley/config-loader": "0.163.0",
-    "@bentley/build-tools": "0.163.0",
+    "@bentley/config-loader": "0.171.0",
+    "@bentley/build-tools": "0.171.0",
     "@types/body-parser": "^1.17.0",
     "@types/chai": "^4.1.4",
     "@types/express": "^4.11.1",
@@ -57,7 +58,7 @@
     "nyc": "^13.0.1",
     "tslint": "^5.11.0",
     "typemoq": "^2.1.0",
-    "typescript": "~3.0.0"
+    "typescript": "~3.1.0"
   },
   "nyc": {
     "include": [

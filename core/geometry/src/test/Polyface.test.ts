@@ -269,6 +269,8 @@ describe("Polyface.Box", () => {
     ck.testBoolean(true, polyface.isAlmostEqual(polyfaceB), "polyface round trip");
     polyfaceB.data.pointIndex[0] += 1;
     ck.testBoolean(false, polyface.isAlmostEqual(polyfaceB), "index change detection");
+    polyfaceB.data.pointIndex[0] -= 1;
+    ck.testTrue(polyface.isAlmostEqual(polyfaceB), "index change undo");
     // console.log(polyfaceB);
     expect(ck.getNumErrors()).equals(0);
   });
@@ -614,4 +616,30 @@ it("facets from sweep contour with holes", () => {
   GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "ParityRegion");
   expect(ck.getNumErrors()).equals(0);
 
+});
+
+it("LargeMeshComporession", () => {
+  const ck = new Checker();
+  const allGeometry: GeometryQuery[] = [];
+  const options = StrokeOptions.createForFacets();
+  options.shouldTriangulate = true;
+  const builder = PolyfaceBuilder.create(options);
+  const nDimensions = 100;
+  const spacing = 1.0;
+
+  /** Create a simple flat mesh with 10,000 points (100x100) */
+  for (let iRow = 0; iRow < nDimensions - 1; iRow++) {
+    for (let iColumn = 0; iColumn < nDimensions - 1; iColumn++) {
+      const quad = [Point3d.create(iRow * spacing, iColumn * spacing, 0.0),
+      Point3d.create((iRow + 1) * spacing, iColumn * spacing, 0.0),
+      Point3d.create((iRow + 1) * spacing, (iColumn + 1) * spacing, 0.0),
+      Point3d.create(iRow * spacing, (iColumn + 1) * spacing)];
+      builder.addQuadFacet(quad);
+    }
+  }
+
+  const polyface = builder.claimPolyface();
+  allGeometry.push(polyface);
+  GeometryCoreTestIO.saveGeometry(allGeometry, "Polyface", "LargeMeshComporession");
+  expect(ck.getNumErrors()).equals(0);
 });

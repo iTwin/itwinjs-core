@@ -2,6 +2,114 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.171.0",
+      "tag": "@bentley/imodeljs-common_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Polyfill URLSearchParams for edge."
+          },
+          {
+            "comment": "Front end \"read pixels\" can now provide subCategoryId and GeometryClass to backend."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.170.0",
+      "tag": "@bentley/imodeljs-common_v0.170.0",
+      "date": "Mon, 26 Nov 2018 19:38:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix GeometryParams constructor. Added test to ensure subcategory id set correctly."
+          },
+          {
+            "comment": "Remove dependency on 'window'-named global object."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.169.0",
+      "tag": "@bentley/imodeljs-common_v0.169.0",
+      "date": "Tue, 20 Nov 2018 16:17:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "GeometryStream markdown"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.168.0",
+      "tag": "@bentley/imodeljs-common_v0.168.0",
+      "date": "Sat, 17 Nov 2018 14:20:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.167.0",
+      "tag": "@bentley/imodeljs-common_v0.167.0",
+      "date": "Fri, 16 Nov 2018 21:45:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add CartographicRange"
+          },
+          {
+            "comment": "Use URL query instead of path segment for cacheable RPC request parameters."
+          },
+          {
+            "comment": "Updated Mobile RPC to deal with binary data"
+          },
+          {
+            "comment": "Temporarily disable tile caching."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.166.0",
+      "tag": "@bentley/imodeljs-common_v0.166.0",
+      "date": "Mon, 12 Nov 2018 16:42:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.165.0",
+      "tag": "@bentley/imodeljs-common_v0.165.0",
+      "date": "Mon, 12 Nov 2018 15:47:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.164.0",
+      "tag": "@bentley/imodeljs-common_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:20 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix JSON representation of display styles."
+          },
+          {
+            "comment": "GeoJson and Analysis Importer simplification"
+          },
+          {
+            "comment": "ModelSelectorProps, CategorySelectorProps, and DisplayStyleProps now properly extend DefinitionElementProps"
+          },
+          {
+            "comment": "Support displacement scale for PolyfaceAuxData"
+          },
+          {
+            "comment": "Do not diffentiate between backend provisioning and imodel downloading state in RPC wire format (202 for all)."
+          },
+          {
+            "comment": "Updated to TypeScript 3.1"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.163.0",
       "tag": "@bentley/imodeljs-common_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",

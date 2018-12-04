@@ -16,7 +16,7 @@ import { GeometryStreamBuilder, GeometryStreamProps } from "@bentley/imodeljs-co
 const actx = new ActivityLoggingContext("");
 
 /** Sleep for ms */
-const pause = (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
+const pause = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
 /** Class to Save and Push CRUD operations for Elements in the IModelDb
  *  - Periodically creates changesets over GeometricElement3d's
  *    - EachChangeset consists of:

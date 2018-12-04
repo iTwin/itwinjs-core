@@ -62,7 +62,10 @@ describe("FeatureSymbology.Overrides", () => {
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
   });
 
-  after(async () => { if (imodel) imodel.closeStandalone(); });
+  after(async () => {
+    if (imodel)
+      await imodel.closeStandalone();
+  });
 
   it("default constructor works as expected", () => {
     overrides = new FeatureSymbology.Overrides();

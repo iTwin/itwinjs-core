@@ -5,14 +5,14 @@
 /** @module Ids */
 
 /**
- * A string containing a well-formed string representation of an [[Id64]].
+ * A string containing a well-formed string representation of an [Id64]($bentleyjs-core).
  *
  * See [Working with Ids]($docs/learning/common/Id64.md).
  */
 export type Id64String = string;
 
 /**
- * A string containing a well-formed string representation of a [[Guid]].
+ * A string containing a well-formed string representation of a [Guid]($bentleyjs-core).
  */
 export type GuidString = string;
 
@@ -37,10 +37,7 @@ function isLowerCaseNonZeroHexDigit(str: string, index: number) {
 function isLowerCaseHexDigit(str: string, index: number, allowZero: boolean = true): boolean {
   const charCode = str.charCodeAt(index);
   const minDecimalDigit = allowZero ? 0x30 : 0x31; // '0' or '1'...
-  if (charCode >= minDecimalDigit && charCode <= 0x39) // ...to '9'
-    return true;
-  else
-    return charCode >= 0x61 && charCode <= 0x66; // 'a' to 'f'
+  return (charCode >= minDecimalDigit && charCode <= 0x39) || (charCode >= 0x61 && charCode <= 0x66); //  '0'-'9, 'a' -'f'
 }
 
 function isValidHexString(id: string, startIndex: number, len: number) {
@@ -114,7 +111,7 @@ export namespace Id64 {
    * For a description of "well-formed", see [Working with Ids]($docs/learning/common/Id64.md).
    */
   export function fromString(val: string): Id64String {
-    // NB: Yes, we must check the run-time type...
+    // NB: in case this is called from JavaScript, we must check the run-time type...
     if (typeof val !== "string")
       return invalid;
 
@@ -218,11 +215,11 @@ export namespace Id64 {
     if (arg instanceof Set)
       return arg;
 
-    const ids = new Set<string>();
+    const ids = new Set<Id64String>();
     if (typeof arg === "string")
       ids.add(arg);
     else if (Array.isArray(arg)) {
-      arg.forEach((id) => {
+      arg.forEach((id: Id64String) => {
         if (typeof id === "string")
           ids.add(id);
       });
@@ -238,18 +235,17 @@ export namespace Id64 {
    * @param id A well-formed Id string.
    * @returns true if the Id represents a transient Id.
    * @note This method assumes the input is a well-formed Id string.
-   * @see [[isTransientId64]]
+   * @see [[Id64.isTransientId64]]
    * @see [[TransientIdSequence]]
    */
   export function isTransient(id: Id64String): boolean {
     // A transient Id is of the format "0xffffffxxxxxxxxxx" where the leading 6 digits indicate an invalid briefcase Id.
-    const str = id.toString();
-    return 18 === str.length && str.startsWith("0xffffff");
+    return 18 === id.length && id.startsWith("0xffffff");
   }
 
   /** Determine if the input is a well-formed [[Id64String]] and represents a transient Id.
-   * @see [[isTransient]]
-   * @see [[isId64]]
+   * @see [[Id64.isTransient]]
+   * @see [[Id64.isId64]]
    * @see [[TransientIdSequence]]
    */
   export function isTransientId64(id: string): boolean {
@@ -259,7 +255,7 @@ export namespace Id64 {
   /** Determine if the input is a well-formed [[Id64String]].
    *
    * For a description of "well-formed", see [Working with Ids]($docs/learning/common/Id64.md).
-   * @see [[isValidId64]]
+   * @see [[Id64.isValidId64]]
    */
   export function isId64(id: string): boolean {
     const len = id.length;
@@ -303,27 +299,21 @@ export namespace Id64 {
 
   /** Returns true if the input is not equal to the representation of an invalid Id.
    * @note This method assumes the input is a well-formed Id string.
-   * @see [[isInvalid]]
-   * @see [[isValidId64]]
+   * @see [[Id64.isInvalid]]
+   * @see [[Id64.isValidId64]]
    */
-  export function isValid(id: Id64String): boolean {
-    return Id64.invalid !== id;
-  }
+  export function isValid(id: Id64String): boolean { return Id64.invalid !== id; }
 
   /** Returns true if the input is a well-formed [[Id64String]] representing a valid Id.
-   * @see [[isValid]]
-   * @see [[isId64]]
+   * @see [[Id64.isValid]]
+   * @see [[Id64.isId64]]
    */
-  export function isValidId64(id: string): boolean {
-    return Id64.invalid !== id && Id64.isId64(id);
-  }
+  export function isValidId64(id: string): boolean { return Id64.invalid !== id && Id64.isId64(id); }
 
   /** Returns true if the input is a well-formed [[Id64String]] representing an invalid Id.
-   * @see [[isValid]]
+   * @see [[Id64.isValid]]
    */
-  export function isInvalid(id: Id64String): boolean {
-    return Id64.invalid === id;
-  }
+  export function isInvalid(id: Id64String): boolean { return Id64.invalid === id; }
 }
 
 /**
@@ -347,7 +337,7 @@ export class TransientIdSequence {
 export namespace Guid {
   const uuidPattern = new RegExp("^[0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{4}-[0-9a-fA-F]{12}$");
 
-  /** determine whether the input string is "guid-like". That is, it follows the 8-4-4-4-12 pattern. This does not enforce
+  /** Determine whether the input string is "guid-like". That is, it follows the 8-4-4-4-12 pattern. This does not enforce
    *  that the string is actually in valid UUID format.
    */
   export function isGuid(value: string): boolean { return uuidPattern.test(value); }

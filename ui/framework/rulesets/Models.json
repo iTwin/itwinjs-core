@@ -1,0 +1,29 @@
+{
+  "$schema": "../../../presentation/common/Ruleset.schema.json",
+  "id": "Models",
+  "rules": [
+    {
+      "ruleType": "RootNodes",
+      "specifications": [
+        {
+          "specType": "InstanceNodesOfSpecificClasses",
+          "classes": [
+            {
+              "schemaName": "BisCore",
+              "classNames": [
+                "Model"
+              ]
+            }
+          ],
+          "arePolymorphic": true,
+          "groupByClass": false,
+          "groupByLabel": false
+        }
+      ]
+    },
+    {
+      "ruleType": "CheckBox",
+      "defaultValue": false
+    }
+  ]
+}

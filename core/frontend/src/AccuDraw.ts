@@ -186,6 +186,7 @@ export class ThreeAxes {
 
 /**
  * Accudraw is an aide for entering coordinate data.
+ * @see [Using AccuDraw]($docs/learning/frontend/primitivetools.md#AccuDraw)
  */
 export class AccuDraw {
   public currentState = CurrentState.NotEnabled; // Compass state
@@ -754,9 +755,9 @@ export class AccuDraw {
     ev.initEvent(pt, pt, vp.worldToView(pt), vp, CoordSource.User);
 
     // Send both down and up events...
-    IModelApp.toolAdmin.sendButtonEvent(ev);
+    IModelApp.toolAdmin.sendButtonEvent(ev); // tslint:disable-line:no-floating-promises
     ev.isDown = false;
-    IModelApp.toolAdmin.sendButtonEvent(ev);
+    IModelApp.toolAdmin.sendButtonEvent(ev); // tslint:disable-line:no-floating-promises
   }
 
   public clearTentative(): boolean {

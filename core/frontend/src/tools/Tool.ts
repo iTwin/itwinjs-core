@@ -172,7 +172,7 @@ export class BeTouchEvent extends BeButtonEvent {
           points.push(this.getTouchPosition(list[i], vp));
         }
         const centroid = Point2d.createZero();
-        PolygonOps.centroidAndArea(points, centroid);
+        PolygonOps.centroidAndAreaXY(points, centroid);
         return centroid;
       }
     }
@@ -457,16 +457,16 @@ export abstract class InteractiveTool extends Tool {
   /** Invoked to allow tools to filter which elements can be located.
    * @return Reject if hit is unacceptable for this tool (fill out response with explanation, if it is defined)
    */
-  public filterHit(_hit: HitDetail, _out?: LocateResponse): LocateFilterStatus { return LocateFilterStatus.Accept; }
+  public async filterHit(_hit: HitDetail, _out?: LocateResponse): Promise<LocateFilterStatus> { return LocateFilterStatus.Accept; }
 
   /** Helper method to keep the view cursor, display of locate circle, and coordinate lock overrides consistent with [[AccuSnap.isLocateEnabled]] and [[AccuSnap.isSnapEnabled]].
-   * @param enableLocate Value to pass to [[IModelApp.accuSnap.enableLocate]]. Tools that locate elements should always pass true to give the user feedback regarding the element at the current cursor location.
-   * @param enableSnap Optional value to pass to [[IModelApp.accuSnap.enableSnap]]. Tools that don't care about the element pick location should not pass true. Default is false.
+   * @param enableLocate Value to pass to [[AccuSnap.enableLocate]]. Tools that locate elements should always pass true to give the user feedback regarding the element at the current cursor location.
+   * @param enableSnap Optional value to pass to [[AccuSnap.enableSnap]]. Tools that don't care about the element pick location should not pass true. Default is false.
    * @note User must also have snapping enabled [[AccuSnap.isSnapEnabledByUser]], otherwise [[TentativePoint]] is used to snap.
    * @param cursor Optional tool specific cursor override. Default is either cross or dynamics cursor depending on whether dynamics are currently active.
-   * @param coordLockOvr Optional tool specific coordinate lock overrides. A tool that only identifies elements and does not use [[BeButtonEvent.point]] can set [[ToolState.coordLockOvr]] to CoordinateLockOverrides.ACS
-   * or CoordinateLockOverrides.ACS, otherwise locate is affected by the input point being first projected to the ACS plane. A tool that will use [[BeButtonEvent.point]], especially those that call [[AccuSnap.enableSnap]]
-   * should honor all locks and leave [[ToolState.coordLockOvr]] set to CoordinateLockOverrides.None, the default for ViewTool and PrimitiveTool.
+   * @param coordLockOvr Optional tool specific coordinate lock overrides. A tool that only identifies elements and does not use [[BeButtonEvent.point]] can set ToolState.coordLockOvr to CoordinateLockOverrides.ACS
+   * or CoordinateLockOverrides.All, otherwise locate is affected by the input point being first projected to the ACS plane. A tool that will use [[BeButtonEvent.point]], especially those that call [[AccuSnap.enableSnap]]
+   * should honor all locks and leave ToolState.coordLockOvr set to CoordinateLockOverrides.None, the default for ViewTool and PrimitiveTool.
    */
   public changeLocateState(enableLocate: boolean, enableSnap?: boolean, cursor?: string, coordLockOvr?: CoordinateLockOverrides): void {
     if (undefined !== cursor) {

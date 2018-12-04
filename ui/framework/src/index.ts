@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 export { default as UiFramework } from "./UiFramework";
 
-export * from "./overallcontent/OverallContent";
-export * from "./overallcontent/state";
+export * from "./oidc/OidcBrowserClient";
 export * from "./FrameworkState";
-export * from "./UiFramework";
 export * from "./SyncUiEventDispatcher";
-export * from "./clientservices/LoginServices";
-export * from "./clientservices/ProjectServices";
-export * from "./clientservices/IModelServices";
+export * from "./UiFramework";
+export * from "./tools";
+export * from "./CoreToolDefinitions";
+export * from "./clientservices";
 export * from "./configurableui";
-export * from "./feedback/ValidationTextbox";
-export * from "./messages/InputField";
-export * from "./messages/Pointer";
-export * from "./pickers/ModelSelector";
-export * from "./pickers/ViewSelector";
+export * from "./feedback";
+export * from "./messages";
+export * from "./oidc";
+export * from "./openimodel";
+export * from "./overallcontent";
+export * from "./pickers";
 export * from "./utils";
 
 /** @docs-package-description
@@ -47,7 +47,7 @@ export * from "./utils";
  */
 /**
  * @docs-group-description DragDrop
- * Classes for working with Drag & Drop
+ * Classes for managing DragDrop API drag layers
  */
 /**
  * @docs-group-description FrameworkState
@@ -74,6 +74,10 @@ export * from "./utils";
  * Classes for working with a Notification or Message
  */
 /**
+ * @docs-group-description OIDC
+ * Classes for working with the OpenID Connect (OIDC) protocol
+ */
+/**
  * @docs-group-description OpenIModel
  * Classes for working with the UI for opening an iModel
  */
@@ -92,6 +96,10 @@ export * from "./utils";
 /**
  * @docs-group-description WorkflowTask
  * Classes for working a Workflow or Task
+ */
+/**
+ * @docs-group-description Tools
+ * Core Tool definitions
  */
 /**
  * @docs-group-description ToolSettings

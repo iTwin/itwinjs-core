@@ -18,7 +18,7 @@ export class PerformanceWriterClient {
    */
   public static async startup(input?: string, output?: string): Promise<Response> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    return await request(alctx, "http://localhost:3002/startup", { method: "POST", body: { input, output } });
+    return request(alctx, "http://localhost:3002/startup", { method: "POST", body: { input, output } });
   }
 
   /**
@@ -27,7 +27,7 @@ export class PerformanceWriterClient {
    */
   public static async addEntry(data: PerformanceDataEntry): Promise<Response> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    return await request(alctx, "http://localhost:3002/addEntry", { method: "POST", body: { data: JSON.stringify(data) } });
+    return request(alctx, "http://localhost:3002/addEntry", { method: "POST", body: { data: JSON.stringify(data) } });
   }
 
   /**
@@ -35,7 +35,7 @@ export class PerformanceWriterClient {
    */
   public static async finishSeries(): Promise<Response> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    return await request(alctx, "http://localhost:3002/finishSeries", { method: "POST" });
+    return request(alctx, "http://localhost:3002/finishSeries", { method: "POST" });
   }
 
   /**

@@ -9,6 +9,11 @@ import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
 
 import "./ContextMenu.scss";
+import { withOnOutsideClick } from "../hocs";
+import { Div } from "../base";
+import { Omit } from "../utils";
+
+const DivWithOutsideClick = withOnOutsideClick(Div); // tslint:disable-line:variable-name
 
 /** Enum to specify where a [[ContextMenu]] should anchor to its parent element */
 export enum ContextMenuDirection {
@@ -19,53 +24,35 @@ export enum ContextMenuDirection {
 }
 
 /** Property interface for the [[ContextMenu]] component */
-export interface ContextMenuProps {
-  /**
-   * Whether ContextMenu is currently opened.
-   */
+export interface ContextMenuProps extends React.AllHTMLAttributes<HTMLDivElement> {
+  /** Whether ContextMenu is currently opened. */
   opened: boolean;
-  /**
-   * Which direction the menu opens
-   * Default: ContextMenuDirection.BottomRight
-   */
+  /** Which direction the menu opens. Default: ContextMenuDirection.BottomRight */
   direction?: ContextMenuDirection;
-  /** When Menu, and all submenus, are unfocused */
-  onBlur?: (event: any) => any;
+  /** When click is registered outside of ContextMenu. */
+  onOutsideClick?: (event: MouseEvent) => any;
   /** When list item or submenu is selected */
   onSelect?: (event: any) => any;
   /** when Escape button is pressed */
   onEsc?: (data: any) => any;
-  style?: React.CSSProperties;
-  /**
-   * Whether menu flips directions based on screen edge.
-   * Default: true
-   */
+  /** Whether menu flips directions based on screen edge. Default: true */
   autoflip?: boolean;
-  /**
-   * Whether menu hugs screen edge when autoflip is off.
-   * Default: true
-   */
+  /** Whether menu hugs screen edge when autoflip is off. Default: true */
   edgeLimit?: boolean;
-  /**
-   * starting menu item selected index
-   * Default: -1
-   */
-  selected?: number;
-  /**
-   * whether menu floats on the viewport, or the page.
-   * When false, container elements can clip menu with overflow: hidden;
-   * Default: true
-   */
+  /** starting menu item selected index Default: -1 */
+  selectedIndex?: number;
+  /** whether menu floats on the viewport, or the page. When false, container elements can clip menu with overflow: hidden; Default: true */
   floating?: boolean;
   /** @hidden */
-  parent?: ContextMenu;
+  parentMenu?: ContextMenu;
   /** @hidden */
   parentSubmenu?: ContextSubMenu;
 }
 
 /** @hidden */
 export interface ContextMenuState {
-  selected: number;
+  selectedIndex: number;
+  direction: ContextMenuDirection;
 }
 
 /**
@@ -82,15 +69,21 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
     direction: ContextMenuDirection.BottomRight,
     autoflip: true,
     edgeLimit: true,
-    selected: -1,
+    selectedIndex: -1,
     floating: true,
   };
 
   /** @hidden */
-  public readonly state: Readonly<ContextMenuState> = {
-    selected: this.props.selected!,
-  };
+  public readonly state: Readonly<ContextMenuState>;
+  constructor(props: ContextMenuProps) {
+    super(props);
+    this.state = {
+      selectedIndex: this.props.selectedIndex!,
+      direction: props.direction!,
+    };
+  }
 
+  /** @hidden */
   public static autoFlip = (dir: ContextMenuDirection, rect: ClientRect, windowWidth: number, windowHeight: number) => {
     if (rect.right > windowWidth) {
       switch (dir) {
@@ -148,78 +141,97 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
   }
 
   public render(): JSX.Element {
-    const { opened, direction, parent } = this.props;
-    let dir = direction;
+    const { opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu, parentSubmenu, children, ...props } = this.props;
+    let dir = parentMenu === undefined ? this.state.direction : direction;
     // check if menu should flip
-    if (!parent && this.props.autoflip) {
+    if (autoflip && parentMenu === undefined) {
       const menuRect = this.getRect();
       dir = ContextMenu.autoFlip(dir!, menuRect, window.innerWidth, window.innerHeight);
+      if (dir !== this.state.direction)
+        this.setState({ direction: dir });
     }
 
     let index = 0;
     // add inheritance data to submenu children
-    const children = React.Children.map(this.props.children, (child) => {
+    const ch = React.Children.map(children, (child) => {
       if (typeof child === "string" || typeof child === "number" || child.props.disabled)
         return child;
 
       const id = index;
       const onHover = () => {
-        this.setState({ selected: id });
+        this.setState({ selectedIndex: id });
         this.focus();
       };
+      const selected = this.state.selectedIndex === index;
       const ref = (el: any) => {
         if (child.props.ref)
           child.props.ref(el);
         if (selected)
           this._selectedElement = el;
       };
-      const selected = this.state.selected === index++;
       if (child.type === ContextSubMenu) {
+        index++;
         return React.cloneElement(child, {
           direction: child.props.direction || dir,
-          parent: this,
+          parentMenu: this,
           ref,
           onHover,
-          selected,
+          isSelected: selected,
         });
       }
       if (child.type === ContextMenuItem) {
+        index++;
         return React.cloneElement(child, {
-          parent: this,
+          parentMenu: this,
           ref,
           onHover,
-          selected,
+          isSelected: selected,
         });
       }
       return child;
     });
     this._length = index;
-
     return (
-      <div style={this.props.style}
-        className="context-menu"
+      <div
+        className={classnames("context-menu", this.props.className)}
         onKeyUp={this._handleKeyUp}
         onClick={this._handleClick}
         data-testid="context-menu-root"
-        ref={(el) => { this._rootElement = el; }}>
-        <div
-          ref={(el) => { this._menuElement = el; }}
-          tabIndex={0}
-          className={classnames("context-menu-container", { opened }, dir)}
-        >
-          {children}
-        </div>
+        {...props}
+        ref={this._rootRef}>
+        <DivWithOutsideClick onOutsideClick={this.props.onOutsideClick}>
+          <div
+            ref={this._menuRef}
+            tabIndex={0}
+            data-testid="context-menu-container"
+            className={classnames("context-menu-container", { opened, floating }, dir)}>
+            {ch}
+          </div>
+        </DivWithOutsideClick>
       </div>
     );
   }
+
+  private _rootRef = (el: HTMLDivElement | null) => {
+    this._rootElement = el;
+  }
+
+  private _menuRef = (el: HTMLDivElement | null) => {
+    this._menuElement = el;
+  }
+
+  /** @hidden */
   public componentDidMount() {
     window.addEventListener("focus", this._handleFocusChange);
     window.addEventListener("mouseup", this._handleFocusChange);
   }
+
+  /** @hidden */
   public componentWillUnmount() {
     window.removeEventListener("focus", this._handleFocusChange);
     window.removeEventListener("mouseup", this._handleFocusChange);
   }
+
   public focus = () => {
     if (this._menuElement)
       this._menuElement.focus();
@@ -238,8 +250,8 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
   }
 
   private _handleFocusChange = (event: any) => {
-    if (this._rootElement && this.props.opened && event.target instanceof Node && this.props.onBlur && !this._rootElement.contains(event.target))
-      this.props.onBlur(event);
+    if (this._rootElement && this.props.opened && event.target instanceof Node && this.props.onOutsideClick && !this._rootElement.contains(event.target))
+      this.props.onOutsideClick(event);
   }
   private _handleClick = (event: React.MouseEvent<HTMLDivElement>) => {
     if (this.props.onSelect)
@@ -248,9 +260,9 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
   private _handleKeyUp = (event: React.KeyboardEvent<HTMLDivElement>) => {
     if (event.keyCode === 37) /*<Left>*/ {
       event.stopPropagation();
-      if (this.props.parent && this.props.parentSubmenu) {
+      if (this.props.parentMenu && this.props.parentSubmenu) {
         this.props.parentSubmenu.close();
-        this.props.parent.focus();
+        this.props.parentMenu.focus();
       }
       if (this.props.onEsc)
         this.props.onEsc(event);
@@ -266,35 +278,40 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
           this._selectedElement.select();
       }
     }
-    let { selected } = this.state;
+    let { selectedIndex } = this.state;
     if (event.keyCode === 38 /*<Up>*/ || event.keyCode === 40/*<Down>*/) {
       event.stopPropagation();
-      if (selected === -1) {
-        selected = 0;
+      if (selectedIndex === -1) {
+        selectedIndex = 0;
       } else {
         if (event.keyCode === 38) /*<Up>*/ {
-          if (this.state.selected === 0)
-            selected = this._length - 1;
+          if (this.state.selectedIndex === 0)
+            selectedIndex = this._length - 1;
           else
-            selected--;
+            selectedIndex--;
         }
         if (event.keyCode === 40) /*<Down>*/ {
-          if (this.state.selected === this._length - 1)
-            selected = 0;
+          if (this.state.selectedIndex === this._length - 1)
+            selectedIndex = 0;
           else
-            selected++;
+            selectedIndex++;
         }
       }
     }
-    this.setState((_prevState) => ({ selected }));
+    this.setState((_prevState) => ({ selectedIndex }));
   }
 
   public componentDidUpdate(prevProps: ContextMenuProps) {
-    if (prevProps.selected !== this.props.selected) {
-      this.setState((_prevState, props) => ({ selected: props.selected! }));
+    if (prevProps.selectedIndex !== this.props.selectedIndex) {
+      this.setState((_prevState, props) => ({ selectedIndex: props.selectedIndex! }));
     }
     if (!prevProps.opened && this.props.opened) {
-      this.setState((_prevState, props) => ({ selected: props.selected! }));
+      this.setState((_prevState, props) => ({ selectedIndex: props.selectedIndex! }));
+    }
+    if (!this.props.parentMenu) {
+      const direction = this.props.direction!;
+      if ((!this.props.opened && prevProps.opened && direction !== this.state.direction) || prevProps.direction !== direction)
+        this.setState({ direction });
     }
   }
 }
@@ -302,50 +319,15 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
 export default ContextMenu;
 
 /** Properties for the [[GlobalContextMenu]] component */
-export interface GlobalContextMenuProps {
-  /**
-   * Whether ContextMenu is currently opened.
-   */
-  opened: boolean;
-  /**
-   * Unique identifier, to distinguish from other GlobalContextMenu components
-   */
-  identifier: string;
-  /**
-   * Specifies the x/horizontal position on the viewport
-   */
+export interface GlobalContextMenuProps extends ContextMenuProps {
+  /** Unique identifier, to distinguish from other GlobalContextMenu components. Needed only if multiple GlobalContextMenus are used simultaneously. */
+  identifier?: string;
+  /** Specifies the x/horizontal position on the viewport. */
   x: number | string;
-  /**
-   * Specifies the y/vertical position on the viewport
-   */
+  /** Specifies the y/vertical position on the viewport. */
   y: number | string;
-  /**
-   * Which direction the menu opens
-   * Default: ContextMenuDirection.BottomRight
-   */
-  direction?: ContextMenuDirection;
-  /** When Menu, and all submenus, are unfocused */
-  onBlur?: (event: any) => any;
-  /** When list item or submenu is selected */
-  onSelect?: (event: any) => any;
-  /** when Escape button is pressed */
-  onEsc?: (data: any) => any;
-  style?: React.CSSProperties;
-  /**
-   * Whether menu flips directions based on screen edge
-   * Default: true
-   */
-  autoflip?: boolean;
-  /**
-   * Whether menu hugs screen edge when autoflip is off.
-   * Default: true
-   */
-  edgeLimit?: boolean;
-  /**
-   * starting menu item selected index
-   * Default: -1
-   */
-  selected?: number;
+  /** Context menu element. Default: ContextMenu */
+  contextMenuComponent?: React.ComponentType<ContextMenuProps>;
 }
 
 /** GlobalContextMenu React component used to display a [[ContextMenu]] at the cursor */
@@ -354,7 +336,7 @@ export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
   constructor(props: GlobalContextMenuProps) {
     super(props);
     this._container = document.createElement("div");
-    this._container.id = `context-menu-${props.identifier}`;
+    this._container.id = props.identifier !== undefined ? `context-menu-${props.identifier}` : "context-menu";
     let rt = document.getElementById("context-menu-root") as HTMLDivElement;
     if (!rt) {
       rt = document.createElement("div");
@@ -369,37 +351,36 @@ export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
     }
   }
   public render(): React.ReactNode {
-    const { x, y, identifier, ...props } = this.props;
+    const { x, y, identifier, contextMenuComponent, ...props } = this.props;
     const positioningStyle: React.CSSProperties = {
       left: x,
       top: y,
     };
+
+    const CtxMenu = contextMenuComponent || ContextMenu; // tslint:disable-line:variable-name
+
     return ReactDOM.createPortal(
       <div className="context-menu-global" style={positioningStyle}>
-        <ContextMenu
+        <CtxMenu
           {...props} />
-      </div>
+      </div >
       , this._container);
   }
 }
 
 /** Properties for the [[ContextMenuItem]] component */
 export interface ContextMenuItemProps extends React.AllHTMLAttributes<HTMLDivElement> {
-  onClick?: (event: any) => any;
-  className?: string;
-  style?: React.CSSProperties;
-  /** When item has been chosen, through click or keyboard. */
   onSelect?: (event: any) => any;
   /** Icon to display in the left margin. */
-  icon?: string;
+  icon?: string | React.ReactNode;
   /** Disables any onSelect calls, hover/keyboard highlighting, and grays item. */
   disabled?: boolean;
-  /** Used by hover highlighting */
+  /** @hidden */
   onHover?: () => any;
-  /** Used by hover highlighting */
-  selected?: boolean;
-  /** Used by keyboard navigation */
-  parent?: ContextMenu;
+  /* @hidden */
+  isSelected?: boolean;
+  /** @hidden */
+  parentMenu?: ContextMenu;
 }
 
 /**
@@ -409,16 +390,16 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps> {
   private _root: HTMLElement | null = null;
   public static defaultProps: Partial<ContextMenuItemProps> = {
     disabled: false,
-    selected: false,
+    isSelected: false,
   };
   constructor(props: ContextMenuItemProps) {
     super(props);
   }
   public render(): JSX.Element {
-    const { onClick, className, style, onSelect, icon, disabled, onHover, selected, parent, ...props } = this.props;
+    const { onClick, className, style, onSelect, icon, disabled, onHover, isSelected, parentMenu, ...props } = this.props;
     return (
       <div
-        { ...props }
+        {...props}
         ref={(el) => { this._root = el; }}
         onClick={this._handleClick}
         style={style}
@@ -426,8 +407,10 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps> {
         onKeyUp={this._handleKeyUp}
         onMouseOver={this._handleMouseOver}
         data-testid={"context-menu-item"}
-        className={classnames(className, "context-menu-item", { disabled, selected })}>
-        <div className={classnames("context-menu-icon", "icon", this.props.icon)} />
+        className={classnames(className, "context-menu-item", { disabled, "is-selected": isSelected })}>
+        <div className={classnames("context-menu-icon", "icon", typeof icon === "string" ? icon : undefined)}>
+          {typeof icon !== "string" ? icon : undefined}
+        </div>
         <div className={"context-menu-content"}>{this.props.children}</div>
       </div>
     );
@@ -446,8 +429,8 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps> {
   public select = () => {
     if (this._root) {
       this._root.click();
-      if (this.props.parent && this.props.parent.props.parentSubmenu)
-        this.props.parent.props.parentSubmenu.close(true);
+      if (this.props.parentMenu && this.props.parentMenu.props.parentSubmenu)
+        this.props.parentMenu.props.parentSubmenu.close(true);
     }
   }
 
@@ -477,37 +460,9 @@ export class ContextMenuDivider extends React.Component {
 }
 
 /** Property interface for [[ContextSubMenu]] */
-export interface ContextSubMenuProps {
-  onClick?: (event: any) => any;
-  className?: string;
-  style?: React.CSSProperties;
+export interface ContextSubMenuProps extends Omit<ContextMenuItemProps, "label">, Omit<ContextMenuProps, "label"> {
   /** Text/jsx to display in the list item */
   label: string | JSX.Element;
-  /** When item has been chosen, through click or keyboard. */
-  onSelect?: (event: any) => any;
-  /** Icon to display in the left margin. */
-  icon?: string;
-  /**
-   * Disables any onSelect calls, hover/keyboard highlighting, and grays item.
-   * Default: false
-   */
-  disabled?: boolean;
-  /**
-   * Whether menu flips directions based on screen edge
-   * Default: true
-   */
-  autoflip?: boolean;
-  /**
-   * Which direction the menu opens
-   * Default: inherit
-   */
-  direction?: ContextMenuDirection;
-  /** Used by hover highlighting */
-  onHover?: () => any;
-  /** Used by hover highlighting */
-  selected?: boolean;
-  /** Used by keyboard navigation */
-  parent?: ContextMenu;
 }
 
 /** @hidden */
@@ -525,32 +480,48 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
   private _menuButtonElement: HTMLElement | null = null;
 
   public static defaultProps: Partial<ContextSubMenuProps> = {
+    direction: ContextMenuDirection.BottomRight,
     disabled: false,
     autoflip: true,
-    selected: false,
+    isSelected: false,
+    selectedIndex: 0,
   };
 
   /** @hidden */
-  public readonly state: Readonly<ContextSubMenuState> = { opened: false, direction: ContextMenuDirection.None };
+  public readonly state: Readonly<ContextSubMenuState>;
+  constructor(props: ContextSubMenuProps) {
+    super(props);
+    this.state = {
+      opened: false,
+      direction: props.direction!,
+    };
+  }
 
   public render(): JSX.Element {
-    const { disabled, selected, label, icon, autoflip, parent, children } = this.props;
-    const direction = this.state.direction || this.props.direction!;
+    const {
+      label,
+      opened, direction, onOutsideClick, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu, parentSubmenu,
+      onSelect, icon, disabled, onHover, isSelected,
+      children, onClick, className, ...props } = this.props;
+    const contextMenuProps = { onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, selectedIndex, floating, parentMenu };
+
+    let dir = this.state.direction;
     if (autoflip && this._menuElement) {
       const menuRect = this._menuElement.getRect();
-      const dir = ContextMenu.autoFlip(direction, menuRect, window.innerWidth, window.innerHeight);
-      if (dir !== direction)
+      dir = ContextMenu.autoFlip(dir, menuRect, window.innerWidth, window.innerHeight);
+      if (dir !== this.state.direction)
         this.setState({ direction: dir });
     }
     return (
-      <div className={classnames("context-submenu", direction)}
+      <div className={classnames("context-submenu", dir, className)}
         onMouseOver={this._handleMouseOver}
-        ref={(el) => { this._subMenuElement = el; }}>
+        ref={(el) => { this._subMenuElement = el; }}
+        {...props} >
         <div
           onClick={this._handleClick}
           ref={(el) => { this._menuButtonElement = el; }}
-          style={this.props.style}
-          className={classnames("context-menu-item context-submenu-container", { disabled, selected })}>
+          className={classnames("context-menu-item context-submenu-container", { disabled, "is-selected": isSelected })}
+        >
           <div className={classnames("context-menu-icon", "icon", icon)} />
           <div className={"context-menu-content"}>{label}</div>
           <div className={classnames("context-submenu-arrow", "icon", "icon-caret-right")} />
@@ -558,11 +529,10 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
         <ContextMenu
           ref={(el) => { this._menuElement = el; }}
           opened={this.state.opened}
-          selected={0}
-          direction={direction}
-          parent={parent}
+          selectedIndex={0}
+          direction={dir}
           parentSubmenu={this}
-          autoflip={autoflip}>
+          {...contextMenuProps} >
           {children}
         </ContextMenu>
       </div>
@@ -574,6 +544,12 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
 
   public componentWillUnmount() {
     document.removeEventListener("click", this._handleClickGlobal);
+  }
+
+  public componentDidUpdate(prevProps: ContextSubMenuProps, prevState: ContextSubMenuState) {
+    const direction = this.props.direction!;
+    if ((this.state.opened !== prevState.opened && direction !== this.state.direction) || prevProps.direction !== direction)
+      this.setState({ direction });
   }
 
   public select = () => {
@@ -588,8 +564,8 @@ export class ContextSubMenu extends React.Component<ContextSubMenuProps, Context
       if (this._menuElement)
         this._menuElement.blur();
     });
-    if (propagate && this.props.parent && this.props.parent.props.parentSubmenu) {
-      this.props.parent.props.parentSubmenu.close(true);
+    if (propagate && this.props.parentMenu && this.props.parentMenu.props.parentSubmenu) {
+      this.props.parentMenu.props.parentSubmenu.close(true);
     }
   }
 

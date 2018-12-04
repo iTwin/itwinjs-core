@@ -2,6 +2,156 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.171.0",
+      "tag": "@bentley/ui-components_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added tests to Breadcrumb, updated Table and fixed Table Resize issues."
+          },
+          {
+            "comment": "Added property value renderers for double and navigation primitive types."
+          },
+          {
+            "comment": "Added specialized property value renderers for nonprimitive types when their container is a table."
+          },
+          {
+            "comment": "Refactored PropertyRenderer into smaller pieces and added isSelectable and indentation prop"
+          },
+          {
+            "comment": "Changed the way PropertyCategoryBlock looks."
+          },
+          {
+            "comment": "Enabled table to contain popups and dialog and slightly cleaned up it's CSS."
+          },
+          {
+            "comment": "Unit tests"
+          },
+          {
+            "comment": "Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components"
+          },
+          {
+            "comment": "Implement pagination in Tree component"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.170.0",
+      "tag": "@bentley/ui-components_v0.170.0",
+      "date": "Mon, 26 Nov 2018 19:38:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added property value renderers for double and navigation primitive types."
+          },
+          {
+            "comment": "Added specialized property value renderers for nonprimitive types when their container is a table."
+          },
+          {
+            "comment": "Refactored PropertyRenderer into smaller pieces and added isSelectable and indentation prop"
+          },
+          {
+            "comment": "Changed the way PropertyCategoryBlock looks."
+          },
+          {
+            "comment": "Enabled table to contain popups and dialog and slightly cleaned up it's CSS."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.169.0",
+      "tag": "@bentley/ui-components_v0.169.0",
+      "date": "Tue, 20 Nov 2018 16:17:15 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Virtualized nodes' rendering in the Tree component"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.168.0",
+      "tag": "@bentley/ui-components_v0.168.0",
+      "date": "Sat, 17 Nov 2018 14:20:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.167.0",
+      "tag": "@bentley/ui-components_v0.167.0",
+      "date": "Fri, 16 Nov 2018 21:45:44 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed some content control sizing issues"
+          },
+          {
+            "comment": "Added Tree cell editing"
+          },
+          {
+            "comment": "Added ShowHide in Common package, implemented ShowHide for Table columns."
+          },
+          {
+            "comment": "Tree cell editing unit tests"
+          },
+          {
+            "comment": "Fix tree nodes loosing their state when ITreeDataProvider.onTreeNodeChanged is called"
+          },
+          {
+            "comment": "ui-framework unit tests & docs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.166.0",
+      "tag": "@bentley/ui-components_v0.166.0",
+      "date": "Mon, 12 Nov 2018 16:42:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.165.0",
+      "tag": "@bentley/ui-components_v0.165.0",
+      "date": "Mon, 12 Nov 2018 15:47:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.164.0",
+      "tag": "@bentley/ui-components_v0.164.0",
+      "date": "Thu, 08 Nov 2018 17:59:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecated dev-cors-proxy-server and use of it. "
+          },
+          {
+            "comment": "Fix: Do not start search if input field is empty"
+          },
+          {
+            "comment": "Use strongly typed enums for identifying keyboard keys"
+          },
+          {
+            "comment": "PropertyGrid property editing and unit tests"
+          },
+          {
+            "comment": "Updated to TypeScript 3.1"
+          },
+          {
+            "comment": "Refactored Tree component to improve its performance"
+          },
+          {
+            "comment": "Refactored Breadcrumb and added tests"
+          },
+          {
+            "comment": "Zone & Widget initial state, more ui-core unit tests, cleaned up ui-framework index.ts files."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.163.0",
       "tag": "@bentley/ui-components_v0.163.0",
       "date": "Wed, 31 Oct 2018 20:55:37 GMT",

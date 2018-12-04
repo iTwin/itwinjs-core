@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { UserProfile, AccessToken } from "@bentley/imodeljs-clients";
-import { TokenSet, UserInfo, Client } from "openid-client";
+import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
+import { TokenSet, UserInfo as OpenIdUserInfo, Client } from "openid-client";
 
 export class OpenIdConnectTokenStore {
   constructor(private _tokenSet: TokenSet, private _oidcClient: Client) { }
@@ -16,23 +16,19 @@ export class OpenIdConnectTokenStore {
     return this._tokenSet;
   }
 
-  // Gets the current user's profile
-  private async getUserProfile(): Promise<UserProfile> {
-    const { access_token } = await this.getTokenSet();
-    const userInfo: UserInfo = await this._oidcClient.userinfo(access_token);
-    return new UserProfile(userInfo.given_name, userInfo.family_name, userInfo.email!, userInfo.sub, userInfo.org_name!, userInfo.org!, userInfo.ultimate_site!, userInfo.usage_country_iso!);
-  }
-
   /**
    * Gets the current user's access token, refreshing it if necessary
    */
   public async getAccessToken(): Promise<AccessToken> {
     const tokenSet: TokenSet = await this.getTokenSet();
-    const userProfile: UserProfile = await this.getUserProfile();
 
     const startsAt: Date = new Date(tokenSet.expires_at - tokenSet.expires_in);
     const expiresAt: Date = new Date(tokenSet.expires_at);
-    return AccessToken.fromJsonWebTokenString(tokenSet.access_token, userProfile, startsAt, expiresAt);
+
+    const openIdUserInfo: OpenIdUserInfo = await this._oidcClient.userinfo(tokenSet.access_token);
+    const userInfo: UserInfo = UserInfo.fromJson(openIdUserInfo);
+
+    return AccessToken.fromJsonWebTokenString(tokenSet.access_token, startsAt, expiresAt, userInfo);
   }
 
 }

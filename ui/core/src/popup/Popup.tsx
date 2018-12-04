@@ -5,8 +5,8 @@
 /** @module Popup */
 
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
+
 import Timer from "../utils/Timer";
 import { CommonProps } from "../Props";
 import "./Popup.scss";
@@ -39,6 +39,8 @@ export interface PopupProps extends CommonProps {
   hideTime: number;
   /** Direction (relative to the target) to which the popup is expanded */
   position: Position;
+  /** Fixed position in the viewport */
+  fixedPosition?: { top: number, left: number };
   /** target element */
   context: HTMLElement | null;
   /** Function called when the popup is opened */
@@ -52,16 +54,27 @@ interface PopupState {
   position: Position;
 }
 
+interface Rect {
+  left: number;
+  top: number;
+  right: number;
+  bottom: number;
+}
+
 /** Popup React component */
 export class Popup extends React.Component<PopupProps, PopupState> {
-  private _ref: HTMLElement | undefined;
-  private _targetRef: HTMLElement | null = null; // target element owning the popup
-  private _hoverTimer = new Timer(300);
+  private _popupRef = React.createRef<HTMLDivElement>();
+  private _targetElement?: HTMLElement; // target element owning the popup
+  private _targetElementOnMouseEnter: ((this: GlobalEventHandlers, ev: MouseEvent) => void) | null = null;
+  private _targetElementOnMouseLeave: ((this: GlobalEventHandlers, ev: MouseEvent) => void) | null = null;
+
+  private _hoverTimer: Timer;
 
   constructor(props: PopupProps, context?: any) {
     super(props, context);
 
     this.state = { isShown: this.props.isShown, position: this.props.position };
+    this._hoverTimer = new Timer(this.props.showTime);
   }
 
   public static defaultProps: Partial<PopupProps> = {
@@ -74,11 +87,13 @@ export class Popup extends React.Component<PopupProps, PopupState> {
   };
 
   public componentDidMount() {
-    const node = ReactDOM.findDOMNode(this) as Element;
-    if (node && node.parentElement) {
-      this._targetRef = node.parentElement;
-      this._targetRef.onmouseenter = this._onMouseEnter;
-      this._targetRef.onmouseleave = this._onMouseLeave;
+    const popupElement = this._popupRef.current;
+    if (popupElement && popupElement.parentElement) {
+      this._targetElement = popupElement.parentElement;
+      this._targetElementOnMouseEnter = this._targetElement.onmouseenter;
+      this._targetElementOnMouseLeave = this._targetElement.onmouseleave;
+      this._targetElement.onmouseenter = this._onMouseEnter;
+      this._targetElement.onmouseleave = this._onMouseLeave;
     }
 
     this._hoverTimer.delay = this.props.showTime;
@@ -101,6 +116,11 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     this._hoverTimer.stop();
     document.body.removeEventListener("click", this._onBodyClick, false);
     document.body.removeEventListener("keydown", this._onEsc, false);
+
+    if (this._targetElement) {
+      this._targetElement.onmouseenter = this._targetElementOnMouseEnter;
+      this._targetElement.onmouseleave = this._targetElementOnMouseLeave;
+    }
   }
 
   private _onMouseEnter = () => {
@@ -119,7 +139,7 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     this._onClose();
   }
 
-  private _onBodyClick = (event: any): void => {
+  private _onBodyClick = (event: MouseEvent): void => {
 
     const context = this._getContext();
 
@@ -128,21 +148,20 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return;
     }
 
-    if (context && context.contains(event.target)) {
+    if (context && context.contains(event.target as Node)) {
       return;
     }
 
-    if (this._ref && (this._ref === event.target || this._ref.contains(event.target))) {
+    if (this._popupRef.current && (this._popupRef.current === event.target || this._popupRef.current.contains(event.target as Node))) {
       return;
     }
 
-    // alert ("body click");
     this._onClose();
   }
 
-  private _onEsc = (event: any): void => {
+  private _onEsc = (event: KeyboardEvent): void => {
     // Esc key
-    if (event.keyCode === 27) {
+    if (event.key === "Escape") {
       this._onClose();
     }
   }
@@ -152,11 +171,11 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return;
     }
 
-    document.body.addEventListener("click", this._onBodyClick, false);
-    document.body.addEventListener("keydown", this._onEsc, false);
+    document.addEventListener("click", this._onBodyClick, true);
+    document.addEventListener("keydown", this._onEsc, true);
 
-    const newPosition = this.withinViewport();
-    this.setState((_prevState) => ({ position: newPosition, isShown: true }), () => {
+    const newPosition = this.getPositionWithinViewport();
+    this.setState({ position: newPosition, isShown: true }, () => {
       if (this.props.onOpen)
         this.props.onOpen();
     });
@@ -167,20 +186,16 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       return;
     }
 
-    document.body.removeEventListener("click", this._onBodyClick, false);
-    document.body.removeEventListener("keydown", this._onEsc, false);
+    document.removeEventListener("click", this._onBodyClick, true);
+    document.removeEventListener("keydown", this._onEsc, true);
 
-    this.setState((_prevState) => ({ isShown: false, position: this.props.position }), () => {
+    this.setState({ isShown: false, position: this.props.position }, () => {
       if (this.props.onClose)
         this.props.onClose();
     });
   }
 
-  public setRef = (element: HTMLDivElement) => {
-    this._ref = element;
-  }
-
-  private _getContext = () => this.props.context || this._targetRef;
+  private _getContext = () => this.props.context || this._targetElement;
 
   private getPositionClassName(position: Position): string {
     switch (position) {
@@ -203,79 +218,81 @@ export class Popup extends React.Component<PopupProps, PopupState> {
     }
   }
 
-  private withinViewport(): Position {
-    const node = ReactDOM.findDOMNode(this) as Element;
-    if (node && this._targetRef) {
-      const viewportRect = new DOMRect(window.scrollX, window.scrollY, window.scrollX + window.innerWidth, window.scrollY + window.innerHeight);
-      const targetRect = this._targetRef!.getBoundingClientRect();
-      const popupRect = node.getBoundingClientRect();
-      const containerStyle = window.getComputedStyle(this._targetRef!);
-      const offset = (this.props.showArrow) ? 12 : 4;
+  private getPositionWithinViewport(): Position {
+    const popupElement = this._popupRef.current;
 
-      switch (this.props.position) {
-        case Position.BottomRight: {
-          const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
-          if ((targetRect.bottom + popupRect.height + bottomMargin + offset) > viewportRect.bottom) {
-            return Position.TopRight;
-          }
-          break;
-        }
+    if (!popupElement || !this._targetElement)
+      return this.props.position;
+    // Note: Cannot use DOMRect yet since it's experimental and not available in all browsers (Nov. 2018)
+    const viewportRect: Rect = { left: window.scrollX, top: window.scrollY, right: window.scrollX + window.innerWidth, bottom: window.scrollY + window.innerHeight };
+    const targetRect = this._targetElement.getBoundingClientRect();
+    const popupRect = popupElement.getBoundingClientRect();
+    const containerStyle = window.getComputedStyle(this._targetElement);
+    const offset = (this.props.showArrow) ? 12 : 4;
 
-        case Position.TopRight: {
-          const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
-          if ((targetRect.top - popupRect.height - topMargin - offset) < viewportRect.top) {
-            return Position.BottomRight;
-          }
-          break;
+    switch (this.props.position) {
+      case Position.BottomRight: {
+        const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
+        if ((targetRect.bottom + popupRect.height + bottomMargin + offset) > viewportRect.bottom) {
+          return Position.TopRight;
         }
+        break;
+      }
 
-        case Position.TopLeft: {
-          const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
-          if ((targetRect.top - popupRect.height - topMargin - offset) < viewportRect.top) {
-            return Position.BottomLeft;
-          }
-          break;
+      case Position.TopRight: {
+        const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
+        if ((targetRect.top - popupRect.height - topMargin - offset) < viewportRect.top) {
+          return Position.BottomRight;
         }
+        break;
+      }
 
-        case Position.BottomLeft: {
-          const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
-          if ((targetRect.bottom + popupRect.height + bottomMargin + offset) > viewportRect.bottom) {
-            return Position.TopLeft;
-          }
-          break;
+      case Position.TopLeft: {
+        const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
+        if ((targetRect.top - popupRect.height - topMargin - offset) < viewportRect.top) {
+          return Position.BottomLeft;
         }
+        break;
+      }
 
-        case Position.Bottom: {
-          const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
-          if ((targetRect.bottom + popupRect.height + bottomMargin + offset) > viewportRect.bottom) {
-            return Position.Top;
-          }
-          break;
+      case Position.BottomLeft: {
+        const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
+        if ((targetRect.bottom + popupRect.height + bottomMargin + offset) > viewportRect.bottom) {
+          return Position.TopLeft;
         }
+        break;
+      }
 
-        case Position.Top: {
-          const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
-          if ((targetRect.top - popupRect.height - topMargin - offset) < viewportRect.top) {
-            return Position.Bottom;
-          }
-          break;
+      case Position.Bottom: {
+        const bottomMargin = containerStyle.marginBottom ? parseFloat(containerStyle.marginBottom) : 0;
+        if ((targetRect.bottom + popupRect.height + bottomMargin + offset) > viewportRect.bottom) {
+          return Position.Top;
         }
+        break;
+      }
 
-        case Position.Left: {
-          const leftMargin = containerStyle.marginLeft ? parseFloat(containerStyle.marginLeft) : 0;
-          if ((targetRect.left - popupRect.width - leftMargin - offset) < viewportRect.left) {
-            return Position.Right;
-          }
-          break;
+      case Position.Top: {
+        const topMargin = containerStyle.marginTop ? parseFloat(containerStyle.marginTop) : 0;
+        if ((targetRect.top - popupRect.height - topMargin - offset) < viewportRect.top) {
+          return Position.Bottom;
         }
+        break;
+      }
 
-        case Position.Right: {
-          const rightMargin = containerStyle.marginRight ? parseFloat(containerStyle.marginRight) : 0;
-          if ((targetRect.right + popupRect.width + rightMargin + offset) > viewportRect.right) {
-            return Position.Left;
-          }
-          break;
+      case Position.Left: {
+        const leftMargin = containerStyle.marginLeft ? parseFloat(containerStyle.marginLeft) : 0;
+        if ((targetRect.left - popupRect.width - leftMargin - offset) < viewportRect.left) {
+          return Position.Right;
         }
+        break;
+      }
+
+      case Position.Right: {
+        const rightMargin = containerStyle.marginRight ? parseFloat(containerStyle.marginRight) : 0;
+        if ((targetRect.right + popupRect.width + rightMargin + offset) > viewportRect.right) {
+          return Position.Left;
+        }
+        break;
       }
     }
 
@@ -292,8 +309,17 @@ export class Popup extends React.Component<PopupProps, PopupState> {
       this.props.className,
     );
 
+    let style: React.CSSProperties | undefined;
+    if (this.props.fixedPosition) {
+      style = {
+        top: this.props.fixedPosition.top,
+        left: this.props.fixedPosition.left,
+        position: "fixed",
+      };
+    }
+
     return (
-      <div className={className} ref={this.setRef}>
+      <div style={style} className={className} ref={this._popupRef}>
         {this.props.children}
       </div>
     );

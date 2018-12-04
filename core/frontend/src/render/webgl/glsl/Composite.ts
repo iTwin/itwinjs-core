@@ -45,20 +45,15 @@ bool isOutlined() {
 }
 `;
 
-const isInHiliteRegion = "\nbool isInHiliteRegion() { return 0.0 != TEXTURE(u_hilite, v_texCoord).r; }\n";
-
 const computeHiliteColor = "\nvec4 computeColor() { return TEXTURE(u_opaque, v_texCoord); }\n";
 
 const computeHiliteBaseColor = `
-  bool isHilite = isInHiliteRegion();
-  if (isHilite || !isOutlined()) {
-    float ratio = isHilite ? u_hilite_settings.y : 0.0;
-    vec4 baseColor = computeColor();
-    baseColor.rgb = mix(baseColor.rgb, u_hilite_color.rgb, ratio);
-    return baseColor;
-  } else {
-    return vec4(u_hilite_color.rgb, 1.0);
-  }
+  float isHilite = floor(TEXTURE(u_hilite, v_texCoord).r + 0.5);
+  float ratio = u_hilite_settings.y * isHilite;
+  vec4 baseColor = computeColor();
+  baseColor.rgb = mix(baseColor.rgb, u_hilite_color.rgb, ratio);
+  // If outlined, use hilite color for boundaries, else use base color, mixed with hilite color if inside hilite region.
+  return mix(vec4(u_hilite_color.rgb, 1.0), baseColor, max(isHilite, 1.0 - float(isOutlined())));
 `;
 
 const computeTranslucentColor = `
@@ -95,7 +90,6 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
     addWindowToTexCoords(frag);
     frag.addFunction(isEdgePixel);
     frag.addFunction(isOutlined);
-    frag.addFunction(isInHiliteRegion);
 
     frag.addUniform("u_hilite", VariableType.Sampler2D, (prog) => {
       prog.addGraphicUniform("u_hilite", (uniform, params) => {

@@ -51,7 +51,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   }
 
   public componentDidMount() {
-    UiFramework.projectServices.getProjects(this.props.accessToken, ProjectScope.MostRecentlyUsed, 40, 0).then((projectInfos: ProjectInfo[]) => {
+    UiFramework.projectServices.getProjects(this.props.accessToken, ProjectScope.MostRecentlyUsed, 40, 0).then((projectInfos: ProjectInfo[]) => { // tslint:disable-line:no-floating-promises
       this.setState(Object.assign({}, this.state, {
         isLoadingProjects: false,
         isLoadingiModels: true,
@@ -82,7 +82,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
   }
 
   private _selectProject(project: ProjectInfo) {
-    this.startRetrieveIModels(project);
+    this.startRetrieveIModels(project); // tslint:disable-line:no-floating-promises
   }
 
   private renderIModels() {

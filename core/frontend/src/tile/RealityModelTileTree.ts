@@ -13,8 +13,10 @@ import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
 import { IModelApp } from "../IModelApp";
 
 /** @hidden */
-class CesiumUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any): Range3d {
+export class RealityModelTileUtils {
+  public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
+    if (undefined === boundingVolume || !Array.isArray(boundingVolume.box))
+      return undefined;
     const box: number[] = boundingVolume.box;
     const center = Point3d.create(box[0], box[1], box[2]);
     const ux = Vector3d.create(box[3], box[4], box[5]);
@@ -66,12 +68,12 @@ class RealityModelTileProps implements TileProps {
   public hasContents: boolean;
   constructor(json: any, thisId: string) {
     this.contentId = thisId;
-    this.range = CesiumUtils.rangeFromBoundingVolume(json.boundingVolume);
+    this.range = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume)!;
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
     this.hasContents = undefined !== json.content && undefined !== json.content.url;
     if (this.hasContents) {
-      this.contentRange = json.content.boundingVolume && CesiumUtils.rangeFromBoundingVolume(json.content.boundingVolume);
-      this.maximumSize = CesiumUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
+      this.contentRange = json.content.boundingVolume && RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume);
+      this.maximumSize = RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
     } else {
       this.maximumSize = 0.0;
     }
@@ -135,7 +137,7 @@ class RealityModelTileLoader extends TileLoader {
 
     let foundChild = tilesetJson.children[childIndex];
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
-    if (separatorIndex >= 0) { return await this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
+    if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
     if (undefined !== foundChild.content && foundChild.content.url.endsWith("json")) {    // A child may contain a subTree...
       const subTree = await this._tree.client.getTileJson(foundChild.content.url);
       foundChild = subTree.root;
@@ -161,7 +163,7 @@ export class RealityModelTileTree {
       const tileClient = new RealityModelTileClient(url);
       const json = await tileClient.getRootDocument(url);
       const ecefLocation = iModel.ecefLocation;
-      const rootTransform: Transform = CesiumUtils.transformFromJson(json.root.transform);
+      const rootTransform: Transform = RealityModelTileUtils.transformFromJson(json.root.transform);
       let tilesetToDb = Transform.createIdentity();
 
       if (undefined !== tilesetToDbJson) {

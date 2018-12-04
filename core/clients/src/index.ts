@@ -6,7 +6,7 @@ export * from "./ECJsonTypeMap";
 export * from "./Client";
 export * from "./Config";
 export * from "./Token";
-export * from "./UserProfile";
+export * from "./UserInfo";
 export * from "./ConnectClients";
 export * from "./WsgClient";
 export * from "./FileHandler";

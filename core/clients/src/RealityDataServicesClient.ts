@@ -354,7 +354,7 @@ export class RealityDataServicesClient extends WsgClient {
     if (root.includes("/"))
       root = root.split("/")[root.split("/").length - 1];
 
-    return (await this.getModelData(alctx, token, projectId, tilesId, root));
+    return this.getModelData(alctx, token, projectId, tilesId, root);
   }
 
   /**

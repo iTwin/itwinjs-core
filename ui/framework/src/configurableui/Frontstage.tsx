@@ -32,7 +32,9 @@ export abstract class FrontstageProvider {
   public set frontstageDef(f: FrontstageDef | undefined) { this._frontstageDef = f; }
 }
 
-enum ZoneLocation {
+/** Enum for Zone Location. Useful for zone merging.
+ */
+export enum ZoneLocation {
   TopLeft = 1,
   TopCenter = 2,
   TopRight = 3,
@@ -43,7 +45,7 @@ enum ZoneLocation {
   BottomRight = 9,
 }
 
-/** Properties for a Frontstage.
+/** Properties for a [[Frontstage]] component.
  */
 export interface FrontstageProps {
   /** Id for the Frontstage */
@@ -231,6 +233,10 @@ export class Frontstage extends React.Component<FrontstageProps> {
               if (!zoneElement || !React.isValidElement(zoneElement))
                 return null;
 
+              const zoneDef = runtimeProps.zoneDefProvider.getZoneDef(zoneId);
+              if (!zoneDef)
+                return null;
+
               const zone: WidgetZone = nineZone.getWidgetZone(zoneId);
               const isDragged = runtimeProps.nineZoneProps.draggingWidget && runtimeProps.nineZoneProps.draggingWidget.id === zoneId;
               const lastPosition = isDragged ? runtimeProps.nineZoneProps.draggingWidget!.lastPosition : undefined;
@@ -238,6 +244,7 @@ export class Frontstage extends React.Component<FrontstageProps> {
               const ghostOutline = zone.getGhostOutlineBounds();
               const dropTarget = zone.getDropTarget();
               const zoneRuntimeProps: ZoneRuntimeProps = {
+                zoneDef,
                 zoneProps: runtimeProps.nineZoneProps.zones[zoneId],
                 widgetChangeHandler: runtimeProps.widgetChangeHandler,
                 targetChangeHandler: runtimeProps.targetChangeHandler,

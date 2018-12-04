@@ -5,7 +5,7 @@
 /** @module Codes */
 
 import { DbResult, Id64String, Id64, Logger } from "@bentley/bentleyjs-core";
-import { IModelError, IModelStatus, CodeSpec } from "@bentley/imodeljs-common";
+import { CodeSpec, CodeScopeSpec, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelDb } from "./IModelDb";
 
@@ -73,19 +73,33 @@ export class CodeSpecs {
   }
 
   /** Add a new CodeSpec to the IModelDb.
-   * <p><em>Example:</em>
-   * ``` ts
-   * [[include:CodeSpecs.insert]]
-   * ```
-   * @param  codeSpec The new entry to add.
-   * @return The id of the persistent CodeSpec.
+   * @param codeSpec The CodeSpec to insert
+   * @returns The Id of the persistent CodeSpec.
    * @note If successful, this method will assign a valid CodeSpecId to the supplied CodeSpec
    * @throws IModelError if the insertion fails
    */
-  public insert(codeSpec: CodeSpec): Id64String {
-    const id: Id64String = this._imodel.insertCodeSpec(codeSpec);
-    codeSpec.id = id;
-    return id;
+  public insert(codeSpec: CodeSpec): Id64String;
+  /** Add a new CodeSpec to the IModelDb.
+   * @param name The name for the new CodeSpec.
+   * @param scopeType The scope type
+   * @returns The Id of the persistent CodeSpec.
+   * @throws IModelError if the insertion fails
+   */
+  public insert(name: string, scopeType: CodeScopeSpec.Type): Id64String;
+  // Overloads funnel here...
+  public insert(codeSpecOrName: CodeSpec | string, scopeType?: CodeScopeSpec.Type): Id64String {
+    if (codeSpecOrName instanceof CodeSpec) {
+      const codeSpec = codeSpecOrName as CodeSpec;
+      const id: Id64String = this._imodel.insertCodeSpec(codeSpec);
+      codeSpec.id = id;
+      return id;
+    }
+    if (typeof codeSpecOrName === "string") {
+      const name = codeSpecOrName as string;
+      if (scopeType)
+        return this._imodel.insertCodeSpec(new CodeSpec(this._imodel, Id64.invalid, name, scopeType));
+    }
+    throw new IModelError(IModelStatus.BadArg, "Invalid argument", Logger.logError, loggingCategory);
   }
 
   /** Load a CodeSpec from IModel
