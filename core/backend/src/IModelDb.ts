@@ -966,6 +966,9 @@ export namespace IModelDb {
      * @throws [[IModelError]] if unable to insert the model.
      */
     public insertModel(props: ModelProps): Id64String {
+      if (props.isPrivate === undefined) // temporarily work around bug in addon
+        props.isPrivate = false;
+
       const jsClass = this._iModel.getJsClass<typeof Model>(props.classFullName);
       if (IModelStatus.Success !== jsClass.onInsert(props))
         return Id64.invalid;
