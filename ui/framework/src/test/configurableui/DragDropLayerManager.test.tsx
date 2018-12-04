@@ -6,7 +6,7 @@ import * as React from "react";
 import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { DragDropLayerManager, DragDropLayerRenderer } from "../../index";
+import { DragDropLayerManager, DragDropLayerRenderer } from "../../ui-framework";
 import { BeDragDropContext } from "@bentley/ui-components";
 
 describe("DragDropLayerManager", () => {

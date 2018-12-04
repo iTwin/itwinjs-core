@@ -9,11 +9,8 @@ import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
 import "./InputField.scss";
 import { Div, withOnOutsideClick } from "@bentley/ui-core";
-import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";
-import MessageButton from "@bentley/ui-ninezone/lib/footer/message/content/Button";
-import Status from "@bentley/ui-ninezone/lib/footer/message/content/status/Status";
-import { StatusMessage } from "@bentley/ui-ninezone/lib/footer/message/content/status/Message";
-import StatusMessageLayout from "@bentley/ui-ninezone/lib/footer/message/content/status/Layout";
+
+import { CommonProps, MessageButton, Status, StatusMessage, MessageLayout as StatusMessageLayout } from "@bentley/ui-ninezone";
 
 // tslint:disable-next-line:variable-name
 const DivWithOnOutsideClick = withOnOutsideClick(Div);

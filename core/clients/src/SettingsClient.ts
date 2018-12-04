@@ -8,7 +8,7 @@ import { request, RequestOptions, Response } from "./Request";
 import { Client } from "./Client";
 import { AuthorizationToken, AccessToken } from "./Token";
 import { SettingsAdmin, SettingsStatus, SettingsResult } from "./SettingsAdmin";
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core/lib/BentleyError";
+import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 

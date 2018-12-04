@@ -2,22 +2,13 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-
 const path = require("path");
 const webpack = require("webpack");
-const configLoader = require("@bentley/config-loader/lib/IModelJsConfig")
-const configEnv = configLoader.IModelJsConfig.init(true /*suppress error*/, true /* suppress message */);
-if (configEnv) {
-  Object.assign(process.env, configEnv);
-} else {
-  console.error("Webpack failed to locate iModelJs configuration");
-}
-
 
 const raw = process.env;
 module.exports = {
   mode: "development",
-  entry: "./lib/frontend/SimpleViewTest.js",
+  entry: { "main": path.resolve(__dirname, 'lib/frontend/SimpleViewTest.js'), },
   output: {
     path: path.resolve(__dirname, "./lib/backend/public"),
     filename: '[name].bundle.js',
@@ -33,16 +24,24 @@ module.exports = {
       }
     ]
   },
+  optimization: {
+    // create only one runtime chunk.
+    runtimeChunk: "single",
+    moduleIds: "named",
+  },
+  node: {
+    Buffer: false,
+    fs: "empty",
+    process: true
+  },
   stats: "errors-only",
   externals: {
-    electron: "require('electron')"
+    electron: "require('electron')",
+    '@bentley/bentleyjs-core': 'bentleyjs_core',
+    '@bentley/geometry-core': 'geometry_core',
+    '@bentley/imodeljs-i18n': 'imodeljs_i18n',
+    '@bentley/imodeljs-clients': 'imodeljs_clients',
+    '@bentley/imodeljs-common': 'imodeljs_common',
+    '@bentley/imodeljs-frontend': 'imodeljs_frontend',
   },
-  plugins: [
-    new webpack.DefinePlugin({
-      "process.env": Object.keys(raw).filter(v => v.match(/^imjs_/i)).reduce((env, key) => {
-        env[key] = JSON.stringify(raw[key]);
-        return env;
-      }, {})
-    })
-  ]
 };

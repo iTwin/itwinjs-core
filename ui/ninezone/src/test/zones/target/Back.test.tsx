@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import Back from "../../..//zones/target/Back";
+import { Back } from "../../../ui-ninezone";
 
 describe("<Back />", () => {
   it("should render", () => {

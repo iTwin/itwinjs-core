@@ -7,10 +7,10 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { Edge } from "../utilities/Rectangle";
-import Content from "./rectangular/Content";
-import ResizeGrip, { ResizeDirection } from "./rectangular/ResizeGrip";
-import ResizeHandle from "./rectangular/ResizeHandle";
-import CommonProps, { NoChildrenProps } from "../utilities/Props";
+import { WidgetContent } from "./rectangular/Content";
+import { ResizeGrip, ResizeDirection } from "./rectangular/ResizeGrip";
+import { ResizeHandle } from "./rectangular/ResizeHandle";
+import { CommonProps, NoChildrenProps } from "../utilities/Props";
 import "./Stacked.scss";
 
 /** Available [[Stacked]] widget horizontal anchors. */
@@ -167,7 +167,7 @@ export class Stacked extends React.PureComponent<StackedProps> {
         ref={this._widget}
       >
         <div className="nz-content-area">
-          <Content
+          <WidgetContent
             anchor={this.props.horizontalAnchor}
             content={this.props.content}
           />
@@ -204,5 +204,3 @@ export class Stacked extends React.PureComponent<StackedProps> {
     );
   }
 }
-
-export default Stacked;

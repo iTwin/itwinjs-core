@@ -2,8 +2,8 @@
   "name": "@bentley/imodeljs-clients-backend",
   "version": "0.171.0",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
-  "main": "lib/index.js",
-  "typings": "lib/index",
+  "main": "lib/imodeljs-clients-backend.js",
+  "typings": "lib/imodeljs-clients-backend",
   "license": "MIT",
   "engines": {
     "node": ">=8.9.0 <9.0"
@@ -14,7 +14,7 @@
     "clean": "rimraf lib package-deps.json",
     "cover": "nyc npm test",
     "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run test:integration",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients-backend/file.json --tsIndexFile=index.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients-backend/file.json --tsIndexFile=imodeljs-clients-backend.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"integration\" --invert",
     "test:integration": "node ./node_modules/@bentley/build-tools/scripts/test.js",
@@ -56,8 +56,7 @@
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~3.1.0",
-    "webpack": "^4.16.4"
+    "typescript": "~3.1.0"
   },
   "dependencies": {
     "@bentley/imodeljs-clients": "0.171.0",

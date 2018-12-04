@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetDefProps, WidgetDef, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../index";
+import { WidgetState, WidgetDefProps, WidgetDef, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework";
 
 describe("WidgetControl", () => {
 

@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./ScrollableArea.scss";
 
 /** Properties of [[ScrollableArea]] component. */
@@ -27,7 +27,7 @@ export interface ScrollableAreaState {
  * Scrollable area with no scroll bar showed. Scrolling is controlled with two arrow buttons.
  * @note Used as content in [[Settings]] and [[Nested]] components
  */
-export default class ScrollableArea extends React.Component<ScrollableAreaProps, ScrollableAreaState> {
+export class ScrollableArea extends React.Component<ScrollableAreaProps, ScrollableAreaState> {
   public static readonly INDICATOR_HEIGHT = 20;
   private _content = React.createRef<HTMLDivElement>();
 

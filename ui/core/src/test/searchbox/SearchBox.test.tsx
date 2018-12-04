@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
-import { SearchBox } from "../../index";
+import { SearchBox } from "../../ui-core";
 import TestUtils from "../TestUtils";
 
 describe("SearchBox", () => {

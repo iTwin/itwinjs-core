@@ -15,7 +15,7 @@ import { NavigationAidControl } from "./NavigationAidControl";
 import { FrontstageManager, ToolActivatedEventArgs, NavigationAidActivatedEventArgs, ContentControlActivatedEventArgs } from "./FrontstageManager";
 import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
-import NZ_ToolsWidget from "@bentley/ui-ninezone/lib/widget/tools/Tools";
+import { Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 /** A Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.

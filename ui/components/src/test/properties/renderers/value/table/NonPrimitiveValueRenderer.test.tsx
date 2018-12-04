@@ -7,7 +7,7 @@ import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
 import { TableNonPrimitiveValueRenderer } from "../../../../../properties/renderers/value/table/NonPrimitiveValueRenderer";
-import { PropertyPopupState } from "../../../../../properties";
+import { PropertyPopupState } from "../../../../../ui-components";
 
 describe("TableNonPrimitiveValueRenderer", () => {
   it("renders correctly", () => {

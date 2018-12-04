@@ -15,7 +15,7 @@ import {
   RpcManager,
   MobileRpcManager,
 } from "@bentley/imodeljs-common";
-import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
+import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common"; // not part of the "barrel"
 import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
 import {
   TestRpcInterface,

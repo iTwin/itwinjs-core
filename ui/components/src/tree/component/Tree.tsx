@@ -28,7 +28,9 @@ import {
 } from "../../common/selection/SelectionHandler";
 // cell editing imports
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PropertyRecord, PropertyValueFormat, PrimitiveValue, PropertyDescription } from "../../properties";
+import { PropertyRecord } from "../../properties/Record";
+import { PropertyValueFormat, PrimitiveValue } from "../../properties/Value";
+import { PropertyDescription } from "../../properties/Description";
 // node highlighting
 import HighlightingEngine, { HighlightableTreeProps, HighlightableTreeNodeProps } from "../HighlightingEngine";
 // misc

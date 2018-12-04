@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
 import "./Snap.scss";
 
 /** Properties of Snap component.  */
@@ -22,7 +22,7 @@ export interface SnapProps extends CommonProps, NoChildrenProps {
 }
 
 /** Snap row used in [[SnapModeDialog]] component. */
-export default class Snap extends React.Component<SnapProps> {
+export class Snap extends React.Component<SnapProps> {
   public render() {
     const dialogClassName = classnames(
       "nz-footer-snapMode-snap",

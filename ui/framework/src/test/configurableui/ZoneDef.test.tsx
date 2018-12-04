@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import TestUtils from "../TestUtils";
-import { ZoneDef, ZoneState, WidgetDef, ZoneLocation } from "../../index";
+import { ZoneDef, ZoneState, WidgetDef, ZoneLocation } from "../../ui-framework";
 import { expect } from "chai";
 
 describe("ZoneDef", () => {

@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import { CSSProperties } from "react";
 import { ProjectInfo } from "../clientservices/ProjectServices";
 import { ProjectDialog } from "./ProjectDialog";
-import { AccessToken } from "@bentley/imodeljs-clients/lib";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { Popup, Position } from "@bentley/ui-core";
 import "./ProjectDropdown.scss";
 

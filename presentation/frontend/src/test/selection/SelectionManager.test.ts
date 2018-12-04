@@ -8,7 +8,7 @@ import * as moq from "typemoq";
 import { createRandomECInstanceKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { InstanceKey } from "@bentley/presentation-common";
-import { SelectionManager } from "../../selection";
+import { SelectionManager } from "../../presentation-frontend";
 
 const generateSelection = (): InstanceKey[] => {
   return [

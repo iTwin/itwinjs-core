@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { DecorateContext, HitDetail, IModelConnection, imageElementFromUrl, IModelApp, MarkerSet, Marker, MarkerImage, Cluster } from "@bentley/imodeljs-frontend";
-import { GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
+import { GraphicType } from "@bentley/imodeljs-frontend";
 import { ColorDef, NpcCenter, ColorByName } from "@bentley/imodeljs-common";
 import { Point3d, XYAndZ, XAndY, Point2d } from "@bentley/geometry-core";
 

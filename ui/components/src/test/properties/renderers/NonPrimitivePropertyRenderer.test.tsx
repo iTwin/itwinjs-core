@@ -8,7 +8,7 @@ import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
 import { NonPrimitivePropertyRenderer } from "../../../properties/renderers/NonPrimitivePropertyRenderer";
-import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../properties/renderers/label";
+import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../ui-components";
 import { PropertyRenderer } from "../../../properties/renderers/PropertyRenderer";
 
 describe("NonPrimitivePropertyRenderer", () => {

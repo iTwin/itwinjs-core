@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../../../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../../../../utilities/Props";
 import "./Scrollable.scss";
 
 /** Properties of [[ScrollableContent]] component. */
@@ -33,5 +33,3 @@ export const ScrollableContent: React.StatelessComponent<ScrollableContentProps>
     </div>
   );
 };
-
-export default ScrollableContent;

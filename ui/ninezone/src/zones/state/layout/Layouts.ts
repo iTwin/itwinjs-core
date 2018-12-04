@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import Rectangle from "../../../utilities/Rectangle";
+import { Rectangle } from "../../../utilities/Rectangle";
 import { WidgetZone } from "../Zone";
-import NineZone from "../NineZone";
-import Layout from "./Layout";
-import Root from "./Root";
+import { NineZone } from "../NineZone";
+import { Layout } from "./Layout";
+import { Root } from "./Root";
 import { HorizontalAnchor } from "../../../widget/Stacked";
 
 export class NineZoneRoot extends Root {

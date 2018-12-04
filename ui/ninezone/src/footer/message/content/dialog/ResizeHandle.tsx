@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../../../utilities/Props";
 import "./ResizeHandle.scss";
 
 /** Properties of [[MessageResizeHandle]] component. */
@@ -29,5 +29,3 @@ export const MessageResizeHandle: React.StatelessComponent<MessageResizeHandlePr
     </div>
   );
 };
-
-export default MessageResizeHandle;

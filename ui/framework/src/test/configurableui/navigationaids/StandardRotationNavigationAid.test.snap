@@ -6,7 +6,7 @@ exports[`StandardRotationNavigationAid <StandardRotationNavigationAid /> renders
 >
   <ExpandableButton
     button={
-      <ToolbarIcon
+      <ToolbarIconButton
         className="icon-button"
         icon={
           <span

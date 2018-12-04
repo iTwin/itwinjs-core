@@ -417,16 +417,9 @@
       "type": "node",
       "request": "launch",
       "name": "ui-test-app (backend)",
-      "program": "${workspaceFolder}/test-apps/ui-test-app/node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js",
+      "program": "${workspaceFolder}/test-apps/ui-test-app/lib/backend/main.js",
       "cwd": "${workspaceFolder}/test-apps/ui-test-app",
-      "args": [
-        "start-backend",
-        "--debug=9229"
-      ],
-      "port": 9229,
       "protocol": "inspector",
-      "outputCapture": "std",
-      "timeout": 100000,
     },
     {
       "type": "node",
@@ -515,7 +508,20 @@
         "${workspaceRoot}/test-apps/imodel-from-geojson/lib/**/*.js"
       ],
       "protocol": "inspector"
-    }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug CopyDependentModules",
+      "program": "${workspaceRoot}/test-apps/ui-test-app/node_modules/@bentley/webpack-tools/modules/copyDependentModules.js",
+      "cwd": "${workspaceRoot}/test-apps/ui-test-app",
+      "args": [
+        "--packageFile=./package.json",
+        "--destDir=./lib/backend/public",
+        "--type=dev"
+      ],
+      "protocol": "inspector"
+    },
   ],
   "compounds": [
     {

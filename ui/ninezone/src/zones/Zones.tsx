@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../utilities/Props";
+import { CommonProps } from "../utilities/Props";
 import "./Zones.scss";
 
 /** Properties of [[Zones]] component. */
@@ -16,7 +16,7 @@ export interface ZonesProps extends CommonProps {
 }
 
 /** Zones component of 9-zone UI app. */
-export default class Zones extends React.Component<ZonesProps> {
+export class Zones extends React.Component<ZonesProps> {
   public render() {
     const className = classnames(
       "nz-zones-zones",

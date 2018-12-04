@@ -12,7 +12,7 @@ import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Node } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
+import { PresentationManager } from "@bentley/presentation-frontend";
 import { PageOptions } from "@bentley/ui-components";
 import PresentationTreeDataProvider from "../../tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../tree/Utils";

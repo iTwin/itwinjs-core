@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Table */
 
-import * as _ from "lodash";
+import { memoize } from "lodash";
 import * as React from "react";
 import ReactDataGrid from "react-data-grid";
 import classnames from "classnames";
@@ -22,7 +22,7 @@ import ReactResizeDetector from "react-resize-detector";
 import "./Grid.scss";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { PropertyValueRendererManager, PropertyContainerType, PropertyDialogState, PropertyPopupState, PropertyValueRendererContext } from "../../properties/ValueRendererManager";
-import { PropertyValueFormat, PrimitiveValue } from "../../properties";
+import { PropertyValueFormat, PrimitiveValue } from "../../properties/Value";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { DragDropHeaderCell } from "./DragDropHeaderCell";
 import { ShowHideMenu } from "../../common/showhide/ShowHideMenu";
@@ -582,7 +582,7 @@ export class Table extends React.Component<TableProps, TableState> {
     return { item: { key: "", cells: [] }, index: i, cells: {} };
   }
 
-  private _rowGetterAsync = _.memoize(async (index: number, clearRows: boolean): Promise<void> => {
+  private _rowGetterAsync = memoize(async (index: number, clearRows: boolean): Promise<void> => {
     if (index < 0)
       return;
 

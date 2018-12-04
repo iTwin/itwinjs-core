@@ -14,9 +14,9 @@ import { FrontstageDef } from "./FrontstageDef";
 import { ZoneDef } from "./ZoneDef";
 import { Zone, ZoneProps, ZoneRuntimeProps } from "./Zone";
 
-import NZ_Zones from "@bentley/ui-ninezone/lib/zones/Zones";
-import NineZone, { WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
-import { WidgetZone } from "@bentley/ui-ninezone/lib/zones/state/Zone";
+import { Zones as NZ_Zones } from "@bentley/ui-ninezone";
+import { NineZone, WidgetZoneIndex } from "@bentley/ui-ninezone";
+import { WidgetZone } from "@bentley/ui-ninezone";
 
 /** Provides a Frontstage as a React based definition
  */

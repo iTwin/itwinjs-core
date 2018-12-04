@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Content from "../../..//footer/message-center/Content";
+import { MessageCenterContent } from "../../../ui-ninezone";
 
 describe("<Content />", () => {
   it("should render", () => {
-    mount(<Content />);
+    mount(<MessageCenterContent />);
   });
 
   it("renders correctly", () => {
-    shallow(<Content />).should.matchSnapshot();
+    shallow(<MessageCenterContent />).should.matchSnapshot();
   });
 });

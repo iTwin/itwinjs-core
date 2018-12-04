@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import Zone from "../..//zones/Zone";
+import { ZoneComponent } from "../../ui-ninezone";
 
-describe("<Zone />", () => {
+describe("<ZoneComponent />", () => {
   it("should render", () => {
-    mount(<Zone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />);
+    mount(<ZoneComponent bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Zone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />).should.matchSnapshot();
+    shallow(<ZoneComponent bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />).should.matchSnapshot();
   });
 });

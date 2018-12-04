@@ -34,7 +34,7 @@ import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { SkyBoxPrimitive, SkySpherePrimitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
-import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "@bentley/geometry-core/lib/topology/Graph";
+import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "@bentley/geometry-core";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 

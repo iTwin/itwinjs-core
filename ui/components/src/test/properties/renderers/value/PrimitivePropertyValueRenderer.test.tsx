@@ -6,7 +6,7 @@ import { expect, assert } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import TestUtils from "../../../TestUtils";
-import { PrimitivePropertyValueRenderer } from "../../../../properties/renderers/value/PrimitivePropertyValueRenderer";
+import { PrimitivePropertyValueRenderer } from "../../../../ui-components";
 
 describe("PrimitivePropertyValueRenderer", () => {
   describe("render", () => {

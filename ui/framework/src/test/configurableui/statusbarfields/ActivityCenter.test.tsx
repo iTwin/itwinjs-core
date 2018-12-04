@@ -18,7 +18,7 @@ import {
   ConfigurableCreateInfo,
   StatusBar,
   MessageManager,
-} from "../../..";
+} from "../../../ui-framework";
 
 describe("ActivityCenter", () => {
 

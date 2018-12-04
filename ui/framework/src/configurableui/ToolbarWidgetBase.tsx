@@ -10,8 +10,7 @@ import { WidgetDef, ToolbarWidgetProps } from "./WidgetDef";
 import { ItemList } from "./ItemMap";
 import { ActionButtonItemDef } from "./Item";
 
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import { Direction } from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
  */

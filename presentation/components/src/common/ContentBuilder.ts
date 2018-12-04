@@ -6,11 +6,11 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import { ValuesDictionary, PresentationError, PresentationStatus } from "@bentley/presentation-common";
-import * as content from "@bentley/presentation-common/lib/content";
-import { isArray, isMap, isNestedContentValue, isPrimitive } from "@bentley/presentation-common/lib/content/Value";
-import { PropertyRecord } from "@bentley/ui-components/lib/properties/Record";
-import { PropertyValue, PropertyValueFormat, ArrayValue, StructValue, PrimitiveValue } from "@bentley/ui-components/lib/properties/Value";
-import { PropertyDescription, PropertyEditorInfo, EnumerationChoicesInfo } from "@bentley/ui-components/lib/properties/Description";
+import * as content from "@bentley/presentation-common";
+import { isArray, isMap, isNestedContentValue, isPrimitive } from "@bentley/presentation-common";
+import { PropertyRecord } from "@bentley/ui-components";
+import { PropertyValue, PropertyValueFormat, ArrayValue, StructValue, PrimitiveValue } from "@bentley/ui-components";
+import { PropertyDescription, PropertyEditorInfo, EnumerationChoicesInfo } from "@bentley/ui-components";
 
 const createArrayValue = (propertyDescription: PropertyDescription, arrayDescription: content.ArrayTypeDescription, values: content.Value[], displayValues: content.DisplayValue[]): ArrayValue => {
   const records = new Array<PropertyRecord>();

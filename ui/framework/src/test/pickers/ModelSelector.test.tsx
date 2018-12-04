@@ -6,7 +6,7 @@
 // import { mount, shallow } from "enzyme";
 
 // import TestUtils from "../TestUtils";
-// import { ModelSelectorWidget } from "../../index";
+// import { ModelSelectorWidget } from "../../ui-framework";
 
 // describe("ModelSelectorWidget", () => {
 //   before(async () => {

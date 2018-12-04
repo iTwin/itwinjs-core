@@ -3,8 +3,8 @@
   "version": "0.171.0",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
-  "main": "lib/index.js",
-  "typings": "lib/index",
+  "main": "lib/ecschema-metadatajs",
+  "typings": "lib/ecschema-metadata",
   "repository": {
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs"
@@ -14,7 +14,7 @@
     "clean": "rimraf lib package-deps.json",
     "lint": "tslint --project . 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test-tsnode.js --testDir=./test/",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./index.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./ecschema-metadata.ts --onlyJson %TYPEDOC_THEME%",
     "cover": "nyc npm test",
     "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
   },

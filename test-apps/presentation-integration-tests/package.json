@@ -14,7 +14,7 @@
     "docs": "",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint --project . 1>&2",
-    "test": "mocha --opts ./mocha.opts ./lib/**/*.js",
+    "test": "mocha -r jsdom-global/register -r ignore-styles --opts ./mocha.opts ./lib/**/*.js",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch",
     "cover": ""
   },
@@ -60,12 +60,18 @@
     "@bentley/build-tools": "0.171.0",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
+    "ignore-styles": "^5.0.1",
+    "jsdom-global": "3.0.2",
     "nyc": "^13.0.1",
     "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typescript": "~3.1.0"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
+    "require": [
+      "ignore-styles",
+      "jsdom-global/register"
+    ]
   }
 }

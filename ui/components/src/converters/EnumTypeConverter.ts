@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module TypeConverters */
 
-import { PropertyDescription, EnumerationChoice } from "../properties";
+import { PropertyDescription, EnumerationChoice } from "../properties/Description";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { Primitives } from "./valuetypes";
+import * as Primitives from "./valuetypes/PrimitiveTypes";
 
 /**
  * Enum Type Converter.

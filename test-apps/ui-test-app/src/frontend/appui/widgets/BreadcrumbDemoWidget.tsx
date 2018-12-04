@@ -14,8 +14,8 @@ import {
 import {
   Breadcrumb, BreadcrumbProps, BreadcrumbMode, BreadcrumbDetailsProps, BreadcrumbDetails, BreadcrumbPath,
 } from "@bentley/ui-components";
-import withBreadcrumbDragDrop from "@bentley/ui-components/lib/breadcrumb/hoc/withDragDrop";
-import withBreadcrumbDetailsDragDrop from "@bentley/ui-components/lib/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+import { withBreadcrumbDragDrop } from "@bentley/ui-components";
+import { withBreadcrumbDetailsDragDrop } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTreeDataProvider, treeDragProps, treeDropProps, TreeDragTypes, DemoTreeDragDropType } from "./demodataproviders/demoTreeDataProvider";
 import { TableDragTypes } from "./demodataproviders/demoTableDataProvider";

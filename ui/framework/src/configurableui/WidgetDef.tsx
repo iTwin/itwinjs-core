@@ -16,7 +16,7 @@ import { ItemDefBase } from "./ItemDefBase";
 import { BaseItemState } from "./ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../SyncUiEventDispatcher";
 
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Direction } from "@bentley/ui-ninezone";
 import { ItemList } from "./ItemMap";
 
 // -----------------------------------------------------------------------------

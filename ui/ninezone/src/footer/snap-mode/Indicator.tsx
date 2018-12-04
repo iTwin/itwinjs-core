@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
 import "./Indicator.scss";
 
 /** Properties of [[SnapModeIndicator]] component. */
@@ -24,7 +24,7 @@ export interface SnapModeIndicatorProps extends CommonProps, NoChildrenProps {
 }
 
 /** One of [[Footer]] indicators. */
-export default class SnapModeIndicator extends React.Component<SnapModeIndicatorProps> {
+export class SnapModeIndicator extends React.Component<SnapModeIndicatorProps> {
   public render() {
     const className = classnames(
       "nz-footer-snapMode-indicator",

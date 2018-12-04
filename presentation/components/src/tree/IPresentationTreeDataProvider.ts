@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import { ITreeDataProvider, TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
+import { ITreeDataProvider, TreeNodeItem } from "@bentley/ui-components";
 import IPresentationDataProvider from "../common/IPresentationDataProvider";
 import { NodeKey, NodePathElement } from "@bentley/presentation-common";
 

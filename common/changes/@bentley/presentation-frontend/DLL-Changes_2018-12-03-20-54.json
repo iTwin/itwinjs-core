@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Changed index file name to match package name, eliminate subdirectory index files, decrease usage of default exports, change imports to use other packages' index file.",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "Barry.Bentley@bentley.com"
+}

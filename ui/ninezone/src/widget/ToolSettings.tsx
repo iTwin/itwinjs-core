@@ -6,11 +6,11 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../utilities/Props";
 import "./ToolSettings.scss";
 
 /** Properties of [[ToolSettings]] component. */
-export interface ToolSettingsProps extends CommonProps, NoChildrenProps {
+export interface ToolSettingsWidgetProps extends CommonProps, NoChildrenProps {
   /** Content of this ToolSettings widget. See: [[Nested]], [[Settings]] */
   content?: React.ReactNode;
   /** Tab to control the content. See [[ToolSettingsTab]] */
@@ -22,7 +22,7 @@ export interface ToolSettingsProps extends CommonProps, NoChildrenProps {
  * @note Should be placed in [[Zone]] component.
  */
 // tslint:disable-next-line:variable-name
-export const ToolSettings: React.StatelessComponent<ToolSettingsProps> = (props: ToolSettingsProps) => {
+export const ToolSettingsWidget: React.StatelessComponent<ToolSettingsWidgetProps> = (props: ToolSettingsWidgetProps) => {
   const className = classnames(
     "nz-widget-toolSettings",
     props.className);
@@ -43,5 +43,3 @@ export const ToolSettings: React.StatelessComponent<ToolSettingsProps> = (props:
     </div>
   );
 };
-
-export default ToolSettings;

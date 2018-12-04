@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import Rectangle from "../../../utilities/Rectangle";
+import { Rectangle } from "../../../utilities/Rectangle";
 import { SizeProps } from "../../../utilities/Size";
 
-export default class Root {
+export class Root {
   public static readonly FOOTER_HEIGHT = 48;
   private _isInFooterMode: boolean;
   private _bounds: Rectangle;

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { mount, shallow } from "enzyme";
-import { BeDragDropContext } from "../..";
+import { BeDragDropContext } from "../../ui-components";
 
 describe("BeDragDropContext", () => {
 

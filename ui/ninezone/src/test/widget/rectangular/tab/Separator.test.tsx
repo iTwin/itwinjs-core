@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Separator from "../../../..//widget/rectangular/tab/Separator";
+import { TabSeparator } from "../../../../ui-ninezone";
 
-describe("<Separator />", () => {
+describe("<TabSeparator />", () => {
   it("should render", () => {
-    mount(<Separator />);
+    mount(<TabSeparator />);
   });
 
   it("renders correctly", () => {
-    shallow(<Separator />).should.matchSnapshot();
+    shallow(<TabSeparator />).should.matchSnapshot();
   });
 });

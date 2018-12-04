@@ -8,7 +8,7 @@ import InspireTree, * as Inspire from "inspire-tree";
 import { isArrayLike } from "lodash";
 import { CallableInstance } from "callable-instance2/import";
 import { IDisposable, using } from "@bentley/bentleyjs-core";
-import { PageOptions } from "../../common";
+import { PageOptions } from "../../common/PageOptions";
 
 /**
  * Enum containing all events that may be emitted by [[BeInspireTree]]

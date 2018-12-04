@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../utilities/Props";
 import "./Footer.scss";
 
 /** Properties of [[Footer]] component. */
@@ -44,5 +44,3 @@ export const Footer: React.StatelessComponent<FooterProps> = (props: FooterProps
     </div>
   );
 };
-
-export default Footer;

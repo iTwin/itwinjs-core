@@ -83,5 +83,3 @@ export class OrthogonalDirectionHelpers {
     }
   }
 }
-
-export default Direction;

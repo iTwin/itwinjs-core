@@ -7,7 +7,7 @@ import { initialize, terminate } from "../../IntegrationTests";
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset, RuleTypes, RuleSpecificationTypes } from "@bentley/presentation-common";
-import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
+import { PresentationManager } from "@bentley/presentation-frontend";
 
 describe("Multiple frontends for one backend", async () => {
 

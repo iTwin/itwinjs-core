@@ -13,7 +13,7 @@
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "docs": "",
     "lint": "tslint --project . 1>&2",
-    "test": "npm run copy:test-backend-assets && npm run copy:backend-assets && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/backend/test\"",
+    "test": "npm run copy:test-backend-assets && npm run copy:backend-assets && node ./node_modules/@bentley/build-tools/scripts/test.js --defineWindow --testDir=\"./lib/backend/test\"",
     "cover": ""
   },
   "repository": {},
@@ -36,7 +36,7 @@
     "i18next-xhr-backend": "^1.5.1",
     "js-base64": "^2.4.5",
     "save": "^2.3.3",
-    "webpack": "^4.16.4"
+    "webpack": "^4.20.2"
   },
   "devDependencies": {
     "@bentley/config-loader": "0.171.0",
@@ -52,6 +52,8 @@
     "@types/mocha": "^5.2.5",
     "@types/node": "10.10.3",
     "@types/webpack": "^3.8.5",
+    "jsdom": "^11.12.0",
+    "jsdom-global": "3.0.2",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
     "mocha": "^5.2.0",

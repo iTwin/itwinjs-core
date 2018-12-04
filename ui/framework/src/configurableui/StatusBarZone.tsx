@@ -13,10 +13,8 @@ import { StatusBar } from "./StatusBar";
 import { StatusBarWidgetControl } from "./StatusBarWidgetControl";
 
 // import TemporaryMessage from "@bentley/ui-ninezone/messages/Temporary";
-import { StatusZoneProps as NZ_ZoneProps, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
-import NZ_FooterZone from "@bentley/ui-ninezone/lib/zones/Footer";
-import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
-import GhostOutline from "@bentley/ui-ninezone/lib/zones/GhostOutline";
+import { StatusZoneProps as NZ_ZoneProps, DropTarget } from "@bentley/ui-ninezone";
+import { FooterZone as NZ_FooterZone, RectangleProps, GhostOutline } from "@bentley/ui-ninezone";
 
 /** Properties for the [[StatusBarZone]] component */
 export interface StatusBarZoneProps {

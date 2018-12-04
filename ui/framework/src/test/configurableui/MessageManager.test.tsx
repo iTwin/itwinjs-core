@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { MessageManager } from "../../";
+import { MessageManager } from "../../ui-framework";
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 describe("MessageManager", () => {

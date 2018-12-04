@@ -6,7 +6,7 @@
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { assert } from "chai";
-import { OpenParams } from "../../backend";
+import { OpenParams } from "../../imodeljs-backend";
 import { PromiseMemoizer, QueryablePromise } from "../../PromiseMemoizer";
 
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";

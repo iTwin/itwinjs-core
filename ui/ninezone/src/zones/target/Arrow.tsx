@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./Arrow.scss";
 
 /**
@@ -26,5 +26,3 @@ export const Arrow: React.StatelessComponent<CommonProps> = (props: CommonProps)
     />
   );
 };
-
-export default Arrow;

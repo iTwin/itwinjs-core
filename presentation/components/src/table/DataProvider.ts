@@ -5,14 +5,14 @@
 /** @module Table */
 
 import * as _ from "lodash";
-import { SortDirection } from "@bentley/ui-core/lib/enums/SortDirection";
+import { SortDirection } from "@bentley/ui-core";
 import {
   TableDataProvider as ITableDataProvider, TableDataChangeEvent,
   ColumnDescription, RowItem, CellItem,
-} from "@bentley/ui-components/lib/table/TableDataProvider";
+} from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
-import * as content from "@bentley/presentation-common/lib/content";
+import * as content from "@bentley/presentation-common";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder from "../common/ContentBuilder";
 import PageContainer, { Page } from "../common/PageContainer";

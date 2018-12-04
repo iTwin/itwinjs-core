@@ -5,8 +5,8 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Toolbar, { ToolbarPanelAlignment } from "../..//toolbar/Toolbar";
-import { Direction } from "../..//utilities/Direction";
+import { Toolbar, ToolbarPanelAlignment } from "../../ui-ninezone";
+import { Direction } from "../../ui-ninezone";
 
 describe("<Toolbar />", () => {
   it("should render", () => {

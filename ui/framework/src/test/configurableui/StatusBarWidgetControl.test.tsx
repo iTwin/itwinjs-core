@@ -16,7 +16,7 @@ import {
   StatusBar,
   WidgetDef,
   ConfigurableUiControlType,
-} from "../..//index";
+} from "../../ui-framework";
 
 describe("StatusBarWidgetControl", () => {
 

@@ -7,7 +7,7 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { ProjectInfo, ProjectScope } from "../clientservices/ProjectServices";
-import { AccessToken } from "@bentley/imodeljs-clients/lib";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { UiFramework } from "../UiFramework";
 import { ProjectTabs, ProjectTab } from "./ProjectTabs";
 import { SearchBox } from "@bentley/ui-core";

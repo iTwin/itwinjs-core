@@ -8,14 +8,8 @@ import * as React from "react";
 import { CSSProperties } from "react";
 import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
 
-import ToolSettingsWidget from "@bentley/ui-ninezone/lib/widget/ToolSettings";
-import ToolSettingsTab from "@bentley/ui-ninezone/lib/widget/tool-settings/Tab";
-import ToolSettings from "@bentley/ui-ninezone/lib/widget/tool-settings/Settings";
-import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";
-import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
-import { TabIcon } from "@bentley/ui-ninezone/lib/widget/TabIcon";
-
-import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
+import { ToolSettingsWidget, ToolSettingsTab, ToolSettings, CommonProps } from "@bentley/ui-ninezone";
+import { RectangleProps, TabIcon, ZoneComponent } from "@bentley/ui-ninezone";
 
 /** State for the ToolSettingsZone content.
  */
@@ -76,13 +70,13 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
       };
 
       return (
-        <NZ_Zone
+        <ZoneComponent
           bounds={this.props.bounds}
         >
           <div style={divStyle} >
             {this.getToolSettingsWidget()}
           </div>
-        </NZ_Zone>
+        </ZoneComponent>
       );
     }
 
@@ -150,7 +144,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
   // private getToolAssistanceButton() {
   //   if (FrontstageManager.activeToolAssistanceNode) {
   //     return (
-  //       <ToolbarIcon
+  //       <Item
   //         key="1"
   //         isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolAssistance}
   //         onClick={
@@ -170,7 +164,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
   //         }
   //       >
   //         <i className="icon icon-help" />
-  //       </ToolbarIcon>
+  //       </Item>
   //     );
   //   }
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added the modules subdirectory, containing configuration file needed to webpack our packages as separate modules.",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "Barry.Bentley@bentley.com"
+}

@@ -20,9 +20,9 @@ import {
   FrontstageProvider,
   Frontstage,
   FrontstageProps,
-} from "../../index";
+} from "../../ui-framework";
 import TestUtils from "../TestUtils";
-import NZ_BackstageItem from "@bentley/ui-ninezone/lib/backstage/Item";
+import { BackstageItem as NZ_BackstageItem } from "@bentley/ui-ninezone";
 
 describe("Backstage", () => {
 

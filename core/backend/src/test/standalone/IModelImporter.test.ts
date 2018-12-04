@@ -10,7 +10,7 @@ import { CodeScopeSpec, ColorDef, GeometricElement2dProps, IModel, SubCategoryAp
 import {
   CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
   IModelDb, IModelJsFs, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SubCategory, Subject,
-} from "../../backend";
+} from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 class TestImporter {

@@ -6,8 +6,8 @@
 
 import { Id64, Id64String, BeEvent } from "@bentley/bentleyjs-core";
 import { RulesetVariablesState } from "@bentley/presentation-common";
-import { VariableValueTypes, VariableValue } from "@bentley/presentation-common/lib/RulesetVariables";
-import { IClientStateHolder } from "@bentley/presentation-common/lib/RpcRequestsHandler";
+import { VariableValueTypes, VariableValue } from "@bentley/presentation-common";
+import { IClientStateHolder } from "@bentley/presentation-common";
 
 /** @hidden */
 export default class RulesetVariablesManager implements IClientStateHolder<RulesetVariablesState> {

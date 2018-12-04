@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./Separator.scss";
 
 /** Properties of [[ToolAssistanceSeparator]] component. */
@@ -16,7 +16,7 @@ export interface ToolAssistanceSeparatorProps extends CommonProps {
 }
 
 /** Assistance item separator. Used in [[ToolAssistance]] component. */
-export default class ToolAssistanceSeparator extends React.Component<ToolAssistanceSeparatorProps> {
+export class ToolAssistanceSeparator extends React.Component<ToolAssistanceSeparatorProps> {
   public render() {
     const className = classnames(
       "nz-footer-toolAssistance-separator",

@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import MouseTracker from "../..//context/MouseTracker";
+import { MouseTracker } from "../../ui-ninezone";
 
 describe("<MouseTracker />", () => {
   it("should render", () => {

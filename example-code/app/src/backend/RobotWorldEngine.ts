@@ -11,7 +11,7 @@ import { RobotWorld } from "./RobotWorldSchema";
 import { Robot } from "./RobotElement";
 import * as path from "path";
 import { Barrier } from "./BarrierElement";
-import { TestRpcManager } from "@bentley/imodeljs-common/lib/rpc/TestRpcManager";
+import { TestRpcManager } from "@bentley/imodeljs-common";
 import { RobotWorldWriteRpcInterface, RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
 import { RobotWorldWriteRpcImpl, RobotWorldReadRpcImpl } from "./RobotWorldRpcImpl";
 

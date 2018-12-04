@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
 import "./Indicator.scss";
 
 /** Properties of [[ToolAssistanceIndicator]] component. */
@@ -24,7 +24,7 @@ export interface ToolAssistanceIndicatorProps extends CommonProps, NoChildrenPro
 }
 
 /** One of [[Footer]] indicators. */
-export default class ToolAssistanceIndicator extends React.Component<ToolAssistanceIndicatorProps> {
+export class ToolAssistanceIndicator extends React.Component<ToolAssistanceIndicatorProps> {
   public render() {
     const className = classnames(
       "nz-footer-toolAssistance-indicator",

@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import ScrollableArea from "../../..//widget/tool-settings/ScrollableArea";
+import { ScrollableArea } from "../../../ui-ninezone";
 
 describe("<ScrollableArea />", () => {
   it("should render", () => {

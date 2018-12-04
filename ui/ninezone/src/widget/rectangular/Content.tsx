@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
 import { HorizontalAnchor } from "../Stacked";
 import "./Content.scss";
 
@@ -19,7 +19,7 @@ export interface WidgetContentProps extends CommonProps, NoChildrenProps {
 }
 
 /** Scrollable widget content. Used by [[Stacked]] component. */
-export default class WidgetContent extends React.Component<WidgetContentProps> {
+export class WidgetContent extends React.Component<WidgetContentProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-content",

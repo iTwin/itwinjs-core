@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import { createRandomDescriptorJSON, createRandomDescriptor } from "../_helpers/random";
-import { Descriptor, Field } from "../../content/index";
+import { Descriptor, Field } from "../../presentation-common";
 import { DescriptorJSON } from "../../content/Descriptor";
 
 describe("Descriptor", () => {

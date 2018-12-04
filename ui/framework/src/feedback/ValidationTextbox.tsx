@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { MessageManager } from "../configurableui";
+import { MessageManager } from "../configurableui/MessageManager";
 
 import "./ValidationTextbox.scss";
 

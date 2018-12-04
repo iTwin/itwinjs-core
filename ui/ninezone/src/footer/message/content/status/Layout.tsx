@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../../../utilities/Props";
+import { CommonProps } from "../../../../utilities/Props";
 import "./Layout.scss";
 
 /** Properties of [[MessageLayout]] component. */
@@ -43,5 +43,3 @@ export const MessageLayout: React.StatelessComponent<MessageLayoutProps> = (prop
     </div>
   );
 };
-
-export default MessageLayout;

@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-import Rectangle, { RectangleProps } from "./Rectangle";
-import Point, { PointProps } from "./Point";
+import { Rectangle, RectangleProps } from "./Rectangle";
+import { Point, PointProps } from "./Point";
 
 /** CSS helpers. */
-export default class Css {
+export class Css {
   /** @returns Value in pixels. */
   public static toPx(px: number): string {
     return px + "px";

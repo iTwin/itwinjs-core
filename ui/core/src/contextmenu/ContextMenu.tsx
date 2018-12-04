@@ -9,9 +9,9 @@ import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
 
 import "./ContextMenu.scss";
-import { withOnOutsideClick } from "../hocs";
-import { Div } from "../base";
-import { Omit } from "../utils";
+import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
+import { Div } from "../base/Div";
+import { Omit } from "../utils/typeUtils";
 
 const DivWithOutsideClick = withOnOutsideClick(Div); // tslint:disable-line:variable-name
 

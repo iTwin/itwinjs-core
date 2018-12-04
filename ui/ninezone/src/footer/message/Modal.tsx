@@ -7,7 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
 import "./Modal.scss";
 
 /** Properties of [[Modal]] component. */
@@ -25,7 +25,7 @@ export interface ModalDefaultProps extends ModalProps {
 }
 
 /** Modal message as defined in 9-Zone UI spec. */
-export default class Modal extends React.Component<ModalProps> {
+export class Modal extends React.Component<ModalProps> {
   public static readonly defaultProps: ModalDefaultProps = {
     renderTo: () => document.body,
   };

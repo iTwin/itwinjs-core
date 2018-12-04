@@ -12,7 +12,7 @@ import {
   DragDropLayerManager,
 } from "@bentley/ui-framework";
 import { Tree, TreeProps } from "@bentley/ui-components";
-import withDragDrop from "@bentley/ui-components/lib/tree/hocs/withDragDrop";
+import { withTreeDragDrop } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTreeDataProvider, treeDragProps, treeDropProps, TreeDragTypes, DemoTreeDragDropType } from "./demodataproviders/demoTreeDataProvider";
 import { TableDragTypes } from "./demodataproviders/demoTableDataProvider";
@@ -20,7 +20,7 @@ import { ParentDragLayer } from "./draglayers/ParentDragLayer";
 import { ChildDragLayer } from "./draglayers/ChildDragLayer";
 
 // tslint:disable-next-line:variable-name
-const DragDropTree = withDragDrop<TreeProps, DemoTreeDragDropType>(Tree);
+const DragDropTree = withTreeDragDrop<TreeProps, DemoTreeDragDropType>(Tree);
 
 export class TreeDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

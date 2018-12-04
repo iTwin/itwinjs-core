@@ -19,7 +19,7 @@ module.exports = {
   mode: "development",
   entry: "./lib/frontend/DisplayPerformanceTestApp.js",
   output: {
-    path: path.resolve(__dirname, "./lib/backend/public"),
+    path: path.resolve(__dirname, "./lib/webresources"),
     filename: '[name].bundle.js',
     devtoolModuleFilenameTemplate: "file:///[absolute-resource-path]"
   },
@@ -32,6 +32,9 @@ module.exports = {
         enforce: "pre"
       }
     ]
+  },
+  node: {
+    fs: "empty"
   },
   stats: "errors-only",
   externals: {

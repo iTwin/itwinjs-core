@@ -21,7 +21,7 @@ import {
   AnyWidgetProps,
   WidgetDefFactory,
   NavigationWidgetDef,
-} from "../../..//index";
+} from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
 
 describe("CubeNavigationAid", () => {

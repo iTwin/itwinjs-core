@@ -9,7 +9,7 @@ import { Id64 } from "@bentley/bentleyjs-core";
 import { RelatedElementProps, ModelProps, ElementProps, Code } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, PersistentKeysContainer, InstanceKey } from "@bentley/presentation-common";
-import { PersistenceHelper } from "../index";
+import { PersistenceHelper } from "../presentation-frontend";
 
 describe("PersistenceHelper", () => {
 

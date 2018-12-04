@@ -9,9 +9,9 @@ import {
   ToolWidget,
   ActionItemButton,
   CoreTools,
-} from "../index";
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+} from "../ui-framework";
+import { Toolbar } from "@bentley/ui-ninezone";
+import { Direction } from "@bentley/ui-ninezone";
 
 describe("CoreToolDefinitions", () => {
 

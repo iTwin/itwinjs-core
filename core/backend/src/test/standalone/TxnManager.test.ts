@@ -7,7 +7,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelDb, SpatialCategory, TxnAction, PhysicalModel } from "../../backend";
+import { IModelDb, SpatialCategory, TxnAction, PhysicalModel } from "../../imodeljs-backend";
 import { Code, IModel, SubCategoryAppearance, ColorByName, IModelError } from "@bentley/imodeljs-common";
 
 describe("TxnManager", () => {

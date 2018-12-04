@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Panel from "../../../../..//toolbar/item/expandable/group/Panel";
+import { Panel } from "../../../../../ui-ninezone";
 
 describe("<Panel />", () => {
   it("should render", () => {

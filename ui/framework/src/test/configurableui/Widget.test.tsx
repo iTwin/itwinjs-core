@@ -5,7 +5,7 @@
 import * as React from "react";
 import { mount, shallow } from "enzyme";
 import TestUtils from "../TestUtils";
-import { Widget, WidgetState } from "../..//index";
+import { Widget, WidgetState } from "../../ui-framework";
 
 describe("Widget", () => {
 

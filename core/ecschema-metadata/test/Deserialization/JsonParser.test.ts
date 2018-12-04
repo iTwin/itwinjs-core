@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "chai";
-import { ECObjectsError } from "../../src";
+import { ECObjectsError } from "../../src/ecschema-metadata";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 

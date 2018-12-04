@@ -11,7 +11,7 @@ import { DefaultProjectServices } from "./clientservices/DefaultProjectServices"
 import { IModelServices } from "./clientservices/IModelServices";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { Store } from "redux";
-import { OidcClientWrapper } from "./oidc/OidcClientWrapper";
+import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 
 /**

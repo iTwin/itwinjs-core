@@ -3,8 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
-import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
-import { IModelBankFileSystemContextClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankFileSystemContextClient";
+import { IModelBankClient } from "@bentley/imodeljs-clients";
+import { IModelBankFileSystemContextClient } from "@bentley/imodeljs-clients";
 import { SimpleViewState } from "./SimpleViewState";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";

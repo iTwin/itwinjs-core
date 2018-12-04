@@ -8,5 +8,3 @@ import { Corner, Edge } from "../../utilities/Rectangle";
 
 /** Available resize handles of rectangular widget. */
 export type ResizeHandle = Corner | Edge;
-
-export default ResizeHandle;

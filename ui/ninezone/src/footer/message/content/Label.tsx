@@ -6,8 +6,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../../utilities/Props";
-import withTheme, { WithThemeProps } from "../../../theme/WithTheme";
+import { CommonProps, NoChildrenProps } from "../../../utilities/Props";
+import { withTheme, WithThemeProps } from "../../../theme/WithTheme";
 import "./Label.scss";
 
 /** Properties of [[Label]] component. */
@@ -35,5 +35,3 @@ const LabelComponent: React.StatelessComponent<LabelProps> = (props) => {
 /** Label component used in status message. I.e. [[MessageLayout]] */
 // tslint:disable-next-line:variable-name
 export const Label: React.ComponentClass<LabelProps & WithThemeProps> = withTheme(LabelComponent);
-
-export default Label;

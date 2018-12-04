@@ -9,7 +9,7 @@ import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/r
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Ruleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import RulesetVariablesManager from "@bentley/presentation-frontend/lib/RulesetVariablesManager";
+import { RulesetVariablesManager } from "@bentley/presentation-frontend";
 
 describe("Ruleset Variables", async () => {
 

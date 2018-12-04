@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { AnyWidgetProps, WidgetDefFactory, ToolWidgetDef, NavigationWidgetDef } from "../..//index";
+import { AnyWidgetProps, WidgetDefFactory, ToolWidgetDef, NavigationWidgetDef } from "../../ui-framework";
 
 describe("WidgetFactory", () => {
 

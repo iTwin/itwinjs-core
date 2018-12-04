@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Temporary from "../../..//footer/message/Temporary";
+import { Temporary } from "../../../ui-ninezone";
 
 describe("<Temporary />", () => {
   it("should render", () => {

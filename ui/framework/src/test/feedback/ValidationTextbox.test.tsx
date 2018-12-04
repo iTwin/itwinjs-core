@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as enzyme from "enzyme";
 import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
-import { MessageManager } from "../..//configurableui";
+import { MessageManager } from "../../ui-framework";
 import ValidationTextbox, { ValidationTextboxProps } from "../..//feedback/ValidationTextbox";
 
 describe("ValidationTextbox", () => {

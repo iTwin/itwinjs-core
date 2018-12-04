@@ -5,7 +5,7 @@
 /* ###TODO adjust these tests
 import { expect } from "chai";
 import { WebGLTestContext } from "./WebGLTestContext";
-import { VertexLUT, MeshArgs } from "@bentley/imodeljs-frontend/lib/rendering";
+import { VertexLUT, MeshArgs } from "@bentley/imodeljs-frontend";
 import { QParams2d, QPoint3dList, QParams3d, QPoint3d, ColorIndex, FeatureIndexType } from "@bentley/imodeljs-common";
 import { Point2d } from "@bentley/geometry-core";
 

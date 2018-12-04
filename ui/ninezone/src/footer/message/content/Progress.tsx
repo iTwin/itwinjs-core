@@ -7,9 +7,9 @@
 import * as classnames from "classnames";
 import * as React from "react";
 
-import CommonProps, { NoChildrenProps } from "../../../utilities/Props";
-import Css from "../../../utilities/Css";
-import withTheme, { WithThemeProps } from "../../../theme/WithTheme";
+import { CommonProps, NoChildrenProps } from "../../../utilities/Props";
+import { Css } from "../../../utilities/Css";
+import { withTheme, WithThemeProps } from "../../../theme/WithTheme";
 import { Status, StatusHelpers } from "./status/Status";
 import "./Progress.scss";
 
@@ -50,5 +50,3 @@ const ProgressComponent: React.StatelessComponent<ProgressProps> = (props) => {
 /** Progress bar component used in status message. I.e. [[MessageLayout]] */
 // tslint:disable-next-line:variable-name
 export const Progress: React.ComponentClass<ProgressProps & WithThemeProps> = withTheme(ProgressComponent);
-
-export default Progress;

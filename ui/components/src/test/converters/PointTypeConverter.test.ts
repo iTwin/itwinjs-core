@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Point2dTypeConverter, Point3dTypeConverter, ConvertedPrimitives } from "../..//index";
+import { Point2dTypeConverter, Point3dTypeConverter, ConvertedPrimitives } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 describe("Point2dTypeConverter", () => {

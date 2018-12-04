@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
-import { withOnOutsideClick, Div } from "../../index";
+import { withOnOutsideClick, Div } from "../../ui-core";
 
 describe("WithOnOutsideClick", () => {
 

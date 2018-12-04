@@ -6,7 +6,8 @@
 
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { Primitives, ConvertedPrimitives } from "./valuetypes";
+import * as Primitives from "./valuetypes/PrimitiveTypes";
+import * as ConvertedPrimitives from "./valuetypes/ConvertedTypes";
 
 /**
  * Point type converter.

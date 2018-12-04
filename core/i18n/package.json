@@ -7,15 +7,17 @@
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs"
   },
-  "main": "lib/i18n",
-  "typings": "lib/i18n",
+  "main": "lib/imodeljs-i18n",
+  "typings": "lib/imodeljs-i18n",
   "scripts": {
-    "build": "tsc 1>&2",
+    "build": "tsc 1>&2 && npm run webpackModule-dev",
     "clean": "rimraf lib package-deps.json",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-i18n/file.json --tsIndexFile=./i18n.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-i18n/file.json --tsIndexFile=./imodeljs-i18n.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "test": "",
-    "cover": ""
+    "cover": "",
+    "webpackModule-dev": "make-dir ./lib/module/dev/ && webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/imodeljs-i18n.js --env.bundlename=imodeljs-i18n --json >./lib/module/dev/webpackStats.json",
+    "webpackModule-prod": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/imodeljs-i18n.js --env.bundlename=imodeljs-i18n --env.prod"
   },
   "keywords": [
     "Bentley",
@@ -36,15 +38,20 @@
   "devDependencies": {
     "@bentley/bentleyjs-core": "0.171.0",
     "@bentley/build-tools": "0.171.0",
+    "@bentley/webpack-tools": "0.171.0",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
     "@types/i18next-xhr-backend": "^1.4.1",
     "@types/node": "10.10.3",
+    "make-dir-cli": "^1.0.0",
     "rimraf": "^2.6.2",
+    "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
-    "typescript": "~3.1.0"
+    "typescript": "~3.1.0",
+    "webpack": "^4.20.2",
+    "webpack-cli": "^3.1.0"
   },
   "//dependencies": [
     "NOTE: these dependencies are specific to imodeljs-i18n",

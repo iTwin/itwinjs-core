@@ -8,7 +8,7 @@ import {
   TreeNodeItem,
   TreeDataChangesListener,
   DelayLoadedTreeNodeItem, ITreeDataProvider, PageOptions, ImmediatelyLoadedTreeNodeItem,
-} from "../../index";
+} from "../../ui-components";
 
 export enum TreeDragTypes {
   Root = "root",

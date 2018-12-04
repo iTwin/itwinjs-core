@@ -6,10 +6,10 @@
 
 import { expect } from "chai";
 import { WebGLTestContext } from "./WebGLTestContext";
-import { PolylineGeometry, PolylineArgs, PolylineInfo, PolylineTesselator, TesselatedPolyline, VertexLUT } from "@bentley/imodeljs-frontend/lib/rendering";
-import { QPoint3dList, QParams3d } from "@bentley/imodeljs-common/lib/QPoint";
+import { PolylineGeometry, PolylineArgs, PolylineInfo, PolylineTesselator, TesselatedPolyline, VertexLUT } from "@bentley/imodeljs-frontend";
+import { QPoint3dList, QParams3d } from "@bentley/imodeljs-common";
 import { PolylineData, ColorIndex, ColorDef } from "@bentley/imodeljs-common";
-import { Range3d } from "@bentley/geometry-core/lib/Range";
+import { Range3d } from "@bentley/geometry-core";
 import { Point3d } from "@bentley/geometry-core";
 
 function testCreateGeometry() {

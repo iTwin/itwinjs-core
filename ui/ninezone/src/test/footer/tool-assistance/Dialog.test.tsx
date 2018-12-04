@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Dialog from "../../..//footer/tool-assistance/Dialog";
+import { ToolAssistanceDialog } from "../../../ui-ninezone";
 
-describe("<Dialog />", () => {
+describe("<ToolAssistanceDialog />", () => {
   it("should render", () => {
-    mount(<Dialog />);
+    mount(<ToolAssistanceDialog />);
   });
 
   it("renders correctly", () => {
-    shallow(<Dialog />).should.matchSnapshot();
+    shallow(<ToolAssistanceDialog />).should.matchSnapshot();
   });
 });

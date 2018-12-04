@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "./TestUtils";
-import { UiComponents } from "..";
+import { UiComponents } from "../ui-components";
 
 describe("UiComponents", () => {
 

@@ -37,7 +37,6 @@ import getSupportedRpcs from "../common/rpcs";
 import { AppUi } from "./appui/AppUi";
 import AppBackstage, { BackstageShow, BackstageHide } from "./appui/AppBackstage";
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
-import { MeasurePointsTool } from "./tools/MeasurePoints";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 
@@ -47,7 +46,7 @@ const rpcInterfaces = getSupportedRpcs();
 if (ElectronRpcConfiguration.isElectron)
     rpcConfiguration = ElectronRpcManager.initializeClient({}, rpcInterfaces);
 else
-    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" } }, rpcInterfaces);
+    rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "ui-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" }, rpcInterfaces);
 
 // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request
 for (const definition of rpcConfiguration.interfaces())
@@ -138,7 +137,7 @@ export class SampleAppIModelApp extends IModelApp {
 
         // Configure a CORS proxy in development mode.
         if (process.env.NODE_ENV === "development")
-            Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:${process.env.CORS_PROXY_PORT}`); // By default, this will run on port 3001
+            Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:3001`); // By default, this will run on port 3001
     }
 
     public static async initialize() {
@@ -170,7 +169,6 @@ export class SampleAppIModelApp extends IModelApp {
         // Register tools.
         BackstageShow.register(this.sampleAppNamespace);
         BackstageHide.register(this.sampleAppNamespace);
-        MeasurePointsTool.register(this.sampleAppNamespace);
         Tool1.register(this.sampleAppNamespace);
         Tool2.register(this.sampleAppNamespace);
     }

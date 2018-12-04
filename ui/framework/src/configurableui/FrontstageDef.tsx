@@ -15,7 +15,7 @@ import { WidgetDef } from "./WidgetDef";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageProvider, Frontstage } from "./Frontstage";
 
-import { NineZoneProps } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
+import { NineZoneProps } from "@bentley/ui-ninezone";
 
 /** FrontstageDef class provides an API for a Frontstage.
  */

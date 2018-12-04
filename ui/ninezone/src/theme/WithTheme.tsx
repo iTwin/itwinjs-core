@@ -6,9 +6,9 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import ThemeContext from "./Context";
+import { ThemeContext } from "./Context";
 import { ClassNameProps } from "../utilities/Props";
-import Theme from "./Theme";
+import { Theme } from "./Theme";
 
 /** Properties supplemented to components that are enhanced with [[withTheme]] HOC. */
 export interface WithThemeProps {
@@ -46,5 +46,3 @@ export const withTheme = <ComponentProps extends ClassNameProps>(
     }
   };
 };
-
-export default withTheme;

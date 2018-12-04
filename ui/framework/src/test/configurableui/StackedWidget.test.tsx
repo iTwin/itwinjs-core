@@ -21,7 +21,7 @@ import {
   Frontstage,
   Zone,
   Widget,
-} from "../..";
+} from "../../ui-framework";
 
 describe("StackedWidget", () => {
 

@@ -6,11 +6,11 @@ import * as React from "react";
 import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
-import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps } from "../../index";
-import { ConfigurableCreateInfo } from "../../index";
-import { ToolUiProvider } from "../../index";
+import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps } from "../../ui-framework";
+import { ConfigurableCreateInfo } from "../../ui-framework";
+import { ToolUiProvider } from "../../ui-framework";
 
-import AssistanceItem from "@bentley/ui-ninezone/lib/footer/tool-assistance/Item";
+import { ToolAssistanceItem } from "@bentley/ui-ninezone";
 
 describe("ToolUiProvider", () => {
 
@@ -51,10 +51,10 @@ describe("ToolUiProvider", () => {
     public render(): React.ReactNode {
       return (
         <>
-          <AssistanceItem>
+          <ToolAssistanceItem>
             <i className="icon icon-cursor" />
             Identify piece to trim
-          </AssistanceItem>
+          </ToolAssistanceItem>
         </>
       );
     }

@@ -10,10 +10,10 @@ import * as React from "react";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { ToolUiProvider } from "../configurableui/ToolUiProvider";
 import { ContentViewManager } from "../configurableui/ContentViewManager";
-import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
+import { Item } from "@bentley/ui-ninezone";
 import { Icon } from "../configurableui/IconComponent";
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Toolbar } from "@bentley/ui-ninezone";
+import { Direction } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
 import "./AnalysisAnimationToolSettings.scss";
 
@@ -172,21 +172,21 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
             expandsTo={Direction.Bottom}
             items={
               <>
-                <ToolbarIcon
+                <Item
                   isActive={this.state.isAnimating && !this.state.isAnimationPaused}
                   title={UiFramework.i18n.translate("UiFramework:tools.AnalysisAnimation.ToolSettings.play")}
                   key="animationPlay"
                   onClick={this._startAnimation}
                   icon={<Icon iconSpec="icon-media-controls-circular-play" />}
                 />
-                <ToolbarIcon
+                <Item
                   isActive={this.state.isAnimationPaused}
                   title={UiFramework.i18n.translate("UiFramework:tools.AnalysisAnimation.ToolSettings.pause")}
                   key="animationPause"
                   onClick={this._pauseAnimation}
                   icon={<Icon iconSpec="icon-media-controls-circular-pause" />}
                 />
-                <ToolbarIcon
+                <Item
                   isActive={!this.state.isAnimating}
                   title={UiFramework.i18n.translate("UiFramework:tools.AnalysisAnimation.ToolSettings.stop")}
                   key="animationStop"

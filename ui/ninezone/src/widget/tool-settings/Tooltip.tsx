@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Tooltip, { TooltipProps } from "../../popup/tooltip/Tooltip";
+import { Tooltip, TooltipProps } from "../../popup/tooltip/Tooltip";
 import "./Tooltip.scss";
 
 /**
@@ -21,7 +21,7 @@ export interface ToolSettingsTooltipProps extends TooltipProps {
 }
 
 /** Tool settings tooltip. Displays the step string and is hidden after certain timeout. */
-export default class ToolSettingsTooltip extends React.Component<ToolSettingsTooltipProps> {
+export class ToolSettingsTooltip extends React.Component<ToolSettingsTooltipProps> {
   public render() {
     const { className, children, stepString, ...props } = this.props;
     const tooltipClassName = classnames(

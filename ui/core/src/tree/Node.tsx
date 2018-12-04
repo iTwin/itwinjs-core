@@ -9,7 +9,7 @@ import * as React from "react";
 
 import ExpansionToggle from "./ExpansionToggle";
 import "./Node.scss";
-import { CheckListBox, CheckListBoxItem } from "../checklistbox";
+import { CheckListBox, CheckListBoxItem } from "../checklistbox/CheckListBox";
 
 /** Number of pixels the node gets offset per each hierarchy level */
 export const LEVEL_OFFSET = 20;

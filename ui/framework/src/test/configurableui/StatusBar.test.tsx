@@ -17,7 +17,7 @@ import {
   AppNotificationManager,
   WidgetDef,
   ConfigurableUiControlType,
-} from "../..//index";
+} from "../../ui-framework";
 
 import {
   NotifyMessageDetails,
@@ -27,8 +27,7 @@ import {
   ActivityMessageEndReason,
 } from "@bentley/imodeljs-frontend";
 
-import Hyperlink from "@bentley/ui-ninezone/lib/footer/message/content/Hyperlink";
-import MessageButton from "@bentley/ui-ninezone/lib/footer/message/content/Button";
+import { Hyperlink, MessageButton } from "@bentley/ui-ninezone";
 
 describe("StatusBar", () => {
 

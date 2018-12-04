@@ -7,7 +7,8 @@
 import * as React from "react";
 import classnames from "classnames";
 import { TreeDragDropType } from "../../tree/hocs/withDragDrop";
-import { withDragSource, withDropTarget, WithDragSourceProps } from "../../dragdrop";
+import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
+import { withDropTarget } from "../../dragdrop/withDropTarget";
 
 /** @hidden */
 export interface DragDropBreadcrumbNodeProps extends React.AllHTMLAttributes<HTMLSpanElement> {

@@ -96,7 +96,7 @@ export type NodeKeyJSON = BaseNodeKey | ECInstanceNodeKeyJSON | ECClassGroupingN
  *
  * @hidden
  */
-export const fromJSON = (json: NodeKeyJSON): NodeKey => {
+export const nodeKeyFromJSON = (json: NodeKeyJSON): NodeKey => {
   switch (json.type) {
     case StandardNodeTypes.ECInstanceNode:
       return { ...json, instanceKey: instanceKeyFromJSON((json as ECInstanceNodeKeyJSON).instanceKey) };

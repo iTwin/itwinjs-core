@@ -8,7 +8,7 @@ import { Id64String, DbOpcode, DbResult, ActivityLoggingContext } from "@bentley
 import { IModelVersion, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, Timer, TestIModelInfo } from "../IModelTestUtils";
 import { IModelJsFs } from "../../IModelJsFs";
-import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
+import { KeepBriefcase, IModelDb, OpenParams, Element, DictionaryModel, BriefcaseManager, SqliteStatement, SqliteValue, SqliteValueType } from "../../imodeljs-backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { AccessToken, CodeState, HubIModel, HubCode, IModelQuery, MultiCode } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";

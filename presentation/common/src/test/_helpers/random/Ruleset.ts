@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // tslint:disable-next-line
 const RulesetSchema = require("../../../../Ruleset.schema.json");
-import { Ruleset } from "../../..";
+import { Ruleset } from "../../../presentation-common";
 
 const hasIndexSignature = (o: any): o is { [key: string]: string } => {
   return typeof o === "object";

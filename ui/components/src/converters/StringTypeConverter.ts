@@ -6,7 +6,7 @@
 
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { Primitives } from "./valuetypes";
+import * as Primitives from "./valuetypes/PrimitiveTypes";
 
 /** Operators for string types */
 export interface StringOperatorProcessor {

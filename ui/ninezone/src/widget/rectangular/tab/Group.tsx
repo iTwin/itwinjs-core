@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../../utilities/Props";
+import { CommonProps } from "../../../utilities/Props";
 import { HorizontalAnchor, HorizontalAnchorHelpers } from "../../Stacked";
 import "./Group.scss";
 
@@ -47,5 +47,3 @@ export const TabGroup: React.StatelessComponent<TabGroupProps> = (props: TabGrou
     </div>
   );
 };
-
-export default TabGroup;

@@ -12,7 +12,7 @@ import { KnownTestLocations } from "./KnownTestLocations";
 import { OpenMode, Id64String, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelTestUtils } from "./Utils";
 import { Point3d, Angle } from "@bentley/geometry-core";
-import { TestRpcManager } from "@bentley/imodeljs-common/lib/rpc/TestRpcManager";
+import { TestRpcManager } from "@bentley/imodeljs-common";
 import { RobotWorld } from "../RobotWorldSchema";
 
 const actx = new ActivityLoggingContext("<backend-initialization>");

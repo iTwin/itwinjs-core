@@ -6,8 +6,7 @@ import * as React from "react";
 
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { IStatusBar, StatusBarFieldId, FrontstageManager } from "@bentley/ui-framework";
-import ToolAssistanceIndicator from "@bentley/ui-ninezone/lib/footer/tool-assistance/Indicator";
-import ToolAssistanceDialog from "@bentley/ui-ninezone/lib/footer/tool-assistance/Dialog";
+import { ToolAssistanceIndicator, ToolAssistanceDialog } from "@bentley/ui-ninezone";
 
 export interface ToolAssistanceProps {
   statusBar: IStatusBar;

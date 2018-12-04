@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { SplitButton } from "../../index";
+import { SplitButton } from "../../ui-core";
 
 describe("<SplitButton />", () => {
   it("should render", () => {

@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { Logger, LogLevel, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams } from "../../backend";
+import { IModelDb, OpenParams } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { KnownLocations } from "../../Platform";

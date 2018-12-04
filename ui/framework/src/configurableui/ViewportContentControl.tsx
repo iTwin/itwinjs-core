@@ -8,7 +8,7 @@ import { ConfigurableUiControlType, ConfigurableCreateInfo } from "./Configurabl
 import { ContentControl } from "./ContentControl";
 
 import { ScreenViewport, IModelApp } from "@bentley/imodeljs-frontend";
-import { ViewUtilities } from "../utils";
+import { ViewUtilities } from "../utils/ViewUtilities";
 
 /** The base class for Frontstage Viewport content controls.
  */

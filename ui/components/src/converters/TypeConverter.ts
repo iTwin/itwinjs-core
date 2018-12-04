@@ -8,7 +8,9 @@ import { PropertyDescription } from "../properties/Description";
 import { PropertyRecord } from "../properties/Record";
 import { PropertyValue, PropertyValueFormat, PrimitiveValue } from "../properties/Value";
 import { OutputMessagePriority, OutputMessageType, OutputMessageAlert } from "@bentley/imodeljs-frontend";
-import { Primitives, ConvertedPrimitives } from "./valuetypes";
+
+import * as Primitives from "./valuetypes/PrimitiveTypes";
+import * as ConvertedPrimitives from "./valuetypes/ConvertedTypes";
 
 /**
  * StandardTypeConverterTypeNames.

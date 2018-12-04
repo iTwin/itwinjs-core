@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../utilities/Props";
+import { CommonProps } from "../utilities/Props";
 import "./SvgSprite.scss";
 
 /** Properties of [[SvgPath]] component. */
@@ -20,7 +20,7 @@ export interface SvgPathProps extends CommonProps {
 }
 
 /** SvgElement wrapper with specified Svg paths. */
-export default class SvgPath extends React.Component<SvgPathProps> {
+export class SvgPath extends React.Component<SvgPathProps> {
   public render() {
     const className = classnames(
       "nz-base-svgSprite",

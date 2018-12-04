@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { WaitSpinner } from "../../index";
+import { WaitSpinner } from "../../ui-core";
 
 describe("WaitSpinner", () => {
 

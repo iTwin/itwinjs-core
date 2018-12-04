@@ -11,7 +11,7 @@ import {
   ActionItemButton,
   CommandItemDef,
   FrontstageManager,
-} from "../../index";
+} from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
 describe("ToolButton", () => {

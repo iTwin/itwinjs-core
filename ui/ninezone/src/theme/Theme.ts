@@ -5,7 +5,7 @@
 /** @module Theme */
 
 /** Describes theme of 9-Zone UI. */
-export default interface Theme {
+export interface Theme {
   /** Theme name. This will be injected to themed component class name as nz-theme-themeName  */
   name: string;
 }

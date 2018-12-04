@@ -11,7 +11,7 @@ export interface CellProps {
 }
 
 /** Provides methods to work with cells. */
-export default class Cell implements CellProps {
+export class Cell implements CellProps {
   /** Creates cell from [[CellProps]]. */
   public static create(props: CellProps) {
     return new Cell(props.row, props.col);

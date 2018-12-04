@@ -5,7 +5,7 @@
 /** @module UiSettings */
 
 import { expect } from "chai";
-import { LocalUiSettings, UiSettingsStatus } from "../..//index";
+import { LocalUiSettings, UiSettingsStatus } from "../../ui-core";
 const storageMock = () => {
   const storage: { [key: string]: any } = {};
   return {

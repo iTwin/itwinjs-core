@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import UiCore from "../UiCore";
+import { UiCore } from "../UiCore";
 
 import "./SearchBox.scss";
 

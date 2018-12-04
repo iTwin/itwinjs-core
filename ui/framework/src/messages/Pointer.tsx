@@ -8,12 +8,9 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { UiEvent } from "@bentley/ui-core";
 import { XAndY } from "@bentley/geometry-core";
-import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";
-
-import ToolSettingsTooltip from "@bentley/ui-ninezone/lib/widget/tool-settings/Tooltip";
+import { CommonProps, ToolSettingsTooltip, Tooltip, offsetAndContainInContainer } from "@bentley/ui-ninezone";
 
 import "./Pointer.scss";
-import Tooltip, { offsetAndContainInContainer } from "@bentley/ui-ninezone/lib/popup/tooltip/Tooltip";
 import { RelativePosition, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
 
 /** Properties of [[PointerMessage]] component. */

@@ -16,7 +16,7 @@ import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl"
 import { WidgetControl } from "../configurableui/WidgetControl";
 import { Tree, FilteringInput, TreeNodeItem, PageOptions, DelayLoadedTreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
 import "./ModelSelector.scss";
-import { PresentationTreeDataProvider, withUnifiedSelection, withFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components/lib/tree";
+import { PresentationTreeDataProvider, treeWithUnifiedSelection, treeWithFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { RegisteredRuleset, NodeKey, NodePathElement } from "@bentley/presentation-common";
 import { CheckBoxState } from "@bentley/ui-core";
@@ -539,7 +539,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 }
 
 // tslint:disable-next-line:variable-name
-const CategoryModelTree = withFilteringSupport(withUnifiedSelection(Tree));
+const CategoryModelTree = treeWithFilteringSupport(treeWithUnifiedSelection(Tree));
 
 export default ModelSelectorWidget;
 

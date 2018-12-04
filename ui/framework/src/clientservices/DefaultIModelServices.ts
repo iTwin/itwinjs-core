@@ -5,7 +5,7 @@
 /** @module ClientServices */
 
 import { IModelHubClient, AccessToken, HubIModel, Version, HubUserInfo, ChangeSet, UserInfoQuery, IModelQuery, ChangeSetQuery, VersionQuery } from "@bentley/imodeljs-clients";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 // import GatewayProxyApi from "./gatewayProxy";

@@ -47,6 +47,22 @@
       "description": "Iterates through each package in the monorepo and runs the 'test' script",
       "enableParallelism": true,
       "ignoreMissingScript": false
+    },
+    {
+      "name": "webpacklib-dev",
+      "commandKind": "bulk",
+      "summary": "Create the module for every iModelJs library package",
+      "description": "Iterates through each package in the monorepo and runs the 'webpacklib:dev' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true
+    },
+    {
+      "name": "webpacklib-prod",
+      "commandKind": "bulk",
+      "summary": "Create the module for every iModelJs library package",
+      "description": "Iterates through each package in the monorepo and runs the 'webpacklib:dev' script",
+      "enableParallelism": true,
+      "ignoreMissingScript": true
     }
   ]
 }

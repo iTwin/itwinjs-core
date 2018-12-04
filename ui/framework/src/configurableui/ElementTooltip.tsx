@@ -11,8 +11,7 @@ import { UiEvent } from "@bentley/ui-core";
 import { XAndY } from "@bentley/geometry-core";
 import { ToolTipOptions } from "@bentley/imodeljs-frontend";
 
-import ToolSettingsTooltip from "@bentley/ui-ninezone/lib/widget/tool-settings/Tooltip";
-import Tooltip, { offsetAndContainInContainer } from "@bentley/ui-ninezone/lib/popup/tooltip/Tooltip";
+import { ToolSettingsTooltip, Tooltip, offsetAndContainInContainer } from "@bentley/ui-ninezone";
 
 /** [[ElementTooltip]] Props. */
 export interface ElementTooltipProps {

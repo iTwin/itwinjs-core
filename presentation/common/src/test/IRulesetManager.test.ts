@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as faker from "faker";
 import * as moq from "./_helpers/Mocks";
 import { RegisteredRuleset } from "../RegisteredRuleset";
-import { Ruleset, RuleTypes } from "../rules";
+import { Ruleset, RuleTypes } from "../presentation-common";
 
 describe("RegisteredRuleset", () => {
 

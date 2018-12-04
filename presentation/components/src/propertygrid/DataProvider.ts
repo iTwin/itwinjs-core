@@ -5,12 +5,11 @@
 /** @module PropertyGrid */
 
 import * as _ from "lodash";
-import { PropertyRecord } from "@bentley/ui-components/lib/properties/Record";
-import { PropertyValue, PropertyValueFormat } from "@bentley/ui-components/lib/properties/Value";
+import { PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/ui-components";
 import {
   PropertyDataProvider as IPropertyDataProvider,
   PropertyData, PropertyDataChangeEvent, PropertyCategory,
-} from "@bentley/ui-components/lib/propertygrid/PropertyDataProvider";
+} from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   CategoryDescription, Descriptor, ContentFlags,

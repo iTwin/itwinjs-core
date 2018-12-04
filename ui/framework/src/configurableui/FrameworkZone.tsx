@@ -15,13 +15,13 @@ import { FrontstageManager, WidgetStateChangedEventArgs } from "./FrontstageMana
 import { StatusBarWidgetControl } from "./StatusBarWidgetControl";
 import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
-import { ZoneProps as NZ_ZoneProps, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
-import { WidgetProps as NZ_WidgetProps } from "@bentley/ui-ninezone/lib/zones/state/Widget";
-import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
-import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
-import GhostOutline from "@bentley/ui-ninezone/lib/zones/GhostOutline";
-import { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone/lib/widget/Stacked";
-import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
+import { ZonePropsBase, DropTarget } from "@bentley/ui-ninezone";
+import { WidgetProps as NZ_WidgetProps } from "@bentley/ui-ninezone";
+import { ZoneComponent as NZ_Zone } from "@bentley/ui-ninezone";
+import { RectangleProps } from "@bentley/ui-ninezone";
+import { GhostOutline } from "@bentley/ui-ninezone";
+import { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone";
+import { PointProps } from "@bentley/ui-ninezone";
 
 // -----------------------------------------------------------------------------
 // Zone React Components
@@ -32,7 +32,7 @@ import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
 export interface FrameworkZoneProps {
   horizontalAnchor: HorizontalAnchor;
   verticalAnchor: VerticalAnchor;
-  zoneProps: NZ_ZoneProps;
+  zoneProps: ZonePropsBase;
   targetedBounds?: RectangleProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;

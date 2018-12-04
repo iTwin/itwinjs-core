@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./Container.scss";
 
 /** Properties of [[Container]] component. */
@@ -31,5 +31,3 @@ export const Container: React.StatelessComponent<ContainerProps> = (props: Conta
     </div>
   );
 };
-
-export default Container;

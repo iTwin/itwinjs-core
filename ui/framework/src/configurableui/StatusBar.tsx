@@ -9,28 +9,12 @@ import { ReactNode } from "react";
 
 import { StatusBarFieldId, IStatusBar, StatusBarWidgetControl } from "./StatusBarWidgetControl";
 
-import Footer from "@bentley/ui-ninezone/lib/footer/Footer";
-import ActivityMessage from "@bentley/ui-ninezone/lib/footer/message/Activity";
-import ModalMessage from "@bentley/ui-ninezone/lib/footer/message/Modal";
-import ModalMessageDialog from "@bentley/ui-ninezone/lib/footer/message/content/dialog/Dialog";
-import DialogScrollableContent from "@bentley/ui-ninezone/lib/footer/message/content/dialog/content/Scrollable";
-import DialogButtonsContent from "@bentley/ui-ninezone/lib/footer/message/content/dialog/content/Buttons";
-import ToastMessage, { Stage as ToastMessageStage } from "@bentley/ui-ninezone/lib/footer/message/Toast";
-import StickyMessage from "@bentley/ui-ninezone/lib/footer/message/Sticky";
-import StatusMessageContent from "@bentley/ui-ninezone/lib/footer/message/content/status/Message";
-import StatusMessageLayout from "@bentley/ui-ninezone/lib/footer/message/content/status/Layout";
-import MessageLabel from "@bentley/ui-ninezone/lib/footer/message/content/Label";
-import MessageButton from "@bentley/ui-ninezone/lib/footer/message/content/Button";
-import MessageStatus from "@bentley/ui-ninezone/lib/footer/message/content/status/Status";
-import { BlueButton as Button } from "@bentley/bwc/lib/buttons/BlueButton";
-import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend/lib/frontend";
-
-import StatusMessage from "@bentley/ui-ninezone/lib/footer/message/content/status/Message";
-import Status from "@bentley/ui-ninezone/lib/footer/message/content/status/Status";
-import StatusLayout from "@bentley/ui-ninezone/lib/footer/message/content/status/Layout";
-import Label from "@bentley/ui-ninezone/lib/footer/message/content/Label";
-import Hyperlink from "@bentley/ui-ninezone/lib/footer/message/content/Hyperlink";
-import Progress from "@bentley/ui-ninezone/lib/footer/message/content/Progress";
+import { Footer, Activity as ActivityMessage, Modal as ModalMessage, Dialog as ModalMessageDialog, ScrollableContent as DialogScrollableContent, Buttons as DialogButtonsContent } from "@bentley/ui-ninezone";
+import { Toast as ToastMessage, Stage as ToastMessageStage, Sticky as StickyMessage, StatusMessage, MessageLayout as StatusMessageLayout } from "@bentley/ui-ninezone";
+import { Label as MessageLabel, MessageButton, Status } from "@bentley/ui-ninezone";
+import { BlueButton as Button } from "@bentley/bwc";
+import { Hyperlink, Progress } from "@bentley/ui-ninezone";
+import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
 
 import { MessageContainer, MessageSeverity } from "@bentley/ui-core";
 
@@ -67,14 +51,14 @@ export interface StatusBarProps {
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> implements IStatusBar {
   private _footerMessages: any;
 
-  public static severityToStatus(severity: MessageSeverity): MessageStatus {
+  public static severityToStatus(severity: MessageSeverity): Status {
     switch (severity) {
       case MessageSeverity.Error:
       case MessageSeverity.Fatal:
       case MessageSeverity.Warning:
-        return MessageStatus.Error;
+        return Status.Error;
     }
-    return MessageStatus.Information;
+    return Status.Information;
   }
 
   /** @hidden */
@@ -215,7 +199,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
               this.setState((_prevState) => ({ toastMessageStage: stage }));
             }}
             content={
-              <StatusMessageContent
+              <StatusMessage
                 status={StatusBar.severityToStatus(severity)}
                 icon={
                   <i className={`icon ${MessageContainer.getIconClassName(severity, true)}`} />
@@ -234,7 +218,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                     </>
                   }
                 />
-              </StatusMessageContent>
+              </StatusMessage>
             }
           />
         );
@@ -242,7 +226,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
       case (StatusBarMessageType.Sticky): {
         return (
           <StickyMessage>
-            <StatusMessageContent
+            <StatusMessage
               status={StatusBar.severityToStatus(severity)}
               icon={
                 <i className={`icon ${MessageContainer.getIconClassName(severity, true)}`} />
@@ -266,7 +250,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                   </MessageButton>
                 }
               />
-            </StatusMessageContent>
+            </StatusMessage>
           </StickyMessage>
         );
       }
@@ -290,10 +274,10 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
             <i className="icon icon-info-hollow" />
           }
         >
-          <StatusLayout
+          <StatusMessageLayout
             label={
               <div>
-                <Label text={this.state.activityMessageInfo!.message} />
+                <MessageLabel text={this.state.activityMessageInfo!.message} />
                 {
                   (messageDetails && messageDetails.showPercentInMessage) &&
                   <h6 className="body-text-dark">{this.state.activityMessageInfo!.percentage + percentComplete}</h6>

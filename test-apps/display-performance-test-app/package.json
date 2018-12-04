@@ -14,8 +14,8 @@
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:ourpublic && npm run webpack:frontend",
     "clean": "rimraf lib package-deps.json",
-    "copy:frontendpublic": "cpx \"../../core/frontend/src/public/**/*\" ./lib/backend/public",
-    "copy:ourpublic": "cpx \"public/**/*\" ./lib/backend/public",
+    "copy:frontendpublic": "cpx \"../../core/frontend/src/public/**/*\" ./lib/webresources",
+    "copy:ourpublic": "cpx \"public/**/*\" ./lib/webresources",
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "mobile": "tsc 1>&2 && webpack --config mobile.backend.webpack.config.js 1>&2 && webpack --config mobile.frontend.webpack.config.js 1>&2 && cpx \"public/**/*\" ./lib/mobile/public && cpx \"assets/**/*\" ./lib/mobile/assets ",
@@ -55,7 +55,7 @@
     "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
     "typescript": "~3.1.0",
-    "webpack": "^4.16.4"
+    "webpack": "^4.20.2"
   },
   "homepage": "http://localhost:3000/"
 }

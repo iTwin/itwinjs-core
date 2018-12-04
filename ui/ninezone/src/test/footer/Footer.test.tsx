@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Footer from "../..//footer/Footer";
+import { Footer } from "../../ui-ninezone";
 
 describe("<Footer />", () => {
   it("should render", () => {

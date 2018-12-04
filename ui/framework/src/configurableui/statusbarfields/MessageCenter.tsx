@@ -15,10 +15,7 @@ import UiFramework from "../../UiFramework";
 import { StatusBarFieldId, IStatusBar } from "../StatusBarWidgetControl";
 import { MessageManager } from "../MessageManager";
 
-import MessageCenterIndicator from "@bentley/ui-ninezone/lib/footer/message-center/Indicator";
-import MessageCenterTab from "@bentley/ui-ninezone/lib/footer/message-center/Tab";
-import MessageCenterMessage from "@bentley/ui-ninezone/lib/footer/message-center/Message";
-import MessageCenter, { MessageCenterButton } from "@bentley/ui-ninezone/lib/footer/message-center/MessageCenter";
+import { MessageCenterIndicator, MessageCenterTab, MessageCenterMessage, MessageCenter, MessageCenterButton } from "@bentley/ui-ninezone";
 
 /** Properties for the [[MessageCenterField]] React component */
 export interface MessageCenterProps {

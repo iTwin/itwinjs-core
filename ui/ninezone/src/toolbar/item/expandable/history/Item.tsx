@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../../../utilities/Props";
+import { CommonProps } from "../../../../utilities/Props";
 import "./Item.scss";
 
 /** Properties of [[HistoryItem]] component. */
@@ -27,7 +27,7 @@ export interface HistoryItemProps extends CommonProps {
  * Basic history item used in [[Tray]] component.
  * @note See [[Icon]] for item with icon.
  */
-export default class HistoryItem extends React.Component<HistoryItemProps> {
+export class HistoryItem extends React.Component<HistoryItemProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-history-item",

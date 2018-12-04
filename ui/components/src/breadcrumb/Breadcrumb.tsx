@@ -11,7 +11,7 @@ import "./Breadcrumb.scss";
 import * as _ from "lodash";
 import { using } from "@bentley/bentleyjs-core";
 import { SplitButton, withOnOutsideClick, MessageSeverity, ButtonType, MessageBox } from "@bentley/ui-core";
-import { TreeDataProvider, TreeNodeItem, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, isTreeDataProviderInterface } from "../tree";
+import { TreeDataProvider, TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../tree/TreeDataProvider";
 import { ContextMenu, ContextMenuItem } from "@bentley/ui-core";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "./BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeNodes, toNodes } from "../tree/component/BeInspireTree";

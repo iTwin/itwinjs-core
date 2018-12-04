@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Modal from "../../..//footer/message/Modal";
+import { Modal } from "../../../ui-ninezone";
 
 describe("<Modal />", () => {
   it("should render", () => {

@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Tooltip from "../../..//popup/tooltip/Tooltip";
+import { Tooltip } from "../../../ui-ninezone";
 
 describe("<Tooltip />", () => {
   it("should render", () => {

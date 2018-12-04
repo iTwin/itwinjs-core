@@ -5,7 +5,7 @@
 /** @module Theme */
 
 import * as React from "react";
-import Theme, { PrimaryTheme } from "./Theme";
+import { Theme, PrimaryTheme } from "./Theme";
 
 /** Properties of [[ThemeContext]]. */
 export interface ThemeContextProps extends Theme {
@@ -22,5 +22,3 @@ export const ThemeContext = React.createContext<ThemeContextProps>({
   name: PrimaryTheme.name,
   change: () => { },
 });
-
-export default ThemeContext;

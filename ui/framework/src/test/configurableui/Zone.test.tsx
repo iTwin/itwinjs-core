@@ -5,7 +5,7 @@
 import * as React from "react";
 import { mount, shallow } from "enzyme";
 import TestUtils from "../TestUtils";
-import { Zone } from "../..//index";
+import { Zone } from "../../ui-framework";
 
 describe("Zone", () => {
 

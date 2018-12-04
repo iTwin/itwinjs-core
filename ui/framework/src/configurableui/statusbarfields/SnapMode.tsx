@@ -12,10 +12,7 @@ import { ConfigurableUiActions } from "../state";
 import { StatusBarFieldId, IStatusBar } from "../StatusBarWidgetControl";
 import { UiFramework } from "../../UiFramework";
 
-import SnapModeIndicator from "@bentley/ui-ninezone/lib/footer/snap-mode/Indicator";
-import SnapModeIcon from "@bentley/ui-ninezone/lib/footer/snap-mode/Icon";
-import SnapModeDialog from "@bentley/ui-ninezone/lib/footer/snap-mode/Dialog";
-import SnapRow from "@bentley/ui-ninezone/lib/footer/snap-mode/Snap";
+import { SnapModeIndicator, SnapModeIcon, SnapModeDialog, Snap as SnapRow } from "@bentley/ui-ninezone";
 
 // cSpell:ignore multione
 /** Defines properties supported by the SnapMode Field Component. */

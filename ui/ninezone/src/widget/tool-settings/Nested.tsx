@@ -6,11 +6,11 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Settings, { SettingsProps } from "./Settings";
+import { ToolSettings, ToolSettingsProps } from "./Settings";
 import "./Nested.scss";
 
 /** Properties of [[Nested]] component. */
-export interface NestedProps extends SettingsProps {
+export interface NestedProps extends ToolSettingsProps {
   /** Nested settings label. */
   label?: string;
   /** Back button icon. */
@@ -18,14 +18,14 @@ export interface NestedProps extends SettingsProps {
 }
 
 /** Nested tool settings component. Used as content of [[ToolSettings]]. */
-export default class Nested extends React.Component<NestedProps> {
+export class Nested extends React.Component<NestedProps> {
   public render() {
     const className = classnames(
       "nz-widget-toolSettings-nested",
       this.props.className);
 
     return (
-      <Settings
+      <ToolSettings
         className={className}
         style={this.props.style}
       >
@@ -38,7 +38,7 @@ export default class Nested extends React.Component<NestedProps> {
           </div>
         </div>
         {this.props.children}
-      </Settings>
+      </ToolSettings>
     );
   }
 }

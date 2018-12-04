@@ -38,13 +38,12 @@ import {
   Widget,
   GroupItemDef,
   CoreTools,
-  SyncUiEventId,
   BaseItemState,
   ContentViewManager,
+  SyncUiEventId,
 } from "@bentley/ui-framework";
 
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
 
 import { AppUi } from "../AppUi";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";
@@ -62,7 +61,6 @@ import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 import { FeedbackDemoWidget } from "../widgets/FeedbackWidget";
 import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSelectionPropertyGridWidget";
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
-// import SvgPath from "@bentley/ui-ninezone/lib/base/SvgPath";
 
 export class ViewsFrontstage extends FrontstageProvider {
 
@@ -269,15 +267,33 @@ class FrontstageToolWidget extends React.Component {
     );
   }
 
+  /** example that disables the button if active content is a SheetView */
+  private _measureStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
+    const returnState: BaseItemState = { ...currentState };
+    const activeContentControl = ContentViewManager.getActiveContentControl();
+    if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
+      returnState.isEnabled = true;
+    else
+      returnState.isEnabled = false;
+    return returnState;
+  }
+
+  private executeMeasureByPoints() {
+    // first load the plugin
+    IModelApp.tools.run("Plugin", ["MeasurePoints.js"]);
+    // then wait one second and run the newly installed Plugin tool.
+    BeDuration.wait(1000).then(() => { IModelApp.tools.run("Measure.Points"); })
+      .catch();
+  }
+
   private _horizontalToolbar =
     <Toolbar
       expandsTo={Direction.Bottom}
       items={
         <>
           <ActionItemButton actionItem={CoreTools.selectElementCommand} />
-          <ActionItemButton actionItem={AppTools.tool1} />
+          <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" execute={this.executeMeasureByPoints} stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
           <ActionItemButton actionItem={AppTools.tool2} />
-          <ActionItemButton actionItem={AppTools.measurePoints} />
           <ActionItemButton actionItem={CoreTools.analysisAnimationCommand} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"

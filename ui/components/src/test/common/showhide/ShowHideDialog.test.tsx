@@ -6,7 +6,7 @@ import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { render, cleanup, fireEvent } from "react-testing-library";
-import { ShowHideDialog } from "../../../";
+import { ShowHideDialog } from "../../../ui-components";
 import TestUtils from "../../TestUtils";
 
 describe("ShowHideDialog", () => {

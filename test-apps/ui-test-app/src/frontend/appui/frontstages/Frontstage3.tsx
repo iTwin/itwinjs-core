@@ -26,8 +26,7 @@ import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Toolbar, Direction } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
 
 export class Frontstage3 extends FrontstageProvider {

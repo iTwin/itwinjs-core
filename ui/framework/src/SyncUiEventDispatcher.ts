@@ -10,7 +10,7 @@ import { FrontstageManager } from "./configurableui/FrontstageManager";
 import { Backstage } from "./configurableui/Backstage";
 import { WorkflowManager } from "./configurableui/Workflow";
 import { ContentViewManager } from "./configurableui/ContentViewManager";
-import { IModelApp, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend/lib/frontend";
+import { IModelApp, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged

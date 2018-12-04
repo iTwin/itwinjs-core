@@ -34,7 +34,7 @@
     "i18next-xhr-backend": "^1.5.1",
     "js-base64": "^2.4.5",
     "save": "^2.3.3",
-    "webpack": "^4.16.4"
+    "webpack": "^4.20.2"
   },
   "devDependencies": {
     "@bentley/config-loader": "0.171.0",

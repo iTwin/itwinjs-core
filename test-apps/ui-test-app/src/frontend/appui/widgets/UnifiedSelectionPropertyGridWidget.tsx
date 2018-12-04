@@ -11,12 +11,12 @@ import {
 } from "@bentley/ui-framework";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid } from "@bentley/ui-components";
-import { PresentationPropertyDataProvider, withUnifiedSelection } from "@bentley/presentation-components/lib/propertygrid";
+import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 // create a HOC property grid component that supports unified selection
 // tslint:disable-next-line:variable-name
-const UnifiedSelectionPropertyGrid = withUnifiedSelection(PropertyGrid);
+const UnifiedSelectionPropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
 
 export class UnifiedSelectionPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

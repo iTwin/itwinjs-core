@@ -2,8 +2,8 @@
   "name": "@bentley/imodeljs-backend",
   "version": "0.171.0",
   "description": "iModel.js backend components",
-  "main": "lib/backend.js",
-  "typings": "lib/backend",
+  "main": "lib/imodeljs-backend.js",
+  "typings": "lib/imodeljs-backend",
   "license": "MIT",
   "engines": {
     "node": ">=8.9.0 <9.0"
@@ -11,7 +11,7 @@
   "scripts": {
     "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
     "clean": "rimraf lib package-deps.json",
-    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-backend/file.json --tsIndexFile=./backend.ts --onlyJson %TYPEDOC_THEME%",
+    "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-backend/file.json --tsIndexFile=./imodeljs-backend.ts --onlyJson %TYPEDOC_THEME%",
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "cover": "nyc npm test",
@@ -76,7 +76,7 @@
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typemoq": "^2.1.0",
     "typescript": "~3.1.0",
-    "webpack": "^4.16.4",
+    "webpack": "^4.20.2",
     "asn1": "0.2.3"
   },
   "dependencies": {

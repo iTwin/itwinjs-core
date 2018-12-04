@@ -4,15 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import Content from "../../..//widget/rectangular/Content";
-import { HorizontalAnchor } from "../../..//widget/Stacked";
+import { WidgetContent } from "../../../ui-ninezone";
+import { HorizontalAnchor } from "../../../ui-ninezone";
 
-describe("<Content />", () => {
+describe("<WidgetContent />", () => {
   it("should render", () => {
-    mount(<Content anchor={HorizontalAnchor.Right} />);
+    mount(<WidgetContent anchor={HorizontalAnchor.Right} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Content anchor={HorizontalAnchor.Right} />).should.matchSnapshot();
+    shallow(<WidgetContent anchor={HorizontalAnchor.Right} />).should.matchSnapshot();
   });
 });

@@ -6,8 +6,8 @@
 
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import Css from "../utilities/Css";
-import Rectangle from "../utilities/Rectangle";
+import { Css } from "../utilities/Css";
+import { Rectangle } from "../utilities/Rectangle";
 
 /** Properties of [[withContainIn]] HOC. */
 export interface WithContainInProps {
@@ -85,5 +85,3 @@ export const withContainIn = <ComponentProps extends {}>(
     }
   };
 };
-
-export default withContainIn;

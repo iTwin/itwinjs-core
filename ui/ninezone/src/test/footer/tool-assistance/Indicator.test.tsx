@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Indicator from "../../..//footer/tool-assistance/Indicator";
+import { ToolAssistanceIndicator } from "../../../ui-ninezone";
 
-describe("<Indicator />", () => {
+describe("<ToolAssistanceIndicator />", () => {
   it("should render", () => {
-    mount(<Indicator />);
+    mount(<ToolAssistanceIndicator />);
   });
 
   it("renders correctly", () => {
-    shallow(<Indicator />).should.matchSnapshot();
+    shallow(<ToolAssistanceIndicator />).should.matchSnapshot();
   });
 });

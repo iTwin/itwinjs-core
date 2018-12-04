@@ -6,7 +6,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { expect } from "chai";
 
-import { MessageBox, MessageSeverity, ButtonType, ButtonStyle } from "../../index";
+import { MessageBox, MessageSeverity, ButtonType, ButtonStyle } from "../../ui-core";
 import TestUtils from "../TestUtils";
 
 describe("MessageBox", () => {

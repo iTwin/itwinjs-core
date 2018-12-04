@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { Id64String, Id64, DbResult, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
-import { IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, ECSqlStatement, AccessMode, ChangeSummary } from "../../backend";
+import { IModelDb, OpenParams, BriefcaseManager, ChangeSummaryManager, ECSqlStatement, AccessMode, ChangeSummary } from "../../imodeljs-backend";
 import { ConcurrencyControl } from "../../ConcurrencyControl";
 import { HubIModel, IModelQuery, AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";

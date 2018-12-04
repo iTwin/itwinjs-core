@@ -13,7 +13,7 @@ import { FractionalPrecision, ShowSignOption, FormatTraits } from "../../src/uti
 import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 import { SchemaContext } from "../../src/Context";
 import { TestSchemaLocater } from "../TestUtils/FormatTestHelper";
-import { InvertedUnit } from "../../src";
+import { InvertedUnit } from "../../src/ecschema-metadata";
 
 function createSchemaJson(format: any) {
   return createSchemaJsonWithItems({

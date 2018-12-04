@@ -13,7 +13,7 @@ import { ContentGroup } from "./ContentGroup";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 import { ContentViewManager } from "./ContentViewManager";
 
-import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
+import { DefaultStateManager as NineZoneStateManager } from "@bentley/ui-ninezone";
 import { IModelConnection, IModelApp, Tool, StartOrResume } from "@bentley/imodeljs-frontend";
 import { ToolInformation } from "./ToolInformation";
 import { FrontstageProvider } from "./Frontstage";

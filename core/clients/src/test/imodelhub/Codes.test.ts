@@ -5,12 +5,12 @@
 import * as chai from "chai";
 import * as utils from "./TestUtils";
 
-import { AccessToken, IModelClient } from "../../";
+import { AccessToken, IModelClient } from "../../imodeljs-clients";
 
 import {
   CodeState, HubCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
   IModelHubClientError, CodeSequence, CodeSequenceType,
-} from "../../";
+} from "../../imodeljs-clients";
 
 import { ResponseBuilder } from "../ResponseBuilder";
 import { TestConfig, TestUsers } from "../TestConfig";

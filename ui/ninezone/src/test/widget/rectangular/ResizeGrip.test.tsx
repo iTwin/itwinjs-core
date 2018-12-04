@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import ResizeGrip, { ResizeDirection } from "../../..//widget/rectangular/ResizeGrip";
+import { ResizeGrip, ResizeDirection } from "../../../ui-ninezone";
 
 describe("<ResizeGrip />", () => {
   it("should render", () => {

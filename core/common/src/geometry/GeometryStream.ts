@@ -7,7 +7,7 @@
 import {
   Point2d, Point3d, Vector3d, YawPitchRollAngles, YawPitchRollProps, Transform, Matrix3d, Angle, GeometryQuery, XYZProps, LowAndHighXYZ, Range3d, TransformProps,
 } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { IModelJson as GeomJson } from "@bentley/geometry-core";
 import { Id64, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { ColorDef, ColorDefProps } from "../ColorDef";
 import { GeometryClass, GeometryParams, FillDisplay, BackgroundFill, Gradient } from "../Render";

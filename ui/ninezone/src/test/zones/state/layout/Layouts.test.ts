@@ -5,11 +5,11 @@
 import * as Moq from "typemoq";
 import { WidgetZoneLayout, NineZoneRoot, WidgetZoneLayoutProps } from "../../../..//zones/state/layout/Layouts";
 import { WidgetZone } from "../../../..//zones/state/Zone";
-import Widget from "../../../..//zones/state/Widget";
+import { Widget } from "../../../../ui-ninezone";
 import { expect } from "chai";
-import Rectangle from "../../../..//utilities/Rectangle";
-import NineZone from "../../../..//zones/state/NineZone";
-import Cell from "../../../..//utilities/Cell";
+import { Rectangle } from "../../../../ui-ninezone";
+import { NineZone } from "../../../../ui-ninezone";
+import { Cell } from "../../../../ui-ninezone";
 
 describe("WidgetZoneLayout", () => {
   const rootMock = Moq.Mock.ofType<NineZoneRoot>();

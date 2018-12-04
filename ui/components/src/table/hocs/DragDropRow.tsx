@@ -7,12 +7,9 @@
 import * as React from "react";
 import classnames from "classnames";
 import { TableDropTargetProps } from "./withDragDrop";
-import {
-  withDragSource, withDropTarget,
-  WithDragSourceProps,
-  DragSourceArguments, DropTargetArguments,
-  DragSourceProps,
-} from "../../dragdrop";
+import { DragSourceArguments, DropTargetArguments, DragSourceProps } from "../../dragdrop/DragDropDef";
+import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
+import { withDropTarget } from "../../dragdrop/withDropTarget";
 
 import "./DragDropRow.scss";
 import { TableDragDropType } from "../../breadcrumb/breadcrumbdetails/hoc/withDragDrop";

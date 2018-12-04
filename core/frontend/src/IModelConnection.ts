@@ -12,8 +12,7 @@ import {
   IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
   TileTreeProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse, SnapRequestProps, SnapResponseProps, ThumbnailProps, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
-import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
-import { IModelUnitTestRpcInterface } from "@bentley/imodeljs-common/lib/rpc/IModelUnitTestRpcInterface"; // not part of the "barrel"
+import { WipRpcInterface, IModelUnitTestRpcInterface } from "@bentley/imodeljs-common";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
 import { CategorySelectorState } from "./CategorySelectorState";

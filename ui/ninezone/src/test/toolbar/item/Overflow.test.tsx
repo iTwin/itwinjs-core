@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Overflow from "../../..//toolbar/item/Overflow";
+import { Overflow } from "../../../ui-ninezone";
 
 describe("<Overflow />", () => {
   it("should render", () => {

@@ -7,7 +7,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { waitForUpdate } from "../test-helpers/misc";
 import { render, cleanup, fireEvent, RenderResult, waitForElement } from "react-testing-library";
-import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../index";
+import { Breadcrumb, BreadcrumbMode, BreadcrumbPath } from "../../ui-components";
 import { mockRawTreeDataProvider, mockInterfaceTreeDataProvider, mockMutableInterfaceTreeDataProvider, mockRawTreeDataProvider2 } from "./mockTreeDataProvider";
 import TestUtils from "../TestUtils";
 

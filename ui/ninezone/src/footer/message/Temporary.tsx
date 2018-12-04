@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./Temporary.scss";
 
 /** Properties of [[Temporary]] component. */
@@ -31,5 +31,3 @@ export const Temporary: React.StatelessComponent<TemporaryProps> = (props) => {
     </div>
   );
 };
-
-export default Temporary;

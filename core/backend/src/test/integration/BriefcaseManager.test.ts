@@ -8,7 +8,7 @@ import { IModelJsFs } from "../../IModelJsFs";
 import { OpenMode, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, TestIModelInfo } from "../IModelTestUtils";
-import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../backend";
+import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../imodeljs-backend";
 import { AccessToken, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core";

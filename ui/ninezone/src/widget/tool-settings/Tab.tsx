@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./Tab.scss";
 
 /** Properties of [[ToolSettings]] component. */
@@ -40,5 +40,3 @@ export const ToolSettingsTab: React.StatelessComponent<ToolSettingsTabProps> = (
     </button>
   );
 };
-
-export default ToolSettingsTab;

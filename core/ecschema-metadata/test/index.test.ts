@@ -5,7 +5,7 @@
 
 import { expect } from 'chai';
 
-import * as Index from '../src/index';
+import * as Index from '../src/ecschema-metadata';
 
 import * as ECObjects from '../src/ECObjects';
 import * as ECStringConstants from '../src/Constants';

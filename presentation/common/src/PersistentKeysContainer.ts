@@ -5,7 +5,7 @@
 /** @module Core */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { NodeKey } from "./hierarchy";
+import { NodeKey } from "./hierarchy/Key";
 
 /**
  * Persistent data structure that holds identity information

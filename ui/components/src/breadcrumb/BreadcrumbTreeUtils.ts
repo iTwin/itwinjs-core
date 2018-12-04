@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Breadcrumb */
-import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, TreeDataProvider, hasChildren } from "../tree";
-import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table";
-import { PropertyRecord, PropertyValueFormat } from "..";
+import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, TreeDataProvider, hasChildren } from "../tree/TreeDataProvider";
+import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table/TableDataProvider";
+import { PropertyRecord, PropertyValueFormat } from "../ui-components";
 
 /**
  * Utility class for tree searching and manipulation in the Breadcrumb component.

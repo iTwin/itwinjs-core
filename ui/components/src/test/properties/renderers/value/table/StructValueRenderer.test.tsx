@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import { TableStructValueRenderer } from "../../../../../properties/renderers/value/table/StructValueRenderer";
-import { Orientation } from "@bentley/ui-core/lib/enums/Orientation";
+import { Orientation } from "@bentley/ui-core";
 import TestUtils from "../../../../TestUtils";
 
 describe("StructValueRenderer", () => {

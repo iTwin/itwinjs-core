@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { IntTypeConverter, FloatTypeConverter } from "../..//index";
+import { IntTypeConverter, FloatTypeConverter } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 describe("IntTypeConverter", () => {

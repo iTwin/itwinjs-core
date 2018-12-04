@@ -7,7 +7,7 @@ import * as path from "path";
 import { ActivityLoggingContext, DbResult, Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
 import { Logger } from "@bentley/bentleyjs-core";
 import { Code, CodeSpec, CodeScopeSpec, FunctionalElementProps, IModel } from "@bentley/imodeljs-common";
-import { BriefcaseManager, ECSqlStatement, Functional, FunctionalModel, IModelDb, SqliteStatement } from "../../backend";
+import { BriefcaseManager, ECSqlStatement, Functional, FunctionalModel, IModelDb, SqliteStatement } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Functional Domain", () => {

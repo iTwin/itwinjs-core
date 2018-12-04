@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { ExpandableBlock } from "../..//index";
+import { ExpandableBlock } from "../../ui-core";
 import TestUtils from "../TestUtils";
 
 describe("ExpandableBlock", () => {

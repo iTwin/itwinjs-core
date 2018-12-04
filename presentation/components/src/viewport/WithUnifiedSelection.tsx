@@ -30,7 +30,7 @@ export interface Props {
  * viewport component.
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function withUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
+export default function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
 
   type CombinedProps = P & Props;
 

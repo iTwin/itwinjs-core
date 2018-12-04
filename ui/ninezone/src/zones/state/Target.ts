@@ -4,22 +4,22 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import NineZone, { WidgetZoneIndex } from "./NineZone";
+import { NineZone, WidgetZoneIndex } from "./NineZone";
 
 export enum TargetType {
   Merge,
   Back,
 }
 
-export interface TargetProps {
+export interface TargetZoneProps {
   readonly zoneId: WidgetZoneIndex;
   readonly type: TargetType;
 }
 
-export default class Target {
+export class Target {
   public constructor(
     public readonly nineZone: NineZone,
-    public readonly props: TargetProps,
+    public readonly props: TargetZoneProps,
   ) {
   }
 
