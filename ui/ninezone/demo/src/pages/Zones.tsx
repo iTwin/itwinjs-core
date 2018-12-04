@@ -5,6 +5,7 @@
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
+import rafSchedule, { ScheduleFn } from "raf-schd";
 import { BlueButton, HollowButton } from "@bentley/bwc";
 import { Timer, withTimeout } from "@bentley/ui-core";
 import App from "@src/app/App";
@@ -1919,6 +1920,9 @@ class ToolZoneScrollableToolbar extends React.PureComponent<ScrollableToolbarPro
   }
 }
 
+type WidgetTabDragFn = (dragged: PointProps) => void;
+type ZoneResizeFn = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => void;
+
 const placeholderIcon = (
   <i className="icon icon-placeholder" />
 );
@@ -2172,11 +2176,19 @@ const directionKeys: Array<keyof DirectionTools> = ["horizontal", "vertical"];
 export default class ZonesExample extends React.PureComponent<{}, State> {
   private _app = React.createRef<App>();
   private _dialogContainer = document.createElement("div");
+  private _scheduleWidgetTabDrag: ScheduleFn<WidgetTabDragFn>;
+  private _scheduleZoneResize: ScheduleFn<ZoneResizeFn>;
 
   public readonly state: Readonly<State>;
 
+  private _szr = 0;
+  private _zr = 0;
+
   public constructor(p: {}) {
     super(p);
+
+    this._scheduleWidgetTabDrag = rafSchedule(this._handleWidgetTabDrag);
+    this._scheduleZoneResize = rafSchedule(this._handleZoneResize);
 
     const nineZone =
       NineZoneManager.mergeZone(9, 6,
@@ -2224,6 +2236,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   public componentWillUnmount(): void {
+    this._scheduleWidgetTabDrag.cancel();
     document.removeEventListener("resize", this._handleWindowResize, true);
   }
 
@@ -2452,12 +2465,12 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
         onOpenModalMessage={this._handleOpenModalMessage}
         onOpenToastMessage={this._handleOpenToastMessage}
         onOpenStickyMessage={this._handleOpenStickyMessage}
-        onResize={this._handleZoneResize}
+        onResize={this._scheduleZoneResize}
         onShowTooltip={this._handleShowTooltip}
         onTabClick={this._handleWidgetTabClick}
         onTabDragStart={this._handleWidgetTabDragStart}
         onTabDragEnd={this._handleWidgetTabDragEnd}
-        onTabDrag={this._handleWidgetTabDrag}
+        onTabDrag={this._scheduleWidgetTabDrag}
         onTargetChanged={this._handleTargetChanged}
         onToggleFooterMode={this._handleToggleFooterMode}
         verticalAnchor={zone.verticalAnchor}
@@ -2970,6 +2983,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   private _handleZoneResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
+    this._zr++;
+    // tslint:disable-next-line:no-console
+    console.log(this._szr, this._zr, this._szr - this._zr);
     this.setState((prevState) => ({
       nineZone: NineZoneManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone),
     }));

@@ -551,6 +551,10 @@
       "allowedCategories": [ "frontend" ]
     },
     {
+      "name": "raf-schd",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "raw-loader",
       "allowedCategories": [ "frontend" ]
     },
