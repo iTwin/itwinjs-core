@@ -41,6 +41,7 @@ export interface FrameworkZoneProps {
   isDragged: boolean | undefined;
   lastPosition: PointProps | undefined;
   isUnmergeDrag: boolean;
+  fillZone?: boolean;
 }
 
 interface FrameworkZoneState {
@@ -196,7 +197,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
     return (
       <StackedWidget
-        fillZone={this.props.zoneProps.isLayoutChanged}
+        fillZone={this.props.fillZone || this.props.zoneProps.isLayoutChanged}
         horizontalAnchor={this.props.horizontalAnchor}
         isDragged={this.props.isDragged}
         isFloating={this.props.zoneProps.floating ? true : false}

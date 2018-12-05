@@ -72,7 +72,7 @@ export class ZoneDef {
    * @returns The WidgetDef if found; otherwise, undefined is returned.
    */
   public findWidgetDef(id: string): WidgetDef | undefined {
-    return this.widgetDefs.find((element) => element.id === id);
+    return this.widgetDefs.find((widgetDef: WidgetDef) => widgetDef.id === id);
   }
 
   /** Determines if this Zone is for Tool Settings. */
@@ -87,5 +87,10 @@ export class ZoneDef {
     if (this.widgetCount === 1)
       return this._widgetDefs[0].isStatusBar;
     return false;
+  }
+
+  /** Determines if the Zone should fill the available space. */
+  public get shouldFillZone(): boolean {
+    return this.widgetDefs.some((widgetDef: WidgetDef) => widgetDef.fillZone);
   }
 }

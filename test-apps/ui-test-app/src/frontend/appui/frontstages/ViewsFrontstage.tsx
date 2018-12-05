@@ -131,7 +131,7 @@ export class ViewsFrontstage extends FrontstageProvider {
                 }}
               />,
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection }} />,
+                applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true} />,
             ]}
           />
         }
@@ -139,7 +139,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} />,
+                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
             ]}
           />
         }
@@ -147,7 +147,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectionTable" control={UnifiedSelectionTableWidgetControl}
-                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} />,
+                applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} fillZone={true} />,
             ]}
           />
         }
@@ -162,7 +162,7 @@ export class ViewsFrontstage extends FrontstageProvider {
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
               <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
-                control={UnifiedSelectionPropertyGridWidgetControl}
+                control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }} />,
               <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
             ]}

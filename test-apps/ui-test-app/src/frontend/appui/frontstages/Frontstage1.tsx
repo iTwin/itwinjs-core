@@ -16,10 +16,11 @@ import {
   Widget,
   FrontstageProvider,
   FrontstageProps,
+  ZoneLocation,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
-import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
+// import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
@@ -57,10 +58,18 @@ export class Frontstage1 extends FrontstageProvider {
             ]}
           />
         }
+        /** The HorizontalPropertyGrid in zone 9 should be merged across zones 6 & 9 and take up the height of both zones initially.
+         *  The zones can be resized manually to take up the full height.
+         */
         centerRight={
+          <Zone allowsMerging={true} mergeWithZone={ZoneLocation.BottomRight}
+          />
+        }
+        bottomLeft={
           <Zone allowsMerging={true}
             widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
+              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl}
+                fillZone={true} />,
             ]}
           />
         }
@@ -74,8 +83,8 @@ export class Frontstage1 extends FrontstageProvider {
         bottomRight={
           <Zone allowsMerging={true}
             widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Off} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
-              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
+              <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl}
+                fillZone={true} />,
             ]}
           />
         }
