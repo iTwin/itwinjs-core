@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { Logger, LogLevel, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams } from "../../backend";
+import { IModelDb, OpenParams } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { KnownLocations } from "../../Platform";
@@ -44,17 +44,17 @@ describe("ApplyChangeSets (#integration)", () => {
 
     const accessToken = await IModelTestUtils.getTestUserAccessToken();
 
-    let projectName = "iModelJsTest"; let iModelName = "ReadOnlyTest";
+    let projectName = "iModelJsIntegrationTest"; let iModelName = "ReadOnlyTest";
     let projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     let iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
     await testAllOperations(accessToken, projectId, iModelId);
 
-    projectName = "iModelJsTest"; iModelName = "ReadWriteTest";
+    projectName = "iModelJsIntegrationTest"; iModelName = "ReadWriteTest";
     projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
     await testAllOperations(accessToken, projectId, iModelId);
 
-    projectName = "iModelJsTest"; iModelName = "NoVersionsTest";
+    projectName = "iModelJsIntegrationTest"; iModelName = "NoVersionsTest";
     projectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     iModelId = await HubUtility.queryIModelIdByName(accessToken, projectId, iModelName);
     await testAllOperations(accessToken, projectId, iModelId);

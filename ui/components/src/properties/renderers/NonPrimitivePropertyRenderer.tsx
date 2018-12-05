@@ -6,7 +6,8 @@
 
 import * as React from "react";
 import _ from "lodash";
-import { PropertyRecord, PropertyValueFormat, StructValue, ArrayValue } from "../";
+import { PropertyValueFormat, StructValue, ArrayValue } from "../Value";
+import { PropertyRecord } from "../Record";
 import { NonPrimitivePropertyLabelRenderer } from "./label/NonPrimitivePropertyLabelRenderer";
 import { PropertyView } from "./PropertyView";
 import { PrimitiveRendererProps } from "./PrimitivePropertyRenderer";

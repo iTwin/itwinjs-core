@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { ECDbTestHelper } from "./ECDbTestHelper";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValue, SqliteValueType } from "../../backend";
+import { ECDb, ECDbOpenMode, SqliteStatement, SqliteValue, SqliteValueType } from "../../imodeljs-backend";
 import { DbResult, using } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 

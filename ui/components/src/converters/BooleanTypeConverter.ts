@@ -7,7 +7,7 @@
 import UiComponents from "../UiComponents";
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { Primitives } from "./valuetypes";
+import * as Primitives from "./valuetypes/PrimitiveTypes";
 
 let sl10nTrue: string = "";
 let sl10nFalse: string = "";

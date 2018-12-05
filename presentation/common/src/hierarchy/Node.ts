@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Hierarchies */
 
-import { NodeKey, NodeKeyJSON, fromJSON as nodeKeyFromJSON } from "./Key";
+import { NodeKey, NodeKeyJSON, nodeKeyFromJSON } from "./Key";
 
 /**
  * Data structure that describes a tree node.

@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../utilities/Props";
 import "./Backstage.scss";
 
 /** Properties of [[Backstage]] component. */
@@ -26,7 +26,7 @@ export interface BackstageProps extends CommonProps, NoChildrenProps {
 }
 
 /** Backstage component of 9-zone UI app. */
-export default class Backstage extends React.Component<BackstageProps> {
+export class Backstage extends React.Component<BackstageProps> {
 
   public static defaultProps: Partial<BackstageProps> = {
     showOverlay: true,
@@ -43,7 +43,7 @@ export default class Backstage extends React.Component<BackstageProps> {
   }
 
   public componentWillUnmount() {
-     document.body.removeEventListener("keydown", this._onEsc, false);
+    document.body.removeEventListener("keydown", this._onEsc, false);
   }
 
   private _onEsc = (event: KeyboardEvent): void => {
@@ -59,7 +59,7 @@ export default class Backstage extends React.Component<BackstageProps> {
     const backstageClassName = classnames("nz-backstage-backstage", this.props.isOpen && "nz-open", this.props.className);
     return (
       <>
-        <div className={overlayClassName} onClick={this._onClose}/>
+        <div className={overlayClassName} onClick={this._onClose} />
         <div className={backstageClassName}>
           {this.props.header &&
             <div className="nz-header">

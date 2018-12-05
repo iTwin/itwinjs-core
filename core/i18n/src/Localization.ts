@@ -114,6 +114,12 @@ export class I18N {
     }
     return Promise.all(namespacePromises);
   }
+
+  /** @hidden */
+  public unregisterNamespace(name: string): void {
+    this._namespaceRegistry.delete(name);
+  }
+
 }
 
 export class I18NNamespace {

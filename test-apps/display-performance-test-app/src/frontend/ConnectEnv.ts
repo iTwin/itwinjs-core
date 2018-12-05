@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, IModelHubClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken } from "@bentley/imodeljs-clients/lib";
+import { ConnectClient, AccessToken, Project, ConnectRequestQueryOptions, IModelHubClient, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, AuthorizationToken } from "@bentley/imodeljs-clients";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { showStatus } from "./Utils";

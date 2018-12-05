@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import SvgSprite from "../..//base/SvgSprite";
+import { SvgSprite } from "../../ui-ninezone";
 
 describe("<SvgSprite />", () => {
   it("should render", () => {

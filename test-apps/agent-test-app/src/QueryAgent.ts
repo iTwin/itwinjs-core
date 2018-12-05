@@ -2,10 +2,10 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Logger, LogLevel, DbResult, assert, Id64String, Id64, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
-import { AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients/lib";
-import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common/lib/common";
-import { IModelHost, IModelHostConfiguration, IModelDb, OpenParams, ChangeSummaryManager, ECSqlStatement, ChangeSummary, AccessMode } from "@bentley/imodeljs-backend/lib/backend";
+import { Logger, LogLevel, DbResult, assert, Id64String, Id64, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import { AccessToken, ChangeSetPostPushEvent, NamedVersionCreatedEvent } from "@bentley/imodeljs-clients";
+import { IModelVersion, ChangedValueState, ChangeOpCode } from "@bentley/imodeljs-common";
+import { IModelHost, IModelHostConfiguration, IModelDb, OpenParams, ChangeSummaryManager, ECSqlStatement, ChangeSummary, AccessMode } from "@bentley/imodeljs-backend";
 import { HubUtility } from "./changeSetUtility";
 import { QueryAgentConfig } from "./QueryAgentConfig";
 import { OpenIdConnectTokenStore } from "./OpenIdConnectTokenStore";

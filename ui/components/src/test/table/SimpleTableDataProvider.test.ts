@@ -13,7 +13,7 @@ import {
   RowItem,
   SimpleTableDataProvider,
   PrimitiveValue,
-} from "../../";
+} from "../../ui-components";
 import { SortDirection } from "@bentley/ui-core";
 
 const createPropertyRecord = (value: any, column: ColumnDescription, typename: string) => {

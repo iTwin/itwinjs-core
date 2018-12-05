@@ -13,9 +13,8 @@ import {
   NavigationWidgetDef,
   ToolButton,
   NavigationWidget,
-} from "../..//index";
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+} from "../../ui-framework";
+import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
 describe("NavigationWidget", () => {
 

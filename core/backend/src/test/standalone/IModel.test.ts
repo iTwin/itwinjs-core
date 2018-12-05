@@ -18,7 +18,7 @@ import {
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
-} from "../../backend";
+} from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
@@ -35,12 +35,16 @@ describe("iModel", () => {
   let imodel5: IModelDb;
   const actx = new ActivityLoggingContext("");
 
-  before(() => {
+  before(async () => {
+    IModelTestUtils.registerTestBim();
     imodel1 = IModelTestUtils.openIModel("test.bim");
     imodel2 = IModelTestUtils.openIModel("CompatibilityTestSeed.bim");
     imodel3 = IModelTestUtils.openIModel("GetSetAutoHandledStructProperties.bim");
     imodel4 = IModelTestUtils.openIModel("GetSetAutoHandledArrayProperties.bim");
     imodel5 = IModelTestUtils.openIModel("mirukuru.ibim");
+
+    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
+    await imodel1.importSchema(actx, schemaPathname); // will throw an exception if import fails
   });
 
   after(() => {
@@ -218,7 +222,7 @@ describe("iModel", () => {
     };
 
     const styleId = imodel2.elements.insertElement(props);
-    let style = imodel2.elements.getElement(styleId) as DisplayStyle3d;
+    let style = imodel2.elements.getElement<DisplayStyle3d>(styleId);
     expect(style instanceof DisplayStyle3d).to.be.true;
 
     expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SolidFill);
@@ -232,7 +236,7 @@ describe("iModel", () => {
     expect(style.jsonProperties.styles.viewflags.renderMode).to.equal(RenderMode.SmoothShade);
 
     imodel2.elements.updateElement(style.toJSON());
-    style = imodel2.elements.getElement(styleId) as DisplayStyle3d;
+    style = imodel2.elements.getElement<DisplayStyle3d>(styleId);
     expect(style instanceof DisplayStyle3d).to.be.true;
 
     expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SmoothShade);
@@ -835,9 +839,6 @@ describe("iModel", () => {
   });
 
   it("should import schemas", async () => {
-    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await imodel1.importSchema(actx, schemaPathname); // will throw an exception if import fails
-
     const classMetaData = imodel1.getMetaData("TestBim:TestDocument"); // will throw on failure
     assert.isDefined(classMetaData.properties.testDocumentProperty);
     assert.isTrue(classMetaData.properties.testDocumentProperty.primitiveType === PrimitiveTypeCode.Integer);
@@ -870,11 +871,8 @@ describe("iModel", () => {
   });
 
   it("should create model with custom relationship to modeled element", async () => {
-    const testBimName = "should-create-models-with-custom-relationship.bim";
-    let testImodel: IModelDb = IModelTestUtils.openIModel("test.bim", { copyFilename: testBimName });
+    const testImodel = imodel1;
 
-    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-    await testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
     assert.isDefined(testImodel.getMetaData("TestBim:TestModelModelsElement"), "TestModelModelsElement is expected to be defined in TestBim.ecschema.xml");
 
     let newModelId1: Id64String;
@@ -896,9 +894,6 @@ describe("iModel", () => {
       relClassName2 = newModel2.modeledElement.relClassName;
     }
 
-    IModelTestUtils.closeIModel(testImodel);
-    testImodel = IModelTestUtils.openIModelFromOut(testBimName);
-
     const model1 = testImodel.models.getModel(newModelId1);
     const model2 = testImodel.models.getModel(newModelId2);
 
@@ -909,8 +904,7 @@ describe("iModel", () => {
     assert.equal(foundRelClassName2, relClassName2);
   });
 
-  // NEEDS_WORK_MERGE: uncomment the following lines when Keith's changes to javascript-domains are merged in
-  it.skip("should create link table relationship instances", () => {
+  it("should create link table relationship instances", () => {
     const testImodel = imodel1;
     const elements = testImodel.elements;
 
@@ -986,13 +980,7 @@ describe("iModel", () => {
   it("should set EC properties of various types", async () => {
 
     const testImodel = imodel1;
-    try {
-      testImodel.getMetaData("TestBim:TestPhysicalObject");
-    } catch (err) {
-      const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      await testImodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
-      assert.isTrue(testImodel.getMetaData("TestBim:TestPhysicalObject") !== undefined);
-    }
+    testImodel.getMetaData("TestBim:TestPhysicalObject");
 
     // Create a new physical model
     let newModelId: Id64String;

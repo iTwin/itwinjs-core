@@ -6,11 +6,10 @@
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { assert } from "chai";
-import { OpenParams } from "../../backend";
+import { OpenParams } from "../../imodeljs-backend";
 import { OpenIModelDbMemoizer } from "../../rpc-impl/OpenIModelDbMemoizer";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { TestConfig } from "../TestConfig";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 describe("OpenIModelDbMemoizer (#integration)", () => {
@@ -24,7 +23,7 @@ describe("OpenIModelDbMemoizer (#integration)", () => {
 
   before(async () => {
     accessToken = await IModelTestUtils.getTestUserAccessToken();
-    testProjectId = await HubUtility.queryProjectIdByName(accessToken, TestConfig.projectName);
+    testProjectId = await HubUtility.queryProjectIdByName(accessToken, "iModelJsIntegrationTest");
   });
 
   it("should be able to memoize and deleteMemoized open IModelDb calls", async () => {

@@ -14,11 +14,11 @@ import {
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Tree } from "@bentley/ui-components";
-import { PresentationTreeDataProvider, withUnifiedSelection } from "@bentley/presentation-components/lib/tree";
+import { PresentationTreeDataProvider, treeWithUnifiedSelection } from "@bentley/presentation-components";
 
 // create a HOC tree component that supports unified selection
 // tslint:disable-next-line:variable-name
-const UnifiedSelectionTree = withUnifiedSelection(Tree);
+const UnifiedSelectionTree = treeWithUnifiedSelection(Tree);
 
 export class NavigationTreeWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {

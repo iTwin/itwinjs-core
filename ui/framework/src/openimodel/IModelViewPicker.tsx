@@ -9,7 +9,7 @@ import * as classnames from "classnames";
 import { UiFramework } from "../UiFramework";
 import { ViewQueryParams, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelInfo } from "../clientservices/IModelServices";
-import { AccessToken } from "@bentley/imodeljs-clients/lib";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import "./Common.scss";
 import "./IModelViewPicker.scss";

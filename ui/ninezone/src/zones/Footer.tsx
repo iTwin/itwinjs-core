@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Zone, { ZoneProps } from "./Zone";
+import { ZoneComponent, ZoneProps } from "./Zone";
 import "./Footer.scss";
 
 /** Properties of [[FooterZone]] component. */
@@ -17,9 +17,9 @@ export interface FooterZoneProps extends ZoneProps {
 
 /**
  * A footer zone that should contain [[Footer]]. This component is used for zone 8 (status zone).
- * @note For other zones use the [[Zone]] component.
+ * @note For other zones use the [[ZoneComponent]] component.
  */
-export default class FooterZone extends React.Component<FooterZoneProps> {
+export class FooterZone extends React.Component<FooterZoneProps> {
   public render() {
     const zoneClassName = classnames(
       "nz-zones-footer",
@@ -29,7 +29,7 @@ export default class FooterZone extends React.Component<FooterZoneProps> {
     const { isInFooterMode, className, ...props } = this.props;
 
     return (
-      <Zone
+      <ZoneComponent
         className={zoneClassName}
         {...props}
       />

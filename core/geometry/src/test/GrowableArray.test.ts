@@ -565,5 +565,29 @@ describe("GrowablePoint3dArray", () => {
 
     expect(ck.getNumErrors()).equals(0);
   });
+  it("Compress", () => {
+    const ck = new Checker();
+    const data = new GrowableFloat64Array();
+    data.compressAdjcentDuplicates(); // nothing happens on empty array.
+    const n0 = 22;
+    for (let i = 0; i < n0; i++) {
+      const c = Math.cos(i * i);
+      let n = 1;
+      if (c < -0.6)
+        n = 3;
+      else if (c > 0.1) {
+        if (c < 0.8)
+          n = 2;
+        else
+          n = 4;
+      }
+      for (let k = 0; k < n; k++)
+        data.push(i);
+    }
+    const n1 = data.length;
+    data.compressAdjcentDuplicates(0.0001);
+    ck.testExactNumber(n0, data.length, "compressed array big length", n1);
+    expect(ck.getNumErrors()).equals(0);
+  });
 
 });

@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../../../utilities/Props";
 import "./Dialog.scss";
 
 /** Properties of [[Dialog]] component. */
@@ -43,5 +43,3 @@ export const Dialog: React.StatelessComponent<DialogProps> = (props) => {
     </div>
   );
 };
-
-export default Dialog;

@@ -1,0 +1,20 @@
+
+> @bentley/ui-components@0.168.0 build D:\bentleyjs\imodeljs\ui\components
+> tsc 1>&2 && npm run build:scss && npm run copy:public && npm run webpackModule-dev
+
+
+> @bentley/ui-components@0.168.0 build:scss D:\bentleyjs\imodeljs\ui\components
+> cpx "./src/**/*.scss" ./lib
+
+
+> @bentley/ui-components@0.168.0 copy:public D:\bentleyjs\imodeljs\ui\components
+> cpx "./public/**/*" ./lib/public && npm run pseudolocalize
+
+
+> @bentley/ui-components@0.168.0 pseudolocalize D:\bentleyjs\imodeljs\ui\components
+> node ./node_modules/@bentley/build-tools/scripts/pseudolocalize.js --englishDir ./public/locales/en --out ./lib/public/locales/en-pseudo
+
+
+> @bentley/ui-components@0.168.0 webpackModule-dev D:\bentleyjs\imodeljs\ui\components
+> make-dir ./lib/module/dev/ && webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/ui-components.js --env.bundlename=ui-components --env.stylesheets --json >./lib/module/dev/webpackStats.json
+

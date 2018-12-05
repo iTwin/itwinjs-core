@@ -22,7 +22,7 @@ export class ClassRegistry {
   public static makeMetaDataNotFoundError(className: string): IModelError { return new IModelError(IModelStatus.NotFound, "metadata not found for " + className); }
 
   /** @hidden */
-  public static register(entityClass: typeof Entity) { this._classMap.set(this.getKey(entityClass.schema.name, entityClass.name), entityClass); }
+  public static register(entityClass: typeof Entity, schema: Schema) { entityClass.schema = schema; this._classMap.set(this.getKey(entityClass.schema.name, entityClass.name), entityClass); }
   /** @hidden */
   public static registerSchema(schema: Schema) { Schemas.registerSchema(schema); }
   /** @hidden */
@@ -65,8 +65,7 @@ export class ClassRegistry {
     // the above line creates an "anonymous" class. We rely on the "constructor.name" property to be eponymous with the EcClass name.
     Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
 
-    generatedClass.schema = schema; // save the schema property
-    this.register(generatedClass); // register it before returning
+    this.register(generatedClass, schema); // register it before returning
     return generatedClass;
   }
 
@@ -81,10 +80,8 @@ export class ClassRegistry {
         continue;
 
       const thisClass = moduleObj[thisMember];
-      if (thisClass.prototype instanceof Entity) {
-        thisClass.schema = schema;
-        this.register(thisClass);
-      }
+      if (thisClass.prototype instanceof Entity)
+        this.register(thisClass, schema);
     }
   }
 

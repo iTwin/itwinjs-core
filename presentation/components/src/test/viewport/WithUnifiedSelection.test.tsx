@@ -23,13 +23,13 @@ import {
   Presentation,
   SelectionManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/presentation-frontend";
-import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
+import { PresentationManager } from "@bentley/presentation-frontend";
 import { ViewportComponent } from "@bentley/ui-components";
 import IUnifiedSelectionComponent from "../../common/IUnifiedSelectionComponent";
-import { default as withUnifiedSelection, ViewportSelectionHandler } from "../../viewport/WithUnifiedSelection";
+import { default as viewWithUnifiedSelection, ViewportSelectionHandler } from "../../viewport/WithUnifiedSelection";
 
 // tslint:disable-next-line:variable-name naming-convention
-const PresentationViewport = withUnifiedSelection(ViewportComponent);
+const PresentationViewport = viewWithUnifiedSelection(ViewportComponent);
 
 describe("Viewport withUnifiedSelection", () => {
 

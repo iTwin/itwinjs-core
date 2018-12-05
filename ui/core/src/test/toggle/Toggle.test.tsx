@@ -6,7 +6,7 @@ import * as React from "react";
 import { mount, shallow } from "enzyme";
 import * as sinon from "sinon";
 
-import { Toggle } from "../..//index";
+import { Toggle } from "../../ui-core";
 
 describe("<Toggle />", () => {
   it("should render", () => {

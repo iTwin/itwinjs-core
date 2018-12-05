@@ -7,11 +7,11 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import PointerCaptor from "../../../base/PointerCaptor";
-import Point, { PointProps } from "../../../utilities/Point";
-import Tab, { TabProps } from "./Tab";
+import { PointerCaptor } from "../../../base/PointerCaptor";
+import { Point, PointProps } from "../../../utilities/Point";
+import { Tab, TabProps } from "./Tab";
 import "./Draggable.scss";
-import Rectangle from "../../../utilities/Rectangle";
+import { Rectangle } from "../../../utilities/Rectangle";
 
 /** Properties of [[Draggable]] component. */
 export interface DraggableProps extends TabProps {
@@ -26,7 +26,7 @@ export interface DraggableProps extends TabProps {
 }
 
 /** Draggable tab of rectangular widget. Used in [[Stacked]] component. */
-export default class Draggable extends React.Component<DraggableProps> {
+export class Draggable extends React.Component<DraggableProps> {
   private _initial: Point | undefined = undefined;
 
   public render() {

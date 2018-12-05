@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d } from "@bentley/geometry-core";
 import { SpatialViewDefinitionProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
+import { DeepCompare } from "@bentley/geometry-core";
 import {
   SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent, AuxCoordSystemSpatialState, CategorySelectorState,
   ModelSelectorState, IModelConnection, DisplayStyle3dState,

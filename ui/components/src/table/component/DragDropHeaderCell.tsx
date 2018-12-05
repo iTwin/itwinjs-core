@@ -11,10 +11,9 @@ import * as RDG from "react-data-grid";
 // tslint:disable-next-line:variable-name
 const HeaderCell = (RDG && (RDG as any).HeaderCell); // react-data-grid @types does not support the HeaderCell export, but it is exported in the js-only library.
 
-import {
-  withDragSource, DragSourceArguments,
-  withDropTarget, DropTargetArguments,
-} from "../../dragdrop";
+import { DragSourceArguments, DropTargetArguments } from "../../dragdrop/DragDropDef";
+import { withDragSource } from "../../dragdrop/withDragSource";
+import { withDropTarget } from "../../dragdrop/withDropTarget";
 import { ColumnDragLayer } from "./ColumnDragLayer";
 
 /** @hidden */

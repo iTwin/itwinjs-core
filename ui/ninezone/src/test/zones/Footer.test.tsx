@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import Footer from "../..//zones/Footer";
+import { FooterZone } from "../../ui-ninezone";
 
-describe("<Footer />", () => {
+describe("<FooterZone />", () => {
   it("should render", () => {
-    mount(<Footer bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />);
+    mount(<FooterZone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Footer bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />).should.matchSnapshot();
+    shallow(<FooterZone bounds={{ bottom: 10, left: 0, right: 10, top: 0 }} />).should.matchSnapshot();
   });
 });

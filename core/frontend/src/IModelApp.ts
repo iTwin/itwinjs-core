@@ -21,6 +21,7 @@ import { ToolAdmin } from "./tools/ToolAdmin";
 import { ViewManager } from "./ViewManager";
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
+import * as pluginTool from "./tools/PluginTool";
 import * as viewTool from "./tools/ViewTool";
 
 /**
@@ -111,6 +112,7 @@ export class IModelApp {
     tools.registerModule(selectTool, coreNamespace);
     tools.registerModule(idleTool, coreNamespace);
     tools.registerModule(viewTool, coreNamespace);
+    tools.registerModule(pluginTool, coreNamespace);
 
     this.onStartup(); // allow subclasses to register their tools, set their applicationId, etc.
 

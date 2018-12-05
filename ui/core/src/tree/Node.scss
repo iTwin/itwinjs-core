@@ -6,6 +6,8 @@
 @import "@bentley/bwc/lib/mixins";
 @import "../colors.scss";
 
+$node-font-size: $bwc-font-size;
+
 /* FIXME: Without this, the loader animation is broken...
  * I guess we'd need to fix BWC's animations to support CSS modules?
  * (I mean, we should probably just be using the loader component anyway...)
@@ -25,7 +27,7 @@
   min-width: 100%;
   line-height: 24px;
   font-family: $bwc-sans;
-  font-size: 13px;
+  font-size: $node-font-size;
   color: $text-dark;
   white-space: nowrap;
   text-overflow: ellipsis;

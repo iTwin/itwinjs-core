@@ -6,12 +6,12 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import withContainIn, { WithContainInProps } from "../../../../base/WithContainIn";
-import Panel from "./Panel";
+import { withContainIn, WithContainInProps } from "../../../../base/WithContainIn";
+import { Panel } from "./Panel";
 import { GroupProps } from "./Group";
-import Columns from "./Columns";
-import Title from "./Title";
-import BackArrow from "./BackArrow";
+import { Columns } from "./Columns";
+import { Title } from "./Title";
+import { BackArrow } from "./BackArrow";
 import "./Nested.scss";
 
 /** Properties of [[NestedGroup]] component. */
@@ -21,7 +21,7 @@ export interface NestedGroupProps extends GroupProps {
 }
 
 /** Nested tool group component. Used in [[ExpandableItem]] component. */
-export default class NestedGroup extends React.Component<NestedGroupProps> {
+export class NestedGroup extends React.Component<NestedGroupProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-nested",

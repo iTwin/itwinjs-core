@@ -11,7 +11,7 @@ import { PropertyRenderer } from "../../../properties/renderers/PropertyRenderer
 import TestUtils from "../../TestUtils";
 import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
 import { PrimitivePropertyRenderer } from "../../../properties/renderers/PrimitivePropertyRenderer";
-import { PropertyRecord } from "../../..";
+import { PropertyRecord } from "../../../ui-components";
 import { NonPrimitivePropertyRenderer } from "../../../properties/renderers/NonPrimitivePropertyRenderer";
 
 describe("PropertyRenderer", () => {

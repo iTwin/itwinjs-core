@@ -6,14 +6,14 @@
 
 import { UiEvent } from "@bentley/ui-core";
 
-import { FrontstageDef, FrontstageDefProps } from "./FrontstageDef";
+import { FrontstageDef } from "./FrontstageDef";
 import { ContentControl } from "./ContentControl";
 import { ContentLayoutDef } from "./ContentLayout";
 import { ContentGroup } from "./ContentGroup";
 import { WidgetDef, WidgetState } from "./WidgetDef";
 import { ContentViewManager } from "./ContentViewManager";
 
-import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
+import { DefaultStateManager as NineZoneStateManager } from "@bentley/ui-ninezone";
 import { IModelConnection, IModelApp, Tool, StartOrResume } from "@bentley/imodeljs-frontend";
 import { ToolInformation } from "./ToolInformation";
 import { FrontstageProvider } from "./Frontstage";
@@ -173,29 +173,10 @@ export class FrontstageManager {
   /** Get  Nine-zone State Manager. */
   public static get NineZoneStateManager() { return NineZoneStateManager; }
 
-  /** Load one or more Frontstages via properties.
-   * @param frontstagePropsList  List of Frontstage properties
-   */
-  public static loadFrontstages(frontstagePropsList: FrontstageDefProps[]): void {
-    frontstagePropsList.map((frontstageProps, _index) => {
-      FrontstageManager.loadFrontstage(frontstageProps);
-    });
-  }
-
-  /** Load a Frontstage via properties.
-   * @param frontstageProps  Properties of the Frontstage to load
-   */
-  public static loadFrontstage(frontstageProps: FrontstageDefProps): void {
-    const frontstageDef = new FrontstageDef(frontstageProps);
-    if (frontstageDef) {
-      FrontstageManager.addFrontstageDef(frontstageDef);
-    }
-  }
-
   /** Add a Frontstage via a definition.
    * @param frontstageDef  Definition of the Frontstage to add
    */
-  public static addFrontstageDef(frontstageDef: FrontstageDef): void {
+  private static addFrontstageDef(frontstageDef: FrontstageDef): void {
     this._frontstageDefs.set(frontstageDef.id, frontstageDef);
   }
 

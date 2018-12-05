@@ -6,8 +6,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Direction, { DirectionHelpers } from "../../utilities/Direction";
-import CommonProps from "../../utilities/Props";
+import { Direction, DirectionHelpers } from "../../utilities/Direction";
+import { CommonProps } from "../../utilities/Props";
 import "./Popover.scss";
 
 /** Properties of [[Popover]] component. */
@@ -35,5 +35,3 @@ export const Popover: React.StatelessComponent<PopoverProps> = (props) => {
     </div>
   );
 };
-
-export default Popover;

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelHubClient, AccessToken, HubIModel, Version, IModelQuery, VersionQuery } from "@bentley/imodeljs-clients";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 // import GatewayProxyApi from "./gatewayProxy";

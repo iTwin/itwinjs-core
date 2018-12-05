@@ -68,14 +68,16 @@ export class TableDemoWidget extends React.Component<Props, State> {
         <input id="receives_tree" type="checkbox" onChange={(event) => {
           this.setState({ checked: event.target.checked });
         }} />
-        <DragDropTable
-          dataProvider={demoMutableTableDataProvider}
-          dragProps={dragProps}
-          dropProps={dropProps}
-          reorderableColumns={true}
-          togglableColumns={true}
-          settingsIdentifier="Test"
-        />
+        <div style={{ height: "calc(100% - 20px)" }}>
+          <DragDropTable
+            dataProvider={demoMutableTableDataProvider}
+            dragProps={dragProps}
+            dropProps={dropProps}
+            reorderableColumns={true}
+            togglableColumns={true}
+            settingsIdentifier="Test"
+          />
+        </div>
       </div >
     );
   }

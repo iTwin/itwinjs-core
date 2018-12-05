@@ -5,23 +5,23 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Tray, { DefaultHistoryManager } from "../../../../..//toolbar/item/expandable/history/Tray";
+import { HistoryTray, DefaultHistoryManager } from "../../../../../ui-ninezone";
 
-describe("<Tray />", () => {
+describe("<HistoryTray />", () => {
   it("should render", () => {
-    mount(<Tray />);
+    mount(<HistoryTray />);
   });
 
   it("renders correctly", () => {
-    shallow(<Tray />).should.matchSnapshot();
+    shallow(<HistoryTray />).should.matchSnapshot();
   });
 
   it("renders extended", () => {
-    shallow(<Tray isExtended />).should.matchSnapshot();
+    shallow(<HistoryTray isExtended />).should.matchSnapshot();
   });
 
   it("renders items", () => {
-    shallow(<Tray items={<><br /><br /></>}></Tray>).should.matchSnapshot();
+    shallow(<HistoryTray items={<><br /><br /></>}></HistoryTray>).should.matchSnapshot();
   });
 
   it("Max item count of default history manager should eq 4", () => {

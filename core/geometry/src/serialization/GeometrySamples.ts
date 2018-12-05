@@ -52,6 +52,7 @@ import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
+import { KnotVector } from "../bspline/KnotVector";
 
 /* tslint:disable:no-console */
 
@@ -852,6 +853,42 @@ export class Sample {
   public static createXYGridBsplineSurface(numU: number, numV: number, orderU: number, orderV: number): BSplineSurface3d | undefined {
     return BSplineSurface3d.create(
       Sample.createXYGrid(numU, numV, 1.0, 1.0), numU, orderU, undefined, numV, orderV, undefined);
+  }
+  /**
+   * @param radiusU major radius
+   * @param radiusV minor radius
+   * @param numU number of facets around major hoop
+   * @param numV number of facets around minor hoop
+   * @param orderU major hoop order
+   * @param orderV minor hoop order
+   */
+  public static createPseudoTorusBsplineSurface(radiusU: number, radiusV: number, numU: number, numV: number, orderU: number, orderV: number): BSplineSurface3d | undefined {
+    const points = [];
+    const numUPole = numU + orderU - 1;
+    const numVPole = numV + orderV - 1;
+    const uKnots = KnotVector.createUniformWrapped(numU, orderU - 1, 0, 1);
+    const vKnots = KnotVector.createUniformWrapped(numV, orderV - 1, 0, 1);
+    const dURadians = 2.0 * Math.PI / numU;
+    const dVRadians = 2.0 * Math.PI / numV;
+    for (let iV = 0; iV < numVPole; iV++) {
+      const vRadians = iV * dVRadians;
+      const cV = Math.cos(vRadians);
+      const sV = Math.sin(vRadians);
+      for (let iU = 0; iU < numUPole; iU++) {
+        const uRadians = iU * dURadians;
+        const cU = Math.cos(uRadians);
+        const sU = Math.sin(uRadians);
+        const rho = radiusU + cV * radiusV;
+        points.push(Point3d.create(rho * cU, rho * sU, sV * radiusV));
+
+      }
+    }
+    const result = BSplineSurface3d.create(points, numUPole, orderU, uKnots.knots, numVPole, orderV, vKnots.knots);
+    if (result) {
+      result.setWrappable(0, true);
+      result.setWrappable(1, true);
+    }
+    return result;
   }
 
   public static createWeightedXYGridBsplineSurface(

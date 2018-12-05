@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module PropertyGrid */
 
-import { PropertyRecord } from "../properties";
+import { PropertyRecord } from "../properties/Record";
 import { PropertyDataProvider, PropertyData, PropertyCategory, PropertyDataChangeEvent } from "./PropertyDataProvider";
 
 /**

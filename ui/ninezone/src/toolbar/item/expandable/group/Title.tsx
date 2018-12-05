@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../../../utilities/Props";
+import { CommonProps } from "../../../../utilities/Props";
 import "./Title.scss";
 
 /** Properties of [[Title]] component. */
@@ -16,7 +16,7 @@ export interface TitleProps extends CommonProps {
 }
 
 /** Tool group title. */
-export default class Title extends React.Component<TitleProps> {
+export class Title extends React.Component<TitleProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-title",

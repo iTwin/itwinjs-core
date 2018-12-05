@@ -8,7 +8,7 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as sinon from "sinon";
 import TestUtils from "../TestUtils";
-import { AppNotificationManager, MessageManager, ElementTooltip, ModalDialogManager } from "../../";
+import { AppNotificationManager, MessageManager, ElementTooltip, ModalDialogManager } from "../../ui-framework";
 import { NotifyMessageDetails, OutputMessagePriority, MessageBoxType, MessageBoxIconType, ActivityMessageDetails, ActivityMessageEndReason } from "@bentley/imodeljs-frontend";
 
 describe("AppNotificationManager", () => {

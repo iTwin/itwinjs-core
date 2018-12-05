@@ -3,29 +3,14 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Breadcrumb */
-import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, TreeDataProvider } from "../tree";
-import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table";
-import { PropertyRecord, PropertyValueFormat } from "..";
+import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, TreeDataProvider, hasChildren } from "../tree/TreeDataProvider";
+import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table/TableDataProvider";
+import { PropertyRecord, PropertyValueFormat } from "../ui-components";
 
 /**
  * Utility class for tree searching and manipulation in the Breadcrumb component.
  */
 export class BreadcrumbTreeUtils {
-  /**
-   * Determines whether node has children
-   * @param node node to check
-   * @returns whether node has children
-   */
-  public static hasChildren = (node: TreeNodeItem) => {
-    const nodeAsImmediate = node as ImmediatelyLoadedTreeNodeItem;
-    if ("children" in nodeAsImmediate && nodeAsImmediate.children && nodeAsImmediate.children.length > 0)
-      return true;
-    const nodeAsDelayed = node as DelayLoadedTreeNodeItem;
-    if ("hasChildren" in nodeAsDelayed && nodeAsDelayed.hasChildren)
-      return true;
-    return false;
-  }
-
   /**
    * Transforms a list of children from a tree node into a [[TableDataProvider]], given a list of column descriptions.
    * @param nodes Node list to use as a basis for the [[TableDataProvider]].
@@ -51,9 +36,9 @@ export class BreadcrumbTreeUtils {
             key: "icon", record:
               new PropertyRecord(
                 {
-                  value: BreadcrumbTreeUtils.hasChildren(n) ? "icon-folder" : n.icon,
+                  value: hasChildren(n) ? "icon-folder" : n.icon,
                   valueFormat: PropertyValueFormat.Primitive,
-                  displayValue: BreadcrumbTreeUtils.hasChildren(n) ? "icon-folder" : n.icon!,
+                  displayValue: hasChildren(n) ? "icon-folder" : n.icon!,
                 },
                 {
                   name: "icon",

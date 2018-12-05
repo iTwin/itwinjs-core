@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { Task } from "../../";
+import { Task } from "../../ui-framework";
 
 describe("Task", () => {
 

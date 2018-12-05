@@ -5,7 +5,7 @@
 /** @module Item */
 
 import { IconProps } from "./IconComponent";
-import { Direction } from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Direction } from "@bentley/ui-ninezone";
 import { GroupItemDef } from "./GroupItem";
 import { CommandItemDef, ToolItemDef } from "./Item";
 import { BaseItemState } from "./ItemDefBase";

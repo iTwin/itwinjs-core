@@ -6,8 +6,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Direction, { DirectionHelpers } from "../../../../utilities/Direction";
-import CommonProps, { NoChildrenProps, FlattenChildren } from "../../../../utilities/Props";
+import { Direction, DirectionHelpers } from "../../../../utilities/Direction";
+import { CommonProps, NoChildrenProps, FlattenChildren } from "../../../../utilities/Props";
 import "./Tray.scss";
 
 /** Key to identify history item. */
@@ -55,7 +55,7 @@ export class HistoryManager {
 export const DefaultHistoryManager = new HistoryManager(4);
 
 /** Properties of [[Tray]] component. */
-export interface TrayProps extends CommonProps, NoChildrenProps {
+export interface HistoryTrayProps extends CommonProps, NoChildrenProps {
   /** Extend direction of tray. */
   direction?: Direction;
   /** Describes if the tray is extended. If this is false, at most 1 item is visible. */
@@ -65,7 +65,7 @@ export interface TrayProps extends CommonProps, NoChildrenProps {
 }
 
 /** History tray used in [[ExpandableItem]] component. */
-export default class Tray extends React.Component<TrayProps> {
+export class HistoryTray extends React.Component<HistoryTrayProps> {
   public render() {
     const items = FlattenChildren(this.props.items);
     const count = React.Children.count(items);

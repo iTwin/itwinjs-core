@@ -6,8 +6,7 @@
 
 import * as React from "react";
 import { FrontstageManager } from "./FrontstageManager";
-import { ZoneDefProps, ZoneDef, ZoneDefFactory } from "./ZoneDef";
-import { ItemPropsList } from "./ItemProps";
+import { ZoneDef } from "./ZoneDef";
 import { ContentLayoutManager, ContentLayoutDef } from "./ContentLayout";
 import { ContentControl } from "./ContentControl";
 import { ContentGroup } from "./ContentGroup";
@@ -16,66 +15,9 @@ import { WidgetDef } from "./WidgetDef";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageProvider, Frontstage } from "./Frontstage";
 
-import { NineZoneProps } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
+import { NineZoneProps } from "@bentley/ui-ninezone";
 
-// -----------------------------------------------------------------------------
-// FrontstageProps and associated enums
-// -----------------------------------------------------------------------------
-
-/** Stage Type enum.
- */
-export enum StageType {
-  Primary,
-  Temporary,
-  Modal,
-}
-
-/** Selection Scope enum.
- */
-export enum SelectionScope {
-  Element,
-  Assembly,
-  TopAssembly,
-  Category,
-  Model,
-}
-
-/** Properties for a Frontstage.
- */
-export interface FrontstageDefProps extends ItemPropsList {
-  id: string;
-  defaultToolId: string;
-
-  defaultLayout: string | ContentLayoutDef;
-  contentGroup: string | ContentGroup;
-
-  defaultContentId?: string;
-
-  type?: StageType;                             // Default - StageType.Primary
-  inheritZoneStates?: boolean;                  // Default - true
-  hubEnabled?: boolean;                         // Default - false
-  contextToolbarEnabled?: boolean;              // Default - false
-  isInFooterMode?: boolean;                     // Default - true
-  defaultSelectionScope?: SelectionScope;       // Default - SelectionScope.Element
-  availableSelectionScopes?: SelectionScope[];  // Defaults - SelectionScope.Element, Assembly, TopAssembly, Category, Model
-
-  topLeft?: ZoneDefProps;
-  topCenter?: ZoneDefProps;
-  topRight?: ZoneDefProps;
-  centerLeft?: ZoneDefProps;
-  centerRight?: ZoneDefProps;
-  bottomLeft?: ZoneDefProps;
-  bottomCenter?: ZoneDefProps;
-  bottomRight?: ZoneDefProps;
-
-  applicationData?: any;
-}
-
-// -----------------------------------------------------------------------------
-// FrontstageDef class
-// -----------------------------------------------------------------------------
-
-/** FrontstageDef class. Application Frontstages can subclass this base class.
+/** FrontstageDef class provides an API for a Frontstage.
  */
 export class FrontstageDef {
   public id: string = "";
@@ -84,20 +26,13 @@ export class FrontstageDef {
   public defaultContentId: string = "";
   public contentGroupId: string = "";
 
-  public type?: StageType = StageType.Primary;
+  public isInFooterMode: boolean = true;
+  public applicationData?: any;
+
+  // TODO
   public inheritZoneStates: boolean = true;
   public hubEnabled: boolean = false;
   public contextToolbarEnabled: boolean = false;
-  public isInFooterMode: boolean = true;
-  public defaultSelectionScope: SelectionScope = SelectionScope.Element;
-  public availableSelectionScopes: SelectionScope[] = [
-    SelectionScope.Element,
-    SelectionScope.Assembly,
-    SelectionScope.TopAssembly,
-    SelectionScope.Category,
-    SelectionScope.Model,
-  ];
-  public applicationData?: any;
 
   public topLeft?: ZoneDef;
   public topCenter?: ZoneDef;
@@ -109,65 +44,12 @@ export class FrontstageDef {
   public bottomRight?: ZoneDef;
 
   public defaultLayout?: ContentLayoutDef;
-
-  /** The [[ContentGroup]] for this Frontstage */
   public contentGroup?: ContentGroup;
-
   public frontstageProvider?: FrontstageProvider;
-
   public nineZoneProps?: NineZoneProps;
 
-  /** Constructs the [[FrontstageDef]] and optionally initializes it based on the given [[FrontstageProps]]  */
-  constructor(frontstageProps?: FrontstageDefProps) {
-    if (frontstageProps) {
-      this.initializeFromProps(frontstageProps);
-    }
-  }
-
-  /** Initializes the [[FrontstageDef]] from [[FrontstageProps]]  */
-  public initializeFromProps(frontstageProps: FrontstageDefProps): void {
-    this.id = frontstageProps.id;
-    this.defaultToolId = frontstageProps.defaultToolId;
-
-    if (frontstageProps.defaultContentId !== undefined)
-      this.defaultContentId = frontstageProps.defaultContentId;
-
-    if (typeof frontstageProps.defaultLayout === "string")
-      this.defaultLayoutId = frontstageProps.defaultLayout;
-    else
-      this.defaultLayout = frontstageProps.defaultLayout;
-
-    if (typeof frontstageProps.contentGroup === "string")
-      this.contentGroupId = frontstageProps.contentGroup;
-    else
-      this.contentGroup = frontstageProps.contentGroup;
-
-    if (frontstageProps.type !== undefined)
-      this.type = frontstageProps.type;
-    if (frontstageProps.inheritZoneStates !== undefined)
-      this.inheritZoneStates = frontstageProps.inheritZoneStates;
-    if (frontstageProps.hubEnabled !== undefined)
-      this.hubEnabled = frontstageProps.hubEnabled;
-    if (frontstageProps.contextToolbarEnabled !== undefined)
-      this.contextToolbarEnabled = frontstageProps.contextToolbarEnabled;
-    if (frontstageProps.isInFooterMode !== undefined)
-      this.isInFooterMode = frontstageProps.isInFooterMode;
-    if (frontstageProps.defaultSelectionScope !== undefined)
-      this.defaultSelectionScope = frontstageProps.defaultSelectionScope;
-    if (frontstageProps.availableSelectionScopes !== undefined)
-      this.availableSelectionScopes = frontstageProps.availableSelectionScopes;
-    if (frontstageProps.applicationData !== undefined)
-      this.applicationData = frontstageProps.applicationData;
-
-    this.topLeft = ZoneDefFactory.Create(frontstageProps.topLeft);
-    this.topCenter = ZoneDefFactory.Create(frontstageProps.topCenter);
-    this.topRight = ZoneDefFactory.Create(frontstageProps.topRight);
-    this.centerLeft = ZoneDefFactory.Create(frontstageProps.centerLeft);
-    this.centerRight = ZoneDefFactory.Create(frontstageProps.centerRight);
-    this.bottomLeft = ZoneDefFactory.Create(frontstageProps.bottomLeft);
-    this.bottomCenter = ZoneDefFactory.Create(frontstageProps.bottomCenter);
-    this.bottomRight = ZoneDefFactory.Create(frontstageProps.bottomRight);
-  }
+  /** Constructs the [[FrontstageDef]]  */
+  constructor() { }
 
   /** Handles when the Frontstage becomes activated */
   public onActivated(): void {
@@ -288,6 +170,10 @@ export class FrontstageDef {
     return [];
   }
 
+  /**
+   * Initializes this [[FrontstageDef]] from a [[FrontstageProvider]]
+   * @param frontstageProvider The FrontstageProvider to initialize from
+   */
   public initializeFromProvider(frontstageProvider: FrontstageProvider) {
     if (frontstageProvider.frontstage && React.isValidElement(frontstageProvider.frontstage)) {
       Frontstage.initializeFrontstageDef(this, frontstageProvider.frontstage.props);

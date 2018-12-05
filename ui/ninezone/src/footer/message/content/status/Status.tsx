@@ -32,5 +32,3 @@ export class StatusHelpers {
     }
   }
 }
-
-export default Status;

@@ -6,11 +6,11 @@ import * as path from "path";
 import { assert } from "chai";
 import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Range2d, Range3d } from "@bentley/geometry-core";
-import { CodeScopeSpec, ColorDef, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, ColorDef, GeometricElement2dProps, IModel, SubCategoryAppearance, Code } from "@bentley/imodeljs-common";
 import {
-  CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingViewDefinition,
+  CategorySelector, DefinitionModel, DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition,
   IModelDb, IModelJsFs, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory, SubCategory, Subject,
-} from "../../backend";
+} from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 class TestImporter {
@@ -48,6 +48,17 @@ class TestImporter {
     assert.isTrue(Id64.isValidId64(subCategoryId));
     const drawingCategoryId: Id64String = DrawingCategory.insert(this.iModelDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
     assert.isTrue(Id64.isValidId64(drawingCategoryId));
+    const drawingGraphicProps: GeometricElement2dProps = {
+      classFullName: DrawingGraphic.classFullName,
+      model: drawingId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "DrawingGraphic",
+    };
+    const drawingGraphicId: Id64String = this.iModelDb.elements.insertElement(drawingGraphicProps);
+    assert.isTrue(Id64.isValidId64(drawingGraphicId));
+    const drawingGraphicRepresentsId: Id64String = DrawingGraphicRepresentsElement.insert(this.iModelDb, drawingGraphicId, drawingId); // WIP: drawingId as targetId is bogus
+    assert.isTrue(Id64.isValidId64(drawingGraphicRepresentsId));
     const spatialCategorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, definitionModelId, "SpatialCategories", [spatialCategoryId]);
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
     const drawingCategorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, definitionModelId, "DrawingCategories", [drawingCategoryId]);

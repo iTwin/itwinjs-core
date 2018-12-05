@@ -11,10 +11,12 @@ import {
   ContentControl,
   ConfigurableCreateInfo,
   ConfigurableUiManager,
-  FrontstageDefProps,
   FrontstageManager,
   ContentViewManager,
-} from "../..//index";
+  FrontstageProvider,
+  FrontstageProps,
+  Frontstage,
+} from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
 describe("ContentControl", () => {
@@ -32,29 +34,35 @@ describe("ContentControl", () => {
     ConfigurableUiManager.registerControl("TestContentControl", TestContentControl);
   });
 
-  const myContentGroup: ContentGroup = new ContentGroup({
-    id: "myContentGroup",
-    contents: [
-      { classId: "TestContentControl" },
-    ],
-  });
-
-  const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
-    id: "SingleContent",
-    descriptionKey: "UiFramework:tests.singleContent",
-    priority: 100,
-  });
-
-  const frontstageProps: FrontstageDefProps = {
-    id: "TestFrontstage1",
-    defaultToolId: "PlaceLine",
-    defaultLayout: myContentLayout,
-    contentGroup: myContentGroup,
-  };
-
   it("activated", () => {
-    ConfigurableUiManager.loadFrontstage(frontstageProps);
-    const frontstageDef = ConfigurableUiManager.findFrontstageDef("TestFrontstage1");
+    const myContentGroup: ContentGroup = new ContentGroup({
+      id: "myContentGroup",
+      contents: [
+        { classId: "TestContentControl" },
+      ],
+    });
+
+    const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
+      id: "SingleContent",
+      descriptionKey: "UiFramework:tests.singleContent",
+      priority: 100,
+    });
+
+    class Frontstage1 extends FrontstageProvider {
+      public get frontstage(): React.ReactElement<FrontstageProps> {
+        return (
+          <Frontstage
+            id="ContentFrontstage1"
+            defaultToolId="PlaceLine"
+            defaultLayout={myContentLayout}
+            contentGroup={myContentGroup}
+          />
+        );
+      }
+    }
+    ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
+
+    const frontstageDef = ConfigurableUiManager.findFrontstageDef("ContentFrontstage1");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {
@@ -82,31 +90,37 @@ describe("ContentControl", () => {
     }
   });
 
-  const contentGroup2: ContentGroup = new ContentGroup({
-    id: "contentGroup2",
-    contents: [
-      { classId: TestContentControl, applicationData: "data1" },
-      { classId: TestContentControl, applicationData: "data2" },
-    ],
-  });
-
-  const contentLayout2: ContentLayoutDef = new ContentLayoutDef({
-    id: "TwoHalvesVertical",
-    descriptionKey: "App:ContentLayoutDef.TwoHalvesVertical",
-    priority: 60,
-    verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
-  });
-
-  const frontstageProps2: FrontstageDefProps = {
-    id: "TestFrontstage2",
-    defaultToolId: "PlaceLine",
-    defaultLayout: contentLayout2,
-    contentGroup: contentGroup2,
-  };
-
   it("deactivated", () => {
-    ConfigurableUiManager.loadFrontstage(frontstageProps2);
-    const frontstageDef = ConfigurableUiManager.findFrontstageDef("TestFrontstage2");
+    const contentGroup2: ContentGroup = new ContentGroup({
+      id: "contentGroup2",
+      contents: [
+        { classId: TestContentControl, applicationData: "data1" },
+        { classId: TestContentControl, applicationData: "data2" },
+      ],
+    });
+
+    const contentLayout2: ContentLayoutDef = new ContentLayoutDef({
+      id: "TwoHalvesVertical",
+      descriptionKey: "App:ContentLayoutDef.TwoHalvesVertical",
+      priority: 60,
+      verticalSplit: { id: "TwoHalvesVertical.VerticalSplit", percentage: 0.50, left: 0, right: 1 },
+    });
+
+    class Frontstage2 extends FrontstageProvider {
+      public get frontstage(): React.ReactElement<FrontstageProps> {
+        return (
+          <Frontstage
+            id="ContentFrontstage2"
+            defaultToolId="PlaceLine"
+            defaultLayout={contentLayout2}
+            contentGroup={contentGroup2}
+          />
+        );
+      }
+    }
+    ConfigurableUiManager.addFrontstageProvider(new Frontstage2());
+
+    const frontstageDef = ConfigurableUiManager.findFrontstageDef("ContentFrontstage2");
     expect(frontstageDef).to.not.be.undefined;
 
     if (frontstageDef) {

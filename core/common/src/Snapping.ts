@@ -7,6 +7,7 @@
 import { Id64String, Id64Array } from "@bentley/bentleyjs-core";
 import { XYZProps, Matrix4dProps } from "@bentley/geometry-core";
 import { GeometryStreamProps } from "./geometry/GeometryStream";
+import { GeometryClass } from "./Render";
 
 /**
  * Information required to request a *snap* to a pickable decoration from the front end to the back end.
@@ -28,7 +29,8 @@ export interface SnapRequestProps {
   snapModes?: number[];
   snapAperture?: number;
   snapDivisor?: number;
-  offSubCategories?: Id64Array;
+  subCategoryId?: Id64String;
+  geometryClass?: GeometryClass;
   intersectCandidates?: Id64Array;
   decorationGeometry?: DecorationGeometryProps[];
 }
@@ -42,8 +44,6 @@ export interface SnapResponseProps {
   heat?: number;
   geomType?: number;
   parentGeomType?: number;
-  category?: string;
-  subCategory?: string;
   hitPoint?: XYZProps;
   snapPoint?: XYZProps;
   normal?: XYZProps;

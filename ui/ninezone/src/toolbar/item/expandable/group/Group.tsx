@@ -6,11 +6,11 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import withContainIn, { WithContainInProps } from "../../../../base/WithContainIn";
-import Panel from "./Panel";
-import Columns from "./Columns";
-import Title from "./Title";
-import CommonProps, { NoChildrenProps } from "../../../../utilities/Props";
+import { withContainIn, WithContainInProps } from "../../../../base/WithContainIn";
+import { Panel } from "./Panel";
+import { Columns } from "./Columns";
+import { Title } from "./Title";
+import { CommonProps, NoChildrenProps } from "../../../../utilities/Props";
 
 /** Properties of [[Group]] component. */
 export interface GroupProps extends CommonProps, NoChildrenProps {
@@ -21,7 +21,7 @@ export interface GroupProps extends CommonProps, NoChildrenProps {
 }
 
 /** Tool group component. Used in [[ExpandableItem]] component.  */
-export default class Group extends React.Component<GroupProps> {
+export class Group extends React.Component<GroupProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-group",

@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Separator from "../../..//footer/tool-assistance/Separator";
+import { ToolAssistanceSeparator } from "../../../ui-ninezone";
 
-describe("<Separator />", () => {
+describe("<ToolAssistanceSeparator />", () => {
   it("should render", () => {
-    mount(<Separator />);
+    mount(<ToolAssistanceSeparator />);
   });
 
   it("renders correctly", () => {
-    shallow(<Separator />).should.matchSnapshot();
+    shallow(<ToolAssistanceSeparator />).should.matchSnapshot();
   });
 });

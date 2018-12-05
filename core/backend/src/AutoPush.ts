@@ -5,7 +5,7 @@
 /** @module iModels */
 
 import { IModelDb } from "./IModelDb";
-import { AccessToken } from "@bentley/imodeljs-clients/lib";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import { assert, Logger, BeEvent, IModelStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { RpcRequest, IModelError } from "@bentley/imodeljs-common";
 

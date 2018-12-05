@@ -9,7 +9,7 @@ import { IModelApp, ScreenViewport, IModelConnection, SpatialViewState, Standard
 import { PackedFeatureTable } from "@bentley/imodeljs-frontend/lib/rendering";
 import { CONSTANTS } from "../common/Testbed";
 import * as path from "path";
-import { GeometryClass, FeatureTable, Feature } from "@bentley/imodeljs-common/lib/Render";
+import { GeometryClass, FeatureTable, Feature } from "@bentley/imodeljs-common";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { WebGLTestContext } from "./WebGLTestContext";
 

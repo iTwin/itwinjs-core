@@ -8,9 +8,10 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 import { Presentation } from "@bentley/presentation-backend";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { Config } from "@bentley/imodeljs-clients";
 import getSupportedRpcs from "../common/rpcs";
+
+import { Config } from "@bentley/imodeljs-clients";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 
 IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
 
@@ -34,7 +35,7 @@ Presentation.initialize({
   if (electron) {
     init = (await import("./electron/ElectronMain")).default;
   } else {
-    init = (await import("./web/WebServer")).default;
+    init = (await import("./web/BackendServer")).default;
   }
   // get RPCs supported by this backend
   const rpcs = getSupportedRpcs();

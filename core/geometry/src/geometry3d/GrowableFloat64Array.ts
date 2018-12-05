@@ -197,6 +197,7 @@ export class GrowableFloat64Array {
       }
     }
   }
+
   /**
    * * compress out values not within the [a,b] interval.
    * * Note that if a is greater than b all values are rejected.
@@ -215,4 +216,28 @@ export class GrowableFloat64Array {
     }
     this._inUse = numAccept;
   }
+
+  /**
+   * * compress out multiple copies of values.
+   * * this is done in the current order of the array.
+   */
+  public compressAdjcentDuplicates(tolerance: number = 0.0) {
+    const data = this._data;
+    const n = this._inUse;
+    if (n === 0)
+      return;
+
+    let numAccepted = 1;
+    let a = data[0];
+    let b;
+    for (let i = 1; i < n; i++) {
+      b = data[i];
+      if (Math.abs(b - a) > tolerance) {
+        data[numAccepted++] = b;
+        a = b;
+      }
+    }
+    this._inUse = numAccepted;
+  }
+
 }

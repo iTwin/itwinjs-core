@@ -5,7 +5,7 @@
 import { expect, assert } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { Orientation } from "@bentley/ui-core/lib/enums/Orientation";
+import { Orientation } from "@bentley/ui-core";
 import TestUtils from "../../../TestUtils";
 import { StructPropertyValueRenderer } from "../../../../properties/renderers/value/StructPropertyValueRenderer";
 import { PropertyContainerType } from "../../../../properties/ValueRendererManager";

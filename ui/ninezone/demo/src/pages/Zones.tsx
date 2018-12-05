@@ -5,11 +5,11 @@
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { BlueButton, HollowButton } from "@bentley/bwc/lib/index";
+import { BlueButton, HollowButton } from "@bentley/bwc";
 import { Timer, withTimeout } from "@bentley/ui-core";
 import App from "@src/app/App";
 import Content from "@src/app/Content";
-import AppButton from "@src/toolbar/button/App";
+import AppButton from "@src/widget/tools/button/App";
 import MouseTracker from "@src/context/MouseTracker";
 import Footer from "@src/footer/Footer";
 import MessageCenter, { MessageCenterButton } from "@src/footer/message-center/MessageCenter";
@@ -59,7 +59,7 @@ import { GroupWithContainIn as ToolGroupComponent } from "@src/toolbar/item/expa
 import { NestedWithContainIn as NestedToolGroup } from "@src/toolbar/item/expandable/group/Nested";
 import HistoryIcon from "@src/toolbar/item/expandable/history/Icon";
 import HistoryTray, { History, DefaultHistoryManager } from "@src/toolbar/item/expandable/history/Tray";
-import ToolbarIcon from "@src/toolbar/item/Icon";
+import Item from "@src/toolbar/item/Icon";
 import Toolbar, { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import ScrollableToolbar from "@src/toolbar/Scrollable";
 import Direction from "@src/utilities/Direction";
@@ -71,7 +71,7 @@ import TabSeparator from "@src/widget/rectangular/tab/Separator";
 import WidgetTabGroup, { VisibilityMode } from "@src/widget/rectangular/tab/Group";
 import { TabMode } from "@src/widget/rectangular/tab/Tab";
 import StackedWidget, { HorizontalAnchor } from "@src/widget/Stacked";
-import ToolsWidget from "@src/widget/Tools";
+import ToolsWidget from "@src/widget/tools/Tools";
 import FooterZone from "@src/zones/Footer";
 import NineZone, { getDefaultProps as getDefaultNineZone, NineZoneProps, WidgetZoneIndex } from "@src/zones/state/NineZone";
 import NineZoneManager from "@src/zones/state/Manager";
@@ -253,7 +253,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           icon: "icon-placeholder",
         } as ToolGroup,
         "angle": {
-          icon: "icon-placeholder",
+          icon: "icon-app-1",
         } as SimpleTool,
         "attach": {
           icon: "icon-placeholder",
@@ -1012,7 +1012,7 @@ export default class ZonesExample extends React.Component<{}, State> {
           panel={this.getToolGroup(toolKey)}
           isDisabled={tool.isDisabled}
         >
-          <ToolbarIcon
+          <Item
             icon={
               <i className={`icon ${tool.icon}`} />
             }
@@ -1024,7 +1024,7 @@ export default class ZonesExample extends React.Component<{}, State> {
     }
 
     return (
-      <ToolbarIcon
+      <Item
         key={toolKey}
         icon={
           <i className={`icon ${tool.icon}`} />
@@ -1037,7 +1037,7 @@ export default class ZonesExample extends React.Component<{}, State> {
   private getToolbarItemWithToolSettings(toolKey: string) {
     const tool = this.state.tools[toolKey];
     return (
-      <ToolbarIcon
+      <Item
         key={toolKey}
         isActive={this.state.secondZoneContent !== SecondZoneContent.None}
         icon={
@@ -1867,6 +1867,7 @@ export default class ZonesExample extends React.Component<{}, State> {
                 <>
                   {this.state.showAllItems && this.getToolbarItem("2d")}
                   <ToolbarIcon
+                    isActive={this.state.showAllItems}
                     key={"angle"}
                     icon={
                       <i className={`icon ${this.state.tools.angle.icon}`} />
@@ -1883,7 +1884,7 @@ export default class ZonesExample extends React.Component<{}, State> {
               items={
                 <>
                   {this.state.showAllItems && this.getToolbarItem("cube")}
-                  <ToolbarIcon
+                  <Item
                     key={"attach"}
                     icon={
                       <i className={`icon ${this.state.tools.attach.icon}`} />

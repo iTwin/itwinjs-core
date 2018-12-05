@@ -6,7 +6,7 @@ import { assert } from "chai";
 import { Guid, Id64String, Id64 } from "@bentley/bentleyjs-core";
 // import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { CategoryProps, Code, GeometricElement3dProps, ElementProps, IModel, InformationPartitionElementProps } from "@bentley/imodeljs-common";
-import { Generic, GroupInformationPartition, Group, GroupModel, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory, SubjectOwnsPartitionElements } from "../../backend";
+import { Generic, GroupInformationPartition, Group, GroupModel, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, SpatialCategory, SubjectOwnsPartitionElements } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("Generic Domain", () => {

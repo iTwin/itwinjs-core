@@ -5,13 +5,7 @@
 /** @module Picker */
 
 import * as React from "react";
-import Group from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Group";
-import Panel from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Panel";
-import Column from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Column";
-import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";
-import ExpandableItem from "@bentley/ui-ninezone/lib/toolbar/item/expandable/Expandable";
-import WithContainInViewport from "@bentley/ui-ninezone/lib/base/WithContainInViewport";
-import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
+import { Group, Panel, GroupColumn, CommonProps, ExpandableItem, withContainInViewport, Item } from "@bentley/ui-ninezone";
 import * as classnames from "classnames";
 
 import "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/tool/Tool.scss";
@@ -20,7 +14,7 @@ import "./ListPicker.scss";
 import { UiFramework } from "../UiFramework";
 
 // tslint:disable-next-line:variable-name
-const ContainedGroup = WithContainInViewport(Group);
+const ContainedGroup = withContainInViewport(Group);
 
 /** Enum for the list picker item type */
 export enum ListItemType {
@@ -119,9 +113,9 @@ export class ExpandableSection extends React.Component<ExpandableSectionProps, a
           </div>
         </div>
         {this.state.expanded ?
-          <Column>
+          <GroupColumn>
             {this.props.children}
-          </Column> : <div />
+          </GroupColumn> : <div />
         }
       </Panel>
     );
@@ -188,7 +182,7 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
       <ExpandableItem
         {...this.props}
         panel={this.getExpandedContent()}>
-        <ToolbarIcon
+        <Item
           title={this.props.title}
           onClick={this._toggleIsExpanded}
           icon={icon}
@@ -227,9 +221,9 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
                 key={itemIndex.toString()}
                 title={item.name}
                 className="ListPickerInnerContainer">
-                <Column>
+                <GroupColumn>
                   {item.children!.map(listItemToElement)}
-                </Column>
+                </GroupColumn>
               </ExpandableSection>
             );
           } else {
@@ -246,9 +240,9 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
         className="ListPickerContainer"
         noVerticalContainment={true}
         columns={
-          <Column className="ListPicker-column">
+          <GroupColumn className="ListPicker-column">
             {this.props.items.map(listItemToElement)}
-          </Column>}
+          </GroupColumn>}
       />
     );
   }

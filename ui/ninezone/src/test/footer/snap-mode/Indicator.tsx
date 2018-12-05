@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Indicator from "../../..//footer/snap-mode/Indicator";
+import { SnapModeIndicator } from "../../../ui-ninezone";
 
-describe("<Indicator />", () => {
+describe("<SnapModeIndicator />", () => {
   it("should render", () => {
-    mount(<Indicator />);
+    mount(<SnapModeIndicator />);
   });
 
   it("renders correctly", () => {
-    shallow(<Indicator />).should.matchSnapshot();
+    shallow(<SnapModeIndicator />).should.matchSnapshot();
   });
 });

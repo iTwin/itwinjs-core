@@ -7,7 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import CommonProps from "../../../utilities/Props";
+import { CommonProps } from "../../../utilities/Props";
 import "./Expandable.scss";
 
 /** Properties of [[ExpandableItem]] component. */
@@ -29,7 +29,7 @@ export interface ExpandableItemProps extends CommonProps {
 }
 
 /** Expandable toolbar item. */
-export default class ExpandableItem extends React.Component<ExpandableItemProps> {
+export class ExpandableItem extends React.Component<ExpandableItemProps> {
   private _panel = document.createElement("div");
   private _history = document.createElement("div");
 

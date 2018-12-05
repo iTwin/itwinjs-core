@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Title from "../../../../..//toolbar/item/expandable/group/Title";
+import { Title } from "../../../../../ui-ninezone";
 
 describe("<Title />", () => {
   it("should render", () => {

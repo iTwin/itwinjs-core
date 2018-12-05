@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../utilities/Props";
+import { CommonProps } from "../utilities/Props";
 import "./Item.scss";
 
 /** Properties of [[BackstageItem]] component. */
@@ -24,7 +24,7 @@ export interface BackstageItemProps extends CommonProps {
 }
 
 /** Item in the [[Backstage]]. */
-export default class BackstageItem extends React.Component<BackstageItemProps> {
+export class BackstageItem extends React.Component<BackstageItemProps> {
 
   public render() {
     const className = classnames(

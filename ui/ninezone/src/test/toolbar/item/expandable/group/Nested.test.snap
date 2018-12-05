@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Nested /> renders correctly 1`] = `
+exports[`<NestedGroup /> renders correctly 1`] = `
 <Panel
   className="nz-toolbar-item-expandable-group-nested"
 >

@@ -8,11 +8,11 @@ import * as moq from "./_helpers/Mocks";
 import { createRandomDescriptor, createRandomECInstanceNodeKey, createRandomECInstanceKey } from "./_helpers/random";
 import { using } from "@bentley/bentleyjs-core";
 import { IModelToken, RpcOperation, RpcRequest, RpcSerializedValue } from "@bentley/imodeljs-common";
-import { RpcRegistry } from "@bentley/imodeljs-common/lib/rpc/core/RpcRegistry";
+import { RpcRegistry } from "@bentley/imodeljs-common";
 import {
   PresentationRpcInterface,
   KeySet, Paged,
-} from "..";
+} from "../presentation-common";
 import {
   RpcRequestOptions, HierarchyRpcRequestOptions, ContentRpcRequestOptions,
   ClientStateSyncRequestOptions,

@@ -1,6 +1,39 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Tue, 20 Nov 2018 16:17:15 GMT and should not be manually modified.
+This log was last generated on Tue, 04 Dec 2018 17:24:39 GMT and should not be manually modified.
+
+## 0.172.0
+Tue, 04 Dec 2018 17:24:39 GMT
+
+### Updates
+
+- Changed index file name to match package name, eliminate subdirectory index files, decrease usage of default exports, change imports to use other packages' index file.
+
+## 0.171.0
+Mon, 03 Dec 2018 18:52:58 GMT
+
+### Updates
+
+- Added tests to Breadcrumb, updated Table and fixed Table Resize issues.
+- Added property value renderers for double and navigation primitive types.
+- Added specialized property value renderers for nonprimitive types when their container is a table.
+- Refactored PropertyRenderer into smaller pieces and added isSelectable and indentation prop
+- Changed the way PropertyCategoryBlock looks.
+- Enabled table to contain popups and dialog and slightly cleaned up it's CSS.
+- Unit tests
+- Removed ConfigurableUiManager.addFrontstageDef and other unused/old methods and components
+- Implement pagination in Tree component
+
+## 0.170.0
+Mon, 26 Nov 2018 19:38:42 GMT
+
+### Updates
+
+- Added property value renderers for double and navigation primitive types.
+- Added specialized property value renderers for nonprimitive types when their container is a table.
+- Refactored PropertyRenderer into smaller pieces and added isSelectable and indentation prop
+- Changed the way PropertyCategoryBlock looks.
+- Enabled table to contain popups and dialog and slightly cleaned up it's CSS.
 
 ## 0.169.0
 Tue, 20 Nov 2018 16:17:15 GMT

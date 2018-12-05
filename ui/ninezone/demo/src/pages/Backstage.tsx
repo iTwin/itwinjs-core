@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { BlueButton } from "@bentley/bwc/lib/buttons/BlueButton";
+import { BlueButton } from "@bentley/bwc";
 import Backstage from "@src/backstage/Backstage";
 import Item from "@src/backstage/Item";
 import Separator from "@src/backstage/Separator";

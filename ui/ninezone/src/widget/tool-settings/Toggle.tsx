@@ -6,9 +6,9 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Popover from "../../popup/popover/Triangle";
-import Direction from "../../utilities/Direction";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
+import { TrianglePopover } from "../../popup/popover/Triangle";
+import { Direction } from "../../utilities/Direction";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
 import "./Toggle.scss";
 
 /** Properties of [[Toggle]] component. */
@@ -25,7 +25,7 @@ export interface ToggleProps extends CommonProps, NoChildrenProps {
  * Tool settings toggle component.
  * @note Used as content in [[Settings]] and [[Nested]] components
  */
-export default class Toggle extends React.Component<ToggleProps> {
+export class Toggle extends React.Component<ToggleProps> {
   public render() {
     const className = classnames(
       "nz-widget-toolSettings-toggle",
@@ -46,7 +46,7 @@ export default class Toggle extends React.Component<ToggleProps> {
           <div className="nz-triangle" />
         </div>
         {!this.props.popoverContent ? undefined :
-          <Popover
+          <TrianglePopover
             className="nz-popover"
             direction={Direction.Bottom}
             content={this.props.popoverContent}

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { PrimitiveTool, IModelApp, AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, EventHandled, Viewport, LocateResponse, HitDetail, LocateFilterStatus } from "@bentley/imodeljs-frontend";
 import { Point3d, Vector3d } from "@bentley/geometry-core";
-import { GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
+import { GraphicType } from "@bentley/imodeljs-frontend";
 import { ColorDef } from "@bentley/imodeljs-common";
 
 export class SamplePrimitiveTool extends PrimitiveTool {

@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./Item.scss";
 
 /** Properties of [[ToolAssistanceItem]] component. */
@@ -16,7 +16,7 @@ export interface ToolAssistanceItemProps extends CommonProps {
 }
 
 /** Tool assistance item. Used in [[Assistance]] component. */
-export default class ToolAssistanceItem extends React.Component<ToolAssistanceItemProps> {
+export class ToolAssistanceItem extends React.Component<ToolAssistanceItemProps> {
   public render() {
     const className = classnames(
       "nz-footer-toolAssistance-item",

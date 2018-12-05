@@ -7,12 +7,7 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import NZ_Expandable from "@bentley/ui-ninezone/lib/toolbar/button/Expandable";
-import NZ_Icon from "@bentley/ui-ninezone/lib/toolbar/button/Icon";
-import NZ_Column from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Column";
-import NZ_Item from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/tool/Tool";
-import NZ_Tray from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Group";
-import WithContainInViewport from "@bentley/ui-ninezone/lib/base/WithContainInViewport";
+import { ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupColumn as NZ_Column, GroupTool as NZ_Item, Group as NZ_Tray, withContainInViewport } from "@bentley/ui-ninezone";
 
 import { ConfigurableCreateInfo } from "../ConfigurableUiControl";
 import { NavigationAidControl } from "../NavigationAidControl";
@@ -22,10 +17,10 @@ import { UiFramework } from "../../UiFramework";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 
 import { ViewRotationCube } from "@bentley/ui-components";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Direction } from "@bentley/ui-ninezone";
 
 // tslint:disable-next-line:variable-name
-const NZ_ContainedTray = WithContainInViewport(NZ_Tray);
+const NZ_ContainedTray = withContainInViewport(NZ_Tray);
 
 // -----------------------------------------------------------------------------
 // 3D Orientation Navigation Aid Control

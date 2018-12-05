@@ -16,10 +16,10 @@ import {
   StatusBarWidgetControl,
   WidgetState,
   ConfigurableCreateInfo,
-  UiFramework,
+  MessageManager,
   ConfigurableUiControlType,
   WidgetDef,
-} from "../../../";
+} from "../../../ui-framework";
 
 describe("PromptField", () => {
 
@@ -58,16 +58,18 @@ describe("PromptField", () => {
       <StatusBar widgetControl={widgetControl} isInFooterMode={true} />
     </Provider>);
 
-    UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: "Hello World!" });
+    const helloWorld = "Hello World!";
+    MessageManager.outputPrompt(helloWorld);
     wrapper.update();
 
     expect(wrapper.find("div.nz-footer-text").length).to.eq(1);
-    expect(wrapper.find("div.nz-footer-text").text()).to.eq("Hello World!");
+    expect(wrapper.find("div.nz-footer-text").text()).to.eq(helloWorld);
 
-    UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: "Goodbye!" });
+    const goodBye = "Goodbye!";
+    MessageManager.outputPrompt(goodBye);
     wrapper.update();
     expect(wrapper.find("div.nz-footer-text").length).to.eq(1);
-    expect(wrapper.find("div.nz-footer-text").text()).to.eq("Goodbye!");
+    expect(wrapper.find("div.nz-footer-text").text()).to.eq(goodBye);
 
     wrapper.unmount();
   });

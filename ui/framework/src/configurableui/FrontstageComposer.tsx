@@ -9,19 +9,14 @@ import * as ReactDOM from "react-dom";
 
 import { FrontstageManager, FrontstageActivatedEventArgs, ModalFrontstageInfo, ModalFrontstageChangedEventArgs } from "./FrontstageManager";
 import { FrontstageDef } from "./FrontstageDef";
-import { FrameworkFrontstage } from "./FrameworkFrontstage";
 import { ZoneDef, ZoneState } from "./ZoneDef";
 import { ModalFrontstage } from "./ModalFrontstage";
 
-import ResizeHandle from "@bentley/ui-ninezone/lib/widget/rectangular/ResizeHandle";
-import NineZone, { NineZoneProps, getDefaultProps as getDefaultNineZoneState, WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
-import Size from "@bentley/ui-ninezone/lib/utilities/Size";
-import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
-import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
-import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
-import { TargetType } from "@bentley/ui-ninezone/lib/zones/state/Target";
+import { ResizeHandle } from "@bentley/ui-ninezone";
+import { NineZone, NineZoneProps, getDefaultNineZoneProps, WidgetZoneIndex } from "@bentley/ui-ninezone";
+import { Size, PointProps, DefaultStateManager as NineZoneStateManager, RectangleProps, TargetType } from "@bentley/ui-ninezone";
 
-import { WidgetProps as NZ_WidgetProps } from "@bentley/ui-ninezone/lib/zones/state/Widget";
+import { WidgetProps as NZ_WidgetProps } from "@bentley/ui-ninezone";
 import { WidgetDef } from "./WidgetDef";
 
 /** Interface defining callbacks for widget changes */
@@ -99,7 +94,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
       nineZoneProps = { ...frontstageDef.nineZoneProps };
     else {
       const isInFooterMode = frontstageDef ? frontstageDef.isInFooterMode : false;
-      nineZoneProps = NineZoneStateManager.setIsInFooterMode(isInFooterMode, getDefaultNineZoneState());
+      nineZoneProps = NineZoneStateManager.setIsInFooterMode(isInFooterMode, getDefaultNineZoneProps());
     }
 
     return nineZoneProps;
@@ -210,15 +205,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
         };
         content = React.cloneElement(this._frontstageDef.frontstageProvider.frontstage, { runtimeProps: frontstageRuntimeProps });
       } else {
-        content = (
-          <FrameworkFrontstage
-            frontstageDef={this._frontstageDef}
-            nineZoneProps={this.state.nineZoneProps}
-            widgetChangeHandler={this}
-            targetChangeHandler={this}
-            zoneDefProvider={this}
-          />
-        );
+        throw Error("FrontstageDef has no FrontstageProvider.");
       }
     }
 

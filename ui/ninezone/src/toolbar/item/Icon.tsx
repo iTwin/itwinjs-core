@@ -6,32 +6,51 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { NoChildrenProps, OmitChildrenProp } from "../../utilities/Props";
-import Item, { ItemProps } from "./Item";
+import { CommonProps } from "../../utilities/Props";
 import "./Icon.scss";
 
-/** Properties of [[Icon]] component. */
-export interface IconComponentProps extends OmitChildrenProp<ItemProps>, NoChildrenProps {
-  /** Actual icon of this toolbar item. */
+/** Properties of [[Item]] component */
+export interface ItemProps extends CommonProps {
+  /** button icon. */
   icon?: React.ReactNode;
+  /** Describes if item is active. */
+  isActive?: boolean;
+  /** Describes if the item is disabled. */
+  isDisabled?: boolean;
+  /** Function called when the item is clicked. */
+  onClick?: () => void;
+  /** Title for the item. */
+  title?: string;
 }
 
-/** Toolbar item component that displays icon. Used in [[Toolbar]] */
-export default class Icon extends React.Component<IconComponentProps> {
+/** Toolbar item component. Used in [[Toolbar]] */
+export class Item extends React.Component<ItemProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-icon",
+      this.props.isActive && "nz-is-active",
+      this.props.isDisabled && "nz-is-disabled",
       this.props.className);
 
     return (
-      <Item
-        {...this.props}
+      <button
+        disabled={this.props.isDisabled}  // this is needed to prevent focusing/keyboard access to disabled buttons
+        onClick={this._handleClick}
         className={className}
+        style={this.props.style}
+        title={this.props.title}
       >
         <div className="nz-icon">
           {this.props.icon}
         </div>
-      </Item>
+      </button>
     );
+  }
+
+  private _handleClick = () => {
+    if (this.props.isDisabled)
+      return;
+
+    this.props.onClick && this.props.onClick();
   }
 }

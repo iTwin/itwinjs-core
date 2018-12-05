@@ -16,6 +16,7 @@ exports[`StandardMessageBox MediumAlert & Question 1`] = `
   }
   minHeight={400}
   minWidth={400}
+  modal={true}
   onClose={[Function]}
   onEscape={[Function]}
   opened={true}
@@ -37,6 +38,7 @@ exports[`StandardMessageBox OK button & NoSymbol 1`] = `
   }
   minHeight={400}
   minWidth={400}
+  modal={true}
   onClose={[Function]}
   onEscape={[Function]}
   opened={true}
@@ -62,6 +64,7 @@ exports[`StandardMessageBox OK/Cancel buttons & Information 1`] = `
   }
   minHeight={400}
   minWidth={400}
+  modal={true}
   onClose={[Function]}
   onEscape={[Function]}
   opened={true}
@@ -87,6 +90,7 @@ exports[`StandardMessageBox Yes/No buttons & Question 1`] = `
   }
   minHeight={400}
   minWidth={400}
+  modal={true}
   onClose={[Function]}
   onEscape={[Function]}
   opened={true}
@@ -116,6 +120,7 @@ exports[`StandardMessageBox YesNoCancel & Critical 1`] = `
   }
   minHeight={400}
   minWidth={400}
+  modal={true}
   onClose={[Function]}
   onEscape={[Function]}
   opened={true}

@@ -96,6 +96,7 @@ export class ContentGroup {
           if (contentControl.getType() !== ConfigurableUiControlType.Content && contentControl.getType() !== ConfigurableUiControlType.Viewport) {
             throw Error("ContentGroup.getContentControl error: classId '" + contentProps.classId + "' is registered to a control that is NOT a ContentControl");
           }
+          contentControl.initialize();
         }
       } else {
         const info = new ConfigurableCreateInfo(contentProps.classId.name, id, id);

@@ -9,7 +9,6 @@
 
   padding-top: 8px;
   padding-bottom: 8px;
-
   display: grid;
   grid-row-gap: 10px;
 }
@@ -43,18 +42,19 @@
   .components-cell-editor {
     border: #c7ccd1 solid 1px;
     border-radius: 3px;
-    background: #fff ;
+    background: #fff;
     box-sizing: border-box;
     width: 100%;
     height: 100%;
-    padding: 9px 8px;
+    padding: 5px 8px;
   }
 }
 
-.components-property-list--horizontal{
+.components-property-list--horizontal {
   @include components-property-list;
+
   display: grid;
-  grid-row-gap: 10px;
+  grid-row-gap: 1px; // A gap of 10px is too wasteful
 }
 
 .components-property-list--vertical {

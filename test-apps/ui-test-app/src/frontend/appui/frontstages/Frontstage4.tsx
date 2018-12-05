@@ -27,8 +27,7 @@ import { BreadcrumbDemoWidgetControl } from "../widgets/BreadcrumbDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
 
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
 import { TestModalDialog } from "../dialogs/TestModalDialog";
 import { TestRadialMenu } from "../dialogs/TestRadialMenu";

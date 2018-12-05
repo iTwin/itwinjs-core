@@ -6,6 +6,7 @@ import {
   IModelStatus, StatusCodeWithMessage, RepositoryStatus, BentleyStatus, ChangeSetApplyOption, DbResult, DbOpcode, OpenMode, IDisposable, ChangeSetStatus, Id64String, GuidString,
 } from "@bentley/bentleyjs-core";
 import { IModelDb } from "./IModelDb";
+import { ElementProps } from "@bentley/imodeljs-common";
 
 /**
  * @hidden
@@ -66,8 +67,10 @@ export declare class NativeDgnDb {
   public buildBriefcaseManagerResourcesRequestForModel(req: NativeBriefcaseManagerResourcesRequest, modelId: string, opcode: DbOpcode): RepositoryStatus;
   public cancelTo(txnId: TxnIdString): IModelStatus;
   public closeIModel(): void;
+  public closeIModelFile(): void;
   public createChangeCache(changeCacheFile: NativeECDb, changeCachePath: string): DbResult;
-  public createIModel(fileName: string, props: string): DbResult;
+  public createIModel(accessToken: string, projectId: GuidString, fileName: string, props: string): DbResult;
+  public createStandaloneIModel(fileName: string, props: string): DbResult;
   public deleteElement(elemIdJson: string): IModelStatus;
   public deleteElementAspect(aspectIdJson: string): IModelStatus;
   public deleteLinkTableRelationship(props: string): DbResult;
@@ -88,7 +91,7 @@ export declare class NativeDgnDb {
   public getCurrentTxnId(): TxnIdString;
   public getDbGuid(): GuidString;
   public getECClassMetaData(schema: string, className: string): ErrorStatusOrResult<IModelStatus, string>;
-  public getElement(opts: string): ErrorStatusOrResult<IModelStatus, any>;
+  public getElement(opts: string): ErrorStatusOrResult<IModelStatus, ElementProps>;
   public getElementPropertiesForDisplay(id: string): ErrorStatusOrResult<IModelStatus, string>;
   public getIModelProps(): string;
   public getModel(opts: string): ErrorStatusOrResult<IModelStatus, string>;
@@ -118,7 +121,8 @@ export declare class NativeDgnDb {
   public isTxnIdValid(txnId: TxnIdString): boolean;
   public isUndoPossible(): boolean;
   public logTxnError(fatal: boolean): void;
-  public openIModel(dbName: string, mode: OpenMode): DbResult;
+  public openIModel(accessToken: string, projectId: GuidString, dbName: string, mode: OpenMode): DbResult;
+  public openIModelFile(dbName: string, mode: OpenMode): DbResult;
   public queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
   public queryFirstTxnId(): TxnIdString;
   public queryModelExtents(options: string): ErrorStatusOrResult<IModelStatus, string>;

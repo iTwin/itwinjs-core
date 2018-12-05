@@ -9,10 +9,10 @@ import * as deepAssign from "deep-assign";
 
 import { TestConfig, TestUsers } from "../TestConfig";
 
-import { AccessToken, IModelClient } from "../../";
+import { AccessToken, IModelClient } from "../../imodeljs-clients";
 import {
   IModelHubClient, Briefcase, ChangeSet, ChangeSetQuery, IModelHubClientError, Version,
-} from "../../";
+} from "../../imodeljs-clients";
 
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";

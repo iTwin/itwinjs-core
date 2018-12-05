@@ -9,6 +9,7 @@ import { XYAndZ } from "../geometry3d/XYZProps";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 
 export type Point4dProps = number[];
 /**
@@ -94,6 +95,20 @@ export class Point4d implements BeJSONFunctions {
       && Geometry.isSameCoordinate(this.w, other.w);
   }
   /**
+   * Test for same coordinate by direct x,y,z,w args
+   * @param x x to test
+   * @param y y to test
+   * @param z z to test
+   * @param w w to test
+   */
+  public isAlmostEqualXYZW(x: number, y: number, z: number, w: number): boolean {
+    return Geometry.isSameCoordinate(this.x, x)
+      && Geometry.isSameCoordinate(this.y, y)
+      && Geometry.isSameCoordinate(this.z, z)
+      && Geometry.isSameCoordinate(this.w, w);
+  }
+
+  /**
    * Convert an Angle to a JSON object.
    * @return {*} [[x,y,z,w]
    */
@@ -135,6 +150,11 @@ export class Point4d implements BeJSONFunctions {
   public magnitudeXYZW(): number {
     return Geometry.hypotenuseXYZW(this.xyzw[0], this.xyzw[1], this.xyzw[2], this.xyzw[3]);
   }
+  /**  @returns Returns the magnitude of the leading xyz components */
+  public magnitudeSquaredXYZ(): number {
+    return Geometry.hypotenuseSquaredXYZ(this.xyzw[0], this.xyzw[1], this.xyzw[2]);
+  }
+
   /** @returns Return the difference (this-other) using all 4 components x,y,z,w */
   public minus(other: Point4d, result?: Point4d): Point4d {
     return Point4d.create(this.xyzw[0] - other.xyzw[0], this.xyzw[1] - other.xyzw[1], this.xyzw[2] - other.xyzw[2], this.xyzw[3] - other.xyzw[3], result);
@@ -367,5 +387,40 @@ export class Point4d implements BeJSONFunctions {
     const mag = Geometry.correctSmallMetricDistance(this.magnitudeXYZW());
     result = result ? result : new Point4d();
     return this.safeDivideOrNull(mag, result);
+  }
+
+  /**
+   * Return the determinant of the 3x3 matrix using components i,j,k of the 3 inputs.
+   */
+  public static determinantIndexed3X3(pointA: Point4d, pointB: Point4d, pointC: Point4d, i: number, j: number, k: number) {
+    return Geometry.tripleProduct(
+      pointA.xyzw[i], pointA.xyzw[j], pointA.xyzw[k],
+      pointB.xyzw[i], pointB.xyzw[j], pointB.xyzw[k],
+      pointC.xyzw[i], pointC.xyzw[j], pointC.xyzw[k]);
+  }
+  /**
+   * Return a Point4d perpendicular to all 3 inputs. (A higher level cross product concept)
+   * @param pointA first point
+   * @param pointB second point
+   * @param pointC third point
+   */
+  public static perpendicularPoint4dPlane(pointA: Point4d, pointB: Point4d, pointC: Point4d): Point4d {
+    return Point4d.create(
+      Point4d.determinantIndexed3X3(pointA, pointB, pointC, 1, 2, 3),
+      -Point4d.determinantIndexed3X3(pointA, pointB, pointC, 2, 3, 0),
+      Point4d.determinantIndexed3X3(pointA, pointB, pointC, 3, 0, 1),
+      -Point4d.determinantIndexed3X3(pointA, pointB, pointC, 0, 1, 2));
+  }
+  public toPlane3dByOriginAndUnitNormal(result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
+    const aa = this.magnitudeSquaredXYZ();
+    const direction = Vector3d.create(this.x, this.y, this.z);
+    const w = this.w;
+    const divW = Geometry.conditionalDivideFraction(1.0, w);
+    if (divW !== undefined) {
+      const b = -w / aa;
+      direction.scaleInPlace(1.0 / Math.sqrt(aa));
+      return Plane3dByOriginAndUnitNormal.create(Point3d.create(this.x * b, this.y * b, this.z * b), direction, result);
+    }
+    return undefined;
   }
 } // DPoint4d

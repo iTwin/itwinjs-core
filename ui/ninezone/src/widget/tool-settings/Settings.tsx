@@ -6,17 +6,17 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./Settings.scss";
 
 /** Properties of [[Settings]] component. */
-export interface SettingsProps extends CommonProps {
+export interface ToolSettingsProps extends CommonProps {
   /** Actual content. I.e.: [[Nested]], [[Toggle]], [[ScrollableArea]], [[ToolSettingsOverflow]] */
   children?: React.ReactNode;
 }
 
 /** Tool settings. Used as content of [[ToolSettings]] component. */
-export default class Settings extends React.Component<SettingsProps> {
+export class ToolSettings extends React.Component<ToolSettingsProps> {
   public render() {
     const className = classnames(
       "nz-widget-toolSettings-settings",

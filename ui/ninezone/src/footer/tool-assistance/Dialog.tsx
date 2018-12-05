@@ -6,14 +6,14 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import withContainInViewport from "../../base/WithContainInViewport";
-import Popover from "../../popup/popover/Triangle";
-import Direction from "../../utilities/Direction";
-import CommonProps from "../../utilities/Props";
-import Dialog from "../message/content/dialog/Dialog";
-import TitleBar from "../message/content/dialog/TitleBar";
-import Title from "../message/content/dialog/Title";
-import Content from "./Content";
+import { withContainInViewport } from "../../base/WithContainInViewport";
+import { TrianglePopover } from "../../popup/popover/Triangle";
+import { Direction } from "../../utilities/Direction";
+import { CommonProps } from "../../utilities/Props";
+import { Dialog } from "../message/content/dialog/Dialog";
+import { TitleBar } from "../message/content/dialog/TitleBar";
+import { DialogTitle } from "../message/content/dialog/Title";
+import { ToolAssistanceContent } from "./Content";
 import "./Dialog.scss";
 
 // tslint:disable-next-line:variable-name
@@ -35,7 +35,7 @@ export const ToolAssistanceDialog: React.StatelessComponent<ToolAssistanceDialog
     props.className);
 
   return (
-    <Popover
+    <TrianglePopover
       className={className}
       direction={Direction.Top}
       content={
@@ -44,19 +44,17 @@ export const ToolAssistanceDialog: React.StatelessComponent<ToolAssistanceDialog
           titleBar={
             <TitleBar
               title={
-                <Title text={props.title} />
+                <DialogTitle text={props.title} />
               }
             />
           }
           content={
-            <Content>
+            <ToolAssistanceContent>
               {props.items}
-            </Content>
+            </ToolAssistanceContent>
           }
         />
       }
     />
   );
 };
-
-export default ToolAssistanceDialog;

@@ -6,12 +6,12 @@ import * as React from "react";
 import { mount, shallow } from "enzyme";
 import * as sinon from "sinon";
 
-import { CheckListBox, CheckListBoxItem, CheckListBoxSeparator } from "../..//index";
+import { CheckListBox, CheckListBoxItem, CheckListBoxSeparator } from "../../ui-core";
 
 describe("<CheckListBox />", () => {
   it("should render", () => {
     const wrapper = mount(
-      <CheckListBox opened={true} >
+      <CheckListBox>
         <CheckListBoxItem label="label" />
         <CheckListBoxSeparator />
       </CheckListBox>);
@@ -20,7 +20,7 @@ describe("<CheckListBox />", () => {
 
   it("renders correctly", () => {
     shallow(
-      <CheckListBox opened={true} >
+      <CheckListBox>
         <CheckListBoxItem label="label" />
         <CheckListBoxSeparator />
       </CheckListBox>,

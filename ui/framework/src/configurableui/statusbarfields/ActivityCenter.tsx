@@ -10,9 +10,7 @@ import "../configurableui.scss";
 
 import { StatusBarFieldId, IStatusBar } from "../StatusBarWidgetControl";
 
-import Status from "@bentley/ui-ninezone/lib/footer/message/content/status/Status";
-import StatusLayout from "@bentley/ui-ninezone/lib/footer/message/content/status/Layout";
-import Progress from "@bentley/ui-ninezone/lib/footer/message/content/Progress";
+import { Status, MessageLayout, Progress } from "@bentley/ui-ninezone";
 import { MessageManager, ActivityMessageEventArgs } from "../MessageManager";
 
 /** Properties for the [[ActivityCenterField]] component */
@@ -76,11 +74,11 @@ export class ActivityCenterField extends React.Component<ActivityCenterProps, Ac
 
   public render(): React.ReactNode {
     let footerMessages: React.ReactNode;
-    const isPercentageValid = (this.state.percentage === 0 || this.state.percentage === 100) ? false : true;
+    const isPercentageValid = (this.state.percentage <= 0 || this.state.percentage >= 100) ? false : true;
     if (this.state.isActivityMessageVisible && isPercentageValid) {
       footerMessages = (
-        <div className="centered" onClick={this._openActivityMessage}>
-          <StatusLayout
+        <div className="centered open-activity-message" onClick={this._openActivityMessage}>
+          <MessageLayout
             progress={
               <Progress
                 status={Status.Information}

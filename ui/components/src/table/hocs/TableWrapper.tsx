@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Table */
 
 import * as React from "react";
-import { WithDropTargetProps } from "../../dragdrop";
+import { WithDropTargetProps } from "../../dragdrop/withDropTarget";
 
 /** @hidden */
 export interface TableWrapperProps extends React.HTMLAttributes<HTMLDivElement> { }

@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { Id64String, ChangeSetStatus, ChangeSetApplyOption, OpenMode } from "@bentley/bentleyjs-core";
-import { Element, IModelDb, DictionaryModel, ChangeSetToken, IModelJsFs, ConcurrencyControl } from "../../backend";
+import { Element, IModelDb, DictionaryModel, ChangeSetToken, IModelJsFs, ConcurrencyControl } from "../../imodeljs-backend";
 import { IModelError, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";

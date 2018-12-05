@@ -1,13 +1,14 @@
 /*---------------------------------------------------------------------------------------------
- | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import {
   TreeNodeItem,
   TreeDataChangesListener,
   DelayLoadedTreeNodeItem, ITreeDataProvider, PageOptions, ImmediatelyLoadedTreeNodeItem,
-} from "../../index";
+} from "../../ui-components";
 
 export enum TreeDragTypes {
   Root = "root",
@@ -45,7 +46,7 @@ export let dataProviderRaw: DelayLoadedTreeNodeItem[] = [
           extendedData: {
             type: TreeDragTypes.Child,
             children: [
-              { label: "Interface Node 2.2.1", id: "2.2.1", extendedData: { type: TreeDragTypes.Child }, description: "First child node to third child node of first root node.", parentId: "2.2", icon: "icon-checkmark" },
+              { label: "Interface Node 2.2.1", id: "2.2.1", extendedData: { type: TreeDragTypes.Child }, description: "First child node to second child node of second root node.", parentId: "2.2", icon: "icon-checkmark" },
             ],
           },
         } as DelayLoadedTreeNodeItem,
@@ -223,9 +224,31 @@ export const mockRawTreeDataProvider: ImmediatelyLoadedTreeNodeItem[] = [
   {
     label: "Raw Node 2", id: "2", description: "node 2 child",
     children: [
-      { label: "Raw Node 2.1", id: "2.1", parentId: "2", description: "node 2.1 child" },
+      {
+        label: "Raw Node 2.1", id: "2.1", parentId: "2", description: "node 2.1 child",
+        children: [
+          { label: "Raw Node 2.1.1", id: "2.1.1", description: "node 2.1.1 child" },
+        ] as ImmediatelyLoadedTreeNodeItem[],
+      },
     ] as ImmediatelyLoadedTreeNodeItem[],
   },
   { label: "Raw Node 3", id: "3", description: "node 3 child" },
   { label: "Raw Node 4", id: "4", description: "node 4 child" },
+];
+
+export const mockRawTreeDataProvider2: ImmediatelyLoadedTreeNodeItem[] = [
+  { label: "Raw 2 Node 1", id: "1", description: "node 1 child" },
+  {
+    label: "Raw 2 Node 2", id: "2", description: "node 2 child",
+    children: [
+      {
+        label: "Raw 2 Node 2.1", id: "2.1", parentId: "2", description: "node 2.1 child",
+        children: [
+          { label: "Raw 2 Node 2.1.1", id: "2.1.1", description: "node 2.1.1 child" },
+        ] as ImmediatelyLoadedTreeNodeItem[],
+      },
+    ] as ImmediatelyLoadedTreeNodeItem[],
+  },
+  { label: "Raw 2 Node 3", id: "3", description: "node 3 child" },
+  { label: "Raw 2 Node 4", id: "4", description: "node 4 child" },
 ];

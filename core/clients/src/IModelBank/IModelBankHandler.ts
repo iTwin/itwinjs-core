@@ -5,7 +5,7 @@
 /** @module iModelBank */
 import { IModelBaseHandler } from "../imodelhub/BaseHandler";
 import { assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { FileHandler } from "..";
+import { FileHandler } from "../imodeljs-clients";
 
 /*
  * This class acts as the WsgClient for other iModelBank Handlers.

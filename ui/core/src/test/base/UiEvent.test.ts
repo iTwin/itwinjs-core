@@ -5,7 +5,7 @@
 import * as sinon from "sinon";
 import { expect } from "chai";
 
-import { UiEvent } from "../../index";
+import { UiEvent } from "../../ui-core";
 
 describe("UIEvent", () => {
 

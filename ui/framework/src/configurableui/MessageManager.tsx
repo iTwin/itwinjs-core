@@ -15,7 +15,7 @@ import {
   MessageBoxValue,
 } from "@bentley/imodeljs-frontend";
 import { UiEvent, MessageContainer, MessageSeverity } from "@bentley/ui-core";
-import UiFramework from "../UiFramework";
+import { UiFramework } from "../UiFramework";
 import { ModalDialogManager } from "./ModalDialogManager";
 import { StandardMessageBox } from "./StandardMessageBox";
 
@@ -208,8 +208,8 @@ export class MessageManager {
   }
 
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */
-  public static outputPrompt(_prompt: string): void {
-    UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: _prompt });
+  public static outputPrompt(prompt: string): void {
+    UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: prompt });
   }
 
   /** Gets an icon CSS class name based on a given NotifyMessageDetails. */

@@ -3,31 +3,38 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { expect } from "chai";
+import { mount } from "enzyme";
 
 import TestUtils from "../TestUtils";
 import {
-  ZoneState,
-  WidgetState,
   ConfigurableUiManager,
-  FrontstageDefProps,
   ToolUiProvider,
   ConfigurableCreateInfo,
-} from "../..";
+  FrontstageProvider,
+  FrontstageProps,
+  Frontstage,
+  Zone,
+  Widget,
+  FrontstageManager,
+  FrontstageComposer,
+} from "../../ui-framework";
+import { Tool1 } from "../tools/Tool1";
 
 describe("ToolSettingsZone", () => {
 
-  class Tool2UiProvider extends ToolUiProvider {
+  class Tool1UiProvider extends ToolUiProvider {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
-      this.toolSettingsNode = <Tool2Settings />;
+      this.toolSettingsNode = <Tool1Settings />;
     }
 
     public execute(): void {
     }
   }
 
-  class Tool2Settings extends React.Component {
+  class Tool1Settings extends React.Component {
     public render(): React.ReactNode {
       return (
         <div>
@@ -48,35 +55,65 @@ describe("ToolSettingsZone", () => {
     }
   }
 
-  const testToolId = "ToolSettingsZone-TestTool";
+  const testToolId = Tool1.toolId;
 
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    const frontstageProps: FrontstageDefProps = {
-      id: "ToolSettingsZone-TestFrontstage",
-      defaultToolId: "PlaceLine",
-      defaultLayout: "FourQuadrants",
-      contentGroup: "TestContentGroup4",
-      defaultContentId: "TestContent1",
+    class Frontstage1 extends FrontstageProvider {
+      public get frontstage(): React.ReactElement<FrontstageProps> {
+        return (
+          <Frontstage
+            id="ToolSettingsZone-TestFrontstage"
+            defaultToolId="PlaceLine"
+            defaultLayout="FourQuadrants"
+            contentGroup="TestContentGroup4"
+            topCenter={
+              <Zone
+                widgets={[
+                  <Widget isToolSettings={true} />,
+                ]}
+              />
+            }
+          />
+        );
+      }
+    }
+    ConfigurableUiManager.addFrontstageProvider(new Frontstage1());
 
-      topCenter: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            defaultState: WidgetState.Open,
-            isFreeform: false,
-            iconSpec: "icon-home",
-            labelKey: "SampleApp:Test.my-label",
-            isToolSettings: true,
-          },
-        ],
-      },
-    };
+    ConfigurableUiManager.registerControl(testToolId, Tool1UiProvider);
+  });
 
-    ConfigurableUiManager.registerControl(testToolId, Tool2UiProvider);
-    ConfigurableUiManager.loadFrontstage(frontstageProps);
+  it("clicking on the Tool Settings tab opens & closes it", () => {
+    FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
+
+    const wrapper = mount(<FrontstageComposer />);
+
+    const frontstageDef = FrontstageManager.findFrontstageDef("ToolSettingsZone-TestFrontstage");
+    expect(frontstageDef).to.not.be.undefined;
+
+    if (frontstageDef) {
+      FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
+
+      FrontstageManager.setActiveToolId(testToolId);
+      expect(FrontstageManager.activeToolId).to.eq(testToolId);
+
+      wrapper.update();
+      expect(wrapper.find(".nz-widget-toolSettings-settings").length).to.eq(0);
+      expect(wrapper.find(".nz-is-active").length).to.eq(0);
+
+      wrapper.find(".nz-widget-toolSettings-tab").simulate("click");
+      wrapper.update();
+      expect(wrapper.find(".nz-widget-toolSettings-settings").length).to.eq(1);
+      expect(wrapper.find(".nz-is-active").length).to.eq(1);
+
+      wrapper.find(".nz-widget-toolSettings-tab").simulate("click");
+      wrapper.update();
+      expect(wrapper.find(".nz-widget-toolSettings-settings").length).to.eq(0);
+      expect(wrapper.find(".nz-is-active").length).to.eq(0);
+    }
+
+    wrapper.unmount();
   });
 
 });

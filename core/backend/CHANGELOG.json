@@ -2,6 +2,78 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.172.0",
+      "tag": "@bentley/imodeljs-backend_v0.172.0",
+      "date": "Tue, 04 Dec 2018 17:24:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "don't register testing domain multiple times"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.171.0",
+      "tag": "@bentley/imodeljs-backend_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "More information logged from BriefcaseManager.\\nFixed deletion/cleanup of invalid briefcases.\\nAdded OIDC support for simpleviewtest application. "
+          },
+          {
+            "comment": "Add ElementRefersToElements.insert"
+          },
+          {
+            "comment": "Fixed front end integration tests. "
+          },
+          {
+            "comment": "Document the intended purpose of IModelJsExpressServer within a deployment environment."
+          },
+          {
+            "comment": "Fixed integration tests. "
+          },
+          {
+            "comment": "added tests for ElementDrivesElement handlers"
+          },
+          {
+            "comment": "Fixes to integration tests. "
+          },
+          {
+            "comment": "Add OrthographicViewDefinition.setRange"
+          },
+          {
+            "comment": "Cleaned up use of mocks in core tests. "
+          },
+          {
+            "comment": "Enable test now that addon was updated."
+          },
+          {
+            "comment": "Fix Subject.insert to set parent"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.170.0",
+      "tag": "@bentley/imodeljs-backend_v0.170.0",
+      "date": "Mon, 26 Nov 2018 19:38:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add DrawingViewDefinition.insert"
+          },
+          {
+            "comment": "Fix GeometryParams constructor. Added test to ensure subcategory id set correctly."
+          },
+          {
+            "comment": "rename LinkTableRelationship to just Relationship. Work on adding callbacks for dependency propagation."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.169.0",
       "tag": "@bentley/imodeljs-backend_v0.169.0",
       "date": "Tue, 20 Nov 2018 16:17:15 GMT",

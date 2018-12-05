@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./Tab.scss";
 
 /** Properties of [[MessageCenterTab]] component. */
@@ -37,5 +37,3 @@ export const MessageCenterTab: React.StatelessComponent<MessageCenterTabProps> =
     </div>
   );
 };
-
-export default MessageCenterTab;

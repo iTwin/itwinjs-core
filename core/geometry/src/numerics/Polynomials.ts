@@ -457,7 +457,11 @@ export class AnalyticRoots {
   }
   // @returns the principal (always real) cube root of x.
   public static cbrt(x: number): number {
-    return ((x) > 0.0 ? Math.pow((x), 1.0 / 3.0) : ((x) < 0.0 ? -Math.pow(-(x), 1.0 / 3.0) : 0.0));
+    return ((x) > 0.0
+      ? Math.pow((x), 1.0 / 3.0)
+      : ((x) < 0.0
+        ? -Math.pow(-(x), 1.0 / 3.0)
+        : 0.0));
   }
   /**
    * Try to divide `numerator/denominator` and place the result (or defaultValue) in `values[offset]`
@@ -684,12 +688,15 @@ export class AnalyticRoots {
       results.push(origin + t * Math.cos(phi));
       results.push(origin - t * Math.cos(phi + Math.PI / 3));
       results.push(origin - t * Math.cos(phi - Math.PI / 3));
+      this.improveSortedRoots(c, 3, results);
+
       return;
     } else {    // One real solution
       const sqrt_D = Math.sqrt(D);
       const u = this.cbrt(sqrt_D - q);
       const v = -(this.cbrt(sqrt_D + q));
       results.push(origin + u + v);
+      this.improveSortedRoots(c, 3, results);
       return;
     }
   }

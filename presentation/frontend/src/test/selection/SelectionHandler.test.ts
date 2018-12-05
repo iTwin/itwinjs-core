@@ -9,7 +9,7 @@ import { KeySet } from "@bentley/presentation-common";
 import {
   SelectionManager, SelectionHandler, SelectionChangeEvent,
   SelectionChangeEventArgs, SelectionChangeType, ISelectionProvider,
-} from "../../selection";
+} from "../../presentation-frontend";
 
 describe("SelectionHandler", () => {
 

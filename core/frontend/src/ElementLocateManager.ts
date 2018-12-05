@@ -34,9 +34,6 @@ export const enum SnapStatus {
   Disabled = 100,
   NoSnapPossible = 200,
   NotSnappable = 300,
-  ModelNotSnappable = 301,
-  FilteredByCategory = 400,
-  FilteredByUser = 500,
   FilteredByApp = 600,
   FilteredByAppQuietly = 700,
 }
@@ -158,12 +155,12 @@ export class ElementPicker {
           const distXY = testPointView.distance(testPoint);
           if (distXY > pixelRadius)
             continue; // ignore corners. it's a locate circle not square...
-          const oldPoint = elmHits.get(pixel.elementId.toString());
+          const oldPoint = elmHits.get(pixel.elementId);
           if (undefined !== oldPoint) {
             if (this.comparePixel(pixel, pixels.getPixel(oldPoint.x, oldPoint.y), distXY, testPointView.distance(oldPoint)) < 0)
               oldPoint.setFrom(testPoint); // new hit is better, update location...
           } else {
-            elmHits.set(pixel.elementId.toString(), testPoint.clone());
+            elmHits.set(pixel.elementId, testPoint.clone());
           }
         }
       }
@@ -177,7 +174,7 @@ export class ElementPicker {
         const hitPointWorld = vp.getPixelDataWorldPoint(pixels, elmPoint.x, elmPoint.y);
         if (undefined === hitPointWorld)
           continue;
-        const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId.toString(), this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction);
+        const hit = new HitDetail(pickPointWorld, vp, options.hitSource, hitPointWorld, pixel.elementId, this.getPixelPriority(pixel), testPointView.distance(elmPoint), pixel.distanceFraction, pixel.subCategoryId, pixel.geometryClass);
         this.hitList!.addHit(hit);
         if (this.hitList!.hits.length > options.maxHits)
           this.hitList!.hits.length = options.maxHits; // truncate array...
@@ -238,13 +235,21 @@ export class ElementLocateManager {
       return LocateFilterStatus.Reject;
     }
 
+    if (undefined !== hit.subCategoryId) {
+      const appearance = hit.viewport.view.getSubCategoryAppearance(hit.subCategoryId);
+      if (appearance.dontLocate) {
+        out.reason = ElementLocateManager.getFailureMessageKey("NotLocatable");
+        return LocateFilterStatus.Reject;
+      }
+    }
+
     const tool = IModelApp.toolAdmin.activeTool;
     if (!(tool && tool instanceof InteractiveTool))
       return LocateFilterStatus.Accept;
 
     const status = await tool.filterHit(hit, out);
     if (LocateFilterStatus.Reject === status)
-      out.reason = ElementLocateManager.getFailureMessageKey("ByCommand");
+      out.reason = ElementLocateManager.getFailureMessageKey("ByApp");
 
     return status;
   }

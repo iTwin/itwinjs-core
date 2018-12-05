@@ -6,12 +6,12 @@ import { ChangeSetUtilityConfig } from "./ChangeSetUtilityConfig";
 import { HubUtility } from "./HubUtility";
 import { IModelDbHandler } from "./IModelDbHandler";
 import { TestChangesetSequence } from "./TestChangesetSequence";
-import { Id64String, Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
-import { IModelDb } from "@bentley/imodeljs-backend/lib/backend";
-import { GeometricElement3dProps, Code } from "@bentley/imodeljs-common/lib/common";
-import { AccessToken } from "@bentley/imodeljs-clients/lib";
-import { YawPitchRollAngles, Point3d, Box, Vector3d } from "@bentley/geometry-core/lib/geometry-core";
-import { GeometryStreamBuilder, GeometryStreamProps } from "@bentley/imodeljs-common/lib/common";
+import { Id64String, Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { IModelDb } from "@bentley/imodeljs-backend";
+import { GeometricElement3dProps, Code } from "@bentley/imodeljs-common";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { YawPitchRollAngles, Point3d, Box, Vector3d } from "@bentley/geometry-core";
+import { GeometryStreamBuilder, GeometryStreamProps } from "@bentley/imodeljs-common";
 
 const actx = new ActivityLoggingContext("");
 

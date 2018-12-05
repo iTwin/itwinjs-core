@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Toast, { Stage } from "../../..//footer/message/Toast";
+import { Toast, Stage } from "../../../ui-ninezone";
 
 describe("<Toast />", () => {
   it("should render", () => {

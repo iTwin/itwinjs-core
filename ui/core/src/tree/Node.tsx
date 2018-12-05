@@ -10,7 +10,10 @@ import * as React from "react";
 import ExpansionToggle from "./ExpansionToggle";
 import "./Node.scss";
 import { Checkbox } from "@bentley/bwc/lib/inputs/Checkbox";
-import { CheckBoxState } from "../enums";
+import { CheckBoxState } from "../enums/CheckBoxState";
+
+/** Number of pixels the node gets offset per each hierarchy level */
+export const LEVEL_OFFSET = 20;
 
 /** Properties for the [[TreeNode]] React component */
 export interface NodeProps {
@@ -50,7 +53,7 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
       this.props.isSelected && "is-selected",
       this.props.isHoverDisabled && "is-hover-disabled",
       this.props.className);
-    const offset = this.props.level * 20;
+    const offset = this.props.level * LEVEL_OFFSET;
     const loader = this.props.isLoading ? (<div className="loader"><i></i><i></i><i></i><i></i><i></i><i></i></div>) : undefined;
     const checkbox = this.props.isCheckboxEnabled ?
       <Checkbox label="" checked={this.props.isChecked} onClick={this.props.onCheckboxClick} /> :

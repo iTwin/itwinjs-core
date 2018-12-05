@@ -6,8 +6,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../../utilities/Props";
-import withTheme, { WithThemeProps } from "../../../theme/WithTheme";
+import { CommonProps, NoChildrenProps } from "../../../utilities/Props";
+import { withTheme, WithThemeProps } from "../../../theme/WithTheme";
 import "./Hyperlink.scss";
 
 /** Properties of [[Hyperlink]] component. */
@@ -38,5 +38,3 @@ const HyperlinkComponent: React.StatelessComponent<HyperlinkProps> = (props) => 
 /** Hyperlink component used in status message. I.e. [[MessageLayout]] */
 // tslint:disable-next-line:variable-name
 export const Hyperlink: React.ComponentClass<HyperlinkProps & WithThemeProps> = withTheme(HyperlinkComponent);
-
-export default Hyperlink;

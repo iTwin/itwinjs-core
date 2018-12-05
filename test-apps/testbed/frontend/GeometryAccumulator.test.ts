@@ -23,7 +23,7 @@ import {
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Branch, System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { Transform, Range3d, StrokeOptions, LineString3d, Path, Point3d, Loop } from "@bentley/geometry-core";
-import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
+import { GraphicParams } from "@bentley/imodeljs-common";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";

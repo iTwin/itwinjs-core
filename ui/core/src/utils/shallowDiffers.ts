@@ -1,8 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2017 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
+/** Performs a shallow difference check on two objects. */
 export const shallowDiffers = (a: { [key: string]: any } | undefined, b: { [key: string]: any } | undefined): boolean => {
   if (a === b)
     return false;

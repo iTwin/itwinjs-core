@@ -12,7 +12,7 @@ import { SearchBox, UiEvent } from "@bentley/ui-core";
 import "./SheetsModalFrontstage.scss";
 import { UiFramework } from "../../UiFramework";
 import { SheetData } from "./SheetNavigationAid";
-import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
+import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 
 /** Data about a sheet card */
 export interface CardInfo {

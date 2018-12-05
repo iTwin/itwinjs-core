@@ -18,7 +18,7 @@ import {
   FrontstageProps,
   ContentLayoutDef,
   ConfigurableUiControlType,
-} from "../..//index";
+} from "../../ui-framework";
 import { ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
 
 describe("ViewportContentControl", () => {

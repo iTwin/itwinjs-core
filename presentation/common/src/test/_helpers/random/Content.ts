@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import * as c from "../../../content";
+import { CategoryDescription, TypeDescription, EditorDescription, Field, PrimitiveTypeDescription, Descriptor, Content, PropertyValueFormat } from "../../../presentation-common";
 import { SelectClassInfoJSON } from "../../../content/Descriptor";
 import { createRandomRelationshipPathJSON, createRandomECClassInfoJSON } from "./EC";
 import { nullable } from "./Misc";
@@ -17,27 +17,27 @@ const createRandomSelectClassInfoJSON = (): SelectClassInfoJSON => {
   };
 };
 
-export const createRandomCategory = (): c.CategoryDescription => {
+export const createRandomCategory = (): CategoryDescription => {
   return {
     name: faker.random.word(),
     label: faker.random.words(),
     description: faker.lorem.sentence(),
     priority: faker.random.number(),
     expand: faker.random.boolean(),
-  } as c.CategoryDescription;
+  } as CategoryDescription;
 };
 
-export const createRandomPrimitiveTypeDescription = (): c.TypeDescription => {
+export const createRandomPrimitiveTypeDescription = (): TypeDescription => {
   return {
-    valueFormat: c.PropertyValueFormat.Primitive,
+    valueFormat: PropertyValueFormat.Primitive,
     typeName: faker.database.type(),
-  } as c.PrimitiveTypeDescription;
+  } as PrimitiveTypeDescription;
 };
 
-export const createRandomEditorDescription = (): c.EditorDescription => {
+export const createRandomEditorDescription = (): EditorDescription => {
   return {
     name: faker.random.word(),
-  } as c.EditorDescription;
+  } as EditorDescription;
 };
 
 const createRandomPrimitiveFieldJSON = () => {
@@ -52,8 +52,8 @@ const createRandomPrimitiveFieldJSON = () => {
   };
 };
 
-export const createRandomPrimitiveField = (): c.Field => {
-  return c.Field.fromJSON(createRandomPrimitiveFieldJSON())!;
+export const createRandomPrimitiveField = (): Field => {
+  return Field.fromJSON(createRandomPrimitiveFieldJSON())!;
 };
 
 export const createRandomDescriptorJSON = (displayType?: string) => {
@@ -70,8 +70,8 @@ export const createRandomDescriptorJSON = (displayType?: string) => {
   };
 };
 
-export const createRandomDescriptor = (displayType?: string): c.Descriptor => {
-  return c.Descriptor.fromJSON(createRandomDescriptorJSON(displayType))!;
+export const createRandomDescriptor = (displayType?: string): Descriptor => {
+  return Descriptor.fromJSON(createRandomDescriptorJSON(displayType))!;
 };
 
 export const createRandomContentJSON = () => {
@@ -81,6 +81,6 @@ export const createRandomContentJSON = () => {
   };
 };
 
-export const createRandomContent = (): c.Content => {
-  return c.Content.fromJSON(createRandomContentJSON())!;
+export const createRandomContent = (): Content => {
+  return Content.fromJSON(createRandomContentJSON())!;
 };

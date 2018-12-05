@@ -30,7 +30,7 @@ export interface Props {
  * **Note:** it is required for the property grid to use [[PresentationPropertyDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function withUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
+export default function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
 
   type CombinedProps = Subtract<P, Props> & Props;
 

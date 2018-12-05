@@ -7,7 +7,7 @@
 import * as React from "react";
 import { connect } from "react-redux";
 
-import StatusBarText from "@bentley/ui-ninezone/lib/footer/StatusBarText";
+import { StatusBarText } from "@bentley/ui-ninezone";
 
 /** Defines properties supported by the Prompt Field Component. */
 export interface PromptFieldProps {

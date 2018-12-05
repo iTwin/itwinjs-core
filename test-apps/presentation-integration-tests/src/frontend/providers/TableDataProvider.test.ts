@@ -8,8 +8,8 @@ import { OpenMode, Id64 } from "@bentley/bentleyjs-core";
 import { ModelProps } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { KeySet, instanceKeyFromJSON } from "@bentley/presentation-common";
-import PresentationTableDataProvider from "@bentley/presentation-components/lib/table/DataProvider";
-import { SortDirection } from "@bentley/ui-core/lib/enums/SortDirection";
+import { PresentationTableDataProvider } from "@bentley/presentation-components";
+import { SortDirection } from "@bentley/ui-core";
 
 interface MeaningfulInstances {
   repositoryModel: ModelProps;

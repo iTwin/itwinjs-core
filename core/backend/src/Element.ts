@@ -9,6 +9,7 @@ import { Transform } from "@bentley/geometry-core";
 import { DrawingModel } from "./Model";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
+import { SubjectOwnsSubjects } from "./NavigationRelationship";
 import {
   BisCodeSpec, Code, CodeScopeProps, CodeSpec, Placement3d, Placement2d, AxisAlignedBox3d, GeometryStreamProps, ElementAlignedBox3d,
   ElementProps, RelatedElement, GeometricElementProps, TypeDefinition, GeometricElement3dProps, GeometricElement2dProps,
@@ -33,7 +34,7 @@ import {
  * * [Working with schemas and elements in TypeScript]($docs/learning/backend/SchemasAndElementsInTypeScript.md)
  * * [Creating elements]($docs/learning/backend/CreateElements.md)
  */
-export abstract class Element extends Entity implements ElementProps {
+export class Element extends Entity implements ElementProps {
   /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
   /** The [Code]($docs/bis/intro/codes.md) for this element */
@@ -60,14 +61,14 @@ export abstract class Element extends Entity implements ElementProps {
     this.jsonProperties = Object.assign({}, props.jsonProperties); // make sure we have our own copy
   }
 
-  public static onInsert(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
-  public static onUpdate(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
-  public static onDelete(_props: ElementProps): IModelStatus { return IModelStatus.Success; }
-  public static onInserted(_props: ElementProps): void { }
-  public static onUpdated(_props: ElementProps): void { }
-  public static onDeleted(_props: ElementProps): void { }
-  public static onBeforeOutputsHandled(_id: Id64String): void { }
-  public static onAllInputsHandled(_id: Id64String): void { }
+  public static onInsert(_props: ElementProps, _iModel: IModelDb): IModelStatus { return IModelStatus.Success; }
+  public static onUpdate(_props: ElementProps, _iModel: IModelDb): IModelStatus { return IModelStatus.Success; }
+  public static onDelete(_props: ElementProps, _iModel: IModelDb): IModelStatus { return IModelStatus.Success; }
+  public static onInserted(_props: ElementProps, _iModel: IModelDb): void { }
+  public static onUpdated(_props: ElementProps, _iModel: IModelDb): void { }
+  public static onDeleted(_props: ElementProps, _iModel: IModelDb): void { }
+  public static onBeforeOutputsHandled(_id: Id64String, _iModel: IModelDb): void { }
+  public static onAllInputsHandled(_id: Id64String, _iModel: IModelDb): void { }
 
   /** Add this Element's properties to an object for serializing to JSON.
    * @hidden
@@ -359,6 +360,7 @@ export class Subject extends InformationReferenceElement implements SubjectProps
     const subjectProps: SubjectProps = {
       classFullName: this.classFullName,
       model: IModel.repositoryModelId,
+      parent: new SubjectOwnsSubjects(parentSubjectId),
       code: this.createCode(iModelDb, parentSubjectId, name),
       description,
     };

@@ -37,9 +37,7 @@ function isLowerCaseNonZeroHexDigit(str: string, index: number) {
 function isLowerCaseHexDigit(str: string, index: number, allowZero: boolean = true): boolean {
   const charCode = str.charCodeAt(index);
   const minDecimalDigit = allowZero ? 0x30 : 0x31; // '0' or '1'...
-  if (charCode >= minDecimalDigit && charCode <= 0x39) // ...to '9'
-    return true;
-  return charCode >= 0x61 && charCode <= 0x66; // 'a' to 'f'
+  return (charCode >= minDecimalDigit && charCode <= 0x39) || (charCode >= 0x61 && charCode <= 0x66); //  '0'-'9, 'a' -'f'
 }
 
 function isValidHexString(id: string, startIndex: number, len: number) {
@@ -113,7 +111,7 @@ export namespace Id64 {
    * For a description of "well-formed", see [Working with Ids]($docs/learning/common/Id64.md).
    */
   export function fromString(val: string): Id64String {
-    // NB: Yes, we must check the run-time type...
+    // NB: in case this is called from JavaScript, we must check the run-time type...
     if (typeof val !== "string")
       return invalid;
 
@@ -217,11 +215,11 @@ export namespace Id64 {
     if (arg instanceof Set)
       return arg;
 
-    const ids = new Set<string>();
+    const ids = new Set<Id64String>();
     if (typeof arg === "string")
       ids.add(arg);
     else if (Array.isArray(arg)) {
-      arg.forEach((id) => {
+      arg.forEach((id: Id64String) => {
         if (typeof id === "string")
           ids.add(id);
       });
@@ -242,8 +240,7 @@ export namespace Id64 {
    */
   export function isTransient(id: Id64String): boolean {
     // A transient Id is of the format "0xffffffxxxxxxxxxx" where the leading 6 digits indicate an invalid briefcase Id.
-    const str = id.toString();
-    return 18 === str.length && str.startsWith("0xffffff");
+    return 18 === id.length && id.startsWith("0xffffff");
   }
 
   /** Determine if the input is a well-formed [[Id64String]] and represents a transient Id.

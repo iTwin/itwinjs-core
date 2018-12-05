@@ -14,7 +14,7 @@ import {
   ExpandableSection,
   ListPickerBase,
   ListItemType,
-} from "../../index";
+} from "../../ui-framework";
 
 const title = "Test";
 const listItems = new Array<ListItem>();

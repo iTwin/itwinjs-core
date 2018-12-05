@@ -2,10 +2,9 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
- @import "@bentley/bwc/lib/mixins";
+@import "@bentley/bwc/lib/mixins";
 
 .react-data-grid-wrapper {
-
   height: 100%;
   width: 100%;
   user-select: none;
@@ -22,8 +21,7 @@
   .react-grid-Container,
   .react-grid-Grid,
   .react-grid-Main,
-  .react-grid-Viewport
-  {
+  .react-grid-Viewport {
     min-height: 100% !important;
     height: 100% !important;
   }
@@ -53,7 +51,7 @@
     width: fit-content;
   }
 
-  .is-hover-enabled .react-grid-Row:hover,.is-hover-enabled .react-grid-Row:hover * {
+  .is-hover-enabled .react-grid-Row:hover, .is-hover-enabled .react-grid-Row:hover * {
     background: #e4f5fd !important;
   }
 
@@ -77,8 +75,8 @@
 
   .react-grid-Cell__value {
     position: absolute;
-    width:100%;
-    height:100%;
+    width: 100%;
+    height: 100%;
   }
 
   .react-grid-Header {
@@ -102,7 +100,7 @@
 
   .react-grid-HeaderCell__draggable::after {
     content: ' ';
-    background-image: url('data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%225%22 height=%2225%22%3E %3Cg fill=%22#909ba6%22 fill-rule=%22evenodd%22%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 20)%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 10)%22/%3E %3C/g%3E %3C/svg%3E');
+    background-image: url("data:image/svg+xml;charset=UTF-8,%3Csvg xmlns=%22http://www.w3.org/2000/svg%22 width=%225%22 height=%2225%22%3E %3Cg fill=%22#909ba6%22 fill-rule=%22evenodd%22%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 20)%22/%3E %3Ccircle cx=%222.5%22 cy=%222.5%22 r=%222.5%22 transform=%22translate(0 10)%22/%3E %3C/g%3E %3C/svg%3E");
     height: 10px;
     width: 2px;
     position: relative;
@@ -112,6 +110,24 @@
     top: calc(50% - 5px);
     left: calc(50% - 1px);
     pointer-events: none;
+  }
+
+  .property-name-cell span {
+    height: 100%;
+    display: inline-block;
+    vertical-align: text-bottom;
+    padding: 0 0 2px 6px;
+  }
+
+  .property-name-cell be-svg-icon {
+    width: 24px;
+    height: 16px;
+    margin-top: 4px;
+  }
+
+  .angry-text {
+    font-weight: 400;
+    color: red;
   }
 
   .react-grid-HeaderCell--locked {
@@ -124,14 +140,14 @@
     height: 100%;
   }
 
-  .cell{
+  .cell {
     padding-left: 8px;
     padding-right: 8px;
     position: absolute;
     width: 100%;
     height: 100%;
-    top:0px;
-    left:0px;
+    top: 0px;
+    left: 0px;
     background-color: #F9F9F9;
     user-select: none;
     display: flex;
@@ -140,6 +156,12 @@
     &.is-selected {
       background-color: #a6d7f5;
     }
+  }
+
+  .react-grid-Cell__value {
+    position: absolute;
+    width: 100%;
+    height: 100%;
 
     &.is-hover-enabled:hover {
       background: #e4f5fd !important;
@@ -157,4 +179,8 @@
     box-sizing: border-box;
     height: 100%;
   }
+}
+
+.table-header-drag-drop .react-grid-HeaderCell {
+  height: 100%;
 }

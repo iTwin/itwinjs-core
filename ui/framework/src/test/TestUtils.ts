@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { UiFramework, FrameworkReducer, FrameworkState } from "..//index";
+import { UiFramework, FrameworkReducer, FrameworkState } from "../ui-framework";
 import { UiComponents } from "@bentley/ui-components";
 import { UiCore } from "@bentley/ui-core";
 import { Store, createStore, combineReducers } from "redux";
@@ -74,5 +74,12 @@ export default class TestUtils {
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiFrameworkInitialized = true;
     }
+  }
+
+  public static terminateUiFramework() {
+    UiCore.terminate();
+    UiComponents.terminate();
+    UiFramework.terminate();
+    TestUtils._uiFrameworkInitialized = false;
   }
 }

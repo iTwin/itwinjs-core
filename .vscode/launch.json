@@ -236,14 +236,14 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "SimpleViewTest Electron (backend)",
-      "cwd": "${workspaceFolder}/test-apps/simpleviewtest/",
+      "name": "display-test-app Electron (backend)",
+      "cwd": "${workspaceFolder}/test-apps/display-test-app/",
       "env": {
         "SVT_LOG_LEVEL": "TRACE",
       },
-      "runtimeExecutable": "${workspaceFolder}\\test-apps\\simpleviewtest\\node_modules\\.bin\\electron",
+      "runtimeExecutable": "${workspaceFolder}\\test-apps\\display-test-app\\node_modules\\.bin\\electron",
       "runtimeArgs": [
-        "${workspaceFolder}/test-apps/simpleviewtest/lib/backend/ElectronMain.js",
+        "${workspaceFolder}/test-apps/display-test-app/lib/backend/ElectronMain.js",
         "--remote-debugging-port=9223"
       ],
       "protocol": "inspector",
@@ -256,9 +256,9 @@
     {
       "type": "node",
       "request": "launch",
-      "name": "SimpleViewTest Browser (backend)",
-      "cwd": "${workspaceRoot}/test-apps/simpleviewtest",
-      "program": "${workspaceRoot}/test-apps/simpleviewtest/lib/backend/WebMain.js",
+      "name": "display-test-app Browser (backend)",
+      "cwd": "${workspaceRoot}/test-apps/display-test-app",
+      "program": "${workspaceRoot}/test-apps/display-test-app/lib/backend/WebMain.js",
       "smartStep": true,
       "sourceMaps": true,
       "outFiles": [
@@ -417,16 +417,9 @@
       "type": "node",
       "request": "launch",
       "name": "ui-test-app (backend)",
-      "program": "${workspaceFolder}/test-apps/ui-test-app/node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js",
+      "program": "${workspaceFolder}/test-apps/ui-test-app/lib/backend/main.js",
       "cwd": "${workspaceFolder}/test-apps/ui-test-app",
-      "args": [
-        "start-backend",
-        "--debug=9229"
-      ],
-      "port": 9229,
       "protocol": "inspector",
-      "outputCapture": "std",
-      "timeout": 100000,
     },
     {
       "type": "node",
@@ -515,7 +508,20 @@
         "${workspaceRoot}/test-apps/imodel-from-geojson/lib/**/*.js"
       ],
       "protocol": "inspector"
-    }
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug CopyDependentModules",
+      "program": "${workspaceRoot}/test-apps/ui-test-app/node_modules/@bentley/webpack-tools/modules/copyDependentModules.js",
+      "cwd": "${workspaceRoot}/test-apps/ui-test-app",
+      "args": [
+        "--packageFile=./package.json",
+        "--destDir=./lib/backend/public",
+        "--type=dev"
+      ],
+      "protocol": "inspector"
+    },
   ],
   "compounds": [
     {

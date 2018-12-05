@@ -17,18 +17,18 @@ import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "./Fro
 import { ToolSettingsZone } from "./ToolSettingsZone";
 import { StatusBarZone } from "./StatusBarZone";
 
-import { isStatusZone } from "@bentley/ui-ninezone/lib/zones/state/Zone";
-import { ZoneProps as NZ_ZoneProps, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
-import { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone/lib/widget/Stacked";
-import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
-import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
+import { isStatusZone } from "@bentley/ui-ninezone";
+import { ZonePropsBase as NZ_ZoneProps, DropTarget } from "@bentley/ui-ninezone";
+import { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone";
+import { RectangleProps } from "@bentley/ui-ninezone";
+import { PointProps } from "@bentley/ui-ninezone";
 
 /** Properties of a [[Zone]] component
  */
 export interface ZoneProps {
   /** Default Zone state. Controls how the Zone is initially displayed. Defaults to ZoneState.Open. */
   defaultState?: ZoneState;
-  /** Indicates if other Zones may be merged with this Zone. Defaults to true.  */
+  /** Indicates if other Zones may be merged with this Zone. Defaults to false.  */
   allowsMerging?: boolean;
   /** Any application data to attach to this Zone. */
   applicationData?: any;

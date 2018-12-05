@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import TestUtils from "../TestUtils";
-import { ZoneDef, ZoneState, WidgetDef, ZoneLocation } from "../../index";
+import { ZoneDef, ZoneState, WidgetDef, ZoneLocation } from "../../ui-framework";
 import { expect } from "chai";
 
 describe("ZoneDef", () => {
@@ -13,17 +13,10 @@ describe("ZoneDef", () => {
   });
 
   it("Defaults, widgetDefs & widgetCount", () => {
-    const zoneDef = new ZoneDef(
-      {
-        defaultState: ZoneState.Minimized,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            classId: "Test",
-          },
-        ],
-      },
-    );
+    const zoneDef = new ZoneDef();
+    zoneDef.addWidgetDef(new WidgetDef({
+      classId: "Test",
+    }));
 
     expect(zoneDef.applicationData).to.be.undefined;
     expect(zoneDef.widgetDefs).to.have.lengthOf(1);
@@ -35,21 +28,17 @@ describe("ZoneDef", () => {
   });
 
   it("applicationData, allowsMerging, mergeWithZone", () => {
-    const zoneDef = new ZoneDef(
-      {
-        defaultState: ZoneState.Open,
-        allowsMerging: true,
-        applicationData: "AppData",
-        mergeWithZone: ZoneLocation.CenterRight,
-        widgetProps: [
-          {
-            classId: "Test",
-            isToolSettings: true,
-            isStatusBar: true,
-          },
-        ],
-      },
-    );
+    const zoneDef = new ZoneDef();
+    zoneDef.zoneState = ZoneState.Open;
+    zoneDef.allowsMerging = true;
+    zoneDef.applicationData = "AppData";
+    zoneDef.mergeWithZone = ZoneLocation.CenterRight;
+
+    zoneDef.addWidgetDef(new WidgetDef({
+      classId: "Test",
+      isToolSettings: true,
+      isStatusBar: true,
+    }));
 
     expect(zoneDef.applicationData).to.eq("AppData");
     expect(zoneDef.mergeWithZone).to.eq(ZoneLocation.CenterRight);
@@ -59,20 +48,17 @@ describe("ZoneDef", () => {
   });
 
   it("addWidgetDef, widgetDefs & getOnlyWidgetDef", () => {
-    const zoneDef = new ZoneDef(
-      {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        applicationData: "AppData",
-        widgetProps: [
-          {
-            classId: "Test",
-          },
-        ],
-      },
-    );
+    const zoneDef = new ZoneDef();
+    zoneDef.zoneState = ZoneState.Open;
+    zoneDef.allowsMerging = false;
+    zoneDef.applicationData = "AppData";
 
     zoneDef.addWidgetDef(new WidgetDef({
+      classId: "Test",
+    }));
+
+    zoneDef.addWidgetDef(new WidgetDef({
+      id: "IdTest",
       classId: "Test2",
     }));
 
@@ -80,23 +66,6 @@ describe("ZoneDef", () => {
     expect(zoneDef.getOnlyWidgetDef()).to.be.undefined;
     expect(zoneDef.isToolSettings).to.be.false;
     expect(zoneDef.isStatusBar).to.be.false;
-  });
-
-  it("findWidgetDef", () => {
-    const zoneDef = new ZoneDef(
-      {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        applicationData: "AppData",
-        widgetProps: [
-          {
-            id: "IdTest",
-            classId: "Test",
-          },
-        ],
-      },
-    );
-
     expect(zoneDef.findWidgetDef("IdTest")).to.not.be.undefined;
   });
 

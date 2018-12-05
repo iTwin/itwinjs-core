@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as path from "path";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Code, EntityMetaData } from "@bentley/imodeljs-common";
-import { DefinitionElement, IModelDb, RepositoryLink, SpatialViewDefinition, ViewDefinition3d, UrlLink } from "../../backend";
+import { DefinitionElement, IModelDb, RepositoryLink, SpatialViewDefinition, ViewDefinition3d, UrlLink } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 

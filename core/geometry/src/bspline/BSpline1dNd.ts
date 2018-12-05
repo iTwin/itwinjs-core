@@ -9,6 +9,7 @@
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { KnotVector } from "./KnotVector";
+import { Geometry } from "../Geometry";
 
 /** Bspline knots and poles for 1d-to-Nd. */
 export class BSpline1dNd {
@@ -132,5 +133,22 @@ export class BSpline1dNd {
       }
     }
     this.knots.reflectKnots();
+  }
+  /**
+   * Test if the leading and trailing polygon coordinates are replicated in the manner of a "closed" bspline polygon which has been expanded
+   * to act as a normal bspline.
+   * @returns true if `degree` leading and trailing polygon blocks match
+   */
+  public testCloseablePolygon(): boolean {
+    const degree = this.degree;
+    const blockSize = this.poleLength;
+    const indexDelta = (this.numPoles - this.degree) * blockSize;
+    const data = this.packedData;
+    const numValuesToTest = degree * blockSize;
+    for (let i0 = 0; i0 < numValuesToTest; i0++) {
+      if (!Geometry.isSameCoordinate(data[i0], data[i0 + indexDelta]))
+        return false;
+    }
+    return true;
   }
 }

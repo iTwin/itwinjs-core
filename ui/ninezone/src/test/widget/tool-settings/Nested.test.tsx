@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Nested from "../../..//widget/tool-settings/Nested";
+import { Nested } from "../../../ui-ninezone";
 
 describe("<Nested />", () => {
   it("should render", () => {

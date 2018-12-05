@@ -14,8 +14,8 @@ import {
 import {
   Breadcrumb, BreadcrumbProps, BreadcrumbMode, BreadcrumbDetailsProps, BreadcrumbDetails, BreadcrumbPath,
 } from "@bentley/ui-components";
-import withBreadcrumbDragDrop from "@bentley/ui-components/lib/breadcrumb/hoc/withDragDrop";
-import withBreadcrumbDetailsDragDrop from "@bentley/ui-components/lib/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+import { withBreadcrumbDragDrop } from "@bentley/ui-components";
+import { withBreadcrumbDetailsDragDrop } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTreeDataProvider, treeDragProps, treeDropProps, TreeDragTypes, DemoTreeDragDropType } from "./demodataproviders/demoTreeDataProvider";
 import { TableDragTypes } from "./demodataproviders/demoTableDataProvider";
@@ -73,14 +73,12 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
         <input id="receives_row" type="checkbox" onChange={(event) => {
           this.setState({ checked: event.target.checked });
         }} />
-        <DragDropBreadcrumb path={path} dataProvider={demoMutableTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} delimiter={"\\"}
-          dragProps={dragProps}
-          dropProps={dropProps}
-        />
-        <DragDropBreadcrumbDetails path={path}
-          dragProps={dragProps}
-          dropProps={dropProps}
-        />
+        <div style={{ height: "calc(100% - 22px)" }}>
+          <DragDropBreadcrumb path={path} dataProvider={demoMutableTreeDataProvider} initialBreadcrumbMode={BreadcrumbMode.Input} delimiter={"\\"}
+            dragProps={dragProps} dropProps={dropProps} />
+          <DragDropBreadcrumbDetails path={path}
+            dragProps={dragProps} dropProps={dropProps} />
+        </div>
       </div>
     );
     return null;

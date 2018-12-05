@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../../../utilities/Props";
+import { CommonProps } from "../../../../utilities/Props";
 import "./Columns.scss";
 
 /** Properties of [[Columns]] component. */
@@ -16,7 +16,7 @@ export interface ColumnsProps extends CommonProps {
 }
 
 /** Columns of tool group. Used in [[Group]], [[NestedGroup]] components. */
-export default class Columns extends React.Component<ColumnsProps> {
+export class Columns extends React.Component<ColumnsProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-columns",

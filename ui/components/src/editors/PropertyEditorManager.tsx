@@ -81,7 +81,7 @@ export class PropertyEditorManager {
     PropertyEditorManager._dataControllers[controllerName] = controller;
   }
 
-  public static createEditor(editType: string, editorName?: string, dataContollerName?: string): PropertyEditorBase | null {
+  public static createEditor(editType: string, editorName?: string, dataControllerName?: string): PropertyEditorBase | null {
     let fullEditorName = editType;
     if (editorName)
       fullEditorName += ":" + editorName;
@@ -94,9 +94,9 @@ export class PropertyEditorManager {
     else
       editor = new BasicPropertyEditor();
 
-    if (dataContollerName) {
-      if (PropertyEditorManager._dataControllers.hasOwnProperty(dataContollerName))
-        editor.customDataController = new PropertyEditorManager._dataControllers[dataContollerName]();
+    if (dataControllerName) {
+      if (PropertyEditorManager._dataControllers.hasOwnProperty(dataControllerName))
+        editor.customDataController = new PropertyEditorManager._dataControllers[dataControllerName]();
     }
 
     return editor;

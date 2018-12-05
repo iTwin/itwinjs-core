@@ -5,7 +5,7 @@
 /** @module Properties */
 
 import { PropertyRecord } from "./Record";
-import { Primitives } from "../converters/valuetypes";
+import * as Primitives from "../converters/valuetypes/PrimitiveTypes";
 
 /**
  * Enumeration for Format of the property value.

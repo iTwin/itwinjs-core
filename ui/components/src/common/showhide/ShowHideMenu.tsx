@@ -10,7 +10,7 @@ import { ShowHideItem, ShowHideID } from "./ShowHideItem";
 import UiComponents from "../../UiComponents";
 import { ShowHideDialog } from "./ShowHideDialog";
 
-/** Props for the [[ShowHideMenu]] component */
+/** Properties for the [[ShowHideMenu]] component */
 export interface ShowHideMenuProps<T extends ShowHideID> extends GlobalContextMenuProps {
   /** key-label pair list for id's to be shown/hidden, and an accompanying label. */
   items: Array<ShowHideItem<T>>;

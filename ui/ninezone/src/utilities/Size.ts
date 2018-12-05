@@ -11,7 +11,7 @@ export interface SizeProps {
 }
 
 /** Describes 2d dimensions. */
-export default class Size implements SizeProps {
+export class Size implements SizeProps {
   public constructor(public readonly width = 0, public readonly height = 0) {
   }
 }

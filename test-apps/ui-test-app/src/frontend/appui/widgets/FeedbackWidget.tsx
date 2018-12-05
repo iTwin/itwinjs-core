@@ -11,8 +11,8 @@ import {
   MessageManager,
   InputFieldMessageEventArgs,
 } from "@bentley/ui-framework";
-import { ValidationTextbox, InputStatus } from "@bentley/ui-framework/lib/feedback/ValidationTextbox";
-import InputFieldMessage from "@bentley/ui-framework/lib/messages/InputField";
+import { ValidationTextbox, InputStatus } from "@bentley/ui-framework";
+import { InputFieldMessage } from "@bentley/ui-framework";
 
 /** Feedback Demo Widget */
 export class FeedbackDemoWidget extends WidgetControl {

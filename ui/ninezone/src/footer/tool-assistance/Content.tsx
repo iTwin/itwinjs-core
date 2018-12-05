@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./Content.scss";
 
 /** Properties of [[TabSeparator]] component. */
@@ -16,7 +16,7 @@ export interface ToolAssistanceContentProps extends CommonProps {
 }
 
 /** Tool assistance. Used as content of [[ToolSettings]] component. */
-export default class ToolAssistanceContent extends React.Component<ToolAssistanceContentProps> {
+export class ToolAssistanceContent extends React.Component<ToolAssistanceContentProps> {
   public render() {
     const className = classnames(
       "nz-footer-toolAssistance-content",

@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Activity, { ActivityProps } from "./Activity";
+import { Activity, ActivityProps } from "./Activity";
 import "./Sticky.scss";
 
 /** Sticky message as defined in 9-Zone UI spec. Used in [[Footer]] component. */
@@ -24,5 +24,3 @@ export const Sticky: React.StatelessComponent<ActivityProps> = (props) => {
     />
   );
 };
-
-export default Sticky;

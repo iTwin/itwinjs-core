@@ -12,7 +12,7 @@ import {
   ContentControl,
   ConfigurableCreateInfo,
   ContentViewManager,
-} from "../..//index";
+} from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
 describe("ContentLayout", () => {

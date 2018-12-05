@@ -6,7 +6,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 
-import PointerCaptor, { PointerCaptorState } from "../..//base/PointerCaptor";
+import { PointerCaptor, PointerCaptorState } from "../../ui-ninezone";
 
 describe("<PointerCaptor />", () => {
   it("should render", () => {

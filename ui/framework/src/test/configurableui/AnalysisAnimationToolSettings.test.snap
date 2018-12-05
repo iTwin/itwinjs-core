@@ -50,7 +50,7 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
         expandsTo={3}
         items={
           <UNDEFINED>
-            <Icon
+            <Item
               icon={
                 <Unknown
                   iconSpec="icon-media-controls-circular-play"
@@ -60,7 +60,7 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
               onClick={[Function]}
               title="tools.AnalysisAnimation.ToolSettings.play"
             />
-            <Icon
+            <Item
               icon={
                 <Unknown
                   iconSpec="icon-media-controls-circular-pause"
@@ -70,7 +70,7 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
               onClick={[Function]}
               title="tools.AnalysisAnimation.ToolSettings.pause"
             />
-            <Icon
+            <Item
               icon={
                 <Unknown
                   iconSpec="icon-media-controls-circular-stop"
@@ -125,7 +125,7 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
             <div
               className="nz-toolbar-items nz-horizontal nz-items"
             >
-              <Icon
+              <Item
                 icon={
                   <Unknown
                     iconSpec="icon-media-controls-circular-play"
@@ -138,42 +138,25 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
                 renderPanelTo={[Function]}
                 title="tools.AnalysisAnimation.ToolSettings.play"
               >
-                <Item
-                  className="nz-toolbar-item-icon"
-                  icon={
-                    <Unknown
-                      iconSpec="icon-media-controls-circular-play"
-                    />
-                  }
-                  isActive={false}
+                <button
+                  className="nz-toolbar-item-icon nz-gradient"
                   onClick={[Function]}
-                  renderHistoryTo={[Function]}
-                  renderPanelTo={[Function]}
                   title="tools.AnalysisAnimation.ToolSettings.play"
                 >
                   <div
-                    className="nz-toolbar-item-item nz-toolbar-item-icon"
-                    onClick={[Function]}
-                    title="tools.AnalysisAnimation.ToolSettings.play"
+                    className="nz-icon"
                   >
-                    <div
-                      className="nz-gradient"
-                    />
-                    <div
-                      className="nz-icon"
+                    <Component
+                      iconSpec="icon-media-controls-circular-play"
                     >
-                      <Component
-                        iconSpec="icon-media-controls-circular-play"
-                      >
-                        <i
-                          className="icon icon-media-controls-circular-play"
-                        />
-                      </Component>
-                    </div>
+                      <i
+                        className="icon icon-media-controls-circular-play"
+                      />
+                    </Component>
                   </div>
-                </Item>
-              </Icon>
-              <Icon
+                </button>
+              </Item>
+              <Item
                 icon={
                   <Unknown
                     iconSpec="icon-media-controls-circular-pause"
@@ -186,42 +169,25 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
                 renderPanelTo={[Function]}
                 title="tools.AnalysisAnimation.ToolSettings.pause"
               >
-                <Item
-                  className="nz-toolbar-item-icon"
-                  icon={
-                    <Unknown
-                      iconSpec="icon-media-controls-circular-pause"
-                    />
-                  }
-                  isActive={false}
+                <button
+                  className="nz-toolbar-item-icon nz-gradient"
                   onClick={[Function]}
-                  renderHistoryTo={[Function]}
-                  renderPanelTo={[Function]}
                   title="tools.AnalysisAnimation.ToolSettings.pause"
                 >
                   <div
-                    className="nz-toolbar-item-item nz-toolbar-item-icon"
-                    onClick={[Function]}
-                    title="tools.AnalysisAnimation.ToolSettings.pause"
+                    className="nz-icon"
                   >
-                    <div
-                      className="nz-gradient"
-                    />
-                    <div
-                      className="nz-icon"
+                    <Component
+                      iconSpec="icon-media-controls-circular-pause"
                     >
-                      <Component
-                        iconSpec="icon-media-controls-circular-pause"
-                      >
-                        <i
-                          className="icon icon-media-controls-circular-pause"
-                        />
-                      </Component>
-                    </div>
+                      <i
+                        className="icon icon-media-controls-circular-pause"
+                      />
+                    </Component>
                   </div>
-                </Item>
-              </Icon>
-              <Icon
+                </button>
+              </Item>
+              <Item
                 icon={
                   <Unknown
                     iconSpec="icon-media-controls-circular-stop"
@@ -234,41 +200,24 @@ exports[`AnalysisAnimationToolUiProvider AnalysisAnimationToolSettings will moun
                 renderPanelTo={[Function]}
                 title="tools.AnalysisAnimation.ToolSettings.stop"
               >
-                <Item
-                  className="nz-toolbar-item-icon"
-                  icon={
-                    <Unknown
-                      iconSpec="icon-media-controls-circular-stop"
-                    />
-                  }
-                  isActive={true}
+                <button
+                  className="nz-toolbar-item-icon nz-is-active nz-gradient"
                   onClick={[Function]}
-                  renderHistoryTo={[Function]}
-                  renderPanelTo={[Function]}
                   title="tools.AnalysisAnimation.ToolSettings.stop"
                 >
                   <div
-                    className="nz-toolbar-item-item nz-is-active nz-toolbar-item-icon"
-                    onClick={[Function]}
-                    title="tools.AnalysisAnimation.ToolSettings.stop"
+                    className="nz-icon"
                   >
-                    <div
-                      className="nz-gradient"
-                    />
-                    <div
-                      className="nz-icon"
+                    <Component
+                      iconSpec="icon-media-controls-circular-stop"
                     >
-                      <Component
-                        iconSpec="icon-media-controls-circular-stop"
-                      >
-                        <i
-                          className="icon icon-media-controls-circular-stop"
-                        />
-                      </Component>
-                    </div>
+                      <i
+                        className="icon icon-media-controls-circular-stop"
+                      />
+                    </Component>
                   </div>
-                </Item>
-              </Icon>
+                </button>
+              </Item>
             </div>
           </Items>
         </div>

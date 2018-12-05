@@ -19,7 +19,7 @@ import {
   MessageManager,
   ConfigurableUiControlType,
   WidgetDef,
-} from "../../../";
+} from "../../../ui-framework";
 import { NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 
 describe("MessageCenter", () => {

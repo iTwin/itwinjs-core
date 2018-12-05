@@ -13,11 +13,11 @@ import {
   ViewportContentControl,
 } from "@bentley/ui-framework";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { withUnifiedSelection } from "@bentley/presentation-components/lib/viewport";
+import { viewWithUnifiedSelection } from "@bentley/presentation-components";
 
 // create a HOC viewport component that supports unified selection
 // tslint:disable-next-line:variable-name
-const UnifiedSelectionViewport = withUnifiedSelection(ViewportComponent);
+const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
 
 /** iModel Viewport Control
  */

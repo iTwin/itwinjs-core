@@ -15,7 +15,7 @@ import { Logger, IModelHubStatus, ActivityLoggingContext, Id64String, GuidString
 import { ArgumentCheck } from "./Errors";
 import { Query } from "./Query";
 import { IModelBaseHandler } from "./BaseHandler";
-import { IModelHubClientError, AggregateResponseError, IModelHubError } from "./index";
+import { IModelHubClientError, AggregateResponseError, IModelHubError } from "./Errors";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 

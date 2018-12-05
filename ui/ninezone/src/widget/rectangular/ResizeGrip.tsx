@@ -6,11 +6,11 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import PointerCaptor from "../../base/PointerCaptor";
-import CommonProps from "../../utilities/Props";
+import { PointerCaptor } from "../../base/PointerCaptor";
+import { CommonProps } from "../../utilities/Props";
 import "./ResizeGrip.scss";
-import Rectangle from "../../utilities/Rectangle";
-import Point, { PointProps } from "../../utilities/Point";
+import { Rectangle } from "../../utilities/Rectangle";
+import { Point, PointProps } from "../../utilities/Point";
 
 /** Properties of [[ResizeGrip]] component. */
 export interface ResizeGripProps extends CommonProps {
@@ -53,7 +53,7 @@ export class ResizeDirectionHelpers {
 }
 
 /** Resize grip used by [[Stacked]] component. */
-export default class ResizeGrip extends React.Component<ResizeGripProps> {
+export class ResizeGrip extends React.Component<ResizeGripProps> {
   private _relativePosition?: Point;
   private _grip = React.createRef<HTMLDivElement>();
 

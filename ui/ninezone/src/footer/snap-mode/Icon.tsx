@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
 import "./Icon.scss";
 
 /** Properties of [[SnapModeIcon]] component. */
@@ -20,7 +20,7 @@ export interface SnapModeIconProps extends CommonProps, NoChildrenProps {
 }
 
 /** Snap mode icon displays characters as snap icon. Used in Snap, SnapModeIndicator components. */
-export default class SnapModeIcon extends React.Component<SnapModeIconProps> {
+export class SnapModeIcon extends React.Component<SnapModeIconProps> {
   public render() {
     const className = classnames(
       "icon icon-" + this.props.iconName,

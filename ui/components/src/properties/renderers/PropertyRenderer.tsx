@@ -7,7 +7,8 @@
 import * as React from "react";
 import _ from "lodash";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyRecord, PropertyValueFormat, ArrayValue } from "../";
+import { PropertyValueFormat, ArrayValue } from "../Value";
+import { PropertyRecord } from "../Record";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../ValueRendererManager";
 import { PrimitiveRendererProps, PrimitivePropertyRenderer } from "./PrimitivePropertyRenderer";
 import { NonPrimitivePropertyRenderer } from "./NonPrimitivePropertyRenderer";
@@ -56,6 +57,8 @@ export interface PropertyRendererState {
 
 /**  A React component that renders properties */
 export class PropertyRenderer extends React.Component<PropertyRendererProps, PropertyRendererState> {
+  private _isMounted = false;
+
   public readonly state: Readonly<PropertyRendererState> = {
     displayValue: UiComponents.i18n.translate("UiComponents:general.loading"),
   };
@@ -93,7 +96,8 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
     if (this.props.orientation === Orientation.Vertical)
       displayValue = <span style={{ paddingLeft: PropertyRenderer.getLabelOffset(this.props.indentation) }}>{displayValue}</span>;
 
-    this.setState({ displayValue });
+    if (this._isMounted)
+      this.setState({ displayValue });
   }
 
   private _onEditCommit = (args: PropertyUpdatedArgs) => {
@@ -108,18 +112,24 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
   /** Display property record value in an editor */
   public updateDisplayValueAsEditor(props: PropertyRendererProps) {
-    this.setState({
-      displayValue:
-        <EditorContainer
-          propertyRecord={props.propertyRecord}
-          onCommit={this._onEditCommit}
-          onCancel={this._onEditCancel}
-        />,
-    });
+    if (this._isMounted)
+      this.setState({
+        displayValue:
+          <EditorContainer
+            propertyRecord={props.propertyRecord}
+            onCommit={this._onEditCommit}
+            onCancel={this._onEditCancel}
+          />,
+      });
   }
 
   public componentDidMount() {
+    this._isMounted = true;
     this.updateDisplayValue(this.props); // tslint:disable-line:no-floating-promises
+  }
+
+  public componentWillUnmount() {
+    this._isMounted = false;
   }
 
   public componentDidUpdate(prevProps: PropertyRendererProps) {

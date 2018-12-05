@@ -12,16 +12,10 @@ import { GroupItemProps, AnyItemDef } from "./ItemProps";
 import { Icon } from "./IconComponent";
 import { ItemList, ItemMap } from "./ItemMap";
 
-import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
-import HistoryTray, { History, DefaultHistoryManager, HistoryEntry } from "@bentley/ui-ninezone/lib/toolbar/item/expandable/history/Tray";
-import HistoryIcon from "@bentley/ui-ninezone/lib/toolbar/item/expandable/history/Icon";
-import ExpandableItem from "@bentley/ui-ninezone/lib/toolbar/item/expandable/Expandable";
-import GroupColumn from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Column";
-import ReactGroupTool from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/tool/Tool";
-import GroupToolExpander from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/tool/Expander";
-import ToolGroupComponent from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Group";
-import NestedToolGroup from "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/Nested";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Item } from "@bentley/ui-ninezone";
+import { HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry } from "@bentley/ui-ninezone";
+import { ExpandableItem, GroupColumn, GroupTool, GroupToolExpander } from "@bentley/ui-ninezone";
+import { Group as ToolGroupComponent, NestedGroup as NestedToolGroup, Direction } from "@bentley/ui-ninezone";
 
 // -----------------------------------------------------------------------------
 // GroupItemDef class
@@ -220,7 +214,7 @@ class GroupItem extends React.Component<Props, State> {
         panel={this.getGroupTray()}
         history={this.getHistoryTray()}
       >
-        <ToolbarIcon
+        <Item
           title={this.state.groupItemDef.label}
           onClick={() => this._toggleIsToolGroupOpen()}
           icon={icon}
@@ -342,7 +336,7 @@ class GroupItem extends React.Component<Props, State> {
                   />
                 );
               return (
-                <ReactGroupTool
+                <GroupTool
                   key={itemKey}
                   ref={itemKey}
                   label={item.label}

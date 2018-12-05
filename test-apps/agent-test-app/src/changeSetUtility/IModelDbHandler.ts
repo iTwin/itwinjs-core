@@ -2,10 +2,10 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
-import { IModelDb, OpenParams } from "@bentley/imodeljs-backend/lib/backend";
-import { AccessToken } from "@bentley/imodeljs-clients/lib";
-import { IModelVersion } from "@bentley/imodeljs-common/lib/common";
+import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { IModelDb, OpenParams } from "@bentley/imodeljs-backend";
+import { AccessToken } from "@bentley/imodeljs-clients";
+import { IModelVersion } from "@bentley/imodeljs-common";
 
 const actx = new ActivityLoggingContext("");
 

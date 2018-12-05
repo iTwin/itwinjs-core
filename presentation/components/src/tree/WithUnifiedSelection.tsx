@@ -6,10 +6,10 @@
 
 import * as React from "react";
 import { Keys, Subtract } from "@bentley/presentation-common";
-import { StandardNodeTypes, ECInstanceNodeKey } from "@bentley/presentation-common/lib/hierarchy/Key";
+import { StandardNodeTypes, ECInstanceNodeKey } from "@bentley/presentation-common";
 import { Presentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
-import { TreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/Tree";
+import { TreeProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
@@ -64,7 +64,7 @@ export interface Props {
  * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function withUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
+export default function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
 
   type CombinedProps = Subtract<P, Props> & Props;
 

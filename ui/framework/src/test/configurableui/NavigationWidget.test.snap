@@ -23,10 +23,13 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
   }
   navigationWidgetDef={
     NavigationWidgetDef {
+      "_handleSyncUiEvent": [Function],
+      "_isVisible": true,
       "_navigationAidId": "",
       "classId": undefined,
       "featureId": "",
       "horizontalDirection": 3,
+      "horizontalItems": undefined,
       "id": "navigationWidget",
       "isEnabled": true,
       "isFloatingStateSupported": false,
@@ -44,6 +47,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "stateSyncIds": Array [],
       "tooltip": "",
       "verticalDirection": 2,
+      "verticalItems": undefined,
       "widgetState": 1,
       "widgetType": 1,
     }

@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Expander from "../../../../../..//toolbar/item/expandable/group/tool/Expander";
+import { GroupToolExpander } from "../../../../../../ui-ninezone";
 
-describe("<Expander />", () => {
+describe("<GroupToolExpander />", () => {
   it("should render", () => {
-    mount(<Expander />);
+    mount(<GroupToolExpander />);
   });
 
   it("renders correctly", () => {
-    shallow(<Expander />).should.matchSnapshot();
+    shallow(<GroupToolExpander />).should.matchSnapshot();
   });
 });

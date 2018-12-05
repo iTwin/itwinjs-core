@@ -74,6 +74,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/imodeljs-webserver",
+      "projectFolder": "core/webserver",
+      "reviewCategory": "common",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/imodeljs-quantity",
       "projectFolder": "core/quantity",
       "reviewCategory": "common",
@@ -189,8 +196,8 @@
       "shouldPublish": false
     },
     {
-      "packageName": "simpleviewtest",
-      "projectFolder": "test-apps/simpleviewtest",
+      "packageName": "display-test-app",
+      "projectFolder": "test-apps/display-test-app",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

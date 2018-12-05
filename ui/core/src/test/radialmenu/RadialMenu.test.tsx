@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { RadialMenu, RadialButton } from "../..//index";
+import { RadialMenu, RadialButton } from "../../ui-core";
 
 describe("RadialMenu", () => {
 

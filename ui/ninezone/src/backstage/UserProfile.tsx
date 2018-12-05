@@ -5,8 +5,8 @@
 /** @module Backstage */
 
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../utilities/Props";
-import { getUserColor } from "@bentley/bwc/lib/index";
+import { CommonProps, NoChildrenProps } from "../utilities/Props";
+import { getUserColor } from "@bentley/bwc";
 import "./UserProfile.scss";
 
 /** Properties of [[UserProfile]] component. */
@@ -22,7 +22,7 @@ export interface UserProfileProps extends CommonProps, NoChildrenProps {
 }
 
 /** UserProfile component of 9-zone UI app. */
-export default class UserProfile extends React.Component<UserProfileProps> {
+export class UserProfile extends React.Component<UserProfileProps> {
 
   private _getInitials(): string {
     let initials: string = "";

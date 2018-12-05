@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-i18n
 
-This log was last generated on Tue, 20 Nov 2018 16:17:15 GMT and should not be manually modified.
+This log was last generated on Tue, 04 Dec 2018 17:24:39 GMT and should not be manually modified.
+
+## 0.172.0
+Tue, 04 Dec 2018 17:24:39 GMT
+
+### Updates
+
+- Changed index file name to match package name. Change imports to use other packages' index file.
+
+## 0.171.0
+Mon, 03 Dec 2018 18:52:58 GMT
+
+### Updates
+
+- Unit tests
+
+## 0.170.0
+Mon, 26 Nov 2018 19:38:42 GMT
+
+*Version update only*
 
 ## 0.169.0
 Tue, 20 Nov 2018 16:17:15 GMT

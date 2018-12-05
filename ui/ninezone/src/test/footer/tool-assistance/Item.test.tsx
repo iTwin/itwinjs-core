@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Item from "../../..//footer/tool-assistance/Item";
+import { ToolAssistanceItem } from "../../../ui-ninezone";
 
-describe("<Item />", () => {
+describe("<ToolAssistanceItem />", () => {
   it("should render", () => {
-    mount(<Item />);
+    mount(<ToolAssistanceItem />);
   });
 
   it("renders correctly", () => {
-    shallow(<Item />).should.matchSnapshot();
+    shallow(<ToolAssistanceItem />).should.matchSnapshot();
   });
 });

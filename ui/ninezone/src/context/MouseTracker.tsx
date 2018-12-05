@@ -17,7 +17,7 @@ export interface MouseTrackerProps {
  * This component listens and reports the mousemove events.
  * @note Does not render.
  */
-export default class MouseTracker extends React.Component<MouseTrackerProps> {
+export class MouseTracker extends React.Component<MouseTrackerProps> {
   public componentDidMount() {
     document.addEventListener("mousemove", this._handleMouseMove);
   }

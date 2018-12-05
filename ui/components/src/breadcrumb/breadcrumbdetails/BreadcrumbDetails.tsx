@@ -1,13 +1,15 @@
 /*---------------------------------------------------------------------------------------------
- | $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 /** @module Breadcrumb */
 
 import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
-import { TableDataProvider, Table, RowItem, ColumnDescription, TableProps } from "../../table";
+import { TableDataProvider, RowItem, ColumnDescription } from "../../table/TableDataProvider";
+import { Table, TableProps } from "../../table/component/Table";
 import { BreadcrumbTreeUtils, DataRowItem } from "../BreadcrumbTreeUtils";
-import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../../tree";
+import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "../BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/component/BeInspireTree";
 
@@ -148,7 +150,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
       this.setState({ modelReady: true });
   }
 
-  private _onTreeNodeChanged = (items?: TreeNodeItem[]) => {
+  private _onTreeNodeChanged = (items: Array<TreeNodeItem | undefined>) => {
     using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
       if (items) {
         for (const item of items) {

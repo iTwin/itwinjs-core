@@ -10,22 +10,25 @@ import { WidgetDef, ToolbarWidgetProps } from "./WidgetDef";
 import { ItemList } from "./ItemMap";
 import { ActionButtonItemDef } from "./Item";
 
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import { Direction } from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
 /** A Toolbar Widget normally displayed in the top left & top right zones in the 9-Zone Layout system.
  */
 export class ToolbarWidgetDefBase extends WidgetDef {
-  public horizontalItems!: ItemList;
   public horizontalDirection: Direction;
-  public verticalItems!: ItemList;
   public verticalDirection: Direction;
+
+  public horizontalItems?: ItemList;
+  public verticalItems?: ItemList;
 
   constructor(def: ToolbarWidgetProps) {
     super(def);
 
     this.horizontalDirection = (def.horizontalDirection !== undefined) ? def.horizontalDirection : Direction.Bottom;
     this.verticalDirection = (def.verticalDirection !== undefined) ? def.verticalDirection : Direction.Right;
+
+    this.horizontalItems = def.horizontalItems;
+    this.verticalItems = def.verticalItems;
   }
 
   private renderToolbarItems(itemList: ItemList): React.ReactNode[] | null {

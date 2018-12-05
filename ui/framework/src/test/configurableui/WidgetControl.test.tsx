@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetDefProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../..//index";
+import { WidgetState, WidgetDefProps, WidgetDef, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework";
 
 describe("WidgetControl", () => {
 
@@ -19,11 +19,12 @@ describe("WidgetControl", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();
-    ConfigurableUiManager.registerControl("WidgetControlTest", TestWidget);
   });
 
   const widgetProps: WidgetDefProps = {
-    classId: "WidgetControlTest",
+    id: "test-widget",
+    classId: TestWidget,
+    defaultState: WidgetState.Off,
   };
 
   it("registerControl & widgetControl using same classId", () => {
@@ -31,8 +32,14 @@ describe("WidgetControl", () => {
     const widgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.Widget);
 
     expect(widgetControl).to.not.be.undefined;
-    if (widgetControl)
+    if (widgetControl) {
       expect(widgetControl.widgetDef).to.eq(widgetDef);
+
+      const testId = "test-widget";
+      expect(widgetControl.uniqueId).to.eq(testId);
+      expect(widgetControl.name).to.eq(testId);
+      expect(widgetControl.controlId).to.eq(testId);
+    }
   });
 
   it("setWidgetState", () => {
@@ -40,8 +47,11 @@ describe("WidgetControl", () => {
     const widgetControl = widgetDef.getWidgetControl(ConfigurableUiControlType.Widget);
 
     expect(widgetControl).to.not.be.undefined;
-    if (widgetControl)
+    if (widgetControl) {
+      expect(widgetDef.widgetState).to.eq(WidgetState.Off);
       widgetControl.setWidgetState(WidgetState.Open);
+      expect(widgetDef.widgetState).to.eq(WidgetState.Open);
+    }
   });
 
 });

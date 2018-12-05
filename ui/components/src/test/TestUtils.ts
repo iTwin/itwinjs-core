@@ -3,9 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { UiComponents } from "..//index";
+import { UiComponents } from "../ui-components";
 import { UiCore } from "@bentley/ui-core";
-import { PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, ArrayValue, StructValue } from "..//properties";
+import { PropertyRecord, PrimitiveValue, PropertyValueFormat, PropertyDescription, ArrayValue, StructValue } from "../ui-components";
 
 export default class TestUtils {
   private static _i18n?: I18N;
@@ -29,6 +29,12 @@ export default class TestUtils {
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiComponentsInitialized = true;
     }
+  }
+
+  public static terminateUiComponents() {
+    UiCore.terminate();
+    UiComponents.terminate();
+    TestUtils._uiComponentsInitialized = false;
   }
 
   /** Waits until all async operations finish */

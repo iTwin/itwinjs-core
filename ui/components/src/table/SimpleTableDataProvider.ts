@@ -9,7 +9,7 @@ import { MutableTableDataProvider, ColumnDescription, RowItem, TableDataChangeEv
 import { PropertyRecord } from "../properties/Record";
 import { PropertyValueFormat } from "../properties/Value";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
-import { Primitives } from "../converters/valuetypes";
+import * as Primitives from "../converters/valuetypes/PrimitiveTypes";
 
 /**
  * A Table Data Provider using an array of items.

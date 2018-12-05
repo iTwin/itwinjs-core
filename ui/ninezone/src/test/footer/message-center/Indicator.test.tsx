@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Indicator from "../../..//footer/message-center/Indicator";
+import { MessageCenterIndicator } from "../../../ui-ninezone";
 
-describe("<Indicator />", () => {
+describe("<MessageCenterIndicator />", () => {
   it("should render", () => {
-    mount(<Indicator />);
+    mount(<MessageCenterIndicator />);
   });
 
   it("renders correctly", () => {
-    shallow(<Indicator />).should.matchSnapshot();
+    shallow(<MessageCenterIndicator />).should.matchSnapshot();
   });
 });

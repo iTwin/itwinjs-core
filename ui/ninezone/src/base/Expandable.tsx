@@ -7,7 +7,7 @@
 import * as React from "react";
 import * as classnames from "classnames";
 import { Direction, DirectionHelpers } from "../utilities/Direction";
-import CommonProps from "../utilities/Props";
+import { CommonProps } from "../utilities/Props";
 import "./Expandable.scss";
 
 /** Properties of [[Expandable]] component. */
@@ -19,7 +19,7 @@ export interface ExpandableProps extends CommonProps {
 }
 
 /** Expandable component is used to expand content to specified direction. */
-export default class Expandable extends React.Component<ExpandableProps> {
+export class Expandable extends React.Component<ExpandableProps> {
   public render() {
     const direction = this.props.direction === undefined ? Direction.Right : this.props.direction;
     const className = classnames(

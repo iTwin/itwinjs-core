@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Target from "../../..//zones/target/Target";
+import { MergeTarget } from "../../../ui-ninezone";
 
-describe("<Target />", () => {
+describe("<MergeTarget />", () => {
   it("should render", () => {
-    mount(<Target />);
+    mount(<MergeTarget />);
   });
 
   it("renders correctly", () => {
-    shallow(<Target />).should.matchSnapshot();
+    shallow(<MergeTarget />).should.matchSnapshot();
   });
 });

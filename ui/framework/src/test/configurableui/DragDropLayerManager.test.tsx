@@ -2,11 +2,12 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-// import * as React from "react";
-// import { mount, shallow } from "enzyme";
+import * as React from "react";
+import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { DragDropLayerManager } from "../..//index";
+import { DragDropLayerManager, DragDropLayerRenderer } from "../../ui-framework";
+import { BeDragDropContext } from "@bentley/ui-components";
 
 describe("DragDropLayerManager", () => {
 
@@ -20,6 +21,21 @@ describe("DragDropLayerManager", () => {
 
   it("getActiveLayer returns undefined when no type set", () => {
     expect(DragDropLayerManager.getActiveLayer()).to.be.undefined;
+  });
+
+  it("DragDropLayerRenderer should render", () => {
+    const wrapper = mount(
+      <BeDragDropContext>
+        <DragDropLayerRenderer />
+      </BeDragDropContext>);
+    wrapper.unmount();
+  });
+
+  it("DragDropLayerRenderer renders correctly", () => {
+    shallow(
+      <BeDragDropContext>
+        <DragDropLayerRenderer />
+      </BeDragDropContext>).should.matchSnapshot();
   });
 
   // NEEDSWORK: setType, registerTypeLayer, DragDropLayerRenderer

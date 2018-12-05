@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./Activity.scss";
 
 /** Properties of [[Activity]] component. */
@@ -31,5 +31,3 @@ export const Activity: React.StatelessComponent<ActivityProps> = (props) => {
     </div>
   );
 };
-
-export default Activity;

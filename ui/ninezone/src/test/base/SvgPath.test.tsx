@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import SvgPath from "../..//base/SvgPath";
+import { SvgPath } from "../../ui-ninezone";
 
 describe("<SvgPath />", () => {
   it("should render", () => {

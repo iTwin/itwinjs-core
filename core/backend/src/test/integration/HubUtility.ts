@@ -5,7 +5,7 @@
 import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, HubUserInfo, IModelHubClient } from "@bentley/imodeljs-clients";
 import { HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
-import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../backend";
+import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../imodeljs-backend";
 import * as path from "path";
 
 const actx = new ActivityLoggingContext("");
@@ -284,6 +284,7 @@ export class HubUtility {
       changeSet.id = changeSetJson.id;
       changeSet.parentId = changeSetJson.parentId;
       changeSet.fileSize = changeSetJson.fileSize;
+      changeSet.changesType = changeSetJson.changesType;
       changeSet.seedFileId = briefcase.fileId;
       changeSet.briefcaseId = briefcase.briefcaseId;
 

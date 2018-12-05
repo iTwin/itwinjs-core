@@ -6,8 +6,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
-import Direction, { DirectionHelpers } from "../../utilities/Direction";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { Direction, DirectionHelpers } from "../../utilities/Direction";
 import "./Chevron.scss";
 
 /** Properties of [[Chevron]] component. */
@@ -19,7 +19,7 @@ export interface ChevronProps extends CommonProps, NoChildrenProps {
 }
 
 /** Chevron component used in [[Indicator]]. */
-export default class Chevron extends React.Component<ChevronProps> {
+export class Chevron extends React.Component<ChevronProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-scroll-chevron",

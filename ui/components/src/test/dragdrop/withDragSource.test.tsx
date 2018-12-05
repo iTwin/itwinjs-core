@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { withDragSource, DragSourceArguments } from "../..//dragdrop";
+import { withDragSource, DragSourceArguments } from "../../ui-components";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";

@@ -2,6 +2,30 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "0.172.0",
+      "tag": "@bentley/bentleyjs-core_v0.172.0",
+      "date": "Tue, 04 Dec 2018 17:24:39 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.171.0",
+      "tag": "@bentley/bentleyjs-core_v0.171.0",
+      "date": "Mon, 03 Dec 2018 18:52:58 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.170.0",
+      "tag": "@bentley/bentleyjs-core_v0.170.0",
+      "date": "Mon, 26 Nov 2018 19:38:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Change Logger.ParseLogLevel() to use camelCased method naming, Logger.parseLogLevel()."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.169.0",
       "tag": "@bentley/bentleyjs-core_v0.169.0",
       "date": "Tue, 20 Nov 2018 16:17:15 GMT",

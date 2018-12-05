@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import UiCore from "..//UiCore";
+import { UiCore } from "../UiCore";
 
 export default class TestUtils {
   private static _i18n?: I18N;
@@ -26,5 +26,10 @@ export default class TestUtils {
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiCoreInitialized = true;
     }
+  }
+
+  public static terminateUiCore() {
+    UiCore.terminate();
+    TestUtils._uiCoreInitialized = false;
   }
 }

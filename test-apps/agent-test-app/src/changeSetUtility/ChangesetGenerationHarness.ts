@@ -7,11 +7,11 @@ import { HubUtility } from "./HubUtility";
 import { IModelDbHandler } from "./IModelDbHandler";
 import { ChangesetGenerator } from "./ChangesetGenerator";
 import { TestChangesetSequence } from "./TestChangesetSequence";
-import { Id64String, Logger, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core/lib/bentleyjs-core";
-import { CategorySelector, DisplayStyle3d, IModelDb, IModelHost, IModelHostConfiguration, KeepBriefcase, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "@bentley/imodeljs-backend/lib/backend";
-import { IModel, CodeScopeSpec, ColorDef, AxisAlignedBox3d } from "@bentley/imodeljs-common/lib/common";
+import { Id64String, Logger, LogLevel, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { CategorySelector, DisplayStyle3d, IModelDb, IModelHost, IModelHostConfiguration, KeepBriefcase, ModelSelector, OrthographicViewDefinition, PhysicalModel, SpatialCategory } from "@bentley/imodeljs-backend";
+import { IModel, CodeScopeSpec, ColorDef, AxisAlignedBox3d } from "@bentley/imodeljs-common";
 import { Point3d, Range3d } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/imodeljs-clients/lib";
+import { AccessToken } from "@bentley/imodeljs-clients";
 import * as fs from "fs";
 import * as path from "path";
 

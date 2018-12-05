@@ -7,6 +7,16 @@
 
 const program = require("commander");
 const floss = require("../floss");
+const paths = require("@bentley/build-tools/scripts/config/paths");
+
+const isCI = (process.env.TF_BUILD);
+
+const reporterOptions = (isCI) ? {
+    reporter: "mocha-junit-reporter",
+    reporterOptions: `mochaFile=${paths.appJUnitTestResults}`
+} : {
+	reporter: "spec"
+};
 
 program
   .version("0.1.0")
@@ -32,7 +42,8 @@ floss(
     fgrep: program.fgrep,
     invert: program.invert,
     coverage: program.coverage,
-    checkLeaks: true
+    checkLeaks: true,
+    ...reporterOptions,
   },
   function (returnCode) {
     process.exit(returnCode ? 1 : 0);

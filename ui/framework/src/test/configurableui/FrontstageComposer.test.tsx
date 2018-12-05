@@ -7,7 +7,7 @@ import { mount } from "enzyme";
 import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
-import { ModalFrontstageInfo, FrontstageManager, FrontstageComposer } from "../../";
+import { ModalFrontstageInfo, FrontstageManager, FrontstageComposer } from "../../ui-framework";
 
 class TestModalFrontstage implements ModalFrontstageInfo {
   public title: string = "Test Modal Frontstage";

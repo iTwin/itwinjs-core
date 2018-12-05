@@ -5,9 +5,9 @@
 /** @module Zone */
 
 import { WidgetZone } from "./Zone";
-import Cell from "../../utilities/Cell";
+import { Cell } from "../../utilities/Cell";
 import { PointProps } from "../../utilities/Point";
-import NineZone, { WidgetZoneIndex } from "./NineZone";
+import { NineZone, WidgetZoneIndex } from "./NineZone";
 
 export interface WidgetProps {
   readonly id: WidgetZoneIndex;
@@ -21,14 +21,14 @@ export interface DraggingWidgetProps {
   readonly isUnmerge: boolean;
 }
 
-export const getDefaultProps = (id: WidgetZoneIndex): WidgetProps => {
+export const getDefaultWidgetProps = (id: WidgetZoneIndex): WidgetProps => {
   return {
     id,
     tabIndex: -1,
   };
 };
 
-export default class Widget {
+export class Widget {
   public static sort(widgets: ReadonlyArray<Widget>) {
     return widgets.slice().sort((a, b) => a.defaultZone.props.id - b.defaultZone.props.id);
   }

@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Container from "../../..//zones/target/Container";
+import { Container } from "../../../ui-ninezone";
 
 describe("<Container />", () => {
   it("should render", () => {

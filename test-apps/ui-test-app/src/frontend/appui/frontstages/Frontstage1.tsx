@@ -22,8 +22,7 @@ import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { Toolbar, Direction } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
 
 export class Frontstage1 extends FrontstageProvider {

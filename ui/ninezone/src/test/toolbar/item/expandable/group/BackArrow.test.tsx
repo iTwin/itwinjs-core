@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import BackArrow from "../../../../..//toolbar/item/expandable/group/BackArrow";
+import { BackArrow } from "../../../../../ui-ninezone";
 
 describe("<BackArrow />", () => {
   it("should render", () => {

@@ -7,16 +7,15 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
-import { withOnOutsideClick } from "../hocs";
-import { Div } from "../base";
+import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
+import { Div } from "../base/Div";
 
 const DivWithOutsideClick = withOnOutsideClick(Div); // tslint:disable-line:variable-name
 
-import UiCore from "../UiCore";
+import { UiCore } from "../UiCore";
 
-import "@bentley/bwc/lib/buttons/classes.scss";
 import "./Dialog.scss";
-import { Omit } from "../utils";
+import { Omit } from "../utils/typeUtils";
 
 /** Enum for button types. Determines button label, and default button style. */
 export enum ButtonType {
@@ -44,7 +43,7 @@ export enum DialogAlignment {
   BottomLeft = "bottom-left", Bottom = "bottom", BottomRight = "bottom-right",
 }
 
-/** interface for a given button in a button cluster */
+/** Interface for a given button in a button cluster */
 export interface ButtonCluster {
   /** type of button */
   type: ButtonType;
@@ -54,7 +53,7 @@ export interface ButtonCluster {
   buttonStyle?: ButtonStyle;
 }
 
-/** Property interface for Dialog */
+/** Property interface for [[Dialog]] */
 export interface DialogProps extends Omit<React.AllHTMLAttributes<HTMLDivElement>, "title"> {
   /** whether to show dialog or not */
   opened: boolean;
@@ -116,7 +115,7 @@ export interface DialogState {
 }
 
 /**
- * Dialog component with optional resizing and dragging functionality
+ * Dialog React component with optional resizing and dragging functionality
  */
 export class Dialog extends React.Component<DialogProps, DialogState> {
   private _containerRef = React.createRef<HTMLDivElement>();
@@ -183,7 +182,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       <div
         className={classnames(
           "dialog",
-          { "dialog-hidden": !modal },
+          { "dialog-hidden": !modal, opened },
         )}
         style={this.props.backgroundStyle}
         data-testid="dialog-root"

@@ -7,8 +7,8 @@
 import * as classnames from "classnames";
 import * as React from "react";
 
-import CommonProps from "../../../utilities/Props";
-import withTheme, { WithThemeProps } from "../../../theme/WithTheme";
+import { CommonProps } from "../../../utilities/Props";
+import { withTheme, WithThemeProps } from "../../../theme/WithTheme";
 import "./Button.scss";
 
 /** Properties of [[MessageButton]] component. */
@@ -39,5 +39,3 @@ const ButtonComponent: React.StatelessComponent<MessageButtonProps> = (props) =>
 /** Button component used in status message. I.e. [[MessageLayout]] */
 // tslint:disable-next-line:variable-name
 export const MessageButton: React.ComponentClass<MessageButtonProps & WithThemeProps> = withTheme(ButtonComponent);
-
-export default MessageButton;

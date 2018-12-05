@@ -8,7 +8,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 
 import TestUtils from "../TestUtils";
-import { ModalFrontstageInfo, FrontstageManager, ModalFrontstage } from "../../";
+import { ModalFrontstageInfo, FrontstageManager, ModalFrontstage } from "../../ui-framework";
 
 const navigationBackSpy = sinon.spy();
 const closeModalSpy = sinon.spy();

@@ -6,7 +6,7 @@
 import { expect, assert } from "chai";
 import { Geometry, DisplayParams, StrokesPrimitiveList, StrokesPrimitivePointLists, StrokesPrimitivePointList, PolyfacePrimitiveList, PolyfacePrimitive } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Loop, Path, LineString3d, Point3d, Transform, Range3d, IndexedPolyface } from "@bentley/geometry-core";
-import { GraphicParams } from "@bentley/imodeljs-common/lib/Render";
+import { GraphicParams } from "@bentley/imodeljs-common";
 import { ColorDef } from "@bentley/imodeljs-common";
 
 function pointIsInArray(pt: Point3d, arr: Point3d[]): boolean {

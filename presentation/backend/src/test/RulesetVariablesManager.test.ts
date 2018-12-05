@@ -7,7 +7,7 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { VariableValueTypes } from "@bentley/presentation-common/lib/RulesetVariables";
+import { VariableValueTypes } from "@bentley/presentation-common";
 import { NativePlatformDefinition } from "../NativePlatform";
 import RulesetVariablesManager from "../RulesetVariablesManager";
 

@@ -105,6 +105,10 @@
         "AcceptConstruction": "Accept - Complete Operation",
         "AcceptRejectMulti": "Accept/Reject (Ctrl+Data to select = "
       }
+    },
+    "Plugin": {
+      "keyin": "Load Plugin",
+      "description": "Loads a plugin module"
     }
   }
 }

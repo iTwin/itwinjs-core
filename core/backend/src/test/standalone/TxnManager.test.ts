@@ -5,46 +5,39 @@
 import { ActivityLoggingContext, IModelStatus } from "@bentley/bentleyjs-core";
 import { assert } from "chai";
 import * as path from "path";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelDb, SpatialCategory, TxnAction, PhysicalModel } from "../../backend";
-import { GeometricElementProps, Code, IModel, SubCategoryAppearance, ColorByName, IModelError } from "@bentley/imodeljs-common";
+import { IModelDb, SpatialCategory, TxnAction, PhysicalModel } from "../../imodeljs-backend";
+import { Code, IModel, SubCategoryAppearance, ColorByName, IModelError } from "@bentley/imodeljs-common";
 
-// NEEDS_WORK_MERGE: uncomment the following lines when Keith's changes to javascript-domains are merged in
-describe.skip("TxnManager", () => {
+describe("TxnManager", () => {
   let imodel: IModelDb;
+  let props: TestPhysicalObjectProps;
+
   const actx = new ActivityLoggingContext("");
 
-  before(() => imodel = IModelTestUtils.openIModel("test.bim"));
-  after(() => IModelTestUtils.closeIModel(imodel));
+  before(async () => {
+    imodel = IModelTestUtils.openIModel("test.bim");
+    const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
+    await imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
 
-  it("Undo/Redo", async () => {
-
-    try {
-      imodel.getMetaData("TestBim:TestPhysicalObject");
-    } catch (err) {
-      const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
-      await imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
-      assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
-      imodel.saveChanges("schema change");
-    }
-
-    const txns = imodel.txns;
-    imodel.nativeDb.enableTxnTesting();
-    assert.isFalse(txns.hasPendingTxns);
-
-    const newModelId = PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel");
-
-    // create a SpatialCategory
-    const spatialCategoryId = SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed }));
-
-    const props: GeometricElementProps = {
+    props = {
       classFullName: "TestBim:TestPhysicalObject",
-      model: newModelId,
-      category: spatialCategoryId,
+      model: PhysicalModel.insert(imodel, IModel.rootSubjectId, "TestModel"),
+      category: SpatialCategory.insert(imodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorByName.darkRed })),
       code: Code.createEmpty(),
       intProperty: 100,
     };
+    imodel.saveChanges("schema change");
+    imodel.nativeDb.enableTxnTesting();
+  });
+  after(() => IModelTestUtils.closeIModel(imodel));
+
+  it("Undo/Redo", () => {
+    assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
+
+    const txns = imodel.txns;
+    assert.isFalse(txns.hasPendingTxns);
 
     const change1Msg = "change 1";
     const change2Msg = "change 2";
@@ -66,7 +59,7 @@ describe.skip("TxnManager", () => {
     assert.isTrue(txns.hasPendingTxns);
     assert.isTrue(txns.hasLocalChanges);
 
-    let element = imodel.elements.getElement(elementId);
+    let element = imodel.elements.getElement<TestPhysicalObject>(elementId);
     assert.equal(element.intProperty, 100, "int property should be 100");
 
     assert.isTrue(txns.isUndoPossible);  // we have an undoable Txn, but nothing undone.
@@ -146,4 +139,61 @@ describe.skip("TxnManager", () => {
     assert.isFalse(txns.hasPendingTxns);
     assert.isFalse(txns.hasLocalChanges);
   });
+
+  it("Element drives element events", () => {
+    const el1 = imodel.elements.insertElement(props);
+    const el2 = imodel.elements.insertElement(props);
+    const ede = TestElementDrivesElement.create<TestElementDrivesElement>(imodel, el1, el2);
+    ede.property1 = "test ede";
+    ede.insert();
+    const removals: VoidFunction[] = [];
+    let beforeOutputsHandled = 0;
+    let allInputsHandled = 0;
+    let rootChanged = 0;
+    let validateOutput = 0;
+    let deletedDependency = 0;
+    removals.push(TestElementDrivesElement.deletedDependency.addListener((evProps) => {
+      assert.equal(evProps.sourceId, el1);
+      assert.equal(evProps.targetId, el2);
+      ++deletedDependency;
+    }));
+    removals.push(TestElementDrivesElement.rootChanged.addListener((evProps, im) => {
+      const ede2 = im.relationships.getInstance<TestElementDrivesElement>(evProps.classFullName, evProps.id!);
+      assert.equal(ede2.property1, ede.property1);
+      assert.equal(evProps.sourceId, el1);
+      assert.equal(evProps.targetId, el2);
+      ++rootChanged;
+    }));
+    removals.push(TestElementDrivesElement.validateOutput.addListener((_props) => ++validateOutput));
+    removals.push(TestPhysicalObject.beforeOutputsHandled.addListener((id, im) => {
+      const e1 = im.elements.getElement<TestPhysicalObject>(id);
+      assert.equal(e1.intProperty, props.intProperty);
+      assert.equal(id, el1);
+      ++beforeOutputsHandled;
+    }));
+    removals.push(TestPhysicalObject.allInputsHandled.addListener((id, im) => {
+      const e2 = im.elements.getElement<TestPhysicalObject>(id);
+      assert.equal(e2.intProperty, props.intProperty);
+      assert.equal(id, el2);
+      ++allInputsHandled;
+    }));
+
+    imodel.saveChanges("step 1");
+    assert.equal(1, beforeOutputsHandled);
+    assert.equal(1, allInputsHandled);
+    assert.equal(1, rootChanged);
+    assert.equal(0, validateOutput);
+    assert.equal(0, deletedDependency);
+
+    const element2 = imodel.elements.getElement<TestPhysicalObject>(el2);
+    element2.update();
+    imodel.saveChanges("step 2");
+    assert.equal(2, beforeOutputsHandled);
+    assert.equal(2, allInputsHandled);
+    assert.equal(2, rootChanged);
+    assert.equal(0, validateOutput);
+    assert.equal(0, deletedDependency);
+    removals.forEach((drop) => drop());
+  });
+
 });

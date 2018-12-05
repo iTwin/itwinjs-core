@@ -5,7 +5,7 @@
 import * as path from "path";
 import * as url from "url";
 
-import { ElectronRpcManager } from "@bentley/imodeljs-common/lib/common";
+import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsElectronAppManager } from "@bentley/imodeljs-backend";
@@ -20,7 +20,7 @@ initializeBackend();
 
 // Set up logging (by default, no logging is enabled)
 const logLevelEnv = process.env.SVT_LOG_LEVEL as string;
-const logLevel = undefined !== logLevelEnv ? Logger.ParseLogLevel(logLevelEnv) : LogLevel.None;
+const logLevel = undefined !== logLevelEnv ? Logger.parseLogLevel(logLevelEnv) : LogLevel.None;
 Logger.setLevelDefault(logLevel);
 
 // --------------------------------------------------------------------------------------
@@ -33,7 +33,7 @@ const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
   const manager = new IModelJsElectronAppManager(electron);
   if (!isDevBuild)
     manager.frontendURL = url.format({
-      pathname: path.join(__dirname, "public/index.html"),
+      pathname: path.join(__dirname, "../webresources/index.html"),
       protocol: "file:",
       slashes: true,
     });
@@ -62,7 +62,7 @@ const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
   }
 
   // tslint:disable-next-line:no-var-requires
-  const configuration = require(path.join(__dirname, "public", "configuration.json"));
+  const configuration = require(path.join(__dirname, "../webresources", "configuration.json"));
   if (configuration.useIModelBank) {
     electron.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
       // (needed temporarily to use self-signed cert to communicate with iModelBank via https)

@@ -5,12 +5,12 @@
 
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationTreeDataProvider, withFilteringSupport, withUnifiedSelection } from "@bentley/presentation-components/lib/tree";
+import { PresentationTreeDataProvider, treeWithFilteringSupport, treeWithUnifiedSelection } from "@bentley/presentation-components";
 import { Tree, FilteringInput } from "@bentley/ui-components";
 import "./TreeWidget.css";
 
 // tslint:disable-next-line:variable-name naming-convention
-const SampleTree = withFilteringSupport(withUnifiedSelection(Tree));
+const SampleTree = treeWithFilteringSupport(treeWithUnifiedSelection(Tree));
 
 export interface Props {
   imodel: IModelConnection;
@@ -89,7 +89,9 @@ export default class TreeWidget extends React.Component<Props, State> {
               resultCount: this.state.matchesCount,
             }} />
         </div>
-        <SampleTree dataProvider={this.state.dataProvider} filter={this.state.filter}
+        <SampleTree dataProvider={this.state.dataProvider}
+          pageSize={5} disposeChildrenOnCollapse={true}
+          filter={this.state.filter}
           onFilterApplied={this.onFilterApplied}
           onMatchesCounted={this._onMatchesCounted}
           activeMatchIndex={this.state.activeMatchIndex} />

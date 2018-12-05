@@ -8,10 +8,10 @@ import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Timer } from "@bentley/ui-core";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
-import Rectangle from "../../utilities/Rectangle";
-import Css from "../../utilities/Css";
-import Activity from "./Activity";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { Rectangle } from "../../utilities/Rectangle";
+import { Css } from "../../utilities/Css";
+import { Activity } from "./Activity";
 import "./Toast.scss";
 
 /** Properties of [[Toast]] component. */
@@ -37,7 +37,7 @@ export interface ToastDefaultProps extends Partial<ToastProps> {
 }
 
 /** Footer message that animates out to specified element after some timeout. Used in [[Footer]] component. */
-export default class Toast extends React.Component<ToastProps> {
+export class Toast extends React.Component<ToastProps> {
   public static readonly defaultProps: ToastDefaultProps = {
     timeout: 2000,
   };

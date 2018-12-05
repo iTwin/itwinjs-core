@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
-import Point, { PointProps } from "./Point";
-import Size, { SizeProps } from "./Size";
+import { Point, PointProps } from "./Point";
+import { Size, SizeProps } from "./Size";
 
 /** Describes [[Rectangle]]. */
 export interface RectangleProps {
@@ -32,7 +32,7 @@ export enum Edge {
 }
 
 /** Describes and provides methods to work with 2d bounds. */
-export default class Rectangle implements RectangleProps {
+export class Rectangle implements RectangleProps {
   /** Creates rectangle from [[RectangleProps]]. */
   public static create(props: RectangleProps) {
     return new Rectangle(props.left, props.top, props.right, props.bottom);

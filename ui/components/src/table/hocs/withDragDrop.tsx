@@ -1,11 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
 import * as React from "react";
 import { getDisplayName } from "@bentley/ui-core";
-import { withDropTarget, DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../dragdrop";
+import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../dragdrop/DragDropDef";
+import { withDropTarget } from "../../dragdrop/withDropTarget";
 import { TableProps, TableRowProps, TableRow } from "../component/Table";
 import { RowItem, TableDataProvider } from "../TableDataProvider";
 import { TableWrapper, TableWrapperProps } from "./TableWrapper";

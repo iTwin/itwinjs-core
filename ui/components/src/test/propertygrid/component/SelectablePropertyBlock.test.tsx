@@ -8,7 +8,7 @@ import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { SelectablePropertyBlock, SelectablePropertyBlockProps, SelectablePropertyBlockState } from "../../../propertygrid/component/SelectablePropertyBlock";
 import TestUtils from "../../TestUtils";
-import { getPropertyKey } from "../../..//propertygrid/component/PropertyList";
+import { getPropertyKey } from "../../../propertygrid/component/PropertyList";
 
 describe("SelectablePropertyBlock", () => {
   let props: SelectablePropertyBlockProps;

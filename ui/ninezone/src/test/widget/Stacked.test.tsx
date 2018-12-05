@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Stacked, { HorizontalAnchor } from "../..//widget/Stacked";
+import { Stacked, HorizontalAnchor } from "../../ui-ninezone";
 
 describe("<Stacked />", () => {
   it("should render", () => {

@@ -19,10 +19,10 @@ import {
 import PresentationManager from "@bentley/presentation-frontend/lib/PresentationManager";
 import { Table, TableProps, ColumnDescription, RowItem, TableDataChangeEvent } from "@bentley/ui-components";
 import IUnifiedSelectionComponent from "../../common/IUnifiedSelectionComponent";
-import { PresentationTableDataProvider, withUnifiedSelection } from "../../table";
+import { PresentationTableDataProvider, tableWithUnifiedSelection } from "../../presentation-components";
 
 // tslint:disable-next-line:variable-name naming-convention
-const PresentationTable = withUnifiedSelection(Table);
+const PresentationTable = tableWithUnifiedSelection(Table);
 
 describe("Table withUnifiedSelection", () => {
 

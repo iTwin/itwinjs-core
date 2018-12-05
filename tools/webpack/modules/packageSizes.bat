@@ -1,0 +1,14 @@
+dir ..\..\..\core\bentley\lib\module\dev\
+dir ..\..\..\core\geometry\lib\module\dev\
+dir ..\..\..\core\common\lib\module\dev\
+dir ..\..\..\core\clients\lib\module\dev\
+dir ..\..\..\core\i18n\lib\module\dev\
+dir ..\..\..\core\quantity\lib\module\dev\
+dir ..\..\..\core\frontend\lib\module\dev\
+dir ..\..\..\ui\core\lib\module\dev\
+dir ..\..\..\ui\components\lib\module\dev\
+dir ..\..\..\ui\ninezone\lib\module\dev\
+dir ..\..\..\ui\framework\lib\module\dev\
+dir ..\..\..\presentation\common\lib\module\dev\
+dir ..\..\..\presentation\components\lib\module\dev\
+dir ..\..\..\presentation\frontend\lib\module\dev\

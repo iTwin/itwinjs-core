@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { ChangeSet, Version, Thumbnail, ThumbnailSize, ThumbnailQuery } from "../../";
-import { AccessToken, IModelClient } from "../../";
+import { ChangeSet, Version, Thumbnail, ThumbnailSize, ThumbnailQuery } from "../../imodeljs-clients";
+import { AccessToken, IModelClient } from "../../imodeljs-clients";
 
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";

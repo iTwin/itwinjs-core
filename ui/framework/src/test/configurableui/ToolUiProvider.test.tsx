@@ -6,11 +6,11 @@ import * as React from "react";
 import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
-import { ConfigurableUiManager, ZoneState, WidgetState, FrontstageDefProps, FrontstageManager } from "../../index";
-import { ConfigurableCreateInfo } from "../../index";
-import { ToolUiProvider } from "../../index";
+import { ConfigurableUiManager, FrontstageManager, FrontstageProvider, Frontstage, Zone, Widget, FrontstageProps } from "../../ui-framework";
+import { ConfigurableCreateInfo } from "../../ui-framework";
+import { ToolUiProvider } from "../../ui-framework";
 
-import AssistanceItem from "@bentley/ui-ninezone/lib/footer/tool-assistance/Item";
+import { ToolAssistanceItem } from "@bentley/ui-ninezone";
 
 describe("ToolUiProvider", () => {
 
@@ -51,10 +51,10 @@ describe("ToolUiProvider", () => {
     public render(): React.ReactNode {
       return (
         <>
-          <AssistanceItem>
+          <ToolAssistanceItem>
             <i className="icon icon-cursor" />
             Identify piece to trim
-          </AssistanceItem>
+          </ToolAssistanceItem>
         </>
       );
     }
@@ -65,31 +65,30 @@ describe("ToolUiProvider", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
 
-    const frontstageProps: FrontstageDefProps = {
-      id: "ToolUiProvider-TestFrontstage",
-      defaultToolId: "PlaceLine",
-      defaultLayout: "FourQuadrants",
-      contentGroup: "TestContentGroup4",
-      defaultContentId: "TestContent1",
+    class Frontstage1 extends FrontstageProvider {
+      public get frontstage(): React.ReactElement<FrontstageProps> {
+        return (
+          <Frontstage
+            id="ToolUiProvider-TestFrontstage"
+            defaultToolId="PlaceLine"
+            defaultLayout="FourQuadrants"
+            contentGroup="TestContentGroup4"
+            topCenter={
+              <Zone
+                widgets={[
+                  <Widget isToolSettings={true} />,
+                ]}
+              />
+            }
+          />
+        );
+      }
+    }
 
-      topLeft: {
-        defaultState: ZoneState.Open,
-        allowsMerging: false,
-        widgetProps: [
-          {
-            classId: "ToolWidget",
-            defaultState: WidgetState.Open,
-            isFreeform: true,
-            iconSpec: "icon-home",
-            labelKey: "SampleApp:Test.my-label",
-            appButton: undefined,
-          },
-        ],
-      },
-    };
+    const frontstageProvider = new Frontstage1();
+    ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
 
     ConfigurableUiManager.registerControl(testToolId, Tool2UiProvider);
-    ConfigurableUiManager.loadFrontstage(frontstageProps);
   });
 
   it("starting a tool with tool settings", () => {

@@ -29,7 +29,7 @@ export class Relationship extends Entity implements RelationshipProps {
   public readonly targetId: Id64String;
 
   /** @hidden */
-  protected constructor(props: RelationshipProps, iModel: IModelDb) {
+  constructor(props: RelationshipProps, iModel: IModelDb) {
     super(props, iModel);
     this.sourceId = Id64.fromJSON(props.sourceId);
     this.targetId = Id64.fromJSON(props.targetId);
@@ -43,9 +43,9 @@ export class Relationship extends Entity implements RelationshipProps {
     return val;
   }
 
-  public static onRootChanged(_props: RelationshipProps): void { }
-  public static onValidateOutput(_props: RelationshipProps): void { }
-  public static onDeletedDependency(_props: RelationshipProps): void { }
+  public static onRootChanged(_props: RelationshipProps, _iModel: IModelDb): void { }
+  public static onValidateOutput(_props: RelationshipProps, _iModel: IModelDb): void { }
+  public static onDeletedDependency(_props: RelationshipProps, _iModel: IModelDb): void { }
 
   /** Insert this Relationship into the iModel. */
   public insert(): Id64String { return this.iModel.relationships.insertInstance(this); }
@@ -75,6 +75,16 @@ export class ElementRefersToElements extends Relationship {
    */
   public static create<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): T {
     return iModel.relationships.createInstance({ sourceId, targetId, classFullName: this.classFullName }) as T;
+  }
+  /** Insert a new instance of the Relationship.
+   * @param iModel The iModel that will contain the relationship
+   * @param sourceId The sourceId of the relationship, that is, the driver element
+   * @param targetId The targetId of the relationship, that is, the driven element
+   * @return The Id of the inserted Relationship.
+   */
+  public static insert<T extends ElementRefersToElements>(iModel: IModelDb, sourceId: Id64String, targetId: Id64String): Id64String {
+    const relationship: T = this.create(iModel, sourceId, targetId);
+    return iModel.relationships.insertInstance(relationship);
   }
 }
 
@@ -135,14 +145,14 @@ export class Relationships {
   private _iModel: IModelDb;
 
   /** @hidden */
-  public constructor(iModel: IModelDb) { this._iModel = iModel; }
+  constructor(iModel: IModelDb) { this._iModel = iModel; }
 
   /**
    * Create a new instance of a Relationship.
    * @param props The properties of the new Relationship.
    * @throws [[IModelError]] if there is a problem creating the Relationship.
    */
-  public createInstance(props: RelationshipProps): Relationship { return this._iModel.constructEntity(props) as Relationship; }
+  public createInstance(props: RelationshipProps): Relationship { return this._iModel.constructEntity<Relationship>(props); }
 
   /**
    * Insert a new relationship instance into the iModel.
@@ -207,6 +217,6 @@ export class Relationships {
 
   /** Get a Relationship instance */
   public getInstance<T extends Relationship>(relClassSqlName: string, criteria: Id64String | SourceAndTarget): T {
-    return this._iModel.constructEntity(this.getInstanceProps(relClassSqlName, criteria)) as T;
+    return this._iModel.constructEntity<T>(this.getInstanceProps(relClassSqlName, criteria));
   }
 }

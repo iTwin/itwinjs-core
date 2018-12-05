@@ -11,7 +11,7 @@ import { CommandItemProps, ToolItemProps, CommandHandler } from "./ItemProps";
 import { ItemDefBase } from "./ItemDefBase";
 import { ItemProps } from "./ItemProps";
 
-import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
+import { Item } from "@bentley/ui-ninezone";
 
 /** Abstract base class that is used by classes to execute an action when pressed. */
 export abstract class ActionButtonItemDef extends ItemDefBase {
@@ -45,7 +45,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
     const icon = <Icon iconSpec={this.iconSpec} />;
 
     return (
-      <ToolbarIcon
+      <Item
         isDisabled={!this.isEnabled}
         title={this.label}
         key={key}

@@ -5,8 +5,8 @@
 /** @module Tree */
 
 import * as React from "react";
-import { TreeProps } from "@bentley/ui-components/lib/tree/component/Tree";
-import { ActiveMatchInfo, HighlightableTreeProps } from "@bentley/ui-components/lib/tree/HighlightingEngine";
+import { TreeProps } from "@bentley/ui-components";
+import { ActiveMatchInfo, HighlightableTreeProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 import FilteredPresentationTreeDataProvider from "./FilteredDataProvider";
@@ -42,7 +42,7 @@ const defaultState: State = {
  * **Note:** it is required for the tree to use [[IPresentationTreeDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function withFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
+export default function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
 
   type CombinedProps = P & Props;
 

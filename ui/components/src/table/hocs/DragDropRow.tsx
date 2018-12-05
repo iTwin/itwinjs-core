@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Table */
@@ -7,12 +7,9 @@
 import * as React from "react";
 import classnames from "classnames";
 import { TableDropTargetProps } from "./withDragDrop";
-import {
-  withDragSource, withDropTarget,
-  WithDragSourceProps,
-  DragSourceArguments, DropTargetArguments,
-  DragSourceProps,
-} from "../../dragdrop";
+import { DragSourceArguments, DropTargetArguments, DragSourceProps } from "../../dragdrop/DragDropDef";
+import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
+import { withDropTarget } from "../../dragdrop/withDropTarget";
 
 import "./DragDropRow.scss";
 import { TableDragDropType } from "../../breadcrumb/breadcrumbdetails/hoc/withDragDrop";

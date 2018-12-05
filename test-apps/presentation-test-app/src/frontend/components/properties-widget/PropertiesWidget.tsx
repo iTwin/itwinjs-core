@@ -5,12 +5,12 @@
 
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationPropertyDataProvider, withUnifiedSelection } from "@bentley/presentation-components/lib/propertygrid";
+import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "@bentley/presentation-components";
 import { PropertyGrid, PropertyData, PropertyCategory } from "@bentley/ui-components";
 import "./PropertiesWidget.css";
 
 // tslint:disable-next-line:variable-name naming-convention
-const SamplePropertyGrid = withUnifiedSelection(PropertyGrid);
+const SamplePropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
 
 export interface Props {
   imodel: IModelConnection;

@@ -45,6 +45,7 @@ import { Point4d } from "../geometry4d/Point4d";
 import { CurveCollection } from "../curve/CurveCollection";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
+
 /* tslint:disable: object-literal-key-quotes no-console*/
 
 export namespace IModelJson {
@@ -1578,9 +1579,34 @@ export namespace IModelJson {
     public handleBSplineSurface3d(surface: BSplineSurface3d): any {
       // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
       // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
-      if (surface.isClosable(0)
-        || surface.isClosable(1)) {
-        // TODO
+      const periodicU = surface.isClosable(0);
+      const periodicV = surface.isClosable(1);
+      if (periodicU || periodicV) {
+        let numUPoles = surface.numPolesUV(0);
+        let numVPoles = surface.numPolesUV(1);
+        if (periodicU) numUPoles -= surface.degreeUV(0);
+        if (periodicV) numVPoles -= surface.degreeUV(1);
+        const xyz = Point3d.create();
+        const grid = [];
+        for (let j = 0; j < numVPoles; j++) {
+          const stringer = [];
+          for (let i = 0; i < numUPoles; i++) {
+            surface.getPoint3dPole(i, j, xyz)!;
+            stringer.push([xyz.x, xyz.y, xyz.z]);
+          }
+          grid.push(stringer);
+        }
+        return {
+          "bsurf": {
+            "points": grid,
+            "uKnots": surface.copyKnots(0, true),
+            "vKnots": surface.copyKnots(1, true),
+            "orderU": surface.orderUV(0),
+            "orderV": surface.orderUV(1),
+            "closedU": periodicU,
+            "closedV": periodicV,
+          },
+        };
       } else {
         return {
           "bsurf": {

@@ -7,7 +7,7 @@ import * as React from "react";
 import { Provider } from "react-redux";
 import { mount, shallow } from "enzyme";
 
-import { ConfigurableUiContent } from "../..//index";
+import { ConfigurableUiContent } from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
 describe("ConfigurableUiContent", () => {

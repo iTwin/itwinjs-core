@@ -20,7 +20,7 @@ import { UiComponents } from "@bentley/ui-components";
 import rpcs from "../common/Rpcs";
 import App from "./components/app/App";
 import "./index.css";
-import { UiCore } from "@bentley/ui-core/lib";
+import { UiCore } from "@bentley/ui-core";
 
 // initialize logging
 Logger.initializeToConsole();

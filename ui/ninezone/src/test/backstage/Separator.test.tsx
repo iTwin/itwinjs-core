@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Separator from "../..//backstage/Separator";
+import { BackstageSeparator } from "../../ui-ninezone";
 
-describe("<Separator />", () => {
+describe("<BackstageSeparator />", () => {
   it("should render", () => {
-    mount(<Separator />);
+    mount(<BackstageSeparator />);
   });
 
   it("renders correctly", () => {
-    shallow(<Separator />).should.matchSnapshot();
+    shallow(<BackstageSeparator />).should.matchSnapshot();
   });
 });

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 - present Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -13,8 +13,8 @@ import {
   Tree, TreeProps,
   NodesSelectedCallback, NodesDeselectedCallback, TreeNodeProps, TreeCellUpdatedArgs,
 } from "../../../tree/component/Tree";
-import { SelectionMode } from "../../../common";
-import { TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "../../..";
+import { SelectionMode, PageOptions } from "../../../ui-components";
+import { TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components";
 import { BeInspireTreeNode } from "../../../tree/component/BeInspireTree";
 import HighlightingEngine, { HighlightableTreeProps } from "../../../tree/HighlightingEngine";
 import { BeEvent } from "@bentley/bentleyjs-core";
@@ -671,6 +671,28 @@ describe("Tree", () => {
       renderMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(2));
     });
 
+    it("renders placeholder when node has no payload", async () => {
+      const provider: ITreeDataProvider = {
+        getNodesCount: async () => 2,
+        getNodes: async (_parent, page: PageOptions) => {
+          if (page.start === 0)
+            return [{ id: "0", label: "0" }];
+          return [{ id: "1", label: "1" }];
+        },
+      };
+
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={provider}
+          pageSize={1}
+        />);
+      }, renderSpy, 2);
+
+      expect(renderedTree.baseElement.getElementsByClassName("nz-tree-node").length).to.eq(1);
+      expect(renderedTree.baseElement.getElementsByClassName("nz-tree-placeholder").length).to.eq(1);
+    });
+
   });
 
   describe("listening to `ITreeDataProvider.onTreeNodeChanged` events", () => {
@@ -1029,4 +1051,5 @@ describe("Tree", () => {
 
     });
   });
+
 });

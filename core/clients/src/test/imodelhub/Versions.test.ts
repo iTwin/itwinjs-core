@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { AccessToken } from "../../";
+import { AccessToken } from "../../imodeljs-clients";
 import {
   Version, VersionQuery, Briefcase, ChangeSet, Thumbnail,
   ThumbnailQuery, ThumbnailSize,
-} from "../../";
+} from "../../imodeljs-clients";
 
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";

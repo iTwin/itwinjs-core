@@ -6,7 +6,22 @@ import * as React from "react";
 import { mount } from "enzyme";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { FrontstageDefProps, ZoneState, WidgetState, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, FrontstageManager, FrontstageComposer, ContentGroup, ContentLayoutDef } from "../../";
+import {
+  ZoneState,
+  WidgetState,
+  ConfigurableUiManager,
+  WidgetControl,
+  ConfigurableCreateInfo,
+  FrontstageManager,
+  FrontstageComposer,
+  ContentGroup,
+  ContentLayoutDef,
+  FrontstageProvider,
+  FrontstageProps,
+  Frontstage,
+  Zone,
+  Widget,
+} from "../../ui-framework";
 
 describe("StackedWidget", () => {
 
@@ -14,13 +29,25 @@ describe("StackedWidget", () => {
     await TestUtils.initializeUiFramework();
   });
 
-  class TestWidget extends WidgetControl {
+  class TestWidget1 extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any) {
       super(info, options);
 
       this.reactElement = (
         <div>
-          <span>This is the Test Widget</span>
+          <span>This is the Test Widget 1</span>
+        </div>
+      );
+    }
+  }
+
+  class TestWidget2 extends WidgetControl {
+    constructor(info: ConfigurableCreateInfo, options: any) {
+      super(info, options);
+
+      this.reactElement = (
+        <div>
+          <span>This is the Test Widget 2</span>
         </div>
       );
     }
@@ -28,44 +55,40 @@ describe("StackedWidget", () => {
 
   it("Producing a StackedWidget", async () => {
 
-    const myContentGroup: ContentGroup = new ContentGroup({
-      contents: [{ classId: "TestContentControl2" }],
-    });
+    class Frontstage1 extends FrontstageProvider {
 
-    const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
-      id: "SingleContent",
-      descriptionKey: "UiFramework:tests.singleContent",
-      priority: 100,
-    });
+      public get frontstage(): React.ReactElement<FrontstageProps> {
+        const myContentGroup: ContentGroup = new ContentGroup({
+          contents: [{ classId: "TestContentControl2" }],
+        });
 
-    const frontstageProps: FrontstageDefProps = {
-      id: "StackedWidget-Frontstage",
-      defaultToolId: "PlaceLine",
-      defaultLayout: myContentLayout,
-      contentGroup: myContentGroup,
+        const myContentLayout: ContentLayoutDef = new ContentLayoutDef({
+          id: "SingleContent",
+          descriptionKey: "UiFramework:tests.singleContent",
+          priority: 100,
+        });
 
-      centerRight: {
-        defaultState: ZoneState.Minimized,
-        allowsMerging: true,
-        widgetProps: [
-          {
-            classId: "StackedWidgetTestWidget",
-            defaultState: WidgetState.Open,
-            iconSpec: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-          {
-            classId: "StackedWidgetTestWidget",
-            defaultState: WidgetState.Open,
-            iconSpec: "icon-placeholder",
-            labelKey: "SampleApp:Test.my-label",
-          },
-        ],
-      },
-    };
+        return (
+          <Frontstage
+            id="StackedWidget-Frontstage"
+            defaultToolId="PlaceLine"
+            defaultLayout={myContentLayout}
+            contentGroup={myContentGroup}
+            centerRight={
+              <Zone defaultState={ZoneState.Open}
+                widgets={[
+                  <Widget id="widget1" control={TestWidget1} defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:Test.my-label" />,
+                  <Widget id="widget2" control={TestWidget2} defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:Test.my-label" />,
+                ]}
+              />
+            }
+          />
+        );
+      }
+    }
 
-    ConfigurableUiManager.registerControl("StackedWidgetTestWidget", TestWidget);
-    ConfigurableUiManager.loadFrontstage(frontstageProps);
+    const frontstageProvider = new Frontstage1();
+    ConfigurableUiManager.addFrontstageProvider(frontstageProvider);
 
     FrontstageManager.setActiveFrontstageDef(undefined); // tslint:disable-line:no-floating-promises
 
@@ -79,22 +102,10 @@ describe("StackedWidget", () => {
     const stackedWidget = wrapper.find("div.nz-widget-stacked");
     expect(stackedWidget.length).to.eq(1);
 
-    const tabs = wrapper.find("div.nz-widget-rectangular-tab-tab");
+    const tabs = wrapper.find("div.nz-draggable");
     expect(tabs.length).to.eq(2);
 
-    // NEEDSWORK - not working
-    tabs.at(0).simulate("click");
-    wrapper.update();
-
-    // tslint:disable-next-line:no-console
-    // console.log(wrapper.debug());
-
-    // NEEDSWORK - not working
-    tabs.at(1).simulate("click");
-    wrapper.update();
-
-    // tslint:disable-next-line:no-console
-    // console.log(wrapper.debug());
+    // TODO - tab click, resize, tab drag
 
     wrapper.unmount();
   });
