@@ -173,7 +173,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           },
           expand: true,
         });
-        // Defaults to all enabled
+        // tslint:disable:no-floating-promises
         this._onSetEnableAll(true);
       });
 
@@ -182,7 +182,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         if (!this._isMounted)
           return;
         this._categoryRuleset = ruleset;
-        // Defaults to all enabled
+        // tslint:disable:no-floating-promises
         this._onSetEnableAll(true);
       });
   }
