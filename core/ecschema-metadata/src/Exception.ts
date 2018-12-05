@@ -3,8 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert } from "@bentley/bentleyjs-core";
-import { BentleyError } from "@bentley/bentleyjs-core";
+import { assert, BentleyError } from "@bentley/bentleyjs-core";
 
 export const enum ECObjectsStatus {
   ECOBJECTS_ERROR_BASE = 0x88EC,

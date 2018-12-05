@@ -5,6 +5,19 @@
 
 export const formatStringRgx = /([\w.:]+)(\(([^\)]+)\))?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?(\[([^\|\]]+)([\|])?([^\]]+)?\])?/;
 
+export function* getItemNamesFromFormatString(formatString: string): Iterable<string> {
+  const match = formatString.split(formatStringRgx);
+  yield match[1]; // the Format Name
+  let index = 4;
+  while (index < match.length - 1) { // index 0 and 21 are empty strings
+    if (match[index] !== undefined)
+      yield match[index + 1]; // Unit Name
+    else
+      break;
+    index += 4;
+  }
+}
+
 export const enum FormatTraits {
   TrailZeroes = 0x1,
   KeepSingleZero = 0x2,

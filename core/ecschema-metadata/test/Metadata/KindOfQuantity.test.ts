@@ -130,10 +130,10 @@ describe("KindOfQuantity", () => {
       ],
     };
     it("async - should throw for presentationUnit having a non-existent format", async () => {
-      await expect(Schema.fromJson(createSchemaJson(presentationUnitsNonExistentFormat), context)).to.be.rejectedWith(ECObjectsError, `Unable to locate format 'TestSchema.NonexistentFormat' for the presentation unit on KindOfQuantity TestSchema.TestKindOfQuantity.`);
+      await expect(Schema.fromJson(createSchemaJson(presentationUnitsNonExistentFormat), context)).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
     });
     it("sync - should throw for presentationUnit having a non-existent format", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(presentationUnitsNonExistentFormat), context), ECObjectsError, `Unable to locate format 'TestSchema.NonexistentFormat' for the presentation unit on KindOfQuantity TestSchema.TestKindOfQuantity.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(presentationUnitsNonExistentFormat), context), ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
     });
 
     // should throw for persistenceUnit with non-existent format
@@ -146,10 +146,10 @@ describe("KindOfQuantity", () => {
       ],
     };
     it("async - should throw for persistenceUnit having a non-existent format", async () => {
-      await expect(Schema.fromJson(createSchemaJson(persistenceUnitNonExistentFormat), context)).to.be.rejectedWith(ECObjectsError, `The SchemaItem TestSchema.NonexistentFormat does not exist.`);
+      await expect(Schema.fromJson(createSchemaJson(persistenceUnitNonExistentFormat), context)).to.be.rejectedWith(ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
     });
     it("sync - should throw for persistenceUnit having a non-existent format", () => {
-      assert.throws(() => Schema.fromJsonSync(createSchemaJson(persistenceUnitNonExistentFormat), context), ECObjectsError, `The SchemaItem TestSchema.NonexistentFormat does not exist.`);
+      assert.throws(() => Schema.fromJsonSync(createSchemaJson(persistenceUnitNonExistentFormat), context), ECObjectsError, `Unable to locate SchemaItem TestSchema.NonexistentFormat.`);
     });
   });
 

@@ -14,7 +14,7 @@ import { ShowSignOption, FormatType, FormatTraits, DecimalPrecision } from "./..
 import { ECObjectsError } from "./../../src/Exception";
 import { FormatProps } from "../../src/Deserialization/JsonProps";
 import { JsonParser } from "../../src/Deserialization/JsonParser";
-import { SchemaContext } from "../../src/ecschema-metadata";
+import { SchemaContext } from "../../src/Context";
 
 function createSchemaJson(koq: any) {
   return createSchemaJsonWithItems({
