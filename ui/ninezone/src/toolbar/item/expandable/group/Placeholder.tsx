@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../../../utilities/Props";
+import { CommonProps } from "../../../../utilities/Props";
 
 /** Panel placeholder used in [[Toolbar]] component. */
 export default class PanelPlaceholder extends React.PureComponent<CommonProps> {

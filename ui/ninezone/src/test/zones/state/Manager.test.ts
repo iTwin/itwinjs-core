@@ -226,7 +226,7 @@ describe("StateManager", () => {
       expect(state.zones[9].floating).undefined;
     });
 
-    it("should unset floating bounds of dragging widget", () => {
+    it("should not unset floating bounds of dragging widget", () => {
       const props: NineZoneProps = {
         ...TestProps.defaultProps,
         draggingWidget: { id: 8, tabIndex: 1, lastPosition: { x: 0, y: 0 }, isUnmerge: false },
@@ -247,7 +247,8 @@ describe("StateManager", () => {
         },
       };
       const state = DefaultStateManager.handleWidgetTabDragEnd(props);
-      expect(state.zones[8].floating).undefined;
+      expect(state.zones[8].floating).exist;
+      state.zones[8].floating!.should.eq(props.zones[8].floating);
     });
   });
 

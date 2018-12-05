@@ -1,12 +1,12 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<MessageCenter /> renders correctly 1`] = `
-<Component
+<TrianglePopover
   className="nz-footer-messageCenter-messageCenter"
   content={
     <WithContainInViewport
       content={
-        <Unknown
+        <MessageCenterContent
           messages={undefined}
           prompt={undefined}
           tabs={undefined}
@@ -14,10 +14,10 @@ exports[`<MessageCenter /> renders correctly 1`] = `
       }
       noVerticalContainment={true}
       titleBar={
-        <Unknown
+        <TitleBar
           buttons={undefined}
           title={
-            <Unknown
+            <DialogTitle
               text={undefined}
             />
           }

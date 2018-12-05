@@ -1,30 +1,39 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Item /> renders correctly 1`] = `
-<li
-  className="nz-backstage-item"
+<button
+  className="nz-toolbar-item-icon"
+  onClick={[Function]}
 >
-  <span />
-</li>
+  <div
+    className="nz-icon"
+  />
+</button>
 `;
 
 exports[`<Item /> should apply style 1`] = `
-<li
-  className="nz-backstage-item"
+<button
+  className="nz-toolbar-item-icon"
+  onClick={[Function]}
   style={
     Object {
       "backgroundColor": "red",
     }
   }
 >
-  <span />
-</li>
+  <div
+    className="nz-icon"
+  />
+</button>
 `;
 
 exports[`<Item /> should set is-active class 1`] = `
-<li
-  className="nz-backstage-item nz-is-active"
+<button
+  className="nz-toolbar-item-icon nz-is-active"
+  onClick={[Function]}
 >
-  <span />
-</li>
+  <div
+    className="nz-icon"
+  />
+</button>
 `;

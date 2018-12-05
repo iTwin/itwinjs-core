@@ -3,6 +3,8 @@
 exports[`<HistoryTray /> renders correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-history-tray nz-direction-left"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
 >
   <div
     className="nz-items"
@@ -16,6 +18,8 @@ exports[`<HistoryTray /> renders correctly 1`] = `
 exports[`<HistoryTray /> renders extended 1`] = `
 <div
   className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-is-extended"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
 >
   <div
     className="nz-items"
@@ -29,6 +33,8 @@ exports[`<HistoryTray /> renders extended 1`] = `
 exports[`<HistoryTray /> renders items 1`] = `
 <div
   className="nz-toolbar-item-expandable-history-tray nz-direction-left nz-extend-is-visible"
+  onMouseEnter={[Function]}
+  onMouseLeave={[Function]}
 >
   <div
     className="nz-items"

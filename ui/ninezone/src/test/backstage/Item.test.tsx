@@ -12,18 +12,15 @@ describe("<Item />", () => {
     mount(<Item />);
   });
 
-  // NEEDSWORK_MODULARIZATION - check for error or update snap.
-  it.skip("renders correctly", () => {
+  it("renders correctly", () => {
     shallow(<Item />).should.matchSnapshot();
   });
 
-  // NEEDSWORK_MODULARIZATION - check for error or update snap.
-  it.skip("should apply style", () => {
+  it("should apply style", () => {
     shallow(<Item style={{ backgroundColor: "red" }} />).should.matchSnapshot();
   });
 
-  // NEEDSWORK_MODULARIZATION - check for error or update snap.
-  it.skip("should set is-active class", () => {
+  it("should set is-active class", () => {
     shallow(<Item isActive />).should.matchSnapshot();
   });
 });

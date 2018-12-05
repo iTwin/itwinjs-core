@@ -12,8 +12,7 @@ describe("<Expandable />", () => {
     mount(<Expandable />);
   });
 
-  // NEEDSWORK_MODULARIZATION - check for error or update snap.
-  it.skip("renders correctly", () => {
+  it("renders correctly", () => {
     shallow(<Expandable />).should.matchSnapshot();
   });
 });

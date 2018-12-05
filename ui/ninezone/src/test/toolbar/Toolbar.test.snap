@@ -5,7 +5,7 @@ exports[`<Toolbar /> renders correctly 1`] = `
   className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-start"
 >
   <div
-    className="nz-expanded nz-history"
+    className="nz-expanded nz-histories"
   />
   <div
     className="nz-expanded nz-panels"
@@ -22,7 +22,7 @@ exports[`<Toolbar /> renders with expandsTo 1`] = `
   className="nz-toolbar-toolbar nz-direction-right nz-vertical nz-panel-alignment-start"
 >
   <div
-    className="nz-expanded nz-history"
+    className="nz-expanded nz-histories"
   />
   <div
     className="nz-expanded nz-panels"
@@ -39,7 +39,7 @@ exports[`<Toolbar /> renders with panelAlignment 1`] = `
   className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-end"
 >
   <div
-    className="nz-expanded nz-history"
+    className="nz-expanded nz-histories"
   />
   <div
     className="nz-expanded nz-panels"
