@@ -12,7 +12,6 @@ import * as fs from "fs";
 import * as path from "path";
 import * as https from "https";
 import { Transform, TransformCallback } from "stream";
-import * as sareq from "superagent";
 
 const loggingCategory = "imodeljs-clients.imodelhub";
 
@@ -113,20 +112,22 @@ export class AzureFileHandler implements FileHandler {
 
     try {
       await new Promise((resolve, reject) => {
-        sareq
-          .get(downloadUrl)
-          .agent(this.agent)
-          .timeout({
-            response: 10000,
-          })
-          .pipe(bufferedStream)
-          .pipe(fileStream)
+        https.get(downloadUrl, ((res) => {
+          res.pipe(bufferedStream).pipe(fileStream)
+            .on("error", (error: any) => {
+              fileStream.close();
+              const parsedError = ResponseError.parse(error);
+              reject(parsedError);
+            })
+            .on("finish", () => {
+              fileStream.close();
+              resolve();
+            });
+        }))
           .on("error", (error: any) => {
+            fileStream.close();
             const parsedError = ResponseError.parse(error);
             reject(parsedError);
-          })
-          .on("finish", () => {
-            resolve();
           });
       });
     } catch (err) {
