@@ -59,6 +59,7 @@ export interface WidgetDefProps extends ItemProps {
   isFloatingStateWindowResizable?: boolean;     // Default - true
   isToolSettings?: boolean;                     // Default - false
   isStatusBar?: boolean;                        // Default - false
+  fillZone?: boolean;                           // Default - false
 
   applicationData?: any;
 
@@ -112,6 +113,7 @@ export class WidgetDef extends ItemDefBase {
   public isToolSettings: boolean = false;
   public isStatusBar: boolean = false;
   public stateChanged: boolean = false;
+  public fillZone: boolean = false;
   public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
   public stateSyncIds: string[] = [];
   public widgetType: WidgetType = WidgetType.Rectangular;
@@ -172,6 +174,8 @@ export class WidgetDef extends ItemDefBase {
         this.isToolSettings = widgetProps.isToolSettings;
       if (widgetProps.isStatusBar !== undefined)
         this.isStatusBar = widgetProps.isStatusBar;
+      if (widgetProps.fillZone !== undefined)
+        this.fillZone = widgetProps.fillZone;
 
       this.widgetType = this.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
 

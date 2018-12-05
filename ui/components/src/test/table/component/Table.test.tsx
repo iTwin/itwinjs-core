@@ -183,7 +183,7 @@ describe("Table", () => {
       onPropertyUpdated={onPropertyUpdated}
       settingsIdentifier="test"
       reorderableColumns={true}
-      togglableColumns={true}
+      showHideColumns={true}
       uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
     />);
     await waitForSpy(table, onRowsLoaded);
@@ -728,7 +728,7 @@ describe("Table", () => {
       const headerCellDiv = table.find("div.react-grid-HeaderCell-sortable");
       headerCellDiv.simulate("click");  // Ascending
       headerCellDiv.simulate("click");  // Descending
-      headerCellDiv.simulate("click");  // Nosort
+      headerCellDiv.simulate("click");  // NoSort
     });
 
   });
@@ -780,7 +780,7 @@ describe("Table", () => {
       backend.simulateEndDrag();
     });
   });
-  describe("columns enable/disablable", async () => {
+  describe("columns show/hide", async () => {
     it("should open context menu", () => {
       const t = table.find(tableWrapper);
       t.simulate("contextmenu", { currentTarget: t, clientX: -1, clientY: -1 });

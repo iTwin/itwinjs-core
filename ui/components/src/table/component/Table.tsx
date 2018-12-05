@@ -69,11 +69,11 @@ export interface TableProps {
   onPropertyUpdated?: (propertyArgs: PropertyUpdatedArgs, cellArgs: TableCellUpdatedArgs) => Promise<boolean>;
   /** @hidden */
   renderRow?: (item: RowItem, props: TableRowProps) => React.ReactNode;
-  /** Enables context menu to enable/disable columns */
-  togglableColumns?: boolean;
+  /** Enables context menu to show/hide columns */
+  showHideColumns?: boolean;
   /** Indicates whether the Table columns are reorderable */
   reorderableColumns?: boolean;
-  /** Optional parameter for persistent UI settings. Used for row reordering and row collapsing persistency. */
+  /** Optional parameter for persistent UI settings. Used for column reordering and show persistency. */
   uiSettings?: UiSettings;
   /** Identifying string used for persistent state. */
   settingsIdentifier?: string;
@@ -948,7 +948,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _hideContextMenu = () => {
     // istanbul ignore else
-    if (this.props.togglableColumns)
+    if (this.props.showHideColumns)
       this.setState({ menuVisible: false });
   }
 
@@ -983,8 +983,8 @@ export class Table extends React.Component<TableProps, TableState> {
     const visibleColumns = this._getVisibleColumns();
     return (
       <>
-        <div className="react-data-grid-wrapper" onMouseDown={this._onMouseDown} onContextMenu={this.props.togglableColumns ? this._showContextMenu : undefined}>
-          {this.props.togglableColumns &&
+        <div className="react-data-grid-wrapper" onMouseDown={this._onMouseDown} onContextMenu={this.props.showHideColumns ? this._showContextMenu : undefined}>
+          {this.props.showHideColumns &&
             <ShowHideMenu
               opened={this.state.menuVisible}
               items={this.state.columns.map((column) => ({ id: column.key, label: column.name }))}

@@ -10,7 +10,7 @@ import { StandardRotationNavigationAid } from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
 
 // NEEDSWORK_MODULARIZATION needs work after modularization reorganization. Might just need snap update, might now be wrong.
-describe.skip("StandardRotationNavigationAid", () => {
+describe("StandardRotationNavigationAid", () => {
 
   before(async () => {
     await TestUtils.initializeUiFramework();

@@ -109,7 +109,7 @@ class TreeExampleContent extends React.Component<{}, TreeExampleState> {
             <option value={SelectionMode.Extended} > Extended </option>
           </select>
         </div>
-        <div style={{ flex: "1", height: "100%" }}>
+        <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
           <Tree dataProvider={this.state.dataProvider} selectionMode={this.state.selectionMode} onCellEditing={this._onCellEditing} onCellUpdated={this._onCellUpdated} />
         </div>
       </div >

@@ -146,6 +146,7 @@ export class Zone extends React.Component<ZoneProps> {
         isDragged={runtimeProps.isDragged}
         lastPosition={runtimeProps.lastPosition}
         isUnmergeDrag={runtimeProps.isUnmergeDrag}
+        fillZone={zoneDef.shouldFillZone}
       />
     );
   }
