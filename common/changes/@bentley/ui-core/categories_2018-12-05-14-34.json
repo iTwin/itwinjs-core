@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Updated TreeNodes to manage checkboxes",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "Allison.Macdonald@bentley.com"
+}
