@@ -6,7 +6,7 @@
 
 import { RenderSchedule, RgbColor } from "@bentley/imodeljs-common";
 import { Range1d } from "@bentley/geometry-core";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { TileTreeModelState } from "./ModelState";
 
@@ -56,18 +56,18 @@ export namespace RenderScheduleState {
     }
   }
   export class ElementTimeline implements RenderSchedule.ElementTimelineProps {
-    public elementID: Id64String;
+    public elementIds: Id64String[];
     public visibilityTimeline?: VisibilityEntry[];
     public colorTimeline?: ColorEntry[];
     public transformTimeline?: TransformEntry[];
     public cuttingPlaneTimeline?: CuttingPlaneEntry[];
-    public get isValid() { return !Id64.isInvalid(this.elementID) && (Array.isArray(this.visibilityTimeline) && this.visibilityTimeline.length > 0) || (Array.isArray(this.colorTimeline) && this.colorTimeline.length > 0); }
-    private constructor(elementId: Id64String) { this.elementID = elementId; }
+    public get isValid() { return this.elementIds.length > 0 && (Array.isArray(this.visibilityTimeline) && this.visibilityTimeline.length > 0) || (Array.isArray(this.colorTimeline) && this.colorTimeline.length > 0); }
+    private constructor(elementIds: Id64String[]) { this.elementIds = elementIds; }
     public static fromJSON(json?: RenderSchedule.ElementTimelineProps): ElementTimeline {
       if (!json)
-        return new ElementTimeline("");
+        return new ElementTimeline([]);
 
-      const val = new ElementTimeline(json.elementID);
+      const val = new ElementTimeline(json.elementIds);
       if (json.visibilityTimeline) {
         val.visibilityTimeline = [];
         json.visibilityTimeline.forEach((entry) => val.visibilityTimeline!.push(new VisibilityEntry(entry)));
@@ -122,38 +122,64 @@ export namespace RenderScheduleState {
         transparencyOverride = 1.0 - interpolate(timeline[interval.index0].value, timeline[interval.index1].value, interval.fraction) / 100.0;
       }
       if (colorOverride || transparencyOverride)
-        overrides.set(this.elementID, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
+        for (let elementId of this.elementIds)
+          overrides.set(elementId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
     }
   }
-  export class Script {
-    public duration: Range1d = Range1d.createNull();
-    public elementTimelines?: ElementTimeline[];
+  export class ModelTimeline implements RenderSchedule.ModelTimelineProps {
+    public modelId: Id64String;
+    public elementTimelines: ElementTimeline[] = [];
     public containsFeatureOverrides: boolean = false;
     public containsAnimation: boolean = false;
+    private constructor(modelId: Id64String) { this.modelId = modelId; }
+    public get duration() {
+      const duration = Range1d.createNull();
+      this.elementTimelines.forEach((element) => duration.extendRange(element.duration));
+      return duration;
+    }
+    public static fromJSON(json?: RenderSchedule.ModelTimelineProps) {
+      if (!json)
+        return new ModelTimeline("");
 
-    public static fromJSON(elementTimelines: RenderSchedule.ElementTimelineProps[]): Script | undefined {
-      if (elementTimelines.length === 0)
-        return undefined;
-
-      const value = new Script();
-      value.elementTimelines = [];
-      elementTimelines.forEach((entry) => {
-        const elementTimeline = ElementTimeline.fromJSON(entry);
-        value.elementTimelines!.push(elementTimeline);
-        value.duration.extendRange(elementTimeline.duration);
-        if (elementTimeline.containsFeatureOverrides)
-          value.containsFeatureOverrides = true;
-        if (elementTimeline.containsAnimation)
-          value.containsAnimation = true;
-      });
+      const value = new ModelTimeline(json.modelId);
+      if (json.elementTimelines)
+        json.elementTimelines.forEach((element) => {
+          const elementTimeline = ElementTimeline.fromJSON(element);
+          value.elementTimelines.push(elementTimeline);
+          if (elementTimeline.containsFeatureOverrides)
+            value.containsFeatureOverrides = true;
+          if (elementTimeline.containsAnimation)
+            value.containsAnimation = true;
+        });
 
       return value;
+    }
+    public getSymbologyOverrides(overrides: Map<Id64String, FeatureSymbology.Appearance>, time: number) { this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time)); }
+  }
+
+  export class Script {
+    public modelTimelines: ModelTimeline[] = [];
+
+    public static fromJSON(modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined {
+      const value = new Script();
+      modelTimelines.forEach((entry) => value.modelTimelines.push(ModelTimeline.fromJSON(entry)));
+
+      return value;
+    }
+    public get duration() {
+      const duration = Range1d.createNull();
+      this.modelTimelines.forEach((model) => duration.extendRange(model.duration));
+      return duration;
+    }
+    public get containsFeatureOverrides() {
+      let containsFeatureOverrides = false;
+      this.modelTimelines.forEach((entry) => { if (entry.containsFeatureOverrides) containsFeatureOverrides = true; });
+      return containsFeatureOverrides;
     }
 
     public getSymbologyOverrides(time: number) {
       const overrides: Map<Id64String, FeatureSymbology.Appearance> = new Map<Id64String, FeatureSymbology.Appearance>();
-      if (this.elementTimelines)
-        this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
+      this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
 
       return overrides;
     }
