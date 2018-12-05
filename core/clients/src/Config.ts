@@ -27,6 +27,16 @@ export class Config {
         } catch (error) {
             // couldn't get config.
         }
+
+        // Merge system environment variables that start with "imjs"
+        const imjsPrefix = /^imjs/i;
+        const systemEnv = Object.keys(process.env)
+            .filter((key) => imjsPrefix.test(key))
+            .reduce<any>((env: any, key: string) => {
+                env[key] = process.env[key];
+                return env;
+            }, {});
+        this.merge(systemEnv);
     }
 
     /** Translate a external var name to a local one if it already exist */
