@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { AccessToken, IModelClient } from "../../imodeljs-clients";
 import {
-  Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
+  AccessToken, IModelClient, Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
   AggregateResponseError, ConflictingLocksError,
   IModelHubClientError,
 } from "../../imodeljs-clients";

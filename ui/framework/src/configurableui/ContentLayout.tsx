@@ -8,8 +8,6 @@ import * as React from "react";
 import * as classnames from "classnames";
 
 import "./ContentLayout.scss";
-
-import { CSSProperties } from "react";
 import { FrontstageManager, ContentLayoutActivatedEventArgs } from "./FrontstageManager";
 import { ContentGroup } from "./ContentGroup";
 import { ContentViewManager, ActiveContentChangedEventArgs } from "./ContentViewManager";
@@ -78,7 +76,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
   }
 
   public render(): React.ReactNode {
-    const divStyle: CSSProperties = {
+    const divStyle: React.CSSProperties = {
       position: "relative",
       width: "100%",
       height: "100%",
@@ -259,7 +257,7 @@ interface SingleContentProps {
 class SingleContentContainer extends React.Component<SingleContentProps> {
 
   public render(): React.ReactNode {
-    const style: CSSProperties = {
+    const style: React.CSSProperties = {
       width: "100%",
       height: "100%",
     };

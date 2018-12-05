@@ -8,7 +8,7 @@
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 
-import { CurveCollection } from "../curve/CurveCollection";
+import { CurveCollection, CurveChain } from "../curve/CurveCollection";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { Geometry } from "../Geometry";
@@ -16,7 +16,6 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { SolidPrimitive } from "./SolidPrimitive";
 import { SweepContour } from "./SweepContour";
 import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
-import { CurveChain } from "../curve/CurveCollection";
 
 export class RuledSweep extends SolidPrimitive {
   private _contours: SweepContour[];

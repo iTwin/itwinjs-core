@@ -28,6 +28,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "_navigationAidId": "",
       "classId": undefined,
       "featureId": "",
+      "fillZone": false,
       "horizontalDirection": 3,
       "horizontalItems": undefined,
       "id": "navigationWidget",

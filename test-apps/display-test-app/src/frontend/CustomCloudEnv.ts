@@ -2,9 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, UserInfo } from "@bentley/imodeljs-clients";
-import { IModelBankClient } from "@bentley/imodeljs-clients";
-import { IModelBankFileSystemContextClient } from "@bentley/imodeljs-clients";
+import { AccessToken, UserInfo, IModelBankClient, IModelBankFileSystemContextClient } from "@bentley/imodeljs-clients";
 import { SimpleViewState } from "./SimpleViewState";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";

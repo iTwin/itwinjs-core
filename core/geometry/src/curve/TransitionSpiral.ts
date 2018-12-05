@@ -14,7 +14,7 @@ import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Quadrature } from "../numerics/Quadrature";
-import { GeometryHandler } from "../geometry3d/GeometryHandler";
+import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
@@ -22,7 +22,6 @@ import { GeometryQuery } from "./GeometryQuery";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { LineString3d } from "./LineString3d";
 // import {} from "./";
 

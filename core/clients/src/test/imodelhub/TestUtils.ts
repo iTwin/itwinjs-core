@@ -8,10 +8,7 @@ import * as chai from "chai";
 import { GuidString, Guid, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
 
 import {
-  ECJsonTypeMap, AccessToken, UserInfo, Project,
-  ProgressInfo,
-} from "../../imodeljs-clients";
-import {
+  ECJsonTypeMap, AccessToken, UserInfo, Project, ProgressInfo,
   IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
   MultiLock, Lock, VersionQuery,

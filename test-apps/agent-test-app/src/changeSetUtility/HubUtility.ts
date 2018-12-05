@@ -3,13 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { ChangeSetUtilityConfig } from "./ChangeSetUtilityConfig";
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, IModelHubClient } from "@bentley/imodeljs-clients";
-import { AzureFileHandler } from "@bentley/imodeljs-clients";
-import { Project, IModelQuery } from "@bentley/imodeljs-clients";
-import { HubIModel as HubIModel } from "@bentley/imodeljs-clients";
+import {
+    AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, ConnectClient, IModelHubClient,
+    AzureFileHandler, Project, IModelQuery, HubIModel, Version,
+} from "@bentley/imodeljs-clients";
 import { Logger, assert, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { Version } from "@bentley/imodeljs-clients";
 import * as path from "path";
 
 const actx = new ActivityLoggingContext("");

@@ -2,10 +2,9 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { RpcProtocol, SerializedRpcRequest } from "../core/RpcProtocol";
+import { RpcProtocol, SerializedRpcRequest, RpcRequestFulfillment } from "../core/RpcProtocol";
 import { MobileRpcConfiguration } from "./MobileRpcManager";
 import { MobileRpcRequest } from "./MobileRpcRequest";
-import { RpcRequestFulfillment } from "../core/RpcProtocol";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
 import { RpcSerializedValue } from "../core/RpcMarshaling";

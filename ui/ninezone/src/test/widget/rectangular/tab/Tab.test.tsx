@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Tab, TabMode } from "../../../../ui-ninezone";
-import { HorizontalAnchor } from "../../../../ui-ninezone";
+import { HorizontalAnchor, Tab, TabMode } from "../../../../ui-ninezone";
 
 describe("<Tab />", () => {
   it("should render", () => {

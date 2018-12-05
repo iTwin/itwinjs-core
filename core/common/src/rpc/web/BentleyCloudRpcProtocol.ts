@@ -10,8 +10,7 @@ import { SerializedRpcOperation } from "../core/RpcProtocol";
 import { RpcOperation } from "../core/RpcOperation";
 import { RpcRequest } from "../core/RpcRequest";
 import { IModelError } from "../../IModelError";
-import { BentleyStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { Logger, assert } from "@bentley/bentleyjs-core";
+import { BentleyStatus, OpenMode, Logger, assert } from "@bentley/bentleyjs-core";
 import { URL } from "url";
 
 enum AppMode {

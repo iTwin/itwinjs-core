@@ -15,13 +15,10 @@ import { FrontstageManager, WidgetStateChangedEventArgs } from "./FrontstageMana
 import { StatusBarWidgetControl } from "./StatusBarWidgetControl";
 import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
-import { ZonePropsBase, DropTarget } from "@bentley/ui-ninezone";
-import { WidgetProps as NZ_WidgetProps } from "@bentley/ui-ninezone";
-import { ZoneComponent as NZ_Zone } from "@bentley/ui-ninezone";
-import { RectangleProps } from "@bentley/ui-ninezone";
-import { GhostOutline } from "@bentley/ui-ninezone";
-import { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone";
-import { PointProps } from "@bentley/ui-ninezone";
+import {
+  ZonePropsBase, DropTarget, WidgetProps as NZ_WidgetProps, ZoneComponent as NZ_Zone, RectangleProps,
+  GhostOutline, HorizontalAnchor, VerticalAnchor, PointProps,
+} from "@bentley/ui-ninezone";
 
 // -----------------------------------------------------------------------------
 // Zone React Components
@@ -41,6 +38,7 @@ export interface FrameworkZoneProps {
   isDragged: boolean | undefined;
   lastPosition: PointProps | undefined;
   isUnmergeDrag: boolean;
+  fillZone?: boolean;
 }
 
 interface FrameworkZoneState {
@@ -196,7 +194,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
     return (
       <StackedWidget
-        fillZone={this.props.zoneProps.isLayoutChanged}
+        fillZone={this.props.fillZone || this.props.zoneProps.isLayoutChanged}
         horizontalAnchor={this.props.horizontalAnchor}
         isDragged={this.props.isDragged}
         isFloating={this.props.zoneProps.floating ? true : false}

@@ -4,14 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { TestConfig } from "../TestConfig";
+import { TestConfig, TestUsers } from "../TestConfig";
 
 import { IModelHubClientError, IModelClient } from "../../imodeljs-clients";
 import { AccessToken } from "../../Token";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
 import * as utils from "./TestUtils";
 import { UserStatisticsQuery, UserStatistics } from "../../imodelhub/Users";
-import { TestUsers } from "../TestConfig";
 import { IModelHubStatus, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
 
 chai.should();

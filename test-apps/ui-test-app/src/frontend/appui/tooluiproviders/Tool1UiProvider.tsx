@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { ConfigurableCreateInfo } from "@bentley/ui-framework";
-import { ToolUiProvider } from "@bentley/ui-framework";
+import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@bentley/ui-framework";
 
 import { ToolAssistanceItem, ToolAssistanceSeparator } from "@bentley/ui-ninezone";
 import { SampleAppIModelApp } from "../..";

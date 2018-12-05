@@ -5,7 +5,6 @@
 /** @module Widget */
 
 import * as React from "react";
-import { CSSProperties } from "react";
 
 import ConfigurableUiManager from "./ConfigurableUiManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
@@ -55,7 +54,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 
     if (this._navigationAidControl) {
       const size = this._navigationAidControl.getSize() || "64px";
-      const divStyle: CSSProperties = {
+      const divStyle: React.CSSProperties = {
         width: size,
         height: size,
       };

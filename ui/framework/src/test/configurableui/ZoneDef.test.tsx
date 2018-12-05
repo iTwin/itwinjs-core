@@ -60,6 +60,7 @@ describe("ZoneDef", () => {
     zoneDef.addWidgetDef(new WidgetDef({
       id: "IdTest",
       classId: "Test2",
+      fillZone: true,
     }));
 
     expect(zoneDef.widgetDefs).to.have.lengthOf(2);
@@ -67,6 +68,7 @@ describe("ZoneDef", () => {
     expect(zoneDef.isToolSettings).to.be.false;
     expect(zoneDef.isStatusBar).to.be.false;
     expect(zoneDef.findWidgetDef("IdTest")).to.not.be.undefined;
+    expect(zoneDef.shouldFillZone).to.be.true;
   });
 
 });

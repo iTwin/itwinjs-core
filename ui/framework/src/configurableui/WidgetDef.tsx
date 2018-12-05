@@ -12,8 +12,7 @@ import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
 import { CommandItemDef } from "../configurableui/Item";
-import { ItemDefBase } from "./ItemDefBase";
-import { BaseItemState } from "./ItemDefBase";
+import { ItemDefBase, BaseItemState } from "./ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../SyncUiEventDispatcher";
 
 import { Direction } from "@bentley/ui-ninezone";
@@ -59,6 +58,7 @@ export interface WidgetDefProps extends ItemProps {
   isFloatingStateWindowResizable?: boolean;     // Default - true
   isToolSettings?: boolean;                     // Default - false
   isStatusBar?: boolean;                        // Default - false
+  fillZone?: boolean;                           // Default - false
 
   applicationData?: any;
 
@@ -112,6 +112,7 @@ export class WidgetDef extends ItemDefBase {
   public isToolSettings: boolean = false;
   public isStatusBar: boolean = false;
   public stateChanged: boolean = false;
+  public fillZone: boolean = false;
   public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
   public stateSyncIds: string[] = [];
   public widgetType: WidgetType = WidgetType.Rectangular;
@@ -172,6 +173,8 @@ export class WidgetDef extends ItemDefBase {
         this.isToolSettings = widgetProps.isToolSettings;
       if (widgetProps.isStatusBar !== undefined)
         this.isStatusBar = widgetProps.isStatusBar;
+      if (widgetProps.fillZone !== undefined)
+        this.fillZone = widgetProps.fillZone;
 
       this.widgetType = this.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
 

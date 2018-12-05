@@ -6,8 +6,7 @@ import * as React from "react";
 import * as classnames from "classnames";
 import "./Common.scss";
 import "./PopupTest.scss";
-import { Popup, Position } from "@bentley/ui-core";
-import { Toggle } from "@bentley/ui-core";
+import { Popup, Position, Toggle } from "@bentley/ui-core";
 
 interface PopupTestProps {
   onClose: () => void;

@@ -4,12 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { assert, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { assert, ActivityLoggingContext, BentleyError, Guid, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
 import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation, BackgroundMapType, BackgroundMapProps } from "@bentley/imodeljs-common";
-import { JsonUtils } from "@bentley/bentleyjs-core";
-import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle } from "@bentley/geometry-core";
+import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile, TileRequests } from "./TileTree";
-import { BentleyError, IModelStatus } from "@bentley/bentleyjs-core";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
@@ -17,7 +15,6 @@ import { RenderSystem } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { SceneContext, DecorateContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
-import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { MessageBoxType, MessageBoxIconType } from "../NotificationManager";
 
 function longitudeToMercator(longitude: number) { return (longitude + Angle.piRadians) / Angle.pi2Radians; }

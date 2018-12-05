@@ -5,15 +5,14 @@
 /** @module StatusBar */
 
 import * as React from "react";
-import { ReactNode } from "react";
-
 import { StatusBarFieldId, IStatusBar, StatusBarWidgetControl } from "./StatusBarWidgetControl";
 
-import { Footer, Activity as ActivityMessage, Modal as ModalMessage, Dialog as ModalMessageDialog, ScrollableContent as DialogScrollableContent, Buttons as DialogButtonsContent } from "@bentley/ui-ninezone";
-import { Toast as ToastMessage, Stage as ToastMessageStage, Sticky as StickyMessage, StatusMessage, MessageLayout as StatusMessageLayout } from "@bentley/ui-ninezone";
-import { Label as MessageLabel, MessageButton, Status } from "@bentley/ui-ninezone";
+import {
+  Footer, Activity as ActivityMessage, Modal as ModalMessage, Dialog as ModalMessageDialog, ScrollableContent as DialogScrollableContent, Buttons as DialogButtonsContent,
+  Toast as ToastMessage, Stage as ToastMessageStage, Sticky as StickyMessage, StatusMessage, MessageLayout as StatusMessageLayout,
+  Label as MessageLabel, MessageButton, Status, Hyperlink, Progress,
+} from "@bentley/ui-ninezone";
 import { BlueButton as Button } from "@bentley/bwc";
-import { Hyperlink, Progress } from "@bentley/ui-ninezone";
 import { NotifyMessageDetails, OutputMessageType } from "@bentley/imodeljs-frontend";
 
 import { MessageContainer, MessageSeverity } from "@bentley/ui-core";
@@ -71,7 +70,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     toastMessageStage: ToastMessageStage.Visible,
   };
 
-  public render(): ReactNode {
+  public render(): React.ReactNode {
     let footerSections: React.ReactNode = null;
     const widgetControl = this.props.widgetControl;
     if (widgetControl && widgetControl.getReactNode) {

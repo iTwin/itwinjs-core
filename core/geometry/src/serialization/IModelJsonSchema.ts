@@ -20,7 +20,7 @@ import { CoordinateXYZ } from "../curve/CoordinateXYZ";
 import { TransitionSpiral3d } from "../curve/TransitionSpiral";
 import { Transform } from "../geometry3d/Transform";
 import { UnionRegion } from "../curve/UnionRegion";
-import { BagOfCurves } from "../curve/CurveCollection";
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { ParityRegion } from "../curve/ParityRegion";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
@@ -42,7 +42,6 @@ import { Arc3d } from "../curve/Arc3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Point4d } from "../geometry4d/Point4d";
-import { CurveCollection } from "../curve/CurveCollection";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 

@@ -6,7 +6,6 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { CSSProperties } from "react";
 import "./ProjectTabs.scss";
 
 /**
@@ -47,7 +46,7 @@ export class ProjectTab extends React.Component<TabProps> {
   public renderIndicator() {
     const percentageOffset = this.props.selectedTabIndex! * 100;
     const translate = "translate(0," + percentageOffset + "%)";
-    const translateStyle: CSSProperties = { transform: translate };
+    const translateStyle: React.CSSProperties = { transform: translate };
 
     return (
       <div className="tab-indicator" style={translateStyle}></div>

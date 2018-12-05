@@ -12,10 +12,10 @@ import { GroupItemProps, AnyItemDef } from "./ItemProps";
 import { Icon } from "./IconComponent";
 import { ItemList, ItemMap } from "./ItemMap";
 
-import { Item } from "@bentley/ui-ninezone";
-import { HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry } from "@bentley/ui-ninezone";
-import { ExpandableItem, GroupColumn, GroupTool, GroupToolExpander } from "@bentley/ui-ninezone";
-import { Group as ToolGroupComponent, NestedGroup as NestedToolGroup, Direction } from "@bentley/ui-ninezone";
+import {
+  Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn,
+  GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroup, Direction,
+} from "@bentley/ui-ninezone";
 
 // -----------------------------------------------------------------------------
 // GroupItemDef class

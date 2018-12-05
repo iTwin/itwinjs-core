@@ -8,9 +8,8 @@ import { request, RequestOptions, Response } from "./Request";
 import { Client } from "./Client";
 import { AuthorizationToken, AccessToken } from "./Token";
 import { SettingsAdmin, SettingsStatus, SettingsResult } from "./SettingsAdmin";
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { ImsDelegationSecureTokenClient } from "./ImsClients";
-import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Client API for the CONNECT ProductSettingsService - implements the SettingsAdmin interface when settings are stored by CONNECT. */
 export class ConnectSettingsClient extends Client implements SettingsAdmin {

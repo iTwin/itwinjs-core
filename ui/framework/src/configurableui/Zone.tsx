@@ -17,11 +17,7 @@ import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "./Fro
 import { ToolSettingsZone } from "./ToolSettingsZone";
 import { StatusBarZone } from "./StatusBarZone";
 
-import { isStatusZone } from "@bentley/ui-ninezone";
-import { ZonePropsBase as NZ_ZoneProps, DropTarget } from "@bentley/ui-ninezone";
-import { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone";
-import { RectangleProps } from "@bentley/ui-ninezone";
-import { PointProps } from "@bentley/ui-ninezone";
+import { isStatusZone, ZonePropsBase as NZ_ZoneProps, DropTarget, HorizontalAnchor, VerticalAnchor, RectangleProps, PointProps } from "@bentley/ui-ninezone";
 
 /** Properties of a [[Zone]] component
  */
@@ -146,6 +142,7 @@ export class Zone extends React.Component<ZoneProps> {
         isDragged={runtimeProps.isDragged}
         lastPosition={runtimeProps.lastPosition}
         isUnmergeDrag={runtimeProps.isUnmergeDrag}
+        fillZone={zoneDef.shouldFillZone}
       />
     );
   }

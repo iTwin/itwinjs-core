@@ -4,16 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
-import { ConfigurableUiManager, FrontstageManager, WidgetState } from "@bentley/ui-framework";
-import { ContentGroupProps, ViewClass } from "@bentley/ui-framework";
-import { TaskPropsList } from "@bentley/ui-framework";
-import { WorkflowPropsList } from "@bentley/ui-framework";
-import { ContentLayoutProps } from "@bentley/ui-framework";
+import {
+  ConfigurableUiManager, FrontstageManager, WidgetState,
+  ContentGroupProps, ViewClass, TaskPropsList, WorkflowPropsList, ContentLayoutProps,
+} from "@bentley/ui-framework";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 
 /** Include application registered Controls in Webpack
  */
-import "./contentviews/IModelViewport";   // TODO - move to ui-framework
 import "./contentviews/CubeContent";
 import "./contentviews/TableExampleContent";
 import "./contentviews/TreeExampleContent";
@@ -32,7 +30,7 @@ import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
-import IModelViewportControl from "./contentviews/IModelViewport";
+import { IModelViewportControl } from "./contentviews/IModelViewport";
 
 /** Example Ui Configuration for an iModelJS App
  */

@@ -14,11 +14,10 @@ import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
 import { LUTDimensions, LUTParams } from "./FeatureDimensions";
 import { Target } from "./Target";
-import { OvrFlags } from "./RenderFlags";
+import { OvrFlags, RenderPass } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
-import { RenderPass } from "./RenderFlags";
 
 export class FeatureOverrides implements IDisposable {
   public lut?: TextureHandle;

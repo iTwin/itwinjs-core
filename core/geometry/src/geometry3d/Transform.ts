@@ -9,10 +9,8 @@ import { Geometry, AxisOrder, BeJSONFunctions } from "../Geometry";
 import { Point4d } from "../geometry4d/Point4d";
 import { Range3d } from "./Range";
 import { Point2d } from "./Point2dVector2d";
-import { XYAndZ } from "./XYZProps";
-import { Point3d, Vector3d } from "./Point3dVector3d";
-import { XAndY, TransformProps } from "./XYZProps";
-import { XYZ } from "./Point3dVector3d";
+import { XAndY, XYAndZ, TransformProps } from "./XYZProps";
+import { XYZ, Point3d, Vector3d } from "./Point3dVector3d";
 import { Matrix3d } from "./Matrix3d";
 
 /** A transform is an origin and a Matrix3d.

@@ -10,9 +10,7 @@ import { Point2d, Vector2d } from "./Point2dVector2d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
 import { Matrix3d } from "./Matrix3d";
-import { Range1dProps, Range2dProps, Range3dProps } from "./XYZProps";
-import { LowAndHighXYZ, LowAndHighXY } from "./XYZProps";
-import { XAndY, XYAndZ } from "./XYZProps";
+import { Range1dProps, Range2dProps, Range3dProps, LowAndHighXYZ, LowAndHighXY, XAndY, XYAndZ } from "./XYZProps";
 import { GrowableXYZArray } from "./GrowableXYZArray";
 
 export abstract class RangeBase {

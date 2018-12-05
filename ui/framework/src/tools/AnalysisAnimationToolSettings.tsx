@@ -10,10 +10,8 @@ import * as React from "react";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { ToolUiProvider } from "../configurableui/ToolUiProvider";
 import { ContentViewManager } from "../configurableui/ContentViewManager";
-import { Item } from "@bentley/ui-ninezone";
+import { Item, Direction, Toolbar } from "@bentley/ui-ninezone";
 import { Icon } from "../configurableui/IconComponent";
-import { Toolbar } from "@bentley/ui-ninezone";
-import { Direction } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
 import "./AnalysisAnimationToolSettings.scss";
 

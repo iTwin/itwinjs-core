@@ -26,6 +26,8 @@ export interface WidgetProps extends ItemProps {
   isToolSettings?: boolean;
   /** Indicates whether this Widget is for the Status Bar. */
   isStatusBar?: boolean;
+  /** Indicates whether this Widget should fill the available space in the Zone. */
+  fillZone?: boolean;
 
   /** A [[WidgetControl]] providing information about the Widget. */
   control?: ConfigurableUiControlConstructor;
@@ -55,6 +57,8 @@ export class Widget extends React.Component<WidgetProps> {
       widgetDef.isToolSettings = props.isToolSettings;
     if (props.isStatusBar !== undefined)
       widgetDef.isStatusBar = props.isStatusBar;
+    if (props.fillZone !== undefined)
+      widgetDef.fillZone = props.fillZone;
 
     widgetDef.widgetType = widgetDef.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
 
