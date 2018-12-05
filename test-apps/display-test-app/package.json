@@ -41,7 +41,6 @@
     "@bentley/imodeljs-quantity": "0.172.0",
     "@bentley/imodeljs-frontend": "0.172.0",
     "@bentley/imodeljs-backend": "0.172.0",
-    "@bentley/ui-framework": "0.172.0",
     "body-parser": "^1.18.2",
     "tooltip.js": "^1.2.0"
   },
