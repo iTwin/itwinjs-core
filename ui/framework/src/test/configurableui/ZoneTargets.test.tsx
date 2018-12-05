@@ -9,9 +9,7 @@ import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
 import ZoneTargets from "../../configurableui/ZoneTargets";
-import { DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
-import { WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
-import { TargetType } from "@bentley/ui-ninezone/lib/zones/state/Target";
+import { DropTarget, WidgetZoneIndex, TargetType } from "@bentley/ui-ninezone";
 
 describe("ZoneTargets", () => {
   const spyMethod = sinon.spy();

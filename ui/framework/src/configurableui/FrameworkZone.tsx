@@ -15,13 +15,10 @@ import { FrontstageManager, WidgetStateChangedEventArgs } from "./FrontstageMana
 import { StatusBarWidgetControl } from "./StatusBarWidgetControl";
 import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
-import { ZonePropsBase, DropTarget } from "@bentley/ui-ninezone";
-import { WidgetProps as NZ_WidgetProps } from "@bentley/ui-ninezone";
-import { ZoneComponent as NZ_Zone } from "@bentley/ui-ninezone";
-import { RectangleProps } from "@bentley/ui-ninezone";
-import { GhostOutline } from "@bentley/ui-ninezone";
-import { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone";
-import { PointProps } from "@bentley/ui-ninezone";
+import {
+  ZonePropsBase, DropTarget, WidgetProps as NZ_WidgetProps, ZoneComponent as NZ_Zone, RectangleProps,
+  GhostOutline, HorizontalAnchor, VerticalAnchor, PointProps,
+} from "@bentley/ui-ninezone";
 
 // -----------------------------------------------------------------------------
 // Zone React Components

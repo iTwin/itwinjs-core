@@ -5,7 +5,7 @@
 
 /** @module Curve */
 
-import { Geometry, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
+import { Geometry, AxisOrder, BeJSONFunctions, PlaneAltitudeEvaluator } from "../Geometry";
 import { Angle } from "../geometry3d/Angle";
 import { XAndY } from "../geometry3d/XYZProps";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -21,9 +21,7 @@ import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { StrokeOptions } from "./StrokeOptions";
 import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
-import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
-import { CurveIntervalRole } from "./CurveLocationDetail";
-import { AxisOrder } from "../Geometry";
+import { CurveLocationDetail, CurveSearchStatus, CurveIntervalRole } from "./CurveLocationDetail";
 import { Clipper } from "../clipping/ClipUtils";
 import { LineSegment3d } from "./LineSegment3d";
 /* tslint:disable:variable-name no-empty*/

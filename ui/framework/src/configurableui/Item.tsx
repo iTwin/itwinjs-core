@@ -7,9 +7,8 @@
 import * as React from "react";
 
 import { Icon } from "./IconComponent";
-import { CommandItemProps, ToolItemProps, CommandHandler } from "./ItemProps";
+import { CommandItemProps, ToolItemProps, CommandHandler, ItemProps } from "./ItemProps";
 import { ItemDefBase } from "./ItemDefBase";
-import { ItemProps } from "./ItemProps";
 
 import { Item } from "@bentley/ui-ninezone";
 

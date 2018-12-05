@@ -5,14 +5,9 @@
 
 import * as React from "react";
 import {
-  ConfigurableUiManager,
-  WidgetControl,
-  ConfigurableCreateInfo,
-  MessageManager,
-  InputFieldMessageEventArgs,
+  ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, MessageManager,
+  InputFieldMessageEventArgs, ValidationTextbox, InputStatus, InputFieldMessage,
 } from "@bentley/ui-framework";
-import { ValidationTextbox, InputStatus } from "@bentley/ui-framework";
-import { InputFieldMessage } from "@bentley/ui-framework";
 
 /** Feedback Demo Widget */
 export class FeedbackDemoWidget extends WidgetControl {

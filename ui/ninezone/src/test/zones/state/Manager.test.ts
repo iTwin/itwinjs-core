@@ -4,12 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import * as Moq from "typemoq";
-import { DefaultStateManager, StateManager, NineZoneFactory } from "../../../ui-ninezone";
-import { TargetType } from "../../../ui-ninezone";
-import { NineZone, NineZoneProps } from "../../../ui-ninezone";
-import { HorizontalAnchor } from "../../../ui-ninezone";
+import { DefaultStateManager, StateManager, NineZoneFactory, TargetType, NineZone, NineZoneProps, HorizontalAnchor, WidgetZone } from "../../../ui-ninezone";
 import { TestProps } from "./TestProps";
-import { WidgetZone } from "../../../ui-ninezone";
 
 // use expect, because dirty-chai ruins the should.exist() helpers
 const expect = chai.expect;

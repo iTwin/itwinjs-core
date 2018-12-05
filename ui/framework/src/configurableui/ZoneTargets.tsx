@@ -8,8 +8,7 @@ import * as React from "react";
 
 import { TargetChangeHandler } from "./FrontstageComposer";
 
-import { Container as ZoneTargetsContainer, Merge as MergeTarget, Back as BackTarget } from "@bentley/ui-ninezone";
-import { WidgetZoneIndex, DropTarget, TargetType } from "@bentley/ui-ninezone";
+import { Container as ZoneTargetsContainer, Merge as MergeTarget, Back as BackTarget, WidgetZoneIndex, DropTarget, TargetType } from "@bentley/ui-ninezone";
 
 /** Properties for the [[ZoneTargets]] component.
  */

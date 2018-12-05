@@ -6,18 +6,19 @@ import * as fs from "fs";
 import * as path from "path";
 import * as cpx from "cpx";
 import * as rimraf from "rimraf";
+// tslint:disable-next-line:no-direct-imports
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 // common includes
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { LoggingNamespaces } from "@bentley/presentation-common";
+import { LoggingNamespaces, PresentationRpcInterface } from "@bentley/presentation-common";
+// tslint:disable-next-line:no-direct-imports
 import TestRpcManager from "@bentley/presentation-common/lib/test/_helpers/TestRpcManager";
 // backend includes
 import { IModelHost, KnownLocations } from "@bentley/imodeljs-backend";
 import { Presentation as PresentationBackend } from "@bentley/presentation-backend";
 // frontend includes
 import { StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
-import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { NoRenderApp } from "@bentley/imodeljs-frontend";
 import { Presentation as PresentationFrontend } from "@bentley/presentation-frontend";
 

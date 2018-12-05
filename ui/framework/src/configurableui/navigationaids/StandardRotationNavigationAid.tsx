@@ -7,7 +7,7 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import { ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupColumn as NZ_Column, GroupTool as NZ_Item, Group as NZ_Tray, withContainInViewport } from "@bentley/ui-ninezone";
+import { Direction, ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupColumn as NZ_Column, GroupTool as NZ_Item, Group as NZ_Tray, withContainInViewport } from "@bentley/ui-ninezone";
 
 import { ConfigurableCreateInfo } from "../ConfigurableUiControl";
 import { NavigationAidControl } from "../NavigationAidControl";
@@ -17,7 +17,6 @@ import { UiFramework } from "../../UiFramework";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 
 import { ViewRotationCube } from "@bentley/ui-components";
-import { Direction } from "@bentley/ui-ninezone";
 
 // tslint:disable-next-line:variable-name
 const NZ_ContainedTray = withContainInViewport(NZ_Tray);

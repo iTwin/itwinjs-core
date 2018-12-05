@@ -7,10 +7,9 @@ import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { Point3d, Vector3d, XYAndZ, XAndY, Point2d } from "@bentley/geometry-core";
 import {
-  IModelApp, PrimitiveTool, AccuDrawHintBuilder, ViewRect, Viewport, QuantityType,
-  BeButtonEvent, EventHandled, AccuDrawShortcuts, DynamicsContext, RotationMode, DecorateContext,
+  IModelApp, PrimitiveTool, AccuDrawHintBuilder, ViewRect, Viewport, QuantityType, BeButtonEvent,
+  EventHandled, AccuDrawShortcuts, DynamicsContext, RotationMode, DecorateContext, GraphicType, CanvasDecoration,
 } from "@bentley/imodeljs-frontend";
-import { GraphicType, CanvasDecoration } from "@bentley/imodeljs-frontend";
 
 class DistanceMarker implements CanvasDecoration {
   public worldLocation: Point3d;
@@ -89,11 +88,11 @@ export class MeasurePointsTool extends PrimitiveTool {
     IModelApp.accuSnap.enableSnap(true);
 
     if (0 === this.points.length) {
-      IModelApp.notifications.outputPromptByKey("SampleApp:tools.Measure.ByPoints.Prompts.FirstPoint");
+      IModelApp.notifications.outputPromptByKey("MeasureTool:tools.Measure.ByPoints.Prompts.FirstPoint");
       return;
     }
 
-    IModelApp.notifications.outputPromptByKey("SampleApp:tools.Measure.ByPoints.Prompts.NextPoint");
+    IModelApp.notifications.outputPromptByKey("MeasureTool:tools.Measure.ByPoints.Prompts.NextPoint");
 
     const hints = new AccuDrawHintBuilder();
     hints.enableSmartRotation = true;
@@ -245,9 +244,11 @@ export class MeasurePointsTool extends PrimitiveTool {
 }
 
 // define and run the entry point
+// tslint:disable:no-console
 function main() {
   const measureNamespace: I18NNamespace = IModelApp.i18n.registerNamespace("MeasureTool");
-  MeasurePointsTool.register(measureNamespace);
+  measureNamespace.readFinished.then(() => { MeasurePointsTool.register(measureNamespace); })
+    .catch((err) => { console.log(err); });
 }
 
 main();

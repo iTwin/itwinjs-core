@@ -4,9 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { ConfigurableCreateInfo } from "@bentley/ui-framework";
-import { ContentControl } from "@bentley/ui-framework";
+import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
 import {
   SelectionMode, DelayLoadedTreeNodeItem,
   SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,

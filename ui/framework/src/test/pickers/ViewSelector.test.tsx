@@ -7,8 +7,7 @@ import { expect } from "chai";
 import * as enzyme from "enzyme";
 
 import TestUtils from "../TestUtils";
-import { ViewSelector } from "../../ui-framework";
-import { ViewUtilities } from "../../ui-framework";
+import { ViewSelector, ViewUtilities } from "../../ui-framework";
 
 describe("ViewSelector", () => {
   before(async () => {

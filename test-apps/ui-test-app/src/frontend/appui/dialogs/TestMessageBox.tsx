@@ -3,8 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { ButtonType, ButtonStyle } from "@bentley/ui-core";
-import { MessageBox, MessageSeverity } from "@bentley/ui-core";
+import { ButtonType, ButtonStyle, MessageBox, MessageSeverity } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { IModelApp, MessageBoxType, MessageBoxIconType } from "@bentley/imodeljs-frontend";
 

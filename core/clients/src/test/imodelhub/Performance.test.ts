@@ -2,9 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, ResponseError, AuthenticationError, IModelClient } from "../../imodeljs-clients";
-
 import {
+  AccessToken, ResponseError, AuthenticationError, IModelClient,
   Briefcase, HubCode, CodeState, CodeQuery, Lock, LockLevel, LockType, LockQuery,
 } from "../../imodeljs-clients";
 

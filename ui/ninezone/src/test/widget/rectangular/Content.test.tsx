@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { WidgetContent } from "../../../ui-ninezone";
-import { HorizontalAnchor } from "../../../ui-ninezone";
+import { HorizontalAnchor, WidgetContent } from "../../../ui-ninezone";
 
 describe("<WidgetContent />", () => {
   it("should render", () => {

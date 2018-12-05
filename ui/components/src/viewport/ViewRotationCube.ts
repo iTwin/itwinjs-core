@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Viewport */
 
-import { IModelApp, Viewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
-import { StandardViewId } from "@bentley/imodeljs-frontend";
+import { IModelApp, Viewport, SelectedViewportChangedArgs, StandardViewId } from "@bentley/imodeljs-frontend";
 import { UiEvent } from "@bentley/ui-core";
 import { Matrix3d } from "@bentley/geometry-core";
 

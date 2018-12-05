@@ -12,8 +12,7 @@ import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
 import { CommandItemDef } from "../configurableui/Item";
-import { ItemDefBase } from "./ItemDefBase";
-import { BaseItemState } from "./ItemDefBase";
+import { ItemDefBase, BaseItemState } from "./ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../SyncUiEventDispatcher";
 
 import { Direction } from "@bentley/ui-ninezone";

@@ -4,12 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { WidgetControl } from "@bentley/ui-framework";
-import { ConfigurableCreateInfo } from "@bentley/ui-framework";
-import { ContentControl } from "@bentley/ui-framework";
-
+import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl, WidgetControl } from "@bentley/ui-framework";
 import { Orientation } from "@bentley/ui-core";
+
 import {
   PropertyDescription, PropertyRecord, PropertyValueFormat, PrimitiveValue,
   PropertyGrid, SimplePropertyDataProvider, PropertyValue, PropertyUpdatedArgs, PropertyCategory,

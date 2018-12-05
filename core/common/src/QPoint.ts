@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Range2d, Range3d } from "@bentley/geometry-core";
-import { Point2d, Point3d } from "@bentley/geometry-core";
+import { Range2d, Range3d, Point2d, Point3d } from "@bentley/geometry-core";
 import { assert } from "@bentley/bentleyjs-core";
 
 /**

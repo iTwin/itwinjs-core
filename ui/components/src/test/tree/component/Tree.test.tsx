@@ -13,8 +13,7 @@ import {
   Tree, TreeProps,
   NodesSelectedCallback, NodesDeselectedCallback, TreeNodeProps, TreeCellUpdatedArgs,
 } from "../../../tree/component/Tree";
-import { SelectionMode, PageOptions } from "../../../ui-components";
-import { TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components";
+import { SelectionMode, PageOptions, TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components";
 import { BeInspireTreeNode } from "../../../tree/component/BeInspireTree";
 import HighlightingEngine, { HighlightableTreeProps } from "../../../tree/HighlightingEngine";
 import { BeEvent } from "@bentley/bentleyjs-core";

@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { AccessToken } from "../../imodeljs-clients";
 import {
-  Version, VersionQuery, Briefcase, ChangeSet, Thumbnail,
+  AccessToken, Version, VersionQuery, Briefcase, ChangeSet, Thumbnail,
   ThumbnailQuery, ThumbnailSize,
 } from "../../imodeljs-clients";
 

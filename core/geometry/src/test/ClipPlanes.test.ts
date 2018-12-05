@@ -11,8 +11,7 @@ import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Segment1d } from "../geometry3d/Segment1d";
-import { Range1d } from "../geometry3d/Range";
-import { Range3d } from "../geometry3d/Range";
+import { Range1d, Range3d } from "../geometry3d/Range";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Transform } from "../geometry3d/Transform";
 import { PolygonOps } from "../geometry3d/PointHelpers";
@@ -20,9 +19,8 @@ import { LineSegment3d } from "../curve/LineSegment3d";
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
 
-import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 import { GeometryQuery } from "../curve/GeometryQuery";
-import { AnnounceNumberNumberCurvePrimitive } from "../curve/CurvePrimitive";
 
 import { ClipPlaneContainment, Clipper, ClipUtilities } from "../clipping/ClipUtils";
 import { ClipPlane } from "../clipping/ClipPlane";

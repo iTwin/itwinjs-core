@@ -5,10 +5,7 @@
 import * as React from "react";
 
 import { SampleAppIModelApp } from "../..";
-
-import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { ConfigurableCreateInfo } from "@bentley/ui-framework";
-import { ToolUiProvider } from "@bentley/ui-framework";
+import { ConfigurableUiManager, ConfigurableCreateInfo, ToolUiProvider } from "@bentley/ui-framework";
 
 class Tool2UiProvider extends ToolUiProvider {
   constructor(info: ConfigurableCreateInfo, options: any) {

@@ -13,10 +13,7 @@ import { Quadrature } from "../numerics/Quadrature";
 import { Point2d, Vector2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Arc3d } from "../curve/Arc3d";
-import { Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial } from "../numerics/Polynomials";
-import { TrigPolynomial, SmallSystem } from "../numerics/Polynomials";
-import { AnalyticRoots } from "../numerics/Polynomials";
-import { SphereImplicit, TorusImplicit } from "../numerics/Polynomials";
+import { Degree2PowerPolynomial, Degree3PowerPolynomial, Degree4PowerPolynomial, TrigPolynomial, SmallSystem, AnalyticRoots, SphereImplicit, TorusImplicit } from "../numerics/Polynomials";
 /* tslint:disable:no-console */
 
 import { UnivariateBezier, Order2Bezier, Order3Bezier, Order4Bezier, Order5Bezier, BezierCoffs } from "../numerics/BezierPolynomials";

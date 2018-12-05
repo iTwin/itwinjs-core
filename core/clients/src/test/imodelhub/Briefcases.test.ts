@@ -6,10 +6,8 @@ import * as chai from "chai";
 import * as fs from "fs";
 import * as path from "path";
 
-import { AccessToken } from "../../imodeljs-clients";
-
 import {
-  IModelHubClient, Briefcase, BriefcaseQuery, IModelHubClientError,
+  AccessToken, IModelHubClient, Briefcase, BriefcaseQuery, IModelHubClientError,
 } from "../../imodeljs-clients";
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";

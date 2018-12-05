@@ -10,18 +10,15 @@ import * as React from "react";
 import * as sinon from "sinon";
 import TestBackend from "react-dnd-test-backend";
 import {
-  Table, TableDataProvider, RowItem,
-  TableDataChangeEvent, TableDataChangesListener, CellItem,
-  TableSelectionTarget, TableProps, ColumnDescription,
+  Table, TableDataProvider, RowItem, TableDataChangeEvent, TableDataChangesListener, CellItem,
+  TableSelectionTarget, TableProps, ColumnDescription, SelectionMode, PropertyRecord, PropertyValue,
+  PropertyValueFormat, PropertyDescription, PropertyUpdatedArgs, EditorContainer,
 } from "../../../ui-components";
-import { SelectionMode } from "../../../ui-components";
-import { PropertyRecord, PropertyValue, PropertyValueFormat, PropertyDescription, PropertyUpdatedArgs } from "../../../ui-components";
 import { waitForSpy } from "../../test-helpers/misc";
 import { DragDropContext } from "react-dnd";
 import { DragDropHeaderWrapper } from "../../../table/component/DragDropHeaderCell";
 import { LocalUiSettings } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
-import { EditorContainer } from "../../../ui-components";
 
 describe("Table", () => {
   before(async () => {

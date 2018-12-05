@@ -12,11 +12,11 @@ import { FrontstageDef } from "./FrontstageDef";
 import { ZoneDef, ZoneState } from "./ZoneDef";
 import { ModalFrontstage } from "./ModalFrontstage";
 
-import { ResizeHandle } from "@bentley/ui-ninezone";
-import { NineZone, NineZoneProps, getDefaultNineZoneProps, WidgetZoneIndex } from "@bentley/ui-ninezone";
-import { Size, PointProps, DefaultStateManager as NineZoneStateManager, RectangleProps, TargetType } from "@bentley/ui-ninezone";
+import {
+  ResizeHandle, NineZone, NineZoneProps, getDefaultNineZoneProps, WidgetZoneIndex,
+  Size, PointProps, DefaultStateManager as NineZoneStateManager, RectangleProps, TargetType, WidgetProps as NZ_WidgetProps,
+} from "@bentley/ui-ninezone";
 
-import { WidgetProps as NZ_WidgetProps } from "@bentley/ui-ninezone";
 import { WidgetDef } from "./WidgetDef";
 
 /** Interface defining callbacks for widget changes */

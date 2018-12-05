@@ -3,13 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as Moq from "typemoq";
-import { WidgetZoneLayout, NineZoneRoot, WidgetZoneLayoutProps } from "../../../..//zones/state/layout/Layouts";
-import { WidgetZone } from "../../../..//zones/state/Zone";
-import { Widget } from "../../../../ui-ninezone";
+import { Widget, WidgetZone, WidgetZoneLayout, NineZoneRoot, WidgetZoneLayoutProps, Rectangle, NineZone, Cell } from "../../../../ui-ninezone";
 import { expect } from "chai";
-import { Rectangle } from "../../../../ui-ninezone";
-import { NineZone } from "../../../../ui-ninezone";
-import { Cell } from "../../../../ui-ninezone";
 
 describe("WidgetZoneLayout", () => {
   const rootMock = Moq.Mock.ofType<NineZoneRoot>();

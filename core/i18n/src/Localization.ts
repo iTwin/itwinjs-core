@@ -5,18 +5,16 @@
 /** @module AppAdministration */
 
 import * as i18next from "i18next";
-import { i18n } from "i18next";
 import * as i18nextXHRBackend from "i18next-xhr-backend";
 import * as i18nextBrowserLanguageDetector from "i18next-browser-languagedetector";
-import { BentleyError } from "@bentley/bentleyjs-core";
-import { Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, Logger } from "@bentley/bentleyjs-core";
 
 export interface I18NOptions {
   urlTemplate?: string;
 }
 /** Supplies Internationalization services. Internally, this class uses the [i18next](https://www.i18next.com/) package. */
 export class I18N {
-  private _i18n: i18n;
+  private _i18n: i18next.i18n;
   private _namespaceRegistry: Map<string, I18NNamespace> = new Map<string, I18NNamespace>();
 
   public constructor(nameSpaces: string[], defaultNameSpace: string, options?: I18NOptions, renderFunction?: any) {

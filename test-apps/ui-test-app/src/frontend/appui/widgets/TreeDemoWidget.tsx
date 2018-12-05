@@ -11,8 +11,7 @@ import {
   WidgetControl,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
-import { Tree, TreeProps } from "@bentley/ui-components";
-import { withTreeDragDrop } from "@bentley/ui-components";
+import { Tree, TreeProps, withTreeDragDrop } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTreeDataProvider, treeDragProps, treeDropProps, TreeDragTypes, DemoTreeDragDropType } from "./demodataproviders/demoTreeDataProvider";
 import { TableDragTypes } from "./demodataproviders/demoTableDataProvider";

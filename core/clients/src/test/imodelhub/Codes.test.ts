@@ -5,10 +5,8 @@
 import * as chai from "chai";
 import * as utils from "./TestUtils";
 
-import { AccessToken, IModelClient } from "../../imodeljs-clients";
-
 import {
-  CodeState, HubCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
+  AccessToken, IModelClient, CodeState, HubCode, AggregateResponseError, ConflictingCodesError, CodeQuery,
   IModelHubClientError, CodeSequence, CodeSequenceType,
 } from "../../imodeljs-clients";
 

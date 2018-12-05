@@ -5,8 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import { Popover } from "../../../ui-ninezone";
-import { Direction } from "../../../ui-ninezone";
+import { Direction, Popover } from "../../../ui-ninezone";
 
 describe("<Popover />", () => {
   it("should render", () => {

@@ -1,3 +1,6 @@
 {
-  "extends": "@bentley/build-tools/tslint.json"
+  "extends": "@bentley/build-tools/tslint.json",
+  "rules": {
+    "no-direct-imports": false // For backend packages, this does not matter.
+  }
 }

@@ -8,11 +8,10 @@ import { Id64, Id64Arg, Id64String, Id64Set, TransientIdSequence, Logger, OpenMo
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
-  IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap,
-  IModelReadRpcInterface, IModelWriteRpcInterface, StandaloneIModelRpcInterface, IModelTileRpcInterface,
-  TileTreeProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse, IModelNotFoundResponse, SnapRequestProps, SnapResponseProps, ThumbnailProps, ImageSourceFormat,
+  IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap, IModelReadRpcInterface, IModelWriteRpcInterface,
+  StandaloneIModelRpcInterface, IModelTileRpcInterface, TileTreeProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse,
+  IModelNotFoundResponse, SnapRequestProps, SnapResponseProps, ThumbnailProps, ImageSourceFormat, WipRpcInterface, IModelUnitTestRpcInterface,
 } from "@bentley/imodeljs-common";
-import { WipRpcInterface, IModelUnitTestRpcInterface } from "@bentley/imodeljs-common";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
 import { CategorySelectorState } from "./CategorySelectorState";

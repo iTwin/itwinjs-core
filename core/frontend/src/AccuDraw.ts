@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module AccuDraw */
 import { IModelApp } from "./IModelApp";
-import { Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive, LineString3d, AxisOrder, CurveCurve, PointString3d } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core";
+import {
+  Point3d, Vector3d, Point2d, Matrix3d, Transform, Geometry, Arc3d, LineSegment3d, CurvePrimitive,
+  LineString3d, AxisOrder, CurveCurve, PointString3d, IModelJson as GeomJson,
+} from "@bentley/geometry-core";
 import { Viewport, ScreenViewport, linePlaneIntersect } from "./Viewport";
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { StandardViewId } from "./StandardView";

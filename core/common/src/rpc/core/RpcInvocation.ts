@@ -5,8 +5,7 @@
 /** @module RpcInterface */
 
 import { IModelError } from "../../IModelError";
-import { BentleyStatus, RpcInterfaceStatus } from "@bentley/bentleyjs-core";
-import { Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus, RpcInterfaceStatus, Logger, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { RpcInterface } from "../../RpcInterface";
 import { RpcOperation } from "./RpcOperation";
 import { RpcRegistry, CURRENT_INVOCATION } from "./RpcRegistry";

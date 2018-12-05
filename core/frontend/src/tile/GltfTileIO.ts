@@ -7,7 +7,7 @@
 import { TileIO } from "./TileIO";
 import { DisplayParams } from "../render/primitives/DisplayParams";
 import { Triangle } from "../render/primitives/Primitives";
-import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
+import { Mesh, MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
 import { ColorMap } from "../render/primitives/ColorMap";
 import {
   FeatureTable,
@@ -29,9 +29,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { Id64String, assert, JsonUtils, utf8ToString } from "@bentley/bentleyjs-core";
 import { Range3d, Point2d, Point3d, Vector3d, Transform, Matrix3d, Angle } from "@bentley/geometry-core";
-import { RenderSystem } from "../render/System";
-import { RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
-import { MeshList, MeshGraphicArgs } from "../render/primitives/mesh/MeshPrimitives";
+import { RenderSystem, RenderGraphic, GraphicBranch, PackedFeatureTable } from "../render/System";
 import { imageElementFromImageSource, getImageSourceFormatForMimeType } from "../ImageUtil";
 import { IModelConnection } from "../IModelConnection";
 

@@ -11,11 +11,12 @@ import {
   WidgetControl,
   DragDropLayerManager,
 } from "@bentley/ui-framework";
+
 import {
   Breadcrumb, BreadcrumbProps, BreadcrumbMode, BreadcrumbDetailsProps, BreadcrumbDetails, BreadcrumbPath,
+  withBreadcrumbDragDrop, withBreadcrumbDetailsDragDrop,
 } from "@bentley/ui-components";
-import { withBreadcrumbDragDrop } from "@bentley/ui-components";
-import { withBreadcrumbDetailsDragDrop } from "@bentley/ui-components";
+
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { demoMutableTreeDataProvider, treeDragProps, treeDropProps, TreeDragTypes, DemoTreeDragDropType } from "./demodataproviders/demoTreeDataProvider";
 import { TableDragTypes } from "./demodataproviders/demoTableDataProvider";

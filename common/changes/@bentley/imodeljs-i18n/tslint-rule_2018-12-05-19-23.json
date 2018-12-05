@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on.",
+      "packageName": "@bentley/imodeljs-i18n",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-i18n",
+  "email": "Barry.Bentley@bentley.com"
+}

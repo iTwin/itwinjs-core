@@ -3,8 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, Config } from "@bentley/imodeljs-clients";
-import { ConnectClient, Project, IModelHubClient, IModelQuery } from "@bentley/imodeljs-clients";
+import {
+  AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, Config,
+  ConnectClient, Project, IModelHubClient, IModelQuery,
+} from "@bentley/imodeljs-clients";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 export class TestData {

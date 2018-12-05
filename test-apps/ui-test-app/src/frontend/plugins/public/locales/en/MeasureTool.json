@@ -1,10 +1,4 @@
 {
-  "MeasureByPoints": {
-    "Prompt": {
-      "FirstPoint": "Enter first point",
-      "NextPoint": "Select next point"
-    }
-  },
   "tools": {
     "Measure": {
       "ByPoints": {

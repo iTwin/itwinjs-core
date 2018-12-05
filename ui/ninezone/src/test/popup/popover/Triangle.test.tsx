@@ -5,8 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import { TrianglePopover } from "../../../ui-ninezone";
-import { Direction } from "../../../ui-ninezone";
+import { Direction, TrianglePopover } from "../../../ui-ninezone";
 
 describe("<TrianglePopover />", () => {
   it("should render", () => {
