@@ -506,16 +506,18 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     const labelBold = node.payload.labelBold ? "bold" : undefined;
     const labelItalic = node.payload.labelItalic ? "italic" : undefined;
 
+    const labelStyle: React.CSSProperties = {
+      color: labelForeColor,
+      backgroundColor: labelBackColor,
+      fontWeight: labelBold,
+      fontStyle: labelItalic,
+    };
+
     if (cellEditorProps) {
       if (cellEditorProps.cellEditorState.active && node === cellEditorProps.cellEditorState.node) {
         const record = new CellEditorPropertyRecord(node.text);
         return (
-          <span style={{
-            color: labelForeColor,
-            backgroundColor: labelBackColor,
-            fontWeight: labelBold,
-            fontStyle: labelItalic,
-          }}>
+          <span style={labelStyle}>
             <EditorContainer propertyRecord={record} title={record.description}
               onCommit={cellEditorProps.onCellEditCommit} onCancel={cellEditorProps.onCellEditCancel} ignoreEditorBlur={cellEditorProps.ignoreEditorBlur} />
           </span>
@@ -525,24 +527,14 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
     if (highlightProps) {
       return (
-        <span style={{
-          color: labelForeColor,
-          backgroundColor: labelBackColor,
-          fontWeight: labelBold,
-          fontStyle: labelItalic,
-        }}>
+        <span style={labelStyle}>
           {HighlightingEngine.renderNodeLabel(node.text, highlightProps)}
         </span>
       );
     }
 
     return (
-      <span style={{
-        color: labelForeColor,
-        backgroundColor: labelBackColor,
-        fontWeight: labelBold,
-        fontStyle: labelItalic,
-      }}>
+      <span style={labelStyle}>
         {node.text}
       </span>
     );
@@ -553,8 +545,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     return (
       <TreeNode
         key={node.id}
-        isChecked={node.payload.checkBoxState && node.payload.checkBoxState === CheckBoxState.On ? true : false}
-        isCheckboxEnabled={node.payload.displayCheckBox}
+        checkboxState={node.payload.checkBoxState}
+        isCheckboxEnabled={node.payload.isCheckBoxEnabled}
         {...props}
       />
     );
@@ -599,7 +591,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         node,
         highlightProps: this.state.highlightingEngine ? this.state.highlightingEngine.createRenderProps(node) : undefined,
         onCheckboxClick: this.props.onCheckboxClick,
-        isChecked: node.payload.checkBoxState === CheckBoxState.On ? true : false,
+        checkboxState: node.payload.checkBoxState,
         renderLabel: Tree.renderLabelComponent,
         onClick: (e: React.MouseEvent) => {
           onNodeSelectionChanged(e.shiftKey, e.ctrlKey);
@@ -666,7 +658,7 @@ export interface TreeNodeProps {
   node: BeInspireTreeNode<TreeNodeItem>;
   highlightProps?: HighlightableTreeNodeProps;
   onCheckboxClick?: (item: TreeNodeItem) => void;
-  isChecked?: boolean;
+  checkboxState?: CheckBoxState;
   isCheckboxEnabled?: boolean;
   cellEditorProps?: TreeNodeCellEditorProps;
   renderLabel: (node: BeInspireTreeNode<TreeNodeItem>, highlightProps?: HighlightableTreeNodeProps, cellEditorProps?: TreeNodeCellEditorProps) => React.ReactNode;
@@ -695,9 +687,8 @@ export class TreeNode extends React.Component<TreeNodeProps> {
         isLeaf={!this.props.node.hasOrWillHaveChildren()}
         label={this.props.renderLabel(this.props.node, this.props.highlightProps, this.props.cellEditorProps)}
         icon={this.props.node.itree && this.props.node.itree.icon ? <span className={this.props.node.itree.icon} /> : undefined}
-        item={this.props.node.payload as TreeNodeItem}
         onCheckboxClick={this.props.onCheckboxClick}
-        isChecked={this.props.isChecked}
+        checkboxState={this.props.checkboxState}
         isCheckboxEnabled={this.props.isCheckboxEnabled}
         level={this.props.node.getParents().length}
         onClick={this.props.onClick}
