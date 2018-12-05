@@ -23,11 +23,7 @@ const computeAmbientOcclusion = `
   vec3 posInView = computePositionFromNonLinearDepth(tc, nonLinearDepth).xyz;
 
   vec2 pixelSize = 1.0 / u_viewport.zw; // could use uniform for this
-  float depthU = readDepthAndOrder(tc - vec2(0.0, pixelSize.y)).y;  depthU = computeNonLinearDepth(depthU);
-  float depthD = readDepthAndOrder(tc + vec2(0.0, pixelSize.y)).y;  depthD = computeNonLinearDepth(depthD);
-  float depthL = readDepthAndOrder(tc - vec2(pixelSize.x, 0.0)).y;  depthL = computeNonLinearDepth(depthL);
-  float depthR = readDepthAndOrder(tc + vec2(pixelSize.x, 0.0)).y;  depthR = computeNonLinearDepth(depthR);
-  vec3 normal = computeNormalFromNonLinearDepth(posInView, tc, depthU, depthD, depthL, depthR, pixelSize);
+  vec3 normal = computeNormalFromNonLinearDepth(posInView, tc, pixelSize);
 
   vec2 sampleDirection = vec2(1.0, 0.0);
   float gapAngle = 90.0 * 0.017453292519943295; // radians per degree
@@ -118,7 +114,12 @@ vec4 computePositionFromNonLinearDepth(vec2 tc, float depth) {
 `;
 
 const computeNormalFromNonLinearDepth = `
-vec3 computeNormalFromNonLinearDepth(vec3 posInView, vec2 tc, float depthU, float depthD, float depthL, float depthR, vec2 pixelSize) {
+vec3 computeNormalFromNonLinearDepth(vec3 posInView, vec2 tc, vec2 pixelSize) {
+  float depthU = readDepthAndOrder(tc - vec2(0.0, pixelSize.y)).y;  depthU = computeNonLinearDepth(depthU);
+  float depthD = readDepthAndOrder(tc + vec2(0.0, pixelSize.y)).y;  depthD = computeNonLinearDepth(depthD);
+  float depthL = readDepthAndOrder(tc - vec2(pixelSize.x, 0.0)).y;  depthL = computeNonLinearDepth(depthL);
+  float depthR = readDepthAndOrder(tc + vec2(pixelSize.x, 0.0)).y;  depthR = computeNonLinearDepth(depthR);
+
   vec3 posInViewUp = computePositionFromNonLinearDepth(tc - vec2(0.0, pixelSize.y), depthU).xyz;
   vec3 posInViewDown = computePositionFromNonLinearDepth(tc + vec2(0.0, pixelSize.y), depthD).xyz;
   vec3 posInViewLeft = computePositionFromNonLinearDepth(tc - vec2(pixelSize.x, 0.0), depthL).xyz;
