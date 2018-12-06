@@ -488,7 +488,7 @@ export namespace Tile {
     Loading = 2, // A response has been received and the tile's graphics and other data are being loaded on the frontend.
     Ready = 3, // The tile has been loaded, and if the tile is displayable it has graphics.
     NotFound = 4, // The tile was requested, and the response from the backend indicated the tile could not be found.
-    Abandoned = 5, // A request was made to the backed, then later cancelled as it was determined that the tile is no longer needed on the frontend.
+    Abandoned = 5, // A request was made to the backend, then later cancelled as it was determined that the tile is no longer needed on the frontend.
   }
 
   /**
