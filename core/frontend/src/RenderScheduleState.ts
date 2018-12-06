@@ -124,7 +124,7 @@ export namespace RenderScheduleState {
                 transparencyOverride = 1.0 - interpolate(timeline[interval.index0].value, timeline[interval.index1].value, interval.fraction) / 100.0;
             }
             if (colorOverride || transparencyOverride)
-                for (let elementId of this.elementIds)
+                for (const elementId of this.elementIds)
                     overrides.set(elementId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
         }
     }
