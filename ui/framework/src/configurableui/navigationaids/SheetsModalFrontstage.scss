@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
  @import "@bentley/bwc/lib/index.scss";
+ @import "@bentley/ui-core/lib/_scrollbar";
 
  $sheets-modal-padding: 10px;
 
@@ -11,10 +12,8 @@
   height: 100%;
   overflow-y: auto;
 
-  @supports (-webkit-overflow-scrolling: touch) {
-    overflow-y: scroll; /* overflow-y has to be scroll, not auto */
-    -webkit-overflow-scrolling: touch;
-  }
+  @include uicore-touch-scrolling;
+  @include uicore-scrollbar();
 }
 
 .sheets-flex-container {
