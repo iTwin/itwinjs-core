@@ -34,7 +34,7 @@
 class ScriptLoader {
 
   // loads a single package
-  public static loadPackage(packageName: string): Promise<void> {
+  public static async loadPackage(packageName: string): Promise<void> {
     return new Promise<void>((resolve, reject) => {
       const head = document.getElementsByTagName("head")[0];
       if (!head)
@@ -58,7 +58,7 @@ class ScriptLoader {
 
   // loads an array of packages in parallel. Promise is resolved when all are loaded.
   // The packages can be loaded in any order, so they must be independent of each other.
-  public static loadPackagesParallel(packages: string[]): Promise<void[]> {
+  public static async loadPackagesParallel(packages: string[]): Promise<void[]> {
     const promises: Array<Promise<void>> = new Array<Promise<void>>();
     for (const thisPackage of packages) {
       promises.push(this.loadPackage(thisPackage));
