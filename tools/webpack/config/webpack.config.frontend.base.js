@@ -113,7 +113,7 @@ module.exports = (publicPath) => {
           oneOf: [
             // Exclude azure-storage (and related packages).
             {
-              test: /azure-storage|AzureFileHandler|UrlFileHandler/,
+              test: /azure-storage|AzureFileHandler|UrlFileHandler|IOSAzureFileHandler/,
               include: /@bentley[\\\/]imodeljs-clients/,
               loader: require.resolve("null-loader"),
             },

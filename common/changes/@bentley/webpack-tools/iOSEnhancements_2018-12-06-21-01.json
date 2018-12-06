@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added command to build backend/frontend for ios",
+      "packageName": "@bentley/webpack-tools",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/webpack-tools",
+  "email": "khanaffan@gmail.com"
+}
