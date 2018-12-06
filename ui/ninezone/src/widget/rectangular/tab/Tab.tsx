@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../../utilities/Props";
+import { CommonProps } from "../../../utilities/Props";
 import { HorizontalAnchor, HorizontalAnchorHelpers } from "../../Stacked";
 import "./Tab.scss";
 
@@ -35,7 +35,7 @@ export interface TabProps extends CommonProps {
  * Rectangular widget tab. Used in [[Stacked]] component.
  * @note See [[Draggable]] tab.
  */
-export default class Tab extends React.Component<TabProps> {
+export class Tab extends React.Component<TabProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-tab-tab",

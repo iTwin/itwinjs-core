@@ -10,13 +10,11 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { MessageSeverity } from "@bentley/ui-core";
 import {
-  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, SyncUiEventId,
-  BaseItemState, ContentViewManager,
+  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp, RootState } from "../";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
-import { MeasurePointsTool } from "../tools/MeasurePoints";
 // cSpell:ignore appui
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
 
@@ -41,6 +39,7 @@ export class AppTools {
     });
   }
 
+  /* ------------- NEEDSWORK - figure out how to move to plugin.
   public static get measurePoints() {
     return new ToolItemDef({
       toolId: MeasurePointsTool.toolId,
@@ -61,6 +60,7 @@ export class AppTools {
       },
     });
   }
+  ----------------------------- */
 
   // Tool that toggles the backstage
   public static get backstageToggleCommand() {

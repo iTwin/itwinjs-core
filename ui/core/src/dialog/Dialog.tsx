@@ -7,16 +7,15 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import * as classnames from "classnames";
-import { withOnOutsideClick } from "../hocs";
-import { Div } from "../base";
+import { withOnOutsideClick } from "../hocs/withOnOutsideClick";
+import { Div } from "../base/Div";
 
 const DivWithOutsideClick = withOnOutsideClick(Div); // tslint:disable-line:variable-name
 
-import UiCore from "../UiCore";
+import { UiCore } from "../UiCore";
 
-import "@bentley/bwc/lib/buttons/classes.scss";
 import "./Dialog.scss";
-import { Omit } from "../utils";
+import { Omit } from "../utils/typeUtils";
 
 /** Enum for button types. Determines button label, and default button style. */
 export enum ButtonType {

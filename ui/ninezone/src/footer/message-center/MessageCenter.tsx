@@ -6,15 +6,15 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import withContainInViewport from "../../base/WithContainInViewport";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
-import Direction from "../../utilities/Direction";
-import Popover from "../../popup/popover/Triangle";
-import Dialog from "../message/content/dialog/Dialog";
-import TitleBar from "../message/content/dialog/TitleBar";
-import Title from "../message/content/dialog/Title";
+import { withContainInViewport } from "../../base/WithContainInViewport";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { Direction } from "../../utilities/Direction";
+import { TrianglePopover } from "../../popup/popover/Triangle";
+import { Dialog } from "../message/content/dialog/Dialog";
+import { TitleBar } from "../message/content/dialog/TitleBar";
+import { DialogTitle } from "../message/content/dialog/Title";
 export { DialogButton as MessageCenterButton } from "../message/content/dialog/Button";
-import Content from "./Content";
+import { MessageCenterContent } from "./Content";
 import "./MessageCenter.scss";
 
 // tslint:disable-next-line:variable-name
@@ -42,7 +42,7 @@ export const MessageCenter: React.StatelessComponent<MessageCenterProps> = (prop
     props.className);
 
   return (
-    <Popover
+    <TrianglePopover
       className={dialogClassName}
       style={props.style}
       direction={Direction.Top}
@@ -52,16 +52,16 @@ export const MessageCenter: React.StatelessComponent<MessageCenterProps> = (prop
           titleBar={
             <TitleBar
               title={
-                <Title text={props.title} />
+                <DialogTitle text={props.title} />
               }
               buttons={props.buttons}
             />
           }
           content={
-          <Content
-            tabs={props.tabs}
-            messages={props.messages}
-            prompt={props.prompt}
+            <MessageCenterContent
+              tabs={props.tabs}
+              messages={props.messages}
+              prompt={props.prompt}
             />
           }
         />
@@ -69,5 +69,3 @@ export const MessageCenter: React.StatelessComponent<MessageCenterProps> = (prop
     />
   );
 };
-
-export default MessageCenter;

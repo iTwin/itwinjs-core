@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Expander /> renders correctly 1`] = `
-<Tool
+exports[`<GroupToolExpander /> renders correctly 1`] = `
+<GroupTool
   className="nz-toolbar-item-expandable-group-tool-expander"
 >
   <div
@@ -9,5 +9,5 @@ exports[`<Expander /> renders correctly 1`] = `
   >
     &gt;
   </div>
-</Tool>
+</GroupTool>
 `;

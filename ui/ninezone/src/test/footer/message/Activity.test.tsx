@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Activity from "../../..//footer/message/Activity";
+import { Activity } from "../../../ui-ninezone";
 
 describe("<Activity />", () => {
   it("should render", () => {

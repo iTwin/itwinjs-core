@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../utilities/Props";
+import { CommonProps } from "../utilities/Props";
 import { OrthogonalDirectionHelpers, OrthogonalDirection } from "../utilities/Direction";
 import "./Items.scss";
 
@@ -19,7 +19,7 @@ export interface ItemsProps extends CommonProps {
 }
 
 /** Toolbar items container. Used in [[Toolbar]] and [[Scrollable]] components. */
-export default class Items extends React.Component<ItemsProps> {
+export class Items extends React.Component<ItemsProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-items",

@@ -23,7 +23,7 @@ import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
-import { ColorDef, GraphicParams } from "@bentley/imodeljs-common/lib/common";
+import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 

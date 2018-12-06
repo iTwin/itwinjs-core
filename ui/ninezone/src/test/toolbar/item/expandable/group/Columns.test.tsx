@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Columns from "../../../../..//toolbar/item/expandable/group/Columns";
+import { Columns } from "../../../../../ui-ninezone";
 
 describe("<Columns />", () => {
   it("should render", () => {

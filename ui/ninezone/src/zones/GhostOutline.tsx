@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../utilities/Props";
+import { CommonProps } from "../utilities/Props";
 import { RectangleProps } from "../utilities/Rectangle";
 import "./GhostOutline.scss";
 import { CssProperties } from "../utilities/Css";
@@ -39,5 +39,3 @@ export const GhostOutline: React.StatelessComponent<GhostOutlineProps> = (props:
     />
   );
 };
-
-export default GhostOutline;

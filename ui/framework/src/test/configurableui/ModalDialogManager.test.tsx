@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { expect } from "chai";
 
 import TestUtils from "../TestUtils";
-import { StandardMessageBox, ModalDialogManager, ModalDialogChangedEventArgs, ModalDialogRenderer } from "../../";
+import { StandardMessageBox, ModalDialogManager, ModalDialogChangedEventArgs, ModalDialogRenderer } from "../../ui-framework";
 import { MessageBoxIconType, MessageBoxType } from "@bentley/imodeljs-frontend";
 
 describe("StandardMessageBox", () => {

@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Mon, 03 Dec 2018 18:52:58 GMT and should not be manually modified.
+This log was last generated on Tue, 04 Dec 2018 17:24:39 GMT and should not be manually modified.
+
+## 0.172.0
+Tue, 04 Dec 2018 17:24:39 GMT
+
+### Updates
+
+- Created index file to match package name, eliminate subdirectory index files, decrease usage of default exports, some class name changes to avoid conflicts in the index file.
 
 ## 0.171.0
 Mon, 03 Dec 2018 18:52:58 GMT

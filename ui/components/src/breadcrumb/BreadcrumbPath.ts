@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Breadcrumb */
 
-import { TreeDataProvider, TreeNodeItem } from "../tree";
+import { TreeDataProvider, TreeNodeItem } from "../tree/TreeDataProvider";
 import { UiEvent } from "@bentley/ui-core";
 
 /** BreadcrumbChangeEvent Event Args class.

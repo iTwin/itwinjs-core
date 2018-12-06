@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { BentleyError } from "@bentley/bentleyjs-core/lib/BentleyError";
+import { BentleyError } from "@bentley/bentleyjs-core";
 
 /**
  * Status codes used during Quantity parsing and formatting processing.

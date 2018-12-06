@@ -11,8 +11,8 @@ import { ECJsonTypeMap, WsgInstance } from "./../ECJsonTypeMap";
 import { ResponseError } from "./../Request";
 import { AccessToken } from "../Token";
 import { Logger, IModelHubStatus, ActivityLoggingContext, Id64String, GuidString } from "@bentley/bentleyjs-core";
-import { AggregateResponseError, Query } from "./index";
-import { IModelHubError, ArgumentCheck } from "./Errors";
+import { Query } from "./Query";
+import { AggregateResponseError, IModelHubError, ArgumentCheck } from "./Errors";
 import { IModelBaseHandler } from "./BaseHandler";
 import { WsgRequestOptions } from "../WsgClient";
 

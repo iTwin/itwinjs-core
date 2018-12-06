@@ -7,7 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { OmitChildrenProp, NoChildrenProps } from "../../utilities/Props";
-import Popover, { PopoverProps } from "./Popover";
+import { Popover, PopoverProps } from "./Popover";
 import "./Triangle.scss";
 
 /** Properties of [[Triangle]] component. */
@@ -34,5 +34,3 @@ export const TrianglePopover: React.StatelessComponent<TrianglePopoverProps> = (
     </Popover>
   );
 };
-
-export default TrianglePopover;

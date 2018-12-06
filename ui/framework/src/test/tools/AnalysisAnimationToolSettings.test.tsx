@@ -7,8 +7,10 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 
 import TestUtils from "../TestUtils";
-import { ConfigurableUiManager, ZoneState, WidgetState, FrontstageManager, AnalysisAnimationTool, FrontstageProvider, FrontstageProps, Frontstage, Zone, Widget, ToolWidget } from "../../index";
-import { AnalysisAnimationToolSettings } from "../../index";
+import {
+  AnalysisAnimationToolSettings, ConfigurableUiManager, ZoneState, WidgetState, FrontstageManager, AnalysisAnimationTool,
+  FrontstageProvider, FrontstageProps, Frontstage, Zone, Widget, ToolWidget,
+} from "../../ui-framework";
 
 describe("AnalysisAnimationToolUiProvider", () => {
 

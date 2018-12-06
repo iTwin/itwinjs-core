@@ -8,7 +8,7 @@ import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
   OnItemsDeselectedCallback, OnItemsSelectedCallback, OnSelectionChanged, DragAction,
 } from "../../..//common/selection/SelectionHandler";
-import { SelectionMode } from "../../..//common";
+import { SelectionMode } from "../../../ui-components";
 
 describe("SelectionHandler", () => {
   let handler: SelectionHandler<string>;

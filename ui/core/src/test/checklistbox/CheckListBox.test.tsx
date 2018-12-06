@@ -6,7 +6,7 @@ import * as React from "react";
 import { mount, shallow } from "enzyme";
 import * as sinon from "sinon";
 
-import { CheckListBox, CheckListBoxItem, CheckListBoxSeparator } from "../..//index";
+import { CheckListBox, CheckListBoxItem, CheckListBoxSeparator } from "../../ui-core";
 
 describe("<CheckListBox />", () => {
   it("should render", () => {

@@ -15,7 +15,7 @@ import {
   RpcResponseCacheControl,
 } from "@bentley/imodeljs-common";
 import { WipRpcInterface } from "@bentley/imodeljs-common/lib/rpc/WipRpcInterface"; // not part of the "barrel"
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyError, Id64, OpenMode } from "@bentley/bentleyjs-core";
 import {
   TestRpcInterface,
   TestOp1Params,
@@ -32,7 +32,6 @@ import {
 } from "../common/TestRpcInterface";
 
 import { assert } from "chai";
-import { BentleyError, Id64 } from "@bentley/bentleyjs-core";
 import { TestbedConfig } from "../common/TestbedConfig";
 import { CONSTANTS } from "../common/Testbed";
 import * as semver from "semver";

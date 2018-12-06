@@ -5,7 +5,7 @@
 /** @module Table */
 
 import * as React from "react";
-import { WithDropTargetProps } from "../../dragdrop";
+import { WithDropTargetProps } from "../../dragdrop/withDropTarget";
 
 /** @hidden */
 export interface TableWrapperProps extends React.HTMLAttributes<HTMLDivElement> { }

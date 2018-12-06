@@ -5,19 +5,18 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Triangle from "../../..//popup/popover/Triangle";
-import { Direction } from "../../..//utilities/Direction";
+import { Direction, TrianglePopover } from "../../../ui-ninezone";
 
-describe("<Triangle />", () => {
+describe("<TrianglePopover />", () => {
   it("should render", () => {
-    mount(<Triangle direction={Direction.Left} />);
+    mount(<TrianglePopover direction={Direction.Left} />);
   });
 
   it("renders correctly", () => {
-    shallow(<Triangle direction={Direction.Left} />).should.matchSnapshot();
+    shallow(<TrianglePopover direction={Direction.Left} />).should.matchSnapshot();
   });
 
   it("should set direction class", () => {
-    shallow(<Triangle direction={Direction.Bottom} />).should.matchSnapshot();
+    shallow(<TrianglePopover direction={Direction.Bottom} />).should.matchSnapshot();
   });
 });

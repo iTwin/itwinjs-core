@@ -4,9 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { BentleyCloudRpcManager, RpcManager, IModelToken } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, RpcManager, IModelToken, WebAppRpcRequest } from "@bentley/imodeljs-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
-import { WebAppRpcRequest } from "@bentley/imodeljs-common/lib/rpc/web/WebAppRpcRequest";
 
 describe("PresentationRpcInterface usage with RPC protocols", () => {
 

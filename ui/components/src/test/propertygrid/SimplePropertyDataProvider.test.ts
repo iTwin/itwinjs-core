@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { PrimitiveValue, PropertyValueFormat, PropertyRecord } from "../../properties";
-import { SimplePropertyDataProvider, PropertyCategory } from "../../propertygrid";
+import { PrimitiveValue, PropertyValueFormat, PropertyRecord, SimplePropertyDataProvider, PropertyCategory } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 class SamplePropertyDataProvider extends SimplePropertyDataProvider {

@@ -20,7 +20,7 @@ import {
   StatusBarFieldId,
   WidgetDef,
   ConfigurableUiControlType,
-} from "../../../";
+} from "../../../ui-framework";
 
 describe("SnapModeField", () => {
 

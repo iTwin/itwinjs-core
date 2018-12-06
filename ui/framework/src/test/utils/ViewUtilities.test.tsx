@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { ViewUtilities } from "../..//utils";
+import { ViewUtilities } from "../../ui-framework";
 
 describe("ViewUtilities", () => {
   before(async () => {

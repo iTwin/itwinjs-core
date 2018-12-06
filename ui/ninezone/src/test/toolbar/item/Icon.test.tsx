@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Icon from "../../..//toolbar/item/Icon";
+import { Item } from "../../../ui-ninezone";
 
-describe("<Icon />", () => {
+describe("<Item />", () => {
   it("should render", () => {
-    mount(<Icon />);
+    mount(<Item />);
   });
 
   it("renders correctly", () => {
-    shallow(<Icon />).should.matchSnapshot();
+    shallow(<Item />).should.matchSnapshot();
   });
 });

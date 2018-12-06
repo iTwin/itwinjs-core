@@ -6,10 +6,10 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Css, { CssProperties } from "../../utilities/Css";
-import CommonProps from "../../utilities/Props";
-import Point, { PointProps } from "../../utilities/Point";
-import Rectangle, { RectangleProps } from "../../utilities/Rectangle";
+import { Css, CssProperties } from "../../utilities/Css";
+import { CommonProps } from "../../utilities/Props";
+import { Point, PointProps } from "../../utilities/Point";
+import { Rectangle, RectangleProps } from "../../utilities/Rectangle";
 import "./Tooltip.scss";
 
 /** Properties of [[Tooltip]] component. */
@@ -44,7 +44,7 @@ export const offsetAndContainInContainer = (offset: PointProps = new Point(20, 2
 };
 
 /** Tooltip component that follows the mouse. */
-export default class Tooltip extends React.Component<TooltipProps> {
+export class Tooltip extends React.Component<TooltipProps> {
   public static readonly defaultProps: TooltipDefaultProps = {
     position: new Point(),
     containIn: (tooltip: HTMLElement) => {

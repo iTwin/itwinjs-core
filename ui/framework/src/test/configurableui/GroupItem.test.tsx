@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 
 import TestUtils from "../TestUtils";
-import { GroupButton, CommandItemDef, GroupItemDef } from "../..";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
+import { GroupButton, CommandItemDef, GroupItemDef } from "../../ui-framework";
+import { Direction } from "@bentley/ui-ninezone";
 
 const tool1 = new CommandItemDef({
   commandId: "tool1",

@@ -5,8 +5,14 @@
 /** @module RPC */
 
 import { RpcInterface, IModelToken } from "@bentley/imodeljs-common";
-import { NodeKey, Node, NodePathElement } from "./hierarchy";
-import { SelectionInfo, Descriptor, Content, Field, Item, PropertiesField, NestedContentField } from "./content";
+import { NodeKey } from "./hierarchy/Key";
+import { default as NodePathElement } from "./hierarchy/NodePathElement";
+import { default as Node } from "./hierarchy/Node";
+import { SelectionInfo, default as Descriptor } from "./content/Descriptor";
+import { default as Content } from "./content/Content";
+import { Field } from "./content/Fields";
+import { default as Item } from "./content/Item";
+import { PropertiesField, NestedContentField } from "./content/Fields";
 import { HierarchyRequestOptions, ContentRequestOptions, Paged } from "./PresentationManagerOptions";
 import KeySet from "./KeySet";
 import { InstanceKey } from "./EC";

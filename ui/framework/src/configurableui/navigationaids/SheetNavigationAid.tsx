@@ -11,12 +11,7 @@ import { NavigationAidControl } from "../NavigationAidControl";
 import { ConfigurableCreateInfo } from "../ConfigurableUiControl";
 import { FrontstageManager, ModalFrontstageInfo } from "../FrontstageManager";
 import { SheetsModalFrontstage, CardContainer, CardSelectedEventArgs } from "./SheetsModalFrontstage";
-import {
-  IModelConnection,
-  IModelApp,
-  ScreenViewport,
-  SelectedViewportChangedArgs,
-} from "@bentley/imodeljs-frontend/lib/frontend";
+import { IModelConnection, IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { SmallLoader } from "@bentley/bwc";
 
 import "./SheetNavigationAid.scss";

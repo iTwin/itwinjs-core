@@ -1,0 +1,15 @@
+{
+  "tools": {
+    "Measure": {
+      "ByPoints": {
+        "keyin": "Measure ByPoints",
+        "description": "Measure distance between points",
+        "flyover": "Measure ByPoints",
+        "Prompts": {
+          "FirstPoint": "Enter first point",
+          "NextPoint": "Select next point"
+        }
+      }
+    }
+  }
+}

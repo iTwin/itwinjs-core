@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+// tslint:disable:no-duplicate-imports
 import * as geometry from "../geometry-core";
+import { YawPitchRollAngles, Matrix3d } from "../geometry-core";
 import { Vector3d, Point3d } from "../geometry3d/Point3dVector3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Ray3d } from "../geometry3d/Ray3d";
-import { YawPitchRollAngles } from "../geometry-core";
-import { Matrix3d } from "../geometry-core";
 // import { LineSegment3d } from "../curve/LineSegment3d";
 // import { GeometryQuery } from "../curve/CurvePrimitive";
 // import { LineString3d } from "../curve/LineString3d";

@@ -7,7 +7,7 @@
 import * as React from "react";
 import { connect } from "react-redux";
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { OidcClientWrapper } from "../oidc/OidcClientWrapper";
+import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
 import { OverallContentPage, OverallContentActions } from "./state";
 import { IModelOpen } from "../openimodel/IModelOpen";
 import { ConfigurableUiContent } from "../configurableui/ConfigurableUiContent";

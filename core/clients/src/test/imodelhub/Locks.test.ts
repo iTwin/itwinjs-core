@@ -4,12 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 
-import { AccessToken, IModelClient } from "../../";
 import {
-  Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
+  AccessToken, IModelClient, Lock, Briefcase, ChangeSet, LockType, LockLevel, LockQuery,
   AggregateResponseError, ConflictingLocksError,
   IModelHubClientError,
-} from "../../";
+} from "../../imodeljs-clients";
 
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";

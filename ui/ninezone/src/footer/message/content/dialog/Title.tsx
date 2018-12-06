@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../../../utilities/Props";
 import "./Title.scss";
 
 /** Properties of [[DialogTitle]] component. */
@@ -31,5 +31,3 @@ export const DialogTitle: React.StatelessComponent<DialogTitleProps> = (props) =
     </div>
   );
 };
-
-export default DialogTitle;

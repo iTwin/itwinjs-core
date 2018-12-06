@@ -18,10 +18,9 @@ import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUn
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
-import { CurvePrimitive } from "./CurvePrimitive";
+import { CurvePrimitive, AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { GeometryQuery } from "./GeometryQuery";
 import { CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
-import { AnnounceNumberNumberCurvePrimitive } from "./CurvePrimitive";
 import { StrokeOptions } from "./StrokeOptions";
 import { Clipper } from "../clipping/ClipUtils";
 import { LineString3d } from "./LineString3d";

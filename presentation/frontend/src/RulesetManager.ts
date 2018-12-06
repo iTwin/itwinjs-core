@@ -6,7 +6,7 @@
 
 import { BeEvent, Guid } from "@bentley/bentleyjs-core";
 import { RulesetManagerState, Ruleset, RegisteredRuleset } from "@bentley/presentation-common";
-import { IClientStateHolder } from "@bentley/presentation-common/lib/RpcRequestsHandler";
+import { IClientStateHolder } from "@bentley/presentation-common";
 
 /** @hidden */
 export default class RulesetManager implements IClientStateHolder<RulesetManagerState> {

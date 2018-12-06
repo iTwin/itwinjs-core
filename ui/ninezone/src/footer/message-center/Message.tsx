@@ -6,20 +6,20 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
 import "./Message.scss";
 
-/** Properties of [[Message]] component. */
-export interface MessageProps extends CommonProps, NoChildrenProps {
+/** Properties of [[MessageCenterMessage]] component. */
+export interface MessageCenterMessageProps extends CommonProps, NoChildrenProps {
   /** Icon of message entry. */
   icon?: React.ReactNode;
   /** Actual message. */
   content?: React.ReactNode;
 }
 
-/** Message entry in [[MessageCenter]] component. */
+/** Message entry in [[MessageCenterMessage]] component. */
 // tslint:disable-next-line:variable-name
-export const Message: React.StatelessComponent<MessageProps> = (props) => {
+export const MessageCenterMessage: React.StatelessComponent<MessageCenterMessageProps> = (props) => {
   const className = classnames(
     "nz-footer-messageCenter-message",
     props.className);
@@ -42,5 +42,3 @@ export const Message: React.StatelessComponent<MessageProps> = (props) => {
     </div>
   );
 };
-
-export default Message;

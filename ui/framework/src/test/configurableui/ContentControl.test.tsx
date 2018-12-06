@@ -16,7 +16,7 @@ import {
   FrontstageProvider,
   FrontstageProps,
   Frontstage,
-} from "../../index";
+} from "../../ui-framework";
 import TestUtils from "../TestUtils";
 
 describe("ContentControl", () => {

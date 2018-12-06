@@ -18,7 +18,7 @@ import {
   Widget,
   FrontstageManager,
   FrontstageComposer,
-} from "../..";
+} from "../../ui-framework";
 import { Tool1 } from "../tools/Tool1";
 
 describe("ToolSettingsZone", () => {

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import TestProps from "./TestProps";
-import NineZone from "../../..//zones/state/NineZone";
+import { NineZone } from "../../../ui-ninezone";
 
 describe("Widget", () => {
   describe("equals", () => {

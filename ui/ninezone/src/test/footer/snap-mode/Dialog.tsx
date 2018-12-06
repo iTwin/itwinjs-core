@@ -5,14 +5,14 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Dialog from "../../..//footer/snap-mode/Dialog";
+import { SnapModeDialog } from "../../../ui-ninezone";
 
-describe("<Dialog />", () => {
+describe("<SnapModeDialog />", () => {
   it("should render", () => {
-    mount(<Dialog />);
+    mount(<SnapModeDialog />);
   });
 
   it("renders correctly", () => {
-    shallow(<Dialog />).should.matchSnapshot();
+    shallow(<SnapModeDialog />).should.matchSnapshot();
   });
 });

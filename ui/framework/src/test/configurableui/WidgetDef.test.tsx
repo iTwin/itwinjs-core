@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetDefProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../..//index";
+import { WidgetState, WidgetDefProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework";
 
 describe("WidgetDef", () => {
 
@@ -32,6 +32,7 @@ describe("WidgetDef", () => {
       tooltipKey: "SampleApp:Test.my-tooltip",
       isToolSettings: true,
       isStatusBar: true,
+      fillZone: true,
       featureId: "FeatureId",
       isFloatingStateSupported: true,
       isFloatingStateWindowResizable: false,
@@ -48,6 +49,7 @@ describe("WidgetDef", () => {
     expect(widgetDef.isFloatingStateWindowResizable).to.eq(false);
     expect(widgetDef.isToolSettings).to.eq(true);
     expect(widgetDef.isStatusBar).to.eq(true);
+    expect(widgetDef.fillZone).to.eq(true);
     expect(widgetDef.applicationData).to.eq("AppData");
 
     expect(widgetDef.label).to.eq("Test.my-label");

@@ -10,7 +10,7 @@ import { RpcOperation, RpcOperationPolicy } from "./RpcOperation";
 import { RpcControlChannel } from "./RpcControl";
 import { IModelError, ServerError } from "../../IModelError";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { RpcConfiguration, RpcPendingQueue, initializeRpcRequest } from "../../common";
+import { RpcConfiguration, RpcPendingQueue, initializeRpcRequest } from "../../imodeljs-common";
 
 // tslint:disable:ban-types
 

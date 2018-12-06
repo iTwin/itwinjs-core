@@ -7,9 +7,9 @@
 import * as React from "react";
 
 import { getDisplayName } from "@bentley/ui-core";
-import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../../dragdrop";
-import { TableDropTargetProps, Table, TableProps } from "../../../table";
-import withTableDragDrop from "../../../table/hocs/withDragDrop";
+import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../../dragdrop/DragDropDef";
+import withTableDragDrop, { TableDropTargetProps } from "../../../table/hocs/withDragDrop";
+import { Table, TableProps } from "../../../table/component/Table";
 import { BreadcrumbDetailsProps } from "../BreadcrumbDetails";
 import { TableDataProvider } from "../../../table/TableDataProvider";
 import { TreeNodeItem } from "../../../tree/TreeDataProvider";

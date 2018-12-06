@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import Rectangle, { Edge, RectangleProps } from "../../../utilities/Rectangle";
-import ResizeHandle from "../../../widget/rectangular/ResizeHandle";
+import { Rectangle, Edge, RectangleProps } from "../../../utilities/Rectangle";
+import { ResizeHandle } from "../../../widget/rectangular/ResizeHandle";
 import { HorizontalAnchor } from "../../../widget/Stacked";
-import Root from "./Root";
+import { Root } from "./Root";
 
 export interface LayoutProps {
   readonly bounds: RectangleProps;
@@ -645,5 +645,3 @@ export interface Resizers {
   readonly growRight: ResizeStrategy;
   readonly shrinkRight: ResizeStrategy;
 }
-
-export default Layout;

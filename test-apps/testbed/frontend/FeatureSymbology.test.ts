@@ -6,10 +6,9 @@ import { assert, expect } from "chai";
 // import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d } from "@bentley/geometry-core";
 import { ViewDefinitionProps, GeometryClass, Feature, RgbColor, LinePixels, ViewFlags } from "@bentley/imodeljs-common";
 import * as path from "path";
-// import { DeepCompare } from "@bentley/geometry-core/lib/serialization/DeepCompare";
+// import { DeepCompare } from "@bentley/geometry-core";
 import { Id64 } from "@bentley/bentleyjs-core";
-import { SpatialViewState, IModelConnection } from "@bentley/imodeljs-frontend";
-import { FeatureSymbology } from "@bentley/imodeljs-frontend/lib/rendering";
+import { SpatialViewState, IModelConnection, FeatureSymbology } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");

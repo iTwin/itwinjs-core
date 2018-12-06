@@ -20,10 +20,10 @@ import {
   Omit,
 } from "@bentley/presentation-common";
 import { Node, Descriptor, Content } from "@bentley/presentation-common";
-import { VariableValueTypes } from "@bentley/presentation-common/lib/RulesetVariables";
+import { VariableValueTypes } from "@bentley/presentation-common";
 import {
   RpcRequestOptions, HierarchyRpcRequestOptions, ClientStateSyncRequestOptions,
-} from "@bentley/presentation-common/lib/PresentationRpcInterface";
+} from "@bentley/presentation-common";
 import RulesetVariablesManager from "../RulesetVariablesManager";
 import PresentationManager from "../PresentationManager";
 import PresentationRpcImpl from "../PresentationRpcImpl";

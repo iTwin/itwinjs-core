@@ -8,8 +8,7 @@ import * as https from "https";
 import * as bodyParser from "body-parser";
 import * as fs from "fs";
 
-import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
-import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { initializeBackend } from "./backend";
 
@@ -56,7 +55,7 @@ if (process.argv.length === 3) {
 
 if (serverConfig === undefined) {
   setupStandaloneConfiguration();
-  serverConfig = { port: 3000, baseUrl: "https://localhost" };
+  serverConfig = { port: 3001, baseUrl: "https://localhost" };
 } else {
 
 }
@@ -72,20 +71,18 @@ app.use(bodyParser.text());
 // Enable CORS for all apis
 app.all("/*", (_req, res, next) => {
   res.header("Access-Control-Allow-Origin", "*");
-  res.header("Access-Control-Allow-Headers", "Authorization, X-Requested-With");
+  res.header("Access-Control-Allow-Methods", "POST, GET");
+  res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id");
   next();
 });
 
 // --------------------------------------------
 // Routes
 // --------------------------------------------
-app.use(express.static(path.resolve(__dirname, "public")));
 app.get("/v3/swagger.json", (req, res) => cloudConfig.protocol.handleOpenApiDescriptionRequest(req, res));
 app.post("*", async (req, res) => cloudConfig.protocol.handleOperationPostRequest(req, res));
 app.get(/\/imodel\//, async (req, res) => cloudConfig.protocol.handleOperationGetRequest(req, res));
-app.get("/signin-callback", (_req, res) => {
-  res.sendFile(path.join(__dirname, "public/index.html"));
-});
+app.use("*", (_req, res) => { res.send("<h1>IModelJs RPC Server</h1>"); });
 
 // ---------------------------------------------
 // Run the server...

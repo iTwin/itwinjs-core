@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
 import "./Content.scss";
 
 /** Properties of [[MessageCenterContent]] component. */
@@ -42,5 +42,3 @@ export const MessageCenterContent: React.StatelessComponent<MessageCenterContent
     </div>
   );
 };
-
-export default MessageCenterContent;

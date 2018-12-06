@@ -15,13 +15,10 @@ import { FrontstageManager, WidgetStateChangedEventArgs } from "./FrontstageMana
 import { StatusBarWidgetControl } from "./StatusBarWidgetControl";
 import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
-import { ZoneProps as NZ_ZoneProps, DropTarget } from "@bentley/ui-ninezone/lib/zones/state/Zone";
-import { WidgetProps as NZ_WidgetProps } from "@bentley/ui-ninezone/lib/zones/state/Widget";
-import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
-import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
-import GhostOutline from "@bentley/ui-ninezone/lib/zones/GhostOutline";
-import { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone/lib/widget/Stacked";
-import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
+import {
+  ZonePropsBase, DropTarget, WidgetProps as NZ_WidgetProps, ZoneComponent as NZ_Zone, RectangleProps,
+  GhostOutline, HorizontalAnchor, VerticalAnchor, PointProps,
+} from "@bentley/ui-ninezone";
 
 // -----------------------------------------------------------------------------
 // Zone React Components
@@ -32,7 +29,7 @@ import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
 export interface FrameworkZoneProps {
   horizontalAnchor: HorizontalAnchor;
   verticalAnchor: VerticalAnchor;
-  zoneProps: NZ_ZoneProps;
+  zoneProps: ZonePropsBase;
   targetedBounds?: RectangleProps;
   widgetChangeHandler: WidgetChangeHandler;
   targetChangeHandler: TargetChangeHandler;
@@ -41,6 +38,7 @@ export interface FrameworkZoneProps {
   isDragged: boolean | undefined;
   lastPosition: PointProps | undefined;
   isUnmergeDrag: boolean;
+  fillZone?: boolean;
 }
 
 interface FrameworkZoneState {
@@ -196,7 +194,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
     return (
       <StackedWidget
-        fillZone={this.props.zoneProps.isLayoutChanged}
+        fillZone={this.props.fillZone || this.props.zoneProps.isLayoutChanged}
         horizontalAnchor={this.props.horizontalAnchor}
         isDragged={this.props.isDragged}
         isFloating={this.props.zoneProps.floating ? true : false}

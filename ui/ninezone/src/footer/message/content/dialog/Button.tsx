@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../../../utilities/Props";
+import { CommonProps } from "../../../../utilities/Props";
 import "./Button.scss";
 
 /** Properties of [[DialogButton]] component. */
@@ -34,5 +34,3 @@ export const DialogButton: React.StatelessComponent<DialogButtonProps> = (props)
     </div>
   );
 };
-
-export default DialogButton;

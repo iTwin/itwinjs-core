@@ -9,14 +9,10 @@ import * as React from "react";
 import { WidgetChangeHandler } from "./FrontstageComposer";
 import { Icon } from "./IconComponent";
 
-import NZ_StackedWidget, { HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone/lib/widget/Stacked";
-import ResizeHandle from "@bentley/ui-ninezone/lib/widget/rectangular/ResizeHandle";
-import WidgetTab from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Draggable";
-import TabGroup, { VisibilityMode } from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Group";
-import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
-import TabSeparator from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Separator";
-import { WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
-import { TabMode } from "@bentley/ui-ninezone/lib/widget/rectangular/tab/Tab";
+import {
+  Stacked as NZ_StackedWidget, HorizontalAnchor, VerticalAnchor,
+  ResizeHandle, Draggable, TabGroup, VisibilityMode, PointProps, TabSeparator, WidgetZoneIndex, TabMode,
+} from "@bentley/ui-ninezone";
 
 /** Properties for a [[StackedWidget]] Tab.
  */
@@ -112,7 +108,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
     return stackedWidget.tabs.map((tab: WidgetTabProps, index: number) => {
       const mode = !isWidgetOpen ? TabMode.Closed : tab.isActive ? TabMode.Active : TabMode.Open;
       return (
-        <WidgetTab
+        <Draggable
           title={tab.title}
           key={`${stackedWidget.id}_${index}`}
           anchor={this.props.horizontalAnchor}
@@ -124,7 +120,7 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
           onDragEnd={this._handleTabDragEnd}
         >
           <Icon iconSpec={tab.iconSpec} />
-        </WidgetTab>
+        </Draggable>
       );
     });
   }

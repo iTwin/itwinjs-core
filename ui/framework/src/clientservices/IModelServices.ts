@@ -5,7 +5,7 @@
 /** @module ClientServices */
 
 import { AccessToken } from "@bentley/imodeljs-clients";
-import { OpenMode } from "@bentley/bentleyjs-core/lib/BeSQLite";
+import { OpenMode } from "@bentley/bentleyjs-core";
 import { ProjectInfo } from "./ProjectServices";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 

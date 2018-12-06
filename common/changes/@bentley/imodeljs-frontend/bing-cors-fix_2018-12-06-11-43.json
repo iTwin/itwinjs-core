@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix failure to display Bing maps logo.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

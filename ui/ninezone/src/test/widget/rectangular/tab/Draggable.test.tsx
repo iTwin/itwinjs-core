@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import Draggable from "../../../..//widget/rectangular/tab/Draggable";
+import { Draggable } from "../../../../ui-ninezone";
 import { HorizontalAnchor } from "../../../..//widget/Stacked";
 import { TabMode } from "../../../..//widget/rectangular/tab/Tab";
 

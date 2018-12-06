@@ -6,12 +6,11 @@ import * as chai from "chai";
 
 import { Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
-import { AccessToken, IModelClient } from "../../";
 import {
-  HubIModel, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
+  AccessToken, IModelClient, HubIModel, GlobalEventSubscription, GlobalEventSAS, GlobalEventType,
   SoftiModelDeleteEvent, HardiModelDeleteEvent, IModelCreatedEvent, ChangeSetCreatedEvent,
   NamedVersionCreatedEvent, IModelHubGlobalEvent, GetEventOperationType,
-} from "../../";
+} from "../../imodeljs-clients";
 
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";

@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../utilities/Props";
+import { CommonProps } from "../utilities/Props";
 import "./Content.scss";
 
 /** Properties of [[Content]] component. */
@@ -16,7 +16,7 @@ export interface ContentProps extends CommonProps, React.HTMLAttributes<HTMLDivE
 }
 
 /** Content component of 9-Zone UI app. */
-export default class Content extends React.Component<ContentProps> {
+export class Content extends React.Component<ContentProps> {
   public render() {
     const { className, ...props } = this.props;
 

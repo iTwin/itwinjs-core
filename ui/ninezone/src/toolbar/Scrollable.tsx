@@ -6,10 +6,10 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Direction, { OrthogonalDirection } from "../utilities/Direction";
-import Indicator from "./scroll/Indicator";
-import Toolbar, { ToolbarProps } from "./Toolbar";
-import Items from "./Items";
+import { Direction, OrthogonalDirection } from "../utilities/Direction";
+import { Indicator } from "./scroll/Indicator";
+import { Toolbar, ToolbarProps } from "./Toolbar";
+import { Items } from "./Items";
 import "./Scrollable.scss";
 
 /** Properties of [[Scrollable]] component. See [[ScrollableDefaultProps]] */
@@ -33,7 +33,7 @@ export interface ScrollableState {
 }
 
 /** A [[Toolbar]] with scroll overflow strategy. */
-export default class Scrollable extends React.Component<ScrollableProps, ScrollableState> {
+export class Scrollable extends React.Component<ScrollableProps, ScrollableState> {
   private static readonly _DESKTOP_ITEM_WIDTH = 40;
   private static readonly _DESKTOP_ITEM_HEIGHT = Scrollable._DESKTOP_ITEM_WIDTH;
   private static readonly _DESKTOP_SEPARATOR_SIZE = 1;

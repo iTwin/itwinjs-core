@@ -5,18 +5,18 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Item from "../../../../..//toolbar/item/expandable/history/Item";
+import { HistoryItem } from "../../../../../ui-ninezone";
 
-describe("<Item />", () => {
+describe("<HistoryItem />", () => {
   it("should render", () => {
-    mount(<Item />);
+    mount(<HistoryItem />);
   });
 
   it("renders correctly", () => {
-    shallow(<Item />).should.matchSnapshot();
+    shallow(<HistoryItem />).should.matchSnapshot();
   });
 
   it("renders active", () => {
-    shallow(<Item isActive />).should.matchSnapshot();
+    shallow(<HistoryItem isActive />).should.matchSnapshot();
   });
 });

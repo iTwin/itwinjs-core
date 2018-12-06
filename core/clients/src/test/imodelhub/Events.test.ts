@@ -7,16 +7,15 @@ import * as utils from "./TestUtils";
 
 import { GuidString, Guid, IModelHubStatus, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
 
-import { AccessToken, IModelClient } from "../../";
 import {
-  LockEvent, AllLocksDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent,
+  AccessToken, IModelClient, LockEvent, AllLocksDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent,
   CodeEvent, AllCodesDeletedEvent, BriefcaseDeletedEvent, IModelDeletedEvent, VersionEvent,
   EventSubscription, EventSAS, EventType, IModelHubEvent,
-} from "../../";
+} from "../../imodeljs-clients";
 
 import { TestConfig, TestUsers } from "../TestConfig";
 import { ResponseBuilder, RequestType, ScopeType } from "../ResponseBuilder";
-import { LockLevel, LockType } from "../../imodelhub";
+import { LockLevel, LockType } from "../../imodelhub/Locks";
 
 chai.should();
 

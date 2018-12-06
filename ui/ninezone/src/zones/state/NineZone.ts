@@ -7,9 +7,9 @@
 import { CellProps } from "../../utilities/Cell";
 import { SizeProps } from "../../utilities/Size";
 import { NineZoneRoot as Root } from "./layout/Layouts";
-import Target, { TargetProps } from "./Target";
-import Widget, { DraggingWidgetProps, DraggingWidget } from "./Widget";
-import Zone, { getDefaultProps as getDefaultZoneProps, ZoneProps, ContentZone, WidgetZone, StatusZone, StatusZoneProps, getDefaultStatusZoneProps } from "./Zone";
+import { Target, TargetZoneProps } from "./Target";
+import { Widget, DraggingWidgetProps, DraggingWidget } from "./Widget";
+import { Zone, getDefaultZoneProps, ZonePropsBase, ContentZone, WidgetZone, StatusZone, StatusZoneProps, getDefaultStatusZoneProps } from "./Zone";
 
 export type ContentZoneIndex = 5;
 export type StatusZoneIndex = 8;
@@ -17,14 +17,14 @@ export type WidgetZoneIndex = 1 | 2 | 3 | 4 | 6 | 7 | StatusZoneIndex | 9;
 export type ZoneIndex = WidgetZoneIndex | ContentZoneIndex;
 
 export type ZonesType =
-  { [id in Exclude<WidgetZoneIndex, StatusZoneIndex>]: ZoneProps } &
+  { [id in Exclude<WidgetZoneIndex, StatusZoneIndex>]: ZonePropsBase } &
   { [id in StatusZoneIndex]: StatusZoneProps };
 
 export interface NineZoneProps {
   readonly zones: Readonly<ZonesType>;
   readonly size: SizeProps;
   readonly draggingWidget?: DraggingWidgetProps;
-  readonly target?: TargetProps;
+  readonly target?: TargetZoneProps;
 }
 
 export const getDefaultZonesProps = (): Readonly<ZonesType> => {
@@ -40,7 +40,7 @@ export const getDefaultZonesProps = (): Readonly<ZonesType> => {
   };
 };
 
-export const getDefaultProps = (): NineZoneProps => (
+export const getDefaultNineZoneProps = (): NineZoneProps => (
   {
     zones: getDefaultZonesProps(),
     size: {
@@ -50,7 +50,7 @@ export const getDefaultProps = (): NineZoneProps => (
   }
 );
 
-export default class NineZone implements Iterable<Zone> {
+export class NineZone implements Iterable<Zone> {
   private _zones: { [id: number]: Zone } = {};
   private _root: Root | undefined;
   private _target?: Target;

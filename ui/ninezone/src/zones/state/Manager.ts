@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import Point, { PointProps } from "../../utilities/Point";
-import Rectangle, { RectangleProps } from "../../utilities/Rectangle";
+import { Point, PointProps } from "../../utilities/Point";
+import { Rectangle, RectangleProps } from "../../utilities/Rectangle";
 import { SizeProps } from "../../utilities/Size";
 import { ResizeHandle } from "../../widget/rectangular/ResizeHandle";
-import NineZone, { NineZoneProps, WidgetZoneIndex, ZonesType } from "./NineZone";
-import Widget from "./Widget";
-import { WidgetZone, StatusZone, StatusZoneProps, ZoneProps } from "./Zone";
-import { TargetType, TargetProps } from "./Target";
+import { NineZone, NineZoneProps, WidgetZoneIndex, ZonesType } from "./NineZone";
+import { Widget } from "./Widget";
+import { WidgetZone, StatusZone, StatusZoneProps, ZonePropsBase } from "./Zone";
+import { TargetType, TargetZoneProps } from "./Target";
 
 export type NineZoneFactory = (props: NineZoneProps) => NineZone;
 
@@ -333,7 +333,7 @@ export class StateManager {
             ...model.props.zones[draggingZone.props.id].floating,
             bounds: newBounds,
           },
-        } as ZoneProps,
+        } as ZonePropsBase,
       },
       draggingWidget: {
         ...draggingWidget.props,
@@ -344,7 +344,7 @@ export class StateManager {
     return newState;
   }
 
-  public handleTargetChanged(target: TargetProps | undefined, state: NineZoneProps): NineZoneProps {
+  public handleTargetChanged(target: TargetZoneProps | undefined, state: NineZoneProps): NineZoneProps {
     const model = this._nineZoneFactory(state);
     const draggingWidget = model.draggingWidget;
 
@@ -480,5 +480,4 @@ const defaultFactory = (props: NineZoneProps): NineZone => {
 };
 
 // tslint:disable-next-line:variable-name
-export const Manager = new StateManager(defaultFactory);
-export default Manager;
+export const DefaultStateManager = new StateManager(defaultFactory);

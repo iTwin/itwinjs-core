@@ -7,10 +7,10 @@
 import * as classnames from "classnames";
 import * as React from "react";
 
-import Direction, { DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
-import CommonProps, { NoChildrenProps, FlattenChildren } from "../utilities/Props";
+import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
+import { CommonProps, NoChildrenProps, FlattenChildren } from "../utilities/Props";
 import { ExpandableItemProps } from "./item/expandable/Expandable";
-import Items from "./Items";
+import { Items } from "./Items";
 import "./Toolbar.scss";
 
 interface ToolbarItem {
@@ -62,7 +62,7 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
  * A toolbar that may contain items.
  * @note See [[Scrollable]] for toolbar with scroll overflow strategy.
  */
-export default class Toolbar extends React.Component<ToolbarProps> {
+export class Toolbar extends React.Component<ToolbarProps> {
   /** @returns Toolbar direction based on [[ToolbarProps.expandsTo]] */
   public static getToolbarDirection(props: ToolbarProps): OrthogonalDirection {
     const expandsTo = Toolbar.getExpandsTo(props);

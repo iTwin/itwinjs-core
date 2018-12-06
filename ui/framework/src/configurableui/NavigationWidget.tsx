@@ -5,7 +5,6 @@
 /** @module Widget */
 
 import * as React from "react";
-import { CSSProperties } from "react";
 
 import ConfigurableUiManager from "./ConfigurableUiManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
@@ -15,7 +14,7 @@ import { NavigationAidControl } from "./NavigationAidControl";
 import { FrontstageManager, ToolActivatedEventArgs, NavigationAidActivatedEventArgs, ContentControlActivatedEventArgs } from "./FrontstageManager";
 import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
-import NZ_ToolsWidget from "@bentley/ui-ninezone/lib/widget/tools/Tools";
+import { Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 /** A Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
@@ -55,7 +54,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 
     if (this._navigationAidControl) {
       const size = this._navigationAidControl.getSize() || "64px";
-      const divStyle: CSSProperties = {
+      const divStyle: React.CSSProperties = {
         width: size,
         height: size,
       };

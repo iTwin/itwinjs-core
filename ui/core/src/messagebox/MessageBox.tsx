@@ -7,7 +7,6 @@
 import * as React from "react";
 import * as classnames from "classnames";
 
-import "@bentley/bwc/lib/buttons/classes.scss";
 import "./MessageBox.scss";
 import { Dialog, ButtonCluster } from "../dialog/Dialog";
 

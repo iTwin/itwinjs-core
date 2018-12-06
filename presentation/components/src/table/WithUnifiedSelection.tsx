@@ -37,7 +37,7 @@ export interface Props {
  * **Note:** it is required for the table to use [[PresentationTableDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function withUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
+export default function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
 
   type CombinedProps = Subtract<P, Props> & Props;
 

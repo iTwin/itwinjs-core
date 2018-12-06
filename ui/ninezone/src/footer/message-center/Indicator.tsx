@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
 import "./Indicator.scss";
 
 /** Properties of [[MessageCenterIndicator]] component. */
@@ -24,7 +24,7 @@ export interface MessageCenterIndicatorProps extends CommonProps, NoChildrenProp
 }
 
 /** One of [[Footer]] indicators. */
-export default class MessageCenterIndicator extends React.Component<MessageCenterIndicatorProps> {
+export class MessageCenterIndicator extends React.Component<MessageCenterIndicatorProps> {
   public render() {
     const className = classnames(
       "nz-footer-messageCenter-indicator",

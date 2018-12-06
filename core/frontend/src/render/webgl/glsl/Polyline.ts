@@ -13,13 +13,12 @@ import {
   FragmentShaderBuilder,
 } from "../ShaderBuilder";
 import { addModelViewMatrix, addProjectionMatrix, GLSLVertex } from "./Vertex";
-import { addFrustum } from "./Common";
+import { addFrustum, addShaderFlags } from "./Common";
 import { addViewport, addModelToWindowCoordinates } from "./Viewport";
 import { GL } from "../GL";
 import { GLSLDecode } from "./Decode";
 import { addColor } from "./Color";
 import { addWhiteOnWhiteReversal } from "./Fragment";
-import { addShaderFlags } from "./Common";
 import { System } from "../System";
 import { TextureUnit } from "../RenderFlags";
 import { addHiliter } from "./FeatureSymbology";

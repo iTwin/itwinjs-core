@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Column /> renders correctly 1`] = `
+exports[`<GroupColumn /> renders correctly 1`] = `
 <div
   className="nz-toolbar-item-expandable-group-column"
 />

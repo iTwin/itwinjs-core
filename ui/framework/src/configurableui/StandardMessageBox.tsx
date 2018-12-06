@@ -7,8 +7,7 @@
 import * as React from "react";
 
 import { MessageBoxType, MessageBoxIconType, MessageBoxValue } from "@bentley/imodeljs-frontend";
-import { ButtonType, ButtonCluster } from "@bentley/ui-core";
-import { MessageBox, MessageSeverity } from "@bentley/ui-core";
+import { ButtonType, ButtonCluster, MessageBox, MessageSeverity } from "@bentley/ui-core";
 
 import { ModalDialogManager } from "./ModalDialogManager";
 

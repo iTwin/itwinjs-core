@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../utilities/Props";
+import { CommonProps } from "../../utilities/Props";
 import "./Icon.scss";
 
 /** Properties of [[Item]] component */
@@ -24,7 +24,7 @@ export interface ItemProps extends CommonProps {
 }
 
 /** Toolbar item component. Used in [[Toolbar]] */
-export default class Item extends React.Component<ItemProps> {
+export class Item extends React.Component<ItemProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-icon",

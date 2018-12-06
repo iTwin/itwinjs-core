@@ -9,13 +9,12 @@ import { FrontstageManager } from "./FrontstageManager";
 import { ZoneDef } from "./ZoneDef";
 import { ContentLayoutManager, ContentLayoutDef } from "./ContentLayout";
 import { ContentControl } from "./ContentControl";
-import { ContentGroup } from "./ContentGroup";
-import { ContentGroupManager } from "./ContentGroup";
+import { ContentGroup, ContentGroupManager } from "./ContentGroup";
 import { WidgetDef } from "./WidgetDef";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageProvider, Frontstage } from "./Frontstage";
 
-import { NineZoneProps } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
+import { NineZoneProps } from "@bentley/ui-ninezone";
 
 /** FrontstageDef class provides an API for a Frontstage.
  */

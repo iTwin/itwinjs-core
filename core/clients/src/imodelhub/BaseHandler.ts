@@ -11,7 +11,7 @@ import { IModelHubError } from "./Errors";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { ImsDelegationSecureTokenClient } from "../ImsClients";
 import * as https from "https";
-import { FileHandler } from "..";
+import { FileHandler } from "../imodeljs-clients";
 import { CustomRequestOptions } from "./CustomRequestOptions";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Config } from "../Config";

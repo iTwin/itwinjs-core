@@ -6,9 +6,10 @@
 
 import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
-import { TableDataProvider, Table, RowItem, ColumnDescription, TableProps } from "../../table";
+import { TableDataProvider, RowItem, ColumnDescription } from "../../table/TableDataProvider";
+import { Table, TableProps } from "../../table/component/Table";
 import { BreadcrumbTreeUtils, DataRowItem } from "../BreadcrumbTreeUtils";
-import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../../tree";
+import { TreeNodeItem, isTreeDataProviderInterface, DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem } from "../../tree/TreeDataProvider";
 import { BreadcrumbPath, BreadcrumbUpdateEventArgs } from "../BreadcrumbPath";
 import { BeInspireTree, BeInspireTreeEvent, BeInspireTreeNodes, BeInspireTreeNode, toNodes, BeInspireTreeNodeConfig, MapPayloadToInspireNodeCallback } from "../../tree/component/BeInspireTree";
 

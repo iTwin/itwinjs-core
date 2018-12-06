@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { CSSProperties } from "react";
 
 import { ViewportComponent } from "@bentley/ui-components";
 import {
@@ -13,11 +12,11 @@ import {
   ViewportContentControl,
 } from "@bentley/ui-framework";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { withUnifiedSelection } from "@bentley/presentation-components/lib/viewport";
+import { viewWithUnifiedSelection } from "@bentley/presentation-components";
 
 // create a HOC viewport component that supports unified selection
 // tslint:disable-next-line:variable-name
-const UnifiedSelectionViewport = withUnifiedSelection(ViewportComponent);
+const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
 
 /** iModel Viewport Control
  */
@@ -71,10 +70,10 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
   }
 
   public render(): React.ReactNode {
-    const divStyle: CSSProperties = {
+    const divStyle: React.CSSProperties = {
       backgroundColor: this.props.bgColor,
     };
-    const canvasStyle: CSSProperties = {
+    const canvasStyle: React.CSSProperties = {
       width: "100%",
       height: "100%",
     };
@@ -133,7 +132,5 @@ class MockIModelViewport extends React.Component<MockIModelViewportProps> {
     this.drawCanvas(event, false);
   }
 }
-
-export default IModelViewportControl;
 
 ConfigurableUiManager.registerControl("IModelViewport", IModelViewportControl);

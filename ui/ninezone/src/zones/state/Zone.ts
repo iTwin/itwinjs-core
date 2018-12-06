@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Zone */
 
-import Rectangle, { RectangleProps } from "../../utilities/Rectangle";
-import Cell from "../../utilities/Cell";
+import { Rectangle, RectangleProps } from "../../utilities/Rectangle";
+import { Cell } from "../../utilities/Cell";
 import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";
 import { Layout1, Layout2, Layout3, Layout4, Layout6, Layout7, Layout8, Layout9, NineZoneRoot, WidgetZoneLayout } from "./layout/Layouts";
-import NineZone, { WidgetZoneIndex, ZoneIndex, StatusZoneIndex, ContentZoneIndex } from "./NineZone";
-import Widget, { WidgetProps, getDefaultProps as getDefaultWidgetProps } from "./Widget";
+import { NineZone, WidgetZoneIndex, ZoneIndex, StatusZoneIndex, ContentZoneIndex } from "./NineZone";
+import { Widget, WidgetProps, getDefaultWidgetProps } from "./Widget";
 import { TargetType } from "./Target";
 
 export enum DropTarget {
@@ -18,7 +18,7 @@ export enum DropTarget {
   Back,
 }
 
-export interface ZoneProps {
+export interface ZonePropsBase {
   readonly id: WidgetZoneIndex;
   readonly bounds: RectangleProps;
   readonly isLayoutChanged: boolean;
@@ -28,7 +28,7 @@ export interface ZoneProps {
   readonly allowsMerging: boolean;
 }
 
-export interface FloatingZoneProps extends ZoneProps {
+export interface FloatingZoneProps extends ZonePropsBase {
   readonly floating: FloatingProps;
 }
 
@@ -37,18 +37,18 @@ export interface FloatingProps {
   readonly stackId: number;
 }
 
-export interface StatusZoneProps extends ZoneProps {
+export interface StatusZoneProps extends ZonePropsBase {
   readonly id: StatusZoneIndex;
   readonly isInFooterMode: boolean;
 }
 
-export const isStatusZone = (zone: ZoneProps): zone is StatusZoneProps => {
+export const isStatusZone = (zone: ZonePropsBase): zone is StatusZoneProps => {
   if (zone.id === 8)
     return true;
   return false;
 };
 
-export const getDefaultProps = (id: WidgetZoneIndex): ZoneProps => {
+export const getDefaultZoneProps = (id: WidgetZoneIndex): ZonePropsBase => {
   return {
     id,
     bounds: {
@@ -118,7 +118,7 @@ export class LayoutFactory {
   }
 }
 
-export default class Zone {
+export class Zone {
   private readonly _id: ZoneIndex;
   protected _widgets: Widget[] | undefined = undefined;
   protected _isWidgetOpen: boolean | undefined = undefined;
@@ -172,7 +172,7 @@ export class WidgetZone extends Zone {
   protected _cell: Cell | undefined = undefined;
   protected _isWidgetOpen: boolean | undefined = undefined;
 
-  public constructor(public readonly nineZone: NineZone, public readonly props: ZoneProps) {
+  public constructor(public readonly nineZone: NineZone, public readonly props: ZonePropsBase) {
     super(nineZone, props.id);
   }
 

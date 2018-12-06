@@ -5,8 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Indicator from "../../..//toolbar/scroll/Indicator";
-import { Direction } from "../../..//utilities/Direction";
+import { Direction, Indicator } from "../../../ui-ninezone";
 
 describe("<Indicator />", () => {
   it("should render", () => {

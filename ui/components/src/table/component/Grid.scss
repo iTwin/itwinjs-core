@@ -31,10 +31,10 @@
     width: 100% !important;
   }
 
-  .react-grid-HeaderRow {
-    width: calc(100% - 28px) !important;
-    overflow-x: visible !important; /* May cause unknown issues; However, fixes unnecessary clipping for reorder styling. */
-  }
+  // .react-grid-HeaderRow {
+  //   width: calc(100% - 28px) !important;
+  //   overflow-x: visible !important; /* May cause unknown issues; However, fixes unnecessary clipping for reorder styling. */
+  // }
 
   .react-grid-Main,
   .react-grid-Grid,

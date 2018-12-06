@@ -10,7 +10,7 @@ import { IModelBankDummyAuthorizationClient } from "../../IModelBank/IModelBankD
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { IModelClient } from "../../IModelClient";
 import { UrlFileHandler } from "../../UrlFileHandler";
-import { IModelBankClient } from "../../IModelBank";
+import { IModelBankClient } from "../../IModelBank/IModelBankClient";
 import { workDir } from "./TestUtils";
 import { IModelBankFileSystemContextClient } from "../../IModelBank/IModelBankFileSystemContextClient";
 

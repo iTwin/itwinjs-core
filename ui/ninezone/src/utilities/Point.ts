@@ -11,7 +11,7 @@ export interface PointProps {
 }
 
 /** Describes and provides methods to work with 2d points. */
-export default class Point implements PointProps {
+export class Point implements PointProps {
   /** Creates point from [[PointProps]]. */
   public static create(pointProps: PointProps) {
     return new Point(pointProps.x, pointProps.y);

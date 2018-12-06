@@ -6,8 +6,8 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Expandable, { ExpandableItemProps } from "./expandable/Expandable";
-import Icon from "./Icon";
+import { ExpandableItem, ExpandableItemProps } from "./expandable/Expandable";
+import { Item } from "./Icon";
 import "./Overflow.scss";
 
 /** Properties of [[Overflow]] component. */
@@ -17,7 +17,7 @@ export interface OverflowProps extends ExpandableItemProps {
 }
 
 /** Expandable toolbar item component that displays ellipsis icon. Used in [[Toolbar]] */
-export default class Overflow extends React.Component<OverflowProps> {
+export class Overflow extends React.Component<OverflowProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-overflow",
@@ -26,18 +26,18 @@ export default class Overflow extends React.Component<OverflowProps> {
     const { onClick, ...props } = this.props;
 
     return (
-      <Expandable
+      <ExpandableItem
         className={className}
         {...props}
       >
-        <Icon
+        <Item
           className="nz-ellipsis-icon"
           onClick={onClick}
           icon={
             <div className="nz-ellipsis" />
           }
         />
-      </Expandable>
+      </ExpandableItem>
     );
   }
 }

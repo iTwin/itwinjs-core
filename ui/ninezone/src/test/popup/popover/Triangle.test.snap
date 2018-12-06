@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`<Triangle /> renders correctly 1`] = `
+exports[`<TrianglePopover /> renders correctly 1`] = `
 <Component
   className="nz-popup-popover-triangle"
   direction={0}
@@ -14,7 +14,7 @@ exports[`<Triangle /> renders correctly 1`] = `
 </Component>
 `;
 
-exports[`<Triangle /> should set direction class 1`] = `
+exports[`<TrianglePopover /> should set direction class 1`] = `
 <Component
   className="nz-popup-popover-triangle"
   direction={3}

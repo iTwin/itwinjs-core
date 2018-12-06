@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../utilities/Props";
+import { CommonProps } from "../utilities/Props";
 import "./Zone.scss";
 import { RectangleProps } from "../utilities/Rectangle";
 import { CssProperties } from "../utilities/Css";
@@ -24,7 +24,7 @@ export interface ZoneProps extends CommonProps {
  * @note For status zone (zone 8) [[FooterZone]] component should be used.
  */
 // tslint:disable-next-line:variable-name
-export const Zone: React.StatelessComponent<ZoneProps> = (props: ZoneProps) => {
+export const ZoneComponent: React.StatelessComponent<ZoneProps> = (props: ZoneProps) => {
   const className = classnames(
     "nz-zones-zone",
     props.className);
@@ -43,5 +43,3 @@ export const Zone: React.StatelessComponent<ZoneProps> = (props: ZoneProps) => {
     </div>
   );
 };
-
-export default Zone;

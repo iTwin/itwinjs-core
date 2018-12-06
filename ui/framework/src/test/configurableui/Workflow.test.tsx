@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { WorkflowManager, WorkflowPropsList, ConfigurableUiManager, TaskPropsList, Workflow } from "../..//index";
+import { WorkflowManager, WorkflowPropsList, ConfigurableUiManager, TaskPropsList, Workflow } from "../../ui-framework";
 
 describe("Workflow & WorkflowManager", () => {
 

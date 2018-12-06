@@ -16,10 +16,29 @@ export class Config {
     /** append system vars */
     private appendSystemVars() {
         this.set("imjs_env_is_browser", Boolean(typeof window !== undefined));
-        if (typeof process.env !== "undefined") {
-            this.merge(process.env);
+        try {
+            const configRequest: XMLHttpRequest = new XMLHttpRequest();
+            configRequest.open("GET", "config.json", false);
+            configRequest.send();
+            const configResponse: any = JSON.parse(configRequest.responseText);
+            if (typeof configResponse !== "undefined") {
+                this.merge(configResponse);
+            }
+        } catch (error) {
+            // couldn't get config.
         }
+
+        // Merge system environment variables that start with "imjs"
+        const imjsPrefix = /^imjs/i;
+        const systemEnv = Object.keys(process.env)
+            .filter((key) => imjsPrefix.test(key))
+            .reduce<any>((env: any, key: string) => {
+                env[key] = process.env[key];
+                return env;
+            }, {});
+        this.merge(systemEnv);
     }
+
     /** Translate a external var name to a local one if it already exist */
     private translateVar(name: string): string {
         const foundVar = Object.keys(this._container).find((key) => {

@@ -10,7 +10,7 @@ import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { NativeECPresentationManager, NativeECPresentationStatus } from "@bentley/imodeljs-backend/lib/imodeljs-native-platform-api";
 import { PresentationError } from "@bentley/presentation-common";
-import { VariableValueTypes } from "@bentley/presentation-common/lib/RulesetVariables";
+import { VariableValueTypes } from "@bentley/presentation-common";
 import "./IModelHostSetup";
 import { NativePlatformDefinition, createDefaultNativePlatform } from "../NativePlatform";
 

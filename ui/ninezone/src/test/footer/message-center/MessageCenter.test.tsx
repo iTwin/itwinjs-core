@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import MessageCenter from "../../..//footer/message-center/MessageCenter";
+import { MessageCenter } from "../../../ui-ninezone";
 
 describe("<MessageCenter />", () => {
   it("should render", () => {

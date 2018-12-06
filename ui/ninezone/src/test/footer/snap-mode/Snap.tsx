@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Snap from "../../..//footer/snap-mode/Snap";
+import { Snap } from "../../../ui-ninezone";
 
 describe("<Snap />", () => {
   it("should render", () => {

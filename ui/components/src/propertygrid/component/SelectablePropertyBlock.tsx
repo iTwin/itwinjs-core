@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import React from "react";
 import _ from "lodash";
-import { Omit } from "@bentley/ui-core/lib/utils";
+import { Omit } from "@bentley/ui-core";
 import { PropertyCategoryBlock, PropertyCategoryBlockProps } from "./PropertyCategoryBlock";
 import { PropertyList, PropertyListProps, getPropertyKey } from "./PropertyList";
 import { PropertyCategory } from "../PropertyDataProvider";

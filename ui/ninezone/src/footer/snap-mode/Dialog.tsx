@@ -7,9 +7,9 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { Div } from "@bentley/ui-core";
-import withContainInViewport from "../../base/WithContainInViewport";
-import CommonProps, { NoChildrenProps } from "../../utilities/Props";
-import Popover from "../../popup/popover/Triangle";
+import { withContainInViewport } from "../../base/WithContainInViewport";
+import { CommonProps, NoChildrenProps } from "../../utilities/Props";
+import { TrianglePopover } from "../../popup/popover/Triangle";
 import { Direction } from "../../utilities/Direction";
 import "./Dialog.scss";
 
@@ -25,14 +25,14 @@ export interface SnapModeDialogProps extends CommonProps, NoChildrenProps {
 }
 
 /** Dialog used in [[SnapModeIndicator]] component. */
-export default class SnapModeDialog extends React.Component<SnapModeDialogProps> {
+export class SnapModeDialog extends React.Component<SnapModeDialogProps> {
   public render() {
     const dialogClassName = classnames(
       "nz-footer-snapMode-dialog",
       this.props.className);
 
     return (
-      <Popover
+      <TrianglePopover
         direction={Direction.Top}
         className={dialogClassName}
         content={

@@ -2,6 +2,18 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "0.172.0",
+      "tag": "@bentley/ui-ninezone_v0.172.0",
+      "date": "Tue, 04 Dec 2018 17:24:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Created index file to match package name, eliminate subdirectory index files, decrease usage of default exports, some class name changes to avoid conflicts in the index file."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.171.0",
       "tag": "@bentley/ui-ninezone_v0.171.0",
       "date": "Mon, 03 Dec 2018 18:52:58 GMT",

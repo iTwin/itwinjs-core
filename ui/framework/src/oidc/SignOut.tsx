@@ -10,7 +10,7 @@ import { UserInfo, AccessToken } from "@bentley/imodeljs-clients";
 import { getUserColor } from "@bentley/bwc";
 import { UiFramework } from "../UiFramework";
 import "./SignOut.scss";
-import { OidcClientWrapper } from "./OidcClientWrapper";
+import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 /** Modal frontstage displaying sign out form. */

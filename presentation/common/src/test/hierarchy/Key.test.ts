@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import {
-  fromJSON, StandardNodeTypes, BaseNodeKey,
+  nodeKeyFromJSON, StandardNodeTypes, BaseNodeKey,
   ECInstanceNodeKeyJSON, ECClassGroupingNodeKey,
   ECPropertyGroupingNodeKey, LabelGroupingNodeKey,
 } from "../../hierarchy/Key";
@@ -18,7 +18,7 @@ describe("NodeKey fromJSON", () => {
       type: faker.random.word(),
       pathFromRoot: [faker.random.uuid()],
     };
-    const key = fromJSON(json);
+    const key = nodeKeyFromJSON(json);
     expect(key).to.matchSnapshot();
   });
 
@@ -31,7 +31,7 @@ describe("NodeKey fromJSON", () => {
         id: createRandomId().toString(),
       },
     };
-    const key = fromJSON(json);
+    const key = nodeKeyFromJSON(json);
     expect(key).to.matchSnapshot();
   });
 
@@ -41,7 +41,7 @@ describe("NodeKey fromJSON", () => {
       pathFromRoot: [faker.random.uuid()],
       className: faker.random.word(),
     };
-    const key = fromJSON(json);
+    const key = nodeKeyFromJSON(json);
     expect(key).to.matchSnapshot();
   });
 
@@ -53,7 +53,7 @@ describe("NodeKey fromJSON", () => {
       propertyName: faker.random.word(),
       groupingValue: faker.random.number(),
     };
-    const key = fromJSON(json);
+    const key = nodeKeyFromJSON(json);
     expect(key).to.matchSnapshot();
   });
 
@@ -63,7 +63,7 @@ describe("NodeKey fromJSON", () => {
       pathFromRoot: [faker.random.uuid()],
       label: faker.random.words(),
     };
-    const key = fromJSON(json);
+    const key = nodeKeyFromJSON(json);
     expect(key).to.matchSnapshot();
   });
 

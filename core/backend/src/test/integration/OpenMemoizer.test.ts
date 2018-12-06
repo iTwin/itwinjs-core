@@ -6,7 +6,7 @@
 import { AccessToken } from "@bentley/imodeljs-clients";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { assert } from "chai";
-import { OpenParams } from "../../backend";
+import { OpenParams } from "../../imodeljs-backend";
 import { OpenIModelDbMemoizer } from "../../rpc-impl/OpenIModelDbMemoizer";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";

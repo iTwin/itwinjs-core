@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
-import { withIsPressed, Div } from "../../index";
+import { withIsPressed, Div } from "../../ui-core";
 
 describe("withIsPressed", () => {
 

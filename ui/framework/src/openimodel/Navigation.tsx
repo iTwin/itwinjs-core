@@ -6,7 +6,6 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { CSSProperties } from "react";
 import "./Navigation.scss";
 
 /** Highlight style of the Navigation List. */
@@ -49,7 +48,7 @@ export class NavigationItem extends React.Component<NavigationItemProps> {
   public renderMovebarIndicator() {
     const percentageOffset = this.props.selectedTabIndex! * 100;
     const translate = "translate(0," + percentageOffset + "%)";
-    const translateStyle: CSSProperties = { transform: translate, zIndex: 2 };
+    const translateStyle: React.CSSProperties = { transform: translate, zIndex: 2 };
     return (
       <div className="open-navbar-movebarindicator" style={translateStyle}></div>
     );

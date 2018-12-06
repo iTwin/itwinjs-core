@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
-import { ExpandableList, ExpandableBlock } from "../../index";
+import { ExpandableList, ExpandableBlock } from "../../ui-core";
 import TestUtils from "../TestUtils";
 
 describe("ExpandableList", () => {

@@ -12,39 +12,42 @@ import { Mixin } from "../../src/Metadata/Mixin";
 import { ECObjectsError } from "../../src/Exception";
 import { NavigationProperty } from "../../src/Metadata/Property";
 import { StrengthDirection } from "../../src/ECObjects";
+import sinon = require("sinon");
+import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
 
 describe("Mixin", () => {
-  describe("deserialization", () => {
-    function createSchemaJson(mixinJson: any): any {
-      return createSchemaJsonWithItems({
-        TestMixin: {
-          schemaItemType: "Mixin",
-          ...mixinJson,
-        },
-        TestEntity: {
-          schemaItemType: "EntityClass",
-        },
-        NavPropRelationship: {
-          schemaItemType: "RelationshipClass",
-          strength: "Embedding",
-          strengthDirection: "Forward",
-          modifier: "Sealed",
-          source: {
-            polymorphic: true,
-            multiplicity: "(0..*)",
-            roleLabel: "Source RoleLabel",
-            constraintClasses: ["TestSchema.TestEntity"],
-          },
-          target: {
-            polymorphic: true,
-            multiplicity: "(0..*)",
-            roleLabel: "Target RoleLabel",
-            constraintClasses: ["TestSchema.TestEntity"],
-          },
-        },
-      });
-    }
 
+  function createSchemaJson(mixinJson: any): any {
+    return createSchemaJsonWithItems({
+      TestMixin: {
+        schemaItemType: "Mixin",
+        ...mixinJson,
+      },
+      TestEntity: {
+        schemaItemType: "EntityClass",
+      },
+      NavPropRelationship: {
+        schemaItemType: "RelationshipClass",
+        strength: "Embedding",
+        strengthDirection: "Forward",
+        modifier: "Sealed",
+        source: {
+          polymorphic: true,
+          multiplicity: "(0..*)",
+          roleLabel: "Source RoleLabel",
+          constraintClasses: ["TestSchema.TestEntity"],
+        },
+        target: {
+          polymorphic: true,
+          multiplicity: "(0..*)",
+          roleLabel: "Target RoleLabel",
+          constraintClasses: ["TestSchema.TestEntity"],
+        },
+      },
+    });
+  }
+
+  describe("deserialization", () => {
     it("should succeed with fully defined", async () => {
       const testSchema = createSchemaJsonWithItems({
         TestMixin: {
@@ -73,6 +76,7 @@ describe("Mixin", () => {
       assert.isDefined(await mixin!.appliesTo);
       assert.isTrue(await mixin!.appliesTo === entity);
       assert.isTrue(await mixin!.baseClass === baseMixin);
+      assert.isTrue(await mixin!.applicableTo(entity!));
     });
 
     it("should succeed with NavigationProperty", async () => {
@@ -152,6 +156,7 @@ describe("Mixin", () => {
       expect(testMixin).to.exist;
       await testMixin.deserialize(json);
       expect(await testMixin.appliesTo).to.eql(testEntity);
+      expect(await testMixin.applicableTo(testEntity)).to.be.true;
     });
 
     it("should throw for invalid appliesTo", async () => {
@@ -185,6 +190,59 @@ describe("Mixin", () => {
       expect(testMixin).to.exist;
       const json = { ...baseJson, appliesTo: "ThisClassDoesNotExist" };
       assert.throws(() => testMixin.deserializeSync(json), ECObjectsError);
+    });
+  });
+
+  describe("Validation tests", () => {
+    afterEach(() => {
+      sinon.restore();
+    });
+
+    it("applicableTo, wrong entity, fails", async () => {
+      const json = createSchemaJson({
+        appliesTo: "TestSchema.TestEntity",
+        properties: [
+          {
+            type: "NavigationProperty",
+            name: "testNavProp",
+            relationshipName: "TestSchema.NavPropRelationship",
+            direction: "forward",
+          },
+        ],
+      });
+
+      const schema = Schema.fromJsonSync(json);
+      expect(schema).to.exist;
+
+      const mixin = schema.getItemSync<Mixin>("TestMixin");
+      expect(mixin).to.exist;
+
+      const validEntity = schema.getItemSync<EntityClass>("TestEntity");
+      expect(validEntity).to.exist;
+
+      const invalidEntity = new EntityClass(schema, "TestEntityB");
+
+      expect(await mixin!.applicableTo(validEntity!)).to.be.true;
+      expect(await mixin!.applicableTo(invalidEntity)).to.be.false;
+    });
+
+    it("applicableTo, appliesTo undefined, should throw", async () => {
+      const schema = new Schema("TestSchema", 1, 1, 1);
+      const mixin = new Mixin(schema, "TestMixin");
+      const entity = new EntityClass(schema, "TestEntity");
+
+      await expect(mixin.applicableTo(entity)).to.be.rejectedWith(`appliesTo is undefined in the class ${mixin.fullName}`);
+    });
+
+    it("applicableTo, appliesTo resolves undefined, should throw", async () => {
+      const schema = new Schema("TestSchema", 1, 1, 1);
+      const entity = new EntityClass(schema, "TestEntity");
+      const mixin = new Mixin(schema, "TestMixin");
+      let undefinedEntity: EntityClass;
+      const promise = new DelayedPromiseWithProps(entity.key, async () => undefinedEntity);
+      sinon.stub(Mixin.prototype, "appliesTo").get(() => promise);
+
+      await expect(mixin!.applicableTo(entity)).to.be.rejectedWith(`Unable to locate the appliesTo ${promise.fullName}`);
     });
   });
 });

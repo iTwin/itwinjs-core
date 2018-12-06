@@ -16,10 +16,10 @@ import {
   StatusBarWidgetControl,
   WidgetState,
   ConfigurableCreateInfo,
+  MessageManager,
   ConfigurableUiControlType,
   WidgetDef,
-} from "../../../";
-import { MessageManager } from "../../../configurableui";
+} from "../../../ui-framework";
 
 describe("PromptField", () => {
 

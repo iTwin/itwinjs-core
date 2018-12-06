@@ -7,7 +7,7 @@ import { render, cleanup /*, RenderResult, waitForElement*/ } from "react-testin
 import * as moq from "typemoq";
 import * as faker from "faker";
 
-import { ViewportComponent } from "../../index";
+import { ViewportComponent } from "../../ui-components";
 
 import { IModelConnection, ViewState3d } from "@bentley/imodeljs-frontend";
 import { Id64String, Id64 } from "@bentley/bentleyjs-core";

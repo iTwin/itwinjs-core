@@ -5,7 +5,7 @@
 import * as path from "path";
 import * as url from "url";
 
-import { ElectronRpcManager } from "@bentley/imodeljs-common/lib/common";
+import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsElectronAppManager } from "@bentley/imodeljs-backend";

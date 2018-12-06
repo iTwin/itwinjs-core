@@ -6,7 +6,8 @@
 
 import * as React from "react";
 import { getDisplayName } from "@bentley/ui-core";
-import { withDropTarget, DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../dragdrop";
+import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../dragdrop/DragDropDef";
+import { withDropTarget } from "../../dragdrop/withDropTarget";
 import { TreeProps, TreeNodeProps, TreeNode } from "../component/Tree";
 import { BeInspireTreeNode } from "../component/BeInspireTree";
 import { TreeNodeItem, TreeDataProvider } from "../TreeDataProvider";

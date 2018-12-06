@@ -2,8 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { AccessToken, UserInfo, ConnectClient, Project } from "../..";
-import { IModelHubClient } from "../..";
+import { AccessToken, UserInfo, ConnectClient, Project, IModelHubClient } from "../../imodeljs-clients";
 import { TestConfig } from "../TestConfig";
 import { ContextManagerClient, IModelAuthorizationClient, IModelCloudEnvironment } from "../../IModelCloudEnvironment";
 import { getDefaultClient } from "./TestUtils";

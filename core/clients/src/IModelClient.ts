@@ -4,7 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 import { FileHandler } from "./FileHandler";
-import { BriefcaseHandler, IModelsHandler, IModelHandler, ChangeSetHandler, LockHandler, CodeHandler, UserInfoHandler, VersionHandler, EventHandler } from "./imodelhub/index";
+import { BriefcaseHandler } from "./imodelhub/Briefcases";
+import { IModelsHandler, IModelHandler } from "./imodelhub/iModels";
+import { ChangeSetHandler } from "./imodelhub/ChangeSets";
+import { LockHandler } from "./imodelhub/Locks";
+import { CodeHandler } from "./imodelhub/Codes";
+import { UserInfoHandler } from "./imodelhub/Users";
+import { VersionHandler } from "./imodelhub/Versions";
+import { EventHandler } from "./imodelhub/Events";
 import { ThumbnailHandler } from "./imodelhub/Thumbnails";
 import { GlobalEventHandler } from "./imodelhub/GlobalEvents";
 import { IModelBaseHandler } from "./imodelhub/BaseHandler";

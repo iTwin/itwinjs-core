@@ -5,14 +5,13 @@
 import { assert } from "chai";
 import { IModelApp, IModelConnection, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { PhysicalModel } from "@bentley/imodeljs-backend";
-import { StandaloneIModelRpcInterface, IModel, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import { StandaloneIModelRpcInterface, IModel, IModelToken, IModelReadRpcInterface, IModelWriteRpcInterface, TestRpcManager } from "@bentley/imodeljs-common";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../../common/RobotWorldRpcInterface";
 import { RobotWorldEngine } from "../RobotWorldEngine";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { OpenMode, Id64String, Id64, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelTestUtils } from "./Utils";
 import { Point3d, Angle } from "@bentley/geometry-core";
-import { TestRpcManager } from "@bentley/imodeljs-common/lib/rpc/TestRpcManager";
 import { RobotWorld } from "../RobotWorldSchema";
 
 const actx = new ActivityLoggingContext("<backend-initialization>");
@@ -118,6 +117,7 @@ describe("RobotWorldRpc", () => {
 });
 
 // __PUBLISH_EXTRACT_START__ RpcInterface.initializeClientBentleyCloudApp
+// tslint:disable:no-duplicate-imports - The imports are intentionally separated in this cease.
 import { BentleyCloudRpcManager, BentleyCloudRpcParams, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 
 export function initializeRpcClientBentleyCloudForApp(interfaces: RpcInterfaceDefinition[]) {

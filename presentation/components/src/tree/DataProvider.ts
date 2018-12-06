@@ -8,8 +8,8 @@ import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodeKey, NodePathElement, HierarchyRequestOptions } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
-import { PageOptions } from "@bentley/ui-components/lib/common/PageOptions";
+import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@bentley/ui-components";
+import { PageOptions } from "@bentley/ui-components";
 import { createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 

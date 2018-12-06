@@ -7,11 +7,11 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { DirectionHelpers } from "../../utilities/Direction";
-import Chevron, { ChevronProps } from "./Chevron";
+import { Chevron, ChevronProps } from "./Chevron";
 import "./Indicator.scss";
 
 /** Scroll indicator component. Used in [[Scrollable]] */
-export default class Indicator extends React.Component<ChevronProps> {
+export class Indicator extends React.Component<ChevronProps> {
   public render() {
     const { className, style, ...props } = this.props;
     const indicatorClassName = classnames(

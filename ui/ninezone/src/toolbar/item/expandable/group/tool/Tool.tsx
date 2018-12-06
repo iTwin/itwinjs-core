@@ -6,11 +6,11 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps from "../../../../../utilities/Props";
+import { CommonProps } from "../../../../../utilities/Props";
 import "./Tool.scss";
 
 /** Properties of [[Tool]] component. */
-export interface ToolProps extends CommonProps {
+export interface GroupToolProps extends CommonProps {
   /** Additional content, besides icon and label. */
   children?: React.ReactNode;
   /** Tool icon. */
@@ -28,7 +28,7 @@ export interface ToolProps extends CommonProps {
 }
 
 /** Tool entry of tool group panel. Used in [[Column]]. */
-export default class Tool extends React.Component<ToolProps> {
+export class GroupTool extends React.Component<GroupToolProps> {
   public render() {
     const itemClassName = classnames(
       "nz-toolbar-item-expandable-group-tool-item",

@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Sticky from "../../..//footer/message/Sticky";
+import { Sticky } from "../../../ui-ninezone";
 
 describe("<Sticky />", () => {
   it("should render", () => {

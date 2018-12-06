@@ -9,7 +9,7 @@ import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManage
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, NativePlatformRegistry, SubjectOwnsPartitionElements,
-} from "../backend";
+} from "../imodeljs-backend";
 import { DisableNativeAssertions as NativeDisableNativeAssertions } from "../imodeljs-native-platform-api";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubUtility, UserCredentials } from "./integration/HubUtility";

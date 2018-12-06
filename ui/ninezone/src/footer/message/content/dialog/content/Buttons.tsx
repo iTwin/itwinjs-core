@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../../../../../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../../../../../utilities/Props";
 import "./Buttons.scss";
 
 /** Properties of [[Buttons]] component. */
@@ -38,5 +38,3 @@ export const Buttons: React.StatelessComponent<ButtonsProps> = (props) => {
     </div>
   );
 };
-
-export default Buttons;

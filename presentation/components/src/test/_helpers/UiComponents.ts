@@ -5,9 +5,9 @@
 import * as faker from "faker";
 import { createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
-import * as h from "@bentley/presentation-common/lib/hierarchy";
+import { NodeKey } from "@bentley/presentation-common";
 
-export const createRandomTreeNodeItem = (key?: h.NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {
+export const createRandomTreeNodeItem = (key?: NodeKey, parentId?: string): DelayLoadedTreeNodeItem => {
   return {
     id: faker.random.uuid(),
     parentId,

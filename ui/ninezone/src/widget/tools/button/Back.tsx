@@ -7,7 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { OmitChildrenProp, NoChildrenProps } from "../../../utilities/Props";
-import Icon, { ToolbarIconProps } from "./Icon";
+import { ToolbarIcon, ToolbarIconProps } from "./Icon";
 import "./Back.scss";
 
 /** Properties of [[BackButton]] component. */
@@ -18,7 +18,7 @@ export interface BackButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoC
  * Back button which displays icon. Used in [[Toolbar]] component.
  * @note See basic button: [[ToolbarButton]]
  */
-export default class BackButton extends React.Component<BackButtonProps> {
+export class BackButton extends React.Component<BackButtonProps> {
   public render() {
     const { className, ...props } = this.props;
     const buttonClassName = classnames(
@@ -26,7 +26,7 @@ export default class BackButton extends React.Component<BackButtonProps> {
       className);
 
     return (
-      <Icon
+      <ToolbarIcon
         className={buttonClassName}
         {...props}
       />

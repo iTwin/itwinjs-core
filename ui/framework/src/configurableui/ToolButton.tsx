@@ -15,7 +15,7 @@ import { BaseItemState } from "./ItemDefBase";
 import { ToolItemProps } from "./ItemProps";
 import { UiFramework } from "../UiFramework";
 
-import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
+import { Item } from "@bentley/ui-ninezone";
 
 /** Tool Button React Component.
  */
@@ -90,7 +90,7 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
     const icon = <Icon iconSpec={this.props.iconSpec} />;
 
     return (
-      <ToolbarIcon
+      <Item
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
         title={this._label}

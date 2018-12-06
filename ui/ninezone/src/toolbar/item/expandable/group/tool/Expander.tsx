@@ -6,17 +6,18 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { Omit } from "@bentley/ui-core/lib/utils";
+import { Omit } from "@bentley/ui-core";
 import { NoChildrenProps } from "../../../../../utilities/Props";
-import Tool, { ToolProps } from "./Tool";
+import { GroupTool, GroupToolProps } from "./Tool";
 import "./Expander.scss";
 
 /** Properties of [[Expander]] component. */
-export interface ExpanderProps extends Omit<ToolProps, "isActive" | "children">, NoChildrenProps {
+
+export interface GroupToolExpanderProps extends Omit<GroupToolProps, "isActive" | "children">, NoChildrenProps {
 }
 
 /** Expandable entry of tool group panel. Used in [[Column]] hosted in [[NestedGroup]] component. */
-export default class Expander extends React.Component<ExpanderProps> {
+export class GroupToolExpander extends React.Component<GroupToolExpanderProps> {
   public render() {
     const { className, ...props } = this.props;
 
@@ -25,13 +26,13 @@ export default class Expander extends React.Component<ExpanderProps> {
       className);
 
     return (
-      <Tool
+      <GroupTool
         className={expanderClassName}
         {...props}>
         <div className="nz-expansion-indicator">
           >
         </div>
-      </Tool>
+      </GroupTool>
     );
   }
 }

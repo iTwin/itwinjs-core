@@ -12,7 +12,7 @@ import { ActionButtonItemDef } from "./Item";
 import { BaseItemState } from "./ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../SyncUiEventDispatcher";
 
-import ToolbarIcon from "@bentley/ui-ninezone/lib/toolbar/item/Icon";
+import { Item } from "@bentley/ui-ninezone";
 
 /** Property that must be specified for a ActionItemButton component */
 export interface ActionItemButtonProps {
@@ -81,7 +81,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     const icon = <Icon iconSpec={this.props.actionItem.iconSpec} />;
 
     return (
-      <ToolbarIcon
+      <Item
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
         title={this.props.actionItem.label}

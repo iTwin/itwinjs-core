@@ -18,10 +18,9 @@ import {
   CommandItemDef,
   ActionItemButton,
   CoreTools,
-} from "../../index";
-import Toolbar from "@bentley/ui-ninezone/lib/toolbar/Toolbar";
-import Direction from "@bentley/ui-ninezone/lib/utilities/Direction";
-import { ItemList } from "../../configurableui";
+  ItemList,
+} from "../../ui-framework";
+import { Toolbar, Direction } from "@bentley/ui-ninezone";
 
 describe("ToolWidget", () => {
 

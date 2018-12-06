@@ -12,15 +12,11 @@ import { FrontstageDef } from "./FrontstageDef";
 import { ZoneDef, ZoneState } from "./ZoneDef";
 import { ModalFrontstage } from "./ModalFrontstage";
 
-import ResizeHandle from "@bentley/ui-ninezone/lib/widget/rectangular/ResizeHandle";
-import NineZone, { NineZoneProps, getDefaultProps as getDefaultNineZoneState, WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
-import Size from "@bentley/ui-ninezone/lib/utilities/Size";
-import { PointProps } from "@bentley/ui-ninezone/lib/utilities/Point";
-import NineZoneStateManager from "@bentley/ui-ninezone/lib/zones/state/Manager";
-import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
-import { TargetType } from "@bentley/ui-ninezone/lib/zones/state/Target";
+import {
+  ResizeHandle, NineZone, NineZoneProps, getDefaultNineZoneProps, WidgetZoneIndex,
+  Size, PointProps, DefaultStateManager as NineZoneStateManager, RectangleProps, TargetType, WidgetProps as NZ_WidgetProps,
+} from "@bentley/ui-ninezone";
 
-import { WidgetProps as NZ_WidgetProps } from "@bentley/ui-ninezone/lib/zones/state/Widget";
 import { WidgetDef } from "./WidgetDef";
 
 /** Interface defining callbacks for widget changes */
@@ -98,7 +94,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
       nineZoneProps = { ...frontstageDef.nineZoneProps };
     else {
       const isInFooterMode = frontstageDef ? frontstageDef.isInFooterMode : false;
-      nineZoneProps = NineZoneStateManager.setIsInFooterMode(isInFooterMode, getDefaultNineZoneState());
+      nineZoneProps = NineZoneStateManager.setIsInFooterMode(isInFooterMode, getDefaultNineZoneProps());
     }
 
     return nineZoneProps;

@@ -10,8 +10,7 @@ import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid, PropertyGridCategory } from "../../../propertygrid/component/PropertyGrid";
 import { PropertyDataProvider, PropertyDataChangeEvent, PropertyCategory } from "../../../propertygrid/PropertyDataProvider";
-import { SimplePropertyDataProvider } from "../../../propertygrid";
-import { PropertyCategoryBlock } from "../../../propertygrid/component/PropertyCategoryBlock";
+import { SimplePropertyDataProvider, PropertyCategoryBlock } from "../../../ui-components";
 import TestUtils from "../../TestUtils";
 
 class SamplePropertyDataProvider extends SimplePropertyDataProvider {

@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Tools from "../../widget/tools/Tools";
+import { Tools } from "../../ui-ninezone";
 
 describe("<Tools />", () => {
   it("should render", () => {

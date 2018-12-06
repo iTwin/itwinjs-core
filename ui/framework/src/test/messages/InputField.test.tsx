@@ -5,7 +5,7 @@
 import * as React from "react";
 import * as enzyme from "enzyme";
 import TestUtils from "../TestUtils";
-import { InputFieldMessage } from "../../index";
+import { InputFieldMessage } from "../../ui-framework";
 
 describe("InputFieldMessage", () => {
   before(async () => {

@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
-import { Popup, Position } from "../../index";
+import { Popup, Position } from "../../ui-core";
 
 describe("Popup", () => {
   it("renders at fixed position when fixedPosition props are provided", () => {

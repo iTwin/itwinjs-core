@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Toggle from "../../..//widget/tool-settings/Toggle";
+import { Toggle } from "../../../ui-ninezone";
 
 describe("<Toggle />", () => {
   it("should render", () => {

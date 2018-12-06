@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { withDropTarget } from "../..//dragdrop";
+import { withDropTarget } from "../../ui-components";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import TestBackend from "react-dnd-test-backend";
@@ -30,10 +30,10 @@ describe("withDropTarget", () => {
   describe("Wrapped component", () => {
     const BaseComponent = TestDropTarget.DecoratedComponent; // tslint:disable-line:variable-name
     it("mounts wrapped component", () => {
-      mount(<BaseComponent dropProps={{}} connectDropTarget={(e: any) => e } />);
+      mount(<BaseComponent dropProps={{}} connectDropTarget={(e: any) => e} />);
     });
     it("renders wrapped component correctly", () => {
-      shallow(<BaseComponent dropProps={{}} connectDropTarget={(e: any) => e } />).should.matchSnapshot();
+      shallow(<BaseComponent dropProps={{}} connectDropTarget={(e: any) => e} />).should.matchSnapshot();
     });
   });
   describe("Drop functionality", () => {

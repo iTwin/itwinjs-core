@@ -3,30 +3,30 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as faker from "faker";
-import * as h from "../../../hierarchy";
+import { ECInstanceNodeKey, StandardNodeTypes, Node, NodePathElement } from "../../../presentation-common";
 import { ECInstanceNodeKeyJSON } from "../../../hierarchy/Key";
 import { NodeJSON } from "../../../hierarchy/Node";
 import { NodePathElementJSON } from "../../../hierarchy/NodePathElement";
 import { nullable, createRandomHexColor, createRandomRgbColor } from "./Misc";
 import { createRandomECInstanceKey, createRandomECInstanceKeyJSON } from "./EC";
 
-export const createRandomECInstanceNodeKey = (): h.ECInstanceNodeKey => {
+export const createRandomECInstanceNodeKey = (): ECInstanceNodeKey => {
   return {
     type: "ECInstanceNode",
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
     instanceKey: createRandomECInstanceKey(),
-  } as h.ECInstanceNodeKey;
+  } as ECInstanceNodeKey;
 };
 
 export const createRandomECInstanceNodeKeyJSON = (): ECInstanceNodeKeyJSON => {
   return {
-    type: h.StandardNodeTypes.ECInstanceNode,
+    type: StandardNodeTypes.ECInstanceNode,
     pathFromRoot: [faker.random.uuid(), faker.random.uuid()],
     instanceKey: createRandomECInstanceKeyJSON(),
   };
 };
 
-export const createRandomECInstanceNode = (): h.Node => {
+export const createRandomECInstanceNode = (): Node => {
   return {
     key: createRandomECInstanceNodeKey(),
     label: faker.random.words(),
@@ -60,8 +60,8 @@ export const createRandomECInstanceNodeJSON = (): NodeJSON => {
   };
 };
 
-export const createRandomNodePathElement = (depth: number = 1): h.NodePathElement => {
-  const el: h.NodePathElement = {
+export const createRandomNodePathElement = (depth: number = 1): NodePathElement => {
+  const el: NodePathElement = {
     node: createRandomECInstanceNode(),
     index: faker.random.number(999),
     isMarked: faker.random.boolean(),

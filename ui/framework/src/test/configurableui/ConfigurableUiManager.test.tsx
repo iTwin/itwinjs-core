@@ -22,7 +22,7 @@ import {
   Frontstage,
   FrontstageProvider,
   FrontstageProps,
-} from "../../index";
+} from "../../ui-framework";
 
 describe("ConfigurableUiManager", () => {
 

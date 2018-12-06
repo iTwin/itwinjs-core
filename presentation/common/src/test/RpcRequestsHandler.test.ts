@@ -17,7 +17,7 @@ import {
   KeySet, Paged, SelectionInfo,
   PresentationError, PresentationStatus,
   HierarchyRequestOptions, ContentRequestOptions,
-} from "..";
+} from "../presentation-common";
 import { RpcRequestOptions, ClientStateSyncRequestOptions } from "../PresentationRpcInterface";
 import { IClientStateHolder } from "../RpcRequestsHandler";
 

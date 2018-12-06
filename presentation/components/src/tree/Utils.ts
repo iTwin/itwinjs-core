@@ -5,11 +5,11 @@
 /** @module Tree */
 
 import StyleHelper from "../common/StyleHelper";
-import { CheckBoxState } from "@bentley/ui-core/lib/enums/CheckBoxState";
+import { CheckBoxState } from "@bentley/ui-core";
 import { Node } from "@bentley/presentation-common";
-import { DelayLoadedTreeNodeItem } from "@bentley/ui-components/lib/tree/TreeDataProvider";
+import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
 import { PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
-import { PageOptions as UiPageOptions } from "@bentley/ui-components/lib/common/PageOptions";
+import { PageOptions as UiPageOptions } from "@bentley/ui-components";
 
 /** @hidden */
 export const createTreeNodeItems = (nodes: ReadonlyArray<Readonly<Node>>, parentId?: string): DelayLoadedTreeNodeItem[] => {

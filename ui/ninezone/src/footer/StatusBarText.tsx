@@ -6,7 +6,7 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import CommonProps, { NoChildrenProps } from "../utilities/Props";
+import { CommonProps, NoChildrenProps } from "../utilities/Props";
 import "./StatusBarText.scss";
 
 /** Properties of StatusBarText component.  */
@@ -18,7 +18,7 @@ export interface StatusBarTextProps extends CommonProps, NoChildrenProps {
 }
 
 /** Generic Text that can be used in StatusBar component. */
-export default class Snap extends React.Component<StatusBarTextProps> {
+export class StatusBarText extends React.Component<StatusBarTextProps> {
   public render() {
     const combinedClassName = classnames(
       "nz-footer-text",

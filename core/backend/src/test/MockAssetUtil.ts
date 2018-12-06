@@ -7,7 +7,7 @@ import * as TypeMoq from "typemoq";
 import * as path from "path";
 import { assert } from "chai";
 import { IModelJsFs } from "../IModelJsFs";
-import { BriefcaseManager, IModelHost } from "../backend";
+import { BriefcaseManager, IModelHost } from "../imodeljs-backend";
 import {
   AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
   Response, ChangeSet, HubIModel, Briefcase, SeedFile, InitializationState,

@@ -16,10 +16,7 @@ import { WorkflowManager } from "./Workflow";
 
 import { UiEvent } from "@bentley/ui-core";
 
-import NZ_Backstage from "@bentley/ui-ninezone/lib/backstage/Backstage";
-import NZ_BackstageItem from "@bentley/ui-ninezone/lib/backstage/Item";
-import NZ_BackstageSeparator from "@bentley/ui-ninezone/lib/backstage/Separator";
-import NZ_UserProfile from "@bentley/ui-ninezone/lib/backstage/UserProfile";
+import { Backstage as NZ_Backstage, BackstageItem as NZ_BackstageItem, BackstageSeparator as NZ_BackstageSeparator, UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
 
 import { AccessToken } from "@bentley/imodeljs-clients";
 
@@ -354,8 +351,3 @@ export class Backstage extends React.Component<BackstageProps> {
     );
   }
 }
-
-// -----------------------------------------------------------------------------
-// export default
-// -----------------------------------------------------------------------------
-export default Backstage;

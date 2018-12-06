@@ -10,9 +10,7 @@ import { Mesh, Triangle } from "@bentley/imodeljs-frontend/lib/rendering";
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
 import { WebGLTestContext } from "./WebGLTestContext";
-import { MeshPolyline } from "@bentley/imodeljs-common/lib/Render";
-import { QPoint3d } from "@bentley/imodeljs-common/lib/QPoint";
-import { ColorDef, OctEncodedNormal } from "@bentley/imodeljs-common/lib/common";
+import { MeshPolyline, QPoint3d, ColorDef, OctEncodedNormal } from "@bentley/imodeljs-common";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 

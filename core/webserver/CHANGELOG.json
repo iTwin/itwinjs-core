@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/imodeljs-webserver",
+  "entries": [
+    {
+      "version": "0.172.0",
+      "tag": "@bentley/imodeljs-webserver_v0.172.0",
+      "date": "Tue, 04 Dec 2018 17:24:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Created new package to deliver static web resources for iModel.js applications. Makes the distinction between the simple web server and the backend RPC server more clear."
+          }
+        ]
+      }
+    }
+  ]
+}

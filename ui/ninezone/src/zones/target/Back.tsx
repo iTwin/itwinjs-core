@@ -6,13 +6,13 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import Target, { TargetProps } from "./Target";
-import Arrow from "./Arrow";
+import { MergeTarget, MergeTargetProps } from "./Target";
+import { Arrow } from "./Arrow";
 import "./Back.scss";
 import { WidgetZoneIndex } from "../state/NineZone";
 
 /** Properties of [[Back]] component. */
-export interface BackProps extends TargetProps {
+export interface BackProps extends MergeTargetProps {
   /** Rotation of back arrow depends on specified zone index. */
   zoneIndex: WidgetZoneIndex;
 }
@@ -26,13 +26,11 @@ export const Back: React.StatelessComponent<BackProps> = (props: BackProps) => {
     props.className);
 
   return (
-    <Target
+    <MergeTarget
       className={mergeClassName}
       {...props}
     >
       <Arrow className="nz-arrow" />
-    </Target>
+    </MergeTarget>
   );
 };
-
-export default Back;

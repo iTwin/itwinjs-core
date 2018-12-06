@@ -4,15 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode, ActivityLoggingContext, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext, GuidString, PerfLogger, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
-import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration, PhysicalModel } from "../../backend";
+import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration, PhysicalModel } from "../../imodeljs-backend";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 import { IModelJsFs } from "../../IModelJsFs";
 import { BriefcaseManager } from "../../BriefcaseManager";
-import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe.skip("DebugHubIssues (#integration)", () => {

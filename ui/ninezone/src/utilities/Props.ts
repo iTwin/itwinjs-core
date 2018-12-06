@@ -5,13 +5,13 @@
 /** @module Utilities */
 
 import * as React from "react";
-import { Omit } from "@bentley/ui-core/lib/utils";
+import { Omit } from "@bentley/ui-core";
 
 /**
  * Common props used by all components.
  * @note Every 9-Zone component has these props.
  */
-export default interface CommonProps extends ClassNameProps {
+export interface CommonProps extends ClassNameProps {
   style?: React.CSSProperties;
 }
 

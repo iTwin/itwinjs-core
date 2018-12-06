@@ -5,12 +5,12 @@
 
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationTreeDataProvider, withFilteringSupport, withUnifiedSelection } from "@bentley/presentation-components/lib/tree";
+import { PresentationTreeDataProvider, treeWithFilteringSupport, treeWithUnifiedSelection } from "@bentley/presentation-components";
 import { Tree, FilteringInput } from "@bentley/ui-components";
 import "./TreeWidget.css";
 
 // tslint:disable-next-line:variable-name naming-convention
-const SampleTree = withFilteringSupport(withUnifiedSelection(Tree));
+const SampleTree = treeWithFilteringSupport(treeWithUnifiedSelection(Tree));
 
 export interface Props {
   imodel: IModelConnection;

@@ -18,7 +18,7 @@ import {
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, SpatialCategory, SqliteStatement, SqliteValue,
   SqliteValueType, SubCategory, Subject, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
-} from "../../backend";
+} from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 

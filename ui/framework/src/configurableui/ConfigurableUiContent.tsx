@@ -5,7 +5,6 @@
 /** @module ConfigurableUi */
 
 import * as React from "react";
-import { CSSProperties } from "react";
 import { connect } from "react-redux";
 import { ModalDialogRenderer } from "./ModalDialogManager";
 import { FrontstageComposer } from "./FrontstageComposer";
@@ -35,7 +34,7 @@ class ConfigurableUiContentClass extends React.Component<ConfigurableUiContentPr
   }
 
   public render(): JSX.Element | undefined {
-    const wrapperStyle: CSSProperties = {
+    const wrapperStyle: React.CSSProperties = {
       position: "relative" as "relative",
       left: "0px",
       width: "100%",

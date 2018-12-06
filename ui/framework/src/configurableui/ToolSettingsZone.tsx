@@ -5,17 +5,9 @@
 /** @module ToolSettings */
 
 import * as React from "react";
-import { CSSProperties } from "react";
 import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
 
-import ToolSettingsWidget from "@bentley/ui-ninezone/lib/widget/ToolSettings";
-import ToolSettingsTab from "@bentley/ui-ninezone/lib/widget/tool-settings/Tab";
-import ToolSettings from "@bentley/ui-ninezone/lib/widget/tool-settings/Settings";
-import CommonProps from "@bentley/ui-ninezone/lib/utilities/Props";
-import NZ_Zone from "@bentley/ui-ninezone/lib/zones/Zone";
-import { TabIcon } from "@bentley/ui-ninezone/lib/widget/TabIcon";
-
-import { RectangleProps } from "@bentley/ui-ninezone/lib/utilities/Rectangle";
+import { ToolSettingsWidget, ToolSettingsTab, ToolSettings, CommonProps, RectangleProps, TabIcon, ZoneComponent } from "@bentley/ui-ninezone";
 
 /** State for the ToolSettingsZone content.
  */
@@ -69,20 +61,20 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
   public render(): React.ReactNode {
     if (FrontstageManager.activeToolAssistanceNode || FrontstageManager.activeToolSettingsNode) {
-      const divStyle: CSSProperties = {
+      const divStyle: React.CSSProperties = {
         display: "grid",
         justifyItems: "center",
         gridAutoRows: "min-content auto",
       };
 
       return (
-        <NZ_Zone
+        <ZoneComponent
           bounds={this.props.bounds}
         >
           <div style={divStyle} >
             {this.getToolSettingsWidget()}
           </div>
-        </NZ_Zone>
+        </ZoneComponent>
       );
     }
 
@@ -114,7 +106,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     switch (this.state.toolSettingsZoneContent) {
       case ToolSettingsZoneContent.ToolSettings: {
         if (FrontstageManager.activeToolSettingsNode) {
-          const settingsStyle: CSSProperties = {
+          const settingsStyle: React.CSSProperties = {
             borderWidth: "thin",
             borderStyle: "solid",
             borderRadius: "3px",
@@ -150,7 +142,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
   // private getToolAssistanceButton() {
   //   if (FrontstageManager.activeToolAssistanceNode) {
   //     return (
-  //       <ToolbarIcon
+  //       <Item
   //         key="1"
   //         isActive={this.state.toolSettingsZoneContent === ToolSettingsZoneContent.ToolAssistance}
   //         onClick={
@@ -170,7 +162,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
   //         }
   //       >
   //         <i className="icon icon-help" />
-  //       </ToolbarIcon>
+  //       </Item>
   //     );
   //   }
 

@@ -10,18 +10,15 @@ import * as React from "react";
 import * as sinon from "sinon";
 import TestBackend from "react-dnd-test-backend";
 import {
-  Table, TableDataProvider, RowItem,
-  TableDataChangeEvent, TableDataChangesListener, CellItem,
-  TableSelectionTarget, TableProps, ColumnDescription,
-} from "../../../table";
-import { SelectionMode } from "../../../common";
-import { PropertyRecord, PropertyValue, PropertyValueFormat, PropertyDescription, PropertyUpdatedArgs } from "../../../";
+  Table, TableDataProvider, RowItem, TableDataChangeEvent, TableDataChangesListener, CellItem,
+  TableSelectionTarget, TableProps, ColumnDescription, SelectionMode, PropertyRecord, PropertyValue,
+  PropertyValueFormat, PropertyDescription, PropertyUpdatedArgs, EditorContainer,
+} from "../../../ui-components";
 import { waitForSpy } from "../../test-helpers/misc";
 import { DragDropContext } from "react-dnd";
 import { DragDropHeaderWrapper } from "../../../table/component/DragDropHeaderCell";
 import { LocalUiSettings } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
-import { EditorContainer } from "../../../";
 
 describe("Table", () => {
   before(async () => {
@@ -183,7 +180,7 @@ describe("Table", () => {
       onPropertyUpdated={onPropertyUpdated}
       settingsIdentifier="test"
       reorderableColumns={true}
-      togglableColumns={true}
+      showHideColumns={true}
       uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
     />);
     await waitForSpy(table, onRowsLoaded);
@@ -728,7 +725,7 @@ describe("Table", () => {
       const headerCellDiv = table.find("div.react-grid-HeaderCell-sortable");
       headerCellDiv.simulate("click");  // Ascending
       headerCellDiv.simulate("click");  // Descending
-      headerCellDiv.simulate("click");  // Nosort
+      headerCellDiv.simulate("click");  // NoSort
     });
 
   });
@@ -780,7 +777,7 @@ describe("Table", () => {
       backend.simulateEndDrag();
     });
   });
-  describe("columns enable/disablable", async () => {
+  describe("columns show/hide", async () => {
     it("should open context menu", () => {
       const t = table.find(tableWrapper);
       t.simulate("contextmenu", { currentTarget: t, clientX: -1, clientY: -1 });

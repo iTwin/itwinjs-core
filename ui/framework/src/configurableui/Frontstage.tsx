@@ -5,8 +5,6 @@
 /** @module Frontstage */
 
 import * as React from "react";
-import { CSSProperties } from "react";
-
 import { ContentLayoutDef, ContentLayout } from "./ContentLayout";
 import { ContentGroup } from "./ContentGroup";
 import { FrontstageRuntimeProps } from "./FrontstageComposer";
@@ -14,9 +12,7 @@ import { FrontstageDef } from "./FrontstageDef";
 import { ZoneDef } from "./ZoneDef";
 import { Zone, ZoneProps, ZoneRuntimeProps } from "./Zone";
 
-import NZ_Zones from "@bentley/ui-ninezone/lib/zones/Zones";
-import NineZone, { WidgetZoneIndex } from "@bentley/ui-ninezone/lib/zones/state/NineZone";
-import { WidgetZone } from "@bentley/ui-ninezone/lib/zones/state/Zone";
+import { Zones as NZ_Zones, NineZone, WidgetZoneIndex, WidgetZone } from "@bentley/ui-ninezone";
 
 /** Provides a Frontstage as a React based definition
  */
@@ -195,12 +191,12 @@ export class Frontstage extends React.Component<FrontstageProps> {
     if (runtimeProps === undefined)
       return null;
 
-    const divStyle: CSSProperties = {
+    const divStyle: React.CSSProperties = {
       position: "relative",
       height: "100%",
     };
 
-    const zonesStyle: CSSProperties = {
+    const zonesStyle: React.CSSProperties = {
       position: "relative",
       pointerEvents: "none",
     };

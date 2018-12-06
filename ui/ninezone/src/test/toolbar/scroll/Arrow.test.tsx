@@ -5,8 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Chevron from "../../..//toolbar/scroll/Chevron";
-import { Direction } from "../../..//utilities/Direction";
+import { Chevron, Direction } from "../../../ui-ninezone";
 
 describe("<Chevron />", () => {
   it("should render", () => {

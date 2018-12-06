@@ -2,6 +2,18 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "0.172.0",
+      "tag": "@bentley/webpack-tools_v0.172.0",
+      "date": "Tue, 04 Dec 2018 17:24:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added the modules subdirectory, containing configuration file needed to webpack our packages as separate modules."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.171.0",
       "tag": "@bentley/webpack-tools_v0.171.0",
       "date": "Mon, 03 Dec 2018 18:52:58 GMT",

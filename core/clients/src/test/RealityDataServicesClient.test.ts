@@ -3,11 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Version } from "../imodelhub";
+import { Version } from "../imodelhub/Versions";
 import { AuthorizationToken, AccessToken } from "../Token";
 import { TestConfig } from "./TestConfig";
 import { RealityDataServicesClient, RealityData } from "../RealityDataServicesClient";
-import { IModelHubClient } from "..";
+import { IModelHubClient } from "../imodeljs-clients";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 chai.should();
 

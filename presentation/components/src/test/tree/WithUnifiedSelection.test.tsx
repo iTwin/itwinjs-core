@@ -19,12 +19,12 @@ import {
 } from "@bentley/presentation-frontend";
 import { Tree, TreeNodeItem, UiComponents } from "@bentley/ui-components";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { TreeProps as TreeProps } from "@bentley/ui-components/lib/tree/component/Tree";
+import { TreeProps } from "@bentley/ui-components";
 import IUnifiedSelectionComponent from "../../common/IUnifiedSelectionComponent";
-import { IPresentationTreeDataProvider, withUnifiedSelection, SelectionTarget } from "../../tree";
+import { IPresentationTreeDataProvider, treeWithUnifiedSelection, SelectionTarget } from "../../presentation-components";
 
 // tslint:disable-next-line:variable-name naming-convention
-const PresentationTree = withUnifiedSelection(Tree);
+const PresentationTree = treeWithUnifiedSelection(Tree);
 
 describe("Tree withUnifiedSelection", () => {
   before(async () => {

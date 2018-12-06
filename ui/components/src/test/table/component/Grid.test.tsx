@@ -6,7 +6,7 @@ import * as React from "react";
 import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 
-import { Grid } from "../../../";
+import { Grid } from "../../../ui-components";
 
 const columns = [
   { key: "id", name: "ID" },

@@ -9,8 +9,8 @@ import "./_helpers/MockFrontendEnvironment";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { PresentationError } from "@bentley/presentation-common";
-import { Presentation } from "../index";
-import { SelectionManager } from "../selection";
+import { Presentation } from "../presentation-frontend";
+import { SelectionManager } from "../presentation-frontend";
 import PresentationManager from "../PresentationManager";
 
 describe("Presentation", () => {

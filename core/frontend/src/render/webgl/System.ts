@@ -5,7 +5,10 @@
 /** @module WebGL */
 
 import { IModelError, RenderTexture, RenderMaterial, Gradient, ImageBuffer, ElementAlignedBox3d, ColorDef, QPoint3dList, QParams3d, QPoint3d } from "@bentley/imodeljs-common";
-import { ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d, IndexedPolyfaceVisitor, Triangulator, StrokeOptions } from "@bentley/geometry-core";
+import {
+  ClipVector, Transform, Point3d, ClipUtilities, PolyfaceBuilder, Point2d, IndexedPolyface, Range3d,
+  IndexedPolyfaceVisitor, Triangulator, StrokeOptions, HalfEdgeGraph, HalfEdge, HalfEdgeMask,
+} from "@bentley/geometry-core";
 import { RenderGraphic, GraphicBranch, RenderSystem, RenderTarget, RenderClipVolume, GraphicList, PackedFeatureTable } from "../System";
 import { SkyBox } from "../../DisplayStyleState";
 import { OnScreenTarget, OffScreenTarget } from "./Target";
@@ -34,7 +37,6 @@ import { Material } from "./Material";
 import { SkyBoxQuadsGeometry, SkySphereViewportQuadGeometry } from "./CachedGeometry";
 import { SkyBoxPrimitive, SkySpherePrimitive } from "./Primitive";
 import { ClipPlanesVolume, ClipMaskVolume } from "./ClipVolume";
-import { HalfEdgeGraph, HalfEdge, HalfEdgeMask } from "@bentley/geometry-core/lib/topology/Graph";
 import { TextureUnit } from "./RenderFlags";
 import { UniformHandle } from "./Handle";
 
@@ -428,8 +430,8 @@ export class System extends RenderSystem {
   private readonly _drawBuffersExtension?: WEBGL_draw_buffers;
   private readonly _textureStats?: TextureStats;
   private readonly _textureBindings: TextureBinding[] = [];
-  private readonly _curVertexAttribStates: boolean[] = [ false, false, false, false ];
-  private readonly _nextVertexAttribStates: boolean[] = [ false, false, false, false ];
+  private readonly _curVertexAttribStates: boolean[] = [false, false, false, false];
+  private readonly _nextVertexAttribStates: boolean[] = [false, false, false, false];
 
   // The following are initialized immediately after the System is constructed.
   private _lineCodeTexture?: TextureHandle;

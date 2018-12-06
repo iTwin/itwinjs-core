@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
-import { Dialog, ButtonType } from "../../index";
+import { Dialog, ButtonType } from "../../ui-core";
 import TestUtils from "../TestUtils";
 
 describe("Dialog", () => {

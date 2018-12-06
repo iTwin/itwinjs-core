@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 
-import Group from "../../../../..//toolbar/item/expandable/group/Group";
+import { Group } from "../../../../../ui-ninezone";
 
 describe("<Group />", () => {
   it("should render", () => {

@@ -3,25 +3,21 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { JsonUtils, OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d, IModelJson as GeomJson } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, LinePixels, ModelProps, ModelQueryParams, RenderMode, RgbColor, RpcConfiguration,
   RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName, GeometryStreamProps, BackgroundMapType, ContextRealityModelProps,
+  MobileRpcConfiguration, MobileRpcManager,
 } from "@bentley/imodeljs-common";
 import { AccessToken, Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
-import { OidcClientWrapper } from "@bentley/ui-framework/lib/oidc";
-import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 import {
   AccuDraw, AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, BeButtonEvent, Cluster, CoordinateLockOverrides, DecorateContext,
   DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
   SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus, imageBufferToPngDataUrl,
-  ContextRealityModelState,
+  ContextRealityModelState, OidcClientWrapper, FeatureSymbology, GraphicType, PerformanceMetrics, Target,
 } from "@bentley/imodeljs-frontend";
-import { FeatureSymbology, GraphicType } from "@bentley/imodeljs-frontend/lib/rendering";
-import { PerformanceMetrics, Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import ToolTip from "tooltip.js";
 import { IModelApi } from "./IModelApi";
 import { SimpleViewState } from "./SimpleViewState";
@@ -1826,12 +1822,6 @@ class SVTIModelApp extends IModelApp {
   }
 }
 
-const docReady = new Promise((resolve) => {
-  window.addEventListener("DOMContentLoaded", () => {
-    resolve();
-  });
-});
-
 // Retrieves the configuration for which project and imodel to open from connect-configuration.json file located in the built public folder
 async function retrieveProjectConfiguration(): Promise<void> {
   return new Promise<void>((resolve, _reject) => {
@@ -1889,7 +1879,7 @@ async function main() {
     Object.assign(configuration, { standalone: true, iModelName: "sample_documents/04_Plant.i.ibim" });
     rpcConfiguration = MobileRpcManager.initializeClient([IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
   } else {
-    const uriPrefix = configuration.customOrchestratorUri;
+    const uriPrefix = configuration.customOrchestratorUri || "http://localhost:3001";
     rpcConfiguration = BentleyCloudRpcManager.initializeClient({ info: { title: "SimpleViewApp", version: "v1.0" }, uriPrefix }, [IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface]);
     // WIP: WebAppRpcProtocol seems to require an IModelToken for every RPC request. ECPresentation initialization tries to set active locale using
     // RPC without any imodel and fails...
@@ -1942,7 +1932,6 @@ async function initView() {
 // Set up the HTML UI elements and wire them to our functions
 async function displayUi() {
   return new Promise(async (resolve) => {
-    await docReady; // We must wait for the document to be in place.
     showSpinner();
     wireIconsToFunctions();
     resolve();

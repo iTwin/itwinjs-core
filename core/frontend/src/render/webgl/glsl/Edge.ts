@@ -10,7 +10,7 @@ import {
   VariableType,
   VertexShaderComponent,
 } from "../ShaderBuilder";
-import { addModelViewMatrix, addProjectionMatrix, addAnimation, GLSLVertex } from "./Vertex";
+import { addModelViewMatrix, addProjectionMatrix, addAnimation, GLSLVertex, addNormalMatrix } from "./Vertex";
 import { addViewport, addModelToWindowCoordinates } from "./Viewport";
 import { GL } from "../GL";
 import { addColor } from "./Color";
@@ -18,7 +18,6 @@ import { addWhiteOnWhiteReversal } from "./Fragment";
 import { addShaderFlags } from "./Common";
 import { addLineCode, adjustWidth } from "./Polyline";
 import { EdgeGeometry, SilhouetteEdgeGeometry } from "../Mesh";
-import { addNormalMatrix } from "./Vertex";
 import { octDecodeNormal } from "./Surface";
 
 const decodeEndPointAndQuadIndices = `

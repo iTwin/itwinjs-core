@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as moq from "typemoq";
-import { TypeConverter } from "../..//index";
-import { PropertyDescription, PrimitiveValue } from "../..//properties";
+import { TypeConverter, PropertyDescription, PrimitiveValue } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 describe("TypeConverter", () => {

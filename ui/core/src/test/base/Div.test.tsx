@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Div } from "../../index";
+import { Div } from "../../ui-core";
 
 describe("Div", () => {
 

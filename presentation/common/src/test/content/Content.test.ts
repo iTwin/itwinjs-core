@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { createRandomECInstanceKeyJSON, createRandomECClassInfoJSON, createRandomDescriptorJSON } from "../_helpers/random";
-import { Content } from "../../content";
+import { Content } from "../../presentation-common";
 import { ContentJSON } from "../../content/Content";
 
 describe("Content", () => {

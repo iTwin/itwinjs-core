@@ -12,7 +12,7 @@ import {
   NestedContentValueJSON,
 } from "../../content/Value";
 import { createRandomECInstanceKeyJSON } from "../_helpers/random";
-import { instanceKeyFromJSON } from "../..";
+import { instanceKeyFromJSON } from "../../presentation-common";
 
 describe("Value", () => {
 

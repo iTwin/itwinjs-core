@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { StringTypeConverter } from "../..//index";
+import { StringTypeConverter } from "../../ui-components";
 import TestUtils from "../TestUtils";
 
 describe("StringTypeConverter", () => {

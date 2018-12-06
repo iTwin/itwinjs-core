@@ -7,7 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { OmitChildrenProp, NoChildrenProps } from "../../../utilities/Props";
-import Icon, { ToolbarIconProps } from "./Icon";
+import { ToolbarIcon, ToolbarIconProps } from "./Icon";
 import "./App.scss";
 
 /** Properties of [[BackButton]] component. */
@@ -18,7 +18,7 @@ export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoCh
  * App button which displays icon. Used in [[Toolbar]] component.
  * @note See basic button: [[ToolbarButton]]
  */
-export default class AppButton extends React.Component<AppButtonProps> {
+export class AppButton extends React.Component<AppButtonProps> {
   public render() {
     const { className, ...props } = this.props;
     const buttonClassName = classnames(
@@ -26,7 +26,7 @@ export default class AppButton extends React.Component<AppButtonProps> {
       className);
 
     return (
-      <Icon
+      <ToolbarIcon
         className={buttonClassName}
         icon={this.props.icon}
         {...props}
@@ -36,7 +36,7 @@ export default class AppButton extends React.Component<AppButtonProps> {
           <div className="nz-bar" />
           <div className="nz-bar" />
         </div>
-      </Icon>
+      </ToolbarIcon>
     );
   }
 }

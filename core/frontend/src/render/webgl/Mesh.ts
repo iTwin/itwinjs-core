@@ -15,17 +15,12 @@ import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
 import { Primitive } from "./Primitive";
 import { FloatPreMulRgba } from "./FloatRGBA";
-import { ShaderProgramParams } from "./DrawCommand";
+import { ShaderProgramParams, RenderCommands } from "./DrawCommand";
 import { Target } from "./Target";
 import { SurfacePrimitive } from "./Surface";
-import { RenderCommands } from "./DrawCommand";
 import { Material } from "./Material";
 import { Texture } from "./Texture";
-import {
-  FillFlags,
-  RenderMode,
-  LinePixels,
-} from "@bentley/imodeljs-common";
+import { FillFlags, RenderMode, LinePixels } from "@bentley/imodeljs-common";
 import { System } from "./System";
 import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";

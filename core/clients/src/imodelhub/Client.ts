@@ -6,7 +6,7 @@
 
 import { AccessToken, AuthorizationToken } from "../Token";
 import { IModelClient } from "../IModelClient";
-import { FileHandler } from "../";
+import { FileHandler } from "../imodeljs-clients";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
 import { ActivityLoggingContext } from "@bentley/bentleyjs-core";

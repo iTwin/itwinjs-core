@@ -105,6 +105,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       "_isVisible": true,
       "classId": undefined,
       "featureId": "",
+      "fillZone": false,
       "horizontalDirection": 3,
       "horizontalItems": undefined,
       "id": "toolWidget",

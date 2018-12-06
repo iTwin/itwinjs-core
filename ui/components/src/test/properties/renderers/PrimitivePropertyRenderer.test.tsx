@@ -8,7 +8,7 @@ import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
 import { PrimitivePropertyRenderer } from "../../../properties/renderers/PrimitivePropertyRenderer";
-import { PrimitivePropertyLabelRenderer } from "../../../properties/renderers/label";
+import { PrimitivePropertyLabelRenderer } from "../../../ui-components";
 import { PropertyView } from "../../../properties/renderers/PropertyView";
 
 describe("PrimitivePropertyRenderer", () => {

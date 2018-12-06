@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { ImsActiveSecureTokenClient } from "../ImsClients";
 import { AuthorizationToken, AccessToken } from "../Token";
-import { HubIModel } from "../imodelhub";
-import { IModelHubClient, IModelClient } from "..";
+import { HubIModel } from "../imodelhub/iModels";
+import { IModelHubClient, IModelClient } from "../imodeljs-clients";
 import { ConnectClient, Project } from "../ConnectClients";
 import { expect } from "chai";
 import * as fs from "fs";

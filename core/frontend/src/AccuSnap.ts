@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module LocatingElements */
 
-import { Point3d, Point2d, XAndY, Vector3d, CurveCurve } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core/lib/serialization/IModelJsonSchema";
+import { Point3d, Point2d, XAndY, Vector3d, CurveCurve, IModelJson as GeomJson } from "@bentley/geometry-core";
 import { Viewport, ScreenViewport } from "./Viewport";
 import { BeButtonEvent } from "./tools/Tool";
 import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager, LocateFilterStatus } from "./ElementLocateManager";

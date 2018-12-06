@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import TestUtils from "../TestUtils";
-import { ZoneDef, ZoneState, WidgetDef, ZoneLocation } from "../../index";
+import { ZoneDef, ZoneState, WidgetDef, ZoneLocation } from "../../ui-framework";
 import { expect } from "chai";
 
 describe("ZoneDef", () => {
@@ -60,6 +60,7 @@ describe("ZoneDef", () => {
     zoneDef.addWidgetDef(new WidgetDef({
       id: "IdTest",
       classId: "Test2",
+      fillZone: true,
     }));
 
     expect(zoneDef.widgetDefs).to.have.lengthOf(2);
@@ -67,6 +68,7 @@ describe("ZoneDef", () => {
     expect(zoneDef.isToolSettings).to.be.false;
     expect(zoneDef.isStatusBar).to.be.false;
     expect(zoneDef.findWidgetDef("IdTest")).to.not.be.undefined;
+    expect(zoneDef.shouldFillZone).to.be.true;
   });
 
 });

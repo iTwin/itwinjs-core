@@ -8,25 +8,22 @@ import * as chai from "chai";
 import { GuidString, Guid, ActivityLoggingContext, Id64, Id64String } from "@bentley/bentleyjs-core";
 
 import {
-  ECJsonTypeMap, AccessToken, UserInfo, Project,
-  ProgressInfo,
-} from "../../";
-import {
+  ECJsonTypeMap, AccessToken, UserInfo, Project, ProgressInfo,
   IModelHubClient, HubCode, CodeState, MultiCode, Briefcase, ChangeSet, Version,
   Thumbnail, SmallThumbnail, LargeThumbnail, IModelQuery, LockType, LockLevel,
   MultiLock, Lock, VersionQuery,
-} from "../../";
+} from "../../imodeljs-clients";
 import { AzureFileHandler } from "../../imodelhub/AzureFileHandler";
 
 import { ResponseBuilder, RequestType, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
 import { TestConfig, UserCredentials, TestUsers } from "../TestConfig";
 import { IModelCloudEnvironment } from "../../IModelCloudEnvironment";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
-import { IModelBankClient } from "../../IModelBank";
+import { IModelBankClient } from "../../IModelBank/IModelBankClient";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelBankFileSystemContextClient } from "../../IModelBank/IModelBankFileSystemContextClient";
 import { Config } from "../../Config";
-import { IModelBaseHandler } from "../../imodelhub";
+import { IModelBaseHandler } from "../../imodelhub/BaseHandler";
 
 const bankProjects: string[] = [];
 

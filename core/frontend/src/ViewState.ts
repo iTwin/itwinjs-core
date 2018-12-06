@@ -1,18 +1,18 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+ * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+ *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
 import { assert, BeTimePoint, Id64, Id64Arg, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
-    Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal,
-    Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles,
+  Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal,
+  Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-    AxisAlignedBox3d, Camera, ColorDef, Frustum, GraphicParams, Npc, RenderMaterial, SpatialViewDefinitionProps,
-    SubCategoryAppearance, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps,
-    ViewFlags, ViewStateData, AnalysisStyle,
+  AxisAlignedBox3d, Camera, ColorDef, Frustum, GraphicParams, Npc, RenderMaterial, SpatialViewDefinitionProps,
+  SubCategoryAppearance, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps,
+  ViewFlags, ViewStateData, AnalysisStyle, RenderSchedule,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -32,8 +32,8 @@ import { Viewport } from "./Viewport";
 
 /** Describes the orientation of the grid displayed within a [[Viewport]]. */
 export const enum GridOrientationType {
-    /** Oriented with the view. */
-    View = 0,
+  /** Oriented with the view. */
+  View = 0,
     /** Top */
     WorldXY = 1, // Top
     /** Right */
@@ -50,22 +50,22 @@ export const enum GridOrientationType {
 
 /** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]]. */
 export const enum ViewStatus {
-    Success = 0,
-    ViewNotInitialized,
-    AlreadyAttached,
-    NotAttached,
-    DrawFailure,
-    NotResized,
-    ModelNotFound,
-    InvalidWindow,
-    MinWindow,
-    MaxWindow,
-    MaxZoom,
-    MaxDisplayDepth,
-    InvalidUpVector,
-    InvalidTargetPoint,
-    InvalidLens,
-    InvalidViewport,
+  Success = 0,
+  ViewNotInitialized,
+  AlreadyAttached,
+  NotAttached,
+  DrawFailure,
+  NotResized,
+  ModelNotFound,
+  InvalidWindow,
+  MinWindow,
+  MaxWindow,
+  MaxZoom,
+  MaxDisplayDepth,
+  InvalidUpVector,
+  InvalidTargetPoint,
+  InvalidLens,
+  InvalidViewport,
 }
 
 /**
@@ -73,86 +73,86 @@ export const enum ViewStatus {
  * Values mean "fraction of view size" and must be between 0 and .25.
  */
 export class MarginPercent {
-    constructor(public left: number, public top: number, public right: number, public bottom: number) {
-        const limitMargin = (val: number) => (val < 0.0) ? 0.0 : (val > .25) ? .25 : val;
-        this.left = limitMargin(left);
-        this.top = limitMargin(top);
-        this.right = limitMargin(right);
-        this.bottom = limitMargin(bottom);
-    }
+  constructor(public left: number, public top: number, public right: number, public bottom: number) {
+    const limitMargin = (val: number) => (val < 0.0) ? 0.0 : (val > .25) ? .25 : val;
+    this.left = limitMargin(left);
+    this.top = limitMargin(top);
+    this.right = limitMargin(right);
+    this.bottom = limitMargin(bottom);
+  }
 }
 
 /**
  * Stores information about sub-categories specific to a ViewState. Functions as a lazily-populated cache.
  */
 export class ViewSubCategories {
-    private readonly _byCategoryId = new Map<string, Id64Set>();
-    private readonly _appearances = new Map<string, SubCategoryAppearance>();
+  private readonly _byCategoryId = new Map<string, Id64Set>();
+  private readonly _appearances = new Map<string, SubCategoryAppearance>();
 
-    /** Get the Ids of all subcategories belonging to the category with the specified Id, or undefined if no such information is present. */
-    public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
+  /** Get the Ids of all subcategories belonging to the category with the specified Id, or undefined if no such information is present. */
+  public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
 
-    /** Get the base appearance of the subcategory with the specified Id, or undefined if no such information is present. */
-    public getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId.toString()); }
+  /** Get the base appearance of the subcategory with the specified Id, or undefined if no such information is present. */
+  public getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId.toString()); }
 
-    /**
-     * Asynchronously populates this cache with information about subcategories belonging to the specified set of categories.
-     * This function is invoked on initial loading of a ViewState to obtain subcategory information for the set of
-     * categories in the ViewState's [[CategorySelector]].
-     */
-    public async load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
-        const where = [...categoryIds].join(",");
-        if (0 === where.length)
-            return Promise.resolve();
+  /**
+   * Asynchronously populates this cache with information about subcategories belonging to the specified set of categories.
+   * This function is invoked on initial loading of a ViewState to obtain subcategory information for the set of
+   * categories in the ViewState's [[CategorySelector]].
+   */
+  public async load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+    const where = [...categoryIds].join(",");
+    if (0 === where.length)
+    return Promise.resolve();
 
-        const ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")";
-        return iModel.executeQuery(ecsql).then((rows: any[]) => this.loadFromRows(rows));
+    const ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")";
+    return iModel.executeQuery(ecsql).then((rows: any[]) => this.loadFromRows(rows));
+  }
+
+  /**
+   * If information for subcategories belonging to the specified categories is not present, enqueues an asynchronous request to load it.
+   * This function is invoked by ViewState.changeCategoryDisplay() to ensure subcategory information is present for any newly-enabled
+   * categories.
+   */
+  public async update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+    let missing: Set<string> | undefined;
+    for (const catId of addedCategoryIds) {
+      if (undefined === this._byCategoryId.get(catId)) {
+        if (undefined === missing)
+          missing = new Set<string>();
+
+        missing.add(catId);
+      }
     }
 
-    /**
-     * If information for subcategories belonging to the specified categories is not present, enqueues an asynchronous request to load it.
-     * This function is invoked by ViewState.changeCategoryDisplay() to ensure subcategory information is present for any newly-enabled
-     * categories.
-     */
-    public async update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
-        let missing: Set<string> | undefined;
-        for (const catId of addedCategoryIds) {
-            if (undefined === this._byCategoryId.get(catId)) {
-                if (undefined === missing)
-                    missing = new Set<string>();
+    if (undefined !== missing)
+    return this.load(missing, iModel);
+    else
+    return Promise.resolve();
+  }
 
-                missing.add(catId);
-            }
-        }
+  private static createSubCategoryAppearance(json?: any) {
+    let props: SubCategoryAppearance | undefined;
+    if ("string" === typeof (json) && 0 < json.length)
+      props = JSON.parse(json);
 
-        if (undefined !== missing)
-            return this.load(missing, iModel);
-        else
-            return Promise.resolve();
-    }
+    return new SubCategoryAppearance(props);
+  }
 
-    private static createSubCategoryAppearance(json?: any) {
-        let props: SubCategoryAppearance | undefined;
-        if ("string" === typeof (json) && 0 < json.length)
-            props = JSON.parse(json);
+  private loadFromRows(rows: any[]): void {
+    for (const row of rows)
+    this.add(row.parentId as string, row.id as string, ViewSubCategories.createSubCategoryAppearance(row.appearance));
+  }
 
-        return new SubCategoryAppearance(props);
-    }
+  private add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
+    let set = this._byCategoryId.get(categoryId);
+    if (undefined === set)
+      this._byCategoryId.set(categoryId, set = new Set<string>());
 
-    private loadFromRows(rows: any[]): void {
-        for (const row of rows)
-            this.add(row.parentId as string, row.id as string, ViewSubCategories.createSubCategoryAppearance(row.appearance));
-    }
+    set.add(subCategoryId);
 
-    private add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
-        let set = this._byCategoryId.get(categoryId);
-        if (undefined === set)
-            this._byCategoryId.set(categoryId, set = new Set<string>());
-
-        set.add(subCategoryId);
-
-        this._appearances.set(subCategoryId, appearance);
-    }
+    this._appearances.set(subCategoryId, appearance);
+  }
 }
 
 /**
@@ -1122,536 +1122,536 @@ export abstract class ViewState extends ElementState {
  * @see [ViewState Parameters]($docs/learning/frontend/views#viewstate-parameters)
  */
 export abstract class ViewState3d extends ViewState {
-    /** True if the camera is valid. */
-    protected _cameraOn: boolean;
-    /** The lower left back corner of the view frustum. */
-    public readonly origin: Point3d;
-    /** The extent of the view frustum. */
-    public readonly extents: Vector3d;
-    /** Rotation of the view frustum. */
-    public readonly rotation: Matrix3d;
-    /** The camera used for this view. */
-    public readonly camera: Camera;
-    /** Minimum distance for front plane */
-    public forceMinFrontDist = 0.0;
-    /** @hidden */
-    public static get className() { return "ViewDefinition3d"; }
-    public onRenderFrame(_viewport: Viewport): void { }
-    public allow3dManipulations(): boolean { return true; }
-    public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
-        super(props, iModel, categories, displayStyle);
-        this._cameraOn = JsonUtils.asBool(props.cameraOn);
-        this.origin = Point3d.fromJSON(props.origin);
-        this.extents = Vector3d.fromJSON(props.extents);
-        this.rotation = YawPitchRollAngles.fromJSON(props.angles).toMatrix3d();
-        assert(this.rotation.isRigid());
-        this.camera = new Camera(props.camera);
+  /** True if the camera is valid. */
+  protected _cameraOn: boolean;
+  /** The lower left back corner of the view frustum. */
+  public readonly origin: Point3d;
+  /** The extent of the view frustum. */
+  public readonly extents: Vector3d;
+  /** Rotation of the view frustum. */
+  public readonly rotation: Matrix3d;
+  /** The camera used for this view. */
+  public readonly camera: Camera;
+  /** Minimum distance for front plane */
+  public forceMinFrontDist = 0.0;
+  /** @hidden */
+  public static get className() { return "ViewDefinition3d"; }
+  public onRenderFrame(_viewport: Viewport): void { }
+  public allow3dManipulations(): boolean { return true; }
+  public constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState) {
+    super(props, iModel, categories, displayStyle);
+    this._cameraOn = JsonUtils.asBool(props.cameraOn);
+    this.origin = Point3d.fromJSON(props.origin);
+    this.extents = Vector3d.fromJSON(props.extents);
+    this.rotation = YawPitchRollAngles.fromJSON(props.angles).toMatrix3d();
+    assert(this.rotation.isRigid());
+    this.camera = new Camera(props.camera);
+  }
+
+  public toJSON(): ViewDefinition3dProps {
+    const val = super.toJSON() as ViewDefinition3dProps;
+    val.cameraOn = this._cameraOn;
+    val.origin = this.origin;
+    val.extents = this.extents;
+    val.angles = YawPitchRollAngles.createFromMatrix3d(this.rotation)!.toJSON();
+    assert(undefined !== val.angles, "rotMatrix is illegal");
+    val.camera = this.camera;
+    return val;
+  }
+
+  public equalState(other: ViewState3d): boolean {
+    if (!this.origin.isAlmostEqual(other.origin) || !this.extents.isAlmostEqual(other.extents) || !this.rotation.isAlmostEqual(other.rotation))
+      return false;
+
+    if (this.isCameraOn !== other.isCameraOn)
+      return false;
+
+    if (this.isCameraOn && this.camera.equals(other.camera)) // ###TODO: should this be less precise equality?
+      return false;
+
+    return super.equalState(other);
+  }
+
+  public get isCameraOn(): boolean { return this._cameraOn; }
+  public setupFromFrustum(frustum: Frustum): ViewStatus {
+    const stat = super.setupFromFrustum(frustum);
+    if (ViewStatus.Success !== stat)
+      return stat;
+
+    this.turnCameraOff();
+    const frustPts = frustum.points;
+
+    // use comparison of back, front plane X sizes to indicate camera or flat view ...
+    const xBack = frustPts[Npc.LeftBottomRear].distance(frustPts[Npc.RightBottomRear]);
+    const xFront = frustPts[Npc.LeftBottomFront].distance(frustPts[Npc.RightBottomFront]);
+
+    const flatViewFractionTolerance = 1.0e-6;
+    if (xFront > xBack * (1.0 + flatViewFractionTolerance))
+      return ViewStatus.InvalidWindow;
+
+    // see if the frustum is tapered, and if so, set up camera eyepoint and adjust viewOrg and delta.
+    const compression = xFront / xBack;
+    if (compression >= (1.0 - flatViewFractionTolerance))
+      return ViewStatus.Success;
+
+    // the frustum has perspective, turn camera on
+    let viewOrg = frustPts[Npc.LeftBottomRear];
+    const viewDelta = this.getExtents().clone();
+    const zDir = this.getZVector();
+    const frustumZ = viewOrg.vectorTo(frustPts[Npc.LeftBottomFront]);
+    const frustOrgToEye = frustumZ.scale(1.0 / (1.0 - compression));
+    const eyePoint = viewOrg.plus(frustOrgToEye);
+
+    const backDistance = frustOrgToEye.dotProduct(zDir);         // distance from eye to back plane of frustum
+    const focusDistance = backDistance - (viewDelta.z / 2.0);
+    const focalFraction = focusDistance / backDistance;           // ratio of focus plane distance to back plane distance
+
+    viewOrg = eyePoint.plus2Scaled(frustOrgToEye, -focalFraction, zDir, focusDistance - backDistance);    // now project that point onto back plane
+    viewDelta.x *= focalFraction;                                  // adjust view delta for x and y so they are also at focus plane
+    viewDelta.y *= focalFraction;
+
+    this.setEyePoint(eyePoint);
+    this.setFocusDistance(focusDistance);
+    this.setOrigin(viewOrg);
+    this.setExtents(viewDelta);
+    this.setLensAngle(this.calcLensAngle());
+    this.enableCamera();
+    return ViewStatus.Success;
+  }
+
+  protected static calculateMaxDepth(delta: Vector3d, zVec: Vector3d): number {
+    const depthRatioLimit = 1.0E8;          // Limit for depth Ratio.
+    const maxTransformRowRatio = 1.0E5;
+    const minXYComponent = Math.min(Math.abs(zVec.x), Math.abs(zVec.y));
+    const maxDepthRatio = (0.0 === minXYComponent) ? depthRatioLimit : Math.min((maxTransformRowRatio / minXYComponent), depthRatioLimit);
+    return Math.max(delta.x, delta.y) * maxDepthRatio;
+  }
+
+  public getOrigin(): Point3d { return this.origin; }
+  public getExtents(): Vector3d { return this.extents; }
+  public getRotation(): Matrix3d { return this.rotation; }
+  public setOrigin(origin: XYAndZ) { this.origin.setFrom(origin); }
+  public setExtents(extents: XYAndZ) { this.extents.setFrom(extents); }
+  public setRotation(rot: Matrix3d) { this.rotation.setFrom(rot); }
+  /** @hidden */
+  protected enableCamera(): void { if (this.supportsCamera()) this._cameraOn = true; }
+  public supportsCamera(): boolean { return true; }
+  public minimumFrontDistance() { return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist); }
+  public isEyePointAbove(elevation: number): boolean { return !this._cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
+
+  public getDisplayStyle3d() { return this.displayStyle as DisplayStyle3dState; }
+
+  /**
+   * Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
+   * display with an orthographic (infinite focal length) projection of the view volume from the view direction.
+   * @note To turn the camera back on, call #lookAt
+   */
+  public turnCameraOff() { this._cameraOn = false; }
+
+  /** Determine whether the camera is valid for this view */
+  public get isCameraValid() { return this.camera.isValid; }
+
+  /** Calculate the lens angle formed by the current delta and focus distance */
+  public calcLensAngle(): Angle {
+    const maxDelta = Math.max(this.extents.x, this.extents.y);
+    return Angle.createRadians(2.0 * Math.atan2(maxDelta * 0.5, this.camera.getFocusDistance()));
+  }
+
+  /** Get the target point of the view. If there is no camera, view center is returned. */
+  public getTargetPoint(result?: Point3d): Point3d {
+    if (!this._cameraOn)
+      return super.getTargetPoint(result);
+
+    const viewZ = this.getRotation().getRow(2);
+    return this.getEyePoint().plusScaled(viewZ, -1.0 * this.getFocusDistance(), result);
+  }
+
+  /**
+   * Position the camera for this view and point it at a new target point.
+   * @param eyePoint The new location of the camera.
+   * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
+   * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
+   * @param newExtents  The new size (width and height) of the view rectangle. The view rectangle is on the focus plane centered on the targetPoint.
+   * If newExtents is undefined, the existing size is unchanged.
+   * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
+   * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
+   * @returns A [[ViewStatus]] indicating whether the camera was successfully positioned.
+   * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
+   * adjusted when the [[Viewport]] is synchronized from this view.
+   */
+  public lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number): ViewStatus {
+    const eye = new Point3d(eyePoint.x, eyePoint.y, eyePoint.z);
+    const yVec = upVector.normalize();
+    if (!yVec) // up vector zero length?
+      return ViewStatus.InvalidUpVector;
+
+    const zVec = Vector3d.createStartEnd(targetPoint, eye); // z defined by direction from eye to target
+    const focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
+    const minFrontDist = this.minimumFrontDistance();
+
+    if (focusDist <= minFrontDist) // eye and target are too close together
+      return ViewStatus.InvalidTargetPoint;
+
+    const xVec = new Vector3d();
+    if (yVec.crossProduct(zVec).normalizeWithLength(xVec).mag < Geometry.smallMetricDistance)
+      return ViewStatus.InvalidUpVector;    // up is parallel to z
+
+    if (zVec.crossProduct(xVec).normalizeWithLength(yVec).mag < Geometry.smallMetricDistance)
+      return ViewStatus.InvalidUpVector;
+
+    // we now have rows of the rotation matrix
+    const rotation = Matrix3d.createRows(xVec, yVec, zVec);
+
+    backDistance = backDistance ? backDistance : this.getBackDistance();
+    frontDistance = frontDistance ? frontDistance : this.getFrontDistance();
+
+    const delta = newExtents ? new Vector3d(Math.abs(newExtents.x), Math.abs(newExtents.y), this.extents.z) : this.extents.clone();
+
+    frontDistance = Math.max(frontDistance!, (.5 * Constant.oneMeter));
+    backDistance = Math.max(backDistance!, focusDist + (.5 * Constant.oneMeter));
+
+    if (backDistance < focusDist) // make sure focus distance is in front of back distance.
+      backDistance = focusDist + Constant.oneMillimeter;
+
+    if (frontDistance > focusDist)
+      frontDistance = focusDist - minFrontDist;
+
+    if (frontDistance < minFrontDist)
+      frontDistance = minFrontDist;
+
+    delta.z = (backDistance! - frontDistance);
+
+    const frontDelta = delta.scale(frontDistance / focusDist);
+    const stat = this.validateViewDelta(frontDelta, false); // validate window size on front (smallest) plane
+    if (ViewStatus.Success !== stat)
+      return stat;
+
+    if (delta.z > ViewState3d.calculateMaxDepth(delta, zVec)) // make sure we're not zoomed out too far
+      return ViewStatus.MaxDisplayDepth;
+
+    // The origin is defined as the lower left of the view rectangle on the focus plane, projected to the back plane.
+    // Start at eye point, and move to center of back plane, then move left half of width. and down half of height
+    const origin = eye.plus3Scaled(zVec, -backDistance!, xVec, -0.5 * delta.x, yVec, -0.5 * delta.y);
+
+    this.setEyePoint(eyePoint);
+    this.setRotation(rotation);
+    this.setFocusDistance(focusDist);
+    this.setOrigin(origin);
+    this.setExtents(delta);
+    this.setLensAngle(this.calcLensAngle());
+    this.enableCamera();
+    return ViewStatus.Success;
+  }
+
+  /**
+   * Position the camera for this view and point it at a new target point, using a specified lens angle.
+   * @param eyePoint The new location of the camera.
+   * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
+   * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
+   * @param fov The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi.
+   * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
+   * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
+   * @note The aspect ratio of the view remains unchanged.
+   */
+  public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewStatus {
+    const focusDist = eyePoint.vectorTo(targetPoint).magnitude();   // Set focus at target point
+
+    if (focusDist <= Constant.oneMillimeter)       // eye and target are too close together
+      return ViewStatus.InvalidTargetPoint;
+
+    if (fov.radians < .0001 || fov.radians > Math.PI)
+      return ViewStatus.InvalidLens;
+
+    const extent = 2.0 * Math.tan(fov.radians / 2.0) * focusDist;
+    const delta = Vector2d.create(this.extents.x, this.extents.y);
+    const longAxis = Math.max(delta.x, delta.y);
+    delta.scale(extent / longAxis, delta);
+
+    return this.lookAt(eyePoint, targetPoint, upVector, delta, frontDistance, backDistance);
+  }
+
+  /**
+   * Move the camera relative to its current location by a distance in camera coordinates.
+   * @param distance to move camera. Length is in world units, direction relative to current camera orientation.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
+   */
+  public moveCameraLocal(distance: Vector3d): ViewStatus {
+    const distWorld = this.getRotation().multiplyTransposeVector(distance);
+    return this.moveCameraWorld(distWorld);
+  }
+
+  /**
+   * Move the camera relative to its current location by a distance in world coordinates.
+   * @param distance in world units.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
+   */
+  public moveCameraWorld(distance: Vector3d): ViewStatus {
+    if (!this._cameraOn) {
+      this.origin.plus(distance, this.origin);
+      return ViewStatus.Success;
     }
 
-    public toJSON(): ViewDefinition3dProps {
-        const val = super.toJSON() as ViewDefinition3dProps;
-        val.cameraOn = this._cameraOn;
-        val.origin = this.origin;
-        val.extents = this.extents;
-        val.angles = YawPitchRollAngles.createFromMatrix3d(this.rotation)!.toJSON();
-        assert(undefined !== val.angles, "rotMatrix is illegal");
-        val.camera = this.camera;
-        return val;
+    const newTarget = this.getTargetPoint().plus(distance);
+    const newEyePt = this.getEyePoint().plus(distance);
+    return this.lookAt(newEyePt, newTarget, this.getYVector());
+  }
+
+  /**
+   * Rotate the camera from its current location about an axis relative to its current orientation.
+   * @param angle The angle to rotate the camera.
+   * @param axis The axis about which to rotate the camera. The axis is a direction relative to the current camera orientation.
+   * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
+   *  (i.e. about the current eyePoint).
+   * @note Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
+   */
+  public rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
+    const axisWorld = this.getRotation().multiplyTransposeVector(axis);
+    return this.rotateCameraWorld(angle, axisWorld, aboutPt);
+  }
+
+  /**
+   * Rotate the camera from its current location about an axis in world coordinates.
+   * @param angle The angle to rotate the camera.
+   * @param axis The world-based axis (direction) about which to rotate the camera.
+   * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
+   *  (i.e. about the current eyePoint).
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
+   */
+  public rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
+    const about = aboutPt ? aboutPt : this.getEyePoint();
+    const rotation = Matrix3d.createRotationAroundVector(axis, angle);
+    if (!rotation)
+      return ViewStatus.InvalidUpVector;    // Invalid axis given
+    const trans = Transform.createFixedPointAndMatrix(about, rotation);
+    const newTarget = trans.multiplyPoint3d(this.getTargetPoint());
+    const upVec = rotation!.multiplyVector(this.getYVector());
+    return this.lookAt(this.getEyePoint(), newTarget, upVec);
+  }
+
+  /** Get the distance from the eyePoint to the front plane for this view. */
+  public getFrontDistance(): number { return this.getBackDistance() - this.extents.z; }
+
+  /** Get the distance from the eyePoint to the back plane for this view. */
+  public getBackDistance(): number {
+    // backDist is the z component of the vector from the origin to the eyePoint .
+    const eyeOrg = this.origin.vectorTo(this.getEyePoint());
+    this.getRotation().multiplyVector(eyeOrg, eyeOrg);
+    return eyeOrg.z;
+  }
+
+  /**
+   * Place the eyepoint of the camera so it is aligned with the center of the view. This removes any 1-point perspective skewing that may be
+   * present in the current view.
+   * @param backDistance If defined, the new the distance from the eyepoint to the back plane. Otherwise the distance from the
+   * current eyepoint is used.
+   */
+  public centerEyePoint(backDistance?: number): void {
+    const eyePoint = this.getExtents().scale(0.5);
+    eyePoint.z = backDistance ? backDistance : this.getBackDistance();
+    const eye = this.getRotation().multiplyTransposeXYZ(eyePoint.x, eyePoint.y, eyePoint.z);
+    this.camera.setEyePoint(this.getOrigin().plus(eye));
+  }
+
+  /** Center the focus distance of the camera halfway between the front plane and the back plane, keeping the eyepoint,
+   * lens angle, rotation, back distance, and front distance unchanged.
+   * @note The focus distance, origin, and delta values are modified, but the view encloses the same volume and appears visually unchanged.
+   */
+  public centerFocusDistance(): void {
+    const backDist = this.getBackDistance();
+    const frontDist = this.getFrontDistance();
+    const eye = this.getEyePoint();
+    const target = eye.plusScaled(this.getZVector(), frontDist - backDist);
+    this.lookAtUsingLensAngle(eye, target, this.getYVector(), this.getLensAngle(), frontDist, backDist);
+  }
+
+  /** Ensure the focus plane lies between the front and back planes. If not, center it. */
+  public verifyFocusPlane(): void {
+    if (!this._cameraOn)
+    return;
+
+    let backDist = this.getBackDistance();
+    const frontDist = backDist - this.extents.z;
+    const camera = this.camera;
+    const extents = this.extents;
+    const rot = this.rotation;
+
+    if (backDist <= 0.0 || frontDist <= 0.0) {
+      // the camera location is invalid. Set it based on the view range.
+      const tanAngle = Math.tan(camera.lens.radians / 2.0);
+      backDist = extents.z / tanAngle;
+      camera.setFocusDistance(backDist / 2);
+      this.centerEyePoint(backDist);
+      return;
     }
 
-    public equalState(other: ViewState3d): boolean {
-        if (!this.origin.isAlmostEqual(other.origin) || !this.extents.isAlmostEqual(other.extents) || !this.rotation.isAlmostEqual(other.rotation))
-            return false;
+    const focusDist = camera.focusDist;
+    if (focusDist > frontDist && focusDist < backDist)
+    return;
 
-        if (this.isCameraOn !== other.isCameraOn)
-            return false;
+    // put it halfway between front and back planes
+    camera.setFocusDistance((extents.z / 2.0) + frontDist);
 
-        if (this.isCameraOn && this.camera.equals(other.camera)) // ###TODO: should this be less precise equality?
-            return false;
+    // moving the focus plane means we have to adjust the origin and delta too (they're on the focus plane, see diagram above)
+    const ratio = camera.focusDist / focusDist;
+    extents.x *= ratio;
+    extents.y *= ratio;
+    camera.eye.plus3Scaled(rot.rowZ(), -backDist, rot.rowX(), -0.5 * extents.x, rot.rowY(), -0.5 * extents.y, this.origin); // this centers the camera too
+  }
 
-        return super.equalState(other);
+  /** Get the current location of the eyePoint for camera in this view. */
+  public getEyePoint(): Point3d { return this.camera.eye; }
+
+  /** Get the lens angle for this view. */
+  public getLensAngle(): Angle { return this.camera.lens; }
+
+  /** Set the lens angle for this view.
+   *  @param angle The new lens angle in radians. Must be greater than 0 and less than pi.
+   *  @note This does not change the view's current field-of-view. Instead, it changes the lens that will be used if the view
+   *  is subsequently modified and the lens angle is used to position the eyepoint.
+   *  @note To change the field-of-view (i.e. "zoom") of a view, pass a new viewDelta to #lookAt
+   */
+  public setLensAngle(angle: Angle): void { this.camera.setLensAngle(angle); }
+
+  /** Change the location of the eyePoint for the camera in this view.
+   * @param pt The new eyepoint.
+   * @note This method is generally for internal use only. Moving the eyePoint arbitrarily can result in skewed or illegal perspectives.
+   * The most common method for user-level camera positioning is #lookAt.
+   */
+  public setEyePoint(pt: XYAndZ): void { this.camera.setEyePoint(pt); }
+
+  /** Set the focus distance for this view.
+   *  @note Changing the focus distance changes the plane on which the delta.x and delta.y values lie. So, changing focus distance
+   *  without making corresponding changes to delta.x and delta.y essentially changes the lens angle, causing a "zoom" effect
+   */
+  public setFocusDistance(dist: number): void { this.camera.setFocusDistance(dist); }
+
+  /**  Get the distance from the eyePoint to the focus plane for this view. */
+  public getFocusDistance(): number { return this.camera.focusDist; }
+  public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem3dState.createNew(acsName, this.iModel); }
+
+  public decorate(context: DecorateContext): void {
+    super.decorate(context);
+    this.drawSkyBox(context);
+    this.drawGroundPlane(context);
+  }
+
+  /** @hidden */
+  protected drawSkyBox(context: DecorateContext): void {
+    const style3d = this.getDisplayStyle3d();
+    if (!style3d.environment.sky.display)
+    return;
+
+    const vp = context.viewport;
+    const skyBoxParams = style3d.loadSkyBoxParams(vp.target.renderSystem);
+    if (undefined !== skyBoxParams) {
+      const skyBoxGraphic = IModelApp.renderSystem.createSkyBox(skyBoxParams);
+      context.setSkyBox(skyBoxGraphic!);
+    }
+  }
+
+  /** Returns the ground elevation taken from the environment added with the global z position of this imodel. */
+  public getGroundElevation(): number {
+    const env = this.getDisplayStyle3d().environment;
+    return env.ground.elevation + this.iModel.globalOrigin.z;
+  }
+
+  /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
+  public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
+    const displayStyle = this.getDisplayStyle3d();
+    const extents = new AxisAlignedBox3d();
+    if (!displayStyle.environment.ground.display)
+      return extents; // Ground plane is not enabled
+
+    const elevation = this.getGroundElevation();
+
+    if (undefined !== vp) {
+      const viewRay = Ray3d.create(Point3d.create(), vp.rotation.rowZ());
+      const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
+
+      // first determine whether the ground plane is displayed in the view
+      const worldFrust = vp.getFrustum();
+      for (const point of worldFrust.points) {
+        viewRay.origin = point;   // We never modify the reference
+        const xyzPoint = Point3d.create();
+        const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
+        if (param === undefined)
+          return extents;   // View does not show ground plane
+      }
     }
 
-    public get isCameraOn(): boolean { return this._cameraOn; }
-    public setupFromFrustum(frustum: Frustum): ViewStatus {
-        const stat = super.setupFromFrustum(frustum);
-        if (ViewStatus.Success !== stat)
-            return stat;
+    extents.setFrom(this.iModel.projectExtents);
+    extents.low.z = extents.high.z = elevation;
 
-        this.turnCameraOff();
-        const frustPts = frustum.points;
+    const center = extents.low.interpolate(.5, extents.high);
 
-        // use comparison of back, front plane X sizes to indicate camera or flat view ...
-        const xBack = frustPts[Npc.LeftBottomRear].distance(frustPts[Npc.RightBottomRear]);
-        const xFront = frustPts[Npc.LeftBottomFront].distance(frustPts[Npc.RightBottomFront]);
+    const radius = extents.low.distance(extents.high);
+    extents.setNull();
+    extents.extendPoint(center);  // Extents now contains single point
+    extents.low.addScaledInPlace(Vector3d.create(-1, -1, -1), radius);
+    extents.high.addScaledInPlace(Vector3d.create(1, 1, 1), radius);
+    extents.low.z = extents.high.z = elevation;
+    return extents;
+  }
 
-        const flatViewFractionTolerance = 1.0e-6;
-        if (xFront > xBack * (1.0 + flatViewFractionTolerance))
-            return ViewStatus.InvalidWindow;
-
-        // see if the frustum is tapered, and if so, set up camera eyepoint and adjust viewOrg and delta.
-        const compression = xFront / xBack;
-        if (compression >= (1.0 - flatViewFractionTolerance))
-            return ViewStatus.Success;
-
-        // the frustum has perspective, turn camera on
-        let viewOrg = frustPts[Npc.LeftBottomRear];
-        const viewDelta = this.getExtents().clone();
-        const zDir = this.getZVector();
-        const frustumZ = viewOrg.vectorTo(frustPts[Npc.LeftBottomFront]);
-        const frustOrgToEye = frustumZ.scale(1.0 / (1.0 - compression));
-        const eyePoint = viewOrg.plus(frustOrgToEye);
-
-        const backDistance = frustOrgToEye.dotProduct(zDir);         // distance from eye to back plane of frustum
-        const focusDistance = backDistance - (viewDelta.z / 2.0);
-        const focalFraction = focusDistance / backDistance;           // ratio of focus plane distance to back plane distance
-
-        viewOrg = eyePoint.plus2Scaled(frustOrgToEye, -focalFraction, zDir, focusDistance - backDistance);    // now project that point onto back plane
-        viewDelta.x *= focalFraction;                                  // adjust view delta for x and y so they are also at focus plane
-        viewDelta.y *= focalFraction;
-
-        this.setEyePoint(eyePoint);
-        this.setFocusDistance(focusDistance);
-        this.setOrigin(viewOrg);
-        this.setExtents(viewDelta);
-        this.setLensAngle(this.calcLensAngle());
-        this.enableCamera();
-        return ViewStatus.Success;
+  /** @hidden */
+  protected drawGroundPlane(context: DecorateContext): void {
+    const extents = this.getGroundExtents(context.viewport);
+    if (extents.isNull) {
+      return;
     }
 
-    protected static calculateMaxDepth(delta: Vector3d, zVec: Vector3d): number {
-        const depthRatioLimit = 1.0E8;          // Limit for depth Ratio.
-        const maxTransformRowRatio = 1.0E5;
-        const minXYComponent = Math.min(Math.abs(zVec.x), Math.abs(zVec.y));
-        const maxDepthRatio = (0.0 === minXYComponent) ? depthRatioLimit : Math.min((maxTransformRowRatio / minXYComponent), depthRatioLimit);
-        return Math.max(delta.x, delta.y) * maxDepthRatio;
-    }
-
-    public getOrigin(): Point3d { return this.origin; }
-    public getExtents(): Vector3d { return this.extents; }
-    public getRotation(): Matrix3d { return this.rotation; }
-    public setOrigin(origin: XYAndZ) { this.origin.setFrom(origin); }
-    public setExtents(extents: XYAndZ) { this.extents.setFrom(extents); }
-    public setRotation(rot: Matrix3d) { this.rotation.setFrom(rot); }
-    /** @hidden */
-    protected enableCamera(): void { if (this.supportsCamera()) this._cameraOn = true; }
-    public supportsCamera(): boolean { return true; }
-    public minimumFrontDistance() { return Math.max(15.2 * Constant.oneCentimeter, this.forceMinFrontDist); }
-    public isEyePointAbove(elevation: number): boolean { return !this._cameraOn ? (this.getZVector().z > 0) : (this.getEyePoint().z > elevation); }
-
-    public getDisplayStyle3d() { return this.displayStyle as DisplayStyle3dState; }
-
-    /**
-     * Turn the camera off for this view. After this call, the camera parameters in this view definition are ignored and views that use it will
-     * display with an orthographic (infinite focal length) projection of the view volume from the view direction.
-     * @note To turn the camera back on, call #lookAt
-     */
-    public turnCameraOff() { this._cameraOn = false; }
-
-    /** Determine whether the camera is valid for this view */
-    public get isCameraValid() { return this.camera.isValid; }
-
-    /** Calculate the lens angle formed by the current delta and focus distance */
-    public calcLensAngle(): Angle {
-        const maxDelta = Math.max(this.extents.x, this.extents.y);
-        return Angle.createRadians(2.0 * Math.atan2(maxDelta * 0.5, this.camera.getFocusDistance()));
-    }
-
-    /** Get the target point of the view. If there is no camera, view center is returned. */
-    public getTargetPoint(result?: Point3d): Point3d {
-        if (!this._cameraOn)
-            return super.getTargetPoint(result);
-
-        const viewZ = this.getRotation().getRow(2);
-        return this.getEyePoint().plusScaled(viewZ, -1.0 * this.getFocusDistance(), result);
-    }
-
-    /**
-     * Position the camera for this view and point it at a new target point.
-     * @param eyePoint The new location of the camera.
-     * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
-     * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
-     * @param newExtents  The new size (width and height) of the view rectangle. The view rectangle is on the focus plane centered on the targetPoint.
-     * If newExtents is undefined, the existing size is unchanged.
-     * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
-     * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
-     * @returns A [[ViewStatus]] indicating whether the camera was successfully positioned.
-     * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
-     * adjusted when the [[Viewport]] is synchronized from this view.
-     */
-    public lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number): ViewStatus {
-        const eye = new Point3d(eyePoint.x, eyePoint.y, eyePoint.z);
-        const yVec = upVector.normalize();
-        if (!yVec) // up vector zero length?
-            return ViewStatus.InvalidUpVector;
-
-        const zVec = Vector3d.createStartEnd(targetPoint, eye); // z defined by direction from eye to target
-        const focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
-        const minFrontDist = this.minimumFrontDistance();
-
-        if (focusDist <= minFrontDist) // eye and target are too close together
-            return ViewStatus.InvalidTargetPoint;
-
-        const xVec = new Vector3d();
-        if (yVec.crossProduct(zVec).normalizeWithLength(xVec).mag < Geometry.smallMetricDistance)
-            return ViewStatus.InvalidUpVector;    // up is parallel to z
-
-        if (zVec.crossProduct(xVec).normalizeWithLength(yVec).mag < Geometry.smallMetricDistance)
-            return ViewStatus.InvalidUpVector;
-
-        // we now have rows of the rotation matrix
-        const rotation = Matrix3d.createRows(xVec, yVec, zVec);
-
-        backDistance = backDistance ? backDistance : this.getBackDistance();
-        frontDistance = frontDistance ? frontDistance : this.getFrontDistance();
-
-        const delta = newExtents ? new Vector3d(Math.abs(newExtents.x), Math.abs(newExtents.y), this.extents.z) : this.extents.clone();
-
-        frontDistance = Math.max(frontDistance!, (.5 * Constant.oneMeter));
-        backDistance = Math.max(backDistance!, focusDist + (.5 * Constant.oneMeter));
-
-        if (backDistance < focusDist) // make sure focus distance is in front of back distance.
-            backDistance = focusDist + Constant.oneMillimeter;
-
-        if (frontDistance > focusDist)
-            frontDistance = focusDist - minFrontDist;
-
-        if (frontDistance < minFrontDist)
-            frontDistance = minFrontDist;
-
-        delta.z = (backDistance! - frontDistance);
-
-        const frontDelta = delta.scale(frontDistance / focusDist);
-        const stat = this.validateViewDelta(frontDelta, false); // validate window size on front (smallest) plane
-        if (ViewStatus.Success !== stat)
-            return stat;
-
-        if (delta.z > ViewState3d.calculateMaxDepth(delta, zVec)) // make sure we're not zoomed out too far
-            return ViewStatus.MaxDisplayDepth;
-
-        // The origin is defined as the lower left of the view rectangle on the focus plane, projected to the back plane.
-        // Start at eye point, and move to center of back plane, then move left half of width. and down half of height
-        const origin = eye.plus3Scaled(zVec, -backDistance!, xVec, -0.5 * delta.x, yVec, -0.5 * delta.y);
-
-        this.setEyePoint(eyePoint);
-        this.setRotation(rotation);
-        this.setFocusDistance(focusDist);
-        this.setOrigin(origin);
-        this.setExtents(delta);
-        this.setLensAngle(this.calcLensAngle());
-        this.enableCamera();
-        return ViewStatus.Success;
-    }
-
-    /**
-     * Position the camera for this view and point it at a new target point, using a specified lens angle.
-     * @param eyePoint The new location of the camera.
-     * @param targetPoint The new location to which the camera should point. This becomes the center of the view on the focus plane.
-     * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the vector from eye to target.
-     * @param fov The angle, in radians, that defines the field-of-view for the camera. Must be between .0001 and pi.
-     * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
-     * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
-     * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
-     * @note The aspect ratio of the view remains unchanged.
-     */
-    public lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number): ViewStatus {
-        const focusDist = eyePoint.vectorTo(targetPoint).magnitude();   // Set focus at target point
-
-        if (focusDist <= Constant.oneMillimeter)       // eye and target are too close together
-            return ViewStatus.InvalidTargetPoint;
-
-        if (fov.radians < .0001 || fov.radians > Math.PI)
-            return ViewStatus.InvalidLens;
-
-        const extent = 2.0 * Math.tan(fov.radians / 2.0) * focusDist;
-        const delta = Vector2d.create(this.extents.x, this.extents.y);
-        const longAxis = Math.max(delta.x, delta.y);
-        delta.scale(extent / longAxis, delta);
-
-        return this.lookAt(eyePoint, targetPoint, upVector, delta, frontDistance, backDistance);
-    }
-
-    /**
-     * Move the camera relative to its current location by a distance in camera coordinates.
-     * @param distance to move camera. Length is in world units, direction relative to current camera orientation.
-     * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
-     */
-    public moveCameraLocal(distance: Vector3d): ViewStatus {
-        const distWorld = this.getRotation().multiplyTransposeVector(distance);
-        return this.moveCameraWorld(distWorld);
-    }
-
-    /**
-     * Move the camera relative to its current location by a distance in world coordinates.
-     * @param distance in world units.
-     * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
-     */
-    public moveCameraWorld(distance: Vector3d): ViewStatus {
-        if (!this._cameraOn) {
-            this.origin.plus(distance, this.origin);
-            return ViewStatus.Success;
-        }
-
-        const newTarget = this.getTargetPoint().plus(distance);
-        const newEyePt = this.getEyePoint().plus(distance);
-        return this.lookAt(newEyePt, newTarget, this.getYVector());
-    }
-
-    /**
-     * Rotate the camera from its current location about an axis relative to its current orientation.
-     * @param angle The angle to rotate the camera.
-     * @param axis The axis about which to rotate the camera. The axis is a direction relative to the current camera orientation.
-     * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
-     *  (i.e. about the current eyePoint).
-     * @note Even though the axis is relative to the current camera orientation, the aboutPt is in world coordinates, \b not relative to the camera.
-     * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
-     */
-    public rotateCameraLocal(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
-        const axisWorld = this.getRotation().multiplyTransposeVector(axis);
-        return this.rotateCameraWorld(angle, axisWorld, aboutPt);
-    }
-
-    /**
-     * Rotate the camera from its current location about an axis in world coordinates.
-     * @param angle The angle to rotate the camera.
-     * @param axis The world-based axis (direction) about which to rotate the camera.
-     * @param aboutPt The point, in world coordinates, about which the camera is rotated. If aboutPt is undefined, the camera rotates in place
-     *  (i.e. about the current eyePoint).
-     * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
-     */
-    public rotateCameraWorld(angle: Angle, axis: Vector3d, aboutPt?: Point3d): ViewStatus {
-        const about = aboutPt ? aboutPt : this.getEyePoint();
-        const rotation = Matrix3d.createRotationAroundVector(axis, angle);
-        if (!rotation)
-            return ViewStatus.InvalidUpVector;    // Invalid axis given
-        const trans = Transform.createFixedPointAndMatrix(about, rotation);
-        const newTarget = trans.multiplyPoint3d(this.getTargetPoint());
-        const upVec = rotation!.multiplyVector(this.getYVector());
-        return this.lookAt(this.getEyePoint(), newTarget, upVec);
-    }
-
-    /** Get the distance from the eyePoint to the front plane for this view. */
-    public getFrontDistance(): number { return this.getBackDistance() - this.extents.z; }
-
-    /** Get the distance from the eyePoint to the back plane for this view. */
-    public getBackDistance(): number {
-        // backDist is the z component of the vector from the origin to the eyePoint .
-        const eyeOrg = this.origin.vectorTo(this.getEyePoint());
-        this.getRotation().multiplyVector(eyeOrg, eyeOrg);
-        return eyeOrg.z;
-    }
-
-    /**
-     * Place the eyepoint of the camera so it is aligned with the center of the view. This removes any 1-point perspective skewing that may be
-     * present in the current view.
-     * @param backDistance If defined, the new the distance from the eyepoint to the back plane. Otherwise the distance from the
-     * current eyepoint is used.
-     */
-    public centerEyePoint(backDistance?: number): void {
-        const eyePoint = this.getExtents().scale(0.5);
-        eyePoint.z = backDistance ? backDistance : this.getBackDistance();
-        const eye = this.getRotation().multiplyTransposeXYZ(eyePoint.x, eyePoint.y, eyePoint.z);
-        this.camera.setEyePoint(this.getOrigin().plus(eye));
-    }
-
-    /** Center the focus distance of the camera halfway between the front plane and the back plane, keeping the eyepoint,
-     * lens angle, rotation, back distance, and front distance unchanged.
-     * @note The focus distance, origin, and delta values are modified, but the view encloses the same volume and appears visually unchanged.
-     */
-    public centerFocusDistance(): void {
-        const backDist = this.getBackDistance();
-        const frontDist = this.getFrontDistance();
-        const eye = this.getEyePoint();
-        const target = eye.plusScaled(this.getZVector(), frontDist - backDist);
-        this.lookAtUsingLensAngle(eye, target, this.getYVector(), this.getLensAngle(), frontDist, backDist);
-    }
-
-    /** Ensure the focus plane lies between the front and back planes. If not, center it. */
-    public verifyFocusPlane(): void {
-        if (!this._cameraOn)
-            return;
-
-        let backDist = this.getBackDistance();
-        const frontDist = backDist - this.extents.z;
-        const camera = this.camera;
-        const extents = this.extents;
-        const rot = this.rotation;
-
-        if (backDist <= 0.0 || frontDist <= 0.0) {
-            // the camera location is invalid. Set it based on the view range.
-            const tanAngle = Math.tan(camera.lens.radians / 2.0);
-            backDist = extents.z / tanAngle;
-            camera.setFocusDistance(backDist / 2);
-            this.centerEyePoint(backDist);
-            return;
-        }
-
-        const focusDist = camera.focusDist;
-        if (focusDist > frontDist && focusDist < backDist)
-            return;
-
-        // put it halfway between front and back planes
-        camera.setFocusDistance((extents.z / 2.0) + frontDist);
-
-        // moving the focus plane means we have to adjust the origin and delta too (they're on the focus plane, see diagram above)
-        const ratio = camera.focusDist / focusDist;
-        extents.x *= ratio;
-        extents.y *= ratio;
-        camera.eye.plus3Scaled(rot.rowZ(), -backDist, rot.rowX(), -0.5 * extents.x, rot.rowY(), -0.5 * extents.y, this.origin); // this centers the camera too
-    }
-
-    /** Get the current location of the eyePoint for camera in this view. */
-    public getEyePoint(): Point3d { return this.camera.eye; }
-
-    /** Get the lens angle for this view. */
-    public getLensAngle(): Angle { return this.camera.lens; }
-
-    /** Set the lens angle for this view.
-     *  @param angle The new lens angle in radians. Must be greater than 0 and less than pi.
-     *  @note This does not change the view's current field-of-view. Instead, it changes the lens that will be used if the view
-     *  is subsequently modified and the lens angle is used to position the eyepoint.
-     *  @note To change the field-of-view (i.e. "zoom") of a view, pass a new viewDelta to #lookAt
-     */
-    public setLensAngle(angle: Angle): void { this.camera.setLensAngle(angle); }
-
-    /** Change the location of the eyePoint for the camera in this view.
-     * @param pt The new eyepoint.
-     * @note This method is generally for internal use only. Moving the eyePoint arbitrarily can result in skewed or illegal perspectives.
-     * The most common method for user-level camera positioning is #lookAt.
-     */
-    public setEyePoint(pt: XYAndZ): void { this.camera.setEyePoint(pt); }
-
-    /** Set the focus distance for this view.
-     *  @note Changing the focus distance changes the plane on which the delta.x and delta.y values lie. So, changing focus distance
-     *  without making corresponding changes to delta.x and delta.y essentially changes the lens angle, causing a "zoom" effect
-     */
-    public setFocusDistance(dist: number): void { this.camera.setFocusDistance(dist); }
-
-    /**  Get the distance from the eyePoint to the focus plane for this view. */
-    public getFocusDistance(): number { return this.camera.focusDist; }
-    public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem3dState.createNew(acsName, this.iModel); }
-
-    public decorate(context: DecorateContext): void {
-        super.decorate(context);
-        this.drawSkyBox(context);
-        this.drawGroundPlane(context);
-    }
-
-    /** @hidden */
-    protected drawSkyBox(context: DecorateContext): void {
-        const style3d = this.getDisplayStyle3d();
-        if (!style3d.environment.sky.display)
-            return;
-
-        const vp = context.viewport;
-        const skyBoxParams = style3d.loadSkyBoxParams(vp.target.renderSystem);
-        if (undefined !== skyBoxParams) {
-            const skyBoxGraphic = IModelApp.renderSystem.createSkyBox(skyBoxParams);
-            context.setSkyBox(skyBoxGraphic!);
-        }
-    }
-
-    /** Returns the ground elevation taken from the environment added with the global z position of this imodel. */
-    public getGroundElevation(): number {
-        const env = this.getDisplayStyle3d().environment;
-        return env.ground.elevation + this.iModel.globalOrigin.z;
-    }
-
-    /** Return the ground extents, which will originate either from the viewport frustum or the extents of the imodel. */
-    public getGroundExtents(vp?: Viewport): AxisAlignedBox3d {
-        const displayStyle = this.getDisplayStyle3d();
-        const extents = new AxisAlignedBox3d();
-        if (!displayStyle.environment.ground.display)
-            return extents; // Ground plane is not enabled
-
-        const elevation = this.getGroundElevation();
-
-        if (undefined !== vp) {
-            const viewRay = Ray3d.create(Point3d.create(), vp.rotation.rowZ());
-            const xyPlane = Plane3dByOriginAndUnitNormal.create(Point3d.create(0, 0, elevation), Vector3d.create(0, 0, 1));
-
-            // first determine whether the ground plane is displayed in the view
-            const worldFrust = vp.getFrustum();
-            for (const point of worldFrust.points) {
-                viewRay.origin = point;   // We never modify the reference
-                const xyzPoint = Point3d.create();
-                const param = viewRay.intersectionWithPlane(xyPlane!, xyzPoint);
-                if (param === undefined)
-                    return extents;   // View does not show ground plane
-            }
-        }
-
-        extents.setFrom(this.iModel.projectExtents);
-        extents.low.z = extents.high.z = elevation;
-
-        const center = extents.low.interpolate(.5, extents.high);
-
-        const radius = extents.low.distance(extents.high);
-        extents.setNull();
-        extents.extendPoint(center);  // Extents now contains single point
-        extents.low.addScaledInPlace(Vector3d.create(-1, -1, -1), radius);
-        extents.high.addScaledInPlace(Vector3d.create(1, 1, 1), radius);
-        extents.low.z = extents.high.z = elevation;
-        return extents;
-    }
-
-    /** @hidden */
-    protected drawGroundPlane(context: DecorateContext): void {
-        const extents = this.getGroundExtents(context.viewport);
-        if (extents.isNull) {
-            return;
-        }
-
-        const ground = this.getDisplayStyle3d().environment.ground;
-        if (!ground.display)
-            return;
-
-        const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
-        points[1].x = extents.high.x;
-        points[3].x = extents.low.x;
-
-        const aboveGround = this.isEyePointAbove(extents.low.z);
-        const gradient = ground.getGroundPlaneGradient(aboveGround);
-        const texture = context.viewport.target.renderSystem.getGradientTexture(gradient, this.iModel);
-        if (!texture)
-            return;
-
-        const matParams = new RenderMaterial.Params();
-        matParams.diffuseColor = ColorDef.white;
-        matParams.shadows = false;
-        matParams.ambient = 1;
-        matParams.diffuse = 0;
-
-        const mapParams = new TextureMapping.Params();
-        const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
-        mapParams.textureMatrix = transform;
-        mapParams.textureMatrix.setTransform();
-        matParams.textureMapping = new TextureMapping(texture, mapParams);
-        const material = context.viewport.target.renderSystem.createMaterial(matParams, this.iModel);
-        if (!material)
-            return;
-
-        const params = new GraphicParams();
-        params.setLineColor(gradient.keys[0].color);
-        params.setFillColor(ColorDef.white);  // Fill should be set to opaque white for gradient texture...
-        params.material = material;
-
-        const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
-        builder.activateGraphicParams(params);
-
-        /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
-        // we will use a PolyfaceBuilder here to add the ground plane as a quad, claim the polyface, and then send that to the GraphicBuilder
-        const strokeOptions = new StrokeOptions();
-        strokeOptions.needParams = true;
-        const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
-        polyfaceBuilder.toggleReversedFacetFlag();
-        const uvParams: Point2d[] = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
-        polyfaceBuilder.addQuadFacet(points, uvParams);
-        const polyface = polyfaceBuilder.claimPolyface(false);
-
-        builder.addPolyface(polyface, true);
-        context.addDecorationFromBuilder(builder);
-    }
+    const ground = this.getDisplayStyle3d().environment.ground;
+    if (!ground.display)
+    return;
+
+    const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
+    points[1].x = extents.high.x;
+    points[3].x = extents.low.x;
+
+    const aboveGround = this.isEyePointAbove(extents.low.z);
+    const gradient = ground.getGroundPlaneGradient(aboveGround);
+    const texture = context.viewport.target.renderSystem.getGradientTexture(gradient, this.iModel);
+    if (!texture)
+    return;
+
+    const matParams = new RenderMaterial.Params();
+    matParams.diffuseColor = ColorDef.white;
+    matParams.shadows = false;
+    matParams.ambient = 1;
+    matParams.diffuse = 0;
+
+    const mapParams = new TextureMapping.Params();
+    const transform = new TextureMapping.Trans2x3(0, 1, 0, 1, 0, 0);
+    mapParams.textureMatrix = transform;
+    mapParams.textureMatrix.setTransform();
+    matParams.textureMapping = new TextureMapping(texture, mapParams);
+    const material = context.viewport.target.renderSystem.createMaterial(matParams, this.iModel);
+    if (!material)
+    return;
+
+    const params = new GraphicParams();
+    params.setLineColor(gradient.keys[0].color);
+    params.setFillColor(ColorDef.white);  // Fill should be set to opaque white for gradient texture...
+    params.material = material;
+
+    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
+    builder.activateGraphicParams(params);
+
+    /// ### TODO: Until we have more support in geometry package for tracking UV coordinates of higher level geometry
+    // we will use a PolyfaceBuilder here to add the ground plane as a quad, claim the polyface, and then send that to the GraphicBuilder
+    const strokeOptions = new StrokeOptions();
+    strokeOptions.needParams = true;
+    const polyfaceBuilder = PolyfaceBuilder.create(strokeOptions);
+    polyfaceBuilder.toggleReversedFacetFlag();
+    const uvParams: Point2d[] = [Point2d.create(0, 0), Point2d.create(1, 0), Point2d.create(1, 1), Point2d.create(0, 1)];
+    polyfaceBuilder.addQuadFacet(points, uvParams);
+    const polyface = polyfaceBuilder.claimPolyface(false);
+
+    builder.addPolyface(polyface, true);
+    context.addDecorationFromBuilder(builder);
+  }
 }
 
 /** Defines a view of one or more SpatialModels.
@@ -1743,100 +1743,113 @@ export class SpatialViewState extends ViewState3d {
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
 export class OrthographicViewState extends SpatialViewState {
-    public static get className() { return "OrthographicViewDefinition"; }
-    constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
-    public supportsCamera(): boolean { return false; }
+  public static get className() { return "OrthographicViewDefinition"; }
+  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
+  public supportsCamera(): boolean { return false; }
 }
 
 /** Defines the state of a view of a single 2d model. */
 export abstract class ViewState2d extends ViewState {
-    public readonly origin: Point2d;
-    public readonly delta: Point2d;
-    public readonly angle: Angle;
-    public readonly baseModelId: Id64String;
-    private _viewedExtents?: AxisAlignedBox3d;
+  public readonly origin: Point2d;
+  public readonly delta: Point2d;
+  public readonly angle: Angle;
+  public readonly baseModelId: Id64String;
+  private _viewedExtents?: AxisAlignedBox3d;
 
-    public static get className() { return "ViewDefinition2d"; }
+  public static get className() { return "ViewDefinition2d"; }
 
-    public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
-        super(props, iModel, categories, displayStyle);
-        this.origin = Point2d.fromJSON(props.origin);
-        this.delta = Point2d.fromJSON(props.delta);
-        this.angle = Angle.fromJSON(props.angle);
-        this.baseModelId = Id64.fromJSON(props.baseModelId);
-    }
+  public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState) {
+    super(props, iModel, categories, displayStyle);
+    this.origin = Point2d.fromJSON(props.origin);
+    this.delta = Point2d.fromJSON(props.delta);
+    this.angle = Angle.fromJSON(props.angle);
+    this.baseModelId = Id64.fromJSON(props.baseModelId);
+  }
 
-    public toJSON(): ViewDefinition2dProps {
-        const val = super.toJSON() as ViewDefinition2dProps;
-        val.origin = this.origin;
-        val.delta = this.delta;
-        val.angle = this.angle;
-        val.baseModelId = this.baseModelId;
-        return val;
-    }
+  public toJSON(): ViewDefinition2dProps {
+    const val = super.toJSON() as ViewDefinition2dProps;
+    val.origin = this.origin;
+    val.delta = this.delta;
+    val.angle = this.angle;
+    val.baseModelId = this.baseModelId;
+    return val;
+  }
 
-    /** Return the model for this 2d view. */
-    public getViewedModel(): GeometricModel2dState | undefined {
-        const model = this.iModel.models.getLoaded(this.baseModelId);
-        if (model && !(model instanceof GeometricModel2dState))
-            return undefined;
-        return model;
-    }
+  /** Return the model for this 2d view. */
+  public getViewedModel(): GeometricModel2dState | undefined {
+    const model = this.iModel.models.getLoaded(this.baseModelId);
+    if (model && !(model instanceof GeometricModel2dState))
+      return undefined;
+    return model;
+  }
 
-    public equalState(other: ViewState2d): boolean {
-        return this.baseModelId === other.baseModelId &&
-            this.origin.isAlmostEqual(other.origin) &&
-            this.delta.isAlmostEqual(other.delta) &&
-            this.angle.isAlmostEqualNoPeriodShift(other.angle) &&
-            super.equalState(other);
-    }
+  public equalState(other: ViewState2d): boolean {
+    return this.baseModelId === other.baseModelId &&
+      this.origin.isAlmostEqual(other.origin) &&
+      this.delta.isAlmostEqual(other.delta) &&
+      this.angle.isAlmostEqualNoPeriodShift(other.angle) &&
+      super.equalState(other);
+  }
 
-    public computeFitRange(): Range3d { return this.getViewedExtents(); }
-    public getViewedExtents(): AxisAlignedBox3d {
-        if (undefined === this._viewedExtents) {
-            const model = this.iModel.models.getLoaded(this.baseModelId);
-            if (undefined !== model && model.isGeometricModel) {
-                const tree = (model as GeometricModelState).getOrLoadTileTree();
-                if (undefined !== tree) {
-                    this._viewedExtents = new AxisAlignedBox3d(tree.range.low, tree.range.high);
-                    tree.location.multiplyRange(this._viewedExtents, this._viewedExtents);
-                }
-            }
+  public computeFitRange(): Range3d { return this.getViewedExtents(); }
+  public getViewedExtents(): AxisAlignedBox3d {
+    if (undefined === this._viewedExtents) {
+      const model = this.iModel.models.getLoaded(this.baseModelId);
+      if (undefined !== model && model.isGeometricModel) {
+        const tree = (model as GeometricModelState).getOrLoadTileTree();
+        if (undefined !== tree) {
+          this._viewedExtents = new AxisAlignedBox3d(tree.range.low, tree.range.high);
+          tree.location.multiplyRange(this._viewedExtents, this._viewedExtents);
         }
-
-        return undefined !== this._viewedExtents ? this._viewedExtents : new AxisAlignedBox3d();
+      }
     }
 
-    public onRenderFrame(_viewport: Viewport): void { }
-    public async load(): Promise<void> {
-        await super.load();
-        return this.iModel.models.load(this.baseModelId);
-    }
+    return undefined !== this._viewedExtents ? this._viewedExtents : new AxisAlignedBox3d();
+  }
 
-    public allow3dManipulations(): boolean { return false; }
-    public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }
-    public getExtents() { return new Vector3d(this.delta.x, this.delta.y); }
-    public getRotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
-    public setExtents(delta: Vector3d) { this.delta.set(delta.x, delta.y); }
-    public setOrigin(origin: Point3d) { this.origin.set(origin.x, origin.y); }
-    public setRotation(rot: Matrix3d) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
-    public viewsModel(modelId: Id64String) { return this.baseModelId.toString() === modelId.toString(); }
-    public forEachModel(func: (model: GeometricModelState) => void) {
-        const model = this.iModel.models.getLoaded(this.baseModelId);
-        if (undefined !== model && model.isGeometricModel)
-            func(model as GeometricModelState);
-    }
-    public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
+  public onRenderFrame(_viewport: Viewport): void { }
+  public async load(): Promise<void> {
+    await super.load();
+    return this.iModel.models.load(this.baseModelId);
+  }
+
+  public allow3dManipulations(): boolean { return false; }
+  public getOrigin() { return new Point3d(this.origin.x, this.origin.y); }
+  public getExtents() { return new Vector3d(this.delta.x, this.delta.y); }
+  public getRotation() { return Matrix3d.createRotationAroundVector(Vector3d.unitZ(), this.angle)!; }
+  public setExtents(delta: Vector3d) { this.delta.set(delta.x, delta.y); }
+  public setOrigin(origin: Point3d) { this.origin.set(origin.x, origin.y); }
+  public setRotation(rot: Matrix3d) { const xColumn = rot.getColumn(0); this.angle.setRadians(Math.atan2(xColumn.y, xColumn.x)); }
+  public viewsModel(modelId: Id64String) { return this.baseModelId.toString() === modelId.toString(); }
+  public forEachModel(func: (model: GeometricModelState) => void) {
+    const model = this.iModel.models.getLoaded(this.baseModelId);
+    if (undefined !== model && model.isGeometricModel)
+      func(model as GeometricModelState);
+  }
+  public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystem2dState.createNew(acsName, this.iModel); }
 }
 
 /** A view of a DrawingModel */
 export class DrawingViewState extends ViewState2d {
-    public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
-        const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
-        // use "new this" so subclasses are correct
-        return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState);
-    }
+  public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
+    const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
+    // use "new this" so subclasses are correct
+    return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState);
+  }
 
-    public static get className() { return "DrawingViewDefinition"; }
-    public getExtentLimits() { return { min: Constant.oneCentimeter, max: this.iModel.projectExtents.xLength() * 2 }; }
+  public static get className() { return "DrawingViewDefinition"; }
+
+  private _extentLimits?: { min: number, max: number };
+  public getExtentLimits() {
+    if (undefined !== this._extentLimits)
+      return this._extentLimits;
+
+    const model = this.getViewedModel();
+    const tree = undefined !== model ? model.tileTree : undefined;
+    if (undefined === tree)
+      return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth };
+
+    this._extentLimits = { min:  Constant.oneMillimeter, max: 2.0 * tree.range.maxLength() };
+    return this._extentLimits;
+  }
 }

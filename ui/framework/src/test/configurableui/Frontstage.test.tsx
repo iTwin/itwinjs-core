@@ -24,7 +24,7 @@ import {
   WidgetControl,
   ZoneLocation,
   FrontstageComposer,
-} from "../../index";
+} from "../../ui-framework";
 
 describe("Frontstage", () => {
 

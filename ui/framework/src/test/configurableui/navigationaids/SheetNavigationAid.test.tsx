@@ -14,7 +14,7 @@ import {
   NavigationWidgetDef,
   ConfigurableUiManager,
   WidgetDefFactory,
-} from "../../..//index";
+} from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 

@@ -7,10 +7,9 @@
 import * as React from "react";
 import { ViewUtilities } from "../utils/ViewUtilities";
 import ListPicker, { ListItem, ListItemType } from "./ListPicker";
-import { IModelApp, Viewport, ViewState, IModelConnection } from "@bentley/imodeljs-frontend/lib/frontend";
-import { ViewQueryParams } from "@bentley/imodeljs-common/lib/ViewProps";
+import { IModelApp, Viewport, ViewState, IModelConnection } from "@bentley/imodeljs-frontend";
+import { ViewQueryParams, ViewDefinitionProps, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { UiFramework } from "../UiFramework";
-import { ViewDefinitionProps, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 
 /** Properties for the [[ViewSelector]] component */
 export interface ViewSelectorProps {

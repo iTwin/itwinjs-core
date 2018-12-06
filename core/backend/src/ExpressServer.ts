@@ -32,9 +32,10 @@ export class IModelJsExpressServer {
 
   protected _configureHeaders() {
     // enable CORS for all apis
-    this._app.all("/*", (_req, res, next) => {
+    this._app.all("/**", (_req, res, next) => {
       res.header("Access-Control-Allow-Origin", "*");
-      res.header("Access-Control-Allow-Headers", "X-Requested-With");
+      res.header("Access-Control-Allow-Methods", "POST, GET");
+      res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id");
       next();
     });
   }
@@ -43,6 +44,8 @@ export class IModelJsExpressServer {
     this._app.get("/v3/swagger.json", (req, res) => this._protocol.handleOpenApiDescriptionRequest(req, res));
     this._app.post("*", async (req, res) => this._protocol.handleOperationPostRequest(req, res));
     this._app.get(/\/imodel\//, async (req, res) => this._protocol.handleOperationGetRequest(req, res));
+    // for all HTTP requests, identify the server.
+    this._app.use("*", (_req, resp) => { resp.send("<h1>IModelJs RPC Server</h1>"); });
   }
 
   /**

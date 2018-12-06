@@ -12,8 +12,7 @@ import { CommandItemDef } from "./Item";
 import { Icon } from "./IconComponent";
 import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
 
-import NZ_AppButton from "@bentley/ui-ninezone/lib/widget/tools/button/App";
-import NZ_ToolsWidget from "@bentley/ui-ninezone/lib/widget/tools/Tools";
+import { AppButton, Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
 
 /** A Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
  */
@@ -39,7 +38,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
   public renderCornerItem(): React.ReactNode | undefined {
     if (this._appButton) {
       return (
-        <NZ_AppButton
+        <AppButton
           onClick={this._appButton.execute}
           icon={
             <Icon iconSpec={this._appButton.iconSpec} />

@@ -6,7 +6,7 @@
 
 import { Id64, GuidString, Guid } from "@bentley/bentleyjs-core";
 import { InstanceId, InstanceKey } from "./EC";
-import { NodeKey, NodeKeyJSON, fromJSON as nodeKeyFromJSON } from "./hierarchy/Key";
+import { NodeKey, NodeKeyJSON, nodeKeyFromJSON } from "./hierarchy/Key";
 import { EntityProps } from "@bentley/imodeljs-common";
 import { PresentationError, PresentationStatus } from "./Error";
 
