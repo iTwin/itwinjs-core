@@ -7,7 +7,7 @@
 import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Vector2d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
@@ -544,25 +544,28 @@ export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
     for (let i = 0; i < noiseDim * noiseDim * 3; i++) {
       noiseArr[i] = AmbientOcclusionGeometry.getRandomNumber(0, 255);
     }
-    this._noise = TextureHandle.createForData(4, 4, noiseArr, false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Rgb);
+    this._noise = TextureHandle.createForData(noiseDim, noiseDim, noiseArr, false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Rgb);
   }
 
   // ###TODO: Dispose noise texture - better place to store this than here?
 }
 
-export class AmbientOcclusionBlurGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(occlusion: WebGLTexture) {
+export class BlurGeometry extends TexturedViewportQuadGeometry {
+  public readonly blurDir: Vector2d;
+
+  public static createGeometry(texToBlur: WebGLTexture, blurDir: Vector2d) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
     }
-    return new AmbientOcclusionBlurGeometry(params, [occlusion]);
+    return new BlurGeometry(params, [texToBlur], blurDir);
   }
 
-  public get occlusion() { return this._textures[0]; }
+  public get textureToBlur() { return this._textures[0]; }
 
-  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
-    super(params, TechniqueId.AmbientOcclusionBlur, textures);
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], blurDir: Vector2d) {
+    super(params, TechniqueId.Blur, textures);
+    this.blurDir = blurDir;
   }
 }
 

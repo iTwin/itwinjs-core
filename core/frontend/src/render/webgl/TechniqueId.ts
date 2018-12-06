@@ -30,7 +30,7 @@ export const enum TechniqueId {
   SkySphereGradient,
   SkySphereTexture,
   AmbientOcclusion,
-  AmbientOcclusionBlur,
+  Blur,
 
   NumBuiltIn,
   COUNT = NumBuiltIn,

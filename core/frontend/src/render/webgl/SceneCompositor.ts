@@ -7,8 +7,8 @@
 import { FrameBuffer, DepthBuffer } from "./FrameBuffer";
 import { TextureHandle } from "./Texture";
 import { Target } from "./Target";
-import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry, CachedGeometry, AmbientOcclusionGeometry, AmbientOcclusionBlurGeometry } from "./CachedGeometry";
-import { Vector3d } from "@bentley/geometry-core";
+import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, SingleTexturedViewportQuadGeometry, CachedGeometry, AmbientOcclusionGeometry, BlurGeometry } from "./CachedGeometry";
+import { Vector2d, Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
 import { Pixel, GraphicList } from "../System";
@@ -159,16 +159,17 @@ class Geometry implements IDisposable {
   public composite?: CompositeGeometry;
   public stencilCopy?: ViewportQuadGeometry;
   public occlusion?: AmbientOcclusionGeometry;
-  public occlusionBlur?: AmbientOcclusionBlurGeometry;
+  public occlusionXBlur?: BlurGeometry;
+  public occlusionYBlur?: BlurGeometry;
 
   public init(textures: Textures): boolean {
     assert(undefined === this.composite);
-    this.composite = CompositeGeometry.createGeometry(textures.color!.getHandle()!, textures.accumulation!.getHandle()!, textures.revealage!.getHandle()!, textures.hilite!.getHandle()!, textures.occlusionBlur!.getHandle()!);
-    // ###TODO: ###TEST: this.composite = CompositeGeometry.createGeometry(textures.color!.getHandle()!, textures.accumulation!.getHandle()!, textures.revealage!.getHandle()!, textures.hilite!.getHandle()!, textures.occlusion!.getHandle()!);
+    this.composite = CompositeGeometry.createGeometry(textures.color!.getHandle()!, textures.accumulation!.getHandle()!, textures.revealage!.getHandle()!, textures.hilite!.getHandle()!, textures.occlusion!.getHandle()!);
     this.stencilCopy = ViewportQuadGeometry.create(TechniqueId.CopyStencil);
     assert(textures.depthAndOrder !== undefined);
     this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder!.getHandle()!);
-    this.occlusionBlur = AmbientOcclusionBlurGeometry.createGeometry(textures.occlusion!.getHandle()!);
+    this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion!.getHandle()!, new Vector2d(1.0, 0.0));
+    this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur!.getHandle()!, new Vector2d(0.0, 1.0));
     return undefined !== this.composite;
   }
 
@@ -176,7 +177,8 @@ class Geometry implements IDisposable {
     this.composite = dispose(this.composite);
     this.stencilCopy = dispose(this.stencilCopy);
     this.occlusion = dispose(this.occlusion);
-    this.occlusionBlur = dispose(this.occlusionBlur);
+    this.occlusionXBlur = dispose(this.occlusionXBlur);
+    this.occlusionYBlur = dispose(this.occlusionYBlur);
   }
 }
 
@@ -392,11 +394,19 @@ abstract class Compositor extends SceneCompositor {
 
     });
 
-    // Render the blurred ambient occlusion based on unblurred ambient occlusion
+    // Render the X-blurred ambient occlusion based on unblurred ambient occlusion
     fbo = this._frameBuffers.occlusionBlur!;
     system.frameBufferStack.execute(fbo, true, () => {
       System.instance.applyRenderState(RenderState.defaults);
-      const params = getDrawParams(this.target, this._geom.occlusionBlur!);
+      const params = getDrawParams(this.target, this._geom.occlusionXBlur!);
+      this.target.techniques.draw(params);
+    });
+
+    // Render the Y-blurred ambient occlusion based on X-blurred ambient occlusion (render into original occlusion framebuffer)
+    fbo = this._frameBuffers.occlusion!;
+    system.frameBufferStack.execute(fbo, true, () => {
+      System.instance.applyRenderState(RenderState.defaults);
+      const params = getDrawParams(this.target, this._geom.occlusionYBlur!);
       this.target.techniques.draw(params);
     });
   }

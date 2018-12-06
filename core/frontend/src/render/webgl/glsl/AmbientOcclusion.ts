@@ -9,7 +9,7 @@ import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
-import { AmbientOcclusionGeometry, AmbientOcclusionBlurGeometry } from "../CachedGeometry";
+import { AmbientOcclusionGeometry } from "../CachedGeometry";
 import { Texture2DHandle } from "../Texture";
 import { GLSLDecode } from "./Decode";
 import { readDepthAndOrder } from "./FeatureSymbology";
@@ -33,10 +33,12 @@ const computeAmbientOcclusion = `
   // Multiply the random 0..1 vec3 by 2 and then substract 1.  This puts the components of the vec3 in the range -1..1.
   vec3 noiseVec = (TEXTURE(u_noise, tc * vec2(u_viewport.z / 4.0, u_viewport.w / 4.0)).rgb + 1.0) / 2.0;
 
-  float bias = 0.5; // default 0.1     ###TODO - uniforms - need values
-  float stepSize = 1.0;
-  float lengthCap = 0.03; // default 0.03 - this determines how close surfaces need to be to cast shadows on each other
-  float depthCutoff = 0.08; // how close items must be in linear Z in order to affect one another with regard to ambient occlusion
+  const float stepSize = 1.0; // how many pixels to step?  I would keep this as a constant, not a uniform.  1.0 seems a good value in Cesium and here.
+
+  // ###TODO - these need to be uniforms
+  // float bias = 0.1; // default 0.1, range: 0 to 1
+  float depthCutoff = 0.025; // how close items must be in linear Z in order to affect one another with regard to ambient occlusion, range: 0 to 1
+  // ###TODO: can depthCutoff be ramped more?
   float intensity = 3.0; // raise the occlusion to the power of this value
 
   float tOcclusion = 0.0;
@@ -75,9 +77,9 @@ const computeAmbientOcclusion = `
 
       float dotVal = clamp(dot(normal, normalize(diffVec)), 0.0, 1.0);
 
-      if (dotVal < bias) {
-          dotVal = 0.0;
-      }
+      // if (dotVal < bias) {
+      //     dotVal = 0.0;
+      // }
 
       curOcclusion = max(curOcclusion, dotVal);
       curStepSize += stepSize; // 1.0 = stepsize
@@ -131,24 +133,6 @@ vec3 computeNormalFromNonLinearDepth(vec3 posInView, vec2 tc, vec2 pixelSize) {
 }
 `;
 
-const computeAmbientOcclusionBlur = `
-  const int blurSize = 16; // make this a uniform (4 default?)
-
-  vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
-  vec2 texelSize = 1.0 / u_viewport.zw; // could use uniform for this
-  float result = 0.0;
-  vec2 hlim = vec2(float(-blurSize) * 0.5 + 0.5);
-  for (int i = 0; i < blurSize; i++) {
-     for (int j = 0; j < blurSize; j++) {
-        vec2 offset = (hlim + vec2(float(i), float(j))) * texelSize;
-        result += TEXTURE(u_occlusion, tc + offset).r;
-     }
-  }
-
-  result /= float(blurSize * blurSize);
-  return vec4(result, result, result, 1.0);
-`;
-
 export function createAmbientOcclusionProgram(context: WebGLRenderingContext): ShaderProgram {
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
@@ -188,27 +172,6 @@ export function createAmbientOcclusionProgram(context: WebGLRenderingContext): S
       uniform.setMatrix4(invProj);
     });
   });
-
-  return builder.buildProgram(context);
-}
-
-export function createAmbientOcclusionBlurProgram(context: WebGLRenderingContext): ShaderProgram {
-  const builder = createViewportQuadBuilder(true);
-  const frag = builder.frag;
-
-  addWindowToTexCoords(frag);
-
-  frag.set(FragmentShaderComponent.ComputeBaseColor, computeAmbientOcclusionBlur);
-  frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
-
-  frag.addUniform("u_occlusion", VariableType.Sampler2D, (prog) => {
-    prog.addGraphicUniform("u_occlusion", (uniform, params) => {
-      const geom = params.geometry as AmbientOcclusionBlurGeometry;
-      Texture2DHandle.bindSampler(uniform, geom.occlusion, TextureUnit.Zero);
-    });
-  });
-
-  addViewport(frag);
 
   return builder.buildProgram(context);
 }
