@@ -102,7 +102,6 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
         "tooltip": "",
       },
       "_handleSyncUiEvent": [Function],
-      "_isVisible": true,
       "classId": undefined,
       "featureId": "",
       "fillZone": false,
@@ -110,6 +109,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       "horizontalItems": undefined,
       "id": "toolWidget",
       "isEnabled": true,
+      "isFloating": false,
       "isFloatingStateSupported": false,
       "isFloatingStateWindowResizable": true,
       "isFreeform": false,
@@ -126,7 +126,6 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       "tooltip": "",
       "verticalDirection": 2,
       "verticalItems": undefined,
-      "widgetState": 1,
       "widgetType": 0,
     }
   }

@@ -356,7 +356,7 @@ export class AppTools {
     return new CommandItemDef({
       commandId: "verticalPropertyGridOpen",
       iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:buttons.tool1",
+      labelKey: "SampleApp:buttons.openPropertyGrid",
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {
@@ -373,13 +373,13 @@ export class AppTools {
     return new CommandItemDef({
       commandId: "verticalPropertyGridOff",
       iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:buttons.tool2",
+      labelKey: "SampleApp:buttons.closePropertyGrid",
       execute: async () => {
         const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
         if (activeFrontstageDef) {
           const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
           if (widgetDef) {
-            widgetDef.setWidgetState(WidgetState.Off);
+            widgetDef.setWidgetState(WidgetState.Hidden);
           }
         }
       },

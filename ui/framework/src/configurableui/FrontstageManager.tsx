@@ -101,8 +101,6 @@ export class NavigationAidActivatedEvent extends UiEvent<NavigationAidActivatedE
  */
 export interface WidgetStateChangedEventArgs {
   widgetDef: WidgetDef;
-  oldWidgetState: WidgetState;
-  newWidgetState: WidgetState;
 }
 
 /** Widget State Changed Event class.

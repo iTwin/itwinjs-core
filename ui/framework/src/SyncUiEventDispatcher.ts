@@ -10,12 +10,12 @@ import { FrontstageManager } from "./configurableui/FrontstageManager";
 import { Backstage } from "./configurableui/Backstage";
 import { WorkflowManager } from "./configurableui/Workflow";
 import { ContentViewManager } from "./configurableui/ContentViewManager";
-import { IModelApp, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { IModelConnection, SelectEventType, IModelApp, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
 // cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
-// cSpell:ignore frontstageready activedgnviewportchanged
+// cSpell:ignore frontstageready activedgnviewportchanged selectionsetchanged
 /** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control. */
 export const enum SyncUiEventId {
   ActiveContentChanged = "activecontentchanged",
@@ -32,6 +32,7 @@ export const enum SyncUiEventId {
   WidgetStateChanged = "widgetstatechanged",
   WorkflowActivated = "workflowactivated",
   ActiveDgnViewportChanged = "activedgnviewportchanged",
+  SelectionSetChanged = "selectionsetchanged",
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
@@ -178,5 +179,18 @@ export class SyncUiEventDispatcher {
         if (undefined === args.previous)
           IModelApp.toolAdmin.startDefaultTool();
       });
+  }
+
+  private static selectionChangedHandler(_iModelConnection: IModelConnection, _evType: SelectEventType, _ids?: Set<string>) {
+    SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SelectionSetChanged);
+  }
+
+  public static clearConnectionEvents(iModelConnection: IModelConnection) {
+    iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
+  }
+
+  public static initializeConnectionEvents(iModelConnection: IModelConnection) {
+    iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
+    iModelConnection.selectionSet.onChanged.addListener(SyncUiEventDispatcher.selectionChangedHandler);
   }
 }
