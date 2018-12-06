@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Id64, Id64String, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
-import { EntityQueryParams } from "./EntityProps";
-import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
-import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
+import { Id64, Id64Array, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { AngleProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { ViewFlags, AnalysisStyleProps, AnalysisStyle, HiddenLine } from "./Render";
-import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppearance";
+import { DefinitionElementProps, ElementProps, SheetProps } from "./ElementProps";
+import { EntityQueryParams } from "./EntityProps";
+import { AnalysisStyle, AnalysisStyleProps, HiddenLine, ViewFlags } from "./Render";
 import { RenderSchedule } from "./RenderSchedule";
+import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppearance";
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend) */
 export interface ViewStateData {

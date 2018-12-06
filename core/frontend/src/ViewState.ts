@@ -33,18 +33,18 @@ import { Viewport } from "./Viewport";
 export const enum GridOrientationType {
   /** Oriented with the view. */
   View = 0,
-    /** Top */
-    WorldXY = 1, // Top
-    /** Right */
-    WorldYZ = 2, // Right
-    /** Front */
-    WorldXZ = 3, // Front
-    /** Oriented by the [[AuxCoordSystem]] */
-    AuxCoord = 4,
-    /** @hidden
-     * ###TODO not implemented - see ViewState.drawGrid.
-     */
-    GeoCoord = 5,
+  /** Top */
+  WorldXY = 1, // Top
+  /** Right */
+  WorldYZ = 2, // Right
+  /** Front */
+  WorldXZ = 3, // Front
+  /** Oriented by the [[AuxCoordSystem]] */
+  AuxCoord = 4,
+  /** @hidden
+   * ###TODO not implemented - see ViewState.drawGrid.
+   */
+  GeoCoord = 5,
 }
 
 /** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]]. */
@@ -89,7 +89,7 @@ export class ViewSubCategories {
   private readonly _appearances = new Map<string, SubCategoryAppearance>();
 
   /** Get the Ids of all subcategories belonging to the category with the specified Id, or undefined if no such information is present. */
-  public getSubCategories(categoryId: string): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
+  public getSubCategories(categoryId: Id64String): Id64Set | undefined { return this._byCategoryId.get(categoryId); }
 
   /** Get the base appearance of the subcategory with the specified Id, or undefined if no such information is present. */
   public getSubCategoryAppearance(subCategoryId: Id64String): SubCategoryAppearance | undefined { return this._appearances.get(subCategoryId.toString()); }
@@ -99,13 +99,13 @@ export class ViewSubCategories {
    * This function is invoked on initial loading of a ViewState to obtain subcategory information for the set of
    * categories in the ViewState's [[CategorySelector]].
    */
-  public async load(categoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+  public async load(categoryIds: Id64Set, iModel: IModelConnection): Promise<void> {
     const where = [...categoryIds].join(",");
     if (0 === where.length)
-    return Promise.resolve();
+      return Promise.resolve();
 
     const ecsql = "SELECT ECInstanceId as id, Parent.Id as parentId, Properties as appearance FROM BisCore.SubCategory WHERE Parent.Id IN (" + where + ")";
-    return iModel.executeQuery(ecsql).then((rows: any[]) => this.loadFromRows(rows));
+    this.loadFromRows(await iModel.executeQuery(ecsql));
   }
 
   /**
@@ -113,7 +113,7 @@ export class ViewSubCategories {
    * This function is invoked by ViewState.changeCategoryDisplay() to ensure subcategory information is present for any newly-enabled
    * categories.
    */
-  public async update(addedCategoryIds: Set<string>, iModel: IModelConnection): Promise<void> {
+  public async update(addedCategoryIds: Id64Set, iModel: IModelConnection): Promise<void> {
     let missing: Set<string> | undefined;
     for (const catId of addedCategoryIds) {
       if (undefined === this._byCategoryId.get(catId)) {
@@ -123,11 +123,7 @@ export class ViewSubCategories {
         missing.add(catId);
       }
     }
-
-    if (undefined !== missing)
-    return this.load(missing, iModel);
-    else
-    return Promise.resolve();
+    return undefined !== missing ? this.load(missing, iModel) : Promise.resolve();
   }
 
   private static createSubCategoryAppearance(json?: any) {
@@ -140,10 +136,10 @@ export class ViewSubCategories {
 
   private loadFromRows(rows: any[]): void {
     for (const row of rows)
-    this.add(row.parentId as string, row.id as string, ViewSubCategories.createSubCategoryAppearance(row.appearance));
+      this.add(row.parentId as Id64String, row.id as Id64String, ViewSubCategories.createSubCategoryAppearance(row.appearance));
   }
 
-  private add(categoryId: string, subCategoryId: string, appearance: SubCategoryAppearance) {
+  private add(categoryId: Id64String, subCategoryId: Id64String, appearance: SubCategoryAppearance) {
     let set = this._byCategoryId.get(categoryId);
     if (undefined === set)
       this._byCategoryId.set(categoryId, set = new Set<string>());
@@ -439,12 +435,12 @@ export abstract class ViewState extends ElementState {
   private changeSubCategoryDisplay(subCategoryId: Id64String, display: boolean): void {
     const app = this.subCategories.getSubCategoryAppearance(subCategoryId);
     if (undefined === app)
-    return; // category is not enabled or subcategory does not exist
+      return; // category is not enabled or subcategory does not exist
 
     const curOvr = this.getSubCategoryOverride(subCategoryId);
     const isAlreadyVisible = undefined !== curOvr && undefined !== curOvr.invisible ? !curOvr.invisible : !app.invisible;
     if (isAlreadyVisible === display)
-    return;
+      return;
 
     // Preserve existing overrides - just flip the visibility flag.
     const json = undefined !== curOvr ? curOvr.toJSON() : {};
@@ -523,7 +519,7 @@ export abstract class ViewState extends ElementState {
   /** @hidden */
   public createTerrain(context: SceneContext): void {
     if (undefined !== this.displayStyle.backgroundMapPlane)
-    this.displayStyle.backgroundMap.addToScene(context);
+      this.displayStyle.backgroundMap.addToScene(context);
   }
 
   /** @hidden */
@@ -535,7 +531,7 @@ export abstract class ViewState extends ElementState {
   public decorate(context: DecorateContext): void {
     this.drawGrid(context);
     if (undefined !== this.displayStyle.backgroundMapPlane)
-    this.displayStyle.backgroundMap.decorate(context);
+      this.displayStyle.backgroundMap.decorate(context);
   }
 
   /** @hidden */
@@ -557,7 +553,7 @@ export abstract class ViewState extends ElementState {
   public drawGrid(context: DecorateContext): void {
     const vp = context.viewport;
     if (!vp.isGridOn)
-    return;
+      return;
 
     const orientation = this.getGridOrientation();
 
@@ -738,13 +734,13 @@ export abstract class ViewState extends ElementState {
     windowAspect *= this.getAspectRatioSkew();
 
     if (Math.abs(1.0 - (viewAspect / windowAspect)) < 1.0e-9)
-    return;
+      return;
 
     const oldDelta = extents.clone();
     if (viewAspect > windowAspect)
-    extents.y = extents.x / windowAspect;
+      extents.y = extents.x / windowAspect;
     else
-    extents.x = extents.y * windowAspect;
+      extents.x = extents.y * windowAspect;
 
     let origin = this.getOrigin();
     const trans = Transform.createOriginAndMatrix(Point3d.createZero(), this.getRotation());
@@ -1081,7 +1077,7 @@ export abstract class ViewState extends ElementState {
   }
   private addModelClassifierToScene(model: GeometricModelState, context: SceneContext): void {
     if (model.jsonProperties.classifiers === undefined)
-    return;
+      return;
     for (const classifier of model.jsonProperties.classifiers) {
       if (classifier.isActive) {
         const classifierModel = this.iModel.models.getLoaded(classifier.modelId) as GeometricModelState;
@@ -1101,11 +1097,11 @@ export abstract class ViewState extends ElementState {
    */
   public setRotationAboutPoint(rotation: Matrix3d, point?: Point3d): void {
     if (undefined === point)
-    point = this.getTargetPoint();
+      point = this.getTargetPoint();
 
     const inverse = rotation.clone().inverse();
     if (undefined === inverse)
-    return;
+      return;
 
     const targetMatrix = inverse.multiplyMatrixMatrix(this.getRotation());
     const worldTransform = Transform.createFixedPointAndMatrix(point, targetMatrix);
@@ -1468,7 +1464,7 @@ export abstract class ViewState3d extends ViewState {
   /** Ensure the focus plane lies between the front and back planes. If not, center it. */
   public verifyFocusPlane(): void {
     if (!this._cameraOn)
-    return;
+      return;
 
     let backDist = this.getBackDistance();
     const frontDist = backDist - this.extents.z;
@@ -1487,7 +1483,7 @@ export abstract class ViewState3d extends ViewState {
 
     const focusDist = camera.focusDist;
     if (focusDist > frontDist && focusDist < backDist)
-    return;
+      return;
 
     // put it halfway between front and back planes
     camera.setFocusDistance((extents.z / 2.0) + frontDist);
@@ -1540,7 +1536,7 @@ export abstract class ViewState3d extends ViewState {
   protected drawSkyBox(context: DecorateContext): void {
     const style3d = this.getDisplayStyle3d();
     if (!style3d.environment.sky.display)
-    return;
+      return;
 
     const vp = context.viewport;
     const skyBoxParams = style3d.loadSkyBoxParams(vp.target.renderSystem);
@@ -1603,7 +1599,7 @@ export abstract class ViewState3d extends ViewState {
 
     const ground = this.getDisplayStyle3d().environment.ground;
     if (!ground.display)
-    return;
+      return;
 
     const points: Point3d[] = [extents.low.clone(), extents.low.clone(), extents.high.clone(), extents.high.clone()];
     points[1].x = extents.high.x;
@@ -1613,7 +1609,7 @@ export abstract class ViewState3d extends ViewState {
     const gradient = ground.getGroundPlaneGradient(aboveGround);
     const texture = context.viewport.target.renderSystem.getGradientTexture(gradient, this.iModel);
     if (!texture)
-    return;
+      return;
 
     const matParams = new RenderMaterial.Params();
     matParams.diffuseColor = ColorDef.white;
@@ -1628,7 +1624,7 @@ export abstract class ViewState3d extends ViewState {
     matParams.textureMapping = new TextureMapping(texture, mapParams);
     const material = context.viewport.target.renderSystem.createMaterial(matParams, this.iModel);
     if (!material)
-    return;
+      return;
 
     const params = new GraphicParams();
     params.setLineColor(gradient.keys[0].color);
@@ -1847,7 +1843,7 @@ export class DrawingViewState extends ViewState2d {
     if (undefined === tree)
       return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth };
 
-    this._extentLimits = { min:  Constant.oneMillimeter, max: 2.0 * tree.range.maxLength() };
+    this._extentLimits = { min: Constant.oneMillimeter, max: 2.0 * tree.range.maxLength() };
     return this._extentLimits;
   }
 }
