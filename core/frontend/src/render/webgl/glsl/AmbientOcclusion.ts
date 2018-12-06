@@ -33,12 +33,13 @@ const computeAmbientOcclusion = `
   // Multiply the random 0..1 vec3 by 2 and then substract 1.  This puts the components of the vec3 in the range -1..1.
   vec3 noiseVec = (TEXTURE(u_noise, tc * vec2(u_viewport.z / 4.0, u_viewport.w / 4.0)).rgb + 1.0) / 2.0;
 
-  float bias = 0.1; // default 0.1     ###TODO - uniforms - need values
+  float bias = 0.5; // default 0.1     ###TODO - uniforms - need values
   float stepSize = 1.0;
   float lengthCap = 0.03; // default 0.03 - this determines how close surfaces need to be to cast shadows on each other
-  float intensity = 3.0; // 3.0 default
+  float depthCutoff = 0.08; // how close items must be in linear Z in order to affect one another with regard to ambient occlusion
+  float intensity = 3.0; // raise the occlusion to the power of this value
 
-  float occlusion = 0.0;
+  float tOcclusion = 0.0;
 
   // loop for each direction
   for (int i = 0; i < 4; i++) {
@@ -48,15 +49,15 @@ const computeAmbientOcclusion = `
 
     // rotate sampling direction
     vec2 rotatedSampleDirection = vec2(cosVal * sampleDirection.x - sinVal * sampleDirection.y, sinVal * sampleDirection.x + cosVal * sampleDirection.y);
-    float localAO = 0.0;
-    float localStepSize = stepSize; // 1.0 = stepsize, StepSize should be specified by uniform - what are good values?
+    float curOcclusion = 0.0;
+    float curStepSize = stepSize; // 1.0 = stepsize, StepSize should be specified by uniform - what are good values?
 
     // loop for each step
     for (int j = 0; j < 6; j++) {
-      vec2 directionWithStep = vec2(rotatedSampleDirection.x * localStepSize * pixelSize.x, rotatedSampleDirection.y * localStepSize * pixelSize.y);
+      vec2 directionWithStep = vec2(rotatedSampleDirection.x * curStepSize * pixelSize.x, rotatedSampleDirection.y * curStepSize * pixelSize.y);
       vec2 newCoords = directionWithStep + tc;
 
-      // Exception Handling ###TODO - necessary?
+      // do not repeat around the depth texture
       if(newCoords.x > 1.0 || newCoords.y > 1.0 || newCoords.x < 0.0 || newCoords.y < 0.0) {
           break;
       }
@@ -67,35 +68,28 @@ const computeAmbientOcclusion = `
       vec3 diffVec = posInView.xyz - stepPosInCamera.xyz;
       float len = length(diffVec);
 
-      // if (len > lengthCap) {
-      //     break;
-      // }
-
       float linearDepth0 = linearStepDepthInfo;
       float linearDepth1 = depthAndOrder.y;
-      if (abs(linearDepth0 - linearDepth1) > 0.1)
+      if (abs(linearDepth0 - linearDepth1) > depthCutoff)
         break;
 
       float dotVal = clamp(dot(normal, normalize(diffVec)), 0.0, 1.0);
-      float weight = len / lengthCap;
-      weight = 1.0 - weight * weight;
 
       if (dotVal < bias) {
           dotVal = 0.0;
       }
 
-      localAO = max(localAO, dotVal * weight);
-      localStepSize += stepSize; // 1.0 = stepsize
+      curOcclusion = max(curOcclusion, dotVal);
+      curStepSize += stepSize; // 1.0 = stepsize
     }
-    occlusion += localAO;
+    tOcclusion += curOcclusion;
   }
 
-  occlusion /= 4.0;
-  occlusion = 1.0 - clamp(occlusion, 0.0, 1.0);
-  occlusion = pow(occlusion, intensity);
+  tOcclusion /= 4.0;
+  tOcclusion = 1.0 - clamp(tOcclusion, 0.0, 1.0);
+  tOcclusion = pow(tOcclusion, intensity);
 
-  // return vec4((normal.xyz + 1.0) / 2.0, 1.0);
-  return vec4(occlusion, occlusion, occlusion, 1.0);
+  return vec4(tOcclusion, tOcclusion, tOcclusion, 1.0);
 `;
 
 const computeNonLinearDepth = `
