@@ -593,8 +593,10 @@ function updateAnimation() {
   const userHitStop = !isAnimating;
   if (animationCurTime >= animationEndTime || !isAnimating) { // stop the animation!
     enableAnimationUI();
-    animationSlider.value = "0";
-    theViewport!.animationFraction = 0;
+    if (isAnimationLooping()) {
+      animationSlider.value = "0";
+      theViewport!.animationFraction = 0;
+    }
     isAnimating = false;
     setAnimationStateMessage("Stopped.");
   } else { // continue the animation - request the next frame

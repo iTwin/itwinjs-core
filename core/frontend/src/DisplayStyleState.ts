@@ -59,7 +59,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       if (styles.analysisStyle)
         this._analysisStyle = AnalysisStyle.fromJSON(styles.analysisStyle);
       if (styles.scheduleScript)
-        this._scheduleScript = RenderScheduleState.Script.fromJSON(styles.scheduleScript);
+        this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, this.iModel, styles.scheduleScript);
     }
   }
 
