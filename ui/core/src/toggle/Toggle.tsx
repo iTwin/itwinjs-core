@@ -6,7 +6,6 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { CSSProperties } from "react";
 import { CommonProps } from "../Props";
 import "./Toggle.scss";
 
@@ -77,14 +76,14 @@ export class Toggle extends React.Component<ToggleProps, ToggleState> {
   public render(): JSX.Element {
     const halfHeight = this.state.height / 2;
     const checkmarkClassName = classnames("toggle-checkmark icon icon-checkmark", this.props.showCheckmark && "visible");
-    const toggleStyle: CSSProperties = { borderRadius: this.props.rounded ? halfHeight : 3, fontSize: halfHeight };
+    const toggleStyle: React.CSSProperties = { borderRadius: this.props.rounded ? halfHeight : 3, fontSize: halfHeight };
     const toggleClassName = classnames(
       "toggle",
       this.props.buttonType === ToggleButtonType.Primary && "toggle-primary",
       this.props.rounded && "rounded",
       { disabled: this.props.disabled },
       this.props.className);
-    const toggleHandleStyle: CSSProperties = {
+    const toggleHandleStyle: React.CSSProperties = {
       width: this.state.height - (this._padding * 2),
       transform: "translateX(" + this._getOffset() + "px)",
       top: this._padding,

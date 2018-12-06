@@ -5,11 +5,9 @@
 /** @module ToolSettings */
 
 import * as React from "react";
-import { CSSProperties } from "react";
 import { FrontstageManager, ToolActivatedEventArgs } from "./FrontstageManager";
 
-import { ToolSettingsWidget, ToolSettingsTab, ToolSettings, CommonProps } from "@bentley/ui-ninezone";
-import { RectangleProps, TabIcon, ZoneComponent } from "@bentley/ui-ninezone";
+import { ToolSettingsWidget, ToolSettingsTab, ToolSettings, CommonProps, RectangleProps, TabIcon, ZoneComponent } from "@bentley/ui-ninezone";
 
 /** State for the ToolSettingsZone content.
  */
@@ -63,7 +61,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
 
   public render(): React.ReactNode {
     if (FrontstageManager.activeToolAssistanceNode || FrontstageManager.activeToolSettingsNode) {
-      const divStyle: CSSProperties = {
+      const divStyle: React.CSSProperties = {
         display: "grid",
         justifyItems: "center",
         gridAutoRows: "min-content auto",
@@ -108,7 +106,7 @@ export class ToolSettingsZone extends React.Component<ToolSettingsZoneProps, Too
     switch (this.state.toolSettingsZoneContent) {
       case ToolSettingsZoneContent.ToolSettings: {
         if (FrontstageManager.activeToolSettingsNode) {
-          const settingsStyle: CSSProperties = {
+          const settingsStyle: React.CSSProperties = {
             borderWidth: "thin",
             borderStyle: "solid",
             borderRadius: "3px",

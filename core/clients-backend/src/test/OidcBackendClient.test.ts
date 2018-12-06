@@ -9,8 +9,8 @@ import { ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import {
   ImsActiveSecureTokenClient, AuthorizationToken, AccessToken, ImsDelegationSecureTokenClient,
   ConnectClient, RbacClient, Project, ConnectRequestQueryOptions, RbacUser,
+  IModelHubClient, HubIModel, IModelQuery, Config,
 } from "@bentley/imodeljs-clients";
-import { IModelHubClient, HubIModel, IModelQuery, Config } from "@bentley/imodeljs-clients";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { OidcBackendClientConfiguration, OidcAgentClient, OidcAgentClientConfiguration, OidcDelegationClient } from "../imodeljs-clients-backend";
 

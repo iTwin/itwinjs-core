@@ -7,9 +7,8 @@ import * as utils from "./TestUtils";
 
 import { GuidString, Guid, IModelHubStatus, ActivityLoggingContext, Id64 } from "@bentley/bentleyjs-core";
 
-import { AccessToken, IModelClient } from "../../imodeljs-clients";
 import {
-  LockEvent, AllLocksDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent,
+  AccessToken, IModelClient, LockEvent, AllLocksDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent,
   CodeEvent, AllCodesDeletedEvent, BriefcaseDeletedEvent, IModelDeletedEvent, VersionEvent,
   EventSubscription, EventSAS, EventType, IModelHubEvent,
 } from "../../imodeljs-clients";

@@ -25,8 +25,7 @@ import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl, HorizontalPropertyGridContentControl } from "../widgets/PropertyGridDemoWidget";
 import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
 
-import { Toolbar } from "@bentley/ui-ninezone";
-import { Direction } from "@bentley/ui-ninezone";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppUi } from "../AppUi";
 import { AppTools } from "../../tools/ToolSpecifications";
 

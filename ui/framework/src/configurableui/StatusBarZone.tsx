@@ -5,7 +5,6 @@
 /** @module StatusBar */
 
 import * as React from "react";
-import { ReactNode } from "react";
 
 import { TargetChangeHandler, WidgetChangeHandler } from "./FrontstageComposer";
 import ZoneTargets from "./ZoneTargets";
@@ -13,8 +12,7 @@ import { StatusBar } from "./StatusBar";
 import { StatusBarWidgetControl } from "./StatusBarWidgetControl";
 
 // import TemporaryMessage from "@bentley/ui-ninezone/messages/Temporary";
-import { StatusZoneProps as NZ_ZoneProps, DropTarget } from "@bentley/ui-ninezone";
-import { FooterZone as NZ_FooterZone, RectangleProps, GhostOutline } from "@bentley/ui-ninezone";
+import { StatusZoneProps as NZ_ZoneProps, DropTarget, FooterZone as NZ_FooterZone, RectangleProps, GhostOutline } from "@bentley/ui-ninezone";
 
 /** Properties for the [[StatusBarZone]] component */
 export interface StatusBarZoneProps {
@@ -29,7 +27,7 @@ export interface StatusBarZoneProps {
 /** Status Bar Zone React component.
  */
 export class StatusBarZone extends React.Component<StatusBarZoneProps, {}> {
-  public render(): ReactNode {
+  public render(): React.ReactNode {
     return (
       <>
         <NZ_FooterZone

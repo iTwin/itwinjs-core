@@ -2,16 +2,14 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps, Code } from "@bentley/imodeljs-common";
+import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps, Code, TestRpcManager } from "@bentley/imodeljs-common";
 import { IModelDb, IModelHost, Element, ECSqlStatement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
 import { DbResult, Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { } from "@bentley/imodeljs-common";
 import { Point3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
 import { RobotWorld } from "./RobotWorldSchema";
 import { Robot } from "./RobotElement";
 import * as path from "path";
 import { Barrier } from "./BarrierElement";
-import { TestRpcManager } from "@bentley/imodeljs-common";
 import { RobotWorldWriteRpcInterface, RobotWorldReadRpcInterface } from "../common/RobotWorldRpcInterface";
 import { RobotWorldWriteRpcImpl, RobotWorldReadRpcImpl } from "./RobotWorldRpcImpl";
 

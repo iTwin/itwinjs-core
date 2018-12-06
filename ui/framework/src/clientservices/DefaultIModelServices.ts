@@ -5,7 +5,7 @@
 /** @module ClientServices */
 
 import { IModelHubClient, AccessToken, HubIModel, Version, HubUserInfo, ChangeSet, UserInfoQuery, IModelQuery, ChangeSetQuery, VersionQuery } from "@bentley/imodeljs-clients";
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext, GuidString, Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 // import GatewayProxyApi from "./gatewayProxy";
@@ -13,7 +13,6 @@ import { IModelVersion } from "@bentley/imodeljs-common";
 
 import { ProjectInfo } from "./ProjectServices";
 import { IModelInfo, IModelServices, VersionInfo, ChangeSetInfo, IModelUserInfo } from "./IModelServices";
-import { ActivityLoggingContext, GuidString, Guid } from "@bentley/bentleyjs-core";
 
 class IModelInfoImpl implements IModelInfo {
   constructor(public name: string, public description: string, public wsgId: string, public createdDate: Date, public projectInfo: ProjectInfo, public status: string = "", public thumbnail: string | undefined) {

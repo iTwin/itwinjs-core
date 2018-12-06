@@ -8,10 +8,9 @@ import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInte
 import * as fs from "fs";
 import * as path from "path";
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
-import { IModelBankClient } from "@bentley/imodeljs-clients";
+import { IModelBankClient, Config } from "@bentley/imodeljs-clients";
 import { UrlFileHandler } from "@bentley/imodeljs-clients/lib/UrlFileHandler";
 import { SVTConfiguration } from "../common/SVTConfiguration";
-import { Config } from "@bentley/imodeljs-clients";
 
 IModelJsConfig.init(true /* suppress exception */, true /* suppress error message */, Config.App);
 process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0"; // (needed temporarily to use self-signed cert to communicate with iModelBank via https)

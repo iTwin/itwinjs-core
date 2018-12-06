@@ -8,10 +8,9 @@ import * as path from "path";
 
 import { Guid, GuidString, IModelHubStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
-import { AccessToken, WsgError, IModelQuery, IModelClient, InitializationState } from "../../imodeljs-clients";
 import {
-  IModelHubClient, HubIModel, SeedFile, IModelHubError,
-  IModelHubClientError,
+  AccessToken, WsgError, IModelQuery, IModelClient, InitializationState,
+  IModelHubClient, HubIModel, SeedFile, IModelHubError, IModelHubClientError,
 } from "../../imodeljs-clients";
 
 import { TestConfig, TestUsers } from "../TestConfig";

@@ -9,9 +9,8 @@ import * as React from "react";
 import ReactDataGrid from "react-data-grid";
 import classnames from "classnames";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { SortDirection, Dialog, Popup, Position } from "@bentley/ui-core";
+import { SortDirection, Dialog, Popup, Position, LocalUiSettings, UiSettings, UiSettingsStatus } from "@bentley/ui-core";
 import { TableDataProvider, ColumnDescription, RowItem, CellItem } from "../TableDataProvider";
-import { LocalUiSettings, UiSettings, UiSettingsStatus } from "@bentley/ui-core";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,

@@ -9,11 +9,10 @@ import * as React from "react";
 import { WidgetChangeHandler } from "./FrontstageComposer";
 import { Icon } from "./IconComponent";
 
-import { Stacked as NZ_StackedWidget, HorizontalAnchor, VerticalAnchor } from "@bentley/ui-ninezone";
-import { ResizeHandle } from "@bentley/ui-ninezone";
-import { Draggable } from "@bentley/ui-ninezone";
-import { TabGroup, VisibilityMode } from "@bentley/ui-ninezone";
-import { PointProps, TabSeparator, WidgetZoneIndex, TabMode } from "@bentley/ui-ninezone";
+import {
+  Stacked as NZ_StackedWidget, HorizontalAnchor, VerticalAnchor,
+  ResizeHandle, Draggable, TabGroup, VisibilityMode, PointProps, TabSeparator, WidgetZoneIndex, TabMode,
+} from "@bentley/ui-ninezone";
 
 /** Properties for a [[StackedWidget]] Tab.
  */

@@ -4,10 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { Scrollable, ScrollableState } from "../../ui-ninezone";
-import { Direction } from "../../ui-ninezone";
-import { Chevron } from "../../ui-ninezone";
-import { ToolbarPanelAlignment } from "../../ui-ninezone";
+import { Direction, Chevron, ToolbarPanelAlignment, Scrollable, ScrollableState } from "../../ui-ninezone";
 
 // tslint:disable-next-line:variable-name
 const Item: React.StatelessComponent = () => {

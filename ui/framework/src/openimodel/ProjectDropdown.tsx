@@ -6,7 +6,6 @@
 
 import * as React from "react";
 import * as classnames from "classnames";
-import { CSSProperties } from "react";
 import { ProjectInfo } from "../clientservices/ProjectServices";
 import { ProjectDialog } from "./ProjectDialog";
 import { AccessToken } from "@bentley/imodeljs-clients";
@@ -87,10 +86,10 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
 
   private renderProjects() {
     const projects: ProjectInfo[] = this.getProjects();
-    const ulStyle: CSSProperties = {
+    const ulStyle: React.CSSProperties = {
       height: (this.props.numVisibleProjects! * this._itemHeight) + "em",
     };
-    const liStyle: CSSProperties = {
+    const liStyle: React.CSSProperties = {
       height: this._itemHeight + "em",
     };
 
@@ -116,7 +115,7 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
   }
 
   private renderDropdown() {
-    const liStyle: CSSProperties = {
+    const liStyle: React.CSSProperties = {
       height: this._itemHeight + "em",
     };
     return (

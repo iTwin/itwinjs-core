@@ -10,10 +10,9 @@ import { Graphic, Batch } from "./Graphic";
 import { CachedGeometry } from "./CachedGeometry";
 import { RenderPass, RenderOrder } from "./RenderFlags";
 import { ShaderProgramExecutor } from "./ShaderProgram";
-import { DrawParams } from "./DrawCommand";
+import { DrawParams, RenderCommands, DrawCommand } from "./DrawCommand";
 import { TechniqueId } from "./TechniqueId";
 import { FeaturesInfo } from "./FeaturesInfo";
-import { RenderCommands, DrawCommand } from "./DrawCommand";
 import { dispose } from "@bentley/bentleyjs-core";
 import { System } from "./System";
 

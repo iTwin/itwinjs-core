@@ -3,12 +3,13 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { Config } from "@bentley/imodeljs-clients";
+import { OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { Config, AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients";
 import {
   BentleyCloudRpcManager, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, RpcConfiguration,
   RpcOperation, StandaloneIModelRpcInterface,
+  ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps,
 } from "@bentley/imodeljs-common";
 import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common/lib/rpc/mobile/MobileRpcManager";
 // import {
@@ -28,9 +29,6 @@ import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-comm
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, SceneContext, TileRequests, Viewport, ViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps } from "@bentley/imodeljs-common";
-import { AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients";
-import { StopWatch } from "@bentley/bentleyjs-core";
 import { PerformanceMetrics, /*System,*/ Target } from "@bentley/imodeljs-frontend/lib/webgl";
 import { IModelApi } from "./IModelApi";
 import { ProjectApi } from "./ProjectApi";

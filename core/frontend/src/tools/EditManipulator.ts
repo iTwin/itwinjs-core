@@ -12,8 +12,7 @@ import { IModelConnection } from "../IModelConnection";
 import { SelectEventType } from "../SelectionSet";
 import { HitDetail } from "../HitDetail";
 import { Viewport } from "../Viewport";
-import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry } from "@bentley/geometry-core";
-import { Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
+import { Point3d, Vector3d, Transform, Matrix3d, AxisOrder, Geometry, Ray3d, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 
 /**
  * A manipulator maintains a set of controls used to modify element(s) or pickable decorations.

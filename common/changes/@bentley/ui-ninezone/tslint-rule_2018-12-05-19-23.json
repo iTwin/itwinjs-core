@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "Barry.Bentley@bentley.com"
+}

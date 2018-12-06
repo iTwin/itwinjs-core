@@ -6,7 +6,6 @@
   "scripts": {
     "build": "npm run build-code && npm run extract-assets",
     "lint": "tslint -p . 1>&2",
-    "webpack": "node ./node_modules/@bentley/webpack-tools/bin/bentley-webpack-tools.js build electron",
     "build-code": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json ../../generated-docs",
     "extract-assets": "cpx assets/**/*  lib/assets/",
@@ -36,9 +35,7 @@
     "null-loader": "^0.1.1",
     "popper.js": "^1.14.4",
     "rimraf": "^2.6.2",
-    "source-map-loader": "^0.2.3",
     "tslint": "^5.11.0",
-    "typescript": "~3.1.0",
-    "webpack": "^4.20.2"
+    "typescript": "~3.1.0"
   }
 }

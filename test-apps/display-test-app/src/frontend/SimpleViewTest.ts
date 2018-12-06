@@ -3,25 +3,21 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { JsonUtils, OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d } from "@bentley/geometry-core";
-import { IModelJson as GeomJson } from "@bentley/geometry-core";
+import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d, IModelJson as GeomJson } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, LinePixels, ModelProps, ModelQueryParams, RenderMode, RgbColor, RpcConfiguration,
   RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName, GeometryStreamProps, BackgroundMapType, ContextRealityModelProps,
+  MobileRpcConfiguration, MobileRpcManager,
 } from "@bentley/imodeljs-common";
 import { AccessToken, Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
-import { OidcClientWrapper } from "@bentley/imodeljs-frontend";
-import { MobileRpcConfiguration, MobileRpcManager } from "@bentley/imodeljs-common";
 import {
   AccuDraw, AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, BeButtonEvent, Cluster, CoordinateLockOverrides, DecorateContext,
   DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
   SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus, imageBufferToPngDataUrl,
-  ContextRealityModelState,
+  ContextRealityModelState, OidcClientWrapper, FeatureSymbology, GraphicType, PerformanceMetrics, Target,
 } from "@bentley/imodeljs-frontend";
-import { FeatureSymbology, GraphicType } from "@bentley/imodeljs-frontend";
-import { PerformanceMetrics, Target } from "@bentley/imodeljs-frontend";
 import ToolTip from "tooltip.js";
 import { IModelApi } from "./IModelApi";
 import { SimpleViewState } from "./SimpleViewState";

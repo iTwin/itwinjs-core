@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-import { CSSProperties } from "react";
 import { createStore, combineReducers, Store } from "redux";
 import { Provider } from "react-redux";
 import {
@@ -16,8 +15,7 @@ import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import { Presentation } from "@bentley/presentation-frontend";
 
-import { WebFontIcon } from "@bentley/ui-core";
-import { UiCore } from "@bentley/ui-core";
+import { WebFontIcon, UiCore } from "@bentley/ui-core";
 import { UiComponents } from "@bentley/ui-components";
 import {
   UiFramework,
@@ -208,7 +206,7 @@ SampleAppIModelApp.startup();
 // wait for both our i18n namespaces to be read.
 SampleAppIModelApp.initialize().then(() => { // tslint:disable-line:no-floating-promises
   //  create the application icon.
-  const applicationIconStyle: CSSProperties = {
+  const applicationIconStyle: React.CSSProperties = {
     width: "50px",
     height: "50px",
     fontSize: "50px",

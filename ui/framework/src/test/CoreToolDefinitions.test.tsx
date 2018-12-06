@@ -10,8 +10,7 @@ import {
   ActionItemButton,
   CoreTools,
 } from "../ui-framework";
-import { Toolbar } from "@bentley/ui-ninezone";
-import { Direction } from "@bentley/ui-ninezone";
+import { Direction, Toolbar } from "@bentley/ui-ninezone";
 
 describe("CoreToolDefinitions", () => {
 

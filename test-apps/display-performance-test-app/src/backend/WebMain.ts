@@ -8,8 +8,7 @@ import * as https from "https";
 import * as bodyParser from "body-parser";
 import * as fs from "fs";
 
-import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
-import { IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager, IModelTileRpcInterface, StandaloneIModelRpcInterface, IModelReadRpcInterface } from "@bentley/imodeljs-common";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { initializeBackend } from "./backend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";

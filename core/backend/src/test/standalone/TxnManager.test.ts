@@ -17,7 +17,7 @@ describe("TxnManager", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
-    imodel = IModelTestUtils.openIModel("test.bim");
+    imodel = IModelTestUtils.openIModel("test.bim", { copyFilename: "TxnManager_Test.bim" });
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     await imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
 
@@ -31,6 +31,7 @@ describe("TxnManager", () => {
     imodel.saveChanges("schema change");
     imodel.nativeDb.enableTxnTesting();
   });
+
   after(() => IModelTestUtils.closeIModel(imodel));
 
   it("Undo/Redo", () => {
@@ -179,20 +180,20 @@ describe("TxnManager", () => {
     }));
 
     imodel.saveChanges("step 1");
-    assert.equal(1, beforeOutputsHandled);
-    assert.equal(1, allInputsHandled);
-    assert.equal(1, rootChanged);
-    assert.equal(0, validateOutput);
-    assert.equal(0, deletedDependency);
+    assert.equal(beforeOutputsHandled, 1);
+    assert.equal(allInputsHandled, 1);
+    assert.equal(rootChanged, 1);
+    assert.equal(validateOutput, 0);
+    assert.equal(deletedDependency, 0);
 
     const element2 = imodel.elements.getElement<TestPhysicalObject>(el2);
     element2.update();
     imodel.saveChanges("step 2");
-    assert.equal(2, beforeOutputsHandled);
-    assert.equal(2, allInputsHandled);
-    assert.equal(2, rootChanged);
-    assert.equal(0, validateOutput);
-    assert.equal(0, deletedDependency);
+    assert.equal(beforeOutputsHandled, 2);
+    assert.equal(allInputsHandled, 2);
+    assert.equal(rootChanged, 2);
+    assert.equal(validateOutput, 0);
+    assert.equal(deletedDependency, 0);
     removals.forEach((drop) => drop());
   });
 

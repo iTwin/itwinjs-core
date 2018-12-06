@@ -5,7 +5,7 @@
 /** @module PropertyGrid */
 
 import * as React from "react";
-import { ExpandableBlock } from "@bentley/ui-core/";
+import { ExpandableBlock } from "@bentley/ui-core";
 import { PropertyCategory } from "../PropertyDataProvider";
 
 import "./PropertyCategoryBlock.scss";

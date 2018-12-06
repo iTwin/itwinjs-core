@@ -4,10 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import * as TypeMoq from "typemoq";
-import { Rectangle, RectangleProps } from "../../../../ui-ninezone";
-import { Layout } from "../../../../ui-ninezone";
-import { Root } from "../../../../ui-ninezone";
-import { Size } from "../../../../ui-ninezone";
+import { Rectangle, RectangleProps, Layout, Root, Size } from "../../../../ui-ninezone";
 
 class LayoutMock extends Layout {
   private _topLayouts: LayoutMock[] = [];

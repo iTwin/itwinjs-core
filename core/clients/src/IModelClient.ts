@@ -5,8 +5,7 @@
 /** @module iModels */
 import { FileHandler } from "./FileHandler";
 import { BriefcaseHandler } from "./imodelhub/Briefcases";
-import { IModelsHandler } from "./imodelhub/iModels";
-import { IModelHandler } from "./imodelhub/iModels";
+import { IModelsHandler, IModelHandler } from "./imodelhub/iModels";
 import { ChangeSetHandler } from "./imodelhub/ChangeSets";
 import { LockHandler } from "./imodelhub/Locks";
 import { CodeHandler } from "./imodelhub/Codes";

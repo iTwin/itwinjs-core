@@ -3,12 +3,11 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { IModelHubClient, AccessToken, HubIModel, Version, IModelQuery, VersionQuery } from "@bentley/imodeljs-clients";
-import { OpenMode } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 // import GatewayProxyApi from "./gatewayProxy";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 
 export class IModelApi {
   private static _hubClient: IModelHubClient;
