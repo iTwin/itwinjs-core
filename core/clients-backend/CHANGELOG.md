@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-clients-backend
 
-This log was last generated on Tue, 04 Dec 2018 17:24:39 GMT and should not be manually modified.
+This log was last generated on Thu, 06 Dec 2018 22:03:29 GMT and should not be manually modified.
+
+## 0.173.0
+Thu, 06 Dec 2018 22:03:29 GMT
+
+### Updates
+
+- Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on.
 
 ## 0.172.0
 Tue, 04 Dec 2018 17:24:39 GMT

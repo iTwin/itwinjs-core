@@ -2,6 +2,27 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.173.0",
+      "tag": "@bentley/imodeljs-clients_v0.173.0",
+      "date": "Thu, 06 Dec 2018 22:03:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Appended system environment with \"imjs\" prefix to Config. "
+          },
+          {
+            "comment": "Fixes to errors during file downloads"
+          },
+          {
+            "comment": "added AzureFileHandler for ios"
+          },
+          {
+            "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.172.0",
       "tag": "@bentley/imodeljs-clients_v0.172.0",
       "date": "Tue, 04 Dec 2018 17:24:39 GMT",
