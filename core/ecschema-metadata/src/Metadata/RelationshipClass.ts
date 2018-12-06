@@ -18,6 +18,7 @@ import {
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { LazyLoadedRelationshipConstraintClass } from "./../Interfaces";
 import { SchemaItemKey } from "./../SchemaKey";
+import { SchemaItem } from "./SchemaItem";
 
 type AnyConstraintClass = EntityClass | Mixin | RelationshipClass;
 
@@ -210,10 +211,64 @@ export class RelationshipConstraint {
 
     this._customAttributes = processCustomAttributes(relationshipConstraintProps.customAttributes, debugName(this), CustomAttributeContainerType.AnyRelationshipConstraint);
   }
+
   public async deserialize(relationshipConstraintProps: RelationshipConstraintProps) {
     this.deserializeSync(relationshipConstraintProps);
   }
 
+  /**
+   * Indicates if the provided [[ECClass]] is supported by this [[RelationshipConstraint]].
+   * @param ecClass The class to check.
+   */
+  public async supportsClass(ecClass: ECClass): Promise<boolean> {
+    if (!this.constraintClasses) {
+      if (this.relationshipClass.baseClass) {
+        const baseRelationship = await this.relationshipClass.baseClass as RelationshipClass;
+        const baseConstraint = this.isSource ? baseRelationship.source : baseRelationship.target;
+        return baseConstraint.supportsClass(ecClass);
+      }
+      return false;
+    }
+
+    if (ecClass.schemaItemType !== SchemaItemType.EntityClass && ecClass.schemaItemType !== SchemaItemType.RelationshipClass &&
+      ecClass.schemaItemType !== SchemaItemType.Mixin) {
+      return false;
+    }
+
+    const abstractConstraint = await this.abstractConstraint;
+
+    if (abstractConstraint && await RelationshipConstraint.classCompatibleWithConstraint(abstractConstraint, ecClass, this.polymorphic || false))
+      return true;
+
+    for (const constraint of this.constraintClasses) {
+      if (await RelationshipConstraint.classCompatibleWithConstraint(await constraint, ecClass, this.polymorphic || false))
+        return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Indicates if an ECClass is of the type or applies to the type (if a mixin) of the ECClass specified by the constraintClass parameter.
+   * @param constraintClass The ECClass that is a constraint class of a relationship.
+   * @param testClass The ECClass to check against the constraint class.
+   * @param isPolymorphic Indicates if the testClass should be checked polymorphically.
+   */
+  public static async classCompatibleWithConstraint(constraintClass: ECClass, testClass: ECClass, isPolymorphic: boolean): Promise<boolean> {
+    if (SchemaItem.equalByKey(constraintClass, testClass))
+      return true;
+
+    if (isPolymorphic) {
+      if (testClass.schemaItemType === SchemaItemType.EntityClass || testClass.schemaItemType === SchemaItemType.RelationshipClass) {
+        return testClass.is(constraintClass);
+      }
+
+      if (testClass.schemaItemType === SchemaItemType.Mixin && constraintClass.schemaItemType === SchemaItemType.EntityClass) {
+        return (testClass as Mixin).applicableTo(constraintClass as EntityClass);
+      }
+    }
+    return false;
+  }
 }
 
 const INT32_MAX = 2147483647;
