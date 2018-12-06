@@ -6,7 +6,7 @@
 
 import { Tool } from "./Tool";
 
-function loadPackage(packageName: string): Promise<void> {
+async function loadPackage(packageName: string): Promise<void> {
   return new Promise<void>((resolve, reject) => {
     const head = document.getElementsByTagName("head")[0];
     if (!head)
