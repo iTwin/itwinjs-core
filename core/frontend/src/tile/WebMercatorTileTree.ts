@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { assert, ActivityLoggingContext, BentleyError, Guid, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
+import { assert, ActivityLoggingContext, BentleyError, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
 import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation, BackgroundMapType, BackgroundMapProps } from "@bentley/imodeljs-common";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile, TileRequests } from "./TileTree";
@@ -210,6 +210,7 @@ class WebMercatorTileLoader extends TileLoader {
 // Represents the service that is providing map tiles for Web Mercator models (background maps).
 abstract class ImageryProvider {
   public mapType: BackgroundMapType;
+  protected _activityLoggingContext = new ActivityLoggingContext("");
 
   constructor(mapType: BackgroundMapType) {
     this.mapType = mapType;
@@ -234,7 +235,7 @@ abstract class ImageryProvider {
   // returns a Uint8Array with the contents of the tile.
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
     const tileUrl: string = this.constructUrl(row, column, zoomLevel);
-    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const alctx = this._activityLoggingContext;
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     try {
       const tileResponse: Response = await request(alctx, tileUrl, tileRequestOptions);
@@ -425,7 +426,7 @@ class BingMapProvider extends ImageryProvider {
     // get the template url
     // NEEDSWORK - should get bing key from server.
     const bingKey = "AtaeI3QDNG7Bpv1L53cSfDBgBKXIgLq3q-xmn_Y2UyzvF-68rdVxwAuje49syGZt";
-    const alctx = new ActivityLoggingContext(Guid.createValue());
+    const alctx = this._activityLoggingContext;
 
     let imagerySet = "Road";
     if (BackgroundMapType.Aerial === this.mapType)
@@ -456,11 +457,10 @@ class BingMapProvider extends ImageryProvider {
       this.readAttributions(thisResourceProps.imageryProviders);
 
       // read the Bing logo data, used in getCopyrightImage
-      this.readLogo().then((logoByteArray) => { // tslint:disable-line:no-floating-promises
+      if (undefined !== this._logoUrl && 0 < this._logoUrl.length) {
         this._logoImage = new Image();
-        const base64Data = Base64.btoa(String.fromCharCode.apply(null, logoByteArray));
-        this._logoImage.src = "data:image/png;base64," + base64Data;
-      });
+        this._logoImage.src = this._logoUrl;
+      }
 
       // Bing sometimes provides tiles that have nothing but a stupid camera icon in the middle of them when you ask
       // for tiles at zoom levels where they don't have data. Their application stops you from zooming in when that's the
@@ -472,22 +472,6 @@ class BingMapProvider extends ImageryProvider {
     } catch (error) {
       throw new BentleyError(IModelStatus.BadModel, "Error in Bing Server communications");
     }
-  }
-
-  // reads the Bing logo from the url returned as part of the first response.
-  private async readLogo(): Promise<Uint8Array | undefined> {
-    const alctx = new ActivityLoggingContext(Guid.createValue());
-    if (!this._logoUrl || (this._logoUrl.length === 0))
-      return Promise.resolve(undefined);
-    const logoRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
-    return request(alctx, this._logoUrl, logoRequestOptions).then((logoResponse: Response) => {
-      const byteArray = new Uint8Array(logoResponse.body);
-      if (!byteArray || (byteArray.length === 0))
-        return undefined;
-      return byteArray;
-    }, (_error) => {
-      return undefined;
-    });
   }
 
   // reads the list of Bing data providers and the map range for which they each provide data.
@@ -638,7 +622,7 @@ export class BackgroundMapState {
       return;
 
     const copyrightImage = this._provider.getCopyrightImage(this);
-    if (copyrightImage) {
+    if (copyrightImage && 0 !== copyrightImage.naturalWidth && 0 !== copyrightImage.naturalHeight) {
       const position = new Point2d(0, (context.viewport.viewRect.height - copyrightImage.height));
       const drawDecoration = (ctx: CanvasRenderingContext2D) => {
         ctx.drawImage(copyrightImage, 0, 0, copyrightImage.width, copyrightImage.height);
