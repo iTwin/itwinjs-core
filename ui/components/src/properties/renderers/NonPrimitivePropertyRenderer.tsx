@@ -19,7 +19,7 @@ import "./NonPrimitivePropertyRenderer.scss";
 /** Properties of [[NonPrimitivePropertyRenderer]] React component */
 export interface NonPrimitivePropertyRendererProps extends PrimitiveRendererProps {
   /** Can struct/array property be collapsed */
-  isCollapsable?: boolean;
+  isCollapsible?: boolean;
 }
 
 /** State of [[NonPrimitivePropertyRenderer]] React component */
@@ -31,8 +31,8 @@ export interface NonPrimitivePropertyRendererState {
 /** React Component that renders struct and array properties */
 export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePropertyRendererProps, NonPrimitivePropertyRendererState> {
   public readonly state: NonPrimitivePropertyRendererState = {
-    /** If it's not collapsable, that means it's expanded by default and can't be collapsed */
-    isExpanded: !this.props.isCollapsable,
+    /** If it's not collapsible, that means it's expanded by default and can't be collapsed */
+    isExpanded: !this.props.isCollapsible,
   };
 
   private _onExpanded = () => {
@@ -119,7 +119,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
 
     return (
       <>
-        {this.props.isCollapsable
+        {this.props.isCollapsible
           ?
           <PropertyView
             labelElement={this.getLabel(this.props, this.state)}

@@ -16,7 +16,7 @@ import { ContentViewManager } from "./ContentViewManager";
 import { DefaultStateManager as NineZoneStateManager } from "@bentley/ui-ninezone";
 import { IModelConnection, IModelApp, Tool, StartOrResume } from "@bentley/imodeljs-frontend";
 import { ToolInformation } from "./ToolInformation";
-import { FrontstageProvider } from "./Frontstage";
+import { FrontstageProvider } from "./FrontstageProvider";
 
 // -----------------------------------------------------------------------------
 // Frontstage Events
@@ -184,10 +184,7 @@ export class FrontstageManager {
    * @param frontstageProvider  FrontstageProvider representing the Frontstage to add
    */
   public static addFrontstageProvider(frontstageProvider: FrontstageProvider): void {
-    const frontstageDef: FrontstageDef = new FrontstageDef();
-    frontstageDef.initializeFromProvider(frontstageProvider);
-    frontstageProvider.frontstageDef = frontstageDef;
-    this.addFrontstageDef(frontstageDef);
+    this.addFrontstageDef(frontstageProvider.initializeDef());
   }
 
   /** Find a loaded Frontstage with a given id. If the id is not provided, the active Frontstage is returned.

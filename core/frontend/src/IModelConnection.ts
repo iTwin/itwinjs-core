@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
 
-import { Id64, Id64Arg, Id64String, Id64Set, TransientIdSequence, Logger, OpenMode, BentleyStatus, BeEvent, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, assert, BeEvent, BentleyStatus, Guid, Id64, Id64Arg, Id64Set, Id64String, Logger, OpenMode, TransientIdSequence } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  CodeSpec, ElementProps, EntityQueryParams, IModel, IModelToken, IModelError, IModelStatus, ModelProps, ModelQueryParams,
-  IModelVersion, AxisAlignedBox3d, ViewQueryParams, ViewDefinitionProps, FontMap, IModelReadRpcInterface, IModelWriteRpcInterface,
-  StandaloneIModelRpcInterface, IModelTileRpcInterface, TileTreeProps, RpcRequest, RpcRequestEvent, RpcOperation, RpcNotFoundResponse,
-  IModelNotFoundResponse, SnapRequestProps, SnapResponseProps, ThumbnailProps, ImageSourceFormat, WipRpcInterface, IModelUnitTestRpcInterface,
+  AxisAlignedBox3d, CodeSpec, ElementProps, EntityQueryParams, FontMap, ImageSourceFormat, IModel, IModelError, IModelNotFoundResponse,
+  IModelReadRpcInterface, IModelStatus, IModelTileRpcInterface, IModelToken, IModelUnitTestRpcInterface, IModelVersion, IModelWriteRpcInterface,
+  ModelProps, ModelQueryParams, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
+  StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
+import { CategorySelectorState } from "./CategorySelectorState";
+import { EntityState } from "./EntityState";
+import { IModelApp } from "./IModelApp";
+import { ModelState } from "./ModelState";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
 import { ViewState } from "./ViewState";
-import { CategorySelectorState } from "./CategorySelectorState";
-import { ModelState } from "./ModelState";
-import { IModelApp } from "./IModelApp";
-import { EntityState } from "./EntityState";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
 
@@ -73,31 +73,36 @@ export class IModelConnection extends IModel {
   private static _registry = new Map<string, typeof EntityState>();
 
   /** Register a class by classFullName */
-  public static registerClass(className: string, classType: typeof EntityState) { this._registry.set(className, classType); }
-
-  /** @hidden */
-  public static findClass(className: string) { return this._registry.get(className); }
+  public static registerClass(className: string, classType: typeof EntityState) { this._registry.set(className.toLowerCase(), classType); }
+  private static lookupClass(className: string) { return this._registry.get(className.toLowerCase()); }
 
   /**
-   * Find the first base class of the given class that is registered. Then, register that EntityState as the handler of the given class so we won't need this method again for that class.
-   * @hidden
+   * Find the first registered base class of the given EntityState className. This class will "handle" the State for the supplied className.
+   * @param className The full name of the class of interest.
+   * @param defaultClass If no base class of the className is registered, return this value.
+   * @note this method is async since it may have to query the server to get the class hierarchy.
    */
-  public async findRegisteredBaseClass(className: string, defaultClass: typeof EntityState | undefined): Promise<typeof EntityState | undefined> {
-    let ctor = defaultClass; // worst case, we don't find any registered base classes
+  public async findClassFor<T extends typeof EntityState>(className: string, defaultClass: T | undefined): Promise<T | undefined> {
+    let ctor = IModelConnection.lookupClass(className) as T | undefined;
+    if (undefined !== ctor)
+      return ctor;
+
+    // it's not registered, we need to query its class hierarchy.
+    ctor = defaultClass; // in case we cant find a registered class that handles this class
 
     // wait until we get the full list of base classes from backend
     const baseClasses = await IModelReadRpcInterface.getClient().getClassHierarchy(this.iModelToken, className);
     // walk through the list until we find a registered base class
     baseClasses.some((baseClass: string) => {
-      const test = IModelConnection.findClass(baseClass);
+      const test = IModelConnection.lookupClass(baseClass) as T | undefined;
       if (test === undefined)
         return false; // nope, not registered
 
       ctor = test; // found it, save it
-      IModelConnection.registerClass(className, ctor); // and register the fact that our starting class is handled by this ModelState subclass.
+      IModelConnection.registerClass(className, ctor); // and register the fact that our starting class is handled by this subclass.
       return true; // stop
     });
-    return ctor; // either the baseClass handler or ModelState if we didn't find a registered baseClass
+    return ctor; // either the baseClass handler or defaultClass if we didn't find a registered baseClass
   }
 
   private constructor(iModel: IModel, openMode: OpenMode, accessToken?: AccessToken) {
@@ -389,10 +394,7 @@ export namespace IModelConnection {
       try {
         const propArray = await this.getProps(notLoaded);
         for (const props of propArray) {
-          let ctor = IModelConnection.findClass(props.classFullName);
-          if (undefined === ctor) { // oops, this className doesn't have a registered handler. Walk through the baseClasses to find one
-            ctor = await this._iModel.findRegisteredBaseClass(props.classFullName, ModelState); // must wait for this
-          }
+          const ctor = await this._iModel.findClassFor(props.classFullName, ModelState);
           const modelState = new ctor!(props, this._iModel); // create a new instance of the appropriate ModelState subclass
           this.loaded.set(modelState.id, modelState as ModelState); // save it in loaded set
         }
@@ -556,12 +558,9 @@ export namespace IModelConnection {
       const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
 
       const className = viewStateData.viewDefinitionProps.classFullName;
-      let ctor = IModelConnection.findClass(className) as typeof ViewState | undefined;
-      if (undefined === ctor) { // oops, this className doesn't have a registered handler. Walk through the baseClasses to find one
-        ctor = (await this._iModel.findRegisteredBaseClass(className, undefined)) as typeof ViewState | undefined; // must wait for this
-        if (ctor === undefined)
-          return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggingCategory, () => viewStateData));
-      }
+      const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
+      if (undefined === ctor)
+        return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggingCategory, () => viewStateData));
 
       const viewState = ctor.createFromStateData(viewStateData, categorySelectorState, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector

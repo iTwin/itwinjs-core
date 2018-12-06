@@ -51,6 +51,7 @@ export * from "./configurableui/Frontstage";
 export * from "./configurableui/FrontstageComposer";
 export * from "./configurableui/FrontstageDef";
 export * from "./configurableui/FrontstageManager";
+export * from "./configurableui/FrontstageProvider";
 export * from "./configurableui/GroupItem";
 export * from "./configurableui/IconComponent";
 export * from "./configurableui/Item";

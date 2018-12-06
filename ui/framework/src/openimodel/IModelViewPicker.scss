@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
  @import "@bentley/bwc/lib/mixins";
  @import "@bentley/bwc/lib/buttons/classes.scss";
+ @import "@bentley/ui-core/lib/_scrollbar";
 
  $view-card-width: 215px;
  $view-card-height: 150px;
@@ -53,6 +54,9 @@
   display: flex;
   flex-wrap: wrap;
   overflow: auto;
+
+  @include uicore-touch-scrolling;
+  @include uicore-scrollbar();
 }
 
 .views-empty {

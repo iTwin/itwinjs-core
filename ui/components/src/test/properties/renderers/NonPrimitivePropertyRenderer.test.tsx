@@ -22,7 +22,7 @@ describe("NonPrimitivePropertyRenderer", () => {
         orientation={Orientation.Horizontal}
         propertyRecord={TestUtils.createArrayProperty("Pipes", [TestUtils.createPrimitiveStringProperty("pipe_1", "Water pipe")])}
         valueElement={"string[1]"}
-        isCollapsable={true}
+        isCollapsible={true}
       />);
 
     await TestUtils.flushAsyncOperations();
@@ -35,7 +35,7 @@ describe("NonPrimitivePropertyRenderer", () => {
     expect(rendererMount.find(PropertyRenderer).exists()).to.be.false;
   });
 
-  it("renders as expanded if isCollapsable is not set", () => {
+  it("renders as expanded if isCollapsible is not set", () => {
     const rendererMount = mount(
       <NonPrimitivePropertyRenderer
         orientation={Orientation.Horizontal}
@@ -60,7 +60,7 @@ describe("NonPrimitivePropertyRenderer", () => {
               building: TestUtils.createPrimitiveStringProperty("Building", "Residential"),
               street: TestUtils.createPrimitiveStringProperty("Street", "Glass st."),
             })}
-        isCollapsable={true}
+        isCollapsible={true}
       />);
 
     expect(rendererMount.find(PropertyRenderer).length).to.be.be.eq(0);

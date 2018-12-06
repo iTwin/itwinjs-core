@@ -109,22 +109,20 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
 
     const frontstageId = args.frontstageId;
     const nineZoneProps = this.determineNineZoneProps(this._frontstageDef);
-    const needLayout = (this._frontstageDef && this._frontstageDef.nineZoneProps) ? false : true;
+    const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZoneProps) ? false : true;
 
     // Get the id and nineZoneProps for the current FrontstageDef
     this.setState({
       frontstageId,
       nineZoneProps,
     }, () => {
-      if (needLayout) {
+      if (needInitialLayout)
         this.initializeFrontstageLayout(nineZoneProps);
-      }
+      this.layout();
     });
   }
 
   private initializeFrontstageLayout(nineZoneProps: NineZoneProps) {
-    this.layout();
-
     const zones = Object.keys(nineZoneProps.zones);
     zones
       .map((key) => Number(key) as WidgetZoneIndex)

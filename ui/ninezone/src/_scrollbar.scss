@@ -2,38 +2,15 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/_scrollbar";
 
-$nz-scrollbar-width: 8px;
+$nz-scrollbar-width: 10px;
 $nz-scrollbar-padding: 2px;
 
 @mixin nz-scrollbar($color, $width: $nz-scrollbar-width, $padding: $nz-scrollbar-padding) {
-  &::-webkit-scrollbar {
-    width: $width;
-    height: $width;
-  }
-
-  &::-webkit-scrollbar-thumb {
-    border-radius: $width;
-    background-color: $color;
-    background-clip: content-box;
-    border-style: solid;
-    border-color: transparent;
-    border-width: $padding;
-  }
-
-  &::-webkit-scrollbar-corner {
-    background-color: transparent;
-  }
-
-  &::-webkit-scrollbar-track-piece:corner-present {
-    margin-bottom: -2 * $padding;
-    margin-right: -2 * $padding;
-  }
+  @include uicore-scrollbar($color, $width, $padding);
 }
 
 @mixin nz-hidden-scrollbar {
-  &::-webkit-scrollbar {
-    width: 0;
-    height: 0;
-  }
+  @include uicore-hidden-scrollbar;
 }
