@@ -1695,7 +1695,7 @@ export abstract class Viewport implements IDisposable {
       target.animationFraction = this.animationFraction;
       isRedrawNeeded = true;
       sync.setValidAnimationFraction();
-      const scheduleScript = view.displayStyle.settings.scheduleScript;
+      const scheduleScript = view.displayStyle.scheduleScript;
       if (scheduleScript)
         view.scheduleTime = scheduleScript.duration.fractionToPoint(target.animationFraction);
     }

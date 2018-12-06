@@ -4,14 +4,14 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
-import { Id64, Id64Array, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { AngleProps, XYProps, XYZProps, YawPitchRollProps } from "@bentley/geometry-core";
-import { ColorDef, ColorDefProps } from "./ColorDef";
-import { DefinitionElementProps, ElementProps, SheetProps } from "./ElementProps";
+import { Id64, Id64String, Id64Array, JsonUtils } from "@bentley/bentleyjs-core";
 import { EntityQueryParams } from "./EntityProps";
-import { AnalysisStyle, AnalysisStyleProps, HiddenLine, ViewFlags } from "./Render";
-import { RenderSchedule } from "./RenderSchedule";
+import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
+import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
+import { ColorDef, ColorDefProps } from "./ColorDef";
+import { ViewFlags, AnalysisStyleProps, HiddenLine } from "./Render";
 import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppearance";
+import { RenderSchedule } from "./RenderSchedule";
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend) */
 export interface ViewStateData {
@@ -318,8 +318,6 @@ export class DisplayStyleSettings {
   private readonly _viewFlags: ViewFlags;
   private readonly _background: ColorDef;
   private readonly _monochrome: ColorDef;
-  private _analysisStyle?: AnalysisStyle;
-  private _scheduleScript?: RenderSchedule.Script;
   private readonly _subCategoryOverrides: Map<string, SubCategoryOverride> = new Map<string, SubCategoryOverride>();
 
   /** Construct a new DisplayStyleSettings from an [[ElementProps.jsonProperties]].
@@ -331,18 +329,10 @@ export class DisplayStyleSettings {
   public constructor(jsonProperties: { styles?: DisplayStyleSettingsProps }) {
     if (undefined === jsonProperties.styles)
       jsonProperties.styles = {};
-
     this._json = jsonProperties.styles;
-
     this._viewFlags = ViewFlags.fromJSON(this._json.viewflags);
     this._background = ColorDef.fromJSON(this._json.backgroundColor);
     this._monochrome = undefined !== this._json.monochromeColor ? ColorDef.fromJSON(this._json.monochromeColor) : ColorDef.white.clone();
-
-    if (undefined !== this._json.analysisStyle)
-      this._analysisStyle = AnalysisStyle.fromJSON(this._json.analysisStyle);
-
-    if (undefined !== this._json.scheduleScript && Array.isArray(this._json.scheduleScript))
-      this._scheduleScript = RenderSchedule.Script.fromJSON(this._json.scheduleScript);
 
     const ovrsArray = JsonUtils.asArray(this._json.subCategoryOvr);
     if (undefined !== ovrsArray) {
@@ -394,24 +384,6 @@ export class DisplayStyleSettings {
   }
   /** @hidden */
   public set backgroundMap(map: BackgroundMapProps | undefined) { this._json.backgroundMap = map; }
-
-  /** Settings controlling display of analytical models.
-   * @note Do not modify the style in place. Clone it and pass the clone to the setter.
-   */
-  public get analysisStyle(): AnalysisStyle | undefined { return this._analysisStyle; }
-  public set analysisStyle(style: AnalysisStyle | undefined) {
-    if (undefined === style) {
-      this._analysisStyle = undefined;
-    } else {
-      if (undefined === this._analysisStyle)
-        this._analysisStyle = AnalysisStyle.fromJSON(style);
-      else
-        this._analysisStyle.copyFrom(style);
-    }
-
-    this._json.analysisStyle = this._analysisStyle;
-  }
-  public get scheduleScript(): RenderSchedule.Script | undefined { return this._scheduleScript; }
 
   /** Customize the way geometry belonging to a [[SubCategory]] is drawn by this display style.
    * @param id The ID of the SubCategory whose appearance is to be overridden.
