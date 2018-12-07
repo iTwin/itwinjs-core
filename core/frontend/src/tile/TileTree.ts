@@ -95,14 +95,13 @@ export class TileRequests {
     return found;
   }
 
-  private readonly _useTileRequests = false;
+  private readonly _useTileRequests = true;
   public requestMissing(): void {
     if (this._useTileRequests) {
       this._map.forEach((missing, _tree) => {
         const list = missing.extractArray();
         if (undefined !== list) {
-          for (const tile of list)
-            tile.request = new TileRequest(tile);
+          IModelApp.tileRequests.requestTiles(list);
         }
       });
     } else {
@@ -492,7 +491,7 @@ export class Tile implements IDisposable {
   public get request(): TileRequest | undefined { return this._request; }
   public set request(request: TileRequest | undefined) {
     assert(undefined === request || undefined === this.request);
-    this.request = request;
+    this._request = request;
   }
 }
 
@@ -597,11 +596,16 @@ export namespace Tile {
       }
     }
 
+    private readonly _useTileRequests = true;
     public requestMissing(): void {
       if (undefined !== this._missing) {
         const list = this._missing.extractArray();
-        if (undefined !== list)
-          this.root.requestTiles(list);
+        if (undefined !== list) {
+          if (this._useTileRequests)
+            IModelApp.tileRequests.requestTiles(list);
+          else
+            this.root.requestTiles(list);
+        }
       }
     }
 
@@ -728,7 +732,7 @@ export abstract class TileLoader {
     let reader: GltfTileIO.Reader | undefined;
     switch (format) {
       case TileIO.Format.Pnts:
-        return { graphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp) };
+        return { renderGraphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp) };
 
       case TileIO.Format.B3dm:
         reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);

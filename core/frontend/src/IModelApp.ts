@@ -19,6 +19,7 @@ import { TentativePoint } from "./TentativePoint";
 import { ToolRegistry } from "./tools/Tool";
 import { ToolAdmin } from "./tools/ToolAdmin";
 import { ViewManager } from "./ViewManager";
+import { TileRequest } from "./tile/TileRequest";
 import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
 import * as pluginTool from "./tools/PluginTool";
@@ -43,6 +44,8 @@ export class IModelApp {
   public static viewManager: ViewManager;
   /** The [[NotificationManager]] for this session. */
   public static notifications: NotificationManager;
+  /** The [[TileRequest.Scheduler]] for this session. */
+  public static tileRequests: TileRequest.Scheduler;
   /** The [[QuantityFormatter]] for this session. */
   public static quantityFormatter: QuantityFormatter;
   /** The [[ToolAdmin]] for this session. */
@@ -121,6 +124,7 @@ export class IModelApp {
     if (!IModelApp.settings) IModelApp.settings = new ConnectSettingsClient(IModelApp.applicationId);
     if (!IModelApp._renderSystem) IModelApp._renderSystem = this.supplyRenderSystem();
     if (!IModelApp.viewManager) IModelApp.viewManager = new ViewManager();
+    if (!IModelApp.tileRequests) IModelApp.tileRequests = TileRequest.createScheduler(IModelApp.supplyTileRequestSchedulerOptions());
     if (!IModelApp.notifications) IModelApp.notifications = new NotificationManager();
     if (!IModelApp.toolAdmin) IModelApp.toolAdmin = new ToolAdmin();
     if (!IModelApp.accuDraw) IModelApp.accuDraw = new AccuDraw();
@@ -142,6 +146,7 @@ export class IModelApp {
   public static shutdown() {
     IModelApp.toolAdmin.onShutDown();
     IModelApp.viewManager.onShutDown();
+    IModelApp.tileRequests.onShutDown();
     IModelApp._renderSystem = dispose(IModelApp._renderSystem);
     IModelApp._initialized = false;
   }
@@ -161,4 +166,7 @@ export class IModelApp {
    * @hidden
    */
   protected static supplyRenderSystem(): RenderSystem { return System.create(); }
+
+  /** Implement this method to supply options for the initialization of the [[TileRequest.Scheduler]]. */
+  protected static supplyTileRequestSchedulerOptions(): TileRequest.SchedulerOptions | undefined { return undefined; }
 }

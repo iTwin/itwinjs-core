@@ -1516,10 +1516,12 @@ async function selectIModel() {
 function setFpsInfo() {
   const perfMet = (theViewport!.target as Target).performanceMetrics;
   if (undefined !== perfMet && document.getElementById("showfps")) {
+    const stats = IModelApp.tileRequests.statistics;
     document.getElementById("showfps")!.innerHTML =
       "Avg. FPS: " + (perfMet.spfTimes.length / perfMet.spfSum).toFixed(2)
       + " Render Time (ms): " + (perfMet.renderSpfSum / perfMet.renderSpfTimes.length).toFixed(2)
-      + "<br />Scene Time (ms): " + (perfMet.loadTileSum / perfMet.loadTileTimes.length).toFixed(2);
+      + "<br />Scene Time (ms): " + (perfMet.loadTileSum / perfMet.loadTileTimes.length).toFixed(2)
+      + "<br />Tiles: " + stats.numActiveRequests + " active, " + stats.numPendingRequests + " pending";
 
     let msg = "";
     perfMet.frameTimings.forEach((v, k) => {

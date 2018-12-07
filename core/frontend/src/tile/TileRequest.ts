@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { base64StringToUint8Array } from "@bentley/bentleyjs-core";
+import { assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import { ImageSource, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { RenderGraphic } from "../render/System";
 import { Tile, TileTree, TileLoader } from "./TileTree";
@@ -61,7 +61,7 @@ export class TileRequest {
     try {
       const graphic = await this.loader.loadTileGraphic(this.tile, data);
       this._state = TileRequest.State.Completed;
-      this.tile.setGraphic(graphic.graphic, graphic.isLeaf, graphic.contentRange, graphic.sizeMultiplier);
+      this.tile.setGraphic(graphic.renderGraphic, graphic.isLeaf, graphic.contentRange, graphic.sizeMultiplier);
       this.tile.request = undefined;
     } catch (_err) {
       this.setFailed();
@@ -84,15 +84,93 @@ export namespace TileRequest {
   }
 
   export interface Graphic {
-    graphic?: RenderGraphic;
+    renderGraphic?: RenderGraphic;
     isLeaf?: boolean;
     contentRange?: ElementAlignedBox3d;
     sizeMultiplier?: number;
   }
+
+  export interface Statistics {
+    numPendingRequests: number;
+    numActiveRequests: number;
+  }
+
+  export interface Scheduler {
+    readonly statistics: Statistics;
+
+    preprocess(): void;
+    process(): void;
+    requestTiles(tiles: Tile[]): void;
+    onShutDown(): void;
+  }
+
+  export interface SchedulerOptions {
+    maxActiveRequests?: number;
+  }
+
+  export function createScheduler(options?: SchedulerOptions): Scheduler {
+    return new TileRequestScheduler(options);
+  }
+}
+
+class TileRequestScheduler implements TileRequest.Scheduler {
+  private readonly _activeRequests = new Set<Tile>();
+  private readonly _maxActiveRequests: number;
+
+  public constructor(options?: TileRequest.SchedulerOptions) {
+    let maxActiveRequests = 10;
+    if (undefined !== options) {
+      if (undefined !== options.maxActiveRequests)
+        maxActiveRequests = options.maxActiveRequests;
+    }
+
+    this._maxActiveRequests = maxActiveRequests;
+    assert(0 !== this._maxActiveRequests); // temporarily, to silence unused var warning...
+  }
+
+  public get statistics(): TileRequest.Statistics {
+    return {
+      numPendingRequests: 0,
+      numActiveRequests: this._activeRequests.size,
+    };
+  }
+
+  public preprocess(): void {
+  }
+
+  public process(): void {
+  }
+
+  public requestTiles(tiles: Tile[]): void {
+    for (const tile of tiles) {
+      if (undefined === tile.request) {
+        assert(!this._activeRequests.has(tile));
+        assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
+        if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
+          tile.request = new TileRequest(tile);
+          this.dispatch(tile.request);
+        }
+      } else {
+        assert(this._activeRequests.has(tile));
+      }
+    }
+  }
+
+  public onShutDown(): void {
+    // ###TODO mark all as cancelled.
+    this._activeRequests.clear();
+  }
+
+  private dispatch(req: TileRequest): void {
+    this._activeRequests.add(req.tile);
+    req.dispatch().then(() => {
+      assert(this._activeRequests.has(req.tile));
+      this._activeRequests.delete(req.tile);
+    });
+  }
 }
 
 /*
-import { PriorityQueue } from "@bentley/bentleyjs-core";
 import { Tile, TileRequests } from "./TileTree";
 
 export class TileRequest {
@@ -105,14 +183,6 @@ export class TileRequest {
     // ###TODO: account for tile type (map/reality vs design model), etc...
     return this.priority - rhs.priority
   }
-}
-
-class Queue extends PriorityQueue<TileRequest> {
-  public constructor() {
-    super((lhs, rhs) => lhs.compare(rhs));
-  }
-
-  public get array(): TileRequest[] { return this._array; }
 }
 
 function compareRequests(lhs: TileRequest, rhs: TileRequest): number { return lhs.compare(rhs); }

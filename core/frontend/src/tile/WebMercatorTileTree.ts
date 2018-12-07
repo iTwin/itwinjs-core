@@ -213,7 +213,7 @@ class WebMercatorTileLoader extends TileLoader {
     if (undefined !== texture) {
       const quadId = new QuadId(tile.contentId);
       const corners = quadId.getCorners(this.mercatorToDb);
-      graphic.graphic = system.createTile(texture, corners);
+      graphic.renderGraphic = system.createTile(texture, corners);
     }
 
     return graphic;
