@@ -9,7 +9,7 @@ import * as React from "react";
 
 import ExpansionToggle from "./ExpansionToggle";
 import "./Node.scss";
-import { Checkbox } from "@bentley/bwc/lib/inputs/Checkbox";
+import { Checkbox } from "@bentley/bwc";
 import { CheckBoxState } from "../enums/CheckBoxState";
 
 /** Number of pixels the node gets offset per each hierarchy level */
