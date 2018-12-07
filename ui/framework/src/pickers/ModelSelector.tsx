@@ -21,6 +21,7 @@ import { Presentation } from "@bentley/presentation-frontend";
 import { RegisteredRuleset, NodeKey, NodePathElement } from "@bentley/presentation-common";
 import { CheckBoxState } from "@bentley/ui-core";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeInspireTreeNode } from "../../../components/lib/tree/component/BeInspireTree";
 
 /** Model Group used by [[ModelSelectorWidget]] */
 export interface ModelGroup {
@@ -495,8 +496,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** enable or disable a single item */
-  private _onCheckboxClick = (treeItem: TreeNodeItem) => {
-    this._setItemState(treeItem);
+  private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>) => {
+    this._setItemState(node.payload);
   }
 
   private _setItemState = (treeItem: TreeNodeItem, enabled?: boolean) => {

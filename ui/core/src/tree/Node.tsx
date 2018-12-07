@@ -22,7 +22,7 @@ export interface NodeProps {
   icon?: React.ReactChild;
   isCheckboxEnabled?: boolean;
   checkboxState?: CheckBoxState;
-  onCheckboxClick?: (item: any) => void;
+  onCheckboxClick?: () => void;
   isChecked?: boolean;
   isLeaf?: boolean;
   isLoading?: boolean;
