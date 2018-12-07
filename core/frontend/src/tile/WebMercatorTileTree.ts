@@ -162,36 +162,6 @@ class WebMercatorTileLoader extends TileLoader {
 
     return props;
   }
-  public async loadTileContents(missingArray: Tile[]): Promise<void> {
-    // Provider initialization is asynchronous...ensure we don't request same tiles again before provider is ready.
-    for (const tile of missingArray)
-      tile.setIsQueued();
-
-    if (!this._providerInitialized) {
-      if (undefined === this._providerInitializing)
-        this._providerInitializing = this._imageryProvider.initialize();
-      await this._providerInitializing;
-      this._providerInitialized = true;
-      this._providerInitializing = undefined;
-    }
-
-    await Promise.all(missingArray.map(async (missingTile) => {
-      assert(missingTile.isQueued);
-
-      const quadId = new QuadId(missingTile.contentId);
-      const corners = quadId.getCorners(this.mercatorToDb);
-      const imageSource = await this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
-      if (undefined === imageSource) {
-        missingTile.setNotFound();
-      } else {
-        const textureLoad = this.loadTextureImage(imageSource as ImageSource, this._iModel, IModelApp.renderSystem);
-        textureLoad.catch((_err) => missingTile.setNotFound());
-        textureLoad.then((result) => { // tslint:disable-line:no-floating-promises
-          missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
-        });
-      }
-    }));
-  }
   public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
     if (!this._providerInitialized) {
       if (undefined === this._providerInitializing)

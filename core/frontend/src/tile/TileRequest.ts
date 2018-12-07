@@ -163,7 +163,7 @@ class TileRequestScheduler implements TileRequest.Scheduler {
 
   private dispatch(req: TileRequest): void {
     this._activeRequests.add(req.tile);
-    req.dispatch().then(() => {
+    req.dispatch().then(() => { // tslint:disable-line no-floating-promises
       assert(this._activeRequests.has(req.tile));
       this._activeRequests.delete(req.tile);
     });

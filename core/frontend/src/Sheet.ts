@@ -222,10 +222,6 @@ export namespace Attachments {
     public abstract get is3dAttachment(): boolean;
     public tileRequiresLoading(_params: Tile.Params): boolean { return true; }
     public async getChildrenProps(_parent: Tile): Promise<TileProps[]> { assert(false); return Promise.resolve([]); }
-    public async loadTileContents(_missing: Tile[]): Promise<void> {
-      // ###TODO: This doesn't appear to be needed, yet it gets invoked?
-      return Promise.resolve();
-    }
     public async requestTileContent(_tile: Tile): Promise<TileRequest.Response> {
       // ###TODO?
       return Promise.resolve(undefined);

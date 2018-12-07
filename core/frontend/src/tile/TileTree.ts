@@ -95,22 +95,13 @@ export class TileRequests {
     return found;
   }
 
-  private readonly _useTileRequests = true;
   public requestMissing(): void {
-    if (this._useTileRequests) {
-      this._map.forEach((missing, _tree) => {
-        const list = missing.extractArray();
-        if (undefined !== list) {
-          IModelApp.tileRequests.requestTiles(list);
-        }
-      });
-    } else {
-      this._map.forEach((missing: MissingNodes, tree: TileTree) => {
-        const list = missing.extractArray();
-        if (undefined !== list)
-          tree.requestTiles(list);
-      });
-    }
+    this._map.forEach((missing, _tree) => {
+      const list = missing.extractArray();
+      if (undefined !== list) {
+        IModelApp.tileRequests.requestTiles(list);
+      }
+    });
   }
 }
 
@@ -596,16 +587,11 @@ export namespace Tile {
       }
     }
 
-    private readonly _useTileRequests = true;
     public requestMissing(): void {
       if (undefined !== this._missing) {
         const list = this._missing.extractArray();
-        if (undefined !== list) {
-          if (this._useTileRequests)
+        if (undefined !== list)
             IModelApp.tileRequests.requestTiles(list);
-          else
-            this.root.requestTiles(list);
-        }
       }
     }
 
@@ -692,8 +678,7 @@ export class TileTree implements IDisposable {
   }
 
   public requestTiles(missing: Tile[]): void {
-    // TBD - cancel any loaded/queued tiles which are no longer needed.
-    this.loader.loadTileContents(missing); // tslint:disable-line:no-floating-promises
+    IModelApp.tileRequests.requestTiles(missing);
   }
 
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {
@@ -715,7 +700,6 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
 /** @hidden */
 export abstract class TileLoader {
   public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
-  public abstract async loadTileContents(missingtiles: Tile[]): Promise<void>;
   public abstract async requestTileContent(tile: Tile): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
   protected get _batchType(): BatchType { return BatchType.Primary; }
@@ -919,19 +903,6 @@ export class IModelTileLoader extends TileLoader {
     }
 
     return kids;
-  }
-
-  public async loadTileContents(missingTiles: Tile[]): Promise<void> {
-    for (const tile of missingTiles) {
-      assert(tile.isNotLoaded);
-      tile.setIsQueued();
-      this._iModel.tiles.getTileContent(tile.root.id, tile.contentId).then((content: Uint8Array) => {
-        if (tile.isQueued)
-          this.loadGraphics(tile, content);
-      }).catch((_err: any) => {
-        tile.setNotFound();
-      });
-    }
   }
 
   public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {

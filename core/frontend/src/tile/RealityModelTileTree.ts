@@ -108,21 +108,6 @@ class RealityModelTileLoader extends TileLoader {
 
     return props;
   }
-  public async loadTileContents(missingArray: Tile[]): Promise<void> {
-    await Promise.all(missingArray.map(async (missingTile) => {
-      assert(missingTile.isNotLoaded);
-      if (missingTile.isNotLoaded) {
-        const foundChild = await this.findTileInJson(this._tree.tilesetJson, missingTile.contentId, "");
-        if (foundChild !== undefined) {
-          missingTile.setIsQueued();
-          const content = await this._tree.client.getTileContent(foundChild.json.content.url);
-          if (content !== undefined) {
-            this.loadGraphics(missingTile, content);
-          }
-        }
-      }
-    }));
-  }
   public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
     const foundChild = await this.findTileInJson(this._tree.tilesetJson, tile.contentId, "");
     if (undefined === foundChild)
