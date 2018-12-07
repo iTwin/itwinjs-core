@@ -33,11 +33,9 @@ export function withDragDrop<P extends BreadcrumbProps, DragDropObject extends T
   // tslint:disable-next-line:variable-name
   return class WithDragAndDrop extends React.Component<CombinedProps> {
 
-    public static get displayName() {
-      return "WithDragDrop(" + getDisplayName(BreadcrumbComponent) + ")";
-    }
+    public static get displayName() { return `WithDragDrop(${getDisplayName(BreadcrumbComponent)})`; }
 
-    private createNodeDragProps(item?: TreeNodeItem, parent?: TreeNodeItem, index?: number): DragSourceProps<DragDropObject> {
+    private createNodeDragProps(item?: TreeNodeItem, parent?: TreeNodeItem): DragSourceProps<DragDropObject> {
       if (!item)
         return {};
       if (!this.props.dragProps)
@@ -46,16 +44,17 @@ export function withDragDrop<P extends BreadcrumbProps, DragDropObject extends T
       const { onDragSourceBegin, onDragSourceEnd, objectType } = this.props.dragProps as any;
       const dragProps: DragSourceProps<DragDropObject> = {
         onDragSourceBegin: (args: DragSourceArguments<DragDropObject>) => {
-          args.row = index;
           args.dataObject = item as DragDropObject;
           args.parentObject = (parent || this.props.dataProvider) as DragDropObject;
           return onDragSourceBegin ? onDragSourceBegin(args) : args;
-        }, onDragSourceEnd: (args: DragSourceArguments<DragDropObject>) => {
+        },
+        onDragSourceEnd: (args: DragSourceArguments<DragDropObject>) => {
           if (onDragSourceEnd) {
             args.parentObject = (parent || this.props.dataProvider) as DragDropObject;
             onDragSourceEnd(args);
           }
-        }, objectType: () => {
+        },
+        objectType: () => {
           if (objectType) {
             if (typeof objectType === "function") {
               return objectType(item.extendedData as DragDropObject);
@@ -71,35 +70,34 @@ export function withDragDrop<P extends BreadcrumbProps, DragDropObject extends T
     private createNodeDropProps(item?: TreeNodeItem): DropTargetProps<DragDropObject> {
       if (!this.props.dropProps)
         return {};
-
-      const dropProps: DropTargetProps = {};
       const { onDropTargetDrop, onDropTargetOver, canDropTargetDrop, objectTypes } = this.props.dropProps as any;
-      dropProps.onDropTargetDrop = (args: DropTargetArguments<DragDropObject>): DropTargetArguments<DragDropObject> => {
-        args.dropLocation = (item || this.props.dataProvider) as DragDropObject;
-        return onDropTargetDrop ? onDropTargetDrop(args) : args;
-      };
-      dropProps.onDropTargetOver = (args: DropTargetArguments<DragDropObject>) => {
-        if (onDropTargetOver) {
+      const dropProps = {
+        onDropTargetDrop: (args: DropTargetArguments<DragDropObject>): DropTargetArguments<DragDropObject> => {
           args.dropLocation = (item || this.props.dataProvider) as DragDropObject;
-          onDropTargetOver(args);
-        }
+          return onDropTargetDrop ? onDropTargetDrop(args) : args;
+        },
+        onDropTargetOver: (args: DropTargetArguments<DragDropObject>) => {
+          if (onDropTargetOver) {
+            args.dropLocation = (item || this.props.dataProvider) as DragDropObject;
+            onDropTargetOver(args);
+          }
+        },
+        canDropTargetDrop: (args: DropTargetArguments<DragDropObject>) => {
+          args.dropLocation = (item || this.props.dataProvider) as DragDropObject;
+          return canDropTargetDrop ? canDropTargetDrop(args) : true;
+        },
+        objectTypes,
       };
-      dropProps.canDropTargetDrop = (args: DropTargetArguments<DragDropObject>) => {
-        args.dropLocation = (item || this.props.dataProvider) as DragDropObject;
-        return canDropTargetDrop ? canDropTargetDrop(args) : true;
-      };
-      dropProps.objectTypes = objectTypes;
-
       return dropProps;
     }
     // tslint:disable-next-line:naming-convention
-    private renderNode = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem, index?: number): React.ReactNode => {
+    private renderNode = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem): React.ReactNode => {
       const baseNode = this.props.renderNode ? this.props.renderNode(props, node) : <BreadcrumbNode {...props} />;
       const DDBreadcrumbNode = DragDropBreadcrumbNode<DragDropObject>(); // tslint:disable-line:variable-name
       return (
         <DDBreadcrumbNode
           key={(node && node.id) || "root"}
-          dragProps={this.createNodeDragProps(node, parent, index)}
+          dragProps={this.createNodeDragProps(node, parent)}
           dropProps={this.createNodeDropProps(node)}>
           {baseNode}
         </DDBreadcrumbNode>

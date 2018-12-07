@@ -99,12 +99,13 @@ export function withDragDrop<P extends TableProps, DragDropObject extends TableD
       return dragProps;
     }
 
-    private createNodeDropProps(item: RowItem): DropTargetProps<DragDropObject> {
+    private createNodeDropProps(item: RowItem): TableDropTargetProps<DragDropObject> {
       if (!this.props.dropProps)
         return {};
 
-      const { onDropTargetOver, onDropTargetDrop, canDropTargetDrop, objectTypes } = this.props.dropProps as TableDropTargetProps;
-      const dropProps: DropTargetProps<DragDropObject> = {
+      const { canDropOn, onDropTargetOver, onDropTargetDrop, canDropTargetDrop, objectTypes } = this.props.dropProps as TableDropTargetProps;
+      const dropProps: TableDropTargetProps<DragDropObject> = {
+        canDropOn,
         onDropTargetOver: (args: DropTargetArguments<DragDropObject>) => {
           // populate table information while it's accessible
           args.dropLocation = this.props.dataProvider as DragDropObject;

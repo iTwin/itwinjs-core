@@ -40,28 +40,33 @@ export function withDragDrop<P extends BreadcrumbDetailsProps, DragDropObject ex
   return class WithDragAndDrop extends React.Component<CombinedProps> {
 
     public static get displayName() { return `WithDragDrop(${getDisplayName(BreadcrumbComponent)})`; }
-    private createDragProps(item: TreeNodeItem): DragSourceProps<DragDropObject> {
+    private createDragProps(_item: TreeNodeItem): DragSourceProps<DragDropObject> {
       if (!this.props.dragProps)
         return {};
-      const dataProvider = this.props.path.getDataProvider();
       const { onDragSourceBegin, onDragSourceEnd, objectType } = this.props.dragProps as DragSourceProps;
       const dragProps: DragSourceProps = {
         onDragSourceBegin: (args: DragSourceArguments) => {
+          const dataProvider = this.props.path.getDataProvider();
+          const current = this.props.path.getCurrentNode();
           if (args.dataObject) {
-            args.dataObject.parentId = item ? item.id : dataProvider;
+            args.dataObject.parentId = current ? current.id : dataProvider;
           }
-          args.parentObject = item || this.props.path.getDataProvider();
+          args.parentObject = current || dataProvider;
           return onDragSourceBegin ? onDragSourceBegin(args) : args;
         }, onDragSourceEnd: (args: DragSourceArguments) => {
           if (onDragSourceEnd) {
-            args.parentObject = item || dataProvider;
+            const dataProvider = this.props.path.getDataProvider();
+            const current = this.props.path.getCurrentNode();
+            args.parentObject = current || dataProvider;
             onDragSourceEnd(args);
           }
         }, objectType: (data: any) => {
           if (objectType) {
             if (typeof objectType === "function") {
               if (data && typeof data === "object") {
-                data.parentId = item ? item.id : dataProvider;
+                const dataProvider = this.props.path.getDataProvider();
+                const current = this.props.path.getCurrentNode();
+                data.parentId = current ? current.id : dataProvider;
               }
               return objectType(data);
             } else
@@ -73,18 +78,19 @@ export function withDragDrop<P extends BreadcrumbDetailsProps, DragDropObject ex
       return dragProps;
     }
 
-    private createDropProps(item: TreeNodeItem, children: TreeNodeItem[]): DropTargetProps<DragDropObject> {
+    private createDropProps(_item: TreeNodeItem, children: TreeNodeItem[]): DropTargetProps<DragDropObject> {
       if (!this.props.dropProps)
         return {};
 
-      const dataProvider = this.props.path.getDataProvider();
       const { onDropTargetOver, onDropTargetDrop, canDropTargetDrop, objectTypes } = this.props.dropProps as DropTargetProps;
 
       const dropProps: TableDropTargetProps = {
         canDropOn: true,
         onDropTargetOver: (args: DropTargetArguments) => {
           if (onDropTargetOver) {
-            args.dropLocation = item || dataProvider;
+            const dataProvider = this.props.path.getDataProvider();
+            const current = this.props.path.getCurrentNode();
+            args.dropLocation = current || dataProvider;
             if (children && args.dropRect && args.row) {
               const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
               if (relativeY >= 1 / 3 && relativeY < 2 / 3) {
@@ -96,7 +102,9 @@ export function withDragDrop<P extends BreadcrumbDetailsProps, DragDropObject ex
             onDropTargetOver(args);
           }
         }, onDropTargetDrop: (args: DropTargetArguments) => {
-          args.dropLocation = item || dataProvider;
+          const dataProvider = this.props.path.getDataProvider();
+          const current = this.props.path.getCurrentNode();
+          args.dropLocation = current || dataProvider;
           if (children && args.dropRect && args.row) {
             const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
             if (relativeY >= 1 / 3 && relativeY < 2 / 3) {
@@ -110,7 +118,9 @@ export function withDragDrop<P extends BreadcrumbDetailsProps, DragDropObject ex
           }
           return onDropTargetDrop ? onDropTargetDrop(args) : args;
         }, canDropTargetDrop: (args: DropTargetArguments) => {
-          args.dropLocation = item || dataProvider;
+          const dataProvider = this.props.path.getDataProvider();
+          const current = this.props.path.getCurrentNode();
+          args.dropLocation = current || dataProvider;
           if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
             args.dataObject.parentId = this.props.path.getDataProvider();
           }
