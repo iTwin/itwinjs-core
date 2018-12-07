@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
+import { PriorityQueue, assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import { ImageSource, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { RenderGraphic } from "../render/System";
 import { Tile, TileTree, TileLoader } from "./TileTree";
@@ -12,6 +12,7 @@ import { Tile, TileTree, TileLoader } from "./TileTree";
 export class TileRequest {
   public readonly tile: Tile;
   private _state: TileRequest.State;
+  public readonly priority: number; // ###TODO Allow priority to be adjusted based on camera etc.
 
   public get state(): TileRequest.State { return this._state; }
   public get tree(): TileTree { return this.tile.root; }
@@ -20,6 +21,7 @@ export class TileRequest {
   public constructor(tile: Tile) {
     this.tile = tile;
     this._state = TileRequest.State.Queued;
+    this.priority = tile.depth; // ###TODO account for reality/map tiles vs design model tiles, etc.
     tile.setIsQueued();
   }
 
@@ -113,19 +115,23 @@ export namespace TileRequest {
   }
 }
 
-/*
 class Queue extends PriorityQueue<TileRequest> {
   public constructor() {
-    super((lhs, rhs) => lhs.compare(rhs));
+    super((lhs, rhs) => lhs.priority - rhs.priority);
   }
 
   public get array(): TileRequest[] { return this._array; }
+
+  public has(request: TileRequest): boolean {
+    return this.array.indexOf(request) >= 0;
+  }
 }
-*/
 
 class TileRequestScheduler implements TileRequest.Scheduler {
   private readonly _activeRequests = new Set<Tile>();
   private readonly _maxActiveRequests: number;
+  private readonly _currentQueue = new Queue();
+  // private readonly _swapQueue = new Queue();
 
   public constructor(options?: TileRequest.SchedulerOptions) {
     let maxActiveRequests = 10;
@@ -140,7 +146,7 @@ class TileRequestScheduler implements TileRequest.Scheduler {
 
   public get statistics(): TileRequest.Statistics {
     return {
-      numPendingRequests: 0,
+      numPendingRequests: this._currentQueue.length,
       numActiveRequests: this._activeRequests.size,
     };
   }
@@ -149,6 +155,13 @@ class TileRequestScheduler implements TileRequest.Scheduler {
   }
 
   public process(): void {
+    while (this._activeRequests.size < this._maxActiveRequests) {
+      const request = this._currentQueue.pop();
+      if (undefined === request)
+        break;
+      else
+        this.dispatch(request);
+    }
   }
 
   public requestTiles(tiles: Set<Tile>): void {
@@ -158,17 +171,25 @@ class TileRequestScheduler implements TileRequest.Scheduler {
         assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
         if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
           tile.request = new TileRequest(tile);
-          this.dispatch(tile.request);
+          this._currentQueue.push(tile.request);
         }
       } else {
-        assert(this._activeRequests.has(tile));
+        assert(this._activeRequests.has(tile) || this._currentQueue.has(tile.request));
       }
     }
   }
 
   public onShutDown(): void {
     // ###TODO mark all as cancelled.
+    for (const activeTile of this._activeRequests)
+      activeTile.setAbandoned();
+
     this._activeRequests.clear();
+
+    for (const queued of this._currentQueue.array) {
+      queued.tile.request = undefined;
+      queued.tile.setAbandoned();
+    }
   }
 
   private dispatch(req: TileRequest): void {
