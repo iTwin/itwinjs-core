@@ -1561,6 +1561,18 @@ function saveImage() {
   window.open(url, "Saved View");
 }
 
+function updateTileLoadIndicator(spinner: HTMLDivElement): void {
+  const stats = IModelApp.tileRequests.statistics;
+  if (0 === stats.numActiveRequests && 0 === stats.numPendingRequests) {
+    spinner.style.visibility = "hidden";
+  } else {
+    spinner.style.visibility = "visible";
+    spinner.title = "Tile Requests: " + stats.numActiveRequests + " active, " + stats.numPendingRequests + " pending.";
+  }
+
+  window.requestAnimationFrame(() => updateTileLoadIndicator(spinner));
+}
+
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
 function wireIconsToFunctions() {
   if (MobileRpcConfiguration.isMobileFrontend) {
@@ -1682,6 +1694,10 @@ function wireIconsToFunctions() {
       }
     }
   });
+
+  // Tile loading indicator
+  const tileLoadSpinner = document.getElementById("tile-load-spinner")! as HTMLDivElement;
+  window.requestAnimationFrame(() => updateTileLoadIndicator(tileLoadSpinner));
 }
 
 // If we are using a browser, close the current iModel before leaving

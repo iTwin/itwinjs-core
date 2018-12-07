@@ -180,7 +180,6 @@ class RequestScheduler implements TileRequest.Scheduler {
         if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
           const request = new Request(tile);
           tile.request = request;
-          tile.request = new Request(tile);
           this._currentQueue.push(request);
         }
       } else {
