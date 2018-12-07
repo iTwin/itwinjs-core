@@ -161,7 +161,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
       case PropertyValueFormat.Struct:
         return (
           <NonPrimitivePropertyRenderer
-            isCollapsable={true}
+            isCollapsible={true}
             {...sharedProps}
           />
         );

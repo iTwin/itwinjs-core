@@ -17,6 +17,9 @@ export * from "./feedback/ValidationTextbox";
 export * from "./messages/InputField";
 export * from "./messages/Pointer";
 
+export * from "./oidc/SignIn";
+export * from "./oidc/SignOut";
+
 export * from "./openimodel/ApplicationHeader";
 export * from "./openimodel/BlockingPrompt";
 export * from "./openimodel/IModelCard";
@@ -51,6 +54,7 @@ export * from "./configurableui/Frontstage";
 export * from "./configurableui/FrontstageComposer";
 export * from "./configurableui/FrontstageDef";
 export * from "./configurableui/FrontstageManager";
+export * from "./configurableui/FrontstageProvider";
 export * from "./configurableui/GroupItem";
 export * from "./configurableui/IconComponent";
 export * from "./configurableui/Item";

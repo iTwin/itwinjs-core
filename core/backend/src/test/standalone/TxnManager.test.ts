@@ -3,12 +3,12 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { ActivityLoggingContext, IModelStatus } from "@bentley/bentleyjs-core";
+import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
+import { IModelDb, PhysicalModel, SpatialCategory, TxnAction } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { IModelDb, SpatialCategory, TxnAction, PhysicalModel } from "../../imodeljs-backend";
-import { Code, IModel, SubCategoryAppearance, ColorByName, IModelError } from "@bentley/imodeljs-common";
 
 describe("TxnManager", () => {
   let imodel: IModelDb;
@@ -17,6 +17,7 @@ describe("TxnManager", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
+    IModelTestUtils.registerTestBim();
     imodel = IModelTestUtils.openIModel("test.bim", { copyFilename: "TxnManager_Test.bim" });
     const schemaPathname = path.join(KnownTestLocations.assetsDir, "TestBim.ecschema.xml");
     await imodel.importSchema(actx, schemaPathname); // will throw an exception if import fails
@@ -142,6 +143,8 @@ describe("TxnManager", () => {
   });
 
   it("Element drives element events", () => {
+    assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
+
     const el1 = imodel.elements.insertElement(props);
     const el2 = imodel.elements.insertElement(props);
     const ede = TestElementDrivesElement.create<TestElementDrivesElement>(imodel, el1, el2);
@@ -166,15 +169,11 @@ describe("TxnManager", () => {
       ++rootChanged;
     }));
     removals.push(TestElementDrivesElement.validateOutput.addListener((_props) => ++validateOutput));
-    removals.push(TestPhysicalObject.beforeOutputsHandled.addListener((id, im) => {
-      const e1 = im.elements.getElement<TestPhysicalObject>(id);
-      assert.equal(e1.intProperty, props.intProperty);
+    removals.push(TestPhysicalObject.beforeOutputsHandled.addListener((id) => {
       assert.equal(id, el1);
       ++beforeOutputsHandled;
     }));
-    removals.push(TestPhysicalObject.allInputsHandled.addListener((id, im) => {
-      const e2 = im.elements.getElement<TestPhysicalObject>(id);
-      assert.equal(e2.intProperty, props.intProperty);
+    removals.push(TestPhysicalObject.allInputsHandled.addListener((id) => {
       assert.equal(id, el2);
       ++allInputsHandled;
     }));
@@ -187,13 +186,14 @@ describe("TxnManager", () => {
     assert.equal(deletedDependency, 0);
 
     const element2 = imodel.elements.getElement<TestPhysicalObject>(el2);
+    element2.intProperty++; // make sure we actually change something about the element
     element2.update();
     imodel.saveChanges("step 2");
-    assert.equal(beforeOutputsHandled, 2);
-    assert.equal(allInputsHandled, 2);
-    assert.equal(rootChanged, 2);
-    assert.equal(validateOutput, 0);
-    assert.equal(deletedDependency, 0);
+    assert.equal(beforeOutputsHandled, 2, "beforeOutputsHandled not called for update");
+    assert.equal(allInputsHandled, 2), "allInputsHandled not called for update";
+    assert.equal(rootChanged, 2, "rootChanged not called for update");
+    assert.equal(validateOutput, 0, "validateOutput shouldn't be called for update");
+    assert.equal(deletedDependency, 0, "deleteDependency shouldn't be called for update");
     removals.forEach((drop) => drop());
   });
 

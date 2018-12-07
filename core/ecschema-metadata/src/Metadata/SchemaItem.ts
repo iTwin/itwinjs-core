@@ -105,5 +105,17 @@ export abstract class SchemaItem {
     return [matches[1], matches[3]];
   }
 
+  /**
+   * Indicates if the two SchemaItem objects are equal by comparing their respective [[key]] properties.
+   * @param thisSchemaItem The first SchemaItem.
+   * @param thatSchemaItem The second SchemaItem.
+   */
+  public static equalByKey(thisSchemaItem: SchemaItem, thatSchemaItem?: SchemaItem) {
+    if (!thatSchemaItem)
+      return true;
+
+    return thisSchemaItem.key.matches(thatSchemaItem.key);
+  }
+
   public abstract async accept(visitor: SchemaItemVisitor): Promise<void>;
 }

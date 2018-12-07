@@ -405,8 +405,8 @@ export namespace FeatureSymbology {
           }
         }
         if (view.scheduleScript) {
-          view.scheduleScript.getSymbologyOverrides(view.scheduleTime).forEach((override, elementID) => {
-            this.overrideElement(elementID, Appearance.fromJSON(override));
+          view.scheduleScript.getSymbologyOverrides(view.scheduleTime).forEach((appearance, elementID) => {
+            this.overrideElement(elementID, appearance);
           });
         }
       }

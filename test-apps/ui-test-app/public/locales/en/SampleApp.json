@@ -98,7 +98,9 @@
     "setLengthFormatMetric": "Set Format Metric",
     "setLengthFormatImperial": "Set Format Imperial",
     "openRadial": "Open Radial Menu",
-    "outputMessage": "Call outputMessage"
+    "outputMessage": "Call outputMessage",
+    "openPropertyGrid": "Open Property Grid",
+    "closePropertyGrid": "Close Property Grid"
   },
   "tools": {
     "Tool1": {

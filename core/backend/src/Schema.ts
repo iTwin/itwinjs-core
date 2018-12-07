@@ -43,7 +43,7 @@ export class Schemas {
    */
   public static unregisterSchema(schemaName: string): void {
     const key = schemaName.toLowerCase();
-    if (!(key === "biscore")) // Can't unregister BisCore
+    if (key !== "biscore") // Can't unregister BisCore
       delete Schemas._registeredSchemas[key];
   }
 
@@ -53,5 +53,5 @@ export class Schemas {
    */
   public static getRegisteredSchema(schemaName: string): Schema | undefined { return Schemas._registeredSchemas[schemaName.toLowerCase()]; }
 
-  public static isRegistered(schema: Schema) { return undefined !== this.getRegisteredSchema(schema.name.toLowerCase()); }
+  public static isRegistered(schema: Schema): boolean { return undefined !== this.getRegisteredSchema(schema.name); }
 }

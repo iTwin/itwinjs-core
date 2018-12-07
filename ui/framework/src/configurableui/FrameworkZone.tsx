@@ -45,12 +45,6 @@ interface FrameworkZoneState {
   updatedWidgetDef?: WidgetDef;
 }
 
-interface WidgetStateChange {
-  widgetId: number;
-  tabIndex: number;
-  isOpening: boolean;
-}
-
 /** ConfigurableUi Zone React component.
  */
 export class FrameworkZone extends React.Component<FrameworkZoneProps, FrameworkZoneState> {
@@ -123,54 +117,71 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
     }
 
     let activeWidgetDef: WidgetDef | undefined;
+    let defToActivate: WidgetDef | undefined;
+    let widgetBeingClosed = false;
+    const currentActiveWidgetDefs: WidgetDef[] = [];  // there should really only ever be one, but just in case.
     const widgets: EachWidgetProps[] = new Array<EachWidgetProps>();
-    let widgetStateChange: WidgetStateChange | undefined;
 
     this.props.zoneProps.widgets.forEach((widget: NZ_WidgetProps) => {
       const zoneDef = this.props.zoneDefProvider.getZoneDef(widget.id);
       if (!zoneDef)
         return;
 
+      const visibleWidgets = zoneDef.widgetDefs
+        .filter((widgetDef: WidgetDef) => {
+          return widgetDef.canShow();
+        });
+
+      if (!visibleWidgets || 0 === visibleWidgets.length)
+        return;
+
+      // save list of WidgetDefs that have isPressed set to true. We use this later to ensure that WidgetDef are in sync with active widget tab.
+      visibleWidgets.forEach((def: WidgetDef) => {
+        if (!def.isFloating) {
+          if (def === this.state.updatedWidgetDef && def.stateChanged) {
+            if (def.isPressed)
+              defToActivate = def;
+            else
+              widgetBeingClosed = true;
+          } else
+            currentActiveWidgetDefs.push(def);
+        }
+      });
+
       widgets.push({
         id: widget.id,
         isStatusBar: zoneDef.isStatusBar,
-        tabs: zoneDef.widgetDefs
-          .filter((widgetDef: WidgetDef) => {
-            return widgetDef.canShow();
-          })
-          .map((widgetDef: WidgetDef, tabIndex: number) => {
-            let isActive = false;
-            if (!activeWidgetDef) {
-              if (widgetDef === this.state.updatedWidgetDef && widgetDef.stateChanged) {
-                if (widgetDef.canOpen()) {
-                  isActive = true;
-                  widgetStateChange = {
-                    widgetId: widget.id,
-                    tabIndex,
-                    isOpening: true,
-                  };
-                }
-                widgetDef.stateChanged = false;
-              } else if (widget.tabIndex === tabIndex) {
-                isActive = true;
-              }
-
-              if (isActive) {
-                activeWidgetDef = widgetDef;
-              }
+        tabs: visibleWidgets.map((widgetDef: WidgetDef, tabIndex: number) => {
+          let isActive = false;
+          if (!activeWidgetDef) {
+            if (widgetDef === this.state.updatedWidgetDef && widgetDef.stateChanged) {
+              isActive = !widgetBeingClosed;
+              widgetDef.stateChanged = false;
+            } else if (widget.tabIndex === tabIndex && !defToActivate && !widgetBeingClosed) {
+              isActive = true;
             }
 
-            return {
-              isActive,
-              iconSpec: widgetDef.iconSpec,
-              title: widgetDef.label,
-            };
-          }),
+            if (isActive) {
+              activeWidgetDef = widgetDef;
+            }
+          }
+
+          return {
+            isActive,
+            iconSpec: widgetDef.iconSpec,
+            title: widgetDef.label,
+          };
+        }),
       });
     });
 
-    if (widgetStateChange) {
-      this.props.widgetChangeHandler.handleWidgetStateChange(widgetStateChange.widgetId, widgetStateChange.tabIndex, widgetStateChange.isOpening);
+    // make sure the isPressed property for the WidgetDefs in the zone match the state of the active widget tab
+    if (currentActiveWidgetDefs.length > 0) {
+      currentActiveWidgetDefs.forEach((def: WidgetDef) => {
+        if (def !== activeWidgetDef) {
+          def.clearIsPressed();
+        }
+      });
     }
 
     let content: React.ReactNode;

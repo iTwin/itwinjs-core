@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/_scrollbar";
 
 .components-property-grid {
   @include bwc-expandable-blocks-list;
@@ -18,10 +19,8 @@
   height: 100%;
   overflow-y: auto;
 
-  @supports (-webkit-overflow-scrolling: touch) {
-    overflow-y: scroll; /* overflow-y has to be scroll, not auto */
-    -webkit-overflow-scrolling: touch;
-  }
+  @include uicore-touch-scrolling;
+  @include uicore-scrollbar();
 }
 
 @mixin components-property-list {
@@ -46,7 +45,7 @@
     box-sizing: border-box;
     width: 100%;
     height: 100%;
-    padding: 5px 8px;
+    padding: 2px 8px;
   }
 }
 

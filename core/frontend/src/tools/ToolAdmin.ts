@@ -418,7 +418,7 @@ export class ToolAdmin {
     }
   }
 
-  private onMouseButton(event: ToolEvent, isDown: boolean): Promise<any> {
+  private async onMouseButton(event: ToolEvent, isDown: boolean): Promise<any> {
     const ev = event.ev as MouseEvent;
     const vp = event.vp!;
     const pos = this.getMousePosition(event);
@@ -685,8 +685,8 @@ export class ToolAdmin {
       this.cursorView = undefined;
   }
 
-  private async onMouseEnter(vp: ScreenViewport) { this.cursorView = vp; }
-  private async onMouseLeave(vp: ScreenViewport) {
+  private async onMouseEnter(vp: ScreenViewport): Promise<void> { this.cursorView = vp; }
+  private async onMouseLeave(vp: ScreenViewport): Promise<void> {
     IModelApp.notifications.clearToolTip();
     this.cursorView = undefined;
     this.setCanvasDecoration(vp);
@@ -1273,10 +1273,10 @@ export class ToolAdmin {
   }
 
   /** @hidden */
-  public testDecorationHit?(id: string): boolean { return this.currentTool.testDecorationHit(id); }
+  public testDecorationHit(id: string): boolean { return this.currentTool.testDecorationHit(id); }
 
   /** @hidden */
-  public getDecorationGeometry?(hit: HitDetail): GeometryStreamProps | undefined { return this.currentTool.getDecorationGeometry(hit); }
+  public getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined { return this.currentTool.getDecorationGeometry(hit); }
 
   /** @hidden */
   public decorate(context: DecorateContext): void {
@@ -1433,7 +1433,7 @@ export class ToolAdmin {
  * @hidden
  */
 export class WheelEventProcessor {
-  public static async process(ev: BeWheelEvent, doUpdate: boolean) {
+  public static async process(ev: BeWheelEvent, doUpdate: boolean): Promise<void> {
     const vp = ev.viewport;
     if (undefined === vp)
       return;

@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/_scrollbar";
 
 .react-data-grid-wrapper {
   height: 100%;
@@ -12,10 +13,8 @@
   .react-grid-Canvas {
     height: calc(100% - 25px) !important;
 
-    @supports (-webkit-overflow-scrolling: touch) {
-      overflow-y: scroll; /* overflow-y has to be scroll, not auto */
-      -webkit-overflow-scrolling: touch;
-    }
+    @include uicore-touch-scrolling;
+    @include uicore-scrollbar();
   }
 
   .react-grid-Container,

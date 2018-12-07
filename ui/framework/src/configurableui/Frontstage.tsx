@@ -14,20 +14,6 @@ import { Zone, ZoneProps, ZoneRuntimeProps } from "./Zone";
 
 import { Zones as NZ_Zones, NineZone, WidgetZoneIndex, WidgetZone } from "@bentley/ui-ninezone";
 
-/** Provides a Frontstage as a React based definition
- */
-export abstract class FrontstageProvider {
-  private _frontstageDef?: FrontstageDef;
-
-  /** Get the Frontstage React based definition */
-  public abstract get frontstage(): React.ReactElement<FrontstageProps>;
-
-  /** Get the associated FrontstageDef */
-  public get frontstageDef(): FrontstageDef | undefined { return this._frontstageDef; }
-  /** Set the associated FrontstageDef */
-  public set frontstageDef(f: FrontstageDef | undefined) { this._frontstageDef = f; }
-}
-
 /** Enum for Zone Location. Useful for zone merging.
  */
 export enum ZoneLocation {

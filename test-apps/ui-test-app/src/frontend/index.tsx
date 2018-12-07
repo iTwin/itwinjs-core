@@ -25,7 +25,7 @@ import {
   AppNotificationManager,
   IModelInfo,
   FrontstageManager,
-  createAction, ActionsUnion, DeepReadonly,
+  createAction, ActionsUnion, DeepReadonly, SyncUiEventDispatcher,
 } from "@bentley/ui-framework";
 import { Id64String } from "@bentley/bentleyjs-core";
 
@@ -182,6 +182,7 @@ export class SampleAppIModelApp extends IModelApp {
 
     const payload = { iModelConnection };
     SampleAppIModelApp.store.dispatch({ type: "SampleApp:SETIMODELCONNECTION", payload });
+    SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
 
     // we create a FrontStage that contains the views that we want.
     const frontstageProvider = new ViewsFrontstage(viewIdsSelected, iModelConnection);

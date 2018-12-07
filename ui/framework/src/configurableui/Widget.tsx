@@ -50,7 +50,7 @@ export class Widget extends React.Component<WidgetProps> {
     if (props.id !== undefined)
       widgetDef.id = props.id;
     if (props.defaultState !== undefined)
-      widgetDef.widgetState = props.defaultState;
+      widgetDef.applyWidgetState(props.defaultState);
     if (props.isFreeform !== undefined)
       widgetDef.isFreeform = props.isFreeform;
     if (props.isToolSettings !== undefined)

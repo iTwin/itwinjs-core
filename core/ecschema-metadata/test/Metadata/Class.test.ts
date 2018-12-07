@@ -5,14 +5,16 @@
 
 import { assert, expect } from "chai";
 import * as sinon from "sinon";
-import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
-
-import { Schema, MutableSchema } from "../../src/Metadata/Schema";
-import { EntityClass } from "../../src/Metadata/EntityClass";
 import { SchemaContext } from "../../src/Context";
 import { DelayedPromiseWithProps } from "../../src/DelayedPromise";
-import { ECClass, MutableClass } from "../../src/Metadata/Class";
 import { ECObjectsError } from "../../src/Exception";
+import { ECClass, MutableClass } from "../../src/Metadata/Class";
+import { EntityClass } from "../../src/Metadata/EntityClass";
+import { Mixin } from "../../src/Metadata/Mixin";
+import { MutableSchema, Schema } from "../../src/Metadata/Schema";
+import { SchemaItem } from "../../src/Metadata/SchemaItem";
+import { SchemaKey } from "../../src/SchemaKey";
+import { createSchemaJsonWithItems } from "../TestUtils/DeserializationHelpers";
 
 describe("ECClass", () => {
   let schema: Schema;
@@ -661,7 +663,7 @@ describe("ECClass", () => {
     });
   });
 
-  describe("getAllBaseClasses", () => {
+  describe("Base class traversal tests", () => {
     // This is the class hierarchy used in this test. The numbers indicate override priority,
     // i.e., the order that they should be returned by testClass.getAllBaseClasses():
     //
@@ -689,7 +691,7 @@ describe("ECClass", () => {
     };
     const expectedNames = ["G", "A", "B", "E", "C", "F", "D"];
 
-    it("should correctly traverse a complex inheritance hierarchy", async () => {
+    it("getAllBaseClasses, should correctly traverse a complex inheritance hierarchy", async () => {
       const actualNames: string[] = [];
 
       schema = await Schema.fromJson(testSchemaJson);
@@ -704,7 +706,7 @@ describe("ECClass", () => {
       expect(actualNames).to.eql(expectedNames);
     });
 
-    it("should correctly traverse a complex inheritance hierarchy synchronously", () => {
+    it("getAllBaseClassesSync, should correctly traverse a complex inheritance hierarchy synchronously", () => {
       schema = Schema.fromJsonSync(testSchemaJson);
       expect(schema).to.exist;
       const testClass = schema.getItemSync<ECClass>("H");
@@ -715,6 +717,89 @@ describe("ECClass", () => {
         syncActualNames.push(baseClass.name);
       }
       expect(syncActualNames).to.eql(expectedNames);
+    });
+
+    const expectedCallBackObjects = [{name:"G", arg:"testArg"}, {name:"A", arg:"testArg"}, {name:"B", arg:"testArg"}, {name:"E", arg:"testArg"},
+                            {name:"C", arg:"testArg"}, {name:"F", arg:"testArg"}, {name:"D", arg:"testArg"}];
+
+    it("traverseBaseClasses, should correctly traverse a complex inheritance hierarchy", async () => {
+      const result: { name: string, arg: string }[] = [];
+
+      schema = await Schema.fromJson(testSchemaJson);
+      expect(schema).to.exist;
+
+      const testClass = await schema.getItem<ECClass>("H");
+      expect(testClass).to.exist;
+
+      await testClass!.traverseBaseClasses((ecClass, arg) => {result.push({name: ecClass.name, arg: arg}); return false}, "testArg");
+
+      expect(result).to.eql(expectedCallBackObjects);
+    });
+
+    it("traverseBaseClassesSync, should correctly traverse a complex inheritance hierarchy synchronously", () => {
+      const result: { name: string, arg: string }[] = [];
+
+      schema = Schema.fromJsonSync(testSchemaJson);
+      expect(schema).to.exist;
+
+      const testClass = schema.getItemSync<ECClass>("H");
+      expect(testClass).to.exist;
+
+      testClass!.traverseBaseClassesSync((ecClass, arg) => {result.push({name: ecClass.name, arg: arg}); return false}, "testArg");
+
+      expect(result).to.eql(expectedCallBackObjects);
+    });
+
+    it("class 'is' a base class", async () => {
+      schema = Schema.fromJsonSync(testSchemaJson);
+      expect(schema).to.exist;
+
+      const aClass = await schema.getItem<ECClass>("A");
+      const bClass = await schema.getItem<ECClass>("B");
+      const cClass = await schema.getItem<ECClass>("C");
+      const dClass = await schema.getItem<ECClass>("D");
+      const eClass = await schema.getItem<ECClass>("E");
+      const fClass = await schema.getItem<ECClass>("F");
+      const gClass = await schema.getItem<ECClass>("G");
+      const hClass = await schema.getItem<ECClass>("H");
+
+      expect(await hClass!.is(gClass!)).to.be.true;
+      expect(await hClass!.is(aClass!)).to.be.true;
+      expect(await hClass!.is(bClass!)).to.be.true;
+      expect(await hClass!.is(eClass!)).to.be.true;
+      expect(await hClass!.is(cClass!)).to.be.true;
+      expect(await hClass!.is(fClass!)).to.be.true;
+      expect(await hClass!.is(dClass!)).to.be.true;
+
+      expect(await gClass!.is(eClass!)).to.be.false;
+      expect(await gClass!.is(dClass!)).to.be.false;
+      expect(await gClass!.is(hClass!)).to.be.false;
+    });
+
+    it("class 'is' a base class synchronous", () => {
+      schema = Schema.fromJsonSync(testSchemaJson);
+      expect(schema).to.exist;
+
+      const aClass = schema.getItemSync<ECClass>("A");
+      const bClass = schema.getItemSync<ECClass>("B");
+      const cClass = schema.getItemSync<ECClass>("C");
+      const dClass = schema.getItemSync<ECClass>("D");
+      const eClass = schema.getItemSync<ECClass>("E");
+      const fClass = schema.getItemSync<ECClass>("F");
+      const gClass = schema.getItemSync<ECClass>("G");
+      const hClass = schema.getItemSync<ECClass>("H");
+
+      expect(hClass!.isSync(gClass!)).to.be.true;
+      expect(hClass!.isSync(aClass!)).to.be.true;
+      expect(hClass!.isSync(bClass!)).to.be.true;
+      expect(hClass!.isSync(eClass!)).to.be.true;
+      expect(hClass!.isSync(cClass!)).to.be.true;
+      expect(hClass!.isSync(fClass!)).to.be.true;
+      expect(hClass!.isSync(dClass!)).to.be.true;
+
+      expect(gClass!.isSync(eClass!)).to.be.false;
+      expect(gClass!.isSync(dClass!)).to.be.false;
+      expect(gClass!.isSync(hClass!)).to.be.false;
     });
   });
 
@@ -779,6 +864,31 @@ describe("ECClass", () => {
       });
 
       assert.throw(() => Schema.fromJsonSync(json), "The Navigation Property TestCA.testNavProp is invalid, because only EntityClasses, Mixins, and RelationshipClasses can have NavigationProperties.");
+    });
+  });
+
+  describe("classesAreEqualByKey tests", () => {
+    const schemaKeyA = new SchemaKey("SchemaTest", 1, 2, 3);
+    const schemaKeyB = new SchemaKey("OtherTestSchema", 1, 2, 3);
+    const schemaA = new Schema(schemaKeyA)
+    const schemaB = new Schema(schemaKeyB)
+
+    it("should return false if names do not match", () => {
+      const testClassA = new Mixin(schemaA, "MixinA");
+      const testClassB = new Mixin(schemaA, "MixinB");
+      expect(SchemaItem.equalByKey(testClassA, testClassB)).to.be.false;
+    });
+
+    it("should return false if types do not match", () => {
+      const testClassA = new Mixin(schemaA, "MixinA");
+      const testClassB = new Mixin(schemaB, "MixinA");
+      expect(SchemaItem.equalByKey(testClassA, testClassB)).to.be.false;
+    });
+
+    it("should return true if keys match", () => {
+      const testClassA = new Mixin(schemaA, "MixinA");
+      const testClassB = new Mixin(schemaA, "MixinA");
+      expect(SchemaItem.equalByKey(testClassA, testClassB)).to.be.true;
     });
   });
 });

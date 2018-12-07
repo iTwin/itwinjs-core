@@ -70,7 +70,7 @@ export class AppUi {
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
       if (widgetDef) {
-        widgetDef.setWidgetState(WidgetState.Off);
+        widgetDef.setWidgetState(WidgetState.Hidden);
       }
     }
   }
