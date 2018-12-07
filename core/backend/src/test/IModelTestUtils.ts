@@ -357,7 +357,6 @@ export class IModelTestUtils {
   }
 
   public static shutdownBackend() {
-    Schemas.unregisterSchema(TestBim.name);
     IModelHost.shutdown();
   }
 }
