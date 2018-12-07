@@ -95,12 +95,23 @@ export class TileRequests {
     return found;
   }
 
+  private readonly _useTileRequests = false;
   public requestMissing(): void {
-    this._map.forEach((missing: MissingNodes, tree: TileTree) => {
-      const list = missing.extractArray();
-      if (undefined !== list)
-        tree.requestTiles(list);
-    });
+    if (this._useTileRequests) {
+      this._map.forEach((missing, _tree) => {
+        const list = missing.extractArray();
+        if (undefined !== list) {
+          for (const tile of list)
+            tile.request = new TileRequest(tile);
+        }
+      });
+    } else {
+      this._map.forEach((missing: MissingNodes, tree: TileTree) => {
+        const list = missing.extractArray();
+        if (undefined !== list)
+          tree.requestTiles(list);
+      });
+    }
   }
 }
 
@@ -123,6 +134,7 @@ export class Tile implements IDisposable {
   protected _graphic?: RenderGraphic;
   protected _rangeGraphic?: RenderGraphic;
   protected _sizeMultiplier?: number;
+  protected _request?: TileRequest;
 
   public constructor(props: Tile.Params) {
     this.root = props.root;
@@ -203,6 +215,7 @@ export class Tile implements IDisposable {
 
   public setIsReady(): void { this.loadStatus = Tile.LoadStatus.Ready; IModelApp.viewManager.onNewTilesReady(); }
   public setIsQueued(): void { this.loadStatus = Tile.LoadStatus.Queued; }
+  public setIsLoading(): void { this.loadStatus = Tile.LoadStatus.Loading; }
   public setNotLoaded(): void { this.loadStatus = Tile.LoadStatus.NotLoaded; }
   public setNotFound(): void { this.loadStatus = Tile.LoadStatus.NotFound; }
   public setAbandoned(): void {
@@ -474,6 +487,12 @@ export class Tile implements IDisposable {
     }
 
     return str;
+  }
+
+  public get request(): TileRequest | undefined { return this._request; }
+  public set request(request: TileRequest | undefined) {
+    assert(undefined === request || undefined === this.request);
+    this.request = request;
   }
 }
 

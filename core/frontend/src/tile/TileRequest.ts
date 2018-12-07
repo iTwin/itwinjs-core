@@ -4,17 +4,89 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { ImageSource } from "@bentley/imodeljs-common";
-import { Range3d } from "@bentley/geometry-core";
+import { base64StringToUint8Array } from "@bentley/bentleyjs-core";
+import { ImageSource, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { RenderGraphic } from "../render/System";
+import { Tile, TileTree, TileLoader } from "./TileTree";
+
+export class TileRequest {
+  public readonly tile: Tile;
+  private _state: TileRequest.State;
+
+  public get state(): TileRequest.State { return this._state; }
+  public get tree(): TileTree { return this.tile.root; }
+  public get loader(): TileLoader { return this.tree.loader; }
+
+  public constructor(tile: Tile) {
+    this.tile = tile;
+    this._state = TileRequest.State.Queued;
+    tile.setIsQueued();
+  }
+
+  public async dispatch(): Promise<void> {
+    try {
+      const response = await this.loader.requestTileContent(this.tile);
+      return this.handleResponse(response);
+    } catch (_err) {
+      this.setFailed();
+      return Promise.resolve();
+    }
+  }
+
+  private setFailed() {
+    this._state = TileRequest.State.Failed;
+    this.tile.setNotFound();
+    this.tile.request = undefined;
+  }
+
+  private async handleResponse(response: TileRequest.Response): Promise<void> {
+    let data: TileRequest.ResponseData | undefined;
+    if (undefined !== response) {
+      if (typeof response === "string")
+        data = base64StringToUint8Array(response);
+      else if (response instanceof Uint8Array || response instanceof ImageSource)
+        data = response;
+      else if (response instanceof ArrayBuffer)
+        data = new Uint8Array(response);
+    }
+
+    if (undefined === data) {
+      this.setFailed();
+      return Promise.resolve();
+    }
+
+    this._state = TileRequest.State.Loading;
+    this.tile.setIsLoading();
+
+    try {
+      const graphic = await this.loader.loadTileGraphic(this.tile, data);
+      this._state = TileRequest.State.Completed;
+      this.tile.setGraphic(graphic.graphic, graphic.isLeaf, graphic.contentRange, graphic.sizeMultiplier);
+      this.tile.request = undefined;
+    } catch (_err) {
+      this.setFailed();
+    }
+
+    return Promise.resolve();
+  }
+}
 
 export namespace TileRequest {
   export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
   export type ResponseData = Uint8Array | ImageSource;
+
+  export const enum State {
+    Queued,
+    Dispatched,
+    Loading,
+    Completed,
+    Failed,
+  }
+
   export interface Graphic {
     graphic?: RenderGraphic;
     isLeaf?: boolean;
-    contentRange?: Range3d;
+    contentRange?: ElementAlignedBox3d;
     sizeMultiplier?: number;
   }
 }
