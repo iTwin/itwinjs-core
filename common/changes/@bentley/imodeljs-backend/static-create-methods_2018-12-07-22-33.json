@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add static create methods for certain Element classes",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "shaun.sewall@bentley.com"
+}

@@ -987,10 +987,9 @@ describe("iModel", () => {
     [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(testImodel, Code.createEmpty(), true);
 
     // Find or create a SpatialCategory
-    const dictionary = testImodel.models.getModel(IModel.dictionaryId) as DictionaryModel;
-    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(dictionary.iModel, dictionary.id, "MySpatialCategory");
+    let spatialCategoryId = SpatialCategory.queryCategoryIdByName(testImodel, IModel.dictionaryId, "MySpatialCategory");
     if (undefined === spatialCategoryId) {
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, "MySpatialCategory", new SubCategoryAppearance());
+      spatialCategoryId = SpatialCategory.insert(testImodel, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance());
     }
 
     const trelClassName = "TestBim:TestPhysicalObjectRelatedToTestPhysicalObject";

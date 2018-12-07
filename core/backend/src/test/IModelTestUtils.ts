@@ -5,9 +5,9 @@
 import { assert } from "chai";
 import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext, BeEvent } from "@bentley/bentleyjs-core";
 import { AccessToken, Config, ChangeSet } from "@bentley/imodeljs-clients";
-import { SubCategoryAppearance, Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
+import { Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
-  IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, DefinitionModel, Model, Element,
+  IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
   InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, NativePlatformRegistry, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
 import { DisableNativeAssertions as NativeDisableNativeAssertions } from "../imodeljs-native-platform-api";
@@ -322,14 +322,6 @@ export class IModelTestUtils {
       newCodeValue = newCodeBaseValue + iter;
       ++iter;
     }
-  }
-
-  // Create a SpatialCategory, insert it, and set its default appearance
-  public static createAndInsertSpatialCategory(definitionModel: DefinitionModel, categoryName: string, appearance: SubCategoryAppearance): Id64String {
-    const cat: SpatialCategory = SpatialCategory.create(definitionModel, categoryName);
-    cat.id = definitionModel.iModel.elements.insertElement(cat);
-    cat.setDefaultAppearance(appearance);
-    return cat.id;
   }
 
   // Create a PhysicalObject. (Does not insert it.)
