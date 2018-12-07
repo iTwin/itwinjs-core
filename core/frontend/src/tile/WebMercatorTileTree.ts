@@ -8,6 +8,7 @@ import { assert, ActivityLoggingContext, BentleyError, Guid, IModelStatus, JsonU
 import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation, BackgroundMapType, BackgroundMapProps } from "@bentley/imodeljs-common";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile, TileRequests } from "./TileTree";
+import { TileRequest } from "./TileRequest";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
@@ -190,6 +191,32 @@ class WebMercatorTileLoader extends TileLoader {
         });
       }
     }));
+  }
+  public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
+    if (!this._providerInitialized) {
+      if (undefined === this._providerInitializing)
+        this._providerInitializing = this._imageryProvider.initialize();
+
+      await this._providerInitializing;
+      this._providerInitialized = true;
+      this._providerInitializing = undefined;
+    }
+
+    const quadId = new QuadId(tile.contentId);
+    return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
+  }
+  public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData): Promise<TileRequest.Graphic> {
+    assert(data instanceof ImageSource);
+    const graphic: TileRequest.Graphic = { };
+    const system = IModelApp.renderSystem;
+    const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system);
+    if (undefined !== texture) {
+      const quadId = new QuadId(tile.contentId);
+      const corners = quadId.getCorners(this.mercatorToDb);
+      graphic.graphic = system.createTile(texture, corners);
+    }
+
+    return graphic;
   }
 
   private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem): Promise<RenderTexture | undefined> {

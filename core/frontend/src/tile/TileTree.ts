@@ -37,6 +37,7 @@ import { GraphicType } from "../render/GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { TileIO } from "./TileIO";
+import { TileRequest } from "./TileRequest";
 import { GltfTileIO } from "./GltfTileIO";
 import { B3dmTileIO } from "./B3dmTileIO";
 import { PntsTileIO } from "./PntsTileIO";
@@ -692,9 +693,53 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
 export abstract class TileLoader {
   public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
   public abstract async loadTileContents(missingtiles: Tile[]): Promise<void>;
+  public abstract async requestTileContent(tile: Tile): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
+  protected get _batchType(): BatchType { return BatchType.Primary; }
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
-  public loadGraphics(tile: Tile, geometry: any, type: BatchType = BatchType.Primary): void {
+  public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData): Promise<TileRequest.Graphic> {
+    assert(data instanceof Uint8Array);
+    const blob = data as Uint8Array;
+
+    const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
+    const format = streamBuffer.nextUint32;
+    streamBuffer.rewind(4);
+
+    const isCanceled = () => false; // !tile.isLoading;
+    let reader: GltfTileIO.Reader | undefined;
+    switch (format) {
+      case TileIO.Format.Pnts:
+        return { graphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp) };
+
+      case TileIO.Format.B3dm:
+        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);
+        break;
+
+      case TileIO.Format.Dgn:
+        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled);
+        break;
+
+      case TileIO.Format.IModel:
+        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
+        break;
+
+      default:
+        assert(false, "unknown tile format " + format);
+        break;
+    }
+
+    let graphic: TileRequest.Graphic = { };
+    if (undefined !== reader) {
+      try {
+        graphic = await reader.read();
+      } catch (_err) {
+        //
+      }
+    }
+
+    return graphic;
+  }
+  public loadGraphics(tile: Tile, geometry: any): void {
     let blob: Uint8Array | undefined;
     if (typeof geometry === "string") {
       blob = base64StringToUint8Array(geometry as string);
@@ -720,11 +765,11 @@ export abstract class TileLoader {
         break;
 
       case TileIO.Format.Dgn:
-        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, type, isCanceled);
+        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled);
         break;
 
       case TileIO.Format.IModel:
-        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, type, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
+        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
         break;
 
       case TileIO.Format.Pnts:
@@ -777,7 +822,15 @@ function bisectRange2d(range: Range3d, takeUpper: boolean): void {
 
 /** @hidden */
 export class IModelTileLoader extends TileLoader {
-  constructor(private _iModel: IModelConnection, private _type: BatchType) { super(); }
+  private _iModel: IModelConnection;
+  private _type: BatchType;
+  protected get _batchType() { return this._type; }
+
+  public constructor(iModel: IModelConnection, batchType: BatchType) {
+    super();
+    this._iModel = iModel;
+    this._type = batchType;
+  }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public tileRequiresLoading(params: Tile.Params): boolean { return 0 !== params.maximumSize; }
@@ -851,11 +904,15 @@ export class IModelTileLoader extends TileLoader {
       tile.setIsQueued();
       this._iModel.tiles.getTileContent(tile.root.id, tile.contentId).then((content: Uint8Array) => {
         if (tile.isQueued)
-          this.loadGraphics(tile, content, this._type);
+          this.loadGraphics(tile, content);
       }).catch((_err: any) => {
         tile.setNotFound();
       });
     }
+  }
+
+  public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
+    return this._iModel.tiles.getTileContent(tile.root.id, tile.contentId);
   }
 }
 

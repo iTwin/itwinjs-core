@@ -18,6 +18,7 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { GraphicList, PackedFeatureTable, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
 import { Tile, TileLoader, TileRequests, TileTree } from "./tile/TileTree";
+import { TileRequest } from "./tile/TileRequest";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { CoordSystem, OffScreenViewport, Viewport, ViewRect } from "./Viewport";
 import { SpatialViewState, ViewState, ViewState2d, ViewState3d } from "./ViewState";
@@ -224,6 +225,10 @@ export namespace Attachments {
     public async loadTileContents(_missing: Tile[]): Promise<void> {
       // ###TODO: This doesn't appear to be needed, yet it gets invoked?
       return Promise.resolve();
+    }
+    public async requestTileContent(_tile: Tile): Promise<TileRequest.Response> {
+      // ###TODO?
+      return Promise.resolve(undefined);
     }
   }
 
