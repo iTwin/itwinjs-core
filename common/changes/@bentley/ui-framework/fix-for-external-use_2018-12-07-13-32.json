@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add SignIn and SignOut to the index file",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "Barry.Bentley@bentley.com"
+}

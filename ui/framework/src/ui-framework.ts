@@ -17,6 +17,9 @@ export * from "./feedback/ValidationTextbox";
 export * from "./messages/InputField";
 export * from "./messages/Pointer";
 
+export * from "./oidc/SignIn";
+export * from "./oidc/SignOut";
+
 export * from "./openimodel/ApplicationHeader";
 export * from "./openimodel/BlockingPrompt";
 export * from "./openimodel/IModelCard";
