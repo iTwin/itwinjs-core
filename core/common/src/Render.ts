@@ -142,7 +142,8 @@ export class MeshPolylineList extends Array<MeshPolyline> { constructor(...args:
 export class MeshEdge {
   public indices = [0, 0];
   public constructor(index0?: number, index1?: number) {
-    if (undefined === index0 || undefined === index1) { return; }
+    if (undefined === index0 || undefined === index1)
+      return;
     if (index0 < index1) {
       this.indices[0] = index0;
       this.indices[1] = index1;
@@ -217,7 +218,7 @@ export class PolylineEdgeArgs {
  * @see [[RenderSystem]] for functions used to create RenderTextures.
  */
 export abstract class RenderTexture implements IDisposable {
-  /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element ID of the corresponding Texture element in the [[IModelDb]].
+  /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element Id of the corresponding Texture element in the [[IModelDb]].
    * Textures created on the front-end generally have no key.
    */
   public readonly key: string | undefined;
@@ -264,10 +265,10 @@ export namespace RenderTexture {
 
   /** Parameters used to construct a [[RenderTexture]]. */
   export class Params {
-    /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element ID of the corresponding Texture element in the [[IModelDb]].
+    /** A string uniquely identifying this texture within the context of an [[IModelConnection]]. Typically this is the element Id of the corresponding Texture element in the [[IModelDb]].
      * Textures created on the front-end generally have no key.
      */
-    public readonly key?: string; // The ID of a persistent texture
+    public readonly key?: string; // The Id of a persistent texture
     /** Indicates the type of texture. */
     public readonly type: Type;
     /** Indicates that some object is managing the lifetime of this texture and will take care of calling its dispose function appropriately.
@@ -292,7 +293,7 @@ export namespace RenderTexture {
 
 /** Represents a material which can be applied to a surface to control aspects of its appearance such as color, reflectivity, texture, and so on. */
 export abstract class RenderMaterial {
-  /** If the material originated from a Material element in the [[IModelDb]], the ID of that element. */
+  /** If the material originated from a Material element in the [[IModelDb]], the Id of that element. */
   public readonly key?: string;
   /** Describes how to map an image to a surface to which this material is applied. */
   public readonly textureMapping?: TextureMapping;
@@ -309,7 +310,7 @@ export abstract class RenderMaterial {
 export namespace RenderMaterial {
   /** Parameters used to construct a [[RenderMaterial]] */
   export class Params {
-    /** If the material originates from a Material element in the [[IModelDb]], the ID of that element. */
+    /** If the material originates from a Material element in the [[IModelDb]], the Id of that element. */
     public key?: string;
     public diffuseColor?: ColorDef;
     public specularColor?: ColorDef;

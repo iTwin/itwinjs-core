@@ -11,6 +11,7 @@ import {
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
+import { IOSAzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/IOSAzureFileHandler";
 import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, ActivityLoggingContext, GuidString, Id64 } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
@@ -20,6 +21,7 @@ import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
 import * as glob from "glob";
+import { Platform } from "./Platform";
 
 const loggingCategory = "imodeljs-backend.BriefcaseManager";
 
@@ -239,7 +241,11 @@ export class BriefcaseManager {
   public static get imodelClient(): IModelClient {
     if (!this._imodelClient) {
       // The server handler defaults to iModelHub handler and the file handler defaults to AzureFileHandler
-      this._imodelClient = new IModelHubClient(new AzureFileHandler());
+      if (Platform.isMobile) {
+        this._imodelClient = new IModelHubClient(new IOSAzureFileHandler());
+      } else {
+        this._imodelClient = new IModelHubClient(new AzureFileHandler());
+      }
     }
     return this._imodelClient;
   }

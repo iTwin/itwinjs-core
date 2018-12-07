@@ -7,8 +7,8 @@ const argv = require("yargs").argv;
 //                   --destDir={destination directory}
 //                   -- type={dev|prod}
 
-function makeModulePath(rushNodeModules, moduleName, relativePath) {
-  return path.resolve(rushNodeModules, moduleName, relativePath);
+function makeModulePath(localNodeModules, moduleName, relativePath) {
+  return path.resolve(localNodeModules, moduleName, relativePath);
 }
 
 function makeBentleyModulePath(localNodeModules, moduleName, isDev) {
@@ -109,22 +109,6 @@ function main() {
   const packageFileName = (argv.packageFile === undefined) ? "./package.json" : argv.packageFile;
   const buildType = (argv.type == undefined) ? "dev" : argv.type;
   const isDev = buildType === "dev";
-
-  // find the common node_modules directory.
-  const packagePath = path.resolve(process.cwd(), packageFileName);
-  const parsedPath = path.parse(packagePath)
-  let imIndex = 0;
-  if (-1 === (imIndex = parsedPath.dir.lastIndexOf("imodeljs"))) {
-    console.log("can't find imodeljs directory, aborting");
-    return;
-  }
-
-  const rushNodeModules = path.resolve(parsedPath.dir.slice(0, imIndex + 8), "common/temp/node_modules");
-  if (!fs.existsSync(rushNodeModules)) {
-    console.log("Rush node modules directory", rushNodeModules, "does not exist, aborting");
-    return;
-  }
-
   const localNodeModules = path.resolve(process.cwd(), "node_modules");
   if (!fs.existsSync(localNodeModules)) {
     console.log("Local node modules directory", localNodeModules, "does not exist, aborting");
@@ -134,7 +118,7 @@ function main() {
   const externalModules = [
     new ModuleInfo(true, "@bentley/bentleyjs-core", undefined, "core/bentley"),
     new ModuleInfo(true, "@bentley/geometry-core", undefined, "core/geometry"),
-    new ModuleInfo(false, "@bentley/bwc", makeModulePath(rushNodeModules, "@bentley/bwc", isDev ? "lib/module/dev/bwc.js" : "lib/module/prod/bwc.js")),
+    new ModuleInfo(false, "@bentley/bwc", makeModulePath(localNodeModules, "@bentley/bwc", isDev ? "lib/module/dev/bwc.js" : "lib/module/prod/bwc.js")),
     new ModuleInfo(true, "@bentley/imodeljs-i18n", undefined, "core/i18n"),
     new ModuleInfo(true, "@bentley/imodeljs-clients", undefined, "core/clients"),
     new ModuleInfo(true, "@bentley/imodeljs-common", undefined, "core/common"),
@@ -147,14 +131,14 @@ function main() {
     new ModuleInfo(true, "@bentley/presentation-common", undefined, "presentation/components"),
     new ModuleInfo(true, "@bentley/presentation-components", undefined, "presentation/components"),
     new ModuleInfo(true, "@bentley/presentation-frontend", undefined, "presentation/frontend"),
-    new ModuleInfo(false, "react", makeModulePath(rushNodeModules, "react", isDev ? "umd/react.development.js" : "umd/react.production.min.js")),
-    new ModuleInfo(false, "react-dnd", makeModulePath(rushNodeModules, "react-dnd", isDev ? "dist/ReactDnd.js" : "dist/ReactDnD.min.js")),
-    new ModuleInfo(false, "react-dnd-html5-backend", makeModulePath(rushNodeModules, "react-dnd-html5-backend", isDev ? "dist/ReactDnDHTML5Backend.js" : "dist/ReactDnDHTML5Backend.min.js")),
-    new ModuleInfo(false, "react-dom", makeModulePath(rushNodeModules, "react-dom", isDev ? "umd/react-dom.development.js" : "umd/react-dom.production.min.js")),
-    new ModuleInfo(false, "react-redux", makeModulePath(rushNodeModules, "react-redux", isDev ? "dist/react-redux.js" : "dist/react-redux.min.js")),
-    new ModuleInfo(false, "redux", makeModulePath(rushNodeModules, "redux", isDev ? "dist/redux.js" : "dist/redux.min.js")),
-    new ModuleInfo(false, "inspire-tree", makeModulePath(rushNodeModules, "inspire-tree", isDev ? "dist/inspire-tree.js" : "dist/inspire-tree.min.js")),
-    new ModuleInfo(false, "lodash", makeModulePath(rushNodeModules, "lodash", isDev ? "lodash.js" : "lodash.min.js")),
+    new ModuleInfo(false, "react", makeModulePath(localNodeModules, "react", isDev ? "umd/react.development.js" : "umd/react.production.min.js")),
+    new ModuleInfo(false, "react-dnd", makeModulePath(localNodeModules, "react-dnd", isDev ? "dist/ReactDnd.js" : "dist/ReactDnD.min.js")),
+    new ModuleInfo(false, "react-dnd-html5-backend", makeModulePath(localNodeModules, "react-dnd-html5-backend", isDev ? "dist/ReactDnDHTML5Backend.js" : "dist/ReactDnDHTML5Backend.min.js")),
+    new ModuleInfo(false, "react-dom", makeModulePath(localNodeModules, "react-dom", isDev ? "umd/react-dom.development.js" : "umd/react-dom.production.min.js")),
+    new ModuleInfo(false, "react-redux", makeModulePath(localNodeModules, "react-redux", isDev ? "dist/react-redux.js" : "dist/react-redux.min.js")),
+    new ModuleInfo(false, "redux", makeModulePath(localNodeModules, "redux", isDev ? "dist/redux.js" : "dist/redux.min.js")),
+    new ModuleInfo(false, "inspire-tree", makeModulePath(localNodeModules, "inspire-tree", isDev ? "dist/inspire-tree.js" : "dist/inspire-tree.min.js")),
+    new ModuleInfo(false, "lodash", makeModulePath(localNodeModules, "lodash", isDev ? "lodash.js" : "lodash.min.js")),
   ];
 
   try {
@@ -165,6 +149,7 @@ function main() {
     }
 
     // open and read the package.json file.
+    const packagePath = path.resolve(process.cwd(), packageFileName);
     const packageFileContents = fs.readFileSync(packagePath, "utf8");
 
     // parse it

@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on.",
+      "comment": "Add SignIn and SignOut to the index file",
       "packageName": "@bentley/ui-framework",
       "type": "none"
     }

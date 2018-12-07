@@ -12,7 +12,8 @@ import { ContentControl } from "./ContentControl";
 import { ContentGroup, ContentGroupManager } from "./ContentGroup";
 import { WidgetDef } from "./WidgetDef";
 import { WidgetControl } from "./WidgetControl";
-import { FrontstageProvider, Frontstage } from "./Frontstage";
+import { Frontstage } from "./Frontstage";
+import { FrontstageProvider } from "./FrontstageProvider";
 
 import { NineZoneProps } from "@bentley/ui-ninezone";
 

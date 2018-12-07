@@ -18,6 +18,7 @@ import {
   DisplayStyleSettings,
   DisplayStyle3dSettings,
   BackgroundMapProps,
+  AnalysisStyle,
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
@@ -27,6 +28,7 @@ import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 import { TileTreeModelState } from "./ModelState";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { ContextRealityModelState } from "./ContextRealityModelState";
+import { RenderScheduleState } from "./RenderScheduleState";
 
 /** A DisplayStyle defines the parameters for 'styling' the contents of a [[ViewState]]
  * @note If the DisplayStyle is associated with a [[ViewState]] which is being rendered inside a [[Viewport]], modifying
@@ -36,6 +38,8 @@ import { ContextRealityModelState } from "./ContextRealityModelState";
 export abstract class DisplayStyleState extends ElementState implements DisplayStyleProps {
   private _backgroundMap: BackgroundMapState;
   private _contextRealityModels: ContextRealityModelState[];
+  private _analysisStyle?: AnalysisStyle;
+  private _scheduleScript?: RenderScheduleState.Script;
 
   public abstract get settings(): DisplayStyleSettings;
 
@@ -47,19 +51,26 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._backgroundMap = new BackgroundMapState(mapProps, iModel);
     this._contextRealityModels = [];
 
-    if (styles && styles.ContextRealityModels)
-      for (const contextRealityModel of styles.contextRealityModels)
-        this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel));
+    if (styles) {
+      if (styles.ContextRealityModels)
+        for (const contextRealityModel of styles.contextRealityModels)
+          this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel));
+
+      if (styles.analysisStyle)
+        this._analysisStyle = AnalysisStyle.fromJSON(styles.analysisStyle);
+      if (styles.scheduleScript)
+        this._scheduleScript = RenderScheduleState.Script.fromJSON(this.id, this.iModel, styles.scheduleScript);
+    }
   }
 
-  /** @hidden */
+  /* * @hidden */
   public setBackgroundMap(mapProps: BackgroundMapProps): void {
     if (!this.backgroundMap.equalsProps(mapProps)) {
       this._backgroundMap = new BackgroundMapState(mapProps, this.iModel);
       this.settings.backgroundMap = mapProps;
     }
   }
-  /** @hidden */
+  /**  @hidden */
   public forEachContextRealityModel(func: (model: TileTreeModelState) => void): void {
     for (const contextRealityModel of this._contextRealityModels) { func(contextRealityModel); }
   }
@@ -72,6 +83,24 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Get the name of this DisplayStyle */
   public get name(): string { return this.code.getValue(); }
+
+  /** Settings controlling display of analytical models.
+   * @note Do not modify the style in place. Clone it and pass the clone to the setter.
+   */
+  public get analysisStyle(): AnalysisStyle | undefined { return this._analysisStyle; }
+  public set analysisStyle(style: AnalysisStyle | undefined) {
+    if (undefined === style) {
+      this._analysisStyle = undefined;
+    } else {
+      if (undefined === this._analysisStyle)
+        this._analysisStyle = AnalysisStyle.fromJSON(style);
+      else
+        this._analysisStyle.copyFrom(style);
+    }
+
+    this.jsonProperties.analysisStyle = this._analysisStyle;
+  }
+  public get scheduleScript(): RenderScheduleState.Script | undefined { return this._scheduleScript; }
 
   /** @hidden */
   public get contextRealityModels(): ContextRealityModelState[] { return this._contextRealityModels; }

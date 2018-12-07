@@ -497,6 +497,66 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
     return this._mergedPropertyCache;
   }
+
+  /**
+   * Asynchronously traverses through the inheritance tree, using depth-first traversal, calling the given callback
+   * function for each base class encountered.
+   * @param callback The function to call for each base class in the hierarchy.
+   * @param arg An argument that will be passed as the second parameter to the callback function.
+   */
+  public async traverseBaseClasses(callback: (ecClass: ECClass, arg?: any) => boolean, arg?: any): Promise<boolean> {
+    const baseClasses = await this.getAllBaseClasses();
+    if (!baseClasses)
+      return false;
+
+    for await (const baseClass of baseClasses) {
+      if (callback(baseClass, arg))
+        return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Synchronously traverses through the inheritance tree, using depth-first traversal, calling the given callback
+   * function for each base class encountered.
+   * @param callback The function to call for each base class in the hierarchy.
+   * @param arg An argument that will be passed as the second parameter to the callback function.
+   */
+  public traverseBaseClassesSync(callback: (ecClass: ECClass, arg?: any) => boolean, arg?: any): boolean {
+    const baseClasses = this.getAllBaseClassesSync();
+    if (!baseClasses)
+      return false;
+
+    for (const baseClass of baseClasses) {
+      if (callback(baseClass, arg))
+        return true;
+    }
+
+    return false;
+  }
+
+  /**
+   * Indicates if the targetClass is of this type.
+   * @param targetClass The class to check.
+   */
+  public async is(targetClass: ECClass): Promise<boolean> {
+    if (SchemaItem.equalByKey(this, targetClass))
+      return true;
+
+    return this.traverseBaseClasses(SchemaItem.equalByKey, targetClass);
+  }
+
+  /**
+   * A synchronous version of the [[ECClass.is]], indicating if the targetClass is of this type.
+   * @param targetClass The class to check.
+   */
+  public isSync(targetClass: ECClass): boolean {
+    if (SchemaItem.equalByKey(this, targetClass))
+      return true;
+
+    return this.traverseBaseClassesSync(SchemaItem.equalByKey, targetClass);
+  }
 }
 
 /**

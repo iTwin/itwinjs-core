@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/bwc/lib/mixins";
 @import "../_z-index";
+@import "../_scrollbar";
 
 .dialog {
   @include bwc-font-family;
@@ -141,6 +142,9 @@
         @include bwc-text-block;
 
         padding: $bwc-unbordered-padding;
+
+        @include uicore-touch-scrolling;
+        @include uicore-scrollbar();
       }
 
       > .dialog-footer {

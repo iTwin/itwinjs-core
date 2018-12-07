@@ -2,6 +2,33 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.173.0",
+      "tag": "@bentley/imodeljs-frontend_v0.173.0",
+      "date": "Thu, 06 Dec 2018 22:03:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "map api cors fix"
+          },
+          {
+            "comment": "Fix failure to display Bing maps logo."
+          },
+          {
+            "comment": "Fix \"maximum window\" error when viewing large drawings."
+          },
+          {
+            "comment": "enable tslint rules for asyncs"
+          },
+          {
+            "comment": "T"
+          },
+          {
+            "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.172.0",
       "tag": "@bentley/imodeljs-frontend_v0.172.0",
       "date": "Tue, 04 Dec 2018 17:24:39 GMT",

@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Added fillZone property to the Widget",
+      "comment": "",
       "packageName": "@bentley/ui-framework",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-framework",
-  "email": "dan.east@bentley.com"
+  "email": "bill.steinbock@bentley.com"
 }

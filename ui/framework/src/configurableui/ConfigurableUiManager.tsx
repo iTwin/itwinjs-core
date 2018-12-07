@@ -11,7 +11,7 @@ import { ContentGroupManager, ContentGroupProps } from "./ContentGroup";
 import { ContentLayoutManager, ContentLayoutProps } from "./ContentLayout";
 import { TaskManager, TaskPropsList } from "./Task";
 import { WorkflowManager, WorkflowPropsList } from "./Workflow";
-import { FrontstageProvider } from "./Frontstage";
+import { FrontstageProvider } from "./FrontstageProvider";
 import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
 
 import { StandardRotationNavigationAidControl } from "./navigationaids/StandardRotationNavigationAid";

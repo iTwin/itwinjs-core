@@ -25,11 +25,11 @@ import { ItemList } from "./ItemMap";
 /** Widget state enum.
  */
 export enum WidgetState {
-  Off,
-  Open,
-  Hidden,
-  Footer,
-  Floating,
+  Open,     // widgetTab is visible and active and its contents are visible.
+  Close,    // widgetTab is visible but its contents are not visible.
+  Hidden,   // widgetTab nor its contents are visible
+  Visible,  // widgetTab is visible in zone's tab stack
+  Floating, // widgetTab is in a 'floating' state and is not docked in zone's tab stack.
 }
 
 /** Widget type enum.
@@ -58,6 +58,7 @@ export interface WidgetDefProps extends ItemProps {
   isFloatingStateWindowResizable?: boolean;     // Default - true
   isToolSettings?: boolean;                     // Default - false
   isStatusBar?: boolean;                        // Default - false
+  isFloating?: boolean;                         // Default - false
   fillZone?: boolean;                           // Default - false
 
   applicationData?: any;
@@ -87,6 +88,11 @@ export interface NavigationWidgetProps extends ToolbarWidgetProps {
   navigationAidId?: string;
 }
 
+export interface WidgetDefState extends BaseItemState {
+  widgetState?: number;
+  isFloating?: boolean;
+}
+
 /** Union of all Widget properties.
  */
 export type AnyWidgetProps = WidgetDefProps | ToolWidgetProps | NavigationWidgetProps;
@@ -102,7 +108,6 @@ export class WidgetDef extends ItemDefBase {
 
   public id: string;
   public classId: string | ConfigurableUiControlConstructor | undefined = undefined;
-  public widgetState: WidgetState = WidgetState.Open;
   public priority: number = 0;
 
   public featureId: string = "";
@@ -120,7 +125,11 @@ export class WidgetDef extends ItemDefBase {
 
   private _widgetReactNode: React.ReactNode;
   private _widgetControl!: WidgetControl;
-  private _isVisible = true;
+  public isFloating: boolean = false;
+
+  public clearIsPressed(): void {  // call from zone processing to ensure only a single non-floating widget is active
+    this.isPressed = false;
+  }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
     let refreshState = false;
@@ -128,19 +137,18 @@ export class WidgetDef extends ItemDefBase {
     if (this.stateSyncIds && this.stateSyncIds.length > 0)
       refreshState = this.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
     if (refreshState) {
-      let newState: BaseItemState = {
-        isVisible: this._isVisible,
-        isEnabled: true,
-        isActive: false,
+      let newState: WidgetDefState = {
+        isVisible: this.isVisible,
+        isEnabled: this.isEnabled,
+        isActive: this.isPressed,
+        isFloating: this.isFloating,
       };
 
       if (this.stateFunc)
         newState = this.stateFunc(newState);
 
-      if (undefined !== newState.isVisible && this._isVisible !== newState.isVisible) {
-        this._isVisible = newState.isVisible;
-        this.setWidgetState(this.widgetState);
-      }
+      if (undefined !== newState.widgetState)
+        this.setWidgetState(newState.widgetState);
     }
   }
 
@@ -157,7 +165,7 @@ export class WidgetDef extends ItemDefBase {
       if (widgetProps.classId !== undefined)
         this.classId = widgetProps.classId;
       if (widgetProps.defaultState !== undefined)
-        this.widgetState = widgetProps.defaultState;
+        this.applyWidgetState(widgetProps.defaultState);
       if (widgetProps.priority !== undefined)
         this.priority = widgetProps.priority;
 
@@ -182,7 +190,16 @@ export class WidgetDef extends ItemDefBase {
         this.applicationData = widgetProps.applicationData;
 
       if (widgetProps.isVisible !== undefined)
-        this._isVisible = widgetProps.isVisible;
+        this.isVisible = widgetProps.isVisible;
+      else
+        this.isVisible = true;
+
+      this.isPressed = false;
+
+      if (widgetProps.isFloating !== undefined)
+        this.isFloating = widgetProps.isFloating;
+      else
+        this.isFloating = false;
 
       if (widgetProps.reactElement !== undefined)
         this._widgetReactNode = widgetProps.reactElement;
@@ -237,18 +254,59 @@ export class WidgetDef extends ItemDefBase {
     this._widgetReactNode = node;
   }
 
+  public applyWidgetState(state: WidgetState): boolean {
+    let stateChanged = false;
+
+    switch (state) {
+      case WidgetState.Open:
+        if (!this.isVisible || !this.isPressed) {
+          stateChanged = true;
+          this.isVisible = true;
+          this.isPressed = true;
+        }
+        break;
+      case WidgetState.Close:
+        if (!this.isVisible || this.isPressed) {
+          stateChanged = true;
+          this.isVisible = true;
+          this.isPressed = false;
+        }
+        break;
+      case WidgetState.Hidden:
+        if (this.isVisible || !this.isFloating) {
+          stateChanged = true;
+          this.isVisible = false;
+          this.isFloating = false;
+        }
+        break;
+      case WidgetState.Visible:
+        if (!this.isVisible) {
+          stateChanged = true;
+          this.isVisible = true;
+        }
+        break;
+      case WidgetState.Floating:
+        if (!this.isVisible || !this.isFloating) {
+          stateChanged = true;
+          this.isFloating = true;
+          this.isVisible = true;
+        }
+        break;
+    }
+
+    return stateChanged;
+  }
+
   public setWidgetState(state: WidgetState): void {
-    const oldWidgetState = this.widgetState;
-    this.widgetState = state;
-    this.stateChanged = oldWidgetState !== state;
-    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this, oldWidgetState, newWidgetState: state });
+    this.stateChanged = this.applyWidgetState(state);
+    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this });
   }
 
   public canShow(): boolean {
-    return (this._isVisible && this.widgetState !== WidgetState.Off && this.widgetState !== WidgetState.Hidden);
+    return (this.isVisible);
   }
 
   public canOpen(): boolean {
-    return (this.widgetState === WidgetState.Open || this.widgetState === WidgetState.Floating || this.widgetState === WidgetState.Footer);
+    return (this.isPressed || this.isFloating);
   }
 }

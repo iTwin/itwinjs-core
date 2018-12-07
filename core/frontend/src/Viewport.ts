@@ -4,27 +4,31 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
 
+import { assert, BeDuration, BeEvent, BeTimePoint, dispose, Id64, Id64Arg, IDisposable, StopWatch } from "@bentley/bentleyjs-core";
 import {
-  Vector3d, XYZ, Point3d, Point2d, XAndY, LowAndHighXY, LowAndHighXYZ, Arc3d, Range3d, AxisOrder, Angle, AngleSweep,
-  Matrix3d, Transform, Map4d, Point4d, Constant, XYAndZ, Plane3dByOriginAndUnitNormal, Ray3d,
+  Angle, AngleSweep, Arc3d, AxisOrder, Constant, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
+  Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, Transform, Vector3d, XAndY,
+  XYAndZ, XYZ,
 } from "@bentley/geometry-core";
-import { ViewState, ViewStatus, MarginPercent, GridOrientationType } from "./ViewState";
-import { StandardView, StandardViewId } from "./StandardView";
-import { BeEvent, BeDuration, BeTimePoint, StopWatch, assert, Id64Arg, IDisposable, dispose, Id64 } from "@bentley/bentleyjs-core";
-import { EventController } from "./tools/EventController";
+import {
+  AnalysisStyle, AntiAliasPref, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc,
+  NpcCenter, NpcCorners, Placement2d, Placement2dProps, Placement3d, PlacementProps, ViewFlags,
+} from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
-import { IModelConnection } from "./IModelConnection";
-import { HitDetail, SnapDetail } from "./HitDetail";
-import { DecorateContext, SceneContext } from "./ViewContext";
-import { TileRequests } from "./tile/TileTree";
-import { ViewFlags, Hilite, Camera, ColorDef, Frustum, Npc, NpcCorners, NpcCenter, Placement2dProps, Placement2d, Placement3d, AntiAliasPref, ImageBuffer, ElementProps, PlacementProps, AnalysisStyle } from "@bentley/imodeljs-common";
-import { IModelApp } from "./IModelApp";
-import { Decorations, RenderTarget, RenderPlan, Pixel, GraphicList } from "./render/System";
-import { FeatureSymbology } from "./render/FeatureSymbology";
 import { ElementPicker, LocateOptions } from "./ElementLocateManager";
-import { ToolSettings } from "./tools/ToolAdmin";
-import { GraphicType } from "./render/GraphicBuilder";
+import { HitDetail, SnapDetail } from "./HitDetail";
+import { IModelApp } from "./IModelApp";
+import { IModelConnection } from "./IModelConnection";
 import { ToolTipOptions } from "./NotificationManager";
+import { FeatureSymbology } from "./render/FeatureSymbology";
+import { GraphicType } from "./render/GraphicBuilder";
+import { Decorations, GraphicList, Pixel, RenderPlan, RenderTarget } from "./render/System";
+import { StandardView, StandardViewId } from "./StandardView";
+import { TileRequests } from "./tile/TileTree";
+import { EventController } from "./tools/EventController";
+import { ToolSettings } from "./tools/ToolAdmin";
+import { DecorateContext, SceneContext } from "./ViewContext";
+import { GridOrientationType, MarginPercent, ViewState, ViewStatus } from "./ViewState";
 
 /** A function which customizes the appearance of Features within a Viewport.
  * @see [[Viewport.addFeatureOverrides]]
@@ -1691,7 +1695,7 @@ export abstract class Viewport implements IDisposable {
       target.animationFraction = this.animationFraction;
       isRedrawNeeded = true;
       sync.setValidAnimationFraction();
-      const scheduleScript = view.displayStyle.settings.scheduleScript;
+      const scheduleScript = view.displayStyle.scheduleScript;
       if (scheduleScript)
         view.scheduleTime = scheduleScript.duration.fractionToPoint(target.animationFraction);
     }

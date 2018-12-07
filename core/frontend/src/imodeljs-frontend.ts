@@ -31,6 +31,7 @@ export * from "./ModelSelectorState";
 export * from "./ModelState";
 export * from "./NotificationManager";
 export * from "./SelectionSet";
+export * from "./Sheet";
 export * from "./Sprites";
 export * from "./StandardView";
 export * from "./TentativePoint";

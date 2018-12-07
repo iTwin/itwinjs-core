@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/_scrollbar";
 
 .ui-components-tree-errormessage {
   padding-left: "10px"
@@ -26,9 +27,13 @@
    */
   .ReactVirtualized__Grid {
     overflow: auto !important;
+
+    @include uicore-scrollbar();
+
     &:focus {
       outline: none;
     }
+
     > .ReactVirtualized__Grid__innerScrollContainer {
       overflow: visible !important;
       width: fit-content !important;
