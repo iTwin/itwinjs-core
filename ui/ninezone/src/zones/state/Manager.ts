@@ -112,21 +112,38 @@ export class StateManager {
         ...model.props.zones,
         ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
           const id = Number(key) as WidgetZoneIndex;
+          const zone = state.zones[id];
+
           const layout = model.getWidgetZone(id).getLayout();
-          const bounds = layout.bounds;
-          const floatingBounds = layout.floatingBounds;
+          const bounds = layout.bounds.equals(zone.bounds) ? zone.bounds : layout.bounds;
+          const isLayoutChanged = zoneId === id ? true : zone.isLayoutChanged;
+
+          const oldFloatingBounds = zone.floating ? zone.floating.bounds : undefined;
+          const newFloatingBounds = layout.floatingBounds;
+
+          let floating = zone.floating;
+          if (newFloatingBounds && oldFloatingBounds && !newFloatingBounds.equals(oldFloatingBounds)) {
+            floating = {
+              ...state.zones[id].floating,
+              stackId: state.zones[id].floating!.stackId,
+              bounds: newFloatingBounds,
+            };
+          }
+
+          const noChange = bounds === zone.bounds &&
+            floating === zone.floating &&
+            isLayoutChanged === zone.isLayoutChanged;
+
+          if (noChange) {
+            acc[id] = zone;
+            return acc;
+          }
 
           acc[id] = {
             ...model.props.zones[id],
-            ...zoneId === id ? { isLayoutChanged: true } : {},
-            ...floatingBounds && state.zones[id].floating ? {
-              floating: {
-                ...state.zones[id].floating,
-                stackId: state.zones[id].floating!.stackId,
-                bounds: floatingBounds,
-              },
-            } : {},
             bounds,
+            floating,
+            isLayoutChanged,
           };
           return acc;
         }, {}),

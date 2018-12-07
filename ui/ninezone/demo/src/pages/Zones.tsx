@@ -722,13 +722,12 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
             }
           />
         </FooterZone>
-        <Zone bounds={this.props.targetBounds}>
-          <TargetExample
-            zoneIndex={StatusZone.id}
-            dropTarget={this.props.dropTarget}
-            onTargetChanged={this.props.onTargetChanged}
-          />
-        </Zone>
+        <ZoneTargetExample
+          bounds={this.props.targetBounds}
+          zoneIndex={StatusZone.id}
+          dropTarget={this.props.dropTarget}
+          onTargetChanged={this.props.onTargetChanged}
+        />
         {!this.props.outlineBounds ? undefined :
           <GhostOutline bounds={this.props.outlineBounds} />
         }
@@ -808,13 +807,12 @@ class FloatingZone extends React.PureComponent<FloatingZoneProps> {
             />
           }
         </Zone>
-        <Zone bounds={this.props.targetBounds}>
-          <TargetExample
-            dropTarget={this.props.dropTarget}
-            zoneIndex={this.props.zone.id}
-            onTargetChanged={this.props.onTargetChanged}
-          />
-        </Zone>
+        <ZoneTargetExample
+          bounds={this.props.targetBounds}
+          dropTarget={this.props.dropTarget}
+          zoneIndex={this.props.zone.id}
+          onTargetChanged={this.props.onTargetChanged}
+        />
         {this.props.outlineBounds &&
           <GhostOutline bounds={this.props.outlineBounds} />
         }
@@ -845,8 +843,6 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
         content={
           activeWidget &&
           <WidgetContent
-            widgetId={activeWidget.id}
-            tabIndex={activeWidget.tabIndex}
             onChangeTheme={this.props.onChangeTheme}
             onOpenActivityMessage={this.props.onOpenActivityMessage}
             onOpenModalMessage={this.props.onOpenModalMessage}
@@ -854,6 +850,8 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
             onOpenStickyMessage={this.props.onOpenStickyMessage}
             onShowTooltip={this.props.onShowTooltip}
             onToggleFooterMode={this.props.onToggleFooterMode}
+            tabIndex={activeWidget.tabIndex}
+            widgetId={activeWidget.id}
           />
         }
         fillZone={this.props.zone.isLayoutChanged}
@@ -1053,27 +1051,32 @@ class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabPro
 type TargetChangedHandler = (target: TargetProps | undefined) => void;
 
 interface TargetExampleProps {
+  bounds: RectangleProps;
   dropTarget: DropTarget;
   zoneIndex: WidgetZoneIndex;
   onTargetChanged: TargetChangedHandler;
 }
 
-class TargetExample extends React.PureComponent<TargetExampleProps> {
+class ZoneTargetExample extends React.PureComponent<TargetExampleProps> {
   public render() {
     return (
-      <TargetContainer>
-        {this.props.dropTarget === DropTarget.Merge &&
-          <MergeTarget
-            onTargetChanged={this._handleMergeTargetChanged}
-          />
-        }
-        {this.props.dropTarget === DropTarget.Back &&
-          <BackTarget
-            onTargetChanged={this._handleBackTargetChanged}
-            zoneIndex={this.props.zoneIndex}
-          />
-        }
-      </TargetContainer>
+      <Zone
+        bounds={this.props.bounds}
+      >
+        <TargetContainer>
+          {this.props.dropTarget === DropTarget.Merge &&
+            <MergeTarget
+              onTargetChanged={this._handleMergeTargetChanged}
+            />
+          }
+          {this.props.dropTarget === DropTarget.Back &&
+            <BackTarget
+              onTargetChanged={this._handleBackTargetChanged}
+              zoneIndex={this.props.zoneIndex}
+            />
+          }
+        </TargetContainer>
+      </Zone>
     );
   }
 
@@ -2181,9 +2184,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   public readonly state: Readonly<State>;
 
-  private _szr = 0;
-  private _zr = 0;
-
   public constructor(p: {}) {
     super(p);
 
@@ -2983,9 +2983,6 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   }
 
   private _handleZoneResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
-    this._zr++;
-    // tslint:disable-next-line:no-console
-    console.log(this._szr, this._zr, this._szr - this._zr);
     this.setState((prevState) => ({
       nineZone: NineZoneManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone),
     }));
