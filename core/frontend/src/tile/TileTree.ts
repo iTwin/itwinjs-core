@@ -6,9 +6,6 @@
 
 import {
   assert,
-  compareNumbers,
-  compareStrings,
-  SortedArray,
   Id64,
   Id64String,
   BeTimePoint,
@@ -45,63 +42,23 @@ import { DgnTileIO } from "./DgnTileIO";
 import { IModelTileIO } from "./IModelTileIO";
 import { ViewFrustum } from "../Viewport";
 
-function compareMissingTiles(lhs: Tile, rhs: Tile): number {
-  const diff = compareNumbers(lhs.depth, rhs.depth);
-  return 0 === diff ? compareStrings(lhs.contentId, rhs.contentId) : diff;
-}
-
 /** @hidden */
-export class MissingNodes {
-  private readonly _requests: TileRequests;
-  private _list?: SortedArray<Tile>;
-
-  public constructor(requests: TileRequests) {
-    this._requests = requests;
-  }
+export class TileRequests {
+  public readonly missingTiles = new Set<Tile>();
+  public hasMissingTiles: boolean = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
 
   public insert(tile: Tile): void {
     switch (tile.loadStatus) {
-      case Tile.LoadStatus.NotLoaded: {
-        if (undefined === this._list)
-          this._list = new SortedArray<Tile>(compareMissingTiles);
-
-        this._list.insert(tile);
-      }
-      /* falls through */
+      case Tile.LoadStatus.NotLoaded:
       case Tile.LoadStatus.Queued:
       case Tile.LoadStatus.Loading:
-        this._requests.hasMissingTiles = true;
+        this.missingTiles.add(tile);
         break;
     }
   }
 
-  public extractArray(): Tile[] | undefined {
-    return undefined !== this._list ? this._list.extractArray() : undefined;
-  }
-}
-
-/** @hidden */
-export class TileRequests {
-  private _map = new Map<TileTree, MissingNodes>();
-  public hasMissingTiles: boolean = false;
-
-  public getMissing(root: TileTree): MissingNodes {
-    let found = this._map.get(root);
-    if (undefined === found) {
-      found = new MissingNodes(this);
-      this._map.set(root, found);
-    }
-
-    return found;
-  }
-
   public requestMissing(): void {
-    this._map.forEach((missing, _tree) => {
-      const list = missing.extractArray();
-      if (undefined !== list) {
-        IModelApp.tileRequests.requestTiles(list);
-      }
-    });
+    IModelApp.tileRequests.requestTiles(this.missingTiles);
   }
 }
 
@@ -533,7 +490,6 @@ export namespace Tile {
     public readonly graphics: GraphicBranch = new GraphicBranch();
     public readonly now: BeTimePoint;
     public readonly purgeOlderThan: BeTimePoint;
-    private _missing?: MissingNodes;
     private readonly _frustumPlanes?: FrustumPlanes;
 
     public getPixelSizeAtPoint(inPoint?: Point3d): number {
@@ -577,22 +533,11 @@ export namespace Tile {
     }
 
     public insertMissing(tile: Tile): void {
-      if (tile.isNotLoaded) {
-        if (undefined === this._missing)
-          this._missing = this.context.requests.getMissing(this.root);
-
-        this._missing.insert(tile);
-      } else if (tile.isQueued || tile.isLoading) {
-        this.context.requests.hasMissingTiles = true;
-      }
+      this.context.requests.insert(tile);
     }
 
     public requestMissing(): void {
-      if (undefined !== this._missing) {
-        const list = this._missing.extractArray();
-        if (undefined !== list)
-            IModelApp.tileRequests.requestTiles(list);
-      }
+      this.context.requests.requestMissing();
     }
 
     public markChildrenLoading(): void { this.context.requests.hasMissingTiles = true; }
@@ -675,10 +620,6 @@ export class TileTree implements IDisposable {
 
     args.drawGraphics();
     args.requestMissing();
-  }
-
-  public requestTiles(missing: Tile[]): void {
-    IModelApp.tileRequests.requestTiles(missing);
   }
 
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {

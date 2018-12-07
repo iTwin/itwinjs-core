@@ -100,7 +100,7 @@ export namespace TileRequest {
 
     preprocess(): void;
     process(): void;
-    requestTiles(tiles: Tile[]): void;
+    requestTiles(tiles: Set<Tile>): void;
     onShutDown(): void;
   }
 
@@ -112,6 +112,16 @@ export namespace TileRequest {
     return new TileRequestScheduler(options);
   }
 }
+
+/*
+class Queue extends PriorityQueue<TileRequest> {
+  public constructor() {
+    super((lhs, rhs) => lhs.compare(rhs));
+  }
+
+  public get array(): TileRequest[] { return this._array; }
+}
+*/
 
 class TileRequestScheduler implements TileRequest.Scheduler {
   private readonly _activeRequests = new Set<Tile>();
@@ -141,7 +151,7 @@ class TileRequestScheduler implements TileRequest.Scheduler {
   public process(): void {
   }
 
-  public requestTiles(tiles: Tile[]): void {
+  public requestTiles(tiles: Set<Tile>): void {
     for (const tile of tiles) {
       if (undefined === tile.request) {
         assert(!this._activeRequests.has(tile));
