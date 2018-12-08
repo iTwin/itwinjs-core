@@ -1,6 +1,7 @@
 {
   "preferredVersions": {
     "@types/react": "^16.4.14",
-    "typescript": "~3.1.0"
+    "typescript": "~3.1.0",
+    "event-stream": "~4.0.1"
   }
 }
