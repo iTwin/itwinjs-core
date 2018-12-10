@@ -803,8 +803,8 @@ async function _changeView(view: ViewState) {
   updateRenderModeOptionsMap();
 }
 
-export class MeasurePointsTool extends PrimitiveTool {
-  public static toolId = "Measure.Points";
+export class DrawingAidTestTool extends PrimitiveTool {
+  public static toolId = "DrawingAidTest.Points";
   public readonly points: Point3d[] = [];
   protected _snapGeomId?: string;
 
@@ -876,7 +876,7 @@ export class MeasurePointsTool extends PrimitiveTool {
 
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined !== IModelApp.accuSnap.currHit) {
-      const status = await IModelApp.accuSnap.resetButton(); // Test AccuSnap hit cycling...only restart when no current hit or not hot snap on next hit...
+      const status = await IModelApp.accuSnap.resetButton(); // TESTING ONLY - NOT NORMAL TOOL OPERATION - Exercise AccuSnap hit cycling...only restart when no current hit or not hot snap on next hit...
       if (SnapStatus.Success === status)
         return EventHandled.No;
     }
@@ -967,7 +967,7 @@ export class MeasurePointsTool extends PrimitiveTool {
   }
 
   public onRestartTool(): void {
-    const tool = new MeasurePointsTool();
+    const tool = new DrawingAidTestTool();
     if (!tool.run())
       this.exitTool();
   }
@@ -1408,12 +1408,12 @@ class IncidentMarkerDemo {
   }
 }
 
-// Starts Measure between points tool
-function startMeasurePoints(event: Event) {
+// Starts drawing aid test tool
+function startDrawingAidTest(event: Event) {
   const menu = document.getElementById("snapModeList") as HTMLDivElement;
   if (event.target === menu)
     return;
-  IModelApp.tools.run("Measure.Points", theViewport!);
+  IModelApp.tools.run("DrawingAidTest.Points", theViewport!);
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
@@ -1595,7 +1595,7 @@ function wireIconsToFunctions() {
   addClickListener("startFit", () => IModelApp.tools.run("View.Fit", theViewport, true));
   addClickListener("startWindowArea", () => IModelApp.tools.run("View.WindowArea", theViewport));
   addClickListener("startSelect", () => IModelApp.tools.run("Select"));
-  addClickListener("startMeasurePoints", startMeasurePoints);
+  addClickListener("startDrawingAidTest", startDrawingAidTest);
   addClickListener("startWalk", () => IModelApp.tools.run("View.Walk", theViewport));
   addClickListener("startRotateView", () => IModelApp.tools.run("View.Rotate", theViewport));
   addClickListener("switchStandardRotation", toggleStandardViewMenu);
@@ -1818,7 +1818,7 @@ class SVTIModelApp extends IModelApp {
     IModelApp.accuSnap = new SVTAccuSnap();
     IModelApp.notifications = new SVTNotifications();
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
-    MeasurePointsTool.register(svtToolNamespace);
+    DrawingAidTestTool.register(svtToolNamespace);
   }
 }
 
