@@ -22,6 +22,7 @@
   "typings": "lib/presentation-frontend",
   "scripts": {
     "build": "tsc -b ./src/test 1>&2 && npm run extract && npm run webpackModule-dev",
+    "build:watch": "tsc -b ./src/test -w",
     "clean": "rimraf lib package-deps.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
@@ -73,7 +74,6 @@
     "sinon": "^7.1.1",
     "sinon-chai": "^3.2.0",
     "source-map-loader": "^0.2.3",
-    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
