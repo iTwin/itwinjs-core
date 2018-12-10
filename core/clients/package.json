@@ -9,9 +9,8 @@
     "node": ">=8.9.0 <9.0"
   },
   "scripts": {
-    "build": "npm run copy:assets && tsc 1>&2 && npm run webpackModule-dev",
+    "build": "tsc 1>&2 && npm run webpackModule-dev",
     "clean": "rimraf lib package-deps.json",
-    "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "cover": "npm run copy:test-assets && nyc npm test",
     "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test:integration",

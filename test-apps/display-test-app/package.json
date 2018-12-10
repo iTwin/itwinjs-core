@@ -12,10 +12,9 @@
   },
   "private": true,
   "scripts": {
-    "build": "tsc 1>&2 && npm run copy:frontendpublic && npm run copy:ourpublic && npm run copy:modules && npm run makeconfig && npm run webpack:main",
+    "build": "tsc 1>&2 && npm run copy:public && npm run copy:modules && npm run makeconfig && npm run webpack:main",
     "clean": "rimraf lib package-deps.json",
-    "copy:frontendpublic": "cpx \"../../core/frontend/src/public/**/*\" ./lib/webresources",
-    "copy:ourpublic": "cpx \"public/**/*\" ./lib/webresources",
+    "copy:public": "cpx \"public/**/*\" ./lib/webresources",
     "copy:modules": "node ./node_modules/@bentley/webpack-tools/modules/copyExternalModules.js --packageFile=./package.json --destDir=./lib/webresources --type=dev",
     "copy:modulesprod": "node ./node_modules/@bentley/webpack-tools/modules/copyExternalModules.js --packageFile=./package.json --destDir=./lib/webresources --type=prod",
     "makeconfig": "node ./node_modules/@bentley/config-loader/scripts/write.js ./lib/webresources/config.json ^imjs_",
