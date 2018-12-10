@@ -41,7 +41,9 @@ describe("WidgetDef", () => {
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
-    expect(widgetDef.widgetState).to.eq(WidgetState.Open);
+    expect(widgetDef.isVisible).to.eq(true);
+    expect(widgetDef.isPressed).to.eq(false);
+    expect(widgetDef.isFloating).to.eq(false);
     expect(widgetDef.priority).to.eq(100);
     expect(widgetDef.featureId).to.eq("FeatureId");
     expect(widgetDef.isFreeform).to.eq(true);
@@ -87,7 +89,8 @@ describe("WidgetDef", () => {
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
     widgetDef.setWidgetState(WidgetState.Open);
 
-    expect(widgetDef.widgetState).to.eq(WidgetState.Open);
+    expect(widgetDef.isVisible).to.eq(true);
+    expect(widgetDef.isPressed).to.eq(true);
     expect(widgetDef.canOpen()).to.be.true;
   });
 

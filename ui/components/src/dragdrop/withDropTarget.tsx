@@ -62,6 +62,8 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
 
           const dropTargetArgs: DropTargetArguments<DragDropObject> = {
             ...dragSourceArgs,
+            row: undefined, // clear stale row/col values to be set while propagating back down
+            col: undefined,
             dropRect,
             clientOffset,
             initialClientOffset,
@@ -89,6 +91,8 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
 
           const dropTargetArgs: DropTargetArguments<DragDropObject> = {
             ...dragSourceArgs,
+            row: undefined, // clear stale row/col values to be set while propagating back down
+            col: undefined,
             dropRect,
             clientOffset,
             initialClientOffset,

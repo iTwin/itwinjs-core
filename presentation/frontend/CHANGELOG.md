@@ -1,6 +1,18 @@
 # Change Log - @bentley/presentation-frontend
 
-This log was last generated on Tue, 04 Dec 2018 17:24:39 GMT and should not be manually modified.
+This log was last generated on Mon, 10 Dec 2018 13:24:09 GMT and should not be manually modified.
+
+## 0.174.0
+Mon, 10 Dec 2018 13:24:09 GMT
+
+### Updates
+
+- Remove unused dependencies, add `build:watch` script
+
+## 0.173.0
+Thu, 06 Dec 2018 22:03:29 GMT
+
+*Version update only*
 
 ## 0.172.0
 Tue, 04 Dec 2018 17:24:39 GMT

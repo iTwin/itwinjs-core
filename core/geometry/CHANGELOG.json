@@ -2,6 +2,24 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "0.174.0",
+      "tag": "@bentley/geometry-core_v0.174.0",
+      "date": "Mon, 10 Dec 2018 13:24:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.173.0",
+      "tag": "@bentley/geometry-core_v0.173.0",
+      "date": "Thu, 06 Dec 2018 22:03:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.172.0",
       "tag": "@bentley/geometry-core_v0.172.0",
       "date": "Tue, 04 Dec 2018 17:24:39 GMT",

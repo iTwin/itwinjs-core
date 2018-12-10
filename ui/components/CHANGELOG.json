@@ -2,6 +2,48 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.174.0",
+      "tag": "@bentley/ui-components_v0.174.0",
+      "date": "Mon, 10 Dec 2018 13:24:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added Tests, updated Table, fixed breadcrumb mutability issues"
+          },
+          {
+            "comment": "Tree now accepts propertyValueRendererManager as a property."
+          },
+          {
+            "comment": "PrimitivePropertyValueRenderer now accepts context and can render tree properties."
+          },
+          {
+            "comment": "TreeNodeItem now accepts an additional optional property - typename."
+          },
+          {
+            "comment": "TreeNode can now render asynchronously."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.173.0",
+      "tag": "@bentley/ui-components_v0.173.0",
+      "date": "Thu, 06 Dec 2018 22:03:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added fillZone property to the Widget"
+          },
+          {
+            "comment": "Fixed initial & return layout of Frontstage. Styling of scrollbar in Chrome."
+          },
+          {
+            "comment": "Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.172.0",
       "tag": "@bentley/ui-components_v0.172.0",
       "date": "Tue, 04 Dec 2018 17:24:39 GMT",

@@ -27,6 +27,8 @@ export interface TreeNodeItem {
   isCheckBoxEnabled?: boolean;
   extendedData?: any;
   isEditable?: boolean;
+  /** Primitive typename. See PropertyRecord.PropertyDescription */
+  typename?: string;
 }
 
 /** A [[TreeNodeItem]] for immediately loaded trees */

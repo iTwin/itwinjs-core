@@ -108,7 +108,7 @@ describe("Frontstage", () => {
             <Zone defaultState={ZoneState.Open} mergeWithZone={ZoneLocation.CenterRight}
               widgets={[
                 <Widget id="widget1" defaultState={WidgetState.Open} element={<div />} />,
-                <Widget id="widget2" defaultState={WidgetState.Off} element={<div />} />,
+                <Widget id="widget2" defaultState={WidgetState.Hidden} element={<div />} />,
               ]}
             />
           }
@@ -144,10 +144,11 @@ describe("Frontstage", () => {
 
       if (widgetDef) {
         widgetDef.setWidgetState(WidgetState.Open);
-        expect(widgetDef.widgetState).to.eq(WidgetState.Open);
+        expect(widgetDef.isPressed).to.eq(true);
+        expect(widgetDef.isVisible).to.eq(true);
 
-        FrontstageManager.setWidgetState("widget1", WidgetState.Off);
-        expect(widgetDef.widgetState).to.eq(WidgetState.Off);
+        FrontstageManager.setWidgetState("widget1", WidgetState.Hidden);
+        expect(widgetDef.isVisible).to.eq(false);
       }
     });
   });
@@ -167,15 +168,17 @@ describe("Frontstage", () => {
       const widgetDef2 = FrontstageManager.findWidget("widget2");
       expect(widgetDef2).to.not.be.undefined;
       if (widgetDef2) {
-        expect(widgetDef2.widgetState).to.eq(WidgetState.Off);
+        expect(widgetDef2.isVisible).to.eq(false);
+        expect(widgetDef2.isPressed).to.eq(false);
 
         widgetDef2.setWidgetState(WidgetState.Open);
         wrapper.update();
-        expect(widgetDef2.widgetState).to.eq(WidgetState.Open);
+        expect(widgetDef2.isVisible).to.eq(true);
+        expect(widgetDef2.isPressed).to.eq(true);
 
-        widgetDef2.setWidgetState(WidgetState.Off);
+        widgetDef2.setWidgetState(WidgetState.Hidden);
         wrapper.update();
-        expect(widgetDef2.widgetState).to.eq(WidgetState.Off);
+        expect(widgetDef2.isVisible).to.eq(false);
       }
 
       wrapper.unmount();

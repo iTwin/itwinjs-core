@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { Id64String, ChangeSetStatus, ChangeSetApplyOption, OpenMode } from "@bentley/bentleyjs-core";
-import { Element, IModelDb, DictionaryModel, ChangeSetToken, IModelJsFs, ConcurrencyControl } from "../../imodeljs-backend";
+import { Element, IModelDb, DictionaryModel, ChangeSetToken, IModelJsFs, ConcurrencyControl, SpatialCategory } from "../../imodeljs-backend";
 import { IModelError, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -79,7 +79,7 @@ describe("ChangeMerging", () => {
       [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(first, IModelTestUtils.getUniqueModelCode(first, "newPhysicalModel"), true);
       const dictionary: DictionaryModel = first.models.getModel(IModel.dictionaryId) as DictionaryModel;
       const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
-      spatialCategoryId = IModelTestUtils.createAndInsertSpatialCategory(dictionary, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
+      spatialCategoryId = SpatialCategory.insert(dictionary.iModel, dictionary.id, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
       el1 = first.elements.insertElement(IModelTestUtils.createPhysicalObject(first, modelId, spatialCategoryId));
       first.saveChanges();
       cshistory.push(createChangeSet(first));

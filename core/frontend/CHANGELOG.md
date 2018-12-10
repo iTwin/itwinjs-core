@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 04 Dec 2018 17:24:39 GMT and should not be manually modified.
+This log was last generated on Mon, 10 Dec 2018 13:24:09 GMT and should not be manually modified.
+
+## 0.174.0
+Mon, 10 Dec 2018 13:24:09 GMT
+
+### Updates
+
+- Touch tap with AccuSnap enabled now brings up a decoration planchette to help choose the snap point.
+
+## 0.173.0
+Thu, 06 Dec 2018 22:03:29 GMT
+
+### Updates
+
+- map api cors fix
+- Fix failure to display Bing maps logo.
+- Fix "maximum window" error when viewing large drawings.
+- enable tslint rules for asyncs
+- T
+- Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on.
 
 ## 0.172.0
 Tue, 04 Dec 2018 17:24:39 GMT

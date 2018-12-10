@@ -8,10 +8,11 @@ import * as React from "react";
 import { getDisplayName } from "@bentley/ui-core";
 import { DropTargetArguments, DragSourceArguments, DropTargetProps, DragSourceProps } from "../../dragdrop/DragDropDef";
 import { withDropTarget } from "../../dragdrop/withDropTarget";
-import { TreeProps, TreeNodeProps, TreeNode } from "../component/Tree";
+import { TreeProps } from "../component/Tree";
 import { BeInspireTreeNode } from "../component/BeInspireTree";
 import { TreeNodeItem, TreeDataProvider } from "../TreeDataProvider";
 import { DragDropTreeNode } from "./DragDropTreeNode";
+import { TreeNodeProps, TreeNode } from "../component/Node";
 
 /**
  * Type for drag and drop,
@@ -71,15 +72,9 @@ export function withDragDrop<P extends TreeProps, DragDropObject extends TreeDra
         return {};
 
       const parent = item.getParent() as BeInspireTreeNode<TreeNodeItem>;
-      let index: number | undefined;
-      if (parent) {
-        const children = parent.getChildren();
-        index = children.indexOf(item);
-      }
       const { onDragSourceBegin, onDragSourceEnd, objectType } = this.props.dragProps as DragSourceProps;
       const dragProps: DragSourceProps<DragDropObject> = {
         onDragSourceBegin: (args: DragSourceArguments<DragDropObject>): DragSourceArguments<DragDropObject> => {
-          args.row = index;
           args.dataObject = item.payload as DragDropObject;
           args.parentObject = ((parent && parent.payload) || this.props.dataProvider) as DragDropObject;
           return onDragSourceBegin ? onDragSourceBegin(args) : args;

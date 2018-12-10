@@ -24,7 +24,7 @@ describe("WidgetControl", () => {
   const widgetProps: WidgetDefProps = {
     id: "test-widget",
     classId: TestWidget,
-    defaultState: WidgetState.Off,
+    defaultState: WidgetState.Hidden,
   };
 
   it("registerControl & widgetControl using same classId", () => {
@@ -48,9 +48,10 @@ describe("WidgetControl", () => {
 
     expect(widgetControl).to.not.be.undefined;
     if (widgetControl) {
-      expect(widgetDef.widgetState).to.eq(WidgetState.Off);
+      expect(widgetDef.isPressed).to.eq(false);
       widgetControl.setWidgetState(WidgetState.Open);
-      expect(widgetDef.widgetState).to.eq(WidgetState.Open);
+      expect(widgetDef.isVisible).to.eq(true);
+      expect(widgetDef.isPressed).to.eq(true);
     }
   });
 

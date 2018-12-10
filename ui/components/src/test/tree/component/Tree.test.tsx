@@ -7,16 +7,19 @@ import * as moq from "typemoq";
 import * as React from "react";
 import * as sinon from "sinon";
 import { RenderResult, render, within, fireEvent } from "react-testing-library";
-import { waitForUpdate } from "../../test-helpers/misc";
+import { waitForUpdate, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 import {
   Tree, TreeProps,
-  NodesSelectedCallback, NodesDeselectedCallback, TreeNodeProps, TreeCellUpdatedArgs,
+  NodesSelectedCallback, NodesDeselectedCallback, TreeCellUpdatedArgs,
 } from "../../../tree/component/Tree";
 import { SelectionMode, PageOptions, TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components";
 import { BeInspireTreeNode } from "../../../tree/component/BeInspireTree";
 import HighlightingEngine, { HighlightableTreeProps } from "../../../tree/HighlightingEngine";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { TreeNodeProps } from "../../../tree/component/Node";
+import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../properties/ValueRendererManager";
+import { PropertyRecord } from "../../../properties/Record";
 
 describe("Tree", () => {
 
@@ -563,7 +566,6 @@ describe("Tree", () => {
   });
 
   describe("rendering", () => {
-
     it("renders 'The tree is empty' when tree is empty", async () => {
       await waitForUpdate(() => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={[]} />);
@@ -596,7 +598,7 @@ describe("Tree", () => {
           {...defaultProps}
           dataProvider={[{ id: "1", label: "1" }]}
         />);
-      }, renderSpy, 2);
+      }, renderSpy, 3);
       expect(getNode("1")).to.not.be.undefined;
     });
 
@@ -619,36 +621,6 @@ describe("Tree", () => {
         />);
       }, renderSpy, 2);
       expect(getNode("0").getElementsByClassName("test-icon").length).to.eq(1);
-    });
-
-    it("renders with HighlightingEngine when nodeHighlightingProps set", async () => {
-      const renderLabelSpy = sinon.spy(HighlightingEngine, "renderNodeLabel");
-      await waitForUpdate(() => {
-        renderedTree = render(<Tree
-          {...defaultProps}
-          dataProvider={[{ id: "0", label: "0", icon: "test-icon" }]}
-          nodeHighlightingProps={{ searchText: "test" }}
-        />);
-      }, renderSpy, 2);
-      expect(renderLabelSpy.calledWith("0", { searchText: "test", activeMatchIndex: undefined })).to.be.true;
-    });
-
-    it("rerenders without HighlightingEngine when nodeHighlightingProps are reset to undefined", async () => {
-      const renderLabelSpy = sinon.spy(HighlightingEngine, "renderNodeLabel");
-      const dp: TreeDataProviderRaw = [{ id: "0", label: "0", icon: "test-icon", children: [] }];
-      await waitForUpdate(() => {
-        renderedTree = render(<Tree
-          {...defaultProps}
-          dataProvider={dp}
-          nodeHighlightingProps={{ searchText: "test" }}
-        />);
-      }, renderSpy, 2);
-      expect(renderLabelSpy.calledOnce).to.be.true;
-      renderLabelSpy.resetHistory();
-      await waitForUpdate(() => {
-        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} />);
-      }, renderSpy, 1);
-      expect(renderLabelSpy.called).to.be.false;
     });
 
     it("renders with custom renderer", async () => {
@@ -691,7 +663,74 @@ describe("Tree", () => {
       expect(renderedTree.baseElement.getElementsByClassName("nz-tree-node").length).to.eq(1);
       expect(renderedTree.baseElement.getElementsByClassName("nz-tree-placeholder").length).to.eq(1);
     });
+  });
 
+  describe("node label rendering", () => {
+    it("renders with HighlightingEngine when nodeHighlightingProps set", async () => {
+      const renderLabelSpy = sinon.spy(HighlightingEngine, "renderNodeLabel");
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={[{ id: "0", label: "0", icon: "test-icon" }]}
+          nodeHighlightingProps={{ searchText: "test" }}
+        />);
+      }, renderSpy, 2);
+      expect(renderLabelSpy.calledWith("0", { searchText: "test", activeMatchIndex: undefined })).to.be.true;
+    });
+
+    it("rerenders without HighlightingEngine when nodeHighlightingProps are reset to undefined", async () => {
+      const renderLabelSpy = sinon.spy(HighlightingEngine, "renderNodeLabel");
+      const renderNodesSpy = sinon.spy();
+      const dp: TreeDataProviderRaw = [{ id: "0", label: "0", icon: "test-icon", children: [] }];
+
+      renderedTree = render(<Tree
+        {...defaultProps}
+        dataProvider={dp}
+        nodeHighlightingProps={{ searchText: "test" }}
+        onNodesRender={renderNodesSpy}
+      />);
+
+      await waitForSpy(renderNodesSpy, { error: "Node rendering timed out!" });
+
+      expect(renderLabelSpy.called).to.be.true;
+      renderLabelSpy.resetHistory();
+
+      renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} onNodesRender={renderNodesSpy} />);
+
+      await waitForSpy(renderNodesSpy, { error: "Node rendering timed out!" });
+
+      expect(renderLabelSpy.called).to.be.false;
+    });
+
+    it("renders a node which primitive type is not a string", async () => {
+      const renderNodesSpy = sinon.spy();
+      const rendererManagerMock = moq.Mock.ofType<PropertyValueRendererManager>();
+      let error: Error | undefined;
+
+      rendererManagerMock.setup(async (manager) => manager.render(moq.It.isAny(), moq.It.isAny()))
+        .callback(async (record: PropertyRecord, context: PropertyValueRendererContext) => {
+          try {
+            expect(record.property.typename).to.equal("test_type");
+            expect(context).to.exist;
+            expect(context.containerType).to.equal(PropertyContainerType.Tree);
+          } catch (testFailure) { error = testFailure; }
+        })
+        .returns(async () => "Custom renderer label")
+        .verifiable(moq.Times.atLeastOnce());
+
+      renderedTree = render(<Tree
+        {...defaultProps}
+        dataProvider={[{ id: "0", label: "Test label", typename: "test_type" }]}
+        onNodesRender={renderNodesSpy}
+        propertyValueRendererManager={rendererManagerMock.object}
+      />);
+
+      await waitForSpy(renderNodesSpy);
+      rendererManagerMock.verifyAll();
+      if (error)
+        throw error;
+      renderedTree.getByText("Custom renderer label");
+    });
   });
 
   describe("listening to `ITreeDataProvider.onTreeNodeChanged` events", () => {
@@ -848,10 +887,13 @@ describe("Tree", () => {
     });
 
     it("scrolls to highlighted node when highlighting props change", async () => {
+      const renderNodesSpy = sinon.spy();
       const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
-      await waitForUpdate(() => {
-        renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
-      }, renderSpy, 2);
+
+      renderedTree = render(<Tree {...defaultProps} dataProvider={dp} onNodesRender={renderNodesSpy} />);
+
+      await waitForSpy(renderNodesSpy, { error: "Node rendering timed out!" });
+
       const highlightProps: HighlightableTreeProps = {
         searchText: "er",
         activeMatch: {
@@ -859,9 +901,11 @@ describe("Tree", () => {
           matchIndex: 0,
         },
       };
-      await waitForUpdate(() => {
-        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} />);
-      }, renderSpy, 1);
+
+      renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} onNodesRender={renderNodesSpy} />);
+
+      await waitForSpy(renderNodesSpy, { error: "Node rendering timed out!" });
+
       expect(scrollToSpy).to.be.calledOnce;
     });
 

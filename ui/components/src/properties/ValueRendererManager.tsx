@@ -18,6 +18,7 @@ import { DoublePropertyValueRenderer } from "./renderers/value/DoublePropertyVal
 export enum PropertyContainerType {
   PropertyPane = "pane",
   Table = "table",
+  Tree = "tree",
 }
 
 /** State of the Dialog component in a container which renders properties */
@@ -44,6 +45,8 @@ export interface PropertyValueRendererContext {
   onPopupHide?: () => void;
   /** Callback to request for Dialog to be opened. */
   onDialogOpen?: (dialogState: PropertyDialogState) => void;
+  /** Text with custom style applied to it */
+  decoratedTextElement?: React.ReactNode;
 }
 
 /** Custom property value renderer interface */

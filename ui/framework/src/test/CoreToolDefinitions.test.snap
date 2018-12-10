@@ -238,7 +238,6 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
     ToolWidgetDef {
       "_appButton": undefined,
       "_handleSyncUiEvent": [Function],
-      "_isVisible": true,
       "classId": undefined,
       "featureId": "",
       "fillZone": false,
@@ -246,6 +245,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
       "horizontalItems": undefined,
       "id": "toolWidget",
       "isEnabled": true,
+      "isFloating": false,
       "isFloatingStateSupported": false,
       "isFloatingStateWindowResizable": true,
       "isFreeform": false,
@@ -262,7 +262,6 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
       "tooltip": "",
       "verticalDirection": 2,
       "verticalItems": undefined,
-      "widgetState": 1,
       "widgetType": 0,
     }
   }

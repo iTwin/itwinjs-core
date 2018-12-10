@@ -14,7 +14,7 @@
     height: calc(100% - 25px) !important;
 
     @include uicore-touch-scrolling;
-    @include uicore-scrollbar();
+    @include uicore-scrollbar;
   }
 
   .react-grid-Container,
@@ -32,7 +32,7 @@
 
   // .react-grid-HeaderRow {
   //   width: calc(100% - 28px) !important;
-  //   overflow-x: visible !important; /* May cause unknown issues; However, fixes unnecessary clipping for reorder styling. */
+  //   overflow-x: visible !important; /* May cause unknown issues; However, fixes unnecessary clipping for reorder styling.
   // }
 
   .react-grid-Main,
