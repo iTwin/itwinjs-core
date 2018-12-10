@@ -139,18 +139,22 @@ class Queue extends PriorityQueue<Request> {
 class RequestScheduler implements TileRequest.Scheduler {
   private readonly _activeRequests = new Set<Request>();
   private readonly _maxActiveRequests: number;
+  private readonly _throttle: boolean;
   private readonly _currentQueue = new Queue();
   // private readonly _swapQueue = new Queue();
 
   public constructor(options?: TileRequest.SchedulerOptions) {
-    let maxActiveRequests = 10;
+    let throttle = false;
+    let maxActiveRequests = 10; // ###TODO for now we don't want the throttling behavior.
     if (undefined !== options) {
-      if (undefined !== options.maxActiveRequests)
+      if (undefined !== options.maxActiveRequests) {
         maxActiveRequests = options.maxActiveRequests;
+        throttle = true;
+      }
     }
 
     this._maxActiveRequests = maxActiveRequests;
-    assert(0 !== this._maxActiveRequests); // temporarily, to silence unused var warning...
+    this._throttle = throttle;
   }
 
   public get statistics(): TileRequest.Statistics {
@@ -164,6 +168,9 @@ class RequestScheduler implements TileRequest.Scheduler {
   }
 
   public process(): void {
+    if (!this._throttle)
+      return;
+
     while (this._activeRequests.size < this._maxActiveRequests) {
       const request = this._currentQueue.pop();
       if (undefined === request)
@@ -180,10 +187,13 @@ class RequestScheduler implements TileRequest.Scheduler {
         if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
           const request = new Request(tile);
           tile.request = request;
-          this._currentQueue.push(request);
+          if (this._throttle)
+            this._currentQueue.push(request);
+          else
+            this.dispatch(request);
         }
       } else {
-        assert(this._activeRequests.has(tile.request as Request) || this._currentQueue.has(tile.request as Request));
+        assert(this._activeRequests.has(tile.request as Request) || (this._throttle && this._currentQueue.has(tile.request as Request)));
       }
     }
   }
@@ -203,10 +213,13 @@ class RequestScheduler implements TileRequest.Scheduler {
 
   private dispatch(req: Request): void {
     this._activeRequests.add(req);
-    req.dispatch().then(() => { // tslint:disable-line no-floating-promises
-      assert(this._activeRequests.has(req));
-      this._activeRequests.delete(req);
-    });
+    req.dispatch().then(() => this.dropActiveRequest(req)) // tslint:disable-line no-floating-promises
+      .catch(() => this.dropActiveRequest(req));
+  }
+
+  private dropActiveRequest(req: Request) {
+    assert(this._activeRequests.has(req));
+    this._activeRequests.delete(req);
   }
 }
 

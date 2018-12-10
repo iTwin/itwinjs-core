@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add tracking of active + pending tile requests.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}
