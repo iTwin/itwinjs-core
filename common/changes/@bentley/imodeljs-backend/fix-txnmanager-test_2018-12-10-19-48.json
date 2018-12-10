@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "fix for timing problem in TxnManager test",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "keith.bentley@bentley.com"
+}

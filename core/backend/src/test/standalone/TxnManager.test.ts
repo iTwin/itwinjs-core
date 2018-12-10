@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ActivityLoggingContext, IModelStatus } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, BeDuration, IModelStatus } from "@bentley/bentleyjs-core";
 import { Code, ColorByName, IModel, IModelError, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { assert } from "chai";
 import * as path from "path";
@@ -142,7 +142,7 @@ describe("TxnManager", () => {
     assert.isFalse(txns.hasLocalChanges);
   });
 
-  it("Element drives element events", () => {
+  it("Element drives element events", async () => {
     assert.isDefined(imodel.getMetaData("TestBim:TestPhysicalObject"), "TestPhysicalObject is present");
 
     const el1 = imodel.elements.insertElement(props);
@@ -193,16 +193,20 @@ describe("TxnManager", () => {
     assert.equal(validateOutput, 0);
     assert.equal(deletedDependency, 0);
 
+    // NOTE: for this test, we're going to update the element we just inserted. The TxnManager relies on the last-modified-time of the element
+    // to recognize that something changed about that element (unless you modify one of the properties of the Element *base class*).
+    // Since the resolution of that value is milliseconds, we need to wait at least 1 millisecond
+    // before we call update on the same element we just inserted.
+    // We don't think this will be a problem in the real world.
+    await BeDuration.wait(2); // wait 2 milliseconds, just for safety
+
     const element2 = imodel.elements.getElement<TestPhysicalObject>(el2);
-    element2.intProperty++; // make sure we actually change something about the element
-    element2.update();
+    element2.update(); // since nothing really changed about this element, only the last-modified-time will change.
     imodel.saveChanges("step 2");
     assert.equal(commits, 2);
     assert.equal(committed, 2);
 
-    const element3 = imodel.elements.getElement<TestPhysicalObject>(el2);
-    assert.equal(element3.intProperty, element2.intProperty, "element was saved properly");
-    assert.equal(allInputsHandled, 2), "allInputsHandled not called for update";
+    assert.equal(allInputsHandled, 2, "allInputsHandled not called for update");
     assert.equal(beforeOutputsHandled, 2, "beforeOutputsHandled not called for update");
     assert.equal(rootChanged, 2, "rootChanged not called for update");
     assert.equal(validateOutput, 0, "validateOutput shouldn't be called for update");
