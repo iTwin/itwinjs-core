@@ -1,0 +1,26 @@
+{
+  "changes": [
+    {
+      "comment": "Tree now accepts propertyValueRendererManager as a property.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    },
+    {
+      "comment": "PrimitivePropertyValueRenderer now accepts context and can render tree properties.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    },
+    {
+      "comment": "TreeNodeItem now accepts an additional optional property - typename.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    },
+    {
+      "comment": "TreeNode can now render asynchronously.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "elonas.seviakovas@bentley.com"
+}

@@ -183,7 +183,8 @@ describe("Table", () => {
       showHideColumns={true}
       uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
     />);
-    await waitForSpy(table, onRowsLoaded);
+    await waitForSpy(onRowsLoaded);
+    table.update();
   });
 
   before(() => {
@@ -393,7 +394,7 @@ describe("Table", () => {
       };
       onRowsLoaded.resetHistory();
       table = enzyme.mount(<Table dataProvider={dataProviderMock.object} isRowSelected={isRowSelected} onRowsLoaded={onRowsLoaded} />);
-      await waitForSpy(table, onRowsLoaded);
+      await waitForSpy(onRowsLoaded);
       table.update();
 
       const selectedRows = table.find(selectedRowClassName);
@@ -417,7 +418,7 @@ describe("Table", () => {
       };
       onRowsLoaded.resetHistory();
       table = enzyme.mount(<Table dataProvider={dataProviderMock.object} isRowSelected={isRowSelected} onRowsLoaded={onRowsLoaded} />);
-      await waitForSpy(table, onRowsLoaded);
+      await waitForSpy(onRowsLoaded);
       table.update();
       let selectedRows = table.find(selectedRowClassName);
       expect(selectedRows.length).to.be.equal(2);
@@ -672,7 +673,7 @@ describe("Table", () => {
         isCellSelected={isCellSelected}
         tableSelectionTarget={TableSelectionTarget.Cell}
         onRowsLoaded={onRowsLoaded} />);
-      await waitForSpy(table, onRowsLoaded);
+      await waitForSpy(onRowsLoaded);
       table.update();
       const selectedCells = table.find(selectedCellClassName);
       expect(selectedCells.length).to.be.equal(6);
@@ -698,7 +699,7 @@ describe("Table", () => {
         isCellSelected={isCellSelected}
         onRowsLoaded={onRowsLoaded}
         tableSelectionTarget={TableSelectionTarget.Cell} />);
-      await waitForSpy(table, onRowsLoaded);
+      await waitForSpy(onRowsLoaded);
       table.update();
       let selectedCells = table.find(selectedCellClassName);
       expect(selectedCells.length).to.be.equal(6);
