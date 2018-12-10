@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
 
-import { Comparable, compareNumbers, compareBooleans, Dictionary } from "@bentley/bentleyjs-core";
+import { compareNumbers, compareBooleans, Dictionary } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { PolyfacePrimitive } from "../Polyface";
 import { DisplayParams } from "../DisplayParams";
@@ -158,7 +158,7 @@ export class MeshBuilderMap extends Dictionary<MeshBuilderMap.Key, MeshBuilder> 
 }
 
 export namespace MeshBuilderMap {
-  export class Key implements Comparable<Key> {
+  export class Key {
     public order: number = 0;
     public readonly params: DisplayParams;
     public readonly type: Mesh.PrimitiveType;

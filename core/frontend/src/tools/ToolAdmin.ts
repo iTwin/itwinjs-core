@@ -634,7 +634,11 @@ export class ToolAdmin {
       return;
 
     IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
+
+    IModelApp.tileRequests.preprocess();
     IModelApp.viewManager.renderLoop();
+    IModelApp.tileRequests.process();
+
     requestAnimationFrame(ToolAdmin.eventLoop);
   }
 

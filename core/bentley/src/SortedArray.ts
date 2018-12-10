@@ -2,25 +2,32 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utils */
+/** @module Collections */
+
+import { OrderedComparator } from "./Compare";
 
 /**
- * An identity function which given a value of type T, returns the same value.
- * Useful as a default argument for functions which can alternatively accept custom logic for cloning values of object type.
+ * A function that, given a value of type T, returns a copy of that value. Such functions are used by various collection classes in the iModel.js library.
+ * It is up to the function to decide how deeply or shallowly the value is cloned. For example, [[shallowClone]] simply returns the input.
+ */
+export type CloneFunction<T> = (value: T) => T;
+
+/**
+ * A [[CloneFunction]] that, given a value of type T, returns the same value.
+ * Useful as a default argument for functions that can alternatively accept custom logic for cloning values of object type.
  * @param value The value to clone.
  * @returns the input value.
  */
-export function defaultClone<T>(value: T) { return value; }
+export function shallowClone<T>(value: T) { return value; }
 
 /**
  * Given a sorted array, computes the position at which the specified value should be inserted into the array so that the array remains sorted.
  * @param value The value whose position is to be computed.
  * @param list An array of U already sorted according to the comparison criterion.
- * @param compare A function accepting a value of type T and a value of type U and returning a negative value if lhs < rhs,
- *        zero if lhs == rhs, and a positive value otherwise.
+ * @param compare The function used to compare the value with elements in `list`.
  * @returns an object with 'index' corresponding to the computed position and 'equal' set to true if an equivalent element already exists at that index.
  */
-export function lowerBound<T, U = T>(value: T, list: U[], compare: (lhs: T, rhs: U) => number): { index: number, equal: boolean } {
+export function lowerBound<T, U = T>(value: T, list: U[], compare: OrderedComparator<T, U>): { index: number, equal: boolean } {
   let low = 0;
   let high = list.length;
   while (low < high) {
@@ -40,7 +47,7 @@ export function lowerBound<T, U = T>(value: T, list: U[], compare: (lhs: T, rhs:
 /**
  * Maintains an array of some type T in sorted order. The ordering is specified by a function supplied
  * by the user.
- * By default, only unique elements are permitted; attempting to insert a new element which compares
+ * By default, only unique elements are permitted; attempting to insert a new element that compares
  * as equal to an element already in the array will not modify the contents of the array.
  *
  * This allows a SortedArray<T> to behave like a Set<T> where T is an object and equality is determined
@@ -63,20 +70,17 @@ export function lowerBound<T, U = T>(value: T, list: U[], compare: (lhs: T, rhs:
  */
 export class SortedArray<T> {
   protected _array: T[] = [];
-  protected readonly _compare: (lhs: T, rhs: T) => number;
-  protected readonly _clone: (src: T) => T;
+  protected readonly _compare: OrderedComparator<T>;
+  protected readonly _clone: CloneFunction<T>;
   protected readonly _allowDuplicates: boolean;
 
   /**
    * Construct a new SortedArray<T>.
-   * @param compare A function accepting two values of type T and returning a negative value if lhs < rhs,
-   *        zero if lhs == rhs, and a positive value otherwise.
+   * @param compare The function used to compare elements within the array.
    * @param allowDuplicates If true, multiple values comparing equal may exist in the array.
-   * @param clone A function that, given a value of type T, returns an equivalent value of type T.
-   *        This function is invoked when a new element is inserted into the array.
-   *        The default implementation simply returns its input.
+   * @param clone The function invoked to clone a new element for insertion into the array. The default implementation simply returns its input.
    */
-  public constructor(compare: (lhs: T, rhs: T) => number, allowDuplicates: boolean = false, clone: (src: T) => T = defaultClone) {
+  public constructor(compare: OrderedComparator<T>, allowDuplicates: boolean = false, clone: CloneFunction<T> = shallowClone) {
     this._compare = compare;
     this._clone = clone;
     this._allowDuplicates = allowDuplicates;

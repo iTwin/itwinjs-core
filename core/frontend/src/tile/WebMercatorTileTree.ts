@@ -8,6 +8,7 @@ import { assert, ActivityLoggingContext, BentleyError, IModelStatus, JsonUtils }
 import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation, BackgroundMapType, BackgroundMapProps } from "@bentley/imodeljs-common";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile, TileRequests } from "./TileTree";
+import { TileRequest } from "./TileRequest";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
@@ -161,35 +162,31 @@ class WebMercatorTileLoader extends TileLoader {
 
     return props;
   }
-  public async loadTileContents(missingArray: Tile[]): Promise<void> {
-    // Provider initialization is asynchronous...ensure we don't request same tiles again before provider is ready.
-    for (const tile of missingArray)
-      tile.setIsQueued();
-
+  public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
     if (!this._providerInitialized) {
       if (undefined === this._providerInitializing)
         this._providerInitializing = this._imageryProvider.initialize();
+
       await this._providerInitializing;
       this._providerInitialized = true;
       this._providerInitializing = undefined;
     }
 
-    await Promise.all(missingArray.map(async (missingTile) => {
-      assert(missingTile.isQueued);
-
-      const quadId = new QuadId(missingTile.contentId);
+    const quadId = new QuadId(tile.contentId);
+    return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
+  }
+  public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData): Promise<TileRequest.Graphic> {
+    assert(data instanceof ImageSource);
+    const graphic: TileRequest.Graphic = { };
+    const system = IModelApp.renderSystem;
+    const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system);
+    if (undefined !== texture) {
+      const quadId = new QuadId(tile.contentId);
       const corners = quadId.getCorners(this.mercatorToDb);
-      const imageSource = await this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
-      if (undefined === imageSource) {
-        missingTile.setNotFound();
-      } else {
-        const textureLoad = this.loadTextureImage(imageSource as ImageSource, this._iModel, IModelApp.renderSystem);
-        textureLoad.catch((_err) => missingTile.setNotFound());
-        textureLoad.then((result) => { // tslint:disable-line:no-floating-promises
-          missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
-        });
-      }
-    }));
+      graphic.renderGraphic = system.createTile(texture, corners);
+    }
+
+    return graphic;
   }
 
   private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem): Promise<RenderTexture | undefined> {
