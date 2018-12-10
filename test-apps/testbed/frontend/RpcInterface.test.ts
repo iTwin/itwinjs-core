@@ -42,7 +42,7 @@ describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
     public static version = "0.0.0";
     public static types = () => [];
-    public async op(): Promise<void> { return this.forward.apply(this, arguments); }
+    public async op(): Promise<void> { return this.forward(arguments); }
   }
 
   const initializeLocalInterface = () => {

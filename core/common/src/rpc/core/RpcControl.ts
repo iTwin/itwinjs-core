@@ -72,7 +72,7 @@ export class RpcControlChannel {
   private _channelInterface = class extends RpcInterface {
     public static readonly version = "CONTROL";
     public static readonly types = () => [];
-    public async describeEndpoints(): Promise<RpcInterfaceEndpoints[]> { return this.forward.apply(this, arguments); }
+    public async describeEndpoints(): Promise<RpcInterfaceEndpoints[]> { return this.forward(arguments); }
   };
 
   private _channelImpl = class extends RpcInterface {

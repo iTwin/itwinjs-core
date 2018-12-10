@@ -32,8 +32,9 @@ export abstract class RpcInterface {
   public readonly configuration = RpcConfiguration.supply(this);
 
   /** Obtains the implementation result for an RPC operation. */
-  public async forward<T>(operation: string, ...parameters: any[]): Promise<T> {
-    const request = new (this.configuration.protocol.requestType as any)(this, operation, parameters);
+  public async forward<T = any>(parameters: IArguments): Promise<T> {
+    const parametersCompat = (arguments.length === 1 && typeof (parameters) === "object") ? parameters : arguments;
+    const request = new (this.configuration.protocol.requestType as any)(this, parametersCompat[0], Array.prototype.slice.call(parametersCompat, 1));
     request.submit();
     (this as any)[CURRENT_REQUEST] = request;
     return request.response;

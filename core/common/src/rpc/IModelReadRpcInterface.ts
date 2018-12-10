@@ -55,23 +55,23 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
   ===========================================================================================*/
-  public async openForRead(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> { return this.forward.apply(this, arguments); }
-  public async close(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<boolean> { return this.forward.apply(this, arguments); }
-  public async executeQuery(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<any[]> { return this.forward.apply(this, arguments); }
-  public async getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<ModelProps[]> { return this.forward.apply(this, arguments); }
-  public async queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward.apply(this, arguments); }
-  public async getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<ElementProps[]> { return this.forward.apply(this, arguments); }
-  public async queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ElementProps[]> { return this.forward.apply(this, arguments); }
-  public async queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set> { return this.forward.apply(this, arguments); }
-  public async formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward.apply(this, arguments); }
-  public async getClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<string[]> { return this.forward.apply(this, arguments); }
-  public async getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]> { return this.forward.apply(this, arguments); }
-  public async getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<ViewStateData> { return this.forward.apply(this, arguments); }
-  public async readFontJson(_iModelToken: IModelToken): Promise<any> { return this.forward.apply(this, arguments); }
-  public async requestSnap(_iModelToken: IModelToken, _connectionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward.apply(this, arguments); }
-  public async cancelSnap(_iModelToken: IModelToken, _connectionId: string): Promise<void> { return this.forward.apply(this, arguments); }
-  public async loadNativeAsset(_iModelToken: IModelToken, _assetName: string): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
-  public async getToolTipMessage(_iModelToken: IModelToken, _elementId: string): Promise<string[]> { return this.forward.apply(this, arguments); }
-  public async getViewThumbnail(_iModelToken: IModelToken, _viewId: string): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
-  public async getDefaultViewId(_iModelToken: IModelToken): Promise<Id64String> { return this.forward.apply(this, arguments); }
+  public async openForRead(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<IModel> { return this.forward(arguments); }
+  public async close(_accessToken: AccessToken, _iModelToken: IModelToken): Promise<boolean> { return this.forward(arguments); }
+  public async executeQuery(_iModelToken: IModelToken, _ecsql: string, _bindings?: any[] | object): Promise<any[]> { return this.forward(arguments); }
+  public async getModelProps(_iModelToken: IModelToken, _modelIds: Id64Set): Promise<ModelProps[]> { return this.forward(arguments); }
+  public async queryModelProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ModelProps[]> { return this.forward(arguments); }
+  public async getElementProps(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<ElementProps[]> { return this.forward(arguments); }
+  public async queryElementProps(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<ElementProps[]> { return this.forward(arguments); }
+  public async queryEntityIds(_iModelToken: IModelToken, _params: EntityQueryParams): Promise<Id64Set> { return this.forward(arguments); }
+  public async formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward(arguments); }
+  public async getClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<string[]> { return this.forward(arguments); }
+  public async getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]> { return this.forward(arguments); }
+  public async getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<ViewStateData> { return this.forward(arguments); }
+  public async readFontJson(_iModelToken: IModelToken): Promise<any> { return this.forward(arguments); }
+  public async requestSnap(_iModelToken: IModelToken, _connectionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
+  public async cancelSnap(_iModelToken: IModelToken, _connectionId: string): Promise<void> { return this.forward(arguments); }
+  public async loadNativeAsset(_iModelToken: IModelToken, _assetName: string): Promise<Uint8Array> { return this.forward(arguments); }
+  public async getToolTipMessage(_iModelToken: IModelToken, _elementId: string): Promise<string[]> { return this.forward(arguments); }
+  public async getViewThumbnail(_iModelToken: IModelToken, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
+  public async getDefaultViewId(_iModelToken: IModelToken): Promise<Id64String> { return this.forward(arguments); }
 }
