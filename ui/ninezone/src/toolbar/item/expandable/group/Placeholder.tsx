@@ -9,7 +9,7 @@ import * as React from "react";
 import { CommonProps } from "../../../../utilities/Props";
 
 /** Panel placeholder used in [[Toolbar]] component. */
-export default class PanelPlaceholder extends React.PureComponent<CommonProps> {
+export class PanelPlaceholder extends React.PureComponent<CommonProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-placeholder",

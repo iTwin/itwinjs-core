@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 
-import Popover from "@src/popup/popover/Popover";
-import TrianglePopover from "@src/popup/popover/Triangle";
-import Direction from "@src/utilities/Direction";
+import { Popover } from "@src/popup/popover/Popover";
+import { TrianglePopover } from "@src/popup/popover/Triangle";
+import { Direction } from "@src/utilities/Direction";
 
 const root: React.CSSProperties = {
   alignItems: "center",

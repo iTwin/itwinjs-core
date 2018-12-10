@@ -34,7 +34,7 @@
   }
 
   > .nz-histories {
-    @include nz-z-index(toolbarHistories);
+    @include uicore-z-index(toolbarHistories);
 
     > .nz-viewport {
       overflow: hidden;
@@ -49,6 +49,8 @@
   }
 
   > .nz-panels {
+    @include uicore-z-index(toolbarPanels);
+
     @include scrollTransition;
   }
 

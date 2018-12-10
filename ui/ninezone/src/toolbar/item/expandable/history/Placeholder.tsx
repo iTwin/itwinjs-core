@@ -9,7 +9,7 @@ import * as React from "react";
 import { CommonProps } from "../../../../utilities/Props";
 
 /** History placeholder used in [[Toolbar]] component. */
-export default class HistoryPlaceholder extends React.PureComponent<CommonProps> {
+export class HistoryPlaceholder extends React.PureComponent<CommonProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-history-placeholder",

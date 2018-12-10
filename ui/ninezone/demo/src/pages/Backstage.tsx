@@ -4,9 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { BlueButton } from "@bentley/bwc";
-import Backstage from "@src/backstage/Backstage";
-import Item from "@src/backstage/Item";
-import Separator from "@src/backstage/Separator";
+import { Backstage } from "@src/backstage/Backstage";
+import { BackstageItem } from "@src/backstage/Item";
+import { BackstageSeparator } from "@src/backstage/Separator";
 
 export interface State {
   isOpen: boolean;
@@ -22,32 +22,32 @@ export default class BackstagePage extends React.PureComponent<{}, State> {
   private getItems() {
     return (
       <>
-        <Item
+        <BackstageItem
           icon="icon-placeholder"
           label="Item1"
           isActive={this.state.activeItem === 1}
           onClick={this._handleSetActiveItem(1)}
         />
-        <Item
+        <BackstageItem
           icon="icon-placeholder"
           label="Item2"
           isActive={this.state.activeItem === 2}
           onClick={this._handleSetActiveItem(2)}
           isDisabled
         />
-        <Item
+        <BackstageItem
           label="Item3"
           isActive={this.state.activeItem === 3}
           onClick={this._handleSetActiveItem(3)}
         />
-        <Separator />
-        <Item
+        <BackstageSeparator />
+        <BackstageItem
           icon="icon icon-placeholder"
           label="Item4"
           isActive={this.state.activeItem === 4}
           onClick={this._handleSetActiveItem(4)}
         />
-        <Item
+        <BackstageItem
           icon="icon-placeholder"
           label="Item5"
           isActive={this.state.activeItem === 5}

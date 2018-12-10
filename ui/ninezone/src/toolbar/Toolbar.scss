@@ -11,11 +11,11 @@
   position: relative;
 
   > .nz-panels {
-    @include nz-z-index(toolbarPanel);
+    @include uicore-z-index(toolbarPanels);
   }
 
   > .nz-histories {
-    @include nz-z-index(toolbarHistories);
+    @include uicore-z-index(toolbarHistories);
 
     > .nz-item > div {
       > * {

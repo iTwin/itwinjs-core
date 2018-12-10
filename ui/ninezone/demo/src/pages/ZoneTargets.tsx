@@ -3,10 +3,9 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-
-import Container from "@src/zones/target/Container";
-import Merge from "@src/zones/target/Merge";
-import Back from "@src/zones/target/Back";
+import { Container } from "@src/zones/target/Container";
+import { Merge } from "@src/zones/target/Merge";
+import { Back } from "@src/zones/target/Back";
 
 const root: React.CSSProperties = {
   display: "grid",

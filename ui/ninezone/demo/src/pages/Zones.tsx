@@ -8,100 +8,100 @@ import * as ReactDOM from "react-dom";
 import rafSchedule, { ScheduleFn } from "raf-schd";
 import { BlueButton, HollowButton } from "@bentley/bwc";
 import { Timer, withTimeout } from "@bentley/ui-core";
-import App from "@src/app/App";
-import Content from "@src/app/Content";
-import AppButton from "@src/widget/tools/button/App";
-import MouseTracker from "@src/context/MouseTracker";
-import Footer from "@src/footer/Footer";
-import MessageCenter, { MessageCenterButton } from "@src/footer/message-center/MessageCenter";
-import MessageCenterIndicator from "@src/footer/message-center/Indicator";
-import MessageCenterMessage from "@src/footer/message-center/Message";
-import MessageCenterTab from "@src/footer/message-center/Tab";
-import SnapModeDialog from "@src/footer/snap-mode/Dialog";
-import SnapModeIcon from "@src/footer/snap-mode/Icon";
-import SnapModeIndicator from "@src/footer/snap-mode/Indicator";
-import SnapRow from "@src/footer/snap-mode/Snap";
-import ToolAssistanceIndicator from "@src/footer/tool-assistance/Indicator";
-import ToolAssistanceDialog from "@src/footer/tool-assistance/Dialog";
-import ToolAssistanceItem from "@src/footer/tool-assistance/Item";
-import ToolAssistanceSeparator from "@src/footer/tool-assistance/Separator";
-import ActivityMessage from "@src/footer/message/Activity";
-import StatusMessage from "@src/footer/message/content/status/Message";
-import StatusLayout from "@src/footer/message/content/status/Layout";
-import Status from "@src/footer/message/content/status/Status";
-import MessageLabel from "@src/footer/message/content/Label";
-import MessageButton from "@src/footer/message/content/Button";
-import MessageProgress from "@src/footer/message/content/Progress";
-import MessageHyperlink from "@src/footer/message/content/Hyperlink";
-import MessageDialog from "@src/footer/message/content/dialog/Dialog";
-import MessageTitleBar from "@src/footer/message/content/dialog/TitleBar";
-import MessageTitle from "@src/footer/message/content/dialog/Title";
-import MessageDialogButton from "@src/footer/message/content/dialog/Button";
-import MessageDialogButtonsContent from "@src/footer/message/content/dialog/content/Buttons";
-import MessageDialogScrollableContent from "@src/footer/message/content/dialog/content/Scrollable";
-import DialogResizeHandle from "@src/footer/message/content/dialog/ResizeHandle";
-import ModalMessage from "@src/footer/message/Modal";
-import StickyMessage from "@src/footer/message/Sticky";
-import TemporaryMessage from "@src/footer/message/Temporary";
-import ToastMessage, { Stage as ToastMessageStage } from "@src/footer/message/Toast";
-import NestedToolSettings from "@src/widget/tool-settings/Nested";
-import ScrollableArea from "@src/widget/tool-settings/ScrollableArea";
-import PopoverToggle from "@src/widget/tool-settings/Toggle";
-import ToolSettings from "@src/widget/tool-settings/Settings";
-import Tooltip from "@src/widget/tool-settings/Tooltip";
-import ToolSettingsWidgetTab from "@src/widget/tool-settings/Tab";
-import ToolSettingsWidget from "@src/widget/ToolSettings";
-import ExpandableItem from "@src/toolbar/item/expandable/Expandable";
-import OverflowItem from "@src/toolbar/item/Overflow";
-import GroupColumn from "@src/toolbar/item/expandable/group/Column";
-import GroupTool from "@src/toolbar/item/expandable/group/tool/Tool";
-import ToolGroupExpander from "@src/toolbar/item/expandable/group/tool/Expander";
-import ToolGroupComponent from "@src/toolbar/item/expandable/group/Group";
-import NestedToolGroup from "@src/toolbar/item/expandable/group/Nested";
-import PanelPlaceholder from "@src/toolbar/item/expandable/group/Placeholder";
-import HistoryIcon from "@src/toolbar/item/expandable/history/Icon";
-import HistoryTray, { History, DefaultHistoryManager } from "@src/toolbar/item/expandable/history/Tray";
-import HistoryPlaceholder from "@src/toolbar/item/expandable/history/Placeholder";
-import ToolbarIcon from "@src/toolbar/item/Icon";
-import Toolbar, { ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
-import ScrollableToolbar from "@src/toolbar/Scrollable";
-import Direction from "@src/utilities/Direction";
+import { App } from "@src/app/App";
+import { Content } from "@src/app/Content";
+import { AppButton } from "@src/widget/tools/button/App";
+import { MouseTracker } from "@src/context/MouseTracker";
+import { Footer } from "@src/footer/Footer";
+import { MessageCenter, MessageCenterButton } from "@src/footer/message-center/MessageCenter";
+import { MessageCenterIndicator } from "@src/footer/message-center/Indicator";
+import { MessageCenterMessage } from "@src/footer/message-center/Message";
+import { MessageCenterTab } from "@src/footer/message-center/Tab";
+import { SnapModeDialog } from "@src/footer/snap-mode/Dialog";
+import { SnapModeIcon } from "@src/footer/snap-mode/Icon";
+import { SnapModeIndicator } from "@src/footer/snap-mode/Indicator";
+import { Snap } from "@src/footer/snap-mode/Snap";
+import { ToolAssistanceIndicator } from "@src/footer/tool-assistance/Indicator";
+import { ToolAssistanceDialog } from "@src/footer/tool-assistance/Dialog";
+import { ToolAssistanceItem } from "@src/footer/tool-assistance/Item";
+import { ToolAssistanceSeparator } from "@src/footer/tool-assistance/Separator";
+import { Activity } from "@src/footer/message/Activity";
+import { StatusMessage } from "@src/footer/message/content/status/Message";
+import { MessageLayout } from "@src/footer/message/content/status/Layout";
+import { Status } from "@src/footer/message/content/status/Status";
+import { Label } from "@src/footer/message/content/Label";
+import { MessageButton } from "@src/footer/message/content/Button";
+import { Progress } from "@src/footer/message/content/Progress";
+import { Hyperlink } from "@src/footer/message/content/Hyperlink";
+import { Dialog } from "@src/footer/message/content/dialog/Dialog";
+import { TitleBar } from "@src/footer/message/content/dialog/TitleBar";
+import { DialogTitle } from "@src/footer/message/content/dialog/Title";
+import { DialogButton } from "@src/footer/message/content/dialog/Button";
+import { Buttons } from "@src/footer/message/content/dialog/content/Buttons";
+import { ScrollableContent } from "@src/footer/message/content/dialog/content/Scrollable";
+import { MessageResizeHandle } from "@src/footer/message/content/dialog/ResizeHandle";
+import { Modal } from "@src/footer/message/Modal";
+import { Sticky } from "@src/footer/message/Sticky";
+import { Temporary } from "@src/footer/message/Temporary";
+import { Toast, Stage } from "@src/footer/message/Toast";
+import { Nested } from "@src/widget/tool-settings/Nested";
+import { ScrollableArea } from "@src/widget/tool-settings/ScrollableArea";
+import { Toggle } from "@src/widget/tool-settings/Toggle";
+import { ToolSettings } from "@src/widget/tool-settings/Settings";
+import { ToolSettingsTooltip } from "@src/widget/tool-settings/Tooltip";
+import { ToolSettingsTab } from "@src/widget/tool-settings/Tab";
+import { ToolSettingsWidget } from "@src/widget/ToolSettings";
+import { ExpandableItem } from "@src/toolbar/item/expandable/Expandable";
+import { Overflow } from "@src/toolbar/item/Overflow";
+import { GroupColumn } from "@src/toolbar/item/expandable/group/Column";
+import { GroupTool } from "@src/toolbar/item/expandable/group/tool/Tool";
+import { GroupToolExpander } from "@src/toolbar/item/expandable/group/tool/Expander";
+import { Group } from "@src/toolbar/item/expandable/group/Group";
+import { NestedGroup } from "@src/toolbar/item/expandable/group/Nested";
+import { PanelPlaceholder } from "@src/toolbar/item/expandable/group/Placeholder";
+import { HistoryIcon } from "@src/toolbar/item/expandable/history/Icon";
+import { HistoryTray, History, DefaultHistoryManager } from "@src/toolbar/item/expandable/history/Tray";
+import { HistoryPlaceholder } from "@src/toolbar/item/expandable/history/Placeholder";
+import { Item } from "@src/toolbar/item/Icon";
+import { Toolbar, ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
+import { Scrollable } from "@src/toolbar/Scrollable";
+import { Direction } from "@src/utilities/Direction";
 import { PointProps } from "@src/utilities/Point";
-import Size from "@src/utilities/Size";
-import ResizeHandle from "@src/widget/rectangular/ResizeHandle";
-import WidgetTab from "@src/widget/rectangular/tab/Draggable";
-import TabSeparator from "@src/widget/rectangular/tab/Separator";
-import WidgetTabGroup, { VisibilityMode } from "@src/widget/rectangular/tab/Group";
+import { Size } from "@src/utilities/Size";
+import { ResizeHandle } from "@src/widget/rectangular/ResizeHandle";
+import { Draggable } from "@src/widget/rectangular/tab/Draggable";
+import { TabSeparator } from "@src/widget/rectangular/tab/Separator";
+import { TabGroup, VisibilityMode } from "@src/widget/rectangular/tab/Group";
 import { TabMode } from "@src/widget/rectangular/tab/Tab";
-import StackedWidget, { HorizontalAnchor, VerticalAnchor } from "@src/widget/Stacked";
-import ToolsWidget from "@src/widget/tools/Tools";
-import FooterZone from "@src/zones/Footer";
-import NineZone, { getDefaultProps as getDefaultNineZone, NineZoneProps, WidgetZoneIndex } from "@src/zones/state/NineZone";
-import NineZoneManager from "@src/zones/state/Manager";
+import { Stacked, HorizontalAnchor, VerticalAnchor } from "@src/widget/Stacked";
+import { Tools as ToolsWidget } from "@src/widget/tools/Tools";
+import { FooterZone } from "@src/zones/Footer";
+import { NineZone, getDefaultNineZoneProps, NineZoneProps, WidgetZoneIndex } from "@src/zones/state/NineZone";
+import { DefaultStateManager } from "@src/zones/state/Manager";
 import { WidgetProps, DraggingWidgetProps } from "@src/zones/state/Widget";
-import { TargetType, TargetProps } from "@src/zones/state/Target";
-import { ZoneProps, DropTarget, StatusZone } from "@src/zones/state/Zone";
-import TargetContainer from "@src/zones/target/Container";
-import MergeTarget from "@src/zones/target/Merge";
-import BackTarget from "@src/zones/target/Back";
-import Zone from "@src/zones/Zone";
-import Zones from "@src/zones/Zones";
-import GhostOutline from "@src/zones/GhostOutline";
-import ThemeContext, { ThemeContextProps } from "@src/theme/Context";
-import Theme, { DarkTheme, PrimaryTheme, LightTheme } from "@src/theme/Theme";
+import { TargetType, TargetZoneProps } from "@src/zones/state/Target";
+import { ZonePropsBase, DropTarget, StatusZone } from "@src/zones/state/Zone";
+import { Container } from "@src/zones/target/Container";
+import { Merge } from "@src/zones/target/Merge";
+import { Back } from "@src/zones/target/Back";
+import { ZoneComponent } from "@src/zones/Zone";
+import { Zones } from "@src/zones/Zones";
+import { GhostOutline } from "@src/zones/GhostOutline";
+import { ThemeContext, ThemeContextProps } from "@src/theme/Context";
+import { Theme, DarkTheme, PrimaryTheme, LightTheme } from "@src/theme/Theme";
 import { offsetAndContainInContainer } from "@src/popup/tooltip/Tooltip";
 import { RectangleProps } from "@src/utilities/Rectangle";
-import "./Zones.scss";
-import withContainInViewport from "@src/base/WithContainInViewport";
+import { withContainInViewport } from "@src/base/WithContainInViewport";
 import { OmitChildrenProp } from "@src/utilities/Props";
+import "./Zones.scss";
 
 const adjustTooltipPosition = offsetAndContainInContainer();
 // tslint:disable-next-line:variable-name
-const TooltipWithTimeout = withTimeout(Tooltip);
+const TooltipWithTimeout = withTimeout(ToolSettingsTooltip);
 // tslint:disable-next-line:variable-name
-const ToolGroupContained = withContainInViewport(ToolGroupComponent);
+const ToolGroupContained = withContainInViewport(Group);
 // tslint:disable-next-line:variable-name
-const NestedToolGroupContained = withContainInViewport(NestedToolGroup);
+const NestedToolGroupContained = withContainInViewport(NestedGroup);
 
 interface State {
   isNestedPopoverOpen?: boolean;
@@ -248,65 +248,65 @@ const customTheme: Theme = {
   name: "custom",
 };
 
-interface MessageExampleProps {
+interface MessageProps {
   onHideMessage: () => void;
 }
 
-class ActivityMessageExample extends React.PureComponent<MessageExampleProps> {
+class ActivityMessage extends React.PureComponent<MessageProps> {
   public render() {
     return (
-      <ActivityMessage>
+      <Activity>
         <StatusMessage
           status={Status.Information}
           icon={
             <i className="icon icon-activity" />
           }
         >
-          <StatusLayout
+          <MessageLayout
             label={
-              <MessageLabel text="Rendering 'big-image.png'" />
+              <Label text="Rendering 'big-image.png'" />
             }
             buttons={
-              <MessageHyperlink
+              <Hyperlink
                 onClick={this.props.onHideMessage}
                 text="Ok"
               />
             }
             progress={
-              <MessageProgress status={Status.Information} progress={33.33} />
+              <Progress status={Status.Information} progress={33.33} />
             }
           />
         </StatusMessage>
-      </ActivityMessage>
+      </Activity>
     );
   }
 }
 
-interface ModalMessageExampleProps extends MessageExampleProps {
+interface ModalMessageProps extends MessageProps {
   renderTo: () => HTMLElement;
 }
 
-class ModalMessageExample extends React.PureComponent<ModalMessageExampleProps> {
+class ModalMessage extends React.PureComponent<ModalMessageProps> {
   public render() {
     return (
-      <ModalMessage
+      <Modal
         renderTo={this.props.renderTo}
         dialog={
-          <MessageDialog
+          <Dialog
             titleBar={
-              <MessageTitleBar
+              <TitleBar
                 title={
-                  <MessageTitle text="Dialog" />
+                  <DialogTitle text="Dialog" />
                 }
                 buttons={
-                  <MessageDialogButton onClick={this.props.onHideMessage}>
+                  <DialogButton onClick={this.props.onHideMessage}>
                     <i className="icon icon-close" />
-                  </MessageDialogButton>
+                  </DialogButton>
                 }
               />
             }
             content={
-              <MessageDialogButtonsContent
+              <Buttons
                 buttons={
                   <>
                     <BlueButton
@@ -322,7 +322,7 @@ class ModalMessageExample extends React.PureComponent<ModalMessageExampleProps> 
                   </>
                 }
                 content={
-                  <MessageDialogScrollableContent
+                  <ScrollableContent
                     content={
                       <>
                         Lorem ipsum dolor sit amet, consectetur adipiscing elit.Integer vehicula viverra ante a finibus.Suspendisse tristique neque volutpat ex auctor, a consectetur nunc convallis.Nullam condimentum imperdiet elit vitae vulputate.Praesent ornare tellus luctus sem cursus, sed porta ligula pulvinar.In fringilla tellus sem, id sollicitudin leo condimentum sed.Quisque tempor sed risus gravida tincidunt.Nulla id hendrerit sapien.
@@ -344,7 +344,7 @@ class ModalMessageExample extends React.PureComponent<ModalMessageExampleProps> 
                 }
               />
             }
-            resizeHandle={< DialogResizeHandle />}
+            resizeHandle={< MessageResizeHandle />}
           />
         }
       />
@@ -352,19 +352,19 @@ class ModalMessageExample extends React.PureComponent<ModalMessageExampleProps> 
   }
 }
 
-class StickyMessageExample extends React.PureComponent<MessageExampleProps> {
+class StickyMessage extends React.PureComponent<MessageProps> {
   public render() {
     return (
-      <StickyMessage>
+      <Sticky>
         <StatusMessage
           status={Status.Error}
           icon={
             <i className="icon icon-status-error-hollow" />
           }
         >
-          <StatusLayout
+          <MessageLayout
             label={
-              <MessageLabel text="Unable to load 3 fonts, replaced with Arial." />
+              <Label text="Unable to load 3 fonts, replaced with Arial." />
             }
             buttons={
               <MessageButton onClick={this.props.onHideMessage}>
@@ -373,31 +373,31 @@ class StickyMessageExample extends React.PureComponent<MessageExampleProps> {
             }
           />
         </StatusMessage>
-      </StickyMessage>
+      </Sticky>
     );
   }
 }
 
-interface ToastMessageExampleProps extends MessageExampleProps {
+interface ToastMessageProps extends MessageProps {
   animateOutTo: React.ReactInstance | undefined;
 }
 
-interface ToastMessageExampleState {
-  stage: ToastMessageStage;
+interface ToastMessageState {
+  stage: Stage;
 }
 
-class ToastMessageExample extends React.PureComponent<ToastMessageExampleProps, ToastMessageExampleState> {
-  public constructor(props: ToastMessageExampleProps) {
+class ToastMessageExample extends React.PureComponent<ToastMessageProps, ToastMessageState> {
+  public constructor(props: ToastMessageProps) {
     super(props);
 
     this.state = {
-      stage: ToastMessageStage.Visible,
+      stage: Stage.Visible,
     };
   }
 
   public render() {
     return (
-      <ToastMessage
+      <Toast
         animateOutTo={this.props.animateOutTo}
         content={
           <StatusMessage
@@ -406,9 +406,9 @@ class ToastMessageExample extends React.PureComponent<ToastMessageExampleProps, 
               <i className="icon icon-status-success-hollow" />
             }
           >
-            <StatusLayout
+            <MessageLayout
               label={
-                <MessageLabel text="Image 'big.png' saved." />
+                <Label text="Image 'big.png' saved." />
               }
             />
           </StatusMessage>
@@ -421,7 +421,7 @@ class ToastMessageExample extends React.PureComponent<ToastMessageExampleProps, 
     );
   }
 
-  private _handleToastStageChange = (stage: ToastMessageStage) => {
+  private _handleToastStageChange = (stage: Stage) => {
     this.setState(() => ({
       stage,
     }));
@@ -441,14 +441,14 @@ class FooterMessageExample extends React.PureComponent<FooterMessageExampleProps
     switch (this.props.message) {
       case (Message.Activity): {
         return (
-          <ActivityMessageExample
+          <ActivityMessage
             onHideMessage={this.props.onHideMessage}
           />
         );
       }
       case (Message.Modal): {
         return (
-          <ModalMessageExample
+          <ModalMessage
             onHideMessage={this.props.onHideMessage}
             renderTo={this.props.renderModalMessageTo}
           />
@@ -465,7 +465,7 @@ class FooterMessageExample extends React.PureComponent<FooterMessageExampleProps
       }
       case (Message.Sticky): {
         return (
-          <StickyMessageExample
+          <StickyMessage
             onHideMessage={this.props.onHideMessage}
           />
         );
@@ -475,7 +475,7 @@ class FooterMessageExample extends React.PureComponent<FooterMessageExampleProps
   }
 }
 
-interface StatusZoneExampleProps extends MessageExampleProps {
+interface StatusZoneExampleProps extends MessageProps {
   bounds: RectangleProps;
   dropTarget: DropTarget;
   isInWidgetMode: boolean;
@@ -684,7 +684,7 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                         title="Snap Mode"
                         snaps={
                           <>
-                            <SnapRow
+                            <Snap
                               key="1"
                               isActive
                               label="Keypoint"
@@ -692,21 +692,21 @@ class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, Stat
                                 <SnapModeIcon isActive text="k" />
                               }
                             />
-                            <SnapRow
+                            <Snap
                               key="2"
                               label="Intersection"
                               icon={
                                 <SnapModeIcon text="i" />
                               }
                             />
-                            <SnapRow
+                            <Snap
                               key="3"
                               label="Center"
                               icon={
                                 <SnapModeIcon text="c" />
                               }
                             />
-                            <SnapRow
+                            <Snap
                               key="4"
                               label="Nearest"
                               icon={
@@ -778,14 +778,16 @@ interface FloatingZoneProps extends Widget6Tab1ContentProps, Widget7Tab1ContentP
   outlineBounds: RectangleProps | undefined;
   targetBounds: RectangleProps;
   verticalAnchor: VerticalAnchor;
-  zone: ZoneProps;
+  zone: ZonePropsBase;
 }
 
 class FloatingZone extends React.PureComponent<FloatingZoneProps> {
   public render() {
     return (
       <>
-        <Zone bounds={this.props.bounds}>
+        <ZoneComponent
+          bounds={this.props.bounds}
+        >
           {this.props.zone.widgets.length > 0 &&
             <FloatingZoneWidget
               draggingWidget={this.props.draggingWidget}
@@ -806,7 +808,7 @@ class FloatingZone extends React.PureComponent<FloatingZoneProps> {
               zone={this.props.zone}
             />
           }
-        </Zone>
+        </ZoneComponent>
         <ZoneTargetExample
           bounds={this.props.targetBounds}
           dropTarget={this.props.dropTarget}
@@ -830,7 +832,7 @@ interface FloatingZoneWidgetProps extends Widget6Tab1ContentProps, Widget7Tab1Co
   onTabDragEnd: () => void;
   onTabDrag: (dragged: PointProps) => void;
   verticalAnchor: VerticalAnchor;
-  zone: ZoneProps;
+  zone: ZonePropsBase;
 }
 
 class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
@@ -839,7 +841,7 @@ class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
     const activeWidget = this.props.zone.widgets.find((widget) => widget.tabIndex !== -1);
     const isDragged = this.props.draggingWidget && this.props.draggingWidget.id === this.props.zone.id;
     return (
-      <StackedWidget
+      <Stacked
         content={
           activeWidget &&
           <WidgetContent
@@ -890,7 +892,7 @@ interface FloatingZoneTabsProps {
   onTabDragStart: (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, widgetOffset: PointProps) => void;
   onTabDragEnd: () => void;
   onTabDrag: (dragged: PointProps) => void;
-  zone: ZoneProps;
+  zone: ZonePropsBase;
 }
 
 class FloatingZoneTabs extends React.PureComponent<FloatingZoneTabsProps> {
@@ -975,13 +977,13 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
     switch (this.props.widget.id) {
       case 4: {
         return (
-          <WidgetTabGroup
+          <TabGroup
             anchor={this.props.anchor}
             handleMode={handleMode}
           >
             {this.getTab(1, mode1, lastPosition1)}
             {this.getTab(2, mode2, lastPosition2)}
-          </WidgetTabGroup >
+          </TabGroup>
         );
       }
       case 6: {
@@ -995,13 +997,13 @@ class FloatingZoneWidgetTabs extends React.PureComponent<FloatingZoneWidgetTabsP
       }
       case 9: {
         return (
-          <WidgetTabGroup
+          <TabGroup
             anchor={this.props.anchor}
             handleMode={handleMode}
           >
             {this.getTab(1, mode1, lastPosition1)}
             {this.getTab(2, mode2, lastPosition2)}
-          </WidgetTabGroup>
+          </TabGroup>
         );
       }
     }
@@ -1024,7 +1026,7 @@ interface FloatingZoneWidgetTabProps {
 class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabProps> {
   public render() {
     return (
-      <WidgetTab
+      <Draggable
         key="3_1"
         mode={this.props.mode}
         onClick={this._handleClick}
@@ -1035,7 +1037,7 @@ class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabPro
         anchor={this.props.anchor}
       >
         {placeholderIcon}
-      </WidgetTab>
+      </Draggable>
     );
   }
 
@@ -1048,7 +1050,7 @@ class FloatingZoneWidgetTab extends React.PureComponent<FloatingZoneWidgetTabPro
   }
 }
 
-type TargetChangedHandler = (target: TargetProps | undefined) => void;
+type TargetChangedHandler = (target: TargetZoneProps | undefined) => void;
 
 interface TargetExampleProps {
   bounds: RectangleProps;
@@ -1060,23 +1062,23 @@ interface TargetExampleProps {
 class ZoneTargetExample extends React.PureComponent<TargetExampleProps> {
   public render() {
     return (
-      <Zone
+      <ZoneComponent
         bounds={this.props.bounds}
       >
-        <TargetContainer>
+        <Container>
           {this.props.dropTarget === DropTarget.Merge &&
-            <MergeTarget
+            <Merge
               onTargetChanged={this._handleMergeTargetChanged}
             />
           }
           {this.props.dropTarget === DropTarget.Back &&
-            <BackTarget
+            <Back
               onTargetChanged={this._handleBackTargetChanged}
               zoneIndex={this.props.zoneIndex}
             />
           }
-        </TargetContainer>
-      </Zone>
+        </Container>
+      </ZoneComponent>
     );
   }
 
@@ -1166,11 +1168,11 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
           )
         }
         {this.props.isTemporaryMessageVisible !== 0 &&
-          <TemporaryMessage
+          <Temporary
             style={this.state.temporaryMessageStyle}
           >
             Text element required.
-          </TemporaryMessage>
+          </Temporary>
         }
       </>
     );
@@ -1442,7 +1444,7 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
   public render() {
     if (!isToolGroup(this.props.tool))
       return (
-        <ToolbarIcon
+        <Item
           icon={placeholderIcon}
           isActive={this.props.tool.isActive}
           isDisabled={this.props.tool.isDisabled}
@@ -1452,7 +1454,7 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
 
     if (this.props.tool.isOverflow)
       return (
-        <OverflowItem
+        <Overflow
           isActive={this.props.tool.isActive}
           isDisabled={this.props.tool.isDisabled}
           onClick={this._handleClick}
@@ -1465,7 +1467,7 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
         isDisabled={this.props.tool.isDisabled}
         onIsHistoryExtendedChange={this._handleIsHistoryExtendedChange}
       >
-        <ToolbarIcon
+        <Item
           icon={placeholderIcon}
           isActive={this.props.tool.isActive}
           isDisabled={this.props.tool.isDisabled}
@@ -1636,7 +1638,7 @@ interface GroupColumnExpanderProps {
 class GroupColumnExpander extends React.PureComponent<GroupColumnExpanderProps> {
   public render() {
     return (
-      <ToolGroupExpander
+      <GroupToolExpander
         label={this.props.label}
         icon={placeholderIcon}
         onClick={this._handleClick}
@@ -1719,7 +1721,7 @@ class Zone1 extends React.PureComponent<Zone1Props> {
 
   public render() {
     return (
-      <Zone
+      <ZoneComponent
         bounds={this.props.bounds}
       >
         <ToolsWidget
@@ -1753,7 +1755,7 @@ class Zone1 extends React.PureComponent<Zone1Props> {
             />
           }
         />
-      </Zone>
+      </ZoneComponent>
     );
   }
 }
@@ -1765,7 +1767,7 @@ interface Zone3Props extends Zone1Props {
 class Zone3 extends React.PureComponent<Zone3Props> {
   public render() {
     return (
-      <Zone
+      <ZoneComponent
         bounds={this.props.bounds}
       >
         <ToolsWidget
@@ -1801,7 +1803,7 @@ class Zone3 extends React.PureComponent<Zone3Props> {
             />
           }
         />
-      </Zone>
+      </ZoneComponent>
     );
   }
 }
@@ -1913,7 +1915,7 @@ class ToolZoneScrollableToolbar extends React.PureComponent<ScrollableToolbarPro
   private _renderScrollableToolbar = (items: React.ReactNode, panels: React.ReactNode, histories: React.ReactNode): React.ReactNode => {
     const { children, ...props } = this.props;
     return (
-      <ScrollableToolbar
+      <Scrollable
         items={items}
         panels={panels}
         histories={histories}
@@ -2191,9 +2193,9 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     this._scheduleZoneResize = rafSchedule(this._handleZoneResize);
 
     const nineZone =
-      NineZoneManager.mergeZone(9, 6,
-        NineZoneManager.setAllowsMerging(4, false,
-          getDefaultNineZone(),
+      DefaultStateManager.mergeZone(9, 6,
+        DefaultStateManager.setAllowsMerging(4, false,
+          getDefaultNineZoneProps(),
         ),
       );
 
@@ -2223,7 +2225,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   public componentDidMount(): void {
     this.setState((prevState) => ({
-      nineZone: NineZoneManager.layout(new Size(document.body.clientWidth, document.body.clientHeight), prevState.nineZone),
+      nineZone: DefaultStateManager.layout(new Size(document.body.clientWidth, document.body.clientHeight), prevState.nineZone),
     }));
 
     if (this._app.current) {
@@ -2301,12 +2303,12 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private getToolSettingsWidget() {
     const tab = (
-      <ToolSettingsWidgetTab
+      <ToolSettingsTab
         isActive={this.state.toolSettingsWidget === ToolSettingsWidgetMode.Open}
         onClick={this._handleToolSettingsWidgetTabClick}
       >
         {placeholderIcon}
-      </ToolSettingsWidgetTab>
+      </ToolSettingsTab>
     );
     switch (this.state.toolSettingsWidget) {
       case ToolSettingsWidgetMode.Minimized: {
@@ -2322,18 +2324,18 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
             tab={tab}
             content={
               <ToolSettings>
-                <PopoverToggle
+                <Toggle
                   content={"Toggle"}
                   onClick={this._handlePopoverToggleClick}
                   popoverContent={
                     !this.state.isPopoverOpen ? undefined :
                       <ToolSettings>
-                        <PopoverToggle
+                        <Toggle
                           content={"Toggle for nested popover"}
                           onClick={this._handleNestedPopoverToggleClick}
                           popoverContent={
                             !this.state.isNestedPopoverOpen ? undefined :
-                              <NestedToolSettings
+                              <Nested
                                 label="Nested"
                                 backButton={
                                   <HollowButton
@@ -2365,7 +2367,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
                                   18. Settings
                                   19. Settings
                                 </ScrollableArea>
-                              </NestedToolSettings>
+                              </Nested>
                           }
                         />
                       </ToolSettings>
@@ -2416,12 +2418,12 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   private getZone2() {
     const zoneId = 2;
     return (
-      <Zone
+      <ZoneComponent
         bounds={this.state.nineZone.zones[zoneId].bounds}
         key={zoneId}
       >
         {this.state.tools[1].horizontal.toolSettings.isActive && this.getToolSettingsWidget()}
-      </Zone>
+      </ZoneComponent>
     );
   }
 
@@ -2972,25 +2974,25 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private _handleWindowResize = () => {
     this.setState((prevState) => ({
-      nineZone: NineZoneManager.layout(new Size(document.body.clientWidth, document.body.clientHeight), prevState.nineZone),
+      nineZone: DefaultStateManager.layout(new Size(document.body.clientWidth, document.body.clientHeight), prevState.nineZone),
     }));
   }
 
   private _handleWidgetTabClick = (widgetId: WidgetZoneIndex, tabIndex: number) => {
     this.setState((prevState) => ({
-      nineZone: NineZoneManager.handleTabClick(widgetId, tabIndex, prevState.nineZone),
+      nineZone: DefaultStateManager.handleTabClick(widgetId, tabIndex, prevState.nineZone),
     }));
   }
 
   private _handleZoneResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
     this.setState((prevState) => ({
-      nineZone: NineZoneManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone),
+      nineZone: DefaultStateManager.handleResize(zoneId, x, y, handle, filledHeightDiff, prevState.nineZone),
     }));
   }
 
   private _handleWidgetTabDragStart = (widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps) => {
     this.setState((prevState) => ({
-      nineZone: NineZoneManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone),
+      nineZone: DefaultStateManager.handleWidgetTabDragStart(widgetId, tabId, initialPosition, offset, prevState.nineZone),
     }));
 
     if (widgetId === StatusZone.id)
@@ -2999,19 +3001,19 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private _handleWidgetTabDragEnd = () => {
     this.setState((prevState) => ({
-      nineZone: NineZoneManager.handleWidgetTabDragEnd(prevState.nineZone),
+      nineZone: DefaultStateManager.handleWidgetTabDragEnd(prevState.nineZone),
     }));
   }
 
   private _handleWidgetTabDrag = (dragged: PointProps) => {
     this.setState((prevState) => ({
-      nineZone: NineZoneManager.handleWidgetTabDrag(dragged, prevState.nineZone),
+      nineZone: DefaultStateManager.handleWidgetTabDrag(dragged, prevState.nineZone),
     }));
   }
 
-  private _handleTargetChanged = (target: TargetProps | undefined) => {
+  private _handleTargetChanged = (target: TargetZoneProps | undefined) => {
     this.setState((prevState) => ({
-      nineZone: NineZoneManager.handleTargetChanged(target, prevState.nineZone),
+      nineZone: DefaultStateManager.handleTargetChanged(target, prevState.nineZone),
     }));
   }
 
@@ -3107,7 +3109,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
 
   private _handleToggleFooterMode = () => {
     this.setState((prevState) => ({
-      nineZone: NineZoneManager.setIsInFooterMode(!prevState.nineZone.zones[StatusZone.id].isInFooterMode, prevState.nineZone),
+      nineZone: DefaultStateManager.setIsInFooterMode(!prevState.nineZone.zones[StatusZone.id].isInFooterMode, prevState.nineZone),
       openWidget: FooterWidget.None,
     }));
   }

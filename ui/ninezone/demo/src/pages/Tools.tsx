@@ -3,27 +3,27 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import HistoryPlaceholder from "@src/toolbar/item/expandable/history/Placeholder";
-import Tray from "@src/toolbar/item/expandable/history/Tray";
-import HistoryIcon from "@src/toolbar/item/expandable/history/Icon";
-import PanelPlaceholder from "@src/toolbar/item/expandable/group/Placeholder";
-import Panel from "@src/toolbar/item/expandable/group/Panel";
-import Group from "@src/toolbar/item/expandable/group/Group";
-import Column from "@src/toolbar/item/expandable/group/Column";
-import Nested from "@src/toolbar/item/expandable/group/Nested";
-import Tool from "@src/toolbar/item/expandable/group/tool/Tool";
-import Expander from "@src/toolbar/item/expandable/group/tool/Expander";
-import Overflow from "@src/toolbar/item/Overflow";
-import Expandable from "@src/toolbar/item/expandable/Expandable";
-import Icon from "@src/toolbar/item/Icon";
-import Toolbar from "@src/toolbar/Toolbar";
-import Scrollable from "@src/toolbar/Scrollable";
+import { HistoryPlaceholder } from "@src/toolbar/item/expandable/history/Placeholder";
+import { HistoryTray } from "@src/toolbar/item/expandable/history/Tray";
+import { HistoryIcon } from "@src/toolbar/item/expandable/history/Icon";
+import { PanelPlaceholder } from "@src/toolbar/item/expandable/group/Placeholder";
+import { Panel } from "@src/toolbar/item/expandable/group/Panel";
+import { Group } from "@src/toolbar/item/expandable/group/Group";
+import { GroupColumn } from "@src/toolbar/item/expandable/group/Column";
+import { NestedGroup } from "@src/toolbar/item/expandable/group/Nested";
+import { GroupTool } from "@src/toolbar/item/expandable/group/tool/Tool";
+import { GroupToolExpander } from "@src/toolbar/item/expandable/group/tool/Expander";
+import { Overflow } from "@src/toolbar/item/Overflow";
+import { ExpandableItem } from "@src/toolbar/item/expandable/Expandable";
+import { Item } from "@src/toolbar/item/Icon";
+import { Toolbar } from "@src/toolbar/Toolbar";
+import { Scrollable } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
-import Button from "@src/widget/tools/button/Button";
-import App from "@src/widget/tools/button/App";
-import Back from "@src/widget/tools/button/Back";
-import ExpandableButton from "@src/widget/tools/button/Expandable";
-import IconButton from "@src/widget/tools/button/Icon";
+import { ToolbarButton } from "@src/widget/tools/button/Button";
+import { AppButton } from "@src/widget/tools/button/App";
+import { BackButton } from "@src/widget/tools/button/Back";
+import { ExpandableButton } from "@src/widget/tools/button/Expandable";
+import { ToolbarIcon } from "@src/widget/tools/button/Icon";
 
 export interface State {
   onBackCount: number;
@@ -113,20 +113,20 @@ export default class Tools extends React.PureComponent<{}, State> {
         </div>
         <h1>Tool Buttons</h1>
         <div style={cols2}>
-          <Button>
+          <ToolbarButton>
             Anything here :)
-          </Button>
-          <IconButton
+          </ToolbarButton>
+          <ToolbarIcon
             icon={
               <i className="icon icon-placeholder" />
             }
           />
-          <App
+          <AppButton
             icon={
               <i className="icon icon-home" />
             }
           />
-          <Back
+          <BackButton
             icon={
               <i className="icon icon-progress-backward-2" />
             }
@@ -140,7 +140,7 @@ export default class Tools extends React.PureComponent<{}, State> {
             }
             direction={this.state.direction}
             button={
-              <IconButton
+              <ToolbarIcon
                 onClick={this._handleExpandableButtonClick}
                 icon={
                   <i className="icon icon-placeholder" />
@@ -158,19 +158,19 @@ export default class Tools extends React.PureComponent<{}, State> {
           title="Tool Group"
           columns={
             <>
-              <Column>
-                <Tool icon={icon} label="Tool1" />
-                <Expander icon={icon} label="Expander" />
-              </Column>
-              <Column>
-                <Tool icon={icon} label="Tool3" />
-                <Tool icon={icon} label="Tool4" />
-              </Column>
+              <GroupColumn>
+                <GroupTool icon={icon} label="Tool1" />
+                <GroupToolExpander icon={icon} label="Expander" />
+              </GroupColumn>
+              <GroupColumn>
+                <GroupTool icon={icon} label="Tool3" />
+                <GroupTool icon={icon} label="Tool4" />
+              </GroupColumn>
             </>
           }
         />
         <br />
-        <Nested
+        <NestedGroup
           title="Nested"
           columns={path}
           onBack={this._handleBackClick}
@@ -181,58 +181,58 @@ export default class Tools extends React.PureComponent<{}, State> {
 
   private getItems1() {
     return [
-      <Expandable
+      <ExpandableItem
         key={0}
       >
-        <Icon
+        <Item
           icon={
             <i className="icon icon-placeholder" />
           }
         />
-      </Expandable>,
-      <Expandable
+      </ExpandableItem>,
+      <ExpandableItem
         key={1}
         isActive
       >
-        <Icon
+        <Item
           icon={
             <i className="icon icon-placeholder" />
           }
           isActive
           onClick={this._handleToggleIsPanelVisible}
         />
-      </Expandable>,
-      <Expandable
+      </ExpandableItem>,
+      <ExpandableItem
         key={2}
         isDisabled
       >
-        <Icon
+        <Item
           icon={
             <i className="icon icon-placeholder" />
           }
           isDisabled
         />
-      </Expandable>,
-      <Expandable
+      </ExpandableItem>,
+      <ExpandableItem
         key={3}
         isDisabled
         isActive
       >
-        <Icon
+        <Item
           icon={
             <i className="icon icon-placeholder" />
           }
           isDisabled
           isActive
         />
-      </Expandable>,
-      <Icon
+      </ExpandableItem>,
+      <Item
         key={4}
         icon={
           <i className="icon icon-placeholder" />
         }
         isActive />,
-      <Icon
+      <Item
         key={5}
         icon={
           <i className="icon icon-placeholder" />
@@ -280,20 +280,20 @@ export default class Tools extends React.PureComponent<{}, State> {
       <>
         <HistoryPlaceholder />
         <HistoryPlaceholder>
-          <Tray
+          <HistoryTray
             direction={direction}
             items={historyItem}
           />
         </HistoryPlaceholder>
         {this.state.isPanelVisible ? <HistoryPlaceholder /> :
           <HistoryPlaceholder>
-            <Tray
+            <HistoryTray
               direction={direction}
               items={historyItems}
             />
           </HistoryPlaceholder>}
         <HistoryPlaceholder>
-          <Tray
+          <HistoryTray
             direction={direction}
             isExtended
             items={historyItems}
@@ -308,19 +308,19 @@ export default class Tools extends React.PureComponent<{}, State> {
   private getItems2() {
     return [
       ...this.getItems1(),
-      <Icon
+      <Item
         key={10}
         icon={
           <i className="icon icon-placeholder" />
         }
       />,
-      <Icon
+      <Item
         key={11}
         icon={
           <i className="icon icon-placeholder" />
         }
       />,
-      <Icon
+      <Item
         key={12}
         icon={
           <i className="icon icon-placeholder" />
