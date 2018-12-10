@@ -4,7 +4,8 @@
     "false": "false",
     "loading": "loading",
     "noData": "No data",
-    "length": "Length"
+    "length": "Length",
+    "label": "Label"
   },
   "button": {
     "label": {

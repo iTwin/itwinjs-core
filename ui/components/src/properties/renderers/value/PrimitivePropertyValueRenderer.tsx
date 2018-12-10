@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
 
-import { IPropertyValueRenderer } from "../../ValueRendererManager";
+import { IPropertyValueRenderer, PropertyValueRendererContext, PropertyContainerType } from "../../ValueRendererManager";
 import { PropertyRecord } from "../../Record";
 import { PropertyValueFormat, PrimitiveValue } from "../../Value";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
@@ -16,8 +16,15 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
     return record.value.valueFormat === PropertyValueFormat.Primitive;
   }
 
-  public async render(record: PropertyRecord) {
+  public async render(record: PropertyRecord, context?: PropertyValueRendererContext) {
     const value = (record.value as PrimitiveValue).value;
+
+    if (context) {
+      switch (context.containerType) {
+        case PropertyContainerType.Tree:
+          return context.decoratedTextElement;
+      }
+    }
 
     if (value !== undefined)
       return TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);

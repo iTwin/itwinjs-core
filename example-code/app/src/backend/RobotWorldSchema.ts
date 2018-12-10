@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { ClassRegistry, Schema, Schemas, IModelDb, DictionaryModel, SpatialCategory, IModelHost } from "@bentley/imodeljs-backend";
+import { ClassRegistry, Schema, Schemas, IModelDb, SpatialCategory, IModelHost } from "@bentley/imodeljs-backend";
 import { IModelError, IModelStatus, SubCategoryAppearance, ColorByName } from "@bentley/imodeljs-common";
 import * as path from "path";
 import * as _schemaNames from "../common/RobotWorldSchema";
@@ -73,20 +73,11 @@ export class RobotWorld extends Schema {
 
   public static bootStrapDefinitions(iModelDb: IModelDb) {
     // Insert some pre-defined categories
-    const dictionary = iModelDb.models.getModel(IModelDb.dictionaryId) as DictionaryModel;
-
     if (true) {
-      const cat: SpatialCategory = SpatialCategory.create(dictionary, _schemaNames.Class.Robot);
-      cat.id = iModelDb.elements.insertElement(cat);
-      cat.setDefaultAppearance(new SubCategoryAppearance({ color: ColorByName.silver }));
-      iModelDb.elements.updateElement(cat);
+      SpatialCategory.insert(iModelDb, IModelDb.dictionaryId, _schemaNames.Class.Robot, new SubCategoryAppearance({ color: ColorByName.silver }));
     }
-
     if (true) {
-      const cat: SpatialCategory = SpatialCategory.create(dictionary, _schemaNames.Class.Barrier);
-      cat.id = iModelDb.elements.insertElement(cat);
-      cat.setDefaultAppearance(new SubCategoryAppearance({ color: ColorByName.brown }));
-      iModelDb.elements.updateElement(cat);
+      SpatialCategory.insert(iModelDb, IModelDb.dictionaryId, _schemaNames.Class.Barrier, new SubCategoryAppearance({ color: ColorByName.brown }));
     }
   }
 
