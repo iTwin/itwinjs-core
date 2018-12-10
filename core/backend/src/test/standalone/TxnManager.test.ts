@@ -150,12 +150,15 @@ describe("TxnManager", () => {
     const ede = TestElementDrivesElement.create<TestElementDrivesElement>(imodel, el1, el2);
     ede.property1 = "test ede";
     ede.insert();
+
     const removals: VoidFunction[] = [];
     let beforeOutputsHandled = 0;
     let allInputsHandled = 0;
     let rootChanged = 0;
     let validateOutput = 0;
     let deletedDependency = 0;
+    let commits = 0;
+    let committed = 0;
     removals.push(TestElementDrivesElement.deletedDependency.addListener((evProps) => {
       assert.equal(evProps.sourceId, el1);
       assert.equal(evProps.targetId, el2);
@@ -178,7 +181,12 @@ describe("TxnManager", () => {
       ++allInputsHandled;
     }));
 
+    removals.push(imodel.txns.onCommit.addListener(() => commits++));
+    removals.push(imodel.txns.onCommitted.addListener(() => committed++));
+
     imodel.saveChanges("step 1");
+    assert.equal(commits, 1);
+    assert.equal(committed, 1);
     assert.equal(beforeOutputsHandled, 1);
     assert.equal(allInputsHandled, 1);
     assert.equal(rootChanged, 1);
@@ -189,8 +197,13 @@ describe("TxnManager", () => {
     element2.intProperty++; // make sure we actually change something about the element
     element2.update();
     imodel.saveChanges("step 2");
-    assert.equal(beforeOutputsHandled, 2, "beforeOutputsHandled not called for update");
+    assert.equal(commits, 2);
+    assert.equal(committed, 2);
+
+    const element3 = imodel.elements.getElement<TestPhysicalObject>(el2);
+    assert.equal(element3.intProperty, element2.intProperty, "element was saved properly");
     assert.equal(allInputsHandled, 2), "allInputsHandled not called for update";
+    assert.equal(beforeOutputsHandled, 2, "beforeOutputsHandled not called for update");
     assert.equal(rootChanged, 2, "rootChanged not called for update");
     assert.equal(validateOutput, 0, "validateOutput shouldn't be called for update");
     assert.equal(deletedDependency, 0, "deleteDependency shouldn't be called for update");

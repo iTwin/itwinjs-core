@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "",
+      "comment": "Fix bug in which the frustum of a spatial view was always expanded to include the ground plane even if the ground plane was not displayed.",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }

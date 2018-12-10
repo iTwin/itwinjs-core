@@ -33,7 +33,7 @@ describe("BreadcrumbDetails", () => {
     it("should update path to child", async () => {
       const path = new BreadcrumbPath(mockRawTreeDataProvider);
       path.setCurrentNode(undefined);
-      await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 11);
+      await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 12);
       const node = mockRawTreeDataProvider[1];
       expect(await waitForElement(() => renderedComponent.getByText(node.label))).to.exist;
     });

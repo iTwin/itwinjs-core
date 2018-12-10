@@ -2,6 +2,36 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.175.0",
+      "tag": "@bentley/ui-components_v0.175.0",
+      "date": "Mon, 10 Dec 2018 17:08:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.174.0",
+      "tag": "@bentley/ui-components_v0.174.0",
+      "date": "Mon, 10 Dec 2018 13:24:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added Tests, updated Table, fixed breadcrumb mutability issues"
+          },
+          {
+            "comment": "Tree now accepts propertyValueRendererManager as a property."
+          },
+          {
+            "comment": "PrimitivePropertyValueRenderer now accepts context and can render tree properties."
+          },
+          {
+            "comment": "TreeNodeItem now accepts an additional optional property - typename."
+          },
+          {
+            "comment": "TreeNode can now render asynchronously."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.173.0",
       "tag": "@bentley/ui-components_v0.173.0",
       "date": "Thu, 06 Dec 2018 22:03:29 GMT",

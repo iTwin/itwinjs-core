@@ -449,9 +449,6 @@ export class ToolAdmin {
         break;
     }
 
-    if (this.cursorView === undefined)
-      return EventHandled.No;
-
     const vp = event.vp!;
     const pt2d = this.getMousePosition(event);
 
@@ -496,12 +493,14 @@ export class ToolAdmin {
     switch (touchEv.type) {
       case "touchstart": {
         current.lastTouchStart = ev;
+        IModelApp.accuSnap.onTouchStart(ev);
         if (undefined !== tool)
           tool.onTouchStart(ev); // tslint:disable-line:no-floating-promises
         return;
       }
 
       case "touchend": {
+        IModelApp.accuSnap.onTouchEnd(ev);
         if (undefined !== tool) {
           await tool.onTouchEnd(ev);
           if (0 === ev.touchCount)
@@ -543,13 +542,14 @@ export class ToolAdmin {
 
       case "touchcancel": {
         current.lastTouchStart = undefined;
+        IModelApp.accuSnap.onTouchCancel(ev);
         if (undefined !== tool)
           tool.onTouchCancel(ev); // tslint:disable-line:no-floating-promises
         return;
       }
 
       case "touchmove": {
-        if (undefined !== tool)
+        if (!IModelApp.accuSnap.onTouchMove(ev) && undefined !== tool)
           tool.onTouchMove(ev); // tslint:disable-line:no-floating-promises
 
         if (undefined === current.lastTouchStart)
@@ -574,6 +574,9 @@ export class ToolAdmin {
 
           const touchStart = current.lastTouchStart;
           current.lastTouchStart = undefined;
+
+          if (IModelApp.accuSnap.onTouchMoveStart(ev, touchStart))
+            return;
 
           if (undefined === tool || EventHandled.Yes !== await tool.onTouchMoveStart(ev, touchStart))
             this.idleTool.onTouchMoveStart(ev, touchStart); // tslint:disable-line:no-floating-promises
@@ -631,7 +634,11 @@ export class ToolAdmin {
       return;
 
     IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
+
+    IModelApp.tileRequests.preprocess();
     IModelApp.viewManager.renderLoop();
+    IModelApp.tileRequests.process();
+
     requestAnimationFrame(ToolAdmin.eventLoop);
   }
 
@@ -736,6 +743,8 @@ export class ToolAdmin {
 
         if (undefined !== touchEv && numTouches > 0 && numTaps > 0) {
           touchEv.tapCount = numTaps;
+          if (await IModelApp.accuSnap.onTouchTap(touchEv))
+            return;
           if ((undefined !== tool && EventHandled.Yes === await tool.onTouchTap(touchEv)) || EventHandled.Yes === await this.idleTool.onTouchTap(touchEv))
             return;
         }
@@ -957,6 +966,8 @@ export class ToolAdmin {
   public async sendButtonEvent(ev: BeButtonEvent): Promise<any> {
     const overlayHit = this.pickCanvasDecoration(ev);
     if (undefined !== overlayHit && undefined !== overlayHit.onMouseButton && overlayHit.onMouseButton(ev))
+      return;
+    if (IModelApp.accuSnap.onPreButtonEvent(ev))
       return;
 
     const activeTool = this.activeTool;
@@ -1291,13 +1302,13 @@ export class ToolAdmin {
         this._primitiveTool.decorateSuspended(context);
     }
 
-    if (this.cursorView !== context.viewport)
+    const viewport = this.currentInputState.viewport;
+    if (viewport !== context.viewport)
       return;
 
     const ev = new BeButtonEvent();
     this.fillEventFromCursorLocation(ev);
 
-    const viewport = this.cursorView;
     const hit = IModelApp.accuDraw.isActive ? undefined : IModelApp.accuSnap.currHit; // NOTE: Show surface normal until AccuDraw becomes active
     viewport.drawLocateCursor(context, ev.point, viewport.pixelsFromInches(IModelApp.locateManager.apertureInches), this.isLocateCircleOn, hit);
   }

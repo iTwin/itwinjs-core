@@ -182,7 +182,7 @@ export const tableDragSourceBeginCallback = (args: DragSourceArguments<DemoTable
   }
   return args;
 };
-export const tableDropTargetDropCallback = (args: DropTargetArguments<DemoTableDragDropType>) => {
+export const onDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType>) => {
   if (args.dataObject && "type" in args.dataObject && "label" in args.dataObject && "description" in args.dataObject) {
     const { type, label, description, parentId, dataProvider, children, icon, ...rest } = args.dataObject;
     let id = "";
@@ -259,12 +259,12 @@ export const tableDropTargetDropCallback = (args: DropTargetArguments<DemoTableD
   }
   return args;
 };
-export const tableDragSourceEndCallback = (args: DragSourceArguments<DemoTableDragDropType>) => {
+export const onDragSourceEnd = (args: DragSourceArguments<DemoTableDragDropType>) => {
   if (args.dataObject && "id" in args.dataObject && args.dataObject.id && args.dropStatus === DropStatus.Drop && args.dropEffect === DropEffects.Move && !args.local) {
     demoMutableTableDataProvider.deleteRow({ key: args.dataObject.id, cells: [] });
   }
 };
-export const tableCanDropTargetDropCallback = (args: DropTargetArguments<DemoTableDragDropType>) => {
+export const canDropTargetDrop = (args: DropTargetArguments<DemoTableDragDropType>) => {
   if (args.dataObject && "type" in args.dataObject && "label" in args.dataObject && "description" in args.dataObject) {
     const { children } = args.dataObject;
     // if object has children, ie. is a non-leaf node of a tree, don't allow drop.
@@ -278,21 +278,14 @@ export const tableCanDropTargetDropCallback = (args: DropTargetArguments<DemoTab
   return false;
 };
 
-export const tableObjectType = (data: any) => {
+export const objectType = (data: any) => {
   if (data !== undefined && data.type) {
     return data.type;
   }
   return "";
 };
 
-export const tableObjectTypes = [TableDragTypes.Row];
+export const objectTypes = [TableDragTypes.Row];
 
-export const tableDragProps: DragSourceProps<DemoTableDragDropType> = {
-  onDragSourceEnd: tableDragSourceEndCallback,
-  objectType: tableObjectType,
-};
-export const tableDropProps: DropTargetProps<DemoTableDragDropType> = {
-  onDropTargetDrop: tableDropTargetDropCallback,
-  canDropTargetDrop: tableCanDropTargetDropCallback,
-  objectTypes: tableObjectTypes,
-};
+export const tableDragProps: DragSourceProps<DemoTableDragDropType> = { onDragSourceEnd, objectType };
+export const tableDropProps: DropTargetProps<DemoTableDragDropType> = { onDropTargetDrop, canDropTargetDrop, objectTypes };

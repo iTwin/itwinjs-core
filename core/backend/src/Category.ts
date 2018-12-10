@@ -8,7 +8,6 @@ import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { BisCodeSpec, Code, CodeScopeProps, CodeSpec, ElementProps, SubCategoryAppearance, Rank, SubCategoryProps, CategoryProps } from "@bentley/imodeljs-common";
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
-import { DefinitionModel } from "./Model";
 import { CategoryOwnsSubCategories } from "./NavigationRelationship";
 
 /** Defines the appearance for graphics in Geometric elements */
@@ -57,6 +56,26 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
     return new Code({ spec: codeSpec.id, scope: parentCategoryId, value: codeValue });
   }
 
+  /** Create a new SubCategory
+   * @param iModelDb The iModel
+   * @param parentCategoryId Create the new SubCategory as a child of this [[Category]]
+   * @param name The name of the SubCategory
+   * @param appearance The appearance settings to use for this SubCategory
+   * @returns The newly constructed SubCategory element.
+   * @throws [[IModelError]] if unable to create the element.
+   */
+  public static create(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props): SubCategory {
+    const parentCategory = iModelDb.elements.getElement<Category>(parentCategoryId);
+    const subCategoryProps: SubCategoryProps = {
+      classFullName: this.classFullName,
+      model: parentCategory.model,
+      parent: new CategoryOwnsSubCategories(parentCategoryId),
+      code: this.createCode(iModelDb, parentCategoryId, name),
+      appearance,
+    };
+    return new SubCategory(subCategoryProps, iModelDb);
+  }
+
   /** Insert a new SubCategory
    * @param iModelDb Insert into this iModel
    * @param parentCategoryId Insert the new SubCategory as a child of this Category
@@ -66,16 +85,8 @@ export class SubCategory extends DefinitionElement implements SubCategoryProps {
    * @throws [[IModelError]] if unable to insert the element.
    */
   public static insert(iModelDb: IModelDb, parentCategoryId: Id64String, name: string, appearance: SubCategoryAppearance.Props): Id64String {
-    const elements = iModelDb.elements;
-    const parentCategory = elements.getElement<Category>(parentCategoryId);
-    const subCategoryProps: SubCategoryProps = {
-      classFullName: this.classFullName,
-      model: parentCategory.model,
-      parent: new CategoryOwnsSubCategories(parentCategoryId),
-      code: this.createCode(iModelDb, parentCategoryId, name),
-      appearance,
-    };
-    return elements.insertElement(subCategoryProps);
+    const subCategory = this.create(iModelDb, parentCategoryId, name, appearance);
+    return iModelDb.elements.insertElement(subCategory);
   }
 }
 
@@ -140,24 +151,36 @@ export class DrawingCategory extends Category {
   }
 
   /**
-   * Insert a new DrawingCategory
-   * @param iModelDb Insert into this iModel
-   * @param definitionModelId Insert the new DrawingCategory into this DefinitionModel
+   * Create a new DrawingCategory
+   * @param iModelDb The iModel
+   * @param definitionModelId The [[DefinitionModel]]
    * @param name The name of the DrawingCategory
-   * @param defaultAppearance The appearance settings to use for the default SubCategory of this DrawingCategory
-   * @returns The Id of the newly inserted DrawingCategory element.
-   * @throws [[IModelError]] if unable to insert the element.
+   * @returns The newly constructed DrawingCategory element.
+   * @throws [[IModelError]] if unable to create the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props): Id64String {
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): DrawingCategory {
     const categoryProps: CategoryProps = {
       classFullName: this.classFullName,
       model: definitionModelId,
       code: this.createCode(iModelDb, definitionModelId, name),
       isPrivate: false,
     };
+    return new DrawingCategory(categoryProps, iModelDb);
+  }
+
+  /**
+   * Insert a new DrawingCategory
+   * @param iModelDb Insert into this iModel
+   * @param definitionModelId Insert the new DrawingCategory into this [[DefinitionModel]]
+   * @param name The name of the DrawingCategory
+   * @param defaultAppearance The appearance settings to use for the default SubCategory of this DrawingCategory
+   * @returns The Id of the newly inserted DrawingCategory element.
+   * @throws [[IModelError]] if unable to insert the element.
+   */
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props): Id64String {
+    const category = this.create(iModelDb, definitionModelId, name);
     const elements = iModelDb.elements;
-    const categoryId = elements.insertElement(categoryProps);
-    const category = elements.getElement<DrawingCategory>(categoryId);
+    const categoryId = elements.insertElement(category);
     category.setDefaultAppearance(defaultAppearance);
     return categoryId;
   }
@@ -193,17 +216,21 @@ export class SpatialCategory extends Category {
   }
 
   /**
-   * Create a new SpatialCategory element.
-   * @param scopeModel The model in which the category element will be inserted by the caller.
-   * @param categoryName The name of the category.
-   * @return A new SpatialCategory element.
+   * Create a new SpatialCategory
+   * @param iModelDb The iModel
+   * @param definitionModelId The [[DefinitionModel]]
+   * @param name The name/CodeValue of the SpatialCategory
+   * @returns The newly constructed SpatialCategory element.
+   * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(scopeModel: DefinitionModel, categoryName: string): SpatialCategory {
-    return scopeModel.iModel.elements.createElement({
-      classFullName: SpatialCategory.classFullName,
-      model: scopeModel.id,
-      code: SpatialCategory.createCode(scopeModel.iModel, scopeModel.id, categoryName),
-    }) as SpatialCategory;
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string): SpatialCategory {
+    const categoryProps: CategoryProps = {
+      classFullName: this.classFullName,
+      model: definitionModelId,
+      code: this.createCode(iModelDb, definitionModelId, name),
+      isPrivate: false,
+    };
+    return new SpatialCategory(categoryProps, iModelDb);
   }
 
   /**
@@ -216,15 +243,9 @@ export class SpatialCategory extends Category {
    * @throws [[IModelError]] if unable to insert the element.
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props): Id64String {
-    const categoryProps: CategoryProps = {
-      classFullName: this.classFullName,
-      model: definitionModelId,
-      code: this.createCode(iModelDb, definitionModelId, name),
-      isPrivate: false,
-    };
+    const category = this.create(iModelDb, definitionModelId, name);
     const elements = iModelDb.elements;
-    const categoryId = elements.insertElement(categoryProps);
-    const category = elements.getElement<SpatialCategory>(categoryId);
+    const categoryId = elements.insertElement(category);
     category.setDefaultAppearance(defaultAppearance);
     return categoryId;
   }

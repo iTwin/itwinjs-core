@@ -2,6 +2,30 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.175.0",
+      "tag": "@bentley/imodeljs-frontend_v0.175.0",
+      "date": "Mon, 10 Dec 2018 17:08:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "route map tiles over https"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.174.0",
+      "tag": "@bentley/imodeljs-frontend_v0.174.0",
+      "date": "Mon, 10 Dec 2018 13:24:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Touch tap with AccuSnap enabled now brings up a decoration planchette to help choose the snap point."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.173.0",
       "tag": "@bentley/imodeljs-frontend_v0.173.0",
       "date": "Thu, 06 Dec 2018 22:03:29 GMT",

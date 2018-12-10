@@ -150,24 +150,10 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
       this.setState({ modelReady: true });
   }
 
-  private _onTreeNodeChanged = (items: Array<TreeNodeItem | undefined>) => {
+  private _onTreeNodeChanged = (_items: Array<TreeNodeItem | undefined>) => {
     using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
-      if (items) {
-        for (const item of items) {
-          if (item) {
-            // specific node needs to be reloaded
-            const node = this._tree.node(item.id);
-            if (node) {
-              node.assign(BreadcrumbDetails.inspireNodeFromTreeNodeItem(item, BreadcrumbDetails.inspireNodeFromTreeNodeItem.bind(this)));
-              await node.loadChildren();
-            }
-          } else {
-            // all root nodes need to be reloaded
-            await this._tree.reload();
-            await Promise.all(this._tree.nodes().map(async (n) => n.loadChildren()));
-          }
-        }
-      }
+      await this._tree.reload();
+      // await Promise.all(this._tree.nodes().map(async (n) => n.loadChildren()));
     });
   }
 
@@ -204,21 +190,17 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     }
   }
   private _updateTree = (node: BeInspireTreeNode<TreeNodeItem> | undefined) => {
-    if (node && node.hasOrWillHaveChildren() && !(node as any).hasLoadedChildren())
-      node.loadChildren(); // tslint:disable-line:no-floating-promises
-    else {
-      const childNodes = (node ? toNodes<TreeNodeItem>(node.getChildren()) : this._tree.nodes()).map((child) => child.payload);
-      if (childNodes.length === 0) {
-        const parents = node ? toNodes<TreeNodeItem>(node.getParents()).map((child) => child.payload) : [];
-        parents.reverse();
-        if (parents.length > 1)
-          this.props.path.setCurrentNode(parents[parents.length - 2]);
-        else if (parents.length === 1)
-          this.props.path.setCurrentNode(undefined);
-      }
-      const table = BreadcrumbTreeUtils.aliasNodeListToTableDataProvider(childNodes, this.props.columns!, this.props.path.getDataProvider());
-      this.setState({ table, childNodes });
+    const childNodes = (node ? toNodes<TreeNodeItem>(node.getChildren()) : this._tree.nodes()).map((child) => child.payload);
+    if (childNodes.length === 0) {
+      const parents = node ? toNodes<TreeNodeItem>(node.getParents()).map((child) => child.payload) : [];
+      parents.reverse();
+      if (parents.length > 1)
+        this.props.path.setCurrentNode(parents[parents.length - 2]);
+      else if (parents.length === 1)
+        this.props.path.setCurrentNode(undefined);
     }
+    const table = BreadcrumbTreeUtils.aliasNodeListToTableDataProvider(childNodes, this.props.columns!, this.props.path.getDataProvider());
+    this.setState({ table, childNodes });
   }
   public render(): React.ReactNode {
     const node = this.props.path.getCurrentNode();

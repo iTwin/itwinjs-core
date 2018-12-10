@@ -74,6 +74,7 @@ function linkStaticFiles(sourceDirectory, outputDirectory) {
 }
 
 function linkPublicStaticFiles(sourcePublicDirectory, outputPublicDirectory) {
+  console.log("linkPublicStaticFiles", sourcePublicDirectory, outputPublicDirectory);
   if (fs.existsSync(sourcePublicDirectory)) {
     linkRecursive(sourcePublicDirectory, outputPublicDirectory);
   }
@@ -96,11 +97,11 @@ function linkModuleFile(moduleSourceFile, outFilePath) {
 }
 
 class ModuleInfo {
-  constructor(inRushRepo, moduleName, moduleSourceFile, sourceDirectory) {
+  constructor(inRushRepo, moduleName, moduleSourceFile, publicResourceDirectory) {
     this.inRushRepo = inRushRepo;
     this.moduleName = moduleName;
     this.moduleSourceFile = moduleSourceFile;
-    this.sourceDirectory = sourceDirectory;
+    this.publicResourceDirectory = publicResourceDirectory;
   }
 }
 
@@ -116,21 +117,21 @@ function main() {
   }
 
   const externalModules = [
-    new ModuleInfo(true, "@bentley/bentleyjs-core", undefined, "core/bentley"),
-    new ModuleInfo(true, "@bentley/geometry-core", undefined, "core/geometry"),
+    new ModuleInfo(true, "@bentley/bentleyjs-core", undefined),
+    new ModuleInfo(true, "@bentley/geometry-core", undefined),
     new ModuleInfo(false, "@bentley/bwc", makeModulePath(localNodeModules, "@bentley/bwc", isDev ? "lib/module/dev/bwc.js" : "lib/module/prod/bwc.js")),
-    new ModuleInfo(true, "@bentley/imodeljs-i18n", undefined, "core/i18n"),
-    new ModuleInfo(true, "@bentley/imodeljs-clients", undefined, "core/clients"),
-    new ModuleInfo(true, "@bentley/imodeljs-common", undefined, "core/common"),
-    new ModuleInfo(true, "@bentley/imodeljs-quantity", undefined, "core/quantity"),
-    new ModuleInfo(true, "@bentley/imodeljs-frontend", undefined, "core/frontend"),
-    new ModuleInfo(true, "@bentley/ui-core", undefined, "ui/core"),
-    new ModuleInfo(true, "@bentley/ui-components", undefined, "ui/components"),
-    new ModuleInfo(true, "@bentley/ui-framework", undefined, "ui/framework"),
-    new ModuleInfo(true, "@bentley/ui-ninezone", undefined, "ui/ninezone"),
-    new ModuleInfo(true, "@bentley/presentation-common", undefined, "presentation/components"),
-    new ModuleInfo(true, "@bentley/presentation-components", undefined, "presentation/components"),
-    new ModuleInfo(true, "@bentley/presentation-frontend", undefined, "presentation/frontend"),
+    new ModuleInfo(true, "@bentley/imodeljs-i18n", undefined),
+    new ModuleInfo(true, "@bentley/imodeljs-clients", undefined),
+    new ModuleInfo(true, "@bentley/imodeljs-common", undefined),
+    new ModuleInfo(true, "@bentley/imodeljs-quantity", undefined),
+    new ModuleInfo(true, "@bentley/imodeljs-frontend", undefined, "lib/public"),
+    new ModuleInfo(true, "@bentley/ui-core", undefined, "lib/public"),
+    new ModuleInfo(true, "@bentley/ui-components", undefined, "lib/public"),
+    new ModuleInfo(true, "@bentley/ui-framework", undefined, "lib/public"),
+    new ModuleInfo(true, "@bentley/ui-ninezone", undefined),
+    new ModuleInfo(true, "@bentley/presentation-common", undefined),
+    new ModuleInfo(true, "@bentley/presentation-components", undefined),
+    new ModuleInfo(true, "@bentley/presentation-frontend", undefined),
     new ModuleInfo(false, "react", makeModulePath(localNodeModules, "react", isDev ? "umd/react.development.js" : "umd/react.production.min.js")),
     new ModuleInfo(false, "react-dnd", makeModulePath(localNodeModules, "react-dnd", isDev ? "dist/ReactDnd.js" : "dist/ReactDnD.min.js")),
     new ModuleInfo(false, "react-dnd-html5-backend", makeModulePath(localNodeModules, "react-dnd-html5-backend", isDev ? "dist/ReactDnDHTML5Backend.js" : "dist/ReactDnDHTML5Backend.min.js")),
@@ -165,7 +166,7 @@ function main() {
           if (externalModule.inRushRepo) {
             // These are our iModelJs modules. Get the version from the package.json file.
             versionString = getBentleyVersionString(localNodeModules, externalModule.moduleName, buildType);
-            let modulePath = makeBentleyModulePath(localNodeModules, externalModule.moduleName, isDev);
+            const modulePath = makeBentleyModulePath(localNodeModules, externalModule.moduleName, isDev);
             fileName = externalModule.moduleName.slice(9) + ".js";
             moduleSourceFile = path.resolve(modulePath, fileName);
           } else {
@@ -193,8 +194,8 @@ function main() {
               outFilePath = path.resolve(outputDirectory, fileName);
             }
             linkModuleFile(moduleSourceFile, outFilePath);
-            if (externalModule.sourceDirectory) {
-              const publicPath = path.resolve(__dirname, "../../..", externalModule.sourceDirectory, "public");
+            if (externalModule.publicResourceDirectory) {
+              const publicPath = path.resolve(localNodeModules, externalModule.moduleName, externalModule.publicResourceDirectory);
               linkPublicStaticFiles(publicPath, outputDirectory);
             }
             // found dependent in list of external, no need to look at the rest of the externals.

@@ -132,9 +132,6 @@ export function DragDropRow<DragDropObject extends TableDragDropType>() {
       const { onDragSourceBegin, onDragSourceEnd, objectType } = dragProps;
       const dragSourceProps = {
         onDragSourceBegin: (args: DragSourceArguments) => {
-          if ("idx" in this.props && this.props.idx !== undefined) {
-            args.row = this.props.idx;
-          }
           return onDragSourceBegin ? onDragSourceBegin(args) : args; // Must return something for drag data.
         },
         onDragSourceEnd,

@@ -17,7 +17,7 @@ import { BeInspireTree, BeInspireTreeNode, BeInspireTreeNodeConfig, MapPayloadTo
 import UiComponents from "../UiComponents";
 
 /** @hidden */
-export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem, index?: number) => React.ReactNode;
+export type BreadcrumbNodeRenderer = (props: BreadcrumbNodeProps, node?: TreeNodeItem, parent?: TreeNodeItem) => React.ReactNode;
 
 /** Property interface for [[Breadcrumb]] component */
 export interface BreadcrumbProps {
@@ -227,26 +227,9 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     }
   }
 
-  private _onTreeNodeChanged = (items: Array<TreeNodeItem | undefined>) => {
+  private _onTreeNodeChanged = (_items: Array<TreeNodeItem | undefined>) => {
     using((this._tree as any).pauseRendering(), async () => { // tslint:disable-line:no-floating-promises
-      // istanbul ignore else
-      if (items) {
-        for (const item of items) {
-          if (item) {
-            // specific node needs to be reloaded
-            const node = this._tree.node(item.id);
-            // istanbul ignore else
-            if (node) {
-              node.assign(Breadcrumb.inspireNodeFromTreeNodeItem(item, Breadcrumb.inspireNodeFromTreeNodeItem.bind(this)));
-              await node.loadChildren();
-            }
-          } else {
-            // all root nodes need to be reloaded
-            await this._tree.reload();
-            await Promise.all(this._tree.nodes().map(async (n) => n.loadChildren()));
-          }
-        }
-      }
+      await this._tree.reload();
     });
   }
 
@@ -807,7 +790,7 @@ export class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNo
   }
 
   // tslint:disable-next-line:naming-convention
-  private renderNode = (props: BreadcrumbNodeProps, _node?: TreeNodeItem, _parent?: TreeNodeItem, _index?: number) => {
+  private renderNode = (props: BreadcrumbNodeProps, _node?: TreeNodeItem, _parent?: TreeNodeItem) => {
     return <BreadcrumbNode label={props.label} icon={props.icon} />;
   }
 }

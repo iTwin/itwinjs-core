@@ -8,6 +8,7 @@ import { assert, ActivityLoggingContext, BentleyError, IModelStatus, JsonUtils }
 import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation, BackgroundMapType, BackgroundMapProps } from "@bentley/imodeljs-common";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
 import { TileLoader, TileTree, Tile, TileRequests } from "./TileTree";
+import { TileRequest } from "./TileRequest";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
@@ -161,35 +162,31 @@ class WebMercatorTileLoader extends TileLoader {
 
     return props;
   }
-  public async loadTileContents(missingArray: Tile[]): Promise<void> {
-    // Provider initialization is asynchronous...ensure we don't request same tiles again before provider is ready.
-    for (const tile of missingArray)
-      tile.setIsQueued();
-
+  public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
     if (!this._providerInitialized) {
       if (undefined === this._providerInitializing)
         this._providerInitializing = this._imageryProvider.initialize();
+
       await this._providerInitializing;
       this._providerInitialized = true;
       this._providerInitializing = undefined;
     }
 
-    await Promise.all(missingArray.map(async (missingTile) => {
-      assert(missingTile.isQueued);
-
-      const quadId = new QuadId(missingTile.contentId);
+    const quadId = new QuadId(tile.contentId);
+    return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
+  }
+  public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData): Promise<TileRequest.Graphic> {
+    assert(data instanceof ImageSource);
+    const graphic: TileRequest.Graphic = { };
+    const system = IModelApp.renderSystem;
+    const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system);
+    if (undefined !== texture) {
+      const quadId = new QuadId(tile.contentId);
       const corners = quadId.getCorners(this.mercatorToDb);
-      const imageSource = await this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
-      if (undefined === imageSource) {
-        missingTile.setNotFound();
-      } else {
-        const textureLoad = this.loadTextureImage(imageSource as ImageSource, this._iModel, IModelApp.renderSystem);
-        textureLoad.catch((_err) => missingTile.setNotFound());
-        textureLoad.then((result) => { // tslint:disable-line:no-floating-promises
-          missingTile.setGraphic(IModelApp.renderSystem.createTile(result as RenderTexture, corners as Point3d[]));
-        });
-      }
-    }));
+      graphic.renderGraphic = system.createTile(texture, corners);
+    }
+
+    return graphic;
   }
 
   private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem): Promise<RenderTexture | undefined> {
@@ -234,7 +231,11 @@ abstract class ImageryProvider {
 
   // returns a Uint8Array with the contents of the tile.
   public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
-    const tileUrl: string = this.constructUrl(row, column, zoomLevel);
+    let tileUrl: string = this.constructUrl(row, column, zoomLevel);
+
+    if (!tileUrl.includes("https"))
+      tileUrl = tileUrl.replace("http", "https");
+
     const alctx = this._activityLoggingContext;
     const tileRequestOptions: RequestOptions = { method: "GET", responseType: "arraybuffer" };
     try {
@@ -361,6 +362,7 @@ class BingMapProvider extends ImageryProvider {
     // from the template url, construct the tile url.
     let url: string = this._urlTemplate!.replace("{subdomain}", subdomain);
     url = url.replace("{quadkey}", quadKey);
+
     return url;
   }
 
@@ -434,7 +436,7 @@ class BingMapProvider extends ImageryProvider {
     else if (BackgroundMapType.Hybrid === this.mapType)
       imagerySet = "AerialWithLabels";
 
-    let bingRequestUrl: string = "http://dev.virtualearth.net/REST/v1/Imagery/Metadata/{imagerySet}?o=json&incl=ImageryProviders&key={bingKey}";
+    let bingRequestUrl: string = "https://dev.virtualearth.net/REST/v1/Imagery/Metadata/{imagerySet}?o=json&incl=ImageryProviders&key={bingKey}";
     bingRequestUrl = bingRequestUrl.replace("{imagerySet}", imagerySet);
     bingRequestUrl = bingRequestUrl.replace("{bingKey}", bingKey);
     const requestOptions: RequestOptions = {
@@ -459,6 +461,8 @@ class BingMapProvider extends ImageryProvider {
       // read the Bing logo data, used in getCopyrightImage
       if (undefined !== this._logoUrl && 0 < this._logoUrl.length) {
         this._logoImage = new Image();
+        if (!this._logoUrl.includes("https"))
+          this._logoUrl = this._logoUrl.replace("http", "https");
         this._logoImage.src = this._logoUrl;
       }
 
@@ -503,15 +507,15 @@ class MapBoxProvider extends ImageryProvider {
     this._zoomMin = 1; this._zoomMax = 20;
     switch (mapType) {
       case BackgroundMapType.Street:
-        this._baseUrl = "http://api.mapbox.com/v4/mapbox.streets/";
+        this._baseUrl = "https://api.mapbox.com/v4/mapbox.streets/";
         break;
 
       case BackgroundMapType.Aerial:
-        this._baseUrl = "http://api.mapbox.com/v4/mapbox.satellite/";
+        this._baseUrl = "https://api.mapbox.com/v4/mapbox.satellite/";
         break;
 
       case BackgroundMapType.Hybrid:
-        this._baseUrl = "http://api.mapbox.com/v4/mapbox.streets-satellite/";
+        this._baseUrl = "https://api.mapbox.com/v4/mapbox.streets-satellite/";
         break;
 
       default:
@@ -532,6 +536,7 @@ class MapBoxProvider extends ImageryProvider {
     let url: string = this._baseUrl.concat(zoomLevel.toString());
     url = url.concat("/").concat(column.toString()).concat("/").concat(row.toString());
     url = url.concat(".jpg80?access_token=pk%2EeyJ1IjoibWFwYm94YmVudGxleSIsImEiOiJjaWZvN2xpcW00ZWN2czZrcXdreGg2eTJ0In0%2Ef7c9GAxz6j10kZvL%5F2DBHg");
+
     return url;
   }
 

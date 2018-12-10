@@ -85,7 +85,7 @@ describe("ElementAspect", () => {
     assert.equal(numErrorsCaught, 2);
   });
 
-  it("should be able to insert and delete MultiAspects", () => {
+  it("should be able to insert, update, and delete MultiAspects", () => {
     const element: Element = iModel.elements.getElement("0x17");
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);
@@ -96,17 +96,34 @@ describe("ElementAspect", () => {
       testMultiAspectProperty: "MultiAspectInsertTest1",
     };
     iModel.elements.insertAspect(aspectProps);
-
     let aspects: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.isAtLeast(aspects.length, 1);
     const numAspects = aspects.length;
 
-    iModel.elements.deleteAspect(aspects[0].id);
+    let found: boolean = false;
+    let foundIndex: number = -1;
+    for (const aspect of aspects) {
+      foundIndex++;
+      if (aspect.testMultiAspectProperty === aspectProps.testMultiAspectProperty) {
+        found = true;
+        break;
+      }
+    }
+    assert.isTrue(found);
+
+    aspects[foundIndex].testMultiAspectProperty = "MultiAspectInsertTest1-Updated";
+    iModel.elements.updateAspect(aspects[foundIndex]);
+
+    const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
+    assert.equal(aspectsUpdated.length, aspects.length);
+    assert.equal(aspectsUpdated[foundIndex].testMultiAspectProperty, "MultiAspectInsertTest1-Updated");
+
+    iModel.elements.deleteAspect(aspects[foundIndex].id);
     aspects = iModel.elements.getAspects(element.id, aspectProps.classFullName);
-    assert.isTrue(numAspects === aspects.length + 1);
+    assert.equal(numAspects, aspects.length + 1);
   });
 
-  it("should be able to insert and delete UniqueAspects", () => {
+  it("should be able to insert, update, and delete UniqueAspects", () => {
     const element: Element = iModel.elements.getElement("0x17");
     assert.exists(element);
     assert.isTrue(element instanceof PhysicalElement);
@@ -114,12 +131,18 @@ describe("ElementAspect", () => {
     const aspectProps: ElementAspectProps = {
       classFullName: "DgnPlatformTest:TestUniqueAspectNoHandler",
       element: { id: element.id },
-      testMultiAspectProperty: "UniqueAspectInsertTest1",
+      testUniqueAspectProperty: "UniqueAspectInsertTest1",
     };
     iModel.elements.insertAspect(aspectProps);
-
     const aspects: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
     assert.isTrue(aspects.length === 1);
+    assert.equal(aspects[0].testUniqueAspectProperty, aspectProps.testUniqueAspectProperty);
+
+    aspects[0].testUniqueAspectProperty = "UniqueAspectInsertTest1-Updated";
+    iModel.elements.updateAspect(aspects[0]);
+    const aspectsUpdated: ElementAspect[] = iModel.elements.getAspects(element.id, aspectProps.classFullName);
+    assert.equal(aspectsUpdated.length, 1);
+    assert.equal(aspectsUpdated[0].testUniqueAspectProperty, "UniqueAspectInsertTest1-Updated");
 
     iModel.elements.deleteAspect(aspects[0].id);
     try {

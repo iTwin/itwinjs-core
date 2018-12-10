@@ -6,7 +6,7 @@
 
 import { Point3d, Point2d, XAndY, Vector3d, CurveCurve, IModelJson as GeomJson } from "@bentley/geometry-core";
 import { Viewport, ScreenViewport } from "./Viewport";
-import { BeButtonEvent } from "./tools/Tool";
+import { BeButtonEvent, BeTouchEvent, BeButton, InputSource } from "./tools/Tool";
 import { SnapStatus, LocateAction, LocateResponse, HitListHolder, ElementLocateManager, LocateFilterStatus } from "./ElementLocateManager";
 import { SpriteLocation, Sprite, IconSprites } from "./Sprites";
 import { DecorateContext } from "./ViewContext";
@@ -14,7 +14,143 @@ import { HitDetail, HitList, SnapMode, SnapDetail, HitSource, HitDetailType, Hit
 import { IModelApp } from "./IModelApp";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Decorator } from "./ViewManager";
-import { SnapRequestProps, DecorationGeometryProps } from "@bentley/imodeljs-common";
+import { SnapRequestProps, DecorationGeometryProps, ColorDef } from "@bentley/imodeljs-common";
+import { CanvasDecoration } from "./rendering";
+
+/** @hidden Virtual cursor for using AccuSnap with touch input. */
+export class TouchCursor implements CanvasDecoration {
+  public position: Point3d = new Point3d();
+  protected _offsetPosition: Point3d = new Point3d();
+  protected _size: number;
+  protected _yOffset: number;
+  protected _outlineColor: string;
+  protected _fillColor: string;
+  protected _isDragging: boolean = false;
+  protected _inTouchTap: boolean = false;
+
+  protected constructor(vp: ScreenViewport) {
+    this._size = vp.pixelsFromInches(0.3);
+    this._yOffset = this._size * 1.75;
+    this._outlineColor = (ColorDef.black === vp.getContrastToBackgroundColor() ? "black" : "white");
+    this._fillColor = this.getFillColor(false);
+  }
+
+  protected getFillColor(isSelected: boolean): string { return isSelected ? "rgba(35,187,252,.5)" : "rgba(128,128,128,.25)"; }
+  protected isSelected(pt: XAndY): boolean { return this.position.distance(Point3d.create(pt.x, pt.y)) < this._size; }
+
+  protected setPosition(vp: Viewport, worldLocation: Point3d): boolean {
+    const pt4 = vp.worldToView4d(worldLocation);
+    if (pt4.w > 1.0 || pt4.w < 0) // outside of frustum.
+      return false;
+
+    const viewLocation = pt4.realPoint();
+    if (undefined === viewLocation || !vp.viewRect.containsPoint(viewLocation))
+      return false; // outside this viewport rect
+
+    viewLocation.x = Math.floor(viewLocation.x) + 0.5; viewLocation.y = Math.floor(viewLocation.y) + 0.5; viewLocation.z = 0.0;
+    const offsetLocation = new Point3d(viewLocation.x, viewLocation.y - this._yOffset, viewLocation.z);
+    if (!vp.viewRect.containsPoint(offsetLocation))
+      return false; // outside this viewport rect
+
+    this.position.setFrom(viewLocation);
+    this._offsetPosition.setFrom(offsetLocation);
+    vp.invalidateDecorations();
+    return true;
+  }
+
+  public drawDecoration(ctx: CanvasRenderingContext2D): void {
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = "rgba(0,0,0,.5)";
+    ctx.fillStyle = "white";
+    ctx.strokeRect(-1, -(this._yOffset + 1), 3, 3);
+    ctx.fillRect(0, -(this._yOffset), 1, 1);
+
+    ctx.beginPath();
+    ctx.lineWidth = 1;
+    ctx.strokeStyle = this._outlineColor;
+    ctx.fillStyle = this._fillColor;
+    ctx.shadowColor = this._outlineColor;
+    ctx.shadowBlur = 15;
+    ctx.moveTo(-this._size, 0);
+    ctx.bezierCurveTo(-this._size, -this._size * 0.85, -this._size * 0.6, -this._yOffset * 0.6, 0, -this._yOffset * 0.8);
+    ctx.bezierCurveTo(this._size * 0.6, -this._yOffset * 0.6, this._size, -this._size * 0.85, this._size, 0);
+    ctx.arc(0, 0, this._size, 0, Math.PI);
+    ctx.fill();
+    ctx.stroke();
+
+    ctx.shadowColor = "black";
+    ctx.shadowBlur = 5;
+    ctx.beginPath();
+    ctx.arc(0, 0, this._size * 0.75, 0, 2 * Math.PI);
+    ctx.stroke();
+
+    ctx.beginPath();
+    ctx.moveTo(-this._size * 0.4, 0);
+    ctx.lineTo(this._size * 0.4, 0);
+    ctx.moveTo(-this._size * 0.4, this._size * 0.25);
+    ctx.lineTo(this._size * 0.4, this._size * 0.25);
+    ctx.stroke();
+  }
+
+  public isButtonHandled(ev: BeButtonEvent): boolean { return (BeButton.Data === ev.button && InputSource.Touch === ev.inputSource && !this._inTouchTap); }
+
+  public doTouchMove(ev: BeTouchEvent): boolean {
+    if (undefined === ev.viewport || !ev.isSingleTouch)
+      return false;
+    if (!this._isDragging || !this.setPosition(ev.viewport, ev.point))
+      return false;
+    ev.viewPoint = this._offsetPosition;
+    IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // tslint:disable-line:no-floating-promises
+    return true;
+  }
+
+  public doTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): boolean {
+    if (undefined === ev.viewport || !ev.isSingleTouch)
+      return false;
+    return (this._isDragging = this.isSelected(startEv.viewPoint));
+  }
+
+  public doTouchStart(ev: BeTouchEvent): void {
+    this._fillColor = this.getFillColor(ev.isSingleTouch && this.isSelected(ev.viewPoint));
+    if (undefined !== ev.viewport)
+      ev.viewport.invalidateDecorations();
+  }
+
+  public doTouchEnd(ev: BeTouchEvent): void {
+    this._isDragging = false;
+    this._fillColor = this.getFillColor(false);
+    if (undefined !== ev.viewport)
+      ev.viewport.invalidateDecorations();
+  }
+
+  public async doTouchTap(ev: BeTouchEvent): Promise<boolean> {
+    if (undefined === ev.viewport || !ev.isSingleTouch || 1 !== ev.tapCount)
+      return false;
+    if (!this.isSelected(ev.viewPoint)) {
+      if (!this.setPosition(ev.viewport, ev.point))
+        return false;
+      ev.viewPoint = this._offsetPosition;
+      IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // tslint:disable-line:no-floating-promises
+      return false;
+    }
+    ev.viewPoint = this._offsetPosition;
+    this._inTouchTap = true;
+    await IModelApp.toolAdmin.convertTouchTapToButtonDownAndUp(ev);
+    this._inTouchTap = false;
+    return true;
+  }
+
+  public static createFromTouchTap(ev: BeTouchEvent): TouchCursor | undefined {
+    if (undefined === ev.viewport || !ev.isSingleTouch || 1 !== ev.tapCount)
+      return undefined;
+    const touchCursor = new TouchCursor(ev.viewport);
+    if (!touchCursor.setPosition(ev.viewport, ev.point) && !touchCursor.setPosition(ev.viewport, ev.viewport.view.getCenter()))
+      return undefined;
+    ev.viewPoint = touchCursor._offsetPosition;
+    IModelApp.toolAdmin.convertTouchMoveToMotion(ev); // tslint:disable-line:no-floating-promises
+    return touchCursor;
+  }
+}
 
 /** AccuSnap is an aide for snapping to interesting points on elements or decorations as the cursor moves over them.
  * @see [Using AccuSnap]($docs/learning/frontend/primitivetools.md#AccuSnap)
@@ -48,6 +184,8 @@ export class AccuSnap implements Decorator {
   public readonly toolState = new AccuSnap.ToolState();
   /** @hidden */
   protected _settings = new AccuSnap.Settings();
+  /** @hidden */
+  public touchCursor?: TouchCursor;
 
   /** @hidden */
   public onInitialized() { }
@@ -274,7 +412,7 @@ export class AccuSnap implements Decorator {
 
     const crossPt = snap.snapPoint;
     const viewport = snap.viewport!;
-    const crossSprite = IconSprites.getSpriteFromUrl(snap.isHot ? "SnapCross.png" : "SnapUnfocused.png");
+    const crossSprite = IconSprites.getSpriteFromUrl(snap.isHot ? "sprites/SnapCross.png" : "sprites/SnapUnfocused.png");
 
     this.cross.activate(crossSprite, viewport, crossPt);
 
@@ -300,7 +438,7 @@ export class AccuSnap implements Decorator {
     let errorSprite: Sprite | undefined;
     switch (out.snapStatus) {
       case SnapStatus.FilteredByApp:
-        errorSprite = IconSprites.getSpriteFromUrl("SnapAppFiltered.png");
+        errorSprite = IconSprites.getSpriteFromUrl("sprites/SnapAppFiltered.png");
         break;
 
       case SnapStatus.FilteredByAppQuietly:
@@ -308,7 +446,7 @@ export class AccuSnap implements Decorator {
         break;
 
       case SnapStatus.NotSnappable:
-        errorSprite = IconSprites.getSpriteFromUrl("SnapNotSnappable.png");
+        errorSprite = IconSprites.getSpriteFromUrl("sprites/SnapNotSnappable.png");
         this.errorKey = ElementLocateManager.getFailureMessageKey("NotSnappable");
         break;
     }
@@ -395,7 +533,13 @@ export class AccuSnap implements Decorator {
   public enableSnap(yesNo: boolean) {
     const previousDoSnapping = this._doSnapping;
     this.toolState.enabled = yesNo;
-    if (!yesNo) this.clear();
+    if (!yesNo) {
+      this.clear();
+      if (undefined !== this.touchCursor) {
+        this.touchCursor = undefined;
+        IModelApp.viewManager.invalidateDecorationsAllViews();
+      }
+    }
     this.onEnabledStateChange(this._doSnapping, previousDoSnapping);
   }
 
@@ -702,6 +846,21 @@ export class AccuSnap implements Decorator {
   public onMotionStopped(_ev: BeButtonEvent): void { this._motionStopTime = Date.now(); }
   public async onNoMotion(ev: BeButtonEvent) { return this.displayToolTip(ev.viewPoint, ev.viewport!, ev.rawPoint); }
 
+  public onPreButtonEvent(ev: BeButtonEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.isButtonHandled(ev) : false; }
+  public onTouchStart(ev: BeTouchEvent): void { if (undefined !== this.touchCursor) this.touchCursor.doTouchStart(ev); }
+  public onTouchEnd(ev: BeTouchEvent): void { if (undefined !== this.touchCursor && 0 === ev.touchCount) this.touchCursor.doTouchEnd(ev); }
+  public onTouchCancel(ev: BeTouchEvent): void { if (undefined !== this.touchCursor) this.touchCursor.doTouchEnd(ev); }
+  public onTouchMove(ev: BeTouchEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.doTouchMove(ev) : false; }
+  public onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.doTouchMoveStart(ev, startEv) : false; }
+
+  public async onTouchTap(ev: BeTouchEvent): Promise<boolean> {
+    if (undefined !== this.touchCursor)
+      return this.touchCursor.doTouchTap(ev);
+    if (!this._doSnapping)
+      return false;
+    return (undefined !== (this.touchCursor = TouchCursor.createFromTouchTap(ev)));
+  }
+
   private flashElements(context: DecorateContext): void {
     const viewport = context.viewport!;
     if (this.currHit) {
@@ -716,6 +875,9 @@ export class AccuSnap implements Decorator {
   }
 
   public decorate(context: DecorateContext): void {
+    if (undefined !== this.touchCursor)
+      context.addCanvasDecoration(this.touchCursor, true);
+
     this.flashElements(context);
 
     if (this.cross.isActive) {

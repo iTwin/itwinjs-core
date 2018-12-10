@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-frontend",
-  "version": "0.173.0",
+  "version": "0.175.0",
   "description": "Frontend of iModel.js Presentation library",
   "license": "MIT",
   "repository": {
@@ -22,6 +22,7 @@
   "typings": "lib/presentation-frontend",
   "scripts": {
     "build": "tsc -b ./src/test 1>&2 && npm run extract && npm run webpackModule-dev",
+    "build:watch": "tsc -b ./src/test -w",
     "clean": "rimraf lib package-deps.json",
     "cover": "nyc npm test",
     "docs": "npm run docs:reference && npm run docs:changelog",
@@ -36,20 +37,20 @@
     "webpackModule-prod": "webpack --config ./node_modules/@bentley/webpack-tools/modules/webpackModule.config.js --env.entry=./lib/presentation-frontend.js --env.bundlename=presentation-frontend --env.prod --env.stylesheets"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.173.0",
-    "@bentley/imodeljs-i18n": "0.173.0",
-    "@bentley/imodeljs-common": "0.173.0",
-    "@bentley/imodeljs-frontend": "0.173.0",
-    "@bentley/presentation-common": "0.173.0"
+    "@bentley/bentleyjs-core": "0.175.0",
+    "@bentley/imodeljs-i18n": "0.175.0",
+    "@bentley/imodeljs-common": "0.175.0",
+    "@bentley/imodeljs-frontend": "0.175.0",
+    "@bentley/presentation-common": "0.175.0"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "0.173.0",
-    "@bentley/build-tools": "0.173.0",
-    "@bentley/imodeljs-i18n": "0.173.0",
-    "@bentley/imodeljs-common": "0.173.0",
-    "@bentley/imodeljs-frontend": "0.173.0",
-    "@bentley/presentation-common": "0.173.0",
-    "@bentley/webpack-tools": "0.173.0",
+    "@bentley/bentleyjs-core": "0.175.0",
+    "@bentley/build-tools": "0.175.0",
+    "@bentley/imodeljs-i18n": "0.175.0",
+    "@bentley/imodeljs-common": "0.175.0",
+    "@bentley/imodeljs-frontend": "0.175.0",
+    "@bentley/presentation-common": "0.175.0",
+    "@bentley/webpack-tools": "0.175.0",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
     "@types/chai-jest-snapshot": "^1.3.0",
@@ -73,7 +74,6 @@
     "sinon": "^7.1.1",
     "sinon-chai": "^3.2.0",
     "source-map-loader": "^0.2.3",
-    "ts-node": "^7.0.1",
     "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",

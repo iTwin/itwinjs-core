@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Fix copyExternalModules for use by package external to rush repository",
+      "comment": "Enhancement to copyExternalModules",
       "packageName": "@bentley/webpack-tools",
       "type": "none"
     }
