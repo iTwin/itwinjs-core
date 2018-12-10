@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "route map tiles over https",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "jason.crow@bentley.com"
+}
