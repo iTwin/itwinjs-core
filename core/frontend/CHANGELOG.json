@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.175.0",
+      "tag": "@bentley/imodeljs-frontend_v0.175.0",
+      "date": "Mon, 10 Dec 2018 17:08:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "route map tiles over https"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.174.0",
       "tag": "@bentley/imodeljs-frontend_v0.174.0",
       "date": "Mon, 10 Dec 2018 13:24:09 GMT",

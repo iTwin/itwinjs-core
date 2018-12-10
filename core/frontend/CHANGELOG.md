@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 10 Dec 2018 13:24:09 GMT and should not be manually modified.
+This log was last generated on Mon, 10 Dec 2018 17:08:55 GMT and should not be manually modified.
+
+## 0.175.0
+Mon, 10 Dec 2018 17:08:55 GMT
+
+### Updates
+
+- route map tiles over https
 
 ## 0.174.0
 Mon, 10 Dec 2018 13:24:09 GMT
