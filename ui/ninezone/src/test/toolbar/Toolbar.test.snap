@@ -1,20 +1,9 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Toolbar /> renders correctly 1`] = `
-<div
-  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-start"
->
-  <div
-    className="nz-expanded nz-histories"
-  />
-  <div
-    className="nz-expanded nz-panels"
-  />
-  <Items
-    className="nz-items"
-    direction={1}
-  />
-</div>
+<PanelsProvider>
+  <Component />
+</PanelsProvider>
 `;
 
 exports[`<Toolbar /> renders with expandsTo 1`] = `

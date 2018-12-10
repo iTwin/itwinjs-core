@@ -15,7 +15,7 @@ export interface PanelProps extends CommonProps {
   children?: React.ReactNode;
 }
 
-/** Basic panel used in [[PanelPlaceholder]]. Used as base in [[Group]] and [[NestedGroup]] components. */
+/** Basic panel used in [[ExpandableItem]]. Used as base in [[Group]] and [[NestedGroup]] components. */
 export class Panel extends React.PureComponent<PanelProps> {
   public render() {
     const className = classnames(

@@ -34,18 +34,56 @@ export class ToolbarPanelAlignmentHelpers {
   }
 }
 
+/** Properties of [[PanelsProvider]] component. */
+export interface PanelsProviderProps {
+  /** Render prop that provides item panels. */
+  children?: (histories: React.ReactNode, panels: React.ReactNode) => React.ReactNode;
+  /** Items of the toolbar. */
+  items?: React.ReactNode;
+}
+
+export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
+  public render() {
+    const mapped = React.Children.toArray(this.props.items).reduce((acc, item, index) => {
+      if (!React.isValidElement<WithExpandableItemProps>(item))
+        return acc;
+
+      const panel = (
+        <div
+          key={item.key || index}
+        >
+          {item.props.panel}
+        </div>
+      );
+
+      const history = (
+        <div
+          key={item.key || index}
+        >
+          {item.props.history}
+        </div>
+      );
+
+      acc.panels.push(panel);
+      acc.histories.push(history);
+      return acc;
+    },
+      {
+        panels: new Array<React.ReactNode>(),
+        histories: new Array<React.ReactNode>(),
+      });
+    return this.props.children && this.props.children(mapped.histories, mapped.panels);
+  }
+}
+
 /** Properties of [[Toolbar]] component. */
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
   /** Describes to which direction the history/panel items are expanded. Defaults to: [[Direction.Bottom]] */
   expandsTo?: Direction;
-  /** History placeholders of the toolbar. See [[HistoryPlaceholder]] */
-  histories?: React.ReactNode;
   /** Items of the toolbar. I.e. [[ExpandableItem]], [[Icon]], [[Item]], [[Overflow]] */
   items?: React.ReactNode;
   /** Describes how expanded panels are aligned. Defaults to: [[ToolbarPanelAlignment.Start]] */
   panelAlignment?: ToolbarPanelAlignment;
-  /** Panel placeholders of the toolbar. See [[PanelPlaceholder]] */
-  panels?: React.ReactNode;
 }
 
 export const getToolbarDirection = (expandsTo: Direction): OrthogonalDirection => {
@@ -64,6 +102,16 @@ export class Toolbar extends React.PureComponent<ToolbarProps> {
   };
 
   public render() {
+    return (
+      <PanelsProvider
+        items={this.props.items}
+      >
+        {this._renderItems}
+      </PanelsProvider>
+    );
+  }
+
+  private _renderItems = (histories: React.ReactNode, panels: React.ReactNode) => {
     const direction = getToolbarDirection(this.props.expandsTo!);
     const className = classnames(
       "nz-toolbar-toolbar",
@@ -80,12 +128,12 @@ export class Toolbar extends React.PureComponent<ToolbarProps> {
         <div
           className="nz-expanded nz-histories"
         >
-          {this.props.histories}
+          {histories}
         </div>
         <div
           className="nz-expanded nz-panels"
         >
-          {this.props.panels}
+          {panels}
         </div>
         <Items
           className="nz-items"
@@ -97,3 +145,27 @@ export class Toolbar extends React.PureComponent<ToolbarProps> {
     );
   }
 }
+
+/** Properties of [[withExpandableItem]] HOC. */
+export interface WithExpandableItemProps {
+  /** History of the toolbar. See [[]] */
+  history?: React.ReactNode;
+  /** Panel of the toolbar. See [[]] */
+  panel?: React.ReactNode;
+}
+
+/** HOC which will ensure, that wrapped component conforms to expandable item interface. */
+export const withExpandableItem = <ComponentProps extends {}>(
+  // tslint:disable-next-line:variable-name
+  Component: React.ComponentType<ComponentProps>,
+) => {
+  return class WithExpandableItem extends React.PureComponent<ComponentProps & WithExpandableItemProps> {
+    public render() {
+      return (
+        <Component
+          {...this.props}
+        />
+      );
+    }
+  };
+};

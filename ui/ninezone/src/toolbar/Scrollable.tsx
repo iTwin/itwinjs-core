@@ -9,7 +9,7 @@ import * as React from "react";
 import { Direction, OrthogonalDirection, DirectionHelpers, OrthogonalDirectionHelpers } from "../utilities/Direction";
 import { FlattenChildren } from "../utilities/Props";
 import { Indicator } from "./scroll/Indicator";
-import { Toolbar, ToolbarProps, getToolbarDirection, ToolbarPanelAlignmentHelpers } from "./Toolbar";
+import { Toolbar, ToolbarProps, getToolbarDirection, ToolbarPanelAlignmentHelpers, PanelsProvider } from "./Toolbar";
 import { Items } from "./Items";
 import "./Scrollable.scss";
 
@@ -62,79 +62,12 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
   }
 
   public render() {
-    const isLeftScrollIndicatorVisible = this.isLeftScrollIndicatorVisible();
-    const isRightScrollIndicatorVisible = this.isRightScrollIndicatorVisible();
-    const direction = getToolbarDirection(this.props.expandsTo!);
-
-    const className = classnames(
-      "nz-toolbar-scrollable",
-      DirectionHelpers.getCssClassName(this.props.expandsTo!),
-      OrthogonalDirectionHelpers.getCssClassName(direction),
-      ToolbarPanelAlignmentHelpers.getCssClassName(this.props.panelAlignment!),
-      isLeftScrollIndicatorVisible && !isRightScrollIndicatorVisible && "nz-scroll-indicator-left-only",
-      !isLeftScrollIndicatorVisible && isRightScrollIndicatorVisible && "nz-scroll-indicator-right-only",
-      this.props.className);
-
-    const leftIndicatorClassName = classnames(
-      "nz-left",
-      isLeftScrollIndicatorVisible && "nz-is-visible",
-    );
-    const rightIndicatorClassName = classnames(
-      "nz-right",
-      isRightScrollIndicatorVisible && "nz-is-visible",
-    );
-
-    const viewportStyle = this.getViewportStyle(direction);
-    const scrolledStyle = this.getScrolledStyle(direction);
     return (
-      <div
-        className={className}
-        style={this.props.style}
+      <PanelsProvider
+        items={this.props.items}
       >
-        <div
-          className="nz-expanded nz-histories"
-        >
-          <div
-            className="nz-viewport"
-            style={this.getHistoryViewportStyle(direction)}
-          >
-            <div
-              className="nz-container"
-              style={this.getHistoryScrolledStyle(direction)}
-            >
-              {this.props.histories}
-            </div>
-          </div>
-        </div>
-        <div
-          className="nz-expanded nz-panels"
-          style={scrolledStyle}
-        >
-          {this.props.panels}
-        </div>
-        <div
-          className="nz-items-viewport"
-          style={viewportStyle}
-        >
-          <Items
-            className="nz-items"
-            direction={direction}
-            style={scrolledStyle}
-          >
-            {this.props.items}
-          </Items>
-          <Indicator
-            className={leftIndicatorClassName}
-            direction={direction === OrthogonalDirection.Vertical ? Direction.Top : Direction.Left}
-            onClick={this._handleLeftScroll}
-          />
-          <Indicator
-            className={rightIndicatorClassName}
-            direction={direction === OrthogonalDirection.Vertical ? Direction.Bottom : Direction.Right}
-            onClick={this._handleRightScroll}
-          />
-        </div>
-      </div >
+        {this._renderItems}
+      </PanelsProvider>
     );
   }
 
@@ -309,5 +242,82 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
   private isRightMostScrolled() {
     const itemCnt = getItemCount(this.props);
     return itemCnt - this.getVisibleItemCount() - this.state.scrollOffset === 0;
+  }
+
+  private _renderItems = (histories: React.ReactNode, panels: React.ReactNode) => {
+    const isLeftScrollIndicatorVisible = this.isLeftScrollIndicatorVisible();
+    const isRightScrollIndicatorVisible = this.isRightScrollIndicatorVisible();
+    const direction = getToolbarDirection(this.props.expandsTo!);
+
+    const className = classnames(
+      "nz-toolbar-scrollable",
+      DirectionHelpers.getCssClassName(this.props.expandsTo!),
+      OrthogonalDirectionHelpers.getCssClassName(direction),
+      ToolbarPanelAlignmentHelpers.getCssClassName(this.props.panelAlignment!),
+      isLeftScrollIndicatorVisible && !isRightScrollIndicatorVisible && "nz-scroll-indicator-left-only",
+      !isLeftScrollIndicatorVisible && isRightScrollIndicatorVisible && "nz-scroll-indicator-right-only",
+      this.props.className);
+
+    const leftIndicatorClassName = classnames(
+      "nz-left",
+      isLeftScrollIndicatorVisible && "nz-is-visible",
+    );
+    const rightIndicatorClassName = classnames(
+      "nz-right",
+      isRightScrollIndicatorVisible && "nz-is-visible",
+    );
+
+    const viewportStyle = this.getViewportStyle(direction);
+    const scrolledStyle = this.getScrolledStyle(direction);
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        <div
+          className="nz-expanded nz-histories"
+        >
+          <div
+            className="nz-viewport"
+            style={this.getHistoryViewportStyle(direction)}
+          >
+            <div
+              className="nz-container"
+              style={this.getHistoryScrolledStyle(direction)}
+            >
+              {histories}
+            </div>
+          </div>
+        </div>
+        <div
+          className="nz-expanded nz-panels"
+          style={scrolledStyle}
+        >
+          {panels}
+        </div>
+        <div
+          className="nz-items-viewport"
+          style={viewportStyle}
+        >
+          <Items
+            className="nz-items"
+            direction={direction}
+            style={scrolledStyle}
+          >
+            {this.props.items}
+          </Items>
+          <Indicator
+            className={leftIndicatorClassName}
+            direction={direction === OrthogonalDirection.Vertical ? Direction.Top : Direction.Left}
+            onClick={this._handleLeftScroll}
+          />
+          <Indicator
+            className={rightIndicatorClassName}
+            direction={direction === OrthogonalDirection.Vertical ? Direction.Bottom : Direction.Right}
+            onClick={this._handleRightScroll}
+          />
+        </div>
+      </div >
+    );
   }
 }

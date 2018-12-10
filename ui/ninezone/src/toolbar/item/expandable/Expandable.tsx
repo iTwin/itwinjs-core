@@ -7,10 +7,11 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { CommonProps } from "../../../utilities/Props";
+import { WithExpandableItemProps } from "../../../toolbar/Toolbar";
 import "./Expandable.scss";
 
 /** Properties of [[ExpandableItem]] component. */
-export interface ExpandableItemProps extends CommonProps {
+export interface ExpandableItemProps extends CommonProps, WithExpandableItemProps {
   /** Describes if item is active. */
   isActive?: boolean;
   /** Describes if item is disabled. */

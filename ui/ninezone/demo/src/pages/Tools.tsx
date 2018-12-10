@@ -3,10 +3,8 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { HistoryPlaceholder } from "@src/toolbar/item/expandable/history/Placeholder";
 import { HistoryTray } from "@src/toolbar/item/expandable/history/Tray";
 import { HistoryIcon } from "@src/toolbar/item/expandable/history/Icon";
-import { PanelPlaceholder } from "@src/toolbar/item/expandable/group/Placeholder";
 import { Panel } from "@src/toolbar/item/expandable/group/Panel";
 import { Group } from "@src/toolbar/item/expandable/group/Group";
 import { GroupColumn } from "@src/toolbar/item/expandable/group/Column";
@@ -60,20 +58,14 @@ export default class Tools extends React.PureComponent<{}, State> {
         <div style={cols2}>
           <Toolbar
             expandsTo={Direction.Left}
-            histories={this.getHistories(Direction.Left)}
-            items={this.getItems1()}
-            panels={this.getPanels()}
+            items={this.getItems1(Direction.Left)}
           />
           <Toolbar
-            histories={this.getHistories(Direction.Bottom)}
-            items={this.getItems1()}
-            panels={this.getPanels()}
+            items={this.getItems1(Direction.Bottom)}
           />
           <Toolbar
             expandsTo={Direction.Right}
-            histories={this.getHistories(Direction.Right)}
-            items={this.getItems1()}
-            panels={this.getPanels()}
+            items={this.getItems1(Direction.Right)}
           />
         </div>
         <h1>Overflow</h1>
@@ -82,33 +74,27 @@ export default class Tools extends React.PureComponent<{}, State> {
           items={
             <Overflow
               onClick={this._handleToggleIsPanelVisible}
+              panel={
+                this.state.isPanelVisible &&
+                <Panel>
+                  Other Tools
+                  </Panel>
+              }
             />
-          }
-          panels={
-            !this.state.isPanelVisible ? undefined :
-              <Panel>
-                Other Tools
-              </Panel>
           }
         />
         <br />
         <div style={cols2}>
           <Scrollable
             expandsTo={Direction.Left}
-            histories={this.getHistories(Direction.Left)}
-            items={this.getItems2()}
-            panels={this.getPanels()}
+            items={this.getItems2(Direction.Left)}
           />
           <Scrollable
-            histories={this.getHistories(Direction.Bottom)}
-            items={this.getItems2()}
-            panels={this.getPanels()}
+            items={this.getItems2(Direction.Bottom)}
           />
           <Scrollable
             expandsTo={Direction.Right}
-            histories={this.getHistories(Direction.Right)}
-            items={this.getItems2()}
-            panels={this.getPanels()}
+            items={this.getItems2(Direction.Right)}
           />
         </div>
         <h1>Tool Buttons</h1>
@@ -179,7 +165,29 @@ export default class Tools extends React.PureComponent<{}, State> {
     );
   }
 
-  private getItems1() {
+  private getItems1(direction: Direction) {
+    const historyItem = (
+      <HistoryIcon>
+        <i className="icon icon-placeholder" />
+      </HistoryIcon>
+    );
+    const historyItems = (
+      <>
+        {historyItem}
+        <HistoryIcon
+          isActive
+        >
+          <i className="icon icon-placeholder" />
+        </HistoryIcon>
+        <HistoryIcon
+          isActive
+          isDisabled
+        >
+          <i className="icon icon-placeholder" />
+        </HistoryIcon>
+      </>
+    );
+
     return [
       <ExpandableItem
         key={0}
@@ -191,6 +199,12 @@ export default class Tools extends React.PureComponent<{}, State> {
         />
       </ExpandableItem>,
       <ExpandableItem
+        history={
+          <HistoryTray
+            direction={direction}
+            items={historyItem}
+          />
+        }
         key={1}
         isActive
       >
@@ -203,8 +217,21 @@ export default class Tools extends React.PureComponent<{}, State> {
         />
       </ExpandableItem>,
       <ExpandableItem
+        history={
+          !this.state.isPanelVisible &&
+          <HistoryTray
+            direction={direction}
+            items={historyItems}
+          />
+        }
         key={2}
         isDisabled
+        panel={
+          this.state.isPanelVisible &&
+          <Panel>
+            Other Tools
+            </Panel>
+        }
       >
         <Item
           icon={
@@ -214,6 +241,13 @@ export default class Tools extends React.PureComponent<{}, State> {
         />
       </ExpandableItem>,
       <ExpandableItem
+        history={
+          <HistoryTray
+            direction={direction}
+            isExtended
+            items={historyItems}
+          />
+        }
         key={3}
         isDisabled
         isActive
@@ -240,74 +274,9 @@ export default class Tools extends React.PureComponent<{}, State> {
     ];
   }
 
-  private getPanels() {
-    return (
-      <>
-        <PanelPlaceholder />
-        {!this.state.isPanelVisible ? <PanelPlaceholder /> :
-          <PanelPlaceholder>
-            <Panel>
-              Other Tools
-            </Panel>
-          </PanelPlaceholder>}
-      </>
-    );
-  }
-
-  private getHistories(direction: Direction) {
-    const historyItem = (
-      <HistoryIcon>
-        <i className="icon icon-placeholder" />
-      </HistoryIcon>
-    );
-    const historyItems = (
-      <>
-        {historyItem}
-        <HistoryIcon
-          isActive
-        >
-          <i className="icon icon-placeholder" />
-        </HistoryIcon>
-        <HistoryIcon
-          isActive
-          isDisabled
-        >
-          <i className="icon icon-placeholder" />
-        </HistoryIcon>
-      </>
-    );
-    return (
-      <>
-        <HistoryPlaceholder />
-        <HistoryPlaceholder>
-          <HistoryTray
-            direction={direction}
-            items={historyItem}
-          />
-        </HistoryPlaceholder>
-        {this.state.isPanelVisible ? <HistoryPlaceholder /> :
-          <HistoryPlaceholder>
-            <HistoryTray
-              direction={direction}
-              items={historyItems}
-            />
-          </HistoryPlaceholder>}
-        <HistoryPlaceholder>
-          <HistoryTray
-            direction={direction}
-            isExtended
-            items={historyItems}
-          />
-        </HistoryPlaceholder>
-        <HistoryPlaceholder />
-        <HistoryPlaceholder />
-      </>
-    );
-  }
-
-  private getItems2() {
+  private getItems2(direction: Direction) {
     return [
-      ...this.getItems1(),
+      ...this.getItems1(direction),
       <Item
         key={10}
         icon={

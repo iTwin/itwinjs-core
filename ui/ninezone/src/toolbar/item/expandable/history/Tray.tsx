@@ -66,7 +66,7 @@ export interface HistoryTrayProps extends CommonProps, NoChildrenProps {
   onIsHistoryExtendedChange?: (isExtended: boolean) => void;
 }
 
-/** History tray used in [[HistoryPlaceholder]] component. */
+/** History tray used in [[ExpandableItem]] component. */
 export class HistoryTray extends React.PureComponent<HistoryTrayProps> {
   public render() {
     const items = FlattenChildren(this.props.items);
