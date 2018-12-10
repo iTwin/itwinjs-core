@@ -1218,6 +1218,20 @@ export namespace IModelDb {
     }
 
     /**
+     * Update an exist ElementAspect within the iModel.
+     * @param aspectProps The properties to use to update the ElementAspect.
+     * @throws [[IModelError]] if unable to update the ElementAspect.
+     */
+    public updateAspect(aspectProps: ElementAspectProps): void {
+      if (!this._iModel.briefcase)
+        throw this._iModel.newNotOpenError();
+
+      const status = this._iModel.nativeDb.updateElementAspect(JSON.stringify(aspectProps));
+      if (status !== IModelStatus.Success)
+        throw new IModelError(status, "Error updating ElementAspect", Logger.logWarning, loggingCategory);
+    }
+
+    /**
      * Delete one or more ElementAspects from this iModel.
      * @param ids The set of Ids of the element(s) to be deleted
      * @throws [[IModelError]]
