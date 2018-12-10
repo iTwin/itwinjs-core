@@ -2,6 +2,18 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "0.174.0",
+      "tag": "@bentley/webpack-tools_v0.174.0",
+      "date": "Mon, 10 Dec 2018 13:24:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix copyExternalModules for use by package external to rush repository"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.173.0",
       "tag": "@bentley/webpack-tools_v0.173.0",
       "date": "Thu, 06 Dec 2018 22:03:29 GMT",

@@ -1,6 +1,17 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Thu, 06 Dec 2018 22:03:29 GMT and should not be manually modified.
+This log was last generated on Mon, 10 Dec 2018 13:24:09 GMT and should not be manually modified.
+
+## 0.174.0
+Mon, 10 Dec 2018 13:24:09 GMT
+
+### Updates
+
+- Added Tests, updated Table, fixed breadcrumb mutability issues
+- Tree now accepts propertyValueRendererManager as a property.
+- PrimitivePropertyValueRenderer now accepts context and can render tree properties.
+- TreeNodeItem now accepts an additional optional property - typename.
+- TreeNode can now render asynchronously.
 
 ## 0.173.0
 Thu, 06 Dec 2018 22:03:29 GMT

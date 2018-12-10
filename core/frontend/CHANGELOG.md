@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 06 Dec 2018 22:03:29 GMT and should not be manually modified.
+This log was last generated on Mon, 10 Dec 2018 13:24:09 GMT and should not be manually modified.
+
+## 0.174.0
+Mon, 10 Dec 2018 13:24:09 GMT
+
+### Updates
+
+- Touch tap with AccuSnap enabled now brings up a decoration planchette to help choose the snap point.
 
 ## 0.173.0
 Thu, 06 Dec 2018 22:03:29 GMT
