@@ -4,30 +4,29 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { Point3d, Angle } from "@bentley/geometry-core";
-import { Cartographic, FontType, FontMap } from "@bentley/imodeljs-common";
+import { Cartographic, FontType, FontMap, ColorDef } from "@bentley/imodeljs-common";
 import * as path from "path";
-import { SpatialViewState, StandardViewId, IModelConnection, ScreenViewport, IModelApp, PanViewTool, CompassMode } from "@bentley/imodeljs-frontend";
+import { SpatialViewState, StandardViewId, IModelConnection, ScreenViewport, IModelApp, PanViewTool, CompassMode, TwoWayViewportSync } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
 import { MaybeRenderApp } from "./WebGLTestContext";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
-// const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
-//   const compare = new DeepCompare();
-//   const v2State = new SpatialViewState(v2, v1.iModel, v1.categorySelector, v1.displayStyle as DisplayStyle3dState, v1.modelSelector);
-//   const val = compare.compare(v1, v2State, .01);
-//   assert.isTrue(val, str);
-// };
-
 describe("Viewport", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
 
-  const viewDiv = document.createElement("div") as HTMLDivElement;
-  assert(null !== viewDiv);
-  viewDiv!.style.width = viewDiv!.style.height = "1000px";
-  document.body.appendChild(viewDiv!);
+  const createViewDiv = () => {
+    const div = document.createElement("div") as HTMLDivElement;
+    assert(null !== div);
+    div!.style.width = div!.style.height = "1000px";
+    document.body.appendChild(div!);
+    return div;
+  };
+
+  const viewDiv = createViewDiv();
+  const viewDiv2 = createViewDiv();
 
   before(async () => {   // Create a ViewState to load into a Viewport
     MaybeRenderApp.startup();
@@ -54,6 +53,16 @@ describe("Viewport", () => {
     assert.notEqual(saveView.displayStyle, vpView.displayStyle, "clone should copy displayStyle");
     const frustSave = vp.getFrustum();
 
+    const vpView2 = spatialView.clone<SpatialViewState>();
+    vpView2.setStandardRotation(StandardViewId.Top);
+    const vp2 = ScreenViewport.create(viewDiv2!, vpView2);
+    assert.isFalse(vp2.getFrustum().isSame(vp.getFrustum()), "frustums should start out different");
+
+    // test the two-way connection between 2 viewports
+    const vpConnection = new TwoWayViewportSync();
+    vpConnection.connect(vp, vp2); // wire them together
+    assert.isTrue(vp2.getFrustum().isSame(frustSave), "vp2 frustum should be same as vp1 after connect");
+
     // const clientRect = vp.getClientRect();
     vpView.camera.validateLens();
 
@@ -66,6 +75,9 @@ describe("Viewport", () => {
 
     vp.synchWithView(true);
     assert.isTrue(vp.isCameraOn, "camera should be on");
+    assert.isTrue(vp2.isCameraOn, "camera should be synched");
+    assert.isTrue(vp2.getFrustum().isSame(vp.getFrustum()), "frustum should be synched");
+
     const frust2 = vp.getFrustum();
     assert.isFalse(frust2.isSame(frustSave), "turning camera on changes frustum");
     assert.isTrue(vp.isUndoPossible, "undo should now be possible");
@@ -73,10 +85,16 @@ describe("Viewport", () => {
     assert.isTrue(vp.getFrustum().isSame(frustSave), "undo should reinstate saved view");
     assert.isTrue(vp.isRedoPossible, "redo is possible");
     assert.isFalse(vp.isUndoPossible, "no undo");
+    assert.isTrue(vp2.getFrustum().isSame(vp.getFrustum()), "frustum should be synched");
     vp.doRedo();
     assert.isTrue(vp.getFrustum().isSame(frust2), "redo should reinstate saved view");
     assert.isFalse(vp.isRedoPossible, "after redo, redo is not possible");
     assert.isTrue(vp.isUndoPossible, "after redo, undo is possible");
+    assert.isTrue(vp2.getFrustum().isSame(frust2), "frustum should be synched");
+
+    vp2.view.displayStyle.monochromeColor = ColorDef.blue;
+    vp2.synchWithView(true);
+    assert.equal(vp.view.displayStyle.monochromeColor.getRgb(), ColorDef.blue.getRgb(), "synch from 2->1 should work");
 
     const pan = IModelApp.tools.create("View.Pan", vp) as PanViewTool;
     assert.instanceOf(pan, PanViewTool);

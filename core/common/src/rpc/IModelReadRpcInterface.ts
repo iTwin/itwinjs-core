@@ -17,7 +17,7 @@ import { IModelVersion } from "../IModelVersion";
 import { ModelProps } from "../ModelProps";
 import { ElementProps } from "../ElementProps";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
-import { ViewStateData } from "../ViewProps";
+import { ViewStateProps } from "../ViewProps";
 
 /** Response if the IModelDb was not found at the backend
  * (if the service has moved)
@@ -66,7 +66,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async formatElements(_iModelToken: IModelToken, _elementIds: Id64Set): Promise<any[]> { return this.forward(arguments); }
   public async getClassHierarchy(_iModelToken: IModelToken, _startClassName: string): Promise<string[]> { return this.forward(arguments); }
   public async getAllCodeSpecs(_iModelToken: IModelToken): Promise<any[]> { return this.forward(arguments); }
-  public async getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<ViewStateData> { return this.forward(arguments); }
+  public async getViewStateData(_iModelToken: IModelToken, _viewDefinitionId: string): Promise<ViewStateProps> { return this.forward(arguments); }
   public async readFontJson(_iModelToken: IModelToken): Promise<any> { return this.forward(arguments); }
   public async requestSnap(_iModelToken: IModelToken, _connectionId: string, _props: SnapRequestProps): Promise<SnapResponseProps> { return this.forward(arguments); }
   public async cancelSnap(_iModelToken: IModelToken, _connectionId: string): Promise<void> { return this.forward(arguments); }
