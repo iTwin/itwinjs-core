@@ -79,7 +79,7 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
 
   const wantHilite = CompositeFlags.None !== (flags & CompositeFlags.Hilite);
   const wantTranslucent = CompositeFlags.None !== (flags & CompositeFlags.Translucent);
-  const wantOcclusion = true;
+  const wantOcclusion = wantTranslucent;
 
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
