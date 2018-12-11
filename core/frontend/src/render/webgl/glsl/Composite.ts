@@ -80,13 +80,14 @@ vec4 computeColor() {
 `;
 
 const computeTranslucentBaseColor = "return computeColor();";
+const computeAmbientOcclusionBaseColor = `\nreturn computeOpaqueColor();\n`;
 
 export function createCompositeProgram(flags: CompositeFlags, context: WebGLRenderingContext): ShaderProgram {
   assert(CompositeFlags.None !== flags);
 
   const wantHilite = CompositeFlags.None !== (flags & CompositeFlags.Hilite);
   const wantTranslucent = CompositeFlags.None !== (flags & CompositeFlags.Translucent);
-  const wantOcclusion = wantTranslucent;
+  const wantOcclusion = CompositeFlags.None !== (flags & CompositeFlags.AmbientOcclusion);
 
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
@@ -144,6 +145,9 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
         Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).occlusion, TextureUnit.Four);
       });
     });
+
+    if (!wantHilite && !wantTranslucent)
+      frag.set(FragmentShaderComponent.ComputeBaseColor, computeAmbientOcclusionBaseColor);
   }
 
   return builder.buildProgram(context);

@@ -236,8 +236,8 @@ export class RenderCommands {
     if (this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteClassification))
       flags |= CompositeFlags.Hilite;
 
-    assert(5 === RenderPass.Translucent);
-    assert(7 === RenderPass.Hilite);
+    if (this.target.wantAmbientOcclusion)
+      flags |= CompositeFlags.AmbientOcclusion;
 
     return flags;
   }

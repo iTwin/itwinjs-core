@@ -89,7 +89,7 @@ export const enum CompositeFlags {
     None = 0,
     Translucent = 1 << 0,
     Hilite = 1 << 1,
-    All = Translucent | Hilite,
+    AmbientOcclusion = 1 << 2,
 }
 
 /** Describes attributes of a MeshGeometry object. Used to conditionally execute portion of shader programs. */

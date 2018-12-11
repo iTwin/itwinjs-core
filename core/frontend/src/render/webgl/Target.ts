@@ -280,6 +280,18 @@ export abstract class Target extends RenderTarget {
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.monochrome ? ShaderFlags.Monochrome : ShaderFlags.None; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
 
+  // ###TODO make a ViewFlag.
+  private _ambientOcclusionEnabled = true;
+  public get wantAmbientOcclusion(): boolean {
+    // NB: We do not want to use the *current* ViewFlags for this - only those set in the RenderPlan,
+    // because our AO implementation is currently "all or nothing" - you can't selectively apply it to only some surfaces.
+    if (!this._ambientOcclusionEnabled)
+      return false;
+
+    // ###TODO do not enable unless smooth shade, probably no visible edges, etc.
+    return true;
+  }
+
   public get clipDef(): ClipDef {
     if (this.hasClipVolume)
       return new ClipDef(ClippingType.Planes, this.clips.count);

@@ -374,7 +374,7 @@ abstract class Compositor extends SceneCompositor {
   public abstract get currentRenderTargetIndex(): number;
 
   protected abstract clearOpaque(_needComposite: boolean): void;
-  protected abstract renderOpaque(_commands: RenderCommands, _needComposite: boolean, _renderForReadPixels: boolean): void;
+  protected abstract renderOpaque(_commands: RenderCommands, _compositeFlags: CompositeFlags, _renderForReadPixels: boolean): void;
   protected abstract renderIndexedClassifierForReadPixels(_commands: DrawCommands, index: number, state: RenderState, _needComposite: boolean): void;
   protected abstract clearTranslucent(): void;
   protected abstract renderTranslucent(_commands: RenderCommands): void;
@@ -490,10 +490,8 @@ abstract class Compositor extends SceneCompositor {
       return;
     }
 
-    const flags = commands.compositeFlags;
-    const needTranslucent = CompositeFlags.None !== (flags & CompositeFlags.Translucent);
-    const needHilite = CompositeFlags.None !== (flags & CompositeFlags.Hilite);
-    const needComposite = needTranslucent || needHilite;
+    const compositeFlags = commands.compositeFlags;
+    const needComposite = CompositeFlags.None !== compositeFlags;
 
     // Clear output targets
     this.clearOpaque(needComposite);
@@ -515,7 +513,7 @@ abstract class Compositor extends SceneCompositor {
     if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Enable Clipping");
 
     // Render opaque geometry
-    this.renderOpaque(commands, needComposite, false);
+    this.renderOpaque(commands, compositeFlags, false);
     if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Opaque");
 
     // Render stencil volumes
@@ -523,7 +521,7 @@ abstract class Compositor extends SceneCompositor {
     if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Stencils");
 
     if (needComposite) {
-      this._geom.composite!.update(flags);
+      this._geom.composite!.update(compositeFlags);
       this.clearTranslucent();
       this.renderTranslucent(commands);
       if (this.target.performanceMetrics) this.target.performanceMetrics.recordTime("Render Translucent");
@@ -550,7 +548,7 @@ abstract class Compositor extends SceneCompositor {
     const haveRenderCommands = !commands.isEmpty;
     if (haveRenderCommands) {
       this.target.pushActiveVolume();
-      this.renderOpaque(commands, false, true);
+      this.renderOpaque(commands, CompositeFlags.None, true);
       this.renderClassification(commands, false, true);
       this.target.popActiveVolume();
     }
@@ -575,7 +573,7 @@ abstract class Compositor extends SceneCompositor {
     }
 
     // Render overlays as opaque into the pick buffers
-    this.renderOpaque(commands, false, true);
+    this.renderOpaque(commands, CompositeFlags.None, true);
   }
 
   public readPixels(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
@@ -1013,25 +1011,28 @@ class MRTCompositor extends Compositor {
     });
   }
 
-  protected renderOpaque(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean) {
+  protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean) {
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
     this._readPickDataFromPingPong = true;
 
-    const testDoAO = true;
+    const needComposite = CompositeFlags.None !== compositeFlags;
+    const needAO = CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion);
 
     let fbStack = System.instance.frameBufferStack;
     fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeAll! : this._fbos.opaqueAll!, true, () => {
       this.drawPass(commands, RenderPass.OpaqueLinear);
       this.drawPass(commands, RenderPass.OpaquePlanar, true);
-      if (testDoAO || renderForReadPixels) {
+      if (needAO || renderForReadPixels) {
         this.drawPass(commands, RenderPass.OpaqueGeneral, true);
-        this.renderAmbientOcclusion();
+        if (needAO)
+          this.renderAmbientOcclusion();
       }
     });
+
     this._readPickDataFromPingPong = false;
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
-    if (!renderForReadPixels && !testDoAO) {
+    if (!renderForReadPixels && !needAO) {
       fbStack = System.instance.frameBufferStack;
       fbStack.execute(needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!, true, () => {
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
@@ -1169,9 +1170,11 @@ class MPCompositor extends Compositor {
     this.clearFbo(this._fbos.featureId!, 0, 0, 0, 0, true);
   }
 
-  protected renderOpaque(commands: RenderCommands, needComposite: boolean, renderForReadPixels: boolean): void {
+  protected renderOpaque(commands: RenderCommands, compositeFlags: CompositeFlags, renderForReadPixels: boolean): void {
+    // ###TODO: Support ambient occlusion.
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
     this._readPickDataFromPingPong = true;
+    const needComposite = CompositeFlags.None !== compositeFlags;
     const colorFbo = needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueLinear, false);
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);

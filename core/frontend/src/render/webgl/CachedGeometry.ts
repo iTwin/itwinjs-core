@@ -11,7 +11,7 @@ import { Point3d, Vector2d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
-import { TechniqueId } from "./TechniqueId";
+import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
@@ -548,6 +548,7 @@ export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
   }
 
   // ###TODO: Dispose noise texture - better place to store this than here?
+  // ==> Store on the System same way we do for the line code texture.
 }
 
 export class BlurGeometry extends TexturedViewportQuadGeometry {
@@ -589,12 +590,9 @@ export class CompositeGeometry extends TexturedViewportQuadGeometry {
 
   // Invoked each frame to determine the appropriate Technique to use.
   public update(flags: CompositeFlags): void { this._techniqueId = this.determineTechnique(flags); }
+
   private determineTechnique(flags: CompositeFlags): TechniqueId {
-    switch (flags) {
-      case CompositeFlags.Hilite: return TechniqueId.CompositeHilite;
-      case CompositeFlags.Translucent: return TechniqueId.CompositeTranslucent;
-      default: return TechniqueId.CompositeHiliteAndTranslucent;
-    }
+    return computeCompositeTechniqueId(flags);
   }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
