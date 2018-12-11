@@ -12,6 +12,8 @@ import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
 import { BlurGeometry } from "../CachedGeometry";
 import { Texture2DHandle } from "../Texture";
 import { addViewport } from "./Viewport";
+import { GLSLDecode } from "./Decode";
+import { readDepthAndOrder } from "./FeatureSymbology";
 
 // This shader applies a Gaussian blur in one dimension.
 const computeBlur = `
@@ -27,16 +29,25 @@ const computeBlur = `
   gaussian.y = exp((-0.5 * delta * delta) / (sigma * sigma));
   gaussian.z = gaussian.y * gaussian.y;
 
-  vec4 result = TEXTURE(u_textureToBlur, tc) * gaussian.x;
-  for (int i = 1; i < 8; ++i) {
+  vec4 origColor = TEXTURE(u_textureToBlur, tc);
+  vec4 result = origColor * gaussian.x;
+  float depth = readDepthAndOrder(tc).y;
+  for (int i = 1; i < 8; i++) {
     gaussian.xy *= gaussian.yz;
 
     vec2 offset = float(i) * u_blurDir * step;
-    result += TEXTURE(u_textureToBlur, tc - offset) * gaussian.x;
-    result += TEXTURE(u_textureToBlur, tc + offset) * gaussian.x;
+    vec2 tcMinusOffset = tc - offset;
+    vec2 tcPlusOffset = tc + offset;
+
+    // if (abs(readDepthAndOrder(tcMinusOffset).y - depth) < 0.01)
+      result += TEXTURE(u_textureToBlur, tcMinusOffset) * gaussian.x;
+
+    // if (abs(readDepthAndOrder(tcPlusOffset).y - depth) < 0.01)
+      result += TEXTURE(u_textureToBlur, tcPlusOffset) * gaussian.x;
   }
 
   return result;
+  // return origColor;
 `;
 
 export function createBlurProgram(context: WebGLRenderingContext): ShaderProgram {
@@ -45,6 +56,9 @@ export function createBlurProgram(context: WebGLRenderingContext): ShaderProgram
 
   addWindowToTexCoords(frag);
 
+  frag.addFunction(GLSLDecode.depthRgb);
+  frag.addFunction(readDepthAndOrder);
+
   frag.set(FragmentShaderComponent.ComputeBaseColor, computeBlur);
   frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
 
@@ -52,6 +66,13 @@ export function createBlurProgram(context: WebGLRenderingContext): ShaderProgram
     prog.addGraphicUniform("u_textureToBlur", (uniform, params) => {
       const geom = params.geometry as BlurGeometry;
       Texture2DHandle.bindSampler(uniform, geom.textureToBlur, TextureUnit.Zero);
+    });
+  });
+
+  frag.addUniform("u_pickDepthAndOrder", VariableType.Sampler2D, (prog) => {
+    prog.addGraphicUniform("u_pickDepthAndOrder", (uniform, params) => {
+      const geom = params.geometry as BlurGeometry;
+      Texture2DHandle.bindSampler(uniform, geom.depthAndOrder, TextureUnit.One);
     });
   });
 

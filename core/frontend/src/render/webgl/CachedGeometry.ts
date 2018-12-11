@@ -553,15 +553,16 @@ export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
 export class BlurGeometry extends TexturedViewportQuadGeometry {
   public readonly blurDir: Vector2d;
 
-  public static createGeometry(texToBlur: WebGLTexture, blurDir: Vector2d) {
+  public static createGeometry(texToBlur: WebGLTexture, depthAndOrder: WebGLTexture, blurDir: Vector2d) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
     }
-    return new BlurGeometry(params, [texToBlur], blurDir);
+    return new BlurGeometry(params, [texToBlur, depthAndOrder], blurDir);
   }
 
   public get textureToBlur() { return this._textures[0]; }
+  public get depthAndOrder() { return this._textures[1]; }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], blurDir: Vector2d) {
     super(params, TechniqueId.Blur, textures);

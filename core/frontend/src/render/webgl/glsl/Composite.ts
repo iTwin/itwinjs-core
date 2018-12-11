@@ -61,11 +61,14 @@ vec4 computeColor() {
   vec4 opaque = TEXTURE(u_opaque, v_texCoord);
   vec4 accum = TEXTURE(u_accumulation, v_texCoord);
   float r = TEXTURE(u_revealage, v_texCoord).r;
-  float ao = TEXTURE(u_occlusion, v_texCoord).r;
+  vec4 aoRGBA = TEXTURE(u_occlusion, v_texCoord);
+  float ao = aoRGBA.r;
 
   opaque.rgb *= ao;
   vec4 transparent = vec4(accum.rgb / clamp(r, 1e-4, 5e4), accum.a);
-  return (1.0 - transparent.a) * transparent + transparent.a * opaque;
+  vec4 col = (1.0 - transparent.a) * transparent + transparent.a * opaque;
+  // col = aoRGBA;
+  return col;
 }
 `;
 

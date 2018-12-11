@@ -168,8 +168,8 @@ class Geometry implements IDisposable {
     this.stencilCopy = ViewportQuadGeometry.create(TechniqueId.CopyStencil);
     assert(textures.depthAndOrder !== undefined);
     this.occlusion = AmbientOcclusionGeometry.createGeometry(textures.depthAndOrder!.getHandle()!);
-    this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion!.getHandle()!, new Vector2d(1.0, 0.0));
-    this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur!.getHandle()!, new Vector2d(0.0, 1.0));
+    this.occlusionXBlur = BlurGeometry.createGeometry(textures.occlusion!.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(1.0, 0.0));
+    this.occlusionYBlur = BlurGeometry.createGeometry(textures.occlusionBlur!.getHandle()!, textures.depthAndOrder!.getHandle()!, new Vector2d(0.0, 1.0));
     return undefined !== this.composite;
   }
 
