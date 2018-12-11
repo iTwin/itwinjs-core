@@ -281,11 +281,11 @@ export abstract class Target extends RenderTarget {
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
 
   // ###TODO make a ViewFlag.
-  private _ambientOcclusionEnabled = true;
+  public ambientOcclusionEnabled = true;
   public get wantAmbientOcclusion(): boolean {
     // NB: We do not want to use the *current* ViewFlags for this - only those set in the RenderPlan,
     // because our AO implementation is currently "all or nothing" - you can't selectively apply it to only some surfaces.
-    if (!this._ambientOcclusionEnabled)
+    if (!this.ambientOcclusionEnabled)
       return false;
 
     // ###TODO do not enable unless smooth shade, probably no visible edges, etc.

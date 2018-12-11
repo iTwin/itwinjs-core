@@ -779,6 +779,16 @@ function updateRenderModeOptionsMap() {
   (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.renderMode);
 }
 
+// ###TODO: This is strictly for demo purposes - need to integrate AO setting(s) into ViewFlags...
+function setAmbientOcclusionEnabled(enabled: boolean) {
+  const vp = theViewport;
+  const target = undefined !== vp ? vp.target as Target : undefined;
+  if (undefined !== target) {
+    target.ambientOcclusionEnabled = enabled;
+    vp!.sync.invalidateRenderPlan();
+  }
+}
+
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
   if (undefined === theViewport) {
@@ -790,6 +800,7 @@ async function openView(state: SimpleViewState) {
   theViewport.addFeatureOverrides = addFeatureOverrides;
   theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
   theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
+  setAmbientOcclusionEnabled((document.getElementById("ambientOcclusion")! as HTMLInputElement).checked);
   IModelApp.viewManager.addViewport(theViewport);
 }
 
@@ -1675,6 +1686,9 @@ function wireIconsToFunctions() {
 
   const boundingBoxes = document.getElementById("boundingBoxes")! as HTMLInputElement;
   boundingBoxes.addEventListener("click", () => theViewport!.wantTileBoundingBoxes = boundingBoxes.checked);
+
+  const ao = document.getElementById("ambientOcclusion")! as HTMLInputElement;
+  ao.addEventListener("click", () => setAmbientOcclusionEnabled(ao.checked));
 
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
   document.getElementById("mapProviderList")!.addEventListener("change", () => changeBackgroundMapState());
