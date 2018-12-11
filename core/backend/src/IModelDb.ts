@@ -6,12 +6,11 @@
 import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
-  AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation,
-  ElementAspectProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams,
-  FilePropertyProps, FontMap, FontMapProps, FontProps, IModel, IModelError, IModelNotFoundResponse, IModelProps,
-  IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps, PropertyCallback, SheetProps,
-  SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateData,
+  AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
+  ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
+  IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
+  PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
+  ViewStateProps,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BriefcaseEntry, BriefcaseId, BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
@@ -24,10 +23,10 @@ import { ElementAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
 import { ErrorStatusOrResult, NativeDgnDb, SnapRequest, TxnIdString } from "./imodeljs-native-platform-api";
 import { IModelJsFs } from "./IModelJsFs";
-import { Relationships, Relationship, RelationshipProps } from "./Relationship";
 import { Model } from "./Model";
 import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { KnownLocations } from "./Platform";
+import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
 
@@ -1299,8 +1298,8 @@ export namespace IModelDb {
       return finished;
     }
 
-    public getViewStateData(viewDefinitionId: string): ViewStateData {
-      const viewStateData: ViewStateData = {} as any;
+    public getViewStateData(viewDefinitionId: string): ViewStateProps {
+      const viewStateData: ViewStateProps = {} as any;
       const elements = this._iModel.elements;
       const viewDefinitionElement = elements.getElement<ViewDefinition>(viewDefinitionId);
       viewStateData.viewDefinitionProps = viewDefinitionElement.toJSON();

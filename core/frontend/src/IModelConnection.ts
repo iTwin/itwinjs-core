@@ -12,7 +12,6 @@ import {
   ModelProps, ModelQueryParams, RpcNotFoundResponse, RpcOperation, RpcRequest, RpcRequestEvent, SnapRequestProps, SnapResponseProps,
   StandaloneIModelRpcInterface, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams, WipRpcInterface,
 } from "@bentley/imodeljs-common";
-import { CategorySelectorState } from "./CategorySelectorState";
 import { EntityState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { ModelState } from "./ModelState";
@@ -554,15 +553,13 @@ export namespace IModelConnection {
 
     /** Load a [[ViewState]] object from the specified [[ViewDefinition]] id. */
     public async load(viewDefinitionId: Id64String): Promise<ViewState> {
-      const viewStateData = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken, viewDefinitionId);
-      const categorySelectorState = new CategorySelectorState(viewStateData.categorySelectorProps, this._iModel);
-
-      const className = viewStateData.viewDefinitionProps.classFullName;
+      const viewProps = await IModelReadRpcInterface.getClient().getViewStateData(this._iModel.iModelToken, viewDefinitionId);
+      const className = viewProps.viewDefinitionProps.classFullName;
       const ctor = await this._iModel.findClassFor<typeof EntityState>(className, undefined) as typeof ViewState | undefined;
       if (undefined === ctor)
-        return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggingCategory, () => viewStateData));
+        return Promise.reject(new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggingCategory, () => viewProps));
 
-      const viewState = ctor.createFromStateData(viewStateData, categorySelectorState, this._iModel)!;
+      const viewState = ctor.createFromProps(viewProps, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector
       return viewState;
     }

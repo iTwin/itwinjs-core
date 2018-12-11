@@ -8,7 +8,7 @@ import { Logger, Id64String, Id64Set, Id64, assert, ActivityLoggingContext } fro
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   EntityQueryParams, RpcInterface, RpcManager, IModel, IModelReadRpcInterface, IModelToken,
-  ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, ViewStateData, ImageSourceFormat,
+  ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, ViewStateProps, ImageSourceFormat,
 } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams } from "../IModelDb";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
@@ -134,7 +134,7 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return codeSpecs;
   }
 
-  public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<ViewStateData> {
+  public async getViewStateData(iModelToken: IModelToken, viewDefinitionId: string): Promise<ViewStateProps> {
     const activityContext = ActivityLoggingContext.current; activityContext.enter();
     return IModelDb.find(iModelToken).views.getViewStateData(viewDefinitionId);
   }
