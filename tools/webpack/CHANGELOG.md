@@ -1,6 +1,18 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Mon, 10 Dec 2018 13:24:09 GMT and should not be manually modified.
+This log was last generated on Mon, 10 Dec 2018 21:19:45 GMT and should not be manually modified.
+
+## 0.176.0
+Mon, 10 Dec 2018 21:19:45 GMT
+
+### Updates
+
+- Enhancement to copyExternalModules
+
+## 0.175.0
+Mon, 10 Dec 2018 17:08:55 GMT
+
+*Version update only*
 
 ## 0.174.0
 Mon, 10 Dec 2018 13:24:09 GMT

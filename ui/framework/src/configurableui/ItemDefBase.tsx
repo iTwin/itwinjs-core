@@ -12,6 +12,7 @@ export interface BaseItemState {
   isVisible?: boolean;        // Default - true
   isEnabled?: boolean;        // Default - true
   isActive?: boolean;         // Default - false
+  isPressed?: boolean;        // Default - false
 }
 
 /** The base class for Items. */
@@ -19,6 +20,7 @@ export abstract class ItemDefBase {
   public isVisible: boolean = true;
   public isEnabled: boolean = true;
   public isPressed: boolean = false;
+  public isActive: boolean = false;
   public featureId: string = "";
   public applicationData?: any;
 
@@ -35,6 +37,7 @@ export abstract class ItemDefBase {
     me.isVisible = (itemProps.isVisible !== undefined) ? itemProps.isVisible : true;
     me.isEnabled = (itemProps.isEnabled !== undefined) ? itemProps.isEnabled : true;
     me.isPressed = (itemProps.isPressed !== undefined) ? itemProps.isPressed : false;
+    me.isActive = (itemProps.isActive !== undefined) ? itemProps.isActive : false;
 
     if (itemProps.featureId !== undefined) me.featureId = itemProps.featureId;
     if (itemProps.applicationData !== undefined) me.applicationData = itemProps.applicationData;

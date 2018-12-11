@@ -31,6 +31,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "horizontalDirection": 3,
       "horizontalItems": undefined,
       "id": "navigationWidget",
+      "isActive": false,
       "isEnabled": true,
       "isFloating": false,
       "isFloatingStateSupported": false,

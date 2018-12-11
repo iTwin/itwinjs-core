@@ -39,7 +39,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2"
           />
-          <GroupButton
+          <Unknown
             direction={3}
             iconSpec="icon-placeholder"
             items={
@@ -108,6 +108,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       "horizontalDirection": 3,
       "horizontalItems": undefined,
       "id": "toolWidget",
+      "isActive": false,
       "isEnabled": true,
       "isFloating": false,
       "isFloatingStateSupported": false,
@@ -156,7 +157,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
             labelKey="SampleApp:buttons.tool2"
             toolId="tool2"
           />
-          <GroupButton
+          <Unknown
             iconSpec="icon-placeholder"
             items={
               Array [

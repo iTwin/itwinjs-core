@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-clients",
-  "version": "0.174.0",
+  "version": "0.176.0",
   "description": "Clients for various Bentley Services used by iModel.js",
   "main": "lib/imodeljs-clients.js",
   "typings": "lib/imodeljs-clients",
@@ -9,9 +9,8 @@
     "node": ">=8.9.0 <9.0"
   },
   "scripts": {
-    "build": "npm run copy:assets && tsc 1>&2 && npm run webpackModule-dev",
+    "build": "tsc 1>&2 && npm run webpackModule-dev",
     "clean": "rimraf lib package-deps.json",
-    "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "cover": "npm run copy:test-assets && nyc npm test",
     "cover:integration": "npm run copy:test-assets && nyc --report-dir ./lib/test/coverage/integration npm run test:integration",
@@ -42,17 +41,17 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "0.174.0"
+    "@bentley/bentleyjs-core": "0.176.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/config-loader": "0.174.0",
-    "@bentley/bentleyjs-core": "0.174.0",
-    "@bentley/build-tools": "0.174.0",
-    "@bentley/webpack-tools": "0.174.0",
+    "@bentley/config-loader": "0.176.0",
+    "@bentley/bentleyjs-core": "0.176.0",
+    "@bentley/build-tools": "0.176.0",
+    "@bentley/webpack-tools": "0.176.0",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",

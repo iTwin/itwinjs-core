@@ -412,7 +412,7 @@ export class AccuSnap implements Decorator {
 
     const crossPt = snap.snapPoint;
     const viewport = snap.viewport!;
-    const crossSprite = IconSprites.getSpriteFromUrl(snap.isHot ? "SnapCross.png" : "SnapUnfocused.png");
+    const crossSprite = IconSprites.getSpriteFromUrl(snap.isHot ? "sprites/SnapCross.png" : "sprites/SnapUnfocused.png");
 
     this.cross.activate(crossSprite, viewport, crossPt);
 
@@ -438,7 +438,7 @@ export class AccuSnap implements Decorator {
     let errorSprite: Sprite | undefined;
     switch (out.snapStatus) {
       case SnapStatus.FilteredByApp:
-        errorSprite = IconSprites.getSpriteFromUrl("SnapAppFiltered.png");
+        errorSprite = IconSprites.getSpriteFromUrl("sprites/SnapAppFiltered.png");
         break;
 
       case SnapStatus.FilteredByAppQuietly:
@@ -446,7 +446,7 @@ export class AccuSnap implements Decorator {
         break;
 
       case SnapStatus.NotSnappable:
-        errorSprite = IconSprites.getSpriteFromUrl("SnapNotSnappable.png");
+        errorSprite = IconSprites.getSpriteFromUrl("sprites/SnapNotSnappable.png");
         this.errorKey = ElementLocateManager.getFailureMessageKey("NotSnappable");
         break;
     }

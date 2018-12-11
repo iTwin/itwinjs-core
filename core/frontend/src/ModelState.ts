@@ -47,6 +47,13 @@ export class ModelState extends EntityState implements ModelProps {
   /** Determine whether this is a GeometricModel */
   public get isGeometricModel(): boolean { return false; }
 
+  /** @hidden */
+  public get asGeometricModel(): GeometricModelState | undefined { return undefined; }
+  /** @hidden */
+  public get asGeometricModel3d(): GeometricModel3dState | undefined { return undefined; }
+  /** @hidden */
+  public get asGeometricModel2d(): GeometricModel2dState | undefined { return undefined; }
+
   /** Runs when the iModel of this iModelState closes. */
   public onIModelConnectionClose() { }
 
@@ -70,6 +77,8 @@ export abstract class GeometricModelState extends ModelState implements TileTree
 
   /** Returns true if this is a 3d model (a [[GeometricModel3dState]]). */
   public abstract get is3d(): boolean;
+  /** @hidden */
+  public get asGeometricModel(): GeometricModelState { return this; }
   /** Returns true if this is a 2d model (a [[GeometricModel2dState]]). */
   public get is2d(): boolean { return !this.is3d; }
   /** @hidden */
@@ -136,6 +145,8 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
 
   /** Returns false. */
   public get is3d(): boolean { return false; }
+  /** @hidden */
+  public get asGeometricModel2d(): GeometricModel2dState { return this; }
 
   public toJSON(): GeometricModel2dProps {
     const val = super.toJSON() as GeometricModel2dProps;
@@ -148,6 +159,8 @@ export class GeometricModel2dState extends GeometricModelState implements Geomet
 export class GeometricModel3dState extends GeometricModelState {
   /** Returns true. */
   public get is3d(): boolean { return true; }
+  /** @hidden */
+  public get asGeometricModel3d(): GeometricModel3dState { return this; }
 }
 
 /** Represents the front-end state of a [SheetModel]($backend). */

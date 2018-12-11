@@ -6,9 +6,6 @@
 
 import {
   assert,
-  compareNumbers,
-  compareStrings,
-  SortedArray,
   Id64,
   Id64String,
   BeTimePoint,
@@ -37,6 +34,7 @@ import { GraphicType } from "../render/GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { TileIO } from "./TileIO";
+import { TileRequest } from "./TileRequest";
 import { GltfTileIO } from "./GltfTileIO";
 import { B3dmTileIO } from "./B3dmTileIO";
 import { PntsTileIO } from "./PntsTileIO";
@@ -44,62 +42,23 @@ import { DgnTileIO } from "./DgnTileIO";
 import { IModelTileIO } from "./IModelTileIO";
 import { ViewFrustum } from "../Viewport";
 
-function compareMissingTiles(lhs: Tile, rhs: Tile): number {
-  const diff = compareNumbers(lhs.depth, rhs.depth);
-  return 0 === diff ? compareStrings(lhs.contentId, rhs.contentId) : diff;
-}
-
 /** @hidden */
-export class MissingNodes {
-  private readonly _requests: TileRequests;
-  private _list?: SortedArray<Tile>;
-
-  public constructor(requests: TileRequests) {
-    this._requests = requests;
-  }
+export class TileRequests {
+  public readonly missingTiles = new Set<Tile>();
+  public hasMissingTiles: boolean = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
 
   public insert(tile: Tile): void {
     switch (tile.loadStatus) {
-      case Tile.LoadStatus.NotLoaded: {
-        if (undefined === this._list)
-          this._list = new SortedArray<Tile>(compareMissingTiles);
-
-        this._list.insert(tile);
-      }
-      /* falls through */
+      case Tile.LoadStatus.NotLoaded:
       case Tile.LoadStatus.Queued:
       case Tile.LoadStatus.Loading:
-        this._requests.hasMissingTiles = true;
+        this.missingTiles.add(tile);
         break;
     }
   }
 
-  public extractArray(): Tile[] | undefined {
-    return undefined !== this._list ? this._list.extractArray() : undefined;
-  }
-}
-
-/** @hidden */
-export class TileRequests {
-  private _map = new Map<TileTree, MissingNodes>();
-  public hasMissingTiles: boolean = false;
-
-  public getMissing(root: TileTree): MissingNodes {
-    let found = this._map.get(root);
-    if (undefined === found) {
-      found = new MissingNodes(this);
-      this._map.set(root, found);
-    }
-
-    return found;
-  }
-
   public requestMissing(): void {
-    this._map.forEach((missing: MissingNodes, tree: TileTree) => {
-      const list = missing.extractArray();
-      if (undefined !== list)
-        tree.requestTiles(list);
-    });
+    IModelApp.tileRequests.requestTiles(this.missingTiles);
   }
 }
 
@@ -122,6 +81,7 @@ export class Tile implements IDisposable {
   protected _graphic?: RenderGraphic;
   protected _rangeGraphic?: RenderGraphic;
   protected _sizeMultiplier?: number;
+  protected _request?: TileRequest;
 
   public constructor(props: Tile.Params) {
     this.root = props.root;
@@ -202,6 +162,7 @@ export class Tile implements IDisposable {
 
   public setIsReady(): void { this.loadStatus = Tile.LoadStatus.Ready; IModelApp.viewManager.onNewTilesReady(); }
   public setIsQueued(): void { this.loadStatus = Tile.LoadStatus.Queued; }
+  public setIsLoading(): void { this.loadStatus = Tile.LoadStatus.Loading; }
   public setNotLoaded(): void { this.loadStatus = Tile.LoadStatus.NotLoaded; }
   public setNotFound(): void { this.loadStatus = Tile.LoadStatus.NotFound; }
   public setAbandoned(): void {
@@ -474,6 +435,12 @@ export class Tile implements IDisposable {
 
     return str;
   }
+
+  public get request(): TileRequest | undefined { return this._request; }
+  public set request(request: TileRequest | undefined) {
+    assert(undefined === request || undefined === this.request);
+    this._request = request;
+  }
 }
 
 /** @hidden */
@@ -488,7 +455,7 @@ export namespace Tile {
     Loading = 2, // A response has been received and the tile's graphics and other data are being loaded on the frontend.
     Ready = 3, // The tile has been loaded, and if the tile is displayable it has graphics.
     NotFound = 4, // The tile was requested, and the response from the backend indicated the tile could not be found.
-    Abandoned = 5, // A request was made to the backed, then later cancelled as it was determined that the tile is no longer needed on the frontend.
+    Abandoned = 5, // A request was made to the backend, then later cancelled as it was determined that the tile is no longer needed on the frontend.
   }
 
   /**
@@ -523,7 +490,6 @@ export namespace Tile {
     public readonly graphics: GraphicBranch = new GraphicBranch();
     public readonly now: BeTimePoint;
     public readonly purgeOlderThan: BeTimePoint;
-    private _missing?: MissingNodes;
     private readonly _frustumPlanes?: FrustumPlanes;
 
     public getPixelSizeAtPoint(inPoint?: Point3d): number {
@@ -567,22 +533,11 @@ export namespace Tile {
     }
 
     public insertMissing(tile: Tile): void {
-      if (tile.isNotLoaded) {
-        if (undefined === this._missing)
-          this._missing = this.context.requests.getMissing(this.root);
-
-        this._missing.insert(tile);
-      } else if (tile.isQueued || tile.isLoading) {
-        this.context.requests.hasMissingTiles = true;
-      }
+      this.context.requests.insert(tile);
     }
 
     public requestMissing(): void {
-      if (undefined !== this._missing) {
-        const list = this._missing.extractArray();
-        if (undefined !== list)
-          this.root.requestTiles(list);
-      }
+      this.context.requests.requestMissing();
     }
 
     public markChildrenLoading(): void { this.context.requests.hasMissingTiles = true; }
@@ -667,11 +622,6 @@ export class TileTree implements IDisposable {
     args.requestMissing();
   }
 
-  public requestTiles(missing: Tile[]): void {
-    // TBD - cancel any loaded/queued tiles which are no longer needed.
-    this.loader.loadTileContents(missing); // tslint:disable-line:no-floating-promises
-  }
-
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {
     const now = BeTimePoint.now();
     const purgeOlderThan = now.minus(this.expirationTime);
@@ -691,10 +641,53 @@ const defaultViewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({
 /** @hidden */
 export abstract class TileLoader {
   public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
-  public abstract async loadTileContents(missingtiles: Tile[]): Promise<void>;
+  public abstract async requestTileContent(tile: Tile): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
+  protected get _batchType(): BatchType { return BatchType.Primary; }
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
-  public loadGraphics(tile: Tile, geometry: any, type: BatchType = BatchType.Primary): void {
+  public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData): Promise<TileRequest.Graphic> {
+    assert(data instanceof Uint8Array);
+    const blob = data as Uint8Array;
+
+    const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
+    const format = streamBuffer.nextUint32;
+    streamBuffer.rewind(4);
+
+    const isCanceled = () => false; // !tile.isLoading;
+    let reader: GltfTileIO.Reader | undefined;
+    switch (format) {
+      case TileIO.Format.Pnts:
+        return { renderGraphic: PntsTileIO.readPointCloud(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp) };
+
+      case TileIO.Format.B3dm:
+        reader = B3dmTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, tile.range, IModelApp.renderSystem, tile.yAxisUp, tile.isLeaf, isCanceled);
+        break;
+
+      case TileIO.Format.Dgn:
+        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled);
+        break;
+
+      case TileIO.Format.IModel:
+        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
+        break;
+
+      default:
+        assert(false, "unknown tile format " + format);
+        break;
+    }
+
+    let graphic: TileRequest.Graphic = { };
+    if (undefined !== reader) {
+      try {
+        graphic = await reader.read();
+      } catch (_err) {
+        //
+      }
+    }
+
+    return graphic;
+  }
+  public loadGraphics(tile: Tile, geometry: any): void {
     let blob: Uint8Array | undefined;
     if (typeof geometry === "string") {
       blob = base64StringToUint8Array(geometry as string);
@@ -720,11 +713,11 @@ export abstract class TileLoader {
         break;
 
       case TileIO.Format.Dgn:
-        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, type, isCanceled);
+        reader = DgnTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled);
         break;
 
       case TileIO.Format.IModel:
-        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, type, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
+        reader = IModelTileIO.Reader.create(streamBuffer, tile.root.iModel, tile.root.modelId, tile.root.is3d, IModelApp.renderSystem, this._batchType, isCanceled, tile.hasSizeMultiplier ? tile.sizeMultiplier : undefined);
         break;
 
       case TileIO.Format.Pnts:
@@ -777,7 +770,15 @@ function bisectRange2d(range: Range3d, takeUpper: boolean): void {
 
 /** @hidden */
 export class IModelTileLoader extends TileLoader {
-  constructor(private _iModel: IModelConnection, private _type: BatchType) { super(); }
+  private _iModel: IModelConnection;
+  private _type: BatchType;
+  protected get _batchType() { return this._type; }
+
+  public constructor(iModel: IModelConnection, batchType: BatchType) {
+    super();
+    this._iModel = iModel;
+    this._type = batchType;
+  }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public tileRequiresLoading(params: Tile.Params): boolean { return 0 !== params.maximumSize; }
@@ -845,17 +846,8 @@ export class IModelTileLoader extends TileLoader {
     return kids;
   }
 
-  public async loadTileContents(missingTiles: Tile[]): Promise<void> {
-    for (const tile of missingTiles) {
-      assert(tile.isNotLoaded);
-      tile.setIsQueued();
-      this._iModel.tiles.getTileContent(tile.root.id, tile.contentId).then((content: Uint8Array) => {
-        if (tile.isQueued)
-          this.loadGraphics(tile, content, this._type);
-      }).catch((_err: any) => {
-        tile.setNotFound();
-      });
-    }
+  public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
+    return this._iModel.tiles.getTileContent(tile.root.id, tile.contentId);
   }
 }
 

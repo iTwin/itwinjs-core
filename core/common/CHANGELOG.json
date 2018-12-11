@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.176.0",
+      "tag": "@bentley/imodeljs-common_v0.176.0",
+      "date": "Mon, 10 Dec 2018 21:19:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "New signature for RpcInterface.forward"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.175.0",
+      "tag": "@bentley/imodeljs-common_v0.175.0",
+      "date": "Mon, 10 Dec 2018 17:08:55 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.174.0",
       "tag": "@bentley/imodeljs-common_v0.174.0",
       "date": "Mon, 10 Dec 2018 13:24:09 GMT",

@@ -2,6 +2,39 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.176.0",
+      "tag": "@bentley/imodeljs-frontend_v0.176.0",
+      "date": "Mon, 10 Dec 2018 21:19:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Move cursors and sprites to separate directories"
+          },
+          {
+            "comment": "Fix bug in which the frustum of a spatial view was always expanded to include the ground plane even if the ground plane was not displayed."
+          },
+          {
+            "comment": "Ignore 2d models in model selectors."
+          },
+          {
+            "comment": "Add tracking of active + pending tile requests."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.175.0",
+      "tag": "@bentley/imodeljs-frontend_v0.175.0",
+      "date": "Mon, 10 Dec 2018 17:08:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "route map tiles over https"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.174.0",
       "tag": "@bentley/imodeljs-frontend_v0.174.0",
       "date": "Mon, 10 Dec 2018 13:24:09 GMT",

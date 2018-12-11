@@ -10,6 +10,7 @@ import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/be
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
 import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, getArrayBuffer, getJson, Config } from "@bentley/imodeljs-clients";
 import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
+import { TileRequest } from "./TileRequest";
 import { IModelApp } from "../IModelApp";
 
 /** @hidden */
@@ -107,20 +108,12 @@ class RealityModelTileLoader extends TileLoader {
 
     return props;
   }
-  public async loadTileContents(missingArray: Tile[]): Promise<void> {
-    await Promise.all(missingArray.map(async (missingTile) => {
-      assert(missingTile.isNotLoaded);
-      if (missingTile.isNotLoaded) {
-        const foundChild = await this.findTileInJson(this._tree.tilesetJson, missingTile.contentId, "");
-        if (foundChild !== undefined) {
-          missingTile.setIsQueued();
-          const content = await this._tree.client.getTileContent(foundChild.json.content.url);
-          if (content !== undefined) {
-            this.loadGraphics(missingTile, content);
-          }
-        }
-      }
-    }));
+  public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
+    const foundChild = await this.findTileInJson(this._tree.tilesetJson, tile.contentId, "");
+    if (undefined === foundChild)
+      return undefined;
+
+    return this._tree.client.getTileContent(foundChild.json.content.url);
   }
 
   private async findTileInJson(tilesetJson: any, id: string, parentId: string): Promise<FindChildResult | undefined> {

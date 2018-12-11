@@ -145,6 +145,7 @@ export declare class NativeDgnDb {
   public setIModelDb(iModelDb?: IModelDb): void;
   public startCreateChangeSet(): ErrorStatusOrResult<ChangeSetStatus, string>;
   public updateElement(elemProps: string): IModelStatus;
+  public updateElementAspect(aspectProps: string): IModelStatus;
   public updateIModelProps(props: string): void;
   public updateLinkTableRelationship(props: string): DbResult;
   public updateModel(modelProps: string): IModelStatus;
