@@ -42,7 +42,7 @@ describe("WidgetDef", () => {
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
     expect(widgetDef.isVisible).to.eq(true);
-    expect(widgetDef.isPressed).to.eq(false);
+    expect(widgetDef.isActive).to.eq(false);
     expect(widgetDef.isFloating).to.eq(false);
     expect(widgetDef.priority).to.eq(100);
     expect(widgetDef.featureId).to.eq("FeatureId");
@@ -90,7 +90,7 @@ describe("WidgetDef", () => {
     widgetDef.setWidgetState(WidgetState.Open);
 
     expect(widgetDef.isVisible).to.eq(true);
-    expect(widgetDef.isPressed).to.eq(true);
+    expect(widgetDef.isActive).to.eq(true);
     expect(widgetDef.canOpen()).to.be.true;
   });
 

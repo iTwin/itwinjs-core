@@ -7,10 +7,11 @@
 import * as React from "react";
 
 import { ActionButtonItemDef } from "./Item";
-import { ItemDefBase } from "./ItemDefBase";
-import { GroupItemProps, AnyItemDef } from "./ItemProps";
+import { ItemDefBase, BaseItemState } from "./ItemDefBase";
+import { GroupButtonProps, AnyItemDef } from "./ItemProps";
 import { Icon } from "./IconComponent";
 import { ItemList, ItemMap } from "./ItemMap";
+import { SyncUiEventDispatcher, SyncUiEventArgs } from "../SyncUiEventDispatcher";
 
 import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn,
@@ -31,7 +32,7 @@ export class GroupItemDef extends ActionButtonItemDef {
   private _itemList!: ItemList;
   private _itemMap!: ItemMap;
 
-  constructor(groupItemProps: GroupItemProps) {
+  constructor(groupItemProps: GroupButtonProps) {
     super(groupItemProps);
 
     this.groupId = (groupItemProps.groupId !== undefined) ? groupItemProps.groupId : "";
@@ -123,14 +124,13 @@ interface Props {
   groupItemDef: GroupItemDef;
 }
 
-interface State {
+interface State extends BaseItemState {
   groupItemDef: GroupItemDef;
   trayId: string;
   backTrays: ReadonlyArray<string>;
   trays: Map<string, ToolGroupTray>;
   history: History<HistoryItem>;
   isExtended: boolean;
-  isToolGroupOpen: boolean;
 }
 
 /** Group Item React component.
@@ -139,11 +139,38 @@ class GroupItem extends React.Component<Props, State> {
 
   /** @hidden */
   public readonly state: Readonly<State>;
+  private _componentUnmounting = false;
 
   constructor(props: Props, context?: any) {
     super(props, context);
 
     this.state = GroupItem.processGroupItemDef(this.props.groupItemDef);
+  }
+
+  private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+    if (this._componentUnmounting) return;
+
+    let refreshState = false;
+    let newState: State = { ...this.state };
+
+    if (this.props.groupItemDef.stateSyncIds && this.props.groupItemDef.stateSyncIds.length > 0)
+      refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
+    if (refreshState) {
+      if (this.props.groupItemDef.stateFunc)
+        newState = this.props.groupItemDef.stateFunc(newState) as State;
+      if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
+        this.setState((_prevState) => ({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible, isPressed: newState.isPressed }));
+      }
+    }
+  }
+
+  public componentDidMount() {
+    SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
+  }
+
+  public componentWillUnmount() {
+    this._componentUnmounting = true;
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
   private static processGroupItemDef(groupItemDef: GroupItemDef): State {
@@ -178,7 +205,9 @@ class GroupItem extends React.Component<Props, State> {
       groupItemDef,
       history: [],
       isExtended: false,
-      isToolGroupOpen: false,
+      isPressed: groupItemDef.isPressed,
+      isEnabled: groupItemDef.isEnabled,
+      isVisible: groupItemDef.isVisible,
       trayId,
       backTrays: [],
       trays,
@@ -204,6 +233,9 @@ class GroupItem extends React.Component<Props, State> {
   }
 
   public render(): React.ReactNode {
+    if (!this.state.isVisible)
+      return null;
+
     const icon = <Icon iconSpec={this.props.groupItemDef.iconSpec} />;
 
     return (
@@ -215,19 +247,20 @@ class GroupItem extends React.Component<Props, State> {
         history={this.getHistoryTray()}
       >
         <Item
+          isDisabled={!this.state.isEnabled}
           title={this.state.groupItemDef.label}
-          onClick={() => this._toggleIsToolGroupOpen()}
+          onClick={() => this._toggleGroupButton()}
           icon={icon}
         />
       </ExpandableItem>
     );
   }
 
-  private _toggleIsToolGroupOpen = () => {
+  private _toggleGroupButton = () => {
     this.setState((_prevState) => ({
       ..._prevState,
       isExtended: false,
-      isToolGroupOpen: !_prevState.isToolGroupOpen,
+      isPressed: !_prevState.isPressed,
     }));
   }
 
@@ -243,7 +276,7 @@ class GroupItem extends React.Component<Props, State> {
         return {
           ...prevState,
           isExpanded: false,
-          isToolGroupOpen: false,
+          isPressed: false,
           history: DefaultHistoryManager.addItem(key, item, prevState.history),
         };
       },
@@ -273,7 +306,7 @@ class GroupItem extends React.Component<Props, State> {
   }
 
   private getHistoryTray(): React.ReactNode {
-    if (this.state.isToolGroupOpen)
+    if (this.state.isPressed)
       return undefined;
     if (this.state.history.length <= 0)
       return undefined;
@@ -305,7 +338,7 @@ class GroupItem extends React.Component<Props, State> {
   }
 
   private getGroupTray(): React.ReactNode {
-    if (!this.state.isToolGroupOpen)
+    if (!this.state.isPressed)
       return undefined;
 
     const tray = this._tray;
@@ -379,47 +412,18 @@ class GroupItem extends React.Component<Props, State> {
   }
 }
 
-/** Group Button React component state.
+/** Group Button Function component that generates a [[GroupItem]]
  */
-export interface GroupItemState {
-  groupItemProps: GroupItemProps;
-  groupItemDef: GroupItemDef;
-}
+// tslint:disable-next-line:variable-name
+export const GroupButton: React.FunctionComponent<GroupButtonProps> = (props) => {
+  const groupItemDef = new GroupItemDef(props);
+  groupItemDef.resolveItems();
 
-/** Group Button React component.
- */
-export class GroupButton extends React.Component<GroupItemProps, GroupItemState> {
-
-  /** @hidden */
-  public readonly state: Readonly<GroupItemState>;
-
-  constructor(props: GroupItemProps, context?: any) {
-    super(props, context);
-
-    const groupItemDef = new GroupItemDef(props);
-    this.state = { groupItemDef, groupItemProps: props };
-  }
-
-  public render(): React.ReactNode {
-    if (!this.state.groupItemDef || !this.state.groupItemDef.resolveItems)
-      return null;
-
-    this.state.groupItemDef.resolveItems();
-
-    return (
-      <GroupItem
-        {...this.props}
-        key={this.state.groupItemDef.id}
-        groupItemDef={this.state.groupItemDef}
-      />
-    );
-  }
-
-  public static getDerivedStateFromProps(newProps: GroupItemProps, state: GroupItemState) {
-    if (newProps !== state.groupItemProps) {
-      return { groupItemProps: new GroupItemDef(newProps), groupItemDef: newProps };
-    }
-
-    return null;
-  }
-}
+  return (
+    <GroupItem
+      {...props}
+      key={groupItemDef.id}
+      groupItemDef={groupItemDef}
+    />
+  );
+};

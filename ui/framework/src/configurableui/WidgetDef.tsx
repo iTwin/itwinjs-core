@@ -118,8 +118,7 @@ export class WidgetDef extends ItemDefBase {
   public isStatusBar: boolean = false;
   public stateChanged: boolean = false;
   public fillZone: boolean = false;
-  public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
-  public stateSyncIds: string[] = [];
+  public stateFunc?: (state: Readonly<WidgetDefState>) => WidgetDefState;  // override stateFunc from ItemDefBase to use widget-specific properties
   public widgetType: WidgetType = WidgetType.Rectangular;
   public applicationData?: any;
 
@@ -127,28 +126,51 @@ export class WidgetDef extends ItemDefBase {
   private _widgetControl!: WidgetControl;
   public isFloating: boolean = false;
 
-  public clearIsPressed(): void {  // call from zone processing to ensure only a single non-floating widget is active
-    this.isPressed = false;
-  }
-
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
     let refreshState = false;
 
     if (this.stateSyncIds && this.stateSyncIds.length > 0)
       refreshState = this.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
     if (refreshState) {
-      let newState: WidgetDefState = {
-        isVisible: this.isVisible,
-        isEnabled: this.isEnabled,
-        isActive: this.isPressed,
-        isFloating: this.isFloating,
-      };
-
-      if (this.stateFunc)
+      if (this.stateFunc) {
+        let newState: WidgetDefState = {
+          isVisible: this.isVisible,
+          isEnabled: this.isEnabled,
+          isActive: this.isActive,
+          isFloating: this.isFloating,
+        };
         newState = this.stateFunc(newState);
+        this.applyStateChanges(newState);
+      }
+    }
+  }
 
-      if (undefined !== newState.widgetState)
-        this.setWidgetState(newState.widgetState);
+  private applyStateChanges(newState: WidgetDefState): void {
+    // if widgetState is defined then use it, else use individual properties
+    if (undefined !== newState.widgetState) {
+      this.setWidgetState(newState.widgetState);
+      return;
+    }
+
+    let stateChanged = false;
+    if (undefined !== newState.isVisible && newState.isVisible !== this.isVisible) {
+      stateChanged = true;
+      this.isVisible = newState.isVisible;
+    }
+
+    if (undefined !== newState.isActive && newState.isActive !== this.isActive) {
+      stateChanged = true;
+      this.isActive = newState.isActive;
+    }
+
+    if (undefined !== newState.isFloating && newState.isFloating !== this.isFloating) {
+      stateChanged = true;
+      this.isFloating = newState.isFloating;
+    }
+
+    if (stateChanged) {
+      this.stateChanged = true;
+      FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this });
     }
   }
 
@@ -194,7 +216,7 @@ export class WidgetDef extends ItemDefBase {
       else
         this.isVisible = true;
 
-      this.isPressed = false;
+      this.isActive = false;
 
       if (widgetProps.isFloating !== undefined)
         this.isFloating = widgetProps.isFloating;
@@ -259,17 +281,17 @@ export class WidgetDef extends ItemDefBase {
 
     switch (state) {
       case WidgetState.Open:
-        if (!this.isVisible || !this.isPressed) {
+        if (!this.isVisible || !this.isActive) {
           stateChanged = true;
           this.isVisible = true;
-          this.isPressed = true;
+          this.isActive = true;
         }
         break;
       case WidgetState.Close:
-        if (!this.isVisible || this.isPressed) {
+        if (!this.isVisible || this.isActive) {
           stateChanged = true;
           this.isVisible = true;
-          this.isPressed = false;
+          this.isActive = false;
         }
         break;
       case WidgetState.Hidden:
@@ -298,15 +320,13 @@ export class WidgetDef extends ItemDefBase {
   }
 
   public setWidgetState(state: WidgetState): void {
-    this.stateChanged = this.applyWidgetState(state);
-    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this });
-  }
-
-  public canShow(): boolean {
-    return (this.isVisible);
+    if (this.applyWidgetState(state)) {
+      this.stateChanged = true;
+      FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this });
+    }
   }
 
   public canOpen(): boolean {
-    return (this.isPressed || this.isFloating);
+    return (this.isActive || this.isFloating);
   }
 }

@@ -100,6 +100,11 @@ export class FrontstageLaunchBackstageItemDef extends BackstageItemDef {
   public get isActive(): boolean {
     return FrontstageManager.activeFrontstageId === this._frontstageId;
   }
+
+  public set isActive(_: boolean) {
+    // do nothing - needed because subclassing from ItemDefBase
+  }
+
 }
 
 /** Command launch Backstage item definition.

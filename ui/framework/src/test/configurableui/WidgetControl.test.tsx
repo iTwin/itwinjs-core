@@ -48,10 +48,10 @@ describe("WidgetControl", () => {
 
     expect(widgetControl).to.not.be.undefined;
     if (widgetControl) {
-      expect(widgetDef.isPressed).to.eq(false);
+      expect(widgetDef.isActive).to.eq(false);
       widgetControl.setWidgetState(WidgetState.Open);
       expect(widgetDef.isVisible).to.eq(true);
-      expect(widgetDef.isPressed).to.eq(true);
+      expect(widgetDef.isActive).to.eq(true);
     }
   });
 
