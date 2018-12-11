@@ -9,7 +9,7 @@ import * as React from "react";
 import { AutoSizer, Size, List as VirtualizedList, ListRowProps as VirtualizedListRowProps } from "react-virtualized";
 // bentley imports
 import { using } from "@bentley/bentleyjs-core";
-import { Tree as TreeBase, TreeNodePlaceholder, shallowDiffers } from "@bentley/ui-core";
+import { Tree as TreeBase, TreeNodePlaceholder, shallowDiffers, CheckBoxState } from "@bentley/ui-core";
 // tree-related imports
 import {
   BeInspireTree, BeInspireTreeNode, BeInspireTreeNodes, BeInspireTreeNodeConfig,
@@ -89,8 +89,8 @@ export interface TreeProps {
   /** @hidden */
   ignoreEditorBlur?: boolean;
 
-  checkboxEnabled?: true;
-  onCheckboxClick?: (label: string) => void;
+  onCheckboxClick?: (node: BeInspireTreeNode<TreeNodeItem>) => void;
+  checkboxesEnabled?: true;
   isChecked?: (label: string) => boolean;
 
   /** Custom property value renderer manager */
@@ -431,7 +431,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
         },
       },
     };
-    if (item.displayCheckBox && item.isCheckBoxEnabled && item.checkBoxState)
+    if (item.checkBoxState === CheckBoxState.On)
       node.itree!.state!.checked = true;
     if (item.icon)
       node.itree!.icon = item.icon;
@@ -538,11 +538,27 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
   // tslint:disable-next-line:naming-convention
   private renderLabelComponent = async ({ node, highlightProps, cellEditorProps, valueRendererManager }: RenderNodeLabelProps): Promise<React.ReactNode> => {
+    const labelForeColor = node.payload.labelForeColor ? node.payload.labelForeColor.toString(16) : undefined;
+    const labelBackColor = node.payload.labelBackColor ? node.payload.labelBackColor.toString(16) : undefined;
+    const labelBold = node.payload.labelBold ? "bold" : undefined;
+    const labelItalic = node.payload.labelItalic ? "italic" : undefined;
+
+    const labelStyle: React.CSSProperties = {
+      color: labelForeColor,
+      backgroundColor: labelBackColor,
+      fontWeight: labelBold,
+      fontStyle: labelItalic,
+    };
+
     if (cellEditorProps) {
       if (cellEditorProps.cellEditorState.active && node === cellEditorProps.cellEditorState.node) {
         const record = new CellEditorPropertyRecord(node.text);
-        return <EditorContainer propertyRecord={record} title={record.description}
-          onCommit={cellEditorProps.onCellEditCommit} onCancel={cellEditorProps.onCellEditCancel} ignoreEditorBlur={cellEditorProps.ignoreEditorBlur} />;
+        return (
+          <span style={labelStyle}>
+            <EditorContainer propertyRecord={record} title={record.description}
+              onCommit={cellEditorProps.onCellEditCommit} onCancel={cellEditorProps.onCellEditCancel} ignoreEditorBlur={cellEditorProps.ignoreEditorBlur} />
+          </span>
+        );
       }
     }
 
@@ -557,13 +573,27 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     if (!valueRendererManager)
       valueRendererManager = PropertyValueRendererManager.defaultManager;
 
-    return valueRendererManager.render(nodeRecord, context);
+    return (
+      <span style={labelStyle}>
+        {await valueRendererManager.render(nodeRecord, context)}
+      </span>
+    );
+  }
+
+  private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>) => {
+    if (this.props.onCheckboxClick)
+      this.props.onCheckboxClick(node);
   }
 
   // tslint:disable-next-line:naming-convention
   private renderNode = (node: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps): React.ReactNode => {
     return (
-      <TreeNode key={node.id} {...props} />
+      <TreeNode
+        key={node.id}
+        checkboxState={node.payload.checkBoxState}
+        isCheckboxEnabled={node.payload.isCheckBoxEnabled}
+        {...props}
+      />
     );
   }
 
@@ -594,9 +624,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     return {
       node,
       highlightProps: state.highlightingEngine ? state.highlightingEngine.createRenderProps(node) : undefined,
-      checkboxEnabled: props.checkboxEnabled,
-      onCheckboxClick: props.onCheckboxClick,
-      isChecked: props.isChecked,
+      isCheckboxEnabled: props.checkboxesEnabled,
+      onCheckboxClick: this._onCheckboxClick,
+      checkboxState: node.payload.checkBoxState,
       renderLabel: this.renderLabelComponent,
       onClick: (e: React.MouseEvent) => {
         onNodeSelectionChanged(e.shiftKey, e.ctrlKey);

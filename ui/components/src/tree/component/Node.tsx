@@ -4,7 +4,7 @@ import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
 import { BeInspireTreeNode } from "./BeInspireTree";
 import { TreeNodeItem } from "../TreeDataProvider";
 import { HighlightableTreeNodeProps } from "../HighlightingEngine";
-import { TreeNode as TreeNodeBase, TreeNodePlaceholder, shallowDiffers } from "@bentley/ui-core";
+import { TreeNode as TreeNodeBase, TreeNodePlaceholder, shallowDiffers, CheckBoxState } from "@bentley/ui-core";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 
 /**
@@ -25,9 +25,9 @@ export interface TreeNodeCellEditorProps {
 export interface TreeNodeProps {
   node: BeInspireTreeNode<TreeNodeItem>;
   highlightProps?: HighlightableTreeNodeProps;
-  checkboxEnabled?: boolean;
-  onCheckboxClick?: (label: string) => void;
-  isChecked?: (label: string) => boolean;
+  isCheckboxEnabled?: boolean;
+  onCheckboxClick?: (node: BeInspireTreeNode<TreeNodeItem>) => void;
+  checkboxState?: CheckBoxState;
   cellEditorProps?: TreeNodeCellEditorProps;
   /** A function that renders node label. Both synchronous and asynchronous can be handled */
   renderLabel: (props: RenderNodeLabelProps) => React.ReactNode | Promise<React.ReactNode>;
@@ -152,9 +152,9 @@ export class TreeNode extends React.Component<TreeNodeProps, TreeNodeState> {
         isLeaf={!this.props.node.hasOrWillHaveChildren()}
         label={this.isPromise(this._label) ? this.state.renderedLabel : this._label}
         icon={this.props.node.itree && this.props.node.itree.icon ? <span className={this.props.node.itree.icon} /> : undefined}
-        checkboxEnabled={this.props.checkboxEnabled}
-        onCheckboxClick={this.props.onCheckboxClick}
-        isChecked={this.props.isChecked}
+        isCheckboxEnabled={this.props.isCheckboxEnabled}
+        onCheckboxClick={this._onCheckboxClick}
+        checkboxState={this.props.checkboxState}
         level={this.props.node.getParents().length}
         onClick={this.props.onClick}
         onMouseMove={this.props.onMouseMove}
@@ -162,5 +162,10 @@ export class TreeNode extends React.Component<TreeNodeProps, TreeNodeState> {
         onClickExpansionToggle={() => this.props.node.toggleCollapse()}
       />
     );
+  }
+
+  private _onCheckboxClick = () => {
+    if (this.props.onCheckboxClick)
+      this.props.onCheckboxClick(this.props.node);
   }
 }

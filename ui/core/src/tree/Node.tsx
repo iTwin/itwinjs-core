@@ -9,7 +9,8 @@ import * as React from "react";
 
 import ExpansionToggle from "./ExpansionToggle";
 import "./Node.scss";
-import { CheckListBox, CheckListBoxItem } from "../checklistbox/CheckListBox";
+import { Checkbox } from "@bentley/bwc";
+import { CheckBoxState } from "../enums/CheckBoxState";
 
 /** Number of pixels the node gets offset per each hierarchy level */
 export const LEVEL_OFFSET = 20;
@@ -19,9 +20,10 @@ export interface NodeProps {
   label: React.ReactNode;
   level: number;
   icon?: React.ReactChild;
-  checkboxEnabled?: boolean;
-  onCheckboxClick?: (label: string) => void;
-  isChecked?: (label: string) => boolean;
+  isCheckboxEnabled?: boolean;
+  checkboxState?: CheckBoxState;
+  onCheckboxClick?: () => void;
+  isChecked?: boolean;
   isLeaf?: boolean;
   isLoading?: boolean;
   isExpanded?: boolean;
@@ -52,17 +54,12 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
       this.props.className);
     const offset = this.props.level * LEVEL_OFFSET;
     const loader = this.props.isLoading ? (<div className="loader"><i></i><i></i><i></i><i></i><i></i><i></i></div>) : undefined;
-    const checkbox = this.props.checkboxEnabled ?
-      <CheckListBox>
-        {
-          this.props.onCheckboxClick && this.props.isChecked ?
-            <CheckListBoxItem
-              label=""
-              checked={this.props.isChecked(this.props.label as string)}
-              onClick={() => { if (this.props.onCheckboxClick) this.props.onCheckboxClick(this.props.label as string); }} /> :
-            <CheckListBoxItem label="" />
-        }
-      </CheckListBox> :
+    const checkbox = this.props.isCheckboxEnabled ?
+      <Checkbox
+        label=""
+        checked={this.props.checkboxState === CheckBoxState.On ? true : false}
+        onClick={this.props.onCheckboxClick}
+      /> :
       undefined;
     const icon = this.props.icon ? (<div className="icon">{this.props.icon}</div>) : undefined;
     const toggle = (this.props.isLoading || this.props.isLeaf) ? undefined : (

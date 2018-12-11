@@ -14,13 +14,14 @@ import { UiFramework } from "../UiFramework";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { WidgetControl } from "../configurableui/WidgetControl";
-import { Tree, FilteringInput, TreeNodeItem, PageOptions, DelayLoadedTreeNodeItem, TreeDataChangesListener } from "@bentley/ui-components";
+import { Tree, FilteringInput, TreeNodeItem, PageOptions, DelayLoadedTreeNodeItem, TreeDataChangesListener, SelectionMode } from "@bentley/ui-components";
 import "./ModelSelector.scss";
 import { PresentationTreeDataProvider, treeWithUnifiedSelection, treeWithFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { RegisteredRuleset, NodeKey, NodePathElement } from "@bentley/presentation-common";
 import { CheckBoxState } from "@bentley/ui-core";
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeInspireTreeNode } from "../../../components/lib/tree/component/BeInspireTree";
 
 /** Model Group used by [[ModelSelectorWidget]] */
 export interface ModelGroup {
@@ -34,7 +35,7 @@ export interface ModelGroup {
 
 /** Properties for the [[ModelSelectorWidget]] component */
 export interface ModelSelectorWidgetProps {
-  imodel: IModelConnection;
+  iModelConnection: IModelConnection;
   allViewports?: boolean;
 }
 
@@ -51,12 +52,18 @@ export interface ModelSelectorWidgetState {
     filtering?: boolean;
     activeMatchIndex?: number;
     matchesCount?: number;
+    selectedNodes?: string[];
   };
 }
 
+/**
+ * Implementation of a PresentationTreeDataProvider that manages checkbox display,
+ * bolding, and highlighting selections.
+ */
 class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
   private _baseProvider: PresentationTreeDataProvider;
 
+  /** @hidden */
   constructor(imodel: IModelConnection, rulesetId: string) {
     this._baseProvider = new PresentationTreeDataProvider(imodel, rulesetId);
   }
@@ -67,6 +74,7 @@ class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
   /** [[IModelConnection]] used by this data provider */
   public get connection(): IModelConnection { return this._baseProvider.connection; }
 
+  /** Listener for tree node changes */
   public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();
 
   /**
@@ -80,19 +88,36 @@ class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
   /**
    * Returns filtered node paths.
    * @param filter Filter.
+   * @returns Filtered NodePaths
    */
   public getFilteredNodePaths = async (filter: string): Promise<NodePathElement[]> => {
     return this._baseProvider.getFilteredNodePaths(filter);
   }
 
+  /**
+   * Provides count for number of nodes under parent node
+   * @param parentNode Node to count children for
+   * @returns number of children under parentNode
+   */
   public getNodesCount = _.memoize(async (parentNode?: TreeNodeItem): Promise<number> => {
     return this._baseProvider.getNodesCount(parentNode);
   });
 
+  /**
+   * Modifies and returns nodes to be displayed.
+   * @param parentNode The parent node for all nodes to be returned
+   * @param pageOptions Paging options
+   * @returns TreeNodeItems to be displayed
+   */
   public getNodes = _.memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> => {
     const nodes = await this._baseProvider.getNodes(parentNode, pageOptions);
-    nodes.forEach((n) => {
-      n.checkBoxState = CheckBoxState.On;
+    nodes.forEach((n: DelayLoadedTreeNodeItem) => {
+      n.displayCheckBox = true;
+
+      if (n.checkBoxState && n.checkBoxState === CheckBoxState.On)
+        n.labelBold = true;
+      else
+        n.labelBold = false;
     });
     return nodes;
   });
@@ -104,7 +129,7 @@ export class ModelSelectorWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactElement = <ModelSelectorWidget imodel={options.iModelConnection} />;
+    this.reactElement = <ModelSelectorWidget iModelConnection={options.iModelConnection} />;
   }
 }
 
@@ -139,15 +164,18 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         this.setState({
           treeInfo: {
             ruleset,
-            dataProvider: new ModelSelectorDataProvider(this.props.imodel, ruleset.id),
+            dataProvider: new ModelSelectorDataProvider(this.props.iModelConnection, ruleset.id),
             filter: "",
             filtering: false,
             prevProps: this.props,
             activeMatchIndex: 0,
             matchesCount: 0,
+            selectedNodes: [],
           },
           expand: true,
         });
+        // tslint:disable:no-floating-promises
+        this._onSetEnableAll(true);
       });
 
     Presentation.presentation.rulesets().add(require("../../rulesets/Categories")) // tslint:disable-line:no-floating-promises
@@ -155,6 +183,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         if (!this._isMounted)
           return;
         this._categoryRuleset = ruleset;
+        // tslint:disable:no-floating-promises
+        this._onSetEnableAll(true);
       });
   }
 
@@ -214,7 +244,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this.setState({
       treeInfo: {
         ruleset: activeRuleset,
-        dataProvider: new ModelSelectorDataProvider(this.props.imodel, activeRuleset.id),
+        dataProvider: new ModelSelectorDataProvider(this.props.iModelConnection, activeRuleset.id),
         filter: this.state.treeInfo ? this.state.treeInfo.filter : "",
         filtering: this.state.treeInfo ? this.state.treeInfo.filtering : false,
         activeMatchIndex: this.state.treeInfo ? this.state.treeInfo.activeMatchIndex : 0,
@@ -228,11 +258,26 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   /** enable or disable all items */
   private _onSetEnableAll = async (enable: boolean) => {
     for (const item of this.state.activeGroup.items) {
+      item.enabled = enable;
       this.state.activeGroup.setEnabled(item, enable);
     }
 
     this.state.activeGroup.updateState();
-    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent();
+
+    const nodes = await this.state.treeInfo!.dataProvider.getNodes();
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(nodes);
+  }
+
+  /** Invert display on all items */
+  private _onInvertAll = async () => {
+    for (const item of this.state.activeGroup.items) {
+      this.state.activeGroup.setEnabled(item, !item.enabled);
+      item.enabled = !item.enabled;
+    }
+    this.state.activeGroup.updateState();
+
+    const nodes = await this.state.treeInfo!.dataProvider.getNodes();
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(nodes);
   }
 
   private async _updateModelsWithViewport(vp: Viewport) {
@@ -244,8 +289,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     const modelQueryParams: ModelQueryParams = { from: SpatialModelState.getClassFullName(), wantPrivate: false };
     let curModelProps: ModelProps[] = new Array<ModelProps>();
 
-    if (this.props.imodel)
-      curModelProps = await this.props.imodel.models.queryProps(modelQueryParams);
+    if (this.props.iModelConnection)
+      curModelProps = await this.props.iModelConnection.models.queryProps(modelQueryParams);
 
     const models: ListItem[] = [];
     for (const modelProps of curModelProps) {
@@ -271,8 +316,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM " + (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory");
     let rows = [];
 
-    if (this.props.imodel)
-      rows = await this.props.imodel.executeQuery(ecsql);
+    if (this.props.iModelConnection)
+      rows = await this.props.iModelConnection.executeQuery(ecsql);
 
     const categories: ListItem[] = [];
     for (const row of rows) {
@@ -296,6 +341,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (!IModelApp.viewManager)
       return;
 
+    item.enabled = checked;
     IModelApp.viewManager.forEachViewport((vp: Viewport) => {
       if (!(vp.view instanceof SpatialViewState))
         return;
@@ -312,6 +358,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (!IModelApp.viewManager || !IModelApp.viewManager.selectedView)
       return;
 
+    item.enabled = checked;
     const updateViewport = (vp: Viewport) => {
       // Only act on viewports that are both 3D or both 2D. Important if we have multiple viewports opened and we
       // are using 'allViewports' property
@@ -432,19 +479,56 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
   }
 
+  private _onNodeSelected = (items: TreeNodeItem[]) => {
+    items.forEach((item: TreeNodeItem) => {
+      item.checkBoxState = CheckBoxState.On;
+      this._setItemState(item, true);
+    });
+    return true;
+  }
+
+  private _onNodesDeselected = (items: TreeNodeItem[]) => {
+    items.forEach((item: TreeNodeItem) => {
+      item.checkBoxState = CheckBoxState.Off;
+      this._setItemState(item, false);
+    });
+    return true;
+  }
+
   /** enable or disable a single item */
-  private _onCheckboxClick = (label: string) => {
-    const item = this._getItem(label);
-    item.enabled = !item.enabled;
-    this.state.activeGroup.setEnabled(item, item.enabled);
+  private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>) => {
+    this._setItemState(node.payload);
+  }
+
+  private _setItemState = (treeItem: TreeNodeItem, enabled?: boolean) => {
+    const item = this._getItem(treeItem.label);
+
+    if (enabled || treeItem.checkBoxState === CheckBoxState.On) {
+      this._selectLabel(treeItem);
+      this.state.activeGroup.setEnabled(item, true);
+    } else {
+      this._deselectLabel(treeItem);
+      this.state.activeGroup.setEnabled(item, false);
+    }
+
     this.setState({ activeGroup: this.state.activeGroup });
   }
 
-  private _isCheckboxChecked = (label: string) => {
-    const item = this._getItem(label);
-    if (item && item.enabled)
-      return true;
-    return false;
+  private _selectLabel = (treeItem: TreeNodeItem) => {
+    if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
+      this.state.treeInfo.selectedNodes.push(treeItem.id);
+      treeItem.checkBoxState = CheckBoxState.On;
+    }
+  }
+
+  private _deselectLabel = (treeItem: TreeNodeItem) => {
+    if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
+      const index = this.state.treeInfo.selectedNodes.indexOf(treeItem.id);
+      if (index > -1) {
+        this.state.treeInfo.selectedNodes.splice(index, 1);
+        treeItem.checkBoxState = CheckBoxState.Off;
+      }
+    }
   }
 
   private _getItem = (label: string): ListItem => {
@@ -461,15 +545,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         break;
     }
 
-    let selectedItem = items[0];
-    items.forEach((item) => {
-      if (label === item.name) {
-        selectedItem = item;
-        return;
-      }
+    const checkedItem = items.find((item: ListItem): boolean => {
+      return label === item.name;
     });
 
-    return selectedItem;
+    return checkedItem ? checkedItem : items[0];
   }
 
   /** @hidden */
@@ -486,6 +566,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
                 this._groups.map((group: any) =>
                   (
                     <li
+                      key={group.id}
                       className={group.label === this.state.activeGroup.label ? activeClassName : ""}
                       onClick={this._onExpand.bind(this, group)}>
                       <a>{group.label}</a>
@@ -509,21 +590,24 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
               <div className="modelselector-buttons">
                 <span className="icon icon-visibility" title={UiFramework.i18n.translate("UiFramework:pickerButtons.all")} onClick={this._onSetEnableAll.bind(this, true)} />
                 <span className="icon icon-visibility-hide" title={UiFramework.i18n.translate("UiFramework:pickerButtons.none")} onClick={this._onSetEnableAll.bind(this, false)} />
-                {/* <span className="icon icon-placeholder" title={UiFramework.i18n.translate("UiFramework:pickerButtons.invert")} /> */}
+                <span className="icon icon-visibility-invert" title={UiFramework.i18n.translate("UiFramework:pickerButtons.invert")} onClick={this._onInvertAll.bind(this)} />
               </div>
             </div>
             <div style={{ height: "100%" }}>
               {
-                (this.props.imodel && this.state.treeInfo.dataProvider) ?
+                (this.props.iModelConnection) ?
                   <CategoryModelTree
                     dataProvider={this.state.treeInfo.dataProvider}
                     filter={this.state.treeInfo.filter}
                     onFilterApplied={this.onFilterApplied}
                     onMatchesCounted={this._onMatchesCounted}
                     activeMatchIndex={this.state.treeInfo.activeMatchIndex}
-                    checkboxEnabled={true}
+                    selectedNodes={this.state.treeInfo.selectedNodes}
+                    selectionMode={SelectionMode.Multiple}
+                    onNodesSelected={this._onNodeSelected}
+                    onNodesDeselected={this._onNodesDeselected}
                     onCheckboxClick={this._onCheckboxClick}
-                    isChecked={this._isCheckboxChecked}
+                    checkboxesEnabled={true}
                   /> :
                   <div />
               }
@@ -531,7 +615,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           </div>
         </div >
       );
-
     // WIP: localize
     return "Loading...";
   }

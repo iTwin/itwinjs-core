@@ -198,5 +198,21 @@
       margin: 8px 0 4px 0;
       overflow: auto;
     }
+
+    .nz-tree-tree  {
+
+      .nz-tree-node {
+        @include bwc-text( leading );
+        padding: 5px 0;
+        background-color: $background-1;
+
+        // > .contents {
+        //  margin: 11px 0;
+        // }
+      }
+    }
+
+
+
   }
 }

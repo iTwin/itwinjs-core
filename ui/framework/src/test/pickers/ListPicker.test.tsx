@@ -54,24 +54,28 @@ describe("ListPicker", () => {
       expect(
         listPickerInstance.isSpecialItem({
           key: ListPicker.Key_All,
+          enabled: true,
         } as ListItem),
       ).to.be.true;
 
       expect(
         listPickerInstance.isSpecialItem({
           key: ListPicker.Key_Invert,
+          enabled: true,
         } as ListItem),
       ).to.be.true;
 
       expect(
         listPickerInstance.isSpecialItem({
           key: ListPicker.Key_None,
+          enabled: true,
         } as ListItem),
       ).to.be.true;
 
       expect(
         listPickerInstance.isSpecialItem({
           key: ListPicker.Key_Separator,
+          enabled: true,
         } as ListItem),
       ).to.be.true;
     });
@@ -81,6 +85,7 @@ describe("ListPicker", () => {
         listPickerInstance.isSpecialItem({
           key: "",
           type: ListItemType.Container,
+          enabled: true,
         } as ListItem),
       ).to.be.true;
     });
@@ -90,6 +95,7 @@ describe("ListPicker", () => {
         listPickerInstance.isSpecialItem({
           key: "",
           type: ListItemType.Item,
+          enabled: true,
         } as ListItem),
       ).to.be.false;
     });
