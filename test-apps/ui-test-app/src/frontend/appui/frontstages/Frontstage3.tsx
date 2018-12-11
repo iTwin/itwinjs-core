@@ -19,6 +19,7 @@ import {
   FrontstageProvider,
   FrontstageProps,
   ZoneLocation,
+  ActionItemButton,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -134,8 +135,8 @@ export class Frontstage3 extends FrontstageProvider {
         expandsTo={Direction.Bottom}
         items={
           <>
-            <ToolButton toolId={AppTools.tool1.id} iconSpec={AppTools.tool1.iconSpec!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
-            <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+            <ActionItemButton actionItem={AppTools.item1} />
+            <ActionItemButton actionItem={AppTools.item2} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
               iconSpec="icon-placeholder"

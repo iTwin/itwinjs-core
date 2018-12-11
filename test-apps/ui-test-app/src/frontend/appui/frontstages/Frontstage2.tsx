@@ -18,6 +18,7 @@ import {
   FrontstageProps,
   ContentGroup,
   ContentLayoutDef,
+  ActionItemButton,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -26,7 +27,6 @@ import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl,
 import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
 
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
-import { AppUi } from "../AppUi";
 import { AppTools } from "../../tools/ToolSpecifications";
 
 export class Frontstage2 extends FrontstageProvider {
@@ -128,8 +128,8 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool1" execute={AppUi.tool1} />
-          <ToolButton toolId="tool2" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool2" execute={AppUi.tool2} />
+          <ActionItemButton actionItem={AppTools.item1} />
+          <ActionItemButton actionItem={AppTools.item2} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconSpec="icon-placeholder"

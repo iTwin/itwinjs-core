@@ -10,7 +10,7 @@ import { I18N } from "@bentley/imodeljs-i18n";
  * Entry point for static initialization required by various
  * components used in the package.
  */
-export default class UiComponents {
+export class UiComponents {
 
   private static _i18n?: I18N;
 
@@ -33,3 +33,5 @@ export default class UiComponents {
   }
 
 }
+
+export default UiComponents;

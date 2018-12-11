@@ -16,7 +16,7 @@ import { DragDropBreadcrumbNode } from "./DragDropBreadcrumbNode";
 /**
  * Props that are injected to the HOC component.
  */
-export interface TreeDragDropProps<DragDropObject = any> {
+export interface BreadcrumbDragDropProps<DragDropObject = any> {
   dragProps?: DragSourceProps<DragDropObject>;
   dropProps?: DropTargetProps<DragDropObject>;
 }
@@ -26,9 +26,9 @@ export interface TreeDragDropProps<DragDropObject = any> {
  * breadcrumb component.
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function withDragDrop<P extends BreadcrumbProps, DragDropObject extends TreeDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & TreeDragDropProps<DragDropObject>> {
+export function withBreadcrumbDragDrop<P extends BreadcrumbProps, DragDropObject extends TreeDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & BreadcrumbDragDropProps<DragDropObject>> {
 
-  type CombinedProps = P & TreeDragDropProps<DragDropObject>;
+  type CombinedProps = P & BreadcrumbDragDropProps<DragDropObject>;
 
   // tslint:disable-next-line:variable-name
   return class WithDragAndDrop extends React.Component<CombinedProps> {
@@ -113,4 +113,4 @@ export function withDragDrop<P extends BreadcrumbProps, DragDropObject extends T
     }
   };
 }
-export default withDragDrop;
+export default withBreadcrumbDragDrop;

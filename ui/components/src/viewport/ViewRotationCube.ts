@@ -52,24 +52,27 @@ export class ViewRotationCube {
   public static readonly onViewRotationChangeEvent = new ViewRotationChangeEvent();
 
   private static handleSelectedViewportChanged(args: SelectedViewportChangedArgs): void {
-    setImmediate(() => {
-      if (args.current) {
-        ViewRotationCube.setViewMatrix(args.current);
-      }
-    });
+    if (args.current)
+      ViewRotationCube.setViewMatrix(args.current);
   }
 
   public static setCubeMatrix(rotMatrix: Matrix3d, animationTime?: number): void {
-    this.rMatrix.setFrom(rotMatrix);
-    this.onCubeRotationChangeEvent.emit({ rotMatrix, animationTime });
+    setImmediate(() => {
+      this.rMatrix.setFrom(rotMatrix);
+      this.onCubeRotationChangeEvent.emit({ rotMatrix, animationTime });
+    });
   }
 
   public static setStandardRotation(standardRotation: StandardViewId): void {
-    this.onStandardRotationChangeEvent.emit({ standardRotation });
+    setImmediate(() => {
+      this.onStandardRotationChangeEvent.emit({ standardRotation });
+    });
   }
 
   public static setViewMatrix(viewport: Viewport, animationTime?: number): void {
-    this.rMatrix.setFrom(viewport.rotation);
-    this.onViewRotationChangeEvent.emit({ viewport, animationTime });
+    setImmediate(() => {
+      this.rMatrix.setFrom(viewport.rotation);
+      this.onViewRotationChangeEvent.emit({ viewport, animationTime });
+    });
   }
 }

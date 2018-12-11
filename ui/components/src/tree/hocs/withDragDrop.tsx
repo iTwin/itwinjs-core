@@ -32,7 +32,7 @@ export interface TreeDragDropProps<DragDropObject = any> {
  * tree component.
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function withDragDrop<P extends TreeProps, DragDropObject extends TreeDragDropType>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeDragDropProps<DragDropObject>> {
+export function withTreeDragDrop<P extends TreeProps, DragDropObject extends TreeDragDropType>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeDragDropProps<DragDropObject>> {
 
   type CombinedProps = P & TreeDragDropProps<DragDropObject>;
 
@@ -178,4 +178,4 @@ export function withDragDrop<P extends TreeProps, DragDropObject extends TreeDra
 
   };
 }
-export default withDragDrop;
+export default withTreeDragDrop;

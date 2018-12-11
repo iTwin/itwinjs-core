@@ -17,6 +17,7 @@ import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 // cSpell:ignore appui
 import { TestMessageBox } from "../appui/dialogs/TestMessageBox";
+import { AppUi } from "../appui/AppUi";
 
 export class AppTools {
   public static get tool1() {
@@ -83,7 +84,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item1",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: () => { AppUi.command1(); },
     });
   }
 
@@ -93,7 +94,7 @@ export class AppTools {
       iconSpec: "icon-placeholder",
       labelKey: "SampleApp:buttons.item2",
       applicationData: { key: "value" },
-      execute: () => { IModelApp.tools.run(SelectionTool.toolId); },
+      execute: () => { AppUi.command2(); },
     });
   }
 

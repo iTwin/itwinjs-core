@@ -18,7 +18,7 @@ export type SimpleTreeDataProviderHierarchy = Map<string | undefined, TreeNodeIt
 /**
  * A tree data provider using [[SimpleTreeDataProviderHierarchy]].
  */
-export default class SimpleTreeDataProvider implements ITreeDataProvider {
+export class SimpleTreeDataProvider implements ITreeDataProvider {
   private _hierarchy: SimpleTreeDataProviderHierarchy;
 
   public constructor(hierarchy: SimpleTreeDataProviderHierarchy) {
@@ -51,5 +51,6 @@ export default class SimpleTreeDataProvider implements ITreeDataProvider {
   public async getNodesCount(parent?: TreeNodeItem): Promise<number> {
     return this.getNodesByParentId(parent ? parent.id : undefined).length;
   }
-
 }
+
+export default SimpleTreeDataProvider;

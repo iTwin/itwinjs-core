@@ -17,12 +17,12 @@ import { TreeNodeItem } from "../../../tree/TreeDataProvider";
 /**
  * Type for drag and drop,
  */
-export type TableDragDropType = {} | TreeNodeItem | TableDataProvider;
+export type BreadcrumbDragDropType = {} | TreeNodeItem | TableDataProvider;
 
 /**
  * Props that are injected to the HOC component.
  */
-export interface TreeDragDropProps<DragDropObject = any> {
+export interface BreadcrumbDetailsDragDropProps<DragDropObject = any> {
   dragProps?: DragSourceProps<DragDropObject>;
   dropProps?: DropTargetProps<DragDropObject>;
 }
@@ -32,9 +32,9 @@ export interface TreeDragDropProps<DragDropObject = any> {
  * breadcrumb component.
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function withDragDrop<P extends BreadcrumbDetailsProps, DragDropObject extends TableDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & TreeDragDropProps<DragDropObject>> {
+export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, DragDropObject extends BreadcrumbDragDropType>(BreadcrumbComponent: React.ComponentType<P>): React.ComponentType<P & BreadcrumbDetailsDragDropProps<DragDropObject>> {
 
-  type CombinedProps = P & TreeDragDropProps<DragDropObject>;
+  type CombinedProps = P & BreadcrumbDetailsDragDropProps<DragDropObject>;
 
   // tslint:disable-next-line:variable-name
   return class WithDragAndDrop extends React.Component<CombinedProps> {
@@ -149,4 +149,4 @@ export function withDragDrop<P extends BreadcrumbDetailsProps, DragDropObject ex
     }
   };
 }
-export default withDragDrop;
+export default withBreadcrumbDetailsDragDrop;

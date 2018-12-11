@@ -127,6 +127,7 @@ export interface TreeCellUpdatedArgs {
   newValue: any;
 }
 
+/** Params to the TreeNodeProps.renderLabel method */
 export interface RenderNodeLabelProps {
   node: BeInspireTreeNode<TreeNodeItem>;
   highlightProps?: HighlightableTreeNodeProps;
