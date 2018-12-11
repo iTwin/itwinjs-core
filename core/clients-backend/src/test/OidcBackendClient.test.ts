@@ -25,7 +25,7 @@ describe("OidcBackendClient (#integration)", () => {
   let agentConfiguration: OidcAgentClientConfiguration;
   let delegationConfiguration: OidcBackendClientConfiguration;
 
-  const testProjectName = "iModelJsTest";
+  const testProjectName = "iModelJsIntegrationTest";
   const testIModelName = "ReadOnlyTest";
   let testProjectId: string;
   let testIModelId: string;
