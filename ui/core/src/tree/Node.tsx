@@ -59,6 +59,7 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
         label=""
         checked={this.props.checkboxState === CheckBoxState.On ? true : false}
         onClick={this.props.onCheckboxClick}
+        onChange={this.props.onCheckboxClick}
       /> :
       undefined;
     const icon = this.props.icon ? (<div className="icon">{this.props.icon}</div>) : undefined;

@@ -264,7 +264,13 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     this.state.activeGroup.updateState();
 
-    const nodes = await this.state.treeInfo!.dataProvider.getNodes();
+    const nodes: TreeNodeItem[] = await this.state.treeInfo!.dataProvider.getNodes();
+    for (const node of nodes) {
+      // GRIGAS: These functions modify the selectedNodes as expected
+      // but the tree appears not to update (nodes remain highlighted)
+      // after onTreeNodeChanged(). I was not able to find the issue.
+      enable ? this._selectLabel(node) : this._deselectLabel(node);
+    }
     this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(nodes);
   }
 
@@ -516,7 +522,10 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
   private _selectLabel = (treeItem: TreeNodeItem) => {
     if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
-      this.state.treeInfo.selectedNodes.push(treeItem.id);
+      const index = this.state.treeInfo.selectedNodes.indexOf(treeItem.id);
+      if (index === -1) {
+        this.state.treeInfo.selectedNodes.push(treeItem.id);
+      }
       treeItem.checkBoxState = CheckBoxState.On;
     }
   }
