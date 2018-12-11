@@ -43,7 +43,7 @@ export abstract class ZeroMajorRpcInterface extends RpcInterface {
   }
 
   public async op1(_params: TestOp1Params): Promise<number> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 }
 
@@ -68,67 +68,67 @@ export abstract class TestRpcInterface extends RpcInterface {
   }
 
   public async op1(_params: TestOp1Params): Promise<number> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op2(_id: Id64String): Promise<Id64String> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op3(_date: Date): Promise<Date> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op4(_map: Map<any, any>): Promise<Map<any, any>> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op5(_set: Set<any>): Promise<Set<any>> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op6(_data: { x: number, y: number }): Promise<{ x: number, y: number }> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op7(): Promise<RpcOperationsProfile> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op8(_x: number, _y: number): Promise<{ initializer: number; sum: number }> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   /** exposed in test RPC interface so that this functionality can be tested from the frontend perspective */
   public async extractChangeSummaries(_accessToken: AccessToken, _iModelToken: IModelToken, _options: any): Promise<void> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
   public async deleteChangeCache(_iModelToken: IModelToken): Promise<void> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op9(_requestId: string): Promise<string> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op10(): Promise<void> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op11(_input: string, _call: number): Promise<string> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op12(): Promise<Uint8Array> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op13(_data: Uint8Array): Promise<void> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 
   public async op14(_x: number, _y: number): Promise<number> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 }
 
@@ -141,7 +141,7 @@ export abstract class TestRpcInterface2 extends RpcInterface {
   }
 
   public async op1(_input: number): Promise<number> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 }
 
@@ -154,7 +154,7 @@ export abstract class TestRpcInterface3 extends RpcInterface {
   }
 
   public async op1(_input: number): Promise<number> {
-    return this.forward.apply(this, arguments);
+    return this.forward(arguments);
   }
 }
 
@@ -170,34 +170,34 @@ export abstract class RpcTransportTest extends RpcInterface {
 
 export abstract class RpcWebTransportTest extends RpcTransportTest {
   public static getClient(): RpcWebTransportTest { return RpcManager.getClientForInterface(RpcWebTransportTest); }
-  public async primitive(_value: string): Promise<string> { return this.forward.apply(this, arguments); }
-  public async binary(_value: Uint8Array): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
-  public async mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> { return this.forward.apply(this, arguments); }
-  public async nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> { return this.forward.apply(this, arguments); }
+  public async primitive(_value: string): Promise<string> { return this.forward(arguments); }
+  public async binary(_value: Uint8Array): Promise<Uint8Array> { return this.forward(arguments); }
+  public async mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> { return this.forward(arguments); }
+  public async nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> { return this.forward(arguments); }
 }
 
 export abstract class RpcElectronTransportTest extends RpcTransportTest {
   public static getClient(): RpcElectronTransportTest { return RpcManager.getClientForInterface(RpcElectronTransportTest); }
-  public async primitive(_value: string): Promise<string> { return this.forward.apply(this, arguments); }
-  public async binary(_value: Uint8Array): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
-  public async mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> { return this.forward.apply(this, arguments); }
-  public async nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> { return this.forward.apply(this, arguments); }
+  public async primitive(_value: string): Promise<string> { return this.forward(arguments); }
+  public async binary(_value: Uint8Array): Promise<Uint8Array> { return this.forward(arguments); }
+  public async mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> { return this.forward(arguments); }
+  public async nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> { return this.forward(arguments); }
 }
 
 export abstract class RpcMobileTransportTest extends RpcTransportTest {
   public static getClient(): RpcMobileTransportTest { return RpcManager.getClientForInterface(RpcMobileTransportTest); }
-  public async primitive(_value: string): Promise<string> { return this.forward.apply(this, arguments); }
-  public async binary(_value: Uint8Array): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
-  public async mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> { return this.forward.apply(this, arguments); }
-  public async nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> { return this.forward.apply(this, arguments); }
+  public async primitive(_value: string): Promise<string> { return this.forward(arguments); }
+  public async binary(_value: Uint8Array): Promise<Uint8Array> { return this.forward(arguments); }
+  public async mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> { return this.forward(arguments); }
+  public async nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> { return this.forward(arguments); }
 }
 
 export abstract class RpcDirectTransportTest extends RpcTransportTest {
   public static getClient(): RpcDirectTransportTest { return RpcManager.getClientForInterface(RpcDirectTransportTest); }
-  public async primitive(_value: string): Promise<string> { return this.forward.apply(this, arguments); }
-  public async binary(_value: Uint8Array): Promise<Uint8Array> { return this.forward.apply(this, arguments); }
-  public async mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> { return this.forward.apply(this, arguments); }
-  public async nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> { return this.forward.apply(this, arguments); }
+  public async primitive(_value: string): Promise<string> { return this.forward(arguments); }
+  public async binary(_value: Uint8Array): Promise<Uint8Array> { return this.forward(arguments); }
+  public async mixed(_value1: string, _value2: Uint8Array): Promise<{ 0: string, 1: Uint8Array }> { return this.forward(arguments); }
+  public async nested(_value: { a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }): Promise<{ a: { x: Uint8Array, y: number }, b: string, c: Uint8Array }> { return this.forward(arguments); }
 }
 
 export class RpcTransportTestImpl extends RpcInterface implements RpcTransportTest {

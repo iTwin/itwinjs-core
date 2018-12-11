@@ -244,6 +244,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
       "horizontalDirection": 3,
       "horizontalItems": undefined,
       "id": "toolWidget",
+      "isActive": false,
       "isEnabled": true,
       "isFloating": false,
       "isFloatingStateSupported": false,

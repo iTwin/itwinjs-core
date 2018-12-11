@@ -16,13 +16,9 @@ import { Item } from "@bentley/ui-ninezone";
 export abstract class ActionButtonItemDef extends ItemDefBase {
   protected _commandHandler?: CommandHandler;
   public parameters?: any;
-  public isActive?: boolean = false;
 
   constructor(itemProps?: ItemProps) {
     super(itemProps);
-    if (itemProps) {
-      this.isActive = (itemProps.isActive !== undefined) ? itemProps.isActive : false;
-    }
 
     this.execute = this.execute.bind(this);
   }

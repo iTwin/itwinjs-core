@@ -38,6 +38,7 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
       isVisible: undefined !== props.isVisible ? props.isVisible : true,
       isEnabled: undefined !== props.isEnabled ? props.isEnabled : true,
       isActive: undefined !== props.isActive ? props.isActive : false,
+      isPressed: undefined !== props.isPressed ? props.isPressed : false,
     };
   }
 

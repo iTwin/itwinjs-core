@@ -2,21 +2,23 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d, DeepCompare } from "@bentley/geometry-core";
 import { SpatialViewDefinitionProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import * as path from "path";
 import {
   SpatialViewState, ViewStatus, StandardView, StandardViewId, MarginPercent, AuxCoordSystemSpatialState, CategorySelectorState,
-  ModelSelectorState, IModelConnection, DisplayStyle3dState,
+  ModelSelectorState, IModelConnection, DisplayStyle3dState, SheetModelState, SpatialModelState, DrawingModelState,
 } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 import { MaybeRenderApp } from "./WebGLTestContext";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
+const iModelLocation2 = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
 
 describe("ViewState", () => {
   let imodel: IModelConnection;
+  let imodel2: IModelConnection;
   let viewState: SpatialViewState;
 
   before(async () => {
@@ -25,10 +27,13 @@ describe("ViewState", () => {
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.sqlName });
     assert.exists(viewRows, "Should find some views");
     viewState = await imodel.views.load(viewRows[0].id!) as SpatialViewState;
+
+    imodel2 = await IModelConnection.openStandalone(iModelLocation2);
   });
 
   after(async () => {
     if (imodel) await imodel.closeStandalone();
+    if (imodel2) await imodel2.closeStandalone();
   });
 
   const compareView = (v1: SpatialViewState, v2: SpatialViewDefinitionProps, str: string) => {
@@ -180,5 +185,29 @@ describe("ViewState", () => {
     const cppView: SpatialViewDefinitionProps = await imodel.executeTest("lookAtUsingLensAngle", testParams);
     viewState.lookAtUsingLensAngle(testParams.eye, testParams.target, testParams.up, testParams.lens, testParams.front, testParams.back);
     compareView(viewState, cppView, "lookAtUsingLensAngle");
+  });
+
+  it("should ignore 2d models in model selector", async () => {
+    const view = await imodel2.views.load("0x46") as SpatialViewState;
+    expect(view).not.to.be.undefined;
+    assert.instanceOf(view, SpatialViewState);
+
+    const numSpatialModels = view.modelSelector.models.size;
+    expect(numSpatialModels).to.be.greaterThan(0);
+
+    // Add 2d models to selector
+    view.modelSelector.addModels(["0x24", "0x28"]);
+    await imodel2.models.load(view.modelSelector.models);
+    assert.instanceOf(imodel2.models.loaded.get("0x24"), DrawingModelState);
+    assert.instanceOf(imodel2.models.loaded.get("0x28"), SheetModelState);
+    expect(view.modelSelector.models.size).to.equal(numSpatialModels + 2);
+
+    let numModelsVisited = 0;
+    view.forEachModel((model) => {
+      assert.instanceOf(model, SpatialModelState);
+      ++numModelsVisited;
+    });
+
+    expect(numModelsVisited).to.equal(numSpatialModels);
   });
 });

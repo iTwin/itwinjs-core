@@ -142,7 +142,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
           zoneProps.widgets.forEach((widget: NZ_WidgetProps) => {
             zoneDef.widgetDefs
               .filter((widgetDef: WidgetDef) => {
-                return widgetDef.canShow() && !widgetDef.isToolSettings && !widgetDef.isStatusBar && !widgetDef.isFreeform;
+                return widgetDef.isVisible && !widgetDef.isToolSettings && !widgetDef.isStatusBar && !widgetDef.isFreeform;
               })
               .forEach((widgetDef: WidgetDef, tabIndex: number) => {
                 if (widgetDef.canOpen()) {

@@ -1,6 +1,16 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 10 Dec 2018 17:08:55 GMT and should not be manually modified.
+This log was last generated on Mon, 10 Dec 2018 21:19:45 GMT and should not be manually modified.
+
+## 0.176.0
+Mon, 10 Dec 2018 21:19:45 GMT
+
+### Updates
+
+- Move cursors and sprites to separate directories
+- Fix bug in which the frustum of a spatial view was always expanded to include the ground plane even if the ground plane was not displayed.
+- Ignore 2d models in model selectors.
+- Add tracking of active + pending tile requests.
 
 ## 0.175.0
 Mon, 10 Dec 2018 17:08:55 GMT
