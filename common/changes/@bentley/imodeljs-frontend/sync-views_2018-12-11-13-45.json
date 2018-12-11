@@ -1,0 +1,16 @@
+{
+  "changes": [
+    {
+      "comment": "Added TwoWayViewportSync class to connect two Viewports so that changes to one are reflected in the other.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    },
+    {
+      "comment": "Renamed ViewStateData to ViewStateProps and ViewState.createFromStateData to ViewState.createFromProps.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "keith.bentley@bentley.com"
+}

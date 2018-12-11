@@ -112,7 +112,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
       /** Return free-form widget */
       if (zoneDef.widgetCount === 1 && zoneDef.widgetDefs[0].widgetType !== WidgetType.Rectangular) {
         const widgetDef = zoneDef.widgetDefs[0];
-        return (widgetDef.canShow()) ? widgetDef.reactElement : null;
+        return (widgetDef.isVisible) ? widgetDef.reactElement : null;
       }
     }
 
@@ -129,17 +129,17 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
       const visibleWidgets = zoneDef.widgetDefs
         .filter((widgetDef: WidgetDef) => {
-          return widgetDef.canShow();
+          return widgetDef.isVisible;
         });
 
       if (!visibleWidgets || 0 === visibleWidgets.length)
         return;
 
-      // save list of WidgetDefs that have isPressed set to true. We use this later to ensure that WidgetDef are in sync with active widget tab.
+      // save list of WidgetDefs that have isActive set to true. We use this later to ensure that WidgetDef are in sync with active widget tab.
       visibleWidgets.forEach((def: WidgetDef) => {
         if (!def.isFloating) {
           if (def === this.state.updatedWidgetDef && def.stateChanged) {
-            if (def.isPressed)
+            if (def.isActive)
               defToActivate = def;
             else
               widgetBeingClosed = true;
@@ -175,11 +175,11 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
       });
     });
 
-    // make sure the isPressed property for the WidgetDefs in the zone match the state of the active widget tab
+    // make sure the isActive property for the WidgetDefs in the zone match the state of the active widget tab
     if (currentActiveWidgetDefs.length > 0) {
       currentActiveWidgetDefs.forEach((def: WidgetDef) => {
         if (def !== activeWidgetDef) {
-          def.clearIsPressed();
+          def.isActive = false;
         }
       });
     }

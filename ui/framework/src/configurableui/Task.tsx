@@ -61,6 +61,10 @@ export class Task extends ItemDefBase {
     return isActive;
   }
 
+  public set isActive(_: boolean) {
+    // do nothing - needed because subclassing from ItemDefBase
+  }
+
   public async onActivated(): Promise<void> {
     const frontstage = FrontstageManager.findFrontstageDef(this.primaryStageId);
     if (frontstage)

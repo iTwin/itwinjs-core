@@ -121,6 +121,10 @@ export class Workflow extends ItemDefBase {
     return isActive;
   }
 
+  public set isActive(_: boolean) {
+    // do nothing - needed because subclassing from ItemDefBase
+  }
+
   /** Sets a Task as active.
    * @param task  The Task to set as active
    */

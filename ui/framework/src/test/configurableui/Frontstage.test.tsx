@@ -144,7 +144,7 @@ describe("Frontstage", () => {
 
       if (widgetDef) {
         widgetDef.setWidgetState(WidgetState.Open);
-        expect(widgetDef.isPressed).to.eq(true);
+        expect(widgetDef.isActive).to.eq(true);
         expect(widgetDef.isVisible).to.eq(true);
 
         FrontstageManager.setWidgetState("widget1", WidgetState.Hidden);
@@ -169,12 +169,12 @@ describe("Frontstage", () => {
       expect(widgetDef2).to.not.be.undefined;
       if (widgetDef2) {
         expect(widgetDef2.isVisible).to.eq(false);
-        expect(widgetDef2.isPressed).to.eq(false);
+        expect(widgetDef2.isActive).to.eq(false);
 
         widgetDef2.setWidgetState(WidgetState.Open);
         wrapper.update();
         expect(widgetDef2.isVisible).to.eq(true);
-        expect(widgetDef2.isPressed).to.eq(true);
+        expect(widgetDef2.isActive).to.eq(true);
 
         widgetDef2.setWidgetState(WidgetState.Hidden);
         wrapper.update();

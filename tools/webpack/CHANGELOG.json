@@ -2,6 +2,18 @@
   "name": "@bentley/webpack-tools",
   "entries": [
     {
+      "version": "0.176.0",
+      "tag": "@bentley/webpack-tools_v0.176.0",
+      "date": "Mon, 10 Dec 2018 21:19:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Enhancement to copyExternalModules"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.175.0",
       "tag": "@bentley/webpack-tools_v0.175.0",
       "date": "Mon, 10 Dec 2018 17:08:55 GMT",

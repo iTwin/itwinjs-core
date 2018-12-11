@@ -23,15 +23,25 @@ export interface SyncUiProps {
 /** Definition that specify properties shared between many ConfigurableUi components.
  */
 export interface ItemProps extends IconProps, SyncUiProps {
-  isVisible?: boolean;        // Default - true
-  isEnabled?: boolean;        // Default - true
-  isActive?: boolean;         // Default - false
-  isPressed?: boolean;        // Default - false;
+  /** if set, component will be visible - defaults to true */
+  isVisible?: boolean;
+  /** if set, component will be enabled - defaults to true */
+  isEnabled?: boolean;
+  /** if set, component will be considered "active" an will display an "active stripe" - defaults to false */
+  isActive?: boolean;
+  /** if set, component will be considered selected but will NOT display an "active stripe" - defaults to false. Typically used by buttons that toggle between two states. */
+  isPressed?: boolean;
+  /** for future use. */
   featureId?: string;
+  /** if set, it is used to explicitly set the label shown by a component. */
   label?: string;
+  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
   labelKey?: string;
+  /** used to explicitly set the tooltip shown by a component. */
   tooltip?: string;
+  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
   tooltipKey?: string;
+  /** can be used by application to store miscellaneous data. */
   applicationData?: any;
 }
 
@@ -58,7 +68,7 @@ export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef;
 
 /** Definition for a Group item that opens a group of items.
  */
-export interface GroupItemProps extends ItemProps {
+export interface GroupButtonProps extends ItemProps {
   groupId?: string;
   items: AnyItemDef[];
   direction?: Direction;
@@ -67,7 +77,7 @@ export interface GroupItemProps extends ItemProps {
 }
 
 /** Union of all Item properties. */
-export type AnyItemProps = ItemProps | GroupItemProps | ToolItemProps | CommandItemProps;
+export type AnyItemProps = ItemProps | GroupButtonProps | ToolItemProps | CommandItemProps;
 
 /** Definition for a list of AnyItemProps. */
 export interface ItemPropsList {
