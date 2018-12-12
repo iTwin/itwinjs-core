@@ -1,0 +1,21 @@
+{
+  "changes": [
+    {
+      "comment": "Remove `selectionTarget` prop from `withUnifiedSelection(Tree)` - `SelectionTarget.Node` turned out to make no sense, so it got removed. Now the tree always works in `SelectionTarget.Instance` mode.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    },
+    {
+      "comment": "Remove `selectedNodes` prop from `withUnifiedSelection(Tree)` - it makes no sense to allow specify selected nodes for a unified selection tree.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    },
+    {
+      "comment": "Fix `withUnifiedSelection(Tree)` reloading on selection change to avoid `forceRefresh()` call.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "grigas.petraitis@bentley.com"
+}

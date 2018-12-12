@@ -5,7 +5,6 @@ Array [
   Object {
     "checkBoxState": 1,
     "description": "Sint libero laudantium voluptatem magni et voluptas quis.",
-    "displayCheckBox": true,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
@@ -21,7 +20,8 @@ Array [
     },
     "hasChildren": false,
     "id": "142b23f9-5f0d-4b34-b39f-de2c0a107d9c/dcb68625-021e-40e1-839b-08a0214f5943",
-    "isCheckBoxEnabled": true,
+    "isCheckboxDisabled": false,
+    "isCheckboxVisible": true,
     "label": "A-2-1",
     "labelBackColor": 1531058431,
     "labelBold": false,
@@ -32,8 +32,7 @@ Array [
   Object {
     "autoExpand": true,
     "checkBoxState": 1,
-    "description": "",
-    "displayCheckBox": false,
+    "description": undefined,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
@@ -49,7 +48,8 @@ Array [
     },
     "hasChildren": true,
     "id": "729087ec-e569-4f02-9212-b8007ffd5072/9451bb8c-be2e-4a06-bb9c-f6fe83e0ae64",
-    "isCheckBoxEnabled": false,
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": false,
     "label": "A-2-2",
     "labelBackColor": undefined,
     "labelBold": false,
@@ -66,7 +66,6 @@ Array [
     "autoExpand": true,
     "checkBoxState": 1,
     "description": "Repellendus fugiat velit sit aperiam placeat fuga doloribus.",
-    "displayCheckBox": false,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
@@ -82,7 +81,8 @@ Array [
     },
     "hasChildren": true,
     "id": "e67862f3-ccbf-4c51-b8ed-ed1d0420ea19/6fbe024f-2316-4265-a6e8-d65a837e308a",
-    "isCheckBoxEnabled": false,
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": false,
     "label": "A-1",
     "labelBackColor": undefined,
     "labelBold": false,
@@ -94,7 +94,6 @@ Array [
     "autoExpand": true,
     "checkBoxState": 1,
     "description": "Voluptas enim ex eveniet facere.",
-    "displayCheckBox": false,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
@@ -110,7 +109,8 @@ Array [
     },
     "hasChildren": true,
     "id": "fb7680c8-0a28-4cf0-9ee8-272ec6682ae5/e14e4128-01ae-43e4-8790-9992f94b3186",
-    "isCheckBoxEnabled": false,
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": false,
     "label": "A-2",
     "labelBackColor": 499774463,
     "labelBold": false,

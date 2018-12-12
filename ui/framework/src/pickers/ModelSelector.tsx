@@ -16,12 +16,11 @@ import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl"
 import { WidgetControl } from "../configurableui/WidgetControl";
 import { Tree, FilteringInput, TreeNodeItem, PageOptions, DelayLoadedTreeNodeItem, TreeDataChangesListener, SelectionMode } from "@bentley/ui-components";
 import "./ModelSelector.scss";
-import { PresentationTreeDataProvider, treeWithUnifiedSelection, treeWithFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { PresentationTreeDataProvider, treeWithFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { RegisteredRuleset, NodeKey, NodePathElement } from "@bentley/presentation-common";
 import { CheckBoxState } from "@bentley/ui-core";
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { BeInspireTreeNode } from "../../../components/lib/tree/component/BeInspireTree";
 
 /** Model Group used by [[ModelSelectorWidget]] */
 export interface ModelGroup {
@@ -112,7 +111,7 @@ class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
   public getNodes = _.memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> => {
     const nodes = await this._baseProvider.getNodes(parentNode, pageOptions);
     nodes.forEach((n: DelayLoadedTreeNodeItem) => {
-      n.displayCheckBox = true;
+      n.isCheckboxVisible = true;
 
       if (n.checkBoxState && n.checkBoxState === CheckBoxState.On)
         n.labelBold = true;
@@ -496,8 +495,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** enable or disable a single item */
-  private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>) => {
-    this._setItemState(node.payload);
+  private _onCheckboxClick = (node: TreeNodeItem) => {
+    this._setItemState(node);
   }
 
   private _setItemState = (treeItem: TreeNodeItem, enabled?: boolean) => {
@@ -607,7 +606,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
                     onNodesSelected={this._onNodeSelected}
                     onNodesDeselected={this._onNodesDeselected}
                     onCheckboxClick={this._onCheckboxClick}
-                    checkboxesEnabled={true}
                   /> :
                   <div />
               }
@@ -622,7 +620,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 }
 
 // tslint:disable-next-line:variable-name
-const CategoryModelTree = treeWithFilteringSupport(treeWithUnifiedSelection(Tree));
+const CategoryModelTree = treeWithFilteringSupport(Tree);
 
 export default ModelSelectorWidget;
 

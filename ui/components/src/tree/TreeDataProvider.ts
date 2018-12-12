@@ -22,9 +22,9 @@ export interface TreeNodeItem {
   labelBold?: boolean;
   labelItalic?: boolean;
   icon?: string;
-  displayCheckBox?: boolean;
+  isCheckboxVisible?: boolean;
+  isCheckboxDisabled?: boolean;
   checkBoxState?: CheckBoxState;
-  isCheckBoxEnabled?: boolean;
   extendedData?: any;
   isEditable?: boolean;
   /** Primitive typename. See PropertyRecord.PropertyDescription */

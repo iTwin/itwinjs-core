@@ -41,8 +41,11 @@ export type BeInspireTreeNodeConfig = Inspire.NodeConfig;
 
 /** Data structure for [[BeInspireTreeNodeConfig]] with our injected props */
 export interface BeInspireTreeNodePayloadConfig<TPayload> extends Inspire.NodeConfig {
-  payload: TPayload;
+  /** Node's data. May be `undefined` if this is placeholder node. */
+  payload?: TPayload;
+  /** Index of the node at the parent level. Only set if this is a placeholder node. */
   placeholderIndex?: number;
+  /** Reference to the tree */
   beInspireTree: BeInspireTree<TPayload>;
 }
 
@@ -150,9 +153,8 @@ interface DeferredLoadingHandler<TPayload> {
  */
 export interface Props<TNodePayload> {
   dataProvider: BeInspireTreeDataProvider<TNodePayload>;
-  pageSize?: number;
-  renderer: BeInspireTreeRenderer<TNodePayload>;
   mapPayloadToInspireNodeConfig: MapPayloadToInspireNodeCallback<TNodePayload>;
+  pageSize?: number;
   disposeChildrenOnCollapse?: boolean;
 }
 
@@ -184,9 +186,6 @@ export class BeInspireTree<TNodePayload> {
     this._tree = new InspireTree(config);
     this._tree.on([BeInspireTreeEvent.ModelLoaded], (model: BeInspireTreeNodes<TNodePayload>) => {
       model.forEach((n) => n.markDirty());
-    });
-    this._tree.on([BeInspireTreeEvent.ChangesApplied], () => {
-      props.renderer(this.visible());
     });
     const baseTreeLoad = this._tree.load;
     this._tree.load = async (loader): Promise<Inspire.TreeNodes> => {
@@ -516,6 +515,8 @@ export const toNode = <TPayload>(inspireNode: Inspire.TreeNode): BeInspireTreeNo
     const loadChildrenBase = inspireNode.loadChildren;
     inspireNode.loadChildren = async (): Promise<Inspire.TreeNodes> => {
       const children = await loadChildrenBase.call(inspireNode);
+      // note: inspire-tree calls BeInspireTreeEvent.ChildrenLoaded as part of
+      // the above call, so listeners get called before we get a chance to auto-expand...
       await ensureNodesAutoExpanded(children);
       return children;
     };

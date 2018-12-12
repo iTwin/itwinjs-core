@@ -6,7 +6,7 @@
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
 import { PresentationTreeDataProvider, treeWithFilteringSupport, treeWithUnifiedSelection } from "@bentley/presentation-components";
-import { Tree, FilteringInput } from "@bentley/ui-components";
+import { Tree, FilteringInput, SelectionMode } from "@bentley/ui-components";
 import "./TreeWidget.css";
 
 // tslint:disable-next-line:variable-name naming-convention
@@ -74,6 +74,21 @@ export default class TreeWidget extends React.Component<Props, State> {
     this.setState({ activeMatchIndex: index });
   }
 
+  private _onSelectionLoadProgress = (loaded: number, total: number) => {
+    // tslint:disable-next-line:no-console
+    console.log(`Loading selection: ${loaded} / ${total}`);
+  }
+
+  private _onSelectionLoadFinished = () => {
+    // tslint:disable-next-line:no-console
+    console.log(`Finished loading selection`);
+  }
+
+  private _onSelectionLoadCanceled = () => {
+    // tslint:disable-next-line:no-console
+    console.log(`Loading selection canceled`);
+  }
+
   public render() {
     return (
       <div className="treewidget">
@@ -94,7 +109,12 @@ export default class TreeWidget extends React.Component<Props, State> {
           filter={this.state.filter}
           onFilterApplied={this.onFilterApplied}
           onMatchesCounted={this._onMatchesCounted}
-          activeMatchIndex={this.state.activeMatchIndex} />
+          activeMatchIndex={this.state.activeMatchIndex}
+          selectionMode={SelectionMode.Extended}
+          onSelectionLoadProgress={this._onSelectionLoadProgress}
+          onSelectionLoadCanceled={this._onSelectionLoadCanceled}
+          onSelectionLoadFinished={this._onSelectionLoadFinished}
+        />
       </div>
     );
   }

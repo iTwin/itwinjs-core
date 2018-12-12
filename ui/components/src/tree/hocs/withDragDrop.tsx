@@ -88,7 +88,7 @@ export function withTreeDragDrop<P extends TreeProps, DragDropObject extends Tre
         objectType: () => {
           if (objectType) {
             if (typeof objectType === "function")
-              return objectType(item.payload.extendedData as DragDropObject);
+              return objectType(item.payload!.extendedData as DragDropObject);
             else
               return objectType;
           }
