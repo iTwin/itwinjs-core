@@ -278,9 +278,12 @@
       "version": "file:projects/bentleyjs-core.tgz",
       "integrity": "sha1-2szA1Av/ipFzaRZhICBeavoEqck=",
       "requires": {
+        "@types/bunyan": "1.8.5",
         "@types/chai": "4.1.7",
         "@types/mocha": "5.2.5",
         "@types/node": "10.10.3",
+        "bunyan": "1.8.12",
+        "bunyan-seq": "0.2.0",
         "chai": "4.2.0",
         "make-dir-cli": "1.0.0",
         "mocha": "5.2.0",
@@ -404,14 +407,17 @@
       "version": "file:projects/ecschema-metadata.tgz",
       "integrity": "sha1-UyFcZlOYPx/LyJNs4gPe2cicKUY=",
       "requires": {
+        "@types/bunyan": "1.8.5",
         "@types/chai": "4.1.7",
         "@types/chai-as-promised": "7.1.0",
         "@types/glob": "5.0.36",
+        "@types/i18next-node-fs-backend": "0.0.30",
         "@types/mocha": "5.2.5",
         "@types/sinon": "5.0.7",
         "chai": "4.2.0",
         "chai-as-promised": "7.1.1",
         "glob": "7.1.3",
+        "i18next-node-fs-backend": "2.1.0",
         "mocha": "5.2.0",
         "nyc": "13.1.0",
         "rimraf": "2.6.2",
@@ -1673,6 +1679,21 @@
       "version": "2.0.1",
       "resolved": "https://registry.npmjs.org/@types/i18next-browser-languagedetector/-/i18next-browser-languagedetector-2.0.1.tgz",
       "integrity": "sha512-9TwP0tw0PSXUtBtM12PFUjBsl9sP5bNHd54qdSXBrrZ4HJmtVdqbKvmXLH4Qd3KQzIS2g/Z7HhLhygL2LUSb8w=="
+    },
+    "@types/i18next-node-fs-backend": {
+      "version": "0.0.30",
+      "resolved": "https://registry.npmjs.org/@types/i18next-node-fs-backend/-/i18next-node-fs-backend-0.0.30.tgz",
+      "integrity": "sha512-IFiNtEGzQ/Q3t6VcgubDoLCDl2oAuC78VMrwvkLCVZIUq7bqDOUtAIKfvRJM48g+hHj2g6uT7CykVUIew3T2Lw==",
+      "requires": {
+        "@types/i18next": "2.3.41"
+      },
+      "dependencies": {
+        "@types/i18next": {
+          "version": "2.3.41",
+          "resolved": "https://registry.npmjs.org/@types/i18next/-/i18next-2.3.41.tgz",
+          "integrity": "sha512-8BLa2+5itmjj3eJI8zbE58Z+I5UEYP7YKHlEn6E4ZJsr8DkpFePtIvt8s0FtBHKPHA1K+HP0LkEgmQRAb9Kbqw=="
+        }
+      }
     },
     "@types/i18next-xhr-backend": {
       "version": "1.4.1",
@@ -3213,6 +3234,14 @@
         "moment": "2.22.2",
         "mv": "2.1.1",
         "safe-json-stringify": "1.2.0"
+      }
+    },
+    "bunyan-seq": {
+      "version": "0.2.0",
+      "resolved": "https://registry.npmjs.org/bunyan-seq/-/bunyan-seq-0.2.0.tgz",
+      "integrity": "sha512-y+wPntKhLydDQRkDLmHCoB+uX5AzRTR3jomobtsU9FagBSspRmheXadv5EfaEfAuhQBhWWfvGmdpIjd2/jpGrA==",
+      "requires": {
+        "seq-logging": "0.2.0"
       }
     },
     "bytes": {
@@ -7938,6 +7967,25 @@
       "version": "2.2.4",
       "resolved": "https://registry.npmjs.org/i18next-browser-languagedetector/-/i18next-browser-languagedetector-2.2.4.tgz",
       "integrity": "sha512-wPbtH18FdOuB245I8Bhma5/XSDdN/HpYlX+wga1eMy+slhaFQSnrWX6fp+aYSL2eEuj0RlfHeEVz6Fo/lxAj6A=="
+    },
+    "i18next-node-fs-backend": {
+      "version": "2.1.0",
+      "resolved": "https://registry.npmjs.org/i18next-node-fs-backend/-/i18next-node-fs-backend-2.1.0.tgz",
+      "integrity": "sha512-ULb+uQYQj1njn/93cxkAtgrw9STCv1zEM8QySH24c0pFxw8ZJPCV9yq4zTqEWtKaNRd8apvzyr2euoV1k05SbA==",
+      "requires": {
+        "js-yaml": "3.12.0",
+        "json5": "2.0.0"
+      },
+      "dependencies": {
+        "json5": {
+          "version": "2.0.0",
+          "resolved": "https://registry.npmjs.org/json5/-/json5-2.0.0.tgz",
+          "integrity": "sha512-0EdQvHuLm7yJ7lyG5dp7Q3X2ku++BG5ZHaJ5FTnaXpKqDrw4pMxel5Bt3oAYMthnrthFBdnZ1FcsXTPyrQlV0w==",
+          "requires": {
+            "minimist": "1.2.0"
+          }
+        }
+      }
     },
     "i18next-xhr-backend": {
       "version": "1.5.1",
@@ -15913,6 +15961,11 @@
           "integrity": "sha512-zhSCtt8v2NDrRlPQpCNtw/heZLtfUDqxBM1udqikb/Hbk52LK4nQSwr10u77iopCW5LsyHpuXS0GnEc48mLeew=="
         }
       }
+    },
+    "seq-logging": {
+      "version": "0.2.0",
+      "resolved": "https://registry.npmjs.org/seq-logging/-/seq-logging-0.2.0.tgz",
+      "integrity": "sha512-U5xWrVvEUAwtSt0BZ+empUGR7uCMwQ1mUKxIM0EcLzbf3PE02dtqQ4KJRB45ne5yS9eZ9hELiwGmqkE1e89+gA=="
     },
     "serialize-javascript": {
       "version": "1.5.0",
