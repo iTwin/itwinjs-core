@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 10 Dec 2018 21:19:45 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Dec 2018 17:21:31 GMT and should not be manually modified.
+
+## 0.177.0
+Wed, 12 Dec 2018 17:21:31 GMT
+
+### Updates
+
+- Added TwoWayViewportSync class to connect two Viewports so that changes to one are reflected in the other.
+- Renamed ViewStateData to ViewStateProps and ViewState.createFromStateData to ViewState.createFromProps.
+- turn off locate circle when mouse leaves a view
 
 ## 0.176.0
 Mon, 10 Dec 2018 21:19:45 GMT
