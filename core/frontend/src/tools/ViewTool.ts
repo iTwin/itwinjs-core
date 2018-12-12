@@ -663,10 +663,15 @@ class ViewTargetCenter extends ViewingToolHandle {
     if (context.viewport !== this.viewTool.viewport)
       return;
 
+    if (!this.viewTool.targetCenterLocked && !this.viewTool.inHandleModify)
+      return; // Don't display default target center, will be updated to use pick point on element...
+
     let sizeInches = 0.2;
     if (!hasFocus && this.viewTool.inHandleModify) {
+      const hitHandle = this.viewTool.viewHandles.hitHandle;
+      if (undefined !== hitHandle && ViewHandleType.Rotate !== hitHandle.handleType)
+        return; // Only display when modifying another handle if that handle is rotate (not pan)...
       sizeInches = 0.1; // Display small target when dragging...
-      hasFocus = false;
     }
 
     const crossSize = Math.floor(context.viewport.pixelsFromInches(sizeInches)) + 0.5;
@@ -750,6 +755,7 @@ class ViewPan extends ViewingToolHandle {
     }
 
     this.viewTool.beginDynamicUpdate();
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Pan.Prompts.NextPoint");
     return true;
   }
 
@@ -819,6 +825,7 @@ class ViewRotate extends ViewingToolHandle {
     this._frustum.setFrom(this._activeFrustum);
 
     tool.beginDynamicUpdate();
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Rotate.Prompts.NextPoint");
     return true;
   }
 
@@ -923,6 +930,7 @@ class ViewLook extends ViewingToolHandle {
 
     vp.getWorldFrustum(this._frustum);
     tool.beginDynamicUpdate();
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Look.Prompts.NextPoint");
     return true;
   }
 
@@ -1024,6 +1032,7 @@ class ViewScroll extends ViewingToolHandle {
     this._anchorPtView.setFrom(ev.viewPoint);
     this._lastPtView.setFrom(ev.viewPoint);
     tool.beginDynamicUpdate();
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Scroll.Prompts.NextPoint");
     return true;
   }
 
@@ -1138,6 +1147,7 @@ class ViewZoom extends ViewingToolHandle {
         this._lastPtView.setFrom(this._anchorPtView);
         tool.viewport!.viewToNpc(this._anchorPtView, this._anchorPtNpc);
         tool.beginDynamicUpdate();
+        IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Zoom.Prompts.NextPoint");
         return true;
       }
     }
@@ -1149,6 +1159,7 @@ class ViewZoom extends ViewingToolHandle {
     this._lastPtView.setFrom(this._anchorPtView);
     tool.viewport!.viewToNpc(this._anchorPtView, this._anchorPtNpc);
     tool.beginDynamicUpdate();
+    IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Zoom.Prompts.NextPoint");
     return true;
   }
 
@@ -1548,6 +1559,7 @@ class ViewWalk extends ViewNavigate {
     this._navigateMotion = new NavigateMotion(this.viewTool.viewport!);
   }
   public get handleType(): ViewHandleType { return ViewHandleType.Walk; }
+  public firstPoint(ev: BeButtonEvent): boolean { IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Walk.Prompts.NextPoint"); return super.firstPoint(ev); }
 
   protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
     const input = this.getInputVector();
@@ -1584,6 +1596,7 @@ class ViewFly extends ViewNavigate {
     this._navigateMotion = new NavigateMotion(this.viewTool.viewport!);
   }
   public get handleType(): ViewHandleType { return ViewHandleType.Fly; }
+  public firstPoint(ev: BeButtonEvent): boolean { IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Fly.Prompts.NextPoint"); return super.firstPoint(ev); }
 
   protected getNavigateMotion(elapsedTime: number): NavigateMotion | undefined {
     const input = this.getInputVector();
@@ -1619,6 +1632,7 @@ export class PanViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Pan, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Pan.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs a Rotate view operation */
@@ -1627,6 +1641,7 @@ export class RotateViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Rotate | ViewHandleType.Pan | ViewHandleType.TargetCenter, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Rotate.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the look operation */
@@ -1635,6 +1650,7 @@ export class LookViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Look, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Look.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the scroll operation */
@@ -1643,6 +1659,7 @@ export class ScrollViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Scroll, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Scroll.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the zoom operation */
@@ -1651,6 +1668,7 @@ export class ZoomViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Zoom, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Zoom.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the walk operation */
@@ -1659,6 +1677,7 @@ export class WalkViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Walk, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Walk.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs the fly operation */
@@ -1667,6 +1686,7 @@ export class FlyViewTool extends ViewManip {
   constructor(vp: ScreenViewport, oneShot = false, isDraggingRequired = false) {
     super(vp, ViewHandleType.Fly, oneShot, isDraggingRequired);
   }
+  public onReinitialize(): void { super.onReinitialize(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Fly.Prompts.FirstPoint"); }
 }
 
 /** A tool that performs a fit view */
@@ -1691,6 +1711,9 @@ export class FitViewTool extends ViewTool {
 
   public onPostInstall() {
     super.onPostInstall();
+    if (undefined === this.viewport || !this.oneShot)
+      IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.Fit.Prompts.FirstPoint");
+
     if (this.viewport)
       this.doFit(this.viewport, this.oneShot, this.doAnimate);
   }
@@ -1717,7 +1740,8 @@ export class WindowAreaTool extends ViewTool {
 
   constructor(viewport: Viewport) { super(); this._viewport = viewport; }
 
-  public onReinitialize() { this._haveFirstPoint = false; this._firstPtWorld.setZero(); this._secondPtWorld.setZero(); }
+  public onPostInstall() { super.onPostInstall(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.WindowArea.Prompts.FirstPoint"); }
+  public onReinitialize() { this._haveFirstPoint = false; this._firstPtWorld.setZero(); this._secondPtWorld.setZero(); IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.WindowArea.Prompts.FirstPoint"); }
   public async onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled> { if (this._haveFirstPoint) { this.onReinitialize(); return EventHandled.Yes; } return super.onResetButtonUp(ev); }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
@@ -1731,6 +1755,7 @@ export class WindowAreaTool extends ViewTool {
       this._secondPtWorld.setFrom(this._firstPtWorld);
       this._haveFirstPoint = true;
       this._lastPtView = ev.viewPoint;
+      IModelApp.notifications.outputPromptByKey("CoreTools:tools.View.WindowArea.Prompts.NextPoint");
     }
 
     return EventHandled.Yes;

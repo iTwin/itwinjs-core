@@ -5,65 +5,95 @@
         "keyin": "Pan View",
         "description": "Moves origin of view",
         "flyover": "Pan View",
-        "Prompt": "Click and drag to pan view."
+        "Prompts": {
+          "FirstPoint": "Define point to pan from.",
+          "NextPoint": "Define point to pan to."
+        }
       },
       "Rotate": {
         "keyin": "Rotate View",
         "description": "Rotates View about specified point",
         "flyover": "Rotate About Point",
-        "Prompt": "Click and drag to move view around rotation point. Change rotation point by moving crosshair."
+        "Prompts": {
+          "FirstPoint": "Identify point on element to rotate view about.",
+          "NextPoint": "Define amount of rotation."
+        }
       },
       "Zoom": {
         "keyin": "Zoom",
         "description": "Changes view magnification",
         "flyover": "Zoom About Point",
-        "Prompt": "Click to zoom view."
+        "Prompts": {
+          "FirstPoint": "Define point to zoom view about.",
+          "NextPoint": "Define amount of zoom."
+        }
       },
       "Look": {
         "keyin": "Look",
         "description": "Look around the design",
         "flyover": "Look Around",
-        "Prompt": "Click and drag to look around."
+        "Prompts": {
+          "FirstPoint": "Enter point to begin looking around.",
+          "NextPoint": "Define new view direction."
+        }
       },
       "Walk": {
         "keyin": "Walk",
         "description": "Walk around in the design",
         "flyover": "Walk Around",
-        "Prompt": "Click and drag to walk around."
+        "Prompts": {
+          "FirstPoint": "Enter point to start walking.",
+          "NextPoint": "Enter point to stop walking."
+        }
+      },
+      "Fly": {
+        "keyin": "Fly",
+        "description": "Fly around in the design",
+        "flyover": "Fly Around",
+        "Prompts": {
+          "FirstPoint": "Enter point to start flying.",
+          "NextPoint": "Enter point to stop flying."
+        }
       },
       "WindowArea": {
         "keyin": "Window Area",
         "description": "Select viewing area",
         "flyover": " Window Area",
-        "Prompt": "Click and drag to define viewing area."
+        "Prompts": {
+          "FirstPoint": "Define first corner point.",
+          "NextPoint": "Define opposite corner point."
+        }
       },
       "Scroll": {
         "keyin": "Scroll View",
         "description": "Scrolls view",
         "flyover": "Scroll",
-        "Prompt": "Click to start scrolling view."
+        "Prompts": {
+          "FirstPoint": "Enter point to start scrolling.",
+          "NextPoint": "Enter point to stop scrolling."
+        }
       },
       "Fit": {
         "keyin": "Fit View",
         "description": "Displays entire model",
         "flyover": "Fit View",
-        "Prompt": "Select view to fit",
+        "Prompts": {
+          "FirstPoint": "Select view to fit."
+        },
         "Model": {
           "keyin": "Fit Model",
           "description": "Fit all graphics in the chosen model"
         }
       },
-      "SelectView": "Select view",
-      "Navigate": "Click and drag to navigate view. Hold Shift to change elevation. Hold Ctrl to look around."
+      "SelectView": "Select view"
     },
     "Select": {
       "keyin": "Select Elements",
       "description": "Selects Element for inspection or manipulation",
-      "flyover": "Select Elements",
-      "Prompt": "Click or drag to selection elements."
+      "flyover": "Select Elements"
     },
     "ElementSet": {
-      "Prompt": {
+      "Prompts": {
         "IdentifyElement": "Identify element",
         "IdentifyLine": "Identify elements by crossing line",
         "IdentifyBox": "Identify elements by box corner points",
@@ -83,27 +113,6 @@
         "NoSSElems": "No elements selected.",
         "NotSuportedElmType": "Element type not valid for this tool",
         "ProjectExtents": "Invalid location. All elements must fit within the volume defined by the project extents."
-      }
-    },
-    "Region": {
-      "Error": {
-        "NoArea": "Difference results in zero area region",
-        "NoIntersection": "Regions do not intersect",
-        "Unbounded": "Unbounded solution",
-        "NonCoplanar": "Regions are not coplanar",
-        "NoEnclosingArea": "No enclosing region found",
-        "NotClosed": "Element is not closed, can't be used"
-      },
-      "Prompt": {
-        "SubtractFrom": "Identify Solid Element",
-        "Intersection": "Identify Intersecting Elements",
-        "Union": "Identify Union Elements",
-        "Difference": "Identify Difference Elements",
-        "PointEnter": "Enter point",
-        "PointEnterInside": "Enter point inside area",
-        "PointReset": "Enter point or RESET to complete",
-        "AcceptConstruction": "Accept - Complete Operation",
-        "AcceptRejectMulti": "Accept/Reject (Ctrl+Data to select = "
       }
     },
     "Plugin": {

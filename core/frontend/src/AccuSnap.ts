@@ -62,8 +62,8 @@ export class TouchCursor implements CanvasDecoration {
     ctx.lineWidth = 1;
     ctx.strokeStyle = "rgba(0,0,0,.5)";
     ctx.fillStyle = "white";
-    ctx.strokeRect(-1, -(this._yOffset + 1), 3, 3);
-    ctx.fillRect(0, -(this._yOffset), 1, 1);
+    ctx.strokeRect(-2, -(this._yOffset + 2), 5, 5);
+    ctx.fillRect(-1, -(this._yOffset + 1), 3, 3);
 
     ctx.beginPath();
     ctx.lineWidth = 1;
@@ -841,6 +841,11 @@ export class AccuSnap implements Decorator {
 
     // indicate errors
     this.showSnapError(out, ev);
+
+    if (undefined !== this.touchCursor && InputSource.Mouse === ev.inputSource) {
+      this.touchCursor = undefined;
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+    }
   }
 
   public onMotionStopped(_ev: BeButtonEvent): void { this._motionStopTime = Date.now(); }
