@@ -16,7 +16,7 @@ import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl"
 import { WidgetControl } from "../configurableui/WidgetControl";
 import { Tree, FilteringInput, TreeNodeItem, PageOptions, DelayLoadedTreeNodeItem, TreeDataChangesListener, SelectionMode } from "@bentley/ui-components";
 import "./ModelSelector.scss";
-import { PresentationTreeDataProvider, treeWithUnifiedSelection, treeWithFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { PresentationTreeDataProvider, treeWithFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { RegisteredRuleset, NodeKey, NodePathElement } from "@bentley/presentation-common";
 import { CheckBoxState } from "@bentley/ui-core";
@@ -249,6 +249,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         filtering: this.state.treeInfo ? this.state.treeInfo.filtering : false,
         activeMatchIndex: this.state.treeInfo ? this.state.treeInfo.activeMatchIndex : 0,
         matchesCount: this.state.treeInfo ? this.state.treeInfo.matchesCount : 0,
+        selectedNodes: [],
       },
       activeGroup: group,
       expand: true,
@@ -271,7 +272,12 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       // after onTreeNodeChanged(). I was not able to find the issue.
       enable ? this._selectLabel(node) : this._deselectLabel(node);
     }
-    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(nodes);
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo!,
+        selectedNodes: [...this.state.treeInfo!.selectedNodes!],
+      },
+    });
   }
 
   /** Invert display on all items */
@@ -631,7 +637,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 }
 
 // tslint:disable-next-line:variable-name
-const CategoryModelTree = treeWithFilteringSupport(treeWithUnifiedSelection(Tree));
+const CategoryModelTree = treeWithFilteringSupport(Tree);
 
 export default ModelSelectorWidget;
 
