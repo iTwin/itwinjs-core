@@ -68,7 +68,7 @@
     width: $nz-desktop-item-height;
 
     > .nz-expanded {
-      > * {
+      > * > * {
         display: grid;
         height: $nz-desktop-item-height;
         margin-top: $nz-desktop-space-between-toolbar-items;
@@ -78,7 +78,7 @@
     > .nz-histories {
       > .nz-viewport {
         > .nz-container {
-          > * {
+          > * > * {
             height: $nz-desktop-item-height;
             margin-top: $nz-desktop-space-between-toolbar-items;
           }
@@ -127,7 +127,7 @@
           grid-auto-columns: min-content;
           left: 1px;
 
-          > * {
+          > * > * {
             width: $nz-desktop-item-width;
             margin-left: $nz-desktop-space-between-toolbar-items;
           }
@@ -171,7 +171,7 @@
 
     &.nz-panel-alignment-start {
       > .nz-panels {
-        > * {
+        > * > * {
           justify-content: start;
         }
       }
@@ -179,7 +179,7 @@
 
     &.nz-panel-alignment-end {
       > .nz-panels {
-        > * {
+        > * > * {
           justify-content: end;
         }
       }

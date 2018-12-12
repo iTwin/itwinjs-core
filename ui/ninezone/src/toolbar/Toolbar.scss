@@ -18,7 +18,7 @@
     @include uicore-z-index(toolbarHistories);
 
     > .nz-item > div {
-      > * {
+      > * > * {
         pointer-events: auto;
       }
     }
@@ -31,7 +31,7 @@
 
   &.nz-vertical {
     > .nz-expanded {
-      > * {
+      > * > * {
         display: grid;
         height: $nz-desktop-item-height;
         margin-top: $nz-desktop-space-between-toolbar-items;
@@ -40,7 +40,7 @@
 
     &.nz-panel-alignment-start {
       > .nz-panels {
-        > * {
+        > * > * {
           align-content: start;
         }
       }
@@ -48,7 +48,7 @@
 
     &.nz-panel-alignment-end {
       > .nz-panels {
-        > * {
+        > * > * {
           align-content: end;
         }
       }
@@ -59,7 +59,7 @@
     > .nz-expanded {
       display: flex;
 
-      > * {
+      > * > * {
         width: $nz-desktop-item-width;
         margin-left: $nz-desktop-space-between-toolbar-items;
         display: grid;
@@ -68,16 +68,14 @@
     }
 
     > .nz-panels {
-      > * {
-        > * {
-          float: left;
-        }
+      > * > *{
+        float: left;
       }
     }
 
     &.nz-panel-alignment-start {
       > .nz-panels {
-        > * {
+        > * > * {
           justify-content: start;
         }
       }
@@ -85,7 +83,7 @@
 
     &.nz-panel-alignment-end {
       > .nz-panels {
-        > * {
+        > * > * {
           justify-content: end;
         }
       }

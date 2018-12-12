@@ -45,6 +45,9 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
   private static readonly _DESKTOP_SEPARATOR_SIZE = 1;
   private static readonly _BORDER_WIDTH = 1;
 
+  private _histories = React.createRef<HTMLDivElement>();
+  private _panels = React.createRef<HTMLDivElement>();
+
   public static readonly defaultProps: Partial<ScrollableDefaultProps> = {
     ...Toolbar.defaultProps,
     visibleItemThreshold: 5,
@@ -64,7 +67,9 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
   public render() {
     return (
       <PanelsProvider
+        histories={this._histories}
         items={this.props.items}
+        panels={this._panels}
       >
         {this._renderItems}
       </PanelsProvider>
@@ -244,7 +249,7 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
     return itemCnt - this.getVisibleItemCount() - this.state.scrollOffset === 0;
   }
 
-  private _renderItems = (histories: React.ReactNode, panels: React.ReactNode) => {
+  private _renderItems = (items: React.ReactNode) => {
     const isLeftScrollIndicatorVisible = this.isLeftScrollIndicatorVisible();
     const isRightScrollIndicatorVisible = this.isRightScrollIndicatorVisible();
     const direction = getToolbarDirection(this.props.expandsTo!);
@@ -284,16 +289,16 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
             <div
               className="nz-container"
               style={this.getHistoryScrolledStyle(direction)}
+              ref={this._histories}
             >
-              {histories}
             </div>
           </div>
         </div>
         <div
           className="nz-expanded nz-panels"
           style={scrolledStyle}
+          ref={this._panels}
         >
-          {panels}
         </div>
         <div
           className="nz-items-viewport"
@@ -304,7 +309,7 @@ export class Scrollable extends React.PureComponent<ScrollableProps, ScrollableS
             direction={direction}
             style={scrolledStyle}
           >
-            {this.props.items}
+            {items}
           </Items>
           <Indicator
             className={leftIndicatorClassName}

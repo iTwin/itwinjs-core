@@ -22,7 +22,7 @@ describe("<Toolbar />", () => {
       />,
     );
     const renderProp = sut.find(PanelsProvider).prop("children");
-    const rendered = shallow(renderProp!(undefined, undefined) as React.ReactElement<{}>);
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
     rendered.should.matchSnapshot();
   });
 
@@ -33,7 +33,7 @@ describe("<Toolbar />", () => {
       />,
     );
     const renderProp = sut.find(PanelsProvider).prop("children");
-    const rendered = shallow(renderProp!(undefined, undefined) as React.ReactElement<{}>);
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
     rendered.should.matchSnapshot();
   });
 });

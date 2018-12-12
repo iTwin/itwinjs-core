@@ -82,6 +82,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
 
     return (
       <Item
+        {...this.props}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
         title={this.props.actionItem.label}

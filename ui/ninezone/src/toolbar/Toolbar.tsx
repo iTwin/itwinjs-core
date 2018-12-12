@@ -7,7 +7,7 @@
 import * as classnames from "classnames";
 import * as React from "react";
 import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
-import { CommonProps, NoChildrenProps } from "../utilities/Props";
+import { CommonProps, NoChildrenProps, FlattenChildren } from "../utilities/Props";
 import { Items } from "./Items";
 import "./Toolbar.scss";
 
@@ -37,42 +37,83 @@ export class ToolbarPanelAlignmentHelpers {
 /** Properties of [[PanelsProvider]] component. */
 export interface PanelsProviderProps {
   /** Render prop that provides item panels. */
-  children?: (histories: React.ReactNode, panels: React.ReactNode) => React.ReactNode;
+  children?: (items: React.ReactNode) => React.ReactNode;
+  /** Ref to histories container. */
+  histories: React.RefObject<HTMLElement>;
   /** Items of the toolbar. */
   items?: React.ReactNode;
+  /** Ref to panels container. */
+  panels: React.RefObject<HTMLElement>;
 }
 
+/** Provides panels and histories of toolbar items. */
 export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
+  private appendPanels() {
+    const panels = this.props.panels.current;
+    if (!panels)
+      return;
+
+    while (panels.firstChild) {
+      panels.removeChild(panels.firstChild);
+    }
+
+    for (const ref of this._refs) {
+      if (!ref.current)
+        continue;
+      if (!ref.current.panel)
+        continue;
+      panels.appendChild(ref.current.panel);
+    }
+  }
+
+  private appendHistories() {
+    const histories = this.props.histories.current;
+    if (!histories)
+      return;
+
+    while (histories.firstChild) {
+      histories.removeChild(histories.firstChild);
+    }
+
+    for (const ref of this._refs) {
+      if (!ref.current)
+        continue;
+      if (!ref.current.history)
+        continue;
+      histories.appendChild(ref.current.history);
+    }
+  }
+
+  public componentDidMount() {
+    this.appendPanels();
+    this.appendHistories();
+  }
+
+  public componentDidUpdate() {
+    this.appendPanels();
+    this.appendHistories();
+  }
+
+  private _refs = new Array<React.RefObject<ToolbarItem>>();
+
   public render() {
-    const mapped = React.Children.toArray(this.props.items).reduce((acc, item, index) => {
-      if (!React.isValidElement<WithExpandableItemProps>(item))
+    const flattened = FlattenChildren(this.props.items);
+    const itemsArray = React.Children.toArray(flattened);
+    this._refs = [];
+    const items = itemsArray.reduce((acc, item) => {
+      if (!React.isValidElement<ToolbarItemProps<ToolbarItem>>(item))
         return acc;
 
-      const panel = (
-        <div
-          key={item.key || index}
-        >
-          {item.props.panel}
-        </div>
-      );
-
-      const history = (
-        <div
-          key={item.key || index}
-        >
-          {item.props.history}
-        </div>
-      );
-
-      acc.panels.push(panel);
-      acc.histories.push(history);
-      return acc;
-    },
-      {
-        panels: new Array<React.ReactNode>(),
-        histories: new Array<React.ReactNode>(),
+      const toolbarItemRef = React.createRef<ToolbarItem>();
+      item = React.cloneElement(item, {
+        toolbarItemRef,
       });
-    return this.props.children && this.props.children(mapped.histories, mapped.panels);
+      this._refs.push(toolbarItemRef);
+
+      acc.push(item);
+      return acc;
+    }, new Array<React.ReactNode>());
+    return this.props.children && this.props.children(items);
   }
 }
 
@@ -101,17 +142,22 @@ export class Toolbar extends React.PureComponent<ToolbarProps> {
     panelAlignment: ToolbarPanelAlignment.Start,
   };
 
+  private _histories = React.createRef<HTMLDivElement>();
+  private _panels = React.createRef<HTMLDivElement>();
+
   public render() {
     return (
       <PanelsProvider
+        histories={this._histories}
         items={this.props.items}
+        panels={this._panels}
       >
         {this._renderItems}
       </PanelsProvider>
     );
   }
 
-  private _renderItems = (histories: React.ReactNode, panels: React.ReactNode) => {
+  private _renderItems = (items: React.ReactNode) => {
     const direction = getToolbarDirection(this.props.expandsTo!);
     const className = classnames(
       "nz-toolbar-toolbar",
@@ -127,45 +173,28 @@ export class Toolbar extends React.PureComponent<ToolbarProps> {
       >
         <div
           className="nz-expanded nz-histories"
-        >
-          {histories}
-        </div>
+          ref={this._histories}
+        />
         <div
           className="nz-expanded nz-panels"
-        >
-          {panels}
-        </div>
+          ref={this._panels}
+        />
         <Items
           className="nz-items"
           direction={direction}
         >
-          {this.props.items}
+          {items}
         </Items>
       </div >
     );
   }
 }
 
-/** Properties of [[withExpandableItem]] HOC. */
-export interface WithExpandableItemProps {
-  /** History of the toolbar. See [[]] */
-  history?: React.ReactNode;
-  /** Panel of the toolbar. See [[]] */
-  panel?: React.ReactNode;
+export interface ToolbarItem {
+  panel: HTMLElement;
+  history: HTMLElement;
 }
 
-/** HOC which will ensure, that wrapped component conforms to expandable item interface. */
-export const withExpandableItem = <ComponentProps extends {}>(
-  // tslint:disable-next-line:variable-name
-  Component: React.ComponentType<ComponentProps>,
-) => {
-  return class WithExpandableItem extends React.PureComponent<ComponentProps & WithExpandableItemProps> {
-    public render() {
-      return (
-        <Component
-          {...this.props}
-        />
-      );
-    }
-  };
-};
+export interface ToolbarItemProps<TItem extends ToolbarItem> {
+  toolbarItemRef?: React.RefObject<TItem>;
+}

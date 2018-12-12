@@ -1,7 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Toolbar /> renders correctly 1`] = `
-<PanelsProvider>
+<PanelsProvider
+  histories={
+    Object {
+      "current": null,
+    }
+  }
+  panels={
+    Object {
+      "current": null,
+    }
+  }
+>
   <Component />
 </PanelsProvider>
 `;

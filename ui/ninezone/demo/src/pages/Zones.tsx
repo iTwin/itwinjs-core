@@ -61,7 +61,7 @@ import { NestedGroup } from "@src/toolbar/item/expandable/group/Nested";
 import { HistoryIcon } from "@src/toolbar/item/expandable/history/Icon";
 import { HistoryTray, History, DefaultHistoryManager } from "@src/toolbar/item/expandable/history/Tray";
 import { Item } from "@src/toolbar/item/Icon";
-import { Toolbar, ToolbarPanelAlignment, withExpandableItem } from "@src/toolbar/Toolbar";
+import { Toolbar, ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import { Scrollable } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
 import { PointProps } from "@src/utilities/Point";
@@ -1433,42 +1433,48 @@ class WidgetContent extends React.PureComponent<WidgetContentProps> {
 }
 
 interface ToolbarItemProps {
+  history: React.ReactNode | undefined;
   onClick: (toolId: string) => void;
   onIsHistoryExtendedChange: (toolId: string, isExtended: boolean) => void;
+  panel: React.ReactNode | undefined;
   tool: Tool;
 }
 
 class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
   public render() {
-    if (!isToolGroup(this.props.tool))
+    const { onIsHistoryExtendedChange, tool, ...props } = this.props;
+    if (!isToolGroup(tool))
       return (
         <Item
+          {...props}
           icon={placeholderIcon}
-          isActive={this.props.tool.isActive}
-          isDisabled={this.props.tool.isDisabled}
+          isActive={tool.isActive}
+          isDisabled={tool.isDisabled}
           onClick={this._handleClick}
         />
       );
 
-    if (this.props.tool.isOverflow)
+    if (tool.isOverflow)
       return (
         <Overflow
-          isActive={this.props.tool.isActive}
-          isDisabled={this.props.tool.isDisabled}
+          {...props}
+          isActive={tool.isActive}
+          isDisabled={tool.isDisabled}
           onClick={this._handleClick}
         />
       );
 
     return (
       <ExpandableItem
-        isActive={this.props.tool.isActive}
-        isDisabled={this.props.tool.isDisabled}
+        {...props}
+        isActive={tool.isActive}
+        isDisabled={tool.isDisabled}
         onIsHistoryExtendedChange={this._handleIsHistoryExtendedChange}
       >
         <Item
           icon={placeholderIcon}
-          isActive={this.props.tool.isActive}
-          isDisabled={this.props.tool.isDisabled}
+          isActive={tool.isActive}
+          isDisabled={tool.isDisabled}
           onClick={this._handleClick}
         />
       </ExpandableItem>
@@ -1483,9 +1489,6 @@ class ToolbarItem extends React.PureComponent<ToolbarItemProps> {
     this.props.onIsHistoryExtendedChange(this.props.tool.id, isExtended);
   }
 }
-
-// tslint:disable-next-line:variable-name
-const ExpandableToolbarItem = withExpandableItem(ToolbarItem);
 
 interface ToolbarItemHistoryTrayProps {
   onHistoryItemClick: (item: HistoryItem) => void;
@@ -1767,7 +1770,6 @@ class Zone3 extends React.PureComponent<Zone3Props> {
       >
         <ToolsWidget
           isNavigation
-          preserveSpace
           horizontalToolbar={
             getNumberOfVisibleTools(this.props.horizontalTools) > 0 &&
             <ToolZoneToolbar
@@ -1858,7 +1860,7 @@ class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
         ) : undefined;
 
       const item = (
-        <ExpandableToolbarItem
+        <ToolbarItem
           history={history}
           key={tool.id}
           onClick={this.props.onToolClick}

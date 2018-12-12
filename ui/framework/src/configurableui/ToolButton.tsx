@@ -92,6 +92,7 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
 
     return (
       <Item
+        {...this.props}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
         title={this._label}

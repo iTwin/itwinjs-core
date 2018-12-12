@@ -6,6 +6,9 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { Direction, Chevron, ToolbarPanelAlignment, Scrollable, ScrollableState, PanelsProvider } from "../../ui-ninezone";
 
+// tslint:disable-next-line:variable-name
+const ToolbarItem = () => <div />;
+
 describe("<Scrollable />", () => {
   it("should render", () => {
     mount(<Scrollable />);
@@ -22,7 +25,7 @@ describe("<Scrollable />", () => {
       />,
     );
     const renderProp = sut.find(PanelsProvider).prop("children");
-    const rendered = shallow(renderProp!(undefined, undefined) as React.ReactElement<{}>);
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
     rendered.should.matchSnapshot();
   });
 
@@ -33,7 +36,7 @@ describe("<Scrollable />", () => {
       />,
     );
     const renderProp = sut.find(PanelsProvider).prop("children");
-    const rendered = shallow(renderProp!(undefined, undefined) as React.ReactElement<{}>);
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
     rendered.should.matchSnapshot();
   });
 
@@ -44,7 +47,7 @@ describe("<Scrollable />", () => {
       />,
     );
     const renderProp = sut.find(PanelsProvider).prop("children");
-    const rendered = shallow(renderProp!(undefined, undefined) as React.ReactElement<{}>);
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
     rendered.should.matchSnapshot();
   });
 
@@ -54,10 +57,7 @@ describe("<Scrollable />", () => {
         visibleItemThreshold={3}
         items={
           <>
-            <div />
-            <div />
-            <div />
-            <div />
+
           </>
         }
       />,
@@ -66,7 +66,7 @@ describe("<Scrollable />", () => {
       scrollOffset: 1,
     });
     const renderProp = sut.find(PanelsProvider).prop("children");
-    const rendered = shallow(renderProp!(undefined, undefined) as React.ReactElement<{}>);
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
     rendered.should.matchSnapshot();
   });
 
@@ -76,10 +76,10 @@ describe("<Scrollable />", () => {
         visibleItemThreshold={2}
         items={
           <>
-            <div />
-            <div />
-            <div />
-            <div />
+            <ToolbarItem />
+            <ToolbarItem />
+            <ToolbarItem />
+            <ToolbarItem />
           </>
         }
       />,
@@ -88,7 +88,7 @@ describe("<Scrollable />", () => {
       scrollOffset: 2,
     });
     const renderProp = sut.find(PanelsProvider).prop("children");
-    const rendered = shallow(renderProp!(undefined, undefined) as React.ReactElement<{}>);
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
     rendered.should.matchSnapshot();
   });
 
@@ -119,11 +119,11 @@ describe("<Scrollable />", () => {
         visibleItemThreshold={2}
         items={
           <>
-            <div />
-            <div />
-            <div />
-            <div />
-            <div />
+            <ToolbarItem />
+            <ToolbarItem />
+            <ToolbarItem />
+            <ToolbarItem />
+            <ToolbarItem />
           </>
         }
       />,

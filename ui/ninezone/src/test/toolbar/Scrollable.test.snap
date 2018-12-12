@@ -1,7 +1,18 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Scrollable /> renders correctly 1`] = `
-<PanelsProvider>
+<PanelsProvider
+  histories={
+    Object {
+      "current": null,
+    }
+  }
+  panels={
+    Object {
+      "current": null,
+    }
+  }
+>
   <Component />
 </PanelsProvider>
 `;
@@ -17,8 +28,8 @@ exports[`<Scrollable /> renders vertical with overflow scrolled left correctly 1
       className="nz-viewport"
       style={
         Object {
-          "left": 40,
-          "width": 82,
+          "left": 41,
+          "width": -41,
         }
       }
     >
@@ -26,8 +37,8 @@ exports[`<Scrollable /> renders vertical with overflow scrolled left correctly 1
         className="nz-container"
         style={
           Object {
-            "left": -40,
-            "marginLeft": -42,
+            "left": -41,
+            "marginLeft": -41,
           }
         }
       />
@@ -37,7 +48,7 @@ exports[`<Scrollable /> renders vertical with overflow scrolled left correctly 1
     className="nz-expanded nz-panels"
     style={
       Object {
-        "marginLeft": -42,
+        "marginLeft": -41,
       }
     }
   />
@@ -45,7 +56,7 @@ exports[`<Scrollable /> renders vertical with overflow scrolled left correctly 1
     className="nz-items-viewport"
     style={
       Object {
-        "width": 123,
+        "width": 0,
       }
     }
   >
@@ -54,15 +65,10 @@ exports[`<Scrollable /> renders vertical with overflow scrolled left correctly 1
       direction={1}
       style={
         Object {
-          "marginLeft": -42,
+          "marginLeft": -41,
         }
       }
-    >
-      <div />
-      <div />
-      <div />
-      <div />
-    </Items>
+    />
     <Indicator
       className="nz-left nz-is-visible"
       direction={0}
@@ -128,12 +134,7 @@ exports[`<Scrollable /> renders vertical with overflow scrolled right most corre
           "marginLeft": -83,
         }
       }
-    >
-      <div />
-      <div />
-      <div />
-      <div />
-    </Items>
+    />
     <Indicator
       className="nz-left nz-is-visible"
       direction={0}
