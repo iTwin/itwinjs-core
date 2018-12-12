@@ -6,19 +6,19 @@
 
 import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
 import { Angle, Constant, Matrix3d, Point2d, Point3d, Transform, Vector3d, XAndY } from "@bentley/geometry-core";
-import { NpcCenter, GeometryStreamProps } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, NpcCenter } from "@bentley/imodeljs-common";
 import { AccuSnap, TentativeOrAccuSnap } from "../AccuSnap";
 import { HitDetail } from "../HitDetail";
 import { IModelApp } from "../IModelApp";
+import { CanvasDecoration } from "../render/System";
 import { IconSprites } from "../Sprites";
 import { DecorateContext, DynamicsContext } from "../ViewContext";
-import { ScreenViewport, Viewport, linePlaneIntersect } from "../Viewport";
+import { linePlaneIntersect, ScreenViewport, Viewport } from "../Viewport";
 import { ViewState3d, ViewStatus } from "../ViewState";
 import { IdleTool } from "./IdleTool";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { BeButton, BeButtonEvent, BeButtonState, BeModifierKeys, BeTouchEvent, BeWheelEvent, CoordSource, EventHandled, InputCollector, InputSource, InteractiveTool, Tool } from "./Tool";
 import { ViewTool } from "./ViewTool";
-import { CanvasDecoration } from "../render/System";
 
 export const enum CoordinateLockOverrides {
   None = 0,
@@ -301,7 +301,6 @@ export class ToolAdmin {
   private _canvasDecoration?: CanvasDecoration;
   private _suspendedByViewTool?: SuspendedToolState;
   private _suspendedByInputCollector?: SuspendedToolState;
-  public cursorView?: ScreenViewport;
   private _viewTool?: ViewTool;
   private _primitiveTool?: PrimitiveTool;
   private _idleTool?: IdleTool;
@@ -381,6 +380,9 @@ export class ToolAdmin {
     ToolAdmin._removals.forEach((remove) => remove());
     ToolAdmin._removals.length = 0;
   }
+
+  /** Get the ScreenViewport where the cursor is currently, if any. */
+  public get cursorView(): ScreenViewport | undefined { return this.currentInputState.viewport; }
 
   /** A first-in-first-out queue of ToolEvents. */
   private readonly _toolEvents: ToolEvent[] = [];
@@ -684,18 +686,12 @@ export class ToolAdmin {
    */
   public readonly manipulatorToolEvent = new BeEvent<(tool: Tool, event: ManipulatorToolEvent) => void>();
 
-  /** Called when a viewport is closed */
-  public onViewportClosed(vp: Viewport): void {
+  private async onMouseEnter(vp: ScreenViewport): Promise<void> { this.currentInputState.viewport = vp; }
+
+  /** @hidden */
+  public async onMouseLeave(vp: ScreenViewport): Promise<void> {
     IModelApp.accuSnap.clear();
     this.currentInputState.clearViewport(vp);
-    if (this.cursorView === vp)
-      this.cursorView = undefined;
-  }
-
-  private async onMouseEnter(vp: ScreenViewport): Promise<void> { this.cursorView = vp; }
-  private async onMouseLeave(vp: ScreenViewport): Promise<void> {
-    IModelApp.notifications.clearToolTip();
-    this.cursorView = undefined;
     this.setCanvasDecoration(vp);
     vp.invalidateDecorations(); // stop drawing locate circle...
   }
@@ -759,7 +755,7 @@ export class ToolAdmin {
       if (tool)
         await tool.onMouseNoMotion(ev);
 
-      if (InputSource.Mouse === current.inputSource && this.cursorView) {
+      if (InputSource.Mouse === current.inputSource && this.currentInputState.viewport) {
         await IModelApp.accuSnap.onNoMotion(ev);
       }
     }
