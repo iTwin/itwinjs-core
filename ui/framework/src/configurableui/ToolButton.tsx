@@ -12,7 +12,7 @@ import { Icon } from "./IconComponent";
 import { FrontstageManager } from "./FrontstageManager";
 import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../SyncUiEventDispatcher";
 import { BaseItemState } from "./ItemDefBase";
-import { ToolItemProps } from "./ItemProps";
+import { ToolItemProps, StringGetter } from "./ItemProps";
 import { UiFramework } from "../UiFramework";
 import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
 
@@ -20,7 +20,7 @@ import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
  */
 export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
   private _componentUnmounting = false;
-  private _label: string = "";
+  private _label: string | StringGetter = "";
 
   /** @hidden */
   public readonly state: Readonly<BaseItemState>;
@@ -83,6 +83,15 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
     }
   }
 
+  public get label(): string {
+    let label = "";
+    if (typeof this._label === "string")
+      label = this._label;
+    else
+      label = this._label();
+    return label;
+  }
+
   public render(): React.ReactNode {
     if (!this.state.isVisible)
       return null;
@@ -94,7 +103,7 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
         {...toolbarItemProps}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
-        title={this._label}
+        title={this.label}
         key={this.props.toolId}
         onClick={this._execute}
         icon={icon}

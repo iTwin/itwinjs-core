@@ -8,6 +8,8 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "_itemList": ItemList {
         "_items": Array [
           CommandItemDef {
+            "_label": "",
+            "_tooltip": "",
             "commandId": "tool1",
             "execute": [Function],
             "featureId": "",
@@ -16,11 +18,11 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
             "isEnabled": true,
             "isPressed": false,
             "isVisible": true,
-            "label": "",
             "stateSyncIds": Array [],
-            "tooltip": "",
           },
           CommandItemDef {
+            "_label": "",
+            "_tooltip": "",
             "applicationData": Object {
               "key": "value",
             },
@@ -32,14 +34,14 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
             "isEnabled": true,
             "isPressed": false,
             "isVisible": true,
-            "label": "",
             "stateSyncIds": Array [],
-            "tooltip": "",
           },
         ],
       },
       "_itemMap": Map {
         "tool1" => CommandItemDef {
+          "_label": "",
+          "_tooltip": "",
           "commandId": "tool1",
           "execute": [Function],
           "featureId": "",
@@ -48,11 +50,11 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "isEnabled": true,
           "isPressed": false,
           "isVisible": true,
-          "label": "",
           "stateSyncIds": Array [],
-          "tooltip": "",
         },
         "tool2" => CommandItemDef {
+          "_label": "",
+          "_tooltip": "",
           "applicationData": Object {
             "key": "value",
           },
@@ -64,11 +66,11 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "isEnabled": true,
           "isPressed": false,
           "isVisible": true,
-          "label": "",
           "stateSyncIds": Array [],
-          "tooltip": "",
         },
       },
+      "_label": "tests.label",
+      "_tooltip": "",
       "direction": 3,
       "execute": [Function],
       "featureId": "",
@@ -80,6 +82,8 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "isVisible": true,
       "items": Array [
         CommandItemDef {
+          "_label": "",
+          "_tooltip": "",
           "commandId": "tool1",
           "execute": [Function],
           "featureId": "",
@@ -88,11 +92,11 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "isEnabled": true,
           "isPressed": false,
           "isVisible": true,
-          "label": "",
           "stateSyncIds": Array [],
-          "tooltip": "",
         },
         CommandItemDef {
+          "_label": "",
+          "_tooltip": "",
           "applicationData": Object {
             "key": "value",
           },
@@ -104,21 +108,19 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "isEnabled": true,
           "isPressed": false,
           "isVisible": true,
-          "label": "",
           "stateSyncIds": Array [],
-          "tooltip": "",
         },
       ],
       "itemsInColumn": 4,
-      "label": "tests.label",
       "stateSyncIds": Array [],
-      "tooltip": "",
     }
   }
   iconSpec="icon-placeholder"
   items={
     Array [
       CommandItemDef {
+        "_label": "",
+        "_tooltip": "",
         "commandId": "tool1",
         "execute": [Function],
         "featureId": "",
@@ -127,11 +129,11 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "isEnabled": true,
         "isPressed": false,
         "isVisible": true,
-        "label": "",
         "stateSyncIds": Array [],
-        "tooltip": "",
       },
       CommandItemDef {
+        "_label": "",
+        "_tooltip": "",
         "applicationData": Object {
           "key": "value",
         },
@@ -143,9 +145,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "isEnabled": true,
         "isPressed": false,
         "isVisible": true,
-        "label": "",
         "stateSyncIds": Array [],
-        "tooltip": "",
       },
     ]
   }

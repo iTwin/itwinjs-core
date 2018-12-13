@@ -20,6 +20,9 @@ export interface SyncUiProps {
   stateSyncIds?: string[];
 }
 
+/** Prototype for string getter function. */
+export type StringGetter = () => string;
+
 /** Definition that specify properties shared between many ConfigurableUi components.
  */
 export interface ItemProps extends IconProps, SyncUiProps {
@@ -34,11 +37,11 @@ export interface ItemProps extends IconProps, SyncUiProps {
   /** for future use. */
   featureId?: string;
   /** if set, it is used to explicitly set the label shown by a component. */
-  label?: string;
+  label?: string | StringGetter;
   /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
   labelKey?: string;
   /** used to explicitly set the tooltip shown by a component. */
-  tooltip?: string;
+  tooltip?: string | StringGetter;
   /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
   tooltipKey?: string;
   /** can be used by application to store miscellaneous data. */
