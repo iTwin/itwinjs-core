@@ -733,6 +733,40 @@ describe("BeInspireTree", () => {
       renderer.resetHistory();
     });
 
+    it("allows registering a listener for multiple events", () => {
+      const listener = sinon.spy();
+      const node = tree.node("0")!;
+
+      // verify registering multiple listeners works
+      tree.on([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred], listener);
+      node.focus();
+      node.blur();
+      expect(listener).to.be.calledTwice;
+
+      // verify unregistering a listener for specific events works
+      listener.resetHistory();
+      tree.removeListener([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred], listener);
+      node.focus();
+      node.blur();
+      expect(listener).to.not.be.called;
+
+      // verify unregistering all listeners for specific events works
+      listener.resetHistory();
+      tree.on([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred], listener);
+      tree.removeAllListeners([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred]);
+      node.focus();
+      node.blur();
+      expect(listener).to.not.be.called;
+
+      // verify unregistering all listeners for all events works
+      listener.resetHistory();
+      tree.on([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred], listener);
+      tree.removeAllListeners();
+      node.focus();
+      node.blur();
+      expect(listener).to.not.be.called;
+    });
+
     it("fires ChangesApplied event when applyChanges is called", () => {
       const listener = moq.Mock.ofInstance(() => { });
       tree.on(BeInspireTreeEvent.ChangesApplied, listener.object);

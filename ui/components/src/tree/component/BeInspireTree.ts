@@ -184,7 +184,7 @@ export class BeInspireTree<TNodePayload> {
       },
     };
     this._tree = new InspireTree(config);
-    this._tree.on([BeInspireTreeEvent.ModelLoaded], (model: BeInspireTreeNodes<TNodePayload>) => {
+    this.on(BeInspireTreeEvent.ModelLoaded, (model: BeInspireTreeNodes<TNodePayload>) => {
       model.forEach((n) => n.markDirty());
     });
     const baseTreeLoad = this._tree.load;
@@ -198,7 +198,7 @@ export class BeInspireTree<TNodePayload> {
     if (props.disposeChildrenOnCollapse) {
       if (!isDeferredDataProvider(props.dataProvider))
         throw new Error("Property `disposeChildrenOnCollapse` is only available on deferred data providers");
-      this._tree.on([BeInspireTreeEvent.NodeCollapsed], (node: BeInspireTreeNode<TNodePayload>) => {
+      this.on(BeInspireTreeEvent.NodeCollapsed, (node: BeInspireTreeNode<TNodePayload>) => {
         if (this._deferredLoadingHandler)
           this._deferredLoadingHandler.disposeNodeCaches(node);
         node.children = true;
@@ -291,19 +291,26 @@ export class BeInspireTree<TNodePayload> {
 
   /** Add a listener for specific event */
   public on(event: BeInspireTreeEvent | BeInspireTreeEvent[], listener: (...values: any[]) => void): this {
-    this._tree.on(event, listener);
+    const events = Array.isArray(event) ? event : [event];
+    events.forEach((e) => this._tree.on(e, listener));
     return this;
   }
 
   /** Remove listener for specific event */
   public removeListener(event: BeInspireTreeEvent | BeInspireTreeEvent[], listener: (...values: any[]) => void): this {
-    this._tree.removeListener(event, listener);
+    const events = Array.isArray(event) ? event : [event];
+    events.forEach((e) => this._tree.removeListener(e, listener));
     return this;
   }
 
   /** Remove all listeners for specific event(s) */
   public removeAllListeners(event?: BeInspireTreeEvent | BeInspireTreeEvent[]) {
-    this._tree.removeAllListeners(event);
+    if (!event) {
+      this._tree.removeAllListeners(undefined);
+      return;
+    }
+    const events = Array.isArray(event) ? event : [event];
+    events.forEach((e) => this._tree.removeAllListeners(e));
   }
 
   /** Get root node with the specified id */
