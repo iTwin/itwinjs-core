@@ -1561,16 +1561,24 @@ function saveImage() {
   window.open(url, "Saved View");
 }
 
-function updateTileLoadIndicator(spinner: HTMLDivElement): void {
-  const stats = IModelApp.tileRequests.statistics;
-  if (0 === stats.numActiveRequests && 0 === stats.numPendingRequests) {
-    spinner.style.visibility = "hidden";
-  } else {
-    spinner.style.visibility = "visible";
-    spinner.title = "Tile Requests: " + stats.numActiveRequests + " active, " + stats.numPendingRequests + " pending.";
+function updateTileLoadIndicator(progress: HTMLProgressElement): void {
+  let pctComplete = 1.0;
+  let title = "";
+  let color = "#00ff00";
+  const requested = undefined !== theViewport ? theViewport.numRequestedTiles : 0;
+  if (undefined !== theViewport && requested > 0) {
+    const selected = theViewport.numSelectedTiles;
+    const total = selected + requested;
+    pctComplete = selected / total;
+    title = "" + selected + " / " + total + " (" + requested + ")";
+    color = "#007fff";
   }
 
-  window.requestAnimationFrame(() => updateTileLoadIndicator(spinner));
+  progress.value = pctComplete;
+  progress.title = title;
+  progress.style.color = color;
+
+  window.requestAnimationFrame(() => updateTileLoadIndicator(progress));
 }
 
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
@@ -1696,8 +1704,8 @@ function wireIconsToFunctions() {
   });
 
   // Tile loading indicator
-  const tileLoadSpinner = document.getElementById("tile-load-spinner")! as HTMLDivElement;
-  window.requestAnimationFrame(() => updateTileLoadIndicator(tileLoadSpinner));
+  const tileLoadIndicator = document.getElementById("tile-load-indicator")! as HTMLProgressElement;
+  window.requestAnimationFrame(() => updateTileLoadIndicator(tileLoadIndicator));
 }
 
 // If we are using a browser, close the current iModel before leaving
