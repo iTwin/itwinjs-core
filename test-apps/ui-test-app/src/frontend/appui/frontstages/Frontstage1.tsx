@@ -17,6 +17,7 @@ import {
   FrontstageProvider,
   FrontstageProps,
   ZoneLocation,
+  ActionItemButton,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
@@ -62,15 +63,7 @@ export class Frontstage1 extends FrontstageProvider {
          *  The zones can be resized manually to take up the full height.
          */
         centerRight={
-          <Zone allowsMerging={true} mergeWithZone={ZoneLocation.BottomRight}
-          />
-        }
-        bottomLeft={
-          <Zone allowsMerging={true}
-            widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl}
-                fillZone={true} />,
-            ]}
+          <Zone defaultState={ZoneState.Open} allowsMerging={true} mergeWithZone={ZoneLocation.BottomRight}
           />
         }
         bottomCenter={
@@ -81,10 +74,10 @@ export class Frontstage1 extends FrontstageProvider {
           />
         }
         bottomRight={
-          <Zone allowsMerging={true}
+          <Zone defaultState={ZoneState.Open} allowsMerging={true}
             widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               <Widget defaultState={WidgetState.Open} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} fillZone={true} />,
+              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
             ]}
           />
         }
@@ -101,8 +94,8 @@ class FrontstageToolWidget extends React.Component {
       expandsTo={Direction.Bottom}
       items={
         <>
-          <ToolButton toolId={AppTools.tool1.id} iconSpec={AppTools.tool1.iconSpec!} labelKey={AppTools.tool1.label} execute={AppTools.tool1.execute} />
-          <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec!} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+          <ActionItemButton actionItem={AppTools.item1} />
+          <ActionItemButton actionItem={AppTools.item2} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconSpec="icon-placeholder"

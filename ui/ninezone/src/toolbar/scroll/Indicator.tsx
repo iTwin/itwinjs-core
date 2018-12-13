@@ -11,7 +11,7 @@ import { Chevron, ChevronProps } from "./Chevron";
 import "./Indicator.scss";
 
 /** Scroll indicator component. Used in [[Scrollable]] */
-export class Indicator extends React.Component<ChevronProps> {
+export class Indicator extends React.PureComponent<ChevronProps> {
   public render() {
     const { className, style, ...props } = this.props;
     const indicatorClassName = classnames(

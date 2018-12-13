@@ -6,7 +6,6 @@ exports[`<ToolAssistanceIndicator /> renders correctly 1`] = `
 >
   <div
     className="nz-indicator"
-    onClick={[Function]}
   >
     <div
       className="nz-icons"

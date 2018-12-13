@@ -13,6 +13,7 @@ import { ArrayPropertyValueRenderer } from "./renderers/value/ArrayPropertyValue
 import { StructPropertyValueRenderer } from "./renderers/value/StructPropertyValueRenderer";
 import { NavigationPropertyValueRenderer } from "./renderers/value/NavigationPropertyValueRenderer";
 import { DoublePropertyValueRenderer } from "./renderers/value/DoublePropertyValueRenderer";
+import { MergedPropertyValueRenderer } from "./renderers/value/MergedPropertyValueRenderer";
 
 /** Types of property containers */
 export enum PropertyContainerType {
@@ -65,10 +66,14 @@ export class PropertyValueRendererManager {
   protected _defaultPrimitiveValueRenderer: IPropertyValueRenderer = new PrimitivePropertyValueRenderer();
   protected _defaultArrayValueRenderer: IPropertyValueRenderer = new ArrayPropertyValueRenderer();
   protected _defaultStructValueRenderer: IPropertyValueRenderer = new StructPropertyValueRenderer();
+  protected _defaultMergedValueRenderer: IPropertyValueRenderer = new MergedPropertyValueRenderer();
 
   private selectRenderer(record: PropertyRecord) {
     if (this._propertyRenderers.has(record.property.typename))
       return this._propertyRenderers.get(record.property.typename)!;
+
+    if (this._defaultMergedValueRenderer.canRender(record))
+      return this._defaultMergedValueRenderer;
 
     // Use one of default renderers
     switch (record.value.valueFormat) {

@@ -18,22 +18,23 @@ export interface HyperlinkProps extends CommonProps, NoChildrenProps {
   onClick?: () => void;
 }
 
-// tslint:disable-next-line:variable-name
-const HyperlinkComponent: React.StatelessComponent<HyperlinkProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-hyperlink",
-    props.className);
+class HyperlinkComponent extends React.PureComponent<HyperlinkProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-hyperlink",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-      onClick={props.onClick}
-    >
-      {props.text}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+        onClick={this.props.onClick}
+      >
+        {this.props.text}
+      </div>
+    );
+  }
+}
 
 /** Hyperlink component used in status message. I.e. [[MessageLayout]] */
 // tslint:disable-next-line:variable-name

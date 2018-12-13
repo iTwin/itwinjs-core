@@ -96,7 +96,6 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   private _recreateTree() {
     this._tree = new BeInspireTree<TreeNodeItem>({
       dataProvider: this.props.path.getDataProvider(),
-      renderer: this._onModelChanged,
       mapPayloadToInspireNodeConfig: BreadcrumbDetails.inspireNodeFromTreeNodeItem,
     });
     this._tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
@@ -128,7 +127,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
   private _onModelLoaded = (rootNodes: BeInspireTreeNodes<TreeNodeItem>) => {
     this._updateTree(undefined);
     if (this.props.onRootNodesLoaded)
-      this.props.onRootNodesLoaded(rootNodes.map((n) => n.payload));
+      this.props.onRootNodesLoaded(rootNodes.map((n) => n.payload!));
   }
 
   private _onChildrenLoaded = (parentNode: BeInspireTreeNode<TreeNodeItem>) => {
@@ -139,10 +138,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     }
     const children = parentNode.getChildren();
     if (this.props.onChildrenLoaded)
-      this.props.onChildrenLoaded(parentNode.payload, toNodes<TreeNodeItem>(children).map((c) => c.payload));
-  }
-
-  private _onModelChanged = (_visibleNodes: Array<BeInspireTreeNode<TreeNodeItem>>) => {
+      this.props.onChildrenLoaded(parentNode.payload!, toNodes<TreeNodeItem>(children).map((c) => c.payload!));
   }
 
   private _onModelReady = () => {
@@ -190,9 +186,9 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
     }
   }
   private _updateTree = (node: BeInspireTreeNode<TreeNodeItem> | undefined) => {
-    const childNodes = (node ? toNodes<TreeNodeItem>(node.getChildren()) : this._tree.nodes()).map((child) => child.payload);
+    const childNodes = (node ? toNodes<TreeNodeItem>(node.getChildren()) : this._tree.nodes()).map((child) => child.payload!);
     if (childNodes.length === 0) {
-      const parents = node ? toNodes<TreeNodeItem>(node.getParents()).map((child) => child.payload) : [];
+      const parents = node ? toNodes<TreeNodeItem>(node.getParents()).map((child) => child.payload!) : [];
       parents.reverse();
       if (parents.length > 1)
         this.props.path.setCurrentNode(parents[parents.length - 2]);

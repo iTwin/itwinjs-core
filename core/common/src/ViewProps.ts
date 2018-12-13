@@ -14,7 +14,7 @@ import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppeara
 import { RenderSchedule } from "./RenderSchedule";
 
 /** Returned from [IModelDb.Views.getViewStateData]($backend) */
-export interface ViewStateData {
+export interface ViewStateProps {
   viewDefinitionProps: ViewDefinitionProps;
   categorySelectorProps: CategorySelectorProps;
   displayStyleProps: DisplayStyleProps;

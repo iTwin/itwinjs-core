@@ -25,7 +25,7 @@ export interface ModalDefaultProps extends ModalProps {
 }
 
 /** Modal message as defined in 9-Zone UI spec. */
-export class Modal extends React.Component<ModalProps> {
+export class Modal extends React.PureComponent<ModalProps> {
   public static readonly defaultProps: ModalDefaultProps = {
     renderTo: () => document.body,
   };

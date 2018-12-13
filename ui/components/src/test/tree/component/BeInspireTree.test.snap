@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`BeInspireTree pagination calls render callback when child node is loaded for not rendered parent 1`] = `
+exports[`BeInspireTree pagination fires ChangesApplied event when child node is loaded for not rendered parent 1`] = `
 Array [
   Object {
     "id": "0",

@@ -23,20 +23,21 @@ export interface ToolSettingsTabProps extends CommonProps {
  * Tool settings widget tab.
  * @note Used in [[ToolSettings]] component.
  */
-// tslint:disable-next-line:variable-name
-export const ToolSettingsTab: React.StatelessComponent<ToolSettingsTabProps> = (props: ToolSettingsTabProps) => {
-  const className = classnames(
-    "nz-widget-toolSettings-tab",
-    props.isActive && "nz-is-active",
-    props.className);
+export class ToolSettingsTab extends React.PureComponent<ToolSettingsTabProps> {
+  public render() {
+    const className = classnames(
+      "nz-widget-toolSettings-tab",
+      this.props.isActive && "nz-is-active",
+      this.props.className);
 
-  return (
-    <button
-      className={className}
-      style={props.style}
-      onClick={props.onClick}
-    >
-      {props.children}
-    </button>
-  );
-};
+    return (
+      <button
+        className={className}
+        style={this.props.style}
+        onClick={this.props.onClick}
+      >
+        {this.props.children}
+      </button>
+    );
+  }
+}

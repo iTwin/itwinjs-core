@@ -16,20 +16,21 @@ export interface DialogContentProps extends CommonProps, NoChildrenProps {
 }
 
 /** Content of [[Dialog]] component. */
-// tslint:disable-next-line:variable-name
-export const DialogContent: React.StatelessComponent<DialogContentProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-dialog-content-content",
-    props.className);
+export class DialogContent extends React.PureComponent<DialogContentProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-dialog-content-content",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      <div className="nz-content">
-        {props.content}
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        <div className="nz-content">
+          {this.props.content}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+}

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added tool prompts. Fix dynamics changing locate circle. Hide touch cursor on mouse motion.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

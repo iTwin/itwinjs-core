@@ -21,25 +21,26 @@ export interface StatusMessageProps extends CommonProps {
   status: Status;
 }
 
-// tslint:disable-next-line:variable-name
-const StatusMessageComponent: React.StatelessComponent<StatusMessageProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-status-message",
-    StatusHelpers.getCssClassName(props.status),
-    props.className);
+class StatusMessageComponent extends React.PureComponent<StatusMessageProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-status-message",
+      StatusHelpers.getCssClassName(this.props.status),
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      <div className="nz-icon">
-        {props.icon}
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        <div className="nz-icon">
+          {this.props.icon}
+        </div>
+        {this.props.children}
       </div>
-      {props.children}
-    </div>
-  );
-};
+    );
+  }
+}
 
 /** Status message can be used in one of footer messages. I.e.: [[Toast]], [[Temporary]], [[Sticky]], [[Activity]] */
 // tslint:disable-next-line:variable-name

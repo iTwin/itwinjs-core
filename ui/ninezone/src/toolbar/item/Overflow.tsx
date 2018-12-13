@@ -17,7 +17,7 @@ export interface OverflowProps extends ExpandableItemProps {
 }
 
 /** Expandable toolbar item component that displays ellipsis icon. Used in [[Toolbar]] */
-export class Overflow extends React.Component<OverflowProps> {
+export class Overflow extends React.PureComponent<OverflowProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-overflow",

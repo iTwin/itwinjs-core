@@ -21,7 +21,7 @@ export interface NestedGroupProps extends GroupProps {
 }
 
 /** Nested tool group component. Used in [[ExpandableItem]] component. */
-export class NestedGroup extends React.Component<NestedGroupProps> {
+export class NestedGroup extends React.PureComponent<NestedGroupProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-nested",

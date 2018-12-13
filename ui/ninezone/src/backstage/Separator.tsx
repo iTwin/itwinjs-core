@@ -10,7 +10,7 @@ import { CommonProps } from "../utilities/Props";
 import "./Separator.scss";
 
 /** Item separator in the [[Backstage]]. */
-export class BackstageSeparator extends React.Component<CommonProps> {
+export class BackstageSeparator extends React.PureComponent<CommonProps> {
   public render() {
     const className = classnames(
       "nz-backstage-separator",

@@ -1,7 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<TrianglePopover /> renders correctly 1`] = `
-<Component
+<Popover
   className="nz-popup-popover-triangle"
   direction={0}
 >
@@ -11,11 +11,11 @@ exports[`<TrianglePopover /> renders correctly 1`] = `
   <div
     className="nz-triangle"
   />
-</Component>
+</Popover>
 `;
 
 exports[`<TrianglePopover /> should set direction class 1`] = `
-<Component
+<Popover
   className="nz-popup-popover-triangle"
   direction={3}
 >
@@ -25,5 +25,5 @@ exports[`<TrianglePopover /> should set direction class 1`] = `
   <div
     className="nz-triangle"
   />
-</Component>
+</Popover>
 `;

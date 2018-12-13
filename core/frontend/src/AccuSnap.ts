@@ -19,14 +19,14 @@ import { CanvasDecoration } from "./rendering";
 
 /** @hidden Virtual cursor for using AccuSnap with touch input. */
 export class TouchCursor implements CanvasDecoration {
-  public position: Point3d = new Point3d();
-  protected _offsetPosition: Point3d = new Point3d();
+  public position = new Point3d();
+  protected _offsetPosition = new Point3d();
   protected _size: number;
   protected _yOffset: number;
   protected _outlineColor: string;
   protected _fillColor: string;
-  protected _isDragging: boolean = false;
-  protected _inTouchTap: boolean = false;
+  protected _isDragging = false;
+  protected _inTouchTap = false;
 
   protected constructor(vp: ScreenViewport) {
     this._size = vp.pixelsFromInches(0.3);
@@ -62,8 +62,8 @@ export class TouchCursor implements CanvasDecoration {
     ctx.lineWidth = 1;
     ctx.strokeStyle = "rgba(0,0,0,.5)";
     ctx.fillStyle = "white";
-    ctx.strokeRect(-1, -(this._yOffset + 1), 3, 3);
-    ctx.fillRect(0, -(this._yOffset), 1, 1);
+    ctx.strokeRect(-2, -(this._yOffset + 2), 5, 5);
+    ctx.fillRect(-1, -(this._yOffset + 1), 3, 3);
 
     ctx.beginPath();
     ctx.lineWidth = 1;
@@ -841,6 +841,11 @@ export class AccuSnap implements Decorator {
 
     // indicate errors
     this.showSnapError(out, ev);
+
+    if (undefined !== this.touchCursor && InputSource.Mouse === ev.inputSource) {
+      this.touchCursor = undefined;
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+    }
   }
 
   public onMotionStopped(_ev: BeButtonEvent): void { this._motionStopTime = Date.now(); }

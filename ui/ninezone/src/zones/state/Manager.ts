@@ -42,7 +42,7 @@ export class StateManager {
     const isClosing = !isOpening;
 
     if (isClosing && zone.isFloating())
-      return { ...model.props };
+      return state;
 
     // Close all widgets
     const widgets = zone.props.widgets.map((w) => ({
@@ -112,21 +112,38 @@ export class StateManager {
         ...model.props.zones,
         ...Object.keys(model.props.zones).reduce((acc: Partial<ZonesType>, key) => {
           const id = Number(key) as WidgetZoneIndex;
+          const zone = state.zones[id];
+
           const layout = model.getWidgetZone(id).getLayout();
-          const bounds = layout.bounds;
-          const floatingBounds = layout.floatingBounds;
+          const bounds = layout.bounds.equals(zone.bounds) ? zone.bounds : layout.bounds;
+          const isLayoutChanged = zoneId === id ? true : zone.isLayoutChanged;
+
+          const oldFloatingBounds = zone.floating ? zone.floating.bounds : undefined;
+          const newFloatingBounds = layout.floatingBounds;
+
+          let floating = zone.floating;
+          if (newFloatingBounds && oldFloatingBounds && !newFloatingBounds.equals(oldFloatingBounds)) {
+            floating = {
+              ...state.zones[id].floating,
+              stackId: state.zones[id].floating!.stackId,
+              bounds: newFloatingBounds,
+            };
+          }
+
+          const noChange = bounds === zone.bounds &&
+            floating === zone.floating &&
+            isLayoutChanged === zone.isLayoutChanged;
+
+          if (noChange) {
+            acc[id] = zone;
+            return acc;
+          }
 
           acc[id] = {
             ...model.props.zones[id],
-            ...zoneId === id ? { isLayoutChanged: true } : {},
-            ...floatingBounds && state.zones[id].floating ? {
-              floating: {
-                ...state.zones[id].floating,
-                stackId: state.zones[id].floating!.stackId,
-                bounds: floatingBounds,
-              },
-            } : {},
             bounds,
+            floating,
+            isLayoutChanged,
           };
           return acc;
         }, {}),
@@ -140,7 +157,7 @@ export class StateManager {
     const model = this._nineZoneFactory(state);
     const root = model.root;
     if (root.isInFooterMode === isInFooterMode)
-      return { ...model.props };
+      return state;
 
     root.isInFooterMode = isInFooterMode;
 
@@ -203,7 +220,7 @@ export class StateManager {
     const widget = model.getWidget(widgetId);
     const zone = widget.zone;
     if (!zone.isWidgetOpen)
-      return { ...model.props };
+      return state;
 
     const isUnmerge = zone.getWidgets().length > 1;
     const defaultZone = widget.defaultZone;
@@ -290,13 +307,6 @@ export class StateManager {
       return {
         ...state,
         draggingWidget: undefined,
-        zones: {
-          ...state.zones,
-          [state.draggingWidget.id]: {
-            ...state.zones[state.draggingWidget.id],
-            floating: undefined,
-          },
-        },
       };
     }
 
@@ -315,11 +325,11 @@ export class StateManager {
     const draggingWidget = model.draggingWidget;
 
     if (!draggingWidget)
-      return { ...model.props };
+      return state;
 
     const draggingZone = draggingWidget.defaultZone;
     if (!draggingZone.props.floating)
-      return { ...model.props };
+      return state;
 
     const newBounds = Rectangle.create(draggingZone.props.floating.bounds).offset(dragged);
     const lastPosition = Point.create(draggingWidget.props.lastPosition).offset(dragged);
@@ -441,7 +451,7 @@ export class StateManager {
 
     const draggingWidget = model.draggingWidget;
     if (!draggingWidget)
-      return { ...state };
+      return state;
 
     const draggingZone = draggingWidget.zone;
     return {

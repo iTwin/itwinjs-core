@@ -20,7 +20,7 @@ export interface SnapModeIconProps extends CommonProps, NoChildrenProps {
 }
 
 /** Snap mode icon displays characters as snap icon. Used in Snap, SnapModeIndicator components. */
-export class SnapModeIcon extends React.Component<SnapModeIconProps> {
+export class SnapModeIcon extends React.PureComponent<SnapModeIconProps> {
   public render() {
     const className = classnames(
       "icon icon-" + this.props.iconName,

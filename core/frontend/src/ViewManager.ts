@@ -232,7 +232,9 @@ export class ViewManager {
       return BentleyStatus.ERROR;
 
     this.onViewClose.emit(vp);
-    IModelApp.toolAdmin.onViewportClosed(vp); // notify tools that this view is no longer valid
+
+    // make sure tools don't think the cursor is still in this viewport
+    IModelApp.toolAdmin.onMouseLeave(vp); // tslint:disable-line:no-floating-promises
 
     vp.setEventController(undefined);
     this._viewports.splice(index, 1);

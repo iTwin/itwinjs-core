@@ -22,7 +22,7 @@ export const withContainInViewport = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
 ) => {
-  return class WithContainInViewport extends React.Component<ComponentProps & WithContainInViewportProps> {
+  return class WithContainInViewport extends React.PureComponent<ComponentProps & WithContainInViewportProps> {
     public getContainerBounds(): Rectangle {
       return new Rectangle(0, 0, window.innerWidth, window.innerHeight);
     }
@@ -56,13 +56,10 @@ export const withContainInViewport = <ComponentProps extends {}>(
     }
 
     public render() {
-      const copyProps = Object.assign({}, this.props);
-      delete (copyProps as WithContainInViewportProps).noVerticalContainment;
-      delete (copyProps as WithContainInViewportProps).noHorizontalContainment;
-
+      const { noVerticalContainment, noHorizontalContainment, ...props } = this.props as WithContainInViewportProps;
       return (
         <Component
-          {...copyProps}
+          {...props}
           {...this.state}
         />
       );

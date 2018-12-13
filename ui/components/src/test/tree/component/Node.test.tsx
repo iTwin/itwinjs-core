@@ -7,27 +7,30 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "react-testing-library";
 import { Tree } from "../../../tree/component/Tree";
-import { BeInspireTree } from "../../../tree/component/BeInspireTree";
+import { BeInspireTree, BeInspireTreeNode } from "../../../tree/component/BeInspireTree";
 import { TreeNode } from "../../../tree/component/Node";
 import { waitForSpy } from "../../test-helpers/misc";
 import { TreeNodeItem } from "../../../tree/TreeDataProvider";
 
 describe("Node", () => {
-  const tree = new BeInspireTree<TreeNodeItem>({
-    dataProvider: [{ id: "0", label: "0" }],
-    renderer: () => { },
-    mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem,
-  });
-  const node = tree.nodes()[0];
 
-  beforeEach(() => node.setDirty(true));
-  afterEach(() => node.setDirty(false));
+  let tree: BeInspireTree<TreeNodeItem>;
+  let node: BeInspireTreeNode<TreeNodeItem>;
+
+  beforeEach(() => {
+    tree = new BeInspireTree<TreeNodeItem>({
+      dataProvider: [{ id: "0", label: "0" }],
+      mapPayloadToInspireNodeConfig: Tree.inspireNodeFromTreeNodeItem,
+    });
+    node = tree.nodes()[0];
+  });
 
   it("renders label with synchronous function", async () => {
     const renderLabelSpy = sinon.spy(() => "Test label");
     const renderedNode = render(
       <TreeNode
         renderLabel={renderLabelSpy}
+        renderId=""
         node={node}
       />);
 
@@ -42,6 +45,7 @@ describe("Node", () => {
       <TreeNode
         onFinalRenderComplete={onRenderSpy}
         renderLabel={renderLabelSpy}
+        renderId=""
         node={node}
       />);
 
@@ -59,6 +63,7 @@ describe("Node", () => {
     const renderedNode = render(
       <TreeNode
         renderLabel={renderLabelSpy}
+        renderId="1"
         node={node}
       />);
 
@@ -72,6 +77,7 @@ describe("Node", () => {
       <TreeNode
         onFinalRenderComplete={onRenderSpy}
         renderLabel={asyncRenderLabelSpy}
+        renderId="2"
         node={node}
       />);
 
@@ -87,13 +93,19 @@ describe("Node", () => {
       <TreeNode
         onFinalRenderComplete={onRenderedSpy}
         renderLabel={renderLabelSpy}
+        renderId="1"
         node={node}
       />);
 
     expect(renderLabelSpy.called).to.be.true;
     expect(onRenderedSpy.calledOnce);
 
-    renderedNode.rerender(<TreeNode renderLabel={renderLabelSpy} node={node} />);
+    renderedNode.rerender(
+      <TreeNode
+        renderLabel={renderLabelSpy}
+        renderId="2"
+        node={node}
+      />);
 
     expect(onRenderedSpy.calledTwice);
   });

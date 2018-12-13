@@ -1,6 +1,14 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Mon, 10 Dec 2018 21:19:45 GMT and should not be manually modified.
+This log was last generated on Wed, 12 Dec 2018 17:21:32 GMT and should not be manually modified.
+
+## 0.177.0
+Wed, 12 Dec 2018 17:21:32 GMT
+
+### Updates
+
+- Updated TreeNodes to manage checkboxes
+- Fix tree Node checkbox-related props
 
 ## 0.176.0
 Mon, 10 Dec 2018 21:19:45 GMT

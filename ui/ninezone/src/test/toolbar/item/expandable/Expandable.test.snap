@@ -2,18 +2,10 @@
 
 exports[`<Expandable /> renders correctly 1`] = `
 <div
-  className="nz-toolbar-item-expandable-expandable"
-  onMouseEnter={[Function]}
-  onMouseLeave={[Function]}
+  className="nz-base-expandable nz-direction-right"
 >
   <div
-    className="nz-triangle"
-  />
-  <Portal
-    containerInfo={<div />}
-  />
-  <Portal
-    containerInfo={<div />}
+    className="nz-expanded"
   />
 </div>
 `;

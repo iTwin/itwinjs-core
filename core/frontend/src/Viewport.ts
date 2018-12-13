@@ -872,7 +872,7 @@ export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its ViewState. */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
 
-  private _animationFraction: number = 0.0;
+  private _animationFraction = 0.0;
   private _doContinuousRendering = false;
   private _animator?: Animator;
   /** Time the current flash started.
@@ -899,7 +899,7 @@ export abstract class Viewport implements IDisposable {
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
   private _addFeatureOverrides?: AddFeatureOverrides;
-  private _wantTileBoundingBoxes: boolean = false;
+  private _wantTileBoundingBoxes = false;
   private _viewFrustum!: ViewFrustum;
   private _target?: RenderTarget;
 
@@ -2096,6 +2096,40 @@ export class ScreenViewport extends Viewport {
       context.addCanvasDecoration({ position, drawDecoration }, true);
     }
   }
+}
+
+/**
+ * Forms a 2-way connection between 2 Viewports of the same iModel, such that any change of the parameters in one will be reflected in the other.
+ * For example, Navigator uses this class to synchronize two views for revision comparison.
+ * @note This approach is only possible with two views of the same type.
+ * @note It is possible to synchronize two Viewports from two different [[IModelConnection]]s of the same iModel.
+ */
+export class TwoWayViewportSync {
+  private _removals: VoidFunction[] = [];
+  private _isEcho = false;
+  private syncView(source: Viewport, target: Viewport) {
+    if (this._isEcho) return;
+    this._isEcho = true; // so we don't react to the echo of this sync
+    target.applyViewState(source.view);
+    this._isEcho = false;
+  }
+
+  /** Establish the connection between two Viewports. When this method is called, view2 is initialized with the state of view1. */
+  public connect(view1: Viewport, view2: Viewport) {
+    this.disconnect();
+
+    if (view1.view.is3d !== view2.view.is3d)
+      throw new Error("cannot sync 2d view to 3d view");
+
+    view2.applyViewState(view1.view); // use view1 as the starting point
+
+    // listen to the onViewChanged events from both views
+    this._removals.push(view1.onViewChanged.addListener(() => this.syncView(view1, view2)));
+    this._removals.push(view2.onViewChanged.addListener(() => this.syncView(view2, view1)));
+  }
+
+  /** Remove the connection the two views. */
+  public disconnect() { this._removals.forEach((removal) => removal()); }
 }
 
 /** @hidden */

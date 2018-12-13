@@ -1,20 +1,20 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`<Toolbar /> renders correctly 1`] = `
-<div
-  className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-start"
+<PanelsProvider
+  histories={
+    Object {
+      "current": null,
+    }
+  }
+  panels={
+    Object {
+      "current": null,
+    }
+  }
 >
-  <div
-    className="nz-expanded nz-history"
-  />
-  <div
-    className="nz-expanded nz-panels"
-  />
-  <Items
-    className="nz-items"
-    direction={1}
-  />
-</div>
+  <Component />
+</PanelsProvider>
 `;
 
 exports[`<Toolbar /> renders with expandsTo 1`] = `
@@ -22,7 +22,7 @@ exports[`<Toolbar /> renders with expandsTo 1`] = `
   className="nz-toolbar-toolbar nz-direction-right nz-vertical nz-panel-alignment-start"
 >
   <div
-    className="nz-expanded nz-history"
+    className="nz-expanded nz-histories"
   />
   <div
     className="nz-expanded nz-panels"
@@ -39,7 +39,7 @@ exports[`<Toolbar /> renders with panelAlignment 1`] = `
   className="nz-toolbar-toolbar nz-direction-bottom nz-horizontal nz-panel-alignment-end"
 >
   <div
-    className="nz-expanded nz-history"
+    className="nz-expanded nz-histories"
   />
   <div
     className="nz-expanded nz-panels"

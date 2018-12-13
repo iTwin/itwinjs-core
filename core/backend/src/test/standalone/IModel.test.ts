@@ -904,7 +904,8 @@ describe("iModel", () => {
     assert.equal(foundRelClassName2, relClassName2);
   });
 
-  it("should create link table relationship instances", () => {
+  // NEEDS_WORK_TXNMANAGER: Re-enable this when we upgrade to Node 10
+  it.skip("should create link table relationship instances", () => {
     const testImodel = imodel1;
     const elements = testImodel.elements;
 

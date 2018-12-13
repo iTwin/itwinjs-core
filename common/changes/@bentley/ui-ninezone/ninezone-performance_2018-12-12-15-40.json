@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Migrate from React.Component to React.PureComponent",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}

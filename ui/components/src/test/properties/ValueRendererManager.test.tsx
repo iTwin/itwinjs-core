@@ -7,8 +7,13 @@ import { mount } from "enzyme";
 import * as React from "react";
 import { PropertyValueRendererManager, IPropertyValueRenderer } from "../../properties/ValueRendererManager";
 import TestUtils from "../TestUtils";
+import UiComponents from "../../UiComponents";
 
 describe("PropertyValueRendererManager", () => {
+  before(async () => {
+    await TestUtils.initializeUiComponents();
+  });
+
   const fakeRenderer: IPropertyValueRenderer = {
     canRender: () => true,
     render: async () => undefined,
@@ -103,6 +108,17 @@ describe("PropertyValueRendererManager", () => {
       const valueMount = mount(<div>{value}</div>);
 
       expect(valueMount.text()).to.be.empty;
+    });
+
+    it("renders merged properties", async () => {
+      const property = TestUtils.createPrimitiveStringProperty("Label", "Test prop");
+      property.isMerged = true;
+
+      const value = await manager.render(property);
+
+      const valueMount = mount(<div>{value}</div>);
+
+      expect(valueMount.text()).to.be.equal(UiComponents.i18n.translate("UiComponents:property.varies"));
     });
   });
 });

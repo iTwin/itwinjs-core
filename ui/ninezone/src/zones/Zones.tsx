@@ -16,7 +16,7 @@ export interface ZonesProps extends CommonProps {
 }
 
 /** Zones component of 9-zone UI app. */
-export class Zones extends React.Component<ZonesProps> {
+export class Zones extends React.PureComponent<ZonesProps> {
   public render() {
     const className = classnames(
       "nz-zones-zones",

@@ -21,7 +21,7 @@ export interface GroupProps extends CommonProps, NoChildrenProps {
 }
 
 /** Tool group component. Used in [[ExpandableItem]] component.  */
-export class Group extends React.Component<GroupProps> {
+export class Group extends React.PureComponent<GroupProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-group",

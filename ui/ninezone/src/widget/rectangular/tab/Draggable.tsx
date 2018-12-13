@@ -26,7 +26,7 @@ export interface DraggableProps extends TabProps {
 }
 
 /** Draggable tab of rectangular widget. Used in [[Stacked]] component. */
-export class Draggable extends React.Component<DraggableProps> {
+export class Draggable extends React.PureComponent<DraggableProps> {
   private _initial: Point | undefined = undefined;
 
   public render() {

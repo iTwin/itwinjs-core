@@ -6,8 +6,8 @@ import { expect } from "chai";
 import * as moq from "typemoq";
 import * as React from "react";
 import * as sinon from "sinon";
-import { RenderResult, render, within, fireEvent } from "react-testing-library";
-import { waitForUpdate, waitForSpy } from "../../test-helpers/misc";
+import { RenderResult, render, within, fireEvent, cleanup } from "react-testing-library";
+import { waitForUpdate, ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 import {
   Tree, TreeProps,
@@ -48,6 +48,8 @@ describe("Tree", () => {
     }, []);
     if (!result || !result.length)
       throw new Error(`Node with label "${label}" not found`);
+    if (result.length > 1)
+      throw new Error(`Found more than one node with label "${label}"`);
     return result[0];
   };
 
@@ -68,6 +70,7 @@ describe("Tree", () => {
 
   let renderedTree: RenderResult;
   let renderSpy: sinon.SinonSpy;
+  let renderNodesSpy: sinon.SinonSpy;
   let defaultProps: Partial<TreeProps>;
 
   before(() => {
@@ -77,8 +80,10 @@ describe("Tree", () => {
   beforeEach(() => {
     sinon.restore();
     renderSpy = sinon.spy();
+    renderNodesSpy = sinon.spy();
     defaultProps = {
       onRender: renderSpy,
+      onNodesRender: renderNodesSpy,
     };
 
     // note: this is needed for AutoSizer used by the Tree to
@@ -148,11 +153,22 @@ describe("Tree", () => {
 
     describe("with Extended selection mode", () => {
 
+      let extendedSelectionProps: TreeProps;
+
       beforeEach(async () => {
-        await waitForUpdate(() => renderedTree = render(<Tree {...defaultSelectionProps} selectionMode={SelectionMode.Extended} />), renderSpy, 2);
+        extendedSelectionProps = {
+          ...defaultSelectionProps,
+          selectionMode: SelectionMode.Extended,
+        };
       });
 
+      const createDefaultTreeForExtendedSelection = async () => {
+        return waitForUpdate(() => renderedTree = render(<Tree {...extendedSelectionProps} />), renderSpy, 2);
+      };
+
       it("deselects collapsed nodes when selects a node", async () => {
+        await createDefaultTreeForExtendedSelection();
+
         // select node 0a
         await waitForUpdate(() => fireEvent.click(getNode("0-a").contentArea), renderSpy);
         expect(getSelectedNodes().length).to.equal(1);
@@ -172,6 +188,8 @@ describe("Tree", () => {
       });
 
       it("shift select nodes from top to bottom", async () => {
+        await createDefaultTreeForExtendedSelection();
+
         // select node 0
         await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
@@ -185,6 +203,8 @@ describe("Tree", () => {
       });
 
       it("shift select nodes from bottom to top", async () => {
+        await createDefaultTreeForExtendedSelection();
+
         // select node 1
         await waitForUpdate(() => fireEvent.click(getNode("1").contentArea), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["1"])), true), moq.Times.once());
@@ -198,6 +218,8 @@ describe("Tree", () => {
       });
 
       it("shift selecting nodes does not select collapsed nodes", async () => {
+        await createDefaultTreeForExtendedSelection();
+
         // collapse node 0
         await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderSpy);
 
@@ -214,6 +236,8 @@ describe("Tree", () => {
       });
 
       it("ctrl selects nodes", async () => {
+        await createDefaultTreeForExtendedSelection();
+
         // select node 0
         await waitForUpdate(() => fireEvent.click(getNode("0").contentArea, { ctrlKey: true }), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), false), moq.Times.once());
@@ -224,6 +248,325 @@ describe("Tree", () => {
 
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
         expect(getSelectedNodes().length).to.equal(2);
+      });
+
+      describe("shift selecting not loaded nodes", () => {
+
+        const selectionLoadProgressListener = sinon.stub();
+        const selectionLoadCanceledListener = sinon.spy();
+        const selectionLoadFinishedListener = sinon.spy();
+        let delayedPromises: { [parentId: string]: Array<ResolvablePromise<TreeNodeItem[]>> };
+        let rootNodes: DelayLoadedTreeNodeItem[];
+        let childNodes: DelayLoadedTreeNodeItem[];
+        let grandchildNodes: DelayLoadedTreeNodeItem[];
+
+        beforeEach(async () => {
+          delayedPromises = {};
+          rootNodes = [
+            { id: "0", label: "0", hasChildren: true, autoExpand: true },
+            { id: "1", label: "1", hasChildren: false },
+            { id: "2", label: "2", hasChildren: false },
+          ];
+          childNodes = [
+            { id: "a", label: "a", hasChildren: false },
+            { id: "b", label: "b", hasChildren: true },
+            { id: "c", label: "c", hasChildren: false },
+          ];
+          grandchildNodes = [
+            { id: "y", label: "y", hasChildren: false },
+            { id: "z", label: "z", hasChildren: false },
+          ];
+
+          selectionLoadProgressListener.reset();
+          selectionLoadCanceledListener.resetHistory();
+          selectionLoadFinishedListener.resetHistory();
+          renderSpy.resetHistory();
+          cleanup();
+        });
+
+        const createPropsForDelayLoadedShiftSelection = () => {
+          const provider: ITreeDataProvider = {
+            getNodesCount: async (parent?: TreeNodeItem) => (parent && parent.id === "b") ? 2 : 3,
+            getNodes: async (parent: TreeNodeItem | undefined, page: PageOptions) => {
+              if (!parent) {
+                // root
+                return rootNodes.slice(page.start, (page.start || 0) + 1);
+              } else {
+                if (page.start === 0) {
+                  if (parent.id === "0")
+                    return childNodes.slice(0, 1);
+                  if (parent.id === "b")
+                    return grandchildNodes.slice(0, 1);
+                } else {
+                  if (!delayedPromises[parent.id])
+                    delayedPromises[parent.id] = [];
+                  if (!delayedPromises[parent.id][page.start!])
+                    delayedPromises[parent.id][page.start!] = new ResolvablePromise<TreeNodeItem[]>();
+                  return delayedPromises[parent.id][page.start!];
+                }
+              }
+              return [];
+            },
+          };
+          return {
+            ...defaultSelectionProps,
+            dataProvider: provider,
+            pageSize: 1,
+            selectionMode: SelectionMode.Extended,
+            onSelectionLoadProgress: selectionLoadProgressListener,
+            onSelectionLoadCanceled: selectionLoadCanceledListener,
+            onSelectionLoadFinished: selectionLoadFinishedListener,
+          };
+        };
+
+        const createDefaultTreeForDelayLoadedShiftSelection = async (props: TreeProps = createPropsForDelayLoadedShiftSelection()) => {
+          // need to wait 3 renders:
+          // - initial display
+          // - first load of node 0
+          // - second load of node 1 & 2
+          await waitForUpdate(() => renderedTree = render(<Tree {...props} />), renderSpy, 3);
+
+          // make sure "a" is loaded and "b" and "c" are not loaded
+          expect(getNode("a")).to.not.be.undefined;
+          expect(() => getNode("b")).throws;
+          expect(() => getNode("c")).throws;
+        };
+
+        it("loads intermediate nodes", async () => {
+          await createDefaultTreeForDelayLoadedShiftSelection();
+
+          // select node 0
+          await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener).to.not.be.called;
+          expect(selectionLoadFinishedListener).to.not.be.called;
+
+          // shift-select node 1
+          await waitForUpdate(() => fireEvent.click(getNode("1").contentArea, { shiftKey: true }), renderSpy);
+          // expect the callback to be called for intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(0, 2, sinon.match.func);
+          expect(selectionLoadFinishedListener).to.not.be.called;
+
+          // resolve the 'b' child promise and wait for re-render
+          await waitForUpdate(() => delayedPromises["0"][1].resolve([childNodes[1]]), renderSpy);
+          // expect the callback to be called for second intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "b", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 2, sinon.match.func);
+          expect(selectionLoadFinishedListener).to.not.be.called;
+
+          // resolve the 'c' child promise and wait for re-render
+          await waitForUpdate(() => delayedPromises["0"][2].resolve([childNodes[2]]), renderSpy);
+          // expect the callback to be called for the final selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "b", "c", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(2, 2, sinon.match.func);
+          expect(selectionLoadFinishedListener).to.be.calledOnce;
+
+          expect(selectionLoadCanceledListener).to.not.be.called;
+          nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+          expect(getSelectedNodes().length).to.equal(5);
+        });
+
+        it("loads auto-expanded child nodes", async () => {
+          childNodes[1].autoExpand = true;
+          await createDefaultTreeForDelayLoadedShiftSelection();
+
+          // select node 0
+          await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener).to.not.be.called;
+          expect(selectionLoadFinishedListener).to.not.be.called;
+
+          // shift-select node 1
+          await waitForUpdate(() => fireEvent.click(getNode("1").contentArea, { shiftKey: true }), renderSpy);
+          // expect the callback to be called for intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(0, 2, sinon.match.func);
+          expect(selectionLoadFinishedListener).to.not.be.called;
+
+          // resolve the 'b' child promise and wait for re-render
+          await waitForUpdate(() => delayedPromises["0"][1].resolve([childNodes[1]]), renderSpy, 2);
+          // expect the callback to be called for intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "b", "y", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(2, 4, sinon.match.func);
+          expect(selectionLoadFinishedListener).to.not.be.called;
+
+          // resolve the 'c' child promise and wait for re-render
+          await waitForUpdate(() => delayedPromises["0"][2].resolve([childNodes[2]]), renderSpy);
+          // expect the callback to be called for intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "b", "y", "c", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(3, 4, sinon.match.func);
+          expect(selectionLoadFinishedListener).to.not.be.called;
+
+          // resolve the 'z' grandchild promise and wait for re-render
+          await waitForUpdate(() => delayedPromises.b[1].resolve([grandchildNodes[1]]), renderSpy);
+          // expect the callback to be called for the final selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "b", "y", "z", "c", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(4, 4, sinon.match.func);
+          expect(selectionLoadFinishedListener).to.be.calledOnce;
+
+          expect(selectionLoadCanceledListener).to.not.be.called;
+          nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+          expect(getSelectedNodes().length).to.equal(7);
+        });
+
+        it("cancels nodes' load from progress callback", async () => {
+          await createDefaultTreeForDelayLoadedShiftSelection();
+
+          // set up the progress listener to cancel nodes loading after the second
+          // call (when "b" node is loaded)
+          selectionLoadProgressListener.onSecondCall().callsArg(2);
+
+          // select node 0
+          await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener).to.not.be.called;
+          expect(selectionLoadCanceledListener).to.not.be.called;
+
+          // shift-select node 1
+          await waitForUpdate(() => fireEvent.click(getNode("1").contentArea, { shiftKey: true }), renderSpy);
+          // expect the callback to be called for intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(0, 2, sinon.match.func);
+          expect(selectionLoadCanceledListener).to.not.be.called;
+
+          // resolve the 'b' child promise and wait for re-render
+          await waitForUpdate(() => delayedPromises["0"][1].resolve([childNodes[1]]), renderSpy);
+          // expect the callback to be called for second intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "b", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 2, sinon.match.func);
+          expect(selectionLoadCanceledListener).to.be.calledOnce;
+
+          // resolve the 'c' child promise and wait for re-render
+          await waitForUpdate(() => delayedPromises["0"][2].resolve([childNodes[2]]), renderSpy);
+          // expect the callback to NOT be called for the final selection as the operation was canceled
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(3));
+          expect(selectionLoadProgressListener.callCount).to.eq(2);
+          expect(selectionLoadCanceledListener).to.be.calledOnce;
+
+          expect(selectionLoadFinishedListener).to.not.be.called;
+          nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+          expect(getSelectedNodes().length).to.equal(4);
+        });
+
+        it("cancels nodes' load when selection changes on node click", async () => {
+          await createDefaultTreeForDelayLoadedShiftSelection();
+
+          // select node 0
+          await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener).to.not.be.called;
+          expect(selectionLoadCanceledListener).to.not.be.called;
+
+          // shift-select node 1
+          await waitForUpdate(() => fireEvent.click(getNode("1").contentArea, { shiftKey: true }), renderSpy);
+          // expect the callback to be called for intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(0, 2, sinon.match.func);
+          expect(selectionLoadCanceledListener).to.not.be.called;
+
+          // resolve the 'b' child promise and wait for re-render
+          await waitForUpdate(() => delayedPromises["0"][1].resolve([childNodes[1]]), renderSpy);
+          // expect the callback to be called for second intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "b", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 2, sinon.match.func);
+
+          // click on node "1" and expect that to cancel the load
+          await waitForUpdate(() => fireEvent.click(getNode("1").contentArea), renderSpy);
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["1"])), true), moq.Times.once());
+          expect(selectionLoadCanceledListener).to.be.calledOnce;
+
+          // resolve the 'c' child promise and wait for re-render
+          await waitForUpdate(() => delayedPromises["0"][2].resolve([childNodes[2]]), renderSpy);
+          // expect the callback to NOT be called for the final selection as the operation was canceled
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(4));
+          expect(selectionLoadProgressListener.callCount).to.eq(2);
+
+          expect(selectionLoadFinishedListener).to.not.be.called;
+          nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+          expect(getSelectedNodes().length).to.equal(1);
+        });
+
+        it("cancels nodes' load when selection changes to another delay loaded selection", async () => {
+          await createDefaultTreeForDelayLoadedShiftSelection();
+
+          // select node 0
+          await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener).to.not.be.called;
+          expect(selectionLoadCanceledListener).to.not.be.called;
+
+          // shift-select node 1
+          await waitForUpdate(() => fireEvent.click(getNode("1").contentArea, { shiftKey: true }), renderSpy);
+          // expect the callback to be called for intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(0, 2, sinon.match.func);
+          expect(selectionLoadCanceledListener).to.not.be.called;
+
+          // resolve the 'b' child promise and wait for re-render
+          await waitForUpdate(() => delayedPromises["0"][1].resolve([childNodes[1]]), renderSpy);
+          // expect the callback to be called for the intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "b", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 2, sinon.match.func);
+
+          // click on node "2" and expect that to cancel the load and initiate a new one
+          await waitForUpdate(() => fireEvent.click(getNode("2").contentArea, { shiftKey: true }), renderSpy);
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "b", "1", "2"])), true), moq.Times.once());
+          expect(selectionLoadCanceledListener).to.be.calledOnce;
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(0, 1, sinon.match.func);
+
+          // resolve the 'c' child promise and wait for re-render
+          await waitForUpdate(() => delayedPromises["0"][2].resolve([childNodes[2]]), renderSpy);
+          // expect the callback to be called for the final selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "b", "c", "1", "2"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 1, sinon.match.func);
+          expect(selectionLoadFinishedListener).to.be.calledOnce;
+
+          nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+          expect(getSelectedNodes().length).to.equal(6);
+        });
+
+        it("cancels nodes' load when selection changes after `selectedNodes` prop change", async () => {
+          const props = createPropsForDelayLoadedShiftSelection();
+          await createDefaultTreeForDelayLoadedShiftSelection(props);
+
+          // select node 0
+          await waitForUpdate(() => fireEvent.click(getNode("0").contentArea), renderSpy);
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener).to.not.be.called;
+          expect(selectionLoadCanceledListener).to.not.be.called;
+
+          // shift-select node 1
+          await waitForUpdate(() => fireEvent.click(getNode("1").contentArea, { shiftKey: true }), renderSpy);
+          // expect the callback to be called for intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(0, 2, sinon.match.func);
+          expect(selectionLoadCanceledListener).to.not.be.called;
+
+          // resolve the 'b' child promise and wait for re-render
+          await waitForUpdate(() => delayedPromises["0"][1].resolve([childNodes[1]]), renderSpy);
+          // expect the callback to be called for second intermediate selection
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "a", "b", "1"])), true), moq.Times.once());
+          expect(selectionLoadProgressListener.lastCall).to.be.calledWith(1, 2, sinon.match.func);
+
+          // change the `selectedNodes` prop
+          await waitForUpdate(() => renderedTree.rerender(
+            <Tree
+              {...props} selectedNodes={["a"]}
+            />), renderSpy);
+          expect(selectionLoadCanceledListener).to.be.calledOnce;
+
+          // resolve the 'c' child promise and wait for re-render
+          await waitForUpdate(() => delayedPromises["0"][2].resolve([childNodes[2]]), renderSpy);
+          // expect the callback to NOT be called for the final selection as the operation was canceled
+          nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.exactly(3));
+          expect(selectionLoadProgressListener.callCount).to.eq(2);
+
+          expect(selectionLoadFinishedListener).to.not.be.called;
+          nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
+          expect(getSelectedNodes().length).to.equal(1);
+        });
+
       });
 
     });
@@ -241,18 +584,20 @@ describe("Tree", () => {
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
         expect(getSelectedNodes().length).to.equal(0);
 
+        const expectSelectAll = ["<span>0</span>", "<span>0-a</span>", "<span>0-b</span>", "<span>1</span>"];
+
         // drag
         // note: dragging re-renders to update selection
         await waitForUpdate(() => fireEvent.mouseMove(getNode("1").contentArea, { buttons: 1 }), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-a", "0-b", "1"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(expectSelectAll);
 
         // release
         fireEvent.mouseUp(getNode("1").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "0-a", "0-b", "1"])), false), moq.Times.once());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-a", "0-b", "1"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(expectSelectAll);
 
         // reset mocks
         nodesSelectedCallbackMock.reset();
@@ -262,20 +607,20 @@ describe("Tree", () => {
         fireEvent.mouseDown(getNode("1").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-a", "0-b", "1"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(expectSelectAll);
 
         // drag
         // note: dragging re-renders to update selection
         await waitForUpdate(() => fireEvent.mouseMove(getNode("0-b").contentArea, { buttons: 1 }), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-a"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0</span>", "<span>0-a</span>"]);
 
         // release
         fireEvent.mouseUp(getNode("0-b").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0-b", "1"]))), moq.Times.once());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-a"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0</span>", "<span>0-a</span>"]);
       });
 
       it("dragging with multiple buttons pressed doesn't select nodes", async () => {
@@ -309,20 +654,20 @@ describe("Tree", () => {
         fireEvent.mouseDown(getNode("0").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "0-b"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0</span>", "<span>0-b</span>"]);
 
         // drag
         // note: dragging re-renders to update selection
         await waitForUpdate(() => fireEvent.mouseMove(getNode("1").contentArea, { buttons: 1 }), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0-a", "1"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0-a</span>", "<span>1</span>"]);
 
         // release
         fireEvent.mouseUp(getNode("1").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0-a", "1"])), false), moq.Times.once());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "0-b"]))), moq.Times.once());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0-a", "1"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0-a</span>", "<span>1</span>"]);
       });
 
       it("drag selecting nodes does not select collapsed nodes", async () => {
@@ -340,13 +685,13 @@ describe("Tree", () => {
         await waitForUpdate(() => fireEvent.mouseMove(getNode("1").contentArea, { buttons: 1 }), renderSpy);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "1"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0</span>", "<span>1</span>"]);
 
         // release
         fireEvent.mouseUp(getNode("1").contentArea);
         nodesSelectedCallbackMock.verify((x) => x(moq.It.is<TreeNodeItem[]>((items: TreeNodeItem[]): boolean => verifyNodes(items, ["0", "1"])), false), moq.Times.once());
         nodesDeselectedCallbackMock.verify((x) => x(moq.It.isAny()), moq.Times.never());
-        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["0", "1"]);
+        expect(getSelectedNodes().map((n) => n.label)).to.deep.eq(["<span>0</span>", "<span>1</span>"]);
       });
 
     });
@@ -520,14 +865,11 @@ describe("Tree", () => {
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(2);
 
       // expand node 0
-      // note: need to wait for 2 renders:
-      // 1. after click
-      // 2. after children are loaded
-      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderSpy, 2);
+      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy);
       expect(getExpandedNodes().length).to.eq(1);
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
 
-      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderSpy);
+      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy);
       expect(getExpandedNodes().length).to.eq(0);
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(2);
     });
@@ -537,10 +879,7 @@ describe("Tree", () => {
       await waitForUpdate(() => renderedTree = render(<Tree {...defaultExpandCollapseProps} onNodeExpanded={callbackMock.object} />), renderSpy, 2);
 
       // expand node 0
-      // note: need to wait for 2 renders:
-      // 1. after click
-      // 2. after children are loaded
-      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderSpy, 2);
+      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy);
 
       const nodeItem = (await dataProvider())[0];
       callbackMock.verify((x) => x(nodeItem), moq.Times.once());
@@ -598,14 +937,11 @@ describe("Tree", () => {
           {...defaultProps}
           dataProvider={[{ id: "1", label: "1" }]}
         />);
-      }, renderSpy, 3);
+      }, renderSpy, 2);
       expect(getNode("1")).to.not.be.undefined;
     });
 
-    // TODO: The test reveals an issue where data provider is not changed if we don't wait
-    // for initial update. This happens because we skip the update from `shouldComponentUpdate`
-    // because `modelReady = false` and later on we don't detect changed data provider.
-    it.skip("rerenders on data provider change without waiting for initial update", async () => {
+    it("rerenders on data provider change without waiting for initial update", async () => {
       renderedTree = render(<Tree {...defaultProps} dataProvider={[{ id: "0", label: "0" }]} />);
       await waitForUpdate(() => {
         renderedTree.rerender(<Tree {...defaultProps} dataProvider={[{ id: "1", label: "1" }]} />);
@@ -666,6 +1002,7 @@ describe("Tree", () => {
   });
 
   describe("node label rendering", () => {
+
     it("renders with HighlightingEngine when nodeHighlightingProps set", async () => {
       const renderLabelSpy = sinon.spy(HighlightingEngine, "renderNodeLabel");
       await waitForUpdate(() => {
@@ -680,34 +1017,32 @@ describe("Tree", () => {
 
     it("rerenders without HighlightingEngine when nodeHighlightingProps are reset to undefined", async () => {
       const renderLabelSpy = sinon.spy(HighlightingEngine, "renderNodeLabel");
-      const renderNodesSpy = sinon.spy();
       const dp: TreeDataProviderRaw = [{ id: "0", label: "0", icon: "test-icon", children: [] }];
 
-      renderedTree = render(<Tree
-        {...defaultProps}
-        dataProvider={dp}
-        nodeHighlightingProps={{ searchText: "test" }}
-        onNodesRender={renderNodesSpy}
-      />);
-
-      await waitForSpy(renderNodesSpy, { error: "Node rendering timed out!" });
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={dp}
+          nodeHighlightingProps={{ searchText: "test" }}
+        />);
+      }, renderNodesSpy);
 
       expect(renderLabelSpy.called).to.be.true;
       renderLabelSpy.resetHistory();
 
-      renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} onNodesRender={renderNodesSpy} />);
-
-      await waitForSpy(renderNodesSpy, { error: "Node rendering timed out!" });
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} />);
+      }, renderNodesSpy);
 
       expect(renderLabelSpy.called).to.be.false;
     });
 
     it("renders a node which primitive type is not a string", async () => {
-      const renderNodesSpy = sinon.spy();
       const rendererManagerMock = moq.Mock.ofType<PropertyValueRendererManager>();
       let error: Error | undefined;
 
-      rendererManagerMock.setup(async (manager) => manager.render(moq.It.isAny(), moq.It.isAny()))
+      rendererManagerMock
+        .setup(async (manager) => manager.render(moq.It.isAny(), moq.It.isAny()))
         .callback(async (record: PropertyRecord, context: PropertyValueRendererContext) => {
           try {
             expect(record.property.typename).to.equal("test_type");
@@ -718,14 +1053,14 @@ describe("Tree", () => {
         .returns(async () => "Custom renderer label")
         .verifiable(moq.Times.atLeastOnce());
 
-      renderedTree = render(<Tree
-        {...defaultProps}
-        dataProvider={[{ id: "0", label: "Test label", typename: "test_type" }]}
-        onNodesRender={renderNodesSpy}
-        propertyValueRendererManager={rendererManagerMock.object}
-      />);
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree
+          {...defaultProps}
+          dataProvider={[{ id: "0", label: "Test label", typename: "test_type" }]}
+          propertyValueRendererManager={rendererManagerMock.object}
+        />);
+      }, renderNodesSpy);
 
-      await waitForSpy(renderNodesSpy);
       rendererManagerMock.verifyAll();
       if (error)
         throw error;
@@ -768,7 +1103,7 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         node.label = "test";
         interfaceProvider.onTreeNodeChanged!.raiseEvent([node]);
-      }, renderSpy, 1);
+      }, renderNodesSpy);
       expect(renderedTree.getByText("test")).to.not.be.undefined;
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
 
@@ -787,7 +1122,7 @@ describe("Tree", () => {
       await waitForUpdate(() => {
         node.label = "test";
         interfaceProvider.onTreeNodeChanged!.raiseEvent([node]);
-      }, renderSpy, 1);
+      }, renderNodesSpy);
       expect(renderedTree.getByText("test")).to.not.be.undefined;
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
 
@@ -804,7 +1139,7 @@ describe("Tree", () => {
         renderedTree = render(<Tree {...defaultProps} dataProvider={interfaceProvider} />);
       }, renderSpy, 2);
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
-      expect(getFlatList()).to.deep.eq(["0", "0-a", "0-b", "1"]);
+      expect(getFlatList()).to.deep.eq(["<span>0</span>", "<span>0-a</span>", "<span>0-b</span>", "<span>1</span>"]);
 
       setReverseOrder(true);
 
@@ -812,7 +1147,7 @@ describe("Tree", () => {
         interfaceProvider.onTreeNodeChanged!.raiseEvent([undefined]);
       }, renderSpy, 1);
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
-      expect(getFlatList()).to.deep.eq(["1", "0", "0-b", "0-a"]);
+      expect(getFlatList()).to.deep.eq(["<span>1</span>", "<span>0</span>", "<span>0-b</span>", "<span>0-a</span>"]);
     });
 
     it("handles case when `onTreeNodeChanged` is broadcasted with invalid node", async () => {
@@ -887,12 +1222,11 @@ describe("Tree", () => {
     });
 
     it("scrolls to highlighted node when highlighting props change", async () => {
-      const renderNodesSpy = sinon.spy();
       const dp = [{ id: "0", label: "zero", icon: "test-icon" }];
 
-      renderedTree = render(<Tree {...defaultProps} dataProvider={dp} onNodesRender={renderNodesSpy} />);
-
-      await waitForSpy(renderNodesSpy, { error: "Node rendering timed out!" });
+      await waitForUpdate(() => {
+        renderedTree = render(<Tree {...defaultProps} dataProvider={dp} />);
+      }, renderNodesSpy);
 
       const highlightProps: HighlightableTreeProps = {
         searchText: "er",
@@ -902,9 +1236,9 @@ describe("Tree", () => {
         },
       };
 
-      renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} onNodesRender={renderNodesSpy} />);
-
-      await waitForSpy(renderNodesSpy, { error: "Node rendering timed out!" });
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={dp} nodeHighlightingProps={highlightProps} />);
+      }, renderNodesSpy);
 
       expect(scrollToSpy).to.be.calledOnce;
     });
@@ -960,34 +1294,6 @@ describe("Tree", () => {
       expect(scrollToSpy).to.not.be.called;
     });
 
-  });
-
-  it("calls `onRootNodesLoaded` props callback", async () => {
-    const spy = sinon.spy();
-    const data: TreeNodeItem[] = [{ id: "0", label: "0" }];
-    await waitForUpdate(() => {
-      renderedTree = render(<Tree
-        {...defaultProps}
-        dataProvider={data}
-        onRootNodesLoaded={spy}
-      />);
-    }, renderSpy, 2);
-    expect(spy.calledWith(data)).to.be.true;
-  });
-
-  it("calls `onChildrenLoaded` props callback", async () => {
-    const spy = sinon.spy();
-    const rootNode: DelayLoadedTreeNodeItem = { id: "0", label: "0", autoExpand: true, hasChildren: true };
-    const childNode: DelayLoadedTreeNodeItem = { id: "1", label: "1" };
-    const data = async (parent?: TreeNodeItem) => parent ? [childNode] : [rootNode];
-    await waitForUpdate(() => {
-      renderedTree = render(<Tree
-        {...defaultProps}
-        dataProvider={data}
-        onChildrenLoaded={spy}
-      />);
-    }, renderSpy, 2);
-    expect(spy.calledWith(rootNode, [childNode])).to.be.true;
   });
 
   describe("cell editing", () => {
@@ -1093,6 +1399,79 @@ describe("Tree", () => {
       });
 
     });
+  });
+
+  it("calls `onRootNodesLoaded` props callback", async () => {
+    const spy = sinon.spy();
+    const data: TreeNodeItem[] = [{ id: "0", label: "0" }];
+    await waitForUpdate(() => {
+      renderedTree = render(<Tree
+        {...defaultProps}
+        dataProvider={data}
+        onRootNodesLoaded={spy}
+      />);
+    }, renderSpy, 2);
+    expect(spy.calledWith(data)).to.be.true;
+  });
+
+  it("calls `onChildrenLoaded` props callback", async () => {
+    const spy = sinon.spy();
+    const rootNode: DelayLoadedTreeNodeItem = { id: "0", label: "0", autoExpand: true, hasChildren: true };
+    const childNode: DelayLoadedTreeNodeItem = { id: "1", label: "1" };
+    const data = async (parent?: TreeNodeItem) => parent ? [childNode] : [rootNode];
+    await waitForUpdate(() => {
+      renderedTree = render(<Tree
+        {...defaultProps}
+        dataProvider={data}
+        onChildrenLoaded={spy}
+      />);
+    }, renderSpy, 2);
+    expect(spy.calledWith(rootNode, [childNode])).to.be.true;
+  });
+
+  it("calls `onRootNodesLoaded` props callback once per page", async () => {
+    const spy = sinon.spy();
+    const data: TreeNodeItem[] = [{ id: "0", label: "0" }, { id: "1", label: "1" }];
+    const provider: ITreeDataProvider = {
+      getNodesCount: async () => 2,
+      getNodes: async (_parent, page: PageOptions) => {
+        return (page.start === 0) ? [data[0]] : [data[1]];
+      },
+    };
+    await waitForUpdate(() => {
+      renderedTree = render(<Tree
+        {...defaultProps}
+        dataProvider={provider}
+        pageSize={1}
+        onRootNodesLoaded={spy}
+      />);
+    }, renderSpy, 3);
+    expect(spy.firstCall.calledWith([data[0]])).to.be.true;
+    expect(spy.secondCall.calledWith(data)).to.be.true;
+  });
+
+  it("calls `onChildrenLoaded` props callback once per page", async () => {
+    const spy = sinon.spy();
+    const rootNode: DelayLoadedTreeNodeItem = { id: "0", label: "0", autoExpand: true, hasChildren: true };
+    const childNodes: TreeNodeItem[] = [{ id: "1", label: "1" }, { id: "2", label: "2" }];
+    const provider: ITreeDataProvider = {
+      getNodesCount: async (parent?: TreeNodeItem) => (parent ? 2 : 1),
+      getNodes: async (parent: TreeNodeItem | undefined, page: PageOptions) => {
+        if (!parent)
+          return [rootNode];
+        return (page.start === 0) ? [childNodes[0]] : [childNodes[1]];
+      },
+    };
+    await waitForUpdate(() => {
+      renderedTree = render(<Tree
+        {...defaultProps}
+        dataProvider={provider}
+        pageSize={1}
+        onChildrenLoaded={spy}
+      />);
+    }, renderSpy, 2);
+    expect(spy.firstCall.calledWith(rootNode, [childNodes[0]])).to.be.true;
+    expect(spy.secondCall.calledWith(rootNode, childNodes)).to.be.true;
   });
 
 });

@@ -16,7 +16,7 @@ exports[`InputFieldMessage should render correctly 1`] = `
       }
       status={2}
     >
-      <Component
+      <MessageLayout
         buttons={
           <WithTheme
             onClick={[Function]}

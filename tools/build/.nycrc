@@ -10,6 +10,7 @@
   "exclude": [
     "src/test/**/*",
     "lib/test/**/*",
+    "lib/module/**/*",
     "**/*.d.ts",
     "**/*.d.tsx"
   ],

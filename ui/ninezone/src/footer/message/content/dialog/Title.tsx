@@ -16,18 +16,19 @@ export interface DialogTitleProps extends CommonProps, NoChildrenProps {
 }
 
 /** Title used in [[TitleBar]] component. */
-// tslint:disable-next-line:variable-name
-export const DialogTitle: React.StatelessComponent<DialogTitleProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-dialog-title",
-    props.className);
+export class DialogTitle extends React.PureComponent<DialogTitleProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-dialog-title",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      {props.text}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        {this.props.text}
+      </div>
+    );
+  }
+}

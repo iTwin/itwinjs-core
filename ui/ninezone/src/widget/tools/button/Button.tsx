@@ -18,7 +18,7 @@ export interface ToolbarButtonProps extends CommonProps {
 }
 
 /** Basic toolbar button. Used in [[Toolbar]] component. */
-export class ToolbarButton extends React.Component<ToolbarButtonProps> {
+export class ToolbarButton extends React.PureComponent<ToolbarButtonProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-button-button",

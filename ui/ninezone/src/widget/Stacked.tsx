@@ -87,7 +87,6 @@ export interface StackedProps extends CommonProps, NoChildrenProps {
  * Stacked widget is used to display multiple tabs and some content.
  * @note Should be placed in [[Zone]] component.
  */
-// tslint:disable-next-line:variable-name
 export class Stacked extends React.PureComponent<StackedProps> {
   private _widget = React.createRef<HTMLDivElement>();
 

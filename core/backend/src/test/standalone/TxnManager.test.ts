@@ -10,7 +10,8 @@ import { IModelDb, PhysicalModel, SpatialCategory, TxnAction } from "../../imode
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-describe("TxnManager", () => {
+// NEEDS_WORK_TXNMANAGER: Re-enable this when we upgrade to Node 10
+describe.skip("TxnManager", () => {
   let imodel: IModelDb;
   let props: TestPhysicalObjectProps;
 
@@ -29,6 +30,7 @@ describe("TxnManager", () => {
       code: Code.createEmpty(),
       intProperty: 100,
     };
+
     imodel.saveChanges("schema change");
     imodel.nativeDb.enableTxnTesting();
   });

@@ -24,7 +24,7 @@ export interface SnapModeIndicatorProps extends CommonProps, NoChildrenProps {
 }
 
 /** One of [[Footer]] indicators. */
-export class SnapModeIndicator extends React.Component<SnapModeIndicatorProps> {
+export class SnapModeIndicator extends React.PureComponent<SnapModeIndicatorProps> {
   public render() {
     const className = classnames(
       "nz-footer-snapMode-indicator",
@@ -39,7 +39,7 @@ export class SnapModeIndicator extends React.Component<SnapModeIndicatorProps> {
       <div
         className={className}
         style={this.props.style}
-        onClick={this._handleOnIndicatorClick}
+        onClick={this.props.onClick}
       >
         <div className="nz-indicator">
           <span className={labelClassName}>{this.props.label}</span>
@@ -54,9 +54,5 @@ export class SnapModeIndicator extends React.Component<SnapModeIndicatorProps> {
         </div>
       </div>
     );
-  }
-
-  private _handleOnIndicatorClick = () => {
-    this.props.onClick && this.props.onClick();
   }
 }

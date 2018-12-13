@@ -18,8 +18,8 @@ export enum OverallContentPage {
 export const OverallContentActions = {
   setOverallPage: (newPage: OverallContentPage | number) => createAction("OverallContent:SET_PAGE", newPage),
   setAccessToken: (accessToken: AccessToken) => createAction("OverallContent:SET_ACCESS_TOKEN", accessToken),
-  clearAccessToken: () => createAction("OverallContent:CLEAR_ACCCESS_TOKEN"),
-  goToConfigurableUi: () => createAction("OpenIModel:SETSELECTEDVIEWS"),
+  clearAccessToken: () => createAction("OverallContent:CLEAR_ACCESS_TOKEN"),
+  goToConfigurableUi: () => createAction("OpenIModel:SET_SELECTED_VIEWS"),
 };
 
 /** The union of all actions that are handled by our reducer. */
@@ -42,9 +42,9 @@ export function OverallContentReducer(state: OverallContentState = initialState,
       return { ...state, currentPage: action.payload };
     case "OverallContent:SET_ACCESS_TOKEN":
       return { ...state, accessToken: action.payload as any };
-    case "OverallContent:CLEAR_ACCCESS_TOKEN":
+    case "OverallContent:CLEAR_ACCESS_TOKEN":
       return { ...state, accessToken: undefined };
-    case "OpenIModel:SETSELECTEDVIEWS":
+    case "OpenIModel:SET_SELECTED_VIEWS":
       return { ...state, currentPage: OverallContentPage.ConfigurableUiPage };
   }
   return state;

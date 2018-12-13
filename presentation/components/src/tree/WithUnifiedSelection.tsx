@@ -5,7 +5,7 @@
 /** @module UnifiedSelection */
 
 import * as React from "react";
-import { Keys, Subtract } from "@bentley/presentation-common";
+import { Keys, Subtract, Omit } from "@bentley/presentation-common";
 import { StandardNodeTypes, ECInstanceNodeKey } from "@bentley/presentation-common";
 import { Presentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { TreeNodeItem } from "@bentley/ui-components";
@@ -15,31 +15,11 @@ import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 
 /**
- * Possible options of what gets put into selection
- * when node is selected
- */
-export const enum SelectionTarget {
-  /**
-   * Node's key is selected
-   */
-  Node,
-
-  /**
-   * If the node is an ECInstanceNode - key of the ECInstance
-   * is selected. Otherwise node's key is selected.
-   */
-  Instance,
-}
-
-/**
  * Props that are injected to the HOC component.
  */
 export interface Props {
   /** The data provider used by the tree. */
   dataProvider: IPresentationTreeDataProvider;
-
-  /** Defines what gets put into selection when a node is selected */
-  selectionTarget?: SelectionTarget;
 
   /**
    * Called when nodes are selected. The callback should return `true`
@@ -64,13 +44,24 @@ export interface Props {
  * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
+export default function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<Omit<P, "selectedNodes">, Props> & Props> {
 
-  type CombinedProps = Subtract<P, Props> & Props;
+  type CombinedProps = Subtract<Omit<P, "selectedNodes">, Props> & Props;
 
-  return class WithUnifiedSelection extends React.Component<CombinedProps> implements IUnifiedSelectionComponent {
+  interface State {
+    isNodeSelected: (node: TreeNodeItem) => boolean;
+  }
+
+  return class WithUnifiedSelection extends React.Component<CombinedProps, State> implements IUnifiedSelectionComponent {
 
     private _selectionHandler?: SelectionHandler;
+
+    public constructor(props: CombinedProps, context: any) {
+      super(props, context);
+      this.state = {
+        isNodeSelected: this.createIsNodeSelectedCallback(),
+      };
+    }
 
     /** Returns the display name of this component */
     public static get displayName() { return `WithUnifiedSelection(${getDisplayName(TreeComponent)})`; }
@@ -81,9 +72,6 @@ export default function treeWithUnifiedSelection<P extends TreeProps>(TreeCompon
     public get imodel() { return this.props.dataProvider.connection; }
 
     public get rulesetId() { return this.props.dataProvider.rulesetId; }
-
-    // tslint:disable-next-line:naming-convention
-    private get baseProps(): TreeProps { return this.props; }
 
     public componentDidMount() {
       const name = `Tree_${counter++}`;
@@ -106,15 +94,11 @@ export default function treeWithUnifiedSelection<P extends TreeProps>(TreeCompon
       }
     }
 
-    // tslint:disable-next-line:naming-convention
-    private isNodeSelected = (node: TreeNodeItem): boolean => {
-      // give consumers a chance to tell if node is selected
-      if (this.baseProps.selectedNodes) {
-        if (Array.isArray(this.baseProps.selectedNodes))
-          return -1 !== this.baseProps.selectedNodes.indexOf(node.id);
-        return this.baseProps.selectedNodes(node);
-      }
+    private createIsNodeSelectedCallback() {
+      return (node: TreeNodeItem) => this.isNodeSelected(node);
+    }
 
+    private isNodeSelected(node: TreeNodeItem): boolean {
       if (!this._selectionHandler)
         return false;
 
@@ -134,17 +118,13 @@ export default function treeWithUnifiedSelection<P extends TreeProps>(TreeCompon
       return false;
     }
 
-    private getNodeKeys(nodes: TreeNodeItem[]): Keys {
+    private getKeys(nodes: TreeNodeItem[]): Keys {
       const nodeKeys = nodes.map((node) => this.props.dataProvider.getNodeKey(node));
-      let keys: Keys = nodeKeys;
-      if (this.props.selectionTarget === SelectionTarget.Instance) {
-        keys = nodeKeys.map((key) => {
-          if (key.type === StandardNodeTypes.ECInstanceNode)
-            return (key as ECInstanceNodeKey).instanceKey;
-          return key;
-        });
-      }
-      return keys;
+      return nodeKeys.map((key) => {
+        if (key.type === StandardNodeTypes.ECInstanceNode)
+          return (key as ECInstanceNodeKey).instanceKey;
+        return key;
+      });
     }
 
     // tslint:disable-next-line:naming-convention
@@ -162,9 +142,9 @@ export default function treeWithUnifiedSelection<P extends TreeProps>(TreeCompon
         return;
 
       if (replace)
-        this._selectionHandler.replaceSelection(this.getNodeKeys(nodes));
+        this._selectionHandler.replaceSelection(this.getKeys(nodes));
       else
-        this._selectionHandler.addToSelection(this.getNodeKeys(nodes));
+        this._selectionHandler.addToSelection(this.getKeys(nodes));
     }
 
     // tslint:disable-next-line:naming-convention
@@ -181,14 +161,18 @@ export default function treeWithUnifiedSelection<P extends TreeProps>(TreeCompon
       if (!this._selectionHandler)
         return;
 
-      this._selectionHandler.removeFromSelection(this.getNodeKeys(nodes));
-      // wip: may want to remove both node **and** instance key
+      this._selectionHandler.removeFromSelection(this.getKeys(nodes));
     }
 
     // tslint:disable-next-line:naming-convention
     private onSelectionChanged = (args: SelectionChangeEventArgs, _provider: ISelectionProvider) => {
-      if (args.level === 0)
-        this.forceUpdate();
+      if (args.level === 0) {
+        // note: we set the `isNodeSelected` callback to a new function which basically
+        // does the same thing, but makes sure that nested component gets re-rendered
+        this.setState({
+          isNodeSelected: this.createIsNodeSelectedCallback(),
+        });
+      }
     }
 
     public render() {
@@ -199,7 +183,7 @@ export default function treeWithUnifiedSelection<P extends TreeProps>(TreeCompon
       } = this.props as any;
       return (
         <TreeComponent
-          selectedNodes={this.isNodeSelected} onNodesSelected={this.onNodesSelected} onNodesDeselected={this.onNodesDeselected}
+          selectedNodes={this.state.isNodeSelected} onNodesSelected={this.onNodesSelected} onNodesDeselected={this.onNodesDeselected}
           {...props}
         />
       );

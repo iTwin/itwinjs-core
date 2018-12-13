@@ -18,7 +18,7 @@ export interface AppButtonProps extends OmitChildrenProp<ToolbarIconProps>, NoCh
  * App button which displays icon. Used in [[Toolbar]] component.
  * @note See basic button: [[ToolbarButton]]
  */
-export class AppButton extends React.Component<AppButtonProps> {
+export class AppButton extends React.PureComponent<AppButtonProps> {
   public render() {
     const { className, ...props } = this.props;
     const buttonClassName = classnames(

@@ -12,7 +12,7 @@ import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSour
 import { withDropTarget } from "../../dragdrop/withDropTarget";
 
 import "./DragDropRow.scss";
-import { TableDragDropType } from "../../breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+import { BreadcrumbDragDropType } from "../../breadcrumb/breadcrumbdetails/hoc/withDragDrop";
 
 /** @hidden */
 export interface DragDropRowProps<DragDropObject = any> {
@@ -92,7 +92,7 @@ class RowWrapper extends React.Component<RowWrapperProps, RowWrapperState> {
 }
 
 /** @hidden */
-export function DragDropRow<DragDropObject extends TableDragDropType>() {
+export function DragDropRow<DragDropObject extends BreadcrumbDragDropType>() {
   // Used only internally in ./Table.tsx
   return class DragDropRowComponent extends React.Component<DragDropRowProps<DragDropObject> & any> {
     public render(): React.ReactElement<any> {

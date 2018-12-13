@@ -35,7 +35,7 @@ export interface TabProps extends CommonProps {
  * Rectangular widget tab. Used in [[Stacked]] component.
  * @note See [[Draggable]] tab.
  */
-export class Tab extends React.Component<TabProps> {
+export class Tab extends React.PureComponent<TabProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-tab-tab",
@@ -49,14 +49,10 @@ export class Tab extends React.Component<TabProps> {
         title={this.props.title}
         className={className}
         style={this.props.style}
-        onClick={this._handleOnClick}
+        onClick={this.props.onClick}
       >
         {this.props.children}
       </div>
     );
-  }
-
-  private _handleOnClick = () => {
-    this.props.onClick && this.props.onClick();
   }
 }

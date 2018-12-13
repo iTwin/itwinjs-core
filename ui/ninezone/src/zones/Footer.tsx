@@ -19,7 +19,7 @@ export interface FooterZoneProps extends ZoneProps {
  * A footer zone that should contain [[Footer]]. This component is used for zone 8 (status zone).
  * @note For other zones use the [[ZoneComponent]] component.
  */
-export class FooterZone extends React.Component<FooterZoneProps> {
+export class FooterZone extends React.PureComponent<FooterZoneProps> {
   public render() {
     const zoneClassName = classnames(
       "nz-zones-footer",

@@ -18,19 +18,20 @@ export interface DialogButtonProps extends CommonProps {
 }
 
 /** Button used in [[TitleBar]] component. */
-// tslint:disable-next-line:variable-name
-export const DialogButton: React.StatelessComponent<DialogButtonProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-dialog-button",
-    props.className);
+export class DialogButton extends React.PureComponent<DialogButtonProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-dialog-button",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-      onClick={props.onClick}
-    >
-      {props.children}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+        onClick={this.props.onClick}
+      >
+        {this.props.children}
+      </div>
+    );
+  }
+}

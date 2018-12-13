@@ -9,7 +9,7 @@ import { Angle, ClipVector, Constant, IndexedPolyface, IndexedPolyfaceVisitor, M
 import {
   ColorDef, ElementAlignedBox2d, ElementAlignedBox3d, Feature, FeatureTable, Gradient, GraphicParams, ImageBuffer,
   Placement2d, RenderMode, RenderTexture, SheetProps, TileProps, ViewAttachmentProps, ViewDefinition2dProps, ViewFlag,
-  ViewFlags, ViewStateData,
+  ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState } from "./DisplayStyleState";
@@ -1033,7 +1033,8 @@ export namespace Attachments {
 
 /** A view of a SheetModel */
 export class SheetViewState extends ViewState2d {
-  public static createFromStateData(viewStateData: ViewStateData, cat: CategorySelectorState, iModel: IModelConnection): ViewState | undefined {
+  public static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
+    const cat = new CategorySelectorState(viewStateData.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
     // use "new this" so subclasses are correct
     return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);

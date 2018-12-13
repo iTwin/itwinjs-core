@@ -144,7 +144,6 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   private _recreateTree() {
     this._tree = new BeInspireTree<TreeNodeItem>({
       dataProvider: this.props.dataProvider,
-      renderer: this._onModelChanged,
       mapPayloadToInspireNodeConfig: Breadcrumb.inspireNodeFromTreeNodeItem,
     });
     this._tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
@@ -199,7 +198,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
 
   private _onModelLoaded = (rootNodes: BeInspireTreeNodes<TreeNodeItem>) => {
     if (this.props.onRootNodesLoaded)
-      this.props.onRootNodesLoaded(rootNodes.map((n) => n.payload));
+      this.props.onRootNodesLoaded(rootNodes.map((n) => n.payload!));
     const current = this.state.current ? this._tree.node(this.state.current.id) : undefined;
     const p = current ? current.getTextualHierarchy().join(this.props.delimiter) : "";
     if (p !== this.state.pathString)
@@ -209,14 +208,11 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   private _onChildrenLoaded = (parentNode: BeInspireTreeNode<TreeNodeItem>) => {
     const children = parentNode.getChildren();
     if (this.props.onChildrenLoaded)
-      this.props.onChildrenLoaded(parentNode.payload, toNodes<TreeNodeItem>(children).map((c) => c.payload));
+      this.props.onChildrenLoaded(parentNode.payload!, toNodes<TreeNodeItem>(children).map((c) => c.payload!));
     const current = this.state.current ? this._tree.node(this.state.current.id) : undefined;
     const p = current ? current.getTextualHierarchy().join(this.props.delimiter) : "";
     if (p !== this.state.pathString)
       this.setState({ pathString: p });
-  }
-
-  private _onModelChanged = (_visibleNodes: Array<BeInspireTreeNode<TreeNodeItem>>) => {
   }
 
   private _onModelReady = () => {
@@ -769,12 +765,12 @@ export class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNo
             return (
               <ContextMenuItem
                 key={d}
-                icon={child.payload.icon}
+                icon={child.payload!.icon}
                 onSelect={(_event) => {
                   if (this.props.onNodeSelected)
                     this.props.onNodeSelected(child.payload);
                 }}>
-                {child.payload.label}
+                {child.payload!.label}
               </ContextMenuItem>
             );
           })}

@@ -25,10 +25,10 @@ export enum ListItemType {
 
 /** List picker item */
 export interface ListItem {
-  key: any;
-  name: string;
+  [key: string]: any;
+  name?: string;
   enabled: boolean;
-  type: ListItemType;
+  type?: ListItemType;
   children?: ListItem[];
 }
 
@@ -229,6 +229,8 @@ export class ListPickerBase extends React.Component<ListPickerProps, ListPickerS
           } else {
             return (<div key={itemIndex.toString()} />);
           }
+        default:
+          return (<div key={itemIndex.toString()} />);
       }
     };
 

@@ -16,21 +16,22 @@ export interface LabelProps extends CommonProps, NoChildrenProps {
   text?: string;
 }
 
-// tslint:disable-next-line:variable-name
-const LabelComponent: React.StatelessComponent<LabelProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-label",
-    props.className);
+class LabelComponent extends React.PureComponent<LabelProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-label",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      {props.text}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        {this.props.text}
+      </div>
+    );
+  }
+}
 
 /** Label component used in status message. I.e. [[MessageLayout]] */
 // tslint:disable-next-line:variable-name

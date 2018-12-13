@@ -16,7 +16,7 @@ export interface ExpandableButtonProps extends ExpandableComponentProps {
 }
 
 /** Expandable toolbar button. Used in [[Toolbar]] component. */
-export class ExpandableButton extends React.Component<ExpandableButtonProps> {
+export class ExpandableButton extends React.PureComponent<ExpandableButtonProps> {
   public render() {
     const { className, ...props } = this.props;
     const buttonClassName = classnames(
