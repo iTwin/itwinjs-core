@@ -104,7 +104,8 @@ export class BriefcaseEntry {
   private _iModelDb?: IModelDb;
   public get iModelDb(): IModelDb | undefined { return this._iModelDb; }
   public set iModelDb(iModelDb: IModelDb | undefined) {
-    this.nativeDb.setIModelDb(iModelDb); // store a pointer to this IModelDb on the native object so we can send it callbacks
+    // NEEDS_WORK_TXNMANAGER: Re-enable this when we upgrade to Node 10
+    // this.nativeDb.setIModelDb(iModelDb); // store a pointer to this IModelDb on the native object so we can send it callbacks
     this._iModelDb = iModelDb;
   }
 
