@@ -1,6 +1,14 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Wed, 12 Dec 2018 17:21:32 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Dec 2018 22:06:10 GMT and should not be manually modified.
+
+## 0.178.0
+Thu, 13 Dec 2018 22:06:10 GMT
+
+### Updates
+
+- Added StringGetter support to ItemDefBase, ItemProps & ToolButton. Added IModelApp.i18n checks to Tool for unit tests.
+- Fix tool panel alignment issue.
 
 ## 0.177.0
 Wed, 12 Dec 2018 17:21:32 GMT
