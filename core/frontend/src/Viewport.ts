@@ -1666,6 +1666,7 @@ export abstract class Viewport implements IDisposable {
       this.setupFromView();
 
     if (!sync.isValidScene) {
+      this.numSelectedTiles = this.numRequestedTiles = 0;
       const context = new SceneContext(this, new TileRequests());
       view.createScene(context);
       view.createClassification(context);
@@ -1771,6 +1772,11 @@ export abstract class Viewport implements IDisposable {
 
     return npc;
   }
+
+  /** @hidden ###TODO WIP */
+  public numSelectedTiles = 0;
+  /** @hidden ###TODO WIP */
+  public numRequestedTiles = 0;
 }
 
 /**
