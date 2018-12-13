@@ -2,10 +2,9 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
 import * as React from "react";
-
-import { Direction, Toolbar, ToolbarPanelAlignment } from "../../ui-ninezone";
+import { mount, shallow } from "enzyme";
+import { Direction, Toolbar, ToolbarPanelAlignment, PanelsProvider } from "../../ui-ninezone";
 
 describe("<Toolbar />", () => {
   it("should render", () => {
@@ -17,10 +16,24 @@ describe("<Toolbar />", () => {
   });
 
   it("renders with expandsTo", () => {
-    shallow(<Toolbar expandsTo={Direction.Right} />).should.matchSnapshot();
+    const sut = shallow(
+      <Toolbar
+        expandsTo={Direction.Right}
+      />,
+    );
+    const renderProp = sut.find(PanelsProvider).prop("children");
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
+    rendered.should.matchSnapshot();
   });
 
   it("renders with panelAlignment", () => {
-    shallow(<Toolbar panelAlignment={ToolbarPanelAlignment.End} />).should.matchSnapshot();
+    const sut = shallow(
+      <Toolbar
+        panelAlignment={ToolbarPanelAlignment.End}
+      />,
+    );
+    const renderProp = sut.find(PanelsProvider).prop("children");
+    const rendered = shallow(renderProp!(undefined) as React.ReactElement<{}>);
+    rendered.should.matchSnapshot();
   });
 });

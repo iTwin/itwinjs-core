@@ -5,7 +5,7 @@ exports[`<Back /> renders correctly 1`] = `
   className="nz-zones-target-back nz-zone-9"
   zoneIndex={9}
 >
-  <Component
+  <Arrow
     className="nz-arrow"
   />
 </MergeTarget>

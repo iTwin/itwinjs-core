@@ -21,21 +21,22 @@ export interface GhostOutlineProps extends CommonProps {
  * Component used to visualize merge/unmerge action by displaying zone outline.
  * @note Should be placed in [[Zone]] component.
  */
-// tslint:disable-next-line:variable-name
-export const GhostOutline: React.StatelessComponent<GhostOutlineProps> = (props: GhostOutlineProps) => {
-  const className = classnames(
-    "nz-zones-ghostOutline",
-    props.className);
+export class GhostOutline extends React.PureComponent<GhostOutlineProps> {
+  public render() {
+    const className = classnames(
+      "nz-zones-ghostOutline",
+      this.props.className);
 
-  const style: React.CSSProperties = {
-    ...props.bounds ? CssProperties.fromBounds(props.bounds) : undefined,
-    ...props.style,
-  };
+    const style: React.CSSProperties = {
+      ...this.props.bounds ? CssProperties.fromBounds(this.props.bounds) : undefined,
+      ...this.props.style,
+    };
 
-  return (
-    <div
-      className={className}
-      style={style}
-    />
-  );
-};
+    return (
+      <div
+        className={className}
+        style={style}
+      />
+    );
+  }
+}

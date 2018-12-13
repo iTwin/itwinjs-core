@@ -18,19 +18,20 @@ export interface BackProps extends MergeTargetProps {
 }
 
 /** Back home target. */
-// tslint:disable-next-line:variable-name
-export const Back: React.StatelessComponent<BackProps> = (props: BackProps) => {
-  const mergeClassName = classnames(
-    "nz-zones-target-back",
-    `nz-zone-${props.zoneIndex}`,
-    props.className);
+export class Back extends React.PureComponent<BackProps> {
+  public render() {
+    const mergeClassName = classnames(
+      "nz-zones-target-back",
+      `nz-zone-${this.props.zoneIndex}`,
+      this.props.className);
 
-  return (
-    <MergeTarget
-      className={mergeClassName}
-      {...props}
-    >
-      <Arrow className="nz-arrow" />
-    </MergeTarget>
-  );
-};
+    return (
+      <MergeTarget
+        className={mergeClassName}
+        {...this.props}
+      >
+        <Arrow className="nz-arrow" />
+      </MergeTarget>
+    );
+  }
+}

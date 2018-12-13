@@ -73,7 +73,6 @@ export interface GroupButtonProps extends ItemProps {
   items: AnyItemDef[];
   direction?: Direction;
   itemsInColumn?: number;
-  renderPanel?: () => React.ReactNode;
 }
 
 /** Union of all Item properties. */

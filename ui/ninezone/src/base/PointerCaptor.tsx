@@ -25,7 +25,7 @@ export interface PointerCaptorState {
  * A component which will capture the pointer down event.
  * While captured will overlay the screen to capture iframe events too.
  */
-export class PointerCaptor extends React.Component<PointerCaptorProps, PointerCaptorState> {
+export class PointerCaptor extends React.PureComponent<PointerCaptorProps, PointerCaptorState> {
   public readonly state: Readonly<PointerCaptorState> = {
     isMouseDown: false,
   };

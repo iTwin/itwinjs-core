@@ -26,8 +26,7 @@ export interface BackstageProps extends CommonProps, NoChildrenProps {
 }
 
 /** Backstage component of 9-zone UI app. */
-export class Backstage extends React.Component<BackstageProps> {
-
+export class Backstage extends React.PureComponent<BackstageProps> {
   public static defaultProps: Partial<BackstageProps> = {
     showOverlay: true,
   };

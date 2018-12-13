@@ -19,7 +19,7 @@ export interface ExpandableProps extends CommonProps {
 }
 
 /** Expandable component is used to expand content to specified direction. */
-export class Expandable extends React.Component<ExpandableProps> {
+export class Expandable extends React.PureComponent<ExpandableProps> {
   public render() {
     const direction = this.props.direction === undefined ? Direction.Right : this.props.direction;
     const className = classnames(

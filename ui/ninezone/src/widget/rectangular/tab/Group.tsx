@@ -28,22 +28,23 @@ export interface TabGroupProps extends CommonProps {
 }
 
 /** Tab group component for stacked widget. */
-// tslint:disable-next-line:variable-name
-export const TabGroup: React.StatelessComponent<TabGroupProps> = (props: TabGroupProps) => {
-  const className = classnames(
-    "nz-widget-rectangular-tab-group",
-    props.handleMode === VisibilityMode.OnHover && "nz-handle-hover",
-    props.handleMode === VisibilityMode.Visible && "nz-handle-visible",
-    props.handleMode === VisibilityMode.Timeout && "nz-handle-timeout",
-    HorizontalAnchorHelpers.getCssClassName(props.anchor),
-    props.className);
+export class TabGroup extends React.PureComponent<TabGroupProps> {
+  public render() {
+    const className = classnames(
+      "nz-widget-rectangular-tab-group",
+      this.props.handleMode === VisibilityMode.OnHover && "nz-handle-hover",
+      this.props.handleMode === VisibilityMode.Visible && "nz-handle-visible",
+      this.props.handleMode === VisibilityMode.Timeout && "nz-handle-timeout",
+      HorizontalAnchorHelpers.getCssClassName(this.props.anchor),
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      {props.children}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        {this.props.children}
+      </div>
+    );
+  }
+}

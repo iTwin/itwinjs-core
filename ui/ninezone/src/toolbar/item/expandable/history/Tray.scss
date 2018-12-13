@@ -13,6 +13,7 @@
   $triangle-color: $text-light;
 
   display: flex;
+  pointer-events: auto;
 
   > .nz-items {
     display: flex;

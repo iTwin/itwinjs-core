@@ -44,7 +44,7 @@ export const offsetAndContainInContainer = (offset: PointProps = new Point(20, 2
 };
 
 /** Tooltip component that follows the mouse. */
-export class Tooltip extends React.Component<TooltipProps> {
+export class Tooltip extends React.PureComponent<TooltipProps> {
   public static readonly defaultProps: TooltipDefaultProps = {
     position: new Point(),
     containIn: (tooltip: HTMLElement) => {

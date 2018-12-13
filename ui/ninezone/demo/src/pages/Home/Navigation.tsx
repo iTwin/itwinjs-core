@@ -12,36 +12,38 @@ export interface Props {
   className?: string;
 }
 
-export const navigation: React.StatelessComponent<Props> = (props) => {
-  const className = classnames(
-    "nzdemo-pages-home-navigation",
-    props.className);
+export class Navigation extends React.PureComponent<Props> {
+  public render() {
+    const className = classnames(
+      "nzdemo-pages-home-navigation",
+      this.props.className);
 
-  return (
-    <nav className={className}>
-      <h2>Examples</h2>
-      <ul>
-        <li>
-          <Link to="/zones">Zones</Link>
-        </li>
-        <li>
-          <Link to="/backstage">Backstage</Link>
-        </li>
-        <li>
-          <Link to="/popovers">Popovers</Link>
-        </li>
-        <li>
-          <Link to="/zone-targets">Zone Targets</Link>
-        </li>
-        <li>
-          <Link to="/footer">Footer</Link>
-        </li>
-        <li>
-          <Link to="/tools">Tools</Link>
-        </li>
-      </ul>
-    </nav>
-  );
-};
+    return (
+      <nav className={className}>
+        <h2>Examples</h2>
+        <ul>
+          <li>
+            <Link to="/zones">Zones</Link>
+          </li>
+          <li>
+            <Link to="/backstage">Backstage</Link>
+          </li>
+          <li>
+            <Link to="/popovers">Popovers</Link>
+          </li>
+          <li>
+            <Link to="/zone-targets">Zone Targets</Link>
+          </li>
+          <li>
+            <Link to="/footer">Footer</Link>
+          </li>
+          <li>
+            <Link to="/tools">Tools</Link>
+          </li>
+        </ul>
+      </nav>
+    );
+  }
+}
 
-export default navigation;
+export default Navigation;

@@ -62,10 +62,12 @@ export interface HistoryTrayProps extends CommonProps, NoChildrenProps {
   isExtended?: boolean;
   /** Items of tray component. I.e. [[HistoryItem]], [[Icon]] */
   items?: React.ReactNode;
+  /** Function called when history tray should be extended or shrank. */
+  onIsHistoryExtendedChange?: (isExtended: boolean) => void;
 }
 
 /** History tray used in [[ExpandableItem]] component. */
-export class HistoryTray extends React.Component<HistoryTrayProps> {
+export class HistoryTray extends React.PureComponent<HistoryTrayProps> {
   public render() {
     const items = FlattenChildren(this.props.items);
     const count = React.Children.count(items);
@@ -81,6 +83,8 @@ export class HistoryTray extends React.Component<HistoryTrayProps> {
       <div
         className={className}
         style={this.props.style}
+        onMouseEnter={this._handleMouseEnter}
+        onMouseLeave={this._handleMouseLeave}
       >
         <div className="nz-items">
           {this.props.items}
@@ -88,5 +92,13 @@ export class HistoryTray extends React.Component<HistoryTrayProps> {
         <div className="nz-extend-indicator" />
       </div>
     );
+  }
+
+  private _handleMouseEnter = () => {
+    this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(true);
+  }
+
+  private _handleMouseLeave = () => {
+    this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(false);
   }
 }

@@ -19,7 +19,7 @@ export interface ToolbarIconProps extends ToolbarButtonProps {
  * Toolbar button which displays icon. Used in [[Toolbar]] component.
  * @note See basic button: [[ToolbarButton]]
  */
-export class ToolbarIcon extends React.Component<ToolbarIconProps> {
+export class ToolbarIcon extends React.PureComponent<ToolbarIconProps> {
   public render() {
     const { className, ...props } = this.props;
     const buttonClassName = classnames(

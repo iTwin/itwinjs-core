@@ -12,8 +12,7 @@ describe("<AppButton />", () => {
     mount(<AppButton />);
   });
 
-  // NEEDSWORK_MODULARIZATION - check for error or update snap.
-  it.skip("renders correctly", () => {
+  it("renders correctly", () => {
     shallow(<AppButton />).should.matchSnapshot();
   });
 });

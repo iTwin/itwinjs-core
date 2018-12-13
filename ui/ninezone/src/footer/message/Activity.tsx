@@ -16,18 +16,19 @@ export interface ActivityProps extends CommonProps {
 }
 
 /** Activity message as defined in 9-Zone UI spec. Used in [[Footer]] component. */
-// tslint:disable-next-line:variable-name
-export const Activity: React.StatelessComponent<ActivityProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-activity",
-    props.className);
+export class Activity extends React.PureComponent<ActivityProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-activity",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      {props.children}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        {this.props.children}
+      </div>
+    );
+  }
+}

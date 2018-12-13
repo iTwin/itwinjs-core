@@ -12,8 +12,7 @@ describe("<BackButton />", () => {
     mount(<BackButton />);
   });
 
-  // NEEDSWORK_MODULARIZATION - check for error or update snap.
-  it.skip("renders correctly", () => {
+  it("renders correctly", () => {
     shallow(<BackButton />).should.matchSnapshot();
   });
 });

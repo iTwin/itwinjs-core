@@ -16,20 +16,21 @@ export interface ScrollableContentProps extends CommonProps, NoChildrenProps {
 }
 
 /** Scrollable content of [[Dialog]] component. */
-// tslint:disable-next-line:variable-name
-export const ScrollableContent: React.StatelessComponent<ScrollableContentProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-dialog-content-scrollable",
-    props.className);
+export class ScrollableContent extends React.PureComponent<ScrollableContentProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-dialog-content-scrollable",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      <div className="nz-content">
-        {props.content}
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        <div className="nz-content">
+          {this.props.content}
+        </div>
       </div>
-    </div>
-  );
-};
+    );
+  }
+}

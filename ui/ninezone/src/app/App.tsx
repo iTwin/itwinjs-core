@@ -16,7 +16,7 @@ export interface AppProps extends CommonProps {
 }
 
 /** Root component of 9-Zone UI app. */
-export class App extends React.Component<AppProps> {
+export class App extends React.PureComponent<AppProps> {
   public render() {
     const className = classnames(
       "nz-app-app",

@@ -20,26 +20,27 @@ export interface MessageLayoutProps extends CommonProps {
 }
 
 /** Default layout used in [[StatusMessage]] component. */
-// tslint:disable-next-line:variable-name
-export const MessageLayout: React.StatelessComponent<MessageLayoutProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-status-layout",
-    props.className);
+export class MessageLayout extends React.PureComponent<MessageLayoutProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-status-layout",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      <div className="nz-label">
-        {props.label}
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        <div className="nz-label">
+          {this.props.label}
+        </div>
+        <div className="nz-buttons">
+          {this.props.buttons}
+        </div>
+        <div className="nz-progress">
+          {this.props.progress}
+        </div>
       </div>
-      <div className="nz-buttons">
-        {props.buttons}
-      </div>
-      <div className="nz-progress">
-        {props.progress}
-      </div>
-    </div>
-  );
-};
+    );
+  }
+}

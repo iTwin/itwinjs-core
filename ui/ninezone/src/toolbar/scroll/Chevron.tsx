@@ -19,7 +19,7 @@ export interface ChevronProps extends CommonProps, NoChildrenProps {
 }
 
 /** Chevron component used in [[Indicator]]. */
-export class Chevron extends React.Component<ChevronProps> {
+export class Chevron extends React.PureComponent<ChevronProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-scroll-chevron",

@@ -21,7 +21,7 @@ export interface ToolSettingsTooltipProps extends TooltipProps {
 }
 
 /** Tool settings tooltip. Displays the step string and is hidden after certain timeout. */
-export class ToolSettingsTooltip extends React.Component<ToolSettingsTooltipProps> {
+export class ToolSettingsTooltip extends React.PureComponent<ToolSettingsTooltipProps> {
   public render() {
     const { className, children, stepString, ...props } = this.props;
     const tooltipClassName = classnames(

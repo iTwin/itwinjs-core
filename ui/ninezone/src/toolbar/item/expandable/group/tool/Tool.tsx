@@ -28,7 +28,7 @@ export interface GroupToolProps extends CommonProps {
 }
 
 /** Tool entry of tool group panel. Used in [[Column]]. */
-export class GroupTool extends React.Component<GroupToolProps> {
+export class GroupTool extends React.PureComponent<GroupToolProps> {
   public render() {
     const itemClassName = classnames(
       "nz-toolbar-item-expandable-group-tool-item",

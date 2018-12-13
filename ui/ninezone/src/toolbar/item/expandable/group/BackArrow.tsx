@@ -14,7 +14,7 @@ export interface BackArrowProps extends CommonProps, NoChildrenProps {
 }
 
 /** Back arrow used in [[NestedGroup]] component. */
-export class BackArrow extends React.Component<BackArrowProps> {
+export class BackArrow extends React.PureComponent<BackArrowProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-backArrow",

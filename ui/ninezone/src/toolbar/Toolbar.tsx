@@ -6,18 +6,10 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-
 import { Direction, DirectionHelpers, OrthogonalDirection, OrthogonalDirectionHelpers } from "../utilities/Direction";
 import { CommonProps, NoChildrenProps, FlattenChildren } from "../utilities/Props";
-import { ExpandableItemProps } from "./item/expandable/Expandable";
 import { Items } from "./Items";
 import "./Toolbar.scss";
-
-interface ToolbarItem {
-  item: React.ReactNode;
-  panel: React.ReactNode;
-  history: React.ReactNode;
-}
 
 /** Available alignment modes of [[Toolbar]] panels. */
 export enum ToolbarPanelAlignment {
@@ -42,6 +34,89 @@ export class ToolbarPanelAlignmentHelpers {
   }
 }
 
+/** Properties of [[PanelsProvider]] component. */
+export interface PanelsProviderProps {
+  /** Render prop that provides item panels. */
+  children?: (items: React.ReactNode) => React.ReactNode;
+  /** Ref to histories container. */
+  histories: React.RefObject<HTMLElement>;
+  /** Items of the toolbar. */
+  items?: React.ReactNode;
+  /** Ref to panels container. */
+  panels: React.RefObject<HTMLElement>;
+}
+
+/** Provides panels and histories of toolbar items. */
+export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
+  private appendPanels() {
+    const panels = this.props.panels.current;
+    if (!panels)
+      return;
+
+    while (panels.firstChild) {
+      panels.removeChild(panels.firstChild);
+    }
+
+    for (const ref of this._refs) {
+      if (!ref.current)
+        continue;
+      if (!ref.current.panel)
+        continue;
+      panels.appendChild(ref.current.panel);
+    }
+  }
+
+  private appendHistories() {
+    const histories = this.props.histories.current;
+    if (!histories)
+      return;
+
+    while (histories.firstChild) {
+      histories.removeChild(histories.firstChild);
+    }
+
+    for (const ref of this._refs) {
+      if (!ref.current)
+        continue;
+      if (!ref.current.history)
+        continue;
+      histories.appendChild(ref.current.history);
+    }
+  }
+
+  public componentDidMount() {
+    this.appendPanels();
+    this.appendHistories();
+  }
+
+  public componentDidUpdate() {
+    this.appendPanels();
+    this.appendHistories();
+  }
+
+  private _refs = new Array<React.RefObject<ToolbarItem>>();
+
+  public render() {
+    const flattened = FlattenChildren(this.props.items);
+    const itemsArray = React.Children.toArray(flattened);
+    this._refs = [];
+    const items = itemsArray.reduce((acc, item) => {
+      if (!React.isValidElement<ToolbarItemProps<ToolbarItem>>(item))
+        return acc;
+
+      const toolbarItemRef = React.createRef<ToolbarItem>();
+      item = React.cloneElement(item, {
+        toolbarItemRef,
+      });
+      this._refs.push(toolbarItemRef);
+
+      acc.push(item);
+      return acc;
+    }, new Array<React.ReactNode>());
+    return this.props.children && this.props.children(items);
+  }
+}
+
 /** Properties of [[Toolbar]] component. */
 export interface ToolbarProps extends CommonProps, NoChildrenProps {
   /** Describes to which direction the history/panel items are expanded. Defaults to: [[Direction.Bottom]] */
@@ -50,143 +125,90 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
   items?: React.ReactNode;
   /** Describes how expanded panels are aligned. Defaults to: [[ToolbarPanelAlignment.Start]] */
   panelAlignment?: ToolbarPanelAlignment;
-  /** Function called to render history items. */
-  renderHistoryItems?: (historyItems: React.ReactNode) => React.ReactNode;
-  /** Function called to render items. */
-  renderItems?: (items: React.ReactNode) => React.ReactNode;
-  /** Function called to render panel items. */
-  renderPanelItems?: (panelItems: React.ReactNode) => React.ReactNode;
 }
+
+export const getToolbarDirection = (expandsTo: Direction): OrthogonalDirection => {
+  const orthogonalDirection = DirectionHelpers.getOrthogonalDirection(expandsTo);
+  return OrthogonalDirectionHelpers.inverse(orthogonalDirection);
+};
 
 /**
  * A toolbar that may contain items.
  * @note See [[Scrollable]] for toolbar with scroll overflow strategy.
  */
-export class Toolbar extends React.Component<ToolbarProps> {
-  /** @returns Toolbar direction based on [[ToolbarProps.expandsTo]] */
-  public static getToolbarDirection(props: ToolbarProps): OrthogonalDirection {
-    const expandsTo = Toolbar.getExpandsTo(props);
-    const orthogonalDirection = DirectionHelpers.getOrthogonalDirection(expandsTo);
-    return OrthogonalDirectionHelpers.inverse(orthogonalDirection);
-  }
+export class Toolbar extends React.PureComponent<ToolbarProps> {
+  public static readonly defaultProps = {
+    expandsTo: Direction.Bottom,
+    panelAlignment: ToolbarPanelAlignment.Start,
+  };
 
-  /** @returns Count of toolbar items. */
-  public static getItemCount(props: ToolbarProps) {
-    const items = FlattenChildren(props.items);
-    return React.Children.count(items);
-  }
-
-  /** @returns True if item is [[ExpandableItem]] */
-  private static isExpandableItem(item: React.ReactChild): item is React.ReactElement<ExpandableItemProps> {
-    if (React.isValidElement<ExpandableItemProps>(item))
-      return true;
-    return false;
-  }
-
-  private static getExpandsTo(props: ToolbarProps) {
-    return props.expandsTo === undefined ? Direction.Bottom : props.expandsTo;
-  }
-
-  private static getPanelAlignment(props: ToolbarProps) {
-    return props.panelAlignment === undefined ? ToolbarPanelAlignment.Start : props.panelAlignment;
-  }
-
-  private getToolbarItems(): ToolbarItem[] {
-    const items = FlattenChildren(this.props.items);
-
-    const toolbarItems = React.Children.map<ToolbarItem>(items, (child, index) => {
-      const key = React.isValidElement(child) && child.key ? child.key : index;
-
-      const panelRef = React.createRef<HTMLDivElement>();
-      const panel = (
-        <div
-          key={key}
-          className="nz-item"
-          ref={panelRef}
-        >
-        </div>
-      );
-
-      const historyRef = React.createRef<HTMLDivElement>();
-      const history = (
-        <div
-          key={key}
-          className="nz-item"
-          ref={historyRef}
-        >
-        </div>
-      );
-
-      const item = !Toolbar.isExpandableItem(child) ? child :
-        React.cloneElement<ExpandableItemProps>(child, {
-          key,
-          renderHistoryTo: () => {
-            if (!historyRef.current)
-              throw new ReferenceError();
-            return historyRef.current;
-          },
-          renderPanelTo: () => {
-            if (!panelRef.current)
-              throw new ReferenceError();
-            return panelRef.current;
-          },
-        });
-
-      return {
-        item,
-        panel,
-        history,
-      };
-    });
-
-    if (!toolbarItems)
-      return [];
-    return toolbarItems;
-  }
+  private _histories = React.createRef<HTMLDivElement>();
+  private _panels = React.createRef<HTMLDivElement>();
 
   public render() {
-    const orthogonalDirection = Toolbar.getToolbarDirection(this.props);
-    const expandsTo = Toolbar.getExpandsTo(this.props);
-    const panelAlignment = Toolbar.getPanelAlignment(this.props);
+    return (
+      <PanelsProvider
+        histories={this._histories}
+        items={this.props.items}
+        panels={this._panels}
+      >
+        {this._renderItems}
+      </PanelsProvider>
+    );
+  }
+
+  private _renderItems = (items: React.ReactNode) => {
+    const direction = getToolbarDirection(this.props.expandsTo!);
     const className = classnames(
       "nz-toolbar-toolbar",
-      DirectionHelpers.getCssClassName(expandsTo),
-      OrthogonalDirectionHelpers.getCssClassName(orthogonalDirection),
-      ToolbarPanelAlignmentHelpers.getCssClassName(panelAlignment),
+      DirectionHelpers.getCssClassName(this.props.expandsTo!),
+      OrthogonalDirectionHelpers.getCssClassName(direction),
+      ToolbarPanelAlignmentHelpers.getCssClassName(this.props.panelAlignment!),
       this.props.className);
 
-    const toolbarItems = this.getToolbarItems();
-    const items = toolbarItems.map((toolbarItem) => toolbarItem.item);
-    const historyItems = toolbarItems.map((toolbarItem) => toolbarItem.history);
-    const panelItems = toolbarItems.map((toolbarItem) => toolbarItem.panel);
     return (
       <div
         className={className}
         style={this.props.style}
       >
-        {this.props.renderHistoryItems ? this.props.renderHistoryItems(historyItems) :
-          <div
-            className="nz-expanded nz-history"
-          >
-            {historyItems}
-          </div>
-        }
-        {this.props.renderPanelItems ? this.props.renderPanelItems(panelItems) :
-          <div
-            className="nz-expanded nz-panels"
-          >
-            {panelItems}
-          </div>
-        }
-        {this.props.renderItems ? this.props.renderItems(items) :
-          <Items
-            className="nz-items"
-            direction={orthogonalDirection}
-          >
-            {items}
-          </Items>
-        }
+        <div
+          className="nz-expanded nz-histories"
+          ref={this._histories}
+        />
+        <div
+          className="nz-expanded nz-panels"
+          ref={this._panels}
+        />
+        <Items
+          className="nz-items"
+          direction={direction}
+        >
+          {items}
+        </Items>
       </div >
     );
   }
 }
+
+export interface ToolbarItem {
+  panel: HTMLElement;
+  history: HTMLElement;
+}
+
+/**
+ * These props will be injected by Toolbar.
+ * @note Must be passed down when wrapping the toolbar item component.
+ */
+export interface ToolbarItemProps<TItem extends ToolbarItem> {
+  toolbarItemRef?: React.RefObject<TItem>;
+}
+
+/** Extracts [[ToolbarItemProps]] from your props. */
+export const getToolbarItemProps = <TProps extends {}>(props: TProps): ToolbarItemProps<ToolbarItem> => {
+  const toolbarItemProps = props as ToolbarItemProps<ToolbarItem>;
+  if (toolbarItemProps.toolbarItemRef)
+    return {
+      toolbarItemRef: toolbarItemProps.toolbarItemRef,
+    };
+  return {};
+};

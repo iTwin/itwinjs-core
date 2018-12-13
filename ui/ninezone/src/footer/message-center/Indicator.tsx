@@ -24,7 +24,7 @@ export interface MessageCenterIndicatorProps extends CommonProps, NoChildrenProp
 }
 
 /** One of [[Footer]] indicators. */
-export class MessageCenterIndicator extends React.Component<MessageCenterIndicatorProps> {
+export class MessageCenterIndicator extends React.PureComponent<MessageCenterIndicatorProps> {
   public render() {
     const className = classnames(
       "nz-footer-messageCenter-indicator",
@@ -47,7 +47,7 @@ export class MessageCenterIndicator extends React.Component<MessageCenterIndicat
           </div>
           <div
             className="nz-balloon"
-            onClick={this._handleOnIndicatorClick}
+            onClick={this.props.onClick}
           >
             <div className="nz-arrow" />
             <div className="nz-content">
@@ -57,9 +57,5 @@ export class MessageCenterIndicator extends React.Component<MessageCenterIndicat
         </div>
       </div>
     );
-  }
-
-  private _handleOnIndicatorClick = () => {
-    this.props.onClick && this.props.onClick();
   }
 }

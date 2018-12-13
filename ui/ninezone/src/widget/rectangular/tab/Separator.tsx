@@ -14,7 +14,7 @@ export interface TabSeparatorProps extends CommonProps, NoChildrenProps {
 }
 
 /** Rectangular widget tab separator. Used in [[Stacked]] component. */
-export class TabSeparator extends React.Component<TabSeparatorProps> {
+export class TabSeparator extends React.PureComponent<TabSeparatorProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-tab-separator",

@@ -19,7 +19,7 @@ export interface MergeTargetProps extends CommonProps {
  * Basic target component used in merge zone interactions.
  * @note Available targets: [[Back]], [[Merge]]
  */
-export class MergeTarget extends React.Component<MergeTargetProps> {
+export class MergeTarget extends React.PureComponent<MergeTargetProps> {
   private _isTargeted = false;
 
   public componentWillUnmount() {

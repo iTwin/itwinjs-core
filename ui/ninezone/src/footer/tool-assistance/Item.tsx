@@ -16,7 +16,7 @@ export interface ToolAssistanceItemProps extends CommonProps {
 }
 
 /** Tool assistance item. Used in [[Assistance]] component. */
-export class ToolAssistanceItem extends React.Component<ToolAssistanceItemProps> {
+export class ToolAssistanceItem extends React.PureComponent<ToolAssistanceItemProps> {
   public render() {
     const className = classnames(
       "nz-footer-toolAssistance-item",

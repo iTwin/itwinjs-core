@@ -24,7 +24,7 @@ export const withContainIn = <ComponentProps extends {}>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
 ) => {
-  return class WithContainIn extends React.Component<ComponentProps & WithContainInProps> {
+  return class WithContainIn extends React.PureComponent<ComponentProps & WithContainInProps> {
     public getContainerBounds(): Rectangle {
       if (!this.props.container)
         return new Rectangle();
@@ -72,13 +72,10 @@ export const withContainIn = <ComponentProps extends {}>(
     }
 
     public render() {
-      const copyProps = Object.assign({}, this.props);
-      delete (copyProps as WithContainInProps).noVerticalContainment;
-      delete (copyProps as WithContainInProps).noHorizontalContainment;
-
+      const { noVerticalContainment, noHorizontalContainment, container, ...props } = this.props as WithContainInProps;
       return (
         <Component
-          {...copyProps}
+          {...props}
           {...this.state}
         />
       );

@@ -24,8 +24,7 @@ export interface BackstageItemProps extends CommonProps {
 }
 
 /** Item in the [[Backstage]]. */
-export class BackstageItem extends React.Component<BackstageItemProps> {
-
+export class BackstageItem extends React.PureComponent<BackstageItemProps> {
   public render() {
     const className = classnames(
       "nz-backstage-item",
