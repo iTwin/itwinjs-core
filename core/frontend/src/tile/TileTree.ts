@@ -30,7 +30,6 @@ import {
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
 import { RenderGraphic, GraphicBranch } from "../render/System";
-import { GraphicType } from "../render/GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { TileIO } from "./TileIO";
@@ -196,7 +195,7 @@ export class Tile implements IDisposable {
 
   private getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
     if (undefined === this._rangeGraphic) {
-      const builder = context.createGraphicBuilder(GraphicType.Scene);
+      const builder = context.createSceneGraphicBuilder();
       const color = this.hasSizeMultiplier ? ColorDef.red : (this.isLeaf ? ColorDef.blue : ColorDef.green);
       builder.setSymbology(color, color, 1);
       builder.addRangeBox(this.contentRange);
@@ -676,7 +675,7 @@ export abstract class TileLoader {
         break;
     }
 
-    let graphic: TileRequest.Graphic = { };
+    let graphic: TileRequest.Graphic = {};
     if (undefined !== reader) {
       try {
         graphic = await reader.read();

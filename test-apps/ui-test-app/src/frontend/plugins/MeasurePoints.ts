@@ -8,7 +8,7 @@ import { ColorDef } from "@bentley/imodeljs-common";
 import { Point3d, Vector3d, XYAndZ, XAndY, Point2d } from "@bentley/geometry-core";
 import {
   IModelApp, PrimitiveTool, AccuDrawHintBuilder, ViewRect, Viewport, QuantityType, BeButtonEvent,
-  EventHandled, AccuDrawShortcuts, DynamicsContext, RotationMode, DecorateContext, GraphicType, CanvasDecoration,
+  EventHandled, AccuDrawShortcuts, DynamicsContext, RotationMode, DecorateContext, CanvasDecoration,
 } from "@bentley/imodeljs-frontend";
 
 class DistanceMarker implements CanvasDecoration {
@@ -123,7 +123,7 @@ export class MeasurePointsTool extends PrimitiveTool {
       }
 
     }
-    const builder = context.createGraphicBuilder(GraphicType.Scene);
+    const builder = context.createSceneGraphicBuilder();
 
     builder.setSymbology(ColorDef.white, ColorDef.white, 1);
     builder.addLineString(tmpPoints);

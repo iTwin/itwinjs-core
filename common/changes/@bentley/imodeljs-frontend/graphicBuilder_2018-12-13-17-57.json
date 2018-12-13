@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Only make createGraphicBuilder available to DecorationContext. DynamicsContext/SceneContext require a scene graphic.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}
