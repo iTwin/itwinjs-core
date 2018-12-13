@@ -113,21 +113,21 @@ vec4 computePositionFromDepth(vec2 tc, float nonLinearDepth) {
 `;
 
 const computeNormalFromDepth = `
-vec3 computeNormalFromDepth(vec3 posInView, vec2 tc, vec2 pixelSize) {
+vec3 computeNormalFromDepth(vec3 viewPos, vec2 tc, vec2 pixelSize) {
   float nonLinearDepthU = computeNonLinearDepth(readDepthAndOrder(tc - vec2(0.0, pixelSize.y)).y);
   float nonLinearDepthD = computeNonLinearDepth(readDepthAndOrder(tc + vec2(0.0, pixelSize.y)).y);
   float nonLinearDepthL = computeNonLinearDepth(readDepthAndOrder(tc - vec2(pixelSize.x, 0.0)).y);
   float nonLinearDepthR = computeNonLinearDepth(readDepthAndOrder(tc + vec2(pixelSize.x, 0.0)).y);
 
-  vec3 posInViewUp = computePositionFromDepth(tc - vec2(0.0, pixelSize.y), nonLinearDepthU).xyz;
-  vec3 posInViewDown = computePositionFromDepth(tc + vec2(0.0, pixelSize.y), nonLinearDepthD).xyz;
-  vec3 posInViewLeft = computePositionFromDepth(tc - vec2(pixelSize.x, 0.0), nonLinearDepthL).xyz;
-  vec3 posInViewRight = computePositionFromDepth(tc + vec2(pixelSize.x, 0.0), nonLinearDepthR).xyz;
+  vec3 viewPosUp = computePositionFromDepth(tc - vec2(0.0, pixelSize.y), nonLinearDepthU).xyz;
+  vec3 viewPosDown = computePositionFromDepth(tc + vec2(0.0, pixelSize.y), nonLinearDepthD).xyz;
+  vec3 viewPostLeft = computePositionFromDepth(tc - vec2(pixelSize.x, 0.0), nonLinearDepthL).xyz;
+  vec3 viewPosRight = computePositionFromDepth(tc + vec2(pixelSize.x, 0.0), nonLinearDepthR).xyz;
 
-  vec3 up = posInView.xyz - posInViewUp.xyz;
-  vec3 down = posInViewDown.xyz - posInView.xyz;
-  vec3 left = posInView.xyz - posInViewLeft.xyz;
-  vec3 right = posInViewRight.xyz - posInView.xyz;
+  vec3 up = viewPos.xyz - viewPosUp.xyz;
+  vec3 down = viewPosDown.xyz - viewPos.xyz;
+  vec3 left = viewPos.xyz - viewPostLeft.xyz;
+  vec3 right = viewPosRight.xyz - viewPos.xyz;
 
   vec3 dx = length(left) < length(right) ? left : right;
   vec3 dy = length(up) < length(down) ? up : down;
