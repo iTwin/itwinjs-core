@@ -78,15 +78,16 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     if (!this.state.isVisible)
       return null;
 
-    const icon = <Icon iconSpec={this.props.actionItem.iconSpec} />;
+    const { actionItem, ...props } = this.props;
+    const icon = <Icon iconSpec={actionItem.iconSpec} />;
 
     return (
       <Item
-        {...this.props}
+        {...props}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
-        title={this.props.actionItem.label}
-        key={this.props.actionItem.id}
+        title={actionItem.label}
+        key={actionItem.id}
         onClick={this._execute}
         icon={icon}
       />

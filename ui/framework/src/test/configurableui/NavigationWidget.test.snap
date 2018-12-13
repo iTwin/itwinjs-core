@@ -19,6 +19,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
           />
         </UNDEFINED>
       }
+      panelAlignment={0}
     />
   }
   navigationWidgetDef={
@@ -70,6 +71,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
           />
         </UNDEFINED>
       }
+      panelAlignment={0}
     />
   }
 />

@@ -14,8 +14,7 @@ import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../SyncUi
 import { BaseItemState } from "./ItemDefBase";
 import { ToolItemProps } from "./ItemProps";
 import { UiFramework } from "../UiFramework";
-
-import { Item } from "@bentley/ui-ninezone";
+import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
 
 /** Tool Button React Component.
  */
@@ -89,10 +88,10 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
       return null;
 
     const icon = <Icon iconSpec={this.props.iconSpec} />;
-
+    const toolbarItemProps = getToolbarItemProps(this.props);
     return (
       <Item
-        {...this.props}
+        {...toolbarItemProps}
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
         title={this._label}

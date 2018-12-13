@@ -232,6 +232,7 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
           />
         </UNDEFINED>
       }
+      panelAlignment={0}
     />
   }
   toolWidgetDef={

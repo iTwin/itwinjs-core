@@ -195,6 +195,20 @@ export interface ToolbarItem {
   history: HTMLElement;
 }
 
+/**
+ * These props will be injected by Toolbar.
+ * @note Must be passed down when wrapping the toolbar item component.
+ */
 export interface ToolbarItemProps<TItem extends ToolbarItem> {
   toolbarItemRef?: React.RefObject<TItem>;
 }
+
+/** Extracts [[ToolbarItemProps]] from your props. */
+export const getToolbarItemProps = <TProps extends {}>(props: TProps): ToolbarItemProps<ToolbarItem> => {
+  const toolbarItemProps = props as ToolbarItemProps<ToolbarItem>;
+  if (toolbarItemProps.toolbarItemRef)
+    return {
+      toolbarItemRef: toolbarItemProps.toolbarItemRef,
+    };
+  return {};
+};
