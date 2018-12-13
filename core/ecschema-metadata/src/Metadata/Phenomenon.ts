@@ -33,6 +33,11 @@ export class Phenomenon extends SchemaItem {
       await visitor.visitPhenomenon(this);
   }
 
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitPhenomenonSync)
+      visitor.visitPhenomenonSync(this);
+  }
+
   public deserializeSync(phenomenonProps: PhenomenonProps) {
     super.deserializeSync(phenomenonProps);
     if (this._definition !== "" && phenomenonProps.definition.toLowerCase() !== this._definition.toLowerCase())

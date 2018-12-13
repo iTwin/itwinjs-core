@@ -116,8 +116,8 @@ export class SchemaReadHelper<T = unknown> {
       this.loadSchemaReferenceSync(reference);
     }
 
-    if (this._visitor && this._visitor.visitEmptySchema)
-      this._visitor.visitEmptySchema(schema);
+    if (this._visitor && this._visitor.visitEmptySchemaSync)
+      this._visitor.visitEmptySchemaSync(schema);
 
     // Load all schema items
     for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
@@ -128,7 +128,7 @@ export class SchemaReadHelper<T = unknown> {
 
       const loadedItem = this.loadSchemaItemSync(schema, itemName, itemType, rawItem);
       if (loadedItem && this._visitor) {
-        loadedItem.accept(this._visitor);
+        loadedItem.acceptSync(this._visitor);
       }
     }
 
@@ -136,8 +136,8 @@ export class SchemaReadHelper<T = unknown> {
       this.loadCustomAttributeSync(customAttribute);
     }
 
-    if (this._visitor && this._visitor.visitFullSchema)
-      this._visitor.visitFullSchema(schema);
+    if (this._visitor && this._visitor.visitFullSchemaSync)
+      this._visitor.visitFullSchemaSync(schema);
 
     return schema;
   }
@@ -374,7 +374,7 @@ export class SchemaReadHelper<T = unknown> {
       if (foundItem) {
         const schemaItem = this.loadSchemaItemSync(this._schema!, ...foundItem);
         if (!skipVisitor && schemaItem && this._visitor) {
-          schemaItem.accept(this._visitor);
+          schemaItem.acceptSync(this._visitor);
         }
         return schemaItem;
       }
@@ -515,7 +515,7 @@ export class SchemaReadHelper<T = unknown> {
     const formatProps = this._parser.parseFormat(rawFormat);
 
     if (undefined !== formatProps.composite) {
-      const formatUnits = await formatProps.composite.units!;
+      const formatUnits = formatProps.composite.units;
       for (const unit of formatUnits) {
         await this.findSchemaItem(unit.name, true);
       }
@@ -604,7 +604,7 @@ export class SchemaReadHelper<T = unknown> {
     }
 
     if (baseClass && this._visitor)
-      baseClass.accept(this._visitor);
+      baseClass.acceptSync(this._visitor);
   }
 
   /**
@@ -666,7 +666,7 @@ export class SchemaReadHelper<T = unknown> {
 
     this.loadClassSync(mixin, mixinProps, rawMixin);
     if (appliesToClass && this._visitor)
-      appliesToClass.accept(this._visitor);
+      appliesToClass.acceptSync(this._visitor);
   }
 
   /**
