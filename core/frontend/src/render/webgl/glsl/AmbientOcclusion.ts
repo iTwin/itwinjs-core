@@ -5,7 +5,7 @@
 /** @module WebGL */
 
 import { TextureUnit } from "../RenderFlags";
-import { VariableType, FragmentShaderComponent } from "../ShaderBuilder";
+import { VariableType, FragmentShaderComponent, VariablePrecision } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
 import { GLSLFragment, addWindowToTexCoords } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
@@ -20,10 +20,10 @@ const computeAmbientOcclusion = `
   vec2 tc = windowCoordsToTexCoords(gl_FragCoord.xy);
   float linearDepth = readDepthAndOrder(tc).y;
   float nonLinearDepth = computeNonLinearDepth(linearDepth);
-  vec3 posInView = computePositionFromDepth(tc, nonLinearDepth, linearDepth).xyz;
+  vec3 viewPos = computePositionFromDepth(tc, nonLinearDepth).xyz;
 
   vec2 pixelSize = 1.0 / u_viewport.zw; // could use uniform for this
-  vec3 normal = computeNormalFromDepth(posInView, tc, pixelSize);
+  vec3 viewNormal = computeNormalFromDepth(viewPos, tc, pixelSize);
 
   vec2 sampleDirection = vec2(1.0, 0.0);
   float gapAngle = 90.0 * 0.017453292519943295; // radians per degree
@@ -33,20 +33,12 @@ const computeAmbientOcclusion = `
   // Multiply the random 0..1 vec3 by 2 and then substract 1.  This puts the components of the vec3 in the range -1..1.
   vec3 noiseVec = (TEXTURE(u_noise, tc * vec2(u_viewport.z / 4.0, u_viewport.w / 4.0)).rgb + 1.0) / 2.0;
 
-  const float stepSize = 1.0; // how many pixels to step?  I would keep this as a constant, not a uniform.  1.0 seems a good value in Cesium and here.
+  // ###TODO: frustumLength (If the current fragment has a distance from the camera greater than this value, ambient occlusion is not computed for the fragment.)
 
-  // From Cesium docs:
-  // intensity is a scalar value used to lighten or darken the shadows exponentially. Higher values make the shadows darker. The default value is 3.0.
-  // bias is a scalar value representing an angle in radians. If the dot product between the normal of the sample and the vector to the camera is less than this value, sampling stops in the current direction. This is used to remove shadows from near planar edges. The default value is 0.1.
-  // lengthCap is a scalar value representing a length in meters. If the distance from the current sample to first sample is greater than this value, sampling stops in the current direction. The default value is 0.26.
-  // stepSize is a scalar value indicating the distance to the next texel sample in the current direction. The default value is 1.95.
-  // frustumLength is a scalar value in meters. If the current fragment has a distance from the camera greater than this value, ambient occlusion is not computed for the fragment. The default value is 1000.0.
-  // ambientOcclusionOnly is a boolean value. When true, only the shadows generated are written to the output. When false, the input texture is modulated with the ambient occlusion. This is a useful debug option for seeing the effects of changing the uniform values. The default value is false.
-
-  // ###TODO - these need to be uniforms
-  float bias = 0.25; // default 0.25, range: 0 to 1: if dot product between normal of sample and vector to the camera is less than this value, sampling stops (removes shadows from near planar edges)
-  float softDepthCutoff = 0.0025; // how close items must be in linear Z in order to affect one another with regard to ambient occlusion, range: 0 to 1 (will smoothly transition as moving in and out of this range)
-  float intensity = 3.0; // raise the occlusion to the power of this value
+  float bias = u_hbaoSettings.x; // Represents an angle in radians. If the dot product between the normal of the sample and the vector to the camera is less than this value, sampling stops in the current direction. This is used to remove shadows from near planar edges.
+  float zLengthCap = u_hbaoSettings.y; // If the distance in linear Z from the current sample to first sample is greater than this value, sampling stops in the current direction.
+  float intensity = u_hbaoSettings.z; // Raise the final occlusion to the power of this value.  Larger values make the ambient shadows darker.
+  float texelStepSize = u_hbaoSettings.w; // texelStepSize indicates the distance to the next texel sample in the current direction.
 
   float tOcclusion = 0.0;
 
@@ -59,7 +51,7 @@ const computeAmbientOcclusion = `
     // rotate sampling direction
     vec2 rotatedSampleDirection = vec2(cosVal * sampleDirection.x - sinVal * sampleDirection.y, sinVal * sampleDirection.x + cosVal * sampleDirection.y);
     float curOcclusion = 0.0;
-    float curStepSize = stepSize; // 1.0 = stepsize, StepSize should be specified by uniform - what are good values?
+    float curStepSize = texelStepSize; // 1.0 = stepsize, StepSize should be specified by uniform - what are good values?
 
     // loop for each step
     for (int j = 0; j < 6; j++) {
@@ -71,24 +63,21 @@ const computeAmbientOcclusion = `
           break;
       }
 
-      float linearStepDepthInfo;
-      float stepDepthInfo = readDepthAndOrder(newCoords).y;  linearStepDepthInfo = stepDepthInfo;  stepDepthInfo = computeNonLinearDepth(stepDepthInfo);
-      vec3 stepPosInCamera = computePositionFromDepth(newCoords, stepDepthInfo, linearStepDepthInfo).xyz;
-      vec3 diffVec = stepPosInCamera.xyz - posInView.xyz;
-      float len = length(diffVec);
+      float curLinearDepth = readDepthAndOrder(newCoords).y;
+      float curNonLinearDepth = computeNonLinearDepth(curLinearDepth);
+      vec3 curViewPos = computePositionFromDepth(newCoords, curNonLinearDepth).xyz;
+      vec3 diffVec = curViewPos.xyz - viewPos.xyz;
+      float zLength = abs(curLinearDepth - linearDepth);
 
-      float linearDepth0 = linearStepDepthInfo;
-      float linearDepth1 = linearDepth;
-
-      float rangeCheck = smoothstep(0.0, 1.0, softDepthCutoff / abs(linearDepth0 - linearDepth1));
-      float dotVal = clamp(dot(normal, normalize(diffVec)), 0.0, 1.0);
+      float dotVal = clamp(dot(viewNormal, normalize(diffVec)), 0.0, 1.0);
+      float weight = smoothstep(0.0, 1.0, zLengthCap / zLength);
 
       if (dotVal < bias) {
           dotVal = 0.0;
       }
 
-      curOcclusion = max(curOcclusion, dotVal) * rangeCheck;
-      curStepSize += stepSize; // 1.0 = stepsize
+      curOcclusion = max(curOcclusion, dotVal) * weight;
+      curStepSize += texelStepSize;
     }
     tOcclusion += curOcclusion;
   }
@@ -107,29 +96,33 @@ float computeNonLinearDepth(float linearDepth) {
 `;
 
 const computePositionFromDepth = `
-vec4 computePositionFromDepth(vec2 tc, float depth, float linearDepth) {
-  vec2 xy = vec2((tc.x * 2.0 - 1.0), ((1.0 - tc.y) * 2.0 - 1.0));
+vec4 computePositionFromDepth(vec2 tc, float nonLinearDepth) {
   if (kFrustumType_Perspective == u_frustum.z) {
-    vec4 posEC = u_invProj * vec4(xy, depth, 1.0);
+    vec2 xy = vec2((tc.x * 2.0 - 1.0), ((1.0 - tc.y) * 2.0 - 1.0));
+    vec4 posEC = u_invProj * vec4(xy, nonLinearDepth, 1.0);
     posEC = posEC / posEC.w;
     return posEC;
   } else {
-    return vec4(xy.x, xy.y, linearDepth * 2.0 - 1.0, 1.0);
+    float top = u_frustumPlanes.x;
+    float bottom = u_frustumPlanes.y;
+    float left = u_frustumPlanes.z;
+    float right = u_frustumPlanes.w;
+    return vec4(mix(left, right, tc.x), mix(bottom, top, tc.y), nonLinearDepth, 1.0);
   }
 }
 `;
 
 const computeNormalFromDepth = `
 vec3 computeNormalFromDepth(vec3 posInView, vec2 tc, vec2 pixelSize) {
-  float linearDepthU = readDepthAndOrder(tc - vec2(0.0, pixelSize.y)).y;  float nonLinearDepthU = computeNonLinearDepth(linearDepthU);
-  float linearDepthD = readDepthAndOrder(tc + vec2(0.0, pixelSize.y)).y;  float nonLinearDepthD = computeNonLinearDepth(linearDepthD);
-  float linearDepthL = readDepthAndOrder(tc - vec2(pixelSize.x, 0.0)).y;  float nonLinearDepthL = computeNonLinearDepth(linearDepthL);
-  float linearDepthR = readDepthAndOrder(tc + vec2(pixelSize.x, 0.0)).y;  float nonLinearDepthR = computeNonLinearDepth(linearDepthR);
+  float nonLinearDepthU = computeNonLinearDepth(readDepthAndOrder(tc - vec2(0.0, pixelSize.y)).y);
+  float nonLinearDepthD = computeNonLinearDepth(readDepthAndOrder(tc + vec2(0.0, pixelSize.y)).y);
+  float nonLinearDepthL = computeNonLinearDepth(readDepthAndOrder(tc - vec2(pixelSize.x, 0.0)).y);
+  float nonLinearDepthR = computeNonLinearDepth(readDepthAndOrder(tc + vec2(pixelSize.x, 0.0)).y);
 
-  vec3 posInViewUp = computePositionFromDepth(tc - vec2(0.0, pixelSize.y), nonLinearDepthU, linearDepthU).xyz;
-  vec3 posInViewDown = computePositionFromDepth(tc + vec2(0.0, pixelSize.y), nonLinearDepthD, linearDepthD).xyz;
-  vec3 posInViewLeft = computePositionFromDepth(tc - vec2(pixelSize.x, 0.0), nonLinearDepthL, linearDepthL).xyz;
-  vec3 posInViewRight = computePositionFromDepth(tc + vec2(pixelSize.x, 0.0), nonLinearDepthR, linearDepthR).xyz;
+  vec3 posInViewUp = computePositionFromDepth(tc - vec2(0.0, pixelSize.y), nonLinearDepthU).xyz;
+  vec3 posInViewDown = computePositionFromDepth(tc + vec2(0.0, pixelSize.y), nonLinearDepthD).xyz;
+  vec3 posInViewLeft = computePositionFromDepth(tc - vec2(pixelSize.x, 0.0), nonLinearDepthL).xyz;
+  vec3 posInViewRight = computePositionFromDepth(tc + vec2(pixelSize.x, 0.0), nonLinearDepthR).xyz;
 
   vec3 up = posInView.xyz - posInViewUp.xyz;
   vec3 down = posInViewDown.xyz - posInView.xyz;
@@ -182,6 +175,20 @@ export function createAmbientOcclusionProgram(context: WebGLRenderingContext): S
       uniform.setMatrix4(invProj);
     });
   });
+
+  frag.addUniform("u_frustumPlanes", VariableType.Vec4, (prog) => {
+    prog.addProgramUniform("u_frustumPlanes", (uniform, params) => {
+      uniform.setUniform4fv(params.target.frustumUniforms.frustumPlanes);
+    });
+  });
+
+  frag.addUniform("u_hbaoSettings", VariableType.Vec4, (prog) => {
+    prog.addProgramUniform("u_hbaoSettings", (uniform, _params) => {
+      const hbaoSettings = new Float32Array([0.25, 0.0025, 3.0, 1.0]);
+      uniform.setUniform4fv(hbaoSettings); // x = bias, y = zLengthCap, z = intensity, w = texelStepSize
+      // ###TODO: Actually retrieve HBAO settings from params.
+    });
+  }, VariablePrecision.High);
 
   return builder.buildProgram(context);
 }
