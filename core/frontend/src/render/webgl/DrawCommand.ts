@@ -621,8 +621,10 @@ export class RenderCommands {
     }
 
     this._batchState.push(batch, true);
-    this._opaqueOverrides = overrides.anyOpaque;
-    this._translucentOverrides = overrides.anyTranslucent;
+    if (this.currentViewFlags.transparency) {
+      this._opaqueOverrides = overrides.anyOpaque;
+      this._translucentOverrides = overrides.anyTranslucent;
+    }
 
     (batch.graphic as Graphic).addCommands(this);
 
