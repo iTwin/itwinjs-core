@@ -42,26 +42,6 @@ import { IModelTileIO } from "./IModelTileIO";
 import { ViewFrustum } from "../Viewport";
 
 /** @hidden */
-export class TileRequests {
-  public readonly missingTiles = new Set<Tile>();
-  public hasMissingTiles: boolean = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
-
-  public insert(tile: Tile): void {
-    switch (tile.loadStatus) {
-      case Tile.LoadStatus.NotLoaded:
-      case Tile.LoadStatus.Queued:
-      case Tile.LoadStatus.Loading:
-        this.missingTiles.add(tile);
-        break;
-    }
-  }
-
-  public requestMissing(): void {
-    IModelApp.tileRequests.requestTiles(this.missingTiles);
-  }
-}
-
-/** @hidden */
 export class Tile implements IDisposable {
   public readonly root: TileTree;
   public readonly range: ElementAlignedBox3d;
@@ -560,14 +540,10 @@ export namespace Tile {
 
     public insertMissing(tile: Tile): void {
       ++this._numMissing; // ###TODO WIP - assumes no duplicates...
-      this.context.requests.insert(tile);
+      this.context.insertMissingTile(tile);
     }
 
-    public requestMissing(): void {
-      this.context.requests.requestMissing();
-    }
-
-    public markChildrenLoading(): void { this.context.requests.hasMissingTiles = true; }
+    public markChildrenLoading(): void { this.context.hasMissingTiles = true; }
   }
 
   /**
@@ -644,6 +620,7 @@ export class TileTree implements IDisposable {
     const selected: Tile[] = [];
     if (undefined !== this._rootTile)
       this._rootTile.selectTiles(selected, args);
+
     return selected;
   }
 
@@ -654,10 +631,8 @@ export class TileTree implements IDisposable {
       selectedTile.drawGraphics(args);
 
     args.drawGraphics();
-    args.requestMissing();
 
     args.context.viewport.numSelectedTiles += selectedTiles.length;
-    args.context.viewport.numRequestedTiles += args.numMissingTiles;
   }
 
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {

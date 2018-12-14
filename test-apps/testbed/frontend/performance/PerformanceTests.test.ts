@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, SceneContext, TileRequests, Viewport, ViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
+import { DisplayStyleState, DisplayStyle3dState, IModelApp, IModelConnection, Viewport, ViewState, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ViewDefinitionProps, ViewFlag, RenderMode, DisplayStyleProps } from "@bentley/imodeljs-common";
 import { AccessToken, HubIModel, Project } from "@bentley/imodeljs-clients";
 import { StopWatch } from "@bentley/bentleyjs-core";
@@ -195,13 +195,12 @@ async function waitForTilesToLoad(modelLocation?: string) {
     theViewport!.sync.invalidateScene();
     theViewport!.renderFrame();
 
-    const requests = new TileRequests();
-    const sceneContext = new SceneContext(theViewport!, requests);
+    const sceneContext = theViewport!.createSceneContext();
     activeViewState.viewState!.createScene(sceneContext);
-    requests.requestMissing();
+    sceneContext.requestMissingTiles();
 
     // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || requests.hasMissingTiles;
+    haveNewTiles = !(activeViewState.viewState!.areAllTileTreesLoaded) || sceneContext.hasMissingTiles;
     // debugPrint(haveNewTiles ? "Awaiting tile loads..." : "...All tiles loaded.");
 
     await resolveAfterXMilSeconds(100);

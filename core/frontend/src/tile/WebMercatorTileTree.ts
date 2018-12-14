@@ -7,7 +7,7 @@
 import { assert, ActivityLoggingContext, BentleyError, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
 import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation, BackgroundMapType, BackgroundMapProps } from "@bentley/imodeljs-common";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
-import { TileLoader, TileTree, Tile, TileRequests } from "./TileTree";
+import { TileLoader, TileTree, Tile } from "./TileTree";
 import { TileRequest } from "./TileRequest";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -573,7 +573,7 @@ export class BackgroundMapState {
   public getTilesForView(viewport: ScreenViewport): Tile[] {
     let displayTiles: Tile[] = [];
     if (this._tileTree) {
-      const sceneContext = new SceneContext(viewport, new TileRequests());
+      const sceneContext = viewport.createSceneContext();
       sceneContext.backgroundMap = this;
       displayTiles = this._tileTree.selectTilesForScene(sceneContext);
     }

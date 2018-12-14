@@ -24,7 +24,7 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Decorations, GraphicList, Pixel, RenderPlan, RenderTarget } from "./render/System";
 import { StandardView, StandardViewId } from "./StandardView";
-import { TileRequests } from "./tile/TileTree";
+import { Tile } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolAdmin";
 import { DecorateContext, SceneContext } from "./ViewContext";
@@ -895,6 +895,11 @@ export abstract class Viewport implements IDisposable {
   /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer.
    * @hidden
    */
+  /** The number of tiles selected for display in the view as of the most recently-drawn frame.
+   * @note This member should be treated as read-only - it should only be modified internally.
+   * @see Viewport.numRequestedTiles
+   */
+  public numSelectedTiles = 0;
   public static nearScale24 = 0.0003;
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
@@ -902,6 +907,7 @@ export abstract class Viewport implements IDisposable {
   private _wantTileBoundingBoxes = false;
   private _viewFrustum!: ViewFrustum;
   private _target?: RenderTarget;
+  private readonly _requestedTiles = new Set<Tile>();
 
   /** @hidden */
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
@@ -982,6 +988,7 @@ export abstract class Viewport implements IDisposable {
   public dispose(): void {
     assert(undefined !== this._target, "Double disposal of Viewport");
     this._target = dispose(this._target);
+    this._requestedTiles.clear();
   }
 
   /** @hidden */
@@ -1035,6 +1042,11 @@ export abstract class Viewport implements IDisposable {
   public get auxCoordSystem(): AuxCoordSystemState { return this.view.auxiliaryCoordinateSystem; }
   public getAuxCoordRotation(result?: Matrix3d) { return this.auxCoordSystem.getRotation(result); }
   public getAuxCoordOrigin(result?: Point3d) { return this.auxCoordSystem.getOrigin(result); }
+
+  /** The number of outstanding requests for tiles to be displayed in this viewport.
+   * @see Viewport.numSelectedTiles
+   */
+  public get numRequestedTiles(): number { return this._requestedTiles.size; }
 
   /** @hidden */
   public toView(from: XYZ, to?: XYZ) { this._viewFrustum.toView(from, to); }
@@ -1616,6 +1628,9 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @hidden */
+  public createSceneContext(): SceneContext { return new SceneContext(this, this._requestedTiles); }
+
+  /** @hidden */
   public renderFrame(): boolean {
     const sync = this.sync;
     const view = this.view;
@@ -1666,12 +1681,12 @@ export abstract class Viewport implements IDisposable {
       this.setupFromView();
 
     if (!sync.isValidScene) {
-      this.numSelectedTiles = this.numRequestedTiles = 0;
-      const context = new SceneContext(this, new TileRequests());
+      this.numSelectedTiles = 0;
+      const context = this.createSceneContext();
       view.createScene(context);
       view.createClassification(context);
       view.createTerrain(context);
-      context.requests.requestMissing();
+      context.requestMissingTiles();
       target.changeScene(context.graphics);
       target.changeTerrain(context.backgroundGraphics);
 
@@ -1772,11 +1787,6 @@ export abstract class Viewport implements IDisposable {
 
     return npc;
   }
-
-  /** @hidden ###TODO WIP */
-  public numSelectedTiles = 0;
-  /** @hidden ###TODO WIP */
-  public numRequestedTiles = 0;
 }
 
 /**
