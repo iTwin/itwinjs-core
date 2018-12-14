@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Refactor Tooltip component to position over multiple viewports.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "gerardas.butkevicius@bentley.com"
+}

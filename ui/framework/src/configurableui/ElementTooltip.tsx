@@ -11,7 +11,7 @@ import { UiEvent } from "@bentley/ui-core";
 import { XAndY } from "@bentley/geometry-core";
 import { ToolTipOptions } from "@bentley/imodeljs-frontend";
 
-import { ToolSettingsTooltip, Tooltip, offsetAndContainInContainer } from "@bentley/ui-ninezone";
+import { ToolSettingsTooltip, offsetAndContainInContainer, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-ninezone";
 
 /** [[ElementTooltip]] Props. */
 export interface ElementTooltipProps {
@@ -22,10 +22,9 @@ export interface ElementTooltipProps {
 /** [[ElementTooltip]] State.
  */
 export interface ElementTooltipState {
-  isTooltipVisible: boolean;
+  isVisible: boolean;
   message: HTMLElement | string;
-  el?: HTMLElement;
-  pt?: XAndY;
+  position: PointProps;
   options?: ToolTipOptions;
 }
 
@@ -64,14 +63,25 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
     ElementTooltip.onElementTooltipChangedEvent.emit({ isTooltipVisible: false, message: "" });
   }
 
+  private _size: SizeProps = {
+    height: 0,
+    width: 0,
+  };
+  private _element?: HTMLElement;
+  private _position?: PointProps;
+
   /** @hidden */
   public readonly state: Readonly<ElementTooltipState> = {
     message: "",
-    isTooltipVisible: false,
+    isVisible: false,
+    position: {
+      x: 0,
+      y: 0,
+    },
   };
 
   public render() {
-    if (!this.state.isTooltipVisible)
+    if (!this.state.isVisible)
       return null;
 
     const className = classnames(
@@ -88,9 +98,8 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
       <ToolSettingsTooltip
         className={className}
         style={this.props.style}
-        position={this.state.pt}
-        adjustPosition={adjustPosition}
-        containIn={this._handleContainIn}
+        position={this.state.position}
+        onSizeChanged={this._handleSizeChanged}
       >
         {message}
       </ToolSettingsTooltip>
@@ -105,18 +114,43 @@ export class ElementTooltip extends React.Component<ElementTooltipProps, Element
     ElementTooltip.onElementTooltipChangedEvent.removeListener(this._handleElementTooltipChangedEvent);
   }
 
-  private _handleContainIn = (tooltip: HTMLElement) => {
-    if (this.state.el)
-      return this.state.el;
-    return Tooltip.defaultProps.containIn(tooltip);
+  private _handleElementTooltipChangedEvent = (args: ElementTooltipChangedEventArgs) => {
+    this._element = args.el;
+    this._position = args.pt;
+    this.setState(() => {
+      return {
+        isVisible: args.isTooltipVisible,
+        message: args.message,
+      };
+    });
+    this.updatePosition();
   }
 
-  private _handleElementTooltipChangedEvent = (args: ElementTooltipChangedEventArgs) => {
-    this.setState(() => ({
-      isTooltipVisible: args.isTooltipVisible,
-      message: args.message,
-      el: args.el,
-      pt: args.pt,
-    }));
+  private _handleSizeChanged = (size: SizeProps) => {
+    this._size = size;
+    this.updatePosition();
+  }
+
+  private updatePosition() {
+    this.setState((prevState) => {
+      if (!this._element)
+        return null;
+      if (!this._position)
+        return null;
+
+      const containerBounds = Rectangle.create(this._element.getBoundingClientRect());
+      const relativeBounds = Rectangle.createFromSize(this._size).offset(this._position);
+      const viewportOffset = new Point().getOffsetTo(containerBounds.topLeft());
+
+      const adjustedPosition = adjustPosition(relativeBounds, containerBounds.getSize());
+      const position = adjustedPosition.offset(viewportOffset);
+
+      if (Point.create(position).equals(prevState.position))
+        return null;
+
+      return {
+        position,
+      };
+    });
   }
 }
