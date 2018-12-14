@@ -438,19 +438,20 @@ export class BeInspireTree<TNodePayload> {
         end = node1;
       }
 
-      const selected = new Array<BeInspireTreeNode<TNodePayload>>();
-
-      let curr = start;
-      while (curr) {
-        selected.push(toNode(curr));
-        curr.select();
-
-        if (curr.id === end.id)
+      let startIndex = -1;
+      let endIndex = -1;
+      for (let i = 0; i < this.visible().length; ++i) {
+        const vn = this.visible()[i];
+        if (vn.id === start.id)
+          startIndex = i;
+        if (vn.id === end.id)
+          endIndex = i;
+        if (startIndex !== -1 && endIndex !== -1)
           break;
-
-        curr = toNode(curr.nextVisibleNode());
       }
 
+      const selected = this.visible().slice(startIndex, endIndex + 1);
+      selected.forEach((n) => n.select());
       return selected;
     });
   }
