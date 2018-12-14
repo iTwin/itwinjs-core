@@ -9,12 +9,11 @@ import {
   MixinProps, NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps, PrimitivePropertyProps, PropertyCategoryProps,
   PropertyProps, RelationshipClassProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructPropertyProps, UnitProps,
 } from "./JsonProps";
-import { parseStrength, parseStrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECName } from "../SchemaKey";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 
-interface UnknownObject { [name: string]: unknown; }
+interface UnknownObject { readonly [name: string]: unknown; }
 function isObject(x: unknown): x is UnknownObject {
   return typeof (x) === "object";
 }
@@ -25,7 +24,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   private _schemaName?: string;
   private _currentItemFullName?: string;
 
-  constructor(rawSchema: unknown) {
+  constructor(rawSchema: Readonly<unknown>) {
     super();
 
     if (!isObject(rawSchema))
@@ -101,7 +100,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     }
   }
 
-  private checkSchemaReference(jsonObj: unknown): SchemaReferenceProps {
+  private checkSchemaReference(jsonObj: Readonly<unknown>): SchemaReferenceProps {
     if (!isObject(jsonObj))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'references' attribute. It should be of type 'object[]'.`);
     if (undefined === jsonObj.name)
@@ -302,19 +301,11 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required 'strength' attribute.`);
     if (typeof (jsonObj.strength) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid 'strength' attribute. It should be of type 'string'.`);
-    const strength = parseStrength(jsonObj.strength);
-    if (undefined === strength)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this._currentItemFullName} has an invalid 'strength' attribute. '${jsonObj.strength}' is not a valid StrengthType.`);
-    jsonObj.strength = strength;
 
     if (undefined === jsonObj.strengthDirection)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required 'strengthDirection' attribute.`);
     if (typeof (jsonObj.strengthDirection) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
-    const strengthDirection = parseStrengthDirection(jsonObj.strengthDirection);
-    if (undefined === strengthDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this._currentItemFullName} has an invalid 'strengthDirection' attribute. '${jsonObj.strengthDirection}' is not a valid StrengthDirection.`);
-    jsonObj.strengthDirection = strengthDirection;
 
     if (undefined === jsonObj.source)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required source constraint.`);
@@ -448,12 +439,8 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'relativeError' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.presentationUnits) {
-      if (!Array.isArray(jsonObj.presentationUnits)) {
-        if (typeof (jsonObj.presentationUnits) === "string") // must be a string or an array
-          jsonObj.presentationUnits = jsonObj.presentationUnits.split(";") as string[];
-        else
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
-      }
+      if (!Array.isArray(jsonObj.presentationUnits) && typeof (jsonObj.presentationUnits) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
     }
 
     if (undefined === jsonObj.persistenceUnit)

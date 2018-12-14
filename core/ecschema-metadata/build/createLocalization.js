@@ -18,7 +18,7 @@ function createLocalization() {
   const localesDir = path.resolve(root, "public", "locales", "en");
   const entries = {};
 
-  for (const [key, value] of Object.entries(diagnostics.Diagnostics)) {
+  for (const [key, value] of Object.entries(diagnostics.DIAGNOSTICS)) {
     entries[value.key] = value.message;
   }
 

@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { StrengthDirection, StrengthType } from "./../ECObjects";
 import { CustomAttribute } from "./../Metadata/CustomAttribute";
 
 export type AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps;
@@ -12,185 +11,185 @@ export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClass
 export type AnySchemaItemProps = AnyClassProps | EnumerationProps | KindOfQuantityProps | PropertyCategoryProps | UnitProps | InvertedUnitProps | ConstantProps | PhenomenonProps | FormatProps;
 
 export interface SchemaProps {
-  $schema: string;
-  name: string;
-  version: string;
-  alias: string;
-  label?: string;
-  description?: string;
-  references?: SchemaReferenceProps[];
-  customAttributes?: CustomAttribute[];
+  readonly $schema: string;
+  readonly name: string;
+  readonly version: string;
+  readonly alias: string;
+  readonly label?: string;
+  readonly description?: string;
+  readonly references?: SchemaReferenceProps[];
+  readonly customAttributes?: CustomAttribute[];
 }
 
 export interface SchemaReferenceProps {
-  name: string;
-  version: string;
+  readonly name: string;
+  readonly version: string;
 }
 
 export interface SchemaItemProps {
   // NEEDSWORK: Still need to clarify how single-item deserialization works...
-  schema?: string;  // conditionally required
-  schemaVersion?: string;
-  schemaItemType?: string;
-  label?: string;
-  description?: string;
+  readonly schema?: string;  // conditionally required
+  readonly schemaVersion?: string;
+  readonly schemaItemType?: string;
+  readonly label?: string;
+  readonly description?: string;
 }
 
 export interface ClassProps extends SchemaItemProps {
-  modifier?: string;
-  baseClass?: string;
-  customAttributes?: object[];
+  readonly modifier?: string;
+  readonly baseClass?: string;
+  readonly customAttributes?: object[];
 }
 
 export interface EntityClassProps extends ClassProps {
-  mixins?: string[];
+  readonly mixins?: string[];
 }
 
 export interface MixinProps extends ClassProps {
-  appliesTo: string;
+  readonly appliesTo: string;
 }
 
 export type StructClassProps = ClassProps;
 
 export interface CustomAttributeClassProps extends ClassProps {
-  appliesTo: string;
+  readonly appliesTo: string;
 }
 
 export interface RelationshipClassProps extends ClassProps {
-  strength: StrengthType;
-  strengthDirection: StrengthDirection;
-  source: RelationshipConstraintProps;
-  target: RelationshipConstraintProps;
+  readonly strength: string;
+  readonly strengthDirection: string;
+  readonly source: RelationshipConstraintProps;
+  readonly target: RelationshipConstraintProps;
 }
 
 export interface RelationshipConstraintProps {
-  multiplicity: string;
-  roleLabel: string;
-  polymorphic: boolean;
-  abstractConstraint?: string;
-  constraintClasses: string[];
-  customAttributes?: object[];
+  readonly multiplicity: string;
+  readonly roleLabel: string;
+  readonly polymorphic: boolean;
+  readonly abstractConstraint?: string;
+  readonly constraintClasses: string[];
+  readonly customAttributes?: object[];
 }
 
 export interface EnumerationProps extends SchemaItemProps {
-  type: string;
-  isStrict: boolean;
-  enumerators: EnumeratorProps[];
+  readonly type: string;
+  readonly isStrict: boolean;
+  readonly enumerators: EnumeratorProps[];
 }
 
 export interface EnumeratorProps {
-  name: string;
-  value: string | number;
-  label?: string;
-  description?: string;
+  readonly name: string;
+  readonly value: string | number;
+  readonly label?: string;
+  readonly description?: string;
 }
 
 export interface KindOfQuantityProps extends SchemaItemProps {
-  persistenceUnit: string;
-  presentationUnits?: string[];
-  relativeError: number;
+  readonly persistenceUnit: string;
+  readonly presentationUnits?: string | string[];
+  readonly relativeError: number;
 }
 
 export interface PropertyCategoryProps extends SchemaItemProps {
-  priority: number;
+  readonly priority: number;
 }
 
 export interface PropertyProps {
-  name: string;
-  type: string;
-  description?: string;
-  label?: string;
-  isReadOnly?: boolean;
-  category?: string;
-  priority?: number;
-  customAttributes?: CustomAttribute[];
-  inherited?: boolean;
-  kindOfQuantity?: string;
+  readonly name: string;
+  readonly type: string;
+  readonly description?: string;
+  readonly label?: string;
+  readonly isReadOnly?: boolean;
+  readonly category?: string;
+  readonly priority?: number;
+  readonly customAttributes?: CustomAttribute[];
+  readonly inherited?: boolean;
+  readonly kindOfQuantity?: string;
 }
 
 export interface PrimitiveOrEnumPropertyBaseProps extends PropertyProps {
-  extendedTypeName?: string;
-  minLength?: number;
-  maxLength?: number;
-  minValue?: number;
-  maxValue?: number;
+  readonly extendedTypeName?: string;
+  readonly minLength?: number;
+  readonly maxLength?: number;
+  readonly minValue?: number;
+  readonly maxValue?: number;
 }
 export interface PrimitivePropertyProps extends PrimitiveOrEnumPropertyBaseProps {
-  typeName: string;
+  readonly typeName: string;
 }
 
 export interface StructPropertyProps extends PropertyProps {
-  typeName: string;
+  readonly typeName: string;
 }
 
 export interface EnumerationPropertyProps extends PrimitiveOrEnumPropertyBaseProps {
-  typeName: string;
+  readonly typeName: string;
 }
 
 export interface ArrayPropertyProps extends PrimitiveOrEnumPropertyBaseProps {
-  minOccurs?: number;
-  maxOccurs?: number;
+  readonly minOccurs?: number;
+  readonly maxOccurs?: number;
 }
 
 export interface PrimitiveArrayPropertyProps extends ArrayPropertyProps {
-  typeName: string;
+  readonly typeName: string;
 }
 
 export interface StructArrayPropertyProps extends ArrayPropertyProps {
-  typeName: string;
+  readonly typeName: string;
 }
 
 export interface NavigationPropertyProps extends PropertyProps {
-  relationshipName: string;
-  direction: string;
+  readonly relationshipName: string;
+  readonly direction: string;
 }
 
 export interface ConstantProps extends SchemaItemProps {
-  phenomenon: string;
-  definition: string;
-  numerator?: number;
-  denominator?: number;
+  readonly phenomenon: string;
+  readonly definition: string;
+  readonly numerator?: number;
+  readonly denominator?: number;
 }
 
 export interface FormatProps extends SchemaItemProps {
-  type: string;
-  precision?: number;
-  roundFactor?: number;
-  minWidth?: number;
-  showSignOption?: string;
-  formatTraits?: string | string[];
-  decimalSeparator?: string;
-  thousandSeparator?: string;
-  uomSeparator?: string;
-  scientificType?: string; // conditionally required
-  stationOffsetSize?: number; // conditionally required
-  stationSeparator?: string;
-  composite?: {
-    spacer?: string;
-    includeZero?: boolean;
-    units: Array<{
-      name: string;
-      label?: string;
+  readonly type: string;
+  readonly precision?: number;
+  readonly roundFactor?: number;
+  readonly minWidth?: number;
+  readonly showSignOption?: string;
+  readonly formatTraits?: string | string[];
+  readonly decimalSeparator?: string;
+  readonly thousandSeparator?: string;
+  readonly uomSeparator?: string;
+  readonly scientificType?: string; // conditionally required
+  readonly stationOffsetSize?: number; // conditionally required
+  readonly stationSeparator?: string;
+  readonly composite?: {
+    readonly spacer?: string;
+    readonly includeZero?: boolean;
+    readonly units: Array<{
+      readonly name: string;
+      readonly label?: string;
     }>
   };
 }
 
 export interface InvertedUnitProps extends SchemaItemProps {
-  invertsUnit: string;
-  unitSystem: string;
+  readonly invertsUnit: string;
+  readonly unitSystem: string;
 }
 
 export interface PhenomenonProps extends SchemaItemProps {
-  definition: string;
+  readonly definition: string;
 }
 
 export type UnitSystemProps = SchemaItemProps;
 
 export interface UnitProps extends SchemaItemProps {
-  phenomenon: string;
-  unitSystem: string;
-  definition: string;
-  numerator?: number;
-  denominator?: number;
-  offset?: number;
+  readonly phenomenon: string;
+  readonly unitSystem: string;
+  readonly definition: string;
+  readonly numerator?: number;
+  readonly denominator?: number;
+  readonly offset?: number;
 }
