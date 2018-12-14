@@ -74,7 +74,7 @@ describe("OidcBackendClient (#integration)", () => {
       clientId: Config.App.getString("imjs_agent_test_client_id"),
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
       serviceUserEmail: Config.App.getString("imjs_agent_test_service_user_email"),
-      serviceUserPassword: Config.App.getString("imjs_agent_test_service_password"),
+      serviceUserPassword: Config.App.getString("imjs_agent_test_service_user_password"),
     };
 
     delegationConfiguration = {
