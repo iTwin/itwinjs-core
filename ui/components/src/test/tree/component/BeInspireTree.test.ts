@@ -838,6 +838,18 @@ describe("BeInspireTree", () => {
       expect(renderer).to.be.calledOnce;
     });
 
+    it("nested pause context with `allowedRendersBeforePause` doesn't unmute wrapped pause context", () => {
+      const node = tree.node("0")!;
+      using(tree.pauseRendering(), () => {
+        using(tree.pauseRendering(1), () => {
+        });
+        node.select();
+        expect(renderer).to.not.be.called;
+      });
+      node.select();
+      expect(renderer).to.be.calledOnce;
+    });
+
     it("fires ChangesApplied event only after outer `pauseRendering` context is disposed", () => {
       const node = tree.node("0")!;
       using(tree.pauseRendering(), () => {

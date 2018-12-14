@@ -107,6 +107,8 @@ type BeInspireTreeData<TPayload> = Array<BeInspireTreeNodePayloadConfig<TPayload
 export class EventsMuteContext implements IDisposable {
 
   private _triggeredEventsCount: number = 0;
+  private _didMute = false;
+  private _stopListening: (() => void) | undefined;
 
   public constructor(
     private _events: BeInspireTreeEvent[],
@@ -121,19 +123,31 @@ export class EventsMuteContext implements IDisposable {
   private init(allowedEventTriggersBeforeMute: number) {
     if (0 === allowedEventTriggersBeforeMute || !this._listen) {
       this._mute(this._events);
+      this._didMute = true;
       return;
     }
-    let stopListening: (() => void) | undefined;
     const callback = () => {
       if (++this._triggeredEventsCount >= allowedEventTriggersBeforeMute) {
         this._mute(this._events);
-        stopListening!();
+        this._didMute = true;
+        if (this._stopListening) {
+          this._stopListening();
+          this._stopListening = undefined;
+        }
       }
     };
-    stopListening = this._listen(this._events, callback);
+    this._stopListening = this._listen(this._events, callback);
   }
 
   public dispose() {
+    if (this._stopListening) {
+      this._stopListening();
+      this._stopListening = undefined;
+    }
+
+    if (!this._didMute)
+      return;
+
     const didUnmute = this._unmute(this._events);
     if (didUnmute && this._emit)
       this._emit(this._events);
