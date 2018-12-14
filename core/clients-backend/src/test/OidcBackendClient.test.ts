@@ -78,8 +78,8 @@ describe("OidcBackendClient (#integration)", () => {
     };
 
     delegationConfiguration = {
-      clientId: Config.App.getString("oauth_delegation_test_client_id"),
-      clientSecret: Config.App.getString("oauth_delegation_test_client_secret"),
+      clientId: Config.App.getString("imjs_delegation_test_client_id"),
+      clientSecret: Config.App.getString("imjs_delegation_test_client_secret"),
     };
 
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(actx, testUser.email, testUser.password);
