@@ -872,6 +872,7 @@ export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its ViewState. */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
 
+  private readonly _viewportId: number;
   private _animationFraction = 0.0;
   private _doContinuousRendering = false;
   private _animator?: Animator;
@@ -900,9 +901,12 @@ export abstract class Viewport implements IDisposable {
    * @see Viewport.numRequestedTiles
    */
   public numSelectedTiles = 0;
+
   public static nearScale24 = 0.0003;
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
+  private static _nextViewportId = 1;
+
   private _addFeatureOverrides?: AddFeatureOverrides;
   private _wantTileBoundingBoxes = false;
   private _viewFrustum!: ViewFrustum;
@@ -983,18 +987,24 @@ export abstract class Viewport implements IDisposable {
    */
   protected constructor(target: RenderTarget) {
     this._target = target;
+    this._viewportId = Viewport._nextViewportId++;
   }
 
   public dispose(): void {
     assert(undefined !== this._target, "Double disposal of Viewport");
     this._target = dispose(this._target);
     this._requestedTiles.clear();
+    IModelApp.tileRequests.forgetViewport(this);
   }
 
   /** @hidden */
   public get continuousRendering(): boolean { return this._doContinuousRendering; }
   /** @hidden */
   public set continuousRendering(contRend: boolean) { this._doContinuousRendering = contRend; }
+  /** This gives each Viewport a unique ID, which can be used for comparing and sorting Viewport objects inside collections.
+   * @hidden
+   */
+  public get viewportId(): number { return this._viewportId; }
 
   /** The ViewState for this Viewport */
   public get view(): ViewState { return this._viewFrustum.view; }

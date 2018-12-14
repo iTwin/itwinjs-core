@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { PriorityQueue, assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
+import { SortedArray, PriorityQueue, assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import { ImageSource, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { RenderGraphic } from "../render/System";
 import { Tile, TileTree, TileLoader } from "./TileTree";
+import { Viewport } from "../Viewport";
 
 export class TileRequest {
   protected _state: TileRequest.State;
@@ -48,7 +49,8 @@ export namespace TileRequest {
 
     preprocess(): void;
     process(): void;
-    requestTiles(tiles: Set<Tile>): void;
+    requestTiles(vp: Viewport, tiles: Set<Tile>): void;
+    forgetViewport(vp: Viewport): void;
     onShutDown(): void;
   }
 
@@ -134,7 +136,125 @@ class Queue extends PriorityQueue<Request> {
   }
 }
 
+export class ViewportSet extends SortedArray<Viewport> {
+  public constructor(vp?: Viewport) {
+    super((lhs, rhs) => lhs.viewportId - rhs.viewportId);
+    if (undefined !== vp)
+      this.insert(vp);
+  }
+
+  public clone(out?: ViewportSet): ViewportSet {
+    if (undefined === out)
+      out = new ViewportSet();
+    else
+      out.clear();
+
+    for (let i = 0; i < this.length; i++)
+      out._array.push(this._array[i]);
+
+    return out;
+  }
+}
+
+function compareViewportSets(lhs: ViewportSet, rhs: ViewportSet): number {
+  if (lhs === rhs)
+    return 0;
+
+  let diff = lhs.length - rhs.length;
+  if (0 === diff) {
+    for (let i = 0; i < lhs.length; i++) {
+      const lhvp = lhs.get(i)!;
+      const rhvp = rhs.get(i)!;
+      diff = lhvp.viewportId - rhvp.viewportId;
+      if (0 !== diff)
+        break;
+    }
+  }
+
+  return diff;
+}
+
+// The scheduler needs to know about all viewports which have tile requests.
+// Each request needs to know the set of viewports for which it has been requested.
+// We don't want to duplicate the latter per-Request - in addition to wasting memory, that would
+// also require us to traverse all requests whenever a viewport becomes un-tracked in order to remove it from their sets.
+// This class holds unique sets of viewports and doles them out to Requests.
+class UniqueViewportSets extends SortedArray<ViewportSet> {
+  public readonly emptySet = new ViewportSet();
+  private readonly _scratchSet = new ViewportSet();
+
+  public constructor() {
+    super((lhs, rhs) => compareViewportSets(lhs, rhs));
+    Object.freeze(this.emptySet);
+  }
+
+  public eraseAt(index: number): void {
+    assert(index < this.length && index >= 0);
+    this._array.splice(index, 1);
+  }
+
+  public getForViewport(vp: Viewport): ViewportSet {
+    for (let i = 0; i < this.length; i++) {
+      const set = this._array[i];
+      if (1 === set.length && set.get(0)! === vp)
+        return set;
+    }
+
+    const newSet = new ViewportSet(vp);
+    this.insert(newSet);
+    return newSet;
+  }
+
+  public getViewportSet(vp: Viewport, vps?: ViewportSet): ViewportSet {
+    if (undefined === vps || vps.isEmpty)
+      return this.getForViewport(vp);
+
+    // Use the scratch set for equality comparison - only allocate if no equivalent set already exists.
+    const toFind = vps.clone(this._scratchSet);
+    toFind.insert(vp);
+    const found = this.findEqual(toFind);
+    if (undefined !== found) {
+      toFind.clear();
+      return found;
+    }
+
+    const newSet = toFind.clone();
+    toFind.clear();
+    this.insert(newSet);
+    return newSet;
+  }
+}
+
+class TrackedViewports {
+  public readonly viewports = new ViewportSet();
+  private readonly _uniqueSets = new UniqueViewportSets();
+
+  public track(vp: Viewport) {
+    this.viewports.insert(vp);
+  }
+
+  public untrack(vp: Viewport) {
+    if (-1 !== this.viewports.remove(vp)) {
+      for (let i = 0; i < this._uniqueSets.length; /* */) {
+        const set = this._uniqueSets.get(i)!;
+        set.remove(vp);
+        if (set.isEmpty)
+          this._uniqueSets.eraseAt(i);
+        else
+          i++;
+      }
+    }
+  }
+
+  public clear(): void {
+    this.viewports.clear();
+    this._uniqueSets.forEach((set) => set.clear());
+    this._uniqueSets.clear();
+  }
+}
+
 class RequestScheduler implements TileRequest.Scheduler {
+  private readonly _viewports = new TrackedViewports();
   private readonly _activeRequests = new Set<Request>();
   private readonly _maxActiveRequests: number;
   private readonly _throttle: boolean;
@@ -178,7 +298,9 @@ class RequestScheduler implements TileRequest.Scheduler {
     }
   }
 
-  public requestTiles(tiles: Set<Tile>): void {
+  public requestTiles(vp: Viewport, tiles: Set<Tile>): void {
+    this._viewports.track(vp);
+
     for (const tile of tiles) {
       if (undefined === tile.request) {
         assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
@@ -196,6 +318,10 @@ class RequestScheduler implements TileRequest.Scheduler {
     }
   }
 
+  public forgetViewport(vp: Viewport): void {
+    this._viewports.untrack(vp);
+  }
+
   public onShutDown(): void {
     // ###TODO mark all as cancelled.
     for (const request of this._activeRequests)
@@ -207,6 +333,8 @@ class RequestScheduler implements TileRequest.Scheduler {
       queued.tile.request = undefined;
       queued.tile.setAbandoned();
     }
+
+    this._viewports.clear();
   }
 
   private dispatch(req: Request): void {
@@ -220,80 +348,3 @@ class RequestScheduler implements TileRequest.Scheduler {
     this._activeRequests.delete(req);
   }
 }
-
-/*
-import { Tile, TileRequests } from "./TileTree";
-
-export class TileRequest {
-  public tile: Tile;
-  public priority: number;
-  public state: TileRequest.State;
-  public expired: boolean; // Set to true for all active+pending requests before tile selection; set to false for those which remain active/pending after tile selection.
-
-  public compare(rhs: TileRequest): number {
-    // ###TODO: account for tile type (map/reality vs design model), etc...
-    return this.priority - rhs.priority
-  }
-}
-
-function compareRequests(lhs: TileRequest, rhs: TileRequest): number { return lhs.compare(rhs); }
-
-export namespace TileRequest {
-  export const enum State {
-    Queued = 0, // Request is pending in queue - not yet dispatched.
-    Dispatched = 1, // Request has been dispatched - awaiting response.
-    Received = 2, // Response has been received but not yet processed.
-    Processing = 3, // Response is being processed.
-    Failed = 4, // Request failed.
-    Cancelled = 5, // Request was cancelled before it completed.
-  }
-
-  export interface Statistics {
-    numPending: number;
-    numActive: number;
-  }
-
-  export interface SchedulerOptions {
-    maxActiveRequests?: number;
-  }
-
-  export class Scheduler {
-    private _maxActiveRequests: number = 10;
-    private _activeRequests: TileRequest[] = [];
-    private _activeQueue = new Queue();
-    private _swapQueue = new Queue();
-
-    public constructor(options?: SchedulerOptions) {
-      if (undefined === options)
-        return;
-
-      if (undefined !== options.maxActiveRequests)
-        this._maxActiveRequests = options.maxActiveRequests;
-    }
-
-    public get statistics(): Statistics {
-      return {
-        numPending: this._activeQueue.length,
-        numActive: this._activeRequests.length,
-      };
-    }
-
-    public update(): void {
-      for (const active of this._activeRequests)
-        active.expired = true;
-
-      for (const pending of this._activeQueue)
-        pending.expired = true;
-
-      const temp = this._swapQueue;
-      this._swapQueue = this._activeQueue;
-      temp.clear();
-      this._activeQueue = temp;
-    }
-
-    public process(requests: TileRequests): void {
-
-    }
-  }
-}
-*/
