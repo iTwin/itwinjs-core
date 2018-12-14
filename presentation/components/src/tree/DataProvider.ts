@@ -8,8 +8,7 @@ import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodeKey, NodePathElement, HierarchyRequestOptions } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@bentley/ui-components";
-import { PageOptions } from "@bentley/ui-components";
+import { DelayLoadedTreeNodeItem, TreeNodeItem, PageOptions } from "@bentley/ui-components";
 import { createTreeNodeItems, pageOptionsUiToPresentation } from "./Utils";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 
@@ -74,10 +73,9 @@ export default class PresentationTreeDataProvider implements IPresentationTreeDa
   public getNodesCount = _.memoize(async (parentNode?: TreeNodeItem): Promise<number> => {
     if (parentNode) {
       const parentKey = this.getNodeKey(parentNode);
-      return await Presentation.presentation.getChildrenCount(this.createRequestOptions(), parentKey);
-    } else {
-      return await Presentation.presentation.getRootNodesCount(this.createRequestOptions());
+      return Presentation.presentation.getChildrenCount(this.createRequestOptions(), parentKey);
     }
+    return Presentation.presentation.getRootNodesCount(this.createRequestOptions());
   }, MemoizationHelpers.getNodesCountKeyResolver);
 
   /**

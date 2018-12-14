@@ -2,6 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as sinon from "sinon";
@@ -11,10 +13,12 @@ import { createRandomDescriptor, createRandomECInstanceKey } from "@bentley/pres
 import { PromiseContainer } from "@bentley/presentation-common/lib/test/_helpers/Promises";
 import { SortDirection } from "@bentley/ui-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationError, ValuesDictionary } from "@bentley/presentation-common";
-import { Content, DefaultContentDisplayTypes, Descriptor, Item, SortDirection as ContentSortDirection } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import { PresentationManager } from "@bentley/presentation-frontend";
+import {
+  PresentationError, ValuesDictionary, Content,
+  DefaultContentDisplayTypes, Descriptor, Item,
+  SortDirection as ContentSortDirection,
+} from "@bentley/presentation-common";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import PresentationTableDataProvider from "../../table/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
 

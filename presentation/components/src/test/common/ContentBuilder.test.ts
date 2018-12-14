@@ -2,16 +2,18 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import { expect } from "chai";
 import * as faker from "faker";
 import {
   createRandomPrimitiveField, createRandomCategory, createRandomPrimitiveTypeDescription,
   createRandomECClassInfo, createRandomECInstanceKey, createRandomRelationshipPath,
 } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { PresentationError } from "@bentley/presentation-common";
 import {
+  PresentationError,
   PropertyValueFormat, PrimitiveTypeDescription, PropertiesField, Property, Item,
-  ArrayTypeDescription, StructTypeDescription, NestedContentField, NestedContentValue
+  ArrayTypeDescription, StructTypeDescription, NestedContentField, NestedContentValue,
 } from "@bentley/presentation-common";
 import ContentBuilder from "../../common/ContentBuilder";
 import { PrimitiveValue } from "@bentley/ui-components";

@@ -5,8 +5,7 @@
 /** @module Tree */
 
 import * as React from "react";
-import { TreeProps } from "@bentley/ui-components";
-import { ActiveMatchInfo, HighlightableTreeProps } from "@bentley/ui-components";
+import { TreeProps, ActiveMatchInfo, HighlightableTreeProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 import FilteredPresentationTreeDataProvider from "./FilteredDataProvider";

@@ -5,11 +5,9 @@
 /** @module UnifiedSelection */
 
 import * as React from "react";
-import { Keys, Subtract, Omit } from "@bentley/presentation-common";
-import { StandardNodeTypes, ECInstanceNodeKey } from "@bentley/presentation-common";
+import { Keys, Subtract, Omit, StandardNodeTypes, ECInstanceNodeKey } from "@bentley/presentation-common";
 import { Presentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
-import { TreeNodeItem } from "@bentley/ui-components";
-import { TreeProps } from "@bentley/ui-components";
+import { TreeProps, TreeNodeItem } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
 import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";

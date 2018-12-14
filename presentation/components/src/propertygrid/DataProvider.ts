@@ -5,8 +5,8 @@
 /** @module PropertyGrid */
 
 import * as _ from "lodash";
-import { PropertyRecord, PropertyValueFormat, PropertyValue } from "@bentley/ui-components";
 import {
+  PropertyRecord, PropertyValueFormat, PropertyValue,
   PropertyDataProvider as IPropertyDataProvider,
   PropertyData, PropertyDataChangeEvent, PropertyCategory,
 } from "@bentley/ui-components";
@@ -35,7 +35,7 @@ const getFavoritesCategory = async (): Promise<CategoryDescription> => {
       expand: true,
     }));
   }
-  return await favoritesCategoryPromise;
+  return favoritesCategoryPromise;
 };
 
 interface PropertyPaneCallbacks {
@@ -286,7 +286,7 @@ export default class PresentationPropertyDataProvider extends ContentDataProvide
     };
     const builder = new PropertyDataBuilder(content.descriptor, contentItem,
       this.includeFieldsWithNoValues, callbacks);
-    return await builder.buildPropertyData();
+    return builder.buildPropertyData();
   });
 
   /**
