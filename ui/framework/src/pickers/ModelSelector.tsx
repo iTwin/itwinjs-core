@@ -362,7 +362,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     for (const node of nodes) {
       enable ? this._selectLabel(node) : this._deselectLabel(node);
     }
-
     this.setState({
       treeInfo: {
         ...this.state.treeInfo!,
