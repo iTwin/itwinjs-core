@@ -36,7 +36,8 @@
     "prompt": "No messages."
   },
   "activityCenter": {
-    "percentComplete": "% complete"
+    "percentComplete": "% complete",
+    "moreDetails": "Click or tap for more details."
   },
   "snapModeField": {
     "snapMode": "Snap Mode",

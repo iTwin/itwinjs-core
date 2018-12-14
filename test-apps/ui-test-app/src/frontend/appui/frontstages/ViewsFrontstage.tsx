@@ -230,7 +230,7 @@ class FrontstageToolWidget extends React.Component {
     let isCancelled = false;
     let progress = 0;
 
-    const details = new ActivityMessageDetails(true, true, true);
+    const details = new ActivityMessageDetails(true, true, true, true);
     details.onActivityCancelled = () => {
       isCancelled = true;
     };
@@ -360,8 +360,8 @@ class FrontstageToolWidget extends React.Component {
         <>
           <ActionItemButton actionItem={AppTools.verticalPropertyGridOpenCommand} />
           <ActionItemButton actionItem={AppTools.verticalPropertyGridOffCommand} />
-          <ToolButton toolId="tool3" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool3" isEnabled={false} execute={this._tool3} />
-          <ToolButton toolId="tool4" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool4" isVisible={false} execute={this._tool4} />
+          <ToolButton toolId="tool3" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool3" execute={this._tool3} />
+          <ToolButton toolId="tool4" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.tool4" execute={this._tool4} />
           <ToolButton toolId="item5" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.outputMessage" execute={() => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test"))} />
           <ToolButton toolId="openRadial" iconSpec="icon-placeholder" labelKey="SampleApp:buttons.openRadial" execute={() => ModalDialogManager.openModalDialog(this.radialMenu())} />
           <GroupButton

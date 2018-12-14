@@ -6,9 +6,9 @@
 @import "../../../theme/_theme";
 
 @include nz-style-component(nz-footer-message-content-progress) {
-  $progress-tip-height: 5px;
+  $progress-tip-height: 7px;
   $progress-tip-width: 2px;
-  $progress-height: 3px;
+  $progress-height: 5px;
   $progress-margin: ($progress-tip-height - $progress-height) / 2;
 
   height: $progress-tip-height;
