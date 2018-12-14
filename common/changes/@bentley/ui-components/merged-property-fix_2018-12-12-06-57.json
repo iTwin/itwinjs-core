@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added a merged property value renderer.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "elonas.seviakovas@bentley.com"
+}

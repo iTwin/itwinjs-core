@@ -2,14 +2,14 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-export { default as UiComponents } from "./UiComponents";
+export { UiComponents } from "./UiComponents";
 
 export * from "./breadcrumb/Breadcrumb";
 export * from "./breadcrumb/BreadcrumbPath";
 export * from "./breadcrumb/BreadcrumbTreeUtils";
-export { TreeDragDropProps, withDragDrop as withBreadcrumbDragDrop } from "./breadcrumb/hoc/withDragDrop";
+export { BreadcrumbDragDropProps, withBreadcrumbDragDrop } from "./breadcrumb/hoc/withDragDrop";
 export * from "./breadcrumb/breadcrumbdetails/BreadcrumbDetails";
-export { withDragDrop as withBreadcrumbDetailsDragDrop } from "./breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+export { BreadcrumbDetailsDragDropProps, withBreadcrumbDetailsDragDrop } from "./breadcrumb/breadcrumbdetails/hoc/withDragDrop";
 
 export { PageOptions } from "./common/PageOptions";
 export { SelectionMode } from "./common/selection/SelectionModes";
@@ -77,14 +77,14 @@ export * from "./table/SimpleTableDataProvider";
 export { Grid, GridProps } from "./table/component/Grid";
 export { Table, TableProps, TableSelectionTarget } from "./table/component/Table";
 export { TableCellEditorState, TableCellUpdatedArgs } from "./table/component/Table";
-export { TableDragDropType, TableDropTargetProps, withDragDrop as withTableDragDrop } from "./table/hocs/withDragDrop";
+export { TableDragDropType, TableDropTargetProps, TableDragDropProps, withTableDragDrop } from "./table/hocs/withDragDrop";
 
 export * from "./tree/TreeDataProvider";
 export * from "./tree/HighlightingEngine";
 export { Tree, TreeProps } from "./tree/component/Tree";
 export { TreeCellEditorState, TreeCellUpdatedArgs } from "./tree/component/Tree";
-export { TreeDragDropType, withDragDrop as withTreeDragDrop } from "./tree/hocs/withDragDrop";
-export { default as SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "./tree/SimpleTreeDataProvider";
+export { TreeDragDropType, TreeDragDropProps, withTreeDragDrop } from "./tree/hocs/withDragDrop";
+export { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "./tree/SimpleTreeDataProvider";
 
 export * from "./viewport/ViewportComponent";
 export * from "./viewport/ViewRotationCube";

@@ -13,11 +13,11 @@
     "copy:typedefs": "cpx \"./src/openid-client.d.ts\" ./lib/",
     "clean": "rimraf lib package-deps.json",
     "cover": "nyc npm test",
-    "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run test:integration",
+    "cover:integration": "nyc --report-dir ./lib/test/coverage/integration npm run test-integration",
     "docs": "node ./node_modules/@bentley/build-tools/scripts/docs.js --source=./src --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-clients-backend/file.json --tsIndexFile=imodeljs-clients-backend.ts --onlyJson %TYPEDOC_THEME%",
     "lint": "tslint --project . 1>&2",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --grep=\"integration\" --invert",
-    "test:integration": "node ./node_modules/@bentley/build-tools/scripts/test.js",
+    "test-integration": "node ./node_modules/@bentley/build-tools/scripts/test.js",
     "watch": "npm run docs && bmsWatch --src ./lib/docs/json --destination ./public"
   },
   "repository": {

@@ -29,6 +29,7 @@ describe("TxnManager", () => {
       code: Code.createEmpty(),
       intProperty: 100,
     };
+
     imodel.saveChanges("schema change");
     imodel.nativeDb.enableTxnTesting();
   });

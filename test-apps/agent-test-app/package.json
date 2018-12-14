@@ -8,7 +8,6 @@
     "docs": "",
     "lint": "tslint --project . 1>&2",
     "test": "",
-    "test:integration": "",
     "cover": "",
     "start": "node ./lib/Main.js",
     "start-with-changesets": "run-p --aggregate-output \"start-changeset-util\" \"start-with-delay\"",

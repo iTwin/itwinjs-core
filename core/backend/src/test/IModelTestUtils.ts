@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext, BeEvent } from "@bentley/bentleyjs-core";
+import { Logger, OpenMode, Id64, Id64String, IDisposable, ActivityLoggingContext, BeEvent, LogLevel } from "@bentley/bentleyjs-core";
 import { AccessToken, Config, ChangeSet } from "@bentley/imodeljs-clients";
 import { Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
@@ -63,18 +63,6 @@ export class TestIModelInfo {
 }
 
 RpcConfiguration.developmentMode = true;
-
-Logger.initializeToConsole();
-if (process.env.imjs_test_logging_config === undefined) {
-  // tslint:disable-next-line:no-console
-  console.log("FYI You can set the environment variable imjs_test_logging_config to point to a logging configuration json file.");
-}
-
-const loggingConfigFile: string = process.env.imjs_test_logging_config || path.join(__dirname, "logging.config.json");
-if (IModelJsFs.existsSync(loggingConfigFile)) {
-  // tslint:disable-next-line:no-var-requires
-  Logger.configureLevels(require(loggingConfigFile));
-}
 
 // Initialize the RPC interface classes used by tests
 RpcManager.initializeInterface(IModelReadRpcInterface);
@@ -340,6 +328,7 @@ export class IModelTestUtils {
     const config = new IModelHostConfiguration();
     IModelHost.startup(config);
   }
+
   public static registerTestBim() {
     if (!Schemas.isRegistered(TestBim)) {
       Schemas.registerSchema(TestBim);
@@ -351,7 +340,36 @@ export class IModelTestUtils {
   public static shutdownBackend() {
     IModelHost.shutdown();
   }
+
+  public static setupLogging() {
+    Logger.initializeToConsole();
+    Logger.setLevelDefault(LogLevel.Error);
+
+    if (process.env.imjs_test_logging_config === undefined) {
+      // tslint:disable-next-line:no-console
+      console.log(`You can set the environment variable imjs_test_logging_config to point to a logging configuration json file.`);
+    }
+    const loggingConfigFile: string = process.env.imjs_test_logging_config || path.join(__dirname, "logging.config.json");
+
+    if (IModelJsFs.existsSync(loggingConfigFile)) {
+      // tslint:disable-next-line:no-console
+      console.log(`Setting up logging levels from ${loggingConfigFile}`);
+      // tslint:disable-next-line:no-var-requires
+      Logger.configureLevels(require(loggingConfigFile));
+    }
+
+    // Setup typical programmatic log level overrides here
+    // Logger.setLevelDefault(LogLevel.Warning);
+    // Logger.setLevel("Performance", LogLevel.Info);
+    // Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
+    // Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
+    // Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
+    // Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
+    // Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
+    // Logger.setLevel("DgnCore", LogLevel.Error);
+    // Logger.setLevel("BeSQLite", LogLevel.Error);
+  }
 }
 
-// Start the backend
+IModelTestUtils.setupLogging();
 IModelTestUtils.startBackend();

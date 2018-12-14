@@ -61,7 +61,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
   }
 
   // called when an imodel (and views) have been selected on the IModelOpen
-  private _onOpenIModel(iModelInfo: IModelInfo, views: ViewDefinitionProps[]) {
+  private _onOpenIModel = (iModelInfo: IModelInfo, views: ViewDefinitionProps[]) => {
 
     // view ids are passed as params
     const viewIds: Id64String[] = new Array<Id64String>();
@@ -76,7 +76,7 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
   }
 
   // called when the "Offline" is clicked on the Sign In.
-  private _onOffline() {
+  private _onOffline = () => {
     if (this.props.onWorkOffline)
       this.props.onWorkOffline();
     this.props.setOverallPage(OverallContentPage.OfflinePage);
@@ -84,15 +84,15 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
 
   public componentDidMount() {
     OidcClientWrapper.oidcClient.getAccessToken(new ActivityLoggingContext("")) // tslint:disable-line:no-floating-promises
-      .then(this.setOrClearAccessToken.bind(this));
-    OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this.setOrClearAccessToken.bind(this));
+      .then((accessToken: AccessToken | undefined) => this._setOrClearAccessToken(accessToken));
+    OidcClientWrapper.oidcClient.onUserStateChanged.addListener(this._setOrClearAccessToken);
   }
 
   public componentWillUnmount() {
-    OidcClientWrapper.oidcClient.onUserStateChanged.removeListener(this.setOrClearAccessToken.bind(this));
+    OidcClientWrapper.oidcClient.onUserStateChanged.removeListener(this._setOrClearAccessToken);
   }
 
-  private setOrClearAccessToken(accessToken: AccessToken | undefined) {
+  private _setOrClearAccessToken = (accessToken: AccessToken | undefined) => {
     accessToken ? this.props.setAccessToken(accessToken) : this.props.clearAccessToken();
   }
 
@@ -111,11 +111,11 @@ class OverallContentComponent extends React.Component<OverallContentProps> {
       element = (
         <React.Fragment>
           <ApplicationHeader {...appHeaderProps} />
-          <SignIn onSignIn={() => OidcClientWrapper.oidcClient.signIn(new ActivityLoggingContext(""))} onOffline={this._onOffline.bind(this)} />
+          <SignIn onSignIn={() => OidcClientWrapper.oidcClient.signIn(new ActivityLoggingContext(""))} onOffline={this._onOffline} />
         </React.Fragment>
       );
     } else if (navigator.onLine && OverallContentPage.SelectIModelPage === currentPage) {
-      element = <IModelOpen accessToken={this.props.accessToken} onOpenIModel={this._onOpenIModel.bind(this)} />;
+      element = <IModelOpen accessToken={this.props.accessToken} onOpenIModel={this._onOpenIModel} />;
     } else if (OverallContentPage.ConfigurableUiPage === currentPage || OverallContentPage.OfflinePage === currentPage) {
       const configurableUiContentProps = {
         appBackstage: this.props.appBackstage,

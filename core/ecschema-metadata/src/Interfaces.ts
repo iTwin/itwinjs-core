@@ -131,5 +131,4 @@ export interface SchemaDeserializationVisitor extends SchemaItemVisitor {
    * @param format fully-loaded Format
    */
   /* async */ visitFormat?: (format: Format) => Promise<void>;
-
 }

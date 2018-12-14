@@ -16,12 +16,11 @@ import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl"
 import { WidgetControl } from "../configurableui/WidgetControl";
 import { Tree, FilteringInput, TreeNodeItem, PageOptions, DelayLoadedTreeNodeItem, TreeDataChangesListener, SelectionMode } from "@bentley/ui-components";
 import "./ModelSelector.scss";
-import { PresentationTreeDataProvider, treeWithUnifiedSelection, treeWithFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { PresentationTreeDataProvider, treeWithFilteringSupport, IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { RegisteredRuleset, NodeKey, NodePathElement } from "@bentley/presentation-common";
 import { CheckBoxState } from "@bentley/ui-core";
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { BeInspireTreeNode } from "../../../components/lib/tree/component/BeInspireTree";
 
 /** Model Group used by [[ModelSelectorWidget]] */
 export interface ModelGroup {
@@ -112,7 +111,7 @@ class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
   public getNodes = _.memoize(async (parentNode?: TreeNodeItem, pageOptions?: PageOptions): Promise<DelayLoadedTreeNodeItem[]> => {
     const nodes = await this._baseProvider.getNodes(parentNode, pageOptions);
     nodes.forEach((n: DelayLoadedTreeNodeItem) => {
-      n.displayCheckBox = true;
+      n.isCheckboxVisible = true;
 
       if (n.checkBoxState && n.checkBoxState === CheckBoxState.On)
         n.labelBold = true;
@@ -199,6 +198,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       this._removeSelectedViewportChanged();
   }
 
+  /** Initializes category & model groups */
   private _initGroups() {
     this._groups = [];
     this._groups.push({
@@ -229,30 +229,59 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
   /** expand the selected group */
   private _onExpand = (group: ModelGroup) => {
-    if (!this._modelRuleset || !this._categoryRuleset)
+    const activeRuleset = this._getActiveRuleset(group);
+    if (!activeRuleset)
       return;
 
-    let activeRuleset;
+    this._setActiveRuleset(activeRuleset);
+    this._setInitialExpandedState(group);
+  }
 
+  private _getActiveRuleset = (group: ModelGroup): RegisteredRuleset | undefined => {
     if (group.label === UiFramework.i18n.translate("UiFramework:categoriesModels.models"))
-      activeRuleset = this._modelRuleset;
+      return this._modelRuleset;
     else if (group.label === UiFramework.i18n.translate("UiFramework:categoriesModels.categories"))
-      activeRuleset = this._categoryRuleset;
+      return this._categoryRuleset;
     else
-      activeRuleset = this._modelRuleset;
+      return this._modelRuleset;
+  }
 
+  private _setActiveRuleset = (activeRuleset: RegisteredRuleset) => {
     this.setState({
       treeInfo: {
+        ...this.state.treeInfo!,
         ruleset: activeRuleset,
         dataProvider: new ModelSelectorDataProvider(this.props.iModelConnection, activeRuleset.id),
-        filter: this.state.treeInfo ? this.state.treeInfo.filter : "",
-        filtering: this.state.treeInfo ? this.state.treeInfo.filtering : false,
-        activeMatchIndex: this.state.treeInfo ? this.state.treeInfo.activeMatchIndex : 0,
-        matchesCount: this.state.treeInfo ? this.state.treeInfo.matchesCount : 0,
       },
-      activeGroup: group,
-      expand: true,
     });
+
+  }
+
+  private _setInitialExpandedState = async (group: ModelGroup) => {
+    if (this.state.treeInfo) {
+      const selectedNodes = await this._manageSelectedNodes(group);
+
+      this.setState({
+        treeInfo: {
+          ...this.state.treeInfo,
+          selectedNodes,
+        },
+        activeGroup: group,
+        expand: true,
+      });
+    }
+  }
+
+  private _manageSelectedNodes = async (group: ModelGroup) => {
+    const selectedNodes = Array<string>();
+    for (const item of group.items) {
+      const node = await this._getNodeFromItem(item);
+      if (node && item.enabled) {
+        selectedNodes.push(node.id);
+        this._selectLabel(node);
+      }
+    }
+    return selectedNodes;
   }
 
   /** enable or disable all items */
@@ -266,12 +295,15 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     const nodes: TreeNodeItem[] = await this.state.treeInfo!.dataProvider.getNodes();
     for (const node of nodes) {
-      // GRIGAS: These functions modify the selectedNodes as expected
-      // but the tree appears not to update (nodes remain highlighted)
-      // after onTreeNodeChanged(). I was not able to find the issue.
       enable ? this._selectLabel(node) : this._deselectLabel(node);
     }
-    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(nodes);
+
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo!,
+        selectedNodes: [...this.state.treeInfo!.selectedNodes!],
+      },
+    });
   }
 
   /** Invert display on all items */
@@ -282,8 +314,17 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     }
     this.state.activeGroup.updateState();
 
-    const nodes = await this.state.treeInfo!.dataProvider.getNodes();
-    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(nodes);
+    const nodes: TreeNodeItem[] = await this.state.treeInfo!.dataProvider.getNodes();
+    for (const node of nodes) {
+      node.checkBoxState === CheckBoxState.On ? this._deselectLabel(node) : this._selectLabel(node);
+    }
+
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo!,
+        selectedNodes: [...this.state.treeInfo!.selectedNodes!],
+      },
+    });
   }
 
   private async _updateModelsWithViewport(vp: Viewport) {
@@ -365,6 +406,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       return;
 
     item.enabled = checked;
+
     const updateViewport = (vp: Viewport) => {
       // Only act on viewports that are both 3D or both 2D. Important if we have multiple viewports opened and we
       // are using 'allViewports' property
@@ -502,29 +544,58 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** enable or disable a single item */
-  private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>) => {
-    this._setItemState(node.payload);
+  private _onCheckboxClick = (node: TreeNodeItem) => {
+    this._setItemState(node);
   }
 
   private _setItemState = (treeItem: TreeNodeItem, enabled?: boolean) => {
-    const item = this._getItem(treeItem.label);
-
-    if (enabled || treeItem.checkBoxState === CheckBoxState.On) {
-      this._selectLabel(treeItem);
-      this.state.activeGroup.setEnabled(item, true);
-    } else {
-      this._deselectLabel(treeItem);
-      this.state.activeGroup.setEnabled(item, false);
-    }
+    if (enabled || treeItem.checkBoxState === CheckBoxState.On)
+      this._setItemStateOn(treeItem);
+    else
+      this._setItemStateOff(treeItem);
 
     this.setState({ activeGroup: this.state.activeGroup });
+  }
+
+  private _setItemStateOn = async (treeItem: TreeNodeItem) => {
+    const item = this._getItem(treeItem.label);
+    this._selectLabel(treeItem);
+    this.state.activeGroup.setEnabled(item, true);
+
+    const childNodes = await this.state.treeInfo!.dataProvider.getNodes(treeItem);
+    for (const child of childNodes) {
+      this._selectLabel(child);
+    }
+
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(childNodes);
+  }
+
+  private _setItemStateOff = async (treeItem: TreeNodeItem) => {
+    const item = this._getItem(treeItem.label);
+    this._deselectLabel(treeItem);
+    this.state.activeGroup.setEnabled(item, false);
+
+    const childNodes = await this.state.treeInfo!.dataProvider.getNodes(treeItem);
+    for (const child of childNodes) {
+      this._deselectLabel(child);
+    }
+
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(childNodes);
   }
 
   private _selectLabel = (treeItem: TreeNodeItem) => {
     if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
       const index = this.state.treeInfo.selectedNodes.indexOf(treeItem.id);
       if (index === -1) {
-        this.state.treeInfo.selectedNodes.push(treeItem.id);
+        // this.state.treeInfo.selectedNodes.push(treeItem.id);
+        const nodes = this.state.treeInfo.selectedNodes;
+        nodes.push(treeItem.id);
+        this.setState({
+          treeInfo: {
+            ...this.state.treeInfo,
+            selectedNodes: nodes,
+          },
+        });
       }
       treeItem.checkBoxState = CheckBoxState.On;
     }
@@ -534,7 +605,15 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
       const index = this.state.treeInfo.selectedNodes.indexOf(treeItem.id);
       if (index > -1) {
-        this.state.treeInfo.selectedNodes.splice(index, 1);
+        // this.state.treeInfo.selectedNodes.splice(index, 1);
+        const nodes = this.state.treeInfo.selectedNodes;
+        nodes.splice(index, 1);
+        this.setState({
+          treeInfo: {
+            ...this.state.treeInfo,
+            selectedNodes: nodes,
+          },
+        });
         treeItem.checkBoxState = CheckBoxState.Off;
       }
     }
@@ -559,6 +638,18 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
 
     return checkedItem ? checkedItem : items[0];
+  }
+
+  private _getNodeFromItem = async (item: ListItem) => {
+    if (this.state.treeInfo) {
+      const nodes = await this.state.treeInfo.dataProvider.getNodes();
+      for (const node of nodes) {
+        if (node.label === item.name)
+          return node;
+      }
+    }
+
+    return;
   }
 
   /** @hidden */
@@ -631,7 +722,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 }
 
 // tslint:disable-next-line:variable-name
-const CategoryModelTree = treeWithFilteringSupport(treeWithUnifiedSelection(Tree));
+const CategoryModelTree = treeWithFilteringSupport(Tree);
 
 export default ModelSelectorWidget;
 

@@ -11,10 +11,10 @@ import { IModelTestUtils, TestUsers, TestIModelInfo } from "../IModelTestUtils";
 import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../imodeljs-backend";
 import { AccessToken, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
 import { HubUtility } from "./HubUtility";
-// import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 
 describe("BriefcaseManager (#integration)", () => {
   let accessToken: AccessToken;
+  let managerAccessToken: AccessToken;
   let testProjectId: string;
 
   let readOnlyTestIModel: TestIModelInfo;
@@ -33,12 +33,15 @@ describe("BriefcaseManager (#integration)", () => {
   };
 
   const validateBriefcaseCache = () => {
+    const paths = new Array<string>();
     (BriefcaseManager as any)._cache._briefcases.forEach((briefcase: BriefcaseEntry, key: string) => {
       assert.isTrue(IModelJsFs.existsSync(briefcase.pathname), `File corresponding to briefcase cache entry not found: ${briefcase.pathname}`);
       assert.strictEqual<string>(briefcase.getKey(), key, `Cached key ${key} doesn't match the current generated key ${briefcase.getKey()}`);
       if (briefcase.isOpen) {
         assert.strictEqual<string>(briefcase.nativeDb.getParentChangeSetId(), briefcase.changeSetId, `Parent change set id of Db doesn't match what's cached in memory`);
       }
+      assert.isFalse(paths.includes(briefcase.pathname), `Briefcase with path: ${briefcase.pathname} (key: ${key}) has a duplicate in the cache`);
+      paths.push(briefcase.pathname);
     });
   };
 
@@ -51,15 +54,11 @@ describe("BriefcaseManager (#integration)", () => {
     readWriteTestIModel = await IModelTestUtils.getTestModelInfo(accessToken, testProjectId, "ReadWriteTest");
 
     // Purge briefcases that are close to reaching the acquire limit
-    const managerAccessToken: AccessToken = await HubUtility.login(TestUsers.manager);
+    managerAccessToken = await HubUtility.login(TestUsers.manager);
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadOnlyTest");
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "NoVersionsTest");
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ReadWriteTest");
     await HubUtility.purgeAcquiredBriefcases(managerAccessToken, "iModelJsIntegrationTest", "ConnectionReadTest");
-
-    // Logger.initializeToConsole();
-    // Logger.setLevelDefault(LogLevel.Warning);
-    // Logger.setLevel("Performance", LogLevel.Info);
   });
 
   afterEach(() => {
@@ -466,7 +465,7 @@ describe("BriefcaseManager (#integration)", () => {
     exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId3);
     assert.isTrue(exists);
 
-    await BriefcaseManager.purgeCache(actx, accessToken);
+    await BriefcaseManager.purgeCache(actx, managerAccessToken);
 
     exists = await briefcaseExistsOnHub(readOnlyTestIModel.id, briefcaseId2);
     assert.isFalse(exists);

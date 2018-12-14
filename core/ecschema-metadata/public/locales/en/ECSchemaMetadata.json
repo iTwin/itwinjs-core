@@ -1,0 +1,6 @@
+{
+  "Diagnostics": {
+    "BaseClassIsSealed": "Class '{0}' cannot derive from sealed base class '{1}'.",
+    "BaseClassOfDifferentType": "Class '{0}' cannot derive from base class '{1}' of type '{2}'."
+  }
+}

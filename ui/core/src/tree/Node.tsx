@@ -20,10 +20,10 @@ export interface NodeProps {
   label: React.ReactNode;
   level: number;
   icon?: React.ReactChild;
-  isCheckboxEnabled?: boolean;
+  isCheckboxVisible?: boolean;
+  isCheckboxDisabled?: boolean;
   checkboxState?: CheckBoxState;
   onCheckboxClick?: () => void;
-  isChecked?: boolean;
   isLeaf?: boolean;
   isLoading?: boolean;
   isExpanded?: boolean;
@@ -54,10 +54,11 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
       this.props.className);
     const offset = this.props.level * LEVEL_OFFSET;
     const loader = this.props.isLoading ? (<div className="loader"><i></i><i></i><i></i><i></i><i></i><i></i></div>) : undefined;
-    const checkbox = this.props.isCheckboxEnabled ?
+    const checkbox = this.props.isCheckboxVisible ?
       <Checkbox
         label=""
         checked={this.props.checkboxState === CheckBoxState.On ? true : false}
+        disabled={this.props.isCheckboxDisabled}
         onClick={this.props.onCheckboxClick}
         onChange={this.props.onCheckboxClick}
       /> :

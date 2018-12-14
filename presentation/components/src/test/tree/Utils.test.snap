@@ -3,8 +3,7 @@
 exports[`Utils createTreeNodeItem creates tree node 1`] = `
 Object {
   "checkBoxState": 0,
-  "description": "",
-  "displayCheckBox": false,
+  "description": undefined,
   "extendedData": Object {
     "key": Object {
       "instanceKey": Object {
@@ -20,7 +19,8 @@ Object {
   },
   "hasChildren": false,
   "id": "19fb96ab-449d-4f28-a09d-cff691955c55/b5c02a04-6127-4f62-b128-58488bc1c9d1",
-  "isCheckBoxEnabled": false,
+  "isCheckboxDisabled": true,
+  "isCheckboxVisible": false,
   "label": "engage",
   "labelBackColor": -2027626753,
   "labelBold": false,
@@ -34,7 +34,6 @@ exports[`Utils createTreeNodeItem creates tree node with parent id 1`] = `
 Object {
   "checkBoxState": 1,
   "description": "Et velit aperiam sed aut.",
-  "displayCheckBox": false,
   "extendedData": Object {
     "key": Object {
       "instanceKey": Object {
@@ -50,7 +49,8 @@ Object {
   },
   "hasChildren": true,
   "id": "0b80175c-270d-4a1a-bba3-14ef8866c2a1/df9c559d-a389-4bc4-aef0-a5d0cb8b62e6",
-  "isCheckBoxEnabled": false,
+  "isCheckboxDisabled": true,
+  "isCheckboxVisible": false,
   "label": "Indian Rupee Rufiyaa systems",
   "labelBackColor": undefined,
   "labelBold": false,
@@ -65,7 +65,6 @@ Array [
   Object {
     "checkBoxState": 1,
     "description": "Necessitatibus eum ab.",
-    "displayCheckBox": true,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
@@ -81,7 +80,8 @@ Array [
     },
     "hasChildren": false,
     "id": "e845ce78-d049-4079-8e52-c1852841f2dd/4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",
-    "isCheckBoxEnabled": true,
+    "isCheckboxDisabled": false,
+    "isCheckboxVisible": true,
     "label": "intranet Executive",
     "labelBackColor": 99406079,
     "labelBold": false,
@@ -91,8 +91,7 @@ Array [
   },
   Object {
     "checkBoxState": 1,
-    "description": "",
-    "displayCheckBox": false,
+    "description": undefined,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
@@ -108,7 +107,8 @@ Array [
     },
     "hasChildren": false,
     "id": "1892b75e-f471-4908-bcd9-caf25d633b21/4ed5eba5-6260-4081-9375-0f3daeabb142",
-    "isCheckBoxEnabled": true,
+    "isCheckboxDisabled": false,
+    "isCheckboxVisible": false,
     "label": "Buckinghamshire",
     "labelBackColor": undefined,
     "labelBold": false,
@@ -124,7 +124,6 @@ Array [
   Object {
     "checkBoxState": 1,
     "description": "At enim qui enim quisquam ratione debitis sequi totam aut.",
-    "displayCheckBox": true,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
@@ -140,7 +139,8 @@ Array [
     },
     "hasChildren": true,
     "id": "fde07d2e-c992-4c8d-9f77-66e2d57cff27/7563a72a-9ca8-4deb-b3f2-90e038b00330",
-    "isCheckBoxEnabled": false,
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
     "label": "Haiti",
     "labelBackColor": 480516607,
     "labelBold": false,
@@ -151,7 +151,6 @@ Array [
   Object {
     "checkBoxState": 0,
     "description": "Voluptas cupiditate rerum consequatur illum unde molestiae quam.",
-    "displayCheckBox": true,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
@@ -167,7 +166,8 @@ Array [
     },
     "hasChildren": false,
     "id": "7bda1c50-0d4d-45d6-bc09-e4f2bdad7ba2/d29db17a-7270-42f3-a398-05abe6ed9fcd",
-    "isCheckBoxEnabled": false,
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
     "label": "SSL methodologies Berkshire",
     "labelBackColor": 1088423167,
     "labelBold": false,

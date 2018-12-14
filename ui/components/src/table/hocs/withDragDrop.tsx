@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Tree */
+/** @module Table */
 
 import * as React from "react";
 import { getDisplayName } from "@bentley/ui-core";
@@ -36,7 +36,7 @@ export interface TableDragDropProps<DragDropObject = any> {
  * table component.
  */
 // tslint:disable-next-line: variable-name naming-convention
-export function withDragDrop<P extends TableProps, DragDropObject extends TableDragDropType>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableDragDropProps<DragDropObject>> {
+export function withTableDragDrop<P extends TableProps, DragDropObject extends TableDragDropType>(TableComponent: React.ComponentType<P>): React.ComponentType<P & TableDragDropProps<DragDropObject>> {
 
   type CombinedProps = P & TableDragDropProps<DragDropObject>;
 
@@ -161,4 +161,4 @@ export function withDragDrop<P extends TableProps, DragDropObject extends TableD
 
   };
 }
-export default withDragDrop;
+export default withTableDragDrop;

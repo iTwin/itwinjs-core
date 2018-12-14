@@ -422,8 +422,6 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
     const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
     const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
     const rotatedRange = rotationTransform.multiplyRange(range);
-    const viewOrigin = rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z);
-    const viewExtents = rotatedRange.diagonal();
     const viewDefinitionProps: SpatialViewDefinitionProps = {
       classFullName: this.classFullName,
       model: definitionModelId,
@@ -431,8 +429,8 @@ export class OrthographicViewDefinition extends SpatialViewDefinition {
       modelSelectorId,
       categorySelectorId,
       displayStyleId,
-      origin: viewOrigin,
-      extents: viewExtents,
+      origin: rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z),
+      extents: rotatedRange.diagonal(),
       angles,
       cameraOn: false,
       camera: new Camera(), // not used when cameraOn === false
@@ -504,6 +502,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
   public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
     super(props, iModel);
   }
+
   /**
    * Create a DrawingViewDefinition
    * @param iModelDb The iModel
@@ -529,6 +528,7 @@ export class DrawingViewDefinition extends ViewDefinition2d {
     };
     return new DrawingViewDefinition(viewDefinitionProps, iModelDb);
   }
+
   /**
    * Insert a DrawingViewDefinition
    * @param iModelDb Insert into this iModel
@@ -547,25 +547,13 @@ export class DrawingViewDefinition extends ViewDefinition2d {
 }
 
 /** Defines a view of a [[SheetModel]]. */
-export class SheetViewDefinition extends ViewDefinition2d {
-  public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
-    super(props, iModel);
-  }
-}
+export class SheetViewDefinition extends ViewDefinition2d { }
 
 /** A ViewDefinition used to display a 2d template model. */
-export class TemplateViewDefinition2d extends ViewDefinition2d {
-  public constructor(props: ViewDefinition2dProps, iModel: IModelDb) {
-    super(props, iModel);
-  }
-}
+export class TemplateViewDefinition2d extends ViewDefinition2d { }
 
 /** A ViewDefinition used to display a 3d template model. */
-export class TemplateViewDefinition3d extends ViewDefinition3d {
-  public constructor(props: ViewDefinition3dProps, iModel: IModelDb) {
-    super(props, iModel);
-  }
-}
+export class TemplateViewDefinition3d extends ViewDefinition3d { }
 
 /**
  * An auxiliary coordinate system element. Auxiliary coordinate systems can be used by views to show
@@ -654,5 +642,4 @@ export class LightLocation extends SpatialLocationElement implements LightLocati
 }
 
 /** Defines a rendering texture. */
-export class Texture extends DefinitionElement {
-}
+export class Texture extends DefinitionElement { }

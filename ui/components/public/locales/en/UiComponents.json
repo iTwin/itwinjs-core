@@ -25,5 +25,8 @@
     "showAll": "Show all",
     "list": "List...",
     "title": "Show/Hide"
+  },
+  "property": {
+    "varies": "*** Varies ***"
   }
 }

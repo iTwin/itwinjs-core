@@ -25,7 +25,7 @@ describe("OidcBackendClient (#integration)", () => {
   let agentConfiguration: OidcAgentClientConfiguration;
   let delegationConfiguration: OidcBackendClientConfiguration;
 
-  const testProjectName = "iModelJsTest";
+  const testProjectName = "iModelJsIntegrationTest";
   const testIModelName = "ReadOnlyTest";
   let testProjectId: string;
   let testIModelId: string;
@@ -71,10 +71,10 @@ describe("OidcBackendClient (#integration)", () => {
     };
 
     agentConfiguration = {
-      clientId: Config.App.getString("agent_test_oidc_client_id"),
-      clientSecret: Config.App.getString("agent_test_oidc_client_secret"),
-      serviceUserEmail: Config.App.getString("agent_test_oidc_service_user_name"),
-      serviceUserPassword: Config.App.getString("agent_test_oidc_service_password"),
+      clientId: Config.App.getString("imjs_agent_test_client_id"),
+      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
+      serviceUserEmail: Config.App.getString("imjs_agent_test_service_user_email"),
+      serviceUserPassword: Config.App.getString("imjs_agent_test_service_password"),
     };
 
     delegationConfiguration = {

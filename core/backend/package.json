@@ -15,11 +15,11 @@
     "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "cover": "nyc npm test",
-    "cover:integration": "nyc npm run test:integration",
+    "cover:integration": "nyc npm run test-integration",
     "lint": "tslint --project . 1>&2",
     "pretest": "cpx \"./src/test/logging.config.json\" ./lib/test",
     "test": "node ./node_modules/@bentley/build-tools/scripts/test.js --offline=\"mock\" --grep \"#integration|#WebGLPerformance\" --invert",
-    "test:integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/test/integration\"",
+    "test-integration": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/test/integration\"",
     "perftest": "npm run pretest && node ./node_modules/@bentley/build-tools/scripts/test.js --testDir=\"./lib/perftest\" --timeout=999999999",
     "webpackformobile": "cpx \"./src/test/runMochaTestsDirectly.js\" ./lib/test && webpack --target=webworker --config ./src/test/mobile.webpack.config.js"
   },
@@ -80,7 +80,7 @@
     "asn1": "0.2.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native-platform-api": "~0.72.0",
+    "@bentley/imodeljs-native-platform-api": "~0.73.0",
     "body-parser": "^1.18.2",
     "fs-extra": "^6.0.1",
     "glob": "^7.1.2",

@@ -55,7 +55,7 @@ export class AppUi {
     ConfigurableUiManager.addFrontstageProvider(new Frontstage4());
   }
 
-  public static tool1 = () => {
+  public static command1 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
@@ -65,7 +65,7 @@ export class AppUi {
     }
   }
 
-  public static tool2 = () => {
+  public static command2 = () => {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
     if (activeFrontstageDef) {
       const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
