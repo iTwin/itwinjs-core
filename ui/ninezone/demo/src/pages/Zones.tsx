@@ -64,8 +64,8 @@ import { Item } from "@src/toolbar/item/Icon";
 import { Toolbar, ToolbarPanelAlignment } from "@src/toolbar/Toolbar";
 import { Scrollable } from "@src/toolbar/Scrollable";
 import { Direction } from "@src/utilities/Direction";
-import { PointProps } from "@src/utilities/Point";
-import { Size } from "@src/utilities/Size";
+import { PointProps, Point } from "@src/utilities/Point";
+import { Size, SizeProps } from "@src/utilities/Size";
 import { ResizeHandle } from "@src/widget/rectangular/ResizeHandle";
 import { Draggable } from "@src/widget/rectangular/tab/Draggable";
 import { TabSeparator } from "@src/widget/rectangular/tab/Separator";
@@ -88,7 +88,7 @@ import { GhostOutline } from "@src/zones/GhostOutline";
 import { ThemeContext, ThemeContextProps } from "@src/theme/Context";
 import { Theme, DarkTheme, PrimaryTheme, LightTheme } from "@src/theme/Theme";
 import { offsetAndContainInContainer } from "@src/popup/tooltip/Tooltip";
-import { RectangleProps } from "@src/utilities/Rectangle";
+import { RectangleProps, Rectangle } from "@src/utilities/Rectangle";
 import { withContainInViewport } from "@src/base/WithContainInViewport";
 import { OmitChildrenProp } from "@src/utilities/Props";
 import "./Zones.scss";
@@ -1099,6 +1099,7 @@ class ZoneTargetExample extends React.PureComponent<TargetExampleProps> {
 }
 
 interface TooltipExampleProps {
+  containerSize: SizeProps;
   isTooltipVisible: boolean;
   isTemporaryMessageVisible: number;
   onMessageHidden: () => void;
@@ -1106,12 +1107,14 @@ interface TooltipExampleProps {
 }
 
 interface TooltipExampleState {
-  mousePosition: PointProps;
   temporaryMessageStyle: React.CSSProperties;
+  tooltipPosition: PointProps;
 }
 
 class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExampleState> {
   private _temporaryMessageTimer = new Timer(2000);
+  private _tooltipSize: SizeProps = new Size();
+  private _mousePosition: PointProps = new Point();
 
   public componentDidMount(): void {
     this._temporaryMessageTimer.setOnExecute(this.props.onMessageHidden);
@@ -1127,10 +1130,10 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
   public componentDidUpdate(prevProps: TooltipExampleProps): void {
     if (this.props.isTemporaryMessageVisible !== 0 && this.props.isTemporaryMessageVisible !== prevProps.isTemporaryMessageVisible) {
       this._temporaryMessageTimer.start();
-      this.setState((prevState) => ({
+      this.setState(() => ({
         temporaryMessageStyle: {
-          left: prevState.mousePosition.x,
-          top: prevState.mousePosition.y,
+          left: this._mousePosition.x,
+          top: this._mousePosition.y,
         },
       }));
     }
@@ -1140,7 +1143,7 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
     super(props);
 
     this.state = {
-      mousePosition: {
+      tooltipPosition: {
         x: 0,
         y: 0,
       },
@@ -1156,10 +1159,10 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
           this.props.isTooltipVisible && (
             <TooltipWithTimeout
               stepString="Start Point"
-              timeout={2000}
+              timeout={3000}
               onTimeout={this.props.onTooltipTimeout}
-              position={this.state.mousePosition}
-              adjustPosition={adjustTooltipPosition}
+              position={this.state.tooltipPosition}
+              onSizeChanged={this._handleTooltipSizeChange}
             >
               {placeholderIcon}
             </TooltipWithTimeout>
@@ -1176,10 +1179,26 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
     );
   }
 
-  private _handlePositionChange = (mousePosition: PointProps) => {
-    this.setState(() => ({
-      mousePosition,
-    }));
+  private _handlePositionChange = (position: PointProps) => {
+    this._mousePosition = position;
+    this.updateTooltipPosition();
+  }
+
+  private _handleTooltipSizeChange = (size: SizeProps) => {
+    this._tooltipSize = size;
+    this.updateTooltipPosition();
+  }
+
+  private updateTooltipPosition() {
+    this.setState((prevState) => {
+      const tooltipBounds = Rectangle.createFromSize(this._tooltipSize).offset(this._mousePosition);
+      const tooltipPosition = adjustTooltipPosition(tooltipBounds, this.props.containerSize);
+      if (tooltipPosition.equals(prevState.tooltipPosition))
+        return null;
+      return {
+        tooltipPosition,
+      };
+    });
   }
 }
 
@@ -2256,6 +2275,7 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
     return (
       <Zones>
         <TooltipExample
+          containerSize={this.state.nineZone.size}
           isTemporaryMessageVisible={this.state.isTemporaryMessageVisible}
           isTooltipVisible={this.state.isTooltipVisible || false}
           onMessageHidden={this._handleTooltipMessageHidden}

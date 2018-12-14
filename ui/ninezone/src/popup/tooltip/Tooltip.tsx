@@ -6,58 +6,44 @@
 
 import * as classnames from "classnames";
 import * as React from "react";
-import { Css, CssProperties } from "../../utilities/Css";
+import { CssProperties } from "../../utilities/Css";
 import { CommonProps } from "../../utilities/Props";
 import { Point, PointProps } from "../../utilities/Point";
 import { Rectangle, RectangleProps } from "../../utilities/Rectangle";
+import { SizeProps, Size } from "../../utilities/Size";
 import "./Tooltip.scss";
 
 /** Properties of [[Tooltip]] component. */
 export interface TooltipProps extends CommonProps {
   /** Tooltip content. */
   children?: React.ReactNode;
-  /** Function called to determine the tooltip container. */
-  containIn?: (tooltip: HTMLElement) => HTMLElement;
-  /** Requested position of the tooltip. */
+  /** Position of the tooltip. */
   position?: PointProps;
-  /** Function called to update actual position of the tooltip. */
-  adjustPosition?: (tooltip: Rectangle, container: Rectangle) => PointProps;
+  /** Function called when the bounds of the tooltip changes. */
+  onSizeChanged?: (size: SizeProps) => void;
 }
 
-/** Default properties for [[TooltipProps]] used in [[Tooltip]] component. */
-export interface TooltipDefaultProps extends TooltipProps {
-  /** Default position of tooltip. */
-  position: PointProps;
-  /** Defaults to DOM parent of tooltip. */
-  containIn: (tooltip: HTMLElement) => HTMLElement;
-  /** By default does not adjust the tooltip position. */
-  adjustPosition: (tooltip: Rectangle, container: Rectangle) => PointProps;
-}
-
-export const offsetAndContainInContainer = (offset: PointProps = new Point(20, 20)) => (tooltip: Rectangle, container: Rectangle) => {
-  let newBounds = tooltip.offset(offset);
-  if (container.contains(newBounds))
+export const offsetAndContainInContainer = (offset: PointProps = new Point(20, 20)) => (relativeTooltipBounds: RectangleProps, containerSize: SizeProps) => {
+  const tooltipBounds = Rectangle.create(relativeTooltipBounds);
+  let newBounds = tooltipBounds.offset(offset);
+  const containerBounds = Rectangle.createFromSize(containerSize);
+  if (containerBounds.contains(newBounds))
     return newBounds.topLeft();
 
-  newBounds = newBounds.containIn(container);
+  newBounds = newBounds.containIn(containerBounds);
   return newBounds.topLeft();
 };
 
-/** Tooltip component that follows the mouse. */
+/** Positionable tooltip component. */
 export class Tooltip extends React.PureComponent<TooltipProps> {
-  public static readonly defaultProps: TooltipDefaultProps = {
-    position: new Point(),
-    containIn: (tooltip: HTMLElement) => {
-      const parent = tooltip.parentNode;
-      if (!parent || !(parent instanceof HTMLElement))
-        throw new ReferenceError();
-      return parent;
-    },
-    adjustPosition: (tooltip: RectangleProps) => {
-      return new Point(tooltip.left, tooltip.top);
+  public static readonly defaultProps: Partial<TooltipProps> = {
+    position: {
+      x: 0,
+      y: 0,
     },
   };
 
+  private _lastSize = new Size();
   private _tooltip = React.createRef<HTMLDivElement>();
 
   public render() {
@@ -67,14 +53,14 @@ export class Tooltip extends React.PureComponent<TooltipProps> {
 
     const style: React.CSSProperties = {
       ...this.props.style,
-      ...CssProperties.fromPosition(this.props.position!),
+      ...CssProperties.fromPosition(this.props.position || { x: 0, y: 0 }),
     };
 
     return (
       <div
         className={className}
-        style={style}
         ref={this._tooltip}
+        style={style}
       >
         {this.props.children}
       </div>
@@ -82,30 +68,28 @@ export class Tooltip extends React.PureComponent<TooltipProps> {
   }
 
   public componentDidMount() {
-    this.adjustPosition();
+    this.onSizeChanged();
   }
 
   public componentDidUpdate(): void {
-    this.adjustPosition();
+    this.onSizeChanged();
   }
 
-  private adjustPosition() {
+  private onSizeChanged() {
     const tooltip = this._tooltip.current;
     if (!tooltip)
       return;
 
-    const container = this.props.containIn!(tooltip);
+    const rect = tooltip.getBoundingClientRect();
+    const size = {
+      height: rect.height,
+      width: rect.width,
+    };
 
-    const x = this.props.position!.x;
-    const y = this.props.position!.y;
-    const tooltipRect = tooltip.getBoundingClientRect();
-    const tooltipBounds = new Rectangle(x, y, x + tooltipRect.width, y + tooltipRect.height);
-    const containerBounds = Rectangle.create(container.getBoundingClientRect());
+    if (this._lastSize.equals(size))
+      return;
 
-    const newPos = this.props.adjustPosition!(tooltipBounds, containerBounds);
-    const offset = tooltipBounds.topLeft().getOffsetTo(newPos);
-
-    tooltip.style.left = Css.toPx(offset.x + x);
-    tooltip.style.top = Css.toPx(offset.y + y);
+    this._lastSize = Size.create(size);
+    this.props.onSizeChanged && this.props.onSizeChanged(size);
   }
 }
