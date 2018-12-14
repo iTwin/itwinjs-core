@@ -91,7 +91,7 @@ export type BeInspireTreeDataProvider<TPayload> = BeInspireTreeDataProviderRaw<T
 /** Type definition for a BeInspireTree renderer */
 export type BeInspireTreeRenderer<TPayload> = (rootNodes: Array<BeInspireTreeNode<TPayload>>) => void;
 
-type BeInspireTreeDataFunc<TPayload> = (parent: BeInspireTreeNodePayloadConfig<TPayload> | undefined,
+type BeInspireTreeDataFunc<TPayload> = (parent: BeInspireTreeNode<TPayload> | undefined,
   resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any,
   reject: (err: Error) => any,
   pagination?: Inspire.Pagination,
@@ -181,6 +181,8 @@ export class BeInspireTree<TNodePayload> {
   private _eventMutes: Map<BeInspireTreeEvent, number>;
   private _readyPromise!: Promise<void>;
   private _deferredLoadingHandler?: DeferredLoadingHandler<TNodePayload>;
+  private _visibleCached?: BeInspireTreeNodes<TNodePayload>;
+  private _suspendedRendering?: EventsMuteContext;
   public props: Props<TNodePayload>;
 
   constructor(props: Props<TNodePayload>) {
@@ -198,9 +200,39 @@ export class BeInspireTree<TNodePayload> {
       },
     };
     this._tree = new InspireTree(config);
+
+    // make sure model is dirty when it's loaded
     this.on(BeInspireTreeEvent.ModelLoaded, (model: BeInspireTreeNodes<TNodePayload>) => {
       model.forEach((n) => n.markDirty());
     });
+
+    setTimeout(() => {
+      // we want to allow consumers of `BeInspireTree` to listen for `ModelLoaded`
+      // and `ChildrenLoaded` events and do any kind of manipulation with them **before**
+      // `ChangesApplied` event is emitted, so we have to suspend rendering when data is loaded
+      // and resume it in `*Loaded` listener.
+      // note: because we need our `*Loaded` listener to be called **after** consumer's listener
+      // for the same events, we subscribe to those events from a `setTimeout` callback.
+      this.on(BeInspireTreeEvent.DataLoaded, () => {
+        this._suspendedRendering = this.pauseRendering();
+      });
+      this.on([BeInspireTreeEvent.ModelLoaded, BeInspireTreeEvent.ChildrenLoaded], () => {
+        if (this._suspendedRendering) {
+          this._suspendedRendering.dispose();
+          this._suspendedRendering = undefined;
+        }
+      });
+    });
+
+    // dispose `visible` cache when data is loaded or nodes are expanded or collapsed
+    this.on([BeInspireTreeEvent.DataLoaded, BeInspireTreeEvent.NodeCollapsed, BeInspireTreeEvent.NodeExpanded], () => {
+      this._visibleCached = undefined;
+    });
+
+    // override the `load` function to handle auto-expanding nodes
+    // note: tree starts loading as soon as it gets created, so the first load
+    // is not using this override - in that case auto-expansion is handled
+    // in `onModelInvalidated` function
     const baseTreeLoad = this._tree.load;
     this._tree.load = async (loader): Promise<Inspire.TreeNodes> => {
       const result = await baseTreeLoad.call(this._tree, loader);
@@ -209,6 +241,8 @@ export class BeInspireTree<TNodePayload> {
       });
       return result;
     };
+
+    // assign `disposeChildrenOnCollapse` handler if needed
     if (props.disposeChildrenOnCollapse) {
       if (!isDeferredDataProvider(props.dataProvider))
         throw new Error("Property `disposeChildrenOnCollapse` is only available on deferred data providers");
@@ -218,6 +252,8 @@ export class BeInspireTree<TNodePayload> {
         node.children = true;
       });
     }
+
+    // invalidate our `ready` promise
     this.onModelInvalidated();
   }
 
@@ -225,7 +261,7 @@ export class BeInspireTree<TNodePayload> {
     this._readyPromise = new Promise<void>((resolve) => {
       this._tree.once([BeInspireTreeEvent.ModelLoaded], resolve);
     }).then(async () => {
-      // note: the following is needed for the initial load of the tree
+      // note: the following is only needed for the initial load of the tree
       // when our `load` override isn't assigned yet
       await using(this.pauseRendering(), async () => {
         await ensureNodesAutoExpanded(this._tree.nodes());
@@ -282,7 +318,7 @@ export class BeInspireTree<TNodePayload> {
    */
   public pauseRendering(allowedRendersBeforePause: number = 0): EventsMuteContext {
     const doEmit = (events: BeInspireTreeEvent[]) => {
-      if (this._tree.visible().some((n) => toNode(n).isDirty())) {
+      if (this.visible().some((n) => n.isDirty())) {
         this.doEmit(events);
       }
     };
@@ -364,7 +400,9 @@ export class BeInspireTree<TNodePayload> {
 
   /** Get a flat list of visible nodes */
   public visible() {
-    return toNodes<TNodePayload>(this._tree.visible());
+    if (!this._visibleCached)
+      this._visibleCached = toNodes<TNodePayload>(this._tree.visible());
+    return this._visibleCached;
   }
 
   /** Reload the tree */
@@ -603,6 +641,15 @@ class PayloadToNodeRemapper<TPayload> {
   }
 }
 
+function onNodesDelayLoaded<TPayload>(parent: BeInspireTreeNode<TPayload> | undefined, nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>) {
+  if (parent) {
+    // inspire-tree emits `data.loaded` event only when root nodes are loaded, but
+    // we also need it to be emitted when children are loaded - we depend on it being called
+    // after the children are loaded but before the `children.loaded` event is emitted.
+    parent.tree().emit(BeInspireTreeEvent.DataLoaded, nodes);
+  }
+}
+
 const wrapDataProvider = <TPayload>(tree: BeInspireTree<TPayload>, provider: BeInspireTreeDataProvider<TPayload>, mapPayloadToInspireNodeConfig: MapPayloadToInspireNodeCallback<TPayload>): BeInspireTreeData<TPayload> => {
   const remapper = new PayloadToNodeRemapper(tree, mapPayloadToInspireNodeConfig);
 
@@ -613,11 +660,12 @@ const wrapDataProvider = <TPayload>(tree: BeInspireTree<TPayload>, provider: BeI
 
   if (typeof provider === "function") {
     // method data provider
-    return ((parent: BeInspireTreeNodePayloadConfig<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any, _reject: (err: Error) => any) => {
+    return ((parent: BeInspireTreeNode<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any, _reject: (err: Error) => any) => {
       const payload = nodeToPayload(parent);
       // tslint:disable-next-line: no-floating-promises
       provider(payload).then(remapper.remapMany).then((nodes) => {
-        using(tree.pauseRendering(), () => resolve(nodes, nodes.length));
+        onNodesDelayLoaded(parent, nodes);
+        resolve(nodes, nodes.length);
       });
     });
   }
@@ -755,7 +803,11 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
       // pagination is disabled - just load all nodes for the parent
       const payload = parent ? parent.payload : undefined;
       // tslint:disable-next-line:no-floating-promises
-      this._provider.getNodes(payload).then((nodes) => resolve(this._nodesRemapper.remapMany(nodes), nodes.length));
+      this._provider.getNodes(payload).then((payloads) => {
+        const nodes = this._nodesRemapper.remapMany(payloads);
+        onNodesDelayLoaded(parent, nodes);
+        resolve(nodes, nodes.length);
+      });
       return;
     }
 
@@ -771,6 +823,7 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
       // reset so concat doesn't duplicate nodes
       parent.children = true;
     }
+    onNodesDelayLoaded(parent, pagedNodes);
     resolve(pagedNodes, pagedNodes.length);
   }
 }

@@ -155,14 +155,14 @@ describe("BeInspireTree", () => {
 
   // run tests for every type of supported provider
   const providers = [
-    { name: "with raw data provider", createProvider: (h: Node[]) => h, isDelayLoaded: false, supportsPagination: false },
-    { name: "with promise data provider", createProvider: async (h: Node[]) => Promise.resolve(h), isDelayLoaded: false, supportsPagination: false },
-    { name: "with method data provider", createProvider: (h: Node[]) => createDataProviderMethod(h), isDelayLoaded: true, supportsPagination: false },
-    { name: "with interface data provider", createProvider: (h: Node[]) => createDataProviderInterface(h), isDelayLoaded: true, supportsPagination: true },
+    { name: "with raw data provider", createProvider: (h: Node[]) => h, isDelayLoaded: { model: false, children: false }, supportsPagination: false },
+    { name: "with promise data provider", createProvider: async (h: Node[]) => Promise.resolve(h), isDelayLoaded: { model: true, children: false }, supportsPagination: false },
+    { name: "with method data provider", createProvider: (h: Node[]) => createDataProviderMethod(h), isDelayLoaded: { model: true, children: true }, supportsPagination: false },
+    { name: "with interface data provider", createProvider: (h: Node[]) => createDataProviderInterface(h), isDelayLoaded: { model: true, children: true }, supportsPagination: true },
   ];
   providers.forEach((entry) => {
 
-    const mapPayloadToInspireNodeConfig = entry.isDelayLoaded ? mapDelayLoadedNodeToInspireNodeConfig : mapImmediateNodeToInspireNodeConfig;
+    const mapPayloadToInspireNodeConfig = entry.isDelayLoaded.children ? mapDelayLoadedNodeToInspireNodeConfig : mapImmediateNodeToInspireNodeConfig;
 
     describe(entry.name, () => {
 
@@ -177,8 +177,10 @@ describe("BeInspireTree", () => {
         tree.on([BeInspireTreeEvent.ChangesApplied], renderer);
 
         await tree.ready;
-        if (entry.isDelayLoaded)
+        if (entry.isDelayLoaded.children)
           await loadHierarchy(tree.nodes());
+
+        expect(renderer).to.have.callCount(entry.isDelayLoaded.model ? 2 : 1);
       });
 
       // node access functions can be used directly on the tree or
@@ -309,10 +311,9 @@ describe("BeInspireTree", () => {
       describe("reload", () => {
 
         it("re-renders tree", async () => {
-          const initialRendersCount = entry.isDelayLoaded ? 2 : 1;
-          expect(renderer).to.have.callCount(initialRendersCount);
+          renderer.resetHistory();
           await tree.reload();
-          expect(renderer).to.have.callCount(initialRendersCount + 1);
+          expect(renderer).to.have.callCount(1);
         });
 
       });
@@ -678,7 +679,7 @@ describe("BeInspireTree", () => {
 
       describe("disposeChildrenOnCollapse", () => {
 
-        if (entry.isDelayLoaded) {
+        if (entry.isDelayLoaded.children) {
 
           beforeEach(async () => {
             tree = new BeInspireTree({
