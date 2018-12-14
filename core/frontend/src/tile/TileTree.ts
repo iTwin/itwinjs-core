@@ -67,7 +67,6 @@ export class Tile implements IDisposable {
   public readonly range: ElementAlignedBox3d;
   public readonly parent: Tile | undefined;
   public readonly depth: number;
-  public loadStatus: Tile.LoadStatus;
   public contentId: string;
   public readonly center: Point3d;
   public readonly radius: number;
@@ -81,13 +80,14 @@ export class Tile implements IDisposable {
   protected _rangeGraphic?: RenderGraphic;
   protected _sizeMultiplier?: number;
   protected _request?: TileRequest;
+  private _state: TileState;
 
   public constructor(props: Tile.Params) {
     this.root = props.root;
     this.range = props.range;
     this.parent = props.parent;
     this.depth = undefined !== this.parent ? this.parent.depth + 1 : 0;
-    this.loadStatus = Tile.LoadStatus.NotLoaded;
+    this._state = TileState.NotReady;
     this.contentId = props.contentId;
     this._maximumSize = props.maximumSize;
     this._isLeaf = (true === props.isLeaf);
@@ -114,15 +114,43 @@ export class Tile implements IDisposable {
         dispose(child);
 
     this._children = undefined;
-    this.loadStatus = Tile.LoadStatus.Abandoned;
+    this._state = TileState.Abandoned;
   }
 
+  /* ###TODO
   public cancelAllLoads(): void {
     if (this.isLoading) {
       this.loadStatus = Tile.LoadStatus.NotLoaded;
       if (this._children !== undefined) {
         for (const child of this._children)
           child.cancelAllLoads();
+      }
+    }
+  }
+  */
+
+  public get loadStatus(): Tile.LoadStatus {
+    switch (this._state) {
+      case TileState.NotReady: {
+        if (undefined === this.request)
+          return Tile.LoadStatus.NotLoaded;
+        else if (TileRequest.State.Loading === this.request.state)
+            return Tile.LoadStatus.Loading;
+
+        assert(TileRequest.State.Completed !== this.request.state && TileRequest.State.Failed !== this.request.state); // this.request should be undefined in these cases...
+        return Tile.LoadStatus.Queued;
+        }
+      case TileState.Ready: {
+        assert(undefined === this.request);
+        return Tile.LoadStatus.Ready;
+      }
+      case TileState.NotFound: {
+        assert(undefined === this.request);
+        return Tile.LoadStatus.NotFound;
+      }
+      default: {
+        assert(TileState.Abandoned === this._state);
+        return Tile.LoadStatus.Abandoned;
       }
     }
   }
@@ -159,18 +187,15 @@ export class Tile implements IDisposable {
     this.setIsReady();
   }
 
-  public setIsReady(): void { this.loadStatus = Tile.LoadStatus.Ready; IModelApp.viewManager.onNewTilesReady(); }
-  public setIsQueued(): void { this.loadStatus = Tile.LoadStatus.Queued; }
-  public setIsLoading(): void { this.loadStatus = Tile.LoadStatus.Loading; }
-  public setNotLoaded(): void { this.loadStatus = Tile.LoadStatus.NotLoaded; }
-  public setNotFound(): void { this.loadStatus = Tile.LoadStatus.NotFound; }
+  public setIsReady(): void { this._state = TileState.Ready; IModelApp.viewManager.onNewTilesReady(); }
+  public setNotFound(): void { this._state = TileState.NotFound; }
   public setAbandoned(): void {
     const children = this.children;
     if (undefined !== children)
       for (const child of children)
         child.setAbandoned();
 
-    this.loadStatus = Tile.LoadStatus.Abandoned;
+    this._state = TileState.Abandoned;
   }
 
   public get maximumSize(): number { return this._maximumSize * this.sizeMultiplier; }
@@ -567,6 +592,14 @@ export namespace Tile {
   }
 }
 
+// Tile.LoadStatus is computed from the combination of Tile._state and, if Tile.request is defined, Tile.request.state.
+const enum TileState {
+  NotReady = Tile.LoadStatus.NotLoaded, // Tile requires loading, but no request has yet completed.
+  Ready = Tile.LoadStatus.Ready, // request completed successfully, or no loading was required.
+  NotFound = Tile.LoadStatus.NotFound, // request failed.
+  Abandoned = Tile.LoadStatus.Abandoned, // tile was abandoned.
+}
+
 /** @hidden */
 export class TileTree implements IDisposable {
   public readonly iModel: IModelConnection;
@@ -704,8 +737,6 @@ export abstract class TileLoader {
       tile.setIsReady();
       return;
     }
-
-    tile.loadStatus = Tile.LoadStatus.Loading;
 
     const streamBuffer: TileIO.StreamBuffer = new TileIO.StreamBuffer(blob.buffer);
     const format = streamBuffer.nextUint32;

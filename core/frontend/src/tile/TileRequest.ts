@@ -73,7 +73,6 @@ class Request extends TileRequest {
     super();
     this.tile = tile;
     this.priority = tile.depth; // ###TODO account for reality/map tiles vs design model tiles, etc.
-    tile.setIsQueued();
   }
 
   public async dispatch(): Promise<void> {
@@ -109,7 +108,6 @@ class Request extends TileRequest {
     }
 
     this._state = TileRequest.State.Loading;
-    this.tile.setIsLoading();
 
     try {
       const graphic = await this.loader.loadTileGraphic(this.tile, data);

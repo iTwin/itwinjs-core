@@ -179,7 +179,7 @@ export namespace Attachments {
 
         // Discard any tiles/graphics used for previous level-of-detail - we'll generate them at the new LOD
         this.sync.invalidateScene();
-        this.view.cancelAllTileLoads();
+        // ###TODO this.view.cancelAllTileLoads();
 
         this._sceneDepth = depth;
         let dim = QUERY_SHEET_TILE_PIXELS;
