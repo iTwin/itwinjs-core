@@ -1173,24 +1173,33 @@ export namespace IModelDb {
     /** Get the root subject element. */
     public getRootSubject(): Subject { return this.getElement(IModel.rootSubjectId); }
 
-    /** Query for aspects rows (by aspect class name) associated with this element.
+    /** Query for aspects of a particular class (polymorphically) associated with this element.
      * @throws [[IModelError]]
      */
     private _queryAspects(elementId: Id64String, aspectClassName: string): ElementAspect[] {
       const rows = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE Element.Id=?`, [elementId]);
-      if (rows.length === 0)
-        throw new IModelError(IModelStatus.NotFound, "ElementAspect class not found", Logger.logWarning, loggingCategory, () => ({ aspectClassName }));
-
+      if (rows.length === 0) {
+        return [];
+      }
       const aspects: ElementAspect[] = [];
       for (const row of rows) {
-        const aspectProps: ElementAspectProps = row; // start with everything that SELECT * returned
-        aspectProps.classFullName = aspectClassName; // add in property required by EntityProps
-        aspectProps.className = undefined; // clear property from SELECT * that we don't want in the final instance
-
-        const aspect = this._iModel.constructEntity<ElementAspect>(aspectProps);
-        aspects.push(aspect);
+        aspects.push(this._queryAspect(row.id, row.className.replace(".", ":")));
       }
       return aspects;
+    }
+
+    /** Query for aspect by ECInstanceId
+     * @throws [[IModelError]]
+     */
+    private _queryAspect(aspectInstanceId: Id64String, aspectClassName: string): ElementAspect {
+      const rows = this._iModel.executeQuery(`SELECT * FROM ${aspectClassName} WHERE ECInstanceId=?`, [aspectInstanceId]);
+      if (rows.length !== 1) {
+        throw new IModelError(IModelStatus.NotFound, "ElementAspect not found", Logger.logError, loggingCategory, () => ({ aspectInstanceId, aspectClassName }));
+      }
+      const aspectProps: ElementAspectProps = rows[0]; // start with everything that SELECT * returned
+      aspectProps.classFullName = aspectProps.className.replace(".", ":"); // add in property required by EntityProps
+      aspectProps.className = undefined; // clear property from SELECT * that we don't want in the final instance
+      return this._iModel.constructEntity<ElementAspect>(aspectProps);
     }
 
     /**
