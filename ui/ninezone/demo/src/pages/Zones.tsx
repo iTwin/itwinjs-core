@@ -102,10 +102,10 @@ const ToolGroupContained = withContainInViewport(Group);
 const NestedToolGroupContained = withContainInViewport(NestedGroup);
 
 interface State {
-  isNestedPopoverOpen?: boolean;
-  isPopoverOpen?: boolean;
+  isNestedPopoverOpen: boolean;
+  isPopoverOpen: boolean;
   isTemporaryMessageVisible: number;
-  isTooltipVisible?: boolean;
+  isTooltipVisible: boolean;
   message: Message;
   nineZone: NineZoneProps;
   openWidget: FooterWidget;
@@ -385,13 +385,9 @@ interface ToastMessageState {
 }
 
 class ToastMessageExample extends React.PureComponent<ToastMessageProps, ToastMessageState> {
-  public constructor(props: ToastMessageProps) {
-    super(props);
-
-    this.state = {
-      stage: Stage.Visible,
-    };
-  }
+  public readonly state = {
+    stage: Stage.Visible,
+  };
 
   public render() {
     return (
@@ -495,13 +491,9 @@ interface StatusZoneExampleState {
 class StatusZoneExample extends React.PureComponent<StatusZoneExampleProps, StatusZoneExampleState> {
   private _footerMessages = React.createRef<MessageCenterIndicator>();
 
-  public constructor(props: StatusZoneExampleProps) {
-    super(props);
-
-    this.state = {
-      messageCenterTab: MessageCenterActiveTab.AllMessages,
-    };
-  }
+  public readonly state = {
+    messageCenterTab: MessageCenterActiveTab.AllMessages,
+  };
 
   public render() {
     return (
@@ -1116,6 +1108,14 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
   private _tooltipSize: SizeProps = new Size();
   private _mousePosition: PointProps = new Point();
 
+  public readonly state = {
+    tooltipPosition: {
+      x: 0,
+      y: 0,
+    },
+    temporaryMessageStyle: {},
+  };
+
   public componentDidMount(): void {
     this._temporaryMessageTimer.setOnExecute(this.props.onMessageHidden);
 
@@ -1137,18 +1137,6 @@ class TooltipExample extends React.PureComponent<TooltipExampleProps, TooltipExa
         },
       }));
     }
-  }
-
-  public constructor(props: TooltipExampleProps) {
-    super(props);
-
-    this.state = {
-      tooltipPosition: {
-        x: 0,
-        y: 0,
-      },
-      temporaryMessageStyle: {},
-    };
   }
 
   public render() {
@@ -2182,43 +2170,41 @@ export default class ZonesExample extends React.PureComponent<{}, State> {
   private _scheduleWidgetTabDrag: ScheduleFn<WidgetTabDragFn>;
   private _scheduleZoneResize: ScheduleFn<ZoneResizeFn>;
 
-  public readonly state: Readonly<State>;
+  public readonly state = {
+    isNestedPopoverOpen: false,
+    isPopoverOpen: false,
+    isTemporaryMessageVisible: 0,
+    isTooltipVisible: false,
+    message: Message.None,
+    nineZone: DefaultStateManager.mergeZone(9, 6,
+      DefaultStateManager.setAllowsMerging(4, false,
+        getDefaultNineZoneProps(),
+      ),
+    ),
+    openWidget: FooterWidget.None,
+    themeContext: {
+      theme: PrimaryTheme,
+      change: (theme: Theme) => {
+        this.setState((prevProps) => {
+          return {
+            themeContext: {
+              ...prevProps.themeContext,
+              theme,
+            },
+          };
+        });
+      },
+    },
+    toastMessageKey: 0,
+    tools: zoneTools,
+    toolSettingsWidget: ToolSettingsWidgetMode.Open,
+  };
 
   public constructor(p: {}) {
     super(p);
 
     this._scheduleWidgetTabDrag = rafSchedule(this._handleWidgetTabDrag);
     this._scheduleZoneResize = rafSchedule(this._handleZoneResize);
-
-    const nineZone =
-      DefaultStateManager.mergeZone(9, 6,
-        DefaultStateManager.setAllowsMerging(4, false,
-          getDefaultNineZoneProps(),
-        ),
-      );
-
-    this.state = {
-      isTemporaryMessageVisible: 0,
-      toastMessageKey: 0,
-      nineZone,
-      openWidget: FooterWidget.None,
-      toolSettingsWidget: ToolSettingsWidgetMode.Open,
-      message: Message.None,
-      tools: zoneTools,
-      themeContext: {
-        theme: PrimaryTheme,
-        change: (theme: Theme) => {
-          this.setState((prevProps) => {
-            return {
-              themeContext: {
-                ...prevProps.themeContext,
-                theme,
-              },
-            };
-          });
-        },
-      },
-    };
   }
 
   public componentDidMount(): void {

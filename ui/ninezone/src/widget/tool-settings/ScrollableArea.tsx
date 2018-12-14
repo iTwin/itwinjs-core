@@ -31,14 +31,10 @@ export class ScrollableArea extends React.PureComponent<ScrollableAreaProps, Scr
   public static readonly INDICATOR_HEIGHT = 20;
   private _content = React.createRef<HTMLDivElement>();
 
-  public constructor(props: Readonly<ScrollableAreaProps>) {
-    super(props);
-
-    this.state = {
-      isScrollBottomIndicatorVisible: false,
-      isScrollTopIndicatorVisible: false,
-    };
-  }
+  public readonly state = {
+    isScrollBottomIndicatorVisible: false,
+    isScrollTopIndicatorVisible: false,
+  };
 
   public componentDidMount() {
     this._updateScrollIndicatorVisibility();
