@@ -774,8 +774,6 @@ export class Tree extends React.Component<TreeProps, TreeState> {
       node.payload ?
         <TreeNode
           key={node.id}
-          // checkboxState={node.payload.checkBoxState}
-          // isCheckboxEnabled={node.payload.isCheckboxEnabled}
           {...props}
         /> :
         <div />

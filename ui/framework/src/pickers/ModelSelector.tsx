@@ -149,12 +149,17 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this.updateState(); // tslint:disable-line:no-floating-promises
   }
 
-  /** Adds listeners */
+  /** Iinitialize listeners and category/model rulesets */
   public componentDidMount() {
     this._isMounted = true;
+    this._initModelState();
+    this._initCategoryState();
 
     this._removeSelectedViewportChanged = IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
+  }
 
+  /** Initializes default state of model tab */
+  private _initModelState = () => {
     Presentation.presentation.rulesets().add(require("../../rulesets/Models")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
@@ -176,7 +181,10 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         // tslint:disable:no-floating-promises
         this._onSetEnableAll(true);
       });
+  }
 
+  /** Initializes default state of category tab */
+  private _initCategoryState = () => {
     Presentation.presentation.rulesets().add(require("../../rulesets/Categories")) // tslint:disable-line:no-floating-promises
       .then((ruleset: RegisteredRuleset) => {
         if (!this._isMounted)
@@ -198,28 +206,47 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       this._removeSelectedViewportChanged();
   }
 
-  /** Initializes category & model groups */
+  /** Initializes category/model groups and contents */
   private _initGroups() {
     this._groups = [];
-    this._groups.push({
+    this._groups.push(this._getDefaultModelGroup());
+    this._groups.push(this._getDefaultCategoryGroup());
+  }
+
+  /**
+   * Creates initial model group
+   * @returns Initialized model group
+   */
+  private _getDefaultModelGroup = () => {
+    return {
       id: "Models",
       label: UiFramework.i18n.translate("UiFramework:categoriesModels.models"),
       items: [],
       initialized: false,
       updateState: this.updateModelsState.bind(this),
       setEnabled: this._onModelChecked,
-    });
-    this._groups.push({
+    };
+  }
+
+  /**
+   * Creates initial category group
+   * @returns Initialized category group
+   */
+  private _getDefaultCategoryGroup = () => {
+    return {
       id: "Categories",
       label: UiFramework.i18n.translate("UiFramework:categoriesModels.categories"),
       items: [],
       initialized: false,
       updateState: this.updateCategoriesState.bind(this),
       setEnabled: this._onCategoryChecked,
-    });
+    };
   }
 
-  /** Update viewed models on selected viewport changed */
+  /**
+   * Update viewed models on selected viewport changed
+   * @param args Arguments for selected viewport changed
+   */
   private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
     if (args.current) {
       this._initGroups();
@@ -227,7 +254,10 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     }
   }
 
-  /** expand the selected group */
+  /**
+   * Expand the selected group
+   * @param group ModelGroup to expand.
+   */
   private _onExpand = (group: ModelGroup) => {
     const activeRuleset = this._getActiveRuleset(group);
     if (!activeRuleset)
@@ -237,6 +267,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this._setInitialExpandedState(group);
   }
 
+  /**
+   * Determines active ruleset based on provided group.
+   * @param group Newly set active group.
+   * @returns Ruleset associated with newly set active group.
+   */
   private _getActiveRuleset = (group: ModelGroup): RegisteredRuleset | undefined => {
     if (group.label === UiFramework.i18n.translate("UiFramework:categoriesModels.models"))
       return this._modelRuleset;
@@ -246,6 +281,10 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       return this._modelRuleset;
   }
 
+  /**
+   * Sets provided ruleset as new ruleset for tree.
+   * @param activeRuleset Ruleset to provide to tree.
+   */
   private _setActiveRuleset = (activeRuleset: RegisteredRuleset) => {
     this.setState({
       treeInfo: {
@@ -254,12 +293,15 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         dataProvider: new ModelSelectorDataProvider(this.props.iModelConnection, activeRuleset.id),
       },
     });
-
   }
 
+  /**
+   * Sets initial state as tab expands
+   * @param group ModelGroup to initialize state on
+   */
   private _setInitialExpandedState = async (group: ModelGroup) => {
     if (this.state.treeInfo) {
-      const selectedNodes = await this._manageSelectedNodes(group);
+      const selectedNodes = await this._selectEnabledItems(group.items);
 
       this.setState({
         treeInfo: {
@@ -272,9 +314,15 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     }
   }
 
-  private _manageSelectedNodes = async (group: ModelGroup) => {
+  /**
+   * Sets checkbox and selection states of node based on
+   * enable state of associated items.
+   * @param items Items to set selection for if enabled
+   * @returns Nodes that have been selected
+   */
+  private _selectEnabledItems = async (items: ListItem[]) => {
     const selectedNodes = Array<string>();
-    for (const item of group.items) {
+    for (const item of items) {
       const node = await this._getNodeFromItem(item);
       if (node && item.enabled) {
         selectedNodes.push(node.id);
@@ -284,15 +332,32 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     return selectedNodes;
   }
 
-  /** enable or disable all items */
-  private _onSetEnableAll = async (enable: boolean) => {
+  /**
+   * Enable or disable all items and nodes
+   * @param enable Specifies if items and nodes should be enabled or disabled
+   */
+  private _onSetEnableAll = (enable: boolean) => {
+    this._setEnableAllItems(enable);
+    this._setEnableAllNodes(enable);
+  }
+
+  /**
+   * Enable or disable all items
+   * @param enable Specifies if items should be enabled or disabled
+   */
+  private _setEnableAllItems = (enable: boolean) => {
     for (const item of this.state.activeGroup.items) {
       item.enabled = enable;
       this.state.activeGroup.setEnabled(item, enable);
     }
-
     this.state.activeGroup.updateState();
+  }
 
+  /**
+   * Enable or disable all nodes
+   * @param enable Specifies if nodes should be enabled or disabled
+   */
+  private _setEnableAllNodes = async (enable: boolean) => {
     const nodes: TreeNodeItem[] = await this.state.treeInfo!.dataProvider.getNodes();
     for (const node of nodes) {
       enable ? this._selectLabel(node) : this._deselectLabel(node);
@@ -306,14 +371,23 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
   }
 
+  /** Invert display on all items and state of all nodes */
+  private _onInvertAll = () => {
+    this._invertEnableOnAllItems();
+    this._invertEnableOnAllNodes();
+  }
+
   /** Invert display on all items */
-  private _onInvertAll = async () => {
+  private _invertEnableOnAllItems = () => {
     for (const item of this.state.activeGroup.items) {
       this.state.activeGroup.setEnabled(item, !item.enabled);
       item.enabled = !item.enabled;
     }
     this.state.activeGroup.updateState();
+  }
 
+  /** Invert state of all nodes */
+  private _invertEnableOnAllNodes = async () => {
     const nodes: TreeNodeItem[] = await this.state.treeInfo!.dataProvider.getNodes();
     for (const node of nodes) {
       node.checkBoxState === CheckBoxState.On ? this._deselectLabel(node) : this._selectLabel(node);
@@ -384,6 +458,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this.forceUpdate();
   }
 
+  /** Modify viewport to display checked models */
   private _onModelChecked = (item: ListItem, checked: boolean) => {
     if (!IModelApp.viewManager)
       return;
@@ -401,6 +476,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
   }
 
+  /** Modify viewport to display checked categories */
   private _onCategoryChecked = (item: ListItem, checked: boolean) => {
     if (!IModelApp.viewManager || !IModelApp.viewManager.selectedView)
       return;
@@ -466,6 +542,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         },
       });
   }
+
   private _onFilterStart = (filter: string) => {
     if (!this.state.treeInfo)
       return;
@@ -527,29 +604,36 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
   }
 
+  /** Set item state for selected node */
   private _onNodeSelected = (items: TreeNodeItem[]) => {
     items.forEach((item: TreeNodeItem) => {
-      item.checkBoxState = CheckBoxState.On;
       this._setItemState(item, true);
+      item.checkBoxState = CheckBoxState.On;
     });
     return true;
   }
 
+  /** Set item state for deselected node */
   private _onNodesDeselected = (items: TreeNodeItem[]) => {
     items.forEach((item: TreeNodeItem) => {
-      item.checkBoxState = CheckBoxState.Off;
       this._setItemState(item, false);
+      item.checkBoxState = CheckBoxState.Off;
     });
     return true;
   }
 
-  /** enable or disable a single item */
+  /** Enable or disable a single item */
   private _onCheckboxClick = (node: TreeNodeItem) => {
     this._setItemState(node);
   }
 
-  private _setItemState = (treeItem: TreeNodeItem, enabled?: boolean) => {
-    if (enabled || treeItem.checkBoxState === CheckBoxState.On)
+  /**
+   * Set item and node state after input change
+   * @param treeItem Item to set state on
+   * @param enable Flag to enable or disable item, determined by checkBoxState if not specified
+   */
+  private _setItemState = (treeItem: TreeNodeItem, enable?: boolean) => {
+    if (enable || treeItem.checkBoxState === CheckBoxState.On)
       this._setItemStateOn(treeItem);
     else
       this._setItemStateOff(treeItem);
@@ -557,30 +641,38 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this.setState({ activeGroup: this.state.activeGroup });
   }
 
-  private _setItemStateOn = async (treeItem: TreeNodeItem) => {
-    const item = this._getItem(treeItem.label);
-    this._selectLabel(treeItem);
-    this.state.activeGroup.setEnabled(item, true);
+  private _setItemStateOn = (treeItem: TreeNodeItem) => {
+    this._setEnableItem(treeItem, true);
+    this._setEnableNode(treeItem, true);
+    this._setEnableChildren(treeItem, true);
 
-    const childNodes = await this.state.treeInfo!.dataProvider.getNodes(treeItem);
-    for (const child of childNodes) {
-      this._selectLabel(child);
-    }
-
-    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(childNodes);
+    const nodes = this.state.treeInfo!.dataProvider.getNodes();
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(nodes);
   }
 
   private _setItemStateOff = async (treeItem: TreeNodeItem) => {
-    const item = this._getItem(treeItem.label);
-    this._deselectLabel(treeItem);
-    this.state.activeGroup.setEnabled(item, false);
+    this._setEnableItem(treeItem, false);
+    this._setEnableNode(treeItem, false);
+    this._setEnableChildren(treeItem, false);
 
+    const nodes = this.state.treeInfo!.dataProvider.getNodes();
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(nodes);
+  }
+
+  private _setEnableItem = (treeItem: TreeNodeItem, enable: boolean) => {
+    const item = this._getItem(treeItem.label);
+    this.state.activeGroup.setEnabled(item, enable);
+  }
+
+  private _setEnableNode = (treeItem: TreeNodeItem, enable: boolean) => {
+    enable ? this._selectLabel(treeItem) : this._deselectLabel(treeItem);
+  }
+
+  private _setEnableChildren = async (treeItem: TreeNodeItem, enable: boolean) => {
     const childNodes = await this.state.treeInfo!.dataProvider.getNodes(treeItem);
     for (const child of childNodes) {
-      this._deselectLabel(child);
+      enable ? this._selectLabel(child) : this._deselectLabel(child);
     }
-
-    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(childNodes);
   }
 
   private _selectLabel = (treeItem: TreeNodeItem) => {
