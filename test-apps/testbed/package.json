@@ -14,7 +14,7 @@
     "lint": "tslint --project . 1>&2",
     "webpack:frontend": "webpack --config webpack.config.js 1>&2",
     "test": "node bin/testbed.js --grep \"#integration|#WebGLPerformance\" --invert",
-    "test-integration": "node bin/testbed.js --grep #integration",
+    "test-integration": "node bin/testbed.js --grep \"#integration\"",
     "test:debug": "node bin/testbed.js --debug --grep \"#integration|#WebGLPerformance\" --invert"
   },
   "repository": {},
