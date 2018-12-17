@@ -743,7 +743,7 @@ class ViewPan extends ViewingToolHandle {
     this._anchorPt.setFrom(ev.rawPoint);
 
     // if the camera is on, we need to find the element under the starting point to get the z
-    if (CoordSource.User === ev.coordsFrom && vp.isCameraOn) {
+    if (vp.isCameraOn) {
       const visiblePoint = vp.pickNearestVisibleGeometry(this._anchorPt, vp.pixelsFromInches(ToolSettings.viewToolPickRadiusInches));
       if (undefined !== visiblePoint) {
         this._anchorPt.setFrom(visiblePoint);

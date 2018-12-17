@@ -991,48 +991,64 @@ export class MeasureDistanceTool extends PrimitiveTool {
   }
 
   public decorate(context: DecorateContext): void {
-    if (this.segments.length < 1)
-      return;
+    if (this.points.length > 0) {
+      const tmpPoints = this.points.slice(); // Deep copy not necessary...
+      const ev = new BeButtonEvent();
+      IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+      tmpPoints.push(ev.point.clone());
 
-    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+      const builder1 = context.createGraphicBuilder(GraphicType.WorldDecoration);
+      const builder2 = context.createGraphicBuilder(GraphicType.WorldOverlay);
 
-    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 2);
+      builder1.setSymbology(context.viewport.hilite.color, ColorDef.black, 3);
+      builder2.setSymbology(context.viewport.hilite.color, ColorDef.black, 1, LinePixels.Code5);
 
-    for (const segment of this.segments)
-      builder.addLineString([segment.point0Ref, segment.point1Ref]);
+      builder1.addLineString(tmpPoints);
+      builder2.addLineString(tmpPoints);
 
-    context.addDecorationFromBuilder(builder);
+      context.addDecorationFromBuilder(builder1);
+      context.addDecorationFromBuilder(builder2);
+    }
+
+    if (this.segments.length > 0) {
+      const builder3 = context.createGraphicBuilder(GraphicType.WorldDecoration);
+      const builder4 = context.createGraphicBuilder(GraphicType.WorldOverlay);
+
+      builder3.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 3);
+      builder4.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.Code5);
+
+      for (const segment of this.segments) {
+        builder3.addLineString([segment.point0Ref, segment.point1Ref]);
+        builder4.addLineString([segment.point0Ref, segment.point1Ref]);
+      }
+
+      builder4.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 8);
+
+      for (const segment of this.segments)
+        builder4.addPointString([segment.point0Ref, segment.point1Ref]);
+
+      context.addDecorationFromBuilder(builder3);
+      context.addDecorationFromBuilder(builder4);
+    }
   }
 
   public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
 
-  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
-    if (this.points.length < 1)
-      return;
-
-    const tmpPoints = this.points.slice(); // Deep copy not necessary...
-    tmpPoints.push(ev.point.clone());
-
-    const builder = context.createSceneGraphicBuilder();
-
-    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 2);
-    builder.addLineString(tmpPoints);
-
-    context.addGraphic(builder.finish());
-  }
+  public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this.points.length > 0 && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     this.points.push(ev.point.clone());
     this.setupAndPromptForNextAction();
 
     if (this.points.length < 2) {
-      if (!this.isDynamicsStarted)
-        this.beginDynamics();
+      IModelApp.toolAdmin.setCursor(IModelApp.viewManager.dynamicsCursor);
     } else if (!ev.isControlKey) {
       for (let i = 0; i < this.points.length - 1; i++)
         this.segments.push(LineSegment3d.create(this.points[i], this.points[i + 1]));
       this.points.length = 0;
-      this.endDynamics();
+      IModelApp.toolAdmin.setCursor(IModelApp.viewManager.crossHairCursor);
+      if (undefined !== ev.viewport)
+        ev.viewport.invalidateDecorations();
     }
 
     return EventHandled.No;
@@ -1067,8 +1083,8 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (0 === this.points.length && 0 === this.segments.length) {
       this.onReinitialize();
     } else {
-      if (0 === this.points.length && this.isDynamicsStarted)
-        this.endDynamics();
+      if (0 === this.points.length)
+        IModelApp.toolAdmin.setCursor(IModelApp.viewManager.crossHairCursor);
       this.setupAndPromptForNextAction();
     }
     return true;

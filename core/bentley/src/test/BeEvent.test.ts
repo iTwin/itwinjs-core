@@ -270,6 +270,19 @@ describe("BeEvent tests", () => {
       expect(resultNr, "resultNr should be 0.").to.equal(0);
     });
 
+    it("Drop removed listeners only.", () => {
+      const fnOnce = () => { };
+      const fn = () => { };
+      const dispatcher = new BeEvent<DummyListener>();
+      dispatcher.addOnce(fnOnce);
+      dispatcher.addListener(fn);
+      dispatcher.raiseEvent();
+      const hasFn = dispatcher.has(fn);
+      const hasOnceFn = dispatcher.has(fnOnce);
+      expect(hasFn, "Handler should be present because it was not dropped.").to.equal(true);
+      expect(hasOnceFn, "Handler should not be present because it was dropped.").to.equal(false);
+    });
+
   });
 
   describe("BeEventList", () => {

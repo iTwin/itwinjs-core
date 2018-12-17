@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix issue where all event listeners are removed.",
+      "packageName": "@bentley/bentleyjs-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "gerardas.butkevicius@bentley.com"
+}
