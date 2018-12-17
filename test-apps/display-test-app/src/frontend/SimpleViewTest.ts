@@ -779,12 +779,55 @@ function updateRenderModeOptionsMap() {
   (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.renderMode);
 }
 
-// ###TODO: This is strictly for demo purposes - need to integrate AO setting(s) into ViewFlags...
-function setAmbientOcclusionEnabled(enabled: boolean) {
+function updateAmbientOcclusionUI() {
   const vp = theViewport;
   const target = undefined !== vp ? vp.target as Target : undefined;
   if (undefined !== target) {
-    target.ambientOcclusionEnabled = enabled;
+    const ao = document.getElementById("ambientOcclusion")! as HTMLInputElement;
+    const aoZLengthCap = document.getElementById("aoZLengthCap") as HTMLInputElement;
+    const aoBias = document.getElementById("aoBias") as HTMLInputElement;
+    const aoIntensity = document.getElementById("aoIntensity") as HTMLInputElement;
+    const aoTexelStepSize = document.getElementById("aoTexelStepSize") as HTMLInputElement;
+    const aoBlurDelta = document.getElementById("aoBlurDelta") as HTMLInputElement;
+    const aoBlurSigma = document.getElementById("aoBlurSigma") as HTMLInputElement;
+    const aoBlurTexelStepSize = document.getElementById("aoBlurTexelStepSize") as HTMLInputElement;
+
+    ao.checked = target.ambientOcclusionParams.isEnabled;
+    aoZLengthCap.value = target.ambientOcclusionParams.zLengthCap.toString();
+    aoBias.value = target.ambientOcclusionParams.bias.toString();
+    aoIntensity.value = target.ambientOcclusionParams.intensity.toString();
+    aoTexelStepSize.value = target.ambientOcclusionParams.texelStepSize.toString();
+    aoBlurDelta.value = target.ambientOcclusionParams.blurDelta.toString();
+    aoBlurSigma.value = target.ambientOcclusionParams.blurSigma.toString();
+    aoBlurTexelStepSize.value = target.ambientOcclusionParams.blurTexelStepSize.toString();
+  }
+}
+
+// ###TODO: This is strictly for demo purposes - need to integrate AO setting(s) into ViewFlags...
+function resetAmbientOcclusion(enabled: boolean) {
+  const vp = theViewport;
+  const target = undefined !== vp ? vp.target as Target : undefined;
+  if (undefined !== target) {
+    target.ambientOcclusionParams.reset();
+    target.ambientOcclusionParams.isEnabled = enabled; // maintain the previous 'enabled' status
+    updateAmbientOcclusionUI();
+    vp!.sync.invalidateRenderPlan();
+  }
+}
+
+// ###TODO: This is strictly for demo purposes - need to integrate AO setting(s) into ViewFlags...
+function setAmbientOcclusion(enabled: boolean, zLengthCap: number, bias: number, intensity: number, texelStepSize: number, blurDelta: number, blurSigma: number, blurTexelStepSize: number) {
+  const vp = theViewport;
+  const target = undefined !== vp ? vp.target as Target : undefined;
+  if (undefined !== target) {
+    target.ambientOcclusionParams.isEnabled = enabled;
+    target.ambientOcclusionParams.zLengthCap = zLengthCap;
+    target.ambientOcclusionParams.bias = bias;
+    target.ambientOcclusionParams.intensity = intensity;
+    target.ambientOcclusionParams.texelStepSize = texelStepSize;
+    target.ambientOcclusionParams.blurDelta = blurDelta;
+    target.ambientOcclusionParams.blurSigma = blurSigma;
+    target.ambientOcclusionParams.blurTexelStepSize = blurTexelStepSize;
     vp!.sync.invalidateRenderPlan();
   }
 }
@@ -800,8 +843,11 @@ async function openView(state: SimpleViewState) {
   theViewport.addFeatureOverrides = addFeatureOverrides;
   theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
   theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
-  setAmbientOcclusionEnabled((document.getElementById("ambientOcclusion")! as HTMLInputElement).checked);
+
   IModelApp.viewManager.addViewport(theViewport);
+
+  resetAmbientOcclusion(false); // ambient occlusion defaults off for now
+  // ###TODO - retrieve ambient occlusion settings from view itself
 }
 
 async function _changeView(view: ViewState) {
@@ -1688,7 +1734,31 @@ function wireIconsToFunctions() {
   boundingBoxes.addEventListener("click", () => theViewport!.wantTileBoundingBoxes = boundingBoxes.checked);
 
   const ao = document.getElementById("ambientOcclusion")! as HTMLInputElement;
-  ao.addEventListener("click", () => setAmbientOcclusionEnabled(ao.checked));
+  const aoZLengthCap = document.getElementById("aoZLengthCap") as HTMLInputElement;
+  const aoBias = document.getElementById("aoBias") as HTMLInputElement;
+  const aoIntensity = document.getElementById("aoIntensity") as HTMLInputElement;
+  const aoTexelStepSize = document.getElementById("aoTexelStepSize") as HTMLInputElement;
+  const aoBlurDelta = document.getElementById("aoBlurDelta") as HTMLInputElement;
+  const aoBlurSigma = document.getElementById("aoBlurSigma") as HTMLInputElement;
+  const aoBlurTexelStepSize = document.getElementById("aoBlurTexelStepSize") as HTMLInputElement;
+
+  ao.addEventListener("click", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
+
+  aoZLengthCap.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
+
+  aoBias.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
+
+  aoIntensity.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
+
+  aoTexelStepSize.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
+
+  aoBlurDelta.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
+
+  aoBlurSigma.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
+
+  aoBlurTexelStepSize.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
+
+  document.getElementById("resetAmbientOcclusion")!.addEventListener("click", () => resetAmbientOcclusion(ao.checked));
 
   document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
   document.getElementById("mapProviderList")!.addEventListener("change", () => changeBackgroundMapState());

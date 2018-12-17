@@ -38,7 +38,7 @@ const computeAmbientOcclusion = `
   float bias = u_hbaoSettings.x; // Represents an angle in radians. If the dot product between the normal of the sample and the vector to the camera is less than this value, sampling stops in the current direction. This is used to remove shadows from near planar edges.
   float zLengthCap = u_hbaoSettings.y; // If the distance in linear Z from the current sample to first sample is greater than this value, sampling stops in the current direction.
   float intensity = u_hbaoSettings.z; // Raise the final occlusion to the power of this value.  Larger values make the ambient shadows darker.
-  float texelStepSize = u_hbaoSettings.w; // texelStepSize indicates the distance to the next texel sample in the current direction.
+  float texelStepSize = u_hbaoSettings.w; // Indicates the distance to step toward the next texel sample in the current direction.
 
   float tOcclusion = 0.0;
 
@@ -76,7 +76,7 @@ const computeAmbientOcclusion = `
           dotVal = 0.0;
       }
 
-      curOcclusion = max(curOcclusion, dotVal) * weight;
+      curOcclusion = max(curOcclusion, dotVal * weight);
       curStepSize += texelStepSize;
     }
     tOcclusion += curOcclusion;
@@ -183,10 +183,13 @@ export function createAmbientOcclusionProgram(context: WebGLRenderingContext): S
   });
 
   frag.addUniform("u_hbaoSettings", VariableType.Vec4, (prog) => {
-    prog.addProgramUniform("u_hbaoSettings", (uniform, _params) => {
-      const hbaoSettings = new Float32Array([0.25, 0.0025, 3.0, 1.0]);
-      uniform.setUniform4fv(hbaoSettings); // x = bias, y = zLengthCap, z = intensity, w = texelStepSize
-      // ###TODO: Actually retrieve HBAO settings from params.
+    prog.addProgramUniform("u_hbaoSettings", (uniform, params) => {
+      const hbaoSettings = new Float32Array([
+        params.target.ambientOcclusionParams.bias,
+        params.target.ambientOcclusionParams.zLengthCap,
+        params.target.ambientOcclusionParams.intensity,
+        params.target.ambientOcclusionParams.texelStepSize]);
+      uniform.setUniform4fv(hbaoSettings);
     });
   }, VariablePrecision.High);
 
