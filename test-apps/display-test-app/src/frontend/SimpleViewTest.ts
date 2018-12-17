@@ -1674,11 +1674,11 @@ function updateTileLoadIndicator(progress: HTMLProgressElement): void {
   let pctComplete = 1.0;
   let title = "";
   let color = "#00ff00";
-  const requested = undefined !== theViewport ? theViewport.numRequestedTiles : 0;
-  if (undefined !== theViewport && requested > 0) {
+  if (undefined !== theViewport) {
+    const requested = undefined !== theViewport ? theViewport.numRequestedTiles : 0;
     const selected = theViewport.numSelectedTiles;
     const total = selected + requested;
-    pctComplete = selected / total;
+    pctComplete = (total > 0) ? (selected / total) : 1.0;
     title = "" + selected + " / " + total + " (" + requested + ")";
     color = "#007fff";
   }

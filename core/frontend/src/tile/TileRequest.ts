@@ -109,7 +109,14 @@ class Request extends TileRequest {
 
   public async dispatch(): Promise<void> {
     try {
+      if (this.isCanceled)
+        return Promise.resolve();
+
+      this._state = TileRequest.State.Dispatched;
       const response = await this.loader.requestTileContent(this.tile);
+      if (this.isCanceled)
+        return Promise.resolve();
+
       return this.handleResponse(response);
     } catch (_err) {
       this.setFailed();
@@ -118,6 +125,9 @@ class Request extends TileRequest {
   }
 
   public cancel(scheduler: RequestScheduler): void {
+    if (this.isCanceled)
+      return;
+
     this._state = TileRequest.State.Failed;
     this.tile.request = undefined;
     this.viewports = scheduler.emptyViewportSet;
@@ -155,6 +165,9 @@ class Request extends TileRequest {
 
     try {
       const graphic = await this.loader.loadTileGraphic(this.tile, data);
+      if (this.isCanceled)
+          return Promise.resolve();
+
       this._state = TileRequest.State.Completed;
       this.tile.setGraphic(graphic.renderGraphic, graphic.isLeaf, graphic.contentRange, graphic.sizeMultiplier);
       this.notifyAndClear();
@@ -271,7 +284,7 @@ class RequestScheduler implements TileRequest.Scheduler {
   private _swapPendingRequests = new Queue();
 
   public constructor(options?: TileRequest.SchedulerOptions) {
-    let throttle = false;
+    let throttle = true; // false;
     let maxActiveRequests = 10; // ###TODO for now we don't want the throttling behavior.
     if (undefined !== options) {
       if (undefined !== options.maxActiveRequests) {
@@ -296,7 +309,7 @@ class RequestScheduler implements TileRequest.Scheduler {
 
   public process(): void {
     // Mark all requests as being associated with no Viewports, indicating they are no longer needed.
-    this._uniqueViewportSets.clearAll()
+    this._uniqueViewportSets.clearAll();
 
     // Process all requests, enqueueing on new queue.
     const previouslyPending = this._pendingRequests;
@@ -354,7 +367,11 @@ class RequestScheduler implements TileRequest.Scheduler {
         const req = Request.getForTile(tile);
         assert(undefined !== req);
         if (undefined !== req) {
+          if (0 === req.viewports.length)
+            this._pendingRequests.push(req);
+
           req.addViewport(vp);
+          assert(0 < req.viewports.length);
         }
       }
     }
@@ -397,7 +414,7 @@ class RequestScheduler implements TileRequest.Scheduler {
   }
 
   private dropActiveRequest(req: Request) {
-    assert(this._activeRequests.has(req));
+    assert(this._activeRequests.has(req) || req.isCanceled);
     this._activeRequests.delete(req);
   }
 
