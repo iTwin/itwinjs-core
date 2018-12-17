@@ -798,7 +798,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
                     onNodesSelected={this._onNodeSelected}
                     onNodesDeselected={this._onNodesDeselected}
                     onCheckboxClick={this._onCheckboxClick}
-                    checkboxesEnabled={true}
                   /> :
                   <div />
               }

@@ -149,7 +149,6 @@ export interface TreeProps {
   ignoreEditorBlur?: boolean;
 
   onCheckboxClick?: (node: TreeNodeItem) => void;
-  checkboxesEnabled?: true;
 
   /** Custom property value renderer manager */
   propertyValueRendererManager?: PropertyValueRendererManager;
@@ -764,19 +763,17 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>) => {
-    if (this.props.onCheckboxClick && node.payload)
-      this.props.onCheckboxClick(node.payload);
+    if (this.props.onCheckboxClick)
+      this.props.onCheckboxClick(node.payload!);
   }
 
   // tslint:disable-next-line:naming-convention
   private renderNode = (node: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps): React.ReactNode => {
     return (
-      node.payload ?
-        <TreeNode
-          key={node.id}
-          {...props}
-        /> :
-        <div />
+      <TreeNode
+        key={node.id}
+        {...props}
+      />
     );
   }
 
