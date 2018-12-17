@@ -19,10 +19,8 @@ describe("MergedPropertyValueRenderer", () => {
       const renderer = new MergedPropertyValueRenderer();
       const property = TestUtils.createPrimitiveStringProperty("a", "b");
       property.isMerged = true;
-
-      const element = await renderer.render(property);
+      const element = renderer.render(property);
       const elementMount = mount(<div>{element}</div>);
-
       expect(elementMount.text()).to.be.eq(UiComponents.i18n.translate("UiComponents:property.varies"));
     });
   });

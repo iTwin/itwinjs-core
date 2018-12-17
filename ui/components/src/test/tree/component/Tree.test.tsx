@@ -865,7 +865,7 @@ describe("Tree", () => {
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(2);
 
       // expand node 0
-      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy);
+      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy, 2);
       expect(getExpandedNodes().length).to.eq(1);
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
 
@@ -879,7 +879,7 @@ describe("Tree", () => {
       await waitForUpdate(() => renderedTree = render(<Tree {...defaultExpandCollapseProps} onNodeExpanded={callbackMock.object} />), renderSpy, 2);
 
       // expand node 0
-      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy);
+      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy, 2);
 
       const nodeItem = (await dataProvider())[0];
       callbackMock.verify((x) => x(nodeItem), moq.Times.once());

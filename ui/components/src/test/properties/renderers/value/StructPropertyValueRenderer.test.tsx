@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect, assert } from "chai";
+import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
@@ -17,41 +17,41 @@ describe("StructPropertyValueRenderer", () => {
   });
 
   describe("render", () => {
-    it("renders struct property", async () => {
+    it("renders struct property", () => {
       const renderer = new StructPropertyValueRenderer();
       const structProperty = TestUtils.createStructProperty("NameStruct");
 
-      const element = await renderer.render(structProperty);
+      const element = renderer.render(structProperty);
       const elementMount = mount(<div>{element}</div>);
 
       expect(elementMount.text()).to.be.eq("{struct}");
     });
 
-    it("renders default way when provided with empty context", async () => {
+    it("renders default way when provided with empty context", () => {
       const renderer = new StructPropertyValueRenderer();
       const structProperty = TestUtils.createStructProperty("NameStruct");
 
-      const element = await renderer.render(structProperty, {});
+      const element = renderer.render(structProperty, {});
       const elementMount = mount(<div>{element}</div>);
 
       expect(elementMount.text()).to.be.eq("{struct}");
     });
 
-    it("renders struct with Table renderer if container type is Table", async () => {
+    it("renders struct with Table renderer if container type is Table", () => {
       const renderer = new StructPropertyValueRenderer();
       const structProperty = TestUtils.createStructProperty("NameStruct");
 
-      const element = await renderer.render(structProperty, { containerType: PropertyContainerType.Table, orientation: Orientation.Vertical });
+      const element = renderer.render(structProperty, { containerType: PropertyContainerType.Table, orientation: Orientation.Vertical });
       const elementMount = mount(<div>{element}</div>);
 
       expect(elementMount.find(TableNonPrimitiveValueRenderer).exists()).to.be.true;
     });
 
-    it("defaults to horizontal orientation when rendering for a table without specified orientation", async () => {
+    it("defaults to horizontal orientation when rendering for a table without specified orientation", () => {
       const renderer = new StructPropertyValueRenderer();
       const structProperty = TestUtils.createStructProperty("NameStruct");
 
-      const element = await renderer.render(structProperty, { containerType: PropertyContainerType.Table });
+      const element = renderer.render(structProperty, { containerType: PropertyContainerType.Table });
       const elementMount = mount(<div>{element}</div>);
 
       const dialogContentsMount = mount(<div>{elementMount.find(TableNonPrimitiveValueRenderer).prop("dialogContents")}</div>);
@@ -59,13 +59,10 @@ describe("StructPropertyValueRenderer", () => {
       expect(dialogContentsMount.childAt(0).prop("orientation")).to.be.eq(Orientation.Horizontal);
     });
 
-    it("throws when trying to render primitive property", async () => {
+    it("throws when trying to render primitive property", () => {
       const renderer = new StructPropertyValueRenderer();
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
-
-      await renderer.render(stringProperty)
-        .then(() => { assert.fail(undefined, undefined, "Function did not throw"); })
-        .catch(async () => Promise.resolve());
+      expect(() => renderer.render(stringProperty)).to.throw;
     });
   });
 
@@ -73,7 +70,6 @@ describe("StructPropertyValueRenderer", () => {
     it("returns true for an struct property", () => {
       const renderer = new StructPropertyValueRenderer();
       const structProperty = TestUtils.createStructProperty("NameStruct");
-
       expect(renderer.canRender(structProperty)).to.be.true;
     });
 
@@ -81,7 +77,6 @@ describe("StructPropertyValueRenderer", () => {
       const renderer = new StructPropertyValueRenderer();
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
       const arrayProperty = TestUtils.createArrayProperty("LabelArray");
-
       expect(renderer.canRender(stringProperty)).to.be.false;
       expect(renderer.canRender(arrayProperty)).to.be.false;
     });

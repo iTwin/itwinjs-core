@@ -335,7 +335,10 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     }
 
     if (this.props.nodeHighlightingProps && shallowDiffers(this.props.nodeHighlightingProps, prevProps.nodeHighlightingProps)) {
-      this._shouldScrollToActiveNode = true;
+      if (this._nodesRenderInfo)
+        this._shouldScrollToActiveNode = true;
+      else
+        this.scrollToActiveNode();
     }
 
     if (this.state.model !== prevState.model) {
@@ -722,7 +725,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   // tslint:disable-next-line:naming-convention
-  private renderLabelComponent = async ({ node, highlightProps, cellEditorProps, valueRendererManager }: RenderNodeLabelProps): Promise<React.ReactNode> => {
+  private renderLabelComponent = ({ node, highlightProps, cellEditorProps, valueRendererManager }: RenderNodeLabelProps): React.ReactNode | Promise<React.ReactNode> => {
     const labelStyle: React.CSSProperties = {
       color: node.payload!.labelForeColor ? node.payload!.labelForeColor!.toString(16) : undefined,
       backgroundColor: node.payload!.labelBackColor ? node.payload!.labelBackColor!.toString(16) : undefined,
@@ -745,21 +748,20 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     }
 
     // handle filtered matches' highlighting
-    let element: React.ReactNode = node.text;
+    let labelElement: React.ReactNode = node.text;
     if (highlightProps)
-      element = HighlightingEngine.renderNodeLabel(node.text, highlightProps);
+      labelElement = HighlightingEngine.renderNodeLabel(node.text, highlightProps);
 
     // handle custom cell rendering
-    const context: PropertyValueRendererContext = { containerType: PropertyContainerType.Tree, decoratedTextElement: element };
+    const context: PropertyValueRendererContext = {
+      containerType: PropertyContainerType.Tree,
+      decoratedTextElement: labelElement,
+      style: labelStyle,
+    };
     const nodeRecord = this.nodeToPropertyRecord(node);
     if (!valueRendererManager)
       valueRendererManager = PropertyValueRendererManager.defaultManager;
-
-    return (
-      <span style={labelStyle}>
-        {await valueRendererManager.render(nodeRecord, context)}
-      </span>
-    );
+    return valueRendererManager.render(nodeRecord, context);
   }
 
   private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>) => {

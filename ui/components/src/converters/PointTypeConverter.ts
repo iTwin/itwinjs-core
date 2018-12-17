@@ -13,7 +13,7 @@ import * as ConvertedPrimitives from "./valuetypes/ConvertedTypes";
  * Point type converter.
  */
 export abstract class BasePointTypeConverter extends TypeConverter {
-  public async convertToString(value?: Primitives.Point): Promise<string> {
+  public convertToString(value?: Primitives.Point) {
     if (!value || !Array.isArray(value) || value.length === 0)
       return "";
     let stringValue: string = value[0].toString();
@@ -21,7 +21,7 @@ export abstract class BasePointTypeConverter extends TypeConverter {
       stringValue += ", " + value[i];
     return stringValue;
   }
-  public async convertFromString(value: string): Promise<ConvertedPrimitives.Point | undefined> {
+  public convertFromString(value: string) {
     return this.constructPoint(value.split(","));
   }
   protected abstract constructPoint(_values: string[]): ConvertedPrimitives.Point | undefined;

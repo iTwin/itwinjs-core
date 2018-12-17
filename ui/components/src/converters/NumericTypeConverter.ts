@@ -39,7 +39,7 @@ export abstract class NumericTypeConverterBase extends TypeConverter implements 
  * Float Type Converter.
  */
 export class FloatTypeConverter extends NumericTypeConverterBase {
-  public async convertToString(value?: Primitives.Float): Promise<string> {
+  public convertToString(value?: Primitives.Float) {
     if (value === undefined)
       return "";
 
@@ -52,7 +52,7 @@ export class FloatTypeConverter extends NumericTypeConverterBase {
     return stringValue;
   }
 
-  public async convertFromString(value: string): Promise<number> {
+  public convertFromString(value: string) {
     return parseFloat(value);
   }
 }
@@ -63,7 +63,7 @@ TypeConverterManager.registerConverter("double", FloatTypeConverter);
  * Int Type Converter.
  */
 export class IntTypeConverter extends NumericTypeConverterBase {
-  public async convertToString(value?: Primitives.Int): Promise<string> {
+  public convertToString(value?: Primitives.Int) {
     if (value === undefined)
       return "";
 
@@ -74,7 +74,7 @@ export class IntTypeConverter extends NumericTypeConverterBase {
     return stringValue;
   }
 
-  public async convertFromString(value: string): Promise<number> {
+  public convertFromString(value: string) {
     return parseInt(value, 10);
   }
 }

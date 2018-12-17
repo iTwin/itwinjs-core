@@ -19,18 +19,18 @@ describe("IntTypeConverter", () => {
   });
 
   describe("convertToString", () => {
-    it("returns correct strings", async () => {
-      expect(await converter.convertToString(100)).to.equal("100");
-      expect(await converter.convertToString("-")).to.equal("0");
+    it("returns correct strings", () => {
+      expect(converter.convertToString(100)).to.equal("100");
+      expect(converter.convertToString("-")).to.equal("0");
     });
 
-    it("returns empty string when value is undefined", async () => {
-      expect(await converter.convertToString(undefined)).to.be.eq("");
+    it("returns empty string when value is undefined", () => {
+      expect(converter.convertToString(undefined)).to.be.eq("");
     });
   });
 
-  it("convertFromString", async () => {
-    expect(await converter.convertFromString("100")).to.equal(100);
+  it("convertFromString", () => {
+    expect(converter.convertFromString("100")).to.equal(100);
   });
 
   it("sortCompare", () => {
@@ -85,19 +85,19 @@ describe("FloatTypeConverter", () => {
   });
 
   describe("convertToString", () => {
-    it("returns correct strings", async () => {
-      expect(await converter.convertToString(100.0)).to.equal("100.0");
-      expect(await converter.convertToString("-")).to.equal("0.0");
-      expect(await converter.convertToString(0)).to.equal("0.0");
+    it("returns correct strings", () => {
+      expect(converter.convertToString(100.0)).to.equal("100.0");
+      expect(converter.convertToString("-")).to.equal("0.0");
+      expect(converter.convertToString(0)).to.equal("0.0");
     });
 
-    it("returns empty string when value is undefined", async () => {
-      expect(await converter.convertToString(undefined)).to.be.eq("");
+    it("returns empty string when value is undefined", () => {
+      expect(converter.convertToString(undefined)).to.be.eq("");
     });
   });
 
-  it("convertFromString", async () => {
-    expect(await converter.convertFromString("100.0")).to.equal(100.0);
+  it("convertFromString", () => {
+    expect(converter.convertFromString("100.0")).to.equal(100.0);
   });
 
   it("sortCompare", () => {
