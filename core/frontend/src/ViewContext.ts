@@ -505,14 +505,12 @@ export class DecorateContext extends RenderContext {
 export class SceneContext extends RenderContext {
   public readonly graphics: RenderGraphic[] = [];
   public readonly backgroundGraphics: RenderGraphic[] = [];
-  public readonly missingTiles: Set<Tile>;
+  public readonly missingTiles = new Set<Tile>();
   public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
   public backgroundMap?: BackgroundMapState;
 
-  public constructor(vp: Viewport, missingTiles: Set<Tile>) {
+  public constructor(vp: Viewport) {
     super(vp);
-    this.missingTiles = missingTiles;
-    this.missingTiles.clear();
   }
 
   public outputGraphic(graphic: RenderGraphic): void { this.backgroundMap ? this.backgroundGraphics.push(graphic) : this.graphics.push(graphic); }

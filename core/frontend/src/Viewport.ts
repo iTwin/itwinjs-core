@@ -24,7 +24,6 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Decorations, GraphicList, Pixel, RenderPlan, RenderTarget } from "./render/System";
 import { StandardView, StandardViewId } from "./StandardView";
-import { Tile } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolAdmin";
 import { DecorateContext, SceneContext } from "./ViewContext";
@@ -911,7 +910,6 @@ export abstract class Viewport implements IDisposable {
   private _wantTileBoundingBoxes = false;
   private _viewFrustum!: ViewFrustum;
   private _target?: RenderTarget;
-  private readonly _requestedTiles = new Set<Tile>();
 
   /** @hidden */
   public get viewFrustum(): ViewFrustum { return this._viewFrustum; }
@@ -993,7 +991,6 @@ export abstract class Viewport implements IDisposable {
   public dispose(): void {
     assert(undefined !== this._target, "Double disposal of Viewport");
     this._target = dispose(this._target);
-    this._requestedTiles.clear();
     IModelApp.tileRequests.forgetViewport(this);
   }
 
@@ -1056,7 +1053,7 @@ export abstract class Viewport implements IDisposable {
   /** The number of outstanding requests for tiles to be displayed in this viewport.
    * @see Viewport.numSelectedTiles
    */
-  public get numRequestedTiles(): number { return this._requestedTiles.size; }
+  public get numRequestedTiles(): number { return IModelApp.tileRequests.getNumRequestsForViewport(this); }
 
   /** @hidden */
   public toView(from: XYZ, to?: XYZ) { this._viewFrustum.toView(from, to); }
@@ -1074,7 +1071,8 @@ export abstract class Viewport implements IDisposable {
     this.target.reset();
   }
 
-  private invalidateScene(): void { this.sync.invalidateScene(); }
+  /** @hidden */
+  public invalidateScene(): void { this.sync.invalidateScene(); }
 
   /**
    * Computes the range of npc depth values for a region of the screen
@@ -1638,7 +1636,7 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @hidden */
-  public createSceneContext(): SceneContext { return new SceneContext(this, this._requestedTiles); }
+  public createSceneContext(): SceneContext { return new SceneContext(this); }
 
   /** @hidden */
   public renderFrame(): boolean {

@@ -61,12 +61,16 @@ export class Dictionary<K, V> {
   /**
    * Deletes a value using its key.
    * @param key The key to delete
+   * @returns true if the key was found and deleted.
    */
-  public delete(key: K) {
+  public delete(key: K): boolean {
     const bound = this.lowerBound(key);
     if (bound.equal) {
       this._values.splice(bound.index, 1);
       this._keys.splice(bound.index, 1);
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -126,6 +130,14 @@ export class Dictionary<K, V> {
     const result = { keys: this._keys, values: this._values };
     this.clear();
     return result;
+  }
+
+  /** Apply a function to each (key, value) pair in the dictionary, in sorted order.
+   * @param func The function to be applied.
+   */
+  public forEach(func: (key: K, value: V) => void): void {
+    for (let i = 0; i < this.length; i++)
+      func(this._keys[i], this._values[i]);
   }
 
   /**

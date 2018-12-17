@@ -4,16 +4,18 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { SortedArray, PriorityQueue, assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
+import { Dictionary, SortedArray, PriorityQueue, assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import { ImageSource, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { RenderGraphic } from "../render/System";
 import { Tile, TileTree, TileLoader } from "./TileTree";
 import { Viewport } from "../Viewport";
+import { IModelApp } from "../IModelApp";
 
-export class TileRequest {
+export abstract class TileRequest {
   protected _state: TileRequest.State;
 
   public get state(): TileRequest.State { return this._state; }
+  public abstract get isCanceled(): boolean;
 
   protected constructor() {
     this._state = TileRequest.State.Queued;
@@ -50,6 +52,7 @@ export namespace TileRequest {
     preprocess(): void;
     process(): void;
     requestTiles(vp: Viewport, tiles: Set<Tile>): void;
+    getNumRequestsForViewport(vp: Viewport): number;
     forgetViewport(vp: Viewport): void;
     onShutDown(): void;
   }
@@ -63,18 +66,45 @@ export namespace TileRequest {
   }
 }
 
+class ViewportSet extends SortedArray<Viewport> {
+  public constructor(vp?: Viewport) {
+    super((lhs, rhs) => lhs.viewportId - rhs.viewportId);
+    if (undefined !== vp)
+      this.insert(vp);
+  }
+
+  public clone(out?: ViewportSet): ViewportSet {
+    if (undefined === out)
+      out = new ViewportSet();
+    else
+      out.clear();
+
+    for (let i = 0; i < this.length; i++)
+      out._array.push(this._array[i]);
+
+    return out;
+  }
+}
+
 class Request extends TileRequest {
   public readonly tile: Tile;
   public readonly priority: number; // ###TODO Allow priority to be adjusted based on camera etc.
+  public viewports: ViewportSet;
 
   public get state(): TileRequest.State { return this._state; }
   public get tree(): TileTree { return this.tile.root; }
   public get loader(): TileLoader { return this.tree.loader; }
+  public get isCanceled(): boolean { return this.viewports.isEmpty; } // ###TODO: check if IModelConnection closed etc.
 
-  public constructor(tile: Tile) {
+  public constructor(tile: Tile, vp: Viewport) {
     super();
     this.tile = tile;
     this.priority = tile.depth; // ###TODO account for reality/map tiles vs design model tiles, etc.
+    this.viewports = RequestScheduler.get().getViewportSet(vp);
+  }
+
+  public addViewport(vp: Viewport): void {
+    this.viewports = RequestScheduler.get().getViewportSet(vp, this.viewports);
   }
 
   public async dispatch(): Promise<void> {
@@ -87,10 +117,22 @@ class Request extends TileRequest {
     }
   }
 
+  public cancel(scheduler: RequestScheduler): void {
+    this._state = TileRequest.State.Failed;
+    this.tile.request = undefined;
+    this.viewports = scheduler.emptyViewportSet;
+  }
+
+  private notifyAndClear(): void {
+    this.viewports.forEach((vp) => vp.invalidateScene());
+    this.viewports = RequestScheduler.get().emptyViewportSet;
+    this.tile.request = undefined;
+  }
+
   private setFailed() {
+    this.notifyAndClear();
     this._state = TileRequest.State.Failed;
     this.tile.setNotFound();
-    this.tile.request = undefined;
   }
 
   private async handleResponse(response: TileRequest.Response): Promise<void> {
@@ -115,13 +157,15 @@ class Request extends TileRequest {
       const graphic = await this.loader.loadTileGraphic(this.tile, data);
       this._state = TileRequest.State.Completed;
       this.tile.setGraphic(graphic.renderGraphic, graphic.isLeaf, graphic.contentRange, graphic.sizeMultiplier);
-      this.tile.request = undefined;
+      this.notifyAndClear();
     } catch (_err) {
       this.setFailed();
     }
 
     return Promise.resolve();
   }
+
+  public static getForTile(tile: Tile): Request | undefined { return tile.request as Request; }
 }
 
 class Queue extends PriorityQueue<Request> {
@@ -133,26 +177,6 @@ class Queue extends PriorityQueue<Request> {
 
   public has(request: Request): boolean {
     return this.array.indexOf(request) >= 0;
-  }
-}
-
-export class ViewportSet extends SortedArray<Viewport> {
-  public constructor(vp?: Viewport) {
-    super((lhs, rhs) => lhs.viewportId - rhs.viewportId);
-    if (undefined !== vp)
-      this.insert(vp);
-  }
-
-  public clone(out?: ViewportSet): ViewportSet {
-    if (undefined === out)
-      out = new ViewportSet();
-    else
-      out.clear();
-
-    for (let i = 0; i < this.length; i++)
-      out._array.push(this._array[i]);
-
-    return out;
   }
 }
 
@@ -223,43 +247,28 @@ class UniqueViewportSets extends SortedArray<ViewportSet> {
     this.insert(newSet);
     return newSet;
   }
+
+  public clearAll(): void {
+    this.forEach((set) => set.clear());
+    this.clear();
+  }
 }
 
-class TrackedViewports {
-  public readonly viewports = new ViewportSet();
-  private readonly _uniqueSets = new UniqueViewportSets();
-
-  public track(vp: Viewport) {
-    this.viewports.insert(vp);
-  }
-
-  public untrack(vp: Viewport) {
-    if (-1 !== this.viewports.remove(vp)) {
-      for (let i = 0; i < this._uniqueSets.length; /* */) {
-        const set = this._uniqueSets.get(i)!;
-        set.remove(vp);
-        if (set.isEmpty)
-          this._uniqueSets.eraseAt(i);
-        else
-          i++;
-      }
-    }
-  }
-
-  public clear(): void {
-    this.viewports.clear();
-    this._uniqueSets.forEach((set) => set.clear());
-    this._uniqueSets.clear();
+class RequestsPerViewport extends Dictionary<Viewport, Set<Tile>> {
+  public constructor() {
+    super((lhs, rhs) => lhs.viewportId - rhs.viewportId);
   }
 }
 
 class RequestScheduler implements TileRequest.Scheduler {
-  private readonly _viewports = new TrackedViewports();
-  private readonly _activeRequests = new Set<Request>();
+  private readonly _requestsPerViewport = new RequestsPerViewport();
+  private readonly _uniqueViewportSets = new UniqueViewportSets();
+  private _activeRequests = new Set<Request>();
+  private _swapActiveRequests = new Set<Request>();
   private readonly _maxActiveRequests: number;
   private readonly _throttle: boolean;
-  private readonly _currentQueue = new Queue();
-  // private readonly _swapQueue = new Queue();
+  private _pendingRequests = new Queue();
+  private _swapPendingRequests = new Queue();
 
   public constructor(options?: TileRequest.SchedulerOptions) {
     let throttle = false;
@@ -277,7 +286,7 @@ class RequestScheduler implements TileRequest.Scheduler {
 
   public get statistics(): TileRequest.Statistics {
     return {
-      numPendingRequests: this._currentQueue.length,
+      numPendingRequests: this._pendingRequests.length,
       numActiveRequests: this._activeRequests.size,
     };
   }
@@ -286,11 +295,42 @@ class RequestScheduler implements TileRequest.Scheduler {
   }
 
   public process(): void {
+    // Mark all requests as being associated with no Viewports, indicating they are no longer needed.
+    this._uniqueViewportSets.clearAll()
+
+    // Process all requests, enqueueing on new queue.
+    const previouslyPending = this._pendingRequests;
+    this._pendingRequests = this._swapPendingRequests;
+    this._swapPendingRequests = previouslyPending;
+
+    this._requestsPerViewport.forEach((key, value) => this.processRequests(key, value));
+    
     if (!this._throttle)
       return;
 
+    // Cancel any previously pending requests which are no longer needed.
+    for (const queued of previouslyPending.array)
+      if (queued.viewports.isEmpty)
+        queued.cancel(this);
+
+    previouslyPending.clear();
+
+    // Cancel any active requests which are no longer needed.
+    const previouslyActive = this._activeRequests;
+    this._activeRequests = this._swapActiveRequests;
+    for (const active of previouslyActive) {
+      if (active.viewports.isEmpty)
+        active.cancel(this);
+      else
+        this._activeRequests.add(active);
+    }
+
+    previouslyActive.clear();
+    this._swapActiveRequests = previouslyActive;
+
+    // Fill up the active requests from the queue.
     while (this._activeRequests.size < this._maxActiveRequests) {
-      const request = this._currentQueue.pop();
+      const request = this._pendingRequests.pop();
       if (undefined === request)
         break;
       else
@@ -298,28 +338,40 @@ class RequestScheduler implements TileRequest.Scheduler {
     }
   }
 
-  public requestTiles(vp: Viewport, tiles: Set<Tile>): void {
-    this._viewports.track(vp);
-
+  private processRequests(vp: Viewport, tiles: Set<Tile>): void {
     for (const tile of tiles) {
       if (undefined === tile.request) {
         assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
         if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
-          const request = new Request(tile);
+          const request = new Request(tile, vp);
           tile.request = request;
           if (this._throttle)
-            this._currentQueue.push(request);
+            this._pendingRequests.push(request);
           else
             this.dispatch(request);
         }
       } else {
-        assert(this._activeRequests.has(tile.request as Request) || (this._throttle && this._currentQueue.has(tile.request as Request)));
+        const req = Request.getForTile(tile);
+        assert(undefined !== req);
+        if (undefined !== req) {
+          req.addViewport(vp);
+        }
       }
     }
   }
 
+  public getNumRequestsForViewport(vp: Viewport): number {
+    const requests = this._requestsPerViewport.get(vp);
+    return undefined !== requests ? requests.size : 0;
+  }
+
+  public requestTiles(vp: Viewport, tiles: Set<Tile>): void {
+    this._requestsPerViewport.set(vp, tiles);
+  }
+
   public forgetViewport(vp: Viewport): void {
-    this._viewports.untrack(vp);
+    // NB: In process() we will eliminate this Viewport from ViewportSets.
+    this._requestsPerViewport.delete(vp);
   }
 
   public onShutDown(): void {
@@ -329,12 +381,13 @@ class RequestScheduler implements TileRequest.Scheduler {
 
     this._activeRequests.clear();
 
-    for (const queued of this._currentQueue.array) {
+    for (const queued of this._pendingRequests.array) {
       queued.tile.request = undefined;
       queued.tile.setAbandoned();
     }
 
-    this._viewports.clear();
+    this._requestsPerViewport.clear();
+    this._uniqueViewportSets.clear();
   }
 
   private dispatch(req: Request): void {
@@ -347,4 +400,12 @@ class RequestScheduler implements TileRequest.Scheduler {
     assert(this._activeRequests.has(req));
     this._activeRequests.delete(req);
   }
+
+  public static get(): RequestScheduler { return IModelApp.tileRequests as RequestScheduler; }
+
+  public getViewportSet(vp: Viewport, vps?: ViewportSet): ViewportSet {
+    return this._uniqueViewportSets.getViewportSet(vp, vps);
+  }
+
+  public get emptyViewportSet(): ViewportSet { return this._uniqueViewportSets.emptySet; }
 }
