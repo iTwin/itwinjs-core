@@ -49,7 +49,6 @@ export namespace TileRequest {
   export interface Scheduler {
     readonly statistics: Statistics;
 
-    preprocess(): void;
     process(): void;
     requestTiles(vp: Viewport, tiles: Set<Tile>): void;
     getNumRequestsForViewport(vp: Viewport): number;
@@ -304,9 +303,6 @@ class RequestScheduler implements TileRequest.Scheduler {
     };
   }
 
-  public preprocess(): void {
-  }
-
   public process(): void {
     // Mark all requests as being associated with no Viewports, indicating they are no longer needed.
     this._uniqueViewportSets.clearAll();
@@ -315,6 +311,9 @@ class RequestScheduler implements TileRequest.Scheduler {
     const previouslyPending = this._pendingRequests;
     this._pendingRequests = this._swapPendingRequests;
     this._swapPendingRequests = previouslyPending;
+
+    const previouslyActive = this._activeRequests;
+    this._activeRequests = this._swapActiveRequests;
 
     this._requestsPerViewport.forEach((key, value) => this.processRequests(key, value));
     
@@ -329,8 +328,6 @@ class RequestScheduler implements TileRequest.Scheduler {
     previouslyPending.clear();
 
     // Cancel any active requests which are no longer needed.
-    const previouslyActive = this._activeRequests;
-    this._activeRequests = this._swapActiveRequests;
     for (const active of previouslyActive) {
       if (active.viewports.isEmpty)
         active.cancel(this);

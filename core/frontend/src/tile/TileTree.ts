@@ -666,7 +666,7 @@ export abstract class TileLoader {
     const format = streamBuffer.nextUint32;
     streamBuffer.rewind(4);
 
-    const isCanceled = () => false; // !tile.isLoading;
+    const isCanceled = () => !tile.isLoading;
     let reader: GltfTileIO.Reader | undefined;
     switch (format) {
       case TileIO.Format.Pnts:
