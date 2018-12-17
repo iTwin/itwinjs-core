@@ -85,4 +85,9 @@ export class Constant extends SchemaItem {
     if (visitor.visitConstant)
       await visitor.visitConstant(this);
   }
+
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitConstantSync)
+      visitor.visitConstantSync(this);
+  }
 }

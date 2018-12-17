@@ -377,6 +377,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       await visitor.visitClass(this as AnyClass);
   }
 
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitClassSync)
+      visitor.visitClassSync(this as AnyClass);
+  }
+
   /**
    * Iterates (recursively) over all base classes and mixins, in "property override" order.
    * This is essentially a depth-first traversal through the inheritance tree.
@@ -505,11 +510,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param arg An argument that will be passed as the second parameter to the callback function.
    */
   public async traverseBaseClasses(callback: (ecClass: ECClass, arg?: any) => boolean, arg?: any): Promise<boolean> {
-    const baseClasses = await this.getAllBaseClasses();
-    if (!baseClasses)
-      return false;
-
-    for await (const baseClass of baseClasses) {
+    for await (const baseClass of this.getAllBaseClasses()) {
       if (callback(baseClass, arg))
         return true;
     }

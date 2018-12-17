@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Migrate from React.Component to React.PureComponent",
+      "comment": "Added showDialogInitially support to ActivityMessageDetails",
       "packageName": "@bentley/ui-ninezone",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-ninezone",
-  "email": "gerardas.butkevicius@bentley.com"
+  "email": "dan.east@bentley.com"
 }

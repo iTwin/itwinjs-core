@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 12 Dec 2018 17:21:31 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Dec 2018 22:06:10 GMT and should not be manually modified.
+
+## 0.178.0
+Thu, 13 Dec 2018 22:06:10 GMT
+
+### Updates
+
+- Fix view becoming black in some circumstnces when locate cursor exits viewport.
+- Only make createGraphicBuilder available to DecorationContext. DynamicsContext/SceneContext require a scene graphic.
+- Added StringGetter support to ItemDefBase, ItemProps & ToolButton. Added IModelApp.i18n checks to Tool for unit tests.
+- Fix failure to locate elements if their transparency is overridden.
+- Added tool prompts. Fix dynamics changing locate circle. Hide touch cursor on mouse motion.
 
 ## 0.177.0
 Wed, 12 Dec 2018 17:21:31 GMT

@@ -9,7 +9,7 @@ import * as React from "react";
 import ReactDataGrid from "react-data-grid";
 import classnames from "classnames";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { SortDirection, Dialog, Popup, Position, LocalUiSettings, UiSettings, UiSettingsStatus } from "@bentley/ui-core";
+import { SortDirection, Dialog, LocalUiSettings, UiSettings, UiSettingsStatus } from "@bentley/ui-core";
 import { TableDataProvider, ColumnDescription, RowItem, CellItem } from "../TableDataProvider";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import {
@@ -20,7 +20,7 @@ import ReactResizeDetector from "react-resize-detector";
 
 import "./Grid.scss";
 import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PropertyValueRendererManager, PropertyContainerType, PropertyDialogState, PropertyPopupState, PropertyValueRendererContext } from "../../properties/ValueRendererManager";
+import { PropertyValueRendererManager, PropertyContainerType, PropertyDialogState, PropertyValueRendererContext } from "../../properties/ValueRendererManager";
 import { PropertyValueFormat, PrimitiveValue } from "../../properties/Value";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";
 import { DragDropHeaderCell } from "./DragDropHeaderCell";
@@ -129,7 +129,8 @@ export interface TableState {
   menuY: number;
   cellEditorState: TableCellEditorState;
   dialog?: PropertyDialogState;
-  popup?: PropertyPopupState;
+  // TODO: Enable, when table gets refactored
+  // popup?: PropertyPopupState;
 }
 
 /** ReactDataGrid.Column with additional properties */
@@ -618,8 +619,9 @@ export class Table extends React.Component<TableProps, TableState> {
     const rendererContext: PropertyValueRendererContext = {
       containerType: PropertyContainerType.Table,
       onDialogOpen: this._onDialogOpen,
-      onPopupShow: this._onPopupShow,
-      onPopupHide: this._onPopupHide,
+      // TODO: Enable, when table gets refactored. Explanation in ./../table/NonPrimitiveValueRenderer
+      // onPopupShow: this._onPopupShow,
+      // onPopupHide: this._onPopupHide,
     };
 
     let renderedElement: React.ReactNode;
@@ -968,13 +970,13 @@ export class Table extends React.Component<TableProps, TableState> {
     this.setState({ dialog: undefined });
   }
 
-  private _onPopupShow = (popupState: PropertyPopupState) => {
-    this.setState({ popup: popupState });
-  }
-
-  private _onPopupHide = () => {
-    this.setState({ popup: undefined });
-  }
+  // TODO: Enable, when table gets refactored. Explanation in ./../table/NonPrimitiveValueRenderer
+  // private _onPopupShow = (popupState: PropertyPopupState) => {
+  //   this.setState({ popup: popupState });
+  // }
+  // private _onPopupHide = () => {
+  //   this.setState({ popup: undefined });
+  // }
 
   public render() {
     const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
@@ -1023,7 +1025,8 @@ export class Table extends React.Component<TableProps, TableState> {
               {this.state.dialog.content}
             </Dialog>
             : undefined}
-          {this.state.popup
+          {/* TODO: Enable, when table gets refactored. Explanation in ./../table/NonPrimitiveValueRenderer */}
+          {/* {this.state.popup
             ?
             <Popup
               isShown={true}
@@ -1033,7 +1036,7 @@ export class Table extends React.Component<TableProps, TableState> {
               {this.state.popup.content}
             </Popup>
             :
-            undefined}
+            undefined} */}
         </div>
       </>
     );

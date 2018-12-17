@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "temporarily disable TxnManager events.",
+      "comment": "",
       "packageName": "@bentley/imodeljs-backend",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-backend",
-  "email": "keith.bentley@bentley.com"
+  "email": "Krischan.Eberle@bentley.com"
 }

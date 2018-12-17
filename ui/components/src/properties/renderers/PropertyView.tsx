@@ -18,20 +18,10 @@ export interface PropertyViewProps extends SharedRendererProps {
   valueElement?: React.ReactNode;
 }
 
-/** State of [[PropertyView]] React component */
-export interface PropertyViewState {
-  /** Width of the whole property element */
-  width?: number;
-}
-
 /**
  * A React component that renders property as label/value pair
  */
-export class PropertyView extends React.Component<PropertyViewProps, PropertyViewState> {
-  private _containerRef: React.RefObject<HTMLDivElement> = React.createRef();
-  public readonly state: Readonly<PropertyViewState> = {
-    width: undefined,
-  };
+export class PropertyView extends React.Component<PropertyViewProps> {
 
   private _onClick = () => {
     if (this.props.onClick)
@@ -65,28 +55,11 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
     return undefined;
   }
 
-  private afterRender() {
-    if (this.props.orientation !== Orientation.Horizontal || !this._containerRef.current)
-      return;
-    const width = this._containerRef.current.getBoundingClientRect().width;
-    if (width !== this.state.width)
-      this.setState({ width });
-  }
-
-  public componentDidMount() {
-    this.afterRender();
-  }
-
-  public componentDidUpdate() {
-    this.afterRender();
-  }
-
   public render() {
     const ratio = this.props.columnRatio ? this.props.columnRatio : 0.25;
 
     return (
       <div
-        ref={this.props.orientation === Orientation.Horizontal ? this._containerRef : undefined}
         style={this.getStyle(this.props, ratio)}
         className={this.getClassName(this.props)}
         onClick={this._onClick}
@@ -95,7 +68,7 @@ export class PropertyView extends React.Component<PropertyViewProps, PropertyVie
         {this.props.orientation === Orientation.Horizontal && this.props.onColumnRatioChanged
           ?
           <ElementSeparator
-            movableArea={this.state.width}
+            movableArea={this.props.width}
             onRatioChanged={this.props.onColumnRatioChanged}
             ratio={ratio}
             orientation={this.props.orientation}

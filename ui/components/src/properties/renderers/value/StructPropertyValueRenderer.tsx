@@ -25,8 +25,6 @@ export class StructPropertyValueRenderer implements IPropertyValueRenderer {
             <TableStructValueRenderer
               propertyRecord={record}
               onDialogOpen={context.onDialogOpen}
-              onPopupShow={context.onPopupShow}
-              onPopupHide={context.onPopupHide}
               orientation={context.orientation ? context.orientation : Orientation.Horizontal}
             />
           );

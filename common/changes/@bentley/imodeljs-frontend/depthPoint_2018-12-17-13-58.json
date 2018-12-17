@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Added tool prompts. Fix dynamics changing locate circle. Hide touch cursor on mouse motion.",
+      "comment": "View tools enhancement to use background map plane for depth point when geometry isn't identified.",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }

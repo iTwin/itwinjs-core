@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Fix view becoming black in some circumstnces when locate cursor exits viewport.",
+      "comment": "",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }

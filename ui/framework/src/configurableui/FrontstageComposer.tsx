@@ -21,8 +21,8 @@ import { WidgetDef } from "./WidgetDef";
 
 /** Interface defining callbacks for widget changes */
 export interface WidgetChangeHandler {
-  handleResize(zoneId: number, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number): void;
-  handleTabClick(widgetId: number, tabIndex: number): void;
+  handleResize(zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number): void;
+  handleTabClick(widgetId: WidgetZoneIndex, tabIndex: number): void;
   handleTabDragStart(widgetId: WidgetZoneIndex, tabId: number, initialPosition: PointProps, offset: PointProps): void;
   handleTabDragEnd(): void;
   handleTabDrag(dragged: PointProps): void;
@@ -242,7 +242,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     });
   }
 
-  public handleTabClick = (widgetId: number, tabIndex: number) => {
+  public handleTabClick = (widgetId: WidgetZoneIndex, tabIndex: number) => {
     this.setState((prevState) => {
       const nineZoneProps = FrontstageManager.NineZoneStateManager.handleTabClick(widgetId, tabIndex, prevState.nineZoneProps);
       return {
@@ -288,7 +288,7 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     });
   }
 
-  public handleWidgetStateChange(widgetId: number, tabIndex: number, isOpening: boolean): void {
+  public handleWidgetStateChange(widgetId: WidgetZoneIndex, tabIndex: number, isOpening: boolean): void {
     this.setState((prevState) => {
       const nineZoneProps = FrontstageManager.NineZoneStateManager.handleWidgetStateChange(widgetId, tabIndex, isOpening, prevState.nineZoneProps);
       return {

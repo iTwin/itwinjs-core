@@ -8,7 +8,7 @@ import { assert, BeDuration, BeEvent, BeTimePoint, dispose, Id64, Id64Arg, IDisp
 import {
   Angle, AngleSweep, Arc3d, AxisOrder, Constant, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d,
   Plane3dByOriginAndUnitNormal, Point2d, Point3d, Point4d, Range3d, Ray3d, Transform, Vector3d, XAndY,
-  XYAndZ, XYZ,
+  XYAndZ, XYZ, Geometry,
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, AntiAliasPref, Camera, ColorDef, ElementProps, Frustum, Hilite, ImageBuffer, Npc,
@@ -1666,6 +1666,7 @@ export abstract class Viewport implements IDisposable {
       this.setupFromView();
 
     if (!sync.isValidScene) {
+      this.numSelectedTiles = this.numRequestedTiles = 0;
       const context = new SceneContext(this, new TileRequests());
       view.createScene(context);
       view.createClassification(context);
@@ -1771,6 +1772,11 @@ export abstract class Viewport implements IDisposable {
 
     return npc;
   }
+
+  /** @hidden ###TODO WIP */
+  public numSelectedTiles = 0;
+  /** @hidden ###TODO WIP */
+  public numRequestedTiles = 0;
 }
 
 /**
@@ -1906,12 +1912,30 @@ export class ScreenViewport extends Viewport {
    */
   public pickNearestVisibleGeometry(pickPoint: Point3d, radius: number, out?: Point3d): Point3d | undefined {
     const picker = new ElementPicker();
-    if (0 === picker.doPick(this, pickPoint, radius, new LocateOptions()))
+    if (0 !== picker.doPick(this, pickPoint, radius, new LocateOptions())) {
+      const result = undefined !== out ? out : new Point3d();
+      result.setFrom(picker.getHit(0)!.getPoint());
+      return result;
+    }
+    if (undefined === this.backgroundMapPlane)
       return undefined;
 
-    const result = undefined !== out ? out : new Point3d();
-    result.setFrom(picker.getHit(0)!.getPoint());
-    return result;
+    const eyePoint = this.worldToViewMap.transform1.columnZ();
+    const direction = Vector3d.createFrom(eyePoint);
+    const aa = Geometry.conditionalDivideFraction(1, eyePoint.w);
+    if (aa !== undefined) {
+      const xyzEye = direction.scale(aa);
+      direction.setFrom(pickPoint.vectorTo(xyzEye));
+    }
+    direction.scaleToLength(-1.0, direction);
+    const rayToEye = Ray3d.create(pickPoint, direction);
+    const projectedPt = Point3d.createZero();
+    if (undefined === rayToEye.intersectionWithPlane(this.backgroundMapPlane, projectedPt))
+      return undefined;
+
+    const mapResult = undefined !== out ? out : new Point3d();
+    mapResult.setFrom(projectedPt);
+    return mapResult;
   }
 
   /** @hidden */

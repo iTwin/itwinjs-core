@@ -808,6 +808,8 @@ describe("iModel", () => {
     const codeSpec: CodeSpec = new CodeSpec(testImodel, Id64.invalid, "CodeSpec1", CodeScopeSpec.Type.Model);
     const codeSpecId: Id64String = testImodel.codeSpecs.insert(codeSpec); // throws in case of error
     assert.deepEqual(codeSpecId, codeSpec.id);
+    assert.equal(codeSpec.specScopeType, CodeScopeSpec.Type.Model);
+    assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.ElementId);
 
     // Should not be able to insert a duplicate.
     try {
@@ -830,6 +832,24 @@ describe("iModel", () => {
     const codeSpec3Id: Id64String = testImodel.codeSpecs.insert(codeSpec3); // throws in case of error
     assert.notDeepEqual(codeSpec2Id, codeSpec3Id);
 
+    const codeSpec4: CodeSpec = testImodel.codeSpecs.getById(codeSpec3Id);
+    codeSpec4.name = "CodeSpec4";
+    const codeSpec4Id: Id64String = testImodel.codeSpecs.insert(codeSpec4); // throws in case of error
+    assert.notDeepEqual(codeSpec3Id, codeSpec4Id);
+    assert.equal(codeSpec4.specScopeType, CodeScopeSpec.Type.Repository);
+    assert.equal(codeSpec4.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
+
+    assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec1"));
+    assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec2"));
+    assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec3"));
+    assert.isTrue(testImodel.codeSpecs.hasName("CodeSpec4"));
+    assert.isFalse(testImodel.codeSpecs.hasName("CodeSpec5"));
+
+    assert.isTrue(testImodel.codeSpecs.hasId(codeSpec.id));
+    assert.isTrue(testImodel.codeSpecs.hasId(codeSpec2.id));
+    assert.isTrue(testImodel.codeSpecs.hasId(codeSpec3.id));
+    assert.isTrue(testImodel.codeSpecs.hasId(codeSpec4.id));
+    assert.isFalse(testImodel.codeSpecs.hasId(Id64.invalid));
   });
 
   it("snapping", async () => {

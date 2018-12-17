@@ -8,10 +8,9 @@ import * as React from "react";
 import * as classnames from "classnames";
 import { UiEvent } from "@bentley/ui-core";
 import { XAndY } from "@bentley/geometry-core";
-import { CommonProps, ToolSettingsTooltip, Tooltip, offsetAndContainInContainer } from "@bentley/ui-ninezone";
-
-import "./Pointer.scss";
+import { CommonProps, ToolSettingsTooltip, offsetAndContainInContainer, PointProps, SizeProps, Rectangle, Point } from "@bentley/ui-ninezone";
 import { RelativePosition, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
+import "./Pointer.scss";
 
 /** Properties of [[PointerMessage]] component. */
 export interface PointerMessageProps extends CommonProps {
@@ -22,12 +21,10 @@ export interface PointerMessageProps extends CommonProps {
 /** [[PointerMessage]] state.
  */
 export interface PointerMessageState {
+  detailedMessage?: string;
   isVisible: boolean;
   message: string;
-  detailedMessage?: string;
-  relativePosition?: RelativePosition;
-  viewport?: HTMLElement;
-  pt?: XAndY;
+  position: PointProps;
 }
 
 /** [[PointerMessageChangedEvent]] arguments.
@@ -41,12 +38,23 @@ export interface PointerMessageChangedEventArgs {
   pt?: XAndY;
 }
 
+const adjustmentOffset = 50;
+const adjustPosition = offsetAndContainInContainer();
+const adjustTopPosition = offsetAndContainInContainer({ x: 0, y: -adjustmentOffset });
+const adjustTopRightPosition = offsetAndContainInContainer({ x: adjustmentOffset, y: -adjustmentOffset });
+const adjustRightPosition = offsetAndContainInContainer({ x: adjustmentOffset, y: 0 });
+const adjustBottomRightPosition = offsetAndContainInContainer({ x: adjustmentOffset, y: adjustmentOffset });
+const adjustBottomPosition = offsetAndContainInContainer({ x: 0, y: adjustmentOffset });
+const adjustBottomLeftPosition = offsetAndContainInContainer({ x: -adjustmentOffset, y: adjustmentOffset });
+const adjustLeftPosition = offsetAndContainInContainer({ x: -adjustmentOffset, y: 0 });
+const adjustTopLeftPosition = offsetAndContainInContainer({ x: -adjustmentOffset, y: -adjustmentOffset });
+
 /** Pointer Message Changed Event emitted by the [[PointerMessage]] component
  */
 export class PointerMessageChangedEvent extends UiEvent<PointerMessageChangedEventArgs> { }
 
 /** Pointer message pops up near pointer when attempting an invalid interaction. */
-export class PointerMessage extends React.Component<PointerMessageProps> {
+export class PointerMessage extends React.Component<PointerMessageProps, PointerMessageState> {
   private static _pointerMessageChangedEvent: PointerMessageChangedEvent = new PointerMessageChangedEvent();
 
   public static get onPointerMessageChangedEvent(): PointerMessageChangedEvent { return PointerMessage._pointerMessageChangedEvent; }
@@ -72,6 +80,18 @@ export class PointerMessage extends React.Component<PointerMessageProps> {
   public readonly state: Readonly<PointerMessageState> = {
     message: "",
     isVisible: false,
+    position: {
+      x: 0,
+      y: 0,
+    },
+  };
+
+  private _relativePosition?: RelativePosition;
+  private _viewport?: HTMLElement;
+  private _position?: XAndY;
+  private _size: SizeProps = {
+    height: 0,
+    width: 0,
   };
 
   public render(): React.ReactNode {
@@ -85,10 +105,9 @@ export class PointerMessage extends React.Component<PointerMessageProps> {
     return (
       <ToolSettingsTooltip
         className={className}
+        onSizeChanged={this._handleSizeChanged}
+        position={this.state.position}
         style={this.props.style}
-        position={this.state.pt}
-        containIn={this._handleContainIn}
-        adjustPosition={this._adjustTooltipPosition()}
       >
         {
           this.state.message &&
@@ -116,54 +135,72 @@ export class PointerMessage extends React.Component<PointerMessageProps> {
     PointerMessage.onPointerMessageChangedEvent.removeListener(this._handlePointerMessageChangedEvent);
   }
 
-  private _handleContainIn = (message: HTMLElement) => {
-    if (this.state.viewport)
-      return this.state.viewport;
-    return Tooltip.defaultProps.containIn(message);
+  private _handleSizeChanged = (size: SizeProps) => {
+    this._size = size;
+    this.updatePosition();
   }
 
   private _handlePointerMessageChangedEvent = (args: PointerMessageChangedEventArgs) => {
+    this._relativePosition = args.relativePosition;
+    this._viewport = args.viewport;
+    this._position = args.pt;
     this.setState(() => ({
       isVisible: args.isVisible,
       message: args.message,
       detailedMessage: args.detailedMessage,
-      relativePosition: args.relativePosition,
-      viewport: args.viewport,
-      pt: args.pt,
     }));
+    this.updatePosition();
   }
 
-  private _adjustTooltipPosition(): any {
-    let tooltipAdjustment = offsetAndContainInContainer();
-
-    const adjustmentOffset = 50;
-    switch (this.state.relativePosition) {
+  private updatePosition() {
+    let adjust = adjustPosition;
+    switch (this._relativePosition) {
       case RelativePosition.Top:
-        tooltipAdjustment = offsetAndContainInContainer({ x: 0, y: -adjustmentOffset });
+        adjust = adjustTopPosition;
         break;
       case RelativePosition.TopRight:
-        tooltipAdjustment = offsetAndContainInContainer({ x: adjustmentOffset, y: -adjustmentOffset });
+        adjust = adjustTopRightPosition;
         break;
       case RelativePosition.Right:
-        tooltipAdjustment = offsetAndContainInContainer({ x: adjustmentOffset, y: 0 });
+        adjust = adjustRightPosition;
         break;
       case RelativePosition.BottomRight:
-        tooltipAdjustment = offsetAndContainInContainer({ x: adjustmentOffset, y: adjustmentOffset });
+        adjust = adjustBottomRightPosition;
         break;
       case RelativePosition.Bottom:
-        tooltipAdjustment = offsetAndContainInContainer({ x: 0, y: adjustmentOffset });
+        adjust = adjustBottomPosition;
         break;
       case RelativePosition.BottomLeft:
-        tooltipAdjustment = offsetAndContainInContainer({ x: -adjustmentOffset, y: adjustmentOffset });
+        adjust = adjustBottomLeftPosition;
         break;
       case RelativePosition.Left:
-        tooltipAdjustment = offsetAndContainInContainer({ x: -adjustmentOffset, y: 0 });
+        adjust = adjustLeftPosition;
         break;
       case RelativePosition.TopLeft:
-        tooltipAdjustment = offsetAndContainInContainer({ x: -adjustmentOffset, y: -adjustmentOffset });
+        adjust = adjustTopLeftPosition;
         break;
     }
-    return tooltipAdjustment;
+
+    this.setState((prevState) => {
+      if (!this._viewport)
+        return null;
+      if (!this._position)
+        return null;
+
+      const containerBounds = Rectangle.create(this._viewport.getBoundingClientRect());
+      const relativeBounds = Rectangle.createFromSize(this._size).offset(this._position);
+      const viewportOffset = new Point().getOffsetTo(containerBounds.topLeft());
+
+      const adjustedPosition = adjust(relativeBounds, containerBounds.getSize());
+      const position = adjustedPosition.offset(viewportOffset);
+
+      if (Point.create(position).equals(prevState.position))
+        return null;
+
+      return {
+        position,
+      };
+    });
   }
 }
 

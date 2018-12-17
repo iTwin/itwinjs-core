@@ -40,14 +40,14 @@ export class RenderContext {
   /** @hidden */
   public get target(): RenderTarget { return this.viewport.target; }
 
-  /** Create a builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
-   * @param type The type of builder to create.
+  /** @hidden */
+  protected _createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this.target.createGraphicBuilder(type, this.viewport, transform, id); }
+
+  /** Create a builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
    * @param transform the local-to-world transform in which the builder's geometry is to be defined.
-   * @param id If the decoration is to be pickable, a unique identifier to associate with the resultant [[RenderGraphic]].
-   * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
-   * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
+   * @returns A builder for creating a [[GraphicType.Scene]] [[RenderGraphic]] for rendering within this context's [[Viewport]].
    */
-  public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this.target.createGraphicBuilder(type, this.viewport, transform, id); }
+  public createSceneGraphicBuilder(transform?: Transform): GraphicBuilder { return this._createGraphicBuilder(GraphicType.Scene, transform); }
 
   /** Create a [[RenderGraphic]] which groups a set of graphics into a node in a scene graph, applying to each a transform and optional clip volume and symbology overrides.
    * @param branch Contains the group of graphics and the symbology overrides.
@@ -164,6 +164,15 @@ export class DecorateContext extends RenderContext {
 
     return intersections.map((cld: CurveLocationDetail) => cld.point.clone());
   }
+
+  /** Create a builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
+   * @param type The type of builder to create.
+   * @param transform the local-to-world transform in which the builder's geometry is to be defined.
+   * @param id If the decoration is to be pickable, a unique identifier to associate with the resultant [[RenderGraphic]].
+   * @returns A builder for creating a [[RenderGraphic]] of the specified type appropriate for rendering within this context's [[Viewport]].
+   * @see [[IModelConnection.transientIds]] for obtaining an ID for a pickable decoration.
+   */
+  public createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder { return this._createGraphicBuilder(type, transform, id); }
 
   /** Calls [[GraphicBuilder.finish]] on the supplied builder to obtain a [[RenderGraphic]], then adds the graphic to the appropriate list of
    * [[Decorations]].

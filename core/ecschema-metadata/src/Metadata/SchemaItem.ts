@@ -118,4 +118,5 @@ export abstract class SchemaItem {
   }
 
   public abstract async accept(visitor: SchemaItemVisitor): Promise<void>;
+  public abstract acceptSync(visitor: SchemaItemVisitor): void;
 }

@@ -88,7 +88,7 @@ describe("iModelHub ThumbnailHandler", () => {
       versions = (await imodelHubClient.versions.get(actx, accessToken, imodelId));
 
       // Wait for all 4 thumbnails (tip and 3 named versions).
-      for (let i = 0; i < 5; i++) {
+      for (let i = 0; i < 50; i++) {
         const largeThumbnails: Thumbnail[] = await imodelHubClient.thumbnails.get(actx, accessToken, imodelId, "Large");
         if (largeThumbnails.length === 4)
           break;

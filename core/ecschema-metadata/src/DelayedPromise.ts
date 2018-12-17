@@ -31,7 +31,7 @@ export class DelayedPromise<T> implements Promise<T> {
    */
   constructor(startCallback: () => Promise<T>) {
     let pending: Promise<T> | undefined;
-    this.start = () => {
+    this.start = async () => {
       pending = pending || startCallback();
       return pending;
     };
@@ -51,7 +51,7 @@ export class DelayedPromise<T> implements Promise<T> {
    * @param onrejected The callback to execute when the Promise is rejected.
    * @return A Promise for the completion of which ever callback is executed.
    */
-  public then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2> {
+  public async then<TResult1 = T, TResult2 = never>(onfulfilled?: ((value: T) => TResult1 | PromiseLike<TResult1>) | undefined | null, onrejected?: ((reason: any) => TResult2 | PromiseLike<TResult2>) | undefined | null): Promise<TResult1 | TResult2> {
     return this.start().then(onfulfilled, onrejected);
   }
 
@@ -60,7 +60,7 @@ export class DelayedPromise<T> implements Promise<T> {
    * @param onrejected The callback to execute when the Promise is rejected.
    * @return A Promise for the completion of the callback.
    */
-  public catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult> {
+  public async catch<TResult = never>(onrejected?: ((reason: any) => TResult | PromiseLike<TResult>) | undefined | null): Promise<T | TResult> {
     return this.start().catch(onrejected);
   }
 }

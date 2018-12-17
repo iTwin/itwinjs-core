@@ -30,7 +30,6 @@ import {
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
 import { RenderGraphic, GraphicBranch } from "../render/System";
-import { GraphicType } from "../render/GraphicBuilder";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { TileIO } from "./TileIO";
@@ -196,7 +195,7 @@ export class Tile implements IDisposable {
 
   private getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
     if (undefined === this._rangeGraphic) {
-      const builder = context.createGraphicBuilder(GraphicType.Scene);
+      const builder = context.createSceneGraphicBuilder();
       const color = this.hasSizeMultiplier ? ColorDef.red : (this.isLeaf ? ColorDef.blue : ColorDef.green);
       builder.setSymbology(color, color, 1);
       builder.addRangeBox(this.contentRange);
@@ -491,6 +490,8 @@ export namespace Tile {
     public readonly now: BeTimePoint;
     public readonly purgeOlderThan: BeTimePoint;
     private readonly _frustumPlanes?: FrustumPlanes;
+    private _numMissing = 0; // ###TODO: WIP
+    public get numMissingTiles(): number { return this._numMissing; }
 
     public getPixelSizeAtPoint(inPoint?: Point3d): number {
       return this.viewFrustum !== undefined ? this.viewFrustum.getPixelSizeAtPoint(inPoint) : this.context.getPixelSizeAtPoint();
@@ -533,6 +534,7 @@ export namespace Tile {
     }
 
     public insertMissing(tile: Tile): void {
+      ++this._numMissing; // ###TODO WIP - assumes no duplicates...
       this.context.requests.insert(tile);
     }
 
@@ -620,6 +622,9 @@ export class TileTree implements IDisposable {
 
     args.drawGraphics();
     args.requestMissing();
+
+    args.context.viewport.numSelectedTiles += selectedTiles.length;
+    args.context.viewport.numRequestedTiles += args.numMissingTiles;
   }
 
   public createDrawArgs(context: SceneContext): Tile.DrawArgs {
@@ -676,7 +681,7 @@ export abstract class TileLoader {
         break;
     }
 
-    let graphic: TileRequest.Graphic = { };
+    let graphic: TileRequest.Graphic = {};
     if (undefined !== reader) {
       try {
         graphic = await reader.read();

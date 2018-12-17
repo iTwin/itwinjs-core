@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { PrimitiveTool, IModelApp, AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, EventHandled, GraphicType, Viewport, LocateResponse, HitDetail, LocateFilterStatus } from "@bentley/imodeljs-frontend";
+import { PrimitiveTool, IModelApp, AccuDrawHintBuilder, BeButtonEvent, DynamicsContext, EventHandled, Viewport, LocateResponse, HitDetail, LocateFilterStatus } from "@bentley/imodeljs-frontend";
 import { Point3d, Vector3d } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 
@@ -50,7 +50,7 @@ export class SampleSnapTool extends PrimitiveTool {
     const tmpPoints = this.points.slice(); // Create shallow copy of accepted points
     tmpPoints.push(ev.point.clone()); // Include current cursor location
 
-    const builder = context.createGraphicBuilder(GraphicType.Scene);
+    const builder = context.createSceneGraphicBuilder();
     builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1);
     builder.addLineString(tmpPoints);
     context.addGraphic(builder.finish()); // Show linestring in view
@@ -130,7 +130,7 @@ export class CreateByPointsTool extends PrimitiveTool {
     const tmpPoints = this.points.slice(); // Create shallow copy of accepted points
     tmpPoints.push(ev.point.clone()); // Include current cursor location
 
-    const builder = context.createGraphicBuilder(GraphicType.Scene);
+    const builder = context.createSceneGraphicBuilder();
     builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1);
     builder.addLineString(tmpPoints);
     context.addGraphic(builder.finish()); // Show linestring in view

@@ -8,6 +8,8 @@ If you have questions, or wish to contribute to iModel.js, see our [Contributing
 
 ## About this Repository
 
+[![Build status](https://dev.azure.com/imodeljs/imodeljs/_apis/build/status/iModel.js)](https://dev.azure.com/imodeljs/imodeljs/_build/latest?definitionId=1)
+
 This repository is a *monorepo* that holds the source code to several iModel.js npm packages. It is built using [Rush](http://rushjs.io/).
 
 See [rush.json](./rush.json) for the list of packages. These packages are described below:

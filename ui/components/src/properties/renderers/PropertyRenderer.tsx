@@ -33,6 +33,8 @@ export interface SharedRendererProps {
   onColumnRatioChanged?: (ratio: number) => void;
   /** Indicated that property can be selected */
   isSelectable?: boolean;
+  /** Width of the whole property element */
+  width?: number;
 }
 
 /** Properties of [[PropertyRenderer]] React component */

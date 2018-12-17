@@ -111,4 +111,9 @@ export class Unit extends SchemaItem {
     if (visitor.visitUnit)
       await visitor.visitUnit(this);
   }
+
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitUnitSync)
+      visitor.visitUnitSync(this);
+  }
 }

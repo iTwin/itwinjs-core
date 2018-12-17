@@ -116,8 +116,8 @@ export class SchemaReadHelper<T = unknown> {
       this.loadSchemaReferenceSync(reference);
     }
 
-    if (this._visitor && this._visitor.visitEmptySchema)
-      this._visitor.visitEmptySchema(schema);
+    if (this._visitor && this._visitor.visitEmptySchemaSync)
+      this._visitor.visitEmptySchemaSync(schema);
 
     // Load all schema items
     for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
@@ -128,7 +128,7 @@ export class SchemaReadHelper<T = unknown> {
 
       const loadedItem = this.loadSchemaItemSync(schema, itemName, itemType, rawItem);
       if (loadedItem && this._visitor) {
-        loadedItem.accept(this._visitor);
+        loadedItem.acceptSync(this._visitor);
       }
     }
 
@@ -136,8 +136,8 @@ export class SchemaReadHelper<T = unknown> {
       this.loadCustomAttributeSync(customAttribute);
     }
 
-    if (this._visitor && this._visitor.visitFullSchema)
-      this._visitor.visitFullSchema(schema);
+    if (this._visitor && this._visitor.visitFullSchemaSync)
+      this._visitor.visitFullSchemaSync(schema);
 
     return schema;
   }
@@ -175,7 +175,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param itemType The SchemaItemType of the item to load.
    * @param schemaItemObject The Object to populate the SchemaItem with.
    */
-  private async loadSchemaItem(schema: Schema, name: string, itemType: string, schemaItemObject: unknown): Promise<SchemaItem | undefined> {
+  private async loadSchemaItem(schema: Schema, name: string, itemType: string, schemaItemObject: Readonly<unknown>): Promise<SchemaItem | undefined> {
     let schemaItem: AnySchemaItem | undefined;
 
     switch (parseSchemaItemType(itemType)) {
@@ -253,7 +253,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param itemType The SchemaItemType of the item to load.
    * @param schemaItemObject The Object to populate the SchemaItem with.
    */
-  private loadSchemaItemSync(schema: Schema, name: string, itemType: string, schemaItemObject: unknown): SchemaItem | undefined {
+  private loadSchemaItemSync(schema: Schema, name: string, itemType: string, schemaItemObject: Readonly<unknown>): SchemaItem | undefined {
     let schemaItem: AnySchemaItem | undefined;
 
     switch (parseSchemaItemType(itemType)) {
@@ -374,7 +374,7 @@ export class SchemaReadHelper<T = unknown> {
       if (foundItem) {
         const schemaItem = this.loadSchemaItemSync(this._schema!, ...foundItem);
         if (!skipVisitor && schemaItem && this._visitor) {
-          schemaItem.accept(this._visitor);
+          schemaItem.acceptSync(this._visitor);
         }
         return schemaItem;
       }
@@ -392,7 +392,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param unit The Unit object that we are loading dependencies for and "deserializing into".
    * @param rawUnit The serialized unit data
    */
-  private async loadUnit(unit: Unit, rawUnit: unknown): Promise<void> {
+  private async loadUnit(unit: Unit, rawUnit: Readonly<unknown>): Promise<void> {
     const unitProps = this._parser.parseUnit(rawUnit);
 
     await this.findSchemaItem(unitProps.phenomenon, true);
@@ -406,7 +406,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param unit The Unit object that we are loading dependencies for and "deserializing into".
    * @param rawUnit The serialized unit data
    */
-  private loadUnitSync(unit: Unit, rawUnit: unknown) {
+  private loadUnitSync(unit: Unit, rawUnit: Readonly<unknown>) {
     const unitProps = this._parser.parseUnit(rawUnit);
 
     this.findSchemaItemSync(unitProps.phenomenon, true);
@@ -420,7 +420,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param koq The KindOfQuantity object that we are loading dependencies for and "deserializing into".
    * @param rawKoQ The serialized kind of quantity data
    */
-  private async loadKindOfQuantity(koq: KindOfQuantity, rawKoQ: unknown): Promise<void> {
+  private async loadKindOfQuantity(koq: KindOfQuantity, rawKoQ: Readonly<unknown>): Promise<void> {
     const koqProps = this._parser.parseKindOfQuantity(rawKoQ);
     await this.findSchemaItem(koqProps.persistenceUnit);
 
@@ -440,7 +440,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param koq The KindOfQuantity object that we are loading dependencies for and "deserializing into".
    * @param rawKoQ The serialized kind of quantity data
    */
-  private loadKindOfQuantitySync(koq: KindOfQuantity, rawKoQ: unknown) {
+  private loadKindOfQuantitySync(koq: KindOfQuantity, rawKoQ: Readonly<unknown>) {
     const koqProps = this._parser.parseKindOfQuantity(rawKoQ);
     this.findSchemaItemSync(koqProps.persistenceUnit);
 
@@ -459,7 +459,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param constant The Constant object that we are loading the phenomenon dependency for
    * @param rawConstant The serialized constant data
    */
-  private async loadConstant(constant: Constant, rawConstant: unknown): Promise<void> {
+  private async loadConstant(constant: Constant, rawConstant: Readonly<unknown>): Promise<void> {
     const constantProps = this._parser.parseConstant(rawConstant);
 
     await this.findSchemaItem(constantProps.phenomenon, true);
@@ -471,7 +471,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param constant The Constant object that we are loading dependencies for and "deserializing into".
    * @param rawConstant The serialized constant data
    */
-  private loadConstantSync(constant: Constant, rawConstant: unknown) {
+  private loadConstantSync(constant: Constant, rawConstant: Readonly<unknown>) {
     const constantProps = this._parser.parseConstant(rawConstant);
 
     this.findSchemaItemSync(constantProps.phenomenon, true);
@@ -483,7 +483,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param invertedUnit The InvertedUnit object that we are loading dependencies for and "deserializing into".
    * @param rawInvertedUnit The serialized inverted unit data.
    */
-  private async loadInvertedUnit(invertedUnit: InvertedUnit, rawInvertedUnit: unknown): Promise<void> {
+  private async loadInvertedUnit(invertedUnit: InvertedUnit, rawInvertedUnit: Readonly<unknown>): Promise<void> {
     const invertedUnitProps = this._parser.parseInvertedUnit(rawInvertedUnit);
 
     await this.findSchemaItem(invertedUnitProps.invertsUnit, true);
@@ -497,7 +497,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param invertedUnit The InvertedUnit object that we are loading dependencies for and "deserializing into".
    * @param rawInvertedUnit The serialized inverted unit data.
    */
-  private loadInvertedUnitSync(invertedUnit: InvertedUnit, rawInvertedUnit: unknown) {
+  private loadInvertedUnitSync(invertedUnit: InvertedUnit, rawInvertedUnit: Readonly<unknown>) {
     const invertedUnitProps = this._parser.parseInvertedUnit(rawInvertedUnit);
 
     this.findSchemaItemSync(invertedUnitProps.invertsUnit, true);
@@ -511,11 +511,11 @@ export class SchemaReadHelper<T = unknown> {
    * @param format The Format object that we are loading dependencies for and "deserializing into".
    * @param rawFormat The serialized format data.
    */
-  private async loadFormat(format: Format, rawFormat: unknown): Promise<void> {
+  private async loadFormat(format: Format, rawFormat: Readonly<unknown>): Promise<void> {
     const formatProps = this._parser.parseFormat(rawFormat);
 
     if (undefined !== formatProps.composite) {
-      const formatUnits = await formatProps.composite.units!;
+      const formatUnits = formatProps.composite.units;
       for (const unit of formatUnits) {
         await this.findSchemaItem(unit.name, true);
       }
@@ -528,7 +528,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param format The Format object that we are loading dependencies for and "deserializing into".
    * @param rawFormat The serialized format data.
    */
-  private loadFormatSync(format: Format, rawFormat: unknown) {
+  private loadFormatSync(format: Format, rawFormat: Readonly<unknown>) {
     const formatProps = this._parser.parseFormat(rawFormat);
 
     if (undefined !== formatProps.composite) {
@@ -563,7 +563,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param classProps The parsed class props object.
    * @param rawClass The serialized class data.
    */
-  private async loadClass(classObj: AnyClass, classProps: ClassProps, rawClass: unknown): Promise<void> {
+  private async loadClass(classObj: AnyClass, classProps: ClassProps, rawClass: Readonly<unknown>): Promise<void> {
     // Load base class first
     let baseClass: undefined | SchemaItem;
     if (undefined !== classProps.baseClass) {
@@ -588,7 +588,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param classProps The parsed class props object.
    * @param rawClass The serialized class data.
    */
-  private loadClassSync(classObj: AnyClass, classProps: ClassProps, rawClass: unknown): void {
+  private loadClassSync(classObj: AnyClass, classProps: ClassProps, rawClass: Readonly<unknown>): void {
     // Load base class first
     let baseClass: undefined | SchemaItem;
     if (undefined !== classProps.baseClass) {
@@ -604,7 +604,7 @@ export class SchemaReadHelper<T = unknown> {
     }
 
     if (baseClass && this._visitor)
-      baseClass.accept(this._visitor);
+      baseClass.acceptSync(this._visitor);
   }
 
   /**
@@ -612,7 +612,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param entity The EntityClass that we are loading dependencies for and "deserializing into".
    * @param rawEntity The serialized entity class data.
    */
-  private async loadEntityClass(entity: EntityClass, rawEntity: unknown): Promise<void> {
+  private async loadEntityClass(entity: EntityClass, rawEntity: Readonly<unknown>): Promise<void> {
     const entityClassProps = this._parser.parseEntityClass(rawEntity);
 
     // Load Mixin classes first
@@ -629,7 +629,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param entity The EntityClass that we are loading dependencies for and "deserializing into".
    * @param rawEntity The serialized entity class data.
    */
-  private loadEntityClassSync(entity: EntityClass, rawEntity: unknown): void {
+  private loadEntityClassSync(entity: EntityClass, rawEntity: Readonly<unknown>): void {
     const entityClassProps = this._parser.parseEntityClass(rawEntity);
 
     // Load Mixin classes first
@@ -646,7 +646,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param mixin The Mixin that we are loading dependencies for and "deserializing into".
    * @param rawMixin The serialized mixin data.
    */
-  private async loadMixin(mixin: Mixin, rawMixin: unknown): Promise<void> {
+  private async loadMixin(mixin: Mixin, rawMixin: Readonly<unknown>): Promise<void> {
     const mixinProps = this._parser.parseMixin(rawMixin);
     const appliesToClass = await this.findSchemaItem(mixinProps.appliesTo, true);
 
@@ -660,13 +660,13 @@ export class SchemaReadHelper<T = unknown> {
    * @param mixin The Mixin that we are loading dependencies for and "deserializing into".
    * @param rawMixin The serialized mixin data.
    */
-  private loadMixinSync(mixin: Mixin, rawMixin: unknown): void {
+  private loadMixinSync(mixin: Mixin, rawMixin: Readonly<unknown>): void {
     const mixinProps = this._parser.parseMixin(rawMixin);
     const appliesToClass = this.findSchemaItemSync(mixinProps.appliesTo, true);
 
     this.loadClassSync(mixin, mixinProps, rawMixin);
     if (appliesToClass && this._visitor)
-      appliesToClass.accept(this._visitor);
+      appliesToClass.acceptSync(this._visitor);
   }
 
   /**
@@ -674,7 +674,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param rel The RelationshipClass that we are loading dependencies for and "deserializing into".
    * @param rawRel The serialized relationship class data.
    */
-  private async loadRelationshipClass(rel: RelationshipClass, rawRel: unknown): Promise<void> {
+  private async loadRelationshipClass(rel: RelationshipClass, rawRel: Readonly<unknown>): Promise<void> {
     const relationshipClassProps = this._parser.parseRelationshipClass(rawRel);
     await this.loadClass(rel, relationshipClassProps, rawRel);
     await this.loadRelationshipConstraint(rel.source, relationshipClassProps.source);
@@ -686,7 +686,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param rel The RelationshipClass that we are loading dependencies for and "deserializing into".
    * @param rawRel The serialized relationship class data.
    */
-  private loadRelationshipClassSync(rel: RelationshipClass, rawRel: unknown): void {
+  private loadRelationshipClassSync(rel: RelationshipClass, rawRel: Readonly<unknown>): void {
     const relationshipClassProps = this._parser.parseRelationshipClass(rawRel);
     this.loadClassSync(rel, relationshipClassProps, rawRel);
     this.loadRelationshipConstraintSync(rel.source, relationshipClassProps.source);
@@ -735,7 +735,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param propType The (serialized string) kind of property to create.
    * @param rawProperty The serialized property class data.
    */
-  private async loadPropertyTypes(classObj: AnyClass, propName: string, propType: string, rawProperty: unknown): Promise<void> {
+  private async loadPropertyTypes(classObj: AnyClass, propName: string, propType: string, rawProperty: Readonly<unknown>): Promise<void> {
 
     const loadTypeName = async (typeName: string) => {
       if (undefined === parsePrimitiveType(typeName))
@@ -785,7 +785,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param propType The (serialized string) kind of property to create.
    * @param rawProperty The serialized property class data.
    */
-  private loadPropertyTypesSync(classObj: AnyClass, propName: string, propType: string, rawProperty: unknown): void {
+  private loadPropertyTypesSync(classObj: AnyClass, propName: string, propType: string, rawProperty: Readonly<unknown>): void {
     const loadTypeName = (typeName: string) => {
       if (undefined === parsePrimitiveType(typeName))
         this.findSchemaItemSync(typeName);

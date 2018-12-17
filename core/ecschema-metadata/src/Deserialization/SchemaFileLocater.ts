@@ -79,8 +79,8 @@ export abstract class SchemaFileLocater {
     this.searchPaths = [];
   }
 
-  public readUtf8FileToString(filePath: string): Promise<string | undefined> {
-    return new Promise((resolve, reject) => {
+  public async readUtf8FileToString(filePath: string): Promise<string | undefined> {
+    return new Promise<string | undefined>((resolve, reject) => {
       fs.readFile(filePath, "utf-8", (err, data) => {
         if (err)
           reject(err);
@@ -90,8 +90,8 @@ export abstract class SchemaFileLocater {
     });
   }
 
-  public fileExists(filePath: string): Promise<boolean | undefined> {
-    return new Promise((resolve) => {
+  public async fileExists(filePath: string): Promise<boolean | undefined> {
+    return new Promise<boolean | undefined>((resolve) => {
       fs.exists(filePath, (data) => {
         resolve(data);
       });
