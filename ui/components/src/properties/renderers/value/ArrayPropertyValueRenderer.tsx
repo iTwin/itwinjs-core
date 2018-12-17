@@ -27,8 +27,6 @@ export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
             <TableArrayValueRenderer
               propertyRecord={record}
               onDialogOpen={context.onDialogOpen}
-              onPopupShow={context.onPopupShow}
-              onPopupHide={context.onPopupHide}
               orientation={context.orientation ? context.orientation : Orientation.Horizontal}
             />
           );

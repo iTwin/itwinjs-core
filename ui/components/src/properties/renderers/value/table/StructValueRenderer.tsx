@@ -31,8 +31,6 @@ export class TableStructValueRenderer extends React.PureComponent<TableSpecificV
         dialogTitle={`Struct of type "${this.props.propertyRecord.property.typename}"`}
         dialogContents={this.getDialogContents()}
         onDialogOpen={this.props.onDialogOpen}
-        onPopupShow={this.props.onPopupShow}
-        onPopupHide={this.props.onPopupHide}
       />
     );
   }
