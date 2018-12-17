@@ -167,6 +167,17 @@ class TableRowRenderer extends React.Component<TableRowRendererProps> {
   }
 }
 
+const enum TableUpdate {
+  None = 0,
+  Rows = 1,
+  Complete = 2,
+}
+
+const enum UpdateStatus {
+  Continue,
+  Abort,
+}
+
 /**
  * Table React component
  */
@@ -175,6 +186,8 @@ export class Table extends React.Component<TableProps, TableState> {
   private _pageAmount = 100;
   private _disposableListeners = new DisposableList();
   private _isMounted = false;
+  private _currentUpdate = TableUpdate.None;
+  private _pendingUpdate = TableUpdate.None;
   private _rowLoadGuid = Guid.createValue();
   private _rowSelectionHandler: SelectionHandler<number>;
   private _cellSelectionHandler: SelectionHandler<CellKey>;
@@ -278,9 +291,11 @@ export class Table extends React.Component<TableProps, TableState> {
     /* istanbul ignore next */
     if (this.props.onRender)
       this.props.onRender();
-    if (this.props.dataProvider !== previousProps.dataProvider)
-      this.update(); // tslint:disable-line:no-floating-promises
-    else if (this.props.isCellSelected !== previousProps.isCellSelected
+
+    if (this.props.dataProvider !== previousProps.dataProvider) {
+      // tslint:disable-next-line:no-floating-promises
+      this.update();
+    } else if (this.props.isCellSelected !== previousProps.isCellSelected
       || this.props.isRowSelected !== previousProps.isRowSelected) {
       this.updateSelectedRows();
       this.updateSelectedCells();
@@ -292,7 +307,9 @@ export class Table extends React.Component<TableProps, TableState> {
     /* istanbul ignore next */
     if (this.props.onRender)
       this.props.onRender();
-    this.update(); // tslint:disable-line:no-floating-promises
+
+    // tslint:disable-next-line:no-floating-promises
+    this.update();
   }
 
   public componentWillUnmount() {
@@ -300,10 +317,35 @@ export class Table extends React.Component<TableProps, TableState> {
     this._disposableListeners.dispose();
   }
 
-  private async updateColumns() {
+  private async handlePendingUpdate(): Promise<UpdateStatus> {
+    const update = this._pendingUpdate;
+    this._pendingUpdate = TableUpdate.None;
+
+    let status = UpdateStatus.Continue;
+    if (update === TableUpdate.Complete)
+      status = await this.updateColumns();
+    if (status === UpdateStatus.Continue && update > TableUpdate.None)
+      status = await this.updateRows();
+    return status;
+  }
+
+  private async updateColumns(): Promise<UpdateStatus> {
+    if (this._currentUpdate !== TableUpdate.None) {
+      this._pendingUpdate = TableUpdate.Complete;
+      return UpdateStatus.Abort;
+    }
+
+    this._currentUpdate = TableUpdate.Complete;
     const columnDescriptions = await this.props.dataProvider.getColumns();
+    this._currentUpdate = TableUpdate.None;
+
     if (!this._isMounted)
-      return;
+      return UpdateStatus.Abort;
+
+    if (this._pendingUpdate === TableUpdate.Complete) {
+      await this.handlePendingUpdate();
+      return UpdateStatus.Abort;
+    }
 
     let columns = columnDescriptions.map(this._columnDescriptionToReactDataGridColumn);
     if (this.props.settingsIdentifier) {
@@ -324,6 +366,11 @@ export class Table extends React.Component<TableProps, TableState> {
       }
     }
     this.setState({ columns });
+
+    if (this._pendingUpdate !== TableUpdate.None) {
+      return this.handlePendingUpdate();
+    }
+    return UpdateStatus.Continue;
   }
 
   private _onColumnsChanged = async () => {
@@ -332,10 +379,23 @@ export class Table extends React.Component<TableProps, TableState> {
     this._cellItemSelectionHandlers = undefined;
   }
 
-  private async updateRows() {
+  private async updateRows(): Promise<UpdateStatus> {
+    if (this._currentUpdate !== TableUpdate.None) {
+      if (this._pendingUpdate === TableUpdate.None)
+        this._pendingUpdate = TableUpdate.Rows;
+      return UpdateStatus.Abort;
+    }
+
+    this._currentUpdate = TableUpdate.Rows;
     const rowsCount = await this.props.dataProvider.getRowsCount();
+    this._currentUpdate = TableUpdate.None;
+
     if (!this._isMounted)
-      return;
+      return UpdateStatus.Abort;
+
+    if (this._pendingUpdate !== TableUpdate.None) {
+      return this.handlePendingUpdate();
+    }
 
     if (rowsCount !== this.state.rowsCount) {
       this._rowItemSelectionHandlers = undefined;
@@ -343,8 +403,9 @@ export class Table extends React.Component<TableProps, TableState> {
     }
 
     this._rowGetterAsync.cache.clear!();
-    this.setState({ rowsCount });
+    this.setState({ rowsCount, rows: [] });
     this._rowGetterAsync(0, true); // tslint:disable-line:no-floating-promises
+    return UpdateStatus.Continue;
   }
 
   private _onRowsChanged = async () => {
@@ -352,9 +413,11 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   /** @hidden */
-  public async update() {
-    await this.updateColumns();
-    await this.updateRows();
+  public async update(): Promise<UpdateStatus> {
+    const status = await this.updateColumns();
+    if (status === UpdateStatus.Abort)
+      return status;
+    return this.updateRows();
   }
 
   public updateSelectedRows() {
@@ -589,7 +652,11 @@ export class Table extends React.Component<TableProps, TableState> {
     // load up to `this._pageAmount` more rows
     const maxIndex = Math.min(this.state.rowsCount, index + this._pageAmount);
     const loadResult = await this.loadRows(index, maxIndex);
+
     if (!this._isMounted)
+      return;
+
+    if (this._pendingUpdate !== TableUpdate.None)
       return;
 
     const selectedRowIndices = this._selectedRowIndices;
