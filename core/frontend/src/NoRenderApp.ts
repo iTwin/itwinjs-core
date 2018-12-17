@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { RenderSystem, RenderTarget } from "./rendering";
+import { RenderSystem, RenderTarget, AnimationBranchStates } from "./rendering";
 import { IModelApp } from "./IModelApp";
 import { ViewRect } from "./Viewport";
 
@@ -18,6 +18,8 @@ export class NullTarget extends RenderTarget {
   public get cameraFrustumNearScaleLimit(): number { return 0; }
   public get viewRect(): ViewRect { return new ViewRect(); }
   public get wantInvertBlackBackground(): boolean { return false; }
+  public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
+  public set animationBranches(_branches: AnimationBranchStates | undefined) { }
   public onDestroy(): void { }
   public reset(): void { }
   public changeScene(): void { }
@@ -35,6 +37,7 @@ export class NullTarget extends RenderTarget {
   public updateViewRect(): boolean { return false; }
   public readPixels(): void { }
   public readImage() { return undefined; }
+
 }
 
 /**

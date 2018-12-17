@@ -6,7 +6,7 @@
 
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
-import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel } from "../System";
+import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates } from "../System";
 import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
@@ -217,6 +217,7 @@ export abstract class Target extends RenderTarget {
   private _currentOverrides?: FeatureOverrides;
   private _batches: Batch[] = [];
   public plan?: RenderPlan;
+  private _animationBranches?: AnimationBranchStates;
 
   protected constructor(rect?: ViewRect) {
     super();
@@ -254,6 +255,9 @@ export abstract class Target extends RenderTarget {
 
   public get scene(): GraphicList { return this._scene; }
   public get dynamics(): GraphicList | undefined { return this._dynamics; }
+
+  public get animationBranches(): AnimationBranchStates | undefined { return this._animationBranches; }
+  public set animationBranches(branches: AnimationBranchStates | undefined) { this._animationBranches = branches; }
 
   public getWorldDecorations(decs: GraphicList): Branch {
     if (undefined === this._worldDecorations) {

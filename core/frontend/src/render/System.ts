@@ -22,6 +22,7 @@ import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
+import { ClipPlanesVolume } from "./webgl/ClipVolume";
 
 /* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
  * @hidden
@@ -74,7 +75,7 @@ export class RenderPlan {
     const clipVec = view.getViewClip();
     const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
     const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights, view.displayStyle.analysisStyle);
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights, style.analysisStyle);
     if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
       rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
 
@@ -218,6 +219,8 @@ export class GraphicBranch implements IDisposable {
   private _viewFlagOverrides = new ViewFlag.Overrides();
   /** Optional symbology overrides to be applied to all graphics in this branch */
   public symbologyOverrides?: FeatureSymbology.Overrides;
+  /** Optional animation branch Id. */
+  public animationId?: string;
 
   public constructor(ownsEntries: boolean = false) { this.ownsEntries = ownsEntries; }
 
@@ -494,6 +497,11 @@ export abstract class RenderTarget implements IDisposable {
   public abstract set animationFraction(fraction: number);
 
   /** @hidden */
+  public abstract get animationBranches(): AnimationBranchStates | undefined;
+  /** @hidden */
+  public abstract set animationBranches(transforms: AnimationBranchStates | undefined);
+
+  /** @hidden */
   public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
   public abstract dispose(): void;
@@ -737,3 +745,11 @@ export abstract class RenderSystem implements IDisposable {
   /** @hidden */
   public onInitialized(): void { }
 }
+/** Clip/Transform for a branch that are varied over time. */
+export class AnimationBranchState {
+  public readonly transform?: Transform;
+  public readonly clip?: ClipPlanesVolume;
+  constructor(transform?: Transform, clip?: ClipPlanesVolume) { this.transform = transform; this.clip = clip; }
+}
+/** Mapping from node/branch IDs to animation branch state  */
+export type AnimationBranchStates = Map<string, AnimationBranchState>;

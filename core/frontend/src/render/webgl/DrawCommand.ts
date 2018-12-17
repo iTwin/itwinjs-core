@@ -147,6 +147,18 @@ class BranchCommand extends DrawCommand {
     this._pushOrPop = pushOrPop;
   }
 
+  public preExecute(_exec: ShaderProgramExecutor): void {
+    if (this._branch.branch.animationId && _exec.target.animationBranches) {
+      const animationBranch = _exec.target.animationBranches.get(this._branch.branch.animationId);
+      if (animationBranch) {
+        if (animationBranch.transform)
+          this._branch.localToWorldTransform = animationBranch.transform;
+        if (animationBranch.clip)
+          this._branch.clips = animationBranch.clip;
+      }
+    }
+  }
+
   public execute(exec: ShaderProgramExecutor): void {
     if (PushOrPop.Push === this._pushOrPop) {
       exec.pushBranch(this._branch);

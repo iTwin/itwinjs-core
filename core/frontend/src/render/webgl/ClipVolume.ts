@@ -107,6 +107,10 @@ export class ClipPlanesVolume extends RenderClipVolume {
 
     const clipPrim = clipVec.clips[0];
     const clipPlaneSet = clipPrim.fetchClipPlanesRef();
+    return ClipPlanesVolume.createFromClipPlaneSet(clipPlaneSet);
+  }
+
+  public static createFromClipPlaneSet(clipPlaneSet: UnionOfConvexClipPlaneSets) {
     let numPlanes = 0;
     let numSets = 0;
     for (const set of clipPlaneSet.convexSets) {

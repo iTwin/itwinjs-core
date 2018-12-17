@@ -56,9 +56,6 @@ export class ModelState extends EntityState implements ModelProps {
 
   /** Runs when the iModel of this iModelState closes. */
   public onIModelConnectionClose() { }
-
-  /** Return whether this model's range should be used for "fit" tool */
-  public useRangeForFit(): boolean { return true; }
 }
 
 export interface TileTreeModelState {
