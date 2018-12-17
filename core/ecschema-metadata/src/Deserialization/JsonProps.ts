@@ -3,8 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { CustomAttribute } from "./../Metadata/CustomAttribute";
-
 export type AnyPropertyProps = PrimitivePropertyProps | StructPropertyProps | PrimitiveArrayPropertyProps | StructArrayPropertyProps | NavigationPropertyProps;
 
 export type AnyClassProps = EntityClassProps | MixinProps | CustomAttributeClassProps | RelationshipClassProps;
@@ -18,7 +16,6 @@ export interface SchemaProps {
   readonly label?: string;
   readonly description?: string;
   readonly references?: SchemaReferenceProps[];
-  readonly customAttributes?: CustomAttribute[];
 }
 
 export interface SchemaReferenceProps {
@@ -38,7 +35,6 @@ export interface SchemaItemProps {
 export interface ClassProps extends SchemaItemProps {
   readonly modifier?: string;
   readonly baseClass?: string;
-  readonly customAttributes?: object[];
 }
 
 export interface EntityClassProps extends ClassProps {
@@ -68,7 +64,6 @@ export interface RelationshipConstraintProps {
   readonly polymorphic: boolean;
   readonly abstractConstraint?: string;
   readonly constraintClasses: string[];
-  readonly customAttributes?: object[];
 }
 
 export interface EnumerationProps extends SchemaItemProps {
@@ -102,7 +97,6 @@ export interface PropertyProps {
   readonly isReadOnly?: boolean;
   readonly category?: string;
   readonly priority?: number;
-  readonly customAttributes?: CustomAttribute[];
   readonly inherited?: boolean;
   readonly kindOfQuantity?: string;
 }

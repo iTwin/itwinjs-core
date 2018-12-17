@@ -165,11 +165,12 @@ describe("ECClass", () => {
       name: "TestSchema",
       version: "1.2.3",
       items: {
+        TestCAClass: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
         testClass: {
           schemaItemType: "EntityClass",
           customAttributes: [
             {
-              className: "CoreCustomAttributes.HiddenSchema",
+              className: "TestSchema.TestCAClass",
               ShowClasses: true,
 
             },
@@ -184,8 +185,8 @@ describe("ECClass", () => {
       const testClass = await schema.getItem<EntityClass>("testClass");
 
       assert.isDefined(testClass);
-      assert.isDefined(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"]);
-      assert(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
+      assert.isDefined(testClass!.customAttributes!["TestSchema.TestCAClass"]);
+      assert(testClass!.customAttributes!["TestSchema.TestCAClass"].ShowClasses === true);
     });
     it("sync - Deserialize One Custom Attribute", () => {
       schema = Schema.fromJsonSync(oneCustomAttributeJson);
@@ -193,22 +194,24 @@ describe("ECClass", () => {
       const testClass = schema.getItemSync<EntityClass>("testClass");
 
       assert.isDefined(testClass);
-      assert.isDefined(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"]);
-      assert(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
+      assert.isDefined(testClass!.customAttributes!["TestSchema.TestCAClass"]);
+      assert(testClass!.customAttributes!["TestSchema.TestCAClass"].ShowClasses === true);
     });
     const twoCustomAttributesJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
       name: "TestSchema",
       version: "1.2.3",
       items: {
+        TestCAClassA: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+        TestCAClassB: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
         testClass: {
           schemaItemType: "EntityClass",
           customAttributes: [
             {
-              className: "CoreCustomAttributes.HiddenSchema",
+              className: "TestSchema.TestCAClassA",
             },
             {
-              className: "ExampleCustomAttributes.ExampleSchema",
+              className: "TestSchema.TestCAClassB",
             },
           ],
         },
@@ -221,8 +224,8 @@ describe("ECClass", () => {
       const testClass = await schema.getItem<EntityClass>("testClass");
 
       assert.isDefined(testClass);
-      assert.isDefined(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"]);
-      assert.isDefined(testClass!.customAttributes!["ExampleCustomAttributes.ExampleSchema"]);
+      assert.isDefined(testClass!.customAttributes!["TestSchema.TestCAClassA"]);
+      assert.isDefined(testClass!.customAttributes!["TestSchema.TestCAClassB"]);
     });
     it("sync - Deserialize Two Custom Attributes", () => {
       schema = Schema.fromJsonSync(twoCustomAttributesJson);
@@ -230,8 +233,8 @@ describe("ECClass", () => {
       const testClass = schema.getItemSync<EntityClass>("testClass");
 
       assert.isDefined(testClass);
-      assert.isDefined(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"]);
-      assert.isDefined(testClass!.customAttributes!["ExampleCustomAttributes.ExampleSchema"]);
+      assert.isDefined(testClass!.customAttributes!["TestSchema.TestCAClassA"]);
+      assert.isDefined(testClass!.customAttributes!["TestSchema.TestCAClassB"]);
     });
     const mustBeAnArrayJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
@@ -256,19 +259,22 @@ describe("ECClass", () => {
         name: "TestSchema",
         version: "1.2.3",
         items: {
+          TestCAClassA: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+          TestCAClassB: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
+          TestCAClassC: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyClass" },
           testClass: {
             schemaItemType: "EntityClass",
             customAttributes: [
               {
-                className: "CoreCustomAttributes.HiddenSchema",
+                className: "TestSchema.TestCAClassA",
                 ShowClasses: 1.2,
               },
               {
-                className: "ExampleCustomAttributes.ExampleSchema",
+                className: "TestSchema.TestCAClassB",
                 ExampleAttribute: true,
               },
               {
-                className: "AnotherCustomAttributes.ExampleSchema1",
+                className: "TestSchema.TestCAClassC",
                 Example2Attribute: "example",
               },
             ],
@@ -280,14 +286,13 @@ describe("ECClass", () => {
       const testClass = schema.getItemSync<EntityClass>("testClass");
 
       assert.isDefined(testClass);
-      assert.isDefined(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"]);
-      assert.isDefined(testClass!.customAttributes!["ExampleCustomAttributes.ExampleSchema"]);
-      assert.isDefined(testClass!.customAttributes!["AnotherCustomAttributes.ExampleSchema1"]);
-      assert(testClass!.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === 1.2);
-      assert(testClass!.customAttributes!["ExampleCustomAttributes.ExampleSchema"].ExampleAttribute === true);
-      assert(testClass!.customAttributes!["AnotherCustomAttributes.ExampleSchema1"].Example2Attribute === "example");
-    });
-
+      assert.isDefined(testClass!.customAttributes!["TestSchema.TestCAClassA"]);
+      assert.isDefined(testClass!.customAttributes!["TestSchema.TestCAClassB"]);
+      assert.isDefined(testClass!.customAttributes!["TestSchema.TestCAClassC"]);
+      assert(testClass!.customAttributes!["TestSchema.TestCAClassA"].ShowClasses === 1.2);
+      assert(testClass!.customAttributes!["TestSchema.TestCAClassB"].ExampleAttribute === true);
+      assert(testClass!.customAttributes!["TestSchema.TestCAClassC"].Example2Attribute === "example");
+    })
     // Used to test that all property types are deserialized correctly. For failure and other tests look at the property
     // specific test files.
     it("with properties", async () => {
@@ -523,6 +528,9 @@ describe("ECClass", () => {
       name: "TestSchema",
       version: "1.2.3",
       items: {
+        TestCAClassA: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyProperty" },
+        TestCAClassB: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyProperty" },
+        TestCAClassC: { schemaItemType: "CustomAttributeClass", appliesTo: "AnyProperty" },
         testBaseClass: {
           schemaItemType: "EntityClass",
         },
@@ -540,15 +548,15 @@ describe("ECClass", () => {
               typeName: "double",
               customAttributes: [
                 {
-                  className: "CoreCustomAttributes.HiddenSchema",
+                  className: "TestSchema.TestCAClassA",
                   ShowClasses: true,
                 },
                 {
-                  className: "CoreAttributes.HiddenSchema",
+                  className: "TestSchema.TestCAClassB",
                   FloatValue: 1.2,
                 },
                 {
-                  className: "CoreCustom.HiddenSchema",
+                  className: "TestSchema.TestCAClassC",
                   IntegerValue: 5,
                 },
               ],

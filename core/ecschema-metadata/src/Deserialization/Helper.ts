@@ -17,13 +17,16 @@ import { Format } from "./../Metadata/Format";
 import { InvertedUnit } from "./../Metadata/InvertedUnit";
 import { KindOfQuantity } from "./../Metadata/KindOfQuantity";
 import { Mixin } from "./../Metadata/Mixin";
-import { Property } from "./../Metadata/Property";
-import { RelationshipClass, RelationshipConstraint } from "./../Metadata/RelationshipClass";
+import { Property, MutableProperty } from "./../Metadata/Property";
+import { RelationshipClass, RelationshipConstraint, MutableRelationshipConstraint } from "./../Metadata/RelationshipClass";
 import { Schema, MutableSchema } from "./../Metadata/Schema";
 import { SchemaItem } from "./../Metadata/SchemaItem";
 import { Unit } from "./../Metadata/Unit";
 import { SchemaKey, ECVersion, SchemaItemKey } from "./../SchemaKey";
 import { getItemNamesFromFormatString } from "../utils/FormatEnums";
+
+type AnyCAContainer = Schema | ECClass | Property | RelationshipConstraint;
+type AnyMutableCAContainer = MutableSchema | MutableClass | MutableProperty | MutableRelationshipConstraint;
 
 /**
  * @hidden
@@ -84,9 +87,7 @@ export class SchemaReadHelper<T = unknown> {
       }
     }
 
-    for (const customAttribute of this._parser.getCustomAttributes()) {
-      await this.loadCustomAttribute(customAttribute);
-    }
+    await this.loadCustomAttributes(schema, this._parser.getSchemaCustomAttributes());
 
     if (this._visitor && this._visitor.visitFullSchema)
       await this._visitor.visitFullSchema(schema);
@@ -132,9 +133,7 @@ export class SchemaReadHelper<T = unknown> {
       }
     }
 
-    for (const customAttribute of this._parser.getCustomAttributes()) {
-      this.loadCustomAttributeSync(customAttribute);
-    }
+    this.loadCustomAttributesSync(schema, this._parser.getSchemaCustomAttributes());
 
     if (this._visitor && this._visitor.visitFullSchemaSync)
       this._visitor.visitFullSchemaSync(schema);
@@ -542,22 +541,6 @@ export class SchemaReadHelper<T = unknown> {
   }
 
   /**
-   * Given a deserialized CustomAttribute object, make sure that the corresponding CustomAttributeClass can be found within the current context.
-   * @param customAttributeProps The deserialized CustomAttribute.
-   */
-  private async loadCustomAttribute(customAttributeProps: CustomAttribute): Promise<void> {
-    await this.findSchemaItem(customAttributeProps.className);
-  }
-
-  /**
-   * Given a deserialized CustomAttribute object, make sure that the corresponding CustomAttributeClass can be found within the current context.
-   * @param customAttributeProps The deserialized CustomAttribute.
-   */
-  private loadCustomAttributeSync(customAttributeProps: CustomAttribute): void {
-    this.findSchemaItemSync(customAttributeProps.className);
-  }
-
-  /**
    * Load the base class and property type dependencies for an ECClass object and load the ECClass (and its properties) from its serialized format.
    * @param classObj The ECClass object that we are loading dependencies for and "deserializing into".
    * @param classProps The parsed class props object.
@@ -580,6 +563,8 @@ export class SchemaReadHelper<T = unknown> {
 
     if (baseClass && this._visitor)
       await baseClass.accept(this._visitor);
+
+    await this.loadCustomAttributes(classObj, this._parser.getClassCustomAttributes(rawClass));
   }
 
   /**
@@ -605,6 +590,8 @@ export class SchemaReadHelper<T = unknown> {
 
     if (baseClass && this._visitor)
       baseClass.acceptSync(this._visitor);
+
+    this.loadCustomAttributesSync(classObj, this._parser.getClassCustomAttributes(rawClass));
   }
 
   /**
@@ -679,6 +666,10 @@ export class SchemaReadHelper<T = unknown> {
     await this.loadClass(rel, relationshipClassProps, rawRel);
     await this.loadRelationshipConstraint(rel.source, relationshipClassProps.source);
     await this.loadRelationshipConstraint(rel.target, relationshipClassProps.target);
+
+    const [sourceCustomAttributes, targetCustomAttributes] = this._parser.getRelationshipConstraintCustomAttributes(rawRel);
+    await this.loadCustomAttributes(rel.source, sourceCustomAttributes);
+    await this.loadCustomAttributes(rel.target, targetCustomAttributes);
   }
 
   /**
@@ -691,6 +682,10 @@ export class SchemaReadHelper<T = unknown> {
     this.loadClassSync(rel, relationshipClassProps, rawRel);
     this.loadRelationshipConstraintSync(rel.source, relationshipClassProps.source);
     this.loadRelationshipConstraintSync(rel.target, relationshipClassProps.target);
+
+    const [sourceCustomAttributes, targetCustomAttributes] = this._parser.getRelationshipConstraintCustomAttributes(rawRel);
+    this.loadCustomAttributesSync(rel.source, sourceCustomAttributes);
+    this.loadCustomAttributesSync(rel.target, targetCustomAttributes);
   }
 
   /**
@@ -733,7 +728,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param classObj The ECClass that the Property should be created in.
    * @param propName The name of the Property.
    * @param propType The (serialized string) kind of property to create.
-   * @param rawProperty The serialized property class data.
+   * @param rawProperty The serialized property data.
    */
   private async loadPropertyTypes(classObj: AnyClass, propName: string, propType: string, rawProperty: Readonly<unknown>): Promise<void> {
 
@@ -747,25 +742,25 @@ export class SchemaReadHelper<T = unknown> {
         const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
         await loadTypeName(primPropertyProps.typeName);
         const primProp = await (classObj as MutableClass).createPrimitiveProperty(propName, primPropertyProps.typeName);
-        return this.loadProperty(primProp, primPropertyProps);
+        return this.loadProperty(primProp, primPropertyProps, rawProperty);
 
       case "StructProperty":
         const structPropertyProps = this._parser.parseStructProperty(rawProperty);
         await loadTypeName(structPropertyProps.typeName);
         const structProp = await (classObj as MutableClass).createStructProperty(propName, structPropertyProps.typeName);
-        return this.loadProperty(structProp, structPropertyProps);
+        return this.loadProperty(structProp, structPropertyProps, rawProperty);
 
       case "PrimitiveArrayProperty":
         const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
         await loadTypeName(primArrPropertyProps.typeName);
         const primArrProp = await (classObj as MutableClass).createPrimitiveArrayProperty(propName, primArrPropertyProps.typeName);
-        return this.loadProperty(primArrProp, primArrPropertyProps);
+        return this.loadProperty(primArrProp, primArrPropertyProps, rawProperty);
 
       case "StructArrayProperty":
         const structArrPropertyProps = this._parser.parseStructArrayProperty(rawProperty);
         await loadTypeName(structArrPropertyProps.typeName);
         const structArrProp = await (classObj as MutableClass).createStructArrayProperty(propName, structArrPropertyProps.typeName);
-        return this.loadProperty(structArrProp, structArrPropertyProps);
+        return this.loadProperty(structArrProp, structArrPropertyProps, rawProperty);
 
       case "NavigationProperty":
         if (classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass && classObj.schemaItemType !== SchemaItemType.Mixin)
@@ -774,7 +769,7 @@ export class SchemaReadHelper<T = unknown> {
         const navPropertyProps = this._parser.parseNavigationProperty(rawProperty);
         await this.findSchemaItem(navPropertyProps.relationshipName);
         const navProp = await (classObj as MutableEntityClass).createNavigationProperty(propName, navPropertyProps.relationshipName, navPropertyProps.direction);
-        return this.loadProperty(navProp, navPropertyProps);
+        return this.loadProperty(navProp, navPropertyProps, rawProperty);
     }
   }
 
@@ -783,7 +778,7 @@ export class SchemaReadHelper<T = unknown> {
    * @param classObj The ECClass that the Property should be created in.
    * @param propName The name of the Property.
    * @param propType The (serialized string) kind of property to create.
-   * @param rawProperty The serialized property class data.
+   * @param rawProperty The serialized property data.
    */
   private loadPropertyTypesSync(classObj: AnyClass, propName: string, propType: string, rawProperty: Readonly<unknown>): void {
     const loadTypeName = (typeName: string) => {
@@ -796,25 +791,25 @@ export class SchemaReadHelper<T = unknown> {
         const primPropertyProps = this._parser.parsePrimitiveProperty(rawProperty);
         loadTypeName(primPropertyProps.typeName);
         const primProp = (classObj as MutableClass).createPrimitivePropertySync(propName, primPropertyProps.typeName);
-        return this.loadPropertySync(primProp, primPropertyProps);
+        return this.loadPropertySync(primProp, primPropertyProps, rawProperty);
 
       case "StructProperty":
         const structPropertyProps = this._parser.parseStructProperty(rawProperty);
         loadTypeName(structPropertyProps.typeName);
         const structProp = (classObj as MutableClass).createStructPropertySync(propName, structPropertyProps.typeName);
-        return this.loadPropertySync(structProp, structPropertyProps);
+        return this.loadPropertySync(structProp, structPropertyProps, rawProperty);
 
       case "PrimitiveArrayProperty":
         const primArrPropertyProps = this._parser.parsePrimitiveArrayProperty(rawProperty);
         loadTypeName(primArrPropertyProps.typeName);
         const primArrProp = (classObj as MutableClass).createPrimitiveArrayPropertySync(propName, primArrPropertyProps.typeName);
-        return this.loadPropertySync(primArrProp, primArrPropertyProps);
+        return this.loadPropertySync(primArrProp, primArrPropertyProps, rawProperty);
 
       case "StructArrayProperty":
         const structArrPropertyProps = this._parser.parseStructArrayProperty(rawProperty);
         loadTypeName(structArrPropertyProps.typeName);
         const structArrProp = (classObj as MutableClass).createStructArrayPropertySync(propName, structArrPropertyProps.typeName);
-        return this.loadPropertySync(structArrProp, structArrPropertyProps);
+        return this.loadPropertySync(structArrProp, structArrPropertyProps, rawProperty);
 
       case "NavigationProperty":
         if (classObj.schemaItemType !== SchemaItemType.EntityClass && classObj.schemaItemType !== SchemaItemType.RelationshipClass && classObj.schemaItemType !== SchemaItemType.Mixin)
@@ -823,7 +818,7 @@ export class SchemaReadHelper<T = unknown> {
         const navPropertyProps = this._parser.parseNavigationProperty(rawProperty);
         this.findSchemaItemSync(navPropertyProps.relationshipName);
         const navProp = (classObj as MutableEntityClass).createNavigationPropertySync(propName, navPropertyProps.relationshipName, navPropertyProps.direction);
-        return this.loadPropertySync(navProp, navPropertyProps);
+        return this.loadPropertySync(navProp, navPropertyProps, rawProperty);
     }
   }
 
@@ -831,8 +826,9 @@ export class SchemaReadHelper<T = unknown> {
    * Load the propertyCategory, kindOfQuantity, and customAttribute dependencies for a Property object and load the Property from its parsed props.
    * @param propertyObj The Property that we are loading dependencies for and "deserializing into".
    * @param props The parsed property props.
+   * @param rawProperty The serialized property data.
    */
-  private async loadProperty<U extends Property>(propertyObj: U, props: PropertyProps): Promise<void> {
+  private async loadProperty<U extends Property>(propertyObj: U, props: PropertyProps, rawProperty: Readonly<unknown>): Promise<void> {
     if (undefined !== props.category) {
       await this.findSchemaItem(props.category);
     }
@@ -841,27 +837,50 @@ export class SchemaReadHelper<T = unknown> {
       await this.findSchemaItem(props.kindOfQuantity);
     }
 
-    // TODO Load CustomAttributeClasses
-
     await propertyObj.deserialize(props);
+    await this.loadCustomAttributes(propertyObj, this._parser.getPropertyCustomAttributes(rawProperty));
   }
 
   /**
    * Load the propertyCategory, kindOfQuantity, and customAttribute dependencies for a Property object and load the Property from its parsed props.
    * @param propertyObj The Property that we are loading dependencies for and "deserializing into".
    * @param props The parsed property props.
+   * @param rawProperty The serialized property data.
    */
-  private loadPropertySync<U extends Property>(prop: U, propertyProps: PropertyProps): void {
-    if (undefined !== propertyProps.category) {
-      this.findSchemaItemSync(propertyProps.category);
+  private loadPropertySync<U extends Property>(propertyObj: U, props: PropertyProps, rawProperty: Readonly<unknown>): void {
+    if (undefined !== props.category) {
+      this.findSchemaItemSync(props.category);
     }
 
-    if (undefined !== propertyProps.kindOfQuantity) {
-      this.findSchemaItemSync(propertyProps.kindOfQuantity);
+    if (undefined !== props.kindOfQuantity) {
+      this.findSchemaItemSync(props.kindOfQuantity);
     }
 
-    // TODO Load CustomAttributeClasses
+    propertyObj.deserializeSync(props);
+    this.loadCustomAttributesSync(propertyObj, this._parser.getPropertyCustomAttributes(rawProperty));
+  }
 
-    prop.deserializeSync(propertyProps);
+  /**
+   * Load the customAttribute class dependencies for a set of CustomAttribute objects and add them to a given custom attribute container.
+   * @param container The CustomAttributeContainer that each CustomAttribute will be added to.
+   * @param customAttributes An iterable set of parsed CustomAttribute objects.
+   */
+  private async loadCustomAttributes(container: AnyCAContainer, customAttributes: Iterable<CustomAttribute>): Promise<void> {
+    for (const customAttribute of customAttributes) {
+      await this.findSchemaItem(customAttribute.className);
+      (container as AnyMutableCAContainer).addCustomAttribute(customAttribute);
+    }
+  }
+
+  /**
+   * Load the customAttribute class dependencies for a set of CustomAttribute objects and add them to a given custom attribute container.
+   * @param container The CustomAttributeContainer that each CustomAttribute will be added to.
+   * @param customAttributes An iterable set of parsed CustomAttribute objects.
+   */
+  private loadCustomAttributesSync(container: AnyCAContainer, customAttributes: Iterable<CustomAttribute>): void {
+    for (const customAttribute of customAttributes) {
+      this.findSchemaItemSync(customAttribute.className);
+      (container as AnyMutableCAContainer).addCustomAttribute(customAttribute);
+    }
   }
 }
