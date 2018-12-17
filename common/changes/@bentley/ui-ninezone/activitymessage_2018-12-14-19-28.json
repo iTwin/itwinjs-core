@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added showDialogInitially support to ActivityMessageDetails",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

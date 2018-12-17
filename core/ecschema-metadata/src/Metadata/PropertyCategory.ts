@@ -40,4 +40,9 @@ export class PropertyCategory extends SchemaItem {
     if (visitor.visitPropertyCategory)
       await visitor.visitPropertyCategory(this);
   }
+
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitPropertyCategorySync)
+      visitor.visitPropertyCategorySync(this);
+  }
 }

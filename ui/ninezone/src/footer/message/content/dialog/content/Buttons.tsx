@@ -18,23 +18,24 @@ export interface ButtonsProps extends CommonProps, NoChildrenProps {
 }
 
 /** Content with buttons. Used in [[Dialog]] component. */
-// tslint:disable-next-line:variable-name
-export const Buttons: React.StatelessComponent<ButtonsProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-dialog-content-buttons",
-    props.className);
+export class Buttons extends React.PureComponent<ButtonsProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-dialog-content-buttons",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      <div className="nz-content">
-        {props.content}
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        <div className="nz-content">
+          {this.props.content}
+        </div>
+        <div className="nz-buttons">
+          {this.props.buttons}
+        </div>
       </div>
-      <div className="nz-buttons">
-        {props.buttons}
-      </div>
-    </div>
-  );
-};
+    );
+  }
+}

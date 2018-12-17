@@ -256,4 +256,8 @@ export class KindOfQuantity extends SchemaItem {
     if (visitor.visitKindOfQuantity)
       await visitor.visitKindOfQuantity((this as any) as KindOfQuantity);
   }
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitKindOfQuantitySync)
+      visitor.visitKindOfQuantitySync((this as any) as KindOfQuantity);
+  }
 }

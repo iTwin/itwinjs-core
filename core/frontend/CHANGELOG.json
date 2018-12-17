@@ -2,6 +2,48 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.178.0",
+      "tag": "@bentley/imodeljs-frontend_v0.178.0",
+      "date": "Thu, 13 Dec 2018 22:06:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix view becoming black in some circumstnces when locate cursor exits viewport."
+          },
+          {
+            "comment": "Only make createGraphicBuilder available to DecorationContext. DynamicsContext/SceneContext require a scene graphic."
+          },
+          {
+            "comment": "Added StringGetter support to ItemDefBase, ItemProps & ToolButton. Added IModelApp.i18n checks to Tool for unit tests."
+          },
+          {
+            "comment": "Fix failure to locate elements if their transparency is overridden."
+          },
+          {
+            "comment": "Added tool prompts. Fix dynamics changing locate circle. Hide touch cursor on mouse motion."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.177.0",
+      "tag": "@bentley/imodeljs-frontend_v0.177.0",
+      "date": "Wed, 12 Dec 2018 17:21:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added TwoWayViewportSync class to connect two Viewports so that changes to one are reflected in the other."
+          },
+          {
+            "comment": "Renamed ViewStateData to ViewStateProps and ViewState.createFromStateData to ViewState.createFromProps."
+          },
+          {
+            "comment": "turn off locate circle when mouse leaves a view"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.176.0",
       "tag": "@bentley/imodeljs-frontend_v0.176.0",
       "date": "Mon, 10 Dec 2018 21:19:45 GMT",

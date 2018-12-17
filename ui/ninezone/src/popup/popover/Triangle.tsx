@@ -16,21 +16,22 @@ export interface TrianglePopoverProps extends OmitChildrenProp<PopoverProps>, No
 }
 
 /** Popover with triangle connection. */
-// tslint:disable-next-line:variable-name
-export const TrianglePopover: React.StatelessComponent<TrianglePopoverProps> = (props) => {
-  const className = classnames(
-    "nz-popup-popover-triangle",
-    props.className);
+export class TrianglePopover extends React.PureComponent<TrianglePopoverProps> {
+  public render() {
+    const className = classnames(
+      "nz-popup-popover-triangle",
+      this.props.className);
 
-  return (
-    <Popover
-      {...props}
-      className={className}
-    >
-      <div className="nz-content">
-        {props.content}
-      </div>
-      <div className="nz-triangle" />
-    </Popover>
-  );
-};
+    return (
+      <Popover
+        {...this.props}
+        className={className}
+      >
+        <div className="nz-content">
+          {this.props.content}
+        </div>
+        <div className="nz-triangle" />
+      </Popover>
+    );
+  }
+}

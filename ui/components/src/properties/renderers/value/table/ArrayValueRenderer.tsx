@@ -32,8 +32,6 @@ export class TableArrayValueRenderer extends React.PureComponent<TableSpecificVa
       <TableValueRenderer
         buttonLabel={this.getButtonLabel(this.props)}
         dialogContents={this.getDialogContents()}
-        onPopupHide={this.props.onPopupHide}
-        onPopupShow={this.props.onPopupShow}
         dialogTitle={`Array of type "${typeName}"`}
         onDialogOpen={this.props.onDialogOpen}
       />

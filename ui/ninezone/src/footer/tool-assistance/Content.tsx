@@ -16,7 +16,7 @@ export interface ToolAssistanceContentProps extends CommonProps {
 }
 
 /** Tool assistance. Used as content of [[ToolSettings]] component. */
-export class ToolAssistanceContent extends React.Component<ToolAssistanceContentProps> {
+export class ToolAssistanceContent extends React.PureComponent<ToolAssistanceContentProps> {
   public render() {
     const className = classnames(
       "nz-footer-toolAssistance-content",

@@ -16,7 +16,7 @@ export interface GroupColumnProps extends CommonProps {
 }
 
 /** Tool group column. Used in [[Group]], [[NestedGroup]] components. */
-export class GroupColumn extends React.Component<GroupColumnProps> {
+export class GroupColumn extends React.PureComponent<GroupColumnProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-column",

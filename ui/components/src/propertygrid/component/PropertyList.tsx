@@ -38,18 +38,43 @@ export function getPropertyKey(propertyCategory: PropertyCategory, propertyRecor
   return propertyCategory.name + propertyRecord.property.name;
 }
 
+/** State of [[PropertyList]] React component */
+export interface PropertyListState {
+  /** Width of the whole property list container */
+  width?: number;
+}
+
 /** A React component that renders multiple properties within a category as a list. */
-export class PropertyList extends React.Component<PropertyListProps> {
+export class PropertyList extends React.Component<PropertyListProps, PropertyListState> {
+  public readonly state: PropertyListState = {};
+
+  private _listRef = React.createRef<HTMLDivElement>();
+
   private _onEditCommit = (args: PropertyUpdatedArgs) => {
     if (this.props.onEditCommit && this.props.category)
       this.props.onEditCommit(args, this.props.category);
+  }
+  private afterRender() {
+    if (this.props.orientation !== Orientation.Horizontal || !this._listRef.current)
+      return;
+    const width = this._listRef.current.getBoundingClientRect().width;
+    if (width !== this.state.width)
+      this.setState({ width });
+  }
+
+  public componentDidMount() {
+    this.afterRender();
+  }
+
+  public componentDidUpdate() {
+    this.afterRender();
   }
 
   public render() {
     const propertyListClassName = (this.props.orientation === Orientation.Horizontal)
       ? "components-property-list--horizontal" : "components-property-list--vertical";
     return (
-      <div className={propertyListClassName}>
+      <div className={propertyListClassName} ref={this._listRef}>
         {this.props.properties.map((propertyRecord: PropertyRecord) => {
           const key = this.props.category ? getPropertyKey(this.props.category, propertyRecord) : propertyRecord.property.name;
           return (
@@ -67,6 +92,7 @@ export class PropertyList extends React.Component<PropertyListProps> {
               isEditing={key === this.props.editingPropertyKey}
               onEditCommit={this._onEditCommit}
               onEditCancel={this.props.onEditCancel}
+              width={this.state.width}
             />);
         })}
       </div>

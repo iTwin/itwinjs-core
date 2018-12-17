@@ -52,7 +52,7 @@
       "commandKind": "bulk",
       "summary": "Run test:integration script for each package",
       "description": "Iterates through each package in the monorepo and runs the 'test:integration' script",
-      "enableParallelism": false,
+      "enableParallelism": true,
       "ignoreMissingScript": true
     },
     {

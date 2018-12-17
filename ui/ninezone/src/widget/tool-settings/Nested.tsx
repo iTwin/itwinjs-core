@@ -18,7 +18,7 @@ export interface NestedProps extends ToolSettingsProps {
 }
 
 /** Nested tool settings component. Used as content of [[ToolSettings]]. */
-export class Nested extends React.Component<NestedProps> {
+export class Nested extends React.PureComponent<NestedProps> {
   public render() {
     const className = classnames(
       "nz-widget-toolSettings-nested",

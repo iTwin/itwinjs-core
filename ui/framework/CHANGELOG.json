@@ -2,6 +2,36 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.178.0",
+      "tag": "@bentley/ui-framework_v0.178.0",
+      "date": "Thu, 13 Dec 2018 22:06:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added StringGetter support to ItemDefBase, ItemProps & ToolButton. Added IModelApp.i18n checks to Tool for unit tests."
+          },
+          {
+            "comment": "Fix tool panel alignment issue."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.177.0",
+      "tag": "@bentley/ui-framework_v0.177.0",
+      "date": "Wed, 12 Dec 2018 17:21:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Moved checkbox responsibility to nodes"
+          },
+          {
+            "comment": "Improved speed & smoothness of CubeNavigationAid. Made class names unique to fix documentation. UI Tree doc fixes."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.176.0",
       "tag": "@bentley/ui-framework_v0.176.0",
       "date": "Mon, 10 Dec 2018 21:19:45 GMT",

@@ -6,7 +6,6 @@ exports[`<Toggle /> renders correctly 1`] = `
 >
   <div
     className="nz-toggle"
-    onClick={[Function]}
   >
     <div
       className="nz-content"

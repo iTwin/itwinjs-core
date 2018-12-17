@@ -1,6 +1,21 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Mon, 10 Dec 2018 21:19:45 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Dec 2018 22:06:10 GMT and should not be manually modified.
+
+## 0.178.0
+Thu, 13 Dec 2018 22:06:10 GMT
+
+*Version update only*
+
+## 0.177.0
+Wed, 12 Dec 2018 17:21:31 GMT
+
+### Updates
+
+- Remove `selectionTarget` prop from `withUnifiedSelection(Tree)` - `SelectionTarget.Node` turned out to make no sense, so it got removed. Now the tree always works in `SelectionTarget.Instance` mode.
+- Remove `selectedNodes` prop from `withUnifiedSelection(Tree)` - it makes no sense to allow specify selected nodes for a unified selection tree.
+- Fix `withUnifiedSelection(Tree)` reloading on selection change to avoid `forceRefresh()` call.
+- React to checkbox-related prop renames in ui-components
 
 ## 0.176.0
 Mon, 10 Dec 2018 21:19:45 GMT

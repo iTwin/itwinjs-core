@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as ReactDOM from "react-dom";
-
 import Demo from "./Demo";
+import "@bentley/bwc/lib/classes.scss";
 
 ReactDOM.render(
   <Demo />,

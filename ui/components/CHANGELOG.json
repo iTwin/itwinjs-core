@@ -2,6 +2,39 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.178.0",
+      "tag": "@bentley/ui-components_v0.178.0",
+      "date": "Thu, 13 Dec 2018 22:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.177.0",
+      "tag": "@bentley/ui-components_v0.177.0",
+      "date": "Wed, 12 Dec 2018 17:21:32 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added a merged property value renderer."
+          },
+          {
+            "comment": "Set BeInspireTreeNode's payload as possibly `undefined`"
+          },
+          {
+            "comment": "Fix Tree component to handle data provider change before the first update"
+          },
+          {
+            "comment": "Handle shift-selecting not loaded tree nodes"
+          },
+          {
+            "comment": "Fix tree checkbox-related props"
+          },
+          {
+            "comment": "Improved speed & smoothness of CubeNavigationAid. Made class names unique to fix documentation. UI Tree doc fixes."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.176.0",
       "tag": "@bentley/ui-components_v0.176.0",
       "date": "Mon, 10 Dec 2018 21:19:45 GMT",

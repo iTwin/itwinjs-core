@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { JsonUtils, OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d, IModelJson as GeomJson } from "@bentley/geometry-core";
+import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d, IModelJson as GeomJson, LineSegment3d } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, LinePixels, ModelProps, ModelQueryParams, RenderMode, RgbColor, RpcConfiguration,
@@ -856,7 +856,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
     if (this.points.length < 1)
       return;
 
-    const builder = context.createGraphicBuilder(GraphicType.Scene);
+    const builder = context.createSceneGraphicBuilder();
 
     builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 1);
     builder.addLineString([this.points[this.points.length - 1], ev.point]); // Only draw current segment in dynamics, accepted segments are drawn as pickable decorations...
@@ -973,6 +973,114 @@ export class DrawingAidTestTool extends PrimitiveTool {
   }
 }
 
+export class MeasureDistanceTool extends PrimitiveTool {
+  public static toolId = "Measure.Distance";
+  public readonly points: Point3d[] = [];
+  public readonly segments: LineSegment3d[] = [];
+
+  public requireWriteableTarget(): boolean { return false; }
+  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+
+  public onUnsuspend(): void { this.showPrompt(); } // TODO: Tool assistance...
+  protected showPrompt(): void { }
+
+  public setupAndPromptForNextAction(): void {
+    IModelApp.accuSnap.enableSnap(true);
+    IModelApp.accuDraw.deactivate(); // Don't enable AccuDraw automatically when starting dynamics.
+    this.showPrompt();
+  }
+
+  public decorate(context: DecorateContext): void {
+    if (this.segments.length < 1)
+      return;
+
+    const builder = context.createGraphicBuilder(GraphicType.WorldOverlay);
+
+    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 2);
+
+    for (const segment of this.segments)
+      builder.addLineString([segment.point0Ref, segment.point1Ref]);
+
+    context.addDecorationFromBuilder(builder);
+  }
+
+  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
+
+  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+    if (this.points.length < 1)
+      return;
+
+    const tmpPoints = this.points.slice(); // Deep copy not necessary...
+    tmpPoints.push(ev.point.clone());
+
+    const builder = context.createSceneGraphicBuilder();
+
+    builder.setSymbology(context.viewport.getContrastToBackgroundColor(), ColorDef.black, 2);
+    builder.addLineString(tmpPoints);
+
+    context.addGraphic(builder.finish());
+  }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    this.points.push(ev.point.clone());
+    this.setupAndPromptForNextAction();
+
+    if (this.points.length < 2) {
+      if (!this.isDynamicsStarted)
+        this.beginDynamics();
+    } else if (!ev.isControlKey) {
+      for (let i = 0; i < this.points.length - 1; i++)
+        this.segments.push(LineSegment3d.create(this.points[i], this.points[i + 1]));
+      this.points.length = 0;
+      this.endDynamics();
+    }
+
+    return EventHandled.No;
+  }
+
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    this.onReinitialize();
+    return EventHandled.No;
+  }
+
+  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+    if (wentDown) {
+      switch (keyEvent.key) {
+        case "u":
+        case "U":
+          this.undoPreviousStep(); // TESTING...
+          break;
+      }
+    }
+    return EventHandled.No;
+  }
+
+  public onUndoPreviousStep(): boolean {
+    if (0 === this.points.length && 0 === this.segments.length)
+      return false;
+
+    if (0 !== this.points.length)
+      this.points.pop();
+    else
+      this.segments.pop();
+
+    if (0 === this.points.length && 0 === this.segments.length) {
+      this.onReinitialize();
+    } else {
+      if (0 === this.points.length && this.isDynamicsStarted)
+        this.endDynamics();
+      this.setupAndPromptForNextAction();
+    }
+    return true;
+  }
+
+  public onRestartTool(): void {
+    const tool = new MeasureDistanceTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+}
+
 export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
   protected _anchorIndex: number;
   protected _ids: string[];
@@ -1039,7 +1147,7 @@ export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
     if (undefined === extents)
       return;
 
-    const builder = context.createGraphicBuilder(GraphicType.Scene);
+    const builder = context.createSceneGraphicBuilder();
     builder.setSymbology(ev.viewport!.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.Code2);
     builder.addRangeBox(extents);
     context.addGraphic(builder.finish());
@@ -1414,6 +1522,7 @@ function startDrawingAidTest(event: Event) {
   if (event.target === menu)
     return;
   IModelApp.tools.run("DrawingAidTest.Points", theViewport!);
+  // IModelApp.tools.run("Measure.Distance", theViewport!);
 }
 
 // functions that start viewing commands, associated with icons in wireIconsToFunctions
@@ -1561,16 +1670,24 @@ function saveImage() {
   window.open(url, "Saved View");
 }
 
-function updateTileLoadIndicator(spinner: HTMLDivElement): void {
-  const stats = IModelApp.tileRequests.statistics;
-  if (0 === stats.numActiveRequests && 0 === stats.numPendingRequests) {
-    spinner.style.visibility = "hidden";
-  } else {
-    spinner.style.visibility = "visible";
-    spinner.title = "Tile Requests: " + stats.numActiveRequests + " active, " + stats.numPendingRequests + " pending.";
+function updateTileLoadIndicator(progress: HTMLProgressElement): void {
+  let pctComplete = 1.0;
+  let title = "";
+  let color = "#00ff00";
+  const requested = undefined !== theViewport ? theViewport.numRequestedTiles : 0;
+  if (undefined !== theViewport && requested > 0) {
+    const selected = theViewport.numSelectedTiles;
+    const total = selected + requested;
+    pctComplete = selected / total;
+    title = "" + selected + " / " + total + " (" + requested + ")";
+    color = "#007fff";
   }
 
-  window.requestAnimationFrame(() => updateTileLoadIndicator(spinner));
+  progress.value = pctComplete;
+  progress.title = title;
+  progress.style.color = color;
+
+  window.requestAnimationFrame(() => updateTileLoadIndicator(progress));
 }
 
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
@@ -1696,8 +1813,8 @@ function wireIconsToFunctions() {
   });
 
   // Tile loading indicator
-  const tileLoadSpinner = document.getElementById("tile-load-spinner")! as HTMLDivElement;
-  window.requestAnimationFrame(() => updateTileLoadIndicator(tileLoadSpinner));
+  const tileLoadIndicator = document.getElementById("tile-load-indicator")! as HTMLProgressElement;
+  window.requestAnimationFrame(() => updateTileLoadIndicator(tileLoadIndicator));
 }
 
 // If we are using a browser, close the current iModel before leaving
@@ -1837,6 +1954,7 @@ class SVTIModelApp extends IModelApp {
     IModelApp.notifications = new SVTNotifications();
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     DrawingAidTestTool.register(svtToolNamespace);
+    // MeasureDistanceTool.register(svtToolNamespace);
   }
 }
 

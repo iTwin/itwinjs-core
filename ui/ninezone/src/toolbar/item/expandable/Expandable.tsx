@@ -8,11 +8,12 @@ import * as classnames from "classnames";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { CommonProps } from "../../../utilities/Props";
+import { ToolbarItem, ToolbarItemProps } from "../../Toolbar";
 import "./Expandable.scss";
 
 /** Properties of [[ExpandableItem]] component. */
 export interface ExpandableItemProps extends CommonProps {
-  /** Actual history tray. I.e. [[Tray]] */
+  /** History of the toolbar. See [[]] */
   history?: React.ReactNode;
   /** Describes if item is active. */
   isActive?: boolean;
@@ -20,30 +21,15 @@ export interface ExpandableItemProps extends CommonProps {
   isDisabled?: boolean;
   /** Function called when history tray should be extended or shrank. */
   onIsHistoryExtendedChange?: (isExtended: boolean) => void;
-  /** Actual panel. I.e. [[Group]], [[NestedGroup]], [[Panel]] */
+  // ref?: React.RefObject<ToolbarItem>;
+  /** Panel of the toolbar. See [[]] */
   panel?: React.ReactNode;
-  /** Function called to determine where the history tray should be rendered. Injected by [[Toolbar]] */
-  renderHistoryTo?: () => HTMLElement;
-  /** Function called to determine where the panel should be rendered. Injected by [[Toolbar]] */
-  renderPanelTo?: () => HTMLElement;
 }
 
 /** Expandable toolbar item. */
-export class ExpandableItem extends React.Component<ExpandableItemProps> {
-  private _panel = document.createElement("div");
-  private _history = document.createElement("div");
-
-  public componentDidMount() {
-    if (this.props.renderPanelTo) {
-      const renderPanelTo = this.props.renderPanelTo();
-      renderPanelTo.appendChild(this._panel);
-    }
-
-    if (this.props.renderHistoryTo) {
-      const renderHistoryTo = this.props.renderHistoryTo();
-      renderHistoryTo.appendChild(this._history);
-    }
-  }
+class ExpandableItemComponent extends React.PureComponent<ExpandableItemProps> implements ToolbarItem {
+  public readonly panel = document.createElement("div");
+  public readonly history = document.createElement("div");
 
   public render() {
     const className = classnames(
@@ -52,28 +38,48 @@ export class ExpandableItem extends React.Component<ExpandableItemProps> {
       this.props.isDisabled && "nz-is-disabled",
       this.props.className);
 
-    const panelPortal = ReactDOM.createPortal(this.props.panel, this._panel);
-    const historyPortal = ReactDOM.createPortal(this.props.history, this._history);
+    const panel = ReactDOM.createPortal((
+      <div className="nz-panel">
+        {this.props.panel}
+      </div>
+    ), this.panel);
+    const history = ReactDOM.createPortal((
+      <div className="nz-history">
+        {this.props.history}
+      </div>
+    ), this.history);
     return (
       <div
-        onMouseEnter={this._handleOnMouseEnter}
-        onMouseLeave={this._handleOnMouseLeave}
+        onMouseEnter={this._handleMouseEnter}
+        onMouseLeave={this._handleMouseLeave}
         className={className}
         style={this.props.style}
       >
         {this.props.children}
         <div className="nz-triangle" />
-        {panelPortal}
-        {historyPortal}
+        {panel}
+        {history}
       </div>
     );
   }
 
-  private _handleOnMouseEnter = () => {
+  private _handleMouseEnter = () => {
     this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(true);
   }
 
-  private _handleOnMouseLeave = () => {
+  private _handleMouseLeave = () => {
     this.props.onIsHistoryExtendedChange && this.props.onIsHistoryExtendedChange(false);
+  }
+}
+
+export class ExpandableItem extends React.PureComponent<ExpandableItemProps> {
+  public render() {
+    const toolbarItemProps = this.props as ToolbarItemProps<ExpandableItemComponent>;
+    return (
+      <ExpandableItemComponent
+        {...this.props}
+        ref={toolbarItemProps.toolbarItemRef}
+      />
+    );
   }
 }

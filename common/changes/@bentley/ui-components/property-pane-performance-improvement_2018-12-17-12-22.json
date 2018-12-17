@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Set BeInspireTreeNode's payload as possibly `undefined`",
+      "comment": "Simplified property pane tooltips and improved Property Pane performance.",
       "packageName": "@bentley/ui-components",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-components",
-  "email": "grigas.petraitis@bentley.com"
+  "email": "elonas.seviakovas@bentley.com"
 }

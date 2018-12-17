@@ -19,12 +19,15 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
           />
         </UNDEFINED>
       }
+      panelAlignment={0}
     />
   }
   navigationWidgetDef={
     NavigationWidgetDef {
       "_handleSyncUiEvent": [Function],
+      "_label": "",
       "_navigationAidId": "",
+      "_tooltip": "",
       "classId": undefined,
       "featureId": "",
       "fillZone": false,
@@ -41,13 +44,11 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
       "isStatusBar": false,
       "isToolSettings": false,
       "isVisible": true,
-      "label": "",
       "priority": 0,
       "renderHorizontalToolbar": [Function],
       "renderVerticalToolbar": [Function],
       "stateChanged": false,
       "stateSyncIds": Array [],
-      "tooltip": "",
       "verticalDirection": 2,
       "verticalItems": undefined,
       "widgetType": 1,
@@ -70,6 +71,7 @@ exports[`NavigationWidget NavigationWidget should render correctly 1`] = `
           />
         </UNDEFINED>
       }
+      panelAlignment={0}
     />
   }
 />

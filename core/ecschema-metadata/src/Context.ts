@@ -165,8 +165,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     if (!schema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to add the schema item ${schemaItem.name} to the schema ${schemaItem.key.schemaKey.toString()} because the schema could not be located.`);
 
-    await (schema as MutableSchema).addItem(schemaItem);
-    return;
+    (schema as MutableSchema).addItem(schemaItem);
   }
 
   /**

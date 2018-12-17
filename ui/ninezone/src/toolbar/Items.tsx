@@ -19,7 +19,7 @@ export interface ItemsProps extends CommonProps {
 }
 
 /** Toolbar items container. Used in [[Toolbar]] and [[Scrollable]] components. */
-export class Items extends React.Component<ItemsProps> {
+export class Items extends React.PureComponent<ItemsProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-items",

@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "",
+      "comment": "Add CodeSpecs.hasId, CodeSpecs.hasName",
       "packageName": "@bentley/imodeljs-backend",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-backend",
-  "email": "Caleb.Shafer@Bentley.com"
+  "email": "shaun.sewall@bentley.com"
 }

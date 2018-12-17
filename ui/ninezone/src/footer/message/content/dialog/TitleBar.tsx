@@ -18,19 +18,20 @@ export interface TitleBarProps extends CommonProps, NoChildrenProps {
 }
 
 /** Title bar of [[Dialog]] component. */
-// tslint:disable-next-line:variable-name
-export const TitleBar: React.StatelessComponent<TitleBarProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-content-dialog-titleBar",
-    props.className);
+export class TitleBar extends React.PureComponent<TitleBarProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-content-dialog-titleBar",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      {props.title}
-      {props.buttons}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        {this.props.title}
+        {this.props.buttons}
+      </div>
+    );
+  }
+}

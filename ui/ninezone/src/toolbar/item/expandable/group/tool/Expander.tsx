@@ -17,7 +17,7 @@ export interface GroupToolExpanderProps extends Omit<GroupToolProps, "isActive" 
 }
 
 /** Expandable entry of tool group panel. Used in [[Column]] hosted in [[NestedGroup]] component. */
-export class GroupToolExpander extends React.Component<GroupToolExpanderProps> {
+export class GroupToolExpander extends React.PureComponent<GroupToolExpanderProps> {
   public render() {
     const { className, ...props } = this.props;
 

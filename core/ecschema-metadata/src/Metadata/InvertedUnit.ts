@@ -68,4 +68,9 @@ export class InvertedUnit extends SchemaItem {
     if (visitor.visitInvertedUnit)
       await visitor.visitInvertedUnit(this);
   }
+
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitInvertedUnitSync)
+      visitor.visitInvertedUnitSync(this);
+  }
 }

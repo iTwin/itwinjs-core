@@ -5,7 +5,7 @@
 /** @module Item */
 
 import { UiFramework } from "../UiFramework";
-import { ItemProps } from "./ItemProps";
+import { ItemProps, StringGetter } from "./ItemProps";
 
 /** Base state for any 'stateful' React component */
 export interface BaseItemState {
@@ -17,6 +17,9 @@ export interface BaseItemState {
 
 /** The base class for Items. */
 export abstract class ItemDefBase {
+  private _label: string | StringGetter = "";
+  private _tooltip: string | StringGetter = "";
+
   public isVisible: boolean = true;
   public isEnabled: boolean = true;
   public isPressed: boolean = false;
@@ -27,8 +30,6 @@ export abstract class ItemDefBase {
   public stateFunc?: (state: Readonly<BaseItemState>) => BaseItemState;
   public stateSyncIds: string[] = [];
 
-  public label: string = "";
-  public tooltip: string = "";
   public iconSpec?: string | React.ReactNode;
   public iconElement?: React.ReactNode;
 
@@ -44,14 +45,14 @@ export abstract class ItemDefBase {
     if (itemProps.iconSpec) me.iconSpec = itemProps.iconSpec;
 
     if (itemProps.label)
-      me.label = itemProps.label;
+      me.setLabel(itemProps.label);
     else if (itemProps.labelKey)
-      me.label = UiFramework.i18n.translate(itemProps.labelKey);
+      me._label = UiFramework.i18n.translate(itemProps.labelKey);
 
     if (itemProps.tooltip)
-      me.tooltip = itemProps.tooltip;
+      me.setTooltip(itemProps.tooltip);
     else if (itemProps.tooltipKey)
-      me.tooltip = UiFramework.i18n.translate(itemProps.tooltipKey);
+      me._tooltip = UiFramework.i18n.translate(itemProps.tooltipKey);
 
     if (itemProps.stateFunc)
       me.stateFunc = itemProps.stateFunc;
@@ -68,4 +69,38 @@ export abstract class ItemDefBase {
 
   public get trayId() { return undefined; }
   public abstract get id(): string;
+
+  /** Get the label string */
+  public get label(): string {
+    let label = "";
+    if (typeof this._label === "string")
+      label = this._label;
+    else
+      label = this._label();
+    return label;
+  }
+
+  /** Set the label.
+   * @param v A string or a function to get the string.
+   */
+  public setLabel(v: string | StringGetter) {
+    this._label = v;
+  }
+
+  /** Get the tooltip string */
+  public get tooltip(): string {
+    let tooltip = "";
+    if (typeof this._tooltip === "string")
+      tooltip = this._tooltip;
+    else
+      tooltip = this._tooltip();
+    return tooltip;
+  }
+
+  /** Set the tooltip.
+   * @param v A string or a function to get the string.
+   */
+  public setTooltip(v: string | StringGetter) {
+    this._tooltip = v;
+  }
 }

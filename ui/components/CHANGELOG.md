@@ -1,6 +1,23 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 10 Dec 2018 21:19:45 GMT and should not be manually modified.
+This log was last generated on Thu, 13 Dec 2018 22:06:10 GMT and should not be manually modified.
+
+## 0.178.0
+Thu, 13 Dec 2018 22:06:10 GMT
+
+*Version update only*
+
+## 0.177.0
+Wed, 12 Dec 2018 17:21:32 GMT
+
+### Updates
+
+- Added a merged property value renderer.
+- Set BeInspireTreeNode's payload as possibly `undefined`
+- Fix Tree component to handle data provider change before the first update
+- Handle shift-selecting not loaded tree nodes
+- Fix tree checkbox-related props
+- Improved speed & smoothness of CubeNavigationAid. Made class names unique to fix documentation. UI Tree doc fixes.
 
 ## 0.176.0
 Mon, 10 Dec 2018 21:19:45 GMT

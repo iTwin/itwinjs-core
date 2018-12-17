@@ -2,6 +2,33 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "0.178.0",
+      "tag": "@bentley/presentation-components_v0.178.0",
+      "date": "Thu, 13 Dec 2018 22:06:10 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.177.0",
+      "tag": "@bentley/presentation-components_v0.177.0",
+      "date": "Wed, 12 Dec 2018 17:21:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Remove `selectionTarget` prop from `withUnifiedSelection(Tree)` - `SelectionTarget.Node` turned out to make no sense, so it got removed. Now the tree always works in `SelectionTarget.Instance` mode."
+          },
+          {
+            "comment": "Remove `selectedNodes` prop from `withUnifiedSelection(Tree)` - it makes no sense to allow specify selected nodes for a unified selection tree."
+          },
+          {
+            "comment": "Fix `withUnifiedSelection(Tree)` reloading on selection change to avoid `forceRefresh()` call."
+          },
+          {
+            "comment": "React to checkbox-related prop renames in ui-components"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.176.0",
       "tag": "@bentley/presentation-components_v0.176.0",
       "date": "Mon, 10 Dec 2018 21:19:45 GMT",

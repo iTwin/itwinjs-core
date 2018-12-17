@@ -19,7 +19,7 @@ export interface WidgetContentProps extends CommonProps, NoChildrenProps {
 }
 
 /** Scrollable widget content. Used by [[Stacked]] component. */
-export class WidgetContent extends React.Component<WidgetContentProps> {
+export class WidgetContent extends React.PureComponent<WidgetContentProps> {
   public render() {
     const className = classnames(
       "nz-widget-rectangular-content",

@@ -30,18 +30,18 @@ export class TestData {
     TestData.testIModelId = await TestData.getTestIModelId(TestData.accessToken, TestData.testProjectId, "ConnectionReadTest");
   }
 
-  public static async getTestUserAccessToken(): Promise<AccessToken> {
+  public static async getAccessToken(email: string, password: string): Promise<AccessToken> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(alctx,
-      Config.App.getString("imjs_test_regular_user_name"),
-      Config.App.getString("imjs_test_regular_user_password"));
-
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(alctx, email, password);
     assert(authToken);
 
     const accessToken = await (new ImsDelegationSecureTokenClient()).getToken(alctx, authToken!);
     assert(accessToken);
-
     return accessToken;
+  }
+
+  public static async getTestUserAccessToken(): Promise<AccessToken> {
+    return TestData.getAccessToken(Config.App.getString("imjs_test_regular_user_name"), Config.App.getString("imjs_test_regular_user_password"));
   }
 
   public static async getTestProjectId(accessToken: AccessToken, projectName: string): Promise<string> {
@@ -62,5 +62,4 @@ export class TestData {
 
     return iModels[0].wsgId;
   }
-
 }

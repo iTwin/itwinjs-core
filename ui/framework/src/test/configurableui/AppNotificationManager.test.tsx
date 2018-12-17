@@ -58,7 +58,7 @@ describe("AppNotificationManager", () => {
 
   it("setupActivityMessage", () => {
     const spyMethod = sinon.spy(MessageManager, "setupActivityMessageDetails");
-    const details = new ActivityMessageDetails(true, true, true);
+    const details = new ActivityMessageDetails(true, true, true, true);
     notifications.setupActivityMessage(details);
     expect(spyMethod.calledOnce).to.be.true;
   });

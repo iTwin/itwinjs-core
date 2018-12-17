@@ -16,7 +16,7 @@ export interface ColumnsProps extends CommonProps {
 }
 
 /** Columns of tool group. Used in [[Group]], [[NestedGroup]] components. */
-export class Columns extends React.Component<ColumnsProps> {
+export class Columns extends React.PureComponent<ColumnsProps> {
   public render() {
     const className = classnames(
       "nz-toolbar-item-expandable-group-columns",

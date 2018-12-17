@@ -16,18 +16,19 @@ export interface TemporaryProps extends CommonProps {
 }
 
 /** Temporary message as defined in 9-Zone UI spec. Used in [[Footer]] component. */
-// tslint:disable-next-line:variable-name
-export const Temporary: React.StatelessComponent<TemporaryProps> = (props) => {
-  const className = classnames(
-    "nz-footer-message-temporary",
-    props.className);
+export class Temporary extends React.PureComponent<TemporaryProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-message-temporary",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      {props.children}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        {this.props.children}
+      </div>
+    );
+  }
+}

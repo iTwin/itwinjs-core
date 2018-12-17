@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Moved checkbox responsibility to nodes",
+      "comment": "Added showDialogInitially support to ActivityMessageDetails",
       "packageName": "@bentley/ui-framework",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-framework",
-  "email": "Allison.Macdonald@bentley.com"
+  "email": "dan.east@bentley.com"
 }

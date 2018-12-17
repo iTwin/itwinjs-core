@@ -13,7 +13,7 @@ import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { RelationshipClassProps, RelationshipConstraintProps } from "./../Deserialization/JsonProps";
 import {
   CustomAttributeContainerType, ECClassModifier, SchemaItemType, StrengthDirection,
-  strengthDirectionToString, strengthToString, StrengthType, RelationshipEnd,
+  strengthDirectionToString, strengthToString, StrengthType, RelationshipEnd, parseStrength, parseStrengthDirection,
 } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
 import { LazyLoadedRelationshipConstraintClass } from "./../Interfaces";
@@ -75,8 +75,17 @@ export class RelationshipClass extends ECClass {
 
   public deserializeSync(relationshipClassProps: RelationshipClassProps) {
     super.deserializeSync(relationshipClassProps);
-    this._strength = relationshipClassProps.strength;
-    this._strengthDirection = relationshipClassProps.strengthDirection;
+
+    const strength = parseStrength(relationshipClassProps.strength);
+    if (undefined === strength)
+      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strength' attribute. '${relationshipClassProps.strength}' is not a valid StrengthType.`);
+
+    const strengthDirection = parseStrengthDirection(relationshipClassProps.strengthDirection);
+    if (undefined === strengthDirection)
+      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this.fullName} has an invalid 'strengthDirection' attribute. '${relationshipClassProps.strengthDirection}' is not a valid StrengthDirection.`);
+
+    this._strength = strength;
+    this._strengthDirection = strengthDirection;
   }
 
   public async deserialize(relationshipClassProps: RelationshipClassProps) {

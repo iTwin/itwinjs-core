@@ -20,20 +20,21 @@ export interface MessageCenterTabProps extends CommonProps {
 }
 
 /** Message center tab used in [[MessageCenter]] component. */
-// tslint:disable-next-line:variable-name
-export const MessageCenterTab: React.StatelessComponent<MessageCenterTabProps> = (props) => {
-  const className = classnames(
-    "nz-footer-messageCenter-tab",
-    props.isOpen && "nz-is-open",
-    props.className);
+export class MessageCenterTab extends React.PureComponent<MessageCenterTabProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-messageCenter-tab",
+      this.props.isOpen && "nz-is-open",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-      onClick={props.onClick}
-    >
-      {props.children}
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+        onClick={this.props.onClick}
+      >
+        {this.props.children}
+      </div>
+    );
+  }
+}

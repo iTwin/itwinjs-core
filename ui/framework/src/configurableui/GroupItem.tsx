@@ -236,11 +236,12 @@ class GroupItem extends React.Component<Props, State> {
     if (!this.state.isVisible)
       return null;
 
-    const icon = <Icon iconSpec={this.props.groupItemDef.iconSpec} />;
+    const { groupItemDef, ...props } = this.props;
+    const icon = <Icon iconSpec={groupItemDef.iconSpec} />;
 
     return (
       <ExpandableItem
-        {...this.props}
+        {...props}
         key={this.state.groupItemDef.id}
         onIsHistoryExtendedChange={(isExtended) => this._handleOnIsHistoryExtendedChange(isExtended)}
         panel={this.getGroupTray()}

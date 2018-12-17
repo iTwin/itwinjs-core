@@ -1152,6 +1152,7 @@ export class ToolAdmin {
 
   /** @hidden */
   public startInputCollector(newTool: InputCollector): void {
+    IModelApp.notifications.outputPrompt("");
     IModelApp.accuDraw.onInputCollectorInstall();
 
     if (undefined !== this._inputCollector) {
@@ -1201,6 +1202,7 @@ export class ToolAdmin {
 
   /** @hidden */
   public startViewTool(newTool: ViewTool) {
+    IModelApp.notifications.outputPrompt("");
     IModelApp.accuDraw.onViewToolInstall();
 
     if (undefined !== this._viewTool) {
@@ -1236,6 +1238,7 @@ export class ToolAdmin {
 
   /** @hidden */
   public startPrimitiveTool(newTool?: PrimitiveTool) {
+    IModelApp.notifications.outputPrompt("");
     this.exitViewTool();
 
     if (undefined !== this._primitiveTool)
@@ -1247,6 +1250,7 @@ export class ToolAdmin {
     IModelApp.viewManager.endDynamicsMode();
     this.activeToolChanged.raiseEvent(undefined !== newTool ? newTool : this.idleTool, StartOrResume.Start);
     this.setIncompatibleViewportCursor(true); // Don't restore this
+    IModelApp.viewManager.invalidateDecorationsAllViews();
 
     this.toolState.coordLockOvr = CoordinateLockOverrides.None;
     this.toolState.locateCircleOn = false;
@@ -1315,14 +1319,14 @@ export class ToolAdmin {
   public beginDynamics(): void {
     IModelApp.accuDraw.onBeginDynamics();
     IModelApp.viewManager.beginDynamicsMode();
-    this.setLocateCursor(false);
+    this.setCursor(IModelApp.viewManager.dynamicsCursor);
   }
 
   /** @hidden */
   public endDynamics(): void {
     IModelApp.accuDraw.onEndDynamics();
     IModelApp.viewManager.endDynamicsMode();
-    this.setLocateCursor(true);
+    this.setCursor(IModelApp.viewManager.crossHairCursor);
   }
 
   /** @hidden */

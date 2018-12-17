@@ -17,28 +17,29 @@ export interface MessageCenterMessageProps extends CommonProps, NoChildrenProps 
   content?: React.ReactNode;
 }
 
-/** Message entry in [[MessageCenterMessage]] component. */
-// tslint:disable-next-line:variable-name
-export const MessageCenterMessage: React.StatelessComponent<MessageCenterMessageProps> = (props) => {
-  const className = classnames(
-    "nz-footer-messageCenter-message",
-    props.className);
+/** Message entry in [[MessageCenter]] component. */
+export class MessageCenterMessage extends React.PureComponent<MessageCenterMessageProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-messageCenter-message",
+      this.props.className);
 
-  return (
-    <div
-      className={className}
-      style={props.style}
-    >
-      {props.icon &&
-        <div className="nz-icon">
-          {props.icon}
-        </div>
-      }
-      {props.content &&
-        <div className="nz-content">
-          {props.content}
-        </div>
-      }
-    </div>
-  );
-};
+    return (
+      <div
+        className={className}
+        style={this.props.style}
+      >
+        {this.props.icon &&
+          <div className="nz-icon">
+            {this.props.icon}
+          </div>
+        }
+        {this.props.content &&
+          <div className="nz-content">
+            {this.props.content}
+          </div>
+        }
+      </div>
+    );
+  }
+}

@@ -228,7 +228,7 @@ export class Format extends SchemaItem implements IFormat {
   }
 
   public async deserialize(formatProps: FormatProps) {
-    super.deserialize(formatProps);
+    await super.deserialize(formatProps);
     this.typecheck(formatProps);
     if (undefined === formatProps.composite)
       return;
@@ -292,5 +292,10 @@ export class Format extends SchemaItem implements IFormat {
   public async accept(visitor: SchemaItemVisitor) {
     if (visitor.visitFormat)
       await visitor.visitFormat(this);
+  }
+
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitFormatSync)
+      visitor.visitFormatSync(this);
   }
 }

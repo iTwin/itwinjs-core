@@ -28,33 +28,34 @@ export interface ToolAssistanceDialogProps extends CommonProps {
 }
 
 /** Tool assistance dialog used in [[ToolAssistanceIndicator]] component. */
-// tslint:disable-next-line:variable-name
-export const ToolAssistanceDialog: React.StatelessComponent<ToolAssistanceDialogProps> = (props: ToolAssistanceDialogProps) => {
-  const className = classnames(
-    "nz-footer-toolAssistance-dialog",
-    props.className);
+export class ToolAssistanceDialog extends React.PureComponent<ToolAssistanceDialogProps> {
+  public render() {
+    const className = classnames(
+      "nz-footer-toolAssistance-dialog",
+      this.props.className);
 
-  return (
-    <TrianglePopover
-      className={className}
-      direction={Direction.Top}
-      content={
-        <DialogWithContainIn
-          noVerticalContainment
-          titleBar={
-            <TitleBar
-              title={
-                <DialogTitle text={props.title} />
-              }
-            />
-          }
-          content={
-            <ToolAssistanceContent>
-              {props.items}
-            </ToolAssistanceContent>
-          }
-        />
-      }
-    />
-  );
-};
+    return (
+      <TrianglePopover
+        className={className}
+        direction={Direction.Top}
+        content={
+          <DialogWithContainIn
+            noVerticalContainment
+            titleBar={
+              <TitleBar
+                title={
+                  <DialogTitle text={this.props.title} />
+                }
+              />
+            }
+            content={
+              <ToolAssistanceContent>
+                {this.props.items}
+              </ToolAssistanceContent>
+            }
+          />
+        }
+      />
+    );
+  }
+}

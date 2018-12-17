@@ -35,37 +35,38 @@ export interface MessageCenterProps extends CommonProps, NoChildrenProps {
 }
 
 /** Message center dialog used in [[MessageCenterIndicator]] component. */
-// tslint:disable-next-line:variable-name
-export const MessageCenter: React.StatelessComponent<MessageCenterProps> = (props) => {
-  const dialogClassName = classnames(
-    "nz-footer-messageCenter-messageCenter",
-    props.className);
+export class MessageCenter extends React.PureComponent<MessageCenterProps> {
+  public render() {
+    const dialogClassName = classnames(
+      "nz-footer-messageCenter-messageCenter",
+      this.props.className);
 
-  return (
-    <TrianglePopover
-      className={dialogClassName}
-      style={props.style}
-      direction={Direction.Top}
-      content={
-        <DialogWithContainIn
-          noVerticalContainment
-          titleBar={
-            <TitleBar
-              title={
-                <DialogTitle text={props.title} />
-              }
-              buttons={props.buttons}
-            />
-          }
-          content={
-            <MessageCenterContent
-              tabs={props.tabs}
-              messages={props.messages}
-              prompt={props.prompt}
-            />
-          }
-        />
-      }
-    />
-  );
-};
+    return (
+      <TrianglePopover
+        className={dialogClassName}
+        style={this.props.style}
+        direction={Direction.Top}
+        content={
+          <DialogWithContainIn
+            noVerticalContainment
+            titleBar={
+              <TitleBar
+                title={
+                  <DialogTitle text={this.props.title} />
+                }
+                buttons={this.props.buttons}
+              />
+            }
+            content={
+              <MessageCenterContent
+                tabs={this.props.tabs}
+                messages={this.props.messages}
+                prompt={this.props.prompt}
+              />
+            }
+          />
+        }
+      />
+    );
+  }
+}

@@ -547,7 +547,7 @@ export namespace Attachments {
       const fillColor = ColorDef.green.clone();
       fillColor.setAlpha(0x88);
       lineColor.setAlpha(0xff);
-      const builder = args.context.createGraphicBuilder(GraphicType.Scene);
+      const builder = args.context.createSceneGraphicBuilder();
       builder.setSymbology(lineColor, fillColor, 2);
       for (const poly of polys) {
         const polyVisitor = IndexedPolyfaceVisitor.create(poly, 0);
@@ -916,7 +916,7 @@ export namespace Attachments {
         Point2d.create(origin.x, origin.y + bbox.high.y),
         Point2d.create(origin.x, origin.y)];
 
-      const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
+      const builder = context.createSceneGraphicBuilder();
       builder.setSymbology(Attachment.DEBUG_BOUNDING_BOX_COLOR, Attachment.DEBUG_BOUNDING_BOX_COLOR, 2);
       builder.addLineString2d(rect, 0);
       const attachmentBorder = builder.finish();

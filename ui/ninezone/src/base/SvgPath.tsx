@@ -20,7 +20,7 @@ export interface SvgPathProps extends CommonProps {
 }
 
 /** SvgElement wrapper with specified Svg paths. */
-export class SvgPath extends React.Component<SvgPathProps> {
+export class SvgPath extends React.PureComponent<SvgPathProps> {
   public render() {
     const className = classnames(
       "nz-base-svgSprite",

@@ -15,7 +15,7 @@ export interface SvgSpriteProps extends CommonProps {
 }
 
 /** SvgElement wrapper. */
-export class SvgSprite extends React.Component<SvgSpriteProps> {
+export class SvgSprite extends React.PureComponent<SvgSpriteProps> {
   public render() {
     const className = classnames(
       "nz-base-svgSprite",

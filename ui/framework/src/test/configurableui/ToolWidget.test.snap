@@ -15,6 +15,8 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   "getCommandArgs": undefined,
                   "parameters": undefined,
                 },
+                "_label": [Function],
+                "_tooltip": [Function],
                 "execute": [Function],
                 "featureId": "",
                 "iconSpec": "icon-cursor",
@@ -22,10 +24,8 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
-                "label": "tools.Select.flyover",
                 "stateSyncIds": Array [],
                 "toolId": "Select",
-                "tooltip": "tools.Select.description",
               }
             }
           />
@@ -45,6 +45,8 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
             items={
               Array [
                 CommandItemDef {
+                  "_label": "",
+                  "_tooltip": "",
                   "commandId": "tool1",
                   "execute": [Function],
                   "featureId": "",
@@ -53,11 +55,11 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   "isEnabled": true,
                   "isPressed": false,
                   "isVisible": true,
-                  "label": "",
                   "stateSyncIds": Array [],
-                  "tooltip": "",
                 },
                 CommandItemDef {
+                  "_label": "",
+                  "_tooltip": "",
                   "applicationData": Object {
                     "key": "value",
                   },
@@ -69,9 +71,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   "isEnabled": true,
                   "isPressed": false,
                   "isVisible": true,
-                  "label": "",
                   "stateSyncIds": Array [],
-                  "tooltip": "",
                 },
               ]
             }
@@ -79,6 +79,7 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
           />
         </UNDEFINED>
       }
+      panelAlignment={0}
     />
   }
   toolWidgetDef={
@@ -89,6 +90,8 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
           "getCommandArgs": undefined,
           "parameters": undefined,
         },
+        "_label": "",
+        "_tooltip": "",
         "commandId": "SampleApp.BackstageToggle",
         "execute": [Function],
         "featureId": "",
@@ -97,11 +100,11 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
         "isEnabled": true,
         "isPressed": false,
         "isVisible": true,
-        "label": "",
         "stateSyncIds": Array [],
-        "tooltip": "",
       },
       "_handleSyncUiEvent": [Function],
+      "_label": "",
+      "_tooltip": "",
       "classId": undefined,
       "featureId": "",
       "fillZone": false,
@@ -118,13 +121,11 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
       "isStatusBar": false,
       "isToolSettings": false,
       "isVisible": true,
-      "label": "",
       "priority": 0,
       "renderHorizontalToolbar": [Function],
       "renderVerticalToolbar": [Function],
       "stateChanged": false,
       "stateSyncIds": Array [],
-      "tooltip": "",
       "verticalDirection": 2,
       "verticalItems": undefined,
       "widgetType": 0,
@@ -162,6 +163,8 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
             items={
               Array [
                 CommandItemDef {
+                  "_label": "",
+                  "_tooltip": "",
                   "commandId": "tool1",
                   "execute": [Function],
                   "featureId": "",
@@ -170,11 +173,11 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   "isEnabled": true,
                   "isPressed": false,
                   "isVisible": true,
-                  "label": "",
                   "stateSyncIds": Array [],
-                  "tooltip": "",
                 },
                 CommandItemDef {
+                  "_label": "",
+                  "_tooltip": "",
                   "applicationData": Object {
                     "key": "value",
                   },
@@ -186,15 +189,14 @@ exports[`ToolWidget ToolWidget should render correctly 1`] = `
                   "isEnabled": true,
                   "isPressed": false,
                   "isVisible": true,
-                  "label": "",
                   "stateSyncIds": Array [],
-                  "tooltip": "",
                 },
               ]
             }
           />
         </UNDEFINED>
       }
+      panelAlignment={0}
     />
   }
 />

@@ -24,7 +24,7 @@ export const withTheme = <ComponentProps extends ClassNameProps>(
   // tslint:disable-next-line:variable-name
   Component: React.ComponentType<ComponentProps>,
 ): React.ComponentClass<ComponentProps & WithThemeProps> => {
-  return class WithTheme extends React.Component<ComponentProps & WithThemeProps> {
+  return class WithTheme extends React.PureComponent<ComponentProps & WithThemeProps> {
     public getTheme(contextTheme: Theme): Theme {
       if (this.props.theme)
         return (this.props as WithThemeProps).theme!;
@@ -35,7 +35,7 @@ export const withTheme = <ComponentProps extends ClassNameProps>(
       return (
         <ThemeContext.Consumer>
           {
-            (theme) =>
+            ({ theme }) =>
               <Component
                 {...this.props}
                 className={classnames(this.props.className, `nz-theme-${this.getTheme(theme).name}`)}

@@ -46,6 +46,7 @@ describe("iModelHub VersionHandler", () => {
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients Versions test";
+  const firstVersionName = "Version 1";
   const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
@@ -78,11 +79,11 @@ describe("iModelHub VersionHandler", () => {
         } else {
           changeSet = (await iModelClient.changeSets.get(actx, accessToken, imodelId))[0];
         }
-        const version: Version = await iModelClient.versions.create(actx, accessToken, imodelId, changeSet.id!, "Version 1");
+        const version: Version = await iModelClient.versions.create(actx, accessToken, imodelId, changeSet.id!, firstVersionName);
 
         if (utils.getCloudEnv().isIModelHub) {
           // Wait for large thumbnail.
-          for (let i = 0; i < 5; i++) {
+          for (let i = 0; i < 50; i++) {
             const largeThumbnails = (await iModelClient.thumbnails.get(actx, accessToken, imodelId, "Large", new ThumbnailQuery().byVersionId(version.id!)));
             if (largeThumbnails.length > 0)
               break;
@@ -153,10 +154,10 @@ describe("iModelHub VersionHandler", () => {
 
   it("should get named versions with thumbnail id", async () => {
     let mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
-    utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
-    let versions: Version[] = await iModelClient.versions.get(actx, accessToken, imodelId, new VersionQuery());
-    chai.expect(versions.length >= 1);
-    const firstVersion = versions[versions.length - 1];
+    utils.mockGetVersions(imodelId, `?$filter=Name+eq+%27Version%201%27`, ...mockedVersions);
+    let versions: Version[] = await iModelClient.versions.get(actx, accessToken, imodelId, new VersionQuery().byName(firstVersionName));
+    chai.expect(versions.length).to.be.equal(1);
+    const firstVersion = versions[0];
     chai.expect(firstVersion.smallThumbnailId).to.be.undefined;
     chai.expect(firstVersion.largeThumbnailId).to.be.undefined;
 

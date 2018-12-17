@@ -154,6 +154,11 @@ export class Enumeration extends SchemaItem {
     if (visitor.visitEnumeration)
       await visitor.visitEnumeration(this);
   }
+
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitEnumerationSync)
+      visitor.visitEnumerationSync(this);
+  }
 }
 
 /** @hidden */

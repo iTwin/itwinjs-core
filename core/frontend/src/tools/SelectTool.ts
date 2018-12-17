@@ -68,6 +68,50 @@ export class SelectionTool extends PrimitiveTool {
   protected getSelectionMode(): SelectionMode { return SelectionMode.Replace; } // NEEDSWORK: Settings...
   protected wantToolSettings(): boolean { return true; } // NEEDSWORK: Settings...
 
+  protected showPrompt(mode: SelectionMode, method: SelectionMethod): void {
+    switch (mode) {
+      case SelectionMode.Replace:
+        switch (method) {
+          case SelectionMethod.Pick:
+            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyElement");
+            break;
+          case SelectionMethod.Line:
+            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyLine");
+            break;
+          case SelectionMethod.Box:
+            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyBox");
+            break;
+        }
+        break;
+      case SelectionMode.Add:
+        switch (method) {
+          case SelectionMethod.Pick:
+            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyElementAdd");
+            break;
+          case SelectionMethod.Line:
+            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyLineAdd");
+            break;
+          case SelectionMethod.Box:
+            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyBoxAdd");
+            break;
+        }
+        break;
+      case SelectionMode.Remove:
+        switch (method) {
+          case SelectionMethod.Pick:
+            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyElementRemove");
+            break;
+          case SelectionMethod.Line:
+            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyLineRemove");
+            break;
+          case SelectionMethod.Box:
+            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompts.IdentifyBoxRemove");
+            break;
+        }
+        break;
+    }
+  }
+
   protected initSelectTool(): void {
     const method = this.getSelectionMethod();
     const mode = this.getSelectionMode();
@@ -78,48 +122,7 @@ export class SelectionTool extends PrimitiveTool {
 
     this.initLocateElements(enableLocate, false, enableLocate ? "default" : "crosshair", CoordinateLockOverrides.All);
     IModelApp.locateManager.options.allowDecorations = true; // Always locate to display tool tip even if we reject for adding to selection set...
-
-    switch (mode) {
-      case SelectionMode.Replace:
-        switch (method) {
-          case SelectionMethod.Pick:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyElement");
-            break;
-          case SelectionMethod.Line:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyLine");
-            break;
-          case SelectionMethod.Box:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyBox");
-            break;
-        }
-        break;
-      case SelectionMode.Add:
-        switch (method) {
-          case SelectionMethod.Pick:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyElementAdd");
-            break;
-          case SelectionMethod.Line:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyLineAdd");
-            break;
-          case SelectionMethod.Box:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyBoxAdd");
-            break;
-        }
-        break;
-      case SelectionMode.Remove:
-        switch (method) {
-          case SelectionMethod.Pick:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyElementRemove");
-            break;
-          case SelectionMethod.Line:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyLineRemove");
-            break;
-          case SelectionMethod.Box:
-            IModelApp.notifications.outputPromptByKey("CoreTools:tools.ElementSet.Prompt.IdentifyBoxRemove");
-            break;
-        }
-        break;
-    }
+    this.showPrompt(mode, method);
   }
 
   public processSelection(elementId: Id64Arg, process: SelectionProcessing): boolean {
@@ -399,7 +402,7 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   public onSuspend(): void { this.isSuspended = true; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Suspend); }
-  public onUnsuspend(): void { this.isSuspended = false; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend); }
+  public onUnsuspend(): void { this.isSuspended = false; if (this.wantEditManipulators()) IModelApp.toolAdmin.manipulatorToolEvent.raiseEvent(this, ManipulatorToolEvent.Unsuspend); this.showPrompt(this.getSelectionMode(), this.getSelectionMethod()); } // TODO: Tool assistance...
 
   public async onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): Promise<EventHandled> {
     if (startEv.isSingleTouch && !this.isSelectByPoints)

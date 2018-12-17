@@ -183,6 +183,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
       return false;
 
     AccuDrawShortcuts.processPendingHints(); // Process any hints the active tool setup in _OnUndoPreviousStep now...
+    IModelApp.viewManager.invalidateDecorationsAllViews();
     IModelApp.toolAdmin.updateDynamics();
 
     return true;

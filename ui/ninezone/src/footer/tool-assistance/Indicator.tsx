@@ -24,7 +24,7 @@ export interface ToolAssistanceIndicatorProps extends CommonProps, NoChildrenPro
 }
 
 /** One of [[Footer]] indicators. */
-export class ToolAssistanceIndicator extends React.Component<ToolAssistanceIndicatorProps> {
+export class ToolAssistanceIndicator extends React.PureComponent<ToolAssistanceIndicatorProps> {
   public render() {
     const className = classnames(
       "nz-footer-toolAssistance-indicator",
@@ -42,7 +42,7 @@ export class ToolAssistanceIndicator extends React.Component<ToolAssistanceIndic
       >
         <div
           className="nz-indicator"
-          onClick={this._handleOnIndicatorClick}
+          onClick={this.props.onClick}
         >
           <div className="nz-icons">
             {this.props.icons}
@@ -53,9 +53,5 @@ export class ToolAssistanceIndicator extends React.Component<ToolAssistanceIndic
         {this.props.dialog}
       </div>
     );
-  }
-
-  private _handleOnIndicatorClick = () => {
-    this.props.onClick && this.props.onClick();
   }
 }

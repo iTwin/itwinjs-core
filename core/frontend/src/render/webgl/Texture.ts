@@ -351,8 +351,11 @@ export class Texture2DHandle extends TextureHandle {
 
     const gl: WebGLRenderingContext = System.instance.context;
     gl.pixelStorei(gl.UNPACK_ALIGNMENT, 1);
-    gl.bindTexture(gl.TEXTURE_2D, tex);
+
+    // Go through System to ensure we don't interface with currently-bound textures!
+    System.instance.bindTexture2d(TextureUnit.Zero, tex);
     gl.texSubImage2D(gl.TEXTURE_2D, 0, 0, 0, this.width, this.height, this._format, this._dataType, this._dataBytes);
+    System.instance.bindTexture2d(TextureUnit.Zero, undefined);
 
     return true;
   }

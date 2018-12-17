@@ -15,6 +15,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                   "getCommandArgs": undefined,
                   "parameters": undefined,
                 },
+                "_label": [Function],
+                "_tooltip": [Function],
                 "execute": [Function],
                 "featureId": "",
                 "iconSpec": "icon-cursor",
@@ -22,10 +24,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
-                "label": "tools.Select.flyover",
                 "stateSyncIds": Array [],
                 "toolId": "Select",
-                "tooltip": "tools.Select.description",
               }
             }
           />
@@ -37,6 +37,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                   "getCommandArgs": undefined,
                   "parameters": undefined,
                 },
+                "_label": [Function],
+                "_tooltip": [Function],
                 "execute": [Function],
                 "featureId": "",
                 "iconSpec": "icon-fit-to-view",
@@ -44,10 +46,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
-                "label": "tools.View.Fit.flyover",
                 "stateSyncIds": Array [],
                 "toolId": "View.Fit",
-                "tooltip": "tools.View.Fit.description",
               }
             }
           />
@@ -59,6 +59,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                   "getCommandArgs": undefined,
                   "parameters": undefined,
                 },
+                "_label": [Function],
+                "_tooltip": [Function],
                 "execute": [Function],
                 "featureId": "",
                 "iconSpec": "icon-window-area",
@@ -66,10 +68,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
-                "label": "tools.View.WindowArea.flyover",
                 "stateSyncIds": Array [],
                 "toolId": "View.WindowArea",
-                "tooltip": "tools.View.WindowArea.description",
               }
             }
           />
@@ -81,6 +81,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                   "getCommandArgs": undefined,
                   "parameters": undefined,
                 },
+                "_label": [Function],
+                "_tooltip": [Function],
                 "execute": [Function],
                 "featureId": "",
                 "iconSpec": "icon-zoom",
@@ -88,10 +90,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
-                "label": "tools.View.Zoom.flyover",
                 "stateSyncIds": Array [],
                 "toolId": "View.Zoom",
-                "tooltip": "tools.View.Zoom.description",
               }
             }
           />
@@ -103,6 +103,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                   "getCommandArgs": undefined,
                   "parameters": undefined,
                 },
+                "_label": [Function],
+                "_tooltip": [Function],
                 "execute": [Function],
                 "featureId": "",
                 "iconSpec": "icon-hand-2",
@@ -110,10 +112,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
-                "label": "tools.View.Pan.flyover",
                 "stateSyncIds": Array [],
                 "toolId": "View.Pan",
-                "tooltip": "tools.View.Pan.description",
               }
             }
           />
@@ -125,6 +125,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                   "getCommandArgs": undefined,
                   "parameters": undefined,
                 },
+                "_label": [Function],
+                "_tooltip": [Function],
                 "execute": [Function],
                 "featureId": "",
                 "iconSpec": "icon-rotate-left",
@@ -132,10 +134,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
-                "label": "tools.View.Rotate.flyover",
                 "stateSyncIds": Array [],
                 "toolId": "View.Rotate",
-                "tooltip": "tools.View.Rotate.description",
               }
             }
           />
@@ -147,6 +147,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                   "getCommandArgs": undefined,
                   "parameters": undefined,
                 },
+                "_label": [Function],
+                "_tooltip": [Function],
                 "execute": [Function],
                 "featureId": "",
                 "iconSpec": "icon-walk",
@@ -154,10 +156,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
-                "label": "tools.View.Walk.flyover",
                 "stateSyncIds": Array [],
                 "toolId": "View.Walk",
-                "tooltip": "tools.View.Walk.description",
               }
             }
           />
@@ -169,6 +169,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                   "getCommandArgs": undefined,
                   "parameters": undefined,
                 },
+                "_label": [Function],
+                "_tooltip": [Function],
                 "execute": [Function],
                 "featureId": "",
                 "iconSpec": "icon-camera",
@@ -176,10 +178,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
-                "label": "tools.View.ToggleCamera.flyover",
                 "stateSyncIds": Array [],
                 "toolId": "View.ToggleCamera",
-                "tooltip": "tools.View.ToggleCamera.description",
               }
             }
           />
@@ -191,6 +191,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                   "getCommandArgs": undefined,
                   "parameters": undefined,
                 },
+                "_label": [Function],
+                "_tooltip": [Function],
                 "execute": [Function],
                 "featureId": "",
                 "iconSpec": "icon-airplane",
@@ -198,10 +200,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
-                "label": "tools.View.Fly.flyover",
                 "stateSyncIds": Array [],
                 "toolId": "View.Fly",
-                "tooltip": "tools.View.Fly.description",
               }
             }
           />
@@ -213,6 +213,8 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                   "getCommandArgs": undefined,
                   "parameters": undefined,
                 },
+                "_label": [Function],
+                "_tooltip": [Function],
                 "execute": [Function],
                 "featureId": "",
                 "iconSpec": "icon-camera-animation",
@@ -220,24 +222,25 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
                 "isEnabled": true,
                 "isPressed": false,
                 "isVisible": true,
-                "label": "tools.AnalysisAnimation.flyover",
                 "stateFunc": [Function],
                 "stateSyncIds": Array [
                   "activecontentchanged",
                 ],
                 "toolId": "AnalysisAnimationTool",
-                "tooltip": "tools.AnalysisAnimation.description",
               }
             }
           />
         </UNDEFINED>
       }
+      panelAlignment={0}
     />
   }
   toolWidgetDef={
     ToolWidgetDef {
       "_appButton": undefined,
       "_handleSyncUiEvent": [Function],
+      "_label": "",
+      "_tooltip": "",
       "classId": undefined,
       "featureId": "",
       "fillZone": false,
@@ -254,13 +257,11 @@ exports[`CoreToolDefinitions ToolWidget should render correctly with Core Tool D
       "isStatusBar": false,
       "isToolSettings": false,
       "isVisible": true,
-      "label": "",
       "priority": 0,
       "renderHorizontalToolbar": [Function],
       "renderVerticalToolbar": [Function],
       "stateChanged": false,
       "stateSyncIds": Array [],
-      "tooltip": "",
       "verticalDirection": 2,
       "verticalItems": undefined,
       "widgetType": 0,

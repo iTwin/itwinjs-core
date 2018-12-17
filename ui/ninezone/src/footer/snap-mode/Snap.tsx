@@ -22,7 +22,7 @@ export interface SnapProps extends CommonProps, NoChildrenProps {
 }
 
 /** Snap row used in [[SnapModeDialog]] component. */
-export class Snap extends React.Component<SnapProps> {
+export class Snap extends React.PureComponent<SnapProps> {
   public render() {
     const dialogClassName = classnames(
       "nz-footer-snapMode-snap",
@@ -31,7 +31,7 @@ export class Snap extends React.Component<SnapProps> {
 
     return (
       <div
-        onClick={this._handleOnClick}
+        onClick={this.props.onClick}
         className={dialogClassName}
         style={this.props.style}
       >
@@ -44,9 +44,4 @@ export class Snap extends React.Component<SnapProps> {
       </div>
     );
   }
-
-  private _handleOnClick = () => {
-    this.props.onClick && this.props.onClick();
-  }
-
 }

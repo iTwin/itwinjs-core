@@ -20,4 +20,9 @@ export class UnitSystem extends SchemaItem {
     if (visitor.visitUnitSystem)
       await visitor.visitUnitSystem(this);
   }
+
+  public acceptSync(visitor: SchemaItemVisitor) {
+    if (visitor.visitUnitSystemSync)
+      visitor.visitUnitSystemSync(this);
+  }
 }

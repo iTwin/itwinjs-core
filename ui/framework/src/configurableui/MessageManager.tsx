@@ -136,7 +136,7 @@ export class MessageManager {
    */
   public static setupActivityMessageDetails(details: ActivityMessageDetails): boolean {
     this._OngoingActivityMessage.details = details;
-    this._OngoingActivityMessage.isRestored = true;
+    this._OngoingActivityMessage.isRestored = details.showDialogInitially;
     return true;
   }
 

@@ -300,7 +300,7 @@ export class ConnectClient extends WsgClient {
   public async getProject(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project> {
     const projects: Project[] = await this.getProjects(alctx, token, queryOptions);
     if (projects.length === 0)
-      throw new Error("Could not find a project with the specified criteria");
+      throw new Error("Could not find a project with the specified criteria that the user has access to");
     else if (projects.length > 1)
       throw new Error("More than one project found with the specified criteria");
 
