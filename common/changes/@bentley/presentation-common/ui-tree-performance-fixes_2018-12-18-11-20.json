@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Invert `isSelectable` property to `isSelectionDisabled` so in the most common case (selectable = true) we don't have to send the value",
+      "packageName": "@bentley/presentation-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-common",
+  "email": "grigas.petraitis@bentley.com"
+}
