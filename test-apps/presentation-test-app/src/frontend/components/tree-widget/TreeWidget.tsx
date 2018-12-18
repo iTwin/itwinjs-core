@@ -20,7 +20,12 @@ class SampleDataProvider implements IPresentationTreeDataProvider {
   }
   public get connection() { return this._wrapped.connection; }
   public get rulesetId() { return this._wrapped.rulesetId; }
-  public async getNodesCount(parentNode?: TreeNodeItem) { return this._wrapped.getNodesCount(parentNode); }
+  public async getNodesCount(parentNode?: TreeNodeItem) {
+    const result = await this._wrapped.getNodesCount(parentNode);
+    // tslint:disable-next-line:no-console
+    console.log(`Total children for "${parentNode ? parentNode.label : "{root}"}": ${result}`);
+    return result;
+  }
   public async getNodes(parentNode?: TreeNodeItem, page?: PageOptions) {
     const result = await this._wrapped.getNodes(parentNode, page);
     result.forEach((n) => {
