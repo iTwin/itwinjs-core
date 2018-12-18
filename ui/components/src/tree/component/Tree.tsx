@@ -830,9 +830,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   public render() {
     if (!this.state.modelReady) {
       return (
-        <p className="ui-components-tree-loading">
-          {UiComponents.i18n.translate("UiComponents:general.loading")}
-        </p>
+        <div className="ui-components-tree-loader">
+          <i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
       );
     }
 
