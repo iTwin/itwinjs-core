@@ -411,6 +411,10 @@
       "args": [
         "--opts",
         "mocha.opts",
+        "-r",
+        "jsdom-global/register",
+        "-r",
+        "ignore-styles",
         "lib/**/*.js"
       ]
     },

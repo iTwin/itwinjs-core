@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added RulesetEmbedder to embed and get rules to/from iModelDb",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "haroldas.vitunskas@bentley.com"
+}
