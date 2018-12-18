@@ -162,8 +162,10 @@ export interface TreeState {
     selectedNodes?: string[] | ((node: TreeNodeItem) => boolean);
     nodeHighlightingProps?: HighlightableTreeProps;
   };
+
   model: BeInspireTree<TreeNodeItem>;
   modelReady: boolean;
+
   cellEditorState: TreeCellEditorState;
 
   pendingSelectionChange?: {
@@ -308,8 +310,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   public shouldComponentUpdate(nextProps: TreeProps, nextState: TreeState): boolean {
-    if (this.state.modelReady !== nextState.modelReady) {
-      // always render when state.modelReady changes
+    if (this.state.modelReady !== nextState.modelReady || this.state.model !== nextState.model) {
+      // always render when modelReady or model changes
       return true;
     }
 
@@ -362,7 +364,11 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     model.on(BeInspireTreeEvent.NodeCollapsed, this._onNodeCollapsed);
     model.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
     model.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
-    model.ready.then(this._onModelReady); // tslint:disable-line:no-floating-promises
+    // tslint:disable-next-line:no-floating-promises
+    model.ready.then(() => {
+      if (model === this.state.model)
+        this._onModelReady();
+    });
   }
 
   private dropModelListeners(model: BeInspireTree<TreeNodeItem>) {
