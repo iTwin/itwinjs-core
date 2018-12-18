@@ -102,7 +102,7 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns either an array of nodes on success or an error string on error.
    */
   public async getRootNodes(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await this._requestsHandler.getRootNodes(this.toIModelTokenOptions(requestOptions));
+    return this._requestsHandler.getRootNodes(this.toIModelTokenOptions(requestOptions));
   }
 
   /**
@@ -111,7 +111,7 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns the number of root nodes.
    */
   public async getRootNodesCount(requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<number> {
-    return await this._requestsHandler.getRootNodesCount(this.toIModelTokenOptions(requestOptions));
+    return this._requestsHandler.getRootNodesCount(this.toIModelTokenOptions(requestOptions));
   }
 
   /**
@@ -121,7 +121,7 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns either an array of nodes on success or an error string on error.
    */
   public async getChildren(requestOptions: Paged<HierarchyRequestOptions<IModelConnection>>, parentKey: Readonly<NodeKey>): Promise<ReadonlyArray<Readonly<Node>>> {
-    return await this._requestsHandler.getChildren(this.toIModelTokenOptions(requestOptions), parentKey);
+    return this._requestsHandler.getChildren(this.toIModelTokenOptions(requestOptions), parentKey);
   }
 
   /**
@@ -131,7 +131,7 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns the number of child nodes.
    */
   public async getChildrenCount(requestOptions: HierarchyRequestOptions<IModelConnection>, parentKey: Readonly<NodeKey>): Promise<number> {
-    return await this._requestsHandler.getChildrenCount(this.toIModelTokenOptions(requestOptions), parentKey);
+    return this._requestsHandler.getChildrenCount(this.toIModelTokenOptions(requestOptions), parentKey);
   }
 
   /**
@@ -142,7 +142,7 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns either an array of paths on success or an error string on error.
    */
   public async getNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, paths: InstanceKey[][], markedIndex: number): Promise<NodePathElement[]> {
-    return await this._requestsHandler.getNodePaths(this.toIModelTokenOptions(requestOptions), paths, markedIndex);
+    return this._requestsHandler.getNodePaths(this.toIModelTokenOptions(requestOptions), paths, markedIndex);
   }
 
   /**
@@ -152,7 +152,7 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns either an array of paths on success or an error string on error.
    */
   public async getFilteredNodePaths(requestOptions: HierarchyRequestOptions<IModelConnection>, filterText: string): Promise<NodePathElement[]> {
-    return await this._requestsHandler.getFilteredNodePaths(this.toIModelTokenOptions(requestOptions), filterText);
+    return this._requestsHandler.getFilteredNodePaths(this.toIModelTokenOptions(requestOptions), filterText);
   }
 
   /**
@@ -180,7 +180,7 @@ export default class PresentationManager implements IDisposable {
    * number of records in the content set.
    */
   public async getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>): Promise<number> {
-    return await this._requestsHandler.getContentSetSize(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys);
+    return this._requestsHandler.getContentSetSize(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys);
   }
 
   /**
@@ -206,7 +206,7 @@ export default class PresentationManager implements IDisposable {
    * @return A promise object that returns either distinct values on success or an error string on error.
    */
   public async getDistinctValues(requestOptions: ContentRequestOptions<IModelConnection>, descriptor: Readonly<Descriptor>, keys: Readonly<KeySet>, fieldName: string, maximumValueCount: number = 0): Promise<string[]> {
-    return await this._requestsHandler.getDistinctValues(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys, fieldName, maximumValueCount);
+    return this._requestsHandler.getDistinctValues(this.toIModelTokenOptions(requestOptions), descriptor.createStrippedDescriptor(), keys, fieldName, maximumValueCount);
   }
 
 }
