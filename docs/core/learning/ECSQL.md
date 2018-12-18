@@ -121,7 +121,7 @@ SELECT ECInstanceId, Model, CodeValue FROM bis.ViewDefinition3d WHERE NOT IsCame
 
 ### DateTime
 
-ECSQL supports both dates without time (`DATE`) and dates with time (`TIMESTAMP`).
+ECSQL supports dates without time (`DATE`), dates with time (`TIMESTAMP`), and times without date (`TIME`).
 
 > ECSQL does not support time zone conversions. Time zone conversions are to be handled by the application.
 
@@ -131,6 +131,8 @@ ECSQL supports both dates without time (`DATE`) and dates with time (`TIMESTAMP`
 
 `TIMESTAMP 'yyyy-mm-dd hh:mm:ss[.nnn][Z]'`
 
+`TIME 'hh:mm:ss[.nnn]'`
+
 The time stamp format matches the [ISO 8601 standard](https://www.iso.org/iso-8601-date-and-time-format.html) (see also https://en.wikipedia.org/wiki/ISO_8601)
 
 #### Basic functions
@@ -139,6 +141,7 @@ Function | Description
 --- | ---
 `CURRENT_DATE` | returns the current date
 `CURRENT_TIMESTAMP` | returns the current timestamp in UTC.
+`CURRENT_TIME` | returns the current time of the day.
 
 #### Example
 
@@ -152,6 +155,31 @@ SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod < TIMESTAMP
 
 ```sql
 SELECT ECInstanceId, Model, CodeValue FROM bis.Element WHERE LastMod BETWEEN :startperiod AND :endperiod`
+```
+
+```sql
+SELECT ECInstanceId FROM myschema.CalenderEntry WHERE startTime >= TIME '08:30:00' AND startTime <= TIME '09:00:00'
+```
+
+The last example is based on this ECSchema snippet:
+
+```xml
+<ECEntityClass typeName="CalenderEntry">
+  <ECProperty propertyName="startTime" typeName="dateTime">
+    <ECCustomAttributes>
+      <DateTimeInfo xmlns="CoreCustomAttributes.01.00.01">
+        <DateTimeComponent>TimeOfDay</DateTimeComponent>
+      </DateTimeInfo>
+    </ECCustomAttributes>
+  </ECProperty>
+  <ECProperty propertyName="endTime" typeName="dateTime">
+    <ECCustomAttributes>
+      <DateTimeInfo xmlns="CoreCustomAttributes.01.00.01">
+        <DateTimeComponent>TimeOfDay</DateTimeComponent>
+      </DateTimeInfo>
+    </ECCustomAttributes>
+  </ECProperty>
+</ECEntityClass>
 ```
 
 ### Points

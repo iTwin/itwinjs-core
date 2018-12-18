@@ -15,11 +15,11 @@ ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECC
 
 > **Try it yourself**
 >
-> *Goal:* Return the actual Element subclass of the [Element](../../bis/domains/BisCore.ecschema.md#SpatialElement) with id 0x10000000021.
+> *Goal:* Return the actual Element subclass of the [Element](../../bis/domains/BisCore.ecschema.md#SpatialElement) with id 0x10000000020.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x10000000021
+> SELECT ECClassId, CodeValue FROM bis.Element WHERE ECInstanceId=0x10000000020
 > ```
 > *Result*
 >
@@ -50,11 +50,12 @@ For Boolean types ECSQL supports the literals `True` and `False`.
 > 0x1 | BisCore.RepositoryModel | false
 > 0xe | BisCore.LinkModel | true
 > 0x10 | BisCore.DictionaryModel | true
-> 0x10000000011 | BisCore.PhysicalModel | false
-> 0x10000000030 | BisCore.DocumentListModel | false
-> 0x10000000031 | BisCore.DrawingModel | false
-> 0x10000000039 | BisCore.DrawingModel | false
-> 0x10000000040 | BisCore.DrawingModel | false
+> 0x10000000002 | BisCore.PhysicalModel | false
+> 0x10000000003 | BisCore.DocumentListModel | false
+> 0x10000000004 | BisCore.DefinitionModel | false
+> 0x10000000037 | BisCore.DrawingModel | false
+> 0x1000000003d | BisCore.DrawingModel | false
+> 0x10000000042 | BisCore.DrawingModel | false
 
 Boolean properties or expressions do not need to be compared to `True` and `False` as they return a
 boolean value already.
@@ -101,15 +102,16 @@ And the same example with `False`:
 > ECInstanceId | ECClassId
 > --- | ---
 > 0x1 | BisCore.RepositoryModel
-> 0x10000000011 | BisCore.PhysicalModel
-> 0x10000000030 | BisCore.DocumentListModel
-> 0x10000000031 | BisCore.DrawingModel
-> 0x10000000039 | BisCore.DrawingModel
-> 0x10000000040 | BisCore.DrawingModel
+> 0x10000000002 | BisCore.PhysicalModel
+> 0x10000000003 | BisCore.DocumentListModel
+> 0x10000000004 | BisCore.DefinitionModel
+> 0x10000000037 | BisCore.DrawingModel
+> 0x1000000003d | BisCore.DrawingModel
+> 0x10000000042 | BisCore.DrawingModel
 
 ## DateTime
 
-ECSQL supports both dates without time (`DATE`) and dates with time (`TIMESTAMP`).
+ECSQL supports dates without time (`DATE`), dates with time (`TIMESTAMP`), and times without date (`TIME`).
 
 > ECSQL does not support time zone conversions. Time zone conversions are to be handled by the application.
 
@@ -117,37 +119,17 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 
 > **Try it yourself**
 >
-> *Goal:* Find all [Device](./MyDomain.ecschema.md#Device)s which were modified before June, 1st, 2018.
+> *Goal:* Find all [Device](./MyDomain.ecschema.md#Device)s which were modified between 4pm and 6pm UTC on December, 18th 2018.
 >
 > *ECSQL*
 > ```sql
-> SELECT CodeValue,LastMod FROM MyDomain.Device WHERE LastMod < DATE '2018-06-01'
+> SELECT CodeValue,LastMod FROM mydomain.Device WHERE LastMod BETWEEN TIMESTAMP '2018-12-18T16:00:00Z' AND TIMESTAMP '2018-12-18T18:00:00Z'
 > ```
 > *Result*
 >
 > CodeValue | LastMod
 > --- | ---
-> DEV-A-G-1 | 2018-05-29T13:43:42.185Z
-> DEV-A-G-2 | 2018-05-29T13:43:42.186Z
-> DEV-A-1-1 | 2018-05-29T19:00:00.029Z
-> DEV-A-2-1 | 2018-05-29T19:00:00.029Z
-
----
-
-> **Try it yourself**
->
-> *Goal:* Find all [Device](./MyDomain.ecschema.md#Device)s which were modified between 8am and 6pm UTC on May, 29th 2018.
->
-> *ECSQL*
-> ```sql
-> SELECT CodeValue,LastMod FROM bis.Element WHERE LastMod BETWEEN TIMESTAMP '2018-05-29T08:00:00Z' AND TIMESTAMP '2018-05-29T18:00:00Z'
-> ```
-> *Result*
->
-> CodeValue | LastMod
-> --- | ---
-> DEV-A-G-1 | 2018-05-29T13:43:42.185Z
-> DEV-A-G-2 | 2018-05-29T13:43:42.186Z
+> DEV-A-G-4 | 2018-12-18T16:03:15.206Z
 
 ## Points
 
@@ -209,7 +191,7 @@ Property | Description
 >
 > Parent |
 > --- |
-> {"id":"0x10000000013","relClassName":"BisCore.ElementOwnsChildElements"} |
+> {"id":"0x1000000001e","relClassName":"BisCore.ElementOwnsChildElements"} |
 
 ---
 
@@ -225,7 +207,7 @@ Property | Description
 >
 > Parent.Id |
 > --- |
-> 0x10000000013 |
+> 0x1000000001e |
 
 ---
 
@@ -242,7 +224,7 @@ Property | Description
 >
 > Parent.Id | Parent.RelECClassId
 > --- | ---
-> 0x10000000013 | BisCore.ElementOwnsChildElements
+> 0x1000000001e | BisCore.ElementOwnsChildElements
 
 Find more examples in the lesson about [Joins and ECRelationshipClasses](./Joins.md#examples).
 
@@ -251,16 +233,67 @@ Find more examples in the lesson about [Joins and ECRelationshipClasses](./Joins
 In ECSQL you can refer to a struct ECProperty either as a whole or by just referring to some of its members.
 The operator for referencing members of structs in an ECSQL is the '.'.
 
-> As there are no struct properties in the sample iModel (structs are generally rarely used), you cannot try that out with this
-> tutorial. However, you will find ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL.md#structs).
+The sample iModel does not have struct properties. However, the Change Summaries of the iModel have them.
+Follow the steps in the sections [Generate Change Summaries](./ChangeSummaryQueries.md#generate-the-change-summaries) and
+[Attach Change Summaries](./ChangeSummaryQueries.md#attach-the-change-summaries), before you run the following queries.
+
+> **Try it yourself**
+>
+> *Goal:* Return ChangedInstance struct as a whole and OpCode for the InstanceChange object `0x36`.
+>
+> *ECSQL*
+> ```sql
+> SELECT ChangedInstance,OpCode FROM change.InstanceChange WHERE ECInstanceId=0x36
+> ```
+>
+> *Result*
+>
+> ChangedInstance | OpCode
+> --- | ---
+> {"classId":"0x100","id":"0x20000000002"} | Update
+
+And here is an example where individual members of the struct are used.
+
+> **Try it yourself**
+>
+> *Goal:* Return the ids of changed instances that are [Device](./MyDomain.ecschema.md#Device)s (ECClass `0x100`) and the corresponding Change Summary id and OpCode.
+>
+> *ECSQL*
+> ```sql
+> SELECT Summary.Id,ChangedInstance.Id,OpCode FROM change.InstanceChange WHERE ChangedInstance.ClassId=0x100
+> ```
+>
+> *Result*
+>
+> Summary.Id | ChangedInstance.Id | OpCode
+> --- | --- | ---
+> 0x1 | 0x20000000001 | Delete
+> 0x35 | 0x20000000001 | Update
+> 0x35 | 0x20000000002 | Insert
+> 0x6c | 0x20000000001 | Insert
+
+You can find more ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL.md#structs).
 
 ## Arrays
 
 In ECSQL you can refer to Array ECProperties only as a whole.
 
-> The sample iModel does not use array properties for its data. However, arrays are used when querying ECSchemas.
-> That topic is covered as advanced lesson: [Querying ECSchemas (Meta queries)](./MetaQueries.md)
-> You will also find ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL.md#arrays).
+> **Try it yourself**
+>
+> *Goal:* Return the ECEnumeration values for the ECEnumeration [FlameDetectionTechnique](./MyDomain.ecschema.md#FlameDetectionTechnique).
+>
+> *ECSQL*
+> ```sql
+> SELECT Name, EnumValues FROM meta.ECEnumerationDef WHERE Name='FlameDetectionTechnique'
+> ```
+>
+> *Result*
+>
+> Name | EnumValues
+> --- | ---
+> FlameDetectionTechnique | [{"name": "Optical", "intValue":0},{"name":"Ultraviolet", "intValue":1},{"name":"Infrared", "intValue":2}]
+
+You can find more ECSQL examples in the respective section of the [ECSQL Reference](../ECSQL.md#arrays).
 
 ---
 

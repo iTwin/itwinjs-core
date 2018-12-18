@@ -8,43 +8,44 @@ We begin the lesson by using a simple ECSQL similar to the ones used at the begi
 
 > **Try it yourself**
 >
-> *Goal:* Return the id and class id of all [SpatialElement](../../bis/domains/BisCore.ecschema.md#SpatialElement)s.
+> *Goal:* Return the code and class id of all [SpatialElement](../../bis/domains/BisCore.ecschema.md#SpatialElement)s.
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId, ECClassId FROM bis.SpatialElement
+> SELECT CodeValue, ECClassId FROM bis.SpatialElement
 > ```
 >
 > *Result*
 >
-> ECInstanceId | ECClassId
+> CodeValue | ECClassId
 > --- | ---
-> 0x10000000012 | MyDomain.Building
-> 0x10000000021 | MyDomain.Device
-> 0x10000000022 | MyDomain.Device
-> 0x10000000023 | MyDomain.Device
-> 0x10000000024 | MyDomain.Device
-> 0x10000000025 | MyDomain.Device
-> 0x10000000026 | MyDomain.Device
-> 0x10000000027 | MyDomain.Device
-> 0x10000000028 | MyDomain.Device
-> 0x10000000029 | MyDomain.Device
-> 0x1000000002a | MyDomain.Device
-> 0x1000000002b | MyDomain.Device
-> 0x10000000014 | MyDomain.Space
-> 0x10000000015 | MyDomain.Space
-> 0x10000000017 | MyDomain.Space
-> 0x10000000019 | MyDomain.Space
-> 0x1000000001a | MyDomain.Space
-> 0x1000000001b | MyDomain.Space
-> 0x1000000001c | MyDomain.Space
-> 0x1000000001d | MyDomain.Space
-> 0x1000000001e | MyDomain.Space
-> 0x1000000001f | MyDomain.Space
-> 0x10000000020 | MyDomain.Space
-> 0x10000000013 | MyDomain.Story
-> 0x10000000016 | MyDomain.Story
-> 0x10000000018 | MyDomain.Story
+> Building A | MyDomain.Building
+> DEV-> A-G-1 | MyDomain.Device
+> DEV-> A-G-2 | MyDomain.Device
+> DEV-> A-1-1 | MyDomain.Device
+> DEV-> A-2-1 | MyDomain.Device
+> DEV-> A-2-2 | MyDomain.Device
+> DEV-> A-2-3 | MyDomain.Device
+> DEV-> A-2-4 | MyDomain.Device
+> DEV-> A-2-5 | MyDomain.Device
+> DEV-> A-2-6 | MyDomain.Device
+> DEV-> A-2-7 | MyDomain.Device
+> DEV-> A-2-8 | MyDomain.Device
+> DEV-> A-G-4 | MyDomain.Device
+> A-G-1 | MyDomain.Space
+> A-G-2 | MyDomain.Space
+> A-1-1 | MyDomain.Space
+> A-2-1 | MyDomain.Space
+> A-2-2 | MyDomain.Space
+> A-2-3 | MyDomain.Space
+> A-2-4 | MyDomain.Space
+> A-2-5 | MyDomain.Space
+> A-2-6 | MyDomain.Space
+> A-2-7 | MyDomain.Space
+> A-2-8 | MyDomain.Space
+> A-G | MyDomain.Story
+> A-1 | MyDomain.Story
+> A-2 | MyDomain.Story
 
 This example illustrates that polymorphism is pretty obvious. All examples throughout the tutorial up to here were polymorphic queries, and we did not have to mention or even explain it. It has worked intuitively. If we now take a closer look at what the ECSQL does, you can notice this:
 
@@ -56,16 +57,16 @@ Now let's turn the query into a non-polymorphic one.
 
 > **Try it yourself**
 >
-> *Goal:* Return the id and class id of instances of only the [SpatialElement](../../bis/domains/BisCore.ecschema.md#SpatialElement) class
+> *Goal:* Return the code and class id of instances of only the [SpatialElement](../../bis/domains/BisCore.ecschema.md#SpatialElement) class
 >
 > *ECSQL*
 > ```sql
-> SELECT ECInstanceId, ECClassId FROM ONLY bis.SpatialElement
+> SELECT CodeValue, ECClassId FROM ONLY bis.SpatialElement
 > ```
 >
 > *Result*
 >
-> ECInstanceId | ECClassId
+> CodeValue | ECClassId
 > --- | ---
 > no rows |
 
@@ -84,27 +85,28 @@ As expected the query does not return anything, because [SpatialElement](../../b
 >
 > ECInstanceId | CodeValue
 > --- | ---
-> 0x10000000021 | DEV-A-G-1
+> 0x10000000020 | DEV-A-G-1
 > 0x10000000022 | DEV-A-G-2
-> 0x10000000023 | DEV-A-1-1
-> 0x10000000024 | DEV-A-2-1
-> 0x10000000025 | DEV-A-2-2
-> 0x10000000026 | DEV-A-2-3
-> 0x10000000027 | DEV-A-2-4
-> 0x10000000028 | DEV-A-2-5
-> 0x10000000029 | DEV-A-2-6
-> 0x1000000002a | DEV-A-2-7
-> 0x1000000002b | DEV-A-2-8
+> 0x10000000025 | DEV-A-1-1
+> 0x10000000028 | DEV-A-2-1
+> 0x1000000002a | DEV-A-2-2
+> 0x1000000002c | DEV-A-2-3
+> 0x1000000002e | DEV-A-2-4
+> 0x10000000030 | DEV-A-2-5
+> 0x10000000032 | DEV-A-2-6
+> 0x10000000034 | DEV-A-2-7
+> 0x10000000036 | DEV-A-2-8
+> 0x20000000002 | DEV-A-G-4
 
 Let's go back to explore more how to work with the ECClassId to tell between subclasses of a polymorphic query.
 
 > **Try it yourself**
 >
-> *Goal:* Return the code and class id of all [SpatialElement](../../bis/domains/BisCore.ecschema.md#SpatialElement)s that are either [Space](./MyDomain.ecschema.md#Space) (ECClassId 244) or [Story](./MyDomain.ecschema.md#Story) (ECClassId 245) classes.
+> *Goal:* Return the code and class id of all [SpatialElement](../../bis/domains/BisCore.ecschema.md#SpatialElement)s that are either [Space](./MyDomain.ecschema.md#Space) (ECClassId 261) or [Story](./MyDomain.ecschema.md#Story) (ECClassId 261) classes.
 >
 > *ECSQL*
 > ```sql
-> SELECT CodeValue, ECClassId FROM bis.SpatialElement WHERE ECClassId IN (244,245)
+> SELECT CodeValue, ECClassId FROM bis.SpatialElement WHERE ECClassId IN (261,262)
 > ```
 >
 > *Result*
@@ -172,7 +174,7 @@ The following shows how you can perform simple statistics on the distribution of
 > ECClassId | ElementCount
 > --- | ---
 > MyDomain.Building | 1
-> MyDomain.Device | 11
+> MyDomain.Device | 12
 > MyDomain.Space | 11
 > MyDomain.Story | 3
 
