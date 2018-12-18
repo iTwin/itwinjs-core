@@ -48,6 +48,8 @@ export interface PanelsProviderProps {
 
 /** Provides panels and histories of toolbar items. */
 export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
+  private _update = false;
+
   private appendPanels() {
     const panels = this.props.panels.current;
     if (!panels)
@@ -87,11 +89,13 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
   public componentDidMount() {
     this.appendPanels();
     this.appendHistories();
+    this._update = true;
   }
 
   public componentDidUpdate() {
     this.appendPanels();
     this.appendHistories();
+    this._update = true;
   }
 
   private _refs = new Array<React.RefObject<ToolbarItem>>();
@@ -100,13 +104,17 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
     const flattened = FlattenChildren(this.props.items);
     const itemsArray = React.Children.toArray(flattened);
     this._refs = [];
+    this._update = false;
+
     const items = itemsArray.reduce((acc, item) => {
       if (!React.isValidElement<ToolbarItemProps<ToolbarItem>>(item))
         return acc;
 
-      const toolbarItemRef = React.createRef<ToolbarItem>();
+      const toolbarItemRef: React.MutableRefObject<ToolbarItem | null> = {
+        current: null,
+      };
       item = React.cloneElement(item, {
-        toolbarItemRef,
+        toolbarItemRef: this._handleToolbarItemRef(toolbarItemRef),
       });
       this._refs.push(toolbarItemRef);
 
@@ -114,6 +122,11 @@ export class PanelsProvider extends React.PureComponent<PanelsProviderProps> {
       return acc;
     }, new Array<React.ReactNode>());
     return this.props.children && this.props.children(items);
+  }
+
+  private _handleToolbarItemRef = (toolbarItemRef: React.MutableRefObject<ToolbarItem | null>) => (toolbarItem: ToolbarItem | null) => {
+    toolbarItemRef.current = toolbarItem;
+    this._update && this.forceUpdate();
   }
 }
 
@@ -200,7 +213,7 @@ export interface ToolbarItem {
  * @note Must be passed down when wrapping the toolbar item component.
  */
 export interface ToolbarItemProps<TItem extends ToolbarItem> {
-  toolbarItemRef?: React.RefObject<TItem>;
+  toolbarItemRef?: React.Ref<TItem>;
 }
 
 /** Extracts [[ToolbarItemProps]] from your props. */
