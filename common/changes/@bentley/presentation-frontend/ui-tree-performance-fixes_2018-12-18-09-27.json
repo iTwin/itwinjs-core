@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Allow specifying `clientId` for PresentationManager. This allows consumers to use clientId that's shared between sessions which makes it possible for presentation framework to share caches.",
+      "packageName": "@bentley/presentation-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-frontend",
+  "email": "grigas.petraitis@bentley.com"
+}

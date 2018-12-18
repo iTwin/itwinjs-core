@@ -70,6 +70,12 @@ describe("PresentationManager", () => {
       expect(mgr.rpcRequestsHandler).to.eq(handler.object);
     });
 
+    it("sets RpcRequestsHandler clientId if supplied with props", async () => {
+      const props = { clientId: faker.random.uuid() };
+      const mgr = PresentationManager.create(props);
+      expect(mgr.rpcRequestsHandler.clientId).to.eq(props.clientId);
+    });
+
   });
 
   describe("dispose", () => {

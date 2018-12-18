@@ -25,6 +25,15 @@ export interface Props {
    */
   activeLocale?: string;
 
+  /**
+   * ID used to identify client that requests data. Generally, clients should
+   * store this ID in their local storage so the ID can be reused across
+   * sessions - this allows reusing some caches.
+   *
+   * Defaults to a unique GUID as a client id.
+   */
+  clientId?: string;
+
   /** @hidden */
   rpcRequestsHandler?: RpcRequestsHandler;
 }
@@ -49,7 +58,9 @@ export default class PresentationManager implements IDisposable {
       this.activeLocale = props.activeLocale;
     this._rulesets = new RulesetManager();
     this._rulesetVars = new Map<string, RulesetVariablesManager>();
-    this._requestsHandler = (props && props.rpcRequestsHandler) ? props.rpcRequestsHandler : new RpcRequestsHandler();
+    this._requestsHandler = (props && props.rpcRequestsHandler)
+      ? props.rpcRequestsHandler
+      : new RpcRequestsHandler(props ? { clientId: props.clientId } : undefined);
     this._requestsHandler.registerClientStateHolder(this._rulesets);
   }
 
