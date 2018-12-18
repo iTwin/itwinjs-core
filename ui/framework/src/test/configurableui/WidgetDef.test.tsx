@@ -42,7 +42,7 @@ describe("WidgetDef", () => {
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
     expect(widgetDef.isVisible).to.eq(true);
-    expect(widgetDef.isActive).to.eq(false);
+    expect(widgetDef.isActive).to.eq(true);
     expect(widgetDef.isFloating).to.eq(false);
     expect(widgetDef.priority).to.eq(100);
     expect(widgetDef.featureId).to.eq("FeatureId");

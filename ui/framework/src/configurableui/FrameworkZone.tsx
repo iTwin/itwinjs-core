@@ -116,9 +116,7 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
       }
     }
 
-    let activeWidgetDef: WidgetDef | undefined;
-    let defToActivate: WidgetDef | undefined;
-    let widgetBeingClosed = false;
+    let widgetDefToActivate: WidgetDef | undefined;
     const currentActiveWidgetDefs: WidgetDef[] = [];  // there should really only ever be one, but just in case.
     const widgets: EachWidgetProps[] = new Array<EachWidgetProps>();
 
@@ -129,45 +127,42 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
 
       const visibleWidgets = zoneDef.widgetDefs
         .filter((widgetDef: WidgetDef) => {
-          return widgetDef.isVisible;
+          return widgetDef.isVisible && !widgetDef.isFloating;
         });
 
       if (!visibleWidgets || 0 === visibleWidgets.length)
         return;
 
-      // save list of WidgetDefs that have isActive set to true. We use this later to ensure that WidgetDef are in sync with active widget tab.
+      // if no updatedWidgetDef, then either the stage is loading or a tab has been selected by user.
+      if (widget.tabIndex >= 0 && (undefined === this.state.updatedWidgetDef || null === this.state.updatedWidgetDef)) {
+        for (let index = 0; index < visibleWidgets.length; index++) {
+          if (widget.tabIndex === index) {
+            widgetDefToActivate = visibleWidgets[index];
+            break;
+          }
+        }
+      }
+
+      // save list of WidgetDefs that have isActive set to true. We use this later to ensure that only one WidgetDef has 'isActive' set.
       visibleWidgets.forEach((def: WidgetDef) => {
-        if (!def.isFloating) {
-          if (def === this.state.updatedWidgetDef && def.stateChanged) {
-            if (def.isActive)
-              defToActivate = def;
-            else
-              widgetBeingClosed = true;
-          } else
+        if (def === this.state.updatedWidgetDef && def.stateChanged) {
+          if (def.isActive)
+            widgetDefToActivate = def;
+        } else {
+          if (def.isActive) {
             currentActiveWidgetDefs.push(def);
+            if (!widgetDefToActivate)
+              widgetDefToActivate = def;
+          }
         }
       });
 
       widgets.push({
         id: widget.id,
         isStatusBar: zoneDef.isStatusBar,
-        tabs: visibleWidgets.map((widgetDef: WidgetDef, tabIndex: number) => {
-          let isActive = false;
-          if (!activeWidgetDef) {
-            if (widgetDef === this.state.updatedWidgetDef && widgetDef.stateChanged) {
-              isActive = !widgetBeingClosed;
-              widgetDef.stateChanged = false;
-            } else if (widget.tabIndex === tabIndex && !defToActivate && !widgetBeingClosed) {
-              isActive = true;
-            }
-
-            if (isActive) {
-              activeWidgetDef = widgetDef;
-            }
-          }
-
+        tabs: visibleWidgets.map((widgetDef: WidgetDef) => {
           return {
-            isActive,
+            isActive: widgetDef === widgetDefToActivate,
             iconSpec: widgetDef.iconSpec,
             title: widgetDef.label,
           };
@@ -178,18 +173,18 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
     // make sure the isActive property for the WidgetDefs in the zone match the state of the active widget tab
     if (currentActiveWidgetDefs.length > 0) {
       currentActiveWidgetDefs.forEach((def: WidgetDef) => {
-        if (def !== activeWidgetDef) {
+        if (def !== widgetDefToActivate) {
           def.isActive = false;
         }
       });
     }
 
     let content: React.ReactNode;
-    if (activeWidgetDef) {
-      content = activeWidgetDef.reactElement;
+    if (widgetDefToActivate) {
+      content = widgetDefToActivate.reactElement;
 
-      if (activeWidgetDef.isStatusBar) {
-        const widgetControl = activeWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
+      if (widgetDefToActivate.isStatusBar) {
+        const widgetControl = widgetDefToActivate.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
 
         content = (
           <StatusBar

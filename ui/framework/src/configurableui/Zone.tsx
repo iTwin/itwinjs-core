@@ -85,7 +85,7 @@ export class Zone extends React.Component<ZoneProps> {
 
   private static createWidgetDef(widgetNode: React.ReactElement<WidgetProps>): WidgetDef | undefined {
     if (widgetNode && React.isValidElement(widgetNode)) {
-      const widgetDef = new WidgetDef(widgetNode.props);
+      const widgetDef = new WidgetDef();
       Widget.initializeWidgetDef(widgetDef, widgetNode.props);
       return widgetDef;
     }

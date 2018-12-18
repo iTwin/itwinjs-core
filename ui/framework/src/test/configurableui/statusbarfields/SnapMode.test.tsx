@@ -20,6 +20,7 @@ import {
   StatusBarFieldId,
   WidgetDef,
   ConfigurableUiControlType,
+  UiFramework,
 } from "../../../ui-framework";
 
 describe("SnapModeField", () => {
@@ -75,7 +76,7 @@ describe("SnapModeField", () => {
       wrapper.update();
 
       // ensure the snap mode selected sets the state of the store.
-      const snapMode = TestUtils.store.getState().frameworkState!.configurableUiState.snapMode;
+      const snapMode = UiFramework.frameworkState ? UiFramework.frameworkState.configurableUiState.snapMode : SnapMode.NearestKeypoint;
       expect(snapMode).to.eq(modes[i]);
 
       // the indicator field should contain the selected snap icon.

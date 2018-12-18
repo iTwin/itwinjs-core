@@ -5,7 +5,6 @@
 export { default as UiFramework } from "./UiFramework";
 
 export * from "./FrameworkState";
-export * from "./SyncUiEventDispatcher";
 export * from "./UiFramework";
 export * from "./CoreToolDefinitions";
 
@@ -104,6 +103,10 @@ export * from "./tools/AnalysisAnimationToolSettings";
 
 export * from "./utils/ViewUtilities";
 export * from "./utils/redux-ts";
+export * from "./utils/WithVisibility";
+
+export * from "./syncui/SyncUiEventDispatcher";
+export * from "./syncui/BooleanListener";
 
 /** @docs-package-description
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
@@ -176,8 +179,13 @@ export * from "./utils/redux-ts";
  */
 /**
  * @docs-group-description StatusBar
- * Classes for working a StatusBar
+ * Classes for defining a StatusBar
  */
+/**
+ * @docs-group-description SyncUi
+ * Classes for informing UI components to sync/refresh their display
+ */
+
 /**
  * @docs-group-description WorkflowTask
  * Classes for working a Workflow or Task

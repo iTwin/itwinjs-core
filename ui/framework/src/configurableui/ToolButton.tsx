@@ -10,7 +10,7 @@ import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 
 import { Icon } from "./IconComponent";
 import { FrontstageManager } from "./FrontstageManager";
-import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../SyncUiEventDispatcher";
+import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { BaseItemState } from "./ItemDefBase";
 import { ToolItemProps, StringGetter } from "./ItemProps";
 import { UiFramework } from "../UiFramework";

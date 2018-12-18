@@ -18,6 +18,7 @@ import { UiEvent, MessageContainer, MessageSeverity } from "@bentley/ui-core";
 import { UiFramework } from "../UiFramework";
 import { ModalDialogManager } from "./ModalDialogManager";
 import { StandardMessageBox } from "./StandardMessageBox";
+import { ConfigurableUiActionId } from "./state";
 
 class MessageBoxCallbacks {
   constructor(
@@ -209,7 +210,7 @@ export class MessageManager {
 
   /** Output a prompt to the user. A 'prompt' indicates an action the user should take to proceed. */
   public static outputPrompt(prompt: string): void {
-    UiFramework.store.dispatch({ type: "ConfigurableUi:SET_TOOLPROMPT", payload: prompt });
+    UiFramework.dispatchActionToStore(ConfigurableUiActionId.SetToolPrompt, prompt, true);
   }
 
   /** Gets an icon CSS class name based on a given NotifyMessageDetails. */

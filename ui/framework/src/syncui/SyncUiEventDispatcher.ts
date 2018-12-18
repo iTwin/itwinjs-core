@@ -2,14 +2,14 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-/** @module Utilities */
+/** @module SyncUi */
 
 // cSpell:ignore configurableui
 import { UiEvent } from "@bentley/ui-core";
-import { FrontstageManager } from "./configurableui/FrontstageManager";
-import { Backstage } from "./configurableui/Backstage";
-import { WorkflowManager } from "./configurableui/Workflow";
-import { ContentViewManager } from "./configurableui/ContentViewManager";
+import { FrontstageManager } from "../configurableui/FrontstageManager";
+import { Backstage } from "../configurableui/Backstage";
+import { WorkflowManager } from "../configurableui/Workflow";
+import { ContentViewManager } from "../configurableui/ContentViewManager";
 import { IModelConnection, SelectEventType, IModelApp, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, contentlayoutactivated, contentcontrolactivated,
@@ -60,7 +60,7 @@ export class SyncUiEventDispatcher {
     SyncUiEventDispatcher._timeoutPeriod = period;
   }
 
-  /** Return SyncUiEvent so callers can register an event callback. */
+  /** Return set of event ids that will be sent to listeners/. */
   public static get syncEventIds(): Set<string> {
     if (!SyncUiEventDispatcher._eventIds)
       SyncUiEventDispatcher._eventIds = new Set<string>();
@@ -81,6 +81,10 @@ export class SyncUiEventDispatcher {
     const eventIds = new Set<string>();
     eventIds.add(eventId.toLowerCase());
     SyncUiEventDispatcher.onSyncUiEvent.emit({ eventIds });
+    // tslint:disable-next-line:no-console
+    console.log("dispatchImmediateSyncUiEvent");
+    // tslint:disable-next-line:no-console
+    console.log(eventIds);
   }
 
   /** Save eventId in Set for processing. */
@@ -109,8 +113,16 @@ export class SyncUiEventDispatcher {
       if (SyncUiEventDispatcher._syncEventTimer) clearTimeout(SyncUiEventDispatcher._syncEventTimer);
       SyncUiEventDispatcher._syncEventTimer = undefined;
       SyncUiEventDispatcher._eventIdAdded = false;
-      SyncUiEventDispatcher.onSyncUiEvent.emit({ eventIds: SyncUiEventDispatcher.syncEventIds });
-      SyncUiEventDispatcher.syncEventIds.clear();
+      if (SyncUiEventDispatcher.syncEventIds.size > 0) {
+        const eventIds = new Set<string>();
+        SyncUiEventDispatcher.syncEventIds.forEach((value) => eventIds.add(value));
+        SyncUiEventDispatcher.syncEventIds.clear();
+        SyncUiEventDispatcher.onSyncUiEvent.emit({ eventIds });
+        // tslint:disable-next-line:no-console
+        console.log("dispatchSyncUiEvent");
+        // tslint:disable-next-line:no-console
+        console.log(eventIds);
+      }
       return;
     }
 

@@ -5,7 +5,7 @@
 import * as React from "react";
 import { connect } from "react-redux";
 
-import { SampleAppIModelApp, RootState } from "..";
+import { SampleAppIModelApp, RootState, SampleAppUiActionId } from "..";
 
 import {
   Backstage,
@@ -22,7 +22,7 @@ export class BackstageShow extends Tool {
 
   public run(): boolean {
     // dispatch the action
-    SampleAppIModelApp.store.dispatch({ type: "SampleApp:BACKSTAGESHOW" });
+    SampleAppIModelApp.store.dispatch({ type: SampleAppUiActionId.showBackstage });
     return true;
   }
 }
@@ -33,7 +33,7 @@ export class BackstageHide extends Tool {
 
   public run(): boolean {
     // dispatch the action
-    SampleAppIModelApp.store.dispatch({ type: "SampleApp:BACKSTAGEHIDE" });
+    SampleAppIModelApp.store.dispatch({ type: SampleAppUiActionId.hideBackstage });
     return true;
   }
 }
