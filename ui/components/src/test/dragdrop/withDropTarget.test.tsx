@@ -40,7 +40,7 @@ describe("withDragSource", () => {
       render(<BaseComponent dragProps={{}} connectDragSource={(e: any) => e} />);
     });
   });
-  describe("Drag functionality", () => {
+  describe("Drop functionality", () => {
     const testDropTarget = withDropTarget(TestComponent);
     const TestDragSource = withDragSource(testDropTarget); // tslint:disable-line:variable-name
     const ContextTestDragSource = wrapInTestContext(TestDragSource) as any; // tslint:disable-line:variable-name

@@ -27,7 +27,7 @@ export interface DropTargetProps<DragDropObject = any> {
    * Triggered when item is dropped on wrapped component.
    * Return value is passed to the DragSource's onDragSourceEnd callback.
    */
-  onDropTargetDrop?: (args: DropTargetArguments<DragDropObject>) => DragSourceArguments<DragDropObject>;
+  onDropTargetDrop?: (args: DropTargetArguments<DragDropObject>) => DropTargetArguments<DragDropObject>;
   /** Triggered when item is dragged over wrapped component. */
   onDropTargetOver?: (args: DropTargetArguments<DragDropObject>) => void;
   /** Determines whether item may be dropped on DropTarget. */

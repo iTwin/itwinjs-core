@@ -54,9 +54,9 @@ describe("withDragSource", () => {
 
     // Obtain a reference to the backend
     const backend = (root as any).getManager().getBackend();
-    const box = ReactTestUtils.findRenderedComponentWithType(root as any, TestDragSource) as any;
+    const instance = ReactTestUtils.findRenderedComponentWithType(root as any, TestDragSource) as any;
     it("calls onDragSourceBegin correctly", () => {
-      backend.simulateBeginDrag([box.getHandlerId()]);
+      backend.simulateBeginDrag([instance.getHandlerId()]);
       expect(beginSpy).to.have.been.calledOnce;
       expect(beginSpy).to.have.been.calledWith(sinon.match({ dataObject: { test: true } }));
 
