@@ -1013,6 +1013,10 @@ describe("BeInspireTree", () => {
       expect(getNodesSpy).to.be.calledOnce;
       // but expect children to be `true` because it was reset on collapse
       expect(node.children).to.be.true;
+
+      // now expand the node again and expect its children to be loaded normally
+      await node.expand();
+      expect(renderedTree).to.matchSnapshot();
     });
 
     it("doesn't request nodes when loadChildren is called", async () => {

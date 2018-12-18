@@ -728,18 +728,38 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
 
   /** Called by PaginationHelper to load a page */
   private _pagedLoad = async (parentId: string | undefined, pageStart: number): Promise<NodesLoadResult<TPayload>> => {
-    const node = parentId ? this._tree.node(parentId) : undefined;
-    const payload = node ? node.payload : undefined;
-    return this._provider.getNodesCount(payload).then(async (total) => {
-      const page: PageOptions = {
-        start: pageStart,
-        size: this._paginationHelper!.pageSize,
-      };
-      return this._provider.getNodes(payload, page).then((nodes) => ({
-        totalNodesCount: total,
-        nodes,
-      }));
-    });
+    const parentNode = parentId ? this._tree.node(parentId) : undefined;
+    const parentPayload = parentNode ? parentNode.payload : undefined;
+
+    const handleCollapsedParent = () => {
+      if (this._tree.props.disposeChildrenOnCollapse && parentNode && parentNode.collapsed())
+        throw new Error("Parent node collapsed while children were being loaded");
+    };
+
+    let totalNodesCount: number | undefined;
+    if (parentNode && isArrayLike(parentNode.children)) {
+      totalNodesCount = parentNode.getChildren().length;
+    } else if (!parentNode) {
+      let rootNodesCount = 0;
+      try { rootNodesCount = this._tree.nodes().length; } catch (e) { }
+      if (rootNodesCount > 0)
+        totalNodesCount = rootNodesCount;
+    }
+    if (undefined === totalNodesCount) {
+      totalNodesCount = await this._provider.getNodesCount(parentPayload);
+      handleCollapsedParent();
+    }
+
+    const page: PageOptions = {
+      start: pageStart,
+      size: this._paginationHelper!.pageSize,
+    };
+    const nodes = await this._provider.getNodes(parentPayload, page);
+    handleCollapsedParent();
+    return {
+      totalNodesCount,
+      nodes,
+    };
   }
 
   /** Called by PaginationHelper when a page is finished loading */
@@ -838,7 +858,7 @@ type PageLoadedCallback<TLoadResult> = (parentId: string | undefined, pageStart:
 class PaginationHelper<TPageLoadResult> {
   public readonly pageSize: number;
   private _loadedPages: Map<string | undefined, Set<number>>;
-  private _requestedPages: Map<string | undefined, Map<number, Promise<TPageLoadResult>>>;
+  private _requestedPages: Map<string | undefined, Map<number, Promise<void>>>;
   private _loadHandler: PagedLoadHandler<TPageLoadResult>;
   private _onPageLoaded: PageLoadedCallback<TPageLoadResult>;
 
@@ -854,10 +874,11 @@ class PaginationHelper<TPageLoadResult> {
     return nodeIndex - nodeIndex % this.pageSize;
   }
 
-  private async createRequest(parentId: string | undefined, pageStart: number): Promise<TPageLoadResult> {
+  private async createRequest(parentId: string | undefined, pageStart: number): Promise<void> {
     return this._loadHandler(parentId, pageStart).then(async (result) => {
       await this.onRequestHandled(parentId, pageStart, result);
-      return result;
+    }).catch(() => {
+      this.onRequestRejected(parentId, pageStart);
     });
   }
 
@@ -905,5 +926,12 @@ class PaginationHelper<TPageLoadResult> {
       // callback
       await this._onPageLoaded(parentId, pageStart, result);
     }
+  }
+
+  private onRequestRejected(parentId: string | undefined, pageStart: number) {
+    // remove request from active requests list
+    const requestedPages = this._requestedPages.get(parentId);
+    if (requestedPages)
+      requestedPages.delete(pageStart);
   }
 }
