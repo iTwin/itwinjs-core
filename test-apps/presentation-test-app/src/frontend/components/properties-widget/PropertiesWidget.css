@@ -7,7 +7,6 @@
   display: flex;
   flex-direction: column;
   padding: 5px;
-  overflow: auto;
 }
 
 .PropertiesWidget > h3 {
@@ -16,4 +15,5 @@
 
 .PropertiesWidget > .ContentContainer {
   flex: 1 0;
+  min-height: 0;
 }
