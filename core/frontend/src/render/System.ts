@@ -497,16 +497,16 @@ export abstract class RenderTarget implements IDisposable {
   public abstract set animationFraction(fraction: number);
 
   /** @hidden */
-  public abstract get animationBranches(): AnimationBranchStates | undefined;
+  public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
   /** @hidden */
-  public abstract set animationBranches(transforms: AnimationBranchStates | undefined);
+  public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
 
   /** @hidden */
   public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
-  public abstract dispose(): void;
+  public dispose(): void { }
   /** @hidden */
-  public abstract reset(): void;
+  public reset(): void { }
   /** @hidden */
   public abstract changeScene(scene: GraphicList, activeVolume?: RenderClipVolume): void;
   /** @hidden */
@@ -520,21 +520,21 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public abstract drawFrame(sceneMilSecElapsed?: number): void;
   /** @hidden */
-  public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
+  public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
   /** @hidden */
-  public abstract setHiliteSet(hilited: Set<string>): void;
+  public setHiliteSet(_hilited: Set<string>): void { }
   /** @hidden */
-  public abstract setFlashed(elementId: Id64String, intensity: number): void;
+  public setFlashed(_elementId: Id64String, _intensity: number): void { }
   /** @hidden */
-  public abstract setViewRect(rect: ViewRect, temporary: boolean): void;
+  public abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
   /** @hidden */
-  public abstract onResized(): void;
+  public onResized(): void { }
   /** @hidden */
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   /** @hidden */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver): void;
   /** @hidden */
-  public abstract readImage(rect: ViewRect, targetSize: Point2d, flipVertically: boolean): ImageBuffer | undefined;
+  public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
 }
 
 /** Describes a texture loaded from an HTMLImageElement */

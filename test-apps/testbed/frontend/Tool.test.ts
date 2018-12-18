@@ -7,7 +7,7 @@ import { assert } from "chai";
 import { IModelConnection, ElementAgenda, ModifyElementSource, SelectEventType } from "@bentley/imodeljs-frontend";
 import { Id64 } from "@bentley/bentleyjs-core";
 import { CONSTANTS } from "../common/Testbed";
-import { MaybeRenderApp } from "./WebGLTestContext";
+import { MockRender } from "./MockRender";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -15,12 +15,12 @@ describe("Tools", () => {
   let imodel: IModelConnection;
 
   before(async () => {
-    MaybeRenderApp.startup();
+    MockRender.App.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
   });
   after(async () => {
     if (imodel) await imodel.closeStandalone();
-    MaybeRenderApp.shutdown();
+    MockRender.App.shutdown();
   });
 
   it("ElementAgenda tests", () => {

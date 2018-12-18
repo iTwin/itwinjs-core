@@ -31,7 +31,7 @@ import {
 import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
-import { WebGLTestContext } from "./WebGLTestContext";
+import { MockRender } from "./MockRender";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -52,11 +52,11 @@ describe("Mesh Builder Tests", () => {
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
-    WebGLTestContext.startup();
+    MockRender.App.startup();
   });
 
   after(async () => {
-    WebGLTestContext.shutdown();
+    MockRender.App.shutdown();
     if (imodel) await imodel.closeStandalone();
   });
 
@@ -80,10 +80,6 @@ describe("Mesh Builder Tests", () => {
   });
 
   it("addStrokePointLists", () => {
-    if (!WebGLTestContext.isInitialized) {
-      return;
-    }
-
     const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(System.instance, GraphicType.Scene, viewport);
 
