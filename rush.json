@@ -190,6 +190,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "test-apps-synchro-schedule-importer",
+      "projectFolder": "test-apps/synchro-schedule-importer",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "imodel-from-geojson",
       "projectFolder": "test-apps/imodel-from-geojson",
       "reviewCategory": "internal",

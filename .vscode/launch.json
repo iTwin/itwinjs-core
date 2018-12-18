@@ -3,7 +3,8 @@
   // Hover to view descriptions of existing attributes.
   // For more information, visit: https://go.microsoft.com/fwlink/?linkid=830387
   "version": "0.2.0",
-  "configurations": [{
+  "configurations": [
+    {
       "name": "Run Frontend Tests (performance)",
       "type": "node",
       "request": "launch",
@@ -516,6 +517,25 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "Debug synchro-schedule-importer",
+      "program": "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/SynchroScheduleImporter.js",
+      "cwd": "${workspaceRoot}/test-apps/synchro-schedule-importer/",
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
+      ],
+      "args": [
+        "--input",
+        "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
+        "--verbose",
+        "--fixRange",
+        "false"
+        "--script",
+        "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "Debug imodel-from-geojson",
       "program": "${workspaceRoot}/test-apps/imodel-from-geojson/lib/Main.js",
       "cwd": "${workspaceRoot}/test-apps/imodel-from-geojson",
@@ -544,7 +564,8 @@
       "protocol": "inspector"
     },
   ],
-  "compounds": [{
+  "compounds": [
+    {
       "name": "Run Testbed (all)",
       "configurations": [
         "_Testbed (frontend)",
