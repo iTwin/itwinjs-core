@@ -81,10 +81,6 @@ export class SyncUiEventDispatcher {
     const eventIds = new Set<string>();
     eventIds.add(eventId.toLowerCase());
     SyncUiEventDispatcher.onSyncUiEvent.emit({ eventIds });
-    // tslint:disable-next-line:no-console
-    console.log("dispatchImmediateSyncUiEvent");
-    // tslint:disable-next-line:no-console
-    console.log(eventIds);
   }
 
   /** Save eventId in Set for processing. */
@@ -118,10 +114,6 @@ export class SyncUiEventDispatcher {
         SyncUiEventDispatcher.syncEventIds.forEach((value) => eventIds.add(value));
         SyncUiEventDispatcher.syncEventIds.clear();
         SyncUiEventDispatcher.onSyncUiEvent.emit({ eventIds });
-        // tslint:disable-next-line:no-console
-        console.log("dispatchSyncUiEvent");
-        // tslint:disable-next-line:no-console
-        console.log(eventIds);
       }
       return;
     }

@@ -25,7 +25,6 @@ describe("SyncUiEventDispatcher", () => {
     let callbackHasExpectedEventId = false;
 
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-      // tslint:disable-next-line:no-console
       callbackCalled = true;
       callbackHasExpectedEventId = args.eventIds.has("event1");
     };
@@ -42,7 +41,6 @@ describe("SyncUiEventDispatcher", () => {
     let callbackHasExpectedEventId = false;
 
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-      // tslint:disable-next-line:no-console
       callbackCalled = true;
       callbackHasExpectedEventId = args.eventIds.has("event1");
     };
@@ -63,7 +61,6 @@ describe("SyncUiEventDispatcher", () => {
     let callbackHasExpectedEventIds = false;
 
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-      // tslint:disable-next-line:no-console
       callbackCalled = true;
       callbackHasExpectedEventIds = args.eventIds.has("event1") && args.eventIds.has("event2");
     };
@@ -84,7 +81,6 @@ describe("SyncUiEventDispatcher", () => {
     let callbackHasExpectedEventIds = false;
 
     const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-      // tslint:disable-next-line:no-console
       callbackCalled = true;
       callbackHasExpectedEventIds = args.eventIds.has("event1") && args.eventIds.has("event2") && args.eventIds.has("event3");
     };

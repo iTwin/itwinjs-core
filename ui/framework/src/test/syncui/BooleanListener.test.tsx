@@ -11,6 +11,8 @@ import {
   BooleanSyncUiListener, SyncUiEventDispatcher,
 } from "../../ui-framework";
 
+const syncUiEventId = "showhellocomponentchanged";  // must be lower case
+
 describe("BooleanSyncUiListener", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
@@ -19,19 +21,18 @@ describe("BooleanSyncUiListener", () => {
   it("BooleanSyncUiListener should mount - visible children", () => {
     const helloWorld = "Hello World!";
     const goodBye = "Goodbye!";
-    const syncUiEventId = "showchildrenchanged";  // must be lower case
-    let showChildren = true;
+    let showHelloComponent = true;
 
     const wrapper = mount(
-      <BooleanSyncUiListener eventIds={[syncUiEventId]} boolFunc={(): boolean => showChildren}>
-        {(isVisible: boolean) => isVisible ? <div>{helloWorld}</div> : <div>{goodBye}</div>}
+      <BooleanSyncUiListener eventIds={[syncUiEventId]} boolFunc={(): boolean => showHelloComponent}>
+        {(showHello: boolean) => showHello ? <div>{helloWorld}</div> : <div>{goodBye}</div>}
       </BooleanSyncUiListener>,
     );
 
     expect(wrapper.find("div").length).to.eq(1);
     expect(wrapper.find("div").text()).to.eq(helloWorld);
 
-    showChildren = false;
+    showHelloComponent = false;
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent(syncUiEventId);
 
     wrapper.update();
@@ -45,12 +46,11 @@ describe("BooleanSyncUiListener", () => {
   it("BooleanSyncUiListener should mount - default non-visible children", () => {
     const helloWorld = "Hello World!";
     const goodBye = "Goodbye!";
-    const syncUiEventId = "showchildrenchanged";  // must be lower case
-    const showChildren = true;
+    const showHelloComponent = true;
 
     const wrapper = mount(
-      <BooleanSyncUiListener eventIds={[syncUiEventId]} boolFunc={(): boolean => showChildren} defaultValue={false}>
-        {(isVisible: boolean) => isVisible ? <div>{helloWorld}</div> : <div>{goodBye}</div>}
+      <BooleanSyncUiListener eventIds={[syncUiEventId]} boolFunc={(): boolean => showHelloComponent} defaultValue={false}>
+        {(showHello: boolean) => showHello ? <div>{helloWorld}</div> : <div>{goodBye}</div>}
       </BooleanSyncUiListener>,
     );
 
