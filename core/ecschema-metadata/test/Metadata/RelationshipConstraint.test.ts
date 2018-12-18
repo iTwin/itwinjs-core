@@ -37,6 +37,9 @@ function createSchemaJson(sourceConst: any, targetConst: any) {
       schemaItemType: "EntityClass",
       baseClass: "TestSchema.TargetBaseEntity",
     },
+    TestCAClassA: { schemaItemType: "CustomAttributeClass", appliesTo: "Any" },
+    TestCAClassB: { schemaItemType: "CustomAttributeClass", appliesTo: "Any" },
+    TestCAClassC: { schemaItemType: "CustomAttributeClass", appliesTo: "Any" },
   });
 }
 
@@ -77,7 +80,7 @@ describe("RelationshipConstraint", () => {
       ],
       customAttributes: [
         {
-          className: "CoreCustomAttributes.HiddenSchema",
+          className: "TestSchema.TestCAClassA",
           ShowClasses: true,
         },
       ],
@@ -86,15 +89,15 @@ describe("RelationshipConstraint", () => {
       const schema = await Schema.fromJson(createSchemaJson(oneCustomAttributeJson, targetStubJson));
       testConstraint = (await schema.getItem<RelationshipClass>("TestRelationship"))!.source;
       expect(testConstraint).to.exist;
-      expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-      assert(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
+      expect(testConstraint.customAttributes!["TestSchema.TestCAClassA"]).to.exist;
+      assert(testConstraint.customAttributes!["TestSchema.TestCAClassA"].ShowClasses === true);
     });
     it("sync - Deserialize One Custom Attribute", () => {
       const schema = Schema.fromJsonSync(createSchemaJson(oneCustomAttributeJson, targetStubJson));
       testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
       expect(testConstraint).to.exist;
-      expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-      assert(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === true);
+      expect(testConstraint.customAttributes!["TestSchema.TestCAClassA"]).to.exist;
+      assert(testConstraint.customAttributes!["TestSchema.TestCAClassA"].ShowClasses === true);
     });
     const twoCustomAttributesJson = {
       $schema: "https://dev.bentley.com/json_schemas/ec/32/draft-01/ecschema",
@@ -107,10 +110,10 @@ describe("RelationshipConstraint", () => {
       ],
       customAttributes: [
         {
-          className: "CoreCustomAttributes.HiddenSchema",
+          className: "TestSchema.TestCAClassA",
         },
         {
-          className: "ExampleCustomAttributes.ExampleSchema",
+          className: "TestSchema.TestCAClassB",
         },
       ],
     };
@@ -118,15 +121,15 @@ describe("RelationshipConstraint", () => {
       const schema = await Schema.fromJson(createSchemaJson(twoCustomAttributesJson, targetStubJson));
       testConstraint = (await schema.getItem<RelationshipClass>("TestRelationship"))!.source;
       expect(testConstraint).to.exist;
-      expect(testConstraint!.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-      expect(testConstraint!.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
+      expect(testConstraint!.customAttributes!["TestSchema.TestCAClassA"]).to.exist;
+      expect(testConstraint!.customAttributes!["TestSchema.TestCAClassB"]).to.exist;
     });
     it("sync - Deserialize Two Custom Attributes", () => {
       const schema = Schema.fromJsonSync(createSchemaJson(twoCustomAttributesJson, targetStubJson));
       testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
       expect(testConstraint).to.exist;
-      expect(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"]).to.exist;
-      expect(testConstraint.customAttributes!["ExampleCustomAttributes.ExampleSchema"]).to.exist;
+      expect(testConstraint.customAttributes!["TestSchema.TestCAClassA"]).to.exist;
+      expect(testConstraint.customAttributes!["TestSchema.TestCAClassB"]).to.exist;
     });
     it("sync - Deserialize Two Custom Attributes with additional properties", () => {
       const relConstraintJson = {
@@ -138,11 +141,11 @@ describe("RelationshipConstraint", () => {
         ],
         customAttributes: [
           {
-            className: "CoreCustomAttributes.HiddenSchema",
+            className: "TestSchema.TestCAClassA",
             ShowClasses: false,
           },
           {
-            className: "ExampleCustomAttributes.ExampleSchema",
+            className: "TestSchema.TestCAClassB",
             ShowClasses: true,
           },
         ],
@@ -150,8 +153,8 @@ describe("RelationshipConstraint", () => {
       const schema = Schema.fromJsonSync(createSchemaJson(relConstraintJson, targetStubJson));
       testConstraint = schema.getItemSync<RelationshipClass>("TestRelationship")!.source;
       expect(testConstraint).to.exist;
-      assert(testConstraint.customAttributes!["CoreCustomAttributes.HiddenSchema"].ShowClasses === false);
-      assert(testConstraint.customAttributes!["ExampleCustomAttributes.ExampleSchema"].ShowClasses === true);
+      assert(testConstraint.customAttributes!["TestSchema.TestCAClassA"].ShowClasses === false);
+      assert(testConstraint.customAttributes!["TestSchema.TestCAClassB"].ShowClasses === true);
     });
   });
 });

@@ -82,7 +82,6 @@ class BreadcrumbDemoWidget extends React.Component<Props, State> {
         </div>
       </div>
     );
-    return null;
   }
 }
 

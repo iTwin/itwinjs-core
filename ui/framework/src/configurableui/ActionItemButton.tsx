@@ -10,7 +10,7 @@ import { Icon } from "./IconComponent";
 import { FrontstageManager } from "./FrontstageManager";
 import { ActionButtonItemDef } from "./Item";
 import { BaseItemState } from "./ItemDefBase";
-import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../SyncUiEventDispatcher";
+import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 
 import { Item } from "@bentley/ui-ninezone";
 

@@ -317,8 +317,9 @@ export class Batch extends Graphic {
 
 export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
-  public readonly localToWorldTransform: Transform;
-  public readonly clips?: ClipPlanesVolume | ClipMaskVolume;
+  public localToWorldTransform: Transform;
+  public clips?: ClipPlanesVolume | ClipMaskVolume;
+  public readonly animationId?: number;
 
   public constructor(branch: GraphicBranch, localToWorld: Transform = Transform.createIdentity(), clips?: ClipMaskVolume | ClipPlanesVolume, viewFlags?: ViewFlags) {
     super();
@@ -330,7 +331,6 @@ export class Branch extends Graphic {
   }
 
   public dispose() { this.branch.dispose(); }
-
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
   public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void { commands.addHiliteBranch(this, batch, pass); }
 }

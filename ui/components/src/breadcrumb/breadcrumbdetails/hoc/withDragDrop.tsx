@@ -40,7 +40,7 @@ export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, 
   return class WithDragAndDrop extends React.Component<CombinedProps> {
 
     public static get displayName() { return `WithDragDrop(${getDisplayName(BreadcrumbComponent)})`; }
-    private createDragProps(_item: TreeNodeItem): DragSourceProps<DragDropObject> {
+    public createDragProps(_item: TreeNodeItem): DragSourceProps<DragDropObject> {
       if (!this.props.dragProps)
         return {};
       const { onDragSourceBegin, onDragSourceEnd, objectType } = this.props.dragProps as DragSourceProps;
@@ -54,6 +54,7 @@ export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, 
           args.parentObject = current || dataProvider;
           return onDragSourceBegin ? onDragSourceBegin(args) : args;
         }, onDragSourceEnd: (args: DragSourceArguments) => {
+          // istanbul ignore else
           if (onDragSourceEnd) {
             const dataProvider = this.props.path.getDataProvider();
             const current = this.props.path.getCurrentNode();
@@ -61,6 +62,7 @@ export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, 
             onDragSourceEnd(args);
           }
         }, objectType: (data: any) => {
+          // istanbul ignore else
           if (objectType) {
             if (typeof objectType === "function") {
               if (data && typeof data === "object") {
@@ -71,14 +73,13 @@ export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, 
               return objectType(data);
             } else
               return objectType;
-          }
-          return "";
+          } else return "";
         },
       };
       return dragProps;
     }
 
-    private createDropProps(_item: TreeNodeItem, children: TreeNodeItem[]): DropTargetProps<DragDropObject> {
+    public createDropProps(_item: TreeNodeItem, children: TreeNodeItem[]): DropTargetProps<DragDropObject> {
       if (!this.props.dropProps)
         return {};
 
@@ -87,11 +88,12 @@ export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, 
       const dropProps: TableDropTargetProps = {
         canDropOn: true,
         onDropTargetOver: (args: DropTargetArguments) => {
+          // istanbul ignore else
           if (onDropTargetOver) {
             const dataProvider = this.props.path.getDataProvider();
             const current = this.props.path.getCurrentNode();
             args.dropLocation = current || dataProvider;
-            if (children && args.dropRect && args.row) {
+            if (children && args.dropRect && args.row !== undefined) {
               const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
               if (relativeY >= 1 / 3 && relativeY < 2 / 3) {
                 const rowNum = args.row;
@@ -105,7 +107,7 @@ export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, 
           const dataProvider = this.props.path.getDataProvider();
           const current = this.props.path.getCurrentNode();
           args.dropLocation = current || dataProvider;
-          if (children && args.dropRect && args.row) {
+          if (children && args.dropRect && args.row !== undefined) {
             const relativeY = (args.clientOffset.y - args.dropRect.top) / args.dropRect.height;
             if (relativeY >= 1 / 3 && relativeY < 2 / 3) {
               const rowNum = args.row;
@@ -113,17 +115,11 @@ export function withBreadcrumbDetailsDragDrop<P extends BreadcrumbDetailsProps, 
               args.dropLocation = children[rowNum];
             }
           }
-          if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
-            args.dataObject.parentId = dataProvider;
-          }
           return onDropTargetDrop ? onDropTargetDrop(args) : args;
         }, canDropTargetDrop: (args: DropTargetArguments) => {
           const dataProvider = this.props.path.getDataProvider();
           const current = this.props.path.getCurrentNode();
           args.dropLocation = current || dataProvider;
-          if ("parentId" in args.dataObject && args.dataObject.parentId === undefined) {
-            args.dataObject.parentId = this.props.path.getDataProvider();
-          }
           return canDropTargetDrop ? canDropTargetDrop(args) : true;
         }, objectTypes,
       };

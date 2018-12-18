@@ -698,13 +698,37 @@ describe("JsonParser", () => {
     it("should throw for invalid description", () => testInvalidAttribute("description", "string", 0));
   });
 
-  describe("getCustomAttributes", () => {
+  describe("getSchemaCustomAttributes", () => {
     it("should throw for invalid customAttributes", () => {
       const json = createSchemaJsonWithItems({});
+
       json.customAttributes = "CoreCustomAttributes.HiddenSchema";
+      parser = new JsonParser(json);
+      assert.throws(() => [...parser.getSchemaCustomAttributes()], ECObjectsError, "The Schema TestSchema has an invalid 'customAttributes' attribute. It should be of type 'object[]'.");
+
+      json.customAttributes = ["CoreCustomAttributes.HiddenSchema"];
+      parser = new JsonParser(json);
+      assert.throws(() => [...parser.getSchemaCustomAttributes()], ECObjectsError, "The Schema TestSchema has an invalid 'customAttributes' attribute. It should be of type 'object[]'.");
+    });
+
+    it("should throw for customAttribute with missing className", () => {
+      const json = createSchemaJsonWithItems({});
+      json.customAttributes = [
+        {},
+      ];
 
       parser = new JsonParser(json);
-      assert.throws(() => [...parser.getCustomAttributes()], ECObjectsError, "The Schema TestSchema has an invalid 'customAttributes' attribute. It should be of type 'array'.");
+      assert.throws(() => [...parser.getSchemaCustomAttributes()], ECObjectsError, "A CustomAttribute in TestSchema.customAttributes is missing the required 'className' attribute.");
+    });
+
+    it("should throw for customAttribute with invalid className", () => {
+      const json = createSchemaJsonWithItems({});
+      json.customAttributes = [
+        { className: 0 },
+      ];
+
+      parser = new JsonParser(json);
+      assert.throws(() => [...parser.getSchemaCustomAttributes()], ECObjectsError, "A CustomAttribute in TestSchema.customAttributes has an invalid 'className' attribute. It should be of type 'string'.");
     });
   });
 });

@@ -13,7 +13,7 @@ import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
 import { CommandItemDef } from "../configurableui/Item";
 import { ItemDefBase, BaseItemState } from "./ItemDefBase";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../SyncUiEventDispatcher";
+import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 
 import { Direction } from "@bentley/ui-ninezone";
 import { ItemList } from "./ItemMap";
@@ -183,7 +183,13 @@ export class WidgetDef extends ItemDefBase {
       this.id = "Widget-" + WidgetDef._sId;
     }
 
-    if (widgetProps) {
+    if (widgetProps) { // typically this is not defined as widgetDef are typically created by Zone.createWidgetDef
+      if (widgetProps.isVisible !== undefined)
+        this.isVisible = widgetProps.isVisible;
+
+      if (widgetProps.isFloating !== undefined)
+        this.isFloating = widgetProps.isFloating;
+
       if (widgetProps.classId !== undefined)
         this.classId = widgetProps.classId;
       if (widgetProps.defaultState !== undefined)
@@ -193,8 +199,11 @@ export class WidgetDef extends ItemDefBase {
 
       if (widgetProps.featureId !== undefined)
         this.featureId = widgetProps.featureId;
-      if (widgetProps.isFreeform !== undefined)
+      if (widgetProps.isFreeform !== undefined) {
         this.isFreeform = widgetProps.isFreeform;
+        this.widgetType = this.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
+      }
+
       if (widgetProps.isFloatingStateSupported !== undefined)
         this.isFloatingStateSupported = widgetProps.isFloatingStateSupported;
       if (widgetProps.isFloatingStateWindowResizable !== undefined)
@@ -206,31 +215,21 @@ export class WidgetDef extends ItemDefBase {
       if (widgetProps.fillZone !== undefined)
         this.fillZone = widgetProps.fillZone;
 
-      this.widgetType = this.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
-
       if (widgetProps.applicationData !== undefined)
         this.applicationData = widgetProps.applicationData;
-
-      if (widgetProps.isVisible !== undefined)
-        this.isVisible = widgetProps.isVisible;
-      else
-        this.isVisible = true;
-
-      this.isActive = false;
-
-      if (widgetProps.isFloating !== undefined)
-        this.isFloating = widgetProps.isFloating;
-      else
-        this.isFloating = false;
 
       if (widgetProps.reactElement !== undefined)
         this._widgetReactNode = widgetProps.reactElement;
 
-      if (widgetProps.stateFunc && widgetProps.stateSyncIds && widgetProps.stateSyncIds.length > 0) {
-        this.stateSyncIds = widgetProps.stateSyncIds;
-        this.stateFunc = widgetProps.stateFunc;
-        SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
-      }
+      this.setUpSyncSupport(widgetProps);
+    }
+  }
+
+  public setUpSyncSupport(props: ItemProps) {
+    if (props.stateFunc && props.stateSyncIds && props.stateSyncIds.length > 0) {
+      this.stateSyncIds = props.stateSyncIds;
+      this.stateFunc = props.stateFunc;
+      SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     }
   }
 

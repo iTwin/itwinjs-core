@@ -36,7 +36,7 @@ As you can see, there is **no syntactical difference** between ECSQL and SQL in 
 >
 > count(*) |
 > --- |
-> 80 |
+> 81 |
 
 There is a **semantic** difference however: ECSQL targets the **business data model**, i.e. your domain's ECSchema, whereas SQL targets the **database's schema**.
 

@@ -15,12 +15,12 @@ Every iModel includes the [ECDbMeta](../ECDbMeta.ecschema.md) ECSchema. It expos
 > Name | Alias | VersionMajor | VersionWrite | VersionMinor
 > --- | --- | --- | --- | ---
 > BisCore | bis | 1 | 0 | 0
-> CoreCustomAttributes | CoreCA | 1 | 0 | 0
-> ECDbFileInfo | ecdbf | 2 | 0 | 0
+> CoreCustomAttributes | CoreCA | 1 | 0 | 1
+> ECDbFileInfo | ecdbf | 2 | 0 | 1
 > ECDbMap | ecdbmap | 2 | 0 | 0
-> ECDbMeta | meta | 4 | 0 | 0
+> ECDbMeta | meta | 4 | 0 | 1
 > ECDbSchemaPolicies | ecdbpol | 1 | 0 | 0
-> ECDbSystem | ecdbsys | 5 | 0 | 0
+> ECDbSystem | ecdbsys | 5 | 0 | 1
 > Generic |generic | 1 | 0 | 0
 > MyDomain | mydomain | 1 | 0 | 0
 
@@ -66,10 +66,10 @@ Another advantage of accessing the schemas via ECSQL is that you can combine tha
 >
 > ClassName | ElementId | CodeValue
 > --- | --- | ---
-> Building | 0x10000000012 | Building A
-> Story | 0x10000000013 | A-G
-> Story | 0x10000000016 | A-1
-> Story | 0x10000000018 | A-2
+> Building | 0x1000000001d | Building A
+> Story | 0x1000000001e | A-G
+> Story | 0x10000000023 | A-1
+> Story | 0x10000000026 | A-2
 
 Of course, the ECSQL is not precise yet because the class names are only unique within a schema. If there
 were a `Building` subclass in another schema, those instances would also be returned. This requires to bring in the [ECSchemaDef](../ECDbMeta.ecschema.md#ECSchemaDef) class again.
@@ -87,10 +87,10 @@ were a `Building` subclass in another schema, those instances would also be retu
 >
 > ClassName | ElementId | CodeValue
 > --- | --- | ---
-> Building | 0x10000000012 | Building A
-> Story | 0x10000000013 | A-G
-> Story | 0x10000000016 | A-1
-> Story | 0x10000000018 | A-2
+> Building | 0x1000000001d | Building A
+> Story | 0x1000000001e | A-G
+> Story | 0x10000000023 | A-1
+> Story | 0x10000000026 | A-2
 
 ---
 

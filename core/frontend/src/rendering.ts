@@ -13,6 +13,7 @@ export * from "./render/primitives/mesh/MeshPrimitives";
 
 export * from "./render/primitives/ColorMap";
 export * from "./render/primitives/DisplayParams";
+export * from "./render/primitives/PointCloudPrimitive";
 export * from "./render/primitives/Primitives";
 export * from "./render/primitives/Strokes";
 export * from "./render/primitives/Polyface";

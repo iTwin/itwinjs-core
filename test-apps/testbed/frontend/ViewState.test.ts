@@ -11,7 +11,7 @@ import {
   ModelSelectorState, IModelConnection, DisplayStyle3dState, SheetModelState, SpatialModelState, DrawingModelState,
 } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
-import { MaybeRenderApp } from "./WebGLTestContext";
+import { MockRender } from "./MockRender";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 const iModelLocation2 = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/CompatibilityTestSeed.bim");
@@ -22,7 +22,7 @@ describe("ViewState", () => {
   let viewState: SpatialViewState;
 
   before(async () => {
-    MaybeRenderApp.startup();
+    MockRender.App.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
     const viewRows: ViewDefinitionProps[] = await imodel.views.queryProps({ from: SpatialViewState.sqlName });
     assert.exists(viewRows, "Should find some views");

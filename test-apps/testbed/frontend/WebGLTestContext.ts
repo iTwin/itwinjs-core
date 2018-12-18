@@ -5,6 +5,11 @@
 import { IModelApp, NullRenderSystem } from "@bentley/imodeljs-frontend";
 import { RenderSystem } from "@bentley/imodeljs-frontend/lib/rendering";
 
+// Electron running inside a Windows VM fails to acquire a WebGLRenderingContext.
+// This prevents us from creating a "real" RenderSystem during CI jobs.
+// Use MaybeRenderApp in place of IModelApp in tests ONLY if the tests require a "real", WebGL-based RenderSystem.
+// Tests which use MaybeRenderApp will NOT execute during Windows CI jobs.
+// Prefer to use MockRender.App if the tests do not directly require/exercise the WebGL RenderSystem.
 export class MaybeRenderApp extends IModelApp {
   protected static supplyRenderSystem(): RenderSystem {
     try {
@@ -15,6 +20,7 @@ export class MaybeRenderApp extends IModelApp {
   }
 }
 
+// See comments on MaybeRenderApp. In a nutshell: use this only if you are testing WebGL. Otherwise use MockRender.App.
 export namespace WebGLTestContext {
   export let isInitialized = false;
 

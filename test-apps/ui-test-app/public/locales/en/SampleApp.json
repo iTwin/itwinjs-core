@@ -97,6 +97,8 @@
     "openMessageBox": "Open Message Box",
     "setLengthFormatMetric": "Set Format Metric",
     "setLengthFormatImperial": "Set Format Imperial",
+    "toggleLengthFormat": "Toggle Length Format (Imperial/Metric)",
+    "toggleItemDisplay": "Toggle Hide/Show Test",
     "openRadial": "Open Radial Menu",
     "outputMessage": "Call outputMessage",
     "openPropertyGrid": "Open Property Grid",

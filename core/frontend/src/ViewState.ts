@@ -1695,98 +1695,105 @@ export abstract class ViewState3d extends ViewState {
  * The list of viewed models is stored by the ModelSelector.
  */
 export class SpatialViewState extends ViewState3d {
-  public modelSelector: ModelSelectorState;
+    public modelSelector: ModelSelectorState;
 
-  public static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
-    const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
-    const displayStyleState = new DisplayStyle3dState(props.displayStyleProps, iModel);
-    const modelSelectorState = new ModelSelectorState(props.modelSelectorProps!, iModel);
+    public static createFromProps(props: ViewStateProps, iModel: IModelConnection): ViewState | undefined {
+        const cat = new CategorySelectorState(props.categorySelectorProps, iModel);
+        const displayStyleState = new DisplayStyle3dState(props.displayStyleProps, iModel);
+        const modelSelectorState = new ModelSelectorState(props.modelSelectorProps!, iModel);
 
-    // use "new this" so subclasses are correct.
-    return new this(props.viewDefinitionProps as SpatialViewDefinitionProps, iModel, cat, displayStyleState, modelSelectorState);
-  }
-
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
-    super(props, iModel, arg3, displayStyle);
-    this.modelSelector = modelSelector;
-    if (arg3 instanceof SpatialViewState) { // from clone
-      this.modelSelector = arg3.modelSelector.clone();
+        // use "new this" so subclasses are correct.
+        return new this(props.viewDefinitionProps as SpatialViewDefinitionProps, iModel, cat, displayStyleState, modelSelectorState);
     }
-  }
-  public equals(other: SpatialViewState): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
 
-  public equalState(other: SpatialViewState): boolean {
-    if (!super.equalState(other))
-      return false;
-
-    if (this.modelSelector.id !== other.modelSelector.id)
-      return false;
-
-    return this.modelSelector.equalState(other.modelSelector);
-  }
-
-  public static get className() { return "SpatialViewDefinition"; }
-  public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
-  public getExtentLimits() { return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth }; }
-
-  public computeFitRange(): AxisAlignedBox3d {
-    // Loop over the current models in the model selector with loaded tile trees and union their ranges
-    const range = new AxisAlignedBox3d();
-    this.forEachModel((model: GeometricModelState) => {   // Only fit real models -- ignore context models for fit.
-      const tileTree = model.tileTree;
-      if (tileTree !== undefined && tileTree.rootTile !== undefined && model.useRangeForFit()) {   // can we assume that a loaded model
-        range.extendRange(tileTree.rootTile.computeWorldContentRange());
-      }
-    });
-
-    if (range.isNull)
-      range.setFrom(this.getViewedExtents());
-
-    range.ensureMinLengths(1.0);
-
-    return range;
-  }
-
-  public getViewedExtents(): AxisAlignedBox3d {
-    const extents = AxisAlignedBox3d.fromJSON(this.iModel.projectExtents);
-    extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
-    extents.extendRange(this.getGroundExtents());
-    return extents;
-  }
-
-  public toJSON(): SpatialViewDefinitionProps {
-    const val = super.toJSON() as SpatialViewDefinitionProps;
-    val.modelSelectorId = this.modelSelector.id;
-    return val;
-  }
-  public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
-  public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
-  public clearViewedModels() { this.modelSelector.models.clear(); }
-  public addViewedModel(id: Id64String) { this.modelSelector.addModels(id); }
-  public removeViewedModel(id: Id64String) { this.modelSelector.dropModels(id); }
-
-  public forEachModel(func: (model: GeometricModelState) => void) {
-    for (const modelId of this.modelSelector.models) {
-      const model = this.iModel.models.getLoaded(modelId);
-      const model3d = undefined !== model ? model.asGeometricModel3d : undefined;
-      if (undefined !== model3d)
-        func(model3d);
+    constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) {
+        super(props, iModel, arg3, displayStyle);
+        this.modelSelector = modelSelector;
+        if (arg3 instanceof SpatialViewState) { // from clone
+            this.modelSelector = arg3.modelSelector.clone();
+        }
     }
-  }
-  public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void {
-    this.forEachModel((model: GeometricModelState) => func(model));
-    this.displayStyle.forEachContextRealityModel((model: TileTreeModelState) => func(model));
-    if (this.scheduleScript) this.scheduleScript.forEachAnimationModel((model: TileTreeModelState) => func(model));
-  }
+    public equals(other: SpatialViewState): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
+
+    public equalState(other: SpatialViewState): boolean {
+        if (!super.equalState(other))
+            return false;
+
+        if (this.modelSelector.id !== other.modelSelector.id)
+            return false;
+
+        return this.modelSelector.equalState(other.modelSelector);
+    }
+
+    public static get className() { return "SpatialViewDefinition"; }
+    public createAuxCoordSystem(acsName: string): AuxCoordSystemState { return AuxCoordSystemSpatialState.createNew(acsName, this.iModel); }
+    public getExtentLimits() { return { min: Constant.oneMillimeter, max: Constant.diameterOfEarth }; }
+
+    public computeFitRange(): AxisAlignedBox3d {
+        // Loop over the current models in the model selector with loaded tile trees and union their ranges
+        const range = new AxisAlignedBox3d();
+        this.forEachSpatialTileTreeModel((model: TileTreeModelState) => {   // Only fit real models -- ignore context models for fit.
+            const tileTree = model.tileTree;
+            if (tileTree !== undefined && tileTree.rootTile !== undefined) {   // can we assume that a loaded model
+                range.extendRange(tileTree.rootTile.computeWorldContentRange());
+            }
+        });
+
+        if (range.isNull)
+            range.setFrom(this.getViewedExtents());
+
+        range.ensureMinLengths(1.0);
+
+        return range;
+    }
+
+    public getViewedExtents(): AxisAlignedBox3d {
+        const extents = AxisAlignedBox3d.fromJSON(this.iModel.projectExtents);
+        extents.scaleAboutCenterInPlace(1.0001); // projectExtents. lying smack up against the extents is not excluded by frustum...
+        extents.extendRange(this.getGroundExtents());
+        return extents;
+    }
+
+    public toJSON(): SpatialViewDefinitionProps {
+        const val = super.toJSON() as SpatialViewDefinitionProps;
+        val.modelSelectorId = this.modelSelector.id;
+        return val;
+    }
+    public async load(): Promise<void> { await super.load(); return this.modelSelector.load(); }
+    public viewsModel(modelId: Id64String): boolean { return this.modelSelector.containsModel(modelId); }
+    public clearViewedModels() { this.modelSelector.models.clear(); }
+    public addViewedModel(id: Id64String) { this.modelSelector.addModels(id); }
+    public removeViewedModel(id: Id64String) { this.modelSelector.dropModels(id); }
+
+    public forEachModel(func: (model: GeometricModelState) => void) {
+        for (const modelId of this.modelSelector.models) {
+            const model = this.iModel.models.getLoaded(modelId);
+            const model3d = undefined !== model ? model.asGeometricModel3d : undefined;
+            if (undefined !== model3d)
+                func(model3d);
+        }
+    }
+    public forEachTileTreeModel(func: (model: TileTreeModelState) => void): void {
+        this.displayStyle.forEachContextRealityModel((model: TileTreeModelState) => func(model));
+        this.forEachSpatialTileTreeModel((model: TileTreeModelState) => func(model));
+    }
+
+    public forEachSpatialTileTreeModel(func: (model: TileTreeModelState) => void): void {
+        const doAnimations = false;     // Not yet - need tile sujport.
+        if (doAnimations && this.scheduleScript && this.scheduleScript.containsAnimation)
+            this.scheduleScript.forEachAnimationModel((model: TileTreeModelState) => func(model));
+        else
+            this.forEachModel((model: GeometricModelState) => func(model));
+    }
 }
 
 /** Defines a spatial view that displays geometry on the image plane using a parallel orthographic projection. */
 export class OrthographicViewState extends SpatialViewState {
-  public static get className() { return "OrthographicViewDefinition"; }
+    public static get className() { return "OrthographicViewDefinition"; }
 
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
+    constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState) { super(props, iModel, categories, displayStyle, modelSelector); }
 
-  public supportsCamera(): boolean { return false; }
+    public supportsCamera(): boolean { return false; }
 }
 
 /** Defines the state of a view of a single 2d model. */

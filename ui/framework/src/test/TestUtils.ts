@@ -19,7 +19,7 @@ const initialState: SampleAppState = {
 
 export interface RootState {
   sampleAppState: SampleAppState;
-  frameworkState?: FrameworkState;
+  testDifferentFrameworkKey?: FrameworkState;
 }
 
 // tslint:disable-next-line:variable-name
@@ -63,13 +63,13 @@ export default class TestUtils {
       // this is the rootReducer for the sample application.
       this._rootReducer = combineReducers<RootState>({
         sampleAppState: SampleAppReducer,
-        frameworkState: FrameworkReducer,
+        testDifferentFrameworkKey: FrameworkReducer,
       } as any);
 
       this.store = createStore(this._rootReducer,
         (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
-      await UiFramework.initialize(this.store, TestUtils.i18n);
+      await UiFramework.initialize(this.store, TestUtils.i18n, undefined, "testDifferentFrameworkKey");
       await UiComponents.initialize(TestUtils.i18n);
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiFrameworkInitialized = true;

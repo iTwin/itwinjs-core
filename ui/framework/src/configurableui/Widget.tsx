@@ -43,32 +43,50 @@ export class Widget extends React.Component<WidgetProps> {
     super(props);
   }
 
-  public static initializeWidgetDef(widgetDef: WidgetDef, props: WidgetProps): void {
+  public static initializeWidgetDef(widgetDef: WidgetDef, widgetProps: WidgetProps): void {
     // set base class properties
-    ItemDefBase.initializeDef(widgetDef, props);
+    ItemDefBase.initializeDef(widgetDef, widgetProps);
 
-    if (props.id !== undefined)
-      widgetDef.id = props.id;
-    if (props.defaultState !== undefined)
-      widgetDef.applyWidgetState(props.defaultState);
-    if (props.isFreeform !== undefined)
-      widgetDef.isFreeform = props.isFreeform;
-    if (props.isToolSettings !== undefined)
-      widgetDef.isToolSettings = props.isToolSettings;
-    if (props.isStatusBar !== undefined)
-      widgetDef.isStatusBar = props.isStatusBar;
-    if (props.fillZone !== undefined)
-      widgetDef.fillZone = props.fillZone;
+    // defaults if no widgetProps are defined
+    widgetDef.isVisible = true;
+    widgetDef.isFloating = false;
+    widgetDef.isActive = false;
 
-    widgetDef.widgetType = widgetDef.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
+    if (widgetProps) {
+      if (widgetProps && widgetProps.id !== undefined)
+        widgetDef.id = widgetProps.id;
 
-    if (props.applicationData !== undefined)
-      widgetDef.applicationData = props.applicationData;
+      if (widgetProps.isVisible !== undefined)
+        widgetDef.isVisible = widgetProps.isVisible;
 
-    if (props.control !== undefined)
-      widgetDef.classId = props.control;
-    if (props.element !== undefined)
-      widgetDef.reactElement = props.element;
+      if (widgetProps.defaultState !== undefined)
+        widgetDef.applyWidgetState(widgetProps.defaultState);
+
+      if (widgetProps.featureId !== undefined)
+        widgetDef.featureId = widgetProps.featureId;
+      if (widgetProps.isFreeform !== undefined) {
+        widgetDef.isFreeform = widgetProps.isFreeform;
+        widgetDef.widgetType = widgetDef.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
+      }
+
+      if (widgetProps.isToolSettings !== undefined)
+        widgetDef.isToolSettings = widgetProps.isToolSettings;
+      if (widgetProps.isStatusBar !== undefined)
+        widgetDef.isStatusBar = widgetProps.isStatusBar;
+      if (widgetProps.fillZone !== undefined)
+        widgetDef.fillZone = widgetProps.fillZone;
+
+      if (widgetProps.applicationData !== undefined)
+        widgetDef.applicationData = widgetProps.applicationData;
+
+      if (widgetProps.control !== undefined)
+        widgetDef.classId = widgetProps.control;
+
+      if (widgetProps.element !== undefined)
+        widgetDef.reactElement = widgetProps.element;
+
+      widgetDef.setUpSyncSupport (widgetProps);
+    }
   }
 
   public render() {

@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { TileIO, IModelTileIO } from "@bentley/imodeljs-frontend/lib/tile";
+import { TileIO, IModelTileIO, IModelTileLoader, TileTree, TileRequest } from "@bentley/imodeljs-frontend/lib/tile";
 import { SurfaceType } from "@bentley/imodeljs-frontend/lib/rendering";
 import { Batch, MeshGraphic, GraphicsArray, PolylinePrimitive, PolylineGeometry } from "@bentley/imodeljs-frontend/lib/webgl";
 import { ModelProps, RelatedElementProps, FeatureIndexType, BatchType } from "@bentley/imodeljs-common";
@@ -13,6 +13,7 @@ import * as path from "path";
 import { CONSTANTS } from "../common/Testbed";
 import { IModelApp, IModelConnection, GeometricModelState } from "@bentley/imodeljs-frontend";
 import { WebGLTestContext } from "./WebGLTestContext";
+import { MockRender } from "./MockRender";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -377,5 +378,50 @@ describe("TileIO", () => {
     const rootTile = tree.rootTile;
     expect(rootTile.contentId).to.equal("0/0/0/0/1");
     expect(rootTile.isLeaf).to.be.false; // this tile has one higher-resolution child because it contains only 1 elements (a sphere)
+  });
+});
+
+describe("TileIO regression", () => {
+  let imodel: IModelConnection;
+
+  before(async () => {
+    imodel = await IModelConnection.openStandalone(path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/mirukuru.ibim"));
+    MockRender.App.startup();
+  });
+
+  after(async () => {
+    MockRender.App.shutdown();
+    if (imodel) await imodel.closeStandalone();
+  });
+
+  // mirukuru contains a model (ID 0x1C) containing a single rectangle.
+  // confirm we can obtain and deserialize contents of that tile, and that it is a leaf tile.
+  it("should obtain a single leaf tile", async () => {
+    const modelProps = await imodel.models.getProps("0x1c");
+    expect(modelProps.length).to.equal(1);
+
+    const treeProps = await imodel.tiles.getTileTreeProps(modelProps[0].id!);
+    expect(treeProps.id).to.equal(modelProps[0].id);
+    expect(treeProps.rootTile).not.to.be.undefined;
+
+    const rootTile = treeProps.rootTile;
+    expect(rootTile.isLeaf).not.to.be.true; // the backend will only set this to true if the tile range contains no elements.
+
+    const loader = new IModelTileLoader(imodel, BatchType.Primary);
+    const tree = new TileTree(TileTree.Params.fromJSON(treeProps, imodel, true, loader, "0x1c"));
+
+    const response: TileRequest.Response = await loader.requestTileContent(tree.rootTile);
+    expect(response).not.to.be.undefined;
+    expect(response).instanceof(Uint8Array);
+
+    const gfx = await loader.loadTileGraphic(tree.rootTile, response as Uint8Array);
+    expect(gfx).not.to.be.undefined;
+    expect(gfx.renderGraphic).not.to.be.undefined;
+    expect(gfx.isLeaf).to.be.true;
+    expect(gfx.contentRange).not.to.be.undefined;
+    expect(gfx.contentRange!.isNull).to.be.false;
+
+    const projExt = imodel.projectExtents;
+    expect(projExt.maxLength()).to.equal(gfx.contentRange!.maxLength());
   });
 });

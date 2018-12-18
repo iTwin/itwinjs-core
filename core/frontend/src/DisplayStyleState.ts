@@ -19,11 +19,12 @@ import {
   DisplayStyle3dSettings,
   BackgroundMapProps,
   AnalysisStyle,
+
 } from "@bentley/imodeljs-common";
 import { ElementState } from "./EntityState";
 import { IModelConnection } from "./IModelConnection";
 import { JsonUtils, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { RenderSystem, TextureImage } from "./render/System";
+import { RenderSystem, TextureImage, AnimationBranchStates } from "./render/System";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 import { TileTreeModelState } from "./ModelState";
 import { Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
@@ -101,6 +102,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.jsonProperties.analysisStyle = this._analysisStyle;
   }
   public get scheduleScript(): RenderScheduleState.Script | undefined { return this._scheduleScript; }
+  public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined { return this._scheduleScript === undefined ? undefined : this._scheduleScript.getAnimationBranches(scheduleTime); }
 
   /** @hidden */
   public get contextRealityModels(): ContextRealityModelState[] { return this._contextRealityModels; }

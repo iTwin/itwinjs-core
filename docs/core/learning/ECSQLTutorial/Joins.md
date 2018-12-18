@@ -13,18 +13,18 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the child [Element](../../bis/domains/BisCore.ecschema.md#Element)s (id and class id) of the parent [Element](../../bis/domains/BisCore.ecschema.md#Element) 0x10000000013
+> *Goal:* Return the child [Element](../../bis/domains/BisCore.ecschema.md#Element)s (id and class id) of the parent [Element](../../bis/domains/BisCore.ecschema.md#Element) 0x1000000001e
 >
 > *ECSQL*
 > ```sql
->  SELECT TargetECInstanceId ChildId, TargetECClassId ChildClassId FROM bis.ElementOwnsChildElements WHERE SourceECInstanceId=0x10000000013
+>  SELECT TargetECInstanceId ChildId, TargetECClassId ChildClassId FROM bis.ElementOwnsChildElements WHERE SourceECInstanceId=0x1000000001e
 > ```
 > *Result*
 >
 > ChildId | ChildClassId
 > --- | ---
-> 0x10000000014 | 0xf4
-> 0x10000000015 | 0xf4
+> 0x1000000001f | 0x105
+> 0x10000000021 | 0x105
 
 Like any ECClass, ECRelationshipClasses abstract away how they are actually persisted in the database. When working with plain database and SQL you need to know that. This usually depends on the cardinality of the relationship. For example M:N relationships (also known as *many to many*) require a separate link table which persists the pairs of related instances. For 1:N relationhips (also known as *one to many*) though, the id of the related instance is usually persisted as foreign key in the child table directly. **For ECRelationshipClasses you do not need to know that.**
 
@@ -83,9 +83,9 @@ As explained above using navigation properties instead of joins is preferred. So
 >
 > Model |
 > --- |
-> {"id": "0x10000000011", "relClassName":"BisCore.ModelContainsElements"} |
+> {"id": "0x10000000002", "relClassName":"BisCore.ModelContainsElements"} |
 
-Note that the above ECSQL implies to navigate from the [Device](./MyDomain.ecschema.md#Device) ECClass (which is a subclass of [Element](../../bis/domains/BisCore.ecschema.md#Element) to the [Model](../../bis/domains/BisCore.ecschema.md#Model) ECClass using the ECRelationshipClass [ModModelContainsElementsel](../../bis/domains/BisCore.ecschema.md#ModelContainsElements). But none of that has to be expressed in the ECSQL. It is all hidden behind the navigation property and makes the ECSQL straight-forward.
+Note that the above ECSQL implies to navigate from the [Device](./MyDomain.ecschema.md#Device) ECClass (which is a subclass of [Element](../../bis/domains/BisCore.ecschema.md#Element) to the [Model](../../bis/domains/BisCore.ecschema.md#Model) ECClass using the ECRelationshipClass [ModelContainsElements](../../bis/domains/BisCore.ecschema.md#ModelContainsElements). But none of that has to be expressed in the ECSQL. It is all hidden behind the navigation property and makes the ECSQL straight-forward.
 
 The following ECSQL is the same as above but uses joins instead of the navigation property.
 
@@ -102,7 +102,7 @@ The following ECSQL is the same as above but uses joins instead of the navigatio
 >
 > ModelId |
 > --- |
-> 0x10000000011 |
+> 0x10000000002 |
 
 If you want to return something else than just the id of the related instance, you can still use the navigation property but you need a join to bring in the related instance's class.
 
@@ -118,7 +118,7 @@ If you want to return something else than just the id of the related instance, y
 >
 > ECInstanceId | ModelElementId | ParentModelId
 > --- | --- | ---
-> 0x10000000011 | 0x10000000011 | 0x1
+> 0x10000000002 | 0x10000000002 | 0x1
 
 Again for the purpose of learning, the same ECSQL expressed with relationship classes instead of navigation properties looks like this.
 
@@ -135,7 +135,7 @@ Again for the purpose of learning, the same ECSQL expressed with relationship cl
 >
 > ECInstanceId | ModelElementId | ParentModelId
 > --- | --- | ---
-> 0x10000000011 | 0x10000000011 | 0x1
+> 0x10000000002 | 0x10000000002 | 0x1
 
 ---
 

@@ -58,7 +58,7 @@ export abstract class ItemDefBase {
       me.stateFunc = itemProps.stateFunc;
 
     if (itemProps.stateSyncIds)
-      me.stateSyncIds = itemProps.stateSyncIds;
+      me.stateSyncIds = itemProps.stateSyncIds.map((value) => value.toLowerCase());
   }
 
   constructor(itemProps?: ItemProps) {

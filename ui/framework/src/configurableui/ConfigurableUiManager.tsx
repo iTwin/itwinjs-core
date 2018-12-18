@@ -12,7 +12,7 @@ import { ContentLayoutManager, ContentLayoutProps } from "./ContentLayout";
 import { TaskManager, TaskPropsList } from "./Task";
 import { WorkflowManager, WorkflowPropsList } from "./Workflow";
 import { FrontstageProvider } from "./FrontstageProvider";
-import { SyncUiEventDispatcher } from "../SyncUiEventDispatcher";
+import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
 import { StandardRotationNavigationAidControl } from "./navigationaids/StandardRotationNavigationAid";
 import { SheetNavigationAidControl } from "./navigationaids/SheetNavigationAid";

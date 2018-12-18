@@ -9,7 +9,7 @@ import * as path from "path";
 import { Mesh, Triangle } from "@bentley/imodeljs-frontend/lib/rendering";
 import { FakeDisplayParams } from "./DisplayParams.test";
 import { CONSTANTS } from "../common/Testbed";
-import { WebGLTestContext } from "./WebGLTestContext";
+import { MockRender } from "./MockRender";
 import { MeshPolyline, QPoint3d, ColorDef, OctEncodedNormal } from "@bentley/imodeljs-common";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
@@ -31,11 +31,11 @@ describe("MeshPrimitive Tests", () => {
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
-    WebGLTestContext.startup();
+    MockRender.App.startup();
   });
 
   after(async () => {
-    WebGLTestContext.shutdown();
+    MockRender.App.shutdown();
     if (imodel) await imodel.closeStandalone();
   });
 

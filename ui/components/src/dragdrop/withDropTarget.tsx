@@ -146,7 +146,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
           canDrop,
         };
         return connectDropTarget!(
-          <div ref={(el) => { this.rootElement = el; }} style={this.props.dropStyle}>
+          <div className="drop-target-wrapper" data-testid="drop-target-wrapper" ref={(el) => { this.rootElement = el; }} style={this.props.dropStyle}>
             <Component {...props} {...(p as any)} />
           </div>,
         );

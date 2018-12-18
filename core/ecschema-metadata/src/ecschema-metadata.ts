@@ -24,9 +24,13 @@ export * from "./Metadata/KindOfQuantity";
 export * from "./Metadata/Mixin";
 export * from "./Metadata/OverrideFormat";
 export * from "./Metadata/Phenomenon";
-export * from "./Metadata/Property";
+export {
+  Property, PrimitiveProperty, PrimitiveArrayProperty, EnumerationProperty, StructProperty,
+  StructArrayProperty, EnumerationArrayProperty, NavigationProperty, AnyArrayProperty, AnyEnumerationProperty,
+  AnyPrimitiveProperty, AnyProperty, AnyStructProperty, ArrayProperty, PrimitiveOrEnumPropertyBase,
+} from "./Metadata/Property";
 export * from "./Metadata/PropertyCategory";
-export * from "./Metadata/RelationshipClass";
+export { RelationshipClass, RelationshipConstraint, RelationshipMultiplicity } from "./Metadata/RelationshipClass";
 export { Schema } from "./Metadata/Schema";
 export * from "./Metadata/SchemaItem";
 export * from "./Metadata/Unit";

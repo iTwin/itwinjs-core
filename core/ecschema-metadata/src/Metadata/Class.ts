@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { processCustomAttributes, CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { CustomAttributeContainerProps, CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
 import { EntityClass } from "./EntityClass";
 import { Enumeration } from "./Enumeration";
 import {
@@ -15,7 +15,7 @@ import { SchemaItem } from "./SchemaItem";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { ClassProps } from "./../Deserialization/JsonProps";
 import {
-  classModifierToString, CustomAttributeContainerType, ECClassModifier,
+  classModifierToString, ECClassModifier,
   parseClassModifier, parsePrimitiveType, PrimitiveType, SchemaItemType,
 } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
@@ -366,10 +366,16 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
           return baseClass;
         });
     }
-    this._customAttributes = processCustomAttributes(classProps.customAttributes, this.name, CustomAttributeContainerType.AnyClass);
   }
   public async deserialize(classProps: ClassProps): Promise<void> {
     this.deserializeSync(classProps);
+  }
+
+  protected addCustomAttribute(customAttribute: CustomAttribute) {
+    if (!this._customAttributes)
+      this._customAttributes = new CustomAttributeSet();
+
+    this._customAttributes[customAttribute.className] = customAttribute;
   }
 
   public async accept(visitor: SchemaItemVisitor) {
@@ -576,6 +582,8 @@ export class StructClass extends ECClass {
  * Hackish approach that works like a "friend class" so we can access protected members without making them public.
  */
 export abstract class MutableClass extends ECClass {
+  public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
+
   public abstract async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
   public abstract async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
   public abstract async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;

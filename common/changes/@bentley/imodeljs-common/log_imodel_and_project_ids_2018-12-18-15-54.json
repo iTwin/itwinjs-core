@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Log context and imodel ids as separate properties. Surface interface and operation names in logging title.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}

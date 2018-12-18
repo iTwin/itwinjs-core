@@ -87,9 +87,7 @@ export class BreadcrumbDetails extends React.Component<BreadcrumbDetailsProps, B
       this.props.onRender();
     if (!this.props.path.BreadcrumbUpdateEvent.has(this._pathChange)) {
       this.props.path.BreadcrumbUpdateEvent.addListener(this._pathChange);
-      if (prevProps.path) {
-        prevProps.path.BreadcrumbUpdateEvent.removeListener(this._pathChange);
-      }
+      prevProps.path.BreadcrumbUpdateEvent.removeListener(this._pathChange);
     }
   }
 
