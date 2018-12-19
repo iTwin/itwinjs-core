@@ -258,12 +258,12 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * Expand the selected group
    * @param group ModelGroup to expand.
    */
-  private _onExpand = (group: ModelGroup) => {
+  private _onExpand = async (group: ModelGroup) => {
     const activeRuleset = this._getActiveRuleset(group);
     if (!activeRuleset)
       return;
 
-    this._setActiveRuleset(activeRuleset);
+    await this._setActiveRuleset(activeRuleset);
     this._setInitialExpandedState(group);
   }
 
@@ -285,7 +285,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * Sets provided ruleset as new ruleset for tree.
    * @param activeRuleset Ruleset to provide to tree.
    */
-  private _setActiveRuleset = (activeRuleset: RegisteredRuleset) => {
+  private _setActiveRuleset = async (activeRuleset: RegisteredRuleset) => {
     this.setState({
       treeInfo: {
         ...this.state.treeInfo!,
@@ -608,6 +608,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     items.forEach((item: TreeNodeItem) => {
       this._setItemState(item, true);
       item.checkBoxState = CheckBoxState.On;
+      item.labelBold = true;
     });
     return true;
   }
@@ -617,6 +618,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     items.forEach((item: TreeNodeItem) => {
       this._setItemState(item, false);
       item.checkBoxState = CheckBoxState.Off;
+      item.labelBold = false;
     });
     return true;
   }
@@ -689,6 +691,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
         });
       }
       treeItem.checkBoxState = CheckBoxState.On;
+      treeItem.labelBold = true;
     }
   }
 
@@ -706,6 +709,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           },
         });
         treeItem.checkBoxState = CheckBoxState.Off;
+        treeItem.labelBold = false;
       }
     }
   }
