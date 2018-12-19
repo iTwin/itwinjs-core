@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix regression in the display of reality models induced by switch to OIDC for access token.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}
