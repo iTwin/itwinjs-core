@@ -613,6 +613,13 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     return true;
   }
 
+  private _onNodeExpanded = async (item: TreeNodeItem) => {
+    const enable = item.checkBoxState === CheckBoxState.On ? true : false;
+    await this._setEnableChildren(item, enable);
+    const nodes = await this.state.treeInfo!.dataProvider.getNodes(item);
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(nodes);
+  }
+
   /** Set item state for deselected node */
   private _onNodesDeselected = (items: TreeNodeItem[]) => {
     items.forEach((item: TreeNodeItem) => {
@@ -680,7 +687,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
       const index = this.state.treeInfo.selectedNodes.indexOf(treeItem.id);
       if (index === -1) {
-        // this.state.treeInfo.selectedNodes.push(treeItem.id);
         const nodes = this.state.treeInfo.selectedNodes;
         nodes.push(treeItem.id);
         this.setState({
@@ -699,7 +705,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
       const index = this.state.treeInfo.selectedNodes.indexOf(treeItem.id);
       if (index > -1) {
-        // this.state.treeInfo.selectedNodes.splice(index, 1);
         const nodes = this.state.treeInfo.selectedNodes;
         nodes.splice(index, 1);
         this.setState({
@@ -802,6 +807,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
                     onNodesSelected={this._onNodeSelected}
                     onNodesDeselected={this._onNodesDeselected}
                     onCheckboxClick={this._onCheckboxClick}
+                    onNodeExpanded={this._onNodeExpanded}
                   /> :
                   <div />
               }
