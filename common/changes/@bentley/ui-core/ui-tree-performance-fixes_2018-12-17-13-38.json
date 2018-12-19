@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use arrow cursor on tree nodes",
+      "packageName": "@bentley/ui-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "grigas.petraitis@bentley.com"
+}

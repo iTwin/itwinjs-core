@@ -5,6 +5,14 @@
 @import "@bentley/bwc/lib/mixins";
 @import "@bentley/ui-core/lib/_scrollbar";
 
+.components-property-grid-loader {
+  @include bwc-loaders-large;
+  position: relative;
+  display: block;
+  left: calc(50% - 24px);
+  top: calc(50% - 24px);
+}
+
 .components-property-grid {
   @include bwc-expandable-blocks-list;
 

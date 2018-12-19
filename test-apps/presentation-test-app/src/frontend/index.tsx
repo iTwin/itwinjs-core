@@ -16,11 +16,12 @@ import {
 // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Imports
 import { Presentation } from "@bentley/presentation-frontend";
 // __PUBLISH_EXTRACT_END__
+import { UiCore } from "@bentley/ui-core";
 import { UiComponents } from "@bentley/ui-components";
+import { MyAppFrontend } from "./api/MyAppFrontend";
 import rpcs from "../common/Rpcs";
 import App from "./components/app/App";
 import "./index.css";
-import { UiCore } from "@bentley/ui-core";
 
 // initialize logging
 Logger.initializeToConsole();
@@ -54,6 +55,11 @@ export class SampleApp extends IModelApp {
 
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Initialization
     Presentation.initialize({
+      // specify `clientId` so Presentation framework can share caches
+      // between sessions for the same clients
+      clientId: MyAppFrontend.getClientId(),
+
+      // specify locale for localizing presentation data
       activeLocale: IModelApp.i18n.languageList()[0],
     });
     // __PUBLISH_EXTRACT_END__

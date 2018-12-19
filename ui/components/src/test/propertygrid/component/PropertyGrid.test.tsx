@@ -5,15 +5,19 @@
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as moq from "typemoq";
+import * as faker from "faker";
 import sinon from "sinon";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyGrid, PropertyGridCategory } from "../../../propertygrid/component/PropertyGrid";
-import { PropertyDataProvider, PropertyDataChangeEvent, PropertyCategory } from "../../../propertygrid/PropertyDataProvider";
 import { SimplePropertyDataProvider, PropertyCategoryBlock } from "../../../ui-components";
+import { PropertyGrid, PropertyGridCategory } from "../../../propertygrid/component/PropertyGrid";
+import { PropertyDataProvider, PropertyDataChangeEvent, PropertyCategory, PropertyData } from "../../../propertygrid/PropertyDataProvider";
+import { PropertyRecord } from "../../../properties/Record";
+import { PropertyValueFormat } from "../../../properties/Value";
+import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 
-class SamplePropertyDataProvider extends SimplePropertyDataProvider {
+class TestDataProvider extends SimplePropertyDataProvider {
   constructor() {
     super();
 
@@ -63,7 +67,7 @@ describe("PropertyGrid", () => {
   });
 
   it("renders correctly horizontally", async () => {
-    const dataProvider = new SamplePropertyDataProvider();
+    const dataProvider = new TestDataProvider();
     const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
     await TestUtils.flushAsyncOperations();
@@ -74,7 +78,7 @@ describe("PropertyGrid", () => {
   });
 
   it("renders correctly vertically", async () => {
-    const dataProvider = new SamplePropertyDataProvider();
+    const dataProvider = new TestDataProvider();
     const wrapper = mount(<PropertyGrid orientation={Orientation.Vertical} dataProvider={dataProvider} />);
 
     await TestUtils.flushAsyncOperations();
@@ -85,7 +89,7 @@ describe("PropertyGrid", () => {
   });
 
   it("renders PropertyCategoryBlocks correctly", async () => {
-    const dataProvider = new SamplePropertyDataProvider();
+    const dataProvider = new TestDataProvider();
     const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
     await TestUtils.flushAsyncOperations();
@@ -100,7 +104,7 @@ describe("PropertyGrid", () => {
   });
 
   it("renders PropertyCategoryBlock as collapsed when it gets clicked", async () => {
-    const dataProvider = new SamplePropertyDataProvider();
+    const dataProvider = new TestDataProvider();
     const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
     await TestUtils.flushAsyncOperations();
@@ -117,7 +121,7 @@ describe("PropertyGrid", () => {
   });
 
   it("calls onPropertySelectionChanged when property gets clicked and selection is enabled", async () => {
-    const dataProvider = new SamplePropertyDataProvider();
+    const dataProvider = new TestDataProvider();
     const onPropertySelectionChanged = sinon.spy();
     const wrapper = mount(
       <PropertyGrid
@@ -140,7 +144,7 @@ describe("PropertyGrid", () => {
   });
 
   it("deselects if clicked a 2nd time", async () => {
-    const dataProvider = new SamplePropertyDataProvider();
+    const dataProvider = new TestDataProvider();
     const wrapper = mount(
       <PropertyGrid
         orientation={Orientation.Horizontal}
@@ -165,7 +169,7 @@ describe("PropertyGrid", () => {
   });
 
   it("does not call onPropertySelectionChanged when property gets clicked and selection is disabled", async () => {
-    const dataProvider = new SamplePropertyDataProvider();
+    const dataProvider = new TestDataProvider();
     const onPropertySelectionChanged = sinon.spy();
     const wrapper = mount(
       <PropertyGrid
@@ -188,7 +192,7 @@ describe("PropertyGrid", () => {
   });
 
   it("rerenders if data in the provider changes", async () => {
-    const dataProvider = new SamplePropertyDataProvider();
+    const dataProvider = new TestDataProvider();
     const wrapper = mount(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
 
     dataProvider.addCategory({ name: "Group_3", label: "Group 3", expand: false });
@@ -201,8 +205,44 @@ describe("PropertyGrid", () => {
     expect(categoryBlocks.children().length).to.be.eq(3);
   });
 
+  it("doesn't rerender on intermediate data changes", async () => {
+    const data: PropertyData = {
+      label: faker.random.word(),
+      categories: [{ label: faker.random.word(), name: "test", expand: true }],
+      records: {
+        test: [
+          new PropertyRecord(
+            { valueFormat: PropertyValueFormat.Primitive, displayValue: faker.random.word() },
+            { typename: faker.database.type(), name: faker.random.word(), displayLabel: faker.random.word() }),
+        ],
+      },
+    };
+    const dataPromise = new ResolvablePromise<PropertyData>();
+    const dataFake = sinon.fake.returns(dataPromise);
+    const dataProvider: PropertyDataProvider = {
+      getData: dataFake,
+      onDataChanged: new PropertyDataChangeEvent(),
+    };
+
+    // first render
+    shallow(<PropertyGrid orientation={Orientation.Horizontal} dataProvider={dataProvider} />);
+    expect(dataFake).to.be.calledOnce;
+
+    // simulate multiple onDataChanged calls
+    for (let i = 1; i <= 10; ++i)
+      dataProvider.onDataChanged.raiseEvent();
+
+    // resolve the data promise
+    dataPromise.resolve(data);
+    await TestUtils.flushAsyncOperations();
+
+    // expect data to be requested one more time for the last change,
+    // but not for intermediate ones
+    expect(dataFake).to.be.calledTwice;
+  });
+
   it("starts editor on click", async () => {
-    const dataProvider = new SamplePropertyDataProvider();
+    const dataProvider = new TestDataProvider();
     const spyMethod = sinon.spy();
     const wrapper = mount(
       <PropertyGrid
@@ -232,7 +272,7 @@ describe("PropertyGrid", () => {
   });
 
   it("does not start editor on click if not selected yet", async () => {
-    const dataProvider = new SamplePropertyDataProvider();
+    const dataProvider = new TestDataProvider();
     const wrapper = mount(
       <PropertyGrid
         orientation={Orientation.Horizontal}
@@ -255,7 +295,7 @@ describe("PropertyGrid", () => {
   });
 
   it("starts editor on click if clicked before to select", async () => {
-    const dataProvider = new SamplePropertyDataProvider();
+    const dataProvider = new TestDataProvider();
     const wrapper = mount(
       <PropertyGrid
         orientation={Orientation.Horizontal}
@@ -288,7 +328,7 @@ describe("PropertyGrid", () => {
   });
 
   it("changes orientation when props change", async () => {
-    const dataProvider = new SamplePropertyDataProvider();
+    const dataProvider = new TestDataProvider();
     const propertyGridMount = mount(
       <PropertyGrid
         orientation={Orientation.Horizontal}
@@ -305,7 +345,7 @@ describe("PropertyGrid", () => {
     expect(propertyGridMount.state("orientation")).to.be.eq(Orientation.Vertical);
   });
 
-  describe("", () => {
+  describe("responsive behavior", () => {
     const getBoundingClientRect = Element.prototype.getBoundingClientRect;
 
     after(() => {
@@ -313,7 +353,7 @@ describe("PropertyGrid", () => {
     });
 
     it("changes orientation when width is lower than 300", async () => {
-      const dataProvider = new SamplePropertyDataProvider();
+      const dataProvider = new TestDataProvider();
       const propertyGridMount = mount(
         <PropertyGrid
           dataProvider={dataProvider}
@@ -337,6 +377,8 @@ describe("PropertyGrid", () => {
       Element.prototype.getBoundingClientRect = () => box;
       propertyGridMount.unmount();
       propertyGridMount.mount();
+      await TestUtils.flushAsyncOperations();
+      propertyGridMount.update();
 
       expect(propertyGridMount.state("orientation")).to.be.eq(Orientation.Vertical);
 
@@ -344,6 +386,8 @@ describe("PropertyGrid", () => {
       Element.prototype.getBoundingClientRect = () => box;
       propertyGridMount.unmount();
       propertyGridMount.mount();
+      await TestUtils.flushAsyncOperations();
+      propertyGridMount.update();
 
       expect(propertyGridMount.state("orientation")).to.be.eq(Orientation.Horizontal);
     });

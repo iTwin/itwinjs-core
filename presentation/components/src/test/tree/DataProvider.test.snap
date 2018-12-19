@@ -20,7 +20,7 @@ Array [
       "isChecked": false,
       "isEditable": true,
       "isExpanded": false,
-      "isSelectable": true,
+      "isSelectionDisabled": true,
       "key": Object {
         "instanceKey": Object {
           "className": "Taka",
@@ -53,7 +53,7 @@ Array [
       "isChecked": true,
       "isEditable": false,
       "isExpanded": false,
-      "isSelectable": false,
+      "isSelectionDisabled": false,
       "key": Object {
         "instanceKey": Object {
           "className": "Extended",

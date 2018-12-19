@@ -13,6 +13,7 @@ import { FrontstageManager, ModalFrontstageInfo } from "../FrontstageManager";
 import { SheetsModalFrontstage, CardContainer, CardSelectedEventArgs } from "./SheetsModalFrontstage";
 import { IModelConnection, IModelApp, ScreenViewport, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
 import { SmallLoader } from "@bentley/bwc";
+import { ViewportComponentEvents, ViewIdChangedEventArgs } from "@bentley/ui-components";
 
 import "./SheetNavigationAid.scss";
 
@@ -67,6 +68,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     this._isMounted = true;
 
     CardContainer.onCardSelectedEvent.addListener(this._handleCardSelected);
+    ViewportComponentEvents.onViewIdChangedEvent.addListener(this._handleViewIdChanged);
 
     if (IModelApp && IModelApp.viewManager)
       IModelApp.viewManager.onSelectedViewportChanged.addListener(this._handleSelectedViewportChanged);
@@ -82,6 +84,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
     this._isMounted = false;
 
     CardContainer.onCardSelectedEvent.removeListener(this._handleCardSelected);
+    ViewportComponentEvents.onViewIdChangedEvent.removeListener(this._handleViewIdChanged);
 
     if (IModelApp && IModelApp.viewManager)
       IModelApp.viewManager.onSelectedViewportChanged.removeListener(this._handleSelectedViewportChanged);
@@ -163,23 +166,31 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
 
   /** Handles a Viewport change & synchs the index */
   private _handleSelectedViewportChanged = (args: SelectedViewportChangedArgs) => {
-    if (args.current && args.current.view) {
-      const className = ViewUtilities.getBisBaseClass(args.current!.view.classFullName);
+    if (args.current) {
+      this._handleViewportChanged(args.current);
+    }
+  }
 
-      if (ViewUtilities.isSheet(className)) {
-        this._viewport = args.current;
+  private _handleViewIdChanged = (args: ViewIdChangedEventArgs) => {
+    if (this._viewport === args.viewport)
+      this._handleViewportChanged(args.viewport as ScreenViewport);
+  }
 
-        if (this._viewport) {
-          const viewId = this._viewport.view.id.toString();
+  /** Handles a Viewport change & synchs the index */
+  private _handleViewportChanged = (viewport: ScreenViewport) => {
+    const className = ViewUtilities.getBisBaseClass(viewport.view.classFullName);
 
-          const index = this.state.sheetData.findIndex((sheetData: SheetData) => {
-            return (viewId === sheetData.viewId);
-          });
+    if (ViewUtilities.isSheet(className)) {
+      this._viewport = viewport;
 
-          if (index >= 0)
-            this.setState({ index });
-        }
-      }
+      const viewId = this._viewport.view.id.toString();
+
+      const index = this.state.sheetData.findIndex((sheetData: SheetData) => {
+        return (viewId === sheetData.viewId);
+      });
+
+      if (index >= 0)
+        this.setState({ index });
     }
   }
 

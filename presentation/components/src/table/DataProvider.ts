@@ -5,14 +5,17 @@
 /** @module Table */
 
 import * as _ from "lodash";
-import { SortDirection } from "@bentley/ui-core";
+import { SortDirection as UiSortDirection } from "@bentley/ui-core";
 import {
   TableDataProvider as ITableDataProvider, TableDataChangeEvent,
   ColumnDescription, RowItem, CellItem,
 } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
-import * as content from "@bentley/presentation-common";
+import {
+  PresentationError, PresentationStatus,
+  DefaultContentDisplayTypes, Descriptor, SortDirection,
+  Content, Field, PropertyValueFormat, Item,
+} from "@bentley/presentation-common";
 import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
 import ContentBuilder from "../common/ContentBuilder";
 import PageContainer, { Page } from "../common/PageContainer";
@@ -27,7 +30,7 @@ interface PromisedPage<TItem> extends Page<TItem> {
  */
 export default class PresentationTableDataProvider extends ContentDataProvider implements ITableDataProvider {
   private _sortColumnKey: string | undefined;
-  private _sortDirection: SortDirection = SortDirection.NoSort;
+  private _sortDirection = UiSortDirection.NoSort;
   private _filterExpression: string | undefined;
   private _pages: PageContainer<RowItem, PromisedPage<RowItem>>;
   public onColumnsChanged = new TableDataChangeEvent();
@@ -35,7 +38,7 @@ export default class PresentationTableDataProvider extends ContentDataProvider i
 
   /** Constructor. */
   constructor(connection: IModelConnection, rulesetId: string, pageSize: number = 20, cachedPagesCount: number = 5) {
-    super(connection, rulesetId, content.DefaultContentDisplayTypes.GRID);
+    super(connection, rulesetId, DefaultContentDisplayTypes.GRID);
     this._pages = new PageContainer(pageSize, cachedPagesCount);
   }
 
@@ -78,7 +81,7 @@ export default class PresentationTableDataProvider extends ContentDataProvider i
    * @param columnIndex Index of the column to sort on.
    * @param sortDirection Sorting direction.
    */
-  public async sort(columnIndex: number, sortDirection: SortDirection): Promise<void> {
+  public async sort(columnIndex: number, sortDirection: UiSortDirection): Promise<void> {
     const columns = await this.getColumns();
     const sortingColumn = columns[columnIndex];
     if (!sortingColumn)
@@ -94,7 +97,7 @@ export default class PresentationTableDataProvider extends ContentDataProvider i
     if (props.descriptor) {
       this._filterExpression = undefined;
       this._sortColumnKey = undefined;
-      this._sortDirection = SortDirection.Ascending;
+      this._sortDirection = UiSortDirection.Ascending;
     }
 
     if (props.descriptor || props.descriptorConfiguration) {
@@ -113,16 +116,16 @@ export default class PresentationTableDataProvider extends ContentDataProvider i
   }
 
   /** Handles filtering and sorting. */
-  protected configureContentDescriptor(descriptor: Readonly<content.Descriptor>): content.Descriptor {
+  protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor {
     const configured = super.configureContentDescriptor(descriptor);
     if (this._sortColumnKey) {
       configured.sortingField = descriptor.getFieldByName(this._sortColumnKey)!;
       switch (this._sortDirection) {
-        case SortDirection.Descending:
-          configured.sortDirection = content.SortDirection.Descending;
+        case UiSortDirection.Descending:
+          configured.sortDirection = SortDirection.Descending;
           break;
-        case SortDirection.Ascending:
-          configured.sortDirection = content.SortDirection.Ascending;
+        case UiSortDirection.Ascending:
+          configured.sortDirection = SortDirection.Ascending;
           break;
         default:
           configured.sortDirection = undefined;
@@ -144,7 +147,7 @@ export default class PresentationTableDataProvider extends ContentDataProvider i
    * Get the total number of rows.
    */
   public async getRowsCount() {
-    return await this.getContentSetSize();
+    return this.getContentSetSize();
   }
 
   /**
@@ -158,7 +161,7 @@ export default class PresentationTableDataProvider extends ContentDataProvider i
       page.promise = this.getContent({
         start: page.position.start,
         size: page.position.end - page.position.start + 1,
-      }).then((c: content.Content | undefined) => {
+      }).then((c: Content | undefined) => {
         page!.items = createRows(c);
       }).catch((e) => {
         throw e;
@@ -177,30 +180,30 @@ export default class PresentationTableDataProvider extends ContentDataProvider i
   }
 }
 
-const createColumns = (descriptor: Readonly<content.Descriptor> | undefined): ColumnDescription[] => {
+const createColumns = (descriptor: Readonly<Descriptor> | undefined): ColumnDescription[] => {
   if (!descriptor)
     return [];
   const sortedFields = [...descriptor.fields].sort(prioritySortFunction);
   return sortedFields.map((field) => createColumn(field));
 };
 
-const createColumn = (field: Readonly<content.Field>): ColumnDescription => {
+const createColumn = (field: Readonly<Field>): ColumnDescription => {
   return {
     key: field.name,
     label: field.label,
     sortable: true,
     editable: !field.isReadonly,
-    filterable: (field.type.valueFormat === content.PropertyValueFormat.Primitive),
+    filterable: (field.type.valueFormat === PropertyValueFormat.Primitive),
   };
 };
 
-const createRows = (c: Readonly<content.Content> | undefined): RowItem[] => {
+const createRows = (c: Readonly<Content> | undefined): RowItem[] => {
   if (!c)
     return [];
   return c.contentSet.map((item) => createRow(c.descriptor, item));
 };
 
-const createRow = (descriptor: Readonly<content.Descriptor>, item: Readonly<content.Item>): RowItem => {
+const createRow = (descriptor: Readonly<Descriptor>, item: Readonly<Item>): RowItem => {
   if (item.primaryKeys.length !== 1) {
     // note: for table view we expect the record to always have only 1 primary key
     throw new PresentationError(PresentationStatus.InvalidArgument, "item.primaryKeys");

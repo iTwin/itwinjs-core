@@ -2,6 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import * as faker from "faker";
 import { createRandomECInstanceNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";

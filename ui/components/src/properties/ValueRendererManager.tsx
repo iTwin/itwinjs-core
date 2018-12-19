@@ -38,6 +38,8 @@ export interface PropertyPopupState {
 export interface PropertyValueRendererContext {
   /** Type of container that holds the property */
   containerType?: string;
+  /** Style that should be applied to the rendered element */
+  style?: React.CSSProperties;
   /** Orientation of property/container */
   orientation?: Orientation;
   /** Callback to request for a Popup to be shown. */
@@ -55,7 +57,7 @@ export interface IPropertyValueRenderer {
   /** Checks if the renderer can handle given property */
   canRender: (record: PropertyRecord, context?: PropertyValueRendererContext) => boolean;
   /** Method that returns a JSX representation of PropertyRecord */
-  render: (record: PropertyRecord, context?: PropertyValueRendererContext) => Promise<React.ReactNode>;
+  render: (record: PropertyRecord, context?: PropertyValueRendererContext) => React.ReactNode | Promise<React.ReactNode>;
 }
 
 /** Default implementation of property value renderer manager */
@@ -89,7 +91,7 @@ export class PropertyValueRendererManager {
   }
 
   /** Render property into JSX element */
-  public async render(record: PropertyRecord, context?: PropertyValueRendererContext): Promise<React.ReactNode> {
+  public render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode | Promise<React.ReactNode> {
     const selectedRenderer = this.selectRenderer(record);
 
     if (!selectedRenderer || !selectedRenderer.canRender(record, context))

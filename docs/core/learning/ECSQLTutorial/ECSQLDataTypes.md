@@ -15,7 +15,7 @@ ECClassId | Refers to the ECClassId of an ECClass. It uniquely identifies an ECC
 
 > **Try it yourself**
 >
-> *Goal:* Return the actual Element subclass of the [Element](../../bis/domains/BisCore.ecschema.md#SpatialElement) with id 0x10000000020.
+> *Goal:* Return the actual Element subclass of the [Element](../../bis/domains/BisCore.ecschema.md#element) with id 0x10000000020.
 >
 > *ECSQL*
 > ```sql
@@ -37,7 +37,7 @@ For Boolean types ECSQL supports the literals `True` and `False`.
 
 > **Try it yourself**
 >
-> *Goal:* Find out which [Model](../../bis/domains/BisCore.ecschema.md#Model) are private or not.
+> *Goal:* Find out which [Model](../../bis/domains/BisCore.ecschema.md#model) are private or not.
 >
 > *ECSQL*
 > ```sql
@@ -62,7 +62,7 @@ boolean value already.
 
 > **Try it yourself**
 >
-> *Goal:* Find private [Model](../../bis/domains/BisCore.ecschema.md#Model)s.
+> *Goal:* Find private [Model](../../bis/domains/BisCore.ecschema.md#model)s.
 >
 > *ECSQL*
 > ```sql
@@ -85,7 +85,7 @@ And the same example with `False`:
 
 > **Try it yourself**
 >
-> *Goal:* Find non-private [Model](../../bis/domains/BisCore.ecschema.md#Model)s.
+> *Goal:* Find non-private [Model](../../bis/domains/BisCore.ecschema.md#model)s.
 >
 > *ECSQL*
 > ```sql
@@ -119,7 +119,7 @@ See [ECSQL Reference](../ECSQL.md#datetime) for details.
 
 > **Try it yourself**
 >
-> *Goal:* Find all [Device](./MyDomain.ecschema.md#Device)s which were modified between 4pm and 6pm UTC on December, 18th 2018.
+> *Goal:* Find all [Device](./MyDomain.ecschema.md#device)s which were modified between 4pm and 6pm UTC on December, 18th 2018.
 >
 > *ECSQL*
 > ```sql
@@ -146,7 +146,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Find all [Device](./MyDomain.ecschema.md#Device)s whose origin lies within the cube with the
+> *Goal:* Find all [Device](./MyDomain.ecschema.md#device)s whose origin lies within the cube with the
 > lower corner point (50, 30, 10) and the upper corner point (70, 40, 20).
 >
 > *ECSQL*
@@ -181,7 +181,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the parent [Element](../../bis/domains/BisCore.ecschema.md#Element) for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
+> *Goal:* Return the parent [Element](../../bis/domains/BisCore.ecschema.md#element) for the [Space](./MyDomain.ecschema.md#space) with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
@@ -197,7 +197,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the id of the parent [Element](../../bis/domains/BisCore.ecschema.md#Element) for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
+> *Goal:* Return the id of the parent [Element](../../bis/domains/BisCore.ecschema.md#element) for the [Space](./MyDomain.ecschema.md#space) with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
@@ -213,7 +213,7 @@ Property | Description
 
 > **Try it yourself**
 >
-> *Goal:* Return the id and RelECClassId of the parent [Element](../../bis/domains/BisCore.ecschema.md#Element) separately for the [Space](./MyDomain.ecschema.md#Space) with code value *A-G-2*.
+> *Goal:* Return the id and RelECClassId of the parent [Element](../../bis/domains/BisCore.ecschema.md#element) separately for the [Space](./MyDomain.ecschema.md#space) with code value *A-G-2*.
 >
 > *ECSQL*
 > ```sql
@@ -239,7 +239,7 @@ Follow the steps in the sections [Generate Change Summaries](./ChangeSummaryQuer
 
 > **Try it yourself**
 >
-> *Goal:* Return ChangedInstance struct as a whole and OpCode for the InstanceChange object `0x36`.
+> *Goal:* Return ChangedInstance struct (of type [InstanceKey](../ECDbChange.ecschema.md#instancekey)) as a whole and OpCode for the InstanceChange object `0x36`.
 >
 > *ECSQL*
 > ```sql
@@ -256,7 +256,7 @@ And here is an example where individual members of the struct are used.
 
 > **Try it yourself**
 >
-> *Goal:* Return the ids of changed instances that are [Device](./MyDomain.ecschema.md#Device)s (ECClass `0x100`) and the corresponding Change Summary id and OpCode.
+> *Goal:* Return the ids of changed instances (structs of type [InstanceKey](../ECDbChange.ecschema.md#instancekey)) that are [Device](./MyDomain.ecschema.md#device)s (ECClass `0x100`) and the corresponding Change Summary id and OpCode.
 >
 > *ECSQL*
 > ```sql
@@ -280,7 +280,8 @@ In ECSQL you can refer to Array ECProperties only as a whole.
 
 > **Try it yourself**
 >
-> *Goal:* Return the ECEnumeration values for the ECEnumeration [FlameDetectionTechnique](./MyDomain.ecschema.md#FlameDetectionTechnique).
+> *Goal:* Return the ECEnumeration values for the ECEnumeration [FlameDetectionTechnique](./MyDomain.ecschema.md#flamedetectiontechnique). The ECEnumeration values are stored
+in the array property [ECEnumerationDef.EnumValues](../ECDbMeta.ecschema.md#ecenumerationdef).
 >
 > *ECSQL*
 > ```sql

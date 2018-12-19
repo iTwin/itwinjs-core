@@ -15,7 +15,7 @@ Object {
   "isChecked": true,
   "isEditable": true,
   "isExpanded": true,
-  "isSelectable": false,
+  "isSelectionDisabled": false,
   "key": Object {
     "instanceKey": Object {
       "className": "Functionality",
@@ -40,7 +40,7 @@ Object {
   "isChecked": true,
   "isEditable": false,
   "isExpanded": false,
-  "isSelectable": false,
+  "isSelectionDisabled": false,
   "key": Object {
     "instanceKey": Object {
       "className": "24/7",
@@ -68,7 +68,7 @@ Array [
     "isChecked": true,
     "isEditable": true,
     "isExpanded": true,
-    "isSelectable": false,
+    "isSelectionDisabled": false,
     "key": Object {
       "instanceKey": Object {
         "className": "Pizza",
@@ -96,7 +96,7 @@ Array [
     "isChecked": false,
     "isEditable": false,
     "isExpanded": false,
-    "isSelectable": true,
+    "isSelectionDisabled": true,
     "key": Object {
       "instanceKey": Object {
         "className": "Home Loan Account",
@@ -128,7 +128,7 @@ Array [
     "isChecked": false,
     "isEditable": true,
     "isExpanded": true,
-    "isSelectable": false,
+    "isSelectionDisabled": false,
     "key": Object {
       "instanceKey": Object {
         "className": "lavender",
@@ -149,7 +149,7 @@ Array [
     "isChecked": true,
     "isEditable": false,
     "isExpanded": false,
-    "isSelectable": false,
+    "isSelectionDisabled": false,
     "key": Object {
       "instanceKey": Object {
         "className": "frictionless",

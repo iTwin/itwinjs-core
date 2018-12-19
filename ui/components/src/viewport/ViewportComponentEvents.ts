@@ -34,8 +34,28 @@ export interface ViewRotationChangeEventArgs {
 /** View Rotation Change event */
 export class ViewRotationChangeEvent extends UiEvent<ViewRotationChangeEventArgs> { }
 
-/** View Rotation events and methods */
-export class ViewRotationCube {
+/** Arguments for [[ViewClassFullNameChangedEvent]] */
+export interface ViewClassFullNameChangedEventArgs {
+  viewport: Viewport;
+  oldName: string;
+  newName: string;
+}
+
+/** View Class Full Name Change event */
+export class ViewClassFullNameChangedEvent extends UiEvent<ViewClassFullNameChangedEventArgs> { }
+
+/** Arguments for [[ViewIdChangedEvent]] */
+export interface ViewIdChangedEventArgs {
+  viewport: Viewport;
+  oldId: string;
+  newId: string;
+}
+
+/** View Id Change event */
+export class ViewIdChangedEvent extends UiEvent<ViewIdChangedEventArgs> { }
+
+/** Viewport Rotation events and methods */
+export class ViewportComponentEvents {
   private static _removeListener?: () => void;
 
   public static initialize() {
@@ -43,17 +63,19 @@ export class ViewRotationCube {
       return;
 
     if (IModelApp.viewManager)  // Not set in unit test environment
-      this._removeListener = IModelApp.viewManager.onSelectedViewportChanged.addListener(ViewRotationCube.handleSelectedViewportChanged);
+      this._removeListener = IModelApp.viewManager.onSelectedViewportChanged.addListener(ViewportComponentEvents.handleSelectedViewportChanged);
   }
 
   public static readonly rMatrix = Matrix3d.createIdentity();
   public static readonly onCubeRotationChangeEvent = new CubeRotationChangeEvent();
   public static readonly onStandardRotationChangeEvent = new StandardRotationChangeEvent();
   public static readonly onViewRotationChangeEvent = new ViewRotationChangeEvent();
+  public static readonly onViewClassFullNameChangedEvent = new ViewClassFullNameChangedEvent();
+  public static readonly onViewIdChangedEvent = new ViewIdChangedEvent();
 
   private static handleSelectedViewportChanged(args: SelectedViewportChangedArgs): void {
     if (args.current)
-      ViewRotationCube.setViewMatrix(args.current);
+      ViewportComponentEvents.setViewMatrix(args.current);
   }
 
   public static setCubeMatrix(rotMatrix: Matrix3d, animationTime?: number): void {

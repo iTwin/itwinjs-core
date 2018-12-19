@@ -111,7 +111,7 @@ describe("ViewportContentControl", () => {
 
             viewMock.reset();
             viewMock.setup((view) => view.classFullName).returns(() => "DrawingViewDefinition");
-            expect(contentControl.navigationAidControl).to.eq("DrawingNavigationAid");
+            expect(contentControl.navigationAidControl).to.eq("");  // TODO
 
             viewMock.reset();
             viewMock.setup((view) => view.classFullName).returns(() => "SpatialViewDefinition");

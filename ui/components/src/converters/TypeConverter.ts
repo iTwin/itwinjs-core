@@ -75,17 +75,17 @@ export interface AsyncValueProcessingResult {
  * Type Converter base class.
  */
 export abstract class TypeConverter implements SortComparer, OperatorProcessor {
-  public async convertToString(value?: Primitives.Value): Promise<string> {
+  public convertToString(value?: Primitives.Value): string | Promise<string> {
     if (value === undefined)
       return "";
     return value.toString();
   }
 
-  public async convertFromString(_value: string): Promise<ConvertedPrimitives.Value | undefined> {
+  public convertFromString(_value: string): ConvertedPrimitives.Value | undefined | Promise<ConvertedPrimitives.Value | undefined> {
     return undefined;
   }
 
-  public async convertPropertyToString(_propertyDescription: PropertyDescription, value?: Primitives.Value): Promise<string> {
+  public convertPropertyToString(_propertyDescription: PropertyDescription, value?: Primitives.Value): string | Promise<string> {
     return this.convertToString(value);
   }
 
