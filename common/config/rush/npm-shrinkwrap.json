@@ -155,9 +155,9 @@
       "integrity": "sha1-vqSw5td04IBnOy4HvLWX+EVcAbI="
     },
     "@bentley/imodeljs-native-platform-api": {
-      "version": "0.74.1",
-      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-api/-/imodeljs-native-platform-api-0.74.1.tgz",
-      "integrity": "sha1-bsTmDtZvnpNMGqjrdVp70A6z4OU="
+      "version": "0.75.0",
+      "resolved": "https://npm.bentley.com/npm/npm/@bentley/imodeljs-native-platform-api/-/imodeljs-native-platform-api-0.75.0.tgz",
+      "integrity": "sha1-C+C0PVezIvd27mWTHJiucjAL3Us="
     },
     "@fimbul/bifrost": {
       "version": "0.15.0",
@@ -542,9 +542,9 @@
     },
     "@rush-temp/imodeljs-backend": {
       "version": "file:projects/imodeljs-backend.tgz",
-      "integrity": "sha1-4NNElcb1P37EjDPgmxh+zL1rz3c=",
+      "integrity": "sha1-4fI1q60j559hxraivffpUw7H0Hw=",
       "requires": {
-        "@bentley/imodeljs-native-platform-api": "0.74.1",
+        "@bentley/imodeljs-native-platform-api": "0.75.0",
         "@types/chai": "4.1.7",
         "@types/express": "4.16.0",
         "@types/form-data": "2.2.1",
@@ -602,7 +602,7 @@
         "mocha": "5.2.0",
         "nock": "9.6.1",
         "nyc": "13.1.0",
-        "oidc-client": "1.5.4",
+        "oidc-client": "1.6.0",
         "qs": "6.6.0",
         "source-map-loader": "0.2.4",
         "source-map-support": "0.5.9",
@@ -678,7 +678,7 @@
         "fuse.js": "3.3.0",
         "js-base64": "2.5.0",
         "make-dir-cli": "1.0.0",
-        "oidc-client": "1.5.4",
+        "oidc-client": "1.6.0",
         "rimraf": "2.6.2",
         "source-map-loader": "0.2.4",
         "tslint": "5.12.0",
@@ -1105,7 +1105,7 @@
         "react-dom": "16.6.3",
         "react-highlight-words": "0.14.0",
         "react-resize-detector": "3.2.1",
-        "react-testing-library": "5.4.0",
+        "react-testing-library": "5.4.1",
         "react-virtualized": "9.21.0",
         "resize-observer-polyfill": "1.5.1",
         "rimraf": "2.6.2",
@@ -1212,7 +1212,7 @@
         "make-dir-cli": "1.0.0",
         "mocha": "5.2.0",
         "nyc": "13.1.0",
-        "oidc-client": "1.5.4",
+        "oidc-client": "1.6.0",
         "raf": "3.4.1",
         "react": "16.6.3",
         "react-dnd": "5.0.0",
@@ -12262,9 +12262,9 @@
       "integrity": "sha512-PX1wu0AmAdPqOL1mWhqmlOd8kOIZQwGZw6rh7uby9fTc5lhaOWFLX3I6R1hrF9k3zUY40e6igsLGkDXK92LJNg=="
     },
     "oidc-client": {
-      "version": "1.5.4",
-      "resolved": "https://registry.npmjs.org/oidc-client/-/oidc-client-1.5.4.tgz",
-      "integrity": "sha512-ddom2rLs7xc6kAOOD7LMXQJTcoJxGLfIM/Up19/LiDYQQrSERGCtyuqjyDoR8T2XQtFhU5Y2HWs1O3WdvyYckA==",
+      "version": "1.6.0",
+      "resolved": "https://registry.npmjs.org/oidc-client/-/oidc-client-1.6.0.tgz",
+      "integrity": "sha512-u0cs487mv5x7rcS5fLfYgH6h8DZySRU8HDQlyrICt6zR/d4zYKzdjr4pmqEROqvkOA1YYdlK19A9eMi3xlmnlQ==",
       "requires": {
         "babel-polyfill": "6.26.0",
         "jsrsasign": "8.0.12"
@@ -14353,9 +14353,9 @@
       }
     },
     "react-testing-library": {
-      "version": "5.4.0",
-      "resolved": "https://registry.npmjs.org/react-testing-library/-/react-testing-library-5.4.0.tgz",
-      "integrity": "sha512-d/z7MNWUmZNKMlnvBJ0MeRmNGckrtJyvgMMQJGZJdX1zLc6v5j/+SeaGO0x/30duFGTe14VgsxbaUYc9UPf8Pw==",
+      "version": "5.4.1",
+      "resolved": "https://registry.npmjs.org/react-testing-library/-/react-testing-library-5.4.1.tgz",
+      "integrity": "sha512-c89iIEc52A5PRKroNs7Fudx3A/eiYG2bq/1vvSi+OFnvNeIDpo726TmqwdKE2dqzGtXohl1tajcoykex/UnTAQ==",
       "requires": {
         "dom-testing-library": "3.16.1"
       }
