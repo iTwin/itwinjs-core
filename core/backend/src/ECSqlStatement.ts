@@ -517,6 +517,21 @@ export class ECSqlBinder {
   public addArrayElement(): ECSqlBinder { return new ECSqlBinder(this._binder.addArrayElement()); }
 }
 
+/** Represents the value of an ECEnumeration.
+ *
+ * See also:
+ * - [[ECSqlValue.getEnum]]
+ * - [[ECSqlStatement]]
+ * - [[ECSqlStatement.getValue]]
+ * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
+ */
+export interface ECEnumValue {
+  schema: string;
+  name: string;
+  key: string;
+  value: number | string;
+}
+
 /** Value of a column in a row of an ECSQL query result.
  *
  * See also:
@@ -564,6 +579,16 @@ export class ECSqlValue {
   public getXAndY(): XAndY { return this._val.getPoint2d(); }
   /** Get the value as [XYAndZ]($geometry-core) */
   public getXYAndZ(): XYAndZ { return this._val.getPoint3d(); }
+  /** Get the value as ECEnumeration value
+   *  Note: This method is optional. Using [[ECSqlValue.getInteger]] for integral enums and
+   *  [[ECSqlValue.getString]] for string enums respectively are the usual way to get
+   *  enum values. This method can be used if the context of the underlying ECEnumeration
+   *  is required.
+   *  @return ECEnumeration value or undefined if the ECSqlValue does not represent an ECEnumeration.
+   *  > Note: You can call [[ECSqlValue.columnInfo.isEnum]] to find out whether
+   *  > this method can be called or not.
+   */
+  public getEnum(): ECEnumValue | undefined { return this._val.getEnum(); }
 
   /** Get the value as [NavigationValue]($common) */
   public getNavigation(): NavigationValue { return this._val.getNavigation(); }
@@ -626,7 +651,10 @@ export interface ECSqlColumnInfo {
    */
   getAccessString(): string;
 
-  /** Indicates whether the column refers to a system property (e.g. id, className) backing the column. */
+  /** Indicates whether the column refers to an ECEnumeration property. */
+  isEnum(): boolean;
+
+  /** Indicates whether the column refers to a system property (e.g. id, className). */
   isSystemProperty(): boolean;
 
   /** Indicates whether the column is backed by a generated property or not. For SELECT clause items that are expressions other
