@@ -19,18 +19,18 @@ describe("StringTypeConverter", () => {
   });
 
   describe("convertToString", () => {
-    it("returns same string", async () => {
-      expect(await converter.convertToString("ABCdefGhIjK!@#$%^&*")).to.equal("ABCdefGhIjK!@#$%^&*");
+    it("returns same string", () => {
+      expect(converter.convertToString("ABCdefGhIjK!@#$%^&*")).to.equal("ABCdefGhIjK!@#$%^&*");
     });
 
-    it("returns empty string if given string is undefined", async () => {
-      expect(await converter.convertToString(undefined)).to.equal("");
+    it("returns empty string if given string is undefined", () => {
+      expect(converter.convertToString(undefined)).to.equal("");
     });
   });
 
   describe("convertFromString", () => {
-    it("returns same string", async () => {
-      expect(await converter.convertFromString("ABCdefGhIjK!@#$%^&*")).to.equal("ABCdefGhIjK!@#$%^&*");
+    it("returns same string", () => {
+      expect(converter.convertFromString("ABCdefGhIjK!@#$%^&*")).to.equal("ABCdefGhIjK!@#$%^&*");
     });
   });
 

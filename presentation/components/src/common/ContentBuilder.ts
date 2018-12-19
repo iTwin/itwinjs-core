@@ -5,14 +5,20 @@
 /** @module Core */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { ValuesDictionary, PresentationError, PresentationStatus } from "@bentley/presentation-common";
-import * as content from "@bentley/presentation-common";
-import { isArray, isMap, isNestedContentValue, isPrimitive } from "@bentley/presentation-common";
-import { PropertyRecord } from "@bentley/ui-components";
-import { PropertyValue, PropertyValueFormat, ArrayValue, StructValue, PrimitiveValue } from "@bentley/ui-components";
-import { PropertyDescription, PropertyEditorInfo, EnumerationChoicesInfo } from "@bentley/ui-components";
+import {
+  ValuesDictionary, PresentationError, PresentationStatus,
+  isArray, isMap, isNestedContentValue, isPrimitive,
+  Field, Item, DisplayValue, Value, PropertyValueFormat,
+  NestedContentValue, NestedContentField,
+  TypeDescription, StructTypeDescription, ArrayTypeDescription,
+} from "@bentley/presentation-common";
+import {
+  PropertyRecord, PropertyValue, PropertyValueFormat as UiPropertyValueFormat,
+  ArrayValue, StructValue, PrimitiveValue,
+  PropertyDescription, PropertyEditorInfo, EnumerationChoicesInfo,
+} from "@bentley/ui-components";
 
-const createArrayValue = (propertyDescription: PropertyDescription, arrayDescription: content.ArrayTypeDescription, values: content.Value[], displayValues: content.DisplayValue[]): ArrayValue => {
+const createArrayValue = (propertyDescription: PropertyDescription, arrayDescription: ArrayTypeDescription, values: Value[], displayValues: DisplayValue[]): ArrayValue => {
   const records = new Array<PropertyRecord>();
   assert(values.length === displayValues.length);
   for (let i = 0; i < values.length; ++i) {
@@ -26,13 +32,13 @@ const createArrayValue = (propertyDescription: PropertyDescription, arrayDescrip
     records.push(record);
   }
   return {
-    valueFormat: PropertyValueFormat.Array,
+    valueFormat: UiPropertyValueFormat.Array,
     items: records,
     itemsTypeName: arrayDescription.memberType.typeName,
   };
 };
 
-const createStructValue = (description: content.StructTypeDescription, valueObj: ValuesDictionary<content.Value>, displayValueObj: ValuesDictionary<content.DisplayValue>): StructValue => {
+const createStructValue = (description: StructTypeDescription, valueObj: ValuesDictionary<Value>, displayValueObj: ValuesDictionary<DisplayValue>): StructValue => {
   const members: { [name: string]: PropertyRecord } = {};
   for (const memberTypeDescription of description.members) {
     const memberPropertyDescription = {
@@ -45,34 +51,34 @@ const createStructValue = (description: content.StructTypeDescription, valueObj:
     members[memberTypeDescription.name] = record;
   }
   return {
-    valueFormat: PropertyValueFormat.Struct,
+    valueFormat: UiPropertyValueFormat.Struct,
     members,
   } as StructValue;
 };
 
-const createPrimitiveValue = (value: content.Value, displayValue: content.DisplayValue): PrimitiveValue => {
+const createPrimitiveValue = (value: Value, displayValue: DisplayValue): PrimitiveValue => {
   return {
-    valueFormat: PropertyValueFormat.Primitive,
+    valueFormat: UiPropertyValueFormat.Primitive,
     value,
     displayValue,
   } as PrimitiveValue;
 };
 
-const createValue = (propertyDescription: PropertyDescription, typeDescription: content.TypeDescription, isMerged: boolean, value: content.Value, displayValue: content.DisplayValue): PropertyValue => {
+const createValue = (propertyDescription: PropertyDescription, typeDescription: TypeDescription, isMerged: boolean, value: Value, displayValue: DisplayValue): PropertyValue => {
   if (undefined === value && undefined === displayValue) {
     return {
-      valueFormat: PropertyValueFormat.Primitive,
+      valueFormat: UiPropertyValueFormat.Primitive,
       value,
       displayValue: "",
     };
   }
   if (!isMerged) {
-    if (typeDescription.valueFormat === content.PropertyValueFormat.Array) {
+    if (typeDescription.valueFormat === PropertyValueFormat.Array) {
       if (!isArray(value) || !isArray(displayValue))
         throw new PresentationError(PresentationStatus.InvalidArgument, "value and displayValue should both be arrays");
       return createArrayValue(propertyDescription, typeDescription, value, displayValue);
     }
-    if (typeDescription.valueFormat === content.PropertyValueFormat.Struct) {
+    if (typeDescription.valueFormat === PropertyValueFormat.Struct) {
       if (!isMap(value) || !isMap(displayValue))
         throw new PresentationError(PresentationStatus.InvalidArgument, "value and displayValue should both be of map type");
       return createStructValue(typeDescription, value, displayValue);
@@ -81,16 +87,16 @@ const createValue = (propertyDescription: PropertyDescription, typeDescription: 
   return createPrimitiveValue(value, displayValue);
 };
 
-const createRecordDescription = (typeDescription: content.TypeDescription, displayValue: content.DisplayValue): string | undefined => {
-  if (content.PropertyValueFormat.Array === typeDescription.valueFormat || content.PropertyValueFormat.Struct === typeDescription.valueFormat)
+const createRecordDescription = (typeDescription: TypeDescription, displayValue: DisplayValue): string | undefined => {
+  if (PropertyValueFormat.Array === typeDescription.valueFormat || PropertyValueFormat.Struct === typeDescription.valueFormat)
     return undefined;
-  if (content.PropertyValueFormat.Primitive !== typeDescription.valueFormat || !isPrimitive(displayValue))
+  if (PropertyValueFormat.Primitive !== typeDescription.valueFormat || !isPrimitive(displayValue))
     throw new PresentationError(PresentationStatus.InvalidArgument, "displayValue is of wrong type");
   return (undefined !== displayValue) ? displayValue.toString() : undefined;
 };
 
-const createRecord = (propertyDescription: PropertyDescription, typeDescription: content.TypeDescription,
-  value: content.Value, displayValue: content.DisplayValue, isReadOnly: boolean, isMerged: boolean): PropertyRecord => {
+const createRecord = (propertyDescription: PropertyDescription, typeDescription: TypeDescription,
+  value: Value, displayValue: DisplayValue, isReadOnly: boolean, isMerged: boolean): PropertyRecord => {
   const valueObj = createValue(propertyDescription, typeDescription, isMerged, value, displayValue);
   const record = new PropertyRecord(valueObj, propertyDescription);
   record.description = createRecordDescription(typeDescription, displayValue);
@@ -99,14 +105,14 @@ const createRecord = (propertyDescription: PropertyDescription, typeDescription:
   return record;
 };
 
-const createNestedStructRecord = (field: content.NestedContentField, nestedContent: content.NestedContentValue, path?: content.Field[]): PropertyRecord => {
+const createNestedStructRecord = (field: NestedContentField, nestedContent: NestedContentValue, path?: Field[]): PropertyRecord => {
   path = path ? [...path] : undefined;
-  let pathField: content.Field | undefined;
+  let pathField: Field | undefined;
   if (path && 0 !== path.length) {
     pathField = path.shift();
   }
 
-  const item = new content.Item(nestedContent.primaryKeys, "", "",
+  const item = new Item(nestedContent.primaryKeys, "", "",
     field.contentClassInfo, nestedContent.values, nestedContent.displayValues, nestedContent.mergedFieldNames);
 
   const members: { [name: string]: PropertyRecord } = {};
@@ -116,7 +122,7 @@ const createNestedStructRecord = (field: content.NestedContentField, nestedConte
     members[nestedField.name] = ContentBuilder.createPropertyRecord(nestedField, item, path);
   }
   const value: StructValue = {
-    valueFormat: PropertyValueFormat.Struct,
+    valueFormat: UiPropertyValueFormat.Struct,
     members,
   };
   const record = new PropertyRecord(value, ContentBuilder.createPropertyDescription(field));
@@ -125,7 +131,7 @@ const createNestedStructRecord = (field: content.NestedContentField, nestedConte
   return record;
 };
 
-const createNestedContentRecord = (field: content.NestedContentField, item: content.Item, path?: content.Field[]): PropertyRecord => {
+const createNestedContentRecord = (field: NestedContentField, item: Item, path?: Field[]): PropertyRecord => {
   const isMerged = item.isFieldMerged(field.name);
   let value: PropertyValue;
 
@@ -135,7 +141,7 @@ const createNestedContentRecord = (field: content.NestedContentField, item: cont
       throw new PresentationError(PresentationStatus.Error, "displayValue should be primitive");
     // if the value is merged, just take the display value
     value = {
-      valueFormat: PropertyValueFormat.Primitive,
+      valueFormat: UiPropertyValueFormat.Primitive,
       value: undefined,
       displayValue: (undefined !== displayValue) ? displayValue.toString() : "",
     };
@@ -144,9 +150,9 @@ const createNestedContentRecord = (field: content.NestedContentField, item: cont
     if (!isNestedContentValue(dictionaryValue))
       throw new PresentationError(PresentationStatus.Error, "value should be nested content");
     // nested content value is in NestedContent[] format
-    const nestedContentArray: content.NestedContentValue[] = dictionaryValue;
+    const nestedContentArray: NestedContentValue[] = dictionaryValue;
     value = {
-      valueFormat: PropertyValueFormat.Array,
+      valueFormat: UiPropertyValueFormat.Array,
       items: nestedContentArray.map((r) => createNestedStructRecord(field, r, path)),
       itemsTypeName: field.type.typeName,
     };
@@ -173,7 +179,7 @@ export default class ContentBuilder {
    * included in the record. Only makes sense if `field` is `NestedContentField`.
    * Should start from the first nested field inside `field`.
    */
-  public static createPropertyRecord(field: content.Field, item: content.Item, path?: content.Field[]): PropertyRecord {
+  public static createPropertyRecord(field: Field, item: Item, path?: Field[]): PropertyRecord {
     if (field.isNestedContentField())
       return createNestedContentRecord(field, item, path);
 
@@ -187,7 +193,7 @@ export default class ContentBuilder {
    * Create a property description for the specified field
    * @param field Content field to create description for
    */
-  public static createPropertyDescription(field: content.Field): PropertyDescription {
+  public static createPropertyDescription(field: Field): PropertyDescription {
     const descr: PropertyDescription = {
       name: field.name,
       displayLabel: field.label,
@@ -196,7 +202,7 @@ export default class ContentBuilder {
     if (field.editor) {
       descr.editor = { name: field.editor.name, params: [] } as PropertyEditorInfo;
     }
-    if (field.type.valueFormat === content.PropertyValueFormat.Primitive && "enum" === field.type.typeName && field.isPropertiesField()) {
+    if (field.type.valueFormat === PropertyValueFormat.Primitive && "enum" === field.type.typeName && field.isPropertiesField()) {
       const enumInfo = field.properties[0].property.enumerationInfo!;
       descr.enum = {
         choices: enumInfo.choices,

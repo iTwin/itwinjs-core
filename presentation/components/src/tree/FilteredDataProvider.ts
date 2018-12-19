@@ -6,10 +6,11 @@
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { NodePathElement, NodeKey } from "@bentley/presentation-common";
-import { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "@bentley/ui-components";
-import { DelayLoadedTreeNodeItem, TreeNodeItem } from "@bentley/ui-components";
-import { PageOptions } from "@bentley/ui-components";
-import { ActiveMatchInfo } from "@bentley/ui-components";
+import {
+  SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy,
+  DelayLoadedTreeNodeItem, TreeNodeItem,
+  PageOptions, ActiveMatchInfo,
+} from "@bentley/ui-components";
 import { createTreeNodeItem } from "./Utils";
 import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
 import { memoize } from "lodash";

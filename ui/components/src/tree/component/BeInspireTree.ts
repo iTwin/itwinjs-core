@@ -91,7 +91,7 @@ export type BeInspireTreeDataProvider<TPayload> = BeInspireTreeDataProviderRaw<T
 /** Type definition for a BeInspireTree renderer */
 export type BeInspireTreeRenderer<TPayload> = (rootNodes: Array<BeInspireTreeNode<TPayload>>) => void;
 
-type BeInspireTreeDataFunc<TPayload> = (parent: BeInspireTreeNodePayloadConfig<TPayload> | undefined,
+type BeInspireTreeDataFunc<TPayload> = (parent: BeInspireTreeNode<TPayload> | undefined,
   resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any,
   reject: (err: Error) => any,
   pagination?: Inspire.Pagination,
@@ -107,6 +107,8 @@ type BeInspireTreeData<TPayload> = Array<BeInspireTreeNodePayloadConfig<TPayload
 export class EventsMuteContext implements IDisposable {
 
   private _triggeredEventsCount: number = 0;
+  private _didMute = false;
+  private _stopListening: (() => void) | undefined;
 
   public constructor(
     private _events: BeInspireTreeEvent[],
@@ -121,19 +123,31 @@ export class EventsMuteContext implements IDisposable {
   private init(allowedEventTriggersBeforeMute: number) {
     if (0 === allowedEventTriggersBeforeMute || !this._listen) {
       this._mute(this._events);
+      this._didMute = true;
       return;
     }
-    let stopListening: (() => void) | undefined;
     const callback = () => {
       if (++this._triggeredEventsCount >= allowedEventTriggersBeforeMute) {
         this._mute(this._events);
-        stopListening!();
+        this._didMute = true;
+        if (this._stopListening) {
+          this._stopListening();
+          this._stopListening = undefined;
+        }
       }
     };
-    stopListening = this._listen(this._events, callback);
+    this._stopListening = this._listen(this._events, callback);
   }
 
   public dispose() {
+    if (this._stopListening) {
+      this._stopListening();
+      this._stopListening = undefined;
+    }
+
+    if (!this._didMute)
+      return;
+
     const didUnmute = this._unmute(this._events);
     if (didUnmute && this._emit)
       this._emit(this._events);
@@ -167,6 +181,8 @@ export class BeInspireTree<TNodePayload> {
   private _eventMutes: Map<BeInspireTreeEvent, number>;
   private _readyPromise!: Promise<void>;
   private _deferredLoadingHandler?: DeferredLoadingHandler<TNodePayload>;
+  private _visibleCached?: BeInspireTreeNodes<TNodePayload>;
+  private _suspendedRendering?: EventsMuteContext;
   public props: Props<TNodePayload>;
 
   constructor(props: Props<TNodePayload>) {
@@ -184,9 +200,39 @@ export class BeInspireTree<TNodePayload> {
       },
     };
     this._tree = new InspireTree(config);
-    this._tree.on([BeInspireTreeEvent.ModelLoaded], (model: BeInspireTreeNodes<TNodePayload>) => {
+
+    // make sure model is dirty when it's loaded
+    this.on(BeInspireTreeEvent.ModelLoaded, (model: BeInspireTreeNodes<TNodePayload>) => {
       model.forEach((n) => n.markDirty());
     });
+
+    setTimeout(() => {
+      // we want to allow consumers of `BeInspireTree` to listen for `ModelLoaded`
+      // and `ChildrenLoaded` events and do any kind of manipulation with them **before**
+      // `ChangesApplied` event is emitted, so we have to suspend rendering when data is loaded
+      // and resume it in `*Loaded` listener.
+      // note: because we need our `*Loaded` listener to be called **after** consumer's listener
+      // for the same events, we subscribe to those events from a `setTimeout` callback.
+      this.on(BeInspireTreeEvent.DataLoaded, () => {
+        this._suspendedRendering = this.pauseRendering();
+      });
+      this.on([BeInspireTreeEvent.ModelLoaded, BeInspireTreeEvent.ChildrenLoaded], () => {
+        if (this._suspendedRendering) {
+          this._suspendedRendering.dispose();
+          this._suspendedRendering = undefined;
+        }
+      });
+    });
+
+    // dispose `visible` cache when data is loaded or nodes are expanded or collapsed
+    this.on([BeInspireTreeEvent.DataLoaded, BeInspireTreeEvent.NodeCollapsed, BeInspireTreeEvent.NodeExpanded], () => {
+      this._visibleCached = undefined;
+    });
+
+    // override the `load` function to handle auto-expanding nodes
+    // note: tree starts loading as soon as it gets created, so the first load
+    // is not using this override - in that case auto-expansion is handled
+    // in `onModelInvalidated` function
     const baseTreeLoad = this._tree.load;
     this._tree.load = async (loader): Promise<Inspire.TreeNodes> => {
       const result = await baseTreeLoad.call(this._tree, loader);
@@ -195,15 +241,19 @@ export class BeInspireTree<TNodePayload> {
       });
       return result;
     };
+
+    // assign `disposeChildrenOnCollapse` handler if needed
     if (props.disposeChildrenOnCollapse) {
       if (!isDeferredDataProvider(props.dataProvider))
         throw new Error("Property `disposeChildrenOnCollapse` is only available on deferred data providers");
-      this._tree.on([BeInspireTreeEvent.NodeCollapsed], (node: BeInspireTreeNode<TNodePayload>) => {
+      this.on(BeInspireTreeEvent.NodeCollapsed, (node: BeInspireTreeNode<TNodePayload>) => {
         if (this._deferredLoadingHandler)
           this._deferredLoadingHandler.disposeNodeCaches(node);
         node.children = true;
       });
     }
+
+    // invalidate our `ready` promise
     this.onModelInvalidated();
   }
 
@@ -211,7 +261,7 @@ export class BeInspireTree<TNodePayload> {
     this._readyPromise = new Promise<void>((resolve) => {
       this._tree.once([BeInspireTreeEvent.ModelLoaded], resolve);
     }).then(async () => {
-      // note: the following is needed for the initial load of the tree
+      // note: the following is only needed for the initial load of the tree
       // when our `load` override isn't assigned yet
       await using(this.pauseRendering(), async () => {
         await ensureNodesAutoExpanded(this._tree.nodes());
@@ -268,7 +318,7 @@ export class BeInspireTree<TNodePayload> {
    */
   public pauseRendering(allowedRendersBeforePause: number = 0): EventsMuteContext {
     const doEmit = (events: BeInspireTreeEvent[]) => {
-      if (this._tree.visible().some((n) => toNode(n).isDirty())) {
+      if (this.visible().some((n) => n.isDirty())) {
         this.doEmit(events);
       }
     };
@@ -291,19 +341,26 @@ export class BeInspireTree<TNodePayload> {
 
   /** Add a listener for specific event */
   public on(event: BeInspireTreeEvent | BeInspireTreeEvent[], listener: (...values: any[]) => void): this {
-    this._tree.on(event, listener);
+    const events = Array.isArray(event) ? event : [event];
+    events.forEach((e) => this._tree.on(e, listener));
     return this;
   }
 
   /** Remove listener for specific event */
   public removeListener(event: BeInspireTreeEvent | BeInspireTreeEvent[], listener: (...values: any[]) => void): this {
-    this._tree.removeListener(event, listener);
+    const events = Array.isArray(event) ? event : [event];
+    events.forEach((e) => this._tree.removeListener(e, listener));
     return this;
   }
 
   /** Remove all listeners for specific event(s) */
   public removeAllListeners(event?: BeInspireTreeEvent | BeInspireTreeEvent[]) {
-    this._tree.removeAllListeners(event);
+    if (!event) {
+      this._tree.removeAllListeners(undefined);
+      return;
+    }
+    const events = Array.isArray(event) ? event : [event];
+    events.forEach((e) => this._tree.removeAllListeners(e));
   }
 
   /** Get root node with the specified id */
@@ -343,7 +400,9 @@ export class BeInspireTree<TNodePayload> {
 
   /** Get a flat list of visible nodes */
   public visible() {
-    return toNodes<TNodePayload>(this._tree.visible());
+    if (!this._visibleCached)
+      this._visibleCached = toNodes<TNodePayload>(this._tree.visible());
+    return this._visibleCached;
   }
 
   /** Reload the tree */
@@ -379,19 +438,20 @@ export class BeInspireTree<TNodePayload> {
         end = node1;
       }
 
-      const selected = new Array<BeInspireTreeNode<TNodePayload>>();
-
-      let curr = start;
-      while (curr) {
-        selected.push(toNode(curr));
-        curr.select();
-
-        if (curr.id === end.id)
+      let startIndex = -1;
+      let endIndex = -1;
+      for (let i = 0; i < this.visible().length; ++i) {
+        const vn = this.visible()[i];
+        if (vn.id === start.id)
+          startIndex = i;
+        if (vn.id === end.id)
+          endIndex = i;
+        if (startIndex !== -1 && endIndex !== -1)
           break;
-
-        curr = toNode(curr.nextVisibleNode());
       }
 
+      const selected = this.visible().slice(startIndex, endIndex + 1);
+      selected.forEach((n) => n.select());
       return selected;
     });
   }
@@ -582,6 +642,15 @@ class PayloadToNodeRemapper<TPayload> {
   }
 }
 
+function onNodesDelayLoaded<TPayload>(parent: BeInspireTreeNode<TPayload> | undefined, nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>) {
+  if (parent) {
+    // inspire-tree emits `data.loaded` event only when root nodes are loaded, but
+    // we also need it to be emitted when children are loaded - we depend on it being called
+    // after the children are loaded but before the `children.loaded` event is emitted.
+    parent.tree().emit(BeInspireTreeEvent.DataLoaded, nodes);
+  }
+}
+
 const wrapDataProvider = <TPayload>(tree: BeInspireTree<TPayload>, provider: BeInspireTreeDataProvider<TPayload>, mapPayloadToInspireNodeConfig: MapPayloadToInspireNodeCallback<TPayload>): BeInspireTreeData<TPayload> => {
   const remapper = new PayloadToNodeRemapper(tree, mapPayloadToInspireNodeConfig);
 
@@ -592,11 +661,12 @@ const wrapDataProvider = <TPayload>(tree: BeInspireTree<TPayload>, provider: BeI
 
   if (typeof provider === "function") {
     // method data provider
-    return ((parent: BeInspireTreeNodePayloadConfig<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any, _reject: (err: Error) => any) => {
+    return ((parent: BeInspireTreeNode<TPayload> | undefined, resolve: (nodes: Array<BeInspireTreeNodePayloadConfig<TPayload>>, totalCount: number) => any, _reject: (err: Error) => any) => {
       const payload = nodeToPayload(parent);
       // tslint:disable-next-line: no-floating-promises
       provider(payload).then(remapper.remapMany).then((nodes) => {
-        using(tree.pauseRendering(), () => resolve(nodes, nodes.length));
+        onNodesDelayLoaded(parent, nodes);
+        resolve(nodes, nodes.length);
       });
     });
   }
@@ -658,18 +728,38 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
 
   /** Called by PaginationHelper to load a page */
   private _pagedLoad = async (parentId: string | undefined, pageStart: number): Promise<NodesLoadResult<TPayload>> => {
-    const node = parentId ? this._tree.node(parentId) : undefined;
-    const payload = node ? node.payload : undefined;
-    return this._provider.getNodesCount(payload).then(async (total) => {
-      const page: PageOptions = {
-        start: pageStart,
-        size: this._paginationHelper!.pageSize,
-      };
-      return this._provider.getNodes(payload, page).then((nodes) => ({
-        totalNodesCount: total,
-        nodes,
-      }));
-    });
+    const parentNode = parentId ? this._tree.node(parentId) : undefined;
+    const parentPayload = parentNode ? parentNode.payload : undefined;
+
+    const handleCollapsedParent = () => {
+      if (this._tree.props.disposeChildrenOnCollapse && parentNode && parentNode.collapsed())
+        throw new Error("Parent node collapsed while children were being loaded");
+    };
+
+    let totalNodesCount: number | undefined;
+    if (parentNode && isArrayLike(parentNode.children)) {
+      totalNodesCount = parentNode.getChildren().length;
+    } else if (!parentNode) {
+      let rootNodesCount = 0;
+      try { rootNodesCount = this._tree.nodes().length; } catch (e) { }
+      if (rootNodesCount > 0)
+        totalNodesCount = rootNodesCount;
+    }
+    if (undefined === totalNodesCount) {
+      totalNodesCount = await this._provider.getNodesCount(parentPayload);
+      handleCollapsedParent();
+    }
+
+    const page: PageOptions = {
+      start: pageStart,
+      size: this._paginationHelper!.pageSize,
+    };
+    const nodes = await this._provider.getNodes(parentPayload, page);
+    handleCollapsedParent();
+    return {
+      totalNodesCount,
+      nodes,
+    };
   }
 
   /** Called by PaginationHelper when a page is finished loading */
@@ -734,7 +824,11 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
       // pagination is disabled - just load all nodes for the parent
       const payload = parent ? parent.payload : undefined;
       // tslint:disable-next-line:no-floating-promises
-      this._provider.getNodes(payload).then((nodes) => resolve(this._nodesRemapper.remapMany(nodes), nodes.length));
+      this._provider.getNodes(payload).then((payloads) => {
+        const nodes = this._nodesRemapper.remapMany(payloads);
+        onNodesDelayLoaded(parent, nodes);
+        resolve(nodes, nodes.length);
+      });
       return;
     }
 
@@ -750,6 +844,7 @@ class WrappedInterfaceProvider<TPayload> extends CallableInstance implements Def
       // reset so concat doesn't duplicate nodes
       parent.children = true;
     }
+    onNodesDelayLoaded(parent, pagedNodes);
     resolve(pagedNodes, pagedNodes.length);
   }
 }
@@ -763,7 +858,7 @@ type PageLoadedCallback<TLoadResult> = (parentId: string | undefined, pageStart:
 class PaginationHelper<TPageLoadResult> {
   public readonly pageSize: number;
   private _loadedPages: Map<string | undefined, Set<number>>;
-  private _requestedPages: Map<string | undefined, Map<number, Promise<TPageLoadResult>>>;
+  private _requestedPages: Map<string | undefined, Map<number, Promise<void>>>;
   private _loadHandler: PagedLoadHandler<TPageLoadResult>;
   private _onPageLoaded: PageLoadedCallback<TPageLoadResult>;
 
@@ -779,10 +874,11 @@ class PaginationHelper<TPageLoadResult> {
     return nodeIndex - nodeIndex % this.pageSize;
   }
 
-  private async createRequest(parentId: string | undefined, pageStart: number): Promise<TPageLoadResult> {
+  private async createRequest(parentId: string | undefined, pageStart: number): Promise<void> {
     return this._loadHandler(parentId, pageStart).then(async (result) => {
       await this.onRequestHandled(parentId, pageStart, result);
-      return result;
+    }).catch(() => {
+      this.onRequestRejected(parentId, pageStart);
     });
   }
 
@@ -830,5 +926,12 @@ class PaginationHelper<TPageLoadResult> {
       // callback
       await this._onPageLoaded(parentId, pageStart, result);
     }
+  }
+
+  private onRequestRejected(parentId: string | undefined, pageStart: number) {
+    // remove request from active requests list
+    const requestedPages = this._requestedPages.get(parentId);
+    if (requestedPages)
+      requestedPages.delete(pageStart);
   }
 }

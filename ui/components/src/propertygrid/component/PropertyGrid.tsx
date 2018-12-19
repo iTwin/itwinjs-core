@@ -66,7 +66,10 @@ export interface PropertyGridState {
   selectedPropertyKey?: string;
   /** Unique key of currently edited property */
   editingPropertyKey?: string;
+  /** Actual orientation used by the property grid */
   orientation: Orientation;
+  /** Is property grid currently loading data */
+  isLoading?: boolean;
 }
 
 /** PropertyGrid React component.
@@ -74,27 +77,30 @@ export interface PropertyGridState {
 export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGridState> {
   private _dataChangesListenerDisposeFunc?: DisposeFunc;
   private _isMounted = false;
+  private _isInDataRequest = false;
+  private _hasPendingDataRequest = false;
   private _gridRef = React.createRef<HTMLDivElement>();
   private _gridResizeSensor: ResizeObserver;
 
   public readonly state: Readonly<PropertyGridState> = {
     categories: [],
-    selectedPropertyKey: undefined,
-    editingPropertyKey: undefined,
     orientation: this.props.orientation ? this.props.orientation : Orientation.Horizontal,
   };
 
   constructor(props: PropertyGridProps) {
     super(props);
-    this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
     this._gridResizeSensor = new ResizeObserver(this._onGridResize);
   }
 
   public componentDidMount() {
     this._isMounted = true;
-    this.gatherData(this.props.dataProvider); // tslint:disable-line:no-floating-promises
+    this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
+
+    // tslint:disable-next-line:no-floating-promises
+    this.gatherData();
 
     this.updateOrientation(this.state.orientation, this.props.orientation);
+
     if (this._gridRef.current) {
       this._gridResizeSensor.observe(this._gridRef.current);
     }
@@ -109,10 +115,12 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this._isMounted = false;
   }
 
-  public componentDidUpdate() {
-    if (this._dataChangesListenerDisposeFunc)
-      this._dataChangesListenerDisposeFunc();
-    this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
+  public componentDidUpdate(prevProps: PropertyGridProps) {
+    if (this.props.dataProvider !== prevProps.dataProvider) {
+      if (this._dataChangesListenerDisposeFunc)
+        this._dataChangesListenerDisposeFunc();
+      this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
+    }
 
     this.updateOrientation(this.state.orientation, this.props.orientation);
   }
@@ -137,7 +145,8 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   }
 
   private _onPropertyDataChanged = () => {
-    this.gatherData(this.props.dataProvider); // tslint:disable-line:no-floating-promises
+    // tslint:disable-next-line:no-floating-promises
+    this.gatherData();
   }
 
   private _shouldExpandCategory = (category: PropertyCategory): boolean => {
@@ -148,10 +157,29 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     });
   }
 
-  private async gatherData(dataProvider: PropertyDataProvider) {
-    const propertyData: PropertyData = await dataProvider.getData();
+  private async gatherData(): Promise<void> {
+    if (this._isInDataRequest) {
+      this._hasPendingDataRequest = true;
+      return;
+    }
+
+    this.setState({ isLoading: true });
+
+    this._isInDataRequest = true;
+    let propertyData: PropertyData;
+    try {
+      propertyData = await this.props.dataProvider.getData();
+    } finally {
+      this._isInDataRequest = false;
+    }
+
     if (!this._isMounted)
       return;
+
+    if (this._hasPendingDataRequest) {
+      this._hasPendingDataRequest = false;
+      return this.gatherData();
+    }
 
     const categories = new Array<PropertyGridCategory>();
     propertyData.categories.map((category: PropertyCategory, _index: number) => {
@@ -162,7 +190,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       };
       categories.push(gridCategory);
     });
-    this.setState({ categories });
+    this.setState({ categories, isLoading: false });
   }
 
   private _onExpansionToggled = (categoryName: string) => {
@@ -234,6 +262,14 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   }
 
   public render() {
+    if (this.state.isLoading) {
+      return (
+        <div className="components-property-grid-loader">
+          <i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
+      );
+    }
+
     return (
       <div className="components-property-grid-wrapper">
         <div ref={this._gridRef} className="components-property-grid">

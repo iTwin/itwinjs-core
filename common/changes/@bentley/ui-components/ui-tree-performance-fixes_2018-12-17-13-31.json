@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix BeInspireTree's event listening functions to handle array inputs",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "grigas.petraitis@bentley.com"
+}

@@ -24,11 +24,11 @@ export interface StringOperatorProcessor {
  * String Type Converter.
  */
 export class StringTypeConverter extends TypeConverter implements StringOperatorProcessor {
-  public async convertToString(value?: Primitives.String): Promise<string> {
+  public convertToString(value?: Primitives.String) {
     return value ? value.toString() : "";
   }
 
-  public async convertFromString(value: string): Promise<string> {
+  public convertFromString(value: string) {
     return value;
   }
 

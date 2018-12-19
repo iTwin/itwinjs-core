@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Show loading spinner in the Tree while root nodes are being loaded",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "grigas.petraitis@bentley.com"
+}

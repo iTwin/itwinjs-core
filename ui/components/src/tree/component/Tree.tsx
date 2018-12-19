@@ -162,8 +162,10 @@ export interface TreeState {
     selectedNodes?: string[] | ((node: TreeNodeItem) => boolean);
     nodeHighlightingProps?: HighlightableTreeProps;
   };
+
   model: BeInspireTree<TreeNodeItem>;
   modelReady: boolean;
+
   cellEditorState: TreeCellEditorState;
 
   pendingSelectionChange?: {
@@ -308,8 +310,8 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   public shouldComponentUpdate(nextProps: TreeProps, nextState: TreeState): boolean {
-    if (this.state.modelReady !== nextState.modelReady) {
-      // always render when state.modelReady changes
+    if (this.state.modelReady !== nextState.modelReady || this.state.model !== nextState.model) {
+      // always render when modelReady or model changes
       return true;
     }
 
@@ -335,7 +337,10 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     }
 
     if (this.props.nodeHighlightingProps && shallowDiffers(this.props.nodeHighlightingProps, prevProps.nodeHighlightingProps)) {
-      this._shouldScrollToActiveNode = true;
+      if (this._nodesRenderInfo)
+        this._shouldScrollToActiveNode = true;
+      else
+        this.scrollToActiveNode();
     }
 
     if (this.state.model !== prevState.model) {
@@ -359,7 +364,11 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     model.on(BeInspireTreeEvent.NodeCollapsed, this._onNodeCollapsed);
     model.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
     model.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
-    model.ready.then(this._onModelReady); // tslint:disable-line:no-floating-promises
+    // tslint:disable-next-line:no-floating-promises
+    model.ready.then(() => {
+      if (model === this.state.model)
+        this._onModelReady();
+    });
   }
 
   private dropModelListeners(model: BeInspireTree<TreeNodeItem>) {
@@ -722,7 +731,7 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   }
 
   // tslint:disable-next-line:naming-convention
-  private renderLabelComponent = async ({ node, highlightProps, cellEditorProps, valueRendererManager }: RenderNodeLabelProps): Promise<React.ReactNode> => {
+  private renderLabelComponent = ({ node, highlightProps, cellEditorProps, valueRendererManager }: RenderNodeLabelProps): React.ReactNode | Promise<React.ReactNode> => {
     const labelStyle: React.CSSProperties = {
       color: node.payload!.labelForeColor ? node.payload!.labelForeColor!.toString(16) : undefined,
       backgroundColor: node.payload!.labelBackColor ? node.payload!.labelBackColor!.toString(16) : undefined,
@@ -745,21 +754,20 @@ export class Tree extends React.Component<TreeProps, TreeState> {
     }
 
     // handle filtered matches' highlighting
-    let element: React.ReactNode = node.text;
+    let labelElement: React.ReactNode = node.text;
     if (highlightProps)
-      element = HighlightingEngine.renderNodeLabel(node.text, highlightProps);
+      labelElement = HighlightingEngine.renderNodeLabel(node.text, highlightProps);
 
     // handle custom cell rendering
-    const context: PropertyValueRendererContext = { containerType: PropertyContainerType.Tree, decoratedTextElement: element };
+    const context: PropertyValueRendererContext = {
+      containerType: PropertyContainerType.Tree,
+      decoratedTextElement: labelElement,
+      style: labelStyle,
+    };
     const nodeRecord = this.nodeToPropertyRecord(node);
     if (!valueRendererManager)
       valueRendererManager = PropertyValueRendererManager.defaultManager;
-
-    return (
-      <span style={labelStyle}>
-        {await valueRendererManager.render(nodeRecord, context)}
-      </span>
-    );
+    return valueRendererManager.render(nodeRecord, context);
   }
 
   private _onCheckboxClick = (node: BeInspireTreeNode<TreeNodeItem>) => {
@@ -822,9 +830,9 @@ export class Tree extends React.Component<TreeProps, TreeState> {
   public render() {
     if (!this.state.modelReady) {
       return (
-        <p className="ui-components-tree-loading">
-          {UiComponents.i18n.translate("UiComponents:general.loading")}
-        </p>
+        <div className="ui-components-tree-loader">
+          <i></i><i></i><i></i><i></i><i></i><i></i>
+        </div>
       );
     }
 

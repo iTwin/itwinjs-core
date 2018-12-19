@@ -57,7 +57,7 @@ export default function propertyGridWithUnifiedSelection<P extends PropertyGridP
       this._selectionHandler = this.props.selectionHandler
         ? this.props.selectionHandler : new SelectionHandler(Presentation.selection, name, imodel, rulesetId);
       this._selectionHandler!.onSelect = this.onSelectionChanged;
-      this.setDataProviderSelection();
+      this.updateDataProviderSelection();
     }
 
     public componentWillUnmount() {
@@ -72,28 +72,35 @@ export default function propertyGridWithUnifiedSelection<P extends PropertyGridP
       }
     }
 
-    private setDataProviderSelection(selectionLevel?: number): void {
+    private getSelectedKeys(selectionLevel?: number): Readonly<KeySet> | undefined {
       if (undefined === selectionLevel) {
         const availableLevels = this._selectionHandler!.getSelectionLevels();
         if (0 === availableLevels.length)
-          return;
+          return undefined;
         selectionLevel = availableLevels[availableLevels.length - 1];
       }
 
       for (let i = selectionLevel; i >= 0; i--) {
         const selection = this._selectionHandler!.getSelection(i);
-        const hasSelection = !selection.isEmpty;
-        if (hasSelection) {
-          this.props.dataProvider.keys = selection;
-          return;
-        }
+        if (!selection.isEmpty)
+          return selection;
       }
-      this.props.dataProvider.keys = new KeySet();
+      return new KeySet();
+    }
+
+    private setDataProviderSelection(selection: Readonly<KeySet>): void {
+      this.props.dataProvider.keys = selection;
+    }
+
+    private updateDataProviderSelection(selectionLevel?: number) {
+      const selection = this.getSelectedKeys(selectionLevel);
+      if (selection)
+        this.setDataProviderSelection(selection);
     }
 
     // tslint:disable-next-line:naming-convention
     private onSelectionChanged = (evt: SelectionChangeEventArgs): void => {
-      this.setDataProviderSelection(evt.level);
+      this.updateDataProviderSelection(evt.level);
     }
 
     public render() {

@@ -5,12 +5,37 @@
 
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { PresentationTreeDataProvider, treeWithFilteringSupport, treeWithUnifiedSelection } from "@bentley/presentation-components";
-import { Tree, FilteringInput, SelectionMode } from "@bentley/ui-components";
+import { IPresentationTreeDataProvider, PresentationTreeDataProvider, treeWithFilteringSupport, treeWithUnifiedSelection } from "@bentley/presentation-components";
+import { Tree, FilteringInput, SelectionMode, TreeNodeItem } from "@bentley/ui-components";
 import "./TreeWidget.css";
+import { PageOptions } from "@bentley/presentation-common";
 
 // tslint:disable-next-line:variable-name naming-convention
 const SampleTree = treeWithFilteringSupport(treeWithUnifiedSelection(Tree));
+
+class SampleDataProvider implements IPresentationTreeDataProvider {
+  private _wrapped: PresentationTreeDataProvider;
+  public constructor(imodel: IModelConnection, rulesetId: string) {
+    this._wrapped = new PresentationTreeDataProvider(imodel, rulesetId);
+  }
+  public get connection() { return this._wrapped.connection; }
+  public get rulesetId() { return this._wrapped.rulesetId; }
+  public async getNodesCount(parentNode?: TreeNodeItem) {
+    const result = await this._wrapped.getNodesCount(parentNode);
+    // tslint:disable-next-line:no-console
+    console.log(`Total children for "${parentNode ? parentNode.label : "{root}"}": ${result}`);
+    return result;
+  }
+  public async getNodes(parentNode?: TreeNodeItem, page?: PageOptions) {
+    const result = await this._wrapped.getNodes(parentNode, page);
+    result.forEach((n) => {
+      n.labelItalic = true;
+    });
+    return result;
+  }
+  public getNodeKey(node: TreeNodeItem) { return this._wrapped.getNodeKey(node); }
+  public async getFilteredNodePaths(filter: string) { return this._wrapped.getFilteredNodePaths(filter); }
+}
 
 export interface Props {
   imodel: IModelConnection;
@@ -18,7 +43,7 @@ export interface Props {
 }
 
 export interface State {
-  dataProvider: PresentationTreeDataProvider;
+  dataProvider: IPresentationTreeDataProvider;
   prevProps: Props;
   filter: string;
   isFiltering: boolean;
@@ -31,7 +56,7 @@ export default class TreeWidget extends React.Component<Props, State> {
   constructor(props: Props) {
     super(props);
     this.state = {
-      dataProvider: new PresentationTreeDataProvider(props.imodel, props.rulesetId),
+      dataProvider: new SampleDataProvider(props.imodel, props.rulesetId),
       prevProps: props,
       filter: "",
       isFiltering: false,
@@ -43,7 +68,7 @@ export default class TreeWidget extends React.Component<Props, State> {
   public static getDerivedStateFromProps(nextProps: Props, state: State) {
     const base = { ...state, prevProps: nextProps };
     if (nextProps.imodel !== state.prevProps.imodel || nextProps.rulesetId !== state.prevProps.rulesetId)
-      return { ...base, dataProvider: new PresentationTreeDataProvider(nextProps.imodel, nextProps.rulesetId) };
+      return { ...base, dataProvider: new SampleDataProvider(nextProps.imodel, nextProps.rulesetId) };
     return base;
   }
 

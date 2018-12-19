@@ -6,9 +6,11 @@
 
 import * as _ from "lodash";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { KeySet, PageOptions, SelectionInfo, ContentRequestOptions } from "@bentley/presentation-common";
+import {
+  KeySet, PageOptions, SelectionInfo,
+  ContentRequestOptions, Content, Descriptor, Field,
+} from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import * as content from "@bentley/presentation-common";
 
 /**
  * Properties for invalidating content cache.
@@ -142,7 +144,7 @@ export default abstract class ContentDataProvider {
    * The default method implementation takes care of hiding properties. Subclasses
    * should call the base class method to not lose this functionality.
    */
-  protected configureContentDescriptor(descriptor: Readonly<content.Descriptor>): content.Descriptor {
+  protected configureContentDescriptor(descriptor: Readonly<Descriptor>): Descriptor {
     const fields = descriptor.fields.slice();
     const fieldsCount = fields.length;
     for (let i = fieldsCount - 1; i >= 0; --i) {
@@ -150,28 +152,28 @@ export default abstract class ContentDataProvider {
       if (this.shouldExcludeFromDescriptor(field))
         fields.splice(i, 1);
     }
-    const customDescriptor = Object.create(content.Descriptor.prototype);
-    return Object.assign(customDescriptor, descriptor, content.Descriptor, {
+    const customDescriptor = Object.create(Descriptor.prototype);
+    return Object.assign(customDescriptor, descriptor, Descriptor, {
       fields,
     });
   }
 
   /** Called to check whether the field should be excluded from the descriptor. */
-  protected shouldExcludeFromDescriptor(field: content.Field): boolean { return this.isFieldHidden(field); }
+  protected shouldExcludeFromDescriptor(field: Field): boolean { return this.isFieldHidden(field); }
 
   /** Called to check whether the field should be hidden. */
-  protected isFieldHidden(_field: content.Field): boolean { return false; }
+  protected isFieldHidden(_field: Field): boolean { return false; }
 
   // tslint:disable-next-line:naming-convention
-  private getDefaultContentDescriptor = _.memoize(async (): Promise<Readonly<content.Descriptor> | undefined> => {
-    return await Presentation.presentation.getContentDescriptor(this.createRequestOptions(),
+  private getDefaultContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
+    return Presentation.presentation.getContentDescriptor(this.createRequestOptions(),
       this._displayType, this.keys, this.selectionInfo);
   });
 
   /**
    * Get the content descriptor.
    */
-  protected getContentDescriptor = _.memoize(async (): Promise<Readonly<content.Descriptor> | undefined> => {
+  protected getContentDescriptor = _.memoize(async (): Promise<Readonly<Descriptor> | undefined> => {
     const descriptor = await this.getDefaultContentDescriptor();
     if (!descriptor)
       return undefined;
@@ -185,20 +187,18 @@ export default abstract class ContentDataProvider {
     const descriptor = await this.getContentDescriptor();
     if (!descriptor)
       return 0;
-    return await Presentation.presentation.getContentSetSize(this.createRequestOptions(),
-      descriptor, this.keys);
+    return Presentation.presentation.getContentSetSize(this.createRequestOptions(), descriptor, this.keys);
   });
 
   /**
    * Get the content.
    * @param pageOptions Paging options.
    */
-  protected getContent = _.memoize(async (pageOptions?: PageOptions): Promise<Readonly<content.Content> | undefined> => {
+  protected getContent = _.memoize(async (pageOptions?: PageOptions): Promise<Readonly<Content> | undefined> => {
     const descriptor = await this.getContentDescriptor();
     if (!descriptor)
       return undefined;
-    return await Presentation.presentation.getContent({ ...this.createRequestOptions(), paging: pageOptions },
-      descriptor, this.keys);
+    return Presentation.presentation.getContent({ ...this.createRequestOptions(), paging: pageOptions }, descriptor, this.keys);
   }, createKeyForPageOptions);
 }
 

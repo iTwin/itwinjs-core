@@ -6,13 +6,13 @@
 
 import { TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";
-import { Id64, Id64String } from "@bentley/bentleyjs-core";
+import { Id64 } from "@bentley/bentleyjs-core";
 import * as Primitives from "./valuetypes/PrimitiveTypes";
 
 /** Hexadecimal Type Converter.
  */
 export class HexadecimalTypeConverter extends TypeConverter {
-  public async convertToString(value?: Primitives.Hexadecimal): Promise<string> {
+  public convertToString(value?: Primitives.Hexadecimal) {
     if (value === undefined)
       return "";
 
@@ -21,7 +21,7 @@ export class HexadecimalTypeConverter extends TypeConverter {
     return "0x" + hexString.substring(2, hexString.length).toUpperCase();
   }
 
-  public async convertFromString(value: string): Promise<Id64String | undefined> {
+  public convertFromString(value: string) {
     if (value.substr(0, 2) !== "0x")
       value = "0x" + value;
 

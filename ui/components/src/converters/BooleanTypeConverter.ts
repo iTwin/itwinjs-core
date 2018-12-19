@@ -22,7 +22,7 @@ export class BooleanTypeConverter extends TypeConverter {
       sl10nFalse = UiComponents.i18n.translate("UiComponents:general.false");
   }
 
-  public async convertToString(value?: Primitives.Boolean): Promise<string> {
+  public convertToString(value?: Primitives.Boolean) {
     if (value === undefined)
       return "";
 
@@ -34,7 +34,7 @@ export class BooleanTypeConverter extends TypeConverter {
     return value ? sl10nTrue : sl10nFalse;
   }
 
-  public async convertFromString(value: string): Promise<boolean> {
+  public convertFromString(value: string) {
     this.getLocalizedTrueFalse();
 
     let booleanValue: boolean;
