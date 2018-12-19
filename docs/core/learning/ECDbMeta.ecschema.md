@@ -84,7 +84,7 @@ ECEnumeration
 |Description||string||
 |Type||PrimitiveType||
 |IsStrict||boolean||
-|EnumValues||||
+|EnumValues||[ECEnumeratorDef](#ECEnumeratorDef)[]||
 |            |                   |            |                        |
 
 ### ECEnumeratorDef

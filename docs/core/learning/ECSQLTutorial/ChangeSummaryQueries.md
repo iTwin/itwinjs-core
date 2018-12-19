@@ -41,7 +41,7 @@ here in text to help understand the following queries.
 
 Operations:
 
-- Insert a new [Device](./MyDomain.ecschema.md#Device) with code `DEV-A-G-3` and User Label 'Fire detector'
+- Insert a new [Device](./MyDomain.ecschema.md#device) with code `DEV-A-G-3` and User Label 'Fire detector'
 
 Result:
 
@@ -53,8 +53,8 @@ ECInstanceId | CodeValue | UserLabel
 
 Operations:
 
-- Update the User Label of [Device](./MyDomain.ecschema.md#Device) `DEV-A-G-3` to 'Fire extinguisher'
-- Insert a new [Device](./MyDomain.ecschema.md#Device) with code `DEV-A-G-4` and User Label 'Fire detector'
+- Update the User Label of [Device](./MyDomain.ecschema.md#device) `DEV-A-G-3` to 'Fire extinguisher'
+- Insert a new [Device](./MyDomain.ecschema.md#device) with code `DEV-A-G-4` and User Label 'Fire detector'
 
 Result:
 
@@ -67,7 +67,7 @@ ECInstanceId | CodeValue | UserLabel
 
 Operations:
 
-- Delete [Device](./MyDomain.ecschema.md#Device) `DEV-A-G-3` again
+- Delete [Device](./MyDomain.ecschema.md#device) `DEV-A-G-3` again
 
 Result:
 
@@ -88,11 +88,11 @@ The following examples will run through both of them.
 
 Generally there are three main classes in the [ECDbChange](../ECDbChange.ecschema.md) to explore what has changed:
 
-- [ChangeSummary](../ECDbChange.ecschema.md#ChangeSummary)
-- [InstanceChange](../ECDbChange.ecschema.md#InstanceChange)
-- [PropertyValueChange](../ECDbChange.ecschema.md#PropertyValueChange)
+- [ChangeSummary](../ECDbChange.ecschema.md#changesummary)
+- [InstanceChange](../ECDbChange.ecschema.md#instancechange)
+- [PropertyValueChange](../ECDbChange.ecschema.md#propertyvaluechange)
 
-Additionally the [IModelChange](../IModelChange.ecschema.md) contains the [ChangeSet](../IModelChange.ecschema.md#ChangeSet) ECClass that links a Change Summary to the changeset from which it was generated.
+Additionally the [IModelChange](../IModelChange.ecschema.md) contains the [ChangeSet](../IModelChange.ecschema.md#changeset) ECClass that links a Change Summary to the changeset from which it was generated.
 
 The following examples will run through all of them.
 
@@ -182,7 +182,7 @@ Here is the gist of what you can read from this query:
 
 ### What properties have changed for a changed instance
 
-Now that we know that [Device](./MyDomain.ecschema.md#Device) `0x36` was modified in Change Summary `0x35` we might want to find
+Now that we know that [Device](./MyDomain.ecschema.md#device) `0x36` was modified in Change Summary `0x35` we might want to find
 out what properties were modified.
 
 > **Try it yourself**
@@ -201,7 +201,7 @@ out what properties were modified.
 > LastMod |
 > UserLabel |
 
-As we know from the [change history's description](#sample-change-history), the modification of `UserLabel` is expected. Why was `LastMod` modified as well? This again is an implicit change, caused by a trigger on the [Element.LastMod](../../bis/domains/BisCore.ecschema.md#Element) property which sets it to the current time whenever
+As we know from the [change history's description](#sample-change-history), the modification of `UserLabel` is expected. Why was `LastMod` modified as well? This again is an implicit change, caused by a trigger on the [Element.LastMod](../../bis/domains/BisCore.ecschema.md#element) property which sets it to the current time whenever
 the element is modified.
 
 Here we used the ECInstanceId `0x48` of the respective InstanceChange object that represents the update of Device `0x20000000001`
@@ -283,7 +283,7 @@ that tells us what kind of change this was, i.e. what the OpCode of that change 
 > --- |
 > Delete |
 
-Now we can explain why the query before returned all properties: As Device `0x20000000001` was deleted in that changeset, all its property values were deleted as well. Consequently, the [PropertyValueChange](../ECDbChange.ecschema.md#PropertyValueChange) ECClass records all properties of the class as being deleted.
+Now we can explain why the query before returned all properties: As Device `0x20000000001` was deleted in that changeset, all its property values were deleted as well. Consequently, the [PropertyValueChange](../ECDbChange.ecschema.md#propertyvaluechange) ECClass records all properties of the class as being deleted.
 The same is true for `Inserts`. You can try that out yourself if you replace the Change Summary id in the previous queries with `0x6c`.
 
 ## Explore *how* data has changed
