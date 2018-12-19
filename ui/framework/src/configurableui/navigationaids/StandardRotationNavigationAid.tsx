@@ -16,7 +16,7 @@ import { UiFramework } from "../../UiFramework";
 
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 
-import { ViewRotationCube } from "@bentley/ui-components";
+import { ViewportComponentEvents } from "@bentley/ui-components";
 
 // tslint:disable-next-line:variable-name
 const NZ_ContainedTray = withContainInViewport(NZ_Tray);
@@ -160,7 +160,7 @@ export class StandardRotationNavigationAid extends React.Component<{}, StandardR
 
     this.setState(
       (_prevState, _props) => ({ isExpanded: false, selected }),
-      () => ViewRotationCube.setStandardRotation(selected),
+      () => ViewportComponentEvents.setStandardRotation(selected),
     );
   }
 
