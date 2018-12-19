@@ -7,7 +7,7 @@
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
   ChangesType, Briefcase, HubCode, IModelHubError,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel,
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel, IncludePrefix,
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
@@ -715,7 +715,7 @@ export class BriefcaseManager {
 
     assert(openParams.openMode === OpenMode.ReadWrite); // Expect to setup briefcase as ReadWrite to allow pull and merge of changes (irrespective of the real openMode)
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
-    let res: DbResult = nativeDb.openIModel(accessToken.toTokenString(), IModelHost.backendVersion, contextId, briefcase.pathname, openParams.openMode);
+    let res: DbResult = nativeDb.openIModel(accessToken.toTokenString(IncludePrefix.No), IModelHost.backendVersion, contextId, briefcase.pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res) {
       Logger.logError(loggingCategory, `Unable to open briefcase at ${briefcase.pathname}`);
       Logger.logWarning(loggingCategory, `Unable to create briefcase ${briefcase.pathname}. Deleting any remnants of it`);
@@ -1046,7 +1046,7 @@ export class BriefcaseManager {
 
     briefcase.nativeDb = briefcase.nativeDb || new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
-    const res: DbResult = briefcase.nativeDb!.openIModel(accessToken.toTokenString(), IModelHost.backendVersion, contextId, briefcase.pathname, openParams.openMode);
+    const res: DbResult = briefcase.nativeDb!.openIModel(accessToken.toTokenString(IncludePrefix.No), IModelHost.backendVersion, contextId, briefcase.pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, briefcase.pathname);
 
