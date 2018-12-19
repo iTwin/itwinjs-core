@@ -116,6 +116,7 @@ export declare class NativeDgnDb {
   public insertLinkTableRelationship(props: string): ErrorStatusOrResult<DbResult, string>;
   public insertModel(modelProps: string): ErrorStatusOrResult<IModelStatus, string>;
   public isChangeCacheAttached(): boolean;
+  public isOpen(): boolean;
   public isRedoPossible(): boolean;
   public isTxnIdValid(txnId: TxnIdString): boolean;
   public isUndoPossible(): boolean;
