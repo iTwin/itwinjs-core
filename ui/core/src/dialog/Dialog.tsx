@@ -145,7 +145,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   public render(): JSX.Element {
     const {
       opened, title, footer, buttonCluster, onClose, onEscape, onOutsideClick,
-      minWidth, minHeight, x, y, width, height,
+      minWidth, minHeight, x, y, width, height, maxHeight, maxWidth,
       backgroundStyle, titleStyle, footerStyle,
       modal, resizable, movable, className, alignment, ...props } = this.props;
 
@@ -155,11 +155,13 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       width, height,
     };
     if (this.props.movable && (this.state.x !== undefined || this.state.y !== undefined)) {
+      // istanbul ignore else
       if (this.state.x !== undefined) {
         containerStyle.marginLeft = "0";
         containerStyle.marginRight = "0";
         containerStyle.left = this.state.x;
       }
+      // istanbul ignore else
       if (this.state.y !== undefined) {
         containerStyle.marginTop = "0";
         containerStyle.marginBottom = "0";
@@ -199,6 +201,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
                 <div className={classnames(
                   "dialog-head",
                   { "dialog-movable": this.props.movable })}
+                  data-testid="dialog-head"
                   onPointerDown={this._handleStartMove}>
                   <div className={"dialog-title"}>{this.props.title}</div>
                   <span
@@ -216,14 +219,17 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
               </div>
               <div
                 className={classnames("dialog-drag", "dialog-drag-right", { "dialog-drag-enabled": this.props.resizable })}
+                data-testid="dialog-drag-right"
                 onPointerDown={this._handleStartResizeRight}
               ></div>
               <div
                 className={classnames("dialog-drag", "dialog-drag-bottom-mid", { "dialog-drag-enabled": this.props.resizable })}
+                data-testid="dialog-drag-bottom"
                 onPointerDown={this._handleStartResizeDown}
               > </div>
               <div
                 className={classnames("dialog-drag", "dialog-drag-bottom-right", { "dialog-drag-enabled": this.props.resizable })}
+                data-testid="dialog-drag-bottom-right"
                 onPointerDown={this._handleStartResizeDownRight}
               ></div>
             </div>
@@ -238,7 +244,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     if (props.buttonCluster) {
       props.buttonCluster.forEach((button: ButtonCluster, index: number) => {
         let buttonText = "";
-        let buttonClass = classnames("dialog-button", button.type ? `dialog-button-${button.type}` : "");
+        let buttonClass = classnames("dialog-button", `dialog-button-${button.type}`);
         switch (button.type) {
           case ButtonType.OK:
             buttonText = UiCore.i18n.translate("UiCore:dialog.ok");
@@ -312,6 +318,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       return;
 
     event.preventDefault();
+    // istanbul ignore else
     if (this._containerRef.current) {
       const rect = this._containerRef.current.getBoundingClientRect();
       const grabOffsetX = event.clientX - rect.left;
@@ -330,7 +337,8 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
     const { minWidth, maxWidth, minHeight, maxHeight, movable } = this.props;
     let { x, y, width, height } = this.state;
-    if (x === undefined || y === undefined || width === undefined || height === undefined) {
+    // istanbul ignore else
+    if (x === undefined) { // if x is undefined, so is y, width, and height
       const rect = this._containerRef.current.getBoundingClientRect();
       width = rect.width, height = rect.height, x = rect.left, y = rect.top;
     }
@@ -345,7 +353,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       }
       if (this.state.downResizing) {
         const centerY = event.clientY;
-        height = movable ? (centerY - y) : ((centerY - window.innerHeight / 2) * 2);
+        height = movable ? (centerY - y!) : ((centerY - window.innerHeight / 2) * 2);
         height = Math.max(height, minHeight!);
         if (maxHeight !== undefined)
           height = Math.min(height, maxHeight);
@@ -381,7 +389,7 @@ export interface GlobalDialogProps extends DialogProps {
   identifier?: string;
 }
 
-/** GlobalContextMenu React component used to display a [[ContextMenu]] at the cursor */
+/** GlobalDialog React component used to display a [[Dialog]] on the top of screen */
 export class GlobalDialog extends React.Component<GlobalDialogProps> {
   private _container: HTMLDivElement;
   constructor(props: GlobalDialogProps) {
@@ -397,6 +405,7 @@ export class GlobalDialog extends React.Component<GlobalDialogProps> {
     rt.appendChild(this._container);
   }
   public componentWillUnmount() {
+    // istanbul ignore else
     if (this._container.parentElement) { // cleanup
       this._container.parentElement.removeChild(this._container);
     }

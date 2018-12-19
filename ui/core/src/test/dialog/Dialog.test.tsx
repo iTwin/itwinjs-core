@@ -2,80 +2,189 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { mount, shallow } from "enzyme";
+import { render, cleanup } from "react-testing-library";
 import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 
 import { Dialog, ButtonType } from "../../ui-core";
 import TestUtils from "../TestUtils";
+import { UiCore } from "../../UiCore";
+import { GlobalDialog } from "../../dialog/Dialog";
 
 describe("Dialog", () => {
+
+  afterEach(cleanup);
+
+  const createBubbledEvent = (type: string, props = {}) => {
+    const event = new Event(type, { bubbles: true });
+    Object.assign(event, props);
+    return event;
+  };
 
   before(async () => {
     await TestUtils.initializeUiCore();
   });
 
+  describe("<GlobalDialog />", () => {
+    it("should render", () => {
+      render(<GlobalDialog opened={true} />);
+    });
+    it("should render multiple in same global container", () => {
+      render(<GlobalDialog opened={true} />);
+      render(<GlobalDialog opened={true} />);
+    });
+    it("should render with identifier", () => {
+      render(<GlobalDialog opened={true} identifier="test" />);
+    });
+  });
+
   describe("renders", () => {
     it("should render", () => {
-      const wrapper = mount(<Dialog opened={true} />);
-      wrapper.unmount();
-    });
-
-    it("renders correctly", () => {
-      shallow(<Dialog opened={true} />).should.matchSnapshot();
+      render(<Dialog opened={true} />);
     });
   });
 
   describe("buttons", () => {
-    it("OK & Cancel", () => {
-      mount(<Dialog opened={true}
+    it("should render with OK & Cancel buttons", () => {
+      const component = render(<Dialog opened={true}
         buttonCluster={[
           { type: ButtonType.OK, onClick: () => { } },
           { type: ButtonType.Cancel, onClick: () => { } },
         ]} />);
+      expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.ok"))).to.exist;
+      expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.cancel"))).to.exist;
     });
 
-    it("Yes, No & Retry", () => {
-      mount(<Dialog opened={true}
+    it("should render with Close button", () => {
+      const component = render(<Dialog opened={true}
+        buttonCluster={[
+          { type: ButtonType.Close, onClick: () => { } },
+        ]} />);
+      expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.close"))).to.exist;
+    });
+
+    it("should render with Yes, No & Retry buttons", () => {
+      const component = render(<Dialog opened={true}
         buttonCluster={[
           { type: ButtonType.Yes, onClick: () => { } },
           { type: ButtonType.No, onClick: () => { } },
           { type: ButtonType.Retry, onClick: () => { } },
         ]} />);
+      expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.yes"))).to.exist;
+      expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.no"))).to.exist;
+      expect(component.getByText(UiCore.i18n.translate("UiCore:dialog.retry"))).to.exist;
     });
   });
 
-  describe("movable & resizable", () => {
-    it("movable", () => {
-      const wrapper = mount(<Dialog opened={true} movable={true} />);
-
-      // TODO: simulate move
-
-      wrapper.unmount();
+  describe("movable and resizable", () => {
+    it("should render with movable", () => {
+      render(<Dialog opened={true} movable={true} />);
     });
-
-    it("resizable", () => {
-      const wrapper = mount(<Dialog opened={true} resizable={true} />);
-
-      // TODO: simulate resize
-
-      wrapper.unmount();
+    it("should move from pointer events", () => {
+      const component = render(<Dialog opened={true} movable={true} height={400} width={400} />);
+      const head = component.getByTestId("dialog-head");
+      head.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 200, clientY: 5 }));
+      head.dispatchEvent(createBubbledEvent("pointermove", { clientX: 300, clientY: 50 }));
+      head.dispatchEvent(createBubbledEvent("pointerup", { clientX: 300, clientY: 50 }));
+      const container = component.getByTestId("dialog-container");
+      expect(container.style.left).to.equal("100px");
+      expect(container.style.top).to.equal("45px");
+    });
+    it("should not move from pointer events when movable is false", () => {
+      const component = render(<Dialog opened={true} movable={false} height={400} width={400} />);
+      const head = component.getByTestId("dialog-head");
+      head.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 200, clientY: 5 }));
+      head.dispatchEvent(createBubbledEvent("pointermove", { clientX: 250, clientY: 25 }));
+      head.dispatchEvent(createBubbledEvent("pointermove", { clientX: 300, clientY: 50 }));
+      head.dispatchEvent(createBubbledEvent("pointerup", { clientX: 300, clientY: 50 }));
+      const container = component.getByTestId("dialog-container");
+      expect(container.style.left).to.equal("");
+      expect(container.style.top).to.equal("");
+    });
+    it("should render with resizable", () => {
+      render(<Dialog opened={true} resizable={true} />);
+    });
+    it("should not resize from pointer events on bottom right when resizable={false}", () => {
+      const component = render(<Dialog opened={true} resizable={false} height={400} width={400} minHeight={200} minWidth={200} />);
+      const bottomRightDragHandle = component.getByTestId("dialog-drag-bottom-right");
+      bottomRightDragHandle.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 400, clientY: 400 }));
+      window.dispatchEvent(createBubbledEvent("pointermove", { clientX: 200, clientY: 200 }));
+      window.dispatchEvent(createBubbledEvent("pointerup", { clientX: 200, clientY: 200 }));
+      const container = component.getByTestId("dialog-container");
+      expect(container.style.height).to.equal("400px");
+      expect(container.style.width).to.equal("400px");
+    });
+    it("should resize from pointer events on bottom right", () => {
+      const component = render(<Dialog opened={true} resizable={true} height={400} width={400} minHeight={200} minWidth={200} />);
+      const bottomRightDragHandle = component.getByTestId("dialog-drag-bottom-right");
+      bottomRightDragHandle.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 400, clientY: 400 }));
+      window.dispatchEvent(createBubbledEvent("pointermove", { clientX: 200, clientY: 200 }));
+      window.dispatchEvent(createBubbledEvent("pointerup", { clientX: 200, clientY: 200 }));
+      const container = component.getByTestId("dialog-container");
+      expect(container.style.height).to.equal("200px");
+      expect(container.style.width).to.equal("200px");
+    });
+    it("should resize relative to top right corner from pointer events on bottom right when both resizable and movable", () => {
+      const component = render(<Dialog opened={true} resizable={true} movable={true} height={400} width={400} minHeight={200} minWidth={200} />);
+      const bottomRightDragHandle = component.getByTestId("dialog-drag-bottom-right");
+      bottomRightDragHandle.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 400, clientY: 400 }));
+      window.dispatchEvent(createBubbledEvent("pointermove", { clientX: 200, clientY: 200 }));
+      window.dispatchEvent(createBubbledEvent("pointerup", { clientX: 200, clientY: 200 }));
+      const container = component.getByTestId("dialog-container");
+      expect(container.style.height).to.equal("200px");
+      expect(container.style.width).to.equal("200px");
+    });
+    it("should resize to minWidth and minHeight", () => {
+      const component = render(<Dialog opened={true} resizable={true} minHeight={200} minWidth={200} />);
+      const bottomRightDragHandle = component.getByTestId("dialog-drag-bottom-right");
+      bottomRightDragHandle.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 400, clientY: 400 }));
+      window.dispatchEvent(createBubbledEvent("pointermove", { clientX: 100, clientY: 100 }));
+      window.dispatchEvent(createBubbledEvent("pointerup", { clientX: 100, clientY: 100 }));
+      const container = component.getByTestId("dialog-container");
+      expect(container.style.height).to.equal("200px");
+      expect(container.style.width).to.equal("200px");
+    });
+    it("should resize to maxWidth and maxHeight when defined", () => {
+      const component = render(<Dialog opened={true} resizable={true} height={200} width={200} maxWidth={350} maxHeight={350} />);
+      const bottomRightDragHandle = component.getByTestId("dialog-drag-bottom-right");
+      bottomRightDragHandle.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 200, clientY: 400 }));
+      window.dispatchEvent(createBubbledEvent("pointermove", { clientX: 400, clientY: 400 }));
+      window.dispatchEvent(createBubbledEvent("pointerup", { clientX: 400, clientY: 400 }));
+      const container = component.getByTestId("dialog-container");
+      expect(container.style.height).to.equal("350px");
+      expect(container.style.width).to.equal("350px");
+    });
+    it("should resize from pointer events on bottom", () => {
+      const component = render(<Dialog opened={true} resizable={true} height={400} width={400} minHeight={100} minWidth={100} />);
+      const bottomRightDragHandle = component.getByTestId("dialog-drag-bottom");
+      bottomRightDragHandle.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 400, clientY: 400 }));
+      window.dispatchEvent(createBubbledEvent("pointermove", { clientX: 405, clientY: 200 }));
+      window.dispatchEvent(createBubbledEvent("pointerup", { clientX: 405, clientY: 200 }));
+    });
+    it("should resize from pointer events on right", () => {
+      const component = render(<Dialog opened={true} resizable={true} height={400} width={400} minHeight={100} minWidth={100} />);
+      const bottomRightDragHandle = component.getByTestId("dialog-drag-right");
+      bottomRightDragHandle.dispatchEvent(createBubbledEvent("pointerdown", { clientX: 400, clientY: 400 }));
+      window.dispatchEvent(createBubbledEvent("pointermove", { clientX: 200, clientY: 405 }));
+      window.dispatchEvent(createBubbledEvent("pointerup", { clientX: 200, clientY: 405 }));
     });
   });
 
   describe("keyboard support", () => {
     it("should close on Esc key", () => {
-      const outerNode = document.createElement("div");
-      document.body.appendChild(outerNode);
-
       const spyOnEscape = sinon.spy();
-      mount(<Dialog opened={true} onEscape={spyOnEscape} />, { attachTo: outerNode });
+      const component = render(<Dialog opened={true} onEscape={spyOnEscape} />);
 
-      outerNode.dispatchEvent(new KeyboardEvent("keyup", { key: "Escape" }));
-      expect(spyOnEscape.calledOnce).to.be.true;
+      component.baseElement.dispatchEvent(new KeyboardEvent("keyup", { key: "Escape" }));
+      expect(spyOnEscape).to.be.calledOnce;
+    });
+    it("should not respond to other keyboard input", () => {
+      const spyOnEscape = sinon.spy();
+      const component = render(<Dialog opened={true} onEscape={spyOnEscape} />);
 
-      document.body.removeChild(outerNode);
+      component.baseElement.dispatchEvent(new KeyboardEvent("keyup"));
+      expect(spyOnEscape).to.not.be.called;
     });
   });
 

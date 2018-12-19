@@ -30,7 +30,7 @@ interface RenderedNode {
   isChecked?: boolean;
 }
 
-describe("BeInspireTree", () => {
+describe.skip("BeInspireTree", () => {
 
   let hierarchy: Node[];
   let tree: BeInspireTree<Node>;

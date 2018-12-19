@@ -164,8 +164,6 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
       };
       const selected = this.state.selectedIndex === index;
       const ref = (el: any) => {
-        if (child.props.ref)
-          child.props.ref(el);
         if (selected)
           this._selectedElement = el;
       };
@@ -233,16 +231,19 @@ export class ContextMenu extends React.Component<ContextMenuProps, ContextMenuSt
   }
 
   public focus = () => {
+    // istanbul ignore else
     if (this._menuElement)
       this._menuElement.focus();
   }
 
   public blur = () => {
+    // istanbul ignore else
     if (this._menuElement)
       this._menuElement.blur();
   }
 
   public getRect = (): ClientRect => {
+    // istanbul ignore else
     if (this._menuElement) {
       return this._menuElement.getBoundingClientRect();
     }
@@ -346,6 +347,7 @@ export class GlobalContextMenu extends React.Component<GlobalContextMenuProps> {
     rt.appendChild(this._container);
   }
   public componentWillUnmount() {
+    // istanbul ignore else
     if (this._container.parentElement) { // cleanup
       this._container.parentElement.removeChild(this._container);
     }
@@ -453,7 +455,7 @@ export class ContextMenuItem extends React.Component<ContextMenuItemProps> {
 export class ContextMenuDivider extends React.Component {
   public render(): JSX.Element {
     return (
-      <div {...this.props} className={"context-menu-divider"}>
+      <div {...this.props} data-testid="context-menu-divider" className="context-menu-divider">
       </div>
     );
   }
