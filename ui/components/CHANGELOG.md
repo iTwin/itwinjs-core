@@ -1,6 +1,27 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Thu, 13 Dec 2018 22:06:10 GMT and should not be manually modified.
+This log was last generated on Wed, 19 Dec 2018 18:26:14 GMT and should not be manually modified.
+
+## 0.179.0
+Wed, 19 Dec 2018 18:26:14 GMT
+
+### Updates
+
+- Added Tests, updated Table, fixed breadcrumb mutability issues
+- Added DragDrop tests, added component withDragDrop HOC tests
+- Synchronizing navigation aids with view definition changes
+- Simplified property pane tooltips and improved Property Pane performance.
+- Simplified struct and array tooltips in Table component. 
+- Fix BeInspireTree's event listening functions to handle array inputs
+- Fix BeInspireTree's muting events with allowed number of triggers
+- Cache BeInspireTree.visible() result for better performance
+- Optimize BeInspireTree.selectBetween
+- Avoid loading PropertyGrid data for intermediate data changes
+- Avoid loading TableView data for intermediate column / row changes
+- Allow property converters and renderers to return result either sync or async
+- Fix tree node loosing its children when collapsed while children are being loaded
+- Fix tree not showing data after changing data provider while another data provider is being loaded
+- Show loading spinner in the Tree while root nodes are being loaded
 
 ## 0.178.0
 Thu, 13 Dec 2018 22:06:10 GMT
