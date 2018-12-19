@@ -154,8 +154,7 @@ export class AccessToken extends Token {
         throw new BentleyError(BentleyStatus.ERROR, "Invalid saml token");
     }
 
-    // Need to replace the trailing \u0000 - see https://github.com/nodejs/node/issues/4775
-    const samlStr = Base64.atob(extractedStr).replace(/\0$/, "");
+    const samlStr = Base64.decode(extractedStr);
     if (!samlStr)
       throw new BentleyError(BentleyStatus.ERROR, "Invalid saml token");
 
@@ -179,7 +178,7 @@ export class AccessToken extends Token {
     if (!this._samlAssertion)
       throw new BentleyError(BentleyStatus.ERROR, "Cannot convert invalid access token to string");
 
-    const tokenStr: string = Base64.btoa(this._samlAssertion);
+    const tokenStr: string = Base64.encode(this._samlAssertion);
     return (includePrefix === IncludePrefix.Yes) ? AccessToken._samlTokenPrefix + " " + tokenStr : tokenStr;
   }
 
