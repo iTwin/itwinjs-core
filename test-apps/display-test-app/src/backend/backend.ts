@@ -27,6 +27,9 @@ function setupStandaloneConfiguration() {
     configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
     configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
     configuration.iModelName = filename;
+    if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
+      configuration.signInForStandalone = true;
+
     fs.writeFileSync(path.join(__dirname, "../webresources", "configuration.json"), JSON.stringify(configuration), "utf8");
   }
 }

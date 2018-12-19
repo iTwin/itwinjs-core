@@ -6,6 +6,9 @@
 
 import * as React from "react";
 
+import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { ViewportComponentEvents, ViewClassFullNameChangedEventArgs } from "@bentley/ui-components";
+
 import ConfigurableUiManager from "./ConfigurableUiManager";
 import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
@@ -15,7 +18,7 @@ import { FrontstageManager, ToolActivatedEventArgs, NavigationAidActivatedEventA
 import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 
 import { Tools as NZ_ToolsWidget } from "@bentley/ui-ninezone";
-import { IModelConnection } from "@bentley/imodeljs-frontend";
+import { ContentViewManager } from "./ContentViewManager";
 
 /** A Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
  */
@@ -107,17 +110,30 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
   /** Adds listeners */
   public componentDidMount() {
     FrontstageManager.onContentControlActivatedEvent.addListener(this._handleContentControlActivated);
+    ViewportComponentEvents.onViewClassFullNameChangedEvent.addListener(this._handleViewClassFullNameChange);
   }
 
   /** Removes listeners */
   public componentWillUnmount() {
     FrontstageManager.onContentControlActivatedEvent.removeListener(this._handleContentControlActivated);
+    ViewportComponentEvents.onViewClassFullNameChangedEvent.removeListener(this._handleViewClassFullNameChange);
   }
 
   private _handleContentControlActivated = (args: ContentControlActivatedEventArgs): void => {
     const navigationAidId = args.activeContentControl.navigationAidControl;
     setImmediate(() => {
       FrontstageManager.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);
+    });
+  }
+
+  private _handleViewClassFullNameChange = (args: ViewClassFullNameChangedEventArgs): void => {
+    setImmediate(() => {
+      const activeContentControl = ContentViewManager.getActiveContentControl();
+
+      if (activeContentControl && args.viewport === activeContentControl.viewport) {
+        const navigationAidId = activeContentControl.navigationAidControl;
+        FrontstageManager.setActiveNavigationAid(navigationAidId, this.props.iModelConnection!);
+      }
     });
   }
 

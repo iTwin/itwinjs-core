@@ -93,8 +93,9 @@ async function retrieveConfiguration(): Promise<void> {
 // opens the configured iModel from disk
 async function openStandaloneIModel(state: SimpleViewState, filename: string) {
   configuration.standalone = true;
-  state.iModelConnection = await IModelConnection.openStandalone(filename);
+  state.iModelConnection = await IModelConnection.openStandalone(filename, OpenMode.Readonly);
   configuration.iModelName = state.iModelConnection.name;
+  IModelApp.accessToken = state.accessToken;
 }
 
 // opens the configured iModel from iModelHub or iModelBank
@@ -1585,12 +1586,19 @@ async function changeView(event: any) {
 }
 
 async function clearViews() {
-  if (activeViewState.iModelConnection !== undefined)
-    if (configuration.standalone)
+  let accessToken: AccessToken | undefined;
+  if (activeViewState.iModelConnection !== undefined) {
+    if (configuration.standalone) {
       await activeViewState.iModelConnection.closeStandalone();
-    else
+      if (configuration.signInForStandalone)
+        accessToken = activeViewState.accessToken;
+    } else {
       await activeViewState.iModelConnection!.close(activeViewState.accessToken!);
+    }
+  }
+
   activeViewState = new SimpleViewState();
+  activeViewState.accessToken = accessToken;
   viewMap.clear();
   document.getElementById("viewList")!.innerHTML = "";
 }
@@ -2043,22 +2051,24 @@ async function main() {
 
   // while the browser is loading stuff, start work on logging in and downloading the imodel, etc.
   try {
-    // Standalone
-    if (configuration.standalone) {
+    if (configuration.standalone && !configuration.signInForStandalone) {
       await openStandaloneIModel(activeViewState, configuration.iModelName!);
       await uiReady; // Now wait for the HTML UI to finish loading.
       await initView();
       return;
     }
 
-    // Connected to hub
     await initializeOidc(actx);
     actx.enter();
 
     if (!activeViewState.accessToken)
       OidcClientWrapper.oidcClient.signIn(actx);
     else {
-      await openIModel(activeViewState);
+      if (configuration.standalone)
+        await openStandaloneIModel(activeViewState, configuration.iModelName!);
+      else
+        await openIModel(activeViewState);
+
       await uiReady; // Now, wait for the HTML UI to finish loading.
       await initView();
     }
