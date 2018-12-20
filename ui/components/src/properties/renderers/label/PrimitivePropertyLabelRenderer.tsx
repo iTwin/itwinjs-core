@@ -25,7 +25,7 @@ export class PrimitivePropertyLabelRenderer extends React.PureComponent<Primitiv
         className={"components-primitive-property-label-renderer " + (this.props.className ? this.props.className : "")}
         style={PropertyLabelRenderer.getStyle(this.props.offset)}
       >
-        <PropertyLabelRenderer>{this.props.children}</PropertyLabelRenderer>
+        <PropertyLabelRenderer renderColon={this.props.renderColon}>{this.props.children}</PropertyLabelRenderer>
       </span>
     );
   }
