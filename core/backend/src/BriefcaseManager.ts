@@ -5,7 +5,7 @@
 /** @module iModels */
 
 import {
-  AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
+  AccessToken, IncludePrefix, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
   ChangesType, Briefcase, HubCode, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel,
 } from "@bentley/imodeljs-clients";
@@ -542,7 +542,7 @@ export class BriefcaseManager {
       }
 
       perfLogger = new PerfLogger("BriefcaseManager.open -> BriefcaseManager.openBriefcase");
-      BriefcaseManager.openBriefcase(accessToken, contextId, briefcase, readWriteOpenParams);
+      BriefcaseManager.openBriefcase(actx, accessToken, contextId, briefcase, readWriteOpenParams);
       perfLogger.dispose();
     } else {
       perfLogger = new PerfLogger("BriefcaseManager.open -> BriefcaseManager.createBriefcase");
@@ -576,7 +576,7 @@ export class BriefcaseManager {
     // Reopen the briefcase if the briefcase hasn't been opened with the required OpenMode
     if (briefcase.openParams!.openMode !== openParams.openMode) {
       BriefcaseManager.closeBriefcase(briefcase, false),
-        BriefcaseManager.openBriefcase(accessToken, contextId, briefcase, openParams);
+        BriefcaseManager.openBriefcase(actx, accessToken, contextId, briefcase, openParams);
     }
 
     // Add briefcase to cache if necessary
@@ -715,7 +715,7 @@ export class BriefcaseManager {
 
     assert(openParams.openMode === OpenMode.ReadWrite); // Expect to setup briefcase as ReadWrite to allow pull and merge of changes (irrespective of the real openMode)
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
-    let res: DbResult = nativeDb.openIModel(accessToken.toTokenString(), IModelHost.backendVersion, contextId, briefcase.pathname, openParams.openMode);
+    let res: DbResult = BriefcaseManager.openDb(nativeDb, actx, accessToken, contextId, briefcase.pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res) {
       Logger.logError(loggingCategory, `Unable to open briefcase at ${briefcase.pathname}`);
       Logger.logWarning(loggingCategory, `Unable to create briefcase ${briefcase.pathname}. Deleting any remnants of it`);
@@ -742,6 +742,17 @@ export class BriefcaseManager {
 
     Logger.logTrace(loggingCategory, `Created briefcase ${briefcase.pathname}`);
     return briefcase;
+  }
+
+  private static openDb(nativeDb: NativeDgnDb, actx: ActivityLoggingContext, accessToken: AccessToken, contextId: GuidString, filePath: string, mode: OpenMode): DbResult {
+    let appVersion: string;
+    if (!actx.versionId || actx.versionId.length === 0)
+      appVersion = IModelHost.backendVersion;
+    else
+      appVersion = actx.versionId;
+
+    assert(appVersion.length !== 0);
+    return nativeDb.openIModel(accessToken.toTokenString(IncludePrefix.No), appVersion, contextId, filePath, mode);
   }
 
   private static async getOrAcquireBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: GuidString): Promise<HubBriefcase> {
@@ -1040,13 +1051,13 @@ export class BriefcaseManager {
     Logger.logTrace(loggingCategory, "Closed briefcase ", () => briefcase.getDebugInfo());
   }
 
-  private static openBriefcase(accessToken: AccessToken, contextId: string, briefcase: BriefcaseEntry, openParams: OpenParams): void {
+  private static openBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, briefcase: BriefcaseEntry, openParams: OpenParams): void {
     if (briefcase.isOpen)
       throw new Error(`Briefcase ${briefcase.pathname} is already open.`);
 
     briefcase.nativeDb = briefcase.nativeDb || new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
-    const res: DbResult = briefcase.nativeDb!.openIModel(accessToken.toTokenString(), IModelHost.backendVersion, contextId, briefcase.pathname, openParams.openMode);
+    const res: DbResult = BriefcaseManager.openDb(briefcase.nativeDb!, actx, accessToken, contextId, briefcase.pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, briefcase.pathname);
 
