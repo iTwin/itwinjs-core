@@ -220,9 +220,9 @@ function doImport(inputArgs: Yargs.Arguments<{}>) {
 
 Yargs.usage("Import a Syncro JSON animation script into an existing IBIM file.");
 Yargs.required("input", "The input IBIM");
-Yargs.default("fixRange", false, "Set the project extents to the range of all geometry");
+Yargs.default("fixRange", true, "Set the project extents to the range of all geometry");
 Yargs.default("createSeparateScript", false, "Create a seperate file with the JSON for the animation script (debugging)");
-Yargs.default("createDuplicateIbim", false, "Create a duplicate IBIM with the imported script (rather than writing to original)");
+Yargs.default("createDuplicateIbim", true, "Create a duplicate IBIM with the imported script (rather than writing to original)");
 Yargs.required("script", "Animation script JSON file");
 Yargs.string("script");
 Yargs.boolean("fixRange");
