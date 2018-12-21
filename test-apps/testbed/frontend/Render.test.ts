@@ -5,185 +5,16 @@
 import { expect } from "chai";
 import * as path from "path";
 import { WebGLTestContext } from "./WebGLTestContext";
+import { OffScreenTestViewport, comparePixelData, Color } from "./TestViewport";
 import { CONSTANTS } from "../common/Testbed";
-import { Id64String, SortedArray } from "@bentley/bentleyjs-core";
-import { GeometryClass, RenderMode, Feature, ColorDef, RgbColor } from "@bentley/imodeljs-common";
+import { RenderMode, ColorDef, RgbColor } from "@bentley/imodeljs-common";
 import { Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
   IModelConnection,
   SpatialViewState,
-  OffScreenViewport,
   ViewRect,
-  ViewState,
   FeatureSymbology,
-  IModelApp,
 } from "@bentley/imodeljs-frontend";
-
-function compareFeatures(lhs?: Feature, rhs?: Feature): number {
-  if (undefined === lhs && undefined === rhs)
-    return 0;
-  else if (undefined === lhs)
-    return -1;
-  else if (undefined === rhs)
-    return 1;
-  else
-    return lhs.compare(rhs);
-}
-
-function comparePixelData(lhs: Pixel.Data, rhs: Pixel.Data): number {
-  let diff = lhs.distanceFraction - rhs.distanceFraction;
-  if (0 === diff) {
-    diff = lhs.type - rhs.type;
-    if (0 === diff) {
-      diff = lhs.planarity - rhs.planarity;
-      if (0 === diff) {
-        diff = compareFeatures(lhs.feature, rhs.feature);
-      }
-    }
-  }
-
-  return diff;
-}
-
-class PixelDataSet extends SortedArray<Pixel.Data> {
-  public constructor() {
-    super((lhs: Pixel.Data, rhs: Pixel.Data) => comparePixelData(lhs, rhs));
-  }
-
-  public get array(): Pixel.Data[] { return this._array; }
-
-  public containsFeature(elemId?: Id64String, subcatId?: Id64String, geomClass?: GeometryClass) {
-    return this.containsWhere((pxl) =>
-      (undefined === elemId || pxl.elementId === elemId) &&
-      (undefined === subcatId || pxl.subCategoryId === subcatId) &&
-      (undefined === geomClass || pxl.geometryClass === geomClass));
-  }
-  public containsElement(id: Id64String) { return this.containsWhere((pxl) => pxl.elementId === id); }
-  public containsPlanarity(planarity: Pixel.Planarity) { return this.containsWhere((pxl) => pxl.planarity === planarity); }
-  public containsGeometryType(type: Pixel.GeometryType) { return this.containsWhere((pxl) => pxl.type === type); }
-  public containsGeometry(type: Pixel.GeometryType, planarity: Pixel.Planarity) { return this.containsWhere((pxl) => pxl.type === type && pxl.planarity === planarity); }
-  public containsWhere(criterion: (pxl: Pixel.Data) => boolean) {
-    for (const pixel of this.array)
-      if (criterion(pixel))
-        return true;
-
-    return false;
-  }
-}
-
-class Color {
-  public readonly v: number;
-  public readonly r: number;
-  public readonly g: number;
-  public readonly b: number;
-  public readonly a: number;
-
-  // val is uint32 repr as AABBGGRR
-  public constructor(val: number) {
-    this.v = val;
-
-    // ">>> 0" required to force unsigned because javascript is a brilliantly-designed language.
-    this.r = ((val & 0x000000ff) >>> 0x00) >>> 0;
-    this.g = ((val & 0x0000ff00) >>> 0x08) >>> 0;
-    this.b = ((val & 0x00ff0000) >>> 0x10) >>> 0;
-    this.a = ((val & 0xff000000) >>> 0x18) >>> 0;
-  }
-
-  public static from(val: number) { return new Color(val); }
-  public static fromRgba(r: number, g: number, b: number, a: number) {
-    const v = (r | (g << 0x08) | (b << 0x10) | (a << 0x18)) >>> 0;
-    return Color.from(v);
-  }
-
-  public compare(rhs: Color): number {
-    return this.v - rhs.v;
-  }
-}
-
-class ColorSet extends SortedArray<Color> {
-  public constructor() { super((lhs: Color, rhs: Color) => lhs.compare(rhs)); }
-
-  public get array(): Color[] { return this._array; }
-}
-
-class TestViewport extends OffScreenViewport {
-  // Read depth, geometry type, and feature for each pixel. Return only the unique ones.
-  public readUniquePixelData(readRect?: ViewRect): PixelDataSet {
-    const rect = undefined !== readRect ? readRect : this.viewRect;
-    const set = new PixelDataSet();
-    this.readPixels(rect, Pixel.Selector.All, (pixels: Pixel.Buffer | undefined) => {
-      if (undefined === pixels)
-        return;
-
-      for (let x = rect.left; x < rect.right; x++)
-        for (let y = rect.top; y < rect.bottom; y++)
-          set.insert(pixels.getPixel(x, y));
-    });
-
-    return set;
-  }
-
-  // Read colors for each pixel; return the unique ones.
-  public readUniqueColors(readRect?: ViewRect): ColorSet {
-    const rect = undefined !== readRect ? readRect : this.viewRect;
-    const buffer = this.readImage(rect)!;
-    expect(buffer).not.to.be.undefined;
-    const u32 = new Uint32Array(buffer.data.buffer);
-    const colors = new ColorSet();
-    for (const rgba of u32)
-      colors.insert(Color.from(rgba));
-
-    return colors;
-  }
-
-  public readPixel(x: number, y: number): Pixel.Data {
-    let pixel = new Pixel.Data();
-    this.readPixels(new ViewRect(x, y, x + 1, y + 1), Pixel.Selector.All, (pixels: Pixel.Buffer | undefined) => {
-      if (undefined !== pixels)
-        pixel = pixels.getPixel(x, y);
-    });
-
-    return pixel;
-  }
-
-  public readColor(x: number, y: number): Color {
-    const colors = this.readUniqueColors(new ViewRect(x, y, x + 1, y + 1));
-    expect(colors.length).to.equal(1);
-    return colors.array[0];
-  }
-
-  public get areAllTilesLoaded(): boolean {
-    return this.view.areAllTileTreesLoaded && this.numRequestedTiles === 0;
-  }
-
-  public async waitForAllTilesToRender(): Promise<void> {
-    this.renderFrame();
-
-    // NB: ToolAdmin loop is not turned on, and this vieport is not tracked by ViewManager - must manually pump tile request scheduler.
-    IModelApp.tileRequests.process();
-
-    if (this.areAllTilesLoaded)
-      return Promise.resolve();
-
-    await new Promise<void>((resolve: any) => setTimeout(resolve, 100));
-
-    // This viewport isn't added to ViewManager, so it won't be notified (and have its scene invalidated) when new tiles become loaded.
-    this.sync.invalidateScene();
-    return this.waitForAllTilesToRender();
-  }
-
-  public static createTestViewport(view: ViewState, rect: ViewRect): TestViewport {
-    // Viewport constructors are awkward because typescript is awkward. (First line of derived ctor must invoke super() if base contains any inline-initialized members).
-    const vp = TestViewport.create(view, rect) as TestViewport;
-    expect(vp).instanceof(TestViewport);
-    return vp;
-  }
-}
-
-async function createViewport(viewId: Id64String, imodel: IModelConnection, rect: ViewRect): Promise<TestViewport> {
-  const viewState = await imodel.views.load(viewId);
-  return TestViewport.createTestViewport(viewState, rect);
-}
 
 // Mirukuru contains a single view, looking at a single design model containing a single white rectangle (element ID 41 (0x29), subcategory ID = 24 (0x18)).
 // (It also is supposed to contain a reality model but the URL is presumably wrong).
@@ -215,7 +46,7 @@ describe("Render mirukuru", () => {
       return;
 
     const rect = new ViewRect(0, 0, 100, 100);
-    const vp = await createViewport("0x24", imodel, rect);
+    const vp = await OffScreenTestViewport.createTestViewport("0x24", imodel, rect);
 
     vp.renderFrame();
 
@@ -260,7 +91,7 @@ describe("Render mirukuru", () => {
       return;
 
     const rect = new ViewRect(0, 0, 100, 100);
-    const vp = await createViewport("0x24", imodel, rect);
+    const vp = await OffScreenTestViewport.createTestViewport("0x24", imodel, rect);
     await vp.waitForAllTilesToRender();
     expect(vp.numRequestedTiles).to.equal(0);
     expect(vp.numSelectedTiles).to.equal(1);
@@ -341,7 +172,7 @@ describe("Render mirukuru", () => {
       return;
 
     const rect = new ViewRect(0, 0, 200, 150);
-    const vp = await createViewport("0x24", imodel, rect);
+    const vp = await OffScreenTestViewport.createTestViewport("0x24", imodel, rect);
 
     const elemId = "0x29";
     const subcatId = "0x18";

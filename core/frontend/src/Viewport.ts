@@ -978,11 +978,7 @@ export abstract class Viewport implements IDisposable {
   /** @hidden */
   public get isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
-  /** Construct a new Viewport
-   * @param htmlElement The HTMLDivElement for the Viewport. This constructor will create a canvas to draw the graphics.
-   * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
-   * @hidden
-   */
+  /** @hidden */
   protected constructor(target: RenderTarget) {
     this._target = target;
     this._viewportId = Viewport._nextViewportId++;
