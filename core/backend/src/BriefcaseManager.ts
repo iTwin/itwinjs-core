@@ -5,7 +5,7 @@
 /** @module iModels */
 
 import {
-  AccessToken, IncludePrefix, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
+  AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
   ChangesType, Briefcase, HubCode, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel, IncludePrefix,
 } from "@bentley/imodeljs-clients";
