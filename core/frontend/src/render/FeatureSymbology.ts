@@ -184,13 +184,29 @@ export namespace FeatureSymbology {
     /** Set of IDs of visible subcategories. Geometry belonging to other subcategories will not be drawn */
     public readonly visibleSubCategories = new Set<string>();
 
+    /** Mapping of elements IDs to batch ID.  When a large number of elements have the same neverDrawn or appearance overrides
+     * as is the case with schedule simulation, setting these values once rather than for each element is is much
+     * more efficient.  Overrides of a specific element always take precedence over batch overrides.
+     */
+    public batchMap: Map<string, number> | undefined = undefined;
+    /**  IDs of batch which should never be drawn  */
+    public readonly batchNeverDrawn = new Set<number>();
+    /** Mapping of batch IDS to overrides applied to the corresponding batch. */
+    public readonly batchOverrides = new Map<number, Appearance>();
+
     /** Overrides applied to features for which no other overrides are defined */
     public get defaultOverrides(): Appearance { return this._defaultOverrides; }
     /** Whether or not line weights are applied. If false, all lines are drawn with a weight of 1. */
     public get lineWeights(): boolean { return this._lineWeights; }
 
     /** @hidden */
-    public isNeverDrawn(id: Id64String): boolean { return this.neverDrawn.has(id.toString()); }
+    public isNeverDrawn(id: Id64String): boolean {
+      if (this.neverDrawn.has(id.toString()))
+        return true;
+
+      let batchId: any;
+      return this.batchMap !== undefined && undefined !== (batchId = this.batchMap.get(id.toString())) && this.batchNeverDrawn.has(batchId);
+    }
     /** @hidden */
     public isAlwaysDrawn(id: Id64String): boolean { return this.alwaysDrawn.has(id.toString()); }
     /** Returns true if the [[SubCategory]] specified by ID is in the set of visible subcategories. */
@@ -206,7 +222,14 @@ export namespace FeatureSymbology {
     /** @hidden */
     public getModelOverrides(id: Id64String): Appearance | undefined { return this.modelOverrides.get(id.toString()); }
     /** @hidden */
-    public getElementOverrides(id: Id64String): Appearance | undefined { return this.elementOverrides.get(id.toString()); }
+    public getElementOverrides(id: Id64String): Appearance | undefined {
+      const idString = id.toString();
+      const app = this.elementOverrides.get(idString);
+      if (app !== undefined)
+        return app;
+      let batchId: any;   // If not element overide look for a batch override (element override takes precedence over batch).
+      return (this.batchMap !== undefined && undefined !== (batchId = this.batchMap.get(idString))) ? this.batchOverrides.get(batchId) : undefined;
+    }
     /** @hidden */
     public getSubCategoryOverrides(id: Id64String): Appearance | undefined { return this.subCategoryOverrides.get(id.toString()); }
 
@@ -216,6 +239,8 @@ export namespace FeatureSymbology {
     public setNeverDrawn(id: Id64String): void { this.neverDrawn.add(id.toString()); }
     /** Specify the ID of an element which should always be drawn in this view. */
     public setAlwaysDrawn(id: Id64String): void { this.alwaysDrawn.add(id.toString()); }
+    /** Specify the ID of a batch which should never be drawn in this view. */
+    public setBatchNeverDrawn(id: number): void { this.batchNeverDrawn.add(id); }
 
     /** Returns the feature's Appearance overrides, or undefined if the feature is not visible. */
     public getAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary): Appearance | undefined {
@@ -362,6 +387,12 @@ export namespace FeatureSymbology {
       if (replaceExisting || undefined === this.getElementOverrides(id))
         this.elementOverrides.set(id.toString(), app);
     }
+    /** Specify overrides for all geometry originating from the specified batch.
+     * @param id The ID of the batch.
+     * @param app The symbology overrides.
+     * @note These overides do not take precedence over element overrides.
+     */
+    public overrideBatch(id: number, app: Appearance): void { this.batchOverrides.set(id, app); }
 
     /** Defines a default Appearance to be applied to any [[Feature]] *not* explicitly overridden.
      * @param appearance The symbology overides.
@@ -381,6 +412,10 @@ export namespace FeatureSymbology {
 
       this.copy(this.alwaysDrawn, alwaysDrawn);
       this.copy(this.neverDrawn, neverDrawn);
+
+      this.batchMap = undefined;
+      this.batchNeverDrawn.clear();
+      this.batchOverrides.clear();
 
       this.isAlwaysDrawnExclusive = view.isAlwaysDrawnExclusive;
       this._constructions = constructions;

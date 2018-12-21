@@ -55,6 +55,12 @@ export abstract class RpcConfiguration {
   /** Reserved for an application authorization value. */
   public applicationAuthorizationValue: string = "";
 
+  /** Reserved for an application version key. */
+  public applicationVersionKey: string = "";
+
+  /** Reserved for an application version value. */
+  public static applicationVersionValue: string = "";
+
   /** The target interval (in milliseconds) between connection attempts for pending RPC operation requests. */
   public pendingOperationRetryInterval = 10000;
 

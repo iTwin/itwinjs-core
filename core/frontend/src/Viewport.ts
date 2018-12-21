@@ -1014,6 +1014,8 @@ export abstract class Viewport implements IDisposable {
   /** @hidden */
   public invalidateDecorations() { this.sync.invalidateDecorations(); }
   /** @hidden */
+  public invalidateRenderPlan() { this.sync.invalidateRenderPlan(); }
+  /** @hidden */
   public changeDynamics(dynamics: GraphicList | undefined): void {
     this.target.changeDynamics(dynamics);
     this.invalidateDecorations();
@@ -1832,7 +1834,7 @@ export class ScreenViewport extends Viewport {
    * "overlay-tooltip" for ToolTips. All the new child HTMLElements are the same size as the parentDiv.
    * @param parentDiv The HTMLDivElement to contain the ScreenViewport.
    * @param view The ViewState for the ScreenViewport.
-   * @note After creating a new ScreenViewport, you must call [[ViewManager.addViewport]] for it to be "live". You must also ensure your dispose of it properly.
+   * @note After creating a new ScreenViewport, you must call [[ViewManager.addViewport]] for it to become "live". You must also ensure you dispose of it properly.
    */
   public static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport {
     const canvas = document.createElement("canvas");
@@ -2160,8 +2162,12 @@ export class TwoWayViewportSync {
 
 /** @hidden */
 export class OffScreenViewport extends Viewport {
-  public static create(view: ViewState) {
-    const vp = new this(IModelApp.renderSystem.createOffscreenTarget(new ViewRect(0, 0, 1, 1)));
+  public static create(view: ViewState, viewRect?: ViewRect) {
+    const rect = new ViewRect(0, 0, 1, 1);
+    if (undefined !== viewRect)
+      rect.setFrom(viewRect);
+
+    const vp = new this(IModelApp.renderSystem.createOffscreenTarget(rect));
     vp.changeView(view);
     vp.sync.setValidDecorations();  // decorations are not used offscreen
     return vp;

@@ -206,27 +206,23 @@ export class BeInspireTree<TNodePayload> {
       model.forEach((n) => n.markDirty());
     });
 
-    setTimeout(() => {
-      // we want to allow consumers of `BeInspireTree` to listen for `ModelLoaded`
-      // and `ChildrenLoaded` events and do any kind of manipulation with them **before**
-      // `ChangesApplied` event is emitted, so we have to suspend rendering when data is loaded
-      // and resume it in `*Loaded` listener.
-      // note: because we need our `*Loaded` listener to be called **after** consumer's listener
-      // for the same events, we subscribe to those events from a `setTimeout` callback.
-      this.on(BeInspireTreeEvent.DataLoaded, () => {
-        this._suspendedRendering = this.pauseRendering();
-      });
-      this.on([BeInspireTreeEvent.ModelLoaded, BeInspireTreeEvent.ChildrenLoaded], () => {
-        if (this._suspendedRendering) {
-          this._suspendedRendering.dispose();
-          this._suspendedRendering = undefined;
-        }
-      });
-    });
-
     // dispose `visible` cache when data is loaded or nodes are expanded or collapsed
     this.on([BeInspireTreeEvent.DataLoaded, BeInspireTreeEvent.NodeCollapsed, BeInspireTreeEvent.NodeExpanded], () => {
       this._visibleCached = undefined;
+    });
+
+    // we want to allow consumers of `BeInspireTree` to listen for `ModelLoaded`
+    // and `ChildrenLoaded` events and do any kind of manipulation with them **before**
+    // `ChangesApplied` event is emitted, so we have to suspend rendering when data is loaded
+    // and resume it in `*Loaded` listener.
+    this.on(BeInspireTreeEvent.DataLoaded, () => {
+      this._suspendedRendering = this.pauseRendering();
+    });
+    this.on([BeInspireTreeEvent.ModelLoaded, BeInspireTreeEvent.ChildrenLoaded], () => {
+      if (this._suspendedRendering) {
+        this._suspendedRendering.dispose();
+        this._suspendedRendering = undefined;
+      }
     });
 
     // override the `load` function to handle auto-expanding nodes
@@ -342,7 +338,15 @@ export class BeInspireTree<TNodePayload> {
   /** Add a listener for specific event */
   public on(event: BeInspireTreeEvent | BeInspireTreeEvent[], listener: (...values: any[]) => void): this {
     const events = Array.isArray(event) ? event : [event];
-    events.forEach((e) => this._tree.on(e, listener));
+    events.forEach((e) => {
+      const shouldInsertBeforeLast = ((e === BeInspireTreeEvent.DataLoaded && this._tree.listeners(e).length >= 2)
+        || (e === BeInspireTreeEvent.ModelLoaded && this._tree.listeners(e).length >= 2)
+        || (e === BeInspireTreeEvent.ChildrenLoaded && this._tree.listeners(e).length >= 1));
+      if (shouldInsertBeforeLast)
+        this._tree.listeners(e).splice(this._tree.listeners(e).length - 1, 0, listener);
+      else
+        this._tree.on(e, listener);
+    });
     return this;
   }
 
