@@ -723,15 +723,11 @@ export class BriefcaseManager {
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
     let res: DbResult = BriefcaseManager.openDb(nativeDb, actx, accessToken, contextId, briefcase.pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res) {
-      if (res === -100)
-        Logger.logWarning(loggingCategory, "Usage tracking failed.", () => ({ userId: !accessToken.getUserInfo() ? undefined : accessToken.getUserInfo()!.id, contextId }));
-      else {
-        Logger.logError(loggingCategory, `Unable to open briefcase at ${briefcase.pathname}`);
-        Logger.logWarning(loggingCategory, `Unable to create briefcase ${briefcase.pathname}. Deleting any remnants of it`);
-        await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
-        actx.enter();
-        throw new IModelError(res, briefcase.pathname);
-      }
+      Logger.logError(loggingCategory, `Unable to open briefcase at ${briefcase.pathname}`);
+      Logger.logWarning(loggingCategory, `Unable to create briefcase ${briefcase.pathname}. Deleting any remnants of it`);
+      await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
+      actx.enter();
+      throw new IModelError(res, briefcase.pathname);
     }
 
     res = nativeDb.setBriefcaseId(briefcase.briefcaseId);
