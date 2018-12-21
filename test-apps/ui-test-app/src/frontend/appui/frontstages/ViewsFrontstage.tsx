@@ -23,7 +23,6 @@ import {
   ToolButton,
   ToolWidget,
   ZoneState,
-  WidgetState,
   NavigationWidget,
   ContentLayoutDef,
   ContentLayoutProps,
@@ -37,10 +36,10 @@ import {
   Zone,
   Widget,
   GroupItemDef,
+  BaseItemState,
   CoreTools,
   SyncUiEventId,
-  WidgetDefState,
-  BaseItemState,
+  WidgetState,
   ContentViewManager,
   BooleanSyncUiListener,
 } from "@bentley/ui-framework";
@@ -118,38 +117,18 @@ export class ViewsFrontstage extends FrontstageProvider {
         centerLeft={
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
-              <Widget defaultState={WidgetState.Visible} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget}
-                stateSyncIds={[SampleAppUiActionId.setTestProperty]}
-                stateFunc={(currentState: Readonly<BaseItemState>): BaseItemState => {
-                  const returnState: BaseItemState = { ...currentState };
-                  returnState.isVisible = SampleAppIModelApp.getTestProperty() !== "HIDE";
-                  return returnState;
-                }}
+              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.FeedbackDemo" control={FeedbackDemoWidget}
+                syncEventIds={[SampleAppUiActionId.setTestProperty]}
+                stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
               />,
-              <Widget defaultState={WidgetState.Visible} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl}
-                stateSyncIds={[SyncUiEventId.ActiveContentChanged]}
-                stateFunc={(currentState: Readonly<WidgetDefState>): WidgetDefState => {
-                  const returnState: WidgetDefState = { ...currentState };
-                  const activeContentControl = ContentViewManager.getActiveContentControl();
-                  if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-                    returnState.widgetState = WidgetState.Visible;
-                  else
-                    returnState.widgetState = WidgetState.Hidden;
-                  return returnState;
-                }}
+              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.BreadcrumbDemo" control={BreadcrumbDemoWidgetControl}
+                syncEventIds={[SampleAppUiActionId.setTestProperty]}
+                stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
               />,
-              <Widget defaultState={WidgetState.Visible} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
+              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.ModelSelector" control={ModelSelectorWidgetControl}
                 applicationData={{ iModelConnection: this.iModelConnection }} fillZone={true}
-                stateSyncIds={[SyncUiEventId.ActiveContentChanged]}
-                stateFunc={(currentState: Readonly<WidgetDefState>): WidgetDefState => {
-                  const returnState: WidgetDefState = { ...currentState };
-                  const activeContentControl = ContentViewManager.getActiveContentControl();
-                  if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-                    returnState.widgetState = WidgetState.Visible;
-                  else
-                    returnState.widgetState = WidgetState.Hidden;
-                  return returnState;
-                }}
+                syncEventIds={[SampleAppUiActionId.setTestProperty]}
+                stateFunc={(): WidgetState => SampleAppIModelApp.getTestProperty() !== "HIDE" ? WidgetState.Closed : WidgetState.Hidden}
               />,
             ]}
           />
@@ -180,19 +159,15 @@ export class ViewsFrontstage extends FrontstageProvider {
         bottomRight={
           <Zone defaultState={ZoneState.Minimized} allowsMerging={true}
             widgets={[
-              <Widget defaultState={WidgetState.Visible} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
+              <Widget defaultState={WidgetState.Closed} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.UnifiedSelectPropertyGrid"
                 control={UnifiedSelectionPropertyGridWidgetControl} fillZone={true}
                 applicationData={{ iModelConnection: this.iModelConnection, rulesetId: "Items" }}
-                stateSyncIds={[SyncUiEventId.SelectionSetChanged]}
-                stateFunc={(currentState: Readonly<WidgetDefState>): WidgetDefState => {
-                  const returnState: WidgetDefState = { ...currentState };
+                syncEventIds={[SyncUiEventId.SelectionSetChanged]}
+                stateFunc={(): WidgetState => {
                   const activeContentControl = ContentViewManager.getActiveContentControl();
                   if (activeContentControl && activeContentControl.viewport && (activeContentControl.viewport.view.iModel.selectionSet.size > 0))
-                    returnState.widgetState = WidgetState.Open;
-                  else
-                    returnState.widgetState = WidgetState.Close;
-
-                  return returnState;
+                    return WidgetState.Open;
+                  return WidgetState.Closed;
                 }}
               />,
               <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,

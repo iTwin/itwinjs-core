@@ -67,9 +67,8 @@ export declare class NativeDgnDb {
   public buildBriefcaseManagerResourcesRequestForModel(req: NativeBriefcaseManagerResourcesRequest, modelId: string, opcode: DbOpcode): RepositoryStatus;
   public cancelTo(txnId: TxnIdString): IModelStatus;
   public closeIModel(): void;
-  public closeIModelFile(): void;
   public createChangeCache(changeCacheFile: NativeECDb, changeCachePath: string): DbResult;
-  public createIModel(accessToken: string, projectId: GuidString, fileName: string, props: string): DbResult;
+  public createIModel(accessToken: string, appVersion: string, projectId: GuidString, fileName: string, props: string): DbResult;
   public createStandaloneIModel(fileName: string, props: string): DbResult;
   public deleteElement(elemIdJson: string): IModelStatus;
   public deleteElementAspect(aspectIdJson: string): IModelStatus;
@@ -121,7 +120,7 @@ export declare class NativeDgnDb {
   public isTxnIdValid(txnId: TxnIdString): boolean;
   public isUndoPossible(): boolean;
   public logTxnError(fatal: boolean): void;
-  public openIModel(accessToken: string, projectId: GuidString, dbName: string, mode: OpenMode): DbResult;
+  public openIModel(accessToken: string, appVersion: string, projectId: GuidString, dbName: string, mode: OpenMode): DbResult;
   public openIModelFile(dbName: string, mode: OpenMode): DbResult;
   public queryFileProperty(props: string, wantString: boolean): string | Uint8Array | undefined;
   public queryFirstTxnId(): TxnIdString;
@@ -204,6 +203,7 @@ export declare class NativeECSqlColumnInfo {
   public getType(): number;
   public getPropertyName(): string;
   public getAccessString(): string;
+  public isEnum(): boolean;
   public isSystemProperty(): boolean;
   public isGeneratedProperty(): boolean;
   public getRootClassTableSpace(): string;
@@ -231,6 +231,7 @@ export declare class NativeECSqlValue {
   public getPoint2d(): { x: number, y: number };
   public getPoint3d(): { x: number, y: number, z: number };
   public getString(): string;
+  public getEnum(): { schema: string, name: string, key: string, value: number | string } | undefined;
   public getNavigation(): { id: Id64String, relClassName?: string };
   public getStructIterator(): NativeECSqlValueIterator;
   public getArrayIterator(): NativeECSqlValueIterator;

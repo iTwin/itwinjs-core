@@ -86,13 +86,8 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
 
     if (this.props.propertyValueRendererManager)
       displayValue = await this.props.propertyValueRendererManager.render(props.propertyRecord, rendererContext);
-    else {
+    else
       displayValue = await PropertyValueRendererManager.defaultManager.render(props.propertyRecord, rendererContext);
-      // Adding left padding so it would align with text in EditText components
-      // Since default renderers return simple text, there should be no problem
-      if (typeof displayValue === typeof "")
-        displayValue = <span style={{ paddingLeft: 9 }}>{displayValue}</span>;
-    }
 
     // Align value with label if orientation is vertical
     if (this.props.orientation === Orientation.Vertical)

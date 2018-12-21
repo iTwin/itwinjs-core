@@ -68,6 +68,8 @@ Debugging display-test-app can be accomplished using the following procedures, d
   * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels (browser only).
 * SVT_STANDALONE_VIEWNAME
   * The view to open by default within an iModel. This may only be used in conjunction with SVT_STANDALONE_FILENAME.
+* SVT_STANDALONE_SIGNIN
+  * If defined (value does not matter), and SVT_STANDALONE_FILENAME is defined, the user will still be required to sign in. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
 * SVT_MAXIMIZE_WINDOW
   * If defined, maximize the electron window on startup
 * SVT_NO_DEVTOOLS

@@ -4,7 +4,7 @@
 import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, GeometricElement, DisplayStyle3d, OrthographicViewDefinition } from "@bentley/imodeljs-backend";
 import { OpenMode, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { Placement3d, ElementAlignedBox3d, AxisAlignedBox3d, RenderMode, ViewFlags, ColorDef } from "@bentley/imodeljs-common";
-import { YawPitchRollAngles, Point3d, Transform, Matrix3d } from "@bentley/geometry-core";
+import { YawPitchRollAngles, Point3d, Transform } from "@bentley/geometry-core";
 import * as Yargs from "yargs";
 import { readFileSync, writeFileSync } from "fs";
 
@@ -116,7 +116,6 @@ function animationScriptFromSynchro(synchroJson: object, iModel: IModelDb): any 
 
         const elementId: Id64String = entry.elementID;
         const data: any = {};
-        const identityMatrix = Matrix3d.createIdentity();
         for (const [key, value] of Object.entries(entry)) {
             switch (key) {
                 case "elementID":
@@ -127,11 +126,9 @@ function animationScriptFromSynchro(synchroJson: object, iModel: IModelDb): any 
                         for (const timelineEntry of value) {
                             if (timelineEntry.value) {
                                 const entryTransform = Transform.fromJSON(timelineEntry.value);
-                                if (!identityMatrix.isAlmostEqual(entryTransform.matrix, 1.0E-6)) {
-                                    const inverseElementMatrix = thisElement.placement.rotation.inverse();
-                                    const matrix = entryTransform.matrix.multiplyMatrixMatrix(inverseElementMatrix);
-                                    timelineEntry.value = Transform.createRefs(entryTransform.origin, matrix).toJSON();
-                                }
+                                const inverseElementMatrix = thisElement.placement.rotation.inverse();
+                                const matrix = entryTransform.matrix.multiplyMatrixMatrix(inverseElementMatrix);
+                                timelineEntry.value = Transform.createRefs(entryTransform.origin, matrix).toJSON();
                             }
                         }
                     }
@@ -182,7 +179,7 @@ function doAddAnimationScript(iModel: IModelDb, animationScript: string, createS
     });
     return true;
 }
-function doImport(inputArgs: Yargs.Arguments) {
+function doImport(inputArgs: Yargs.Arguments<{}>) {
     let originalIModel: IModelDb;
 
     try {
@@ -212,14 +209,14 @@ function doImport(inputArgs: Yargs.Arguments) {
         outputIModel.saveChanges();
     } catch (error) {
         process.stdout.write("Unable to save changes to: " + outputFileName + "\n");
-        }
+    }
 
     originalIModel.closeStandalone();
     if (inputArgs.duplicateIbim)
         outputIModel.closeStandalone();
 
     return true;
-    }
+}
 
 Yargs.usage("Import a Syncro JSON animation script into an existing IBIM file.");
 Yargs.required("input", "The input IBIM");

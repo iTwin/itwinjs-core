@@ -61,6 +61,8 @@ export class IModelHost {
   /** @hidden */
   public static readonly features = new FeatureGates();
 
+  private static _backendVersion?: string;
+
   /** This method must be called before any iModel.js services are used.
    * @param configuration Host configuration data.
    * Raises [[onAfterStartup]].
@@ -110,4 +112,16 @@ export class IModelHost {
     return (IModelHost.configuration === undefined) ? undefined : IModelHost.configuration.appAssetsDir;
   }
 
+  public static get backendVersion(): string {
+    if (IModelHost._backendVersion === undefined) {
+      // tslint:disable-next-line:no-var-requires
+      const backendVersion: any = require("../package.json").version;
+      if (!backendVersion || typeof (backendVersion) !== "string")
+        throw new Error("Could not read version of imodeljs-backend from package.json.");
+
+      IModelHost._backendVersion = backendVersion;
+    }
+
+    return IModelHost._backendVersion;
+  }
 }

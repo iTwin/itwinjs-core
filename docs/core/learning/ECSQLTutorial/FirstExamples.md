@@ -310,7 +310,7 @@ As you cannot bind values to parameters in the iModelConsole, the above query re
 
 ## Comparing to NULL
 
-The above example can be used to mention SQLite's semantics of comparing to NULL (see also https://www.sqlite.org/nulls.html). The rule in SQLite is:
+The above example can be used to mention SQLite's semantics of comparing to NULL (see also https://www.sqlite.org/nulls.html ). The rule in SQLite is:
 
 > SQLite evaluates the expression `myProp = NULL` always to `false`, even if the property is unset.
 

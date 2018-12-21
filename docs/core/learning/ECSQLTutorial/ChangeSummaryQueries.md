@@ -86,13 +86,13 @@ The following examples will run through both of them.
 
 ## Explore *what* has changed
 
-Generally there are three main classes in the [ECDbChange](../ECDbChange.ecschema.md) to explore what has changed:
+Generally there are three main classes in the [ECDbChange ECSchema](../ECDbChange.ecschema.md) to explore what has changed:
 
 - [ChangeSummary](../ECDbChange.ecschema.md#changesummary)
 - [InstanceChange](../ECDbChange.ecschema.md#instancechange)
 - [PropertyValueChange](../ECDbChange.ecschema.md#propertyvaluechange)
 
-Additionally the [IModelChange](../IModelChange.ecschema.md) contains the [ChangeSet](../IModelChange.ecschema.md#changeset) ECClass that links a Change Summary to the changeset from which it was generated.
+Additionally the [IModelChange ECSchema](../IModelChange.ecschema.md) contains the [ChangeSet](../IModelChange.ecschema.md#changeset) ECClass that links a Change Summary to the changeset from which it was generated.
 
 The following examples will run through all of them.
 
@@ -115,9 +115,9 @@ also serves to return the ECInstanceIds of the corresponding Change Summaries wh
 >
 > Summary.Id | WsgId | Description | PushDate | Author | ParentWsgId
 > --- | --- | --- | --- | --- | ---
-> 0x6c | f7c220138713044a89f4e5fa479564863516b53b | Inserted new Device 'DEV-A-G-3'. | 2018-12-18T16:03:08.373Z | krischan.eberle@bentley.com | NULL
-> 0x35 | 9c4239a1fef7cc7136fcef1f6a7472a3b0ffbd7d | Fixed user label of Device 'DEV-A-G-3'. Inserted new Device 'DEV-A-G-4'.| 2018-12-18T16:03:19.763Z | krischan.eberle@bentley.com | f7c220138713044a89f4e5fa479564863516b53b
-> 0x1 | 1264417d6364c79d3d1c8d6a45ee6e3ee79188c4 | Removed Device 'DEV-A-G-3' again. | 2018-12-18T16:03:27.140Z | krischan.eberle@bentley.com | 9c4239a1fef7cc7136fcef1f6a7472a3b0ffbd7d
+> 0x6c | f7c220138713044a89f4e5fa479564863516b53b | Inserted new Device 'DEV-A-G-3'. | 2018-12-18T16:03:08.373Z | some email address | NULL
+> 0x35 | 9c4239a1fef7cc7136fcef1f6a7472a3b0ffbd7d | Fixed user label of Device 'DEV-A-G-3'. Inserted new Device 'DEV-A-G-4'.| 2018-12-18T16:03:19.763Z | some email address | f7c220138713044a89f4e5fa479564863516b53b
+> 0x1 | 1264417d6364c79d3d1c8d6a45ee6e3ee79188c4 | Removed Device 'DEV-A-G-3' again. | 2018-12-18T16:03:27.140Z | some email address | 9c4239a1fef7cc7136fcef1f6a7472a3b0ffbd7d
 
 ### What instances have changed in a Change Summary
 
@@ -368,7 +368,7 @@ Now let's change the [ChangedValueState]($common) argument in the query.
 The query not returning anything just means that no Devices were updated in that changeset - which we already know from
 the [change history's description](#sample-change-history) and the previous queries.
 
-Consequently, the same result is obtained when using [ChangedValueState.BeforeUpdate]($common) and [ChangedValueState.BeforeDelete]($common)'.
+Consequently, the same result is obtained when using [ChangedValueState.BeforeUpdate]($common) and [ChangedValueState.BeforeDelete]($common).
 
 #### Changes in the second changeset
 

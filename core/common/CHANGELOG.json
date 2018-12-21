@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.179.0",
+      "tag": "@bentley/imodeljs-common_v0.179.0",
+      "date": "Wed, 19 Dec 2018 18:26:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Log context and imodel ids as separate properties. Surface interface and operation names in logging title."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.178.0",
       "tag": "@bentley/imodeljs-common_v0.178.0",
       "date": "Thu, 13 Dec 2018 22:06:10 GMT",
