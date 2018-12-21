@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Do not send X-Application-Version header if empty.",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "steve.wilson@bentley.com"
+}
