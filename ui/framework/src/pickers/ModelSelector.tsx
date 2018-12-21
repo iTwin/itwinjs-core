@@ -641,7 +641,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * @param enable Flag to enable or disable item, determined by checkBoxState if not specified
    */
   private _setItemState = (treeItem: TreeNodeItem, enable?: boolean) => {
-    if (enable || treeItem.checkBoxState === CheckBoxState.On)
+    if (enable || treeItem.checkBoxState === CheckBoxState.Off)
       this._setItemStateOn(treeItem);
     else
       this._setItemStateOff(treeItem);
@@ -653,18 +653,14 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this._setEnableItem(treeItem, true);
     this._setEnableNode(treeItem, true);
     this._setEnableChildren(treeItem, true);
-
-    const nodes = this.state.treeInfo!.dataProvider.getNodes();
-    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(nodes);
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent([treeItem]);
   }
 
   private _setItemStateOff = async (treeItem: TreeNodeItem) => {
     this._setEnableItem(treeItem, false);
     this._setEnableNode(treeItem, false);
     this._setEnableChildren(treeItem, false);
-
-    const nodes = this.state.treeInfo!.dataProvider.getNodes();
-    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(nodes);
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent([treeItem]);
   }
 
   private _setEnableItem = (treeItem: TreeNodeItem, enable: boolean) => {
@@ -687,7 +683,10 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
       const index = this.state.treeInfo.selectedNodes.indexOf(treeItem.id);
       if (index === -1) {
-        const nodes = this.state.treeInfo.selectedNodes;
+        treeItem.checkBoxState = CheckBoxState.On;
+        treeItem.labelBold = true;
+
+        const nodes = [...this.state.treeInfo.selectedNodes];
         nodes.push(treeItem.id);
         this.setState({
           treeInfo: {
@@ -696,8 +695,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           },
         });
       }
-      treeItem.checkBoxState = CheckBoxState.On;
-      treeItem.labelBold = true;
     }
   }
 
@@ -705,7 +702,14 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
       const index = this.state.treeInfo.selectedNodes.indexOf(treeItem.id);
       if (index > -1) {
+<<<<<<< HEAD
         const nodes = this.state.treeInfo.selectedNodes;
+=======
+        treeItem.checkBoxState = CheckBoxState.Off;
+        treeItem.labelBold = false;
+
+        const nodes = [...this.state.treeInfo.selectedNodes];
+>>>>>>> ffae3061c4a0b0f097ef3ba70318a4b3bcd667ee
         nodes.splice(index, 1);
         this.setState({
           treeInfo: {
@@ -713,8 +717,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
             selectedNodes: nodes,
           },
         });
-        treeItem.checkBoxState = CheckBoxState.Off;
-        treeItem.labelBold = false;
       }
     }
   }
