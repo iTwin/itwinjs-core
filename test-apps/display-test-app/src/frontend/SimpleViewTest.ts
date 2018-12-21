@@ -1678,14 +1678,25 @@ function updateTileLoadIndicator(progress: HTMLProgressElement): void {
     const requested = undefined !== theViewport ? theViewport.numRequestedTiles : 0;
     const selected = theViewport.numSelectedTiles;
     const total = selected + requested;
+    const canceled = IModelApp.tileRequests.statistics.numCanceled;
     pctComplete = (total > 0) ? (selected / total) : 1.0;
-    title = "" + selected + " / " + total + " (" + requested + ")";
+    title = "" + selected + " / " + total;
+    if (total < selected)
+      title += " (" + requested + " queued)";
+
+    if (0 < canceled)
+      title += " (" + canceled + " canceled)";
+
     color = "#007fff";
+
+    const wantLogTileStats = false;
+    if (wantLogTileStats && progress.title !== title)
+      console.log(title);
   }
 
   progress.value = pctComplete;
   progress.title = title;
-  progress.style.color = color;
+  progress.style.color = color; // ###TODO this does nothing. HTMLProgressElement is quite opaque.
 
   window.requestAnimationFrame(() => updateTileLoadIndicator(progress));
 }

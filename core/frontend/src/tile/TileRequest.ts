@@ -10,6 +10,7 @@ import { RenderGraphic } from "../render/System";
 import { Tile, TileTree, TileLoader } from "./TileTree";
 import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
+import { IModelConnection } from "../IModelConnection";
 
 export abstract class TileRequest {
   protected _state: TileRequest.State;
@@ -44,6 +45,7 @@ export namespace TileRequest {
   export interface Statistics {
     numPendingRequests: number;
     numActiveRequests: number;
+    numCanceled: number;
   }
 
   export interface Scheduler {
@@ -275,14 +277,18 @@ class RequestsPerViewport extends Dictionary<Viewport, Set<Tile>> {
 class RequestScheduler implements TileRequest.Scheduler {
   private readonly _requestsPerViewport = new RequestsPerViewport();
   private readonly _uniqueViewportSets = new UniqueViewportSets();
-  private _activeRequests = new Set<Request>();
-  private _swapActiveRequests = new Set<Request>();
   private readonly _maxActiveRequests: number;
   private readonly _throttle: boolean;
+  private readonly _removeIModelConnectionOnCloseListener: () => void;
+  private _activeRequests = new Set<Request>();
+  private _swapActiveRequests = new Set<Request>();
   private _pendingRequests = new Queue();
   private _swapPendingRequests = new Queue();
+  private _numCanceled = 0;
 
   public constructor(options?: TileRequest.SchedulerOptions) {
+    this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
+
     let throttle = true; // false;
     let maxActiveRequests = 10; // ###TODO for now we don't want the throttling behavior.
     if (undefined !== options) {
@@ -300,10 +306,13 @@ class RequestScheduler implements TileRequest.Scheduler {
     return {
       numPendingRequests: this._pendingRequests.length,
       numActiveRequests: this._activeRequests.size,
+      numCanceled: this._numCanceled,
     };
   }
 
   public process(): void {
+    this._numCanceled = 0;
+
     // Mark all requests as being associated with no Viewports, indicating they are no longer needed.
     this._uniqueViewportSets.clearAll();
 
@@ -323,14 +332,14 @@ class RequestScheduler implements TileRequest.Scheduler {
     // Cancel any previously pending requests which are no longer needed.
     for (const queued of previouslyPending.array)
       if (queued.viewports.isEmpty)
-        queued.cancel(this);
+        this.cancel(queued);
 
     previouslyPending.clear();
 
     // Cancel any active requests which are no longer needed.
     for (const active of previouslyActive) {
       if (active.viewports.isEmpty)
-        active.cancel(this);
+        this.cancel(active);
       else
         this._activeRequests.add(active);
     }
@@ -384,21 +393,36 @@ class RequestScheduler implements TileRequest.Scheduler {
   }
 
   public forgetViewport(vp: Viewport): void {
-    // NB: In process() we will eliminate this Viewport from ViewportSets.
-    this._requestsPerViewport.delete(vp);
+    // NB: vp will be removed from ViewportSets in process() - but if we can establish that only this vp wants a given tile, cancel its request immediately.
+    const tiles = this._requestsPerViewport.get(vp);
+    if (undefined !== tiles) {
+      for (const tile of tiles) {
+        const request = Request.getForTile(tile);
+        if (undefined !== request && 1 === request.viewports.length)
+          request.cancel(this);
+      }
+
+      this._requestsPerViewport.delete(vp);
+    }
+  }
+
+  private onIModelClosed(iModel: IModelConnection): void {
+    this._requestsPerViewport.forEach((vp, _req) => {
+      if (vp.iModel === iModel)
+        this.forgetViewport(vp);
+    });
   }
 
   public onShutDown(): void {
-    // ###TODO mark all as cancelled.
+    this._removeIModelConnectionOnCloseListener();
+
     for (const request of this._activeRequests)
-      request.tile.setAbandoned();
+      request.cancel(this);
 
     this._activeRequests.clear();
 
-    for (const queued of this._pendingRequests.array) {
-      queued.tile.request = undefined;
-      queued.tile.setAbandoned();
-    }
+    for (const queued of this._pendingRequests.array)
+      queued.cancel(this);
 
     this._requestsPerViewport.clear();
     this._uniqueViewportSets.clear();
@@ -408,6 +432,11 @@ class RequestScheduler implements TileRequest.Scheduler {
     this._activeRequests.add(req);
     req.dispatch().then(() => this.dropActiveRequest(req)) // tslint:disable-line no-floating-promises
       .catch(() => this.dropActiveRequest(req));
+  }
+
+  private cancel(req: Request) {
+    req.cancel(this);
+    ++this._numCanceled;
   }
 
   private dropActiveRequest(req: Request) {
