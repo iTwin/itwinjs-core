@@ -764,6 +764,8 @@ export class BriefcaseManager {
     assert(appVersion.length !== 0);
     const res: DbResult = nativeDb.openIModel(accessToken.toTokenString(IncludePrefix.No), appVersion, contextId, filePath, mode);
     if (res === -100) {
+      // The addon returns -100 if usage tracking failed. For now we don't yet fail the open, as
+      // apps need to switch to OIDC authentication first.
       Logger.logWarning(loggingCategory, "Usage tracking failed.", () => ({ userId: !accessToken.getUserInfo() ? undefined : accessToken.getUserInfo()!.id, contextId }));
       return DbResult.BE_SQLITE_OK;
     }
