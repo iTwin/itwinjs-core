@@ -8,9 +8,7 @@ import { WebGLTestContext } from "./WebGLTestContext";
 import { CONSTANTS } from "../common/Testbed";
 import { Id64String, SortedArray } from "@bentley/bentleyjs-core";
 import { GeometryClass, RenderMode, Feature, ColorDef, RgbColor } from "@bentley/imodeljs-common";
-import {
-  Pixel,
-} from "@bentley/imodeljs-frontend/lib/rendering";
+import { Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
   IModelConnection,
   SpatialViewState,
@@ -18,6 +16,7 @@ import {
   ViewRect,
   ViewState,
   FeatureSymbology,
+  IModelApp,
 } from "@bentley/imodeljs-frontend";
 
 function compareFeatures(lhs?: Feature, rhs?: Feature): number {
@@ -159,6 +158,10 @@ class TestViewport extends OffScreenViewport {
 
   public async waitForAllTilesToRender(): Promise<void> {
     this.renderFrame();
+
+    // NB: ToolAdmin loop is not turned on, and this vieport is not tracked by ViewManager - must manually pump tile request scheduler.
+    IModelApp.tileRequests.process();
+
     if (this.areAllTilesLoaded)
       return Promise.resolve();
 

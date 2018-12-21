@@ -658,7 +658,9 @@ export abstract class TileLoader {
   public abstract get maxDepth(): number;
   protected get _batchType(): BatchType { return BatchType.Primary; }
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
-  public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData): Promise<TileRequest.Graphic> {
+
+  // NB: The isCanceled arg is chiefly for tests...in usual case it just returns false if the tile is no longer in 'loading' state.
+  public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<TileRequest.Graphic> {
     assert(data instanceof Uint8Array);
     const blob = data as Uint8Array;
 
@@ -666,7 +668,9 @@ export abstract class TileLoader {
     const format = streamBuffer.nextUint32;
     streamBuffer.rewind(4);
 
-    const isCanceled = () => !tile.isLoading;
+    if (undefined === isCanceled)
+      isCanceled = () => !tile.isLoading;
+
     let reader: GltfTileIO.Reader | undefined;
     switch (format) {
       case TileIO.Format.Pnts:

@@ -325,7 +325,7 @@ class RequestScheduler implements TileRequest.Scheduler {
     this._activeRequests = this._swapActiveRequests;
 
     this._requestsPerViewport.forEach((key, value) => this.processRequests(key, value));
-    
+
     if (!this._throttle)
       return;
 

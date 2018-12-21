@@ -175,11 +175,14 @@ class WebMercatorTileLoader extends TileLoader {
     const quadId = new QuadId(tile.contentId);
     return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
   }
-  public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData): Promise<TileRequest.Graphic> {
+  public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<TileRequest.Graphic> {
+    if (undefined === isCanceled)
+      isCanceled = () => !tile.isLoading;
+
     assert(data instanceof ImageSource);
     const graphic: TileRequest.Graphic = { };
     const system = IModelApp.renderSystem;
-    const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system);
+    const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system, isCanceled);
     if (undefined !== texture) {
       const quadId = new QuadId(tile.contentId);
       const corners = quadId.getCorners(this.mercatorToDb);
@@ -189,9 +192,8 @@ class WebMercatorTileLoader extends TileLoader {
     return graphic;
   }
 
-  private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem): Promise<RenderTexture | undefined> {
+  private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem, isCanceled: () => boolean): Promise<RenderTexture | undefined> {
     try {
-      const isCanceled = false;  // Tbd...
       const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.TileSection);
       return imageElementFromImageSource(imageSource)
         .then((image) => isCanceled ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
