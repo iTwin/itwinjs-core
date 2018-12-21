@@ -827,8 +827,8 @@ interface FloatingZoneWidgetProps extends Widget6Tab1ContentProps, Widget7Tab1Co
 
 class FloatingZoneWidget extends React.PureComponent<FloatingZoneWidgetProps> {
   public render() {
-    const isOpen = this.props.zone.widgets.some((w) => w.tabIndex !== -1);
-    const activeWidget = this.props.zone.widgets.find((widget) => widget.tabIndex !== -1);
+    const isOpen = this.props.zone.widgets.some((w) => w.tabIndex >= 0);
+    const activeWidget = this.props.zone.widgets.find((widget) => widget.tabIndex >= 0);
     const isDragged = this.props.draggingWidget && this.props.draggingWidget.id === this.props.zone.id;
     return (
       <Stacked
@@ -1828,7 +1828,7 @@ interface ToolZoneToolbarProps {
 class ToolZoneToolbar extends React.PureComponent<ToolZoneToolbarProps> {
   public static readonly defaultProps = {
     // tslint:disable-next-line:space-before-function-paren object-literal-shorthand
-    children: function(this: ToolZoneToolbarProps, items: React.ReactNode) {
+    children: function (this: ToolZoneToolbarProps, items: React.ReactNode) {
       return (
         <Toolbar
           expandsTo={this.expandsTo}

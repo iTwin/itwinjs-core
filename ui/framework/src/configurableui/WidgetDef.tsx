@@ -5,15 +5,16 @@
 /** @module Widget */
 
 import * as React from "react";
-
-import { ItemProps } from "./ItemProps";
+import { UiFramework } from "../UiFramework";
+import { WidgetProps } from "./Widget";
 import { ConfigurableUiManager } from "./ConfigurableUiManager";
 import { WidgetControl } from "./WidgetControl";
 import { FrontstageManager } from "./FrontstageManager";
 import { ConfigurableUiControlType, ConfigurableUiControlConstructor, ConfigurableCreateInfo } from "./ConfigurableUiControl";
 import { CommandItemDef } from "../configurableui/Item";
-import { ItemDefBase, BaseItemState } from "./ItemDefBase";
+import { BaseItemState } from "./ItemDefBase";
 import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
+import { StringGetter } from "./ItemProps";
 
 import { Direction } from "@bentley/ui-ninezone";
 import { ItemList } from "./ItemMap";
@@ -26,9 +27,8 @@ import { ItemList } from "./ItemMap";
  */
 export enum WidgetState {
   Open,     // widgetTab is visible and active and its contents are visible.
-  Close,    // widgetTab is visible but its contents are not visible.
+  Closed,   // widgetTab is visible but its contents are not visible.
   Hidden,   // widgetTab nor its contents are visible
-  Visible,  // widgetTab is visible in zone's tab stack
   Floating, // widgetTab is in a 'floating' state and is not docked in zone's tab stack.
 }
 
@@ -43,32 +43,9 @@ export enum WidgetType {
   StatusBar,
 }
 
-/** Properties for a Widget.
- */
-export interface WidgetDefProps extends ItemProps {
-  id?: string;
-
-  classId?: string | ConfigurableUiControlConstructor;
-  defaultState?: WidgetState;
-  priority?: number;
-
-  featureId?: string;
-  isFreeform?: boolean;                         // Default - false
-  isFloatingStateSupported?: boolean;           // Default - false
-  isFloatingStateWindowResizable?: boolean;     // Default - true
-  isToolSettings?: boolean;                     // Default - false
-  isStatusBar?: boolean;                        // Default - false
-  isFloating?: boolean;                         // Default - false
-  fillZone?: boolean;                           // Default - false
-
-  applicationData?: any;
-
-  reactElement?: React.ReactNode;
-}
-
 /** Properties for a Toolbar Widget.
  */
-export interface ToolbarWidgetProps extends WidgetDefProps {
+export interface ToolbarWidgetProps extends WidgetProps {
   horizontalDirection?: Direction;
   verticalDirection?: Direction;
 
@@ -95,7 +72,7 @@ export interface WidgetDefState extends BaseItemState {
 
 /** Union of all Widget properties.
  */
-export type AnyWidgetProps = WidgetDefProps | ToolWidgetProps | NavigationWidgetProps;
+export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
 
 // -----------------------------------------------------------------------------
 // Widget and subclasses
@@ -103,13 +80,17 @@ export type AnyWidgetProps = WidgetDefProps | ToolWidgetProps | NavigationWidget
 
 /** A Widget Definition in the 9-Zone Layout system.
  */
-export class WidgetDef extends ItemDefBase {
+export class WidgetDef {
   private static _sId = 0;
+  private _label: string | StringGetter = "";
+  private _tooltip: string | StringGetter = "";
+  private _widgetReactNode: React.ReactNode;
+  private _widgetControl!: WidgetControl;
 
+  public state: WidgetState = WidgetState.Closed;
   public id: string;
   public classId: string | ConfigurableUiControlConstructor | undefined = undefined;
   public priority: number = 0;
-
   public featureId: string = "";
   public isFreeform: boolean = false;
   public isFloatingStateSupported: boolean = false;
@@ -118,64 +99,24 @@ export class WidgetDef extends ItemDefBase {
   public isStatusBar: boolean = false;
   public stateChanged: boolean = false;
   public fillZone: boolean = false;
-  public stateFunc?: (state: Readonly<WidgetDefState>) => WidgetDefState;  // override stateFunc from ItemDefBase to use widget-specific properties
+  public syncEventIds: string[] = [];
+  public stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
   public widgetType: WidgetType = WidgetType.Rectangular;
   public applicationData?: any;
-
-  private _widgetReactNode: React.ReactNode;
-  private _widgetControl!: WidgetControl;
-  public isFloating: boolean = false;
+  public isFloating = false;
+  public iconSpec?: string | React.ReactNode;
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
-    let refreshState = false;
-
-    if (this.stateSyncIds && this.stateSyncIds.length > 0)
-      refreshState = this.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
-    if (refreshState) {
+    if ((this.syncEventIds.length > 0) && this.syncEventIds.some((value: string): boolean => args.eventIds.has(value))) {
       if (this.stateFunc) {
-        let newState: WidgetDefState = {
-          isVisible: this.isVisible,
-          isEnabled: this.isEnabled,
-          isActive: this.isActive,
-          isFloating: this.isFloating,
-        };
+        let newState = this.state;
         newState = this.stateFunc(newState);
-        this.applyStateChanges(newState);
+        this.setWidgetState(newState);
       }
     }
   }
 
-  private applyStateChanges(newState: WidgetDefState): void {
-    // if widgetState is defined then use it, else use individual properties
-    if (undefined !== newState.widgetState) {
-      this.setWidgetState(newState.widgetState);
-      return;
-    }
-
-    let stateChanged = false;
-    if (undefined !== newState.isVisible && newState.isVisible !== this.isVisible) {
-      stateChanged = true;
-      this.isVisible = newState.isVisible;
-    }
-
-    if (undefined !== newState.isActive && newState.isActive !== this.isActive) {
-      stateChanged = true;
-      this.isActive = newState.isActive;
-    }
-
-    if (undefined !== newState.isFloating && newState.isFloating !== this.isFloating) {
-      stateChanged = true;
-      this.isFloating = newState.isFloating;
-    }
-
-    if (stateChanged) {
-      this.stateChanged = true;
-      FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this });
-    }
-  }
-
-  constructor(widgetProps?: WidgetDefProps) {
-    super(widgetProps);
+  constructor(widgetProps?: WidgetProps) {
     if (widgetProps && widgetProps.id !== undefined)
       this.id = widgetProps.id;
     else {
@@ -183,54 +124,105 @@ export class WidgetDef extends ItemDefBase {
       this.id = "Widget-" + WidgetDef._sId;
     }
 
-    if (widgetProps) { // typically this is not defined as widgetDef are typically created by Zone.createWidgetDef
-      if (widgetProps.isVisible !== undefined)
-        this.isVisible = widgetProps.isVisible;
-
-      if (widgetProps.isFloating !== undefined)
-        this.isFloating = widgetProps.isFloating;
-
-      if (widgetProps.classId !== undefined)
-        this.classId = widgetProps.classId;
-      if (widgetProps.defaultState !== undefined)
-        this.applyWidgetState(widgetProps.defaultState);
-      if (widgetProps.priority !== undefined)
-        this.priority = widgetProps.priority;
-
-      if (widgetProps.featureId !== undefined)
-        this.featureId = widgetProps.featureId;
-      if (widgetProps.isFreeform !== undefined) {
-        this.isFreeform = widgetProps.isFreeform;
-        this.widgetType = this.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
-      }
-
-      if (widgetProps.isFloatingStateSupported !== undefined)
-        this.isFloatingStateSupported = widgetProps.isFloatingStateSupported;
-      if (widgetProps.isFloatingStateWindowResizable !== undefined)
-        this.isFloatingStateWindowResizable = widgetProps.isFloatingStateWindowResizable;
-      if (widgetProps.isToolSettings !== undefined)
-        this.isToolSettings = widgetProps.isToolSettings;
-      if (widgetProps.isStatusBar !== undefined)
-        this.isStatusBar = widgetProps.isStatusBar;
-      if (widgetProps.fillZone !== undefined)
-        this.fillZone = widgetProps.fillZone;
-
-      if (widgetProps.applicationData !== undefined)
-        this.applicationData = widgetProps.applicationData;
-
-      if (widgetProps.reactElement !== undefined)
-        this._widgetReactNode = widgetProps.reactElement;
-
-      this.setUpSyncSupport(widgetProps);
-    }
+    if (widgetProps)
+      WidgetDef.initializeFromWidgetProps(widgetProps, this);
   }
 
-  public setUpSyncSupport(props: ItemProps) {
-    if (props.stateFunc && props.stateSyncIds && props.stateSyncIds.length > 0) {
-      this.stateSyncIds = props.stateSyncIds;
+  public static initializeFromWidgetProps(widgetProps: WidgetProps, me: WidgetDef) {
+    if (!widgetProps)
+      return;
+
+    if (widgetProps.label)
+      me.setLabel(widgetProps.label);
+    else if (widgetProps.labelKey)
+      me._label = UiFramework.i18n.translate(widgetProps.labelKey);
+
+    if (widgetProps.priority !== undefined)
+      me.priority = widgetProps.priority;
+
+    if (widgetProps.tooltip)
+      me.setTooltip(widgetProps.tooltip);
+    else if (widgetProps.tooltipKey)
+      me._tooltip = UiFramework.i18n.translate(widgetProps.tooltipKey);
+
+    if (widgetProps.control !== undefined)
+      me.classId = widgetProps.control;
+    else if (widgetProps.classId !== undefined)
+      me.classId = widgetProps.classId;
+
+    if (widgetProps.defaultState !== undefined)
+      me.state = widgetProps.defaultState;
+
+    if (widgetProps.featureId !== undefined)
+      me.featureId = widgetProps.featureId;
+    if (widgetProps.isFreeform !== undefined) {
+      me.isFreeform = widgetProps.isFreeform;
+      me.widgetType = me.isFreeform ? WidgetType.FreeFrom : WidgetType.Rectangular;
+    }
+
+    if (widgetProps.isFloatingStateSupported !== undefined)
+      me.isFloatingStateSupported = widgetProps.isFloatingStateSupported;
+    if (widgetProps.isFloatingStateWindowResizable !== undefined)
+      me.isFloatingStateWindowResizable = widgetProps.isFloatingStateWindowResizable;
+    if (widgetProps.isToolSettings !== undefined)
+      me.isToolSettings = widgetProps.isToolSettings;
+    if (widgetProps.isStatusBar !== undefined)
+      me.isStatusBar = widgetProps.isStatusBar;
+    if (widgetProps.fillZone !== undefined)
+      me.fillZone = widgetProps.fillZone;
+
+    if (widgetProps.applicationData !== undefined)
+      me.applicationData = widgetProps.applicationData;
+
+    if (widgetProps.element !== undefined)
+      me._widgetReactNode = widgetProps.element;
+
+    if (widgetProps.iconSpec !== undefined)
+      me.iconSpec = widgetProps.iconSpec;
+
+    me.setUpSyncSupport(widgetProps);
+  }
+
+  public setUpSyncSupport(props: WidgetProps) {
+    if (props.stateFunc && props.syncEventIds && props.syncEventIds.length > 0) {
+      this.syncEventIds = props.syncEventIds;
       this.stateFunc = props.stateFunc;
       SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     }
+  }
+
+  /** Get the label string */
+  public get label(): string {
+    let label = "";
+    if (typeof this._label === "string")
+      label = this._label;
+    else
+      label = this._label();
+    return label;
+  }
+
+  /** Set the label.
+   * @param v A string or a function to get the string.
+   */
+  public setLabel(v: string | StringGetter) {
+    this._label = v;
+  }
+
+  /** Get the tooltip string */
+  public get tooltip(): string {
+    let tooltip = "";
+    if (typeof this._tooltip === "string")
+      tooltip = this._tooltip;
+    else
+      tooltip = this._tooltip();
+    return tooltip;
+  }
+
+  /** Set the tooltip.
+   * @param v A string or a function to get the string.
+   */
+  public setTooltip(v: string | StringGetter) {
+    this._tooltip = v;
   }
 
   public get widgetControl(): WidgetControl | undefined {
@@ -275,57 +267,25 @@ export class WidgetDef extends ItemDefBase {
     this._widgetReactNode = node;
   }
 
-  public applyWidgetState(state: WidgetState): boolean {
-    let stateChanged = false;
-
-    switch (state) {
-      case WidgetState.Open:
-        if (!this.isVisible || !this.isActive) {
-          stateChanged = true;
-          this.isVisible = true;
-          this.isActive = true;
-        }
-        break;
-      case WidgetState.Close:
-        if (!this.isVisible || this.isActive) {
-          stateChanged = true;
-          this.isVisible = true;
-          this.isActive = false;
-        }
-        break;
-      case WidgetState.Hidden:
-        if (this.isVisible || !this.isFloating) {
-          stateChanged = true;
-          this.isVisible = false;
-          this.isFloating = false;
-        }
-        break;
-      case WidgetState.Visible:
-        if (!this.isVisible) {
-          stateChanged = true;
-          this.isVisible = true;
-        }
-        break;
-      case WidgetState.Floating:
-        if (!this.isVisible || !this.isFloating) {
-          stateChanged = true;
-          this.isFloating = true;
-          this.isVisible = true;
-        }
-        break;
-    }
-
-    return stateChanged;
-  }
-
-  public setWidgetState(state: WidgetState): void {
-    if (this.applyWidgetState(state)) {
-      this.stateChanged = true;
-      FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this });
-    }
+  public setWidgetState(newState: WidgetState): void {
+    this.state = newState;
+    FrontstageManager.onWidgetStateChangedEvent.emit({ widgetDef: this });
   }
 
   public canOpen(): boolean {
-    return (this.isActive || this.isFloating);
+    return (this.isFloating || this.isActive);
   }
+
+  public get isVisible(): boolean {
+    return (WidgetState.Hidden !== this.state);
+  }
+
+  public get activeState(): WidgetState {
+    return this.state;
+  }
+
+  public get isActive(): boolean {
+    return WidgetState.Open === this.activeState;
+  }
+
 }
