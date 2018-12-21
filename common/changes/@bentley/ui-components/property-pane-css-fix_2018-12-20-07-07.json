@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Added Tests, updated Table, fixed breadcrumb mutability issues",
+      "comment": " Changed how vertical PropertyPane looks.",
       "packageName": "@bentley/ui-components",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-components",
-  "email": "Simeon.McGraw@bentley.com"
+  "email": "elonas.seviakovas@bentley.com"
 }

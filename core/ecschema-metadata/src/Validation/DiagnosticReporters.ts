@@ -9,7 +9,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 
 const loggingCategory = "ecschema-metadata";
 
-/** A [[DiagnosticReporter]] for logging [[Diagnostic]] objects.  */
+/** A [[IDiagnosticReporter]] for logging [[Diagnostic]] objects.  */
 export class LoggingDiagnosticReporter implements IDiagnosticReporter {
   public report(diagnostic: Diagnostic) {
     switch (diagnostic.category) {
@@ -33,7 +33,7 @@ export class LoggingDiagnosticReporter implements IDiagnosticReporter {
   }
 }
 
-/** A [[DiagnosticReporter]] for throwing errors for a given [[Diagnostic]] object. */
+/** A [[IDiagnosticReporter]] for throwing errors for a given [[Diagnostic]] object. */
 export class ExceptionDiagnosticReporter implements IDiagnosticReporter {
   public report(diagnostic: Diagnostic) {
     if (diagnostic.category === DiagnosticCategory.Error)
@@ -41,7 +41,7 @@ export class ExceptionDiagnosticReporter implements IDiagnosticReporter {
   }
 }
 
-/** A [[DiagnosticReporter]] for storing all reported [[Diagnostic]] objects in a collection. */
+/** A [[IDiagnosticReporter]] for storing all reported [[Diagnostic]] objects in a collection. */
 export class CollectionDiagnosticReporter implements IDiagnosticReporter {
   private _diagnostics: Diagnostic[] = [];
 

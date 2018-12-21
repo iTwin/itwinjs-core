@@ -2,6 +2,21 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "0.179.0",
+      "tag": "@bentley/ui-ninezone_v0.179.0",
+      "date": "Wed, 19 Dec 2018 18:26:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added showDialogInitially support to ActivityMessageDetails"
+          },
+          {
+            "comment": "Refactor Tooltip component to position over multiple viewports."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.178.0",
       "tag": "@bentley/ui-ninezone_v0.178.0",
       "date": "Thu, 13 Dec 2018 22:06:10 GMT",

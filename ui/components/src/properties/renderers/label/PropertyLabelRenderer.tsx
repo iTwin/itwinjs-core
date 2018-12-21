@@ -12,6 +12,7 @@ import "./PropertyLabelRenderer.scss";
 export interface PropertyLabelRendererProps {
   /** Label to be rendered */
   children: string;
+  renderColon?: boolean;
 }
 
 /** @hidden */
@@ -31,9 +32,7 @@ export class PropertyLabelRenderer extends React.PureComponent<PropertyLabelRend
         <span className="components-property-label-renderer" title={this.props.children}>
           {this.props.children}
         </span>
-        <span className="components-property-label-renderer-dots">
-          :
-        </span>
+        {this.props.renderColon ? <span className="components-property-label-renderer-colon">:</span> : undefined}
       </>
     );
   }

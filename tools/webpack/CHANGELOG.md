@@ -1,6 +1,13 @@
 # Change Log - @bentley/webpack-tools
 
-This log was last generated on Thu, 13 Dec 2018 22:06:10 GMT and should not be manually modified.
+This log was last generated on Wed, 19 Dec 2018 18:26:14 GMT and should not be manually modified.
+
+## 0.179.0
+Wed, 19 Dec 2018 18:26:14 GMT
+
+### Updates
+
+- Added mobile config
 
 ## 0.178.0
 Thu, 13 Dec 2018 22:06:10 GMT

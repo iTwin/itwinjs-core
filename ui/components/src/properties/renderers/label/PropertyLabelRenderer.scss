@@ -24,7 +24,7 @@
   margin-bottom: auto;
 }
 
-.components-property-label-renderer-dots{
+.components-property-label-renderer-colon{
   margin: auto auto auto 3px;
 }
 
@@ -53,11 +53,11 @@
   width: 100%;
 
   > i {
-    // display: inline-block;
     transition: transform 0.15s ease-in-out, -webkit-transform 0.15s ease-in-out;
     margin: auto 5px auto 0px;
     width: 14px;
     height: 14px;
+    font-size: 12px;
   }
 
   > .components-expanded {

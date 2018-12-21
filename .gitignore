@@ -24,3 +24,7 @@ package-deps.json
 
 # docs
 /public
+
+# trash
+*.bak
+*.orig

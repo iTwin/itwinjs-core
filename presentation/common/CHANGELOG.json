@@ -2,6 +2,18 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "0.179.0",
+      "tag": "@bentley/presentation-common_v0.179.0",
+      "date": "Wed, 19 Dec 2018 18:26:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Invert `isSelectable` property to `isSelectionDisabled` so in the most common case (selectable = true) we don't have to send the value"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.178.0",
       "tag": "@bentley/presentation-common_v0.178.0",
       "date": "Thu, 13 Dec 2018 22:06:10 GMT",

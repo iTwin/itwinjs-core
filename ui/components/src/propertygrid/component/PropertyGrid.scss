@@ -66,4 +66,5 @@
 
 .components-property-list--vertical {
   @include components-property-list;
+  margin-top: -13px;
 }

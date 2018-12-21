@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Allow property converters and renderers to return result either sync or async",
+      "comment": "",
       "packageName": "@bentley/ui-components",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-components",
-  "email": "grigas.petraitis@bentley.com"
+  "email": "dan.east@bentley.com"
 }

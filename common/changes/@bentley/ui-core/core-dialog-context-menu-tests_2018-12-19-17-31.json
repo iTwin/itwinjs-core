@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Use arrow cursor on tree nodes",
+      "comment": "Added tests for Dialog and Context Menu",
       "packageName": "@bentley/ui-core",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-core",
-  "email": "grigas.petraitis@bentley.com"
+  "email": "Simeon.McGraw@bentley.com"
 }

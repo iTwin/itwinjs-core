@@ -51,16 +51,14 @@ describe("PropertyRenderer", () => {
     await TestUtils.flushAsyncOperations();
     propertyRenderer.update();
 
-    let valueElementMount = mount(<>{propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElement")}</>);
-    expect(valueElementMount.html().indexOf(originalValue)).to.be.greaterThan(-1);
+    expect(propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElement")).to.be.equal(originalValue);
 
     propertyRenderer.setProps({ propertyRecord: TestUtils.createPrimitiveStringProperty("Label", recordValue) });
 
     await TestUtils.flushAsyncOperations();
     propertyRenderer.update();
 
-    valueElementMount = mount(<>{propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElement")}</>);
-    expect(valueElementMount.html().indexOf(recordValue)).to.be.greaterThan(-1);
+    expect(propertyRenderer.find(PrimitivePropertyRenderer).prop("valueElement")).to.be.equal(recordValue);
   });
 
   it("renders value differently if provided with custom propertyValueRendererManager", async () => {

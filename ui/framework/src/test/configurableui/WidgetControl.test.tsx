@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetDefProps, WidgetDef, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework";
+import { WidgetState, WidgetProps, WidgetDef, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework";
 
 describe("WidgetControl", () => {
 
@@ -21,7 +21,7 @@ describe("WidgetControl", () => {
     await TestUtils.initializeUiFramework();
   });
 
-  const widgetProps: WidgetDefProps = {
+  const widgetProps: WidgetProps = {
     id: "test-widget",
     classId: TestWidget,
     defaultState: WidgetState.Hidden,
