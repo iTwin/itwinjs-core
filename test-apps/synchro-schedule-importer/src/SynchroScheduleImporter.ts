@@ -182,7 +182,7 @@ function doAddAnimationScript(iModel: IModelDb, animationScript: string, createS
     });
     return true;
 }
-function doImport(inputArgs: Yargs.Arguments) {
+function doImport(inputArgs: Yargs.Arguments<{}>) {
     let originalIModel: IModelDb;
 
     try {
