@@ -152,6 +152,10 @@ describe("BeInspireTree", () => {
       });
     });
   });
+  afterEach(() => {
+    if (tree)
+      tree.removeAllListeners();
+  });
 
   // run tests for every type of supported provider
   const providers = [
@@ -179,6 +183,12 @@ describe("BeInspireTree", () => {
         await tree.ready;
         if (entry.isDelayLoaded)
           await loadHierarchy(tree.nodes());
+
+        // renders:
+        // 1. model.loaded
+        // 2. apply.changes
+        // 3. (only for delay-loaded providers) loadHierarchy - see above
+        expect(renderer).to.have.callCount(entry.isDelayLoaded ? 3 : 2);
       });
 
       // node access functions can be used directly on the tree or
@@ -309,10 +319,9 @@ describe("BeInspireTree", () => {
       describe("reload", () => {
 
         it("re-renders tree", async () => {
-          const initialRendersCount = entry.isDelayLoaded ? 2 : 1;
-          expect(renderer).to.have.callCount(initialRendersCount);
+          renderer.resetHistory();
           await tree.reload();
-          expect(renderer).to.have.callCount(initialRendersCount + 1);
+          expect(renderer).to.have.callCount(1);
         });
 
       });
@@ -733,6 +742,40 @@ describe("BeInspireTree", () => {
       renderer.resetHistory();
     });
 
+    it("allows registering a listener for multiple events", () => {
+      const listener = sinon.spy();
+      const node = tree.node("0")!;
+
+      // verify registering multiple listeners works
+      tree.on([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred], listener);
+      node.focus();
+      node.blur();
+      expect(listener).to.be.calledTwice;
+
+      // verify unregistering a listener for specific events works
+      listener.resetHistory();
+      tree.removeListener([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred], listener);
+      node.focus();
+      node.blur();
+      expect(listener).to.not.be.called;
+
+      // verify unregistering all listeners for specific events works
+      listener.resetHistory();
+      tree.on([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred], listener);
+      tree.removeAllListeners([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred]);
+      node.focus();
+      node.blur();
+      expect(listener).to.not.be.called;
+
+      // verify unregistering all listeners for all events works
+      listener.resetHistory();
+      tree.on([BeInspireTreeEvent.NodeFocused, BeInspireTreeEvent.NodeBlurred], listener);
+      tree.removeAllListeners();
+      node.focus();
+      node.blur();
+      expect(listener).to.not.be.called;
+    });
+
     it("fires ChangesApplied event when applyChanges is called", () => {
       const listener = moq.Mock.ofInstance(() => { });
       tree.on(BeInspireTreeEvent.ChangesApplied, listener.object);
@@ -801,6 +844,18 @@ describe("BeInspireTree", () => {
       node.select();
       expect(renderer).to.not.be.called;
       pausedRendering.dispose();
+      expect(renderer).to.be.calledOnce;
+    });
+
+    it("nested pause context with `allowedRendersBeforePause` doesn't unmute wrapped pause context", () => {
+      const node = tree.node("0")!;
+      using(tree.pauseRendering(), () => {
+        using(tree.pauseRendering(1), () => {
+        });
+        node.select();
+        expect(renderer).to.not.be.called;
+      });
+      node.select();
       expect(renderer).to.be.calledOnce;
     });
 
@@ -966,6 +1021,10 @@ describe("BeInspireTree", () => {
       expect(getNodesSpy).to.be.calledOnce;
       // but expect children to be `true` because it was reset on collapse
       expect(node.children).to.be.true;
+
+      // now expand the node again and expect its children to be loaded normally
+      await node.expand();
+      expect(renderedTree).to.matchSnapshot();
     });
 
     it("doesn't request nodes when loadChildren is called", async () => {

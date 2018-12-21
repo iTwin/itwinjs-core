@@ -12,6 +12,7 @@ import { StatusBarFieldId, IStatusBar } from "../StatusBarWidgetControl";
 
 import { Status, MessageLayout, Progress } from "@bentley/ui-ninezone";
 import { MessageManager, ActivityMessageEventArgs } from "../MessageManager";
+import { UiFramework } from "../../UiFramework";
 
 /** Properties for the [[ActivityCenterField]] component */
 export interface ActivityCenterProps {
@@ -67,17 +68,17 @@ export class ActivityCenterField extends React.Component<ActivityCenterProps, Ac
 
   private _openActivityMessage = () => {
     MessageManager.setupActivityMessageValues(this.state.title, this.state.percentage, true);
-    this.setState((_prevState) => ({
-      isActivityMessageVisible: true,
-    }));
   }
 
   public render(): React.ReactNode {
     let footerMessages: React.ReactNode;
-    const isPercentageValid = (this.state.percentage <= 0 || this.state.percentage >= 100) ? false : true;
+    const isPercentageValid = (this.state.percentage > 0 && this.state.percentage < 100);
     if (this.state.isActivityMessageVisible && isPercentageValid) {
+      const moreDetails = UiFramework.i18n.translate("UiFramework:activityCenter.moreDetails");
+      const tooltip = this.state.title + " - " + moreDetails;
+
       footerMessages = (
-        <div className="centered open-activity-message" onClick={this._openActivityMessage}>
+        <div className="centered open-activity-message" onClick={this._openActivityMessage} title={tooltip}>
           <MessageLayout
             progress={
               <Progress
@@ -89,7 +90,7 @@ export class ActivityCenterField extends React.Component<ActivityCenterProps, Ac
         </div>
       );
     } else {
-      footerMessages = (<div />);
+      footerMessages = <div />;
     }
     this.props.statusBar.setFooterMessages(this._element);
     return footerMessages;

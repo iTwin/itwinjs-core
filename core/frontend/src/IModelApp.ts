@@ -5,7 +5,7 @@
 /** @module IModelApp */
 
 import { dispose } from "@bentley/bentleyjs-core";
-import { ConnectSettingsClient, IModelClient, IModelHubClient, SettingsAdmin } from "@bentley/imodeljs-clients";
+import { AccessToken, ConnectSettingsClient, IModelClient, IModelHubClient, SettingsAdmin } from "@bentley/imodeljs-clients";
 import { FeatureGates, IModelError, IModelStatus } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
 import { AccuSnap } from "./AccuSnap";
@@ -84,6 +84,9 @@ export class IModelApp {
   public static set iModelClient(client: IModelClient) { this._imodelClient = client; }
   /** @hidden */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
+
+  /** @hidden This is to be refactored...for now it holds the AccessToken for the current session. Must be set by the application. */
+  public static accessToken?: AccessToken;
 
   /**
    * This method must be called before any iModel.js frontend services are used. Typically, an application will make a subclass of IModelApp

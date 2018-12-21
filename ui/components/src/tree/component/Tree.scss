@@ -5,6 +5,14 @@
 @import "@bentley/bwc/lib/mixins";
 @import "@bentley/ui-core/lib/_scrollbar";
 
+.ui-components-tree-loader {
+  @include bwc-loaders-large;
+  position: relative;
+  display: block;
+  left: calc(50% - 24px);
+  top: calc(50% - 24px);
+}
+
 .ui-components-tree-errormessage {
   padding-left: "10px"
 }

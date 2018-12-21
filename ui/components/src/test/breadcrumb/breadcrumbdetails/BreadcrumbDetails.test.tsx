@@ -37,5 +37,34 @@ describe("BreadcrumbDetails", () => {
       const node = mockRawTreeDataProvider[1];
       expect(await waitForElement(() => renderedComponent.getByText(node.label))).to.exist;
     });
+
+    it("should change path", async () => {
+      const path1 = new BreadcrumbPath(mockRawTreeDataProvider);
+      await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path1} />), renderSpy, 12);
+      const path2 = new BreadcrumbPath(mockRawTreeDataProvider);
+      await waitForUpdate(() => renderedComponent.rerender(<BreadcrumbDetails onRender={renderSpy} path={path2} />), renderSpy, 2);
+    });
+    describe("Interface DataProvider", () => {
+      it("should rerender from raw dataProvider to interface dataProvider", async () => {
+        const nodeRaw = mockRawTreeDataProvider[1];
+        const path = new BreadcrumbPath(mockRawTreeDataProvider);
+        path.setCurrentNode(nodeRaw);
+        renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />);
+        expect(await waitForElement(() => renderedComponent.getByText(nodeRaw.label))).to.exist;
+        const nodeInterface = (await mockInterfaceTreeDataProvider.getNodes())[1];
+        path.setDataProvider(mockInterfaceTreeDataProvider);
+        path.setCurrentNode(nodeInterface);
+        renderedComponent.rerender(<BreadcrumbDetails onRender={renderSpy} path={path} />);
+      });
+      describe("listening to `ITreeDataProvider.onTreeNodeChanged` events", () => {
+        it("rerenders when `onTreeNodeChanged` is broadcasted with node", async () => {
+          const node = (await mockInterfaceTreeDataProvider.getNodes())[0];
+          const path = new BreadcrumbPath(mockRawTreeDataProvider);
+          path.setCurrentNode(node);
+          await waitForUpdate(() => renderedComponent = render(<BreadcrumbDetails onRender={renderSpy} path={path} />), renderSpy, 12);
+          mockInterfaceTreeDataProvider.onTreeNodeChanged!.raiseEvent([node]);
+        });
+      });
+    });
   });
 });

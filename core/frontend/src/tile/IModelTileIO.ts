@@ -26,7 +26,7 @@ import {
 } from "../render/primitives/VertexTable";
 import { ColorMap } from "../render/primitives/ColorMap";
 import { Id64String, JsonUtils, assert } from "@bentley/bentleyjs-core";
-import { RenderSystem, RenderGraphic, PackedFeatureTable } from "../render/System";
+import { RenderSystem, RenderGraphic, PackedFeatureTable, GraphicBranch } from "../render/System";
 import { imageElementFromImageSource } from "../ImageUtil";
 import {
   ElementAlignedBox3d,
@@ -46,7 +46,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Mesh } from "../render/primitives/mesh/MeshPrimitives";
-import { Range2d, Point3d, Range3d } from "@bentley/geometry-core";
+import { Range2d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 
 /** Provides facilities for deserializing tiles in 'imodel' format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @hidden
@@ -643,16 +643,43 @@ export namespace IModelTileIO {
     private finishRead(isLeaf: boolean, featureTable: PackedFeatureTable, contentRange: ElementAlignedBox3d, sizeMultiplier?: number): GltfTileIO.ReaderResult {
       const graphics: RenderGraphic[] = [];
 
-      for (const meshKey of Object.keys(this._meshes)) {
-        const meshValue = this._meshes[meshKey];
-        const primitives = JsonUtils.asArray(meshValue.primitives);
-        if (undefined === primitives)
-          continue;
+      if (undefined === this._nodes.Node_Root) {
+        // Unstructured -- prior to animation support....
+        for (const meshKey of Object.keys(this._meshes)) {
+          const meshValue = this._meshes[meshKey];
+          const primitives = JsonUtils.asArray(meshValue.primitives);
+          if (undefined === primitives)
+            continue;
+          for (const primitive of primitives) {
+            const graphic = this.readMeshGraphic(primitive);
+            if (undefined !== graphic)
+              graphics.push(graphic);
+          }
+        }
+      } else {
+        for (const nodeKey of Object.keys(this._nodes)) {
+          const meshValue = this._meshes[this._nodes[nodeKey]];
+          const primitives = JsonUtils.asArray(meshValue.primitives);
+          if (undefined === primitives)
+            continue;
 
-        for (const primitive of primitives) {
-          const graphic = this.readMeshGraphic(primitive);
-          if (undefined !== graphic)
-            graphics.push(graphic);
+          if ("Node_Root" === nodeKey) {
+            for (const primitive of primitives) {
+              const graphic = this.readMeshGraphic(primitive);
+              if (undefined !== graphic)
+                graphics.push(graphic);
+            }
+          } else {
+            const branch = new GraphicBranch(true);
+            branch.animationId = this._modelId + "_" + nodeKey;
+            for (const primitive of primitives) {
+              const graphic = this.readMeshGraphic(primitive);
+              if (undefined !== graphic)
+                branch.add(graphic);
+            }
+            if (!branch.isEmpty)
+              graphics.push(this._system.createBranch(branch, Transform.createIdentity()));
+          }
         }
       }
 

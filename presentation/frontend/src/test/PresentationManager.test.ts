@@ -2,6 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import { expect } from "chai";
 import * as faker from "faker";
 const deepEqual = require("deep-equal"); // tslint:disable-line:no-var-requires
@@ -66,6 +68,12 @@ describe("PresentationManager", () => {
       const props = { rpcRequestsHandler: handler.object };
       const mgr = PresentationManager.create(props);
       expect(mgr.rpcRequestsHandler).to.eq(handler.object);
+    });
+
+    it("sets RpcRequestsHandler clientId if supplied with props", async () => {
+      const props = { clientId: faker.random.uuid() };
+      const mgr = PresentationManager.create(props);
+      expect(mgr.rpcRequestsHandler.clientId).to.eq(props.clientId);
     });
 
   });

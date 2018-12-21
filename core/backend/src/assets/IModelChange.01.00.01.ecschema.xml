@@ -1,11 +1,11 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ECSchema schemaName="IModelChange" alias="imodelchange" version="1.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-  <ECSchemaReference name="ECDbChange" version="01.00" alias="change"/>
-  <ECSchemaReference name="CoreCustomAttributes" version="01.00.00" alias="CoreCA"/>
+<ECSchema schemaName="IModelChange" alias="imodelchange" version="1.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="ECDbChange" version="01.00.00" alias="change"/>
+  <ECSchemaReference name="CoreCustomAttributes" version="01.00.01" alias="CoreCA"/>
 
   <ECEntityClass typeName="ChangeSet" modifier="Sealed">
     <ECCustomAttributes>
-      <DbIndexList xmlns="ECDbMap.02.00">
+      <DbIndexList xmlns="ECDbMap.02.00.00">
         <Indexes>
           <DbIndex>
             <Name>ix_imodelchange_ChangeSet_ParentWsgId</Name>
@@ -37,42 +37,42 @@
     </ECCustomAttributes>
     <ECNavigationProperty propertyName="Summary" relationshipName="ChangeSummaryIsExtractedFromChangeset" direction="backward">
         <ECCustomAttributes>
-            <ForeignKeyConstraint xmlns="ECDbMap.02.00">
+            <ForeignKeyConstraint xmlns="ECDbMap.02.00.00">
                 <OnDeleteAction>Cascade</OnDeleteAction>
             </ForeignKeyConstraint>
         </ECCustomAttributes>
     </ECNavigationProperty>
     <ECProperty propertyName="ParentWsgId" typeName="string">
       <ECCustomAttributes>
-        <PropertyMap xmlns="ECDbMap.02.00">
+        <PropertyMap xmlns="ECDbMap.02.00.00">
           <Collation>NoCase</Collation>
         </PropertyMap>
       </ECCustomAttributes>
     </ECProperty>
     <ECProperty propertyName="WsgId" typeName="string">
       <ECCustomAttributes>
-        <PropertyMap xmlns="ECDbMap.02.00">
+        <PropertyMap xmlns="ECDbMap.02.00.00">
           <Collation>NoCase</Collation>
         </PropertyMap>
       </ECCustomAttributes>
     </ECProperty>
     <ECProperty propertyName="Description" typeName="string">
       <ECCustomAttributes>
-        <PropertyMap xmlns="ECDbMap.02.00">
+        <PropertyMap xmlns="ECDbMap.02.00.00">
           <Collation>NoCase</Collation>
         </PropertyMap>
       </ECCustomAttributes>
     </ECProperty>
     <ECProperty propertyName="PushDate" typeName="dateTime">
       <ECCustomAttributes>
-        <DateTimeInfo xmlns="CoreCustomAttributes.01.00">
+        <DateTimeInfo xmlns="CoreCustomAttributes.01.00.01">
           <DateTimeKind>Utc</DateTimeKind>
         </DateTimeInfo>
       </ECCustomAttributes>
     </ECProperty>
     <ECProperty propertyName="Author" typeName="string">
       <ECCustomAttributes>
-        <PropertyMap xmlns="ECDbMap.02.00">
+        <PropertyMap xmlns="ECDbMap.02.00.00">
           <Collation>NoCase</Collation>
         </PropertyMap>
       </ECCustomAttributes>

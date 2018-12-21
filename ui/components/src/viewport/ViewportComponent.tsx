@@ -15,10 +15,10 @@ import {
 } from "@bentley/imodeljs-frontend";
 
 import {
-  ViewRotationCube,
+  ViewportComponentEvents,
   CubeRotationChangeEventArgs,
   StandardRotationChangeEventArgs,
-} from "./ViewRotationCube";
+} from "./ViewportComponentEvents";
 
 import { Transform } from "@bentley/geometry-core";
 
@@ -43,6 +43,8 @@ export class ViewportComponent extends React.Component<ViewportProps> {
 
   private _viewportDiv: React.RefObject<HTMLDivElement>;
   private _vp?: ScreenViewport;
+  private _viewClassFullName: string = "";
+  private _viewId: string = "";
 
   public constructor(props: ViewportProps, context?: any) {
     super(props, context);
@@ -63,10 +65,13 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     if (this.props.viewportRef)
       this.props.viewportRef(this._vp);
 
-    ViewRotationCube.initialize();
-    ViewRotationCube.onCubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent, this);
-    ViewRotationCube.onStandardRotationChangeEvent.addListener(this._handleStandardRotationChangeEvent, this);
+    ViewportComponentEvents.initialize();
+    ViewportComponentEvents.onCubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent, this);
+    ViewportComponentEvents.onStandardRotationChangeEvent.addListener(this._handleStandardRotationChangeEvent, this);
+
     this._vp.onViewChanged.addListener(this._handleViewChanged, this);
+    this._viewClassFullName = this._vp.view.classFullName;
+    this._viewId = this._vp.view.id;
   }
 
   public componentWillUnmount() {
@@ -75,8 +80,8 @@ export class ViewportComponent extends React.Component<ViewportProps> {
       this._vp.onViewChanged.removeListener(this._handleViewChanged, this);
     }
 
-    ViewRotationCube.onCubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent, this);
-    ViewRotationCube.onStandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent, this);
+    ViewportComponentEvents.onCubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent, this);
+    ViewportComponentEvents.onStandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent, this);
   }
 
   private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {
@@ -113,7 +118,21 @@ export class ViewportComponent extends React.Component<ViewportProps> {
   }
 
   private _handleViewChanged = (vp: Viewport) => {
-    ViewRotationCube.setViewMatrix(vp);
+    ViewportComponentEvents.setViewMatrix(vp);
+
+    if (this._viewClassFullName !== vp.view.classFullName) {
+      setImmediate(() => {
+        ViewportComponentEvents.onViewClassFullNameChangedEvent.emit({ viewport: vp, oldName: this._viewClassFullName, newName: vp.view.classFullName });
+        this._viewClassFullName = vp.view.classFullName;
+      });
+    }
+
+    if (this._viewId !== vp.view.id) {
+      setImmediate(() => {
+        ViewportComponentEvents.onViewIdChangedEvent.emit({ viewport: vp, oldId: this._viewId, newId: vp.view.id });
+        this._viewId = vp.view.id;
+      });
+    }
   }
 
   private _handleContextMenu = (e: React.MouseEvent): boolean => {

@@ -173,7 +173,7 @@ export const withDragSource = <ComponentProps extends {}, DragDropObject = any>(
 
         const dropEffect = this.state.ctrlKey ? ctrlEffect || "copy" : this.state.altKey ? altEffect || "link" : defaultEffect || "move";
         return connectDragSource!(
-          <div className={"drag-source-wrapper"} ref={(el) => { this.rootElement = el; }} style={this.props.dragStyle}>
+          <div className="drag-source-wrapper" data-testid="drag-source-wrapper" ref={(el) => { this.rootElement = el; }} style={this.props.dragStyle}>
             <Component {...props} {...(p as any)} />
           </div>,
           { dropEffect },

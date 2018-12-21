@@ -11,7 +11,7 @@ import { WidgetDef } from "./WidgetDef";
 import { ConfigurableUiControlType } from "./ConfigurableUiControl";
 import { FrameworkZone } from "./FrameworkZone";
 import { StatusBarWidgetControl } from "./StatusBarWidgetControl";
-import { WidgetProps, Widget } from "./Widget";
+import { WidgetProps } from "./Widget";
 import { ZoneLocation } from "./Frontstage";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "./FrontstageComposer";
 import { ToolSettingsZone } from "./ToolSettingsZone";
@@ -85,9 +85,7 @@ export class Zone extends React.Component<ZoneProps> {
 
   private static createWidgetDef(widgetNode: React.ReactElement<WidgetProps>): WidgetDef | undefined {
     if (widgetNode && React.isValidElement(widgetNode)) {
-      const widgetDef = new WidgetDef(widgetNode.props);
-      Widget.initializeWidgetDef(widgetDef, widgetNode.props);
-      return widgetDef;
+      return new WidgetDef(widgetNode.props);
     }
 
     return undefined;

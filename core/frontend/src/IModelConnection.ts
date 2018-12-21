@@ -46,7 +46,6 @@ export class IModelConnection extends IModel {
   public readonly connectionId = Guid.createValue();
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   private static _connectionTimeout: number = 10 * 60 * 1000;
-  private _openAccessToken?: AccessToken;
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
   public get isReadonly(): boolean { return this.openMode === OpenMode.Readonly; }
@@ -104,7 +103,7 @@ export class IModelConnection extends IModel {
     return ctor; // either the baseClass handler or defaultClass if we didn't find a registered baseClass
   }
 
-  private constructor(iModel: IModel, openMode: OpenMode, accessToken?: AccessToken) {
+  private constructor(iModel: IModel, openMode: OpenMode) {
     super(iModel.iModelToken);
     super.initialize(iModel.name, iModel);
     this.openMode = openMode;
@@ -115,7 +114,6 @@ export class IModelConnection extends IModel {
     this.hilited = new HilitedSet(this);
     this.selectionSet = new SelectionSet(this);
     this.tiles = new IModelConnection.Tiles(this);
-    this._openAccessToken = accessToken;
   }
 
   /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */
@@ -127,7 +125,7 @@ export class IModelConnection extends IModel {
     const changeSetId: string = await version.evaluateChangeSet(actx, accessToken, iModelId, IModelApp.iModelClient);
     const iModelToken = new IModelToken(undefined, contextId, iModelId, changeSetId, openMode);
     const openResponse: IModel = await IModelConnection.callOpen(accessToken, iModelToken, openMode);
-    const connection = new IModelConnection(openResponse, openMode, accessToken);
+    const connection = new IModelConnection(openResponse, openMode);
     RpcRequest.notFoundHandlers.addListener(connection._reopenConnectionHandler);
     return connection;
   }
@@ -189,6 +187,8 @@ export class IModelConnection extends IModel {
       removeListener();
     }
 
+    IModelApp.accessToken = accessToken; // ###TODO to be refactored later...
+
     Logger.logTrace(loggingCategory, "Completed open request in IModelConnection.open", () => ({ ...iModelToken, openMode }));
     return openResponse;
   }
@@ -203,7 +203,9 @@ export class IModelConnection extends IModel {
 
     try {
       Logger.logTrace(loggingCategory, "Attempting to reopen connection", () => ({ iModelId: iModelToken.iModelId, changeSetId: iModelToken.changeSetId, key: iModelToken.key }));
-      const openResponse: IModel = await IModelConnection.callOpen(this._openAccessToken!, iModelToken, this.openMode);
+      const accessToken = IModelApp.accessToken;
+      assert(undefined !== accessToken);
+      const openResponse: IModel = await IModelConnection.callOpen(accessToken!, iModelToken, this.openMode);
       this._token = openResponse.iModelToken;
     } catch (error) {
       reject(error.message);
@@ -242,6 +244,7 @@ export class IModelConnection extends IModel {
   public async closeStandalone(): Promise<void> {
     if (!this.iModelToken)
       return;
+
     IModelConnection.onClose.raiseEvent(this);
     this.models.onIModelConnectionClose();  // free WebGL resources if rendering
     try {

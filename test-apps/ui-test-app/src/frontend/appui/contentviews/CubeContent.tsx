@@ -7,7 +7,7 @@ import * as React from "react";
 import { Cube } from "@bentley/ui-core";
 import { Matrix3d } from "@bentley/geometry-core";
 import { ConfigurableUiManager, ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
-import { ViewRotationCube, CubeRotationChangeEventArgs } from "@bentley/ui-components";
+import { ViewportComponentEvents, CubeRotationChangeEventArgs } from "@bentley/ui-components";
 
 import "./CubeContent.scss";
 
@@ -45,11 +45,11 @@ class CubeContent extends React.Component<{}, CubeContentState> {
   }
 
   public componentDidMount() {
-    ViewRotationCube.onCubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent);
+    ViewportComponentEvents.onCubeRotationChangeEvent.addListener(this._handleCubeRotationChangeEvent);
   }
 
   public componentWillUnmount() {
-    ViewRotationCube.onCubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent);
+    ViewportComponentEvents.onCubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent);
   }
 
   private _handleCubeRotationChangeEvent = (args: CubeRotationChangeEventArgs) => {

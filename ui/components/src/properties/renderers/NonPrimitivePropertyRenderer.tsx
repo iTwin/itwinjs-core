@@ -13,6 +13,7 @@ import { PropertyView } from "./PropertyView";
 import { PrimitiveRendererProps } from "./PrimitivePropertyRenderer";
 import { PropertyRenderer } from "./PropertyRenderer";
 import UiComponents from "../../UiComponents";
+import { Orientation } from "@bentley/ui-core";
 
 import "./NonPrimitivePropertyRenderer.scss";
 
@@ -52,6 +53,7 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
         onExpand={this._onExpanded}
         onCollapse={this._onCollapsed}
         offset={offset}
+        renderColon={this.props.orientation === Orientation.Horizontal}
       >
         {props.propertyRecord.property.displayLabel}
       </NonPrimitivePropertyLabelRenderer>

@@ -405,13 +405,10 @@ export namespace FeatureSymbology {
           }
         }
         if (view.scheduleScript) {
-          view.scheduleScript.getSymbologyOverrides(view.scheduleTime).forEach((appearance, elementID) => {
-            this.overrideElement(elementID, appearance);
-          });
+          view.scheduleScript.getSymbologyOverrides(this, view.scheduleTime);
         }
       }
     }
-
     /** Create an Overrides based on the supplied [[ViewState]]. */
     constructor(view?: ViewState) { if (undefined !== view) this.initFromView(view); }
 

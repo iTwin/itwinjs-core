@@ -83,6 +83,7 @@
 - [OverallContent]($framework:OverallContent)
 - [Picker]($framework:Picker)
 - [StatusBar]($framework:StatusBar)
+- [SyncUi]($framework:SyncUi)
 - [Tools]($framework:Tools)
 - [ToolSettings]($framework:ToolSettings)
 - [Utilities]($framework:Utilities)

@@ -9,7 +9,7 @@ import { Orientation } from "@bentley/ui-core";
 
 import "./NonPrimitiveValueRenderer.scss";
 import { PropertyRecord } from "../../../Record";
-import { PropertyPopupState, PropertyDialogState } from "../../../ValueRendererManager";
+import { PropertyDialogState } from "../../../ValueRendererManager";
 
 /** Properties for [[TableArrayValueRenderer]] and [[TableStructValueRenderer]] React component */
 export interface TableSpecificValueRendererProps extends SharedTableNonPrimitiveValueRendererProps {
@@ -21,10 +21,10 @@ export interface TableSpecificValueRendererProps extends SharedTableNonPrimitive
 
 /** Shared properties between table non-primitive value renderers */
 export interface SharedTableNonPrimitiveValueRendererProps {
-  /** Callback to request for a Popup to be shown. */
-  onPopupShow?: (popupState: PropertyPopupState) => void;
-  /** Callback to request for a Popup to be hidden. */
-  onPopupHide?: () => void;
+  // /** Callback to request for a Popup to be shown. */
+  // onPopupShow?: (popupState: PropertyPopupState) => void;
+  // /** Callback to request for a Popup to be hidden. */
+  // onPopupHide?: () => void;
   /** Callback to request for dialog to be opened. */
   onDialogOpen?: (dialogState: PropertyDialogState) => void;
 }
@@ -55,34 +55,38 @@ export class TableNonPrimitiveValueRenderer extends React.PureComponent<TableNon
     this.props.onDialogOpen(dialogState);
   }
 
-  private _showTooltip = () => {
-    if (!this.props.onPopupShow)
-      return;
+  // TODO: Enable, when table gets refactored
+  // Disabled fancy tooltips, because table controlls it's state.
+  // But, because everything is in table state and there is no shouldComponentUpdate,
+  // tooltips cause rerender of the whole table
+  // private _showTooltip = () => {
+  //   if (!this.props.onPopupShow)
+  //     return;
 
-    const buttonElement = this._buttonRef.current;
+  //   const buttonElement = this._buttonRef.current;
 
-    if (!buttonElement)
-      return;
+  //   if (!buttonElement)
+  //     return;
 
-    const buttonBox = buttonElement.getBoundingClientRect();
+  //   const buttonBox = buttonElement.getBoundingClientRect();
 
-    const popupState: PropertyPopupState = {
-      fixedPosition: {
-        top: buttonBox.top - 10,
-        left: buttonBox.left + buttonBox.width / 2,
-      },
-      content:
-        <span className="components-table-value-popup">
-          {`View ${this.props.buttonLabel} in more detail.`}
-        </span>,
-    };
-    this.props.onPopupShow(popupState);
-  }
+  //   const popupState: PropertyPopupState = {
+  //     fixedPosition: {
+  //       top: buttonBox.top - 10,
+  //       left: buttonBox.left + buttonBox.width / 2,
+  //     },
+  //     content:
+  //       <span className="components-table-value-popup">
+  //         {`View ${this.props.buttonLabel} in more detail.`}
+  //       </span>,
+  //   };
+  //   this.props.onPopupShow(popupState);
+  // }
 
-  private _hideTooltip = () => {
-    if (this.props.onPopupHide)
-      this.props.onPopupHide();
-  }
+  // private _hideTooltip = () => {
+  //   if (this.props.onPopupHide)
+  //     this.props.onPopupHide();
+  // }
 
   public render() {
     return (
@@ -91,8 +95,9 @@ export class TableNonPrimitiveValueRenderer extends React.PureComponent<TableNon
           ref={this._buttonRef}
           className="components-table-value-button"
           onClick={this._onClick}
-          onMouseEnter={this._showTooltip}
-          onMouseLeave={this._hideTooltip}
+          // onMouseEnter={this._showTooltip}
+          // onMouseLeave={this._hideTooltip}
+          title={`View ${this.props.buttonLabel} in more detail.`}
         >
           <span>
             {this.props.buttonLabel}

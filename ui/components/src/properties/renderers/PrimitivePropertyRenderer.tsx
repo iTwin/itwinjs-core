@@ -9,6 +9,7 @@ import _ from "lodash";
 import { PrimitivePropertyLabelRenderer } from "./label/PrimitivePropertyLabelRenderer";
 import { PropertyView } from "./PropertyView";
 import { SharedRendererProps, PropertyRendererState, PropertyRenderer } from "./PropertyRenderer";
+import { Orientation } from "@bentley/ui-core";
 
 /** Properties of [[PrimitivePropertyRenderer]] React component */
 export interface PrimitiveRendererProps extends SharedRendererProps {
@@ -27,7 +28,7 @@ export class PrimitivePropertyRenderer extends React.Component<PrimitiveRenderer
     return (
       <PropertyView
         labelElement={
-          <PrimitivePropertyLabelRenderer offset={offset}>
+          <PrimitivePropertyLabelRenderer offset={offset} renderColon={this.props.orientation === Orientation.Horizontal}>
             {this.props.propertyRecord.property.displayLabel}
           </PrimitivePropertyLabelRenderer>}
         {...props}

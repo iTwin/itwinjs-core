@@ -9,7 +9,7 @@ import * as path from "path";
 import { SpatialViewState, StandardViewId, IModelConnection, ScreenViewport, IModelApp, PanViewTool, CompassMode, TwoWayViewportSync } from "@bentley/imodeljs-frontend";
 import { CONSTANTS } from "../common/Testbed";
 import { RenderPlan } from "@bentley/imodeljs-frontend/lib/rendering";
-import { MaybeRenderApp } from "./WebGLTestContext";
+import { MockRender } from "./MockRender";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/test.bim");
 
@@ -29,7 +29,7 @@ describe("Viewport", () => {
   const viewDiv2 = createViewDiv();
 
   before(async () => {   // Create a ViewState to load into a Viewport
-    MaybeRenderApp.startup();
+    MockRender.App.startup();
     imodel = await IModelConnection.openStandalone(iModelLocation);
     spatialView = await imodel.views.load("0x34") as SpatialViewState;
     spatialView.setStandardRotation(StandardViewId.RightIso);
@@ -37,7 +37,7 @@ describe("Viewport", () => {
 
   after(async () => {
     if (imodel) await imodel.closeStandalone();
-    MaybeRenderApp.shutdown();
+    MockRender.App.shutdown();
   });
 
   it("Viewport", async () => {

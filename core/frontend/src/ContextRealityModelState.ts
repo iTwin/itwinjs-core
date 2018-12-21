@@ -5,6 +5,7 @@
 /** @module Views */
 import { ContextRealityModelProps, CartographicRange } from "@bentley/imodeljs-common";
 import { IModelConnection } from "./IModelConnection";
+import { IModelApp } from "./IModelApp";
 import { TileTreeModelState } from "./ModelState";
 import { TileTree, TileTreeState } from "./tile/TileTree";
 import { RealityModelTileTree, RealityModelTileClient, RealityModelTileUtils } from "./tile/RealityModelTileTree";
@@ -35,9 +36,10 @@ export class ContextRealityModelState implements TileTreeModelState {
     return tileTreeState.loadStatus;
   }
   public async intersectsProjectExtents(): Promise<boolean> {
-    if (undefined === this._iModel.ecefLocation)
+    if (undefined === this._iModel.ecefLocation || undefined === IModelApp.accessToken)
       return false;
-    const client = new RealityModelTileClient(this._tilesetUrl);
+
+    const client = new RealityModelTileClient(this._tilesetUrl, IModelApp.accessToken);
     const json = await client.getRootDocument(this._tilesetUrl);
     let tileTreeRange, tileTreeTransform;
     if (json === undefined ||

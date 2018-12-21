@@ -13,7 +13,7 @@ import * as Primitives from "./valuetypes/PrimitiveTypes";
  * Enum Type Converter.
  */
 export class EnumTypeConverter extends TypeConverter {
-  public async convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Enum): Promise<string> {
+  public convertPropertyToString(propertyDescription: PropertyDescription, value?: Primitives.Enum) {
     if (value === undefined)
       return "";
 

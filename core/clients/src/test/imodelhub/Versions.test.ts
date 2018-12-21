@@ -40,12 +40,37 @@ function mockGetVersionsByNameWithThumbnails(imodelId: GuidString, name: string,
   ResponseBuilder.mockResponse(utils.IModelHubUrlMock.getUrl(), RequestType.Get, requestPath, requestResponse);
 }
 
+async function createNamedVersionWithThumbnail(actx: ActivityLoggingContext, imodelClient: IModelClient, accessToken: AccessToken, imodelId: GuidString, versionName: string) {
+  const changeSetCount = (await imodelClient.changeSets.get(actx, accessToken, imodelId)).length;
+  const briefcase2 = (await utils.getBriefcases(accessToken, imodelId, 1))[0];
+  let changeSet: ChangeSet;
+  if (changeSetCount === 0 || changeSetCount > 9) {
+    changeSet = (await utils.createChangeSets(accessToken, imodelId, briefcase2, 0, 1))[0];
+  } else {
+    changeSet = (await imodelClient.changeSets.get(actx, accessToken, imodelId))[0];
+  }
+  const version: Version = await imodelClient.versions.create(actx, accessToken, imodelId, changeSet.id!, versionName);
+
+  if (utils.getCloudEnv().isIModelHub) {
+    // Wait for large thumbnail.
+    for (let i = 0; i < 50; i++) {
+      const largeThumbnails = (await imodelClient.thumbnails.get(actx, accessToken, imodelId, "Large", new ThumbnailQuery().byVersionId(version.id!)));
+      if (largeThumbnails.length > 0)
+        break;
+      await utils.delay(6000);
+    }
+  }
+}
+
 describe("iModelHub VersionHandler", () => {
   let accessToken: AccessToken;
   let imodelId: GuidString;
+  let imodelId2: GuidString;
   let iModelClient: IModelClient;
   let briefcase: Briefcase;
   const imodelName = "imodeljs-clients Versions test";
+  const imodelName2 = "imodeljs-clients Versions test 2";
+  const firstVersionName = "Version 1";
   const actx = new ActivityLoggingContext("");
 
   before(async function (this: Mocha.IHookCallbackContext) {
@@ -57,10 +82,13 @@ describe("iModelHub VersionHandler", () => {
 
     accessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     await utils.createIModel(accessToken, imodelName);
+    await utils.createIModel(accessToken, imodelName2);
     imodelId = await utils.getIModelId(accessToken, imodelName);
+    imodelId2 = await utils.getIModelId(accessToken, imodelName2);
     iModelClient = utils.getDefaultClient();
     briefcase = (await utils.getBriefcases(accessToken, imodelId, 1))[0];
     if (!TestConfig.enableMocks) {
+      // Prepare first iModel
       iModelClient.requestOptions.setCustomOptions(utils.getRequestBehaviorOptionsHandler().toCustomRequestOptions());
       const changeSetCount = (await iModelClient.changeSets.get(actx, accessToken, imodelId)).length;
       if (changeSetCount > 9) {
@@ -69,26 +97,11 @@ describe("iModelHub VersionHandler", () => {
         imodelId = await utils.getIModelId(accessToken, imodelName);
         briefcase = (await utils.getBriefcases(accessToken, imodelId, 1))[0];
       }
-      const versionsCount = (await iModelClient.versions.get(actx, accessToken, imodelId)).length;
+      // Prepared second iModel
+      const versionsCount = (await iModelClient.versions.get(actx, accessToken, imodelId2)).length;
       if (versionsCount === 0) {
         // Create at least 1 named version
-        let changeSet: ChangeSet;
-        if (changeSetCount === 0 || changeSetCount > 9) {
-          changeSet = (await utils.createChangeSets(accessToken, imodelId, briefcase, 0, 1))[0];
-        } else {
-          changeSet = (await iModelClient.changeSets.get(actx, accessToken, imodelId))[0];
-        }
-        const version: Version = await iModelClient.versions.create(actx, accessToken, imodelId, changeSet.id!, "Version 1");
-
-        if (utils.getCloudEnv().isIModelHub) {
-          // Wait for large thumbnail.
-          for (let i = 0; i < 5; i++) {
-            const largeThumbnails = (await iModelClient.thumbnails.get(actx, accessToken, imodelId, "Large", new ThumbnailQuery().byVersionId(version.id!)));
-            if (largeThumbnails.length > 0)
-              break;
-            await utils.delay(6000);
-          }
-        }
+        await createNamedVersionWithThumbnail(actx, iModelClient, accessToken, imodelId2, firstVersionName);
       }
     }
   });
@@ -153,24 +166,24 @@ describe("iModelHub VersionHandler", () => {
 
   it("should get named versions with thumbnail id", async () => {
     let mockedVersions = Array(1).fill(0).map(() => utils.generateVersion());
-    utils.mockGetVersions(imodelId, undefined, ...mockedVersions);
-    let versions: Version[] = await iModelClient.versions.get(actx, accessToken, imodelId, new VersionQuery());
-    chai.expect(versions.length >= 1);
-    const firstVersion = versions[versions.length - 1];
+    utils.mockGetVersions(imodelId2, `?$filter=Name+eq+%27Version%201%27`, ...mockedVersions);
+    let versions: Version[] = await iModelClient.versions.get(actx, accessToken, imodelId2, new VersionQuery().byName(firstVersionName));
+    chai.expect(versions.length).to.be.equal(1);
+    const firstVersion = versions[0];
     chai.expect(firstVersion.smallThumbnailId).to.be.undefined;
     chai.expect(firstVersion.largeThumbnailId).to.be.undefined;
 
     const mockedSmallThumbnail = utils.generateThumbnail("Small");
-    utils.mockGetThumbnailsByVersionId(imodelId, "Small", firstVersion.id!, mockedSmallThumbnail);
-    const smallThumbnail: Thumbnail = (await iModelClient.thumbnails.get(actx, accessToken, imodelId, "Small", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
+    utils.mockGetThumbnailsByVersionId(imodelId2, "Small", firstVersion.id!, mockedSmallThumbnail);
+    const smallThumbnail: Thumbnail = (await iModelClient.thumbnails.get(actx, accessToken, imodelId2, "Small", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
 
     const mockedLargeThumbnail = utils.generateThumbnail("Large");
-    utils.mockGetThumbnailsByVersionId(imodelId, "Large", firstVersion.id!, mockedLargeThumbnail);
-    const largeThumbnail: Thumbnail = (await iModelClient.thumbnails.get(actx, accessToken, imodelId, "Large", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
+    utils.mockGetThumbnailsByVersionId(imodelId2, "Large", firstVersion.id!, mockedLargeThumbnail);
+    const largeThumbnail: Thumbnail = (await iModelClient.thumbnails.get(actx, accessToken, imodelId2, "Large", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
 
     mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, mockedSmallThumbnail.id!, mockedLargeThumbnail.id!));
-    mockGetVersionsByIdWithThumbnails(imodelId, firstVersion.id!, ["Small", "Large"], ...mockedVersions);
-    versions = await iModelClient.versions.get(actx, accessToken, imodelId, new VersionQuery().byId(firstVersion.id!).selectThumbnailId("Small", "Large"));
+    mockGetVersionsByIdWithThumbnails(imodelId2, firstVersion.id!, ["Small", "Large"], ...mockedVersions);
+    versions = await iModelClient.versions.get(actx, accessToken, imodelId2, new VersionQuery().byId(firstVersion.id!).selectThumbnailId("Small", "Large"));
     chai.expect(versions.length === 1);
     chai.assert(!!versions[0].smallThumbnailId);
     chai.expect(versions[0].smallThumbnailId!.toString()).to.be.equal(smallThumbnail.id!.toString());
@@ -178,8 +191,8 @@ describe("iModelHub VersionHandler", () => {
     chai.expect(versions[0].largeThumbnailId!.toString()).to.be.equal(largeThumbnail.id!.toString());
 
     mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, undefined, mockedLargeThumbnail.id!));
-    mockGetVersionsByNameWithThumbnails(imodelId, firstVersion.name!, ["Large"], ...mockedVersions);
-    versions = await iModelClient.versions.get(actx, accessToken, imodelId, new VersionQuery().byName(firstVersion.name!).selectThumbnailId("Large"));
+    mockGetVersionsByNameWithThumbnails(imodelId2, firstVersion.name!, ["Large"], ...mockedVersions);
+    versions = await iModelClient.versions.get(actx, accessToken, imodelId2, new VersionQuery().byName(firstVersion.name!).selectThumbnailId("Large"));
     chai.expect(versions.length === 1);
     chai.expect(versions[0].smallThumbnailId).to.be.undefined;
     chai.assert(!!versions[0].largeThumbnailId);

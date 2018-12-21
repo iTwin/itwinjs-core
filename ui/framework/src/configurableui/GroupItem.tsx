@@ -11,7 +11,7 @@ import { ItemDefBase, BaseItemState } from "./ItemDefBase";
 import { GroupButtonProps, AnyItemDef } from "./ItemProps";
 import { Icon } from "./IconComponent";
 import { ItemList, ItemMap } from "./ItemMap";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../SyncUiEventDispatcher";
+import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
 
 import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn,

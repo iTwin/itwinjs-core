@@ -209,6 +209,7 @@ export namespace GltfTileIO {
       public readonly accessors: any,
       public readonly bufferViews: any,
       public readonly scene: any,
+      public readonly nodes: any,
       public readonly meshes: any,
       public readonly materials: any,
       public readonly extensions: any,
@@ -230,6 +231,7 @@ export namespace GltfTileIO {
 
       try {
         const sceneValue = JSON.parse(sceneStr);
+        const nodes = JsonUtils.asObject(sceneValue.nodes);
         const meshes = JsonUtils.asObject(sceneValue.meshes);
         const materialValues = JsonUtils.asObject(sceneValue.materials);
         const accessors = JsonUtils.asObject(sceneValue.accessors);
@@ -240,7 +242,7 @@ export namespace GltfTileIO {
         if (undefined === meshes)
           return undefined;
 
-        return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, meshes, materialValues, extensions, samplers, yAxisUp);
+        return new ReaderProps(buffer, binaryData, accessors, bufferViews, sceneValue, nodes, meshes, materialValues, extensions, samplers, yAxisUp);
       } catch (e) {
         return undefined;
       }
@@ -260,6 +262,8 @@ export namespace GltfTileIO {
     protected readonly _bufferViews: any;
     /** @hidden */
     protected readonly _meshes: any;
+    /** @hidden */
+    protected readonly _nodes: any;
     /** @hidden */
     protected readonly _batchData: any;
     /** @hidden */
@@ -399,6 +403,7 @@ export namespace GltfTileIO {
       this._accessors = props.accessors;
       this._bufferViews = props.bufferViews;
       this._meshes = props.meshes;
+      this._nodes = props.nodes;
       this._materialValues = props.materials;
       this._samplers = props.samplers;
       this._yAxisUp = props.yAxisUp;

@@ -23,7 +23,7 @@ export class StateManager {
     this._nineZoneFactory = nineZoneFactory;
   }
 
-  public handleTabClick(widgetId: number, tabIndex: number, state: NineZoneProps): NineZoneProps {
+  public handleTabClick(widgetId: WidgetZoneIndex, tabIndex: number, state: NineZoneProps): NineZoneProps {
     const model = this._nineZoneFactory(state);
 
     const widget = model.getWidget(widgetId);
@@ -33,7 +33,7 @@ export class StateManager {
     return this.handleWidgetStateChange(widgetId, tabIndex, !isClosing, state);
   }
 
-  public handleWidgetStateChange(widgetId: number, tabIndex: number, isOpening: boolean, state: NineZoneProps): NineZoneProps {
+  public handleWidgetStateChange(widgetId: WidgetZoneIndex, tabIndex: number, isOpening: boolean, state: NineZoneProps): NineZoneProps {
     const model = this._nineZoneFactory(state);
 
     const widget = model.getWidget(widgetId);

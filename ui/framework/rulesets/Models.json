@@ -1,6 +1,6 @@
 {
   "$schema": "../../../presentation/common/Ruleset.schema.json",
-  "id": "Models",
+  "id": "ui-framework/Models",
   "rules": [
     {
       "ruleType": "RootNodes",
@@ -11,11 +11,12 @@
             {
               "schemaName": "BisCore",
               "classNames": [
-                "Model"
+                "SpatialModel"
               ]
             }
           ],
           "arePolymorphic": true,
+          "instanceFilter": "NOT this.IsPrivate",
           "groupByClass": false,
           "groupByLabel": false
         }

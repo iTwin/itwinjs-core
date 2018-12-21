@@ -9,12 +9,11 @@ import {
   MixinProps, NavigationPropertyProps, PhenomenonProps, PrimitiveArrayPropertyProps, PrimitiveOrEnumPropertyBaseProps, PrimitivePropertyProps, PropertyCategoryProps,
   PropertyProps, RelationshipClassProps, SchemaProps, SchemaReferenceProps, StructArrayPropertyProps, StructPropertyProps, UnitProps,
 } from "./JsonProps";
-import { parseStrength, parseStrengthDirection } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { ECName } from "../SchemaKey";
 import { CustomAttribute } from "../Metadata/CustomAttribute";
 
-interface UnknownObject { [name: string]: unknown; }
+interface UnknownObject { readonly [name: string]: unknown; }
 function isObject(x: unknown): x is UnknownObject {
   return typeof (x) === "object";
 }
@@ -25,7 +24,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
   private _schemaName?: string;
   private _currentItemFullName?: string;
 
-  constructor(rawSchema: unknown) {
+  constructor(rawSchema: Readonly<unknown>) {
     super();
 
     if (!isObject(rawSchema))
@@ -85,23 +84,7 @@ export class JsonParser extends AbstractParser<UnknownObject> {
     }
   }
 
-  public *getCustomAttributes(): Iterable<CustomAttribute> {
-    if (undefined !== this._rawSchema.customAttributes) {
-      if (!Array.isArray(this._rawSchema.customAttributes))
-        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Schema ${this._rawSchema.name} has an invalid 'customAttributes' attribute. It should be of type 'array'.`);
-
-      for (const instance of this._rawSchema.customAttributes) {
-        if (!instance.className)
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A SchemaItem ${this._rawSchema.name}.customAttributes instance is missing the required 'className' attribute.`);
-        if (typeof (instance.className) !== "string")
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A SchemaItem ${this._rawSchema.name}.customAttributes instance has an invalid 'className' attribute. It should be of type 'string'.`);
-
-        yield instance;
-      }
-    }
-  }
-
-  private checkSchemaReference(jsonObj: unknown): SchemaReferenceProps {
+  private checkSchemaReference(jsonObj: Readonly<unknown>): SchemaReferenceProps {
     if (!isObject(jsonObj))
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The schema ${this._schemaName} has an invalid 'references' attribute. It should be of type 'object[]'.`);
     if (undefined === jsonObj.name)
@@ -302,19 +285,11 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required 'strength' attribute.`);
     if (typeof (jsonObj.strength) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid 'strength' attribute. It should be of type 'string'.`);
-    const strength = parseStrength(jsonObj.strength);
-    if (undefined === strength)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this._currentItemFullName} has an invalid 'strength' attribute. '${jsonObj.strength}' is not a valid StrengthType.`);
-    jsonObj.strength = strength;
 
     if (undefined === jsonObj.strengthDirection)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required 'strengthDirection' attribute.`);
     if (typeof (jsonObj.strengthDirection) !== "string")
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} has an invalid 'strengthDirection' attribute. It should be of type 'string'.`);
-    const strengthDirection = parseStrengthDirection(jsonObj.strengthDirection);
-    if (undefined === strengthDirection)
-      throw new ECObjectsError(ECObjectsStatus.InvalidStrength, `The RelationshipClass ${this._currentItemFullName} has an invalid 'strengthDirection' attribute. '${jsonObj.strengthDirection}' is not a valid StrengthDirection.`);
-    jsonObj.strengthDirection = strengthDirection;
 
     if (undefined === jsonObj.source)
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The RelationshipClass ${this._currentItemFullName} is missing the required source constraint.`);
@@ -448,12 +423,8 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'relativeError' attribute. It should be of type 'number'.`);
 
     if (undefined !== jsonObj.presentationUnits) {
-      if (!Array.isArray(jsonObj.presentationUnits)) {
-        if (typeof (jsonObj.presentationUnits) === "string") // must be a string or an array
-          jsonObj.presentationUnits = jsonObj.presentationUnits.split(";") as string[];
-        else
-          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
-      }
+      if (!Array.isArray(jsonObj.presentationUnits) && typeof (jsonObj.presentationUnits) !== "string")
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The KindOfQuantity ${this._currentItemFullName} has an invalid 'presentationUnits' attribute. It should be of type 'string' or 'string[]'.`);
     }
 
     if (undefined === jsonObj.persistenceUnit)
@@ -820,5 +791,41 @@ export class JsonParser extends AbstractParser<UnknownObject> {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The Navigation Property ${fullname} has an invalid 'direction' property. It should be of type 'string'.`);
 
     return jsonObj as NavigationPropertyProps;
+  }
+
+  public getSchemaCustomAttributes(): Iterable<CustomAttribute> {
+    return this.getCustomAttributes(this._rawSchema, "Schema", this._schemaName);
+  }
+
+  public getClassCustomAttributes(jsonObj: UnknownObject): Iterable<CustomAttribute> {
+    return this.getCustomAttributes(jsonObj, "ECClass", this._currentItemFullName);
+  }
+
+  public getPropertyCustomAttributes(jsonObj: UnknownObject): Iterable<CustomAttribute> {
+    return this.getCustomAttributes(jsonObj, "ECProperty", `${this._currentItemFullName}.${jsonObj.name}`);
+  }
+
+  public getRelationshipConstraintCustomAttributes(jsonObj: UnknownObject): [Iterable<CustomAttribute> /* source */, Iterable<CustomAttribute> /* target */] {
+    const sourceCustomAttributes = this.getCustomAttributes(jsonObj.source as UnknownObject, "Source Constraint of", this._currentItemFullName);
+    const targetCustomAttributes = this.getCustomAttributes(jsonObj.target as UnknownObject, "Target Constraint of", this._currentItemFullName);
+    return [sourceCustomAttributes, targetCustomAttributes];
+  }
+
+  private *getCustomAttributes(jsonObj: UnknownObject, type: string, name?: string): Iterable<CustomAttribute> {
+    if (undefined !== jsonObj.customAttributes) {
+      if (!Array.isArray(jsonObj.customAttributes))
+        throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${type} ${name} has an invalid 'customAttributes' attribute. It should be of type 'object[]'.`);
+
+      for (const instance of jsonObj.customAttributes) {
+        if (!isObject(instance) || Array.isArray(instance))
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `The ${type} ${name} has an invalid 'customAttributes' attribute. It should be of type 'object[]'.`);
+        if (undefined === instance.className)
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A CustomAttribute in ${name}.customAttributes is missing the required 'className' attribute.`);
+        if (typeof (instance.className) !== "string")
+          throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `A CustomAttribute in ${name}.customAttributes has an invalid 'className' attribute. It should be of type 'string'.`);
+
+        yield instance as CustomAttribute;
+      }
+    }
   }
 }

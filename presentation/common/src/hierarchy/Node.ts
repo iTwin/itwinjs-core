@@ -27,7 +27,7 @@ export default interface Node {
   /** Does this node have child nodes */
   hasChildren?: boolean;
   /** Is this node selectable */
-  isSelectable?: boolean;
+  isSelectionDisabled?: boolean;
   /** Is this node editable */
   isEditable?: boolean;
   /** Is this node expanded */
@@ -54,7 +54,7 @@ export interface NodeJSON {
   backColor?: string;
   fontStyle?: string;
   hasChildren?: boolean;
-  isSelectable?: boolean;
+  isSelectionDisabled?: boolean;
   isEditable?: boolean;
   isExpanded?: boolean;
   isCheckboxVisible?: boolean;

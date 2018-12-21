@@ -82,7 +82,7 @@ export class BeEvent<T extends Listener> {
     this._insideRaiseEvent = true;
 
     const listeners = this._listeners;
-    let length = listeners.length;
+    const length = listeners.length;
     let dropped = false;
 
     for (let i = 0; i < length; ++i) {
@@ -96,15 +96,13 @@ export class BeEvent<T extends Listener> {
           dropped = true;
         }
       }
-
-      // if we had dropped listeners, remove them now
-      if (dropped) {
-        this._listeners.length = 0;
-        listeners.forEach((ctx) => { if (ctx.listener) this._listeners.push(ctx); });
-        length = listeners.length;
-      }
-
     }
+
+    // if we had dropped listeners, remove them now
+    if (dropped) {
+      this._listeners = this._listeners.filter((ctx) => ctx.listener !== undefined);
+    }
+
     this._insideRaiseEvent = false;
   }
 

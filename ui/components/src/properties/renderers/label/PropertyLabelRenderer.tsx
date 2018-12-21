@@ -5,7 +5,6 @@
 /** @module Properties */
 
 import * as React from "react";
-import { Popup, Position } from "@bentley/ui-core";
 
 import "./PropertyLabelRenderer.scss";
 
@@ -13,6 +12,7 @@ import "./PropertyLabelRenderer.scss";
 export interface PropertyLabelRendererProps {
   /** Label to be rendered */
   children: string;
+  renderColon?: boolean;
 }
 
 /** @hidden */
@@ -29,17 +29,10 @@ export class PropertyLabelRenderer extends React.PureComponent<PropertyLabelRend
   public render() {
     return (
       <>
-        <span className="components-property-label-renderer">
+        <span className="components-property-label-renderer" title={this.props.children}>
           {this.props.children}
         </span>
-        <span className="components-property-label-renderer-dots">
-          :
-        </span>
-        <Popup showOnHover={true} position={Position.Top} showTime={500}>
-          <div className="components-label-popup">
-            {this.props.children}
-          </div>
-        </Popup>
+        {this.props.renderColon ? <span className="components-property-label-renderer-colon">:</span> : undefined}
       </>
     );
   }

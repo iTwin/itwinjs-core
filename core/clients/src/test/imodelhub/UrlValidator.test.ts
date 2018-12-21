@@ -6,7 +6,7 @@ import { assert, should } from "chai";
 
 import * as fs from "fs";
 import * as path from "path";
-import { urlLogPath } from "../TestConfig";
+import { urlLogPath, TestConfig } from "../TestConfig";
 import { IModelBaseHandler } from "../../imodelhub/BaseHandler";
 import { UrlDiscoveryClient } from "../../Client";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
@@ -15,7 +15,8 @@ export const whitelistRelPath: string = "../assets/whitelist.txt";
 
 should();
 
-describe("iModelHub URL Whitelist Validator", () => {
+// These tests have to run last
+describe("Validate iModelHub URL Whitelist", () => {
 
   function normalizeUrl(loggedUrl: string, hubBaseUrl: string): string | undefined {
     const extractRegex = new RegExp(hubBaseUrl + "\\/s?v(\\d+).(\\d+)\\/Repositories\\/(iModel|Project|Global)--(\\w{8}-\\w{4}-\\w{4}-\\w{4}-\\w{12}|Global)\\/(.*)", "i");
@@ -57,7 +58,9 @@ describe("iModelHub URL Whitelist Validator", () => {
     return normalizedUrl === "" ? undefined : normalizedUrl;
   }
 
-  it("Detect whether new iModelHub APIs have been added to which iModelBank has to react", async () => {
+  it("Detect whether new iModelHub APIs have been added to which iModelBank has to react", async function (this: Mocha.ITestCallbackContext) {
+    if (TestConfig.enableMocks)
+      this.skip();
     const whitelistPath: string = path.join(__dirname, whitelistRelPath);
     assert.isTrue(fs.existsSync(whitelistPath), `Whitelist file is expected to exist in the assets to run this test: ${whitelistPath}`);
 

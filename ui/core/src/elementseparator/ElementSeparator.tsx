@@ -27,8 +27,8 @@ export interface ElementSeparatorProps {
 export class ElementSeparator extends React.PureComponent<ElementSeparatorProps> {
   private _dragStarted = false;
   private _initialGlobalPosition = 0;
-  // How big must ratio difference be to trigger a rerender
-  private readonly _updateThreshold = 0.025;
+  // How big must ratio difference be to trigger a rerender. In pixels
+  private readonly _updateThreshold = 3;
 
   public static defaultProps: Partial<ElementSeparatorProps> = {
     separatorSize: 30,
@@ -72,7 +72,7 @@ export class ElementSeparator extends React.PureComponent<ElementSeparatorProps>
     }
     const positionChange = this.getCurrentGlobalPosition(e) - this._initialGlobalPosition;
     // Limit update count
-    if (Math.abs(positionChange) < this.props.movableArea * this._updateThreshold)
+    if (Math.abs(positionChange) < this._updateThreshold)
       return;
 
     const currentLocalPosition = this.props.movableArea * this.props.ratio + positionChange;

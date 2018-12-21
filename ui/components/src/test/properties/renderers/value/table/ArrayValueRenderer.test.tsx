@@ -17,8 +17,6 @@ describe("ArrayValueRenderer", () => {
     const rendererMount = mount(
       <TableArrayValueRenderer
         onDialogOpen={() => { }}
-        onPopupHide={() => { }}
-        onPopupShow={() => { }}
         orientation={Orientation.Horizontal}
         propertyRecord={record}
       />);
@@ -33,8 +31,6 @@ describe("ArrayValueRenderer", () => {
     const rendererMount = mount(
       <TableArrayValueRenderer
         onDialogOpen={() => { }}
-        onPopupHide={() => { }}
-        onPopupShow={() => { }}
         orientation={Orientation.Horizontal}
         propertyRecord={record}
       />);

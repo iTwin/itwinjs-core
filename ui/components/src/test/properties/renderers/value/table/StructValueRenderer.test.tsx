@@ -17,8 +17,6 @@ describe("StructValueRenderer", () => {
     const rendererMount = mount(
       <TableStructValueRenderer
         onDialogOpen={() => { }}
-        onPopupHide={() => { }}
-        onPopupShow={() => { }}
         orientation={Orientation.Horizontal}
         propertyRecord={record}
       />);

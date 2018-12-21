@@ -13,7 +13,7 @@ import * as Primitives from "./valuetypes/PrimitiveTypes";
  * Short Date Type Converter.
  */
 export class ShortDateTypeConverter extends TypeConverter implements LessGreaterOperatorProcessor {
-  public async convertToString(value?: Primitives.ShortDate): Promise<string> {
+  public convertToString(value?: Primitives.ShortDate) {
     if (value === undefined)
       return "";
 
@@ -27,7 +27,7 @@ export class ShortDateTypeConverter extends TypeConverter implements LessGreater
     return date instanceof Date && !isNaN(+date);
   }
 
-  public async convertFromString(value: string): Promise<Date | undefined> {
+  public convertFromString(value: string) {
     if (!value)
       return undefined;
 

@@ -13,7 +13,7 @@ import {
 import { ToolItemDef } from "./configurableui/Item";
 import { ContentViewManager } from "./configurableui/ContentViewManager";
 import { BaseItemState } from "./configurableui/ItemDefBase";
-import { SyncUiEventId } from "./SyncUiEventDispatcher";
+import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 
 /** Utility Class that provides definitions of tools provided by imodel.js core. These definitions can be used to populate the ui. */

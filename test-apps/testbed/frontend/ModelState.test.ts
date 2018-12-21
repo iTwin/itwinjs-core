@@ -8,7 +8,7 @@ import { ModelSelectorState, IModelConnection, DrawingModelState, SheetModelStat
 import { Id64 } from "@bentley/bentleyjs-core";
 import { Code, ModelSelectorProps } from "@bentley/imodeljs-common";
 import { CONSTANTS } from "../common/Testbed";
-import { MaybeRenderApp } from "./WebGLTestContext";
+import { MockRender } from "./MockRender";
 
 const iModelLocation = path.join(CONSTANTS.IMODELJS_CORE_DIRNAME, "core/backend/lib/test/assets/");
 
@@ -16,7 +16,7 @@ describe("ModelState", () => {
   let imodel: IModelConnection;
   let imodel2: IModelConnection;
   before(async () => {
-    MaybeRenderApp.startup();
+    MockRender.App.startup();
     imodel2 = await IModelConnection.openStandalone(iModelLocation + "mirukuru.ibim");
     imodel = await IModelConnection.openStandalone(iModelLocation + "CompatibilityTestSeed.bim");
   });
@@ -24,7 +24,7 @@ describe("ModelState", () => {
   after(async () => {
     if (imodel) await imodel.closeStandalone();
     if (imodel2) await imodel2.closeStandalone();
-    MaybeRenderApp.shutdown();
+    MockRender.App.shutdown();
   });
 
   it("ModelSelectors should hold models", () => {

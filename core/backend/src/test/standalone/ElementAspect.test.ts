@@ -41,6 +41,12 @@ describe("ElementAspect", () => {
     assert.equal(aspect2.testUniqueAspectProperty, "Aspect2-Updated");
     assert.isUndefined(aspect2.length);
 
+    const uniqueAspects: ElementUniqueAspect[] = iModel.elements.getAspects(element.id, ElementUniqueAspect.classFullName);
+    assert.equal(uniqueAspects.length, 2);
+    uniqueAspects.forEach((aspect) => {
+      assert.isTrue(aspect.classFullName === aspect1.classFullName || aspect.classFullName === aspect2.classFullName);
+    });
+
     const multiAspectsA: ElementAspect[] = iModel.elements.getAspects(element.id, "DgnPlatformTest:TestMultiAspectNoHandler");
     assert.exists(multiAspectsA);
     assert.isArray(multiAspectsA);
@@ -61,6 +67,12 @@ describe("ElementAspect", () => {
       assert.equal(aspect.schemaName, "DgnPlatformTest");
       assert.equal(aspect.className, "TestMultiAspect");
       assert.exists(aspect.testMultiAspectProperty);
+    });
+
+    const multiAspects: ElementAspect[] = iModel.elements.getAspects(element.id, ElementMultiAspect.classFullName);
+    assert.equal(multiAspects.length, 4);
+    multiAspects.forEach((aspect) => {
+      assert.isTrue(aspect.classFullName === multiAspectsA[0].classFullName || aspect.classFullName === multiAspectsB[0].classFullName);
     });
 
     let numErrorsCaught = 0;

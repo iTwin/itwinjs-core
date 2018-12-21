@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { expect, assert } from "chai";
+import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import TestUtils from "../../../TestUtils";
@@ -16,23 +16,20 @@ function createDoubleProperty() {
 
 describe("DoublePropertyValueRenderer", () => {
   describe("render", () => {
-    it("renders double property", async () => {
+    it("renders double property", () => {
       const renderer = new DoublePropertyValueRenderer();
       const property = createDoubleProperty();
 
-      const element = await renderer.render(property);
+      const element = renderer.render(property);
       const elementMount = mount(<div>{element}</div>);
 
       expect(elementMount.text()).to.be.eq("0.45 m");
     });
 
-    it("throws when trying to render array property", async () => {
+    it("throws when trying to render array property", () => {
       const renderer = new DoublePropertyValueRenderer();
       const arrayProperty = TestUtils.createArrayProperty("LabelArray");
-
-      await renderer.render(arrayProperty)
-        .then(() => { assert.fail(undefined, undefined, "Function did not throw"); })
-        .catch(async () => Promise.resolve());
+      expect(() => renderer.render(arrayProperty)).to.throw;
     });
   });
 
@@ -40,7 +37,6 @@ describe("DoublePropertyValueRenderer", () => {
     it("returns true for a double property", () => {
       const renderer = new DoublePropertyValueRenderer();
       const property = createDoubleProperty();
-
       expect(renderer.canRender(property)).to.be.true;
     });
 
@@ -49,7 +45,6 @@ describe("DoublePropertyValueRenderer", () => {
       const arrayProperty = TestUtils.createArrayProperty("LabelArray");
       const structProperty = TestUtils.createStructProperty("NameStruct");
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Model");
-
       expect(renderer.canRender(arrayProperty)).to.be.false;
       expect(renderer.canRender(structProperty)).to.be.false;
       expect(renderer.canRender(stringProperty)).to.be.false;

@@ -1,6 +1,14 @@
 # Change Log - @bentley/presentation-frontend
 
-This log was last generated on Thu, 13 Dec 2018 22:06:10 GMT and should not be manually modified.
+This log was last generated on Wed, 19 Dec 2018 18:26:14 GMT and should not be manually modified.
+
+## 0.179.0
+Wed, 19 Dec 2018 18:26:14 GMT
+
+### Updates
+
+- Fix linter warnings
+- Allow specifying `clientId` for PresentationManager. This allows consumers to use clientId that's shared between sessions which makes it possible for presentation framework to share caches.
 
 ## 0.178.0
 Thu, 13 Dec 2018 22:06:10 GMT

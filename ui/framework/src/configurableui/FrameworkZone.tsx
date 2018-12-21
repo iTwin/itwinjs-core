@@ -6,7 +6,7 @@
 
 import * as React from "react";
 
-import { WidgetType, WidgetDef } from "./WidgetDef";
+import { WidgetType, WidgetDef, WidgetState } from "./WidgetDef";
 import { WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider } from "./FrontstageComposer";
 import { StackedWidget, EachWidgetProps } from "./StackedWidget";
 import ZoneTargets from "./ZoneTargets";
@@ -48,6 +48,7 @@ interface FrameworkZoneState {
 /** ConfigurableUi Zone React component.
  */
 export class FrameworkZone extends React.Component<FrameworkZoneProps, FrameworkZoneState> {
+
   constructor(props: FrameworkZoneProps) {
     super(props);
   }
@@ -66,8 +67,21 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
   }
 
   private _handleWidgetStateChangedEvent = (args: WidgetStateChangedEventArgs) => {
-    if (this.containsWidgetDef(args.widgetDef)) {
-      this.setState((_prevState, _props) => ({ updatedWidgetDef: args.widgetDef }));
+    const widgetDef = args.widgetDef;
+    const id = this.getWidgetPropsIdForDef(widgetDef);
+    if (!id)
+      return;
+
+    const zoneDef = this.props.zoneDefProvider.getZoneDef(id);
+    if (zoneDef) {
+      // tslint:disable-next-line:prefer-for-of
+      for (let index = 0; index < zoneDef.widgetDefs.length; index++) {
+        const wDef = zoneDef.widgetDefs[index];
+        if (wDef === widgetDef) {
+          this.props.widgetChangeHandler.handleWidgetStateChange(id, index, widgetDef.state === WidgetState.Open);
+          break;
+        }
+      }
     }
   }
 
@@ -93,14 +107,17 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
     );
   }
 
-  private containsWidgetDef(widgetDef: WidgetDef): boolean {
-    return this.props.zoneProps.widgets.some((wProps: NZ_WidgetProps) => {
-      const zoneDef = this.props.zoneDefProvider.getZoneDef(wProps.id);
-      if (!zoneDef)
-        return false;
-
-      return zoneDef.widgetDefs.some((wDef: WidgetDef) => wDef === widgetDef);
-    });
+  private getWidgetPropsIdForDef(widgetDef: WidgetDef): number | undefined {
+    if (this.props.zoneProps.widgets.length > 0) {
+      for (const wProps of this.props.zoneProps.widgets) {
+        const zoneDef = this.props.zoneDefProvider.getZoneDef(wProps.id);
+        if (zoneDef) {
+          if (zoneDef.widgetDefs.some((wDef: WidgetDef) => wDef === widgetDef))
+            return wProps.id;
+        }
+      }
+    }
+    return undefined;
   }
 
   private _getWidget = () => {
@@ -109,87 +126,78 @@ export class FrameworkZone extends React.Component<FrameworkZoneProps, Framework
       if (!zoneDef)
         return null;
 
-      /** Return free-form widget */
+      /** Return free-form nzWidgetProps */
       if (zoneDef.widgetCount === 1 && zoneDef.widgetDefs[0].widgetType !== WidgetType.Rectangular) {
         const widgetDef = zoneDef.widgetDefs[0];
         return (widgetDef.isVisible) ? widgetDef.reactElement : null;
       }
     }
 
-    let activeWidgetDef: WidgetDef | undefined;
-    let defToActivate: WidgetDef | undefined;
-    let widgetBeingClosed = false;
-    const currentActiveWidgetDefs: WidgetDef[] = [];  // there should really only ever be one, but just in case.
+    let widgetDefToActivate: WidgetDef | undefined;
     const widgets: EachWidgetProps[] = new Array<EachWidgetProps>();
 
-    this.props.zoneProps.widgets.forEach((widget: NZ_WidgetProps) => {
-      const zoneDef = this.props.zoneDefProvider.getZoneDef(widget.id);
+    this.props.zoneProps.widgets.forEach((nzWidgetProps: NZ_WidgetProps) => {
+      const zoneDef = this.props.zoneDefProvider.getZoneDef(nzWidgetProps.id);
       if (!zoneDef)
         return;
 
-      const visibleWidgets = zoneDef.widgetDefs
+      const visibleWidgetDefs = zoneDef.widgetDefs
         .filter((widgetDef: WidgetDef) => {
-          return widgetDef.isVisible;
+          return widgetDef.isVisible && !widgetDef.isFloating;
         });
 
-      if (!visibleWidgets || 0 === visibleWidgets.length)
+      if (!visibleWidgetDefs || 0 === visibleWidgetDefs.length)
         return;
 
-      // save list of WidgetDefs that have isActive set to true. We use this later to ensure that WidgetDef are in sync with active widget tab.
-      visibleWidgets.forEach((def: WidgetDef) => {
-        if (!def.isFloating) {
-          if (def === this.state.updatedWidgetDef && def.stateChanged) {
-            if (def.isActive)
-              defToActivate = def;
+      if (nzWidgetProps.tabIndex === -2) { // -2 is used when stage is initially created and we need to apply default widget state.
+        // No WidgetTab has been selected so find the first WidgetDef set to Open and use that as the widgetDefToActivate
+        for (const currentWidgetDef of visibleWidgetDefs) {
+          if (WidgetState.Open === currentWidgetDef.state) {
+            if (!widgetDefToActivate)
+              widgetDefToActivate = currentWidgetDef;
             else
-              widgetBeingClosed = true;
-          } else
-            currentActiveWidgetDefs.push(def);
+              currentWidgetDef.state = WidgetState.Closed;
+          }
         }
-      });
-
-      widgets.push({
-        id: widget.id,
-        isStatusBar: zoneDef.isStatusBar,
-        tabs: visibleWidgets.map((widgetDef: WidgetDef, tabIndex: number) => {
-          let isActive = false;
-          if (!activeWidgetDef) {
-            if (widgetDef === this.state.updatedWidgetDef && widgetDef.stateChanged) {
-              isActive = !widgetBeingClosed;
-              widgetDef.stateChanged = false;
-            } else if (widget.tabIndex === tabIndex && !defToActivate && !widgetBeingClosed) {
-              isActive = true;
+      } else {
+        // if there was a state change in this zone then force the WidgetDef state to match that defined by the active tabIndex
+        for (let index = 0; index < visibleWidgetDefs.length; index++) {
+          const currentWidgetDef = visibleWidgetDefs[index];
+          if (nzWidgetProps.tabIndex === index) {
+            widgetDefToActivate = visibleWidgetDefs[index];
+            if (!currentWidgetDef.isActive) {
+              // This is needed if stateFun says tab should be closed and then user clicks tab to show tab contents.
+              currentWidgetDef.state = WidgetState.Open;
             }
-
-            if (isActive) {
-              activeWidgetDef = widgetDef;
+          } else {
+            if (currentWidgetDef.isActive) {
+              // This is needed if stateFun enables tab and then user clicks tab to hide tab contents.
+              currentWidgetDef.state = WidgetState.Closed;
             }
           }
+        }
+      }
 
+      widgets.push({
+        id: nzWidgetProps.id,
+        isStatusBar: zoneDef.isStatusBar,
+        tabs: visibleWidgetDefs.map((widgetDef: WidgetDef) => {
           return {
-            isActive,
+            isActive: widgetDef === widgetDefToActivate,
             iconSpec: widgetDef.iconSpec,
             title: widgetDef.label,
+            widgetName: widgetDef.id,
           };
         }),
       });
     });
 
-    // make sure the isActive property for the WidgetDefs in the zone match the state of the active widget tab
-    if (currentActiveWidgetDefs.length > 0) {
-      currentActiveWidgetDefs.forEach((def: WidgetDef) => {
-        if (def !== activeWidgetDef) {
-          def.isActive = false;
-        }
-      });
-    }
-
     let content: React.ReactNode;
-    if (activeWidgetDef) {
-      content = activeWidgetDef.reactElement;
+    if (widgetDefToActivate) {
+      content = widgetDefToActivate.reactElement;
 
-      if (activeWidgetDef.isStatusBar) {
-        const widgetControl = activeWidgetDef.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
+      if (widgetDefToActivate.isStatusBar) {
+        const widgetControl = widgetDefToActivate.getWidgetControl(ConfigurableUiControlType.StatusBarWidget) as StatusBarWidgetControl;
 
         content = (
           <StatusBar

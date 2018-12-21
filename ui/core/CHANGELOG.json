@@ -2,6 +2,18 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "0.179.0",
+      "tag": "@bentley/ui-core_v0.179.0",
+      "date": "Wed, 19 Dec 2018 18:26:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Use arrow cursor on tree nodes"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.178.0",
       "tag": "@bentley/ui-core_v0.178.0",
       "date": "Thu, 13 Dec 2018 22:06:10 GMT",

@@ -8,6 +8,7 @@ import { IPropertyValueRenderer, PropertyValueRendererContext, PropertyContainer
 import { PropertyRecord } from "../../Record";
 import { PropertyValueFormat, PrimitiveValue } from "../../Value";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
+import { withContextStyle } from "./WithContextStyle";
 
 /** Default Primitive Property Renderer */
 export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
@@ -16,18 +17,13 @@ export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
     return record.value.valueFormat === PropertyValueFormat.Primitive;
   }
 
-  public async render(record: PropertyRecord, context?: PropertyValueRendererContext) {
+  public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
+    if (context && context.containerType === PropertyContainerType.Tree)
+      return withContextStyle(context.decoratedTextElement, context);
+
     const value = (record.value as PrimitiveValue).value;
-
-    if (context) {
-      switch (context.containerType) {
-        case PropertyContainerType.Tree:
-          return context.decoratedTextElement;
-      }
-    }
-
     if (value !== undefined)
-      return TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);
+      return withContextStyle(TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value), context);
 
     return "";
   }

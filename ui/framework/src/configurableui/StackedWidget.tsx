@@ -20,6 +20,7 @@ export interface WidgetTabProps {
   isActive: boolean;
   iconSpec?: string | React.ReactNode;
   title: string;
+  widgetName: string;
 }
 
 /** Properties for a Widget in a [[StackedWidget]].
@@ -36,7 +37,7 @@ export interface StackedWidgetProps {
   children?: React.ReactNode;
   fillZone: boolean;
   isFloating: boolean;
-  zoneId: number;
+  zoneId: WidgetZoneIndex;
   widgets: EachWidgetProps[];
   widgetChangeHandler: WidgetChangeHandler;
   horizontalAnchor: HorizontalAnchor;
@@ -135,11 +136,11 @@ export class StackedWidget extends React.Component<StackedWidgetProps> {
     this.props.widgetChangeHandler.handleTabDragEnd();
   }
 
-  private _handleOnWidgetResize = (zoneId: number, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
+  private _handleOnWidgetResize = (zoneId: WidgetZoneIndex, x: number, y: number, handle: ResizeHandle, filledHeightDiff: number) => {
     this.props.widgetChangeHandler.handleResize(zoneId, x, y, handle, filledHeightDiff);
   }
 
-  private _handleWidgetTabClick = (widgetId: number, tabIndex: number) => {
+  private _handleWidgetTabClick = (widgetId: WidgetZoneIndex, tabIndex: number) => {
     this.props.widgetChangeHandler.handleTabClick(widgetId, tabIndex);
   }
 

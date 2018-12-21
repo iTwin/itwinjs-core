@@ -66,7 +66,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
     visibleMessage: StatusBarMessageType.None,
     messageDetails: undefined,
     activityMessageInfo: undefined,
-    isActivityMessageVisible: true,
+    isActivityMessageVisible: false,
     toastMessageStage: ToastMessageStage.Visible,
   };
 
@@ -290,6 +290,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                     <Hyperlink text="Cancel"
                       onClick={this._cancelActivityMessage}
                     />
+                    <span>&nbsp;</span>
                     <MessageButton onClick={this._dismissActivityMessage}>
                       <i className="icon icon-close" />
                     </MessageButton>
