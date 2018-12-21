@@ -18,6 +18,7 @@ import { Schema, Schemas } from "../Schema";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { PhysicalElement } from "../Element";
 import { ClassRegistry } from "../ClassRegistry";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 
 const actx = new ActivityLoggingContext("");
 
@@ -325,6 +326,7 @@ export class IModelTestUtils {
   }
 
   public static startBackend() {
+    IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
     const config = new IModelHostConfiguration();
     IModelHost.startup(config);
   }

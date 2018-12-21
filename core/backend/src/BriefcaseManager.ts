@@ -573,10 +573,16 @@ export class BriefcaseManager {
       throw error;
     }
 
-    // Reopen the briefcase if the briefcase hasn't been opened with the required OpenMode
+    // Reopen the iModel file if the briefcase hasn't been opened with the required OpenMode
     if (briefcase.openParams!.openMode !== openParams.openMode) {
-      BriefcaseManager.closeBriefcase(briefcase, false),
-        BriefcaseManager.openBriefcase(accessToken, contextId, briefcase, openParams);
+      // Don't use closeBriefcase and openBriefcase as this would trigger a new usage tracking entry
+      assert(briefcase.isOpen, "Briefcase must be open for it to be closed");
+      briefcase.nativeDb.closeIModel();
+      const res: DbResult = briefcase.nativeDb.openIModelFile(briefcase.pathname, openParams.openMode);
+      if (DbResult.BE_SQLITE_OK !== res)
+        throw new IModelError(res, briefcase.pathname);
+
+      briefcase.openParams = openParams;
     }
 
     // Add briefcase to cache if necessary
@@ -717,11 +723,15 @@ export class BriefcaseManager {
     const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
     let res: DbResult = nativeDb.openIModel(accessToken.toTokenString(IncludePrefix.No), IModelHost.backendVersion, contextId, briefcase.pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res) {
-      Logger.logError(loggingCategory, `Unable to open briefcase at ${briefcase.pathname}`);
-      Logger.logWarning(loggingCategory, `Unable to create briefcase ${briefcase.pathname}. Deleting any remnants of it`);
-      await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
-      actx.enter();
-      throw new IModelError(res, briefcase.pathname);
+      if (res === -100)
+        Logger.logWarning(loggingCategory, "Usage tracking failed.", () => ({ userId: !accessToken.getUserInfo() ? undefined : accessToken.getUserInfo()!.id, contextId }));
+      else {
+        Logger.logError(loggingCategory, `Unable to open briefcase at ${briefcase.pathname}`);
+        Logger.logWarning(loggingCategory, `Unable to create briefcase ${briefcase.pathname}. Deleting any remnants of it`);
+        await BriefcaseManager.deleteBriefcase(actx, accessToken, briefcase);
+        actx.enter();
+        throw new IModelError(res, briefcase.pathname);
+      }
     }
 
     res = nativeDb.setBriefcaseId(briefcase.briefcaseId);
@@ -1047,8 +1057,12 @@ export class BriefcaseManager {
     briefcase.nativeDb = briefcase.nativeDb || new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
 
     const res: DbResult = briefcase.nativeDb!.openIModel(accessToken.toTokenString(IncludePrefix.No), IModelHost.backendVersion, contextId, briefcase.pathname, openParams.openMode);
-    if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res, briefcase.pathname);
+    if (DbResult.BE_SQLITE_OK !== res) {
+      if (res === -100)
+        Logger.logWarning(loggingCategory, "Usage tracking failed.", () => ({ userId: !accessToken.getUserInfo() ? undefined : accessToken.getUserInfo()!.id, contextId }));
+      else
+        throw new IModelError(res, briefcase.pathname);
+    }
 
     briefcase.openParams = openParams;
     briefcase.userId = accessToken.getUserInfo()!.id;

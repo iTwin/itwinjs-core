@@ -232,7 +232,7 @@ export declare class NativeECSqlValue {
   public getPoint2d(): { x: number, y: number };
   public getPoint3d(): { x: number, y: number, z: number };
   public getString(): string;
-  public getEnum(): { schema: string, name: string, key: string, value: number | string } | undefined;
+  public getEnum(): Array<{ schema: string, name: string, key: string, value: number | string }> | undefined;
   public getNavigation(): { id: Id64String, relClassName?: string };
   public getStructIterator(): NativeECSqlValueIterator;
   public getArrayIterator(): NativeECSqlValueIterator;
