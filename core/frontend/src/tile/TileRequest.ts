@@ -187,10 +187,8 @@ class Queue extends PriorityQueue<Request> {
     super((lhs, rhs) => lhs.priority - rhs.priority);
   }
 
-  public get array(): Request[] { return this._array; }
-
   public has(request: Request): boolean {
-    return this.array.indexOf(request) >= 0;
+    return this._array.indexOf(request) >= 0;
   }
 }
 
@@ -330,7 +328,7 @@ class RequestScheduler implements TileRequest.Scheduler {
       return;
 
     // Cancel any previously pending requests which are no longer needed.
-    for (const queued of previouslyPending.array)
+    for (const queued of previouslyPending)
       if (queued.viewports.isEmpty)
         this.cancel(queued);
 
@@ -421,7 +419,7 @@ class RequestScheduler implements TileRequest.Scheduler {
 
     this._activeRequests.clear();
 
-    for (const queued of this._pendingRequests.array)
+    for (const queued of this._pendingRequests)
       queued.cancel(this);
 
     this._requestsPerViewport.clear();
