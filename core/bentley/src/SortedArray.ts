@@ -68,7 +68,7 @@ export function lowerBound<T, U = T>(value: T, list: U[], compare: OrderedCompar
  * Modifying an element in a way that affects the comparison function will produce unpredictable results, the
  * most likely of which is that the array will cease to be sorted.
  */
-export class SortedArray<T> {
+export class SortedArray<T> implements Iterable<T> {
   protected _array: T[] = [];
   protected readonly _compare: OrderedComparator<T>;
   protected readonly _clone: CloneFunction<T>;
@@ -95,12 +95,15 @@ export class SortedArray<T> {
   /** Clears the contents of the sorted array. */
   public clear(): void { this._array.length = 0; }
 
+  /** Returns an iterator over the contents of the array in sorted order, suitable for use in `for-of` loops. */
+  public [Symbol.iterator](): Iterator<T> { return this._array[Symbol.iterator](); }
+
   /** Extracts the sorted array as a T[] and empties the contents of this SortedArray.
    * @returns the contents of this SortedArray as a T[].
    */
   public extractArray(): T[] {
     const result = this._array;
-    this.clear();
+    this._array = [];
     return result;
   }
 

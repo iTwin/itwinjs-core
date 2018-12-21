@@ -7,6 +7,39 @@
 import { CloneFunction, shallowClone, lowerBound } from "./SortedArray";
 import { OrderedComparator } from "./Compare";
 
+class DictionaryIterator<K, V> implements Iterator<DictionaryEntry<K, V>> {
+  private _keys: K[];
+  private _values: V[];
+  private _curIndex = -1;
+
+  public constructor(keys: K[], values: V[]) { this._keys = keys; this._values = values; }
+
+  public next(): IteratorResult<DictionaryEntry<K, V>> {
+    if (++this._curIndex >= this._keys.length) {
+      // The ECMAScript spec states that value=undefined is valid if done=true. The TypeScript interface violates the spec hence the cast to any and back below.
+      return { done: true } as any as IteratorResult<DictionaryEntry<K, V>>;
+    } else {
+      return {
+        value: {
+          key: this._keys[this._curIndex],
+          value: this._values[this._curIndex],
+        },
+        done: false,
+      };
+    }
+  }
+}
+
+/**
+ * Represents an entry in a [[Dictionary]].
+ */
+export interface DictionaryEntry<K, V> {
+  /** The key used for lookup in the Dictionary. */
+  key: K;
+  /** The value associated with the key in the Dictionary. */
+  value: V;
+}
+
 /**
  * Maintains a mapping of keys to values.
  * Unlike the standard Map<K, V>, a Dictionary<K, V> supports custom comparison logic for keys of object type (and for any other type).
@@ -20,7 +53,7 @@ import { OrderedComparator } from "./Compare";
  * Modifying a key in a way that affects the comparison function will produce unpredictable results, the
  * most likely of which is that keys will cease to map to the values with which they were initially inserted.
  */
-export class Dictionary<K, V> {
+export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
   protected _keys: K[] = [];
   protected readonly _compareKeys: OrderedComparator<K>;
   protected readonly _cloneKey: CloneFunction<K>;
@@ -41,6 +74,9 @@ export class Dictionary<K, V> {
 
   /** The number of entries in the dictionary. */
   public get length(): number { return this._keys.length; }
+
+  /** Returns an iterator over the key-value pairs in the Dictionary suitable for use in `for-of` loops. Entries are returned in sorted order by key. */
+  public [Symbol.iterator](): Iterator<DictionaryEntry<K, V>> { return new DictionaryIterator<K, V>(this._keys, this._values); }
 
   /** Removes all entries from this dictionary */
   public clear(): void {

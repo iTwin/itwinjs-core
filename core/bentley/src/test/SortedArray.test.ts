@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Dictionary, SortedArray } from "../bentleyjs-core";
+import { compareStrings, Dictionary, SortedArray } from "../bentleyjs-core";
 
 class Thing {
   public constructor(public readonly first: number, public readonly second: number) { }
@@ -108,6 +108,44 @@ describe("SortedArray", () => {
 
     expectSorted(list.extractArray(), ids.length + 2, true, (lhs: Id, rhs: Id) => lhs.compare(rhs));
   });
+
+  it("Should support iteration", () => {
+    const list = new SortedArray<number>((lhs, rhs) => lhs - rhs);
+
+    const countEntries = () => {
+      let numEntries = 0;
+      for (const entry of list) {
+        ++numEntries;
+        expect(entry).not.to.be.undefined; // silence `unused variable` warning...
+      }
+
+      expect(numEntries).to.equal(list.length);
+    };
+
+    countEntries();
+
+    const contents = [ 6, 5, 1, 3, 2, 4, 4, 6, 5, 5, 5 ];
+    for (const content of contents)
+      list.insert(content);
+
+    countEntries();
+
+    let prev = 0;
+    for (const entry of list) {
+      expect(entry).to.equal(prev + 1);
+      prev = entry;
+    }
+
+    const iter = list[Symbol.iterator]();
+    const howManyTimes = list.length; // stupid compiler/linter is stupid.
+    expect(howManyTimes).to.equal(6);
+    for (let i = 0; i < howManyTimes; i++) {
+      const next = iter.next();
+      expect(next.done).to.be.false;
+    }
+
+    expect(iter.next().done).to.be.true;
+  });
 });
 
 describe("Dictionary", () => {
@@ -130,5 +168,47 @@ describe("Dictionary", () => {
     const arrays = dict.extractArrays();
     expectSorted(arrays.keys, entries.length, false, compareIds);
     expectSorted(arrays.values, entries.length, false, compareIds);
+  });
+
+  it("should support iteration", () => {
+    const dict = new Dictionary<string, number>((lhs, rhs) => compareStrings(lhs, rhs));
+
+    const countEntries = () => {
+      let numEntries = 0;
+      for (const entry of dict) {
+        expect(entry.key).not.to.be.undefined; // because otherwise `entry` is unused...
+        ++numEntries;
+      }
+
+      expect(numEntries).to.equal(dict.length);
+    };
+
+    countEntries();
+
+    dict.insert("one", 1);
+    dict.insert("two", 2);
+    dict.insert("three", 3);
+    dict.insert("four", 4);
+
+    countEntries();
+
+    const sorted = [ ["four", 4], ["one", 1], ["three", 3], ["two", 2] ];
+    let index = 0;
+    for (const kvp of dict) {
+      expect(kvp.key).to.equal(sorted[index][0]);
+      expect(kvp.value).to.equal(sorted[index][1]);
+      ++index;
+    }
+
+    const iter = dict[Symbol.iterator]();
+    for (let i = 0; i < 4; i++) {
+      const next = iter.next();
+      expect(next.done).to.be.false;
+      expect(next.value).not.to.be.undefined;
+    }
+
+    const last = iter.next();
+    expect(last.done).to.be.true;
+    expect(last.value).to.be.undefined;
   });
 });
