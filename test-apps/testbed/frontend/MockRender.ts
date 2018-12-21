@@ -104,7 +104,7 @@ export namespace MockRender {
   }
 
   export class Batch extends Graphic {
-    public constructor(public readonly graphic: RenderGraphic, public readonly features: PackedFeatureTable, public readonly range: ElementAlignedBox3d) { super(); }
+    public constructor(public readonly graphic: RenderGraphic, public readonly featureTable: PackedFeatureTable, public readonly range: ElementAlignedBox3d) { super(); }
 
     public dispose() {
       dispose(this.graphic);

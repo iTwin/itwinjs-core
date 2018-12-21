@@ -139,6 +139,15 @@ export class SortedArray<T> {
   }
 
   /**
+   * Returns true if this array contains at least one value comparing equal to the specified value.
+   * @param value The value to search for
+   * @returns true if an equivalent element exists in the array.
+   */
+  public contains(value: T): boolean {
+    return -1 !== this.indexOf(value);
+  }
+
+  /**
    * Looks up an element comparing equal to the specified value using binary search.
    * @param value The value to search for
    * @returns the first equivalent element in the array, or -1 if no such element exists.
