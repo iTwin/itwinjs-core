@@ -29,7 +29,9 @@ export interface ViewportProps {
   /** IModel to display */
   imodel: IModelConnection;
   /** Id of a default view definition to load as a starting point */
-  viewDefinitionId: Id64String;
+  viewDefinitionId?: Id64String;
+  /** ViewState to use as a starting point */
+  viewState?: ViewState;
   /** Function to get a reference to the ScreenViewport */
   viewportRef?: (v: ScreenViewport) => void;
   /** @hidden */
@@ -55,9 +57,16 @@ export class ViewportComponent extends React.Component<ViewportProps> {
     if (!this._viewportDiv.current)
       throw new Error("Parent <div> failed to load");
 
-    const viewState = await this.props.imodel.views.load(this.props.viewDefinitionId);
-    if (!viewState)
-      throw new Error("View state failed to load");
+    let viewState: ViewState;
+    if (this.props.viewState) {
+      viewState = this.props.viewState;
+    } else if (this.props.viewDefinitionId) {
+      viewState = await this.props.imodel.views.load(this.props.viewDefinitionId);
+      if (!viewState)
+        throw new Error("View state failed to load");
+    } else {
+      throw new Error("Either viewDefinitionId or viewState must be provided as a ViewportComponent Prop");
+    }
 
     this._vp = ScreenViewport.create(this._viewportDiv.current, viewState);
     IModelApp.viewManager.addViewport(this._vp);

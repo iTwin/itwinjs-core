@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix transform order when pushing branch.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}

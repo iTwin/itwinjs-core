@@ -23,7 +23,7 @@ export class BranchState {
 
   public static fromBranch(prev: BranchState, branch: Branch) {
     const vf = branch.branch.getViewFlags(prev.viewFlags);
-    const transform = prev.transform.multiplyTransformTransform(branch.localToWorldTransform);
+    const transform = branch.localToWorldTransform.multiplyTransformTransform(prev.transform);
     const ovrs = undefined !== branch.branch.symbologyOverrides ? branch.branch.symbologyOverrides : prev.symbologyOverrides;
     return new BranchState(vf, transform, ovrs, branch.clips);
   }
