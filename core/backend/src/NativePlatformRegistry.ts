@@ -34,7 +34,7 @@ export class NativePlatformRegistry {
   public static get isNativePlatformLoaded(): boolean { return NativePlatformRegistry._platform !== undefined; }
 
   /** @hidden */
-  public static register(platform: any): void {
+  public static register(platform: any, region: number): void {
     NativePlatformRegistry._platform = platform;
 
     if (!NativePlatformRegistry._platform)
@@ -45,6 +45,7 @@ export class NativePlatformRegistry {
     }
 
     NativePlatformRegistry._platform.logger = Logger;
+    NativePlatformRegistry._platform.initializeRegion(region);
   }
 
   private static checkNativePlatformVersion(): void {
@@ -71,11 +72,11 @@ export class NativePlatformRegistry {
   }
 
   /** @hidden */
-  public static loadAndRegisterStandardNativePlatform(dir?: string) {
+  public static loadAndRegisterStandardNativePlatform(region: number, dir?: string) {
 
     if (Platform.imodeljsMobile !== undefined) {
       // We are running in imodeljs (our mobile platform)
-      NativePlatformRegistry.register(Platform.imodeljsMobile.imodeljsNative);
+      NativePlatformRegistry.register(Platform.imodeljsMobile.imodeljsNative, region);
       return;
     }
 
@@ -85,6 +86,6 @@ export class NativePlatformRegistry {
     }
 
     // We are running in node or electron.
-    NativePlatformRegistry.register(this.loadStandardAddon(dir));
+    NativePlatformRegistry.register(this.loadStandardAddon(dir), region);
   }
 }

@@ -5,7 +5,7 @@
 /** @module IModelHost */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { IModelClient } from "@bentley/imodeljs-clients";
+import { IModelClient, Config, UrlDiscoveryClient } from "@bentley/imodeljs-clients";
 import { BentleyStatus, IModelError, FeatureGates } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
@@ -74,11 +74,12 @@ export class IModelHost {
 
     initializeRpcBackend();
 
+    const region: number = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     if (!NativePlatformRegistry.isNativePlatformLoaded) {
       if (configuration.nativePlatform !== undefined)
-        NativePlatformRegistry.register(configuration.nativePlatform);
+        NativePlatformRegistry.register(configuration.nativePlatform, region);
       else
-        NativePlatformRegistry.loadAndRegisterStandardNativePlatform();
+        NativePlatformRegistry.loadAndRegisterStandardNativePlatform(region);
     }
 
     if (configuration.imodelClient)

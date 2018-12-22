@@ -22,7 +22,7 @@ async function getImodelAfterApplyingCS(csvPath: string) {
   };
   Config.App.merge(myAppConfig);
   const client: IModelHubClient = new IModelHubClient();
-  NativePlatformRegistry.loadAndRegisterStandardNativePlatform();
+  NativePlatformRegistry.loadAndRegisterStandardNativePlatform(myAppConfig.imjs_buddi_resolve_url_using_region);
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   const actLogCtx = new ActivityLoggingContext(Guid.createValue());
   const imsClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
@@ -79,7 +79,7 @@ async function pushImodelAfterMetaChanges(csvPath: string) {
   };
   Config.App.merge(myAppConfig);
   const client: IModelHubClient = new IModelHubClient();
-  NativePlatformRegistry.loadAndRegisterStandardNativePlatform();
+  NativePlatformRegistry.loadAndRegisterStandardNativePlatform(myAppConfig.imjs_buddi_resolve_url_using_region);
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   const actLogCtx = new ActivityLoggingContext(Guid.createValue());
   const imsClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();

@@ -5,9 +5,9 @@
 /** @module iModels */
 
 import {
-  AccessToken, IncludePrefix, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
+  AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
   ChangesType, Briefcase, HubCode, IModelHubError,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel,
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel, IncludePrefix,
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
@@ -573,10 +573,16 @@ export class BriefcaseManager {
       throw error;
     }
 
-    // Reopen the briefcase if the briefcase hasn't been opened with the required OpenMode
+    // Reopen the iModel file if the briefcase hasn't been opened with the required OpenMode
     if (briefcase.openParams!.openMode !== openParams.openMode) {
-      BriefcaseManager.closeBriefcase(briefcase, false),
-        BriefcaseManager.openBriefcase(actx, accessToken, contextId, briefcase, openParams);
+      // Don't use closeBriefcase and openBriefcase as this would trigger a new usage tracking entry
+      assert(briefcase.isOpen, "Briefcase must be open for it to be closed");
+      briefcase.nativeDb.closeIModel();
+      const res: DbResult = briefcase.nativeDb.openIModelFile(briefcase.pathname, openParams.openMode);
+      if (DbResult.BE_SQLITE_OK !== res)
+        throw new IModelError(res, briefcase.pathname);
+
+      briefcase.openParams = openParams;
     }
 
     // Add briefcase to cache if necessary
@@ -752,7 +758,15 @@ export class BriefcaseManager {
       appVersion = actx.versionId;
 
     assert(appVersion.length !== 0);
-    return nativeDb.openIModel(accessToken.toTokenString(IncludePrefix.No), appVersion, contextId, filePath, mode);
+    const res: DbResult = nativeDb.openIModel(accessToken.toTokenString(IncludePrefix.No), appVersion, contextId, filePath, mode);
+    if (res === -100) {
+      // The addon returns -100 if usage tracking failed. For now we don't yet fail the open, as
+      // apps need to switch to OIDC authentication first.
+      Logger.logWarning(loggingCategory, "Usage tracking failed.", () => ({ userId: !accessToken.getUserInfo() ? undefined : accessToken.getUserInfo()!.id, contextId }));
+      return DbResult.BE_SQLITE_OK;
+    }
+
+    return res;
   }
 
   private static async getOrAcquireBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: GuidString): Promise<HubBriefcase> {

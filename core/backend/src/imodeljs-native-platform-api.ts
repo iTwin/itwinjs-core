@@ -116,6 +116,7 @@ export declare class NativeDgnDb {
   public insertLinkTableRelationship(props: string): ErrorStatusOrResult<DbResult, string>;
   public insertModel(modelProps: string): ErrorStatusOrResult<IModelStatus, string>;
   public isChangeCacheAttached(): boolean;
+  public isOpen(): boolean;
   public isRedoPossible(): boolean;
   public isTxnIdValid(txnId: TxnIdString): boolean;
   public isUndoPossible(): boolean;
@@ -231,7 +232,7 @@ export declare class NativeECSqlValue {
   public getPoint2d(): { x: number, y: number };
   public getPoint3d(): { x: number, y: number, z: number };
   public getString(): string;
-  public getEnum(): { schema: string, name: string, key: string, value: number | string } | undefined;
+  public getEnum(): Array<{ schema: string, name: string, key: string, value: number | string }> | undefined;
   public getNavigation(): { id: Id64String, relClassName?: string };
   public getStructIterator(): NativeECSqlValueIterator;
   public getArrayIterator(): NativeECSqlValueIterator;
