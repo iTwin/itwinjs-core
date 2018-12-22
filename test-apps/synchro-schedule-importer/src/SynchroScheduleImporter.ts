@@ -1,12 +1,12 @@
 /*---------------------------------------------------------------------------------------------
 |  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
-import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, GeometricElement, DisplayStyle3d, OrthographicViewDefinition } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, DisplayStyle3d, OrthographicViewDefinition } from "@bentley/imodeljs-backend";
 import { OpenMode, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { Placement3d, ElementAlignedBox3d, AxisAlignedBox3d, RenderMode, ViewFlags, ColorDef } from "@bentley/imodeljs-common";
-import { YawPitchRollAngles, Point3d, Transform } from "@bentley/geometry-core";
+import { YawPitchRollAngles, Point3d } from "@bentley/geometry-core";
 import * as Yargs from "yargs";
-import { readFileSync, writeFileSync } from "fs";
+import { readFileSync, writeFileSync, unlinkSync } from "fs";
 
 function doFixRange(iModel: IModelDb) {
     const totalRange = new AxisAlignedBox3d();
@@ -76,18 +76,19 @@ function transformTimelineIsIdentity(transformTimeline: any) {
         return true;
 
     for (const entry of transformTimeline) {
-        if (entry.value) {
+        if (entry.value && entry.value.transform) {
             for (let i = 0; i < 3; i++) {
                 for (let j = 0; j < 3; j++)
-                    if (Math.abs(entry.value[i][j] - ((i === j) ? 1 : 0)) > 1.0E-5)
+                    if (Math.abs(entry.value.transform[i][j] - ((i === j) ? 1 : 0)) > 1.0E-5)
                         return false;
-                if (Math.abs(entry.value[i][3]) > .1)       // Ignore translations less than .1MM (Synchro files are currently in millimeters)
+                if (Math.abs(entry.value.transform[i][3]) > .1)       // Ignore translations less than .1MM (Synchro files are currently in millimeters)
                     return false;
             }
         }
     }
     return true;
 }
+
 function timelineValuesAreNull(timeline: any) {
     if (!timeline || !Array.isArray(timeline))
         return true;
@@ -121,20 +122,22 @@ function animationScriptFromSynchro(synchroJson: object, iModel: IModelDb): any 
                 case "elementID":
                     break;
                 case "transformTimeline":
-                    const thisElement = iModel.elements.getElement(elementId) as GeometricElement;
-                    if (thisElement && Array.isArray(value)) {
-                        for (const timelineEntry of value) {
-                            if (timelineEntry.value) {
-                                const entryTransform = Transform.fromJSON(timelineEntry.value);
-                                const inverseElementMatrix = thisElement.placement.rotation.inverse();
-                                const matrix = entryTransform.matrix.multiplyMatrixMatrix(inverseElementMatrix);
-                                timelineEntry.value = Transform.createRefs(entryTransform.origin, matrix).toJSON();
+                    /*
+                        const thisElement = iModel.elements.getElement(elementId) as GeometricElement;
+                        if (thisElement && Array.isArray(value)) {
+                            for (const timelineEntry of value) {
+                                if (timelineEntry.value) {
+                                    const entryTransform = Transform.fromJSON(timelineEntry.value);
+                                    const inverseElementMatrix = thisElement.placement.rotation.inverse();
+                                    const matrix = entryTransform.matrix.multiplyMatrixMatrix(inverseElementMatrix);
+                                    timelineEntry.value = Transform.createRefs(entryTransform.origin, matrix).toJSON();
+                                }
                             }
-                        }
-                    }
+                        } */
                     if (!transformTimelineIsIdentity(value))
                         data[key] = value;
                     break;
+
                 default:
                     if (!timelineValuesAreNull(value))
                         data[key] = value;
@@ -196,7 +199,7 @@ function doImport(inputArgs: Yargs.Arguments<{}>) {
         IModelJsFs.copySync(inputArgs.input, outputFileName);
         outputIModel = IModelDb.openStandalone(outputFileName, OpenMode.ReadWrite);
     }
-
+    try { unlinkSync(outputFileName + ".tiles"); } catch (error) { }
     if (inputArgs.fixRange)
         doFixRange(outputIModel);
 
@@ -221,11 +224,10 @@ function doImport(inputArgs: Yargs.Arguments<{}>) {
 Yargs.usage("Import a Syncro JSON animation script into an existing IBIM file.");
 Yargs.required("input", "The input IBIM");
 Yargs.default("fixRange", true, "Set the project extents to the range of all geometry");
-Yargs.default("createSeparateScript", false, "Create a seperate file with the JSON for the animation script (debugging)");
+Yargs.default("createSeparateScript", true, "Create a seperate file with the JSON for the animation script (debugging)");
 Yargs.default("createDuplicateIbim", true, "Create a duplicate IBIM with the imported script (rather than writing to original)");
 Yargs.required("script", "Animation script JSON file");
 Yargs.string("script");
-Yargs.boolean("fixRange");
 const args = Yargs.parse();
 
 IModelHost.startup(new IModelHostConfiguration());

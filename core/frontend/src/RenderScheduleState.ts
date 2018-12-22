@@ -5,7 +5,7 @@
 /** @module Views */
 
 import { RenderSchedule, RgbColor, TileTreeProps, BatchType } from "@bentley/imodeljs-common";
-import { Range1d, YawPitchRollAngles, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets } from "@bentley/geometry-core";
+import { Range1d, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets, Point4d } from "@bentley/geometry-core";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { TileTreeModelState } from "./ModelState";
@@ -47,7 +47,7 @@ export namespace RenderScheduleState {
     }
 
     export class TransformEntry extends TimelineEntry implements RenderSchedule.TransformEntryProps {
-        public value: number[][];
+        public value: RenderSchedule.TransformProps;
         constructor(props: RenderSchedule.TransformEntryProps) {
             super(props);
             this.value = props.value;
@@ -161,20 +161,31 @@ export namespace RenderScheduleState {
             if (interval.index0 < 0)
                 return Transform.createIdentity();
 
+            const doInterpolate = false;
             const timeline = this.transformTimeline!;
-            const transform = Transform.fromJSON(timeline[interval.index0].value);
-            if (interval.fraction > 0.0) {
-                const transform1 = Transform.fromJSON(timeline[interval.index1].value);
-                const rigid0 = Matrix3d.createRigidFromMatrix3d(transform.matrix), rigid1 = Matrix3d.createRigidFromMatrix3d(transform1.matrix);
-                const angles = YawPitchRollAngles.createFromMatrix3d(rigid0!), angles1 = YawPitchRollAngles.createFromMatrix3d(rigid1!);
-                if (!angles || !angles1)
-                    return undefined;
-                angles.yaw.setRadians(interpolate(angles.yaw.radians, angles1.yaw.radians, interval.fraction));
-                angles.pitch.setRadians(interpolate(angles.pitch.radians, angles1.pitch.radians, interval.fraction));
-                angles.roll.setRadians(interpolate(angles.roll.radians, angles1.roll.radians, interval.fraction));
+            const value = timeline[interval.index0].value;
+            const transform = Transform.fromJSON(value.transform);
+            if (interval.fraction > 0.0 && doInterpolate) {
+                const value1 = timeline[interval.index1].value;
+                if (value1.pivot !== null && value1.orientation !== null && value1.position !== null) {
+                    const q0 = Point4d.fromJSON(value.orientation), q1 = Point4d.fromJSON(value1.orientation);
+                    const sum = Point4d.interpolateQuaternions(q0, interval.fraction, q1);
+                    const interpolatedMatrix = Matrix3d.createFromQuaternion(sum);
+                    const position0 = Vector3d.fromJSON(value.position), position1 = Vector3d.fromJSON(value1.position);
+                    const pivot = Vector3d.fromJSON(value.pivot);
+                    const pre = Transform.createTranslation(pivot);
+                    const post = Transform.createTranslation(position0.interpolate(interval.fraction, position1));
+                    const product = post.multiplyTransformMatrix3d(interpolatedMatrix);
+                    transform.setFromJSON(product.multiplyTransformTransform(pre));
+                } else {
+                    const transform1 = Transform.fromJSON(value1.transform);
+                    const q0 = transform.matrix.toQuaternion(), q1 = transform1.matrix.toQuaternion();
+                    const sum = Point4d.interpolateQuaternions(q0, interval.fraction, q1);
+                    const interpolatedMatrix = Matrix3d.createFromQuaternion(sum);
 
-                const origin = Vector3d.createFrom(transform.origin), origin1 = Vector3d.createFrom(transform1.origin);
-                transform.setFromJSON({ origin: origin.interpolate(interval.fraction, origin1, origin), matrix: angles.toMatrix3d() });
+                    const origin = Vector3d.createFrom(transform.origin), origin1 = Vector3d.createFrom(transform1.origin);
+                    transform.setFromJSON({ origin: origin.interpolate(interval.fraction, origin1), matrix: interpolatedMatrix });
+                }
             }
             return transform;
         }

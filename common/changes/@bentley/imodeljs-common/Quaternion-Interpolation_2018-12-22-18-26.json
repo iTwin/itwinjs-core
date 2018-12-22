@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add path pivot data to render schedule",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Ray.Bentley@bentley.com"
+}
