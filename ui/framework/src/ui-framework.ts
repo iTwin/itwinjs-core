@@ -39,7 +39,6 @@ export * from "./pickers/ViewSelector";
 
 export * from "./configurableui/ActionItemButton";
 export * from "./configurableui/AppNotificationManager";
-export * from "./configurableui/Backstage";
 export * from "./configurableui/ConfigurableUiContent";
 export * from "./configurableui/ConfigurableUiControl";
 export * from "./configurableui/ConfigurableUiManager";
@@ -88,6 +87,11 @@ export * from "./configurableui/Zone";
 export * from "./configurableui/ZoneDef";
 export * from "./configurableui/ZoneTargets";
 
+export * from "./configurableui/backstage/Backstage";
+export * from "./configurableui/backstage/FrontstageLaunch";
+export * from "./configurableui/backstage/CommandLaunch";
+export * from "./configurableui/backstage/TaskLaunch";
+
 export * from "./configurableui/navigationaids/CubeNavigationAid";
 export * from "./configurableui/navigationaids/SheetNavigationAid";
 export * from "./configurableui/navigationaids/SheetsModalFrontstage";
@@ -103,7 +107,7 @@ export * from "./tools/AnalysisAnimationToolSettings";
 
 export * from "./utils/ViewUtilities";
 export * from "./utils/redux-ts";
-export * from "./utils/WithVisibility";
+export * from "./utils/PropsHelper";
 
 export * from "./syncui/SyncUiEventDispatcher";
 export * from "./syncui/BooleanListener";
