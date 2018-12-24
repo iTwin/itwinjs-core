@@ -161,11 +161,10 @@ export namespace RenderScheduleState {
             if (interval.index0 < 0)
                 return Transform.createIdentity();
 
-            const doInterpolate = false;
             const timeline = this.transformTimeline!;
             const value = timeline[interval.index0].value;
             const transform = Transform.fromJSON(value.transform);
-            if (interval.fraction > 0.0 && doInterpolate) {
+            if (interval.fraction > 0.0) {
                 const value1 = timeline[interval.index1].value;
                 if (value1.pivot !== null && value1.orientation !== null && value1.position !== null) {
                     const q0 = Point4d.fromJSON(value.orientation), q1 = Point4d.fromJSON(value1.orientation);
@@ -179,7 +178,7 @@ export namespace RenderScheduleState {
                     transform.setFromJSON(product.multiplyTransformTransform(pre));
                 } else {
                     const transform1 = Transform.fromJSON(value1.transform);
-                    const q0 = transform.matrix.toQuaternion(), q1 = transform1.matrix.toQuaternion();
+                    const q0 = transform.matrix.inverse()!.toQuaternion(), q1 = transform1.matrix.inverse()!.toQuaternion();
                     const sum = Point4d.interpolateQuaternions(q0, interval.fraction, q1);
                     const interpolatedMatrix = Matrix3d.createFromQuaternion(sum);
 
