@@ -26,6 +26,7 @@ import {
   PolylineParams,
   PointStringParams,
   PointCloudArgs,
+  RenderMemory,
 } from "@bentley/imodeljs-frontend/lib/rendering";
 import { ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
@@ -84,6 +85,7 @@ export namespace MockRender {
     public constructor() { super(); }
 
     public dispose() { }
+    public collectStatistics(_stats: RenderMemory.Statistics): void { }
   }
 
   export class List extends Graphic {

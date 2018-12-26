@@ -24,6 +24,8 @@ export class VertexLUT implements IDisposable {
   public readonly auxNormals?: Map<string, AuxNormal>;  // Auxilliary displacements.
   public readonly auxParams?: Map<string, AuxParam>;  // Auxilliary displacements.
 
+  public get bytesUsed(): number { return this.texture.bytesUsed; }
+
   public static createFromVertexTable(vt: VertexTable): VertexLUT | undefined {
     const texture = TextureHandle.createForData(vt.width, vt.height, vt.data);
     return undefined !== texture ? new VertexLUT(texture, vt, ColorInfo.createFromVertexTable(vt), vt.qparams, vt.uvParams) : undefined;
