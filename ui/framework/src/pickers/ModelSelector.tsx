@@ -359,13 +359,14 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    */
   private _setEnableAllNodes = async (enable: boolean) => {
     const nodes: TreeNodeItem[] = await this.state.treeInfo!.dataProvider.getNodes();
+    let selectedNodes: string[] = [];
     for (const node of nodes) {
-      enable ? this._selectLabel(node) : this._deselectLabel(node);
+      selectedNodes = enable ? this._selectLabel(node, selectedNodes) : this._deselectLabel(node, selectedNodes);
     }
     this.setState({
       treeInfo: {
         ...this.state.treeInfo!,
-        selectedNodes: [...this.state.treeInfo!.selectedNodes!],
+        selectedNodes,
       },
     });
   }
@@ -604,11 +605,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** Set item state for selected node */
-  private _onNodeSelected = (items: TreeNodeItem[]) => {
+  private _onNodesSelected = (items: TreeNodeItem[]) => {
     items.forEach((item: TreeNodeItem) => {
-      this._setItemState(item, true);
       item.checkBoxState = CheckBoxState.On;
       item.labelBold = true;
+      this._setItemState(item, true);
     });
     return true;
   }
@@ -623,30 +624,32 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   /** Set item state for deselected node */
   private _onNodesDeselected = (items: TreeNodeItem[]) => {
     items.forEach((item: TreeNodeItem) => {
-      this._setItemState(item, false);
       item.checkBoxState = CheckBoxState.Off;
       item.labelBold = false;
+      this._setItemState(item, false);
     });
     return true;
   }
 
-  /** Enable or disable a single item */
-  private _onCheckboxClick = (node: TreeNodeItem) => {
-    this._setItemState(node);
-  }
+  // /** Enable or disable a single item */
+  // private _onCheckboxClick = (node: TreeNodeItem) => {
+  //   // Enable value should equal the toggled checkbox state
+  //   const enable = node.checkBoxState === CheckBoxState.On ? false : true;
+  //   this._setItemState(node, enable);
+  // }
 
   /**
    * Set item and node state after input change
    * @param treeItem Item to set state on
    * @param enable Flag to enable or disable item, determined by checkBoxState if not specified
    */
-  private _setItemState = (treeItem: TreeNodeItem, enable?: boolean) => {
-    if (enable || treeItem.checkBoxState === CheckBoxState.Off)
+  private _setItemState = (treeItem: TreeNodeItem, enable: boolean) => {
+    if (enable)
       this._setItemStateOn(treeItem);
     else
       this._setItemStateOff(treeItem);
 
-    this.setState({ activeGroup: this.state.activeGroup });
+    this.setState({ activeGroup: this.state.activeGroup }); // #1
   }
 
   private _setItemStateOn = (treeItem: TreeNodeItem) => {
@@ -669,47 +672,60 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   private _setEnableNode = (treeItem: TreeNodeItem, enable: boolean) => {
-    enable ? this._selectLabel(treeItem) : this._deselectLabel(treeItem);
+    const selectedNodes = enable ? this._selectLabel(treeItem) : this._deselectLabel(treeItem);
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo!,
+        selectedNodes,
+      },
+    });
   }
 
   private _setEnableChildren = async (treeItem: TreeNodeItem, enable: boolean) => {
     const childNodes = await this.state.treeInfo!.dataProvider.getNodes(treeItem);
+    let selectedNodes: string[] = this.state.treeInfo!.selectedNodes ? [...this.state.treeInfo!.selectedNodes!] : [];
     for (const child of childNodes) {
-      enable ? this._selectLabel(child) : this._deselectLabel(child);
+      selectedNodes = enable ? this._selectLabel(child) : this._deselectLabel(child);
     }
+
+    this.setState({
+      treeInfo: {
+        ...this.state.treeInfo!,
+        selectedNodes,
+      },
+    });
   }
 
-  private _selectLabel = (treeItem: TreeNodeItem) => {
+  private _selectLabel = (treeItem: TreeNodeItem, selectedNodes?: string[]): string[] => {
     if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
+      if (!selectedNodes || selectedNodes.length === 0)
+        selectedNodes = [...this.state.treeInfo.selectedNodes];
+
       const index = this.state.treeInfo.selectedNodes.indexOf(treeItem.id);
       if (index === -1) {
         treeItem.checkBoxState = CheckBoxState.On;
         treeItem.labelBold = true;
 
-        const nodes = [...this.state.treeInfo.selectedNodes];
+        const nodes = selectedNodes;
         nodes.push(treeItem.id);
-        this.setState({
-          treeInfo: {
-            ...this.state.treeInfo,
-            selectedNodes: nodes,
-          },
-        });
+        return nodes;
       }
+      return selectedNodes;
     }
+    return [];
   }
 
-  private _deselectLabel = (treeItem: TreeNodeItem) => {
+  private _deselectLabel = (treeItem: TreeNodeItem, selectedNodes?: string[]): string[] => {
     if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
+      if (!selectedNodes || selectedNodes.length === 0)
+        selectedNodes = [...this.state.treeInfo.selectedNodes];
+
       const index = this.state.treeInfo.selectedNodes.indexOf(treeItem.id);
       if (index > -1) {
-<<<<<<< HEAD
-        const nodes = this.state.treeInfo.selectedNodes;
-=======
         treeItem.checkBoxState = CheckBoxState.Off;
         treeItem.labelBold = false;
 
-        const nodes = [...this.state.treeInfo.selectedNodes];
->>>>>>> ffae3061c4a0b0f097ef3ba70318a4b3bcd667ee
+        const nodes = selectedNodes ? selectedNodes : [...this.state.treeInfo.selectedNodes];
         nodes.splice(index, 1);
         this.setState({
           treeInfo: {
@@ -717,8 +733,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
             selectedNodes: nodes,
           },
         });
+        return nodes;
       }
+      return selectedNodes;
     }
+    return [];
   }
 
   private _getItem = (label: string): ListItem => {
@@ -806,9 +825,9 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
                     activeMatchIndex={this.state.treeInfo.activeMatchIndex}
                     selectedNodes={this.state.treeInfo.selectedNodes}
                     selectionMode={SelectionMode.Multiple}
-                    onNodesSelected={this._onNodeSelected}
+                    onNodesSelected={this._onNodesSelected}
                     onNodesDeselected={this._onNodesDeselected}
-                    onCheckboxClick={this._onCheckboxClick}
+                    // onCheckboxClick={this._onCheckboxClick}
                     onNodeExpanded={this._onNodeExpanded}
                   /> :
                   <div />
