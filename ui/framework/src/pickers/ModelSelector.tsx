@@ -631,13 +631,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     return true;
   }
 
-  // /** Enable or disable a single item */
-  // private _onCheckboxClick = (node: TreeNodeItem) => {
-  //   // Enable value should equal the toggled checkbox state
-  //   const enable = node.checkBoxState === CheckBoxState.On ? false : true;
-  //   this._setItemState(node, enable);
-  // }
-
   /**
    * Set item and node state after input change
    * @param treeItem Item to set state on
@@ -652,6 +645,10 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this.setState({ activeGroup: this.state.activeGroup }); // #1
   }
 
+  /**
+   * Set display flag on for item and then set node state to on.
+   * @param treeItem  Node item that is being enabled
+   */
   private _setItemStateOn = (treeItem: TreeNodeItem) => {
     this._setEnableItem(treeItem, true);
     this._setEnableNode(treeItem, true);
@@ -659,6 +656,10 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent([treeItem]);
   }
 
+  /**
+   * Set display flag off for item and then set node state to off.
+   * @param treeItem  Node item that is being disabled.
+   */
   private _setItemStateOff = async (treeItem: TreeNodeItem) => {
     this._setEnableItem(treeItem, false);
     this._setEnableNode(treeItem, false);
@@ -666,11 +667,20 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent([treeItem]);
   }
 
+  /**
+   * Set display flag on an item based on toggled node.
+   * @param treeItem  Node related to toggled display item.
+   */
   private _setEnableItem = (treeItem: TreeNodeItem, enable: boolean) => {
     const item = this._getItem(treeItem.label);
     this.state.activeGroup.setEnabled(item, enable);
   }
 
+  /**
+   * Sets display flag and node state for a given item.
+   * @param treeItem  Node to set state for.
+   * @param enable  Specifies if item should be enabled or disabled.
+   */
   private _setEnableNode = (treeItem: TreeNodeItem, enable: boolean) => {
     const selectedNodes = enable ? this._selectLabel(treeItem) : this._deselectLabel(treeItem);
     this.setState({
@@ -681,6 +691,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
   }
 
+  /**
+   * Sets display flag and node state for a given item's children.
+   * @param treeItem  Node whose children to set state and display for.
+   * @param enable  Specified if children should be enabled or disabled.
+   */
   private _setEnableChildren = async (treeItem: TreeNodeItem, enable: boolean) => {
     const childNodes = await this.state.treeInfo!.dataProvider.getNodes(treeItem);
     let selectedNodes: string[] = this.state.treeInfo!.selectedNodes ? [...this.state.treeInfo!.selectedNodes!] : [];
@@ -696,6 +711,13 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
   }
 
+  /**
+   * Adds a node to a list of selected items and returns to caller for state setting.
+   * @param treeNode  Node to add as a selected node
+   * @param selectedNodes (optional) managed set of selected nodes - defaults to set
+   *                      provided by treeInfo if none provided
+   * @returns List of ID's for selected nodes
+   */
   private _selectLabel = (treeItem: TreeNodeItem, selectedNodes?: string[]): string[] => {
     if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
       if (!selectedNodes || selectedNodes.length === 0)
@@ -715,6 +737,13 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     return [];
   }
 
+  /**
+   * Removes a node from a list of selected items and returns to caller for state setting.
+   * @param treeNode  Node to remove from selected nodes
+   * @param selectedNodes (optional) managed set of selected nodes - defaults to set
+   *                      provided by treeInfo if none provided
+   * @returns List of ID's for selected nodes
+   */
   private _deselectLabel = (treeItem: TreeNodeItem, selectedNodes?: string[]): string[] => {
     if (this.state.treeInfo && this.state.treeInfo.selectedNodes) {
       if (!selectedNodes || selectedNodes.length === 0)
@@ -740,6 +769,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     return [];
   }
 
+  /**
+   * Find an item specified by a node based on shared label.
+   * @param label  Label of item to be retreived
+   * @returns Specified item from list. Defaults to first item if none found.
+   */
   private _getItem = (label: string): ListItem => {
     let items: ListItem[];
     switch (this.state.activeGroup.id) {
@@ -761,6 +795,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     return checkedItem ? checkedItem : items[0];
   }
 
+  /**
+   * Find a node specified by an item
+   * @param item Item to find node with
+   * @returns Matching node.
+   */
   private _getNodeFromItem = async (item: ListItem) => {
     if (this.state.treeInfo) {
       const nodes = await this.state.treeInfo.dataProvider.getNodes();
@@ -827,7 +866,6 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
                     selectionMode={SelectionMode.Multiple}
                     onNodesSelected={this._onNodesSelected}
                     onNodesDeselected={this._onNodesDeselected}
-                    // onCheckboxClick={this._onCheckboxClick}
                     onNodeExpanded={this._onNodeExpanded}
                   /> :
                   <div />
@@ -836,10 +874,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
           </div>
         </div >
       );
-    // WIP: localize
-    return "Loading...";
+    return UiFramework.i18n.translate("UiFramework:categoriesModels.loadingMessage");
   }
-
 }
 
 // tslint:disable-next-line:variable-name
