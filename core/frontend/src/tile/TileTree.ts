@@ -29,7 +29,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { Range3d, Point3d, Transform, ClipVector, ClipPlaneContainment } from "@bentley/geometry-core";
 import { SceneContext } from "../ViewContext";
-import { RenderGraphic, GraphicBranch } from "../render/System";
+import { RenderGraphic, GraphicBranch, RenderMemory } from "../render/System";
 import { IModelConnection } from "../IModelConnection";
 import { IModelApp } from "../IModelApp";
 import { TileIO } from "./TileIO";
@@ -42,7 +42,7 @@ import { IModelTileIO } from "./IModelTileIO";
 import { ViewFrustum } from "../Viewport";
 
 /** @hidden */
-export class Tile implements IDisposable {
+export class Tile implements IDisposable, RenderMemory.Consumer {
   public readonly root: TileTree;
   public readonly range: ElementAlignedBox3d;
   public readonly parent: Tile | undefined;
@@ -95,6 +95,15 @@ export class Tile implements IDisposable {
 
     this._children = undefined;
     this._state = TileState.Abandoned;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    if (undefined !== this._graphic)
+      this._graphic.collectStatistics(stats);
+
+    if (undefined !== this._children)
+      for (const child of this._children)
+        child.collectStatistics(stats);
   }
 
   /* ###TODO
@@ -577,7 +586,7 @@ const enum TileState {
 }
 
 /** @hidden */
-export class TileTree implements IDisposable {
+export class TileTree implements IDisposable, RenderMemory.Consumer {
   public readonly iModel: IModelConnection;
   public readonly is3d: boolean;
   public readonly location: Transform;
@@ -610,6 +619,10 @@ export class TileTree implements IDisposable {
 
   public dispose() {
     dispose(this._rootTile);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this._rootTile.collectStatistics(stats);
   }
 
   public get is2d(): boolean { return !this.is3d; }

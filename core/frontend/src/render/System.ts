@@ -398,7 +398,8 @@ export namespace Pixel {
     public constructor(public readonly feature?: Feature,
       public readonly distanceFraction: number = -1.0,
       public readonly type: GeometryType = GeometryType.Unknown,
-      public readonly planarity: Planarity = Planarity.Unknown) { }
+      public readonly planarity: Planarity = Planarity.Unknown,
+      public readonly featureTable?: PackedFeatureTable) { }
 
     public get elementId(): Id64String | undefined { return undefined !== this.feature ? this.feature.elementId : undefined; }
     public get subCategoryId(): Id64String | undefined { return undefined !== this.feature ? this.feature.subCategoryId : undefined; }
@@ -439,7 +440,7 @@ export namespace Pixel {
    */
   export const enum Selector {
     None = 0,
-    /** Select the [[Feature]] which produced each pixel. */
+    /** Select the [[Feature]] which produced each pixel, as well as the [[PackedFeatureTable]] from which the feature originated. */
     Feature = 1 << 0,
     /** Select the type and planarity of geometry which produced each pixel as well as the fraction of its distance between the near and far planes. */
     GeometryAndDistance = 1 << 2,
