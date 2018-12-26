@@ -1636,6 +1636,12 @@ export abstract class Viewport implements IDisposable {
   /** @hidden */
   public createSceneContext(): SceneContext { return new SceneContext(this); }
 
+  /**
+   * Called when the visible contents of the viewport are redrawn.
+   * @note Due to the frequency of this event, avoid performing expensive work inside event listeners.
+   */
+  public readonly onRender = new BeEvent<(vp: Viewport) => void>();
+
   /** @hidden */
   public renderFrame(): boolean {
     const sync = this.sync;
@@ -1732,6 +1738,7 @@ export abstract class Viewport implements IDisposable {
     timer.stop();
     if (isRedrawNeeded) {
       target.drawFrame(timer.elapsed.milliseconds);
+      this.onRender.raiseEvent(this);
     }
 
     return true;
