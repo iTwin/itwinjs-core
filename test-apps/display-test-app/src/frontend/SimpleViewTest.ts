@@ -16,7 +16,7 @@ import {
   DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
   SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus, imageBufferToPngDataUrl,
-  ContextRealityModelState, OidcClientWrapper, FeatureSymbology, GraphicType, PerformanceMetrics, Target,
+  ContextRealityModelState, OidcClientWrapper, FeatureSymbology, GraphicType, PerformanceMetrics, Target, RenderMemory,
 } from "@bentley/imodeljs-frontend";
 import ToolTip from "tooltip.js";
 import { IModelApi } from "./IModelApi";
@@ -785,6 +785,9 @@ async function openView(state: SimpleViewState) {
   if (undefined === theViewport) {
     const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
     theViewport = ScreenViewport.create(vpDiv, state.viewState!);
+
+    const tileLoadIndicator = document.getElementById("tile-load-indicator")! as HTMLProgressElement;
+    theViewport.onRender.addListener((vp) => updateTileLoadIndicator(tileLoadIndicator, vp));
   }
 
   await _changeView(state.viewState!);
@@ -1694,35 +1697,42 @@ function saveImage() {
   window.open(url, "Saved View");
 }
 
-function updateTileLoadIndicator(progress: HTMLProgressElement): void {
+function updateTileLoadIndicator(progress: HTMLProgressElement, vp: Viewport): void {
   let pctComplete = 1.0;
   let title = "";
   let color = "#00ff00";
-  if (undefined !== theViewport) {
-    const requested = undefined !== theViewport ? theViewport.numRequestedTiles : 0;
-    const selected = theViewport.numSelectedTiles;
-    const total = selected + requested;
-    const canceled = IModelApp.tileRequests.statistics.numCanceled;
-    pctComplete = (total > 0) ? (selected / total) : 1.0;
-    title = "" + selected + " / " + total;
-    if (total < selected)
-      title += " (" + requested + " queued)";
+  const requested = vp.numRequestedTiles;
+  const selected = vp.numSelectedTiles;
+  const total = selected + requested;
+  const canceled = IModelApp.tileRequests.statistics.numCanceled;
+  pctComplete = (total > 0) ? (selected / total) : 1.0;
+  title = "" + selected + " / " + total;
+  if (total < selected)
+    title += " (" + requested + " queued)";
 
-    if (0 < canceled)
-      title += " (" + canceled + " canceled)";
+  if (0 < canceled)
+    title += " (" + canceled + " canceled)";
 
-    color = "#007fff";
+  color = "#007fff";
 
-    const wantLogTileStats = false;
-    if (wantLogTileStats && progress.title !== title)
-      console.log(title);
+  const wantLogTileStats = false;
+  if (wantLogTileStats && progress.title !== title)
+    console.log(title);
+
+  const wantLogTileMemory = false;
+  if (wantLogTileMemory) {
+    const stats = new RenderMemory.Statistics();
+    vp.view.forEachTileTreeModel((model) => {
+      if (undefined !== model.tileTree)
+        model.tileTree.collectStatistics(stats);
+    });
+
+    console.log("TileTree memory: Total " + stats.totalBytes / 1024 / 1024 + "mb");
   }
 
   progress.value = pctComplete;
   progress.title = title;
   progress.style.color = color; // ###TODO this does nothing. HTMLProgressElement is quite opaque.
-
-  window.requestAnimationFrame(() => updateTileLoadIndicator(progress));
 }
 
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
@@ -1846,10 +1856,6 @@ function wireIconsToFunctions() {
       }
     }
   });
-
-  // Tile loading indicator
-  const tileLoadIndicator = document.getElementById("tile-load-indicator")! as HTMLProgressElement;
-  window.requestAnimationFrame(() => updateTileLoadIndicator(tileLoadIndicator));
 }
 
 // If we are using a browser, close the current iModel before leaving
