@@ -289,21 +289,21 @@ export async function testViewports(viewId: Id64String, imodel: IModelConnection
   if (!WebGLTestContext.isInitialized)
     return Promise.resolve();
 
+  // ###TODO: Make ScreenTestViewport integrate properly with the (non-continuous) render loop...
+  const onscreen = await createOnScreenTestViewport(viewId, imodel, width, height);
+  onscreen.continuousRendering = true;
+  try {
+    await test(onscreen);
+  } finally {
+    onscreen.continuousRendering = false;
+    onscreen.dispose();
+  }
+
   const offscreen = await createOffScreenTestViewport(viewId, imodel, width, height);
   try {
     await test(offscreen);
   } finally {
     offscreen.dispose();
-  }
-
-  // ###TODO: Make ScreenTestViewport integrate properly with the (non-continuous) render loop...
-  const onscreen = await createOnScreenTestViewport(viewId, imodel, width, height);
-  try {
-    onscreen.continuousRendering = true;
-    await test(onscreen);
-  } finally {
-    onscreen.continuousRendering = false;
-    onscreen.dispose();
   }
 
   return Promise.resolve();
