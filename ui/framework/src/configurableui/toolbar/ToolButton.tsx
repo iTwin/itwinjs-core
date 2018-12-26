@@ -8,12 +8,12 @@ import * as React from "react";
 
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 
-import { Icon } from "./IconComponent";
-import { FrontstageManager } from "./FrontstageManager";
-import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
-import { BaseItemState } from "./ItemDefBase";
-import { ToolItemProps, StringGetter } from "./ItemProps";
-import { UiFramework } from "../UiFramework";
+import { Icon } from "../IconComponent";
+import { FrontstageManager } from "../FrontstageManager";
+import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
+import { BaseItemState } from "../ItemDefBase";
+import { ToolItemProps, StringGetter } from "../ItemProps";
+import { UiFramework } from "../../UiFramework";
 import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
 
 /** Tool Button React Component.

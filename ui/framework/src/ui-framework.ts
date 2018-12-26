@@ -37,7 +37,6 @@ export * from "./pickers/ListPicker";
 export * from "./pickers/ModelSelector";
 export * from "./pickers/ViewSelector";
 
-export * from "./configurableui/ActionItemButton";
 export * from "./configurableui/AppNotificationManager";
 export * from "./configurableui/ConfigurableUiContent";
 export * from "./configurableui/ConfigurableUiControl";
@@ -53,7 +52,6 @@ export * from "./configurableui/FrontstageComposer";
 export * from "./configurableui/FrontstageDef";
 export * from "./configurableui/FrontstageManager";
 export * from "./configurableui/FrontstageProvider";
-export * from "./configurableui/GroupItem";
 export * from "./configurableui/IconComponent";
 export * from "./configurableui/Item";
 export * from "./configurableui/ItemDefBase";
@@ -72,7 +70,6 @@ export * from "./configurableui/StatusBar";
 export * from "./configurableui/StatusBarWidgetControl";
 export * from "./configurableui/StatusBarZone";
 export * from "./configurableui/Task";
-export * from "./configurableui/ToolButton";
 export * from "./configurableui/ToolbarWidgetBase";
 export * from "./configurableui/ToolSettingsZone";
 export * from "./configurableui/ToolUiProvider";
@@ -86,6 +83,10 @@ export * from "./configurableui/Workflow";
 export * from "./configurableui/Zone";
 export * from "./configurableui/ZoneDef";
 export * from "./configurableui/ZoneTargets";
+
+export * from "./configurableui/toolbar/ActionItemButton";
+export * from "./configurableui/toolbar/GroupItem";
+export * from "./configurableui/toolbar/ToolButton";
 
 export * from "./configurableui/backstage/Backstage";
 export * from "./configurableui/backstage/FrontstageLaunch";

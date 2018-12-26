@@ -6,7 +6,7 @@
 
 import { IconProps } from "./IconComponent";
 import { Direction } from "@bentley/ui-ninezone";
-import { GroupItemDef } from "./GroupItem";
+import { GroupItemDef } from "./toolbar/GroupItem";
 import { CommandItemDef, ToolItemDef } from "./Item";
 import { BaseItemState } from "./ItemDefBase";
 

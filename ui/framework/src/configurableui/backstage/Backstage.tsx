@@ -44,7 +44,7 @@ export interface BackstageItemState {
   isActive?: boolean;
 }
 
-/** Helper method to set initial backstage item state from props */
+/** Helper method to set backstage item state from props */
 export const getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => {
   const labelSpec = PropsHelper.getStringSpec(props.label, props.labelKey);
   const subtitleSpec = PropsHelper.getStringSpec(props.subtitle, props.subtitleKey);
