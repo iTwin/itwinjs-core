@@ -100,6 +100,7 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   public location: TransformProps;
   public yAxisUp = true;
   public isTerrain = true;
+  public maxTilesToSkip = 4;
   public constructor(mercatorToDb: Transform) {
     this.rootTile = new WebMercatorTileProps("0_0_0", mercatorToDb);
     this.location = Transform.createIdentity();
@@ -196,7 +197,7 @@ class WebMercatorTileLoader extends TileLoader {
     try {
       const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.TileSection);
       return imageElementFromImageSource(imageSource)
-        .then((image) => isCanceled ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
+        .then((image) => isCanceled() ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
         .catch((_) => undefined);
     } catch (e) {
       return undefined;

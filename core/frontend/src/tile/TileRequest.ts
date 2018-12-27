@@ -145,7 +145,7 @@ class Request extends TileRequest {
   }
 
   private setFailed() {
-    this.notify();
+    this.notifyAndClear();
     this._state = TileRequest.State.Failed;
     this.tile.setNotFound();
   }
