@@ -1697,6 +1697,20 @@ function saveImage() {
   window.open(url, "Saved View");
 }
 
+function formatMemory(numBytes: number): string {
+  let suffix = "b";
+  if (numBytes >= 1024) {
+    numBytes /= 1024;
+    suffix = "kb";
+    if (numBytes >= 1024) {
+      numBytes /= 1024;
+      suffix = "mb";
+    }
+  }
+
+  return numBytes.toFixed(2) + suffix;
+}
+
 function updateTileLoadIndicator(progress: HTMLProgressElement, vp: Viewport): void {
   let pctComplete = 1.0;
   let title = "";
@@ -1727,7 +1741,7 @@ function updateTileLoadIndicator(progress: HTMLProgressElement, vp: Viewport): v
         model.tileTree.collectStatistics(stats);
     });
 
-    console.log("TileTree memory: Total " + stats.totalBytes / 1024 / 1024 + "mb");
+    console.log("TileTree memory: Total " + formatMemory(stats.totalBytes));
   }
 
   progress.value = pctComplete;
