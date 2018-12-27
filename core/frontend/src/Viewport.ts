@@ -895,13 +895,14 @@ export abstract class Viewport implements IDisposable {
   /** Maximum ratio of frontplane to backplane distance for 24 bit zbuffer.
    * @hidden
    */
+  public static nearScale24 = 0.0003;
+
   /** The number of tiles selected for display in the view as of the most recently-drawn frame.
    * @note This member should be treated as read-only - it should only be modified internally.
    * @see Viewport.numRequestedTiles
    */
   public numSelectedTiles = 0;
 
-  public static nearScale24 = 0.0003;
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
   private static _nextViewportId = 1;
