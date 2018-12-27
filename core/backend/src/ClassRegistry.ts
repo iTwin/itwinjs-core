@@ -62,7 +62,7 @@ export class ClassRegistry {
       throw new IModelError(IModelStatus.NotFound, "cannot find superclass for class " + name);
 
     const generatedClass = class extends superclass { };
-    // the above line creates an "anonymous" class. We rely on the "constructor.name" property to be eponymous with the EcClass name.
+    // the above line creates an "anonymous" class. We rely on the "constructor.name" property to be the same as the EcClass name.
     Object.defineProperty(generatedClass, "name", { get: () => className });  // this is the (only) way to change that readonly property.
 
     this.register(generatedClass, schema); // register it before returning
@@ -70,7 +70,7 @@ export class ClassRegistry {
   }
 
   /**
-   * Register all of the classes that derive from Entity, that are found in a given module. See the example in [[Schema]]
+   * Register all of the classes found in the given module that derive from Entity. See the example in [[Schema]]
    * @param moduleObj The module to search for subclasses of Entity
    * @param schema The schema for all found classes
    */
@@ -94,8 +94,7 @@ export class ClassRegistry {
     if (metadata === undefined || metadata.ecclass === undefined)
       throw this.makeMetaDataNotFoundError(classFullName);
 
-    // Make sure that we have all base classes registered.
-    // This recurses. I have to know that the super class is defined and registered before defining a derived class.
+    // Make sure we have all base classes registered.
     if (metadata!.baseClasses && metadata.baseClasses.length !== 0)
       this.getClass(metadata.baseClasses[0], iModel);
 
