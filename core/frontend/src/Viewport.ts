@@ -898,10 +898,23 @@ export abstract class Viewport implements IDisposable {
   public static nearScale24 = 0.0003;
 
   /** The number of tiles selected for display in the view as of the most recently-drawn frame.
+   * The tiles selected may not meet the desired level-of-detail for the view, instead being temporarily drawn while
+   * tiles of more appropriate level-of-detail are loaded asynchronously.
    * @note This member should be treated as read-only - it should only be modified internally.
    * @see Viewport.numRequestedTiles
+   * @see Viewport.numReadyTiles
    */
   public numSelectedTiles = 0;
+
+  /** The number of tiles which were ready and met the desired level-of-detail for display in the view as of the most recently-drawn frame.
+   * These tiles may *not* have been selected because some other (probably sibling) tiles were *not* ready for display.
+   * This is a useful metric for determining how "complete" the view is - e.g., one indicator of progress toward view completion can be expressed as:
+   * `  (numReadyTiles) / (numReadyTiles + numRequestedTiles)`
+   * @note This member should be treated as read-only - it should only be modified internally.
+   * @see Viewport.numSelectedTiles
+   * @see Viewport.numRequestedTiles
+   */
+  public numReadyTiles = 0;
 
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
@@ -1694,7 +1707,7 @@ export abstract class Viewport implements IDisposable {
       this.setupFromView();
 
     if (!sync.isValidScene) {
-      this.numSelectedTiles = 0;
+      this.numSelectedTiles = this.numReadyTiles = 0;
       const context = this.createSceneContext();
       view.createScene(context);
       view.createClassification(context);

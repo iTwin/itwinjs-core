@@ -1716,12 +1716,12 @@ function updateTileLoadIndicator(progress: HTMLProgressElement, vp: Viewport): v
   let title = "";
   let color = "#00ff00";
   const requested = vp.numRequestedTiles;
-  const selected = vp.numSelectedTiles;
-  const total = selected + requested;
+  const ready = vp.numReadyTiles;
+  const total = ready + requested;
   const canceled = IModelApp.tileRequests.statistics.numCanceled;
-  pctComplete = (total > 0) ? (selected / total) : 1.0;
-  title = "" + selected + " / " + total;
-  if (total < selected)
+  pctComplete = (total > 0) ? (ready / total) : 1.0;
+  title = "" + ready + " / " + total;
+  if (total < ready)
     title += " (" + requested + " queued)";
 
   if (0 < canceled)

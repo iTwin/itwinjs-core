@@ -282,6 +282,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
 
       if (this.hasGraphics) {
         // It can be drawn - select it
+        ++args.context.viewport.numReadyTiles;
         selected.push(this);
         this.unloadChildren(args.purgeOlderThan);
       } else {
@@ -345,6 +346,11 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     }
 
     if (this.hasGraphics) {
+      if (!canSkipThisTile) {
+        // This tile is too coarse, but we require loading it before we can start loading higher-res children.
+        ++args.context.viewport.numReadyTiles;
+      }
+
       selected.push(this);
       return Tile.SelectParent.No;
     }
