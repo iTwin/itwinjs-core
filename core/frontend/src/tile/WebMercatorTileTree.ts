@@ -205,6 +205,12 @@ class WebMercatorTileLoader extends TileLoader {
   }
 
   public get maxDepth(): number { return this._providerInitialized ? this._imageryProvider.maximumZoomLevel : 32; }
+  public get parentsAndChildrenExclusive(): boolean { return false; }
+  public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] {
+    // Ensure lo-res tiles drawn before (therefore behind) hi-res tiles.
+    // NB: Array.sort() sorts in-place and returns the input array - we're not making a copy.
+    return selected.sort((lhs, rhs) => lhs.depth - rhs.depth);
+  }
 }
 
 // Represents the service that is providing map tiles for Web Mercator models (background maps).

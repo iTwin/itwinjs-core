@@ -342,7 +342,9 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       if (allChildrenDrawable)
         return Tile.SelectParent.No;
 
-      selected.length = initialSize;
+      // Some types of tiles (like maps) allow the ready children to be drawn on top of the parent while other children are not yet loaded.
+      if (this.root.loader.parentsAndChildrenExclusive)
+        selected.length = initialSize;
     }
 
     if (this.hasGraphics) {
@@ -638,7 +640,7 @@ export class TileTree implements IDisposable, RenderMemory.Consumer {
     if (undefined !== this._rootTile)
       this._rootTile.selectTiles(selected, args);
 
-    return selected;
+    return this.loader.processSelectedTiles(selected, args);
   }
 
   public drawScene(context: SceneContext): void { this.draw(this.createDrawArgs(context)); }
@@ -675,6 +677,9 @@ export abstract class TileLoader {
   public abstract get maxDepth(): number;
   protected get _batchType(): BatchType { return BatchType.Primary; }
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
+  public get parentsAndChildrenExclusive(): boolean { return true; }
+
+  public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] { return selected; }
 
   // NB: The isCanceled arg is chiefly for tests...in usual case it just returns false if the tile is no longer in 'loading' state.
   public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<TileRequest.Graphic> {
