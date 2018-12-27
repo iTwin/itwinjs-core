@@ -25,6 +25,7 @@ export interface SerializedRpcOperation {
 export interface SerializedRpcRequest {
   id: string;
   authorization: string;
+  version: string;
   operation: SerializedRpcOperation;
   method: string;
   path: string;
@@ -88,6 +89,9 @@ export abstract class RpcProtocol {
   /** The name of the request id header. */
   public requestIdHeaderName: string = "X-RequestId";
 
+  /** The name of the version header. */
+  public get versionHeaderName() { return this.configuration.applicationVersionKey; }
+
   /** The name of the authorization header. */
   public get authorizationHeaderName() { return this.configuration.applicationAuthorizationKey; }
 
@@ -121,6 +125,7 @@ export abstract class RpcProtocol {
     return {
       id: request.id,
       authorization: this.configuration.applicationAuthorizationValue || "",
+      version: RpcConfiguration.applicationVersionValue || "",
       operation: {
         interfaceDefinition: request.operation.interfaceDefinition.name,
         operationName: request.operation.operationName,

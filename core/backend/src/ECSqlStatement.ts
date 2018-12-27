@@ -584,11 +584,15 @@ export class ECSqlValue {
    *  [[ECSqlValue.getString]] for string enums respectively are the usual way to get
    *  enum values. This method can be used if the context of the underlying ECEnumeration
    *  is required.
-   *  @return ECEnumeration value or undefined if the ECSqlValue does not represent an ECEnumeration.
+   *  The value is broken down into the ECEnumerators that make it up, if the value
+   *  is a combination of ECEnumerators. If the value is not a strict match of an ECEnumerator
+   *  or a combination of them, undefined is returned.
    *  > Note: You can call [[ECSqlValue.columnInfo.isEnum]] to find out whether
    *  > this method can be called or not.
+   *  @return ECEnumeration value(s) or undefined if the ECSqlValue does not represent an ECEnumeration.
+   *  or is not a strict match of an ECEnumerator or a combination of them.
    */
-  public getEnum(): ECEnumValue | undefined { return this._val.getEnum(); }
+  public getEnum(): ECEnumValue[] | undefined { return this._val.getEnum(); }
 
   /** Get the value as [NavigationValue]($common) */
   public getNavigation(): NavigationValue { return this._val.getNavigation(); }

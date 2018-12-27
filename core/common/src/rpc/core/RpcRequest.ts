@@ -318,6 +318,10 @@ export abstract class RpcRequest<TResponse = any> {
     if (this.protocol.authorizationHeaderName) {
       this.setHeader(this.protocol.authorizationHeaderName, this.protocol.configuration.applicationAuthorizationValue);
     }
+
+    if (this.protocol.versionHeaderName && RpcConfiguration.applicationVersionValue) {
+      this.setHeader(this.protocol.versionHeaderName, RpcConfiguration.applicationVersionValue);
+    }
   }
 
   private setStatus(status: RpcRequestStatus): void {

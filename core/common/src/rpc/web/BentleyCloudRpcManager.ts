@@ -29,6 +29,9 @@ export abstract class BentleyCloudRpcConfiguration extends RpcConfiguration {
   /** Bentley user authorization header. */
   public applicationAuthorizationKey = "Authorization";
 
+  /** Bentley frontend application version id header. */
+  public applicationVersionKey = "X-Application-Version";
+
   /** The protocol of the configuration. */
   public abstract readonly protocol: BentleyCloudRpcProtocol;
 }

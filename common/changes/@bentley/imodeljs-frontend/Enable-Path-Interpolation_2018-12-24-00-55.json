@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Enable path interpolation",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}

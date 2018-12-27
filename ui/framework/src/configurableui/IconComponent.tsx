@@ -6,10 +6,13 @@
 
 import * as React from "react";
 
+/** Prototype for an IconSpec which can be a string or a ReactNode. */
+export type IconSpec = string | React.ReactNode;
+
 /** Properties for the [[Icon]] React component */
 export interface IconProps {
   /** CSS class name for icon */
-  iconSpec?: string | React.ReactNode;
+  iconSpec?: IconSpec;
 }
 
 /** Icon Functional component */

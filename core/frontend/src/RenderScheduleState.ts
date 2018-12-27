@@ -5,7 +5,7 @@
 /** @module Views */
 
 import { RenderSchedule, RgbColor, TileTreeProps, BatchType } from "@bentley/imodeljs-common";
-import { Range1d, YawPitchRollAngles, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets } from "@bentley/geometry-core";
+import { Range1d, Transform, Point3d, Vector3d, Matrix3d, Plane3dByOriginAndUnitNormal, ClipPlane, ConvexClipPlaneSet, UnionOfConvexClipPlaneSets, Point4d } from "@bentley/geometry-core";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { TileTreeModelState } from "./ModelState";
@@ -47,7 +47,7 @@ export namespace RenderScheduleState {
     }
 
     export class TransformEntry extends TimelineEntry implements RenderSchedule.TransformEntryProps {
-        public value: number[][];
+        public value: RenderSchedule.TransformProps;
         constructor(props: RenderSchedule.TransformEntryProps) {
             super(props);
             this.value = props.value;
@@ -126,7 +126,7 @@ export namespace RenderScheduleState {
             return true;
         }
 
-        public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval) {
+        public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, interval: Interval, batchId: number) {
             let colorOverride, transparencyOverride;
 
             if (ElementTimeline.findTimelineInterval(interval, time, this.visibilityTimeline) && this.visibilityTimeline![interval.index0].value !== null) {
@@ -136,8 +136,7 @@ export namespace RenderScheduleState {
                     visibility = interpolate(visibility, timeline[interval.index1].value, interval.fraction);
 
                 if (visibility <= 0) {
-                    for (const elementId of this.elementIds)
-                        overrides.setNeverDrawn(elementId);
+                    overrides.setBatchNeverDrawn(batchId);
                     return;
                 }
                 if (visibility <= 100)
@@ -153,8 +152,7 @@ export namespace RenderScheduleState {
             }
 
             if (colorOverride || transparencyOverride)
-                for (const elementId of this.elementIds)
-                    overrides.overrideElement(elementId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
+                overrides.overrideBatch(batchId, FeatureSymbology.Appearance.fromJSON({ rgb: colorOverride, transparency: transparencyOverride }));
         }
         public getAnimationTransform(time: number, interval: Interval): Transform | undefined {
             if (!ElementTimeline.findTimelineInterval(interval, time, this.transformTimeline) || this.transformTimeline![interval.index0].value === null)
@@ -164,19 +162,29 @@ export namespace RenderScheduleState {
                 return Transform.createIdentity();
 
             const timeline = this.transformTimeline!;
-            const transform = Transform.fromJSON(timeline[interval.index0].value);
+            const value = timeline[interval.index0].value;
+            const transform = Transform.fromJSON(value.transform);
             if (interval.fraction > 0.0) {
-                const transform1 = Transform.fromJSON(timeline[interval.index1].value);
-                const rigid0 = Matrix3d.createRigidFromMatrix3d(transform.matrix), rigid1 = Matrix3d.createRigidFromMatrix3d(transform1.matrix);
-                const angles = YawPitchRollAngles.createFromMatrix3d(rigid0!), angles1 = YawPitchRollAngles.createFromMatrix3d(rigid1!);
-                if (!angles || !angles1)
-                    return undefined;
-                angles.yaw.setRadians(interpolate(angles.yaw.radians, angles1.yaw.radians, interval.fraction));
-                angles.pitch.setRadians(interpolate(angles.pitch.radians, angles1.pitch.radians, interval.fraction));
-                angles.roll.setRadians(interpolate(angles.roll.radians, angles1.roll.radians, interval.fraction));
+                const value1 = timeline[interval.index1].value;
+                if (value1.pivot !== null && value1.orientation !== null && value1.position !== null) {
+                    const q0 = Point4d.fromJSON(value.orientation), q1 = Point4d.fromJSON(value1.orientation);
+                    const sum = Point4d.interpolateQuaternions(q0, interval.fraction, q1);
+                    const interpolatedMatrix = Matrix3d.createFromQuaternion(sum);
+                    const position0 = Vector3d.fromJSON(value.position), position1 = Vector3d.fromJSON(value1.position);
+                    const pivot = Vector3d.fromJSON(value.pivot);
+                    const pre = Transform.createTranslation(pivot);
+                    const post = Transform.createTranslation(position0.interpolate(interval.fraction, position1));
+                    const product = post.multiplyTransformMatrix3d(interpolatedMatrix);
+                    transform.setFromJSON(product.multiplyTransformTransform(pre));
+                } else {
+                    const transform1 = Transform.fromJSON(value1.transform);
+                    const q0 = transform.matrix.inverse()!.toQuaternion(), q1 = transform1.matrix.inverse()!.toQuaternion();
+                    const sum = Point4d.interpolateQuaternions(q0, interval.fraction, q1);
+                    const interpolatedMatrix = Matrix3d.createFromQuaternion(sum);
 
-                const origin = Vector3d.createFrom(transform.origin), origin1 = Vector3d.createFrom(transform1.origin);
-                transform.setFromJSON({ origin: origin.interpolate(interval.fraction, origin1, origin), matrix: angles.toMatrix3d() });
+                    const origin = Vector3d.createFrom(transform.origin), origin1 = Vector3d.createFrom(transform1.origin);
+                    transform.setFromJSON({ origin: origin.interpolate(interval.fraction, origin1), matrix: interpolatedMatrix });
+                }
             }
             return transform;
         }
@@ -268,7 +276,7 @@ export namespace RenderScheduleState {
 
             return value;
         }
-        public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) { const interval = new Interval(); this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time, interval)); }
+        public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number, nextBatchId: number) { const interval = new Interval(); this.elementTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time, interval, nextBatchId++)); }
         public forEachAnimatedId(idFunction: (id: Id64String) => void): void {
             if (this.containsAnimation) {
                 for (const timeline of this.elementTimelines)
@@ -286,18 +294,32 @@ export namespace RenderScheduleState {
                     branches.set(this.modelId + "_Node_" + (i + 1).toString(), new AnimationBranchState(transform, clip));
             }
         }
+        public initBatchMap(batchMap: Map<string, number>, nextBatchId: number) {
+            for (const timeline of this.elementTimelines) {
+                for (const id of timeline.elementIds)
+                    batchMap.set(id, nextBatchId);
+
+                nextBatchId++;
+            }
+        }
     }
 
     export class Script {
         public modelTimelines: ModelTimeline[] = [];
         public iModel: IModelConnection;
         public displayStyleId: Id64String;
+        private _batchMap = new Map<string, number>();
 
         constructor(displayStyleId: Id64String, iModel: IModelConnection) { this.displayStyleId = displayStyleId; this.iModel = iModel; }
         public static fromJSON(displayStyleId: Id64String, iModel: IModelConnection, modelTimelines: RenderSchedule.ModelTimelineProps[]): Script | undefined {
             const value = new Script(displayStyleId, iModel);
             modelTimelines.forEach((entry) => value.modelTimelines.push(ModelTimeline.fromJSON(entry)));
+            value.initBatchMap();
             return value;
+        }
+        public initBatchMap() {
+            const nextBatchId = 0;
+            this.modelTimelines.forEach((modelTimeline) => modelTimeline.initBatchMap(this._batchMap, nextBatchId));
         }
         public get containsAnimation() {
             for (const modelTimeline of this.modelTimelines)
@@ -327,7 +349,9 @@ export namespace RenderScheduleState {
         }
 
         public getSymbologyOverrides(overrides: FeatureSymbology.Overrides, time: number) {
-            this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time));
+            overrides.batchMap = this._batchMap;   // Is it necessary to clone this??
+            const batchId = 0;
+            this.modelTimelines.forEach((entry) => entry.getSymbologyOverrides(overrides, time, batchId));
         }
 
         public forEachAnimationModel(tileTreeFunction: (model: TileTreeModelState) => void): void {
@@ -338,7 +362,6 @@ export namespace RenderScheduleState {
                     tileTreeFunction(modelTimeline.animationModel);
                 }
             }
-
         }
     }
 }

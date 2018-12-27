@@ -423,4 +423,70 @@ export class Point4d implements BeJSONFunctions {
     }
     return undefined;
   }
-} // DPoint4d
+  public normalizeQuaternion() {
+    const magnitude = Math.sqrt(this.x * this.x + this.y * this.y + this.z * this.z + this.w * this.w);
+
+    if (magnitude > 0.0) {
+      const f = 1.0 / magnitude;
+      this.x *= f;
+      this.y *= f;
+      this.z *= f;
+      this.w *= f;
+    }
+    return magnitude;
+  }
+
+  public static interpolateQuaternions(quaternion0: Point4d, fractionParameter: number, quaternion1: Point4d, result?: Point4d): Point4d {
+    if (!result)
+      result = new Point4d();
+    const maxSafeCosine = 0.9995;
+
+    // return exact quats for special values
+    if (0.0 === fractionParameter) {
+      result = quaternion0;
+      return result;
+    }
+    if (1.0 === fractionParameter) {
+      result = quaternion1;
+      return result;
+    }
+    if (0.5 === fractionParameter) {
+      quaternion0.plus(quaternion1, result);
+      result.normalizeQuaternion();
+      return result;
+    }
+
+    const q0 = quaternion0.clone();
+    const q1 = quaternion1.clone();
+    let dot = quaternion0.dotProduct(quaternion1);
+
+    // prevent interpolation through the longer great arc
+    if (dot < 0.0) {
+      q1.negate(q1);
+      dot = -dot;
+    }
+
+    // if nearly parallel, use nlerp
+    if (dot > maxSafeCosine) {
+      q0.interpolate(fractionParameter, q1, result);
+      result.normalizeQuaternion();
+      return result;
+    }
+
+    // safety check
+    if (dot < -1.0)
+      dot = -1.0;
+    else if (dot > 1.0)
+      dot = 1.0;
+
+    // create orthonormal basis {q0, q2}
+    const q2 = new Point4d();
+    q1.plusScaled(q0, -dot, q2);  //  bsiDPoint4d_addScaledDPoint4d(& q2, & q1, & q0, -dot);
+    q2.normalizeQuaternion();
+
+    const angle = Math.acos(dot);
+    const angleOfInterpolant = angle * fractionParameter;
+    result = Point4d.createAdd2Scaled(q0, Math.cos(angleOfInterpolant), q2, Math.sin(angleOfInterpolant));
+    return result;
+  }
+}

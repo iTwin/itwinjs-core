@@ -59,7 +59,8 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
         label=""
         checked={this.props.checkboxState === CheckBoxState.On ? true : false}
         disabled={this.props.isCheckboxDisabled}
-        onClick={this.props.onCheckboxClick}
+        onClick={this._onCheckboxClick}
+        onChange={this._onCheckboxChange}
       /> :
       undefined;
     const icon = this.props.icon ? (<div className="icon">{this.props.icon}</div>) : undefined;
@@ -104,9 +105,17 @@ export default class TreeNode extends React.PureComponent<NodeProps> {
     return `${this.props["data-testid"]}-${subId}`;
   }
 
+  private _onCheckboxChange = (_e: React.ChangeEvent<HTMLInputElement>) => {
+    if (this.props.onCheckboxClick)
+      this.props.onCheckboxClick();
+  }
+
+  private _onCheckboxClick = (e: React.MouseEvent<HTMLInputElement>) => {
+    e.stopPropagation();
+  }
+
   private _onClickExpansionToggle = (e: React.MouseEvent<HTMLDivElement>) => {
     e.stopPropagation();
-
     if (this.props.onClickExpansionToggle)
       this.props.onClickExpansionToggle();
   }

@@ -537,4 +537,14 @@ describe("RpcInterface", () => {
     const s: string = await WipRpcInterface.getClient().placeholder(new IModelToken());
     assert.equal(s, "placeholder");
   });
+
+  it("should send app version to backend", async () => {
+    RpcConfiguration.applicationVersionValue = "testbed1";
+    try {
+      await TestRpcInterface.getClient().op15();
+      assert(true);
+    } catch (err) {
+      assert(false);
+    }
+  });
 });

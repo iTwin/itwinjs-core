@@ -525,12 +525,9 @@
       ],
       "args": [
         "--input",
-        "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
-        "--verbose",
-        "--fixRange",
-        "false"
+        "E:\\SyncroAnimation\\ComplexAnimated5\\proj.ibim",
         "--script",
-        "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
+        "E:\\SyncroAnimation\\ComplexAnimated5\\anim.json"
       ],
     },
     {
