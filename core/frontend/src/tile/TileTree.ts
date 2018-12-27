@@ -355,7 +355,8 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
       return Tile.SelectParent.No;
     }
 
-    if (!this.isReady)
+    // This tile is not ready to be drawn. Request it *only* if we cannot skip it.
+    if (!this.isReady && !canSkipThisTile)
       args.insertMissing(this);
 
     return this.isParentDisplayable ? Tile.SelectParent.Yes : Tile.SelectParent.No;
@@ -510,8 +511,6 @@ export namespace Tile {
     public readonly now: BeTimePoint;
     public readonly purgeOlderThan: BeTimePoint;
     private readonly _frustumPlanes?: FrustumPlanes;
-    private _numMissing = 0; // ###TODO: WIP
-    public get numMissingTiles(): number { return this._numMissing; }
 
     public getPixelSizeAtPoint(inPoint?: Point3d): number {
       return this.viewFrustum !== undefined ? this.viewFrustum.getPixelSizeAtPoint(inPoint) : this.context.getPixelSizeAtPoint();
@@ -554,7 +553,6 @@ export namespace Tile {
     }
 
     public insertMissing(tile: Tile): void {
-      ++this._numMissing; // ###TODO WIP - assumes no duplicates...
       this.context.insertMissingTile(tile);
     }
 
