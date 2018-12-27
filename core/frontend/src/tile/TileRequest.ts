@@ -16,6 +16,7 @@ export abstract class TileRequest {
   protected _state: TileRequest.State;
 
   public get state(): TileRequest.State { return this._state; }
+  public get isQueued() { return TileRequest.State.Queued === this._state; }
   public abstract get isCanceled(): boolean;
 
   protected constructor() {
@@ -113,6 +114,7 @@ class Request extends TileRequest {
       if (this.isCanceled)
         return Promise.resolve();
 
+      assert(this._state === TileRequest.State.Queued);
       this._state = TileRequest.State.Dispatched;
       const response = await this.loader.requestTileContent(this.tile);
       if (this.isCanceled)
@@ -371,7 +373,8 @@ class RequestScheduler implements TileRequest.Scheduler {
         const req = Request.getForTile(tile);
         assert(undefined !== req);
         if (undefined !== req) {
-          if (0 === req.viewports.length)
+          // Request may already be dispatched (in this._activeRequests) - if so do not re-enqueue!
+          if (req.isQueued && 0 === req.viewports.length)
             this._pendingRequests.push(req);
 
           req.addViewport(vp);
