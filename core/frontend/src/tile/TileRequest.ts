@@ -128,22 +128,24 @@ class Request extends TileRequest {
   }
 
   public cancel(scheduler: RequestScheduler): void {
-    if (this.isCanceled)
-      return;
-
+    this.notify();
     this._state = TileRequest.State.Failed;
-    this.tile.request = undefined;
+    this.tile.request = undefined; // NB: We do NOT modify the tile's internal state; its computed status will update based on absence of associated request.
     this.viewports = scheduler.emptyViewportSet;
   }
 
-  private notifyAndClear(): void {
+  private notify(): void {
     this.viewports.forEach((vp) => vp.invalidateScene());
+  }
+
+  private notifyAndClear(): void {
+    this.notify();
     this.viewports = RequestScheduler.get().emptyViewportSet;
     this.tile.request = undefined;
   }
 
   private setFailed() {
-    this.notifyAndClear();
+    this.notify();
     this._state = TileRequest.State.Failed;
     this.tile.setNotFound();
   }
