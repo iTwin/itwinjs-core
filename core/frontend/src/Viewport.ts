@@ -1367,9 +1367,7 @@ export abstract class Viewport implements IDisposable {
       delta.y *= factor;
 
       // first check to see whether the zoom operation results in an invalid view. If so, make sure we don't change anything
-      const validSize = view.validateViewDelta(delta, true);
-      if (ViewStatus.Success !== validSize)
-        return;
+      view.validateViewDelta(delta, true);
 
       const center = newCenter ? newCenter.clone() : view.getCenter().clone();
 
@@ -2149,7 +2147,6 @@ export class ScreenViewport extends Viewport {
         ctx.arc(0, 0, radius, 0, 2 * Math.PI);
         ctx.fill();
         ctx.stroke();
-
         ctx.beginPath();
         ctx.strokeStyle = "rgba(0,0,0,.8)";
         ctx.lineWidth = 1;
@@ -2164,7 +2161,6 @@ export class ScreenViewport extends Viewport {
 /**
  * Forms a 2-way connection between 2 Viewports of the same iModel, such that any change of the parameters in one will be reflected in the other.
  * For example, Navigator uses this class to synchronize two views for revision comparison.
- * @note This approach is only possible with two views of the same type.
  * @note It is possible to synchronize two Viewports from two different [[IModelConnection]]s of the same iModel.
  */
 export class TwoWayViewportSync {
@@ -2181,9 +2177,6 @@ export class TwoWayViewportSync {
   public connect(view1: Viewport, view2: Viewport) {
     this.disconnect();
 
-    if (view1.view.is3d !== view2.view.is3d)
-      throw new Error("cannot sync 2d view to 3d view");
-
     view2.applyViewState(view1.view); // use view1 as the starting point
 
     // listen to the onViewChanged events from both views
@@ -2191,7 +2184,7 @@ export class TwoWayViewportSync {
     this._removals.push(view2.onViewChanged.addListener(() => this.syncView(view2, view1)));
   }
 
-  /** Remove the connection the two views. */
+  /** Remove the connection between the two views. */
   public disconnect() { this._removals.forEach((removal) => removal()); }
 }
 

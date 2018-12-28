@@ -603,7 +603,8 @@ export namespace IModelTileIO {
       if (undefined !== json.silhouettes && undefined === (silhouettes = this.readSilhouettes(json.silhouettes)))
         return { succeeded };
 
-      if (undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines)))
+      const ignorePolylineEdges = true; // ###TODO: Fix add-on - it duplicates these with the segment edges, and these waste tons of memory...
+      if (!ignorePolylineEdges && undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines)))
         return { succeeded };
 
       const ignorePolylineEdges = true; // ###TODO!!! Add-on is duplicating polyline edges with simple segment edges, wasting gobs of memory...
