@@ -2066,9 +2066,9 @@ export class Matrix3d implements BeJSONFunctions {
   }
   public toQuaternion(): Point4d {
     const result = Point4d.createZero();
-    const props = [[this.coffs[0], this.coffs[1], this.coffs[2]],
-    [this.coffs[3], this.coffs[4], this.coffs[5]],
-    [this.coffs[6], this.coffs[7], this.coffs[8]]];
+    const props = [[this.coffs[0], this.coffs[3], this.coffs[6]],
+    [this.coffs[1], this.coffs[4], this.coffs[7]],
+    [this.coffs[2], this.coffs[5], this.coffs[8]]];
 
     const xx = props[0][0];
     const yy = props[1][1];
