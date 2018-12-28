@@ -8,7 +8,7 @@ import { assert, Id64, Id64String, BeTimePoint, IDisposable, dispose } from "@be
 import { ViewFlags, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
-import { RenderGraphic, GraphicBranch, GraphicList, PackedFeatureTable } from "../System";
+import { RenderGraphic, GraphicBranch, GraphicList, PackedFeatureTable, RenderMemory } from "../System";
 import { RenderCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
@@ -32,6 +32,7 @@ export class FeatureOverrides implements IDisposable {
   public anyOpaque: boolean = true;
   public anyHilited: boolean = true;
 
+  public get byteLength(): number { return undefined !== this.lut ? this.lut.bytesUsed : 0; }
   public get isUniform() { return 2 === this.lutParams.width && 1 === this.lutParams.height; }
   public get isUniformFlashed() {
     if (!this.isUniform || undefined === this.lut)
@@ -271,6 +272,13 @@ export class Batch extends Graphic {
     this._overrides.length = 0;
   }
 
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.graphic.collectStatistics(stats);
+    stats.addFeatureTable(this.featureTable.byteLength);
+    for (const ovrs of this._overrides)
+      stats.addFeatureOverrides(ovrs.byteLength);
+  }
+
   public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
   public get isPickable(): boolean { return true; }
 
@@ -331,6 +339,12 @@ export class Branch extends Graphic {
   }
 
   public dispose() { this.branch.dispose(); }
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.branch.collectStatistics(stats);
+    if (undefined !== this.clips)
+      this.clips.collectStatistics(stats);
+  }
+
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
   public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void { commands.addHiliteBranch(this, batch, pass); }
 }
@@ -365,5 +379,10 @@ export class GraphicsArray extends Graphic {
     for (const graphic of this.graphics) {
       (graphic as Graphic).addHiliteCommands(commands, batch, pass);
     }
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const graphic of this.graphics)
+      graphic.collectStatistics(stats);
   }
 }

@@ -212,7 +212,7 @@ export class BatchState {
     return found.index < this._batches.length ? found.index : -1;
   }
 
-  private find(featureId: number): Batch | undefined {
+  public find(featureId: number): Batch | undefined {
     const index = this.indexOf(featureId);
     return -1 !== index ? this._batches[index] : undefined;
   }

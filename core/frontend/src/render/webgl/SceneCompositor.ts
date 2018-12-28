@@ -11,7 +11,7 @@ import { ViewportQuadGeometry, CompositeGeometry, CopyPickBufferGeometry, Single
 import { Vector3d } from "@bentley/geometry-core";
 import { TechniqueId } from "./TechniqueId";
 import { System, RenderType, DepthType } from "./System";
-import { Pixel, GraphicList } from "../System";
+import { PackedFeatureTable, Pixel, GraphicList } from "../System";
 import { ViewRect } from "../../Viewport";
 import { assert, Id64, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { GL } from "./GL";
@@ -184,14 +184,23 @@ class PixelBuffer implements Pixel.Buffer {
   }
 
   private getFeature(pixelIndex: number): Feature | undefined {
-    if (undefined === this._featureId)
-      return undefined;
+    const featureId = this.getFeatureId(pixelIndex);
+    return undefined !== featureId ? this._batchState.getFeature(featureId) : undefined;
+  }
 
-    const featureId = this.getPixel32(this._featureId, pixelIndex);
-    if (undefined === featureId)
-      return undefined;
+  private getFeatureId(pixelIndex: number): number | undefined {
+    return undefined !== this._featureId ? this.getPixel32(this._featureId, pixelIndex) : undefined;
+  }
 
-    return this._batchState.getFeature(featureId);
+  private getFeatureTable(pixelIndex: number): PackedFeatureTable | undefined {
+    const featureId = this.getFeatureId(pixelIndex);
+    if (undefined !== featureId) {
+      const batch = this._batchState.find(featureId);
+      if (undefined !== batch)
+        return batch.featureTable;
+    }
+
+    return undefined;
   }
 
   private readonly _scratchUint32Array = new Uint32Array(1);
@@ -233,7 +242,9 @@ class PixelBuffer implements Pixel.Buffer {
     let geometryType = px.type;
     let planarity = px.planarity;
 
-    const feature = Pixel.Selector.None !== (this._selector & Pixel.Selector.Feature) ? this.getFeature(index) : undefined;
+    const haveFeatureIds = Pixel.Selector.None !== (this._selector & Pixel.Selector.Feature);
+    const feature = haveFeatureIds ? this.getFeature(index) : undefined;
+    const featureTable = haveFeatureIds ? this.getFeatureTable(index) : undefined;
     if (Pixel.Selector.None !== (this._selector & Pixel.Selector.GeometryAndDistance) && undefined !== this._depthAndOrder) {
       const depthAndOrder = this.getPixel32(this._depthAndOrder, index);
       if (undefined !== depthAndOrder) {
@@ -270,7 +281,7 @@ class PixelBuffer implements Pixel.Buffer {
       }
     }
 
-    return new Pixel.Data(feature, distanceFraction, geometryType, planarity);
+    return new Pixel.Data(feature, distanceFraction, geometryType, planarity, featureTable);
   }
 
   private constructor(rect: ViewRect, selector: Pixel.Selector, compositor: SceneCompositor) {

@@ -531,7 +531,8 @@ describe("mirukuru TileTree", () => {
     expect(response).not.to.be.undefined;
     expect(response).instanceof(Uint8Array);
 
-    const gfx = await loader.loadTileGraphic(tree.rootTile, response as Uint8Array);
+    const isCanceled = () => false; // Our tile has no Request, therefore not considered in "loading" state, so would be immediately treated as "canceled" during loading...
+    const gfx = await loader.loadTileGraphic(tree.rootTile, response as Uint8Array, isCanceled);
     expect(gfx).not.to.be.undefined;
     expect(gfx.renderGraphic).not.to.be.undefined;
     expect(gfx.isLeaf).to.be.true;

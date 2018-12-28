@@ -9,7 +9,7 @@ import { ClipVector, Point3d, ClipUtilities, Triangulator, PolyfaceBuilder, Inde
 import { QPoint3dList, Frustum, QParams3d } from "@bentley/imodeljs-common";
 import { ShaderProgramExecutor } from "./ShaderProgram";
 import { Target } from "./Target";
-import { RenderClipVolume, ClippingType } from "../System";
+import { RenderMemory, RenderClipVolume, ClippingType } from "../System";
 import { ClipMaskGeometry } from "./CachedGeometry";
 import { ViewRect } from "../../Viewport";
 import { FrameBuffer } from "./FrameBuffer";
@@ -89,12 +89,17 @@ class PackedPlanesWriter extends PlanesWriter {
 }
 
 /** A 3D clip volume defined as a texture derived from a set of planes. */
-export class ClipPlanesVolume extends RenderClipVolume {
+export class ClipPlanesVolume extends RenderClipVolume implements RenderMemory.Consumer {
   private _texture?: TextureHandle;
 
   private constructor(texture?: TextureHandle) {
     super();
     this._texture = texture;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    if (undefined !== this._texture)
+      stats.addClipVolume(this._texture.bytesUsed);
   }
 
   public get type(): ClippingType { return ClippingType.Planes; }
@@ -178,7 +183,7 @@ export class ClipPlanesVolume extends RenderClipVolume {
 }
 
 /** A 2D clip volume defined as a texture derived from a masked set of planes. */
-export class ClipMaskVolume implements RenderClipVolume {
+export class ClipMaskVolume extends RenderClipVolume implements RenderMemory.Consumer {
   public readonly geometry: ClipMaskGeometry;
   public readonly frustum: Frustum;
   public readonly rect: ViewRect;
@@ -186,9 +191,16 @@ export class ClipMaskVolume implements RenderClipVolume {
   private _fbo?: FrameBuffer;
 
   private constructor(geometry: ClipMaskGeometry) {
+    super();
     this.geometry = geometry;
     this.frustum = new Frustum();
     this.rect = new ViewRect(0, 0, 0, 0);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.geometry.collectStatistics(stats);
+    if (undefined !== this._texture)
+      stats.addClipVolume(this._texture.bytesUsed);
   }
 
   public get type(): ClippingType { return ClippingType.Mask; }

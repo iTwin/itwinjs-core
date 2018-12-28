@@ -9,10 +9,11 @@ import { ConvexClipPlaneSet, CurveLocationDetail, Geometry, LineSegment3d, Matri
 import { ColorDef, Frustum, FrustumPlanes, LinePixels, Npc, ViewFlags } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { CanvasDecoration, Decorations, GraphicBranch, GraphicList, RenderClipVolume, RenderGraphic, RenderTarget } from "./render/System";
-import { TileRequests } from "./tile/TileTree";
 import { BackgroundMapState } from "./tile/WebMercatorTileTree";
 import { ScreenViewport, Viewport } from "./Viewport";
 import { ViewState3d } from "./ViewState";
+import { Tile } from "./tile/TileTree";
+import { IModelApp } from "./IModelApp";
 
 const gridConstants = { maxPoints: 50, maxRefs: 25, maxDotsInRow: 250, maxHorizon: 500, dotTransparency: 100, lineTransparency: 200, planeTransparency: 225 };
 
@@ -504,13 +505,27 @@ export class DecorateContext extends RenderContext {
 export class SceneContext extends RenderContext {
   public readonly graphics: RenderGraphic[] = [];
   public readonly backgroundGraphics: RenderGraphic[] = [];
-  public readonly requests: TileRequests;
+  public readonly missingTiles = new Set<Tile>();
+  public hasMissingTiles = false; // ###TODO for asynchronous loading of child nodes...turn those into requests too.
   public backgroundMap?: BackgroundMapState;
 
-  public constructor(vp: Viewport, requests: TileRequests) {
+  public constructor(vp: Viewport) {
     super(vp);
-    this.requests = requests;
   }
 
   public outputGraphic(graphic: RenderGraphic): void { this.backgroundMap ? this.backgroundGraphics.push(graphic) : this.graphics.push(graphic); }
+
+  public insertMissingTile(tile: Tile): void {
+    switch (tile.loadStatus) {
+      case Tile.LoadStatus.NotLoaded:
+      case Tile.LoadStatus.Queued:
+      case Tile.LoadStatus.Loading:
+        this.missingTiles.add(tile);
+        break;
+    }
+  }
+
+  public requestMissingTiles(): void {
+    IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
+  }
 }

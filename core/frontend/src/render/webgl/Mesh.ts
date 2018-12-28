@@ -25,6 +25,7 @@ import { System } from "./System";
 import { BufferHandle, AttributeHandle } from "./Handle";
 import { GL } from "./GL";
 import { TechniqueId } from "./TechniqueId";
+import { RenderMemory } from "../System";
 
 export class MeshData implements IDisposable {
   public readonly edgeWidth: number;
@@ -106,6 +107,11 @@ export class MeshGraphic extends Graphic {
     this._primitives.length = 0;
   }
 
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addVertexTable(this.meshData.lut.bytesUsed);
+    this._primitives.forEach((prim) => prim.collectStatistics(stats));
+  }
+
   public addCommands(cmds: RenderCommands): void { this._primitives.forEach((prim) => prim.addCommands(cmds)); }
   public addHiliteCommands(cmds: RenderCommands, batch: Batch, pass: RenderPass): void { this._primitives.forEach((prim) => prim.addHiliteCommands(cmds, batch, pass)); }
 
@@ -174,8 +180,8 @@ export abstract class MeshPrimitive extends Primitive {
 }
 
 export class EdgeGeometry extends MeshGeometry {
-  private readonly _indices: BufferHandle;
-  private readonly _endPointAndQuadIndices: BufferHandle;
+  protected readonly _indices: BufferHandle;
+  protected readonly _endPointAndQuadIndices: BufferHandle;
 
   public static create(mesh: MeshData, edges: SegmentEdgeParams): EdgeGeometry | undefined {
     const indexBuffer = BufferHandle.createArrayBuffer(edges.indices.data);
@@ -186,6 +192,11 @@ export class EdgeGeometry extends MeshGeometry {
   public dispose() {
     dispose(this._indices);
     dispose(this._endPointAndQuadIndices);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addVisibleEdges(this._indices.bytesUsed);
+    stats.addVisibleEdges(this._endPointAndQuadIndices.bytesUsed);
   }
 
   public bindVertexArray(attr: AttributeHandle): void {
@@ -241,6 +252,12 @@ export class SilhouetteEdgeGeometry extends EdgeGeometry {
     super.dispose();
   }
 
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addSilhouetteEdges(this._indices.bytesUsed);
+    stats.addSilhouetteEdges(this._endPointAndQuadIndices.bytesUsed);
+    stats.addSilhouetteEdges(this._normalPairs.bytesUsed);
+  }
+
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.SilhouetteEdge; }
   public get renderOrder(): RenderOrder { return this.isPlanar ? RenderOrder.PlanarSilhouette : RenderOrder.Silhouette; }
   public get normalPairs(): BufferHandle { return this._normalPairs; }
@@ -273,6 +290,10 @@ export class PolylineEdgeGeometry extends MeshGeometry {
 
   public dispose() {
     dispose(this._buffers);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this._buffers.collectStatistics(stats, RenderMemory.BufferType.PolylineEdges);
   }
 
   protected _wantWoWReversal(_target: Target): boolean { return true; }

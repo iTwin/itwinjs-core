@@ -7,7 +7,7 @@
 // cSpell:ignore configurableui
 import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "../configurableui/FrontstageManager";
-import { Backstage } from "../configurableui/Backstage";
+import { Backstage } from "../configurableui/backstage/Backstage";
 import { WorkflowManager } from "../configurableui/Workflow";
 import { ContentViewManager } from "../configurableui/ContentViewManager";
 import { IModelConnection, SelectEventType, IModelApp, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
@@ -122,6 +122,13 @@ export class SyncUiEventDispatcher {
     SyncUiEventDispatcher._eventIdAdded = false;
     // if events have been added before the initial timer expired wait half that time to see if events are still being added.
     SyncUiEventDispatcher._syncEventTimer = setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod / 2);
+  }
+
+  /** Checks to see if an eventId of interest is contained in the set of eventIds */
+  public static hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]) {
+    if ((idsOfInterest.length > 0) && idsOfInterest.some((value: string): boolean => eventIds.has(value)))
+      return true;
+    return false;
   }
 
   /** Initializes the Monitoring of Events that trigger dispatching sync events */

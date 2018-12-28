@@ -300,6 +300,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @hidden */
+    /* ###TODO
   public cancelAllTileLoads(): void {
     this.forEachTileTreeModel((model) => {
       const tileTree = model.tileTree;
@@ -307,6 +308,7 @@ export abstract class ViewState extends ElementState {
         tileTree.rootTile.cancelAllLoads();
     });
   }
+    */
 
   /** @hidden */
   public get areAllTileTreesLoaded(): boolean {
@@ -752,9 +754,7 @@ export abstract class ViewState extends ElementState {
 
     // delta is in view coordinates
     const viewDelta = viewRot.multiplyVector(viewDiagRoot);
-    const validSize = this.validateViewDelta(viewDelta, false);
-    if (validSize !== ViewStatus.Success)
-      return validSize;
+    this.validateViewDelta(viewDelta, false);
 
     this.setOrigin(viewOrg);
     this.setExtents(viewDelta);
@@ -1356,7 +1356,7 @@ export abstract class ViewState3d extends ViewState {
     if (frontDistance < minFrontDist)
       frontDistance = minFrontDist;
 
-    delta.z = (backDistance! - frontDistance);
+    delta.z = (backDistance - frontDistance);
 
     const frontDelta = delta.scale(frontDistance / focusDist);
     const stat = this.validateViewDelta(frontDelta, false); // validate window size on front (smallest) plane

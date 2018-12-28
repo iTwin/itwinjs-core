@@ -6,12 +6,13 @@
 
 import * as React from "react";
 
-import { ActionButtonItemDef } from "./Item";
-import { ItemDefBase, BaseItemState } from "./ItemDefBase";
-import { GroupButtonProps, AnyItemDef } from "./ItemProps";
-import { Icon } from "./IconComponent";
-import { ItemList, ItemMap } from "./ItemMap";
-import { SyncUiEventDispatcher, SyncUiEventArgs } from "../syncui/SyncUiEventDispatcher";
+import { ActionButtonItemDef } from "../Item";
+import { ItemDefBase, BaseItemState } from "../ItemDefBase";
+import { GroupButtonProps, AnyItemDef } from "../ItemProps";
+import { Icon } from "../IconComponent";
+import { ItemList, ItemMap } from "../ItemMap";
+import { SyncUiEventDispatcher, SyncUiEventArgs } from "../../syncui/SyncUiEventDispatcher";
+import { PropsHelper } from "../../utils/PropsHelper";
 
 import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn,
@@ -140,25 +141,47 @@ class GroupItem extends React.Component<Props, State> {
   /** @hidden */
   public readonly state: Readonly<State>;
   private _componentUnmounting = false;
+  private _childSyncIds?: Set<string>;
+  private _childRefreshRequired = false;
 
   constructor(props: Props, context?: any) {
     super(props, context);
 
+    this._loadChildSyncIds(props);
     this.state = GroupItem.processGroupItemDef(this.props.groupItemDef);
+  }
+
+  private _loadChildSyncIds(props: Props) {
+    if (props.groupItemDef && props.groupItemDef.items.length > 0) {
+      props.groupItemDef.items.forEach((itemDef: AnyItemDef) => {
+        const item: ItemDefBase | undefined = itemDef;
+        if (item.stateSyncIds.length > 0) {
+          if (undefined === this._childSyncIds)
+            this._childSyncIds = new Set<string>();
+          item.stateSyncIds.forEach((value) => this._childSyncIds!.add(value));
+        }
+      });
+    }
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
     if (this._componentUnmounting) return;
 
     let refreshState = false;
+
+    if (this._childSyncIds && this._childSyncIds.size > 0)
+      if ([...this._childSyncIds].some((value: string): boolean => args.eventIds.has(value)))
+        this._childRefreshRequired = true;  // this is cleared when render occurs
+
     let newState: State = { ...this.state };
 
     if (this.props.groupItemDef.stateSyncIds && this.props.groupItemDef.stateSyncIds.length > 0)
       refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value));
-    if (refreshState) {
+    if (refreshState || this._childRefreshRequired) {
       if (this.props.groupItemDef.stateFunc)
         newState = this.props.groupItemDef.stateFunc(newState) as State;
-      if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
+      if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)
+        || this._childRefreshRequired) {
         this.setState((_prevState) => ({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible, isPressed: newState.isPressed }));
       }
     }
@@ -171,6 +194,20 @@ class GroupItem extends React.Component<Props, State> {
   public componentWillUnmount() {
     this._componentUnmounting = true;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
+  }
+
+  public shouldComponentUpdate(nextProps: Props, nextState: State) {
+    if (!PropsHelper.isShallowEqual(nextState, this.state))
+      return true;
+    if (!PropsHelper.isShallowEqual(nextProps, this.props))
+      return true;
+
+    if (this._childRefreshRequired) {
+      this._childRefreshRequired = false;
+      return true;
+    }
+
+    return false;
   }
 
   private static processGroupItemDef(groupItemDef: GroupItemDef): State {
@@ -323,8 +360,26 @@ class GroupItem extends React.Component<Props, State> {
             const item = column.items.get(entry.item.itemKey)!;
             const icon = <Icon iconSpec={item.iconSpec} />;
 
+            let isVisible = true;
+            let isActive = false;
+            let isEnabled = true;
+
+            if (item instanceof ItemDefBase) {
+              isVisible = item.isVisible;
+              isActive = item.isActive;
+              isEnabled = item.isEnabled;
+              if (item.stateFunc) {
+                const newState = item.stateFunc({ isVisible, isActive, isEnabled });
+                isVisible = undefined !== newState.isVisible ? newState.isVisible : isVisible;
+                isEnabled = undefined !== newState.isEnabled ? newState.isEnabled : isEnabled;
+                isActive = undefined !== newState.isActive ? newState.isActive : isActive;
+              }
+            }
+
             return (
-              <HistoryIcon
+              isVisible && <HistoryIcon
+                isDisabled={!isEnabled}
+                isActive={isActive}
                 key={entry.key}
                 onClick={() => this._handleOnHistoryItemClick(entry.item)}
                 title={item.label}
@@ -351,11 +406,28 @@ class GroupItem extends React.Component<Props, State> {
             {Array.from(column.items.keys()).map((itemKey) => {
               const item = column.items.get(itemKey)!;
               const icon = <Icon iconSpec={item.iconSpec} />;
+              let isVisible = true;
+              let isActive = false;
+              let isEnabled = true;
+
+              if (item instanceof ItemDefBase) {
+                isVisible = item.isVisible;
+                isActive = item.isActive;
+                isEnabled = item.isEnabled;
+                if (item.stateFunc) {
+                  const newState = item.stateFunc({ isVisible, isActive, isEnabled });
+                  isVisible = undefined !== newState.isVisible ? newState.isVisible : isVisible;
+                  isEnabled = undefined !== newState.isEnabled ? newState.isEnabled : isEnabled;
+                  isActive = undefined !== newState.isActive ? newState.isActive : isActive;
+                }
+              }
 
               const trayId = item.trayId;
               if (trayId)
                 return (
+                  isVisible &&
                   <GroupToolExpander
+                    isDisabled={!isEnabled}
                     key={itemKey}
                     ref={itemKey}
                     label={item.label}
@@ -370,7 +442,10 @@ class GroupItem extends React.Component<Props, State> {
                   />
                 );
               return (
-                <GroupTool
+                isVisible &&
+                < GroupTool
+                  isDisabled={!isEnabled}
+                  isActive={isActive}
                   key={itemKey}
                   ref={itemKey}
                   label={item.label}

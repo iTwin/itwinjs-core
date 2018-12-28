@@ -6,18 +6,32 @@
 
 import * as React from "react";
 
-import { Icon } from "./IconComponent";
-import { FrontstageManager } from "./FrontstageManager";
-import { ActionButtonItemDef } from "./Item";
-import { BaseItemState } from "./ItemDefBase";
-import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
+import { Icon } from "../IconComponent";
+import { FrontstageManager } from "../FrontstageManager";
+import { ActionButtonItemDef } from "../Item";
+import { BaseItemState } from "../ItemDefBase";
+import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
+import { PropsHelper } from "../../utils/PropsHelper";
 
 import { Item } from "@bentley/ui-ninezone";
 
 /** Property that must be specified for a ActionItemButton component */
 export interface ActionItemButtonProps {
   actionItem: ActionButtonItemDef;
+  isEnabled?: boolean;
 }
+
+/** Helper method to set state from props */
+const getItemStateFromProps = (props: ActionItemButtonProps): BaseItemState => {
+
+  // Parent Component can only modify the isEnable state if the actionItem.isEnabled value is set to true.
+  return {
+    isEnabled: undefined !== props.isEnabled ? props.isEnabled && props.actionItem.isEnabled : props.actionItem.isEnabled,
+    isVisible: props.actionItem.isVisible,
+    isActive: undefined !== props.actionItem.isActive ? props.actionItem.isActive : false,
+  };
+};
+
 /** A Toolbar button React Component that executes an action defined by a CommandItemDef or a ToolItemDef.
  */
 export class ActionItemButton extends React.Component<ActionItemButtonProps, BaseItemState> {
@@ -29,11 +43,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
   constructor(props: ActionItemButtonProps) {
     super(props);
 
-    this.state = {
-      isVisible: props.actionItem.isVisible,
-      isEnabled: props.actionItem.isEnabled,
-      isActive: false,
-    };
+    this.state = getItemStateFromProps(props);
   }
 
   private _handleSyncUiEvent = (args: SyncUiEventArgs): void => {
@@ -54,9 +64,21 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
       if (this.props.actionItem.stateFunc)
         newState = this.props.actionItem.stateFunc(newState);
       if ((this.state.isActive !== newState.isActive) || (this.state.isEnabled !== newState.isEnabled) || (this.state.isVisible !== newState.isVisible)) {
+        // update actionItem as it hold the 'truth' for all state
+        if (undefined !== newState.isVisible)
+          this.props.actionItem.isVisible = newState.isVisible;
+        if (undefined !== newState.isActive)
+          this.props.actionItem.isActive = newState.isActive;
+
         this.setState((_prevState) => ({ isActive: newState.isActive, isEnabled: newState.isEnabled, isVisible: newState.isVisible }));
       }
     }
+  }
+
+  public componentWillReceiveProps(nextProps: ActionItemButtonProps) {
+    const updatedState = getItemStateFromProps(nextProps);
+    if (!PropsHelper.isShallowEqual(updatedState, this.state))
+      this.setState((_prevState) => updatedState);
   }
 
   public componentDidMount() {

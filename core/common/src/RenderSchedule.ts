@@ -25,8 +25,14 @@ export namespace RenderSchedule {
         position: number[];
         direction: number[];
     }
+    export interface TransformProps {
+        position: number[];
+        orientation: number[];
+        pivot: number[];
+        transform: number[][];
+    }
     export interface TransformEntryProps extends TimelineEntryProps {
-        value: number[][];
+        value: TransformProps;
     }
     export interface CuttingPlaneEntryProps extends TimelineEntryProps {
         value: CuttingPlaneProps;

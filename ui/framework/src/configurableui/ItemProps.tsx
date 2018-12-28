@@ -6,7 +6,7 @@
 
 import { IconProps } from "./IconComponent";
 import { Direction } from "@bentley/ui-ninezone";
-import { GroupItemDef } from "./GroupItem";
+import { GroupItemDef } from "./toolbar/GroupItem";
 import { CommandItemDef, ToolItemDef } from "./Item";
 import { BaseItemState } from "./ItemDefBase";
 
@@ -23,9 +23,23 @@ export interface SyncUiProps {
 /** Prototype for string getter function. */
 export type StringGetter = () => string;
 
+export interface LabelProps {
+  /** if set, it is used to explicitly set the label shown by a component. */
+  label?: string | StringGetter;
+  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
+  labelKey?: string;
+}
+
+export interface TooltipProps {
+  /** used to explicitly set the tooltip shown by a component. */
+  tooltip?: string | StringGetter;
+  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
+  tooltipKey?: string;
+}
+
 /** Definition that specify properties shared between many ConfigurableUi components.
  */
-export interface ItemProps extends IconProps, SyncUiProps {
+export interface ItemProps extends IconProps, LabelProps, SyncUiProps, TooltipProps {
   /** if set, component will be visible - defaults to true */
   isVisible?: boolean;
   /** if set, component will be enabled - defaults to true */
@@ -36,14 +50,6 @@ export interface ItemProps extends IconProps, SyncUiProps {
   isPressed?: boolean;
   /** for future use. */
   featureId?: string;
-  /** if set, it is used to explicitly set the label shown by a component. */
-  label?: string | StringGetter;
-  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
-  labelKey?: string;
-  /** used to explicitly set the tooltip shown by a component. */
-  tooltip?: string | StringGetter;
-  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
-  tooltipKey?: string;
   /** can be used by application to store miscellaneous data. */
   applicationData?: any;
 }

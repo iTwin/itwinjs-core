@@ -19,6 +19,7 @@ export type BufferData = number | Int8Array | Int16Array | Int32Array | Uint8Arr
  */
 export class BufferHandle implements IDisposable {
   private _glBuffer?: WebGLBuffer;
+  private _bytesUsed = 0;
 
   /** Allocates the WebGLBuffer using the supplied context. Free the WebGLBuffer using dispose() */
   public constructor() {
@@ -35,6 +36,7 @@ export class BufferHandle implements IDisposable {
   }
 
   public get isDisposed(): boolean { return this._glBuffer === undefined; }
+  public get bytesUsed(): number { return this._bytesUsed; }
 
   /** Frees the WebGL buffer */
   public dispose(): void {
@@ -59,6 +61,7 @@ export class BufferHandle implements IDisposable {
     this.bind(target);
     System.instance.context.bufferData(target, data, usage);
     BufferHandle.unbind(target);
+    this._bytesUsed = data.byteLength;
   }
 
   /** Creates a BufferHandle and binds its data */
