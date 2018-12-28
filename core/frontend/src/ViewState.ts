@@ -300,6 +300,7 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @hidden */
+    /* ###TODO
   public cancelAllTileLoads(): void {
     this.forEachTileTreeModel((model) => {
       const tileTree = model.tileTree;
@@ -307,6 +308,7 @@ export abstract class ViewState extends ElementState {
         tileTree.rootTile.cancelAllLoads();
     });
   }
+    */
 
   /** @hidden */
   public get areAllTileTreesLoaded(): boolean {

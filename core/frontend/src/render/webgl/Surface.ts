@@ -17,6 +17,7 @@ import { Target } from "./Target";
 import { ColorInfo } from "./ColorInfo";
 import { ShaderProgramParams } from "./DrawCommand";
 import { Material } from "./Material";
+import { RenderMemory } from "../System";
 
 function wantMaterials(vf: ViewFlags) { return vf.materials && RenderMode.SmoothShade === vf.renderMode; }
 function wantLighting(vf: ViewFlags) {
@@ -33,6 +34,10 @@ export class SurfaceGeometry extends MeshGeometry {
 
   public dispose() {
     dispose(this._indices);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addSurface(this._indices.bytesUsed);
   }
 
   public get isLit() { return SurfaceType.Lit === this.surfaceType || SurfaceType.TexturedLit === this.surfaceType; }

@@ -7,7 +7,7 @@
 import { assert, ActivityLoggingContext, BentleyError, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
 import { TileTreeProps, TileProps, Cartographic, ImageSource, ImageSourceFormat, RenderTexture, EcefLocation, BackgroundMapType, BackgroundMapProps } from "@bentley/imodeljs-common";
 import { Range3dProps, Range3d, TransformProps, Transform, Point3d, Point2d, Range2d, Vector3d, Angle, Plane3dByOriginAndUnitNormal } from "@bentley/geometry-core";
-import { TileLoader, TileTree, Tile, TileRequests } from "./TileTree";
+import { TileLoader, TileTree, Tile } from "./TileTree";
 import { TileRequest } from "./TileRequest";
 import { request, Response, RequestOptions } from "@bentley/imodeljs-clients";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -100,6 +100,7 @@ class WebMercatorTileTreeProps implements TileTreeProps {
   public location: TransformProps;
   public yAxisUp = true;
   public isTerrain = true;
+  public maxTilesToSkip = 4;
   public constructor(mercatorToDb: Transform) {
     this.rootTile = new WebMercatorTileProps("0_0_0", mercatorToDb);
     this.location = Transform.createIdentity();
@@ -175,11 +176,14 @@ class WebMercatorTileLoader extends TileLoader {
     const quadId = new QuadId(tile.contentId);
     return this._imageryProvider.loadTile(quadId.row, quadId.column, quadId.level);
   }
-  public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData): Promise<TileRequest.Graphic> {
+  public async loadTileGraphic(tile: Tile, data: TileRequest.ResponseData, isCanceled?: () => boolean): Promise<TileRequest.Graphic> {
+    if (undefined === isCanceled)
+      isCanceled = () => !tile.isLoading;
+
     assert(data instanceof ImageSource);
     const graphic: TileRequest.Graphic = { };
     const system = IModelApp.renderSystem;
-    const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system);
+    const texture = await this.loadTextureImage(data as ImageSource, this._iModel, system, isCanceled);
     if (undefined !== texture) {
       const quadId = new QuadId(tile.contentId);
       const corners = quadId.getCorners(this.mercatorToDb);
@@ -189,12 +193,11 @@ class WebMercatorTileLoader extends TileLoader {
     return graphic;
   }
 
-  private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem): Promise<RenderTexture | undefined> {
+  private async loadTextureImage(imageSource: ImageSource, iModel: IModelConnection, system: RenderSystem, isCanceled: () => boolean): Promise<RenderTexture | undefined> {
     try {
-      const isCanceled = false;  // Tbd...
       const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.TileSection);
       return imageElementFromImageSource(imageSource)
-        .then((image) => isCanceled ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
+        .then((image) => isCanceled() ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
         .catch((_) => undefined);
     } catch (e) {
       return undefined;
@@ -202,6 +205,12 @@ class WebMercatorTileLoader extends TileLoader {
   }
 
   public get maxDepth(): number { return this._providerInitialized ? this._imageryProvider.maximumZoomLevel : 32; }
+  public get parentsAndChildrenExclusive(): boolean { return false; }
+  public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] {
+    // Ensure lo-res tiles drawn before (therefore behind) hi-res tiles.
+    // NB: Array.sort() sorts in-place and returns the input array - we're not making a copy.
+    return selected.sort((lhs, rhs) => lhs.depth - rhs.depth);
+  }
 }
 
 // Represents the service that is providing map tiles for Web Mercator models (background maps).
@@ -573,7 +582,7 @@ export class BackgroundMapState {
   public getTilesForView(viewport: ScreenViewport): Tile[] {
     let displayTiles: Tile[] = [];
     if (this._tileTree) {
-      const sceneContext = new SceneContext(viewport, new TileRequests());
+      const sceneContext = viewport.createSceneContext();
       sceneContext.backgroundMap = this;
       displayTiles = this._tileTree.selectTilesForScene(sceneContext);
     }

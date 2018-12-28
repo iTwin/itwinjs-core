@@ -16,7 +16,7 @@ import {
   DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
   SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus, imageBufferToPngDataUrl,
-  ContextRealityModelState, OidcClientWrapper, FeatureSymbology, GraphicType, PerformanceMetrics, Target,
+  ContextRealityModelState, OidcClientWrapper, FeatureSymbology, GraphicType, PerformanceMetrics, Target, RenderMemory,
 } from "@bentley/imodeljs-frontend";
 import ToolTip from "tooltip.js";
 import { IModelApi } from "./IModelApi";
@@ -785,6 +785,9 @@ async function openView(state: SimpleViewState) {
   if (undefined === theViewport) {
     const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
     theViewport = ScreenViewport.create(vpDiv, state.viewState!);
+
+    const tileLoadIndicator = document.getElementById("tile-load-indicator")! as HTMLProgressElement;
+    theViewport.onRender.addListener((vp) => updateTileLoadIndicator(tileLoadIndicator, vp));
   }
 
   await _changeView(state.viewState!);
@@ -1649,7 +1652,7 @@ async function selectIModel() {
 function setFpsInfo() {
   const perfMet = (theViewport!.target as Target).performanceMetrics;
   if (undefined !== perfMet && document.getElementById("showfps")) {
-    const stats = IModelApp.tileRequests.statistics;
+    const stats = IModelApp.tileAdmin.statistics;
     document.getElementById("showfps")!.innerHTML =
       "Avg. FPS: " + (perfMet.spfTimes.length / perfMet.spfSum).toFixed(2)
       + " Render Time (ms): " + (perfMet.renderSpfSum / perfMet.renderSpfTimes.length).toFixed(2)
@@ -1694,24 +1697,56 @@ function saveImage() {
   window.open(url, "Saved View");
 }
 
-function updateTileLoadIndicator(progress: HTMLProgressElement): void {
+function formatMemory(numBytes: number): string {
+  let suffix = "b";
+  if (numBytes >= 1024) {
+    numBytes /= 1024;
+    suffix = "kb";
+    if (numBytes >= 1024) {
+      numBytes /= 1024;
+      suffix = "mb";
+    }
+  }
+
+  return numBytes.toFixed(2) + suffix;
+}
+
+function updateTileLoadIndicator(progress: HTMLProgressElement, vp: Viewport): void {
   let pctComplete = 1.0;
   let title = "";
   let color = "#00ff00";
-  const requested = undefined !== theViewport ? theViewport.numRequestedTiles : 0;
-  if (undefined !== theViewport && requested > 0) {
-    const selected = theViewport.numSelectedTiles;
-    const total = selected + requested;
-    pctComplete = selected / total;
-    title = "" + selected + " / " + total + " (" + requested + ")";
-    color = "#007fff";
+  const requested = vp.numRequestedTiles;
+  const ready = vp.numReadyTiles;
+  const total = ready + requested;
+  const canceled = IModelApp.tileAdmin.statistics.numCanceled;
+  pctComplete = (total > 0) ? (ready / total) : 1.0;
+  title = "" + ready + " / " + total;
+  if (total < ready)
+    title += " (" + requested + " queued)";
+
+  if (0 < canceled)
+    title += " (" + canceled + " canceled)";
+
+  color = "#007fff";
+
+  const wantLogTileStats = false;
+  if (wantLogTileStats && progress.title !== title)
+    console.log(title);
+
+  const wantLogTileMemory = false;
+  if (wantLogTileMemory) {
+    const stats = new RenderMemory.Statistics();
+    vp.view.forEachTileTreeModel((model) => {
+      if (undefined !== model.tileTree)
+        model.tileTree.collectStatistics(stats);
+    });
+
+    console.log("TileTree memory: Total " + formatMemory(stats.totalBytes));
   }
 
   progress.value = pctComplete;
   progress.title = title;
-  progress.style.color = color;
-
-  window.requestAnimationFrame(() => updateTileLoadIndicator(progress));
+  progress.style.color = color; // ###TODO this does nothing. HTMLProgressElement is quite opaque.
 }
 
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
@@ -1835,10 +1870,6 @@ function wireIconsToFunctions() {
       }
     }
   });
-
-  // Tile loading indicator
-  const tileLoadIndicator = document.getElementById("tile-load-indicator")! as HTMLProgressElement;
-  window.requestAnimationFrame(() => updateTileLoadIndicator(tileLoadIndicator));
 }
 
 // If we are using a browser, close the current iModel before leaving

@@ -24,7 +24,6 @@ import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicType } from "./render/GraphicBuilder";
 import { Decorations, GraphicList, Pixel, RenderPlan, RenderTarget } from "./render/System";
 import { StandardView, StandardViewId } from "./StandardView";
-import { TileRequests } from "./tile/TileTree";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolAdmin";
 import { DecorateContext, SceneContext } from "./ViewContext";
@@ -872,6 +871,7 @@ export abstract class Viewport implements IDisposable {
   /** Event called whenever this viewport is synchronized with its ViewState. */
   public readonly onViewChanged = new BeEvent<(vp: Viewport) => void>();
 
+  private readonly _viewportId: number;
   private _animationFraction = 0.0;
   private _doContinuousRendering = false;
   private _animator?: Animator;
@@ -896,8 +896,30 @@ export abstract class Viewport implements IDisposable {
    * @hidden
    */
   public static nearScale24 = 0.0003;
+
+  /** The number of tiles selected for display in the view as of the most recently-drawn frame.
+   * The tiles selected may not meet the desired level-of-detail for the view, instead being temporarily drawn while
+   * tiles of more appropriate level-of-detail are loaded asynchronously.
+   * @note This member should be treated as read-only - it should only be modified internally.
+   * @see Viewport.numRequestedTiles
+   * @see Viewport.numReadyTiles
+   */
+  public numSelectedTiles = 0;
+
+  /** The number of tiles which were ready and met the desired level-of-detail for display in the view as of the most recently-drawn frame.
+   * These tiles may *not* have been selected because some other (probably sibling) tiles were *not* ready for display.
+   * This is a useful metric for determining how "complete" the view is - e.g., one indicator of progress toward view completion can be expressed as:
+   * `  (numReadyTiles) / (numReadyTiles + numRequestedTiles)`
+   * @note This member should be treated as read-only - it should only be modified internally.
+   * @see Viewport.numSelectedTiles
+   * @see Viewport.numRequestedTiles
+   */
+  public numReadyTiles = 0;
+
   /** Don't allow entries in the view undo buffer unless they're separated by more than this amount of time. */
   public static undoDelay = BeDuration.fromSeconds(.5);
+  private static _nextViewportId = 1;
+
   private _addFeatureOverrides?: AddFeatureOverrides;
   private _wantTileBoundingBoxes = false;
   private _viewFrustum!: ViewFrustum;
@@ -970,24 +992,26 @@ export abstract class Viewport implements IDisposable {
   /** @hidden */
   public get isContextRotationRequired(): boolean { return IModelApp.toolAdmin.acsContextLock; }
 
-  /** Construct a new Viewport
-   * @param htmlElement The HTMLDivElement for the Viewport. This constructor will create a canvas to draw the graphics.
-   * @param view a fully loaded (see discussion at [[ViewState.load]]) ViewState
-   * @hidden
-   */
+  /** @hidden */
   protected constructor(target: RenderTarget) {
     this._target = target;
+    this._viewportId = Viewport._nextViewportId++;
   }
 
   public dispose(): void {
     assert(undefined !== this._target, "Double disposal of Viewport");
     this._target = dispose(this._target);
+    IModelApp.tileAdmin.forgetViewport(this);
   }
 
   /** @hidden */
   public get continuousRendering(): boolean { return this._doContinuousRendering; }
   /** @hidden */
   public set continuousRendering(contRend: boolean) { this._doContinuousRendering = contRend; }
+  /** This gives each Viewport a unique ID, which can be used for comparing and sorting Viewport objects inside collections.
+   * @hidden
+   */
+  public get viewportId(): number { return this._viewportId; }
 
   /** The ViewState for this Viewport */
   public get view(): ViewState { return this._viewFrustum.view; }
@@ -1038,6 +1062,11 @@ export abstract class Viewport implements IDisposable {
   public getAuxCoordRotation(result?: Matrix3d) { return this.auxCoordSystem.getRotation(result); }
   public getAuxCoordOrigin(result?: Point3d) { return this.auxCoordSystem.getOrigin(result); }
 
+  /** The number of outstanding requests for tiles to be displayed in this viewport.
+   * @see Viewport.numSelectedTiles
+   */
+  public get numRequestedTiles(): number { return IModelApp.tileAdmin.getNumRequestsForViewport(this); }
+
   /** @hidden */
   public toView(from: XYZ, to?: XYZ) { this._viewFrustum.toView(from, to); }
   /** @hidden */
@@ -1054,7 +1083,8 @@ export abstract class Viewport implements IDisposable {
     this.target.reset();
   }
 
-  private invalidateScene(): void { this.sync.invalidateScene(); }
+  /** @hidden */
+  public invalidateScene(): void { this.sync.invalidateScene(); }
 
   /**
    * Computes the range of npc depth values for a region of the screen
@@ -1616,6 +1646,15 @@ export abstract class Viewport implements IDisposable {
   }
 
   /** @hidden */
+  public createSceneContext(): SceneContext { return new SceneContext(this); }
+
+  /**
+   * Called when the visible contents of the viewport are redrawn.
+   * @note Due to the frequency of this event, avoid performing expensive work inside event listeners.
+   */
+  public readonly onRender = new BeEvent<(vp: Viewport) => void>();
+
+  /** @hidden */
   public renderFrame(): boolean {
     const sync = this.sync;
     const view = this.view;
@@ -1666,12 +1705,12 @@ export abstract class Viewport implements IDisposable {
       this.setupFromView();
 
     if (!sync.isValidScene) {
-      this.numSelectedTiles = this.numRequestedTiles = 0;
-      const context = new SceneContext(this, new TileRequests());
+      this.numSelectedTiles = this.numReadyTiles = 0;
+      const context = this.createSceneContext();
       view.createScene(context);
       view.createClassification(context);
       view.createTerrain(context);
-      context.requests.requestMissing();
+      context.requestMissingTiles();
       target.changeScene(context.graphics);
       target.changeTerrain(context.backgroundGraphics);
 
@@ -1711,6 +1750,7 @@ export abstract class Viewport implements IDisposable {
     timer.stop();
     if (isRedrawNeeded) {
       target.drawFrame(timer.elapsed.milliseconds);
+      this.onRender.raiseEvent(this);
     }
 
     return true;
@@ -1774,11 +1814,6 @@ export abstract class Viewport implements IDisposable {
 
     return npc;
   }
-
-  /** @hidden ###TODO WIP */
-  public numSelectedTiles = 0;
-  /** @hidden ###TODO WIP */
-  public numRequestedTiles = 0;
 }
 
 /**

@@ -68,7 +68,7 @@ export function lowerBound<T, U = T>(value: T, list: U[], compare: OrderedCompar
  * Modifying an element in a way that affects the comparison function will produce unpredictable results, the
  * most likely of which is that the array will cease to be sorted.
  */
-export class SortedArray<T> {
+export class SortedArray<T> implements Iterable<T> {
   protected _array: T[] = [];
   protected readonly _compare: OrderedComparator<T>;
   protected readonly _clone: CloneFunction<T>;
@@ -89,15 +89,21 @@ export class SortedArray<T> {
   /** The number of elements in the array */
   public get length(): number { return this._array.length; }
 
+  /** Returns true if the array contains no elements. */
+  public get isEmpty(): boolean { return 0 === this.length; }
+
   /** Clears the contents of the sorted array. */
-  public clear(): void { this._array = []; }
+  public clear(): void { this._array.length = 0; }
+
+  /** Returns an iterator over the contents of the array in sorted order, suitable for use in `for-of` loops. */
+  public [Symbol.iterator](): Iterator<T> { return this._array[Symbol.iterator](); }
 
   /** Extracts the sorted array as a T[] and empties the contents of this SortedArray.
    * @returns the contents of this SortedArray as a T[].
    */
   public extractArray(): T[] {
     const result = this._array;
-    this.clear();
+    this._array = [];
     return result;
   }
 
@@ -129,6 +135,21 @@ export class SortedArray<T> {
   }
 
   /**
+   * Removes the first occurrence of a value comparing equal to the specified value from the array.
+   * @param value The value of the element to delete
+   * @returns the index of the deleted value, or -1 if no such element exists.
+   */
+  public remove(value: T): number {
+    const bound = this.lowerBound(value);
+    if (bound.equal) {
+      this._array.splice(bound.index, 1);
+      return bound.index;
+    } else {
+      return -1;
+    }
+  }
+
+  /**
    * Looks up the index of an element comparing equal to the specified value using binary search.
    * @param value The value to search for
    * @returns the index of the first equivalent element in the array, or -1 if no such element exists.
@@ -150,7 +171,7 @@ export class SortedArray<T> {
   /**
    * Looks up an element comparing equal to the specified value using binary search.
    * @param value The value to search for
-   * @returns the first equivalent element in the array, or -1 if no such element exists.
+   * @returns the first equivalent element in the array, or undefined if no such element exists.
    */
   public findEqual(value: T): T | undefined {
     const index = this.indexOf(value);
@@ -163,6 +184,14 @@ export class SortedArray<T> {
    * @returns the element corresponding to that position in the array, or undefined if the supplied index exceeds the length of the array.
    */
   public get(index: number): T | undefined { return index < this.length ? this._array[index] : undefined; }
+
+  /** Apply a function to each element in the array, in sorted order.
+   * @param func The function to be applied.
+   */
+  public forEach(func: (value: T) => void): void {
+    for (let i = 0; i < this.length; i++)
+      func(this._array[i]);
+  }
 
   /**
    * Computes the position at which the specified value should be inserted to maintain sorted order.

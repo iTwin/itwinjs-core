@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Enable usage of custom collection classes inside for..of loops.",
+      "packageName": "@bentley/bentleyjs-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/bentleyjs-core",
+  "email": "Paul.Connelly@bentley.com"
+}
