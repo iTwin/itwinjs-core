@@ -1652,7 +1652,7 @@ async function selectIModel() {
 function setFpsInfo() {
   const perfMet = (theViewport!.target as Target).performanceMetrics;
   if (undefined !== perfMet && document.getElementById("showfps")) {
-    const stats = IModelApp.tileRequests.statistics;
+    const stats = IModelApp.tileAdmin.statistics;
     document.getElementById("showfps")!.innerHTML =
       "Avg. FPS: " + (perfMet.spfTimes.length / perfMet.spfSum).toFixed(2)
       + " Render Time (ms): " + (perfMet.renderSpfSum / perfMet.renderSpfTimes.length).toFixed(2)
@@ -1718,7 +1718,7 @@ function updateTileLoadIndicator(progress: HTMLProgressElement, vp: Viewport): v
   const requested = vp.numRequestedTiles;
   const ready = vp.numReadyTiles;
   const total = ready + requested;
-  const canceled = IModelApp.tileRequests.statistics.numCanceled;
+  const canceled = IModelApp.tileAdmin.statistics.numCanceled;
   pctComplete = (total > 0) ? (ready / total) : 1.0;
   title = "" + ready + " / " + total;
   if (total < ready)

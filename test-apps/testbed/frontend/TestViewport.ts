@@ -181,7 +181,7 @@ class OffScreenTestViewport extends OffScreenViewport implements TestableViewpor
     this.renderFrame();
 
     // NB: ToolAdmin loop is not turned on, and this vieport is not tracked by ViewManager - must manually pump tile request scheduler.
-    IModelApp.tileRequests.process();
+    IModelApp.tileAdmin.process();
 
     if (this.areAllTilesLoaded)
       return Promise.resolve();

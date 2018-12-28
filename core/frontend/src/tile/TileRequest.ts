@@ -4,111 +4,48 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { Dictionary, SortedArray, PriorityQueue, assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
+import { assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import { ImageSource, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { RenderGraphic } from "../render/System";
 import { Tile, TileTree, TileLoader } from "./TileTree";
+import { TileAdmin } from "./TileAdmin";
 import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
-import { IModelConnection } from "../IModelConnection";
 
-export abstract class TileRequest {
-  protected _state: TileRequest.State;
+/** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with a [[TileLoader]] to execute the request for tile content and
+ * convert the result into a renderable graphic.
+ * @hidden
+ */
+export class TileRequest {
+  /** The requested tile. While the request is pending or active, `tile.request` points back to this TileRequest. */
+  public readonly tile: Tile;
+  /** Determines the order in which pending requests are pulled off the queue to become active. A tile with a lower value takes precedence over one with a higher value. */
+  public readonly priority: number; // ###TODO Allow priority to be adjusted based on camera etc.
+  /** The set of [[Viewport]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no viewport cares about it. */
+  public viewports: TileAdmin.ViewportSet;
+  private _state: TileRequest.State;
+
+  public constructor(tile: Tile, vp: Viewport) {
+    this._state = TileRequest.State.Queued;
+    this.tile = tile;
+    this.priority = tile.depth; // ###TODO account for reality/map tiles vs design model tiles, etc.
+    this.viewports = IModelApp.tileAdmin.getViewportSet(vp);
+  }
 
   public get state(): TileRequest.State { return this._state; }
   public get isQueued() { return TileRequest.State.Queued === this._state; }
-  public abstract get isCanceled(): boolean;
-
-  protected constructor() {
-    this._state = TileRequest.State.Queued;
-  }
-}
-
-export namespace TileRequest {
-  export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
-  export type ResponseData = Uint8Array | ImageSource;
-
-  export const enum State {
-    Queued,
-    Dispatched,
-    Loading,
-    Completed,
-    Failed,
-  }
-
-  export interface Graphic {
-    renderGraphic?: RenderGraphic;
-    isLeaf?: boolean;
-    contentRange?: ElementAlignedBox3d;
-    sizeMultiplier?: number;
-  }
-
-  export interface Statistics {
-    numPendingRequests: number;
-    numActiveRequests: number;
-    numCanceled: number;
-  }
-
-  export interface Scheduler {
-    readonly statistics: Statistics;
-
-    process(): void;
-    requestTiles(vp: Viewport, tiles: Set<Tile>): void;
-    getNumRequestsForViewport(vp: Viewport): number;
-    forgetViewport(vp: Viewport): void;
-    onShutDown(): void;
-  }
-
-  export interface SchedulerOptions {
-    maxActiveRequests?: number;
-  }
-
-  export function createScheduler(options?: SchedulerOptions): Scheduler {
-    return new RequestScheduler(options);
-  }
-}
-
-class ViewportSet extends SortedArray<Viewport> {
-  public constructor(vp?: Viewport) {
-    super((lhs, rhs) => lhs.viewportId - rhs.viewportId);
-    if (undefined !== vp)
-      this.insert(vp);
-  }
-
-  public clone(out?: ViewportSet): ViewportSet {
-    if (undefined === out)
-      out = new ViewportSet();
-    else
-      out.clear();
-
-    for (let i = 0; i < this.length; i++)
-      out._array.push(this._array[i]);
-
-    return out;
-  }
-}
-
-class Request extends TileRequest {
-  public readonly tile: Tile;
-  public readonly priority: number; // ###TODO Allow priority to be adjusted based on camera etc.
-  public viewports: ViewportSet;
-
-  public get state(): TileRequest.State { return this._state; }
-  public get tree(): TileTree { return this.tile.root; }
-  public get loader(): TileLoader { return this.tree.loader; }
   public get isCanceled(): boolean { return this.viewports.isEmpty; } // ###TODO: check if IModelConnection closed etc.
 
-  public constructor(tile: Tile, vp: Viewport) {
-    super();
-    this.tile = tile;
-    this.priority = tile.depth; // ###TODO account for reality/map tiles vs design model tiles, etc.
-    this.viewports = RequestScheduler.get().getViewportSet(vp);
-  }
+  public get tree(): TileTree { return this.tile.root; }
+  public get loader(): TileLoader { return this.tree.loader; }
 
   public addViewport(vp: Viewport): void {
-    this.viewports = RequestScheduler.get().getViewportSet(vp, this.viewports);
+    this.viewports = IModelApp.tileAdmin.getViewportSet(vp, this.viewports);
   }
 
+  /** Transition the request from "queued" to "active", kicking off a series of asynchronous operations usually beginning with an http request, and -
+   * if the request is not subsequently canceled - resulting in either a successfully-loaded Tile, or a failed ("not found") Tile.
+   */
   public async dispatch(): Promise<void> {
     try {
       if (this.isCanceled)
@@ -127,20 +64,21 @@ class Request extends TileRequest {
     }
   }
 
-  public cancel(scheduler: RequestScheduler): void {
-    this.notify();
+  /** Cancels this request. This leaves the associated Tile's state untouched. */
+  public cancel(): void {
+    this.notifyAndClear();
     this._state = TileRequest.State.Failed;
-    this.tile.request = undefined; // NB: We do NOT modify the tile's internal state; its computed status will update based on absence of associated request.
-    this.viewports = scheduler.emptyViewportSet;
   }
 
+  /** Invalidates the scene of each [[Viewport]] interested in this request - typically because the request succeeded, failed, or was canceled. */
   private notify(): void {
     this.viewports.forEach((vp) => vp.invalidateScene());
   }
 
+  /** Invalidates the scene of each [[Viewport]] interested in this request and clears the set of interested viewports. */
   private notifyAndClear(): void {
     this.notify();
-    this.viewports = RequestScheduler.get().emptyViewportSet;
+    this.viewports = IModelApp.tileAdmin.emptyViewportSet;
     this.tile.request = undefined;
   }
 
@@ -150,6 +88,7 @@ class Request extends TileRequest {
     this.tile.setNotFound();
   }
 
+  /** Invoked when the raw tile content becomes available, to convert it into a tile graphic. */
   private async handleResponse(response: TileRequest.Response): Promise<void> {
     let data: TileRequest.ResponseData | undefined;
     if (undefined !== response) {
@@ -182,276 +121,34 @@ class Request extends TileRequest {
 
     return Promise.resolve();
   }
-
-  public static getForTile(tile: Tile): Request | undefined { return tile.request as Request; }
 }
 
-class Queue extends PriorityQueue<Request> {
-  public constructor() {
-    super((lhs, rhs) => lhs.priority - rhs.priority);
+/** @hidden */
+export namespace TileRequest {
+  /** The type of a raw response to a request for tile content. Processed upon receipt into a [[TileRequest.Response]] type. */
+  export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
+  /** The input to [[TileLoader.loadTileGraphic]], to be converted into a [[TileRequest.Graphic]]. */
+  export type ResponseData = Uint8Array | ImageSource;
+
+  /** The states through which a TileRequest proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined, and its [[Tile.LoadStatus]] is computed based on the state of its request. */
+  export const enum State {
+    /** Initial state. Request is pending but not yet dispatched. */
+    Queued,
+    /** Follows `Queued` when request begins to be actively processed. */
+    Dispatched,
+    /** Follows `Dispatched` when tile content is being converted into tile graphics. */
+    Loading,
+    /** Follows `Loading` when tile graphic has successfully been produced. */
+    Completed,
+    /** Follows any state in which an error prevents progression, or during which the request was canceled. */
+    Failed,
   }
 
-  public has(request: Request): boolean {
-    return this._array.indexOf(request) >= 0;
+  /** The result of [[TileLoader.loadTileGraphic]]. */
+  export interface Graphic {
+    renderGraphic?: RenderGraphic;
+    isLeaf?: boolean;
+    contentRange?: ElementAlignedBox3d;
+    sizeMultiplier?: number;
   }
-}
-
-function compareViewportSets(lhs: ViewportSet, rhs: ViewportSet): number {
-  if (lhs === rhs)
-    return 0;
-
-  let diff = lhs.length - rhs.length;
-  if (0 === diff) {
-    for (let i = 0; i < lhs.length; i++) {
-      const lhvp = lhs.get(i)!;
-      const rhvp = rhs.get(i)!;
-      diff = lhvp.viewportId - rhvp.viewportId;
-      if (0 !== diff)
-        break;
-    }
-  }
-
-  return diff;
-}
-
-// The scheduler needs to know about all viewports which have tile requests.
-// Each request needs to know the set of viewports for which it has been requested.
-// We don't want to duplicate the latter per-Request - in addition to wasting memory, that would
-// also require us to traverse all requests whenever a viewport becomes un-tracked in order to remove it from their sets.
-// This class holds unique sets of viewports and doles them out to Requests.
-class UniqueViewportSets extends SortedArray<ViewportSet> {
-  public readonly emptySet = new ViewportSet();
-  private readonly _scratchSet = new ViewportSet();
-
-  public constructor() {
-    super((lhs, rhs) => compareViewportSets(lhs, rhs));
-    Object.freeze(this.emptySet);
-  }
-
-  public eraseAt(index: number): void {
-    assert(index < this.length && index >= 0);
-    this._array.splice(index, 1);
-  }
-
-  public getForViewport(vp: Viewport): ViewportSet {
-    for (let i = 0; i < this.length; i++) {
-      const set = this._array[i];
-      if (1 === set.length && set.get(0)! === vp)
-        return set;
-    }
-
-    const newSet = new ViewportSet(vp);
-    this.insert(newSet);
-    return newSet;
-  }
-
-  public getViewportSet(vp: Viewport, vps?: ViewportSet): ViewportSet {
-    if (undefined === vps || vps.isEmpty)
-      return this.getForViewport(vp);
-
-    // Use the scratch set for equality comparison - only allocate if no equivalent set already exists.
-    const toFind = vps.clone(this._scratchSet);
-    toFind.insert(vp);
-    const found = this.findEqual(toFind);
-    if (undefined !== found) {
-      toFind.clear();
-      return found;
-    }
-
-    const newSet = toFind.clone();
-    toFind.clear();
-    this.insert(newSet);
-    return newSet;
-  }
-
-  public clearAll(): void {
-    this.forEach((set) => set.clear());
-    this.clear();
-  }
-}
-
-class RequestsPerViewport extends Dictionary<Viewport, Set<Tile>> {
-  public constructor() {
-    super((lhs, rhs) => lhs.viewportId - rhs.viewportId);
-  }
-}
-
-class RequestScheduler implements TileRequest.Scheduler {
-  private readonly _requestsPerViewport = new RequestsPerViewport();
-  private readonly _uniqueViewportSets = new UniqueViewportSets();
-  private readonly _maxActiveRequests: number;
-  private readonly _throttle: boolean;
-  private readonly _removeIModelConnectionOnCloseListener: () => void;
-  private _activeRequests = new Set<Request>();
-  private _swapActiveRequests = new Set<Request>();
-  private _pendingRequests = new Queue();
-  private _swapPendingRequests = new Queue();
-  private _numCanceled = 0;
-
-  public constructor(options?: TileRequest.SchedulerOptions) {
-    this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
-
-    let throttle = true; // false;
-    let maxActiveRequests = 10; // ###TODO for now we don't want the throttling behavior.
-    if (undefined !== options) {
-      if (undefined !== options.maxActiveRequests) {
-        maxActiveRequests = options.maxActiveRequests;
-        throttle = true;
-      }
-    }
-
-    this._maxActiveRequests = maxActiveRequests;
-    this._throttle = throttle;
-  }
-
-  public get statistics(): TileRequest.Statistics {
-    return {
-      numPendingRequests: this._pendingRequests.length,
-      numActiveRequests: this._activeRequests.size,
-      numCanceled: this._numCanceled,
-    };
-  }
-
-  public process(): void {
-    this._numCanceled = 0;
-
-    // Mark all requests as being associated with no Viewports, indicating they are no longer needed.
-    this._uniqueViewportSets.clearAll();
-
-    // Process all requests, enqueueing on new queue.
-    const previouslyPending = this._pendingRequests;
-    this._pendingRequests = this._swapPendingRequests;
-    this._swapPendingRequests = previouslyPending;
-
-    const previouslyActive = this._activeRequests;
-    this._activeRequests = this._swapActiveRequests;
-
-    this._requestsPerViewport.forEach((key, value) => this.processRequests(key, value));
-
-    if (!this._throttle)
-      return;
-
-    // Cancel any previously pending requests which are no longer needed.
-    for (const queued of previouslyPending)
-      if (queued.viewports.isEmpty)
-        this.cancel(queued);
-
-    previouslyPending.clear();
-
-    // Cancel any active requests which are no longer needed.
-    for (const active of previouslyActive) {
-      if (active.viewports.isEmpty)
-        this.cancel(active);
-      else
-        this._activeRequests.add(active);
-    }
-
-    previouslyActive.clear();
-    this._swapActiveRequests = previouslyActive;
-
-    // Fill up the active requests from the queue.
-    while (this._activeRequests.size < this._maxActiveRequests) {
-      const request = this._pendingRequests.pop();
-      if (undefined === request)
-        break;
-      else
-        this.dispatch(request);
-    }
-  }
-
-  private processRequests(vp: Viewport, tiles: Set<Tile>): void {
-    for (const tile of tiles) {
-      if (undefined === tile.request) {
-        assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
-        if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
-          const request = new Request(tile, vp);
-          tile.request = request;
-          if (this._throttle)
-            this._pendingRequests.push(request);
-          else
-            this.dispatch(request);
-        }
-      } else {
-        const req = Request.getForTile(tile);
-        assert(undefined !== req);
-        if (undefined !== req) {
-          // Request may already be dispatched (in this._activeRequests) - if so do not re-enqueue!
-          if (req.isQueued && 0 === req.viewports.length)
-            this._pendingRequests.push(req);
-
-          req.addViewport(vp);
-          assert(0 < req.viewports.length);
-        }
-      }
-    }
-  }
-
-  public getNumRequestsForViewport(vp: Viewport): number {
-    const requests = this._requestsPerViewport.get(vp);
-    return undefined !== requests ? requests.size : 0;
-  }
-
-  public requestTiles(vp: Viewport, tiles: Set<Tile>): void {
-    this._requestsPerViewport.set(vp, tiles);
-  }
-
-  public forgetViewport(vp: Viewport): void {
-    // NB: vp will be removed from ViewportSets in process() - but if we can establish that only this vp wants a given tile, cancel its request immediately.
-    const tiles = this._requestsPerViewport.get(vp);
-    if (undefined !== tiles) {
-      for (const tile of tiles) {
-        const request = Request.getForTile(tile);
-        if (undefined !== request && 1 === request.viewports.length)
-          request.cancel(this);
-      }
-
-      this._requestsPerViewport.delete(vp);
-    }
-  }
-
-  private onIModelClosed(iModel: IModelConnection): void {
-    this._requestsPerViewport.forEach((vp, _req) => {
-      if (vp.iModel === iModel)
-        this.forgetViewport(vp);
-    });
-  }
-
-  public onShutDown(): void {
-    this._removeIModelConnectionOnCloseListener();
-
-    for (const request of this._activeRequests)
-      request.cancel(this);
-
-    this._activeRequests.clear();
-
-    for (const queued of this._pendingRequests)
-      queued.cancel(this);
-
-    this._requestsPerViewport.clear();
-    this._uniqueViewportSets.clear();
-  }
-
-  private dispatch(req: Request): void {
-    this._activeRequests.add(req);
-    req.dispatch().then(() => this.dropActiveRequest(req)) // tslint:disable-line no-floating-promises
-      .catch(() => this.dropActiveRequest(req));
-  }
-
-  private cancel(req: Request) {
-    req.cancel(this);
-    ++this._numCanceled;
-  }
-
-  private dropActiveRequest(req: Request) {
-    assert(this._activeRequests.has(req) || req.isCanceled);
-    this._activeRequests.delete(req);
-  }
-
-  public static get(): RequestScheduler { return IModelApp.tileRequests as RequestScheduler; }
-
-  public getViewportSet(vp: Viewport, vps?: ViewportSet): ViewportSet {
-    return this._uniqueViewportSets.getViewportSet(vp, vps);
-  }
-
-  public get emptyViewportSet(): ViewportSet { return this._uniqueViewportSets.emptySet; }
 }

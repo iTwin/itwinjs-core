@@ -1001,7 +1001,7 @@ export abstract class Viewport implements IDisposable {
   public dispose(): void {
     assert(undefined !== this._target, "Double disposal of Viewport");
     this._target = dispose(this._target);
-    IModelApp.tileRequests.forgetViewport(this);
+    IModelApp.tileAdmin.forgetViewport(this);
   }
 
   /** @hidden */
@@ -1065,7 +1065,7 @@ export abstract class Viewport implements IDisposable {
   /** The number of outstanding requests for tiles to be displayed in this viewport.
    * @see Viewport.numSelectedTiles
    */
-  public get numRequestedTiles(): number { return IModelApp.tileRequests.getNumRequestsForViewport(this); }
+  public get numRequestedTiles(): number { return IModelApp.tileAdmin.getNumRequestsForViewport(this); }
 
   /** @hidden */
   public toView(from: XYZ, to?: XYZ) { this._viewFrustum.toView(from, to); }

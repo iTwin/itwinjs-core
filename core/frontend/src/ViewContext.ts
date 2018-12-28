@@ -526,6 +526,6 @@ export class SceneContext extends RenderContext {
   }
 
   public requestMissingTiles(): void {
-    IModelApp.tileRequests.requestTiles(this.viewport, this.missingTiles);
+    IModelApp.tileAdmin.requestTiles(this.viewport, this.missingTiles);
   }
 }
