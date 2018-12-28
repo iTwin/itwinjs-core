@@ -206,10 +206,18 @@ class WebMercatorTileLoader extends TileLoader {
 
   public get maxDepth(): number { return this._providerInitialized ? this._imageryProvider.maximumZoomLevel : 32; }
   public get parentsAndChildrenExclusive(): boolean { return false; }
+  public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Background; }
   public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] {
     // Ensure lo-res tiles drawn before (therefore behind) hi-res tiles.
     // NB: Array.sort() sorts in-place and returns the input array - we're not making a copy.
     return selected.sort((lhs, rhs) => lhs.depth - rhs.depth);
+  }
+  public compareTilePriorities(lhs: Tile, rhs: Tile): number {
+    // The default implementation prioritizes lower-resolution tiles. For maps, we want tiles closest to the camera to load first.
+    // When the camera is ON, those will be the higher-resolution tiles - so invert the default behavior.
+    // ###TODO: Compute actual distance from camera when camera is OFF.
+    // NB: We never load higher-res children until the first displayable lowest-res tile is available - so we always have *something* to draw while awaiting hi-res tiles.
+    return rhs.depth - lhs.depth;
   }
 }
 

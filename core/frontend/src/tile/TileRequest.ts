@@ -20,7 +20,6 @@ export class TileRequest {
   /** The requested tile. While the request is pending or active, `tile.request` points back to this TileRequest. */
   public readonly tile: Tile;
   /** Determines the order in which pending requests are pulled off the queue to become active. A tile with a lower value takes precedence over one with a higher value. */
-  public readonly priority: number; // ###TODO Allow priority to be adjusted based on camera etc.
   /** The set of [[Viewport]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no viewport cares about it. */
   public viewports: TileAdmin.ViewportSet;
   private _state: TileRequest.State;
@@ -28,7 +27,6 @@ export class TileRequest {
   public constructor(tile: Tile, vp: Viewport) {
     this._state = TileRequest.State.Queued;
     this.tile = tile;
-    this.priority = tile.depth; // ###TODO account for reality/map tiles vs design model tiles, etc.
     this.viewports = IModelApp.tileAdmin.getViewportSet(vp);
   }
 

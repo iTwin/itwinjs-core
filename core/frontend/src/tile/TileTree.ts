@@ -202,6 +202,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public get children(): Tile[] | undefined { return this._children; }
   public get iModel(): IModelConnection { return this.root.iModel; }
   public get yAxisUp(): boolean { return this.root.yAxisUp; }
+  public get loader(): TileLoader { return this.root.loader; }
 
   public get hasContentRange(): boolean { return undefined !== this._contentRange; }
   public isRegionCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.range, args); }
@@ -500,6 +501,18 @@ export namespace Tile {
   }
 
   /**
+   * Loosely describes the "importance" of a tile. Requests for tiles of more "importance" are prioritized for loading.
+   * @note A lower LoadPriority value indicates higher importance.
+   * @hidden
+   */
+  export const enum LoadPriority {
+    Primary = 0,
+    Context = 1,
+    Classifier = 2,
+    Background = 3,
+  }
+
+  /**
    * Arguments used when selecting and drawing tiles
    * @hidden
    */
@@ -675,8 +688,14 @@ export abstract class TileLoader {
   public abstract async getChildrenProps(parent: Tile): Promise<TileProps[]>;
   public abstract async requestTileContent(tile: Tile): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
+  public abstract get priority(): Tile.LoadPriority;
   protected get _batchType(): BatchType { return BatchType.Primary; }
   public abstract tileRequiresLoading(params: Tile.Params): boolean;
+  /** Given two tiles of the same [[Tile.LoadPriority]], determine which should be prioritized.
+   * A negative value indicates lhs should load first, positive indicates rhs should load first, and zero indicates no distinction in priority.
+   * @hidden
+   */
+  public compareTilePriorities(lhs: Tile, rhs: Tile): number { return lhs.depth - rhs.depth; }
   public get parentsAndChildrenExclusive(): boolean { return true; }
 
   public processSelectedTiles(selected: Tile[], _args: Tile.DrawArgs): Tile[] { return selected; }
@@ -818,6 +837,7 @@ export class IModelTileLoader extends TileLoader {
   }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
+  public get priority(): Tile.LoadPriority { return BatchType.Classifier === this._batchType ? Tile.LoadPriority.Classifier : Tile.LoadPriority.Primary; }
   public tileRequiresLoading(params: Tile.Params): boolean { return 0 !== params.maximumSize; }
 
   protected static _viewFlagOverrides = new ViewFlag.Overrides();

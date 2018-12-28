@@ -100,9 +100,18 @@ export namespace TileAdmin {
   }
 }
 
+function compareTilePriorities(lhs: Tile, rhs: Tile): number {
+  let diff = lhs.loader.priority - rhs.loader.priority;
+  if (0 === diff) {
+    diff = lhs.loader.compareTilePriorities(lhs, rhs);
+  }
+
+  return diff;
+}
+
 class Queue extends PriorityQueue<TileRequest> {
   public constructor() {
-    super((lhs, rhs) => lhs.priority - rhs.priority);
+    super((lhs, rhs) => compareTilePriorities(lhs.tile, rhs.tile));
   }
 
   public has(request: TileRequest): boolean {
