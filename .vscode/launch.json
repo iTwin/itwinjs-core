@@ -286,6 +286,14 @@
       "protocol": "inspector"
     },
     {
+      "name": "display-test-app (frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223,
+      "webRoot": "${workspaceRoot}",
+      "sourceMaps": true
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "[UI] Tests: Components",
@@ -574,6 +582,13 @@
       "configurations": [
         "_Testbed (frontend)",
         "_Testbed (backend-integration)"
+      ]
+    },
+    {
+      "name": "display-test-app Electron (frontend + backend)",
+      "configurations": [
+        "display-test-app Electron (backend)",
+        "display-test-app (frontend)"
       ]
     }
   ]
