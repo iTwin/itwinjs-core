@@ -115,6 +115,7 @@ export class CoreTools {
       label: () => AnalysisAnimationTool.flyover,
       tooltip: () => AnalysisAnimationTool.description,
       execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
+      isVisible: false, // default to not show and then allow stateFunc to redefine.
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
         const returnState: BaseItemState = { ...currentState };
