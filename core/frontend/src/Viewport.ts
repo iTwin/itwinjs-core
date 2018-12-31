@@ -28,6 +28,7 @@ import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolAdmin";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { GridOrientationType, MarginPercent, ViewState, ViewStatus } from "./ViewState";
+import { Tile } from "./tile/TileTree";
 
 /** A function which customizes the appearance of Features within a Viewport.
  * @see [[Viewport.addFeatureOverrides]]
@@ -921,7 +922,8 @@ export abstract class Viewport implements IDisposable {
   private static _nextViewportId = 1;
 
   private _addFeatureOverrides?: AddFeatureOverrides;
-  private _wantTileBoundingBoxes = false;
+  private _debugBoundingBoxes: Tile.DebugBoundingBoxes = Tile.DebugBoundingBoxes.None;
+  private _freezeScene = false;
   private _viewFrustum!: ViewFrustum;
   private _target?: RenderTarget;
 
@@ -972,15 +974,29 @@ export abstract class Viewport implements IDisposable {
   public get wantAntiAliasLines(): AntiAliasPref { return AntiAliasPref.Off; }
   /** @hidden */
   public get wantAntiAliasText(): AntiAliasPref { return AntiAliasPref.Detect; }
-  /** @hidden */
-  public get wantTileBoundingBoxes(): boolean { return this._wantTileBoundingBoxes; }
-  /** @hidden */
-  public set wantTileBoundingBoxes(want: boolean) {
-    if (want !== this.wantTileBoundingBoxes) {
-      this._wantTileBoundingBoxes = want;
+
+  /**
+   * Determines what type (if any) of debug graphics will be displayed to visualize [[Tile]] volumes.
+   * @see [[Tile.DebugBoundingBoxes]]
+   */
+  public get debugBoundingBoxes(): Tile.DebugBoundingBoxes { return this._debugBoundingBoxes; }
+  public set debugBoundingBoxes(boxes: Tile.DebugBoundingBoxes) {
+    if (boxes !== this.debugBoundingBoxes) {
+      this._debugBoundingBoxes = boxes;
       this.invalidateScene();
     }
   }
+  /** When true, the scene will never be recreated. Chiefly for debugging purposes.
+   * @hidden
+   */
+  public set freezeScene(freeze: boolean) {
+    if (freeze !== this._freezeScene) {
+      this._freezeScene = freeze;
+      if (!freeze)
+        this.invalidateScene();
+    }
+  }
+
   /** @hidden */
   public get AnalysisStyle(): AnalysisStyle | undefined { return this.view.AnalysisStyle; }
   /** The iModel of this Viewport */
@@ -1705,16 +1721,19 @@ export abstract class Viewport implements IDisposable {
       this.setupFromView();
 
     if (!sync.isValidScene) {
-      this.numSelectedTiles = this.numReadyTiles = 0;
-      const context = this.createSceneContext();
-      view.createScene(context);
-      view.createClassification(context);
-      view.createTerrain(context);
-      context.requestMissingTiles();
-      target.changeScene(context.graphics);
-      target.changeTerrain(context.backgroundGraphics);
+      if (!this._freezeScene) {
+        this.numSelectedTiles = this.numReadyTiles = 0;
+        const context = this.createSceneContext();
+        view.createScene(context);
+        view.createClassification(context);
+        view.createTerrain(context);
+        context.requestMissingTiles();
+        target.changeScene(context.graphics);
+        target.changeTerrain(context.backgroundGraphics);
 
-      isRedrawNeeded = true;
+        isRedrawNeeded = true;
+      }
+
       sync.setValidScene();
     }
 

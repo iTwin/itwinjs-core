@@ -112,57 +112,86 @@
             <option>Wireframe</option>
           </select>
           <br>
-          <input id="skybox" type="checkbox"> Skybox
-          <br>
-          <input id="groundplane" type="checkbox"> Ground Plane
-          <br>
-          <input id="ACSTriad" type="checkbox"> ACS Triad
-          <br>
-          <input id="fill" type="checkbox"> Fill
-          <br>
-          <input id="grid" type="checkbox"> Grid
-          <br>
-          <input id="textures" type="checkbox"> Textures
-          <br>
-          <input id="visibleEdges" type="checkbox"> Visible Edges
-          <br>
-          <input id="hiddenEdges" type="checkbox"> Hidden Edges
-          <br>
-          <input id="materials" type="checkbox"> Materials
-          <br>
-          <input id="lights" type="checkbox"> Lights
-          <br>
-          <input id="monochrome" type="checkbox"> Monochrome
-          <br>
-          <input id="constructions" type="checkbox"> Constructions
-          <br>
-          <input id="transparency" type="checkbox"> Transparency
-          <br>
-          <input id="weights" type="checkbox"> Line Weight
-          <br>
-          <input id="styles" type="checkbox"> Line Styles
-          <br>
-          <input id="backgroundMap" type="checkbox"> Background Map
-          <br>
+          <div>
+            <input id="skybox" type="checkbox" />
+            <label for="skybox">Skybox</label>
+          </div>
+          <div>
+            <input id="groundplane" type="checkbox" />
+            <label for="groundplane">Ground Plane</label>
+          </div>
+          <div>
+            <input id="ACSTriad" type="checkbox" />
+            <label for="ACSTriad">ACS Triad</label>
+          </div>
+          <div>
+            <input id="fill" type="checkbox" />
+            <label for="fill">Fill</label>
+          </div>
+          <div>
+            <input id="grid" type="checkbox" />
+            <label for="grid">Grid</label>
+          </div>
+          <div>
+            <input id="textures" type="checkbox" />
+            <label for="textures">Textures</label>
+          </div>
+          <div>
+            <input id="visibleEdges" type="checkbox" />
+            <label for="visibleEdges">Visible Edges</label>
+          </div>
+          <div>
+            <input id="hiddenEdges" type="checkbox" />
+            <label for="hiddenEdges">Hidden Edges</label>
+          </div>
+          <div>
+            <input id="materials" type="checkbox" />
+            <label for="materials">Materials</label>
+          </div>
+          <div>
+            <input id="lights" type="checkbox" />
+            <label for="lights">Lights</label>
+          </div>
+          <div>
+            <input id="monochrome" type="checkbox" />
+            <label for="monochrome">Monochrome</label>
+          </div>
+          <div>
+            <input id="constructions" type="checkbox" />
+            <label for="constructions">Constructions</label>
+          </div>
+          <div>
+            <input id="transparency" type="checkbox" />
+            <label for="transparency">Transparency</label>
+          </div>
+          <div>
+            <input id="weights" type="checkbox" />
+            <label for="weights">Line Weight</label>
+          </div>
+          <div>
+            <input id="styles" type="checkbox" />
+            <label for="styles">Line Styles</label>
+          </div>
+          <div>
+            <input id="clipVolume" type="checkbox" />
+            <label for="clipVolume">Clip Volume</label>
+          </div>
+          <hr>
+          <div>
+            <input id="backgroundMap" type="checkbox" />
+            <label for="backgroundMap">Background Map</label>
+          </div>
           <label for="mapProviderList">Map Provider:</label>
           <select id="mapProviderList" name="mapProviderList">
             <option>BingProvider</option>
             <option>MapBoxProvider</option>
           </select>
-          <br>
           <label for="mapTypeList">Map Type:</label>
           <select id="mapTypeList" name="mapTypeList">
             <option>Street</option>
             <option>Aerial</option>
             <option>Hybrid</option>
           </select>
-          <br>
-          <input id="clipVolume" type="checkbox"> Clip Volume
-          <br>
-          <input id="continuousRendering" type="checkbox"> Cont. Rendering
-          <br>
-          <input id="boundingBoxes" type="checkbox"> Bounding Boxes
-          <br>
         </div>
       </div>
       <div class="simpleicon" id="doUndo">
@@ -225,8 +254,11 @@
       <div>
         <progress id="tile-load-indicator" />
       </div>
-      <span class="fsp-info" id="showfps" style="display: none;">Avg. FPS (ms): ---- Render Time (ms): ----
-        <br />Scene Time (ms): ----</span>
+      <div class="simpleicon" id="debugPanelContainer">
+        <div id="debugPanelToggle">
+          <i class="bim-icon-settings"></i>
+        </div>
+      </div>
       <span class="statusspan" id="showstatus" style="display:inline;"></span>
       <span class="statusspan" id="showerror" style="display:inline;"></span>
     </div>

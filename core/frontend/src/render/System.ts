@@ -63,25 +63,25 @@ export namespace RenderMemory {
    * @hidden
    */
   export class Buffers extends Consumers {
-    private readonly _consumers: Consumers[];
+    public readonly consumers: Consumers[];
 
     public constructor() {
       super();
-      this._consumers = [];
+      this.consumers = [];
       for (let i = 0; i < BufferType.COUNT; i++)
-        this._consumers[i] = new Consumers();
+        this.consumers[i] = new Consumers();
     }
 
-    public get surfaces() { return this._consumers[BufferType.Surfaces]; }
-    public get visibleEdges() { return this._consumers[BufferType.VisibleEdges]; }
-    public get silhouetteEdges() { return this._consumers[BufferType.SilhouetteEdges]; }
-    public get polylineEdges() { return this._consumers[BufferType.PolylineEdges]; }
-    public get polylines() { return this._consumers[BufferType.Polylines]; }
-    public get pointStrings() { return this._consumers[BufferType.PointStrings]; }
-    public get pointClouds() { return this._consumers[BufferType.PointClouds]; }
+    public get surfaces() { return this.consumers[BufferType.Surfaces]; }
+    public get visibleEdges() { return this.consumers[BufferType.VisibleEdges]; }
+    public get silhouetteEdges() { return this.consumers[BufferType.SilhouetteEdges]; }
+    public get polylineEdges() { return this.consumers[BufferType.PolylineEdges]; }
+    public get polylines() { return this.consumers[BufferType.Polylines]; }
+    public get pointStrings() { return this.consumers[BufferType.PointStrings]; }
+    public get pointClouds() { return this.consumers[BufferType.PointClouds]; }
 
     public clear(): void {
-      for (const consumer of this._consumers)
+      for (const consumer of this.consumers)
         consumer.clear();
 
       super.clear();
@@ -89,7 +89,7 @@ export namespace RenderMemory {
 
     public addBuffer(type: BufferType, numBytes: number): void {
       this.addConsumer(numBytes);
-      this._consumers[type].addConsumer(numBytes);
+      this.consumers[type].addConsumer(numBytes);
     }
   }
 
@@ -106,21 +106,21 @@ export namespace RenderMemory {
   /** @hidden */
   export class Statistics {
     private _totalBytes = 0;
-    private readonly _consumers: Consumers[];
+    public readonly consumers: Consumers[];
     public readonly buffers = new Buffers();
 
     public constructor() {
-      this._consumers = [];
+      this.consumers = [];
       for (let i = 0; i < ConsumerType.COUNT; i++)
-        this._consumers[i] = new Consumers();
+        this.consumers[i] = new Consumers();
     }
 
     public get totalBytes(): number { return this._totalBytes; }
-    public get textures() { return this._consumers[ConsumerType.Textures]; }
-    public get vertexTables() { return this._consumers[ConsumerType.VertexTables]; }
-    public get featureTables() { return this._consumers[ConsumerType.FeatureTables]; }
-    public get featureOverrides() { return this._consumers[ConsumerType.FeatureOverrides]; }
-    public get clipVolumes() { return this._consumers[ConsumerType.ClipVolumes]; }
+    public get textures() { return this.consumers[ConsumerType.Textures]; }
+    public get vertexTables() { return this.consumers[ConsumerType.VertexTables]; }
+    public get featureTables() { return this.consumers[ConsumerType.FeatureTables]; }
+    public get featureOverrides() { return this.consumers[ConsumerType.FeatureOverrides]; }
+    public get clipVolumes() { return this.consumers[ConsumerType.ClipVolumes]; }
 
     public addBuffer(type: BufferType, numBytes: number): void {
       this._totalBytes += numBytes;
@@ -129,13 +129,13 @@ export namespace RenderMemory {
 
     public addConsumer(type: ConsumerType, numBytes: number): void {
       this._totalBytes += numBytes;
-      this._consumers[type].addConsumer(numBytes);
+      this.consumers[type].addConsumer(numBytes);
     }
 
     public clear(): void {
       this._totalBytes = 0;
       this.buffers.clear();
-      for (const consumer of this._consumers)
+      for (const consumer of this.consumers)
         consumer.clear();
     }
 

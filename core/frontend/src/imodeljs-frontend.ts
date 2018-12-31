@@ -42,6 +42,7 @@ export * from "./Viewport";
 export * from "./ViewState";
 export * from "./IModelApp";
 export * from "./NoRenderApp";
+export * from "./tile/TileAdmin";
 export * from "./tile/TileTree";
 export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";

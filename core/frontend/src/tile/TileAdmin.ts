@@ -21,7 +21,7 @@ export abstract class TileAdmin {
   public abstract get emptyViewportSet(): TileAdmin.ViewportSet;
   /** Returns basic statistics about the TileAdmin's current state. */
   public abstract get statistics(): TileAdmin.Statistics;
-  /** Changes the maximum number of simultaneously-active requests allowed.
+  /** Controls the maximum number of simultaneously-active requests allowed.
    * If the maximum is reduced below the current size of the active set, no active requests will be canceled - but no more will be dispatched until the
    * size of the active set falls below the new maximum.
    * @see [[TileAdmin.Props.maxActiveRequests]]
@@ -30,6 +30,7 @@ export abstract class TileAdmin {
    * bandwidth and memory consumption.
    */
   public abstract set maxActiveRequests(max: number);
+  public abstract get maxActiveRequests(): number;
 
   /** Returns the union of the input set and the input viewport. */
   public abstract getViewportSet(vp: Viewport, vps?: TileAdmin.ViewportSet): TileAdmin.ViewportSet;
@@ -241,6 +242,7 @@ class Admin extends TileAdmin {
     this._removeIModelConnectionOnCloseListener = IModelConnection.onClose.addListener((iModel) => this.onIModelClosed(iModel));
   }
 
+  public get maxActiveRequests() { return this._maxActiveRequests; }
   public set maxActiveRequests(max: number) {
     if (max > 0)
       this._maxActiveRequests = max;
