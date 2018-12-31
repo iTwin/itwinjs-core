@@ -2103,7 +2103,7 @@ export namespace TextureMapping {
       if (visitor.normal === undefined)
         normal = points.getPoint3dAt(0).crossProductToPoints(points.getPoint3dAt(1), points.getPoint3dAt(2));
       else
-        normal = visitor.normal[0];
+        normal = visitor.normal.atVector3dIndex(0)!;
 
       if (!normal.normalize(normal))
         return undefined;

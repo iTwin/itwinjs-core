@@ -555,7 +555,7 @@ export namespace Attachments {
         while (polyVisitor.moveToNextFacet()) {
           const lineString: Point3d[] = [];
           for (let i = 0; i < 3; i++)
-            lineString.push(polyVisitor.getPoint(i));
+            lineString.push(polyVisitor.getPoint(i)!);
           if (lineString.length > 0)
             lineString.push(lineString[0].clone()); // close the loop
           builder.addLineString(lineString);

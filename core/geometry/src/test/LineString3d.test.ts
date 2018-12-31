@@ -56,17 +56,26 @@ describe("LineString3d", () => {
     exerciseLineString3d(ck, ls0);
     ls0.addPoint(Point3d.create(4, 3, 2));
     exerciseLineString3d(ck, ls0);
-
-    const lsA = LineString3d.create([
-      Point3d.create(1, 0, 0),
-      Point3d.create(4, 2, 0),
-      Point3d.create(4, 5, 0),
-      Point3d.create(1, 5, 0)]);
+    const point100 = Point3d.create(1, 0, 0);
+    const point420 = Point3d.create(4, 2, 0);
+    const point450 = Point3d.create(4, 5, 0);
+    const point150 = Point3d.create(1, 5, 0);
+    const lsA = LineString3d.create([point100, point420, point450, point150]);
     exerciseLineString3d(ck, lsA);
     const lsB = LineString3d.createRectangleXY(
       Point3d.create(1, 1),
       3, 2, true);
     exerciseLineString3d(ck, lsB);
+    const lsC = LineString3d.create([point100]);
+    ck.testUndefined(lsC.quickUnitNormal(), "quickUnitNormal expected failure 1 point");
+    lsC.addPoint(point420);
+    ck.testUndefined(lsC.quickUnitNormal(), "quickUnitNormal expected failure 2 point");
+    lsC.addPoint(point420.interpolate(0.6, point100));
+    ck.testUndefined(lsC.quickUnitNormal(), "quickUnitNormal expected failure 3 point colinear");
+    const normalA = lsA.quickUnitNormal();
+    if (ck.testPointer(normalA, "quickUnitNormal") && normalA)
+      ck.testCoordinate(1.0, normalA.magnitude(), "unit normal magnitude");
+
     ck.checkpoint("LineString3d.HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
@@ -188,4 +197,5 @@ describe("LineStringIterator", () => {
     }
     expect(ck.getNumErrors()).equals(0);
   });
+
 });

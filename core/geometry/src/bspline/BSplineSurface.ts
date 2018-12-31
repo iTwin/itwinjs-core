@@ -15,7 +15,7 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3dArray, Point4dArray } from "../geometry3d/PointHelpers";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
-import { KnotVector } from "./KnotVector";
+import { KnotVector, BSplineWrapMode } from "./KnotVector";
 import { Point4d } from "../geometry4d/Point4d";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
@@ -385,7 +385,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
   /**
    * Set the flag indicating the bspline might be suitable for having wrapped "closed" interpretation.
    */
-  public setWrappable(select: UVSelect, value: boolean) {
+  public setWrappable(select: UVSelect, value: BSplineWrapMode) {
     this.knots[select].wrappable = value;
   }
   /**
@@ -394,7 +394,7 @@ export abstract class BSpline2dNd extends GeometryQuery {
    * @returns true if coordinates matched.
    */
   public isClosable(select: UVSelect): boolean {
-    if (!this.knots[select].wrappable)
+    if (this.knots[select].wrappable === BSplineWrapMode.None)
       return false;
     if (!this.knots[select].testClosable())
       return false;

@@ -52,7 +52,7 @@ import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
-import { KnotVector } from "../bspline/KnotVector";
+import { KnotVector, BSplineWrapMode } from "../bspline/KnotVector";
 
 /* tslint:disable:no-console */
 
@@ -259,6 +259,30 @@ export class Sample {
         result.push(curve);
       }
     }
+    return result;
+  }
+
+  /** Create weighted bsplines for circular arcs.
+   */
+  public static createBspline3dHArcs(): BSplineCurve3dH[] {
+    const result: BSplineCurve3dH[] = [];
+    const halfRadians = Angle.degreesToRadians(60.0);
+    const c = Math.cos(halfRadians);
+    const s = Math.sin(halfRadians);
+    // const sec = 1.0 / c;
+    // const t = s / c;
+    const points = [
+      Point4d.create(1, 0, 0, 1),
+      Point4d.create(c, s, 0, c),
+      Point4d.create(-c, s, 0, 1),
+      Point4d.create(-1, 0, 0, c),
+      Point4d.create(-c, -s, 0, 1),
+      Point4d.create(c, -s, 0, c),
+      Point4d.create(1, 0, 0, 1)];
+    const knots = [0, 0, 1, 1, 2, 2, 3, 3];
+
+    const curve = BSplineCurve3dH.create(points, knots, 3) as BSplineCurve3dH;
+    result.push(curve);
     return result;
   }
 
@@ -786,7 +810,7 @@ export class Sample {
     let thisColorIndex = 0;
     for (let j = 0; j + 1 < numYVertices; j++) {
       for (let i = 0; i + 1 < numXVertices; i++) {
-        const vertex00 = numYVertices * j + i;
+        const vertex00 = numXVertices * j + i;
         const vertex10 = vertex00 + 1;
         const vertex01 = vertex00 + numXVertices;
         const vertex11 = vertex01 + 1;
@@ -885,8 +909,8 @@ export class Sample {
     }
     const result = BSplineSurface3d.create(points, numUPole, orderU, uKnots.knots, numVPole, orderV, vKnots.knots);
     if (result) {
-      result.setWrappable(0, true);
-      result.setWrappable(1, true);
+      result.setWrappable(0, BSplineWrapMode.OpenByAddingControlPoints);
+      result.setWrappable(1, BSplineWrapMode.OpenByAddingControlPoints);
     }
     return result;
   }
