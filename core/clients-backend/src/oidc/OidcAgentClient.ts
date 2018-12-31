@@ -26,7 +26,7 @@ export class OidcAgentClient extends OidcBackendClient {
     const samlToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(actx, authToken);
 
     const delegationClient = new OidcDelegationClient(this._configuration as OidcBackendClientConfiguration);
-    const jwt: AccessToken = await delegationClient.getJwtFromSaml(actx, samlToken, scope || "openid email profile organization context-registry-service imodelhub imodeljs-backend-2686 reality-data:read");
+    const jwt: AccessToken = await delegationClient.getJwtFromSaml(actx, samlToken, scope || "openid email profile organization context-registry-service imodelhub imodeljs-backend-2686");
     return jwt;
   }
 
