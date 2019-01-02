@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add SyncUi support for ConfigurableUi controls.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "bill.steinbock@bentley.com"
+}

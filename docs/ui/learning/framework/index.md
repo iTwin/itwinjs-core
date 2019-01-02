@@ -4,4 +4,4 @@ The ui-framework package contains application fragments for Login, Project, iMod
 
 Topics:
 
-* [Placeholder](./Placeholder.md)
+* [SyncUi](./SyncUi.md)

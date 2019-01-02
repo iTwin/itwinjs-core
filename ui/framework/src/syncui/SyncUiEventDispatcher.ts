@@ -15,23 +15,38 @@ import { IModelConnection, SelectEventType, IModelApp, SelectedViewportChangedAr
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
 // cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
-// cSpell:ignore frontstageready activedgnviewportchanged selectionsetchanged
+// cSpell:ignore frontstageready activeviewportchanged selectionsetchanged
 /** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control. */
 export const enum SyncUiEventId {
+  /** The active content as maintained by the ContentViewManager has changed. */
   ActiveContentChanged = "activecontentchanged",
+  /** The active view maintained by the ViewManager has changed. */
+  ActiveViewportChanged = "activeviewportchanged",
+  /** Backstage has been closed. */
   BackstageCloseEvent = "backstagecloseevent",
+  /** A Content Layout has been activated.  */
   ContentLayoutActivated = "contentlayoutactivated",
+  /** A Content Control maintained by FrontstageManager has been activated. */
   ContentControlActivated = "contentcontrolactivated",
+  /** A Frontstage is activating. */
   FrontstageActivating = "frontstageactivating",
+  /** A Frontstage has been activated and the content has been assigned. */
   FrontstageReady = "frontstageready",
+  /** A Modal Frontstage has been opened or closed. */
   ModalFrontstageChanged = "modalfrontstagechanged",
+  /** A Modal Dialog has been opened or closed. */
   ModalDialogChanged = "modaldialogchanged",
+  /** A NavigationAid has been activated. */
   NavigationAidActivated = "navigationaidactivated",
+  /** An InteractiveTool has been activated via the ToolAdmin. */
   ToolActivated = "toolactivated",
+  /** A Task has been activated. */
   TaskActivated = "taskactivated",
+  /** The state of a Widget has changed. */
   WidgetStateChanged = "widgetstatechanged",
+  /** A Workflow has been activated. */
   WorkflowActivated = "workflowactivated",
-  ActiveDgnViewportChanged = "activedgnviewportchanged",
+  /** The SelectionSet for the active IModelConnection has changed. */
   SelectionSetChanged = "selectionsetchanged",
 }
 
@@ -184,7 +199,7 @@ export class SyncUiEventDispatcher {
 
     if (IModelApp && IModelApp.viewManager)
       IModelApp.viewManager.onSelectedViewportChanged.addListener((args: SelectedViewportChangedArgs) => {
-        SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveDgnViewportChanged);
+        SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveViewportChanged);
 
         // if this is the first view being opened up start the default tool so tool admin is happy.
         if (undefined === args.previous)
