@@ -245,7 +245,6 @@ export abstract class Graphic extends RenderGraphic {
   public get isPickable(): boolean { return false; }
   public addHiliteCommands(_commands: RenderCommands, _batch: Batch, _pass: RenderPass): void { assert(false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
-  // public abstract setIsPixelMode(): void;
 }
 
 export class Batch extends Graphic {

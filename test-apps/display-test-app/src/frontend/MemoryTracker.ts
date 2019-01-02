@@ -9,6 +9,7 @@ import {
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import { assert } from "@bentley/bentleyjs-core";
+import { createComboBox, ComboBoxEntry } from "./ComboBox";
 
 function collectTileTreeMemory(stats: RenderMemory.Statistics, model: TileTreeModelState): void {
   const tree = model.tileTree;
@@ -114,7 +115,7 @@ class MemoryPanel {
   }
 }
 
-class MemoryTracker {
+export class MemoryTracker {
   private readonly _stats = new RenderMemory.Statistics();
   private readonly _vp: Viewport;
   private readonly _div: HTMLDivElement;
@@ -143,25 +144,23 @@ class MemoryTracker {
     parent.appendChild(this._div);
   }
 
+  public dispose(): void {
+    this.clearInterval();
+  }
+
   private addSelector(parent: HTMLElement): void {
-    const label = document.createElement("label") as HTMLLabelElement;
-    label.htmlFor = "selectMemoryType";
-    label.innerText = "Track Memory: ";
-    parent.appendChild(label);
+    const entries: Array<ComboBoxEntry<MemIndex>> = [];
+    for (let i = MemIndex.None; i < MemIndex.COUNT; i++)
+      entries.push({ name: memLabels[i + 1], value: i });
 
-    const select = document.createElement("select") as HTMLSelectElement;
-    select.id = "selectMemoryType";
-    for (let i = MemIndex.None; i < MemIndex.COUNT; i++) {
-      const option = document.createElement("option") as HTMLOptionElement;
-      option.value = i.toString();
-      option.innerText = memLabels[i + 1];
-      select.appendChild(option);
-    }
-
-    select.value = MemIndex.None.toString();
-    select.onchange = () => this.change(Number.parseInt(select.value, 10));
-
-    parent.appendChild(select);
+    createComboBox({
+      parent,
+      name: "Track Memory: ",
+      id: "memTracker_type",
+      value: MemIndex.None,
+      handler: (select) => this.change(Number.parseInt(select.value, 10)),
+      entries,
+    });
   }
 
   private addPurgeButton(parent: HTMLElement): HTMLButtonElement {
@@ -187,14 +186,20 @@ class MemoryTracker {
     return text;
   }
 
+  private clearInterval(): void {
+    if (undefined !== this._curIntervalId) {
+      clearInterval(this._curIntervalId);
+      this._curIntervalId = undefined;
+    }
+  }
+
   private change(newIndex: MemIndex): void {
     if (newIndex === this._memIndex)
       return;
 
     this._memIndex = newIndex;
     if (MemIndex.None === newIndex) {
-      clearInterval(this._curIntervalId!);
-      this._curIntervalId = undefined;
+      this.clearInterval();
       this._div.style.display = "none";
       return;
     }
@@ -226,8 +231,4 @@ class MemoryTracker {
       this.update();
     }
   }
-}
-
-export function addMemoryTracker(parent: HTMLElement, viewport: Viewport): void {
-  new MemoryTracker(parent, viewport);
 }

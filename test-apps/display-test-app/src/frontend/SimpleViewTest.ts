@@ -2,7 +2,7 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { JsonUtils, OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { Point3d, Transform, Vector3d, XAndY, LineString3d, IModelJson as GeomJson, LineSegment3d } from "@bentley/geometry-core";
 import {
   BentleyCloudRpcManager,
@@ -15,14 +15,12 @@ import {
   LinePixels,
   ModelProps,
   ModelQueryParams,
-  RenderMode,
   RgbColor,
   RpcConfiguration,
   RpcOperation,
   StandaloneIModelRpcInterface,
   ViewQueryParams,
   GeometryStreamProps,
-  BackgroundMapType,
   ContextRealityModelProps,
   MobileRpcConfiguration,
   MobileRpcManager,
@@ -55,25 +53,26 @@ import {
   ToolTipOptions,
   Viewport,
   ViewState,
-  ViewState3d,
   SnapStatus,
   imageBufferToPngDataUrl,
   ContextRealityModelState,
   OidcClientWrapper,
   FeatureSymbology,
   GraphicType,
-  RenderMemory,
 } from "@bentley/imodeljs-frontend";
 import ToolTip from "tooltip.js";
 import { IModelApi } from "./IModelApi";
 import { SimpleViewState } from "./SimpleViewState";
 import { DebugPanel } from "./DebugPanel";
+import { CategoryPicker } from "./CategoryPicker";
+import { ViewAttributesPanel } from "./ViewAttributes";
 import { showError, showStatus } from "./Utils";
 import { initializeCustomCloudEnv } from "./CustomCloudEnv";
 import { initializeIModelHub } from "./ConnectEnv";
 import { SVTConfiguration } from "../common/SVTConfiguration";
 import { toggleIncidentMarkers } from "./IncidentMarkerDemo";
 import { toggleProjectExtents } from "./ProjectExtents";
+import { TileLoadIndicator } from "./TileLoadIndicator";
 
 // Only want the following imports if we are using electron and not a browser -----
 // tslint:disable-next-line:variable-name
@@ -85,16 +84,6 @@ if (ElectronRpcConfiguration.isElectron) {
 
 // tslint:disable:no-console
 
-interface RenderModeOptions {
-  flags: Map<string, boolean>;
-  mode: RenderMode;
-}
-
-const renderModeOptions: RenderModeOptions = {
-  flags: new Map<string, boolean>(),
-  mode: RenderMode.SmoothShade,
-};
-
 const availableContextRealityModels: ContextRealityModelProps[] = ContextRealityModelState.findAvailableRealityModels();
 
 let activeViewState: SimpleViewState = new SimpleViewState();
@@ -103,7 +92,6 @@ let theViewport: ScreenViewport | undefined;
 let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
 let curNumModels = 0;
-const curCategories = new Set<string>();
 const configuration = {} as SVTConfiguration;
 let overrideColor: ColorDef | undefined;
 let overrideTransparency: number | undefined;
@@ -203,12 +191,6 @@ function startToggleModel() {
 // open up the context model toggle menu
 function startToggleContextRealityModel() {
   const menu = document.getElementById("toggleContextRealityModelMenu") as HTMLDivElement;
-  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
-}
-
-// open up the category selection model
-function startCategorySelection() {
-  const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
@@ -324,39 +306,6 @@ async function buildModelMenu(state: SimpleViewState) {
   applyModelToggleChange("cbxModel0"); // force view to update based on all being enabled
 }
 
-// build list of categories; enable those defined in category selector
-async function buildCategoryMenu(state: SimpleViewState) {
-  curCategories.clear();
-  let html = '<input id="cbxCatToggleAll" type="checkbox"> Toggle All\n<br>\n';
-
-  const view = state.viewState!;
-  if (undefined === view) return;
-  const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM " + (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory");
-  const rows = await view.iModel.executeQuery(ecsql);
-
-  for (const row of rows) {
-    let label = row.label as string;
-    if (undefined === label)
-      label = row.code;
-
-    const id = row.id as string;
-    curCategories.add(id);
-    html += '<input id="cbxCat' + id + '" type="checkbox"> ' + label + "\n<br>\n";
-  }
-
-  const categoryMenu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
-  categoryMenu.innerHTML = html;
-
-  updateCheckboxToggleState("cbxCatToggleAll", curCategories.size === view.categorySelector.categories.size);
-  addCategoryToggleAllHandler();
-
-  for (const cat of curCategories) {
-    const cbxName = "cbxCat" + cat;
-    updateCheckboxToggleState(cbxName, view.categorySelector.has(cat));
-    addCategoryToggleHandler(cbxName);
-  }
-}
-
 // set checkbox state to checked or unchecked
 function updateCheckboxToggleState(id: string, enabled: boolean) {
   (document.getElementById(id)! as HTMLInputElement).checked = enabled;
@@ -458,50 +407,6 @@ function applyContextRealityModelToggleAllChange() {
   theViewport!.sync.invalidateScene();
 }
 
-function toggleCategoryState(invis: boolean, catId: string, view: ViewState) {
-  const enableAllSubCategories = false; // set to true to emulate semi-wacky Navigator behavior...
-  const alreadyInvis = !view.viewsCategory(catId);
-  if (alreadyInvis !== invis)
-    view.changeCategoryDisplay(catId, !invis, enableAllSubCategories);
-}
-
-// apply a category checkbox state being changed
-function applyCategoryToggleChange(_cbxCategory: string) {
-  const view = theViewport!.view;
-
-  let allToggledOn = true;
-  for (const cat of curCategories) {
-    const cbxName = "cbxCat" + cat;
-    const isChecked = getCheckboxToggleState(cbxName);
-    const invis = isChecked ? false : true;
-    toggleCategoryState(invis, cat, view);
-    if (invis)
-      allToggledOn = false;
-  }
-
-  updateCheckboxToggleState("cbxCatToggleAll", allToggledOn);
-
-  const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
-  menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
-}
-
-// toggle all checkboxes being toggled
-function applyCategoryToggleAllChange() {
-  const view = theViewport!.view;
-  const isChecked = getCheckboxToggleState("cbxCatToggleAll");
-
-  for (const cat of curCategories) {
-    const cbxName = "cbxCat" + cat;
-    updateCheckboxToggleState(cbxName, isChecked);
-
-    const invis = isChecked ? false : true;
-    toggleCategoryState(invis, cat, view);
-  }
-
-  const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
-  menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
-}
-
 function applyModelToggleAllChange() {
   if (!(theViewport!.view instanceof SpatialViewState))
     return;
@@ -548,16 +453,6 @@ function addClassifierToggleHandler(id: string) {
   document.getElementById(id)!.addEventListener("click", () => applyClassifierToggleChange(id));
 }
 
-// add a click handler to category checkbox
-function addCategoryToggleHandler(id: string) {
-  document.getElementById(id)!.addEventListener("click", () => applyCategoryToggleChange(id));
-}
-
-// add a click handler to the category 'toggle all' checkbox
-function addCategoryToggleAllHandler() {
-  document.getElementById("cbxCatToggleAll")!.addEventListener("click", () => applyCategoryToggleAllChange());
-}
-
 function toggleStandardViewMenu() {
   const menu = document.getElementById("standardRotationMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
@@ -569,16 +464,63 @@ function toggleDebugToolsMenu() {
 }
 
 let debugPanel: DebugPanel | undefined;
-function toggleDebugPanel() {
-  if (undefined === debugPanel)
-    debugPanel = new DebugPanel(theViewport!, document.getElementById("debugPanelContainer")!);
-  else
-    debugPanel = debugPanel.dispose();
+let categoryPicker: CategoryPicker | undefined;
+let viewAttributes: ViewAttributesPanel | undefined;
+
+function closeDebugPanel() {
+  if (undefined !== debugPanel && debugPanel.isOpen)
+    debugPanel.toggle();
+}
+function closeCategoryPicker() {
+  if (undefined !== categoryPicker && categoryPicker.isOpen)
+    categoryPicker.toggle();
+}
+function closeViewAttributes() {
+  if (undefined !== viewAttributes)
+    viewAttributes = viewAttributes.dispose();
 }
 
-function toggleRenderModeMenu() {
-  const menu = document.getElementById("changeRenderModeMenu") as HTMLDivElement;
-  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+function toggleDebugPanel() {
+  if (undefined === debugPanel) {
+    // Panel is shown on construction. toggle() will hide it.
+    debugPanel = new DebugPanel(theViewport!, document.getElementById("debugPanelContainer")!);
+  } else {
+    // Alternatively: debugPanel.dispose() will reset any changes made. toggle() simply temporarily hides the panel.
+    debugPanel.toggle();
+  }
+
+  if (debugPanel.isOpen) {
+    closeCategoryPicker();
+    closeViewAttributes();
+  }
+}
+
+async function toggleCategoryPicker() {
+  if (undefined === categoryPicker) {
+    categoryPicker = new CategoryPicker(theViewport!, document.getElementById("categoryPickerContainer")!);
+    await categoryPicker.populate();
+  } else {
+    categoryPicker.toggle();
+  }
+
+  if (categoryPicker.isOpen) {
+    closeViewAttributes();
+    closeDebugPanel();
+  }
+}
+async function updateCategoryPicker() {
+  if (undefined !== categoryPicker)
+    await categoryPicker.populate();
+}
+
+function toggleViewAttributes() {
+  if (undefined === viewAttributes) {
+    closeCategoryPicker();
+    closeDebugPanel();
+    viewAttributes = new ViewAttributesPanel(theViewport!, document.getElementById("viewAttributesContainer")!);
+  } else {
+    viewAttributes = viewAttributes.dispose();
+  }
 }
 
 function toggleSnapModeMenu() {
@@ -728,122 +670,14 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   showStatus(label, "view");
 }
 
-function applyRenderModeChange(mode: string) {
-  const menuDialog = document.getElementById("changeRenderModeMenu");
-  const newValue = (document.getElementById(mode)! as HTMLInputElement).checked;
-  renderModeOptions.flags.set(mode, newValue);
-  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, menuDialog, renderModeOptions.mode);
-}
-
-function stringToRenderMode(name: string): RenderMode {
-  switch (name) {
-    case "Smooth Shade": return RenderMode.SmoothShade;
-    case "Solid Fill": return RenderMode.SolidFill;
-    case "Hidden Line": return RenderMode.HiddenLine;
-    default: return RenderMode.Wireframe;
-  }
-}
-
-function renderModeToString(mode: RenderMode): string {
-  switch (mode) {
-    case RenderMode.SmoothShade: return "Smooth Shade";
-    case RenderMode.SolidFill: return "Solid Fill";
-    case RenderMode.HiddenLine: return "Hidden Line";
-    default: return "Wireframe";
-  }
-}
-
-function changeRenderMode(): void {
-  const select = (document.getElementById("renderModeList") as HTMLSelectElement)!;
-  renderModeOptions.mode = stringToRenderMode(select.value);
-  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
-}
-
-function stringToMapType(s: string): BackgroundMapType {
-  if ("Street" === s) return BackgroundMapType.Street;
-  if ("Aerial" === s) return BackgroundMapType.Aerial;
-  return BackgroundMapType.Hybrid;
-}
-
-function mapTypeToString(m: BackgroundMapType): string {
-  if (BackgroundMapType.Street === m) return "Street";
-  if (BackgroundMapType.Aerial === m) return "Aerial";
-  return "Hybrid";
-}
-
-function changeBackgroundMapState(): void {
-  if (!theViewport!.view.is3d())
-    return;
-  const mapProviderString = (document.getElementById("mapProviderList") as HTMLSelectElement)!.value;
-  const mapTypeString = (document.getElementById("mapTypeList") as HTMLSelectElement)!.value;
-  const mapTypeVal = stringToMapType(mapTypeString);
-  const view = theViewport!.view as ViewState3d;
-  const ds = view.getDisplayStyle3d();
-  ds.setBackgroundMap({ providerName: mapProviderString, providerData: { mapType: mapTypeVal } });
-  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
-}
-
-function updateRenderModeOption(id: string, enabled: boolean, options: Map<string, boolean>) {
-  (document.getElementById(id)! as HTMLInputElement).checked = enabled;
-  options.set(id, enabled);
-}
-
-// updates the checkboxes and the map for turning off and on rendering options to match what the current view is showing
-function updateRenderModeOptionsMap() {
-  let skybox = false;
-  let groundplane = false;
-  let providerName = "BingProvider";
-  let mapType = BackgroundMapType.Hybrid;
-  if (theViewport!.view.is3d()) {
-    const view = theViewport!.view as ViewState3d;
-    const env = view.getDisplayStyle3d().environment;
-    skybox = env.sky.display;
-    groundplane = env.ground.display;
-    const backgroundMap = view.getDisplayStyle3d().backgroundMap;
-    providerName = JsonUtils.asString(backgroundMap.providerName, "BingProvider");
-    mapType = JsonUtils.asInt(backgroundMap.mapType, BackgroundMapType.Hybrid);
-  }
-
-  const viewflags = theViewport!.view.viewFlags;
-  const lights = viewflags.sourceLights || viewflags.solarLight || viewflags.cameraLights;
-
-  updateRenderModeOption("skybox", skybox, renderModeOptions.flags);
-  updateRenderModeOption("groundplane", groundplane, renderModeOptions.flags);
-  updateRenderModeOption("ACSTriad", viewflags.acsTriad, renderModeOptions.flags);
-  updateRenderModeOption("fill", viewflags.fill, renderModeOptions.flags);
-  updateRenderModeOption("grid", viewflags.grid, renderModeOptions.flags);
-  updateRenderModeOption("textures", viewflags.textures, renderModeOptions.flags);
-  updateRenderModeOption("visibleEdges", viewflags.visibleEdges, renderModeOptions.flags);
-  updateRenderModeOption("hiddenEdges", viewflags.hiddenEdges, renderModeOptions.flags);
-  updateRenderModeOption("materials", viewflags.materials, renderModeOptions.flags);
-  updateRenderModeOption("lights", lights, renderModeOptions.flags);
-  updateRenderModeOption("monochrome", viewflags.monochrome, renderModeOptions.flags);
-  updateRenderModeOption("constructions", viewflags.constructions, renderModeOptions.flags);
-  updateRenderModeOption("weights", viewflags.weights, renderModeOptions.flags);
-  updateRenderModeOption("styles", viewflags.styles, renderModeOptions.flags);
-  updateRenderModeOption("transparency", viewflags.transparency, renderModeOptions.flags);
-  updateRenderModeOption("clipVolume", viewflags.clipVolume, renderModeOptions.flags);
-  updateRenderModeOption("backgroundMap", viewflags.backgroundMap, renderModeOptions.flags);
-  (document.getElementById("mapProviderList") as HTMLSelectElement)!.value = providerName;
-  (document.getElementById("mapTypeList") as HTMLSelectElement)!.value = mapTypeToString(mapType);
-
-  const backgroundMapDisabled = !theViewport!.iModel.isGeoLocated;
-  (document.getElementById("backgroundMap")! as HTMLInputElement).disabled = backgroundMapDisabled;
-  (document.getElementById("mapProviderList")! as HTMLInputElement).disabled = backgroundMapDisabled;
-  (document.getElementById("mapTypeList")! as HTMLInputElement).disabled = backgroundMapDisabled;
-
-  renderModeOptions.mode = viewflags.renderMode;
-  (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.renderMode);
-}
-
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
   if (undefined === theViewport) {
     const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
     theViewport = ScreenViewport.create(vpDiv, state.viewState!);
 
-    const tileLoadIndicator = document.getElementById("tile-load-indicator")! as HTMLProgressElement;
-    theViewport.onRender.addListener((vp) => updateTileLoadIndicator(tileLoadIndicator, vp));
+    const tileLoadIndicatorDiv = document.getElementById("tileLoadIndicatorContainer") as HTMLDivElement;
+    new TileLoadIndicator(tileLoadIndicatorDiv, theViewport);
   }
 
   await _changeView(state.viewState!);
@@ -856,9 +690,8 @@ async function _changeView(view: ViewState) {
   theViewport!.changeView(view);
   activeViewState.viewState = view;
   await buildModelMenu(activeViewState);
-  await buildCategoryMenu(activeViewState);
+  await updateCategoryPicker();
   await buildContextRealityModelMenu(activeViewState);
-  updateRenderModeOptionsMap();
 }
 
 export class DrawingAidTestTool extends PrimitiveTool {
@@ -1268,10 +1101,6 @@ async function selectIModel() {
   }
 }
 
-function addRenderModeHandler(id: string) {
-  document.getElementById(id)!.addEventListener("click", () => applyRenderModeChange(id));
-}
-
 function keepOpenDebugToolsMenu(_open: boolean = true) { // keep open debug tool menu
   const menu = document.getElementById("debugToolsMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
@@ -1292,58 +1121,6 @@ function saveImage() {
   }
 
   window.open(url, "Saved View");
-}
-
-function formatMemory(numBytes: number): string {
-  let suffix = "b";
-  if (numBytes >= 1024) {
-    numBytes /= 1024;
-    suffix = "kb";
-    if (numBytes >= 1024) {
-      numBytes /= 1024;
-      suffix = "mb";
-    }
-  }
-
-  return numBytes.toFixed(2) + suffix;
-}
-
-function updateTileLoadIndicator(progress: HTMLProgressElement, vp: Viewport): void {
-  let pctComplete = 1.0;
-  let title = "";
-  let color = "#00ff00";
-  const requested = vp.numRequestedTiles;
-  const ready = vp.numReadyTiles;
-  const total = ready + requested;
-  const canceled = IModelApp.tileAdmin.statistics.numCanceled;
-  pctComplete = (total > 0) ? (ready / total) : 1.0;
-  title = "" + ready + " / " + total;
-  if (total < ready)
-    title += " (" + requested + " queued)";
-
-  if (0 < canceled)
-    title += " (" + canceled + " canceled)";
-
-  color = "#007fff";
-
-  const wantLogTileStats = false;
-  if (wantLogTileStats && progress.title !== title)
-    console.log(title);
-
-  const wantLogTileMemory = false;
-  if (wantLogTileMemory) {
-    const stats = new RenderMemory.Statistics();
-    vp.view.forEachTileTreeModel((model) => {
-      if (undefined !== model.tileTree)
-        model.tileTree.collectStatistics(stats);
-    });
-
-    console.log("TileTree memory: Total " + formatMemory(stats.totalBytes));
-  }
-
-  progress.value = pctComplete;
-  progress.title = title;
-  progress.style.color = color; // ###TODO this does nothing. HTMLProgressElement is quite opaque.
 }
 
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
@@ -1377,7 +1154,6 @@ function wireIconsToFunctions() {
   const addClickListener = (el: string, listener: (ev: Event) => void) => { document.getElementById(el)!.addEventListener("click", listener); };
   addClickListener("startToggleModel", startToggleModel);
   addClickListener("startToggleContextRealityModel", startToggleContextRealityModel);
-  addClickListener("startCategorySelection", startCategorySelection);
   addClickListener("startToggleCamera", startToggleCamera);
   addClickListener("startFit", () => IModelApp.tools.run("View.Fit", theViewport, true));
   addClickListener("startWindowArea", () => IModelApp.tools.run("View.WindowArea", theViewport));
@@ -1387,8 +1163,9 @@ function wireIconsToFunctions() {
   addClickListener("startRotateView", () => IModelApp.tools.run("View.Rotate", theViewport));
   addClickListener("switchStandardRotation", toggleStandardViewMenu);
   addClickListener("debugTools", toggleDebugToolsMenu);
-  addClickListener("renderModeToggle", toggleRenderModeMenu);
   addClickListener("debugPanelToggle", toggleDebugPanel);
+  addClickListener("categoryPickerToggle", toggleCategoryPicker);
+  addClickListener("viewAttributesToggle", toggleViewAttributes);
   addClickListener("snapModeToggle", toggleSnapModeMenu);
   addClickListener("doUndo", () => IModelApp.tools.run("View.Undo", theViewport));
   addClickListener("doRedo", () => IModelApp.tools.run("View.Redo", theViewport));
@@ -1414,28 +1191,6 @@ function wireIconsToFunctions() {
   addClickListener("iso", () => applyStandardViewRotation(StandardViewId.Iso, "Iso"));
   addClickListener("rightIso", () => applyStandardViewRotation(StandardViewId.RightIso, "RightIso"));
 
-  // render mode handlers
-  addRenderModeHandler("skybox");
-  addRenderModeHandler("groundplane");
-  addRenderModeHandler("ACSTriad");
-  addRenderModeHandler("fill");
-  addRenderModeHandler("grid");
-  addRenderModeHandler("textures");
-  addRenderModeHandler("visibleEdges");
-  addRenderModeHandler("hiddenEdges");
-  addRenderModeHandler("materials");
-  addRenderModeHandler("lights");
-  addRenderModeHandler("monochrome");
-  addRenderModeHandler("constructions");
-  addRenderModeHandler("clipVolume");
-  addRenderModeHandler("weights");
-  addRenderModeHandler("styles");
-  addRenderModeHandler("transparency");
-  addRenderModeHandler("backgroundMap");
-
-  document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
-  document.getElementById("mapProviderList")!.addEventListener("change", () => changeBackgroundMapState());
-  document.getElementById("mapTypeList")!.addEventListener("change", () => changeBackgroundMapState());
   document.getElementById("colorList")!.addEventListener("change", () => changeOverrideColor());
 
   // File Selector for the browser (a change represents a file selection)... only used when in browser and given base path for local files
@@ -1688,7 +1443,6 @@ async function main() {
     alert(reason);
     return;
   }
-
 }
 
 async function initView() {

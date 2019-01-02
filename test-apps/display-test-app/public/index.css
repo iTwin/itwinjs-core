@@ -36,8 +36,18 @@
   padding-right:2.5px;
 }
 
+.bottomdiv {
+  width: 98%;
+  margin-left: 5px;
+  margin-bottom: 5px;
+}
+
+#tileLoadIndicatorContainer {
+  float: right;
+}
+
 .statusspan {
-  margin-left: 20px;
+  margin-left: 5px;
 }
 
 .bim-spinner-container {

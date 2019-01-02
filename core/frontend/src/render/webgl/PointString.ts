@@ -75,7 +75,7 @@ export class PointStringGeometry extends LUTGeometry {
 
   public collectStatistics(stats: RenderMemory.Statistics): void {
     stats.addVertexTable(this.lut.bytesUsed);
-    stats.addPointCloud(this.indices.bytesUsed);
+    stats.addPointString(this.indices.bytesUsed);
   }
 }
 

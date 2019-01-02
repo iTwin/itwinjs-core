@@ -533,11 +533,13 @@ export namespace IModelTileIO {
       if (undefined === indices || undefined === prevIndices || undefined === nextIndicesAndParams || undefined === distanceBytes)
         return undefined;
 
+      // Constructor takes byte offset in bytes, length in number of elements (4 bytes per float). Does not make a copy.
+      const distances = new Float32Array(distanceBytes.buffer, distanceBytes.byteOffset, distanceBytes.byteLength / 4);
       return {
         indices,
         prevIndices,
         nextIndicesAndParams,
-        distances: new Float32Array(distanceBytes.buffer),
+        distances,
       };
     }
 

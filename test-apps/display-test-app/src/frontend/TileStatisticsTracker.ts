@@ -8,6 +8,7 @@ import {
   TileAdmin,
   Viewport,
 } from "@bentley/imodeljs-frontend";
+import { createCheckBox } from "./CheckBox";
 
 const enum StatIndex {
   Active,
@@ -49,7 +50,7 @@ const getStat: GetStat[] = [
   },
 ];
 
-class StatsTracker {
+export class StatsTracker {
   private readonly _statElements: HTMLElement[] = [];
   private readonly _div: HTMLDivElement;
   private readonly _vp: Viewport;
@@ -58,7 +59,13 @@ class StatsTracker {
   public constructor(parent: HTMLElement, vp: Viewport) {
     this._vp = vp;
     this.addMaxActive(parent);
-    this.addCheckbox(parent);
+    createCheckBox({
+      parent,
+      name: "Track Tile Requests",
+      id: "stats_trackMemory",
+      handler: (_cb) => this.toggle(),
+    });
+
     this._div = document.createElement("div") as HTMLDivElement;
     this._div.style.display = "none";
     this._div.style.textAlign = "right";
@@ -74,21 +81,8 @@ class StatsTracker {
     parent.appendChild(this._div);
   }
 
-  private addCheckbox(parent: HTMLElement): void {
-    const div = document.createElement("div");
-
-    const cb = document.createElement("input") as HTMLInputElement;
-    cb.type = "checkbox";
-    cb.id = "trackStats";
-    cb.addEventListener("click", () => this.toggle());
-    div.appendChild(cb);
-
-    const label = document.createElement("label") as HTMLLabelElement;
-    label.htmlFor = cb.id;
-    label.innerText = "Track Tile Requests";
-    div.appendChild(label);
-
-    parent.appendChild(div);
+  public dispose(): void {
+    this.clearInterval();
   }
 
   private addMaxActive(parent: HTMLElement): void {
@@ -124,12 +118,18 @@ class StatsTracker {
     input.value = admin.maxActiveRequests.toString();
   }
 
+  private clearInterval(): void {
+    if (undefined !== this._curIntervalId) {
+      clearInterval(this._curIntervalId);
+      this._curIntervalId = undefined;
+    }
+  }
+
   private toggle(): void {
     if (undefined !== this._curIntervalId) {
       // Currently on - turn off.
       this._div.style.display = "none";
-      clearInterval(this._curIntervalId);
-      this._curIntervalId = undefined;
+      this.clearInterval();
     } else {
       // Currently off - turn on.
       this._div.style.display = "block";
@@ -145,8 +145,4 @@ class StatsTracker {
       this._statElements[i].innerText = label;
     }
   }
-}
-
-export function addTileStatisticsTracker(parent: HTMLElement, viewport: Viewport): void {
-  new StatsTracker(parent, viewport);
 }

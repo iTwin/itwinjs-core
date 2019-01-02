@@ -215,6 +215,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
     if (type === this._rangeGraphicType)
       return this._rangeGraphic;
 
+    this._rangeGraphicType = type;
     this._rangeGraphic = dispose(this._rangeGraphic);
     if (Tile.DebugBoundingBoxes.None !== type) {
       const builder = context.createSceneGraphicBuilder();

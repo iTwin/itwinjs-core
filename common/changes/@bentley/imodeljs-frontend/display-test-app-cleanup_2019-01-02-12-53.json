@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix excessive memory consumption by polyline graphics.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Paul.Connelly@bentley.com"
+}

@@ -8,45 +8,48 @@ import {
   Target,
   Viewport,
 } from "@bentley/imodeljs-frontend";
+import { createCheckBox } from "./CheckBox";
 
-class FpsTracker {
+export class FpsTracker {
   private readonly _label: HTMLLabelElement;
   private _metrics?: PerformanceMetrics;
   private _curIntervalId?: NodeJS.Timer;
+  private readonly _vp: Viewport;
 
   public constructor(parent: HTMLElement, viewport: Viewport) {
-    const div = document.createElement("div");
-    div.style.display = "block";
-
-    const cb = document.createElement("input") as HTMLInputElement;
-    cb.type = "checkbox";
-    cb.id = "fpsCheckBox";
-    cb.addEventListener("click", () => this.toggle(viewport, cb.checked));
-    div.appendChild(cb);
-
-    const label = document.createElement("label") as HTMLLabelElement;
-    label.htmlFor = cb.id;
-    label.innerText = "Track FPS";
-    div.appendChild(label);
-    this._label = label;
-
-    parent.appendChild(div);
+    this._vp = viewport;
+    this._label = createCheckBox({
+      parent,
+      name: "Track FPS",
+      id: "fpsTracker_toggle",
+      handler: (cb) => this.toggle(cb.checked),
+    }).label;
   }
 
-  private toggle(viewport: Viewport, enabled: boolean): void {
-    viewport.continuousRendering = enabled;
+  public dispose(): void {
+    this.toggle(false);
+  }
+
+  private clearInterval(): void {
+    if (undefined !== this._curIntervalId) {
+      clearInterval(this._curIntervalId);
+      this._curIntervalId = undefined;
+    }
+  }
+
+  private toggle(enabled: boolean): void {
+    this._vp.continuousRendering = enabled;
     if (enabled) {
       this._metrics = new PerformanceMetrics(false, true);
       this._curIntervalId = setInterval(() => this.updateFPS(), 500);
       this._label.innerText = "Tracking FPS...";
     } else {
       this._metrics = undefined;
-      clearInterval(this._curIntervalId!);
-      this._curIntervalId = undefined;
+      this.clearInterval();
       this._label.innerText = "Track FPS";
     }
 
-    (viewport.target as Target).performanceMetrics = this._metrics;
+    (this._vp.target as Target).performanceMetrics = this._metrics;
   }
 
   private updateFPS(): void {
@@ -54,8 +57,4 @@ class FpsTracker {
     const fps = (metrics.spfTimes.length / metrics.spfSum).toFixed(2);
     this._label.innerText = "FPS: " + fps;
   }
-}
-
-export function addFpsTracker(parent: HTMLElement, viewport: Viewport): void {
-  new FpsTracker(parent, viewport);
 }

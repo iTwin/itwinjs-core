@@ -35,6 +35,11 @@
     <!-- Browser file selector only used when we are running in browser and were given a base path for all standalone files -->
     <input type="file" id="browserFileSelector" />
     <div class=topdiv id="toolBar">
+      <div class="simpleicon" id="debugPanelContainer">
+        <div id="debugPanelToggle">
+          <i class="bim-icon-settings"></i>
+        </div>
+      </div>
       <div class="simpleicon" id="selectIModel">
         <i class="bim-icon-briefcases"></i>
       </div>
@@ -54,9 +59,9 @@
         <div class="scrollingToolMenu" id="toggleModelMenu">
         </div>
       </div>
-      <div class="simpleicon" id="startCategorySelection">
-        <i class="bim-icon-categories"></i>
-        <div class="scrollingToolMenu" id="categorySelectionMenu">
+      <div class="simpleicon" id="categoryPickerContainer">
+        <div id="categoryPickerToggle">
+          <i class="bim-icon-categories"></i>
         </div>
       </div>
       <div class="simpleicon" id="startToggleContextRealityModel">
@@ -99,99 +104,9 @@
           </div>
         </div>
       </div>
-      <div class="simpleicon" id="changeRenderMode">
-        <div id="renderModeToggle">
+      <div class="simpleicon" id="viewAttributesContainer">
+        <div id="viewAttributesToggle">
           <i class="bim-icon-settings"></i>
-        </div>
-        <div class="toolMenu" id="changeRenderModeMenu">
-          <label for="renderModeList">Mode:</label>
-          <select id="renderModeList" name="renderModeList">
-            <option>Smooth Shade</option>
-            <option>Solid Fill</option>
-            <option>Hidden Line</option>
-            <option>Wireframe</option>
-          </select>
-          <br>
-          <div>
-            <input id="skybox" type="checkbox" />
-            <label for="skybox">Skybox</label>
-          </div>
-          <div>
-            <input id="groundplane" type="checkbox" />
-            <label for="groundplane">Ground Plane</label>
-          </div>
-          <div>
-            <input id="ACSTriad" type="checkbox" />
-            <label for="ACSTriad">ACS Triad</label>
-          </div>
-          <div>
-            <input id="fill" type="checkbox" />
-            <label for="fill">Fill</label>
-          </div>
-          <div>
-            <input id="grid" type="checkbox" />
-            <label for="grid">Grid</label>
-          </div>
-          <div>
-            <input id="textures" type="checkbox" />
-            <label for="textures">Textures</label>
-          </div>
-          <div>
-            <input id="visibleEdges" type="checkbox" />
-            <label for="visibleEdges">Visible Edges</label>
-          </div>
-          <div>
-            <input id="hiddenEdges" type="checkbox" />
-            <label for="hiddenEdges">Hidden Edges</label>
-          </div>
-          <div>
-            <input id="materials" type="checkbox" />
-            <label for="materials">Materials</label>
-          </div>
-          <div>
-            <input id="lights" type="checkbox" />
-            <label for="lights">Lights</label>
-          </div>
-          <div>
-            <input id="monochrome" type="checkbox" />
-            <label for="monochrome">Monochrome</label>
-          </div>
-          <div>
-            <input id="constructions" type="checkbox" />
-            <label for="constructions">Constructions</label>
-          </div>
-          <div>
-            <input id="transparency" type="checkbox" />
-            <label for="transparency">Transparency</label>
-          </div>
-          <div>
-            <input id="weights" type="checkbox" />
-            <label for="weights">Line Weight</label>
-          </div>
-          <div>
-            <input id="styles" type="checkbox" />
-            <label for="styles">Line Styles</label>
-          </div>
-          <div>
-            <input id="clipVolume" type="checkbox" />
-            <label for="clipVolume">Clip Volume</label>
-          </div>
-          <hr>
-          <div>
-            <input id="backgroundMap" type="checkbox" />
-            <label for="backgroundMap">Background Map</label>
-          </div>
-          <label for="mapProviderList">Map Provider:</label>
-          <select id="mapProviderList" name="mapProviderList">
-            <option>BingProvider</option>
-            <option>MapBoxProvider</option>
-          </select>
-          <label for="mapTypeList">Map Type:</label>
-          <select id="mapTypeList" name="mapTypeList">
-            <option>Street</option>
-            <option>Aerial</option>
-            <option>Hybrid</option>
-          </select>
         </div>
       </div>
       <div class="simpleicon" id="doUndo">
@@ -251,21 +166,16 @@
           </div>
         </div>
       </div>
-      <div>
-        <progress id="tile-load-indicator" />
-      </div>
-      <div class="simpleicon" id="debugPanelContainer">
-        <div id="debugPanelToggle">
-          <i class="bim-icon-settings"></i>
-        </div>
-      </div>
-      <span class="statusspan" id="showstatus" style="display:inline;"></span>
-      <span class="statusspan" id="showerror" style="display:inline;"></span>
     </div>
     <div id="spinner" class="bim-spinner-container">
       <div class="bim-spinner"></div>
     </div>
     <div class="imodel-viewport" id="imodel-viewport">
+    </div>
+    <div class="bottomdiv">
+      <span class="statusspan" id="showstatus" style="display:inline;"></span>
+      <span class="statusspan" id="showerror" style="display:inline;"></span>
+      <span id="tileLoadIndicatorContainer"></span>
     </div>
 </body>
 
