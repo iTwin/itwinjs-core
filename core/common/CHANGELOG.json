@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.180.0",
+      "tag": "@bentley/imodeljs-common_v0.180.0",
+      "date": "Wed, 02 Jan 2019 15:18:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "merge"
+          },
+          {
+            "comment": "Do not send X-Application-Version header if empty."
+          },
+          {
+            "comment": "Add path pivot data to render schedule"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.179.0",
       "tag": "@bentley/imodeljs-common_v0.179.0",
       "date": "Wed, 19 Dec 2018 18:26:14 GMT",

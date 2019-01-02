@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Wed, 19 Dec 2018 18:26:14 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Jan 2019 15:18:23 GMT and should not be manually modified.
+
+## 0.180.0
+Wed, 02 Jan 2019 15:18:23 GMT
+
+### Updates
+
+- merge
+- Do not send X-Application-Version header if empty.
+- Add path pivot data to render schedule
 
 ## 0.179.0
 Wed, 19 Dec 2018 18:26:14 GMT
