@@ -86,9 +86,9 @@ export function createBlurProgram(context: WebGLRenderingContext): ShaderProgram
     prog.addProgramUniform("u_blurSettings", (uniform, params) => {
       const hbaoSettings = new Float32Array([
         // ###TODO: If we want to apply this blur shader to situations other than AO, we should move these settings away from the ambient occlusion params.
-        params.target.ambientOcclusionParams.blurDelta,
-        params.target.ambientOcclusionParams.blurSigma,
-        params.target.ambientOcclusionParams.blurTexelStepSize]);
+        params.target.ambientOcclusionSettings.blurDelta!,
+        params.target.ambientOcclusionSettings.blurSigma!,
+        params.target.ambientOcclusionSettings.blurTexelStepSize!]);
       uniform.setUniform3fv(hbaoSettings);
     });
   }, VariablePrecision.High);

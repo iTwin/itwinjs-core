@@ -7,7 +7,7 @@
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture } from "@bentley/imodeljs-common";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -169,47 +169,6 @@ function swapImageByte(image: ImageBuffer, i0: number, i1: number) {
   image.data[i1] = tmp;
 }
 
-export class AmbientOcclusionParams {
-  private static _defaultIsEnabled: boolean = false;
-  private static _defaultBias: number = 0.25;
-  private static _defaultZLengthCap: number = 0.0025;
-  private static _defaultIntensity: number = 3.0;
-  private static _defaultTexelStepSize: number = 1.95;
-  private static _defaultBlurDelta: number = 1.0;
-  private static _defaultBlurSigma: number = 2.0;
-  private static _defaultBlurTexelStepSize: number = 1.0;
-
-  public isEnabled: boolean = AmbientOcclusionParams._defaultIsEnabled;
-  public bias: number = AmbientOcclusionParams._defaultBias;
-  public zLengthCap: number = AmbientOcclusionParams._defaultZLengthCap;
-  public intensity: number = AmbientOcclusionParams._defaultIntensity;
-  public texelStepSize: number = AmbientOcclusionParams._defaultTexelStepSize;
-  public blurDelta: number = AmbientOcclusionParams._defaultBlurDelta;
-  public blurSigma: number = AmbientOcclusionParams._defaultBlurSigma;
-  public blurTexelStepSize: number = AmbientOcclusionParams._defaultBlurTexelStepSize;
-
-  public get wantAmbientOcclusion(): boolean {
-    // NB: We do not want to use the *current* ViewFlags for this - only those set in the RenderPlan,
-    // because our AO implementation is currently "all or nothing" - you can't selectively apply it to only some surfaces.
-    if (!this.isEnabled)
-      return false;
-
-    // ###TODO do not enable unless smooth shade, probably no visible edges, etc.
-    return true;
-  }
-
-  public reset() {
-    this.isEnabled = AmbientOcclusionParams._defaultIsEnabled;
-    this.bias = AmbientOcclusionParams._defaultBias;
-    this.zLengthCap = AmbientOcclusionParams._defaultZLengthCap;
-    this.intensity = AmbientOcclusionParams._defaultIntensity;
-    this.texelStepSize = AmbientOcclusionParams._defaultTexelStepSize;
-    this.blurDelta = AmbientOcclusionParams._defaultBlurDelta;
-    this.blurSigma = AmbientOcclusionParams._defaultBlurSigma;
-    this.blurTexelStepSize = AmbientOcclusionParams._defaultBlurTexelStepSize;
-  }
-}
-
 export abstract class Target extends RenderTarget {
   protected _decorations?: Decorations;
   private _stack = new BranchStack();
@@ -256,6 +215,7 @@ export abstract class Target extends RenderTarget {
   public analysisStyle?: AnalysisStyle;
   public analysisTexture?: RenderTexture;
   private _currentOverrides?: FeatureOverrides;
+  public ambientOcclusionSettings = AmbientOcclusion.Settings.defaults;
   private _batches: Batch[] = [];
   public plan?: RenderPlan;
 
@@ -320,9 +280,6 @@ export abstract class Target extends RenderTarget {
   public get currentTransform(): Transform { return this._stack.top.transform; }
   public get currentShaderFlags(): ShaderFlags { return this.currentViewFlags.monochrome ? ShaderFlags.Monochrome : ShaderFlags.None; }
   public get currentFeatureSymbologyOverrides(): FeatureSymbology.Overrides { return this._stack.top.symbologyOverrides; }
-
-  // ###TODO make a ViewFlag.
-  public ambientOcclusionParams: AmbientOcclusionParams = new AmbientOcclusionParams();
 
   public get clipDef(): ClipDef {
     if (this.hasClipVolume)
@@ -407,6 +364,16 @@ export abstract class Target extends RenderTarget {
     const index = this._batches.indexOf(batch);
     assert(index > -1);
     this._batches.splice(index, 1);
+  }
+
+  public get wantAmbientOcclusion(): boolean {
+    // NB: We do not want to use the *current* ViewFlags for this - only those set in the RenderPlan,
+    // because our AO implementation is currently "all or nothing" - you can't selectively apply it to only some surfaces.
+    if (!this.currentViewFlags.ambientOcclusion)
+      return false;
+
+    // ###TODO do not enable unless smooth shade, probably no visible edges, etc.
+    return true;
   }
 
   // ---- Implementation of RenderTarget interface ---- //
@@ -547,6 +514,8 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
+    if (plan.ao !== undefined)
+      this.ambientOcclusionSettings = plan.ao;
     this.bgColor.setFrom(plan.bgColor);
     this.monoColor.setFrom(plan.monoColor);
     this.hiliteSettings = plan.hiliteSettings;

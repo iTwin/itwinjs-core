@@ -8,7 +8,7 @@ import {
   AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
   IModelTileRpcInterface, IModelToken, LinePixels, ModelProps, ModelQueryParams, RenderMode, RgbColor, RpcConfiguration,
   RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName, GeometryStreamProps, BackgroundMapType, ContextRealityModelProps,
-  MobileRpcConfiguration, MobileRpcManager,
+  MobileRpcConfiguration, MobileRpcManager, AmbientOcclusion,
 } from "@bentley/imodeljs-common";
 import { AccessToken, Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import {
@@ -16,7 +16,7 @@ import {
   DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
   MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
   SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus, imageBufferToPngDataUrl,
-  ContextRealityModelState, OidcClientWrapper, FeatureSymbology, GraphicType, PerformanceMetrics, Target,
+  ContextRealityModelState, OidcClientWrapper, FeatureSymbology, GraphicType, PerformanceMetrics, Target, DisplayStyle3dState,
 } from "@bentley/imodeljs-frontend";
 import ToolTip from "tooltip.js";
 import { IModelApi } from "./IModelApi";
@@ -781,8 +781,7 @@ function updateRenderModeOptionsMap() {
 
 function updateAmbientOcclusionUI() {
   const vp = theViewport;
-  const target = undefined !== vp ? vp.target as Target : undefined;
-  if (undefined !== target) {
+  if (undefined !== vp) {
     const ao = document.getElementById("ambientOcclusion")! as HTMLInputElement;
     const aoZLengthCap = document.getElementById("aoZLengthCap") as HTMLInputElement;
     const aoBias = document.getElementById("aoBias") as HTMLInputElement;
@@ -792,43 +791,48 @@ function updateAmbientOcclusionUI() {
     const aoBlurSigma = document.getElementById("aoBlurSigma") as HTMLInputElement;
     const aoBlurTexelStepSize = document.getElementById("aoBlurTexelStepSize") as HTMLInputElement;
 
-    ao.checked = target.ambientOcclusionParams.isEnabled;
-    aoZLengthCap.value = target.ambientOcclusionParams.zLengthCap.toString();
-    aoBias.value = target.ambientOcclusionParams.bias.toString();
-    aoIntensity.value = target.ambientOcclusionParams.intensity.toString();
-    aoTexelStepSize.value = target.ambientOcclusionParams.texelStepSize.toString();
-    aoBlurDelta.value = target.ambientOcclusionParams.blurDelta.toString();
-    aoBlurSigma.value = target.ambientOcclusionParams.blurSigma.toString();
-    aoBlurTexelStepSize.value = target.ambientOcclusionParams.blurTexelStepSize.toString();
+    const aoSettings = (vp.view.displayStyle as DisplayStyle3dState).settings.ambientOcclusionSettings;
+
+    ao.checked = vp.view.viewFlags.ambientOcclusion;
+    aoZLengthCap.value = aoSettings.zLengthCap!.toString();
+    aoBias.value = aoSettings.bias!.toString();
+    aoIntensity.value = aoSettings.intensity!.toString();
+    aoTexelStepSize.value = aoSettings.texelStepSize!.toString();
+    aoBlurDelta.value = aoSettings.blurDelta!.toString();
+    aoBlurSigma.value = aoSettings.blurSigma!.toString();
+    aoBlurTexelStepSize.value = aoSettings.blurTexelStepSize!.toString();
   }
 }
 
-// ###TODO: This is strictly for demo purposes - need to integrate AO setting(s) into ViewFlags...
-function resetAmbientOcclusion(enabled: boolean) {
+function resetAmbientOcclusion(aoEnabled: boolean) {
   const vp = theViewport;
-  const target = undefined !== vp ? vp.target as Target : undefined;
-  if (undefined !== target) {
-    target.ambientOcclusionParams.reset();
-    target.ambientOcclusionParams.isEnabled = enabled; // maintain the previous 'enabled' status
-    updateAmbientOcclusionUI();
-    vp!.sync.invalidateRenderPlan();
+  if (undefined !== vp) {
+    if (vp.view.displayStyle.is3d()) {
+      (vp.view.displayStyle as DisplayStyle3dState).settings.ambientOcclusionSettings = AmbientOcclusion.Settings.defaults;
+      vp.view.viewFlags.ambientOcclusion = aoEnabled;
+      updateAmbientOcclusionUI();
+      vp!.sync.invalidateRenderPlan();
+    }
   }
 }
 
-// ###TODO: This is strictly for demo purposes - need to integrate AO setting(s) into ViewFlags...
-function setAmbientOcclusion(enabled: boolean, zLengthCap: number, bias: number, intensity: number, texelStepSize: number, blurDelta: number, blurSigma: number, blurTexelStepSize: number) {
+function setAmbientOcclusion(aoEnabled: boolean, aoZLengthCap: number, aoBias: number, aoIntensity: number, aoTexelStepSize: number, aoBlurDelta: number, aoBlurSigma: number, aoBlurTexelStepSize: number) {
   const vp = theViewport;
-  const target = undefined !== vp ? vp.target as Target : undefined;
-  if (undefined !== target) {
-    target.ambientOcclusionParams.isEnabled = enabled;
-    target.ambientOcclusionParams.zLengthCap = zLengthCap;
-    target.ambientOcclusionParams.bias = bias;
-    target.ambientOcclusionParams.intensity = intensity;
-    target.ambientOcclusionParams.texelStepSize = texelStepSize;
-    target.ambientOcclusionParams.blurDelta = blurDelta;
-    target.ambientOcclusionParams.blurSigma = blurSigma;
-    target.ambientOcclusionParams.blurTexelStepSize = blurTexelStepSize;
-    vp!.sync.invalidateRenderPlan();
+  if (undefined !== vp) {
+    vp.view.viewFlags.ambientOcclusion = aoEnabled;
+    if (vp.view.displayStyle.is3d()) {
+      const aoSettings = AmbientOcclusion.Settings.fromJSON({
+        bias: aoBias,
+        zLengthCap: aoZLengthCap,
+        intensity: aoIntensity,
+        texelStepSize: aoTexelStepSize,
+        blurDelta: aoBlurDelta,
+        blurSigma: aoBlurSigma,
+        blurTexelStepSize: aoBlurTexelStepSize,
+      });
+      (vp.view.displayStyle as DisplayStyle3dState).settings.ambientOcclusionSettings = aoSettings;
+      vp!.sync.invalidateRenderPlan();
+    }
   }
 }
 
@@ -847,7 +851,7 @@ async function openView(state: SimpleViewState) {
   IModelApp.viewManager.addViewport(theViewport);
 
   resetAmbientOcclusion(false); // ambient occlusion defaults off for now
-  // ###TODO - retrieve ambient occlusion settings from view itself
+  // ###TODO - retrieve ambient occlusion settings from view itself?
 }
 
 async function _changeView(view: ViewState) {

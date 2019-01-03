@@ -9,7 +9,7 @@ import { EntityQueryParams } from "./EntityProps";
 import { AngleProps, XYZProps, XYProps, YawPitchRollProps } from "@bentley/geometry-core";
 import { ElementProps, DefinitionElementProps, SheetProps } from "./ElementProps";
 import { ColorDef, ColorDefProps } from "./ColorDef";
-import { ViewFlags, AnalysisStyleProps, HiddenLine } from "./Render";
+import { ViewFlags, AnalysisStyleProps, HiddenLine, AmbientOcclusion } from "./Render";
 import { SubCategoryAppearance, SubCategoryOverride } from "./SubCategoryAppearance";
 import { RenderSchedule } from "./RenderSchedule";
 
@@ -94,6 +94,8 @@ export interface ViewFlagProps {
   renderMode?: number;
   /** Display background map. */
   backgroundMap?: boolean;
+  /** If true, show ambient occlusion. */
+  ambientOcclusion?: boolean;
 }
 
 /** Describes the [[SubCategoryOverride]]s applied to a [[SubCategory]] by a [[DisplayStyle]].
@@ -233,6 +235,8 @@ export interface DisplayStyle3dSettingsProps extends DisplayStyleSettingsProps {
   environment?: EnvironmentProps;
   /** Settings controlling display of visible and hidden edges. */
   hline?: HiddenLine.SettingsProps;
+  /** Settings controlling display of ambient occlusion, stored in Props. */
+  ao?: AmbientOcclusion.Props;
 }
 
 /** JSON representation of a [[DisplayStyle]] or [[DisplayStyleState]]. */
@@ -458,11 +462,13 @@ export class DisplayStyleSettings {
  */
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
   private _hline: HiddenLine.Settings;
+  private _ao: AmbientOcclusion.Settings;
   private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
 
   public constructor(jsonProperties: { styles?: DisplayStyle3dSettingsProps }) {
     super(jsonProperties);
     this._hline = HiddenLine.Settings.fromJSON(this._json3d.hline);
+    this._ao = AmbientOcclusion.Settings.fromJSON(this._json3d.ao);
   }
 
   public toJSON(): DisplayStyle3dSettingsProps { return this._json3d; }
@@ -474,6 +480,15 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   public set hiddenLineSettings(hline: HiddenLine.Settings) {
     this._hline = hline;
     this._json3d.hline = hline.toJSON();
+  }
+
+  /** The settings that control how ambient occlusion is displayed.
+   * @note Do not modify the settings in place. Clone them and pass the clone to the setter.
+   */
+  public get ambientOcclusionSettings(): AmbientOcclusion.Settings { return this._ao; }
+  public set ambientOcclusionSettings(ao: AmbientOcclusion.Settings) {
+    this._ao = ao;
+    this._json3d.ao = ao.toJSON();
   }
 
   /** @hidden */

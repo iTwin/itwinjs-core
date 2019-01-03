@@ -185,10 +185,10 @@ export function createAmbientOcclusionProgram(context: WebGLRenderingContext): S
   frag.addUniform("u_hbaoSettings", VariableType.Vec4, (prog) => {
     prog.addProgramUniform("u_hbaoSettings", (uniform, params) => {
       const hbaoSettings = new Float32Array([
-        params.target.ambientOcclusionParams.bias,
-        params.target.ambientOcclusionParams.zLengthCap,
-        params.target.ambientOcclusionParams.intensity,
-        params.target.ambientOcclusionParams.texelStepSize]);
+        params.target.ambientOcclusionSettings.bias!,
+        params.target.ambientOcclusionSettings.zLengthCap!,
+        params.target.ambientOcclusionSettings.intensity!,
+        params.target.ambientOcclusionSettings.texelStepSize!]);
       uniform.setUniform4fv(hbaoSettings);
     });
   }, VariablePrecision.High);
