@@ -4,26 +4,26 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Schema */
 
-import { NativePlatformRegistry } from "./NativePlatformRegistry";
 import { IModelError } from "@bentley/imodeljs-common";
-import { NativeECSchemaXmlContext } from "./imodeljs-native-platform-api";
+import { IModelJsNative } from "./IModelJsNative";
+import { IModelHost } from "./IModelHost";
 
-export type SchemaKey = NativeECSchemaXmlContext.SchemaKey;
-export type SchemaMatchType = NativeECSchemaXmlContext.SchemaMatchType;
+export type SchemaKey = IModelJsNative.ECSchemaXmlContext.SchemaKey;
+export type SchemaMatchType = IModelJsNative.ECSchemaXmlContext.SchemaMatchType;
 
 /** @hidden */
 export class ECSchemaXmlContext {
-  private _nativeContext: NativeECSchemaXmlContext | undefined;
+  private _nativeContext: IModelJsNative.ECSchemaXmlContext | undefined;
 
   constructor() {
-    this._nativeContext = new (NativePlatformRegistry.getNativePlatform()).NativeECSchemaXmlContext();
+    this._nativeContext = new IModelHost.platform.ECSchemaXmlContext();
   }
 
   public addSchemaPath(searchPath: string): void {
     this._nativeContext!.addSchemaPath(searchPath);
   }
 
-  public setSchemaLocater(locater: NativeECSchemaXmlContext.SchemaLocaterCallback): void {
+  public setSchemaLocater(locater: IModelJsNative.ECSchemaXmlContext.SchemaLocaterCallback): void {
     this._nativeContext!.setSchemaLocater(locater);
   }
 

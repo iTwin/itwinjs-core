@@ -33,12 +33,7 @@ module.exports = (publicPath) => {
       // We need the following work around to keep the native addon loader out of the bundle:
       "@bentley/imodeljs-electronaddon": "@bentley/imodeljs-electronaddon",
       "@bentley/imodeljs-nodeaddon": "@bentley/imodeljs-nodeaddon",
-      "@bentley/imodeljs-nodeaddon/NodeAddonLoader": "@bentley/imodeljs-nodeaddon/NodeAddonLoader",
-      "@bentley/imodeljs-nodeaddonapi/package.json": "@bentley/imodeljs-nodeaddonapi/package.json",
-      "@bentley/imodeljs-native-platform-electron": "@bentley/imodeljs-native-platform-electron",
-      "@bentley/imodeljs-native-platform-node": "@bentley/imodeljs-native-platform-node",
-      "@bentley/imodeljs-native-platform-node/NodeAddonLoader": "@bentley/imodeljs-native-platform-node/NodeAddonLoader",
-      "@bentley/imodeljs-native-platform-api/package.json": "@bentley/imodeljs-native-platform-api/package.json",
+      "@bentley/imodeljs-native/package.json": "@bentley/imodeljs-nativeapi/package.json",
     },
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.

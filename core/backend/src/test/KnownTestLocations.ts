@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { Platform } from "../Platform";
+import { Platform } from "../IModelHost";
 
 export class KnownTestLocations {
 

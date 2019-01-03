@@ -186,17 +186,17 @@ function doImport(inputArgs: Yargs.Arguments<{}>) {
     let originalIModel: IModelDb;
 
     try {
-        originalIModel = IModelDb.openStandalone(inputArgs.input, inputArgs.createDuplicateIbim ? OpenMode.Readonly : OpenMode.ReadWrite); // could throw Error
+        originalIModel = IModelDb.openStandalone(inputArgs.input as string, inputArgs.createDuplicateIbim ? OpenMode.Readonly : OpenMode.ReadWrite); // could throw Error
     } catch (error) {
         process.stdout.write("Unable to open: " + inputArgs.input + "\n");
         return false;
     }
 
     let outputIModel = originalIModel;
-    let outputFileName = inputArgs.input;
+    let outputFileName = inputArgs.input as string;
     if (inputArgs.createDuplicateIbim) {
         outputFileName = inputArgs.input + ".animated.ibim";
-        IModelJsFs.copySync(inputArgs.input, outputFileName);
+        IModelJsFs.copySync(inputArgs.input as string, outputFileName);
         outputIModel = IModelDb.openStandalone(outputFileName, OpenMode.ReadWrite);
     }
     try { unlinkSync(outputFileName + ".tiles"); } catch (error) { }
@@ -204,7 +204,7 @@ function doImport(inputArgs: Yargs.Arguments<{}>) {
         doFixRange(outputIModel);
 
     if (inputArgs.script) {
-        if (doAddAnimationScript(outputIModel, inputArgs.script, inputArgs.createSeparateScript))
+        if (doAddAnimationScript(outputIModel, inputArgs.script as string, inputArgs.createSeparateScript as boolean))
             process.stdout.write("Animation Script: " + inputArgs.script + " added to: " + outputFileName + "\n");
     }
 
@@ -224,7 +224,7 @@ function doImport(inputArgs: Yargs.Arguments<{}>) {
 Yargs.usage("Import a Syncro JSON animation script into an existing IBIM file.");
 Yargs.required("input", "The input IBIM");
 Yargs.default("fixRange", true, "Set the project extents to the range of all geometry");
-Yargs.default("createSeparateScript", true, "Create a seperate file with the JSON for the animation script (debugging)");
+Yargs.default("createSeparateScript", true, "Create a separate file with the JSON for the animation script (debugging)");
 Yargs.default("createDuplicateIbim", true, "Create a duplicate IBIM with the imported script (rather than writing to original)");
 Yargs.required("script", "Animation script JSON file");
 Yargs.string("script");

@@ -8,9 +8,9 @@ import { AccessToken, Config, ChangeSet } from "@bentley/imodeljs-clients";
 import { Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, NativePlatformRegistry, SubjectOwnsPartitionElements,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
-import { DisableNativeAssertions as NativeDisableNativeAssertions } from "../imodeljs-native-platform-api";
+import { IModelJsNative } from "../IModelJsNative";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubUtility, UserCredentials } from "./integration/HubUtility";
 import * as path from "path";
@@ -123,10 +123,10 @@ export class TestUsers {
  * this class.
  */
 export class DisableNativeAssertions implements IDisposable {
-  private _native: NativeDisableNativeAssertions | undefined;
+  private _native: IModelJsNative.DisableNativeAssertions | undefined;
 
   constructor() {
-    this._native = new (NativePlatformRegistry.getNativePlatform()).DisableNativeAssertions();
+    this._native = new IModelHost.platform.DisableNativeAssertions();
   }
 
   public dispose(): void {

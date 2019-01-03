@@ -5,8 +5,8 @@
 /** @module Core */
 
 import { IDisposable, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { NativeECPresentationManager, NativeECPresentationStatus, ErrorStatusOrResult } from "@bentley/imodeljs-backend/lib/imodeljs-native-platform-api";
-import { IModelDb, NativePlatformRegistry } from "@bentley/imodeljs-backend";
+import { IModelJsNative } from "@bentley/imodeljs-backend";
+import { IModelDb, IModelHost } from "@bentley/imodeljs-backend";
 import { PresentationError, PresentationStatus } from "@bentley/presentation-common";
 import { VariableValueJSON, VariableValueTypes } from "@bentley/presentation-common/lib/RulesetVariables";
 
@@ -43,14 +43,14 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
   // note the implementation is constructed here to make PresentationManager
   // usable without loading the actual addon (if addon is set to something other)
   return class implements NativePlatformDefinition {
-    private _nativeAddon: NativeECPresentationManager = new (NativePlatformRegistry.getNativePlatform()).NativeECPresentationManager();
-    private getStatus(responseStatus: NativeECPresentationStatus): PresentationStatus {
+    private _nativeAddon = new IModelHost.platform.ECPresentationManager();
+    private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
-        case NativeECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
+        case IModelJsNative.ECPresentationStatus.InvalidArgument: return PresentationStatus.InvalidArgument;
         default: return PresentationStatus.Error;
       }
     }
-    private handleResult<T>(response: ErrorStatusOrResult<NativeECPresentationStatus, T>): T {
+    private handleResult<T>(response: IModelJsNative.ErrorStatusOrResult<IModelJsNative.ECPresentationStatus, T>): T {
       if (!response)
         throw new PresentationError(PresentationStatus.InvalidResponse);
       if (response.error)
@@ -59,7 +59,7 @@ export const createDefaultNativePlatform = (): { new(): NativePlatformDefinition
         throw new PresentationError(PresentationStatus.InvalidResponse);
       return response.result;
     }
-    private handleVoidResult(response: ErrorStatusOrResult<NativeECPresentationStatus, void>): void {
+    private handleVoidResult(response: IModelJsNative.ErrorStatusOrResult<IModelJsNative.ECPresentationStatus, void>): void {
       if (!response)
         throw new PresentationError(PresentationStatus.InvalidResponse);
       if (response.error)

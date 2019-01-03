@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/* WIP WIP WIP: Disabled because of switch to pnpm
 const path = require("path");
 const fs = require("fs");
 const { spawnSync } = require("child_process");
@@ -84,3 +85,4 @@ if (jsonOut.metadata.vulnerabilities.high || jsonOut.metadata.vulnerabilities.cr
   if (1 < jsonOut.actions.length || jsonOut.actions[0].resolves[0].id !== 725)
     failBuild();
 }
+*/
