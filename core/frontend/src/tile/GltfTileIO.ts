@@ -728,8 +728,6 @@ export namespace GltfTileIO {
       if (undefined === view)
         return false;
 
-      const startDistance = new Float32Array(1);
-      const sdBytes = new Uint8Array(startDistance.buffer);
       const numIndices = new Uint32Array(1);
       const niBytes = new Uint8Array(numIndices.buffer);
       const index16 = new Uint16Array(1);
@@ -739,8 +737,6 @@ export namespace GltfTileIO {
 
       let ndx = 0;
       for (let p = 0; p < view.count; ++p) {
-        for (let b = 0; b < 4; ++b)
-          sdBytes[b] = view.data[ndx++];
         for (let b = 0; b < 4; ++b)
           niBytes[b] = view.data[ndx++];
 
@@ -766,7 +762,7 @@ export namespace GltfTileIO {
           }
         }
 
-        polylines.push(new MeshPolyline(startDistance[0], indices));
+        polylines.push(new MeshPolyline(indices));
       }
 
       return true;

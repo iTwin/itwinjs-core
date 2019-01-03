@@ -103,18 +103,15 @@ export class PolylineFlags {
 export class PolylineData {
   public vertIndices: number[];
   public numIndices: number;
-  public startDistance: number;
-  public constructor(vertIndices: number[] = [], numIndices = 0, startDistance = 0) {
+  public constructor(vertIndices: number[] = [], numIndices = 0) {
     this.vertIndices = vertIndices;
     this.numIndices = numIndices;
-    this.startDistance = startDistance;
   }
   public get isValid(): boolean { return 0 < this.numIndices; }
-  public reset(): void { this.numIndices = 0; this.vertIndices = []; this.startDistance = 0; }
+  public reset(): void { this.numIndices = 0; this.vertIndices = []; }
   public init(polyline: MeshPolyline) {
     this.numIndices = polyline.indices.length;
     this.vertIndices = 0 < this.numIndices ? polyline.indices : [];
-    this.startDistance = polyline.startDistance;
     return this.isValid;
   }
 }
@@ -122,10 +119,8 @@ export class PolylineData {
 /** @hidden */
 export class MeshPolyline {
   public readonly indices: number[];
-  public readonly startDistance: number;
-  public constructor(startDistance: number = 0, indices: number[] = []) {
+  public constructor(indices: number[] = []) {
     this.indices = indices.slice();
-    this.startDistance = startDistance;
   }
   public addIndex(index: number) {
     const { indices } = this;

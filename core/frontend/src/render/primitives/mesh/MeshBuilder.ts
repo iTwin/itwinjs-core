@@ -73,11 +73,10 @@ export class MeshBuilder {
    */
   public addStrokePointLists(strokes: StrokesPrimitivePointLists, isDisjoint: boolean, fillColor: number): void {
     for (const strokePoints of strokes) {
-      const { startDistance, points } = strokePoints;
       if (isDisjoint)
-        this.addPointString(points, fillColor, startDistance);
+        this.addPointString(strokePoints.points, fillColor);
       else
-        this.addPolyline(points, fillColor, startDistance);
+        this.addPolyline(strokePoints.points, fillColor);
     }
   }
 
@@ -192,10 +191,10 @@ export class MeshBuilder {
   }
 
   /** removed Feature for now */
-  public addPolyline(pts: QPoint3dList | Point3d[], fillColor: number, startDistance: number): void {
+  public addPolyline(pts: QPoint3dList | Point3d[], fillColor: number): void {
     const { mesh } = this;
 
-    const poly = new MeshPolyline(startDistance);
+    const poly = new MeshPolyline();
     const points = pts instanceof QPoint3dList ? pts : QPoint3dList.createFrom(pts, mesh.points.params);
 
     for (const position of points)
@@ -205,9 +204,9 @@ export class MeshBuilder {
   }
 
   /** removed Feature for now */
-  public addPointString(pts: Point3d[], fillColor: number, startDistance: number): void {
+  public addPointString(pts: Point3d[], fillColor: number): void {
     const { mesh } = this;
-    const poly = new MeshPolyline(startDistance);
+    const poly = new MeshPolyline();
     const points = QPoint3dList.createFrom(pts, mesh.points.params);
 
     for (const position of points)

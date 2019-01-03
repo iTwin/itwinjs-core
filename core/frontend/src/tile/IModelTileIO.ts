@@ -528,18 +528,14 @@ export namespace IModelTileIO {
       const indices = this.readVertexIndices(json.indices);
       const prevIndices = this.readVertexIndices(json.prevIndices);
       const nextIndicesAndParams = this.findBuffer(json.nextIndicesAndParams);
-      const distanceBytes = this.findBuffer(json.distances);
 
-      if (undefined === indices || undefined === prevIndices || undefined === nextIndicesAndParams || undefined === distanceBytes)
+      if (undefined === indices || undefined === prevIndices || undefined === nextIndicesAndParams)
         return undefined;
 
-      // Constructor takes byte offset in bytes, length in number of elements (4 bytes per float). Does not make a copy.
-      const distances = new Float32Array(distanceBytes.buffer, distanceBytes.byteOffset, distanceBytes.byteLength / 4);
       return {
         indices,
         prevIndices,
         nextIndicesAndParams,
-        distances,
       };
     }
 

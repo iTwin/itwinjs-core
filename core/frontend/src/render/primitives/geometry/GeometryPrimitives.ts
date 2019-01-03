@@ -121,7 +121,7 @@ export class PrimitivePathGeometry extends Geometry {
     if (undefined !== strokes) {
       const pts = strokes.getPoint3dArray();
       trans.multiplyPoint3dArrayInPlace(pts);
-      strksPts.push(new StrokesPrimitivePointList(0, pts));
+      strksPts.push(new StrokesPrimitivePointList(pts));
     }
   }
 }
@@ -140,7 +140,7 @@ export class PrimitivePointStringGeometry extends Geometry {
 
   protected _getStrokes(_facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
     const strksList = new StrokesPrimitiveList();
-    const strksPts = new StrokesPrimitivePointLists(new StrokesPrimitivePointList(0, this.pts));
+    const strksPts = new StrokesPrimitivePointLists(new StrokesPrimitivePointList(this.pts));
 
     const strksPrim: StrokesPrimitive = StrokesPrimitive.create(this.displayParams, true, false);
     strksPrim.strokes = strksPts;
@@ -165,7 +165,7 @@ export class PrimitiveLineStringGeometry extends Geometry {
 
   protected _getStrokes(_facetOptions: StrokeOptions): StrokesPrimitiveList | undefined {
     const strksList = new StrokesPrimitiveList();
-    const strksPts = new StrokesPrimitivePointLists(new StrokesPrimitivePointList(0, this.pts));
+    const strksPts = new StrokesPrimitivePointLists(new StrokesPrimitivePointList(this.pts));
 
     const strksPrim: StrokesPrimitive = StrokesPrimitive.create(this.displayParams, false, false);
     strksPrim.strokes = strksPts;

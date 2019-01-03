@@ -603,35 +603,29 @@ export class PolylineBuffers implements IDisposable {
   public indices: BufferHandle;
   public prevIndices: BufferHandle;
   public nextIndicesAndParams: BufferHandle;
-  public distances: BufferHandle;
-
-  private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle, distances: BufferHandle) {
+  private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle) {
     this.indices = indices;
     this.prevIndices = prevIndices;
     this.nextIndicesAndParams = nextIndicesAndParams;
-    this.distances = distances;
   }
 
   public static create(polyline: TesselatedPolyline): PolylineBuffers | undefined {
     const indices = BufferHandle.createArrayBuffer(polyline.indices.data);
     const prev = BufferHandle.createArrayBuffer(polyline.prevIndices.data);
     const next = BufferHandle.createArrayBuffer(polyline.nextIndicesAndParams);
-    const dist = BufferHandle.createArrayBuffer(polyline.distances);
 
-    return undefined !== indices && undefined !== prev && undefined !== next && undefined !== dist ? new PolylineBuffers(indices, prev, next, dist) : undefined;
+    return undefined !== indices && undefined !== prev && undefined !== next ? new PolylineBuffers(indices, prev, next) : undefined;
   }
 
   public collectStatistics(stats: RenderMemory.Statistics, type: RenderMemory.BufferType): void {
     stats.addBuffer(type, this.indices.bytesUsed);
     stats.addBuffer(type, this.prevIndices.bytesUsed);
     stats.addBuffer(type, this.nextIndicesAndParams.bytesUsed);
-    stats.addBuffer(type, this.distances.bytesUsed);
   }
 
   public dispose() {
     dispose(this.indices);
     dispose(this.prevIndices);
     dispose(this.nextIndicesAndParams);
-    dispose(this.distances);
   }
 }
