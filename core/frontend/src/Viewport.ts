@@ -1129,14 +1129,18 @@ export abstract class Viewport implements IDisposable {
 
       let maximum = 0;
       let minimum = 1;
-      const npc = Point3d.create();
-      const testPoint = Point2d.create();
-      for (testPoint.x = readRect.left; testPoint.x < readRect.right; ++testPoint.x) {
-        for (testPoint.y = readRect.top; testPoint.y < readRect.bottom; ++testPoint.y) {
-          if (this.getPixelDataNpcPoint(pixels, testPoint.x, testPoint.y, npc) !== undefined) {
-            minimum = Math.min(minimum, npc.z);
-            maximum = Math.max(maximum, npc.z);
-          }
+      const frac = this._viewFrustum.frustFraction;
+      for (let x = readRect.left; x < readRect.right; ++x) {
+        for (let y = readRect.top; y < readRect.bottom; ++y) {
+          let npcZ = pixels.getPixel(x, y).distanceFraction;
+          if (npcZ <= 0.0)
+            continue;
+
+          if (frac < 1.0)
+            npcZ *= frac / (1.0 + npcZ * (frac - 1.0));
+
+          minimum = Math.min(minimum, npcZ);
+          maximum = Math.max(maximum, npcZ);
         }
       }
 
