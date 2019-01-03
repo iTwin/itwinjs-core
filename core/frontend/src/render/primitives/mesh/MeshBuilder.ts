@@ -207,18 +207,11 @@ export class MeshBuilder {
   /** removed Feature for now */
   public addPointString(pts: Point3d[], fillColor: number, startDistance: number): void {
     const { mesh } = this;
-
-    // Assume no duplicate points in point strings (or, too few to matter).
-    // Why? Because drawGridDots() potentially sends us tens of thousands of points (up to 83000 on my large monitor in top view), and wants to do so every frame.
-    // The resultant map lookups/inserts/rebalancing kill performance in non-optimized builds.
-    // NB: startDistance currently unused - Ray claims they will be used in future for non-cosmetic line styles? If not let's jettison them...
     const poly = new MeshPolyline(startDistance);
     const points = QPoint3dList.createFrom(pts, mesh.points.params);
 
-    for (const position of points) {
-      mesh.addVertex({ position, fillColor });
-      poly.addIndex(this.addVertex({ position, fillColor }, false));
-    }
+    for (const position of points)
+      poly.addIndex(this.addVertex({ position, fillColor }));
 
     mesh.addPolyline(poly);
   }
