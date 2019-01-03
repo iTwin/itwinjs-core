@@ -7,9 +7,9 @@
 
 import * as g from "../geometry-core";
 
-console.log("=========================");
-console.log("Standalone Output");
-console.log("=========================");
+// console.log("=========================");
+// console.log("Standalone Output");
+// console.log("=========================");
 
 /**
  * This class has static methods to create typical instances of various classes.

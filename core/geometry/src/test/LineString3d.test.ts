@@ -192,8 +192,11 @@ describe("LineStringIterator", () => {
       Point3d.create(20, 0, 0),
       Point3d.create(20, 10, 0)];
     const ls = new LineStringWithIterator(allPoints);
+    let i = 0;
     for (const p of ls) {
-      console.log("for..of ", p.toJSON());
+      ck.testPoint3d(p, allPoints[i], "LineStringIterator");
+      i++;
+      // console.log("for..of ", p.toJSON());
     }
     expect(ck.getNumErrors()).equals(0);
   });
