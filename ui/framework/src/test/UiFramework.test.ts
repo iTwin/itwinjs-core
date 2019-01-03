@@ -31,9 +31,19 @@ describe("UiFramework", () => {
   });
 
   it("projectServices & iModelServices should return defaults", async () => {
+    await TestUtils.initializeUiFramework(true);
+    expect(UiFramework.projectServices).to.be.instanceOf(DefaultProjectServices);
+    expect(UiFramework.iModelServices).to.be.instanceOf(DefaultIModelServices);
+    expect(UiFramework.frameworkStateKey).to.equal("testDifferentFrameworkKey");
+    TestUtils.terminateUiFramework();
+  });
+
+  it("test default frameworkState key", async () => {
     await TestUtils.initializeUiFramework();
     expect(UiFramework.projectServices).to.be.instanceOf(DefaultProjectServices);
     expect(UiFramework.iModelServices).to.be.instanceOf(DefaultIModelServices);
+    expect(UiFramework.frameworkStateKey).to.equal("frameworkState");
+    TestUtils.terminateUiFramework();
   });
 
 });

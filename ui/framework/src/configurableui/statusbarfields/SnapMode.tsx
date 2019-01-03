@@ -134,7 +134,7 @@ const mapDispatch = {
 
 /** Function used by Redux to map state data in Redux store to props that are used to render this component. */
 function mapStateToProps(state: any) {
-  const frameworkState = state[UiFramework.frameworkReducerKey];  // since app sets up key, don't hard-code name
+  const frameworkState = state[UiFramework.frameworkStateKey];  // since app sets up key, don't hard-code name
   if (!frameworkState)
     return undefined;
 

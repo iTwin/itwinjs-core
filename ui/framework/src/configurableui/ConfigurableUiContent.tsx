@@ -19,7 +19,7 @@ export interface ConfigurableUiContentProps {
 }
 
 function mapStateToProps(state: any) {
-  const frameworkState = state[UiFramework.frameworkReducerKey];  // since app sets up key, don't hard-code name
+  const frameworkState = state[UiFramework.frameworkStateKey];  // since app sets up key, don't hard-code name
   if (!frameworkState)
     return undefined;
 
