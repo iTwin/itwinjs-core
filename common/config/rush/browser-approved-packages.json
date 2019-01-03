@@ -451,6 +451,14 @@
       "allowedCategories": [ "internal" ]
     },
     {
+      "name": "mobx",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "mobx-react",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "mocha",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },

@@ -105,6 +105,8 @@
     "express": "^4.16.3",
     "inspire-tree": "^5.0.1",
     "lodash": "^4.17.10",
+    "mobx": "^5.8.0",
+    "mobx-react": "^5.4.3",
     "react": "^16.4.2",
     "react-dom": "^16.4.2",
     "react-dnd": "^5.0.0",

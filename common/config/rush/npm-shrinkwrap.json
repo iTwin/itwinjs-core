@@ -1304,7 +1304,7 @@
     },
     "@rush-temp/ui-test-app": {
       "version": "file:projects/ui-test-app.tgz",
-      "integrity": "sha1-q6tKNbXsPtoaiwri+P/hGA5nTyk=",
+      "integrity": "sha1-llZYtF4N+MWX5B4g8nkM742AG+0=",
       "requires": {
         "@bentley/bwc": "7.1.0",
         "@bentley/icons-generic-webfont": "0.0.6",
@@ -1325,6 +1325,8 @@
         "immutable": "3.8.2",
         "inspire-tree": "5.0.2",
         "lodash": "4.17.11",
+        "mobx": "5.8.0",
+        "mobx-react": "5.4.3",
         "npm-run-all": "4.1.5",
         "postcss-flexbugs-fixes": "3.3.1",
         "postcss-loader": "2.1.6",
@@ -3572,7 +3574,7 @@
             },
             "is-accessor-descriptor": {
               "version": "0.1.6",
-              "resolved": "http://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+              "resolved": "https://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
               "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -3590,7 +3592,7 @@
             },
             "is-data-descriptor": {
               "version": "0.1.4",
-              "resolved": "http://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+              "resolved": "https://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
               "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -4334,7 +4336,7 @@
     },
     "content-disposition": {
       "version": "0.5.2",
-      "resolved": "http://registry.npmjs.org/content-disposition/-/content-disposition-0.5.2.tgz",
+      "resolved": "https://registry.npmjs.org/content-disposition/-/content-disposition-0.5.2.tgz",
       "integrity": "sha1-DPaLud318r55YcOoUXjLhdunjLQ="
     },
     "content-type": {
@@ -6030,7 +6032,7 @@
             },
             "is-accessor-descriptor": {
               "version": "0.1.6",
-              "resolved": "http://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+              "resolved": "https://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
               "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -6048,7 +6050,7 @@
             },
             "is-data-descriptor": {
               "version": "0.1.4",
-              "resolved": "http://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+              "resolved": "https://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
               "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -6569,7 +6571,7 @@
             },
             "is-accessor-descriptor": {
               "version": "0.1.6",
-              "resolved": "http://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+              "resolved": "https://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
               "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -6587,7 +6589,7 @@
             },
             "is-data-descriptor": {
               "version": "0.1.4",
-              "resolved": "http://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+              "resolved": "https://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
               "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -6904,7 +6906,7 @@
         },
         "string-width": {
           "version": "1.0.2",
-          "resolved": "http://registry.npmjs.org/string-width/-/string-width-1.0.2.tgz",
+          "resolved": "https://registry.npmjs.org/string-width/-/string-width-1.0.2.tgz",
           "integrity": "sha1-EYvfW4zcUaKn5w0hHgfisLmxB9M=",
           "requires": {
             "code-point-at": "1.1.0",
@@ -7605,7 +7607,7 @@
             },
             "is-accessor-descriptor": {
               "version": "0.1.6",
-              "resolved": "http://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+              "resolved": "https://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
               "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -7623,7 +7625,7 @@
             },
             "is-data-descriptor": {
               "version": "0.1.4",
-              "resolved": "http://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+              "resolved": "https://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
               "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -8178,7 +8180,7 @@
     },
     "is-accessor-descriptor": {
       "version": "0.1.6",
-      "resolved": "http://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+      "resolved": "https://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
       "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
       "requires": {
         "kind-of": "3.2.2"
@@ -8244,7 +8246,7 @@
     },
     "is-data-descriptor": {
       "version": "0.1.4",
-      "resolved": "http://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+      "resolved": "https://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
       "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
       "requires": {
         "kind-of": "3.2.2"
@@ -10005,6 +10007,30 @@
           "version": "0.0.8",
           "resolved": "http://registry.npmjs.org/minimist/-/minimist-0.0.8.tgz",
           "integrity": "sha1-hX/Kv8M5fSYluCKCYuhqp6ARsF0="
+        }
+      }
+    },
+    "mobx": {
+      "version": "5.8.0",
+      "resolved": "https://registry.npmjs.org/mobx/-/mobx-5.8.0.tgz",
+      "integrity": "sha512-NsZB+9bF5j+nv9Qwk6bNeE3np26a4TbTGkMpOLf6o1zXoM9BtHPQn/00px4uZ2AXJXtQML5P4MEWdMm6icMIfQ=="
+    },
+    "mobx-react": {
+      "version": "5.4.3",
+      "resolved": "https://registry.npmjs.org/mobx-react/-/mobx-react-5.4.3.tgz",
+      "integrity": "sha512-WC8yFlwvJ91hy8j6CrydAuFteUafcuvdITFQeHl3LRIf5ayfT/4W3M/byhEYD2BcJWejeXr8y4Rh2H26RunCRQ==",
+      "requires": {
+        "hoist-non-react-statics": "3.2.1",
+        "react-lifecycles-compat": "3.0.4"
+      },
+      "dependencies": {
+        "hoist-non-react-statics": {
+          "version": "3.2.1",
+          "resolved": "https://registry.npmjs.org/hoist-non-react-statics/-/hoist-non-react-statics-3.2.1.tgz",
+          "integrity": "sha512-TFsu3TV3YLY+zFTZDrN8L2DTFanObwmBLpWvJs1qfUuEQ5bTAdFcwfx2T/bsCXfM9QHSLvjfP+nihEl0yvozxw==",
+          "requires": {
+            "react-is": "16.6.3"
+          }
         }
       }
     },
@@ -14642,7 +14668,7 @@
             },
             "is-accessor-descriptor": {
               "version": "0.1.6",
-              "resolved": "http://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+              "resolved": "https://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
               "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -14660,7 +14686,7 @@
             },
             "is-data-descriptor": {
               "version": "0.1.4",
-              "resolved": "http://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+              "resolved": "https://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
               "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -15481,7 +15507,7 @@
         },
         "string-width": {
           "version": "1.0.2",
-          "resolved": "http://registry.npmjs.org/string-width/-/string-width-1.0.2.tgz",
+          "resolved": "https://registry.npmjs.org/string-width/-/string-width-1.0.2.tgz",
           "integrity": "sha1-EYvfW4zcUaKn5w0hHgfisLmxB9M=",
           "requires": {
             "code-point-at": "1.1.0",
@@ -15837,7 +15863,7 @@
         },
         "string-width": {
           "version": "1.0.2",
-          "resolved": "http://registry.npmjs.org/string-width/-/string-width-1.0.2.tgz",
+          "resolved": "https://registry.npmjs.org/string-width/-/string-width-1.0.2.tgz",
           "integrity": "sha1-EYvfW4zcUaKn5w0hHgfisLmxB9M=",
           "requires": {
             "code-point-at": "1.1.0",
@@ -16558,7 +16584,7 @@
             },
             "is-accessor-descriptor": {
               "version": "0.1.6",
-              "resolved": "http://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+              "resolved": "https://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
               "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -16576,7 +16602,7 @@
             },
             "is-data-descriptor": {
               "version": "0.1.4",
-              "resolved": "http://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+              "resolved": "https://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
               "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -17493,7 +17519,7 @@
             },
             "is-accessor-descriptor": {
               "version": "0.1.6",
-              "resolved": "http://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+              "resolved": "https://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
               "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -17511,7 +17537,7 @@
             },
             "is-data-descriptor": {
               "version": "0.1.4",
-              "resolved": "http://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+              "resolved": "https://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
               "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -19000,7 +19026,7 @@
             },
             "is-accessor-descriptor": {
               "version": "0.1.6",
-              "resolved": "http://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
+              "resolved": "https://registry.npmjs.org/is-accessor-descriptor/-/is-accessor-descriptor-0.1.6.tgz",
               "integrity": "sha1-qeEss66Nh2cn7u84Q/igiXtcmNY=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -19018,7 +19044,7 @@
             },
             "is-data-descriptor": {
               "version": "0.1.4",
-              "resolved": "http://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
+              "resolved": "https://registry.npmjs.org/is-data-descriptor/-/is-data-descriptor-0.1.4.tgz",
               "integrity": "sha1-C17mSDiOLIYCgueT8YVv7D8wG1Y=",
               "requires": {
                 "kind-of": "3.2.2"
@@ -19549,7 +19575,7 @@
         },
         "string-width": {
           "version": "1.0.2",
-          "resolved": "http://registry.npmjs.org/string-width/-/string-width-1.0.2.tgz",
+          "resolved": "https://registry.npmjs.org/string-width/-/string-width-1.0.2.tgz",
           "integrity": "sha1-EYvfW4zcUaKn5w0hHgfisLmxB9M=",
           "requires": {
             "code-point-at": "1.1.0",
