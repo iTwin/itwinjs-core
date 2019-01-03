@@ -7,8 +7,8 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 
-import TestUtils from "../TestUtils";
-import { GroupButton, CommandItemDef, GroupItemDef } from "../../ui-framework";
+import TestUtils from "../../TestUtils";
+import { GroupButton, CommandItemDef, GroupItemDef } from "../../../ui-framework";
 import { Direction } from "@bentley/ui-ninezone";
 
 const tool1 = new CommandItemDef({

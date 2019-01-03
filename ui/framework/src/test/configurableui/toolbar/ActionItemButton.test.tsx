@@ -7,38 +7,10 @@ import { mount, shallow } from "enzyme";
 import * as sinon from "sinon";
 
 import {
-  ToolButton,
   ActionItemButton,
   CommandItemDef,
-  FrontstageManager,
-} from "../../ui-framework";
-import TestUtils from "../TestUtils";
-
-describe("ToolButton", () => {
-
-  before(async () => {
-    await TestUtils.initializeUiFramework();
-  });
-
-  describe("<ToolButton />", () => {
-    it("should render", () => {
-      mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />);
-    });
-
-    it("renders correctly", () => {
-      FrontstageManager.setActiveToolId("tool1");
-      shallow(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" />).should.matchSnapshot();
-    });
-
-    it("should execute a function", () => {
-      const spyMethod = sinon.spy();
-      const wrapper = mount(<ToolButton toolId="tool1" iconSpec="icon-placeholder" labelKey="UiFramework:tests.label" execute={spyMethod} />);
-      wrapper.find(".nz-toolbar-item-icon").simulate("click");
-      spyMethod.should.have.been.called;
-      wrapper.unmount();
-    });
-  });
-});
+} from "../../../ui-framework";
+import TestUtils from "../../TestUtils";
 
 describe("ActionItemButton", () => {
 
