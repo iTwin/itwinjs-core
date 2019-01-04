@@ -63,11 +63,7 @@ function getConfig(env) {
       ]
     },
     externals: {
-      "@bentley/imodeljs-electronaddon": "@bentley/imodeljs-electronaddon",
-      "@bentley/imodeljs-nodeaddon": "@bentley/imodeljs-nodeaddon",
-      "@bentley/imodeljs-nodeaddon/NodeAddonLoader": "@bentley/imodeljs-nodeaddon/NodeAddonLoader",
-      "@bentley/imodeljs-nodeaddonapi/package.json": "@bentley/imodeljs-nodeaddonapi/package.json",
-      "@bentley/imodeljs-native-platform-api/package.json": "@bentley/imodeljs-native-platform-api/package.json,",
+      "@bentley/imodeljs-native/package.json": "@bentley/imodeljs-native/package.json,",
       "electron": "electron",
       "IModelJsFs": "IModelJsFs",
       "./IModelJsFs": "IModelJsFs",

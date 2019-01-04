@@ -31,9 +31,7 @@ module.exports = (publicPath) => {
     // The "externals" configuration option provides a way of excluding dependencies from the output bundles.
     externals: {
       // We need the following work around to keep the native addon loader out of the bundle:
-      "@bentley/imodeljs-electronaddon": "@bentley/imodeljs-electronaddon",
-      "@bentley/imodeljs-nodeaddon": "@bentley/imodeljs-nodeaddon",
-      "@bentley/imodeljs-native/package.json": "@bentley/imodeljs-nativeapi/package.json",
+      "@bentley/imodeljs-native/package.json": "@bentley/imodeljs-native/package.json",
     },
     // These are the "entry points" to our application.
     // This means they will be the "root" imports that are included in JS bundle.

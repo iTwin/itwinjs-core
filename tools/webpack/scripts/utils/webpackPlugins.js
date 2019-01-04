@@ -46,7 +46,7 @@ function findPackageJson(pkgName, parentPath) {
     const parentContainingDir = parentPath.replace(/^(.*node_modules).*$/, "$1");
     searchPaths.push(parentNodeModules, parentContainingDir);
   }
-  // Also search in node_modules/@bentley/imodeljs-backend, since we can't rely on imodeljs-native-platform-api being hoisted in a rush monorepo.
+  // Also search in node_modules/@bentley/imodeljs-backend, since we can't rely on imodeljs-native being hoisted in a rush monorepo.
   searchPaths.push(path.join(paths.appNodeModules, "@bentley", "imodeljs-backend"));
   searchPaths.push(paths.appNodeModules);
 
@@ -75,9 +75,9 @@ class CopyNativeAddonsPlugin {
   apply(compiler) {
     compiler.hooks.environment.tap("CopyNativeAddonsPlugin", () => {
       const appPackageJson = require(paths.appPackageJson);
-      // NEEDSWORK: We need to special case imodeljs-native-platform-api now that it is not an explicit dependency of most apps.
+      // NEEDSWORK: We need to special case imodeljs-native now that it is not an explicit dependency of most apps.
       // This is a bit of a hack, but it's easier to just do this for now than build out the entire dependency tree...
-      const appDependencies = new Set([...Object.keys(appPackageJson.dependencies), "@bentley/imodeljs-native-platform-api"]);
+      const appDependencies = new Set([...Object.keys(appPackageJson.dependencies), "@bentley/imodeljs-native"]);
       let packagesToCopy = [];
 
       // Copy any modules excluded from the bundle via the "externals" webpack config option
