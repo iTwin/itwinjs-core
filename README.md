@@ -23,7 +23,7 @@ See [rush.json](./rush.json) for the list of packages. These packages are descri
   * Controls the version number and package dependencies for **@bentley/geometry-core**
 * `core/common/package.json`
   * Controls the version number for **@bentley/imodeljs-common**
-  * Controls the package dependencies for the source code in common to both the backend and frontend
+  * Controls the package dependencies for the source code in common with both the backend and frontend
 * `core/backend/package.json`
   * Controls the version number and package dependencies for **@bentley/imodeljs-backend**
 * `core/clients/package.json`
@@ -48,9 +48,9 @@ Each package will have its own **node_modules** directory which will contain sym
 ## Prerequisites
 
 * [Git](https://git-scm.com/)
-* [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 8.11.x. The Node installation also includes the **npm** package manager.
+* [Node](https://nodejs.org/en/): an installation of the latest security patch of Node 10. The Node installation also includes the **npm** package manager.
 * [Rush](https://github.com/Microsoft/web-build-tools/wiki/Rush): to install `npm install -g @microsoft/rush`
-* [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`. Currently we're using version 3.0 of TypeScript.
+* [TypeScript](https://www.typescriptlang.org/): this is listed as a devDependency, so if you're building it from source, you will get it with `rush install`.
 * [Visual Studio Code](https://code.visualstudio.com/): an optional dependency, but the repository structure is optimized for its use
 
 ### Linux
