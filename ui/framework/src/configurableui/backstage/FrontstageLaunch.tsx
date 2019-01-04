@@ -85,6 +85,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
         label={this.state.label}
+        subtitle={this.state.subtitle}
         icon={PropsHelper.getIcon(this.state.iconSpec)}
         onClick={this.execute} />
     );

@@ -72,7 +72,7 @@ describe("Backstage", () => {
 
     it("CommandLaunchBackstageItem should render & execute", () => {
       const spyMethod = sinon.stub();
-      const wrapper = mount(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" subtitleKey="UiFramework:tests.subtitle" iconSpec="icon-placeholder" execute={spyMethod} />);
+      const wrapper = mount(<CommandLaunchBackstageItem commandId="my-command-id" labelKey="UiFramework:tests.label" descriptionKey="UiFramework:tests.subtitle" iconSpec="icon-placeholder" execute={spyMethod} />);
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       expect(spyMethod.calledOnce).to.be.true;

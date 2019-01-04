@@ -30,6 +30,13 @@ export interface LabelProps {
   labelKey?: string;
 }
 
+export interface DescriptionProps {
+  /** if set, it is used to explicitly set the description shown by a component. */
+  description?: string | StringGetter;
+  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if description is not explicitly set. */
+  descriptionKey?: string;
+}
+
 export interface TooltipProps {
   /** used to explicitly set the tooltip shown by a component. */
   tooltip?: string | StringGetter;

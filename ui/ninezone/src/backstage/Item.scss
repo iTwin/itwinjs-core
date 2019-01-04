@@ -45,11 +45,26 @@
     padding-right: $nz-backstage-icon-spacing-right;
   }
 
-  > span:last-child {
-    line-height: $nz-backstage-item-font-size;
-    text-overflow: ellipsis;
-    white-space: nowrap;
+  > div {
+    display: flex;
+    flex-direction: column;
+    padding-right: $bwc-sm;
     overflow: hidden;
-    padding-right: 14px;
+
+    > span {
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    > span:nth-child(1) {
+      line-height: $nz-backstage-item-font-size;
+    }
+
+    > span:nth-child(2) {
+      margin-top: $bwc-s;
+      font-size: $bwc-font-size;
+      color: $bwc-gray;
+    }
   }
 }
