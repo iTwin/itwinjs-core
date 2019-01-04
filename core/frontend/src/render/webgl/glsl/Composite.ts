@@ -49,7 +49,6 @@ const computeOpaqueColor = `
 vec4 computeOpaqueColor() {
   vec4 opaque = TEXTURE(u_opaque, v_texCoord);
   opaque.rgb *= computeAmbientOcclusion();
-  // opaque.rgb = vec3(computeAmbientOcclusion());
   return opaque;
 }
 `;

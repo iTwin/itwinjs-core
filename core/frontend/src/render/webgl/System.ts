@@ -71,7 +71,7 @@ export const enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
-const forceNoDrawBuffers = true;
+const forceNoDrawBuffers = false;
 const forceHalfFloat = false;
 const debugTextureLifetime = false;
 

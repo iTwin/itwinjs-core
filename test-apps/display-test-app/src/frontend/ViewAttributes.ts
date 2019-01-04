@@ -15,9 +15,12 @@ import {
   BackgroundMapProps,
   BackgroundMapType,
   RenderMode,
+  AmbientOcclusion,
 } from "@bentley/imodeljs-common";
 import { CheckBox, createCheckBox } from "./CheckBox";
 import { createComboBox } from "./ComboBox";
+import { createSlider, Slider } from "./Slider";
+import { createButton } from "./Button";
 
 type UpdateAttribute = (view: ViewState) => void;
 
@@ -32,6 +35,13 @@ export class ViewAttributesPanel {
   private readonly _removeMe: () => void;
   private readonly _parent: HTMLElement;
   private _id = 0;
+  private _aoBias?: Slider;
+  private _aoZLengthCap?: Slider;
+  private _aoIntensity?: Slider;
+  private _aoTexelStepSize?: Slider;
+  private _aoBlurDelta?: Slider;
+  private _aoBlurSigma?: Slider;
+  private _aoBlurTexelStepSize?: Slider;
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._vp = vp;
@@ -61,6 +71,7 @@ export class ViewAttributesPanel {
     this.addEnvAttribute("Ground Plane", "ground");
 
     this.addBackgroundMap();
+    this.addAmbientOcclusion();
 
     // Set initial states
     this.update();
@@ -143,6 +154,164 @@ export class ViewAttributesPanel {
     });
 
     this._element.appendChild(div);
+  }
+
+  private addAmbientOcclusion(): void {
+    const isAOSupported = (view: ViewState) => view.is3d();
+    const isAOEnabled = (view: ViewState) => view.viewFlags.ambientOcclusion;
+
+    const div = document.createElement("div");
+    div.appendChild(document.createElement("hr")!);
+
+    const slidersDiv = document.createElement("div")!;
+
+    const showHideDropDowns = (show: boolean) => {
+      const display = show ? "block" : "none";
+      slidersDiv.style.display = display;
+    };
+
+    const enableAO = (enabled: boolean) => {
+      this._vp.view.viewFlags.ambientOcclusion = enabled;
+      showHideDropDowns(enabled);
+      this.sync();
+    };
+    const checkbox = this.addCheckbox("Ambient Occlusion", enableAO, div).checkbox;
+
+    this._aoBias = createSlider({
+      parent: slidersDiv,
+      name: "Bias: ",
+      id: "viewAttr_AOBias",
+      min: "0.0",
+      step: "0.025",
+      max: "1.0",
+      value: "0.0",
+      handler: (slider) => this.updateAmbientOcclusion(parseFloat(slider.value)),
+    });
+
+    this._aoZLengthCap = createSlider({
+      parent: slidersDiv,
+      name: "zLengthCap: ",
+      id: "viewAttr_AOZLengthCap",
+      min: "0.0",
+      step: "0.000025",
+      max: "0.25",
+      value: "0.0",
+      handler: (slider) => this.updateAmbientOcclusion(undefined, parseFloat(slider.value)),
+    });
+
+    this._aoIntensity = createSlider({
+      parent: slidersDiv,
+      name: "intensity: ",
+      id: "viewAttr_AOIntensity",
+      min: "1.0",
+      step: "0.1",
+      max: "16.0",
+      value: "0.0",
+      handler: (slider) => this.updateAmbientOcclusion(undefined, undefined, parseFloat(slider.value)),
+    });
+
+    this._aoTexelStepSize = createSlider({
+      parent: slidersDiv,
+      name: "texelStepSize: ",
+      id: "viewAttr_AOTexelStepSize",
+      min: "1.0",
+      step: "0.005",
+      max: "5.0",
+      value: "0.0",
+      handler: (slider) => this.updateAmbientOcclusion(undefined, undefined, undefined, parseFloat(slider.value)),
+    });
+
+    this._aoBlurDelta = createSlider({
+      parent: slidersDiv,
+      name: "blurDelta: ",
+      id: "viewAttr_AOBlurDelta",
+      min: "0.5",
+      step: "0.0001",
+      max: "1.5",
+      value: "0.0",
+      handler: (slider) => this.updateAmbientOcclusion(undefined, undefined, undefined, undefined, parseFloat(slider.value)),
+    });
+
+    this._aoBlurSigma = createSlider({
+      parent: slidersDiv,
+      name: "blurSigma: ",
+      id: "viewAttr_AOBlurSigma",
+      min: "0.5",
+      step: "0.0001",
+      max: "5.0",
+      value: "0.0",
+      handler: (slider) => this.updateAmbientOcclusion(undefined, undefined, undefined, undefined, undefined, parseFloat(slider.value)),
+    });
+
+    this._aoBlurTexelStepSize = createSlider({
+      parent: slidersDiv,
+      name: "blurTexelStepSize: ",
+      id: "viewAttr_AOBlurTexelStepSize",
+      min: "1.0",
+      step: "0.005",
+      max: "5.0",
+      value: "0.0",
+      handler: (slider) => this.updateAmbientOcclusion(undefined, undefined, undefined, undefined, undefined, undefined, parseFloat(slider.value)),
+    });
+
+    createButton({
+      parent: slidersDiv,
+      id: "viewAttr_AOReset",
+      value: "Reset Ambient Occlusion",
+      handler: () => this.resetAmbientOcclusion(),
+    });
+
+    this._updates.push((view) => {
+      const visible = isAOSupported(view);
+      div.style.display = visible ? "block" : "none";
+      if (!visible)
+        return;
+
+      checkbox.checked = isAOEnabled(view);
+      showHideDropDowns(checkbox.checked);
+
+      this.updateAmbientOcclusionUI(view);
+    });
+
+    div.appendChild(slidersDiv);
+
+    this._element.appendChild(div);
+  }
+
+  private updateAmbientOcclusionUI(view: ViewState) {
+    const getAOSettings = (view: ViewState) => (view as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings;
+
+    const aoSettings = getAOSettings(view);
+
+    this._aoBias!.slider.value = aoSettings.bias!.toString();
+    this._aoZLengthCap!.slider.value = aoSettings.zLengthCap!.toString();
+    this._aoIntensity!.slider.value = aoSettings.intensity!.toString();
+    this._aoTexelStepSize!.slider.value = aoSettings.texelStepSize!.toString();
+    this._aoBlurDelta!.slider.value = aoSettings.blurDelta!.toString();
+    this._aoBlurSigma!.slider.value = aoSettings.blurSigma!.toString();
+    this._aoBlurTexelStepSize!.slider.value = aoSettings.blurTexelStepSize!.toString();
+  }
+
+  private updateAmbientOcclusion(newBias?: number, newZLengthCap?: number, newIntensity?: number, newTexelStepSize?: number, newBlurDelta?: number, newBlurSigma?: number, newBlurTexelStepSize?: number): void {
+    const oldAOSettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings;
+    const newAOSettings = AmbientOcclusion.Settings.fromJSON({
+      bias: newBias !== undefined ? newBias : oldAOSettings.bias,
+      zLengthCap: newZLengthCap !== undefined ? newZLengthCap : oldAOSettings.zLengthCap,
+      intensity: newIntensity !== undefined ? newIntensity : oldAOSettings.intensity,
+      texelStepSize: newTexelStepSize !== undefined ? newTexelStepSize : oldAOSettings.texelStepSize,
+      blurDelta: newBlurDelta !== undefined ? newBlurDelta : oldAOSettings.blurDelta,
+      blurSigma: newBlurSigma !== undefined ? newBlurSigma : oldAOSettings.blurSigma,
+      blurTexelStepSize: newBlurTexelStepSize !== undefined ? newBlurTexelStepSize : oldAOSettings.blurTexelStepSize,
+    });
+    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings = newAOSettings;
+    this.sync();
+  }
+
+  private resetAmbientOcclusion(): void {
+    const newAOSettings = AmbientOcclusion.Settings.defaults;
+    (this._vp.view as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings = newAOSettings;
+    this.sync();
+    this.updateAmbientOcclusionUI(this._vp.view);
   }
 
   private addBackgroundMap(): void {
