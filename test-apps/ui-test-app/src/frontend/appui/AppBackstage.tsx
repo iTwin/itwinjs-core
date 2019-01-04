@@ -84,7 +84,7 @@ class AppBackstage extends React.Component<AppBackstageProps> {
           {(isEnabled: boolean) => <FrontstageLaunchBackstageItem frontstageId="Test4" labelKey="SampleApp:backstage.testFrontstage4" iconSpec="icon icon-placeholder" isEnabled={isEnabled} />}
         </BooleanSyncUiListener>
         <SeparatorBackstageItem />
-        <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" labelKey="Views Frontstage" iconSpec="icon-placeholder" />
+        <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" label="View iModel" descriptionKey="SampleApp:backstage.iModelStage" iconSpec="icon-placeholder" />
       </Backstage>
     );
   }
