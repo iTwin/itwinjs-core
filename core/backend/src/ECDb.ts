@@ -5,11 +5,11 @@
 /** @module ECDb */
 
 import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { NativeECDb } from "./imodeljs-native-platform-api";
-import { NativePlatformRegistry } from "./NativePlatformRegistry";
+import { IModelJsNative } from "./IModelJsNative";
 import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { SqliteStatement, SqliteStatementCache, CachedSqliteStatement } from "./SqliteStatement";
 import { DbResult, OpenMode, IDisposable, Logger, assert } from "@bentley/bentleyjs-core";
+import { IModelHost } from "./IModelHost";
 
 const loggingCategory = "imodeljs-backend.ECDb";
 
@@ -23,12 +23,12 @@ export enum ECDbOpenMode {
 
 /** An ECDb file */
 export class ECDb implements IDisposable {
-  private _nativeDb: NativeECDb | undefined;
+  private _nativeDb?: IModelJsNative.ECDb;
   private readonly _statementCache: ECSqlStatementCache = new ECSqlStatementCache();
   private readonly _sqliteStatementCache: SqliteStatementCache = new SqliteStatementCache();
 
   constructor() {
-    this._nativeDb = new (NativePlatformRegistry.getNativePlatform()).NativeECDb();
+    this._nativeDb = new IModelHost.platform.ECDb();
   }
 
   /** Call this function when finished with this ECDb object. This releases the native resources held by the
@@ -222,7 +222,7 @@ export class ECDb implements IDisposable {
     return stmt;
   }
 
-  public get nativeDb(): NativeECDb {
+  public get nativeDb(): IModelJsNative.ECDb {
     if (!this._nativeDb)
       throw new IModelError(IModelStatus.BadRequest, "ECDb object has already been disposed.");
 

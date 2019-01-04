@@ -10,6 +10,25 @@
 import { Geometry } from "../Geometry";
 import { NumberArray } from "../geometry3d/PointHelpers";
 /**
+ * false ==> no wrap possible
+ * true ==> wrapped by adding poles
+ * 2 ==> wrapped by deleting extrme knots.
+ */
+export enum BSplineWrapMode {
+  /** No conversion to periodic */
+  None = 0,
+  /** Covnert to periodic by removing control points.  This is typical for closed bcurve constructed by control points with maximum continuity.
+   * * Knots stay the same in open and periodic form.
+   * * Periodic form omits {degree} control points.
+   */
+  OpenByAddingControlPoints = 1,
+  /** Covnert to periodc by adding special knots.  This is typical of closed bcurve constructed as exact circular or elliptic arc
+   * * 2 knots on each end are omitted in open form
+   * * poles stay the same.
+   */
+  OpenByRemovingKnots = 2,
+}
+/**
  * Array of non-decreasing numbers acting as a knot array for bsplines.
  *
  * * Essential identity: numKnots = numPoles + order = numPoles + degree - 1
@@ -28,14 +47,18 @@ export class KnotVector {
   public degree: number;
   private _knot0: number;
   private _knot1: number;
-  private _possibleWrap: boolean;
+
+  private _wrapMode?: BSplineWrapMode;
   public static readonly knotTolerance = 1.0e-9;
   public get leftKnot() { return this._knot0; }
   public get rightKnot() { return this._knot1; }
   public get leftKnotIndex() { return this.degree - 1; }
   public get rightKnotIndex() { return this.knots.length - this.degree; }
-  public get wrappable() { return this._possibleWrap; }
-  public set wrappable(value: boolean) { this._possibleWrap = value; }
+  /**
+   * Return true if the bspline was created by adding poles in to "closed" structure
+   */
+  public get wrappable() { return this._wrapMode === undefined ? BSplineWrapMode.None : this._wrapMode; }
+  public set wrappable(value: BSplineWrapMode) { this._wrapMode = value; }
   public get numSpans() { return this.rightKnotIndex - this.leftKnotIndex; }
   /**
    *
@@ -46,7 +69,6 @@ export class KnotVector {
    */
   private constructor(knots: number[] | Float64Array | number, degree: number) {
     this.degree = degree;
-    this._possibleWrap = false;
     // default values to satisfy compiler -- real values hapn setupFixedValues or final else defers to user
     this._knot0 = 0.0;
     this._knot1 = 1.0;
@@ -71,19 +93,43 @@ export class KnotVector {
   }
   /** @returns Return the total knot distance from beginning to end. */
   public get knotLength01(): number { return this._knot1 - this._knot0; }
-  /** @returns true if all numeric values have wraparound conditions for "closed" knotVector. */
-  public testClosable(): boolean {
+  /**
+   * @param mdoe optional test mode.  If undefined, use the this.wrappable.
+   * @returns true if all numeric values have wraparound conditions for "closed" knotVector with specified wrap mode
+   */
+  public testClosable(mode?: BSplineWrapMode): boolean {
+    if (mode === undefined)
+      mode = this.wrappable;
     const leftKnotIndex = this.leftKnotIndex;
     const rightKnotIndex = this.rightKnotIndex;
     const period = this.rightKnot - this.leftKnot;
     const degree = this.degree;
     const indexDelta = rightKnotIndex - leftKnotIndex;
-    for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree - 1; k0++) {
-      const k1 = k0 + indexDelta;
-      if (!Geometry.isSameCoordinate(this.knots[k0] + period, this.knots[k1]))
-        return false;
+    // maximum continuity mode .  . .
+    if (mode === BSplineWrapMode.OpenByAddingControlPoints) {
+      for (let k0 = leftKnotIndex - degree + 1; k0 < leftKnotIndex + degree - 1; k0++) {
+        const k1 = k0 + indexDelta;
+        if (!Geometry.isSameCoordinate(this.knots[k0] + period, this.knots[k1]))
+          return false;
+      }
+      return true;
     }
-    return true;
+    // arc mode ...
+    if (mode === BSplineWrapMode.OpenByRemovingKnots) {
+      // we expect {degree} replicated knots at each end . . .
+      const numRepeated = degree - 1;
+      const leftKnot = this.knots[leftKnotIndex];
+      const rightKnot = this.knots[rightKnotIndex];
+      for (let i = 0; i < numRepeated; i++) {
+        if (!Geometry.isSameCoordinate(leftKnot, this.knots[leftKnotIndex - i]))
+          return false;
+        if (!Geometry.isSameCoordinate(rightKnot, this.knots[rightKnotIndex + i]))
+          return false;
+      }
+      return true;
+    }
+
+    return false;
   }
   public isAlmostEqual(other: KnotVector): boolean {
     if (this.degree !== other.degree) return false;
@@ -330,7 +376,7 @@ export class KnotVector {
    * in classic over-clamped manner
    */
   public copyKnots(includeExtraEndKnot: boolean): number[] {
-    const wrap = this.wrappable && this.testClosable();
+    const wrap = this.wrappable === BSplineWrapMode.OpenByAddingControlPoints && this.testClosable();
     const leftIndex = this.leftKnotIndex;
     const rightIndex = this.rightKnotIndex;
     const a0 = this.leftKnot;

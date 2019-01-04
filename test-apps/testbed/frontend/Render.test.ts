@@ -10,6 +10,7 @@ import { CONSTANTS } from "../common/Testbed";
 import { RenderMode, ColorDef, RgbColor } from "@bentley/imodeljs-common";
 import { RenderMemory, Pixel } from "@bentley/imodeljs-frontend/lib/rendering";
 import {
+  DepthRangeNpc,
   IModelConnection,
   SpatialViewState,
   ViewRect,
@@ -250,6 +251,45 @@ describe("Render mirukuru", () => {
           expect(c.a).to.equal(0xff); // The alpha is intentionally not preserved by Viewport.readImage()
         }
       }
+    });
+  });
+
+  it("should determine visible depth range", async () => {
+    const fullRect = new ViewRect(0, 0, 100, 100);
+    await testViewports("0x24", imodel, fullRect.width, fullRect.height, async (vp) => {
+      await vp.waitForAllTilesToRender();
+
+      // Depth range for entire view should correspond to the face of the slab in the center of the view which is parallel to the camera's near+far planes.
+      // i.e., min and max should be equal, and roughly half-way between the near and far planes.
+      const fullRange = vp.determineVisibleDepthRange(fullRect);
+      expect(fullRange).not.to.be.undefined;
+      expect(fullRange!.minimum).least(0.45);
+      expect(fullRange!.minimum).most(0.55);
+      expect(fullRange!.minimum).to.equal(fullRange!.maximum);
+
+      // If we pass in a DepthRangeNpc, the same object should be returned to us.
+      const myRange = new DepthRangeNpc();
+      let range = vp.determineVisibleDepthRange(fullRect, myRange);
+      expect(range).to.equal(myRange);
+      expect(range!.maximum).to.equal(fullRange!.maximum);
+      expect(range!.minimum).to.equal(fullRange!.minimum);
+
+      // Depth range in center of view should be same as above.
+      const centerRect = new ViewRect(40, 40, 60, 60);
+      range = vp.determineVisibleDepthRange(centerRect);
+      expect(range!.maximum).to.equal(fullRange!.maximum);
+      expect(range!.minimum).to.equal(fullRange!.minimum);
+
+      // Depth range in empty portion of view should be null.
+      const topLeftRect = new ViewRect(0, 0, 5, 5);
+      range = vp.determineVisibleDepthRange(topLeftRect);
+      expect(range).to.be.undefined;
+
+      // If we pass in an output DepthRangeNpc, and read an empty portion of view, the output should be set to a null range but the reutnr value should still be undefined.
+      range = vp.determineVisibleDepthRange(topLeftRect, myRange);
+      expect(range).to.be.undefined;
+      expect(myRange.minimum).to.equal(1);
+      expect(myRange.maximum).to.equal(0);
     });
   });
 });

@@ -528,16 +528,14 @@ export namespace IModelTileIO {
       const indices = this.readVertexIndices(json.indices);
       const prevIndices = this.readVertexIndices(json.prevIndices);
       const nextIndicesAndParams = this.findBuffer(json.nextIndicesAndParams);
-      const distanceBytes = this.findBuffer(json.distances);
 
-      if (undefined === indices || undefined === prevIndices || undefined === nextIndicesAndParams || undefined === distanceBytes)
+      if (undefined === indices || undefined === prevIndices || undefined === nextIndicesAndParams)
         return undefined;
 
       return {
         indices,
         prevIndices,
         nextIndicesAndParams,
-        distances: new Float32Array(distanceBytes.buffer),
       };
     }
 

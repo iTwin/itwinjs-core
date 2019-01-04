@@ -35,6 +35,11 @@
     <!-- Browser file selector only used when we are running in browser and were given a base path for all standalone files -->
     <input type="file" id="browserFileSelector" />
     <div class=topdiv id="toolBar">
+      <div class="simpleicon" id="debugPanelContainer">
+        <div id="debugPanelToggle">
+          <i class="bim-icon-settings"></i>
+        </div>
+      </div>
       <div class="simpleicon" id="selectIModel">
         <i class="bim-icon-briefcases"></i>
       </div>
@@ -54,9 +59,9 @@
         <div class="scrollingToolMenu" id="toggleModelMenu">
         </div>
       </div>
-      <div class="simpleicon" id="startCategorySelection">
-        <i class="bim-icon-categories"></i>
-        <div class="scrollingToolMenu" id="categorySelectionMenu">
+      <div class="simpleicon" id="categoryPickerContainer">
+        <div id="categoryPickerToggle">
+          <i class="bim-icon-categories"></i>
         </div>
       </div>
       <div class="simpleicon" id="startToggleContextRealityModel">
@@ -99,70 +104,9 @@
           </div>
         </div>
       </div>
-      <div class="simpleicon" id="changeRenderMode">
-        <div id="renderModeToggle">
+      <div class="simpleicon" id="viewAttributesContainer">
+        <div id="viewAttributesToggle">
           <i class="bim-icon-settings"></i>
-        </div>
-        <div class="toolMenu" id="changeRenderModeMenu">
-          <label for="renderModeList">Mode:</label>
-          <select id="renderModeList" name="renderModeList">
-            <option>Smooth Shade</option>
-            <option>Solid Fill</option>
-            <option>Hidden Line</option>
-            <option>Wireframe</option>
-          </select>
-          <br>
-          <input id="skybox" type="checkbox"> Skybox
-          <br>
-          <input id="groundplane" type="checkbox"> Ground Plane
-          <br>
-          <input id="ACSTriad" type="checkbox"> ACS Triad
-          <br>
-          <input id="fill" type="checkbox"> Fill
-          <br>
-          <input id="grid" type="checkbox"> Grid
-          <br>
-          <input id="textures" type="checkbox"> Textures
-          <br>
-          <input id="visibleEdges" type="checkbox"> Visible Edges
-          <br>
-          <input id="hiddenEdges" type="checkbox"> Hidden Edges
-          <br>
-          <input id="materials" type="checkbox"> Materials
-          <br>
-          <input id="lights" type="checkbox"> Lights
-          <br>
-          <input id="monochrome" type="checkbox"> Monochrome
-          <br>
-          <input id="constructions" type="checkbox"> Constructions
-          <br>
-          <input id="transparency" type="checkbox"> Transparency
-          <br>
-          <input id="weights" type="checkbox"> Line Weight
-          <br>
-          <input id="styles" type="checkbox"> Line Styles
-          <br>
-          <input id="backgroundMap" type="checkbox"> Background Map
-          <br>
-          <label for="mapProviderList">Map Provider:</label>
-          <select id="mapProviderList" name="mapProviderList">
-            <option>BingProvider</option>
-            <option>MapBoxProvider</option>
-          </select>
-          <br>
-          <label for="mapTypeList">Map Type:</label>
-          <select id="mapTypeList" name="mapTypeList">
-            <option>Street</option>
-            <option>Aerial</option>
-            <option>Hybrid</option>
-          </select>
-          <br>
-          <input id="clipVolume" type="checkbox"> Clip Volume
-          <br>
-          <input id="continuousRendering" type="checkbox"> Cont. Rendering
-          <br>
-          <input id="boundingBoxes" type="checkbox"> Bounding Boxes
-          <br>
         </div>
       </div>
       <div class="simpleicon" id="doUndo">
@@ -222,18 +166,16 @@
           </div>
         </div>
       </div>
-      <div>
-        <progress id="tile-load-indicator" />
-      </div>
-      <span class="fsp-info" id="showfps" style="display: none;">Avg. FPS (ms): ---- Render Time (ms): ----
-        <br />Scene Time (ms): ----</span>
-      <span class="statusspan" id="showstatus" style="display:inline;"></span>
-      <span class="statusspan" id="showerror" style="display:inline;"></span>
     </div>
     <div id="spinner" class="bim-spinner-container">
       <div class="bim-spinner"></div>
     </div>
     <div class="imodel-viewport" id="imodel-viewport">
+    </div>
+    <div class="bottomdiv">
+      <span class="statusspan" id="showstatus" style="display:inline;"></span>
+      <span class="statusspan" id="showerror" style="display:inline;"></span>
+      <span id="tileLoadIndicatorContainer"></span>
     </div>
 </body>
 

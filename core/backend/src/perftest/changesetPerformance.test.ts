@@ -1,4 +1,4 @@
-import { IModelDb, NativePlatformRegistry, OpenParams, IModelJsFs, KeepBriefcase } from "../imodeljs-backend";
+import { IModelDb, OpenParams, IModelJsFs, KeepBriefcase } from "../imodeljs-backend";
 import { Config, IModelHubClient, ImsActiveSecureTokenClient, AuthorizationToken, AccessToken, ChangeSet } from "@bentley/imodeljs-clients";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
@@ -7,6 +7,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { assert } from "chai";
 import { Element } from "../Element";
+import { IModelHost } from "../IModelHost";
 
 async function getImodelAfterApplyingCS(csvPath: string) {
   csvPath = csvPath;
@@ -22,7 +23,7 @@ async function getImodelAfterApplyingCS(csvPath: string) {
   };
   Config.App.merge(myAppConfig);
   const client: IModelHubClient = new IModelHubClient();
-  NativePlatformRegistry.loadAndRegisterStandardNativePlatform(myAppConfig.imjs_buddi_resolve_url_using_region);
+  IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   const actLogCtx = new ActivityLoggingContext(Guid.createValue());
   const imsClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
@@ -79,7 +80,7 @@ async function pushImodelAfterMetaChanges(csvPath: string) {
   };
   Config.App.merge(myAppConfig);
   const client: IModelHubClient = new IModelHubClient();
-  NativePlatformRegistry.loadAndRegisterStandardNativePlatform(myAppConfig.imjs_buddi_resolve_url_using_region);
+  IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   const actLogCtx = new ActivityLoggingContext(Guid.createValue());
   const imsClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();

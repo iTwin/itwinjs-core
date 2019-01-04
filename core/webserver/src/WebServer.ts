@@ -19,7 +19,7 @@ import * as kill from "tree-kill";
 function getArgs(): any {
   const args = yargs
     .usage("$0 <port> <resources>")
-    .wrap(yargs.argv.terminalWidth)
+    .wrap(yargs.argv.terminalWidth as number)
     .option("port", {
       alias: ["p", "port"],
       description: "Web Server Port",

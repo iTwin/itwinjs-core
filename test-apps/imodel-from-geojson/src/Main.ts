@@ -23,8 +23,8 @@ const argv: yargs.Arguments<{}> = yargs
 IModelHost.startup();
 Logger.initializeToConsole();
 
-const geoJson = new GeoJson(argv.input);
-const importer = new GeoJsonImporter(argv.output, geoJson);
+const geoJson = new GeoJson(argv.input as string);
+const importer = new GeoJsonImporter(argv.output as string, geoJson);
 importer.import();
 
 IModelHost.shutdown();

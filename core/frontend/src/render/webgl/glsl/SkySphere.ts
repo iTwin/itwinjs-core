@@ -11,7 +11,7 @@ import { GLSLFragment } from "./Fragment";
 import { createViewportQuadBuilder } from "./ViewportQuad";
 import { FrustumUniformType, fromSumOf } from "../Target";
 import { Frustum, Npc } from "@bentley/imodeljs-common";
-import { Vector3d, Point3d, Constant } from "@bentley/geometry-core";
+import { Vector3d, Point3d, Angle} from "@bentley/geometry-core";
 import { SkySphereViewportQuadGeometry } from "../CachedGeometry";
 import { GL } from "../GL";
 import { Texture } from "../Texture";
@@ -121,7 +121,7 @@ export function createSkySphereProgram(context: WebGLRenderingContext, isGradien
         const delta = Vector3d.createStartEnd(frustum.getCorner(Npc.LeftBottomRear), frustum.getCorner(Npc.LeftBottomFront));
         const pseudoCameraHalfAngle = 22.5;
         const diagonal = frustum.getCorner(Npc.LeftBottomRear).distance(frustum.getCorner(Npc.RightTopRear));
-        const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Constant.radiansPerDegree));
+        const focalLength = diagonal / (2 * Math.atan(pseudoCameraHalfAngle * Angle.radiansPerDegree));
         const worldEye = Point3d.createAdd3Scaled(frustum.getCorner(Npc.LeftBottomRear), .5, frustum.getCorner(Npc.RightTopRear), .5, delta, focalLength / delta.magnitude());
         scratch3Floats[0] = worldEye.x;
         scratch3Floats[1] = worldEye.y;

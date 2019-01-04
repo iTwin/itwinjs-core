@@ -3,20 +3,18 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import * as TypeMoq from "typemoq";
-import * as path from "path";
-import { assert } from "chai";
-import { IModelJsFs } from "../IModelJsFs";
-import { BriefcaseManager, IModelHost } from "../imodeljs-backend";
-import {
-  AccessToken, ConnectClient, Project, IModelHubClient, WsgInstance, ECJsonTypeMap,
-  Response, ChangeSet, HubIModel, Briefcase, SeedFile, InitializationState,
-  UserInfo, Version, IModelQuery, ChangeSetQuery, IModelsHandler, BriefcaseHandler,
-  ChangeSetHandler, VersionHandler, VersionQuery, UserInfoHandler, UserInfoQuery, HubUserInfo,
-  ConnectRequestQueryOptions,
-} from "@bentley/imodeljs-clients";
-import { KnownLocations } from "../Platform";
 import { ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
+import {
+  AccessToken, Briefcase, BriefcaseHandler, ChangeSet, ChangeSetHandler, ChangeSetQuery, ConnectClient, ConnectRequestQueryOptions, ECJsonTypeMap,
+  HubIModel, HubUserInfo, IModelHubClient, IModelQuery, IModelsHandler, InitializationState, Project, Response, SeedFile, UserInfo,
+  UserInfoHandler, UserInfoQuery, Version, VersionHandler, VersionQuery, WsgInstance,
+} from "@bentley/imodeljs-clients";
+import { assert } from "chai";
+import * as path from "path";
+import * as TypeMoq from "typemoq";
+import { BriefcaseManager } from "../BriefcaseManager";
+import { IModelHost, KnownLocations } from "../IModelHost";
+import { IModelJsFs } from "../IModelJsFs";
 
 const actx = new ActivityLoggingContext("");
 

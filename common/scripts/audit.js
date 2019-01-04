@@ -3,6 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
+/* WIP WIP WIP: Disabled because of switch to pnpm
 const path = require("path");
 const fs = require("fs");
 const { spawnSync } = require("child_process");
@@ -58,6 +59,20 @@ for (const action of jsonOut.actions) {
     const severity = advisory.severity.toUpperCase();
     const message = `${severity} Security Vulnerability: ${advisory.title} in ${advisory.module_name} (from ${mpath}).  See ${advisory.url} for more info.`;
 
+    // WORKAROUND: The following security vulnerability is from webpack-dev-server versions <3.1.5.  This repository has been updated to 3.1.6, however due to a typo
+    // in the npm vulnerability database, https://github.com/webpack/webpack-dev-server/issues/1615 and https://npm.community/t/npm-audit-sweems-to-get-semver-wrong/4352/4,
+    // npm audit is still flagging this as an issue.
+    //
+    // Security Warning:
+    //    ERROR: HIGH Security Vulnerability: Missing Origin Validation in webpack-dev-server (from webpack-dev-server).  See https://npmjs.com/advisories/725 for more info.
+    if (725 === issue.id) {
+      if (process.env.TF_BUILD && process.platform === "win32")
+        console.log("##vso[task.logissue type=warning;]%s", message);
+      else
+        console.log("WARNING: %s", message);
+      continue;
+    }
+
     // For now, we'll only treat HIGH and CRITICAL vulnerabilities as errors in CI builds.
     if (severity === "HIGH" || severity === "CRITICAL")
       logBuildError(message);
@@ -66,5 +81,8 @@ for (const action of jsonOut.actions) {
   }
 }
 
-if (jsonOut.metadata.vulnerabilities.high || jsonOut.metadata.vulnerabilities.critical)
-  failBuild();
+if (jsonOut.metadata.vulnerabilities.high || jsonOut.metadata.vulnerabilities.critical) {
+  if (1 < jsonOut.actions.length || jsonOut.actions[0].resolves[0].id !== 725)
+    failBuild();
+}
+*/

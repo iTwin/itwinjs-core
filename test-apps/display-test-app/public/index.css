@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+ * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+ *--------------------------------------------------------------------------------------------*/
 
 .simpleicon {
   position:relative;
@@ -9,14 +9,8 @@
   border-color: gray;
   border-style: solid;
   border-width: 1px;
-  padding-left: 3px;
-  padding-right: 3px;
-  padding-top: 3px;
-  padding-bottom: 3px;
-  margin-left: 3px;
-  margin-top: 3px;
-  margin-right: 3px;
-  margin-bottom: 3px;
+  padding: 3px;
+  margin: 3px;
   width: 35px;
   height: 35px;
   cursor:pointer;
@@ -42,62 +36,58 @@
   padding-right:2.5px;
 }
 
-.statusspan {
-  margin-left: 20px;
+.bottomdiv {
+  width: 98%;
+  margin-left: 5px;
+  margin-bottom: 5px;
 }
 
-.fsp-info {
-  background-color: #f0f0f0;
-  border-color: gray;
-  border-style: solid;
-  border-width: 1px;
-  padding-left: 3px;
-  padding-right: 3px;
-  padding-top: 3px;
-  padding-bottom: 3px;
-  margin-left: 3px;
-  margin-right: 3px;
-  display: inline;
+#tileLoadIndicatorContainer {
+  float: right;
+}
+
+.statusspan {
+  margin-left: 5px;
 }
 
 .bim-spinner-container {
-    position:absolute;
-    z-index:9999999;
-    height:100%;
-    width:100%;
-    background-color:rgba(255, 255, 255, 0.5);
-    top:0;
-    left:0;
+  position:absolute;
+  z-index:9999999;
+  height:100%;
+  width:100%;
+  background-color:rgba(255, 255, 255, 0.5);
+  top:0;
+  left:0;
 }
 
 .bim-spinner {
-    position:absolute;
-    display:block;
-    top:calc(50% - 45px);
-    left:calc(50% - 45px);
-    width: 90px;
-    height:90px;
-    border: 5px solid #f3f3f3; /* Light grey */
-    border-top: 5px solid  #008be1; /* Blue */
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+  position:absolute;
+  display:block;
+  top:calc(50% - 45px);
+  left:calc(50% - 45px);
+  width: 90px;
+  height:90px;
+  border: 5px solid #f3f3f3; /* Light grey */
+  border-top: 5px solid  #008be1; /* Blue */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
 .tile-load-spinner {
-    position: relative;
-    float:right;
-    margin:10px;
-    width: 33px;
-    height:33px;
-    border: 5px solid #f3f3f3; /* Light grey */
-    border-top: 5px solid  #008be1; /* Blue */
-    border-radius: 50%;
-    animation: spin 1s linear infinite;
+  position: relative;
+  float:right;
+  margin:10px;
+  width: 33px;
+  height:33px;
+  border: 5px solid #f3f3f3; /* Light grey */
+  border-top: 5px solid  #008be1; /* Blue */
+  border-radius: 50%;
+  animation: spin 1s linear infinite;
 }
 
 @keyframes spin {
-    0% { transform: rotate(0deg); }
-    100% { transform: rotate(360deg); }
+  0% { transform: rotate(0deg); }
+  100% { transform: rotate(360deg); }
 }
 
 #viewList {
@@ -113,9 +103,9 @@
   font-family: 'Bentley-Cesium-Web-Viewer-Icons';
   src:  url('Fonts/Bentley-Cesium-Web-Viewer-Icons.eot');
   src:  url('Fonts/Bentley-Cesium-Web-Viewer-Icons.eot?#iefix') format('embedded-opentype'),
-    url('Fonts/Bentley-Cesium-Web-Viewer-Icons.ttf') format('truetype'),
-    url('Fonts/Bentley-Cesium-Web-Viewer-Icons.woff') format('woff'),
-    url('Fonts/Bentley-Cesium-Web-Viewer-Icons.svg?#Bentley-Cesium-Web-Viewer-Icons') format('svg');
+  url('Fonts/Bentley-Cesium-Web-Viewer-Icons.ttf') format('truetype'),
+  url('Fonts/Bentley-Cesium-Web-Viewer-Icons.woff') format('woff'),
+  url('Fonts/Bentley-Cesium-Web-Viewer-Icons.svg?#Bentley-Cesium-Web-Viewer-Icons') format('svg');
   font-weight: normal;
   font-style: normal;
 }
@@ -222,61 +212,61 @@
   content: "\e916";
 }
 .bim-icon-link:before {
-    content: "\e9cb";
+  content: "\e9cb";
 }
 .bim-icon-paste:before {
-    content: "\e92d";
+  content: "\e92d";
 }
 .bim-icon-property-data:before {
-    content: "\e9d8";
+  content: "\e9d8";
 }
 .bim-icon-cancel:before {
-    content: "\ea2a";
+  content: "\ea2a";
 }
 .bim-icon-calendar:before {
-    content: "\e970";
+  content: "\e970";
 }
 .bim-icon-briefcases:before {
-    content: "\e9cc";
+  content: "\e9cc";
 }
 .bim-icon-drawer:before {
-    content: "\e979";
+  content: "\e979";
 }
 .rd-icon-measure-position:before {
-    content: "\eb08";
+  content: "\eb08";
 }
 .rd-icon-measure-distance:before {
-    content: "\eb09";
+  content: "\eb09";
 }
 .rd-icon-measure-area:before {
-    content: "\eb0a";
+  content: "\eb0a";
 }
 .bim-icon-measure-tool:before {
-      content: "\e9b4";
+  content: "\e9b4";
 }
 .bim-icon-undo:before {
-      content: "\e982";
+  content: "\e982";
 }
 .bim-icon-redo:before {
-      content: "\e983";
+  content: "\e983";
 }
 .bim-icon-model:before {
-      content: "\e90b";
+  content: "\e90b";
 }
 .bim-icon-model:categories {
-      content: "\e901";
+  content: "\e901";
 }
 .bim-icon-animation:before {
-      content: "\e931";
+  content: "\e931";
 }
 .bim-icon-play:before {
-      content: "\ea32";
+  content: "\ea32";
 }
 .bim-icon-pause:before {
-      content: "\ea33";
+  content: "\ea33";
 }
 .bim-icon-stop:before {
-      content: "\ea34";
+  content: "\ea34";
 }
 
 .toolMenu {
@@ -284,8 +274,7 @@
   background-color: #f0f0f0;
   display:none;
   width:256px;
-  padding-left: 3px;
-  padding-top: 3px;
+  padding: 3px;
   z-index: 999;
   top: 45px;
   left: -1px;
@@ -298,17 +287,30 @@
   background-color: #f0f0f0;
   display:none;
   width:200px;
-  padding-left: 3px;
-  padding-top: 3px;
+  padding: 3px;
+  z-index: 999;
+  top: 45px;
+  right: -1px;
+  border-color: gray;
+  border-style: solid;
+  border-width: 1px;
+  float:right;
+  overflow-y: auto;
+  height: 400px;
+}
+
+.debugPanel {
+  position:absolute;
+  background-color: #f0f0f0;
+  display:block;
+  width:256px;
+  padding: 3px;
   z-index: 999;
   top: 45px;
   left: -1px;
   border-color: gray;
   border-style: solid;
   border-width: 1px;
-  float:left;
-  overflow-y: auto;
-  height: 400px;
 }
 
 .tooltip {
@@ -331,77 +333,77 @@
 
 .popper .popper__arrow,
 .tooltip .tooltip-arrow {
-    width: 0;
-    height: 0;
-    border-style: solid;
-    position: absolute;
-    margin: 5px;
+  width: 0;
+  height: 0;
+  border-style: solid;
+  position: absolute;
+  margin: 5px;
 }
 
 .tooltip .tooltip-arrow,
 .popper .popper__arrow {
-    border-color: rgb(255, 252, 216);
+  border-color: rgb(255, 252, 216);
 }
 .popper[x-placement^="top"],
 .tooltip[x-placement^="top"] {
-    margin-bottom: 10px;
+  margin-bottom: 10px;
 }
 
 .popper[x-placement^="top"] .popper__arrow,
 .tooltip[x-placement^="top"] .tooltip-arrow {
-    border-width: 5px 5px 0 5px;
-    border-left-color: transparent;
-    border-right-color: transparent;
-    border-bottom-color: transparent;
-    bottom: -5px;
-    left: calc(50% - 5px);
-    margin-top: 0;
-    margin-bottom: 0;
+  border-width: 5px 5px 0 5px;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  bottom: -5px;
+  left: calc(50% - 5px);
+  margin-top: 0;
+  margin-bottom: 0;
 }
 .popper[x-placement^="bottom"],
 .tooltip[x-placement^="bottom"] {
-    margin-top: 5px;
+  margin-top: 5px;
 }
 .tooltip[x-placement^="bottom"] .tooltip-arrow,
 .popper[x-placement^="bottom"] .popper__arrow {
-    border-width: 0 5px 5px 5px;
-    border-left-color: transparent;
-    border-right-color: transparent;
-    border-top-color: transparent;
-    top: -5px;
-    left: calc(50% - 5px);
-    margin-top: 0;
-    margin-bottom: 0;
+  border-width: 0 5px 5px 5px;
+  border-left-color: transparent;
+  border-right-color: transparent;
+  border-top-color: transparent;
+  top: -5px;
+  left: calc(50% - 5px);
+  margin-top: 0;
+  margin-bottom: 0;
 }
 .tooltip[x-placement^="right"],
 .popper[x-placement^="right"] {
-    margin-left: 5px;
+  margin-left: 5px;
 }
 .popper[x-placement^="right"] .popper__arrow,
 .tooltip[x-placement^="right"] .tooltip-arrow {
-    border-width: 5px 5px 5px 0;
-    border-left-color: transparent;
-    border-top-color: transparent;
-    border-bottom-color: transparent;
-    left: -5px;
-    top: calc(50% - 5px);
-    margin-left: 0;
-    margin-right: 0;
+  border-width: 5px 5px 5px 0;
+  border-left-color: transparent;
+  border-top-color: transparent;
+  border-bottom-color: transparent;
+  left: -5px;
+  top: calc(50% - 5px);
+  margin-left: 0;
+  margin-right: 0;
 }
 .popper[x-placement^="left"],
 .tooltip[x-placement^="left"] {
-    margin-right: 5px;
+  margin-right: 5px;
 }
 .popper[x-placement^="left"] .popper__arrow,
 .tooltip[x-placement^="left"] .tooltip-arrow {
-    border-width: 5px 0 5px 5px;
-    border-top-color: transparent;
-    border-right-color: transparent;
-    border-bottom-color: transparent;
-    right: -5px;
-    top: calc(50% - 5px);
-    margin-left: 0;
-    margin-right: 0;
+  border-width: 5px 0 5px 5px;
+  border-top-color: transparent;
+  border-right-color: transparent;
+  border-bottom-color: transparent;
+  right: -5px;
+  top: calc(50% - 5px);
+  margin-left: 0;
+  margin-right: 0;
 }
 
 .notification-messagebox {
@@ -455,4 +457,13 @@
 #browserFileSelector {
   position: absolute;
   display: none;
+}
+
+hr {
+  display: block;
+  height: 1px;
+  border: 0;
+  border-top: 1px solid #ccc;
+  margin: 2px 0;
+  padding: 0;
 }

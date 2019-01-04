@@ -10,316 +10,18 @@
 // import { Geometry } from "./Geometry";
 import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
-import { Range3d, Range2d, Range1d } from "../geometry3d/Range";
+import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
 import { NumberArray } from "../geometry3d/PointHelpers";
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { PolyfaceData } from "./PolyfaceData";
+import { FacetFaceData } from "./FacetFaceData";
 
-/**
- * Check validity of indices into a data array.
- * * It is valid to have  both indices and data undeinfed.
- * * It is NOT valid for just one to be defined.
- * * Index values at indices[indexPositionA <= i < indexPositionB] must be valid indices to the data array.
- * @param indices array of indices.
- * @param indexPositionA first index to test
- * @param indexPositionB one past final index to test
- * @param data data array.  Only its length is referenced.
- */
-function areIndicesValid(indices: number[] | undefined, indexPositionA: number, indexPositionB: number, data: any[] | undefined): boolean {
-  if (indices === undefined && data === undefined)
-    return true;
-  if (!indices || !data)
-    return false;
-  const dataLength = data.length;
-  if (indexPositionA < 0 || indexPositionA >= indices.length)
-    return false;
-  if (indexPositionB < indexPositionA || indexPositionB > indices.length)
-    return false;
-  for (let i = indexPositionA; i < indexPositionB; i++)
-    if (indices[i] < 0 || indices[i] >= dataLength)
-      return false;
-  return true;
-}
 function allDefined(valueA: any, valueB: any, valueC: any): boolean {
   return valueA !== undefined && valueB !== undefined && valueC !== undefined;
-}
-
-/**
- * Data for a face in a polyface containing facets.
- * This is built up cooperatively by the PolyfaceBuilder and its
- * callers, and stored as a FaceData array in PolyfaceData.
- */
-export class FacetFaceData {
-  private _paramDistanceRange: Range2d;
-  private _paramRange: Range2d;
-
-  public get paramDistanceRange(): Range2d { return this._paramDistanceRange; }
-  public get paramRange(): Range2d { return this._paramRange; }
-
-  private constructor(distanceRange: Range2d, paramRange: Range2d) {
-    this._paramDistanceRange = distanceRange;
-    this._paramRange = paramRange;
-  }
-
-  /** Create a FacetFaceData with null ranges. */
-  public static createNull(): FacetFaceData {
-    return new FacetFaceData(Range2d.createNull(), Range2d.createNull());
-  }
-
-  /** Create a deep copy of this FacetFaceData object. */
-  public clone(result?: FacetFaceData): FacetFaceData {
-    if (result) {
-      this._paramDistanceRange.clone(result._paramDistanceRange);
-      this._paramRange.clone(result._paramRange);
-      return result;
-    }
-    return new FacetFaceData(this._paramDistanceRange.clone(), this._paramRange.clone());
-  }
-
-  /** Restore this FacetFaceData to its null constructor state. */
-  public null() {
-    this._paramDistanceRange.setNull();
-    this._paramRange.setNull();
-  }
-
-  /** Return distance-based parameter from stored parameter value. */
-  public convertParamToDistance(param: Point2d, result?: Point2d): Point2d {
-    result = result ? result : Point2d.create();
-    const paramDelta = this._paramRange.high.minus(this._paramRange.low);
-    result.x = (0 === paramDelta.x) ? param.x : (this._paramDistanceRange.low.x + (param.x - this._paramRange.low.x)
-      * (this._paramDistanceRange.high.x - this._paramDistanceRange.low.x) / paramDelta.x);
-    result.y = (0.0 === paramDelta.y) ? param.y : (this.paramDistanceRange.low.y + (param.y - this._paramRange.low.y)
-      * (this._paramDistanceRange.high.y - this._paramDistanceRange.low.y) / paramDelta.y);
-    return result;
-  }
-
-  /** Return normalized (0-1) parameter from stored parameter value. */
-  public convertParamToNormalized(param: Point2d, result?: Point2d): Point2d {
-    result = result ? result : Point2d.create();
-    const paramDelta = this._paramRange.high.minus(this._paramRange.low);
-    result.x = (0.0 === paramDelta.x) ? param.x : ((param.x - this._paramRange.low.x) / paramDelta.x);
-    result.y = (0.0 === paramDelta.y) ? param.y : ((param.y - this._paramRange.low.y) / paramDelta.y);
-    return result;
-  }
-
-  /** Scale distance paramaters. */
-  public scaleDistances(distanceScale: number) {
-    this._paramDistanceRange.low.x *= distanceScale;
-    this._paramDistanceRange.low.y *= distanceScale;
-    this._paramDistanceRange.high.x *= distanceScale;
-    this._paramDistanceRange.high.y *= distanceScale;
-  }
-
-  /**
-   * Sets the paramDistance range of this FacetFaceData based on the newly terminated facets that make it up.
-   * Takes the polyface itself, the first and last indexes of the facets to be included in the face.
-   * Returns true on success, false otherwise.
-   */
-  public setParamDistanceRangeFromNewFaceData(polyface: IndexedPolyface, facetStart: number, facetEnd: number): boolean {
-    const dSTotal = Point2d.create();
-    const dSSquaredTotal = Point2d.create();
-    let aveTotal = 0;
-
-    const visitor = IndexedPolyfaceVisitor.create(polyface, 0);
-    if (!visitor.moveToReadIndex(facetStart))
-      return false;
-
-    do {
-      const numPointsInFacet = visitor.numEdgesThisFacet;
-      const visitorPoints = visitor.point;
-      const trianglePointIndexes: number[] = [];
-      const visitorParams = visitor.param;
-      const triangleParamIndexes: number[] = [];
-
-      if (!visitorParams)
-        return false;
-
-      for (let k = 0; k < numPointsInFacet; k++) {
-        trianglePointIndexes[2] = k;
-        triangleParamIndexes[2] = k;
-
-        if (k > 1) {
-          const dUV0 = visitorParams[triangleParamIndexes[0]].minus(visitorParams[triangleParamIndexes[1]]);
-          const dUV1 = visitorParams[triangleParamIndexes[1]].minus(visitorParams[triangleParamIndexes[2]]);
-          const delta0 = visitorPoints.getPoint3dAt(trianglePointIndexes[0]).minus(visitorPoints.getPoint3dAt(trianglePointIndexes[1]));
-          const delta1 = visitorPoints.getPoint3dAt(trianglePointIndexes[1]).minus(visitorPoints.getPoint3dAt(trianglePointIndexes[2]));
-
-          const uvCross = Math.abs(dUV0.x * dUV1.y - dUV1.x * dUV0.y);
-          if (uvCross) {
-            const dwDu = Point3d.createFrom(delta0);
-            dwDu.scaleInPlace(dUV1.y);
-            dwDu.addScaledInPlace(delta1, -dUV0.y);
-            const dwDv = Point3d.createFrom(delta1);
-            dwDv.scaleInPlace(dUV0.x);
-            dwDv.addScaledInPlace(delta0, -dUV1.x);
-
-            const dS = Point2d.create(dwDu.magnitude() / uvCross, dwDv.magnitude() / uvCross);
-
-            dSTotal.x += dS.x;
-            dSTotal.y += dS.y;
-            dSSquaredTotal.x += dS.x * dS.x;
-            dSSquaredTotal.y += dS.y * dS.y;
-            aveTotal++;
-          }
-        }
-
-        triangleParamIndexes[0] = triangleParamIndexes[1];
-        triangleParamIndexes[1] = triangleParamIndexes[2];
-        trianglePointIndexes[0] = trianglePointIndexes[1];
-        trianglePointIndexes[1] = trianglePointIndexes[2];
-      }
-    } while (visitor.moveToNextFacet() && visitor.currentReadIndex() < facetEnd);
-
-    if (aveTotal !== 0) {
-      const dS = Point2d.create(dSTotal.x / aveTotal, dSTotal.y / aveTotal);
-      const standardDeviation = Point2d.create(
-        Math.sqrt(Math.abs((dSSquaredTotal.x / aveTotal) - dS.x * dS.x)),
-        Math.sqrt(Math.abs((dSSquaredTotal.y / aveTotal) - dS.y * dS.y)),
-      );
-
-      // TR# 268980 - Add standard deviation to match QV....
-      this._paramDistanceRange.low.set(0, 0);
-      this._paramDistanceRange.high.set(
-        (dS.x + standardDeviation.x) * (this._paramRange.high.x - this._paramRange.low.x),
-        (dS.y + standardDeviation.y) * (this._paramRange.high.y - this._paramRange.low.y),
-      );
-    }
-    return true;
-  }
-}
-/** The data types of [[AuxChannel]].  The scalar types are used to produce thematic  vertex colors. */
-export enum AuxChannelDataType {
-  /** General scalar type - no scaling is applied if associated [[Polyface]] is transformed. */
-  Scalar = 0,
-  /** Distance (scalar) scaling is applied if associated [[Polyface]] is scaled. 3 Data values (x,y.z) per entry. */
-  Distance = 1,
-  /** Displacement added to  vertex position.  Transformed and scaled with associated [[Polyface]]. 3 Data values (x,y.z) per entry.,*/
-  Vector = 2,
-  /** Normal -- replaces vertex normal.  Rotated with associated [[Polyface]] transformation. 3 Data values (x,y.z) per entry. */
-  Normal = 3,
-}
-/**  Represents the [[AuxChannel]] data at a single input value. */
-export class AuxChannelData {
-  /** The input value for this data. */
-  public input: number;
-  /** The vertex values for this data.  A single value per vertex for scalar types and 3 values (x,y,z) for normal or vector channels. */
-  public values: number[];
-  /** Construct a new [[AuxChannelData]] from input value and vertex values. */
-  constructor(input: number, values: number[]) {
-    this.input = input;
-    this.values = values;
-  }
-  public copyValues(other: AuxChannelData, thisIndex: number, otherIndex: number, blockSize: number) {
-    for (let i = 0; i < blockSize; i++)
-      this.values[thisIndex * blockSize + i] = other.values[otherIndex * blockSize + i];
-  }
-  public clone() {
-    return new AuxChannelData(this.input, this.values.slice());
-  }
-  public isAlmostEqual(other: AuxChannelData, tol?: number) {
-    const tolerance = tol ? tol : 1.0E-8;
-    return Math.abs(this.input - other.input) < tolerance && NumberArray.isAlmostEqual(this.values, other.values, tolerance);
-  }
-}
-/**  Represents a single [[PolyfaceAuxData]] channel. A channel  may represent a single scalar value such as stress or temperature or may represent displacements from vertex position or replacements for normals. */
-export class AuxChannel {
-  /** An array of [[AuxChannelData]] that represents the vertex data at one or more input values. */
-  public data: AuxChannelData[];
-  public dataType: AuxChannelDataType;
-  /** The channel name. This is used to present the [[AuxChannel]] to the user and also to select the [[AuxChannel]] for display from [[AnalysisStyle]] */
-  public name?: string;
-  /** The input name. */
-  public inputName?: string;
-  /** create a [[AuxChannel]] */
-  public constructor(data: AuxChannelData[], dataType: AuxChannelDataType, name?: string, inputName?: string) {
-    this.data = data;
-    this.dataType = dataType;
-    this.name = name;
-    this.inputName = inputName;
-  }
-  public clone() {
-    const clonedData = [];
-    for (const data of this.data) clonedData.push(data.clone());
-    return new AuxChannel(clonedData, this.dataType, this.name, this.inputName);
-  }
-  public isAlmostEqual(other: AuxChannel, tol?: number) {
-    if (this.dataType !== other.dataType ||
-      this.name !== other.name ||
-      this.inputName !== other.inputName ||
-      this.data.length !== other.data.length)
-      return false;
-
-    for (let i = 0; i < this.data.length; i++)
-      if (!this.data[i].isAlmostEqual(other.data[i], tol))
-        return false;
-
-    return true;
-  }
-  /** return true if the data for this channel is of scalar type (single data entry per value) */
-  get isScalar(): boolean { return this.dataType === AuxChannelDataType.Distance || this.dataType === AuxChannelDataType.Scalar; }
-  /** return the number of data values per entry (1 for scalar, 3 for point or vector */
-  get entriesPerValue(): number { return this.isScalar ? 1 : 3; }
-  /** return value count */
-  get valueCount(): number { return 0 === this.data.length ? 0 : this.data[0].values.length / this.entriesPerValue; }
-  /** return the range of the scalar data. (undefined if not scalar) */
-  get scalarRange(): Range1d | undefined {
-    if (!this.isScalar) return undefined;
-    const range = Range1d.createNull();
-    for (const data of this.data) {
-      range.extendArray(data.values);
-    }
-    return range;
-  }
-}
-/**  The `PolyfaceAuxData` structure contains one or more analytical data channels for each vertex of a `Polyface`.
- * Typically a `Polyface` will contain only vertex data required for its basic display,the vertex position, normal
- * and possibly texture parameter.  The `PolyfaceAuxData` structure contains supplemental data that is generally computed
- *  in an analysis program or other external data source.  This can be scalar data used to either overide the vertex colors through *Thematic Colorization* or
- *  XYZ data used to deform the mesh by adjusting the vertex postions or normals.
- */
-export class PolyfaceAuxData {
-  /** @param channels Array with one or more channels of auxilliary data for the associated polyface.
-   * @param indices The indices (shared by all data in all channels) mapping the data to the mesh facets.
-   */
-  public channels: AuxChannel[];
-  public indices: number[];
-
-  public constructor(channels: AuxChannel[], indices: number[]) {
-    this.channels = channels;
-    this.indices = indices;
-  }
-  public clone() {
-    const clonedChannels = [];
-    for (const channel of this.channels) clonedChannels.push(channel.clone());
-    return new PolyfaceAuxData(clonedChannels, this.indices.slice());
-  }
-  public isAlmostEqual(other: PolyfaceAuxData, tol?: number) {
-    if (!NumberArray.isExactEqual(this.indices, other.indices) || this.channels.length !== other.channels.length)
-      return false;
-
-    for (let i = 0; i < this.channels.length; i++)
-      if (!this.channels[i].isAlmostEqual(other.channels[i], tol))
-        return false;
-
-    return true;
-  }
-  public createForVisitor() {
-    const visitorChannels: AuxChannel[] = [];
-
-    for (const parentChannel of this.channels) {
-      const visitorChannelData: AuxChannelData[] = [];
-      for (const parentChannelData of parentChannel.data) {
-        visitorChannelData.push(new AuxChannelData(parentChannelData.input, []));
-      }
-      visitorChannels.push(new AuxChannel(visitorChannelData, parentChannel.dataType, parentChannel.name, parentChannel.inputName));
-    }
-
-    return new PolyfaceAuxData(visitorChannels, []);
-  }
-
 }
 
 /**
@@ -339,6 +41,31 @@ export abstract class Polyface extends GeometryQuery {
   public get twoSided() { return this._twoSided; }
   public set twoSided(value: boolean) { this._twoSided = value; }
 
+  /**
+   * Check validity of indices into a data array.
+   * * It is valid to have  both indices and data undeinfed.
+   * * It is NOT valid for just one to be defined.
+   * * Index values at indices[indexPositionA <= i < indexPositionB] must be valid indices to the data array.
+   * @param indices array of indices.
+   * @param indexPositionA first index to test
+   * @param indexPositionB one past final index to test
+   * @param data data array.  Only its length is referenced.
+   */
+  public static areIndicesValid(indices: number[] | undefined, indexPositionA: number, indexPositionB: number, data: any | undefined, dataLength: number): boolean {
+    if (indices === undefined && data === undefined)
+      return true;
+    if (!indices || !data)
+      return false;
+    if (indexPositionA < 0 || indexPositionA >= indices.length)
+      return false;
+    if (indexPositionB < indexPositionA || indexPositionB > indices.length)
+      return false;
+    for (let i = indexPositionA; i < indexPositionB; i++)
+      if (indices[i] < 0 || indices[i] >= dataLength)
+        return false;
+    return true;
+  }
+
 }
 export class IndexedPolyface extends Polyface {
   public isSameGeometryClass(other: any): boolean { return other instanceof IndexedPolyface; }
@@ -350,6 +77,14 @@ export class IndexedPolyface extends Polyface {
     }
     return false;
   }
+  /**
+   * * apply the transform to points
+   * * apply the (inverse transpose of) the matrix part to normals
+   * * If determinant is negative, also
+   *   * negate normals
+   *   * reverse index order around each facet.
+   * @param transform
+   */
   public tryTransformInPlace(transform: Transform) {
     if (this.data.tryTransformInPlace(transform)) {
       const determinant = transform.matrix.determinant();
@@ -395,7 +130,12 @@ export class IndexedPolyface extends Polyface {
       return undefined;
     return this.data.face[faceIndex];
   }
-
+  /**
+   * Constructor for a new polyface.
+   * @param data PolyfaceData arrays to capture.
+   * @param facetStart optional array of facet start indices (e.g. known during clone)
+   * @param facetToFacetData optional array of face identifiers (e.g. known during clone)
+   */
   protected constructor(data: PolyfaceData, facetStart?: number[], facetToFaceData?: number[]) {
     super(data);
     if (facetStart)
@@ -454,12 +194,7 @@ export class IndexedPolyface extends Polyface {
       const startOfNewParams = this.data.param!.length;
       for (const param of source.data.param!) {
         const sourceParam = param.clone();
-        if (transform) {
-          // TODO: Perform transformation
-          this.addParam(sourceParam);
-        } else {
-          this.addParam(sourceParam);
-        }
+        this.addParam(sourceParam);
       }
       for (let i = 0; i < source._facetStart.length; i++) {  // Expect facet start and ends for points to match normals
         const i0 = source._facetStart[i];
@@ -475,10 +210,11 @@ export class IndexedPolyface extends Polyface {
     }
 
     // Add normal and normal index data
-    if (copyNormals) {
+    if (copyNormals && source.data.normal) {
       const startOfNewNormals = this.data.normal!.length;
-      for (const normal of source.data.normal!) {
-        const sourceNormal = normal.clone();
+      const numNewNOrmals = source.data.normal.length;
+      for (let i = 0; i < numNewNOrmals; i++) {
+        const sourceNormal = source.data.normal.atVector3dIndex(i)!;
         if (transform) {
           transform.multiplyVector(sourceNormal, sourceNormal);
           this.addNormal(sourceNormal);
@@ -556,6 +292,12 @@ export class IndexedPolyface extends Polyface {
     this.data.param.push(param.clone());
     return this.data.param.length - 1;
   }
+  public addParamUV(u: number, v: number): number {
+    if (!this.data.param) this.data.param = [];
+    this.data.param.push(Point2d.create(u, v));
+    return this.data.param.length - 1;
+  }
+
   public addParamXY(x: number, y: number): number {
     if (!this.data.param) this.data.param = [];
     this.data.param.push(Point2d.create(x, y));
@@ -563,15 +305,13 @@ export class IndexedPolyface extends Polyface {
   }
 
   public addNormal(normal: Vector3d): number {
-    if (!this.data.normal) this.data.normal = [];
-    this.data.normal.push(normal.clone());
-    return this.data.normal.length - 1;
+    return this.addNormalXYZ(normal.x, normal.y, normal.z);
   }
 
   public addNormalXYZ(x: number, y: number, z: number): number {
-    if (!this.data.normal) this.data.normal = [];
-    this.data.normal.push(Vector3d.create(x, y, z));
-    return this.data.normal.length - 1;
+    if (!this.data.normal) this.data.normal = new GrowableXYZArray();
+    this.data.normal!.pushXYZ(x, y, z);
+    return this.data.normal!.length - 1;
   }
 
   public addColor(color: number): number {
@@ -628,7 +368,7 @@ export class IndexedPolyface extends Polyface {
       if (this.data.edgeVisible.length !== lengthB)
         messages.push("visibleIndex count must equal pointIndex count");
 
-      if (!areIndicesValid(this.data.normalIndex, lengthA, lengthB, this.data.normal))
+      if (!Polyface.areIndicesValid(this.data.normalIndex, lengthA, lengthB, this.data.normal, this.data.normal ? this.data.normal.length : 0))
         messages.push("invalid normal indices in open facet");
       if (messages.length > 0) {
         this.cleanupOpenFacet();
@@ -675,11 +415,6 @@ export class IndexedPolyface extends Polyface {
   /** Given the index of a facet, return the data pertaining to the face it is a part of. */
   public getFaceDataByFacetIndex(facetIndex: number): FacetFaceData {
     return this.data.face[this._facetToFaceData[facetIndex]];
-  }
-
-  /** Given the index of a face, return the range of that face. */
-  public getFaceDataByFaceIndex(faceIndex: number): FacetFaceData {
-    return this.data.face[faceIndex];
   }
 
   /**
@@ -799,7 +534,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
   }
 
   /**
-   * Attempts to extract the distance parameter for the face of a given point index.
+   * Attempts to extract the distance parameter for the given vertex index on the current facet
    * Returns the distance parameter as a point. Returns undefined on failure.
    */
   public tryGetDistanceParameter(index: number, result?: Point2d): Point2d | undefined {
@@ -816,7 +551,7 @@ export class IndexedPolyfaceVisitor extends PolyfaceData implements PolyfaceVisi
   }
 
   /**
-   * Attempts to extract the normalized parameter (0,1) for the face of a given point index.
+   * Attempts to extract the normalized parameter (0,1) for the given vertex index on the current facet.
    * Returns the normalized parameter as a point. Returns undefined on failure.
    */
   public tryGetNormalizedParameter(index: number, result?: Point2d): Point2d | undefined {

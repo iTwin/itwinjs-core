@@ -1,6 +1,16 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 19 Dec 2018 18:26:14 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Jan 2019 15:18:23 GMT and should not be manually modified.
+
+## 0.180.0
+Wed, 02 Jan 2019 15:18:23 GMT
+
+### Updates
+
+- Changed property pane css.
+-  Changed how vertical PropertyPane looks.
+- Fix BeInspireTree's render suspension not being consistent in some cases
+- Added optional viewState prop to ViewportComponent
 
 ## 0.179.0
 Wed, 19 Dec 2018 18:26:14 GMT

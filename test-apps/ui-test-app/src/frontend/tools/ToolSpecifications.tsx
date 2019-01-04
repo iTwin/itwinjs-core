@@ -51,12 +51,7 @@ export class AppTools {
 
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
-        const activeContentControl = ContentViewManager.getActiveContentControl();
-        if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-          returnState.isEnabled = true;
-        else
-          returnState.isEnabled = false;
+        returnState.isEnabled = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
         return returnState;
       },
     });
@@ -194,11 +189,7 @@ export class AppTools {
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
         const returnState: BaseItemState = { ...currentState };
-        const activeContentControl = ContentViewManager.getActiveContentControl();
-        if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-          returnState.isVisible = true;
-        else
-          returnState.isVisible = false;
+        returnState.isVisible = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
         return returnState;
       },
     });

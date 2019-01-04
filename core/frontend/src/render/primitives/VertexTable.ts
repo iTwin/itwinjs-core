@@ -367,8 +367,6 @@ export interface TesselatedPolyline {
   readonly prevIndices: VertexIndices;
   /** 24-bit index of the next vertex in the polyline, plus 8-bit parameter describing the semantics of this vertex. */
   readonly nextIndicesAndParams: Uint8Array;
-  /** Distance of this vertex along the polyline. */
-  readonly distances: Float32Array;
 }
 
 class PolylineVertex {
@@ -377,17 +375,15 @@ class PolylineVertex {
   public vertexIndex: number = 0;
   public prevIndex: number = 0;
   public nextIndex: number = 0;
-  public distance: number = 0;
 
   public constructor() { }
 
-  public init(isSegmentStart: boolean, isPolylineStartOrEnd: boolean, vertexIndex: number, prevIndex: number, nextIndex: number, distance: number) {
+  public init(isSegmentStart: boolean, isPolylineStartOrEnd: boolean, vertexIndex: number, prevIndex: number, nextIndex: number) {
     this.isSegmentStart = isSegmentStart;
     this.isPolylineStartOrEnd = isPolylineStartOrEnd;
     this.vertexIndex = vertexIndex;
     this.prevIndex = prevIndex;
     this.nextIndex = nextIndex;
-    this.distance = distance;
   }
 
   public computeParam(negatePerp: boolean, adjacentToJoint: boolean = false, joint: boolean = false, noDisplacement: boolean = false): number {
@@ -421,7 +417,6 @@ class PolylineTesselator {
   private _prevIndex: number[] = [];
   private _nextIndex: number[] = [];
   private _nextParam: number[] = [];
-  private _distance: number[] = [];
   private _position: Point3d[] = [];
 
   private constructor(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean) {
@@ -458,15 +453,10 @@ class PolylineTesselator {
       nextIndexAndParam[j + 3] = this._nextParam[i] & 0x000000ff;
     }
 
-    const distance = new Float32Array(this._numIndices);
-    for (let i = 0; i < this._numIndices; ++i)
-      distance[i] = this._distance[i];
-
     return {
       indices: vertIndex,
       prevIndices: prevIndex,
       nextIndicesAndParams: nextIndexAndParam,
-      distances: distance,
     };
   }
 
@@ -478,23 +468,19 @@ class PolylineTesselator {
       if (line.numIndices < 2)
         continue;
 
-      let cumulativeDist = line.startDistance;
       const last = line.numIndices - 1;
       const isClosed: boolean = line.vertIndices[0] === line.vertIndices[last];
 
       for (let i = 0; i < last; ++i) {
         const idx0 = line.vertIndices[i];
         const idx1 = line.vertIndices[i + 1];
-        const pos0 = this._position[idx0];
-        const pos1 = this._position[idx1];
-        const dist = pos0.distance(pos1);
         const isStart: boolean = (0 === i);
         const isEnd: boolean = (last - 1 === i);
         const prevIdx0 = isStart ? (isClosed ? line.vertIndices[last - 1] : idx0) : line.vertIndices[i - 1];
         const nextIdx1 = isEnd ? (isClosed ? line.vertIndices[1] : idx1) : line.vertIndices[i + 2];
 
-        v0.init(true, isStart && !isClosed, idx0, prevIdx0, idx1, cumulativeDist);
-        v1.init(false, isEnd && !isClosed, idx1, nextIdx1, idx0, cumulativeDist += dist);
+        v0.init(true, isStart && !isClosed, idx0, prevIdx0, idx1);
+        v1.init(false, isEnd && !isClosed, idx1, nextIdx1, idx0);
 
         const jointAt0: boolean = this._doJoints && (isClosed || !isStart) && this._dotProduct(v0) > maxJointDot;
         const jointAt1: boolean = this._doJoints && (isClosed || !isEnd) && this._dotProduct(v1) > maxJointDot;
@@ -536,7 +522,6 @@ class PolylineTesselator {
     this._prevIndex[this._numIndices] = vertex.prevIndex;
     this._nextIndex[this._numIndices] = vertex.nextIndex;
     this._nextParam[this._numIndices] = param;
-    this._distance[this._numIndices] = vertex.distance;
     this._numIndices++;
   }
 }

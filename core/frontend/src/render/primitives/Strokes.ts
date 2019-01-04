@@ -9,8 +9,7 @@ import { DisplayParams } from "./DisplayParams";
 
 export class StrokesPrimitivePointList {
   public points: Point3d[];
-  public readonly startDistance: number;
-  constructor(startDistance: number, points: Point3d[] = []) { this.startDistance = startDistance; this.points = [...points]; }
+  constructor(points: Point3d[] = []) { this.points = [...points]; }
 }
 
 export class StrokesPrimitivePointLists extends Array<StrokesPrimitivePointList> { constructor(...args: StrokesPrimitivePointList[]) { super(...args); } }

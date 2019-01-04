@@ -9,11 +9,11 @@ import { Element, IModelDb, DictionaryModel, ChangeSetToken, IModelJsFs, Concurr
 import { IModelError, SubCategoryAppearance, IModel } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
-import { ErrorStatusOrResult } from "../../imodeljs-native-platform-api";
+import { IModelJsNative } from "../../IModelJsNative";
 
 // Combine all local Txns and generate a changeset file. Then delete all local Txns.
 function createChangeSet(imodel: IModelDb): ChangeSetToken {
-  const res: ErrorStatusOrResult<ChangeSetStatus, string> = imodel.briefcase!.nativeDb!.startCreateChangeSet();
+  const res: IModelJsNative.ErrorStatusOrResult<ChangeSetStatus, string> = imodel.briefcase!.nativeDb!.startCreateChangeSet();
   if (res.error)
     throw new IModelError(res.error.status, "Error in startCreateChangeSet");
 

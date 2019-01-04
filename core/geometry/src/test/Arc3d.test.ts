@@ -138,7 +138,9 @@ describe("Arc3d", () => {
       }
       // console.log(prettyPrint(sweep) + prettyPrint(factorRange1));
     }
-    console.log("Arc3d QuickLength FactorRange" + prettyPrint(factorRange));
+    // console.log("Arc3d QuickLength FactorRange" + prettyPrint(factorRange));
+    ck.testLT(0.95, factorRange.low, "QuickLength FactorRange Low");
+    ck.testLT(factorRange.high, 1.05, "QuickLength FactorRange Low");
 
     ck.checkpoint("Arc3d.QuickLength");
     expect(ck.getNumErrors()).equals(0);
@@ -189,7 +191,8 @@ describe("Arc3d", () => {
         }
         maxFactor = Math.max(factor, maxFactor);
       }
-      console.log("Eccentric ellipse integration  (numGauss " + numGauss + ")   (maxFactor  " + maxFactor + ")");
+      if (noisy)
+        console.log("Eccentric ellipse integration  (numGauss " + numGauss + ")   (maxFactor  " + maxFactor + ")");
       if (numGauss === 5)
         ck.testLE(maxFactor, 20.0, "Eccentric Ellipse integraton factor");
     }

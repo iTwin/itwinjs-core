@@ -1177,16 +1177,21 @@ export class Range2d extends RangeBase implements LowAndHighXY {
       Range2d._EXTREME_POSITIVE);
   }
 
-  /** Expand this range by distances a (possibly signed) in all directions */
+  /** Expand this range to include a point given by x,y */
   public extendXY(x: number, y: number): void {
     if (x < this.low.x) this.low.x = x;
     if (x > this.high.x) this.high.x = x;
 
     if (y < this.low.y) this.low.y = y;
     if (y > this.high.y) this.high.y = y;
-
   }
 
+  /** Expand this range to include a point given by x,y */
+  public extendTransformedXY(transform: Transform, x: number, y: number): void {
+    const x1 = transform.multiplyComponentXYZ(0, x, y, 0);
+    const y1 = transform.multiplyComponentXYZ(1, x, y, 0);
+    this.extendXY(x1, y1);
+  }
   /** Expand this range to include a point. */
   public extendPoint(point: XAndY): void { this.extendXY(point.x, point.y); }
 

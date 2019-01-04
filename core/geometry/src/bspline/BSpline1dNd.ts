@@ -8,7 +8,7 @@
 // import { Point2d } from "../Geometry2d";
 /* tslint:disable:variable-name jsdoc-format no-empty no-console*/
 import { Point3d } from "../geometry3d/Point3dVector3d";
-import { KnotVector } from "./KnotVector";
+import { KnotVector, BSplineWrapMode } from "./KnotVector";
 import { Geometry } from "../Geometry";
 
 /** Bspline knots and poles for 1d-to-Nd. */
@@ -139,16 +139,28 @@ export class BSpline1dNd {
    * to act as a normal bspline.
    * @returns true if `degree` leading and trailing polygon blocks match
    */
-  public testCloseablePolygon(): boolean {
+  public testCloseablePolygon(mode?: BSplineWrapMode): boolean {
+    if (mode === undefined)
+      mode = this.knots.wrappable;
     const degree = this.degree;
     const blockSize = this.poleLength;
     const indexDelta = (this.numPoles - this.degree) * blockSize;
     const data = this.packedData;
-    const numValuesToTest = degree * blockSize;
-    for (let i0 = 0; i0 < numValuesToTest; i0++) {
-      if (!Geometry.isSameCoordinate(data[i0], data[i0 + indexDelta]))
-        return false;
+    if (mode === BSplineWrapMode.OpenByAddingControlPoints) {
+      // expect {degree} matched points.
+      const numValuesToTest = degree * blockSize;
+      for (let i0 = 0; i0 < numValuesToTest; i0++) {
+        if (!Geometry.isSameCoordinate(data[i0], data[i0 + indexDelta]))
+          return false;
+      }
+      return true;
     }
-    return true;
+
+    if (mode === BSplineWrapMode.OpenByRemovingKnots) {
+      // no pole conditions are applied.
+      return true;
+    }
+
+    return false;
   }
 }

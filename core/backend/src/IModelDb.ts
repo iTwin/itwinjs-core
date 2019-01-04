@@ -21,29 +21,28 @@ import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
 import { Element, Subject } from "./Element";
 import { ElementAspect } from "./ElementAspect";
 import { Entity } from "./Entity";
-import { ErrorStatusOrResult, NativeDgnDb, SnapRequest, TxnIdString } from "./imodeljs-native-platform-api";
+import { IModelJsNative } from "./IModelJsNative";
 import { IModelJsFs } from "./IModelJsFs";
 import { Model } from "./Model";
-import { NativePlatformRegistry } from "./NativePlatformRegistry";
-import { KnownLocations } from "./Platform";
 import { Relationship, RelationshipProps, Relationships } from "./Relationship";
 import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
 import { SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
+import { IModelHost, KnownLocations } from "./IModelHost";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.IModelDb";
 
 /** The signature of a function that can supply a description of local Txns in the specified briefcase up to and including the specified endTxnId. */
-export type ChangeSetDescriber = (endTxnId: TxnIdString) => string;
+export type ChangeSetDescriber = (endTxnId: IModelJsNative.TxnIdString) => string;
 
 /** Operations allowed when synchronizing changes between the IModelDb and the iModel Hub */
-export enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
+export const enum SyncMode { FixedVersion = 1, PullOnly = 2, PullAndPush = 3 }
 
 /** Mode to access the IModelDb */
-export enum AccessMode { Shared = 1, Exclusive = 2 }
+export const enum AccessMode { Shared = 1, Exclusive = 2 }
 
 /** Additional options for exclusive access to IModelDb  */
-export enum ExclusiveAccessOption {
+export const enum ExclusiveAccessOption {
   /** Create or acquire a new briefcase every time the open call is made */
   CreateNewBriefcase = 1,
 
@@ -133,7 +132,7 @@ export class IModelDb extends IModel {
   private _classMetaDataRegistry?: MetaDataRegistry;
   private _concurrency?: ConcurrencyControl;
   protected _fontMap?: FontMap;
-  private readonly _snaps = new Map<string, SnapRequest>();
+  private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
 
   public readFontJson(): string { return this.nativeDb.readFontMap(); }
   public get fontMap(): FontMap { return this._fontMap || (this._fontMap = new FontMap(JSON.parse(this.readFontJson()) as FontMapProps)); }
@@ -350,7 +349,7 @@ export class IModelDb extends IModel {
   public readonly onBeforeClose = new BeEvent<() => void>();
 
   /** Get the in-memory handle of the native Db */
-  public get nativeDb(): NativeDgnDb { return this.briefcase.nativeDb; }
+  public get nativeDb(): IModelJsNative.DgnDb { return this.briefcase.nativeDb; }
 
   /** Get the briefcase Id of this iModel */
   public getBriefcaseId(): BriefcaseId { return new BriefcaseId(this.briefcase === undefined ? BriefcaseId.Illegal : this.briefcase.briefcaseId); }
@@ -863,13 +862,13 @@ export class IModelDb extends IModel {
     activity.enter();
     let request = this._snaps.get(connectionId);
     if (undefined === request) {
-      request = (new (NativePlatformRegistry.getNativePlatform()).SnapRequest()) as SnapRequest;
+      request = new IModelHost.platform.SnapRequest();
       this._snaps.set(connectionId, request);
     } else
       request.cancelSnap();
 
     return new Promise<SnapResponseProps>((resolve, reject) => {
-      request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
+      request!.doSnap(this.nativeDb, JsonUtils.toObject(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, SnapResponseProps>) => {
         this._snaps.delete(connectionId);
         if (ret.error !== undefined)
           reject(new Error(ret.error.message));
@@ -1164,9 +1163,8 @@ export namespace IModelDb {
     public queryChildren(elementId: Id64String): Id64String[] {
       const rows: any[] = this._iModel.executeQuery(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE Parent.Id=?`, [elementId]);
       const childIds: Id64String[] = [];
-      for (const row of rows) {
+      for (const row of rows)
         childIds.push(Id64.fromJSON(row.id));
-      }
       return childIds;
     }
 
@@ -1383,7 +1381,7 @@ export namespace IModelDb {
 
       return new Promise<TileTreeProps>((resolve, reject) => {
         activity.enter();
-        this._iModel.nativeDb.getTileTree(id, (ret: ErrorStatusOrResult<IModelStatus, any>) => {
+        this._iModel.nativeDb.getTileTree(id, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, any>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, "TreeId=" + id));
           else
@@ -1400,7 +1398,7 @@ export namespace IModelDb {
 
       return new Promise<Uint8Array>((resolve, reject) => {
         activity.enter();
-        this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
+        this._iModel.nativeDb.getTileContent(treeId, tileId, (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, Uint8Array>) => {
           if (undefined !== ret.error)
             reject(new IModelError(ret.error.status, "TreeId=" + treeId + " TileId=" + tileId));
           else
@@ -1524,13 +1522,13 @@ export class TxnManager {
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public reverseTo(txnId: TxnIdString) { return this._nativeDb.reverseTo(txnId); }
+  public reverseTo(txnId: IModelJsNative.TxnIdString) { return this._nativeDb.reverseTo(txnId); }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
-  public cancelTo(txnId: TxnIdString) { return this._nativeDb.cancelTo(txnId); }
+  public cancelTo(txnId: IModelJsNative.TxnIdString) { return this._nativeDb.cancelTo(txnId); }
 
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
@@ -1540,22 +1538,22 @@ export class TxnManager {
   public reinstateTxn(): IModelStatus { return this._nativeDb.reinstateTxn(); }
 
   /** Get the Id of the first transaction, if any. */
-  public queryFirstTxnId(): TxnIdString { return this._nativeDb.queryFirstTxnId(); }
+  public queryFirstTxnId(): IModelJsNative.TxnIdString { return this._nativeDb.queryFirstTxnId(); }
 
   /** Get the successor of the specified TxnId */
-  public queryNextTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryNextTxnId(txnId); }
+  public queryNextTxnId(txnId: IModelJsNative.TxnIdString): IModelJsNative.TxnIdString { return this._nativeDb.queryNextTxnId(txnId); }
 
   /** Get the predecessor of the specified TxnId */
-  public queryPreviousTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryPreviousTxnId(txnId); }
+  public queryPreviousTxnId(txnId: IModelJsNative.TxnIdString): IModelJsNative.TxnIdString { return this._nativeDb.queryPreviousTxnId(txnId); }
 
   /** Get the Id of the current (tip) transaction.  */
-  public getCurrentTxnId(): TxnIdString { return this._nativeDb.getCurrentTxnId(); }
+  public getCurrentTxnId(): IModelJsNative.TxnIdString { return this._nativeDb.getCurrentTxnId(); }
 
   /** Get the description that was supplied when the specified transaction was saved. */
-  public getTxnDescription(txnId: TxnIdString): string { return this._nativeDb.getTxnDescription(txnId); }
+  public getTxnDescription(txnId: IModelJsNative.TxnIdString): string { return this._nativeDb.getTxnDescription(txnId); }
 
   /** Test if a TxnId is valid */
-  public isTxnIdValid(txnId: TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
+  public isTxnIdValid(txnId: IModelJsNative.TxnIdString): boolean { return this._nativeDb.isTxnIdValid(txnId); }
 
   /** Query if there are any pending Txns in this IModelDb that are waiting to be pushed.  */
   public get hasPendingTxns(): boolean { return this.isTxnIdValid(this.queryFirstTxnId()); }
@@ -1567,7 +1565,7 @@ export class TxnManager {
   public get hasLocalChanges(): boolean { return this.hasUnsavedChanges || this.hasPendingTxns; }
 
   /** Make a description of the changeset by combining all local txn comments. */
-  public describeChangeSet(endTxnId?: TxnIdString): string {
+  public describeChangeSet(endTxnId?: IModelJsNative.TxnIdString): string {
     if (endTxnId === undefined)
       endTxnId = this.getCurrentTxnId();
 

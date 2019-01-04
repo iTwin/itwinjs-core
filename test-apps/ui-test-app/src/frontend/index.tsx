@@ -36,6 +36,9 @@ import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 
+// Mobx demo
+import { configure as mobxConfigure } from "mobx";
+
 import "./index.scss";
 
 // Initialize my application gateway configuration for the frontend
@@ -153,6 +156,9 @@ export class SampleAppIModelApp extends IModelApp {
     // Configure a CORS proxy in development mode.
     if (process.env.NODE_ENV === "development")
       Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:3001`); // By default, this will run on port 3001
+
+    // Mobx configuration
+    mobxConfigure({ enforceActions: "observed" });
   }
 
   public static async initialize() {

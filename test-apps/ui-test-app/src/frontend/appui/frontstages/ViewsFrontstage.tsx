@@ -273,25 +273,17 @@ class FrontstageToolWidget extends React.Component {
     );
   }
 
-  /** example that hides the button if active content is a SheetView */
+  /** example that hides the button if active content is not a 3d View */
   private _anotherGroupStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
     const returnState: BaseItemState = { ...currentState };
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-      returnState.isVisible = true;
-    else
-      returnState.isVisible = false;
+    returnState.isVisible = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
     return returnState;
   }
 
-  /** example that disables the button if active content is a SheetView */
+  /** example that disables the button if active content is not a 3d view */
   private _measureStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
     const returnState: BaseItemState = { ...currentState };
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-      returnState.isEnabled = true;
-    else
-      returnState.isEnabled = false;
+    returnState.isEnabled = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
     return returnState;
   }
 

@@ -58,6 +58,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   protected _contentRange?: ElementAlignedBox3d;
   protected _graphic?: RenderGraphic;
   protected _rangeGraphic?: RenderGraphic;
+  protected _rangeGraphicType: Tile.DebugBoundingBoxes = Tile.DebugBoundingBoxes.None;
   protected _sizeMultiplier?: number;
   protected _request?: TileRequest;
   private _state: TileState;
@@ -88,6 +89,7 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public dispose() {
     this._graphic = dispose(this._graphic);
     this._rangeGraphic = dispose(this._rangeGraphic);
+    this._rangeGraphicType = Tile.DebugBoundingBoxes.None;
 
     if (this._children)
       for (const child of this._children)
@@ -209,11 +211,18 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public isContentCulled(args: Tile.DrawArgs): boolean { return this.isCulled(this.contentRange, args); }
 
   private getRangeGraphic(context: SceneContext): RenderGraphic | undefined {
-    if (undefined === this._rangeGraphic) {
+    const type = context.viewport.debugBoundingBoxes;
+    if (type === this._rangeGraphicType)
+      return this._rangeGraphic;
+
+    this._rangeGraphicType = type;
+    this._rangeGraphic = dispose(this._rangeGraphic);
+    if (Tile.DebugBoundingBoxes.None !== type) {
       const builder = context.createSceneGraphicBuilder();
       const color = this.hasSizeMultiplier ? ColorDef.red : (this.isLeaf ? ColorDef.blue : ColorDef.green);
       builder.setSymbology(color, color, 1);
-      builder.addRangeBox(this.contentRange);
+      const range = Tile.DebugBoundingBoxes.Content === type ? this.contentRange : this.range;
+      builder.addRangeBox(range);
       this._rangeGraphic = builder.finish();
     }
 
@@ -368,11 +377,9 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
   public drawGraphics(args: Tile.DrawArgs): void {
     if (undefined !== this.graphics) {
       args.graphics.add(this.graphics);
-      if (args.context.viewport.wantTileBoundingBoxes) {
-        const rangeGraphics = this.getRangeGraphic(args.context);
-        if (undefined !== rangeGraphics)
-          args.graphics.add(rangeGraphics);
-      }
+      const rangeGraphics = this.getRangeGraphic(args.context);
+      if (undefined !== rangeGraphics)
+        args.graphics.add(rangeGraphics);
     }
   }
 
@@ -510,6 +517,24 @@ export namespace Tile {
     Context = 1,
     Classifier = 2,
     Background = 3,
+  }
+
+  /**
+   * Options for displaying tile bounding boxes for debugging purposes.
+   *
+   * Bounding boxes are color-coded based on refinement strategy:
+   *  - Blue: A leaf tile (has no child tiles).
+   *  - Green: An ordinary tile (sub-divides into 4 or 8 child tiles).
+   *  - Red: A tile which refines to a single higher-resolution child occupying the same volume.
+   * @see [[Viewport.debugBoundingBoxes]]
+   */
+  export const enum DebugBoundingBoxes {
+    /** Display no bounding boxes */
+    None = 0,
+    /** Display boxes representing the tile's full volume. */
+    Volume,
+    /** Display boxes representing the range of the tile's contents, which may be tighter than (but never larger than) the tile's full volume. */
+    Content,
   }
 
   /**

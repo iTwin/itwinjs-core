@@ -1,0 +1,33 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`ToolButton disabled renders correctly 1`] = `
+<Item
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={false}
+  isDisabled={true}
+  key="tool1"
+  onClick={[Function]}
+  title="tests.label"
+/>
+`;
+
+exports[`ToolButton hidden renders correctly 1`] = `""`;
+
+exports[`ToolButton renders correctly 1`] = `
+<Item
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={false}
+  isDisabled={false}
+  key="tool1"
+  onClick={[Function]}
+  title="tests.label"
+/>
+`;

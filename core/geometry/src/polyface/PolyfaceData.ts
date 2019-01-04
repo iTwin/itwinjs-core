@@ -9,10 +9,11 @@ import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Range3d } from "../geometry3d/Range";
 import { Transform } from "../geometry3d/Transform";
-import { NumberArray, Vector3dArray, Point2dArray } from "../geometry3d/PointHelpers";
+import { NumberArray, Point2dArray } from "../geometry3d/PointHelpers";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { ClusterableArray } from "../numerics/ClusterableArray";
-import { FacetFaceData, PolyfaceAuxData } from "./Polyface";
+import { PolyfaceAuxData } from "./AuxData";
+import { FacetFaceData } from "./FacetFaceData";
 
 /**
  * PolyfaceData carries data arrays for point, normal, param, color and their indices.
@@ -38,7 +39,7 @@ export class PolyfaceData {
   // edgeVisible[i] = true if the edge following pointIndex[i] is visible
   public edgeVisible: boolean[];
 
-  public normal: Vector3d[] | undefined;
+  public normal: GrowableXYZArray | undefined;
   public normalIndex: number[] | undefined;
   public param: Point2d[] | undefined;
   public paramIndex: number[] | undefined;
@@ -52,7 +53,7 @@ export class PolyfaceData {
     this.point = new GrowableXYZArray();
     this.pointIndex = []; this.edgeVisible = [];
     this.face = [];
-    if (needNormals) { this.normal = []; this.normalIndex = []; }
+    if (needNormals) { this.normal = new GrowableXYZArray(); this.normalIndex = []; }
     if (needParams) { this.param = []; this.paramIndex = []; }
     if (needColors) { this.color = []; this.colorIndex = []; }
   }
@@ -65,7 +66,7 @@ export class PolyfaceData {
     result.face = this.face.slice();
 
     if (this.normal)
-      result.normal = Vector3dArray.cloneVector3dArray(this.normal);
+      result.normal = this.normal.clone();
     if (this.param)
       result.param = Point2dArray.clonePoint2dArray(this.param);
     if (this.color)
@@ -88,7 +89,7 @@ export class PolyfaceData {
     if (!NumberArray.isExactEqual(this.pointIndex, other.pointIndex))
       return false;
 
-    if (!Vector3dArray.isAlmostEqual(this.normal, other.normal)) return false;
+    if (!GrowableXYZArray.isAlmostEqual(this.normal, other.normal)) return false;
     if (!NumberArray.isExactEqual(this.normalIndex, other.normalIndex)) return false;
 
     if (!Point2dArray.isAlmostEqual(this.param, other.param)) return false;
@@ -98,6 +99,7 @@ export class PolyfaceData {
     if (!NumberArray.isExactEqual(this.colorIndex, other.colorIndex)) return false;
 
     if (!NumberArray.isExactEqual(this.edgeVisible, other.edgeVisible)) return false;
+    if (!PolyfaceAuxData.isAlmostEqual(this.auxData, other.auxData)) return false;
     return true;
   }
   public get requireNormals(): boolean { return undefined !== this.normal; }
@@ -110,9 +112,9 @@ export class PolyfaceData {
   public get faceCount() { return this.face.length; }
 
   /** return indexed point. This is a copy of the coordinates, not a reference. */
-  public getPoint(i: number): Point3d { return this.point.getPoint3dAt(i); }
+  public getPoint(i: number): Point3d | undefined { return this.point.atPoint3dIndex(i); }
   /** return indexed normal. This is the REFERENCE to the normal, not a copy. */
-  public getNormal(i: number): Vector3d { return this.normal ? this.normal[i] : Vector3d.create(); }
+  public getNormal(i: number): Vector3d | undefined { return this.normal ? this.normal.atVector3dIndex(i) : undefined; }
   /** return indexed param. This is the REFERENCE to the param, not a copy. */
   public getParam(i: number): Point2d { return this.param ? this.param[i] : Point2d.create(); }
   /** return indexed color */
@@ -122,7 +124,7 @@ export class PolyfaceData {
   /** Copy the contents (not pointer) of point[i] into dest. */
   public copyPointTo(i: number, dest: Point3d): void { this.point.getPoint3dAt(i, dest); }
   /** Copy the contents (not pointer) of normal[i] into dest. */
-  public copyNormalTo(i: number, dest: Vector3d): void { if (this.normal) dest.setFrom(this.normal[i]); }
+  public copyNormalTo(i: number, dest: Vector3d): void { if (this.normal) this.normal.atVector3dIndex(i, dest); }
   /** Copy the contents (not pointer) of param[i] into dest. */
   public copyParamTo(i: number, dest: Point2d): void { if (this.param) dest.setFrom(this.param[i]); }
   /**
@@ -159,9 +161,9 @@ export class PolyfaceData {
 
     if (this.normal && this.normalIndex && other.normal && other.normalIndex) {
       for (let i = 0; i < numEdge; i++)
-        this.normal[i].setFrom(other.normal[other.normalIndex[index0 + i]]);
+        this.normal.transferFromGrowableXYZArray(i, other.normal, other.pointIndex[index0 + i]);
       for (let i = 0; i < numWrap; i++)
-        this.normal[numEdge + i].setFrom(this.normal[i]);
+        this.normal.transferFromGrowableXYZArray(numEdge + i, this.normal, i);
 
       for (let i = 0; i < numEdge; i++)
         this.normalIndex[i] = other.normalIndex[index0 + i];
@@ -253,7 +255,7 @@ export class PolyfaceData {
       this.point.resize(length);
       this.edgeVisible.length = length;
       this.pointIndex.length = length;
-      if (this.normal) this.normal.length = length;
+      if (this.normal) this.normal.resize(length);
       if (this.param) this.param.length = length;
       if (this.color) this.color.length = length;
       if (this.auxData) {
@@ -288,8 +290,7 @@ export class PolyfaceData {
   }
   public reverseNormals() {
     if (this.normal)
-      for (const normal of this.normal)
-        normal.scaleInPlace(-1.0);
+      this.normal.scaleInPlace(-1.0);
   }
   // This base class is just a data carrier.  It does not know if the index order and normal directions have special meaning.
   // 1) Caller must reverse normals if semanitically needed.
@@ -297,12 +298,12 @@ export class PolyfaceData {
   public tryTransformInPlace(
     transform: Transform): boolean {
     const inverseTranspose = transform.matrix.inverse();
-    this.point.transformInPlace(transform);
+    this.point.multiplyTransformInPlace(transform);
 
     if (inverseTranspose) {
       // apply simple Matrix3d to normals ...
       if (this.normal) {
-        inverseTranspose.multiplyVectorArrayInPlace(this.normal);
+        this.normal.multiplyMatrix3dInPlace(inverseTranspose);
       }
     }
     return true;

@@ -7,6 +7,7 @@
 import { UiEvent } from "@bentley/ui-core";
 import { FrontstageManager } from "./FrontstageManager";
 import { ContentControl } from "./ContentControl";
+import { ViewUtilities } from "../utils/ViewUtilities";
 
 /** [[MouseDownChangedEvent]] Args interface.
  */
@@ -90,6 +91,66 @@ export class ContentViewManager {
         }
       }
     }
+  }
+
+  /**
+   * Determines if content displays a Sheet view.
+   * @param content ContentControl to check
+   */
+  public static isContentSheetView(content: ContentControl | undefined): boolean {
+    if (!content || !content.viewport)
+      return false;
+    return (ViewUtilities.isSheetView(content.viewport));
+  }
+
+  /**
+   * Determines if content displays a Drawing view.
+   * @param content ContentControl to check
+   */
+  public static isContentDrawingView(content: ContentControl | undefined): boolean {
+    if (!content || !content.viewport)
+      return false;
+    return (ViewUtilities.isDrawingView(content.viewport));
+  }
+
+  /**
+   * Determines if content displays a Spatial view.
+   * @param content ContentControl to check
+   */
+  public static isContentSpatialView(content: ContentControl | undefined): boolean {
+    if (!content || !content.viewport)
+      return false;
+    return (ViewUtilities.isSpatialView(content.viewport));
+  }
+
+  /**
+   * Determines if content displays a Orthographic view.
+   * @param content ContentControl to check
+   */
+  public static isContentOrthographicView(content: ContentControl | undefined): boolean {
+    if (!content || !content.viewport)
+      return false;
+    return (ViewUtilities.isOrthographicView(content.viewport));
+  }
+
+  /**
+   * Determines if content displays a 3d view.
+   * @param content ContentControl to check
+   */
+  public static isContent3dView(content: ContentControl | undefined): boolean {
+    if (!content || !content.viewport)
+      return false;
+    return (ViewUtilities.is3dView(content.viewport));
+  }
+
+  /**
+   * Determines if viewport supports use of a camera.
+   * @param content ContentControl to check
+   */
+  public static contentSupportsCamera(content: ContentControl | undefined): boolean {
+    if (!content || !content.viewport)
+      return false;
+    return (ViewUtilities.viewSupportsCamera(content.viewport));
   }
 
 }

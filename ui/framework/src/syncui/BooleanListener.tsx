@@ -26,7 +26,7 @@ export interface BooleanListenerProps {
 export interface BooleanListenerState {
   boolValue: boolean;
 }
-
+// cSpell:Ignore Unmounting
 /**
  * A component that expect its children to be a function that will be passed the current boolValue state.
  */

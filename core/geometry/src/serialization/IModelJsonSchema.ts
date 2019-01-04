@@ -24,7 +24,8 @@ import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 import { ParityRegion } from "../curve/ParityRegion";
 import { Loop } from "../curve/Loop";
 import { Path } from "../curve/Path";
-import { IndexedPolyface, PolyfaceAuxData, AuxChannel, AuxChannelData, AuxChannelDataType } from "../polyface/Polyface";
+import { IndexedPolyface } from "../polyface/Polyface";
+import { PolyfaceAuxData, AuxChannel, AuxChannelData, AuxChannelDataType } from "../polyface/AuxData";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
 import { Sphere } from "../solid/Sphere";
@@ -44,6 +45,7 @@ import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { Point4d } from "../geometry4d/Point4d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
+import { BSplineWrapMode } from "../bspline/KnotVector";
 
 /* tslint:disable: object-literal-key-quotes no-console*/
 
@@ -637,24 +639,60 @@ export namespace IModelJson {
           Transform.createOriginAndMatrix(origin, axes));
       return undefined;
     }
-
+    /**
+     * Special closed case if the input was forced to bezier . . . (e.g. arc)
+     *       (b-1) 0 0 0  a . . . b 111 (a+1)
+     *       with {order} clamp-like values .. no pole duplication needed, but throw out 2 knots at each end . ..
+     * @param numPoles number of poles
+     * @param knots knot vector
+     * @param order curve order
+     * @param newKnots array to receive new knots.
+     * @returns true if this is a closed-but-clamped case and corrected knots are filled in.
+     */
+    private static getCorrectedKnotsForClosedClamped(numPoles: number, knots: number[], order: number, newKnots: number[]): boolean {
+      const numKnots = knots.length;
+      if (numPoles + 2 * order - 1 === numKnots
+        && knots[0] < knots[1]
+        && knots[numKnots - 2] < knots[numKnots - 1]) {
+        const a0 = knots[1];
+        const a1 = knots[numKnots - 2];
+        for (let i = 2; i <= order; i++) {
+          if (knots[i] !== a0)
+            return false;
+          if (knots[numKnots - 1 - i] !== a1)
+            return false;
+        }
+        // copy only the "minimal" set - without the typical extra knots from microstation and psd.
+        for (let i = 2; i + 2 < numKnots; i++)
+          newKnots.push(knots[i]);
+        return true;
+      }
+      return false;
+    }
     public static parseBcurve(data?: any): BSplineCurve3d | BSplineCurve3dH | undefined {
       if (Array.isArray(data.points) && Array.isArray(data.knots) && Number.isFinite(data.order) && data.closed !== undefined) {
         if (data.points[0].length === 4) {
           const hPoles: Point4d[] = [];
           for (const p of data.points) hPoles.push(Point4d.fromJSON(p));
           const knots: number[] = [];
-          for (const knot of data.knots) knots.push(knot);
-          // TODO -- wrap poles and knots for closed case !!
-          if (data.closed) {
+          let wrapMode = BSplineWrapMode.None;
+          if (data.closed && this.getCorrectedKnotsForClosedClamped(data.points.length, data.knots, data.order, knots)) {
+            // leave the poles alone -- knots are fixed.
+            wrapMode = BSplineWrapMode.OpenByRemovingKnots;
+          } else if (data.closed) {
+            for (const knot of data.knots) knots.push(knot);
             for (let i = 0; i + 1 < data.order; i++) {
               hPoles.push(hPoles[i].clone());
             }
+            wrapMode = BSplineWrapMode.OpenByAddingControlPoints;
+          } else {
+            // simple case .. just copy
+            for (const knot of data.knots) knots.push(knot);
           }
           const newCurve = BSplineCurve3dH.create(hPoles, knots, data.order);
           if (newCurve) {
             if (data.closed === true)
-              newCurve.setWrappable(true);
+              newCurve.setWrappable(wrapMode);
             return newCurve;
           }
         } else if (data.points[0].length === 3 || data.points[0].length === 2) {
@@ -662,17 +700,24 @@ export namespace IModelJson {
           const poles: Point3d[] = [];
           for (const p of data.points) poles.push(Point3d.fromJSON(p));
           const knots: number[] = [];
-          for (const knot of data.knots) knots.push(knot);
-          // TODO -- wrap poles and knots for closed case !!
-          if (data.closed) {
+          let wrapMode = BSplineWrapMode.None;
+          if (data.closed && this.getCorrectedKnotsForClosedClamped(data.points.length, data.knots, data.order, knots)) {
+            wrapMode = BSplineWrapMode.OpenByRemovingKnots;
+            // leave the poles alone -- knots are fixed.
+          } else if (data.closed) {
+            for (const knot of data.knots) knots.push(knot);
             for (let i = 0; i + 1 < data.order; i++) {
               poles.push(poles[i].clone());
             }
+            wrapMode = BSplineWrapMode.OpenByAddingControlPoints;
+          } else {
+            // simple case .. just copy
+            for (const knot of data.knots) knots.push(knot);
           }
           const newCurve = BSplineCurve3d.create(poles, knots, data.order);
           if (newCurve) {
             if (data.closed === true)
-              newCurve.setWrappable(true);
+              newCurve.setWrappable(wrapMode);
             return newCurve;
           }
         }
@@ -1428,7 +1473,13 @@ export namespace IModelJson {
         points.push(p.toJSON());
 
       if (pf.data.normal) {
-        for (const value of pf.data.normal) normals.push(value.toJSON());
+        const numNormal = pf.data.normal.length;
+        const normal = Vector3d.create();
+        for (let i = 0; i < numNormal; i++) {
+          pf.data.normal.atVector3dIndex(i, normal);
+          normals.push(normal.toJSON());
+        }
+
       }
 
       if (pf.data.param) {
@@ -1495,7 +1546,8 @@ export namespace IModelJson {
     public handleBSplineCurve3d(curve: BSplineCurve3d): any {
       // ASSUME -- if the curve originated "closed" the knot and pole replication are unchanged,
       // so first and last knots can be re-assigned, and last (degree - 1) poles can be deleted.
-      if (curve.isClosable) {
+      const wrapMode = curve.isClosable;
+      if (wrapMode === BSplineWrapMode.OpenByAddingControlPoints) {
         const knots = curve.copyKnots(true);
         const poles = curve.copyPoints();
         const degree = curve.degree;
@@ -1506,6 +1558,33 @@ export namespace IModelJson {
         const knotPeriod = knots[rightIndex] - knots[leftIndex];
         knots[0] = knots[rightIndex - degree] - knotPeriod;
         knots[knots.length - 1] = knots[leftIndex + degree] + knotPeriod;
+        return {
+          "bcurve": {
+            "points": poles,
+            "knots": knots,
+            "closed": true,
+            "order": curve.order,
+          },
+        };
+      } else if (curve.isClosable === BSplineWrapMode.OpenByRemovingKnots) {
+        // special case to re-close the case that originated as :    a a0 a0 .. a0 knot0 knot1 knot2 ... b1 b1 .. b1 b
+        // with (order) copies of a0 and b1 (usually 0 and 1)
+        // and a,b are related to the interior knots
+        // (This is the "bezier saturated arc")
+        const rawKnots = curve.copyKnots(false); // unchanged knots . . .
+        const poles = curve.copyPoints();
+        const degree = curve.degree;
+        const leftIndex = degree - 1;
+        const rightIndex = rawKnots.length - degree;
+        const leftKnot = rawKnots[leftIndex];
+        const rightKnot = rawKnots[rightIndex];
+        const knotPeriod = rightKnot - leftKnot;
+        const knots = [];
+        knots.push(rawKnots[rightIndex - 1] - knotPeriod);
+        knots.push(leftKnot);
+        for (const k of rawKnots) knots.push(k);
+        knots.push(rightKnot);
+        knots.push(rawKnots[leftIndex + 1] + knotPeriod);
         return {
           "bcurve": {
             "points": poles,

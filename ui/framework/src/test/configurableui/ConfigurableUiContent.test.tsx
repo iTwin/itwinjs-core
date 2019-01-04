@@ -12,7 +12,7 @@ import TestUtils from "../TestUtils";
 
 describe("ConfigurableUiContent", () => {
   before(async () => {
-    await TestUtils.initializeUiFramework();
+    await TestUtils.initializeUiFramework(true);
   });
 
   it("ConfigurableUiContent should render", () => {
@@ -31,4 +31,8 @@ describe("ConfigurableUiContent", () => {
       </Provider>).should.matchSnapshot();
   });
 
+  after(() => {
+    // clear out the framework key
+    TestUtils.terminateUiFramework();
+  });
 });

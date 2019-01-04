@@ -8,9 +8,9 @@
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { assert } from "chai";
 
-console.log("=========================");
-console.log("Standalone Output");
-console.log("=========================");
+// console.log("=========================");
+// console.log("Standalone Output");
+// console.log("=========================");
 
 const point0 = Point3d.create(0, 0.001, 586);
 const point1 = Point3d.create(5, 0, -192);

@@ -18,6 +18,7 @@ import { ApplicationHeader, ApplicationHeaderProps } from "../openimodel/Applica
 import { ViewDefinitionProps } from "@bentley/imodeljs-common";
 import { IModelInfo } from "../clientservices/IModelServices";
 import { Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { UiFramework } from "../UiFramework";
 
 type IModelViewsSelectedFunc = (iModelInfo: IModelInfo, viewIdsSelected: Id64String[]) => void;
 
@@ -38,9 +39,13 @@ export interface OverallContentProps {
 }
 
 function mapStateToProps(state: any) {
+  const frameworkState = state[UiFramework.frameworkStateKey];  // since app sets up key, don't hard-code name
+  if (!frameworkState)
+    return undefined;
+
   return {
-    currentPage: state.frameworkState.overallContentState.currentPage,
-    accessToken: state.frameworkState.overallContentState.accessToken,
+    currentPage: frameworkState.overallContentState.currentPage,
+    accessToken: frameworkState.overallContentState.accessToken,
   };
 }
 

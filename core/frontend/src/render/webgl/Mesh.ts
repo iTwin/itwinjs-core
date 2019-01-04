@@ -118,11 +118,6 @@ export class MeshGraphic extends Graphic {
   public setUniformFeatureIndices(id: number): void {
     this.meshData.features = FeaturesInfo.createUniform(id);
   }
-  public setIsPixelMode(): void {
-    // this.primitives.forEach((prim) => {
-    //   if (true /*prim.isValid()*/) { prim.setIsPixelMode(); } // TODO: setIsPixelMode() has not been implemented yet
-    // });
-  }
   public get surfaceType(): SurfaceType { return this.meshData.type; }
 }
 

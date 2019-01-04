@@ -1,6 +1,24 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Wed, 19 Dec 2018 18:26:14 GMT and should not be manually modified.
+This log was last generated on Wed, 02 Jan 2019 15:18:23 GMT and should not be manually modified.
+
+## 0.180.0
+Wed, 02 Jan 2019 15:18:23 GMT
+
+### Updates
+
+- Allow the maximum number of active tile requests to be modified at run-time.
+- Fix excessive memory consumption by polyline graphics.
+- merge
+- Enable path interpolation
+- Enable schedule animation
+- if view delta is too large or small, set it to max/min rather than aborting viewing operations.
+- Fix transform order when pushing branch.
+- Implement quaternion interpolation for Synchro schedule animation
+- remove trash files
+- Add batch feature overrides to optimize schedule animation.
+- Prioritize tile requests based on tile type and depth.
+- Improve performance by limiting the number of simultaneously-active tile requests.
 
 ## 0.179.0
 Wed, 19 Dec 2018 18:26:14 GMT
