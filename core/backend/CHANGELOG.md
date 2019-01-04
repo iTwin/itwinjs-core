@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 02 Jan 2019 15:18:23 GMT and should not be manually modified.
+This log was last generated on Fri, 04 Jan 2019 13:02:40 GMT and should not be manually modified.
+
+## 0.181.0
+Fri, 04 Jan 2019 13:02:40 GMT
+
+### Updates
+
+- upgrade to Node 10. There is no longer separate packages for Node and Electron.
 
 ## 0.180.0
 Wed, 02 Jan 2019 15:18:23 GMT

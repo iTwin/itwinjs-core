@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.181.0",
+      "tag": "@bentley/imodeljs-frontend_v0.181.0",
+      "date": "Fri, 04 Jan 2019 13:02:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix incorrect display of point strings containing duplicate points."
+          },
+          {
+            "comment": "Optimize performance when reading depth buffer."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.180.0",
       "tag": "@bentley/imodeljs-frontend_v0.180.0",
       "date": "Wed, 02 Jan 2019 15:18:23 GMT",
