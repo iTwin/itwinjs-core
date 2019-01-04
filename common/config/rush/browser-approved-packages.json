@@ -739,6 +739,10 @@
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
+      "name": "tslib",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "tslint",
       "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
@@ -749,6 +753,10 @@
     {
       "name": "tslint-loader",
       "allowedCategories": [ "frontend", "tools" ]
+    },
+    {
+      "name": "tsutils",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "typedoc",

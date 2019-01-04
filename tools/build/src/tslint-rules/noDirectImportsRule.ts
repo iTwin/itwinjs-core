@@ -3,12 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-// ====================================================================================================================
 /**
  * This rule prevents the use of import statements that refer to source files within a package that has an index (barrel) file.
  * That is important for preventing our modules from incorporating code that should be in other modules.
  */
-// ====================================================================================================================
 import * as ts from "typescript";
 import * as Lint from "tslint";
 
