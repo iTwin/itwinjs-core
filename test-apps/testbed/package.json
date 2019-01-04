@@ -63,6 +63,7 @@
     "cpx": "^1.5.0",
     "mocha": "^5.2.0",
     "node-glob": "^1.2.0",
+    "glob": "^7.1.2",
     "null-loader": "^0.1.1",
     "rimraf": "^2.6.2",
     "source-map-loader": "^0.2.3",
