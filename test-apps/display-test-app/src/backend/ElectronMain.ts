@@ -31,12 +31,15 @@ const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
 
 (async () => { // tslint:disable-line:no-floating-promises
   const manager = new IModelJsElectronAppManager(electron);
-  if (!isDevBuild)
+  if (!isDevBuild) {
+    const pathname = path.normalize(path.join(__dirname, "../webresources/index.html"));
+
     manager.frontendURL = url.format({
-      pathname: path.join(__dirname, "public/index.html"),
+      pathname,
       protocol: "file:",
       slashes: true,
     });
+  }
 
   await manager.initialize({
     width: 1280,
@@ -62,7 +65,8 @@ const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
   }
 
   // tslint:disable-next-line:no-var-requires
-  const configuration = require(path.join(__dirname, "public", "configuration.json"));
+  const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
+  const configuration = require(configPathname);
   if (configuration.useIModelBank) {
     electron.app.on("certificate-error", (event, _webContents, _url, _error, _certificate, callback) => {
       // (needed temporarily to use self-signed cert to communicate with iModelBank via https)

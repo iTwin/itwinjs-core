@@ -46,7 +46,7 @@ This also enables you to experiment more with ECSQL by modifying the tutorial's 
 
 Run this command:
 
-> `.open -project:<project name>`
+> `.open -project:ECSQL`
 
 ### Step 3 - Run an ECSQL in the iModelConsole
 
@@ -63,7 +63,7 @@ Once you opened the iModel just type in the ECSQL (without a leading .) and hit 
 >
 > ElementCount |
 > --- |
-> 80 |
+> 81 |
 
 ## Tutorial Overview
 

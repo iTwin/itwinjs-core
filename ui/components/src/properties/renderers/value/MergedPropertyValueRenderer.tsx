@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
 
-import { IPropertyValueRenderer } from "../../ValueRendererManager";
+import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { PropertyRecord } from "../../Record";
 import { PropertyValueFormat } from "../../Value";
 import { UiComponents } from "../../../UiComponents";
+import { withContextStyle } from "./WithContextStyle";
 
 /** Default Merged Property Renderer */
 export class MergedPropertyValueRenderer implements IPropertyValueRenderer {
@@ -16,7 +17,7 @@ export class MergedPropertyValueRenderer implements IPropertyValueRenderer {
     return !!record.isMerged && record.value.valueFormat === PropertyValueFormat.Primitive;
   }
 
-  public async render({ }): Promise<React.ReactNode> {
-    return UiComponents.i18n.translate("UiComponents:property.varies");
+  public render(_record: PropertyRecord, context?: PropertyValueRendererContext) {
+    return withContextStyle(UiComponents.i18n.translate("UiComponents:property.varies"), context);
   }
 }

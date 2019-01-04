@@ -2,6 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as path from "path";
 import { expect } from "chai";
@@ -15,13 +17,13 @@ import {
 import { I18N } from "@bentley/imodeljs-i18n";
 import { PropertyRecord } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ValuesDictionary } from "@bentley/presentation-common";
 import {
-  Descriptor, Field, CategoryDescription, Content, ContentFlags, Item, NestedContentValue, NestedContentField,
-  Property, ArrayTypeDescription, PropertyValueFormat, PropertiesField, StructTypeDescription,
+  ValuesDictionary, Descriptor, Field,
+  CategoryDescription, Content, ContentFlags, Item,
+  NestedContentValue, NestedContentField, Property,
+  ArrayTypeDescription, PropertyValueFormat, PropertiesField, StructTypeDescription,
 } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import { PresentationManager } from "@bentley/presentation-frontend";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import PresentationPropertyDataProvider from "../../propertygrid/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
 

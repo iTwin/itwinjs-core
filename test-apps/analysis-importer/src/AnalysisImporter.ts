@@ -76,7 +76,7 @@ export class AnalysisImporter {
         const props: GeometricElement3dProps = {
             model: modelId,
             code: Code.createEmpty(),
-            classFullName: "Generic: PhysicalObject",
+            classFullName: "Generic:PhysicalObject",
             category: categoryId,
             geom: geometry,
         };

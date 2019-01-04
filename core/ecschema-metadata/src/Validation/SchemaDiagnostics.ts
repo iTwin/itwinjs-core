@@ -14,7 +14,7 @@ const subTranslationNamespace = "Diagnostics";
 const baseTranslationKey = translationNamespace + ":" + subTranslationNamespace;
 
 /**
- * A utility class that 'reports' messages defined as [[DiagnosticMessage]] objects. [[DiagnosticReporter]] objects may be registered using
+ * A utility class that 'reports' messages defined as [[DiagnosticMessage]] objects. [[IDiagnosticReporter]] objects may be registered using
  * the static method [[SchemaDiagnosticReporter.registerReporter]].
  */
 export class SchemaDiagnosticReporter {
@@ -52,15 +52,15 @@ export class SchemaDiagnosticReporter {
   }
 
   /**
-   * Registers a [[DiagnosticReporter]] which will be called when calling [[SchemaDiagnosticReporter.reportDiagnostic]].
-   * @param reporter The [[DiagnosticReporter]] to register.
+   * Registers a [[IDiagnosticReporter]] which will be called when calling [[SchemaDiagnosticReporter.reportDiagnostic]].
+   * @param reporter The [[IDiagnosticReporter]] to register.
    */
   public static registerReporter(reporter: Diagnostics.IDiagnosticReporter) {
     this._reporters.push(reporter);
   }
 
   /**
-   * Calls all registered [[DiagnosticReporter]] objects with the given [[DiagnosticMessage]].
+   * Calls all registered [[IDiagnosticReporter]] objects with the given [[DiagnosticMessage]].
    * @param message The [[DiagnosticMessage]] to report.
    * @param args Any parameters required for message formatting.
    */
@@ -73,7 +73,7 @@ export class SchemaDiagnosticReporter {
   }
 
   /**
-   * Calls all registered [[DiagnosticReporter]] objects with the given [[DiagnosticMessage]].
+   * Calls all registered [[IDiagnosticReporter]] objects with the given [[DiagnosticMessage]].
    * @param schema The [[Schema]] associated with the given message.
    * @param message The [[DiagnosticMessage]] to report.
    * @param args Any parameters required for message formatting.
@@ -87,7 +87,7 @@ export class SchemaDiagnosticReporter {
   }
 
   /**
-   * Calls all registered [[DiagnosticReporter]] objects with the given [[DiagnosticMessage]].
+   * Calls all registered [[IDiagnosticReporter]] objects with the given [[DiagnosticMessage]].
    * @param schemaItem The [[SchemaItem]] associated with the given message.
    * @param message The [[DiagnosticMessage]] to report.
    * @param args Any parameters required for message formatting.
@@ -101,7 +101,7 @@ export class SchemaDiagnosticReporter {
   }
 
   /**
-   * Calls all registered [[DiagnosticReporter]] objects with the given [[DiagnosticMessage]].
+   * Calls all registered [[IDiagnosticReporter]] objects with the given [[DiagnosticMessage]].
    * @param schemaItem The [[SchemaItem]] associated with the given message.
    * @param propertyName The property name associated with the given message.
    * @param message The [[DiagnosticMessage]] to report.

@@ -10,7 +10,7 @@ import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { KnownLocations } from "../../Platform";
+import { KnownLocations } from "../../IModelHost";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe("ApplyChangeSets (#integration)", () => {

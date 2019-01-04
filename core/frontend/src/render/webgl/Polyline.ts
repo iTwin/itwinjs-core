@@ -20,6 +20,7 @@ import { GL } from "./GL";
 import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
 import { dispose } from "@bentley/bentleyjs-core";
+import { RenderMemory } from "../System";
 
 export class PolylineGeometry extends LUTGeometry {
   public vertexParams: QParams3d;
@@ -48,6 +49,11 @@ export class PolylineGeometry extends LUTGeometry {
   public dispose() {
     dispose(this.lut);
     dispose(this._buffers);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this._buffers.collectStatistics(stats, RenderMemory.BufferType.Polylines);
+    stats.addVertexTable(this.lut.bytesUsed);
   }
 
   public get isAnyEdge(): boolean { return PolylineTypeFlags.Normal !== this.type; }

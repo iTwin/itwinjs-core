@@ -688,8 +688,8 @@ describe("MiscAngles", () => {
         errorRangeC.extendX(eC);
 
     }
-    console.log(" degrees round trip error range through Angle logic", errorRangeB);
-    console.log(" degrees round trip error range through direct multiply", errorRangeC);
+    ck.testLT(errorRangeB.maxAbs(), 1.0e-15, " degrees round trip error range through Angle logic");
+    ck.testLT(errorRangeC.maxAbs(), 1.0e-15, " degrees round trip error range through direct multiply");
     expect(ck.getNumErrors()).equals(0);
   });
 

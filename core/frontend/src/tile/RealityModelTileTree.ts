@@ -8,7 +8,7 @@ import { IModelError, TileTreeProps, TileProps } from "@bentley/imodeljs-common"
 import { IModelConnection } from "../IModelConnection";
 import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
-import { RealityDataServicesClient, AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, getArrayBuffer, getJson, Config } from "@bentley/imodeljs-clients";
+import { RealityDataServicesClient, AccessToken, getArrayBuffer, getJson } from "@bentley/imodeljs-clients";
 import { TileTree, TileTreeState, Tile, TileLoader } from "./TileTree";
 import { TileRequest } from "./TileRequest";
 import { IModelApp } from "../IModelApp";
@@ -90,6 +90,7 @@ class FindChildResult {
 class RealityModelTileLoader extends TileLoader {
   constructor(private _tree: RealityModelTileTreeProps) { super(); }
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
+  public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Context; }
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
   public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
     const props: RealityModelTileProps[] = [];
@@ -151,9 +152,8 @@ export class RealityModelTileTree {
   }
 
   private static async getTileTreeProps(url: string, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
-    if (undefined !== url) {
-      await RealityModelTileClient.setToken(); // ###TODO we should not set the token here in the future!
-      const tileClient = new RealityModelTileClient(url);
+    if (undefined !== url && undefined !== IModelApp.accessToken) {
+      const tileClient = new RealityModelTileClient(url, IModelApp.accessToken);
       const json = await tileClient.getRootDocument(url);
       const ecefLocation = iModel.ecefLocation;
       const rootTransform: Transform = RealityModelTileUtils.transformFromJson(json.root.transform);
@@ -184,15 +184,15 @@ interface RDSClientProps {
  * @hidden
  */
 export class RealityModelTileClient {
-  public rdsProps?: RDSClientProps;
+  public readonly rdsProps?: RDSClientProps;
   private _baseUrl: string = "";
-  private static _token?: AccessToken;
+  private readonly _token: AccessToken;
   private static _client = new RealityDataServicesClient();
-  private static _onCloseListener?: () => void;
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
-  constructor(url: string) {
+  constructor(url: string, accessToken: AccessToken) {
     this.rdsProps = this.parseUrl(url);
+    this._token = accessToken;
   }
 
   // ###TODO temporary means of extracting the tileId and projectId from the given url
@@ -213,28 +213,6 @@ export class RealityModelTileClient {
     return props;
   }
 
-  // ###TODO this needs to be integrated with the IModelConnection lifecycle,
-  // when the IModelConnection closes, a listener to that event should set the token as undefined
-  // when a token is used to open an imodel, that token needs to be applied here as well (which at that time should exist in the clients repo, this is just temporarily here for testing)
-  // once the previously described workflow is finished, the SVT will need to explicity call this and pass a test account token when a standalone imodel is opened as a workaround,
-  // for electron apps, there will need to be a mechanism to prompt the user to sign in when opening a local imodels from the disk that has reality tiles referenced in it
-  public static async setToken(token?: AccessToken) {
-    if (undefined !== token) {
-      RealityModelTileClient._token = token;
-    } else if (undefined === RealityModelTileClient._token) {
-      // ###TODO for testing purposes, we are hardcoding a test user's credentials to generate a token that can access the reality tiles
-      const alctx = new ActivityLoggingContext(Guid.createValue());
-      const authToken: AuthorizationToken | undefined = await (new ImsActiveSecureTokenClient()).getToken(alctx, Config.App.getString("imjs_test_regular_user_name"), Config.App.getString("imjs_test_regular_user_password"));
-      RealityModelTileClient._token = await RealityModelTileClient._client.getAccessToken(alctx, authToken);
-    }
-    if (undefined === RealityModelTileClient._onCloseListener)
-      RealityModelTileClient._onCloseListener = IModelConnection.onClose.addListener(RealityModelTileClient.removeToken);
-  }
-
-  public static removeToken() {
-    RealityModelTileClient._token = undefined;
-  }
-
   // this is only used for accessing locally served reality tiles.
   // The tile's path root will need to be reinserted for child tiles to return a 200
   private setBaseUrl(url: string): void {
@@ -245,16 +223,17 @@ export class RealityModelTileClient {
 
   public async getRootDocument(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    if (undefined !== this.rdsProps && undefined !== RealityModelTileClient._token)
-      return RealityModelTileClient._client.getRootDocumentJson(alctx, RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId);
+    if (undefined !== this.rdsProps)
+      return RealityModelTileClient._client.getRootDocumentJson(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId);
+
     this.setBaseUrl(url);
     return getJson(alctx, url);
   }
 
   public async getTileContent(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    if (undefined !== this.rdsProps && undefined !== RealityModelTileClient._token)
-      return RealityModelTileClient._client.getTileContent(alctx, RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+    if (undefined !== this.rdsProps)
+      return RealityModelTileClient._client.getTileContent(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     if (undefined !== this._baseUrl) {
       const tileUrl = this._baseUrl + url;
       return getArrayBuffer(alctx, tileUrl);
@@ -264,8 +243,8 @@ export class RealityModelTileClient {
 
   public async getTileJson(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    if (undefined !== this.rdsProps && undefined !== RealityModelTileClient._token)
-      return RealityModelTileClient._client.getTileJson(alctx, RealityModelTileClient._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
+    if (undefined !== this.rdsProps)
+      return RealityModelTileClient._client.getTileJson(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     if (undefined !== this._baseUrl) {
       const tileUrl = this._baseUrl + url;
       return getJson(alctx, tileUrl);

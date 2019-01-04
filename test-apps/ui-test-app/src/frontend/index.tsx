@@ -36,6 +36,9 @@ import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 
+// Mobx demo
+import { configure as mobxConfigure } from "mobx";
+
 import "./index.scss";
 
 // Initialize my application gateway configuration for the frontend
@@ -50,21 +53,35 @@ else
 for (const definition of rpcConfiguration.interfaces())
   RpcOperation.forEach(definition, (operation) => operation.policy.token = (_request) => new IModelToken("test", "test", "test", "test"));
 
+// cSpell:ignore BACKSTAGESHOW BACKSTAGEHIDE SETIMODELCONNECTION setTestProperty
+/** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
+ * Use lower case strings to be compatible with SyncUi processing.
+ */
+export const enum SampleAppUiActionId {
+  showBackstage = "sampleapp:backstageshow",
+  hideBackstage = "sampleapp:backstagehide",
+  setIModelConnection = "sampleapp:setimodelconnection",
+  setTestProperty = "sampleapp:settestproperty",
+}
+
 export interface SampleAppState {
-  backstageVisible?: boolean;
+  backstageVisible: boolean;
   currentIModelConnection?: IModelConnection;
+  testProperty: string;
 }
 
 const initialState: SampleAppState = {
   backstageVisible: false,
+  testProperty: "",
 };
 
 // An object with a function that creates each OpenIModelAction that can be handled by our reducer.
 // tslint:disable-next-line:variable-name
 export const SampleAppActions = {
-  showBackstage: () => createAction("SampleApp:BACKSTAGESHOW"),
-  hideBackstage: () => createAction("SampleApp:BACKSTAGEHIDE"),
-  setIModelConnection: (iModelConnection: IModelConnection) => createAction("SampleApp:SETIMODELCONNECTION", { iModelConnection }),
+  showBackstage: () => createAction(SampleAppUiActionId.showBackstage),
+  hideBackstage: () => createAction(SampleAppUiActionId.hideBackstage),
+  setIModelConnection: (iModelConnection: IModelConnection) => createAction(SampleAppUiActionId.setIModelConnection, { iModelConnection }),
+  setTestProperty: (testProperty: string) => createAction(SampleAppUiActionId.setTestProperty, testProperty),
 };
 
 class SampleAppAccuSnap extends AccuSnap {
@@ -90,14 +107,17 @@ export type SampleAppActionsUnion = ActionsUnion<typeof SampleAppActions>;
 
 function SampleAppReducer(state: SampleAppState = initialState, action: SampleAppActionsUnion): DeepReadonly<SampleAppState> {
   switch (action.type) {
-    case "SampleApp:BACKSTAGESHOW": {
+    case SampleAppUiActionId.showBackstage: {
       return { ...state, backstageVisible: true };
     }
-    case "SampleApp:BACKSTAGEHIDE": {
+    case SampleAppUiActionId.hideBackstage: {
       return { ...state, backstageVisible: false };
     }
-    case "SampleApp:SETIMODELCONNECTION": {
+    case SampleAppUiActionId.setIModelConnection: {
       return { ...state, currentIModelConnection: action.payload.iModelConnection };
+    }
+    case SampleAppUiActionId.setTestProperty: {
+      return { ...state, testProperty: action.payload };
     }
   }
 
@@ -136,6 +156,9 @@ export class SampleAppIModelApp extends IModelApp {
     // Configure a CORS proxy in development mode.
     if (process.env.NODE_ENV === "development")
       Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:3001`); // By default, this will run on port 3001
+
+    // Mobx configuration
+    mobxConfigure({ enforceActions: "observed" });
   }
 
   public static async initialize() {
@@ -157,7 +180,7 @@ export class SampleAppIModelApp extends IModelApp {
       oidcConfiguration = { clientId, redirectUri };
     }
 
-    await UiFramework.initialize(SampleAppIModelApp.store, SampleAppIModelApp.i18n, oidcConfiguration);
+    await UiFramework.initialize(SampleAppIModelApp.store, SampleAppIModelApp.i18n, oidcConfiguration, "frameworkState");
 
     // initialize Presentation
     Presentation.initialize({
@@ -181,7 +204,7 @@ export class SampleAppIModelApp extends IModelApp {
     const iModelConnection = await UiFramework.iModelServices.openIModel(accessToken, projectInfo, wsgId);
 
     const payload = { iModelConnection };
-    SampleAppIModelApp.store.dispatch({ type: "SampleApp:SETIMODELCONNECTION", payload });
+    SampleAppIModelApp.store.dispatch({ type: SampleAppUiActionId.setIModelConnection, payload });
     SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
 
     // we create a FrontStage that contains the views that we want.
@@ -199,6 +222,16 @@ export class SampleAppIModelApp extends IModelApp {
       const frontstageDef = FrontstageManager.findFrontstageDef("Test4");
       FrontstageManager.setActiveFrontstageDef(frontstageDef); // tslint:disable-line:no-floating-promises
     }
+  }
+
+  public static setTestProperty(value: string, immediateSync = false) {
+    if (value !== SampleAppIModelApp.getTestProperty()) {
+      UiFramework.dispatchActionToStore(SampleAppUiActionId.setTestProperty, value, immediateSync);
+    }
+  }
+
+  public static getTestProperty(): string {
+    return SampleAppIModelApp.store.getState().sampleAppState.testProperty;
   }
 }
 

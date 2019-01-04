@@ -10,6 +10,7 @@ import { ModalDialogRenderer } from "./ModalDialogManager";
 import { FrontstageComposer } from "./FrontstageComposer";
 import { ElementTooltip } from "./ElementTooltip";
 import PointerMessage from "../messages/Pointer";
+import { UiFramework } from "../UiFramework";
 
 /** Properties for [[ConfigurableUiContent]] */
 export interface ConfigurableUiContentProps {
@@ -18,9 +19,11 @@ export interface ConfigurableUiContentProps {
 }
 
 function mapStateToProps(state: any) {
-  return {
-    placeholder: state.frameworkState.configurableUiState.placeHolder,
-  };
+  const frameworkState = state[UiFramework.frameworkStateKey];  // since app sets up key, don't hard-code name
+  if (!frameworkState)
+    return undefined;
+
+  return { placeholder: frameworkState.configurableUiState.placeHolder };
 }
 
 const mapDispatch = {

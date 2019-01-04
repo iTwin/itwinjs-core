@@ -48,6 +48,7 @@ export class WebAppRpcRequest extends RpcRequest {
     const request = {
       id: req.header(protocol.requestIdHeaderName) || "",
       authorization: req.header(protocol.authorizationHeaderName) || "",
+      version: req.header(protocol.versionHeaderName) || "",
       operation: {
         interfaceDefinition: operation.interfaceDefinition,
         operationName: operation.operationName,

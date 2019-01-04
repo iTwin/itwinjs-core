@@ -110,7 +110,7 @@ export class RpcInvocation {
     const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition);
     (impl as any)[CURRENT_INVOCATION] = this;
     const op = this.lookupOperationFunction(impl);
-    const context = new ActivityLoggingContext(this.request.id);
+    const context = new ActivityLoggingContext(this.request.id, this.request.version);
     context.enter();
     return Promise.resolve(op.call(impl, ...parameters));
   }

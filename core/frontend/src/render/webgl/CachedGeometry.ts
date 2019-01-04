@@ -16,6 +16,7 @@ import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
 import { System } from "./System";
+import { RenderMemory } from "../System";
 import { ColorInfo } from "./ColorInfo";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { VertexLUT } from "./VertexLUT";
@@ -24,7 +25,7 @@ import { Material } from "./Material";
 import { SkyBox } from "../../DisplayStyleState";
 
 /** Represents a geometric primitive ready to be submitted to the GPU for rendering. */
-export abstract class CachedGeometry implements IDisposable {
+export abstract class CachedGeometry implements IDisposable, RenderMemory.Consumer {
   // Returns true if white portions of this geometry should render as black on white background
   protected abstract _wantWoWReversal(_target: Target): boolean;
   // Returns the edge/line weight used to render this geometry
@@ -104,6 +105,8 @@ export abstract class CachedGeometry implements IDisposable {
     else
       return vf.sourceLights || vf.cameraLights || vf.solarLight;
   }
+
+  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
 // Geometry which is drawn using indices into a look-up texture of vertex data, via gl.drawArrays()
@@ -183,6 +186,11 @@ export abstract class IndexedGeometry extends CachedGeometry {
 export class ClipMaskGeometry extends IndexedGeometry {
   public constructor(indices: Uint32Array, vertices: QPoint3dList) {
     super(IndexedGeometryParams.createFromList(vertices, indices)!);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addClipVolume(this._params.positions.bytesUsed);
+    stats.addClipVolume(this._params.indices.bytesUsed);
   }
 
   public getTechniqueId(_target: Target): TechniqueId { return TechniqueId.ClipMask; }
@@ -315,6 +323,10 @@ export class SkyBoxQuadsGeometry extends CachedGeometry {
     return undefined !== sbxGeomParams ? new SkyBoxQuadsGeometry(sbxGeomParams, texture) : undefined;
   }
 
+  public collectStatistics(_stats: RenderMemory.Statistics): void {
+    // ###TODO, maybe.
+  }
+
   public getTechniqueId(_target: Target) { return this._techniqueId; }
   public getRenderPass(_target: Target) { return RenderPass.SkyBox; }
   public get renderOrder() { return RenderOrder.Surface; }
@@ -397,6 +409,10 @@ export class ViewportQuadGeometry extends IndexedGeometry {
   public getTechniqueId(_target: Target) { return this._techniqueId; }
   public getRenderPass(_target: Target) { return RenderPass.OpaqueGeneral; }
   public get renderOrder() { return RenderOrder.Surface; }
+
+  public collectStatistics(_stats: RenderMemory.Statistics): void {
+    // NB: These don't really count...
+  }
 }
 
 // Geometry used for view-space rendering techniques which involve sampling one or more textures.
@@ -642,28 +658,29 @@ export class PolylineBuffers implements IDisposable {
   public indices: BufferHandle;
   public prevIndices: BufferHandle;
   public nextIndicesAndParams: BufferHandle;
-  public distances: BufferHandle;
-
-  private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle, distances: BufferHandle) {
+  private constructor(indices: BufferHandle, prevIndices: BufferHandle, nextIndicesAndParams: BufferHandle) {
     this.indices = indices;
     this.prevIndices = prevIndices;
     this.nextIndicesAndParams = nextIndicesAndParams;
-    this.distances = distances;
   }
 
   public static create(polyline: TesselatedPolyline): PolylineBuffers | undefined {
     const indices = BufferHandle.createArrayBuffer(polyline.indices.data);
     const prev = BufferHandle.createArrayBuffer(polyline.prevIndices.data);
     const next = BufferHandle.createArrayBuffer(polyline.nextIndicesAndParams);
-    const dist = BufferHandle.createArrayBuffer(polyline.distances);
 
-    return undefined !== indices && undefined !== prev && undefined !== next && undefined !== dist ? new PolylineBuffers(indices, prev, next, dist) : undefined;
+    return undefined !== indices && undefined !== prev && undefined !== next ? new PolylineBuffers(indices, prev, next) : undefined;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics, type: RenderMemory.BufferType): void {
+    stats.addBuffer(type, this.indices.bytesUsed);
+    stats.addBuffer(type, this.prevIndices.bytesUsed);
+    stats.addBuffer(type, this.nextIndicesAndParams.bytesUsed);
   }
 
   public dispose() {
     dispose(this.indices);
     dispose(this.prevIndices);
     dispose(this.nextIndicesAndParams);
-    dispose(this.distances);
   }
 }

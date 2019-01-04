@@ -221,7 +221,7 @@ export class WidgetZone extends Zone {
     if (this._isWidgetOpen === undefined) {
       this._isWidgetOpen = false;
       for (const widget of this.props.widgets) {
-        if (widget.tabIndex !== -1) {
+        if (widget.tabIndex >= 0) {
           this._isWidgetOpen = true;
           break;
         }

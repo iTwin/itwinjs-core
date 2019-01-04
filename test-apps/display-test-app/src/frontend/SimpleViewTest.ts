@@ -2,29 +2,77 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { JsonUtils, OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
-import { Point2d, Point3d, Transform, Vector3d, XAndY, XYAndZ, Geometry, Range3d, Arc3d, AngleSweep, LineString3d, IModelJson as GeomJson, LineSegment3d } from "@bentley/geometry-core";
+import { OpenMode, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
+import { Point3d, Transform, Vector3d, XAndY, LineString3d, IModelJson as GeomJson, LineSegment3d } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, BentleyCloudRpcManager, ColorDef, ElectronRpcConfiguration, ElectronRpcManager, IModelReadRpcInterface,
-  IModelTileRpcInterface, IModelToken, LinePixels, ModelProps, ModelQueryParams, RenderMode, RgbColor, RpcConfiguration,
-  RpcOperation, StandaloneIModelRpcInterface, ViewQueryParams, ColorByName, GeometryStreamProps, BackgroundMapType, ContextRealityModelProps,
-  MobileRpcConfiguration, MobileRpcManager, AmbientOcclusion,
+  BentleyCloudRpcManager,
+  ColorDef,
+  ElectronRpcConfiguration,
+  ElectronRpcManager,
+  IModelReadRpcInterface,
+  IModelTileRpcInterface,
+  IModelToken,
+  LinePixels,
+  ModelProps,
+  ModelQueryParams,
+  RgbColor,
+  RpcConfiguration,
+  RpcOperation,
+  StandaloneIModelRpcInterface,
+  ViewQueryParams,
+  GeometryStreamProps,
+  ContextRealityModelProps,
+  MobileRpcConfiguration,
+  MobileRpcManager,
 } from "@bentley/imodeljs-common";
 import { AccessToken, Config, OidcFrontendClientConfiguration } from "@bentley/imodeljs-clients";
 import {
-  AccuDraw, AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, BeButtonEvent, Cluster, CoordinateLockOverrides, DecorateContext,
-  DynamicsContext, EditManipulator, EventHandled, HitDetail, imageElementFromUrl, IModelApp, IModelConnection, Marker, MarkerSet, MessageBoxIconType,
-  MessageBoxType, MessageBoxValue, NotificationManager, NotifyMessageDetails, PrimitiveTool, RotationMode, ScreenViewport, SnapMode,
-  SpatialModelState, SpatialViewState, StandardViewId, ToolTipOptions, Viewport, ViewState, ViewState3d, MarkerImage, BeButton, SnapStatus, imageBufferToPngDataUrl,
-  ContextRealityModelState, OidcClientWrapper, FeatureSymbology, GraphicType, PerformanceMetrics, Target, DisplayStyle3dState,
+  AccuDraw,
+  AccuDrawHintBuilder,
+  AccuDrawShortcuts,
+  AccuSnap,
+  DecorateContext,
+  MessageBoxIconType,
+  BeButtonEvent,
+  DynamicsContext,
+  EventHandled,
+  HitDetail,
+  IModelApp,
+  IModelConnection,
+  MessageBoxType,
+  MessageBoxValue,
+  NotificationManager,
+  NotifyMessageDetails,
+  PrimitiveTool,
+  RotationMode,
+  ScreenViewport,
+  SnapMode,
+  SpatialModelState,
+  SpatialViewState,
+  StandardViewId,
+  ToolTipOptions,
+  Viewport,
+  ViewState,
+  SnapStatus,
+  imageBufferToPngDataUrl,
+  ContextRealityModelState,
+  OidcClientWrapper,
+  FeatureSymbology,
+  GraphicType,
 } from "@bentley/imodeljs-frontend";
 import ToolTip from "tooltip.js";
 import { IModelApi } from "./IModelApi";
 import { SimpleViewState } from "./SimpleViewState";
+import { DebugPanel } from "./DebugPanel";
+import { CategoryPicker } from "./CategoryPicker";
+import { ViewAttributesPanel } from "./ViewAttributes";
 import { showError, showStatus } from "./Utils";
 import { initializeCustomCloudEnv } from "./CustomCloudEnv";
 import { initializeIModelHub } from "./ConnectEnv";
 import { SVTConfiguration } from "../common/SVTConfiguration";
+import { toggleIncidentMarkers } from "./IncidentMarkerDemo";
+import { toggleProjectExtents } from "./ProjectExtents";
+import { TileLoadIndicator } from "./TileLoadIndicator";
 
 // Only want the following imports if we are using electron and not a browser -----
 // tslint:disable-next-line:variable-name
@@ -36,16 +84,6 @@ if (ElectronRpcConfiguration.isElectron) {
 
 // tslint:disable:no-console
 
-interface RenderModeOptions {
-  flags: Map<string, boolean>;
-  mode: RenderMode;
-}
-
-const renderModeOptions: RenderModeOptions = {
-  flags: new Map<string, boolean>(),
-  mode: RenderMode.SmoothShade,
-};
-
 const availableContextRealityModels: ContextRealityModelProps[] = ContextRealityModelState.findAvailableRealityModels();
 
 let activeViewState: SimpleViewState = new SimpleViewState();
@@ -54,9 +92,7 @@ let theViewport: ScreenViewport | undefined;
 let curModelProps: ModelProps[] = [];
 let curModelPropIndices: number[] = [];
 let curNumModels = 0;
-const curCategories = new Set<string>();
 const configuration = {} as SVTConfiguration;
-let curFPSIntervalId: NodeJS.Timer;
 let overrideColor: ColorDef | undefined;
 let overrideTransparency: number | undefined;
 let curContextRealityModels: ContextRealityModelState[];
@@ -93,8 +129,9 @@ async function retrieveConfiguration(): Promise<void> {
 // opens the configured iModel from disk
 async function openStandaloneIModel(state: SimpleViewState, filename: string) {
   configuration.standalone = true;
-  state.iModelConnection = await IModelConnection.openStandalone(filename);
+  state.iModelConnection = await IModelConnection.openStandalone(filename, OpenMode.Readonly);
   configuration.iModelName = state.iModelConnection.name;
+  IModelApp.accessToken = state.accessToken;
 }
 
 // opens the configured iModel from iModelHub or iModelBank
@@ -154,12 +191,6 @@ function startToggleModel() {
 // open up the context model toggle menu
 function startToggleContextRealityModel() {
   const menu = document.getElementById("toggleContextRealityModelMenu") as HTMLDivElement;
-  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
-}
-
-// open up the category selection model
-function startCategorySelection() {
-  const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
@@ -275,39 +306,6 @@ async function buildModelMenu(state: SimpleViewState) {
   applyModelToggleChange("cbxModel0"); // force view to update based on all being enabled
 }
 
-// build list of categories; enable those defined in category selector
-async function buildCategoryMenu(state: SimpleViewState) {
-  curCategories.clear();
-  let html = '<input id="cbxCatToggleAll" type="checkbox"> Toggle All\n<br>\n';
-
-  const view = state.viewState!;
-  if (undefined === view) return;
-  const ecsql = "SELECT ECInstanceId as id, CodeValue as code, UserLabel as label FROM " + (view.is3d() ? "BisCore.SpatialCategory" : "BisCore.DrawingCategory");
-  const rows = await view.iModel.executeQuery(ecsql);
-
-  for (const row of rows) {
-    let label = row.label as string;
-    if (undefined === label)
-      label = row.code;
-
-    const id = row.id as string;
-    curCategories.add(id);
-    html += '<input id="cbxCat' + id + '" type="checkbox"> ' + label + "\n<br>\n";
-  }
-
-  const categoryMenu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
-  categoryMenu.innerHTML = html;
-
-  updateCheckboxToggleState("cbxCatToggleAll", curCategories.size === view.categorySelector.categories.size);
-  addCategoryToggleAllHandler();
-
-  for (const cat of curCategories) {
-    const cbxName = "cbxCat" + cat;
-    updateCheckboxToggleState(cbxName, view.categorySelector.has(cat));
-    addCategoryToggleHandler(cbxName);
-  }
-}
-
 // set checkbox state to checked or unchecked
 function updateCheckboxToggleState(id: string, enabled: boolean) {
   (document.getElementById(id)! as HTMLInputElement).checked = enabled;
@@ -409,50 +407,6 @@ function applyContextRealityModelToggleAllChange() {
   theViewport!.sync.invalidateScene();
 }
 
-function toggleCategoryState(invis: boolean, catId: string, view: ViewState) {
-  const enableAllSubCategories = false; // set to true to emulate semi-wacky Navigator behavior...
-  const alreadyInvis = !view.viewsCategory(catId);
-  if (alreadyInvis !== invis)
-    view.changeCategoryDisplay(catId, !invis, enableAllSubCategories);
-}
-
-// apply a category checkbox state being changed
-function applyCategoryToggleChange(_cbxCategory: string) {
-  const view = theViewport!.view;
-
-  let allToggledOn = true;
-  for (const cat of curCategories) {
-    const cbxName = "cbxCat" + cat;
-    const isChecked = getCheckboxToggleState(cbxName);
-    const invis = isChecked ? false : true;
-    toggleCategoryState(invis, cat, view);
-    if (invis)
-      allToggledOn = false;
-  }
-
-  updateCheckboxToggleState("cbxCatToggleAll", allToggledOn);
-
-  const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
-  menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
-}
-
-// toggle all checkboxes being toggled
-function applyCategoryToggleAllChange() {
-  const view = theViewport!.view;
-  const isChecked = getCheckboxToggleState("cbxCatToggleAll");
-
-  for (const cat of curCategories) {
-    const cbxName = "cbxCat" + cat;
-    updateCheckboxToggleState(cbxName, isChecked);
-
-    const invis = isChecked ? false : true;
-    toggleCategoryState(invis, cat, view);
-  }
-
-  const menu = document.getElementById("categorySelectionMenu") as HTMLDivElement;
-  menu.style.display = "none"; // menu.style.display === "none" || menu.style.display === "" ? "none" : "block";
-}
-
 function applyModelToggleAllChange() {
   if (!(theViewport!.view instanceof SpatialViewState))
     return;
@@ -499,16 +453,6 @@ function addClassifierToggleHandler(id: string) {
   document.getElementById(id)!.addEventListener("click", () => applyClassifierToggleChange(id));
 }
 
-// add a click handler to category checkbox
-function addCategoryToggleHandler(id: string) {
-  document.getElementById(id)!.addEventListener("click", () => applyCategoryToggleChange(id));
-}
-
-// add a click handler to the category 'toggle all' checkbox
-function addCategoryToggleAllHandler() {
-  document.getElementById("cbxCatToggleAll")!.addEventListener("click", () => applyCategoryToggleAllChange());
-}
-
 function toggleStandardViewMenu() {
   const menu = document.getElementById("standardRotationMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
@@ -519,9 +463,64 @@ function toggleDebugToolsMenu() {
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
 }
 
-function toggleRenderModeMenu() {
-  const menu = document.getElementById("changeRenderModeMenu") as HTMLDivElement;
-  menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
+let debugPanel: DebugPanel | undefined;
+let categoryPicker: CategoryPicker | undefined;
+let viewAttributes: ViewAttributesPanel | undefined;
+
+function closeDebugPanel() {
+  if (undefined !== debugPanel && debugPanel.isOpen)
+    debugPanel.toggle();
+}
+function closeCategoryPicker() {
+  if (undefined !== categoryPicker && categoryPicker.isOpen)
+    categoryPicker.toggle();
+}
+function closeViewAttributes() {
+  if (undefined !== viewAttributes)
+    viewAttributes = viewAttributes.dispose();
+}
+
+function toggleDebugPanel() {
+  if (undefined === debugPanel) {
+    // Panel is shown on construction. toggle() will hide it.
+    debugPanel = new DebugPanel(theViewport!, document.getElementById("debugPanelContainer")!);
+  } else {
+    // Alternatively: debugPanel.dispose() will reset any changes made. toggle() simply temporarily hides the panel.
+    debugPanel.toggle();
+  }
+
+  if (debugPanel.isOpen) {
+    closeCategoryPicker();
+    closeViewAttributes();
+  }
+}
+
+async function toggleCategoryPicker() {
+  if (undefined === categoryPicker) {
+    categoryPicker = new CategoryPicker(theViewport!, document.getElementById("categoryPickerContainer")!);
+    await categoryPicker.populate();
+  } else {
+    categoryPicker.toggle();
+  }
+
+  if (categoryPicker.isOpen) {
+    closeViewAttributes();
+    closeDebugPanel();
+  }
+}
+async function updateCategoryPicker() {
+  if (undefined !== categoryPicker)
+    await categoryPicker.populate();
+}
+
+function toggleViewAttributes() {
+  if (undefined === viewAttributes) {
+    closeCategoryPicker();
+    closeDebugPanel();
+    viewAttributes = new ViewAttributesPanel(theViewport!, document.getElementById("viewAttributesContainer")!);
+  } else {
+    viewAttributes = viewAttributes.dispose();
+  }
 }
 
 function toggleSnapModeMenu() {
@@ -671,183 +670,18 @@ function applyStandardViewRotation(rotationId: StandardViewId, label: string) {
   showStatus(label, "view");
 }
 
-function applyRenderModeChange(mode: string) {
-  const menuDialog = document.getElementById("changeRenderModeMenu");
-  const newValue = (document.getElementById(mode)! as HTMLInputElement).checked;
-  renderModeOptions.flags.set(mode, newValue);
-  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, menuDialog, renderModeOptions.mode);
-}
-
-function stringToRenderMode(name: string): RenderMode {
-  switch (name) {
-    case "Smooth Shade": return RenderMode.SmoothShade;
-    case "Solid Fill": return RenderMode.SolidFill;
-    case "Hidden Line": return RenderMode.HiddenLine;
-    default: return RenderMode.Wireframe;
-  }
-}
-
-function renderModeToString(mode: RenderMode): string {
-  switch (mode) {
-    case RenderMode.SmoothShade: return "Smooth Shade";
-    case RenderMode.SolidFill: return "Solid Fill";
-    case RenderMode.HiddenLine: return "Hidden Line";
-    default: return "Wireframe";
-  }
-}
-
-function changeRenderMode(): void {
-  const select = (document.getElementById("renderModeList") as HTMLSelectElement)!;
-  renderModeOptions.mode = stringToRenderMode(select.value);
-  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
-}
-
-function stringToMapType(s: string): BackgroundMapType {
-  if ("Street" === s) return BackgroundMapType.Street;
-  if ("Aerial" === s) return BackgroundMapType.Aerial;
-  return BackgroundMapType.Hybrid;
-}
-
-function mapTypeToString(m: BackgroundMapType): string {
-  if (BackgroundMapType.Street === m) return "Street";
-  if (BackgroundMapType.Aerial === m) return "Aerial";
-  return "Hybrid";
-}
-
-function changeBackgroundMapState(): void {
-  if (!theViewport!.view.is3d())
-    return;
-  const mapProviderString = (document.getElementById("mapProviderList") as HTMLSelectElement)!.value;
-  const mapTypeString = (document.getElementById("mapTypeList") as HTMLSelectElement)!.value;
-  const mapTypeVal = stringToMapType(mapTypeString);
-  const view = theViewport!.view as ViewState3d;
-  const ds = view.getDisplayStyle3d();
-  ds.setBackgroundMap({ providerName: mapProviderString, providerData: { mapType: mapTypeVal } });
-  IModelApp.tools.run("View.ChangeRenderMode", theViewport!, renderModeOptions.flags, document.getElementById("changeRenderModeMenu"), renderModeOptions.mode);
-}
-
-function updateRenderModeOption(id: string, enabled: boolean, options: Map<string, boolean>) {
-  (document.getElementById(id)! as HTMLInputElement).checked = enabled;
-  options.set(id, enabled);
-}
-
-// updates the checkboxes and the map for turning off and on rendering options to match what the current view is showing
-function updateRenderModeOptionsMap() {
-  let skybox = false;
-  let groundplane = false;
-  let providerName = "BingProvider";
-  let mapType = BackgroundMapType.Hybrid;
-  if (theViewport!.view.is3d()) {
-    const view = theViewport!.view as ViewState3d;
-    const env = view.getDisplayStyle3d().environment;
-    skybox = env.sky.display;
-    groundplane = env.ground.display;
-    const backgroundMap = view.getDisplayStyle3d().backgroundMap;
-    providerName = JsonUtils.asString(backgroundMap.providerName, "BingProvider");
-    mapType = JsonUtils.asInt(backgroundMap.mapType, BackgroundMapType.Hybrid);
-  }
-
-  const viewflags = theViewport!.view.viewFlags;
-  const lights = viewflags.sourceLights || viewflags.solarLight || viewflags.cameraLights;
-
-  updateRenderModeOption("skybox", skybox, renderModeOptions.flags);
-  updateRenderModeOption("groundplane", groundplane, renderModeOptions.flags);
-  updateRenderModeOption("ACSTriad", viewflags.acsTriad, renderModeOptions.flags);
-  updateRenderModeOption("fill", viewflags.fill, renderModeOptions.flags);
-  updateRenderModeOption("grid", viewflags.grid, renderModeOptions.flags);
-  updateRenderModeOption("textures", viewflags.textures, renderModeOptions.flags);
-  updateRenderModeOption("visibleEdges", viewflags.visibleEdges, renderModeOptions.flags);
-  updateRenderModeOption("hiddenEdges", viewflags.hiddenEdges, renderModeOptions.flags);
-  updateRenderModeOption("materials", viewflags.materials, renderModeOptions.flags);
-  updateRenderModeOption("lights", lights, renderModeOptions.flags);
-  updateRenderModeOption("monochrome", viewflags.monochrome, renderModeOptions.flags);
-  updateRenderModeOption("constructions", viewflags.constructions, renderModeOptions.flags);
-  updateRenderModeOption("weights", viewflags.weights, renderModeOptions.flags);
-  updateRenderModeOption("styles", viewflags.styles, renderModeOptions.flags);
-  updateRenderModeOption("transparency", viewflags.transparency, renderModeOptions.flags);
-  updateRenderModeOption("clipVolume", viewflags.clipVolume, renderModeOptions.flags);
-  updateRenderModeOption("backgroundMap", viewflags.backgroundMap, renderModeOptions.flags);
-  (document.getElementById("mapProviderList") as HTMLSelectElement)!.value = providerName;
-  (document.getElementById("mapTypeList") as HTMLSelectElement)!.value = mapTypeToString(mapType);
-
-  const backgroundMapDisabled = !theViewport!.iModel.isGeoLocated;
-  (document.getElementById("backgroundMap")! as HTMLInputElement).disabled = backgroundMapDisabled;
-  (document.getElementById("mapProviderList")! as HTMLInputElement).disabled = backgroundMapDisabled;
-  (document.getElementById("mapTypeList")! as HTMLInputElement).disabled = backgroundMapDisabled;
-
-  renderModeOptions.mode = viewflags.renderMode;
-  (document.getElementById("renderModeList") as HTMLSelectElement)!.value = renderModeToString(viewflags.renderMode);
-}
-
-function updateAmbientOcclusionUI() {
-  const vp = theViewport;
-  if (undefined !== vp) {
-    const ao = document.getElementById("ambientOcclusion")! as HTMLInputElement;
-    const aoZLengthCap = document.getElementById("aoZLengthCap") as HTMLInputElement;
-    const aoBias = document.getElementById("aoBias") as HTMLInputElement;
-    const aoIntensity = document.getElementById("aoIntensity") as HTMLInputElement;
-    const aoTexelStepSize = document.getElementById("aoTexelStepSize") as HTMLInputElement;
-    const aoBlurDelta = document.getElementById("aoBlurDelta") as HTMLInputElement;
-    const aoBlurSigma = document.getElementById("aoBlurSigma") as HTMLInputElement;
-    const aoBlurTexelStepSize = document.getElementById("aoBlurTexelStepSize") as HTMLInputElement;
-
-    const aoSettings = (vp.view.displayStyle as DisplayStyle3dState).settings.ambientOcclusionSettings;
-
-    ao.checked = vp.view.viewFlags.ambientOcclusion;
-    aoZLengthCap.value = aoSettings.zLengthCap!.toString();
-    aoBias.value = aoSettings.bias!.toString();
-    aoIntensity.value = aoSettings.intensity!.toString();
-    aoTexelStepSize.value = aoSettings.texelStepSize!.toString();
-    aoBlurDelta.value = aoSettings.blurDelta!.toString();
-    aoBlurSigma.value = aoSettings.blurSigma!.toString();
-    aoBlurTexelStepSize.value = aoSettings.blurTexelStepSize!.toString();
-  }
-}
-
-function resetAmbientOcclusion(aoEnabled: boolean) {
-  const vp = theViewport;
-  if (undefined !== vp) {
-    if (vp.view.displayStyle.is3d()) {
-      (vp.view.displayStyle as DisplayStyle3dState).settings.ambientOcclusionSettings = AmbientOcclusion.Settings.defaults;
-      vp.view.viewFlags.ambientOcclusion = aoEnabled;
-      updateAmbientOcclusionUI();
-      vp!.sync.invalidateRenderPlan();
-    }
-  }
-}
-
-function setAmbientOcclusion(aoEnabled: boolean, aoZLengthCap: number, aoBias: number, aoIntensity: number, aoTexelStepSize: number, aoBlurDelta: number, aoBlurSigma: number, aoBlurTexelStepSize: number) {
-  const vp = theViewport;
-  if (undefined !== vp) {
-    vp.view.viewFlags.ambientOcclusion = aoEnabled;
-    if (vp.view.displayStyle.is3d()) {
-      const aoSettings = AmbientOcclusion.Settings.fromJSON({
-        bias: aoBias,
-        zLengthCap: aoZLengthCap,
-        intensity: aoIntensity,
-        texelStepSize: aoTexelStepSize,
-        blurDelta: aoBlurDelta,
-        blurSigma: aoBlurSigma,
-        blurTexelStepSize: aoBlurTexelStepSize,
-      });
-      (vp.view.displayStyle as DisplayStyle3dState).settings.ambientOcclusionSettings = aoSettings;
-      vp!.sync.invalidateRenderPlan();
-    }
-  }
-}
-
 // opens the view and connects it to the HTML canvas element.
 async function openView(state: SimpleViewState) {
   if (undefined === theViewport) {
     const vpDiv = document.getElementById("imodel-viewport") as HTMLDivElement;
     theViewport = ScreenViewport.create(vpDiv, state.viewState!);
+
+    const tileLoadIndicatorDiv = document.getElementById("tileLoadIndicatorContainer") as HTMLDivElement;
+    new TileLoadIndicator(tileLoadIndicatorDiv, theViewport);
   }
 
   await _changeView(state.viewState!);
   theViewport.addFeatureOverrides = addFeatureOverrides;
-  theViewport.continuousRendering = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
-  theViewport.wantTileBoundingBoxes = (document.getElementById("boundingBoxes")! as HTMLInputElement).checked;
-
   IModelApp.viewManager.addViewport(theViewport);
 
   resetAmbientOcclusion(false); // ambient occlusion defaults off for now
@@ -859,9 +693,8 @@ async function _changeView(view: ViewState) {
   theViewport!.changeView(view);
   activeViewState.viewState = view;
   await buildModelMenu(activeViewState);
-  await buildCategoryMenu(activeViewState);
+  await updateCategoryPicker();
   await buildContextRealityModelMenu(activeViewState);
-  updateRenderModeOptionsMap();
 }
 
 export class DrawingAidTestTool extends PrimitiveTool {
@@ -1158,441 +991,6 @@ export class MeasureDistanceTool extends PrimitiveTool {
   }
 }
 
-export class ProjectExtentsResizeTool extends EditManipulator.HandleTool {
-  protected _anchorIndex: number;
-  protected _ids: string[];
-  protected _base: Point3d[];
-  protected _axis: Vector3d[];
-
-  public constructor(manipulator: EditManipulator.HandleProvider, hitId: string, ids: string[], base: Point3d[], axis: Vector3d[]) {
-    super(manipulator);
-    this._anchorIndex = ids.indexOf(hitId);
-    this._ids = ids;
-    this._base = base;
-    this._axis = axis;
-  }
-
-  protected init(): void {
-    this.receivedDownEvent = true;
-    this.initLocateElements(false, false, undefined, CoordinateLockOverrides.All); // Disable locate/snap/locks for control modification; overrides state inherited from suspended primitive...
-    IModelApp.accuDraw.deactivate(); // Disable activate of compass from beginDynamics...
-    this.beginDynamics();
-  }
-
-  protected accept(ev: BeButtonEvent): boolean {
-    const extents = this.computeNewExtents(ev);
-    if (undefined === extents)
-      return true;
-
-    // NEEDSWORK: Update extents and low/high markers...
-    return true;
-  }
-
-  public computeNewExtents(ev: BeButtonEvent): Range3d | undefined {
-    if (-1 === this._anchorIndex || undefined === ev.viewport)
-      return undefined;
-
-    // NOTE: Use AccuDraw z instead of view z if AccuDraw is explicitly enabled (tool disables by default)...
-    const projectedPt = EditManipulator.HandleUtils.projectPointToLineInView(ev.point, this._base[this._anchorIndex], this._axis[this._anchorIndex], ev.viewport, true);
-    if (undefined === projectedPt)
-      return undefined;
-
-    const anchorPt = this._base[this._anchorIndex];
-    const offsetVec = Vector3d.createStartEnd(anchorPt, projectedPt);
-    let offset = offsetVec.normalizeWithLength(offsetVec).mag;
-    if (offset < Geometry.smallMetricDistance)
-      return;
-    if (offsetVec.dotProduct(this._axis[this._anchorIndex]) < 0.0)
-      offset *= -1.0;
-
-    const adjustedPts: Point3d[] = [];
-    for (let iFace = 0; iFace < this._ids.length; iFace++) {
-      if (iFace === this._anchorIndex || this.manipulator.iModel.selectionSet.has(this._ids[iFace]))
-        adjustedPts.push(this._base[iFace].plusScaled(this._axis[iFace], offset));
-      else
-        adjustedPts.push(this._base[iFace]);
-    }
-
-    const extents = Range3d.create();
-    extents.extendArray(adjustedPts);
-
-    return extents;
-  }
-
-  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
-    const extents = this.computeNewExtents(ev);
-    if (undefined === extents)
-      return;
-
-    const builder = context.createSceneGraphicBuilder();
-    builder.setSymbology(ev.viewport!.getContrastToBackgroundColor(), ColorDef.black, 1, LinePixels.Code2);
-    builder.addRangeBox(extents);
-    context.addGraphic(builder.finish());
-  }
-}
-
-export class ProjectExtentsDecoration extends EditManipulator.HandleProvider {
-  private static _decorator?: ProjectExtentsDecoration;
-  protected _extents: AxisAlignedBox3d;
-  protected _markers: Marker[] = [];
-  protected _boxId?: string;
-  protected _controlIds: string[] = [];
-  protected _controlPoint: Point3d[] = [];
-  protected _controlAxis: Vector3d[] = [];
-
-  public constructor() {
-    super(activeViewState.iModelConnection!);
-    this._extents = this.iModel.projectExtents;
-    this._boxId = this.iModel.transientIds.next;
-    this.updateDecorationListener(true);
-
-    const image = imageElementFromUrl("map_pin.svg");
-    const markerDrawFunc = (ctx: CanvasRenderingContext2D) => {
-      ctx.beginPath();
-      ctx.arc(0, 0, 15, 0, 2 * Math.PI);
-      ctx.fillStyle = "green";
-      ctx.lineWidth = 1;
-      ctx.strokeStyle = "black";
-      ctx.fill();
-      ctx.stroke();
-    };
-
-    const markerSize = Point2d.create(48, 48);
-    const imageOffset = Point2d.create(-11, 32);
-    const createBoundsMarker = (label: string, markerPos: Point3d): void => {
-      const marker = new Marker(markerPos, markerSize);
-      marker.drawFunc = markerDrawFunc;
-      marker.label = label;
-      marker.imageOffset = imageOffset;
-      marker.setImage(image);
-      marker.setScaleFactor({ low: .4, high: 1.5 });
-      this._markers.push(marker);
-    };
-
-    createBoundsMarker(this.iModel.iModelToken.key!, this._extents.center);
-    createBoundsMarker("low", this._extents.low);
-    createBoundsMarker("high", this._extents.high);
-  }
-
-  protected stop(): void {
-    const selectedId = (undefined !== this._boxId && this.iModel.selectionSet.has(this._boxId)) ? this._boxId : undefined;
-    this._boxId = undefined; // Invalidate id so that decorator will be dropped...
-    super.stop();
-    if (undefined !== selectedId)
-      this.iModel.selectionSet.remove(selectedId); // Don't leave decorator id in selection set...
-  }
-
-  protected async createControls(): Promise<boolean> {
-    //    if (this.iModel.isReadonly)
-    //      return false;
-
-    // Decide if resize controls should be presented.
-    if (undefined === this._boxId)
-      return false;
-
-    const iModel = this.iModel;
-
-    // Show controls if only extents box and it's controls are selected, selection set doesn't include any other elements...
-    let showControls = false;
-    if (iModel.selectionSet.size <= this._controlIds.length + 1 && iModel.selectionSet.has(this._boxId)) {
-      showControls = true;
-      if (iModel.selectionSet.size > 1) {
-        iModel.selectionSet.elements.forEach((val) => {
-          if (this._boxId !== val && !this._controlIds.includes(val))
-            showControls = false;
-        });
-      }
-    }
-
-    if (!showControls)
-      return false;
-
-    this._extents = iModel.projectExtents; // Update extents post-modify...NEEDSWORK - Update marker locations too!
-
-    const transientIds = iModel.transientIds;
-    if (0 === this._controlIds.length) {
-      this._controlIds[0] = transientIds.next;
-      this._controlIds[1] = transientIds.next;
-      this._controlIds[2] = transientIds.next;
-      this._controlIds[3] = transientIds.next;
-      this._controlIds[4] = transientIds.next;
-      this._controlIds[5] = transientIds.next;
-    }
-
-    const xOffset = 0.5 * this._extents.xLength();
-    const yOffset = 0.5 * this._extents.yLength();
-    const zOffset = 0.5 * this._extents.zLength();
-    const center = this._extents.center;
-
-    this._controlAxis[0] = Vector3d.unitX();
-    this._controlAxis[1] = Vector3d.unitX(-1.0);
-    this._controlPoint[0] = center.plusScaled(this._controlAxis[0], xOffset);
-    this._controlPoint[1] = center.plusScaled(this._controlAxis[1], xOffset);
-
-    this._controlAxis[2] = Vector3d.unitY();
-    this._controlAxis[3] = Vector3d.unitY(-1.0);
-    this._controlPoint[2] = center.plusScaled(this._controlAxis[2], yOffset);
-    this._controlPoint[3] = center.plusScaled(this._controlAxis[3], yOffset);
-
-    this._controlAxis[4] = Vector3d.unitZ();
-    this._controlAxis[5] = Vector3d.unitZ(-1.0);
-    this._controlPoint[4] = center.plusScaled(this._controlAxis[4], zOffset);
-    this._controlPoint[5] = center.plusScaled(this._controlAxis[5], zOffset);
-
-    return true;
-  }
-
-  protected clearControls(): void {
-    this.iModel.selectionSet.remove(this._controlIds); // Remove any selected controls as they won't continue to be displayed...
-    super.clearControls();
-  }
-
-  protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean {
-    const manipTool = new ProjectExtentsResizeTool(this, hit.sourceId, this._controlIds, this._controlPoint, this._controlAxis);
-    return manipTool.run();
-  }
-
-  public testDecorationHit(id: string): boolean { return (id === this._boxId || this._controlIds.includes(id)); }
-  public async getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string> {
-    if (hit.sourceId === this._boxId) {
-      const popup = window.document.createElement("div");
-      const image = window.document.createElement("img"); image.className = "simpleicon"; image.src = "Warning_sign.svg"; popup.appendChild(image);
-      const descr = window.document.createElement("div"); descr.className = "tooltip"; descr.innerHTML = "Project Extents"; popup.appendChild(descr);
-      return popup;
-    }
-    return "Resize Project Extents";
-  }
-  public async onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled> { return (hit.sourceId === this._boxId ? EventHandled.No : super.onDecorationButtonEvent(hit, ev)); }
-
-  protected updateDecorationListener(_add: boolean) {
-    super.updateDecorationListener(undefined !== this._boxId); // Decorator isn't just for resize controls...
-  }
-
-  public decorate(context: DecorateContext): void {
-    if (undefined === this._boxId)
-      return;
-
-    const vp = context.viewport;
-    if (!vp.view.isSpatialView())
-      return;
-
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._boxId);
-
-    builder.setSymbology(vp.getContrastToBackgroundColor(), ColorDef.black, 3);
-    builder.addRangeBox(this._extents);
-    context.addDecorationFromBuilder(builder);
-
-    this._markers.forEach((marker) => marker.addDecoration(context));
-
-    if (!this._isActive)
-      return;
-
-    const outlineColor = ColorDef.black.adjustForContrast(vp.view.backgroundColor, 100);
-    for (let iFace = 0; iFace < this._controlIds.length; iFace++) {
-      const transform = EditManipulator.HandleUtils.getArrowTransform(vp, this._controlPoint[iFace], this._controlAxis[iFace], 0.75);
-      if (undefined === transform)
-        continue;
-
-      const fillColor = (0.0 !== this._controlAxis[iFace].x ? ColorDef.red : (0.0 !== this._controlAxis[iFace].y ? ColorDef.green : ColorDef.blue)).adjustForContrast(vp.view.backgroundColor, 100);
-      const shapePts = EditManipulator.HandleUtils.getArrowShape(0.0, 0.15, 0.55, 1.0, 0.3, 0.5, 0.1);
-      const arrowBuilder = context.createGraphicBuilder(GraphicType.WorldOverlay, transform, this._controlIds[iFace]);
-
-      arrowBuilder.setSymbology(outlineColor, outlineColor, 2);
-      arrowBuilder.addLineString(shapePts);
-      arrowBuilder.setBlankingFill(fillColor);
-      arrowBuilder.addShape(shapePts);
-
-      context.addDecorationFromBuilder(arrowBuilder);
-    }
-  }
-
-  public static toggle() {
-    if (undefined === ProjectExtentsDecoration._decorator) {
-      ProjectExtentsDecoration._decorator = new ProjectExtentsDecoration();
-      IModelApp.toolAdmin.startDefaultTool();
-    } else {
-      ProjectExtentsDecoration._decorator.stop();
-      ProjectExtentsDecoration._decorator = undefined;
-    }
-  }
-}
-
-/** Example Marker to show an *incident*. Each incident has an *id*, a *severity*, and an *icon*. */
-class IncidentMarker extends Marker {
-  private static _size = Point2d.create(30, 30);
-  private static _imageSize = Point2d.create(40, 40);
-  private static _imageOffset = Point2d.create(0, 30);
-  private static _amber = new ColorDef(ColorByName.amber);
-  private static _sweep360 = AngleSweep.create360();
-  private _color: ColorDef;
-
-  /** This makes the icon only show when the cursor is over an incident marker. */
-  // public get wantImage() { return this._isHilited; }
-
-  /** Get a color based on severity by interpolating Green(0) -> Amber(15) -> Red(30)  */
-  public static makeColor(severity: number): ColorDef {
-    return (severity <= 16 ? ColorDef.green.lerp(this._amber, (severity - 1) / 15.) :
-      this._amber.lerp(ColorDef.red, (severity - 16) / 14.));
-  }
-
-  public onMouseButton(ev: BeButtonEvent): boolean {
-    if (ev.button === BeButton.Data) {
-      if (ev.isDown) {
-        IModelApp.notifications.openMessageBox(MessageBoxType.LargeOk, "severity = " + this.severity, MessageBoxIconType.Information); // tslint:disable-line:no-floating-promises
-      }
-    }
-    return true;
-  }
-
-  // /** draw a filled square with the incident color and a white outline */
-  // public drawFunc(ctx: CanvasRenderingContext2D) {
-  //   ctx.beginPath();
-  //   ctx.fillStyle = this._color.toHexString();
-  //   ctx.rect(-11, -11, 20, 20);
-  //   ctx.fill();
-  //   ctx.strokeStyle = "white";
-  //   ctx.stroke();
-  // }
-
-  /** Create a new IncidentMarker */
-  constructor(location: XYAndZ, public severity: number, public id: number, icon: Promise<HTMLImageElement>) {
-    super(location, IncidentMarker._size);
-    this._color = IncidentMarker.makeColor(severity); // color interpolated from severity
-    this.setImage(icon); // save icon
-    this.imageOffset = IncidentMarker._imageOffset; // move icon up by 30 pixels
-    this.imageSize = IncidentMarker._imageSize; // 40x40
-    this.labelFont = "italic 14px san-serif"; // use italic so incidents look different than Clusters
-    // this.label = severity.toLocaleString(); // label with severity
-    this.title = "Severity: " + severity + "<br>Id: " + id; // tooltip
-    this.setScaleFactor({ low: .2, high: 1.4 }); // make size 20% at back of frustum and 140% at front of frustum (if camera is on)
-  }
-
-  public addMarker(context: DecorateContext) {
-    super.addMarker(context);
-    const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
-    const ellipse = Arc3d.createScaledXYColumns(this.worldLocation, context.viewport.rotation.transpose(), .2, .2, IncidentMarker._sweep360);
-    builder.setSymbology(ColorDef.white, this._color, 1);
-    builder.addArc(ellipse, false, false);
-    builder.setBlankingFill(this._color);
-    builder.addArc(ellipse, true, true);
-    context.addDecorationFromBuilder(builder);
-  }
-}
-
-/** A Marker used to show a cluster of incidents */
-class IncidentClusterMarker extends Marker {
-  private _clusterColor: string;
-  // public get wantImage() { return this._isHilited; }
-
-  // draw the cluster as a white circle with an outline color based on what's in the cluster
-  public drawFunc(ctx: CanvasRenderingContext2D) {
-    ctx.beginPath();
-    ctx.strokeStyle = this._clusterColor;
-    ctx.fillStyle = "white";
-    ctx.lineWidth = 5;
-    ctx.arc(0, 0, 13, 0, Math.PI * 2);
-    ctx.fill();
-    ctx.stroke();
-  }
-
-  /** Create a new cluster marker with label and color based on the content of the cluster */
-  constructor(location: XYAndZ, size: XAndY, cluster: Cluster<IncidentMarker>, image: Promise<MarkerImage>) {
-    super(location, size);
-
-    // get the top 10 incidents by severity
-    const sorted: IncidentMarker[] = [];
-    const maxLen = 10;
-    cluster.markers.forEach((marker) => {
-      if (maxLen > sorted.length || marker.severity > sorted[sorted.length - 1].severity) {
-        const index = sorted.findIndex((val) => val.severity < marker.severity);
-        if (index === -1)
-          sorted.push(marker);
-        else
-          sorted.splice(index, 0, marker);
-        if (sorted.length > maxLen)
-          sorted.length = maxLen;
-      }
-    });
-
-    this.imageOffset = new Point3d(0, 28);
-    this.imageSize = new Point2d(30, 30);
-    this.label = cluster.markers.length.toLocaleString();
-    this.labelColor = "black";
-    this.labelFont = "bold 14px san-serif";
-
-    let title = "";
-    sorted.forEach((marker) => {
-      if (title !== "")
-        title += "<br>";
-      title += "Severity: " + marker.severity + " Id: " + marker.id;
-    });
-    if (cluster.markers.length > maxLen)
-      title += "<br>...";
-
-    this.title = title;
-    this._clusterColor = IncidentMarker.makeColor(sorted[0].severity).toHexString();
-    this.setImage(image);
-  }
-}
-
-/** A MarkerSet to hold incidents. This class supplies to `getClusterMarker` method to create IncidentClusterMarkers. */
-class IncidentMarkerSet extends MarkerSet<IncidentMarker> {
-  protected getClusterMarker(cluster: Cluster<IncidentMarker>): Marker {
-    return IncidentClusterMarker.makeFrom(cluster.markers[0], cluster, IncidentMarkerDemo.warningSign);
-  }
-}
-
-/** This demo shows how to use MarkerSets to cluster markers that overlap on the screen. It creates a set of 500
- * "incidents" at random locations within the ProjectExtents. For each incident, it creates an IncidentMarker with an Id and
- * with a random value between 1-30 for "severity", and one of 5 possible icons.
- */
-class IncidentMarkerDemo {
-  public static warningSign?: HTMLImageElement;
-  private _incidents = new IncidentMarkerSet();
-  private static _decorator?: IncidentMarkerDemo; // static variable just so we can tell if the demo is active.
-
-  public constructor() {
-    const markerIcons = [
-      imageElementFromUrl("Hazard_biological.svg"),
-      imageElementFromUrl("Hazard_electric.svg"),
-      imageElementFromUrl("Hazard_flammable.svg"),
-      imageElementFromUrl("Hazard_toxic.svg"),
-      imageElementFromUrl("Hazard_tripping.svg"),
-    ];
-
-    if (undefined === IncidentMarkerDemo.warningSign)
-      imageElementFromUrl("Warning_sign.svg").then((image) => IncidentMarkerDemo.warningSign = image); // tslint:disable-line:no-floating-promises
-
-    const extents = activeViewState.iModelConnection!.projectExtents;
-    const pos = new Point3d();
-    for (let i = 0; i < 500; ++i) {
-      pos.x = extents.low.x + (Math.random() * extents.xLength());
-      pos.y = extents.low.y + (Math.random() * extents.yLength());
-      pos.z = extents.low.z + (Math.random() * extents.zLength());
-      this._incidents.markers.add(new IncidentMarker(pos, 1 + Math.round(Math.random() * 29), i, markerIcons[i % markerIcons.length]));
-    }
-  }
-
-  /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. We add the MarkerSet. */
-  public decorate(context: DecorateContext) {
-    if (context.viewport.view.isSpatialView())
-      this._incidents.addDecoration(context);
-  }
-
-  /** Turn the markers on and off. Each time it runs it creates a new random set of incidents. */
-  public static toggle() {
-    if (undefined === IncidentMarkerDemo._decorator) {
-      // start the demo by creating the demo object and adding it as a ViewManager decorator.
-      IncidentMarkerDemo._decorator = new IncidentMarkerDemo();
-      IModelApp.viewManager.addDecorator(IncidentMarkerDemo._decorator);
-    } else {
-      // stop the demo
-      IModelApp.viewManager.dropDecorator(IncidentMarkerDemo._decorator);
-      IncidentMarkerDemo._decorator = undefined;
-    }
-  }
-}
-
 // Starts drawing aid test tool
 function startDrawingAidTest(event: Event) {
   const menu = document.getElementById("snapModeList") as HTMLDivElement;
@@ -1646,12 +1044,19 @@ async function changeView(event: any) {
 }
 
 async function clearViews() {
-  if (activeViewState.iModelConnection !== undefined)
-    if (configuration.standalone)
+  let accessToken: AccessToken | undefined;
+  if (activeViewState.iModelConnection !== undefined) {
+    if (configuration.standalone) {
       await activeViewState.iModelConnection.closeStandalone();
-    else
+      if (configuration.signInForStandalone)
+        accessToken = activeViewState.accessToken;
+    } else {
       await activeViewState.iModelConnection!.close(activeViewState.accessToken!);
+    }
+  }
+
   activeViewState = new SimpleViewState();
+  activeViewState.accessToken = accessToken;
   viewMap.clear();
   document.getElementById("viewList")!.innerHTML = "";
 }
@@ -1699,32 +1104,6 @@ async function selectIModel() {
   }
 }
 
-function setFpsInfo() {
-  const perfMet = (theViewport!.target as Target).performanceMetrics;
-  if (undefined !== perfMet && document.getElementById("showfps")) {
-    const stats = IModelApp.tileRequests.statistics;
-    document.getElementById("showfps")!.innerHTML =
-      "Avg. FPS: " + (perfMet.spfTimes.length / perfMet.spfSum).toFixed(2)
-      + " Render Time (ms): " + (perfMet.renderSpfSum / perfMet.renderSpfTimes.length).toFixed(2)
-      + "<br />Scene Time (ms): " + (perfMet.loadTileSum / perfMet.loadTileTimes.length).toFixed(2)
-      + "<br />Tiles: " + stats.numActiveRequests + " active, " + stats.numPendingRequests + " pending";
-
-    let msg = "";
-    perfMet.frameTimings.forEach((v, k) => {
-      if (0 < msg.length)
-        msg += ", ";
-
-      msg += k + "=" + v;
-    });
-
-    console.log(msg);
-  }
-}
-
-function addRenderModeHandler(id: string) {
-  document.getElementById(id)!.addEventListener("click", () => applyRenderModeChange(id));
-}
-
 function keepOpenDebugToolsMenu(_open: boolean = true) { // keep open debug tool menu
   const menu = document.getElementById("debugToolsMenu") as HTMLDivElement;
   menu.style.display = menu.style.display === "none" || menu.style.display === "" ? "block" : "none";
@@ -1745,26 +1124,6 @@ function saveImage() {
   }
 
   window.open(url, "Saved View");
-}
-
-function updateTileLoadIndicator(progress: HTMLProgressElement): void {
-  let pctComplete = 1.0;
-  let title = "";
-  let color = "#00ff00";
-  const requested = undefined !== theViewport ? theViewport.numRequestedTiles : 0;
-  if (undefined !== theViewport && requested > 0) {
-    const selected = theViewport.numSelectedTiles;
-    const total = selected + requested;
-    pctComplete = selected / total;
-    title = "" + selected + " / " + total + " (" + requested + ")";
-    color = "#007fff";
-  }
-
-  progress.value = pctComplete;
-  progress.title = title;
-  progress.style.color = color;
-
-  window.requestAnimationFrame(() => updateTileLoadIndicator(progress));
 }
 
 // associate viewing commands to icons. I couldn't get assigning these in the HTML to work.
@@ -1798,7 +1157,6 @@ function wireIconsToFunctions() {
   const addClickListener = (el: string, listener: (ev: Event) => void) => { document.getElementById(el)!.addEventListener("click", listener); };
   addClickListener("startToggleModel", startToggleModel);
   addClickListener("startToggleContextRealityModel", startToggleContextRealityModel);
-  addClickListener("startCategorySelection", startCategorySelection);
   addClickListener("startToggleCamera", startToggleCamera);
   addClickListener("startFit", () => IModelApp.tools.run("View.Fit", theViewport, true));
   addClickListener("startWindowArea", () => IModelApp.tools.run("View.WindowArea", theViewport));
@@ -1808,7 +1166,9 @@ function wireIconsToFunctions() {
   addClickListener("startRotateView", () => IModelApp.tools.run("View.Rotate", theViewport));
   addClickListener("switchStandardRotation", toggleStandardViewMenu);
   addClickListener("debugTools", toggleDebugToolsMenu);
-  addClickListener("renderModeToggle", toggleRenderModeMenu);
+  addClickListener("debugPanelToggle", toggleDebugPanel);
+  addClickListener("categoryPickerToggle", toggleCategoryPicker);
+  addClickListener("viewAttributesToggle", toggleViewAttributes);
   addClickListener("snapModeToggle", toggleSnapModeMenu);
   addClickListener("doUndo", () => IModelApp.tools.run("View.Undo", theViewport));
   addClickListener("doRedo", () => IModelApp.tools.run("View.Redo", theViewport));
@@ -1819,8 +1179,8 @@ function wireIconsToFunctions() {
   addClickListener("animationMenu", processAnimationMenuEvent);
 
   // debug tool handlers
-  addClickListener("incidentMarkers", () => IncidentMarkerDemo.toggle());
-  addClickListener("projectExtents", () => ProjectExtentsDecoration.toggle());
+  addClickListener("incidentMarkers", () => toggleIncidentMarkers(activeViewState.iModelConnection!.projectExtents));
+  addClickListener("projectExtents", () => toggleProjectExtents(activeViewState.iModelConnection!));
   addClickListener("saveImage", () => saveImage());
   addClickListener("debugToolsMenu", () => keepOpenDebugToolsMenu());
 
@@ -1834,72 +1194,6 @@ function wireIconsToFunctions() {
   addClickListener("iso", () => applyStandardViewRotation(StandardViewId.Iso, "Iso"));
   addClickListener("rightIso", () => applyStandardViewRotation(StandardViewId.RightIso, "RightIso"));
 
-  // render mode handlers
-  addRenderModeHandler("skybox");
-  addRenderModeHandler("groundplane");
-  addRenderModeHandler("ACSTriad");
-  addRenderModeHandler("fill");
-  addRenderModeHandler("grid");
-  addRenderModeHandler("textures");
-  addRenderModeHandler("visibleEdges");
-  addRenderModeHandler("hiddenEdges");
-  addRenderModeHandler("materials");
-  addRenderModeHandler("lights");
-  addRenderModeHandler("monochrome");
-  addRenderModeHandler("constructions");
-  addRenderModeHandler("clipVolume");
-  addRenderModeHandler("weights");
-  addRenderModeHandler("styles");
-  addRenderModeHandler("transparency");
-  addRenderModeHandler("backgroundMap");
-  document.getElementById("continuousRendering")!.addEventListener("click", () => {
-    const checked: boolean = (document.getElementById("continuousRendering")! as HTMLInputElement).checked;
-    if (theViewport) {
-      theViewport.continuousRendering = checked;
-      (theViewport!.target as Target).performanceMetrics = checked ? new PerformanceMetrics(false, true) : undefined;
-    }
-    if (checked) {
-      curFPSIntervalId = setInterval(setFpsInfo, 500);
-      document.getElementById("showfps")!.style.display = "inline";
-    } else {
-      document.getElementById("showfps")!.style.display = "none";
-      clearInterval(curFPSIntervalId);
-    }
-  });
-
-  const boundingBoxes = document.getElementById("boundingBoxes")! as HTMLInputElement;
-  boundingBoxes.addEventListener("click", () => theViewport!.wantTileBoundingBoxes = boundingBoxes.checked);
-
-  const ao = document.getElementById("ambientOcclusion")! as HTMLInputElement;
-  const aoZLengthCap = document.getElementById("aoZLengthCap") as HTMLInputElement;
-  const aoBias = document.getElementById("aoBias") as HTMLInputElement;
-  const aoIntensity = document.getElementById("aoIntensity") as HTMLInputElement;
-  const aoTexelStepSize = document.getElementById("aoTexelStepSize") as HTMLInputElement;
-  const aoBlurDelta = document.getElementById("aoBlurDelta") as HTMLInputElement;
-  const aoBlurSigma = document.getElementById("aoBlurSigma") as HTMLInputElement;
-  const aoBlurTexelStepSize = document.getElementById("aoBlurTexelStepSize") as HTMLInputElement;
-
-  ao.addEventListener("click", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
-
-  aoZLengthCap.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
-
-  aoBias.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
-
-  aoIntensity.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
-
-  aoTexelStepSize.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
-
-  aoBlurDelta.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
-
-  aoBlurSigma.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
-
-  aoBlurTexelStepSize.addEventListener("input", () => setAmbientOcclusion(ao.checked, parseFloat(aoZLengthCap.value), parseFloat(aoBias.value), parseFloat(aoIntensity.value), parseFloat(aoTexelStepSize.value), parseFloat(aoBlurDelta.value), parseFloat(aoBlurSigma.value), parseFloat(aoBlurTexelStepSize.value)));
-
-  document.getElementById("resetAmbientOcclusion")!.addEventListener("click", () => resetAmbientOcclusion(ao.checked));
-
-  document.getElementById("renderModeList")!.addEventListener("change", () => changeRenderMode());
-  document.getElementById("mapProviderList")!.addEventListener("change", () => changeBackgroundMapState());
-  document.getElementById("mapTypeList")!.addEventListener("change", () => changeBackgroundMapState());
   document.getElementById("colorList")!.addEventListener("change", () => changeOverrideColor());
 
   // File Selector for the browser (a change represents a file selection)... only used when in browser and given base path for local files
@@ -1915,10 +1209,6 @@ function wireIconsToFunctions() {
       }
     }
   });
-
-  // Tile loading indicator
-  const tileLoadIndicator = document.getElementById("tile-load-indicator")! as HTMLProgressElement;
-  window.requestAnimationFrame(() => updateTileLoadIndicator(tileLoadIndicator));
 }
 
 // If we are using a browser, close the current iModel before leaving
@@ -2131,22 +1421,24 @@ async function main() {
 
   // while the browser is loading stuff, start work on logging in and downloading the imodel, etc.
   try {
-    // Standalone
-    if (configuration.standalone) {
+    if (configuration.standalone && !configuration.signInForStandalone) {
       await openStandaloneIModel(activeViewState, configuration.iModelName!);
       await uiReady; // Now wait for the HTML UI to finish loading.
       await initView();
       return;
     }
 
-    // Connected to hub
     await initializeOidc(actx);
     actx.enter();
 
     if (!activeViewState.accessToken)
       OidcClientWrapper.oidcClient.signIn(actx);
     else {
-      await openIModel(activeViewState);
+      if (configuration.standalone)
+        await openStandaloneIModel(activeViewState, configuration.iModelName!);
+      else
+        await openIModel(activeViewState);
+
       await uiReady; // Now, wait for the HTML UI to finish loading.
       await initView();
     }
@@ -2154,7 +1446,6 @@ async function main() {
     alert(reason);
     return;
   }
-
 }
 
 async function initView() {

@@ -20,13 +20,14 @@ describe("StandardMessageBox", () => {
   }
 
   before(async () => {
-    await TestUtils.initializeUiFramework();
+    await TestUtils.initializeUiFramework(true);
 
     ModalDialogManager.onModalDialogChangedEvent.addListener(handleModalDialogChanged);
   });
 
   after(() => {
     ModalDialogManager.onModalDialogChangedEvent.removeListener(handleModalDialogChanged);
+    TestUtils.terminateUiFramework(); // clear out the framework key
   });
 
   it("ModalDialogManager methods", () => {

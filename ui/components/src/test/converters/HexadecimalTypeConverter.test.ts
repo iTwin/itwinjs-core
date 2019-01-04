@@ -19,29 +19,29 @@ describe("HexadecimalTypeConverter", () => {
   });
 
   describe("convertToString", () => {
-    it("returns correct string", async () => {
-      expect(await converter.convertToString("0xff")).to.equal("0xFF");
-      expect(await converter.convertToString("0xaabbcc")).to.equal("0xAABBCC");
-      expect(await converter.convertToString("0xaabbccff")).to.equal("0xAABBCCFF");
+    it("returns correct string", () => {
+      expect(converter.convertToString("0xff")).to.equal("0xFF");
+      expect(converter.convertToString("0xaabbcc")).to.equal("0xAABBCC");
+      expect(converter.convertToString("0xaabbccff")).to.equal("0xAABBCCFF");
     });
 
-    it("returns empty string when value is undefined", async () => {
-      expect(await converter.convertToString(undefined)).to.equal("");
+    it("returns empty string when value is undefined", () => {
+      expect(converter.convertToString(undefined)).to.equal("");
     });
   });
 
   describe("convertFromString", () => {
-    it("returns correct values", async () => {
-      expect(await converter.convertFromString("FF")).to.be.eq("0xff");
-      expect(await converter.convertFromString("0xFF")).to.be.eq("0xff");
-      expect(await converter.convertFromString("0x000000FF")).to.be.eq("0xff");
-      expect(await converter.convertFromString("AABBCC")).to.be.eq("0xaabbcc");
-      expect(await converter.convertFromString("AABBCCFF")).to.be.eq("0xaabbccff");
-      expect(await converter.convertFromString("0xAABBCCFF")).to.be.eq("0xaabbccff");
+    it("returns correct values", () => {
+      expect(converter.convertFromString("FF")).to.be.eq("0xff");
+      expect(converter.convertFromString("0xFF")).to.be.eq("0xff");
+      expect(converter.convertFromString("0x000000FF")).to.be.eq("0xff");
+      expect(converter.convertFromString("AABBCC")).to.be.eq("0xaabbcc");
+      expect(converter.convertFromString("AABBCCFF")).to.be.eq("0xaabbccff");
+      expect(converter.convertFromString("0xAABBCCFF")).to.be.eq("0xaabbccff");
     });
 
-    it("returns undefined when string is incorrect", async () => {
-      expect(await converter.convertFromString("GFF")).to.be.undefined;
+    it("returns undefined when string is incorrect", () => {
+      expect(converter.convertFromString("GFF")).to.be.undefined;
     });
   });
 

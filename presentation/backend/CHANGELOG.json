@@ -2,6 +2,36 @@
   "name": "@bentley/presentation-backend",
   "entries": [
     {
+      "version": "0.181.0",
+      "tag": "@bentley/presentation-backend_v0.181.0",
+      "date": "Fri, 04 Jan 2019 13:02:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "move to Node 10"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.180.0",
+      "tag": "@bentley/presentation-backend_v0.180.0",
+      "date": "Wed, 02 Jan 2019 15:18:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "0.179.0",
+      "tag": "@bentley/presentation-backend_v0.179.0",
+      "date": "Wed, 19 Dec 2018 18:26:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added RulesetEmbedder to embed and get rules to/from iModelDb"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.178.0",
       "tag": "@bentley/presentation-backend_v0.178.0",
       "date": "Thu, 13 Dec 2018 22:06:10 GMT",

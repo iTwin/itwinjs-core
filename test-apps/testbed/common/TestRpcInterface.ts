@@ -130,6 +130,10 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async op14(_x: number, _y: number): Promise<number> {
     return this.forward(arguments);
   }
+
+  public async op15(): Promise<void> {
+    return this.forward(arguments);
+  }
 }
 
 export abstract class TestRpcInterface2 extends RpcInterface {

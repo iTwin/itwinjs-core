@@ -87,7 +87,7 @@ export { TreeDragDropType, TreeDragDropProps, withTreeDragDrop } from "./tree/ho
 export { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "./tree/SimpleTreeDataProvider";
 
 export * from "./viewport/ViewportComponent";
-export * from "./viewport/ViewRotationCube";
+export * from "./viewport/ViewportComponentEvents";
 
 /** @docs-package-description
  * The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.

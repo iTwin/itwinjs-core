@@ -10,6 +10,7 @@ import { PropertyRecord } from "../../Record";
 import { PropertyValueFormat } from "../../Value";
 import { Orientation } from "@bentley/ui-core";
 import { TableStructValueRenderer } from "./table/StructValueRenderer";
+import { withContextStyle } from "./WithContextStyle";
 
 /** Default Struct Property Renderer */
 export class StructPropertyValueRenderer implements IPropertyValueRenderer {
@@ -17,19 +18,17 @@ export class StructPropertyValueRenderer implements IPropertyValueRenderer {
     return record.value.valueFormat === PropertyValueFormat.Struct;
   }
 
-  public async render(record: PropertyRecord, context?: PropertyValueRendererContext) {
-    if (context) {
-      switch (context.containerType) {
-        case PropertyContainerType.Table:
-          return (
-            <TableStructValueRenderer
-              propertyRecord={record}
-              onDialogOpen={context.onDialogOpen}
-              orientation={context.orientation ? context.orientation : Orientation.Horizontal}
-            />
-          );
-      }
+  public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
+    if (context && context.containerType === PropertyContainerType.Table) {
+      return withContextStyle(
+        <TableStructValueRenderer
+          propertyRecord={record}
+          onDialogOpen={context.onDialogOpen}
+          orientation={context.orientation ? context.orientation : Orientation.Horizontal}
+        />,
+        context,
+      );
     }
-    return `{${record.property.typename}}`;
+    return withContextStyle(`{${record.property.typename}}`, context);
   }
 }

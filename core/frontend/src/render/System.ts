@@ -22,6 +22,143 @@ import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
+import { ClipPlanesVolume } from "./webgl/ClipVolume";
+
+/** Contains metadata about memory consumed by the render system or aspect thereof.
+ * @hidden
+ */
+export namespace RenderMemory {
+  /** Describes memory consumed by a particular type of resource.
+   * @hidden
+   */
+  export class Consumers {
+    public totalBytes = 0; // total number of bytes consumed by all consumers
+    public maxBytes = 0; // largest number of bytes consumed by a single consumer
+    public count = 0; // total number of consumers of this type
+
+    public addConsumer(numBytes: number): void {
+      this.totalBytes += numBytes;
+      this.maxBytes = Math.max(this.maxBytes, numBytes);
+      ++this.count;
+    }
+
+    public clear(): void {
+      this.totalBytes = this.maxBytes = this.count = 0;
+    }
+  }
+
+  export const enum BufferType {
+    Surfaces = 0,
+    VisibleEdges,
+    SilhouetteEdges,
+    PolylineEdges,
+    Polylines,
+    PointStrings,
+    PointClouds,
+
+    COUNT,
+  }
+
+  /** Describes memory consumed by GPU-allocated buffers.
+   * @hidden
+   */
+  export class Buffers extends Consumers {
+    public readonly consumers: Consumers[];
+
+    public constructor() {
+      super();
+      this.consumers = [];
+      for (let i = 0; i < BufferType.COUNT; i++)
+        this.consumers[i] = new Consumers();
+    }
+
+    public get surfaces() { return this.consumers[BufferType.Surfaces]; }
+    public get visibleEdges() { return this.consumers[BufferType.VisibleEdges]; }
+    public get silhouetteEdges() { return this.consumers[BufferType.SilhouetteEdges]; }
+    public get polylineEdges() { return this.consumers[BufferType.PolylineEdges]; }
+    public get polylines() { return this.consumers[BufferType.Polylines]; }
+    public get pointStrings() { return this.consumers[BufferType.PointStrings]; }
+    public get pointClouds() { return this.consumers[BufferType.PointClouds]; }
+
+    public clear(): void {
+      for (const consumer of this.consumers)
+        consumer.clear();
+
+      super.clear();
+    }
+
+    public addBuffer(type: BufferType, numBytes: number): void {
+      this.addConsumer(numBytes);
+      this.consumers[type].addConsumer(numBytes);
+    }
+  }
+
+  export const enum ConsumerType {
+    Textures = 0,
+    VertexTables,
+    FeatureTables,
+    FeatureOverrides,
+    ClipVolumes,
+
+    COUNT,
+  }
+
+  /** @hidden */
+  export class Statistics {
+    private _totalBytes = 0;
+    public readonly consumers: Consumers[];
+    public readonly buffers = new Buffers();
+
+    public constructor() {
+      this.consumers = [];
+      for (let i = 0; i < ConsumerType.COUNT; i++)
+        this.consumers[i] = new Consumers();
+    }
+
+    public get totalBytes(): number { return this._totalBytes; }
+    public get textures() { return this.consumers[ConsumerType.Textures]; }
+    public get vertexTables() { return this.consumers[ConsumerType.VertexTables]; }
+    public get featureTables() { return this.consumers[ConsumerType.FeatureTables]; }
+    public get featureOverrides() { return this.consumers[ConsumerType.FeatureOverrides]; }
+    public get clipVolumes() { return this.consumers[ConsumerType.ClipVolumes]; }
+
+    public addBuffer(type: BufferType, numBytes: number): void {
+      this._totalBytes += numBytes;
+      this.buffers.addBuffer(type, numBytes);
+    }
+
+    public addConsumer(type: ConsumerType, numBytes: number): void {
+      this._totalBytes += numBytes;
+      this.consumers[type].addConsumer(numBytes);
+    }
+
+    public clear(): void {
+      this._totalBytes = 0;
+      this.buffers.clear();
+      for (const consumer of this.consumers)
+        consumer.clear();
+    }
+
+    public addTexture(numBytes: number) { this.addConsumer(ConsumerType.Textures, numBytes); }
+    public addVertexTable(numBytes: number) { this.addConsumer(ConsumerType.VertexTables, numBytes); }
+    public addFeatureTable(numBytes: number) { this.addConsumer(ConsumerType.FeatureTables, numBytes); }
+    public addFeatureOverrides(numBytes: number) { this.addConsumer(ConsumerType.FeatureOverrides, numBytes); }
+    public addClipVolume(numBytes: number) { this.addConsumer(ConsumerType.ClipVolumes, numBytes); }
+
+    public addSurface(numBytes: number) { this.addBuffer(BufferType.Surfaces, numBytes); }
+    public addVisibleEdges(numBytes: number) { this.addBuffer(BufferType.VisibleEdges, numBytes); }
+    public addSilhouetteEdges(numBytes: number) { this.addBuffer(BufferType.SilhouetteEdges, numBytes); }
+    public addPolylineEdges(numBytes: number) { this.addBuffer(BufferType.PolylineEdges, numBytes); }
+    public addPolyline(numBytes: number) { this.addBuffer(BufferType.Polylines, numBytes); }
+    public addPointString(numBytes: number) { this.addBuffer(BufferType.PointStrings, numBytes); }
+    public addPointCloud(numBytes: number) { this.addBuffer(BufferType.PointClouds, numBytes); }
+  }
+
+  /** @hidden */
+  export interface Consumer {
+    collectStatistics(stats: Statistics): void;
+  }
+}
 
 /* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
  * @hidden
@@ -77,7 +214,7 @@ export class RenderPlan {
     const clipVec = view.getViewClip();
     const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
     const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights, view.displayStyle.analysisStyle, ao);
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights, style.analysisStyle, ao);
     if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
       rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
 
@@ -91,8 +228,11 @@ export class RenderPlan {
  *  - [[Decorations]] created on the front-end to be rendered along with the scene.
  * The latter are produced using a [[GraphicBuilder]].
  */
-export abstract class RenderGraphic implements IDisposable {
+export abstract class RenderGraphic implements IDisposable, RenderMemory.Consumer {
   public abstract dispose(): void;
+
+  /** @hidden */
+  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
 /** Describes the type of a RenderClipVolume. */
@@ -213,7 +353,7 @@ export class Decorations implements IDisposable {
  * Branches can be nested to build an arbitrarily-complex scene graph.
  * @see [[RenderSystem.createBranch]]
  */
-export class GraphicBranch implements IDisposable {
+export class GraphicBranch implements IDisposable, RenderMemory.Consumer {
   /** The child nodes of this branch */
   public readonly entries: RenderGraphic[] = [];
   /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */
@@ -221,6 +361,8 @@ export class GraphicBranch implements IDisposable {
   private _viewFlagOverrides = new ViewFlag.Overrides();
   /** Optional symbology overrides to be applied to all graphics in this branch */
   public symbologyOverrides?: FeatureSymbology.Overrides;
+  /** Optional animation branch Id. */
+  public animationId?: string;
 
   public constructor(ownsEntries: boolean = false) { this.ownsEntries = ownsEntries; }
 
@@ -242,6 +384,12 @@ export class GraphicBranch implements IDisposable {
     else
       this.entries.length = 0;
   }
+
+  /** @hidden */
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const entry of this.entries)
+      entry.collectStatistics(stats);
+  }
 }
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
@@ -253,7 +401,8 @@ export namespace Pixel {
     public constructor(public readonly feature?: Feature,
       public readonly distanceFraction: number = -1.0,
       public readonly type: GeometryType = GeometryType.Unknown,
-      public readonly planarity: Planarity = Planarity.Unknown) { }
+      public readonly planarity: Planarity = Planarity.Unknown,
+      public readonly featureTable?: PackedFeatureTable) { }
 
     public get elementId(): Id64String | undefined { return undefined !== this.feature ? this.feature.elementId : undefined; }
     public get subCategoryId(): Id64String | undefined { return undefined !== this.feature ? this.feature.subCategoryId : undefined; }
@@ -294,7 +443,7 @@ export namespace Pixel {
    */
   export const enum Selector {
     None = 0,
-    /** Select the [[Feature]] which produced each pixel. */
+    /** Select the [[Feature]] which produced each pixel, as well as the [[PackedFeatureTable]] from which the feature originated. */
     Feature = 1 << 0,
     /** Select the type and planarity of geometry which produced each pixel as well as the fraction of its distance between the near and far planes. */
     GeometryAndDistance = 1 << 2,
@@ -327,6 +476,8 @@ export class PackedFeatureTable {
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
   public readonly type: BatchType;
+
+  public get byteLength(): number { return this._data.byteLength; }
 
   /** Construct a PackedFeatureTable from the packed binary data.
    * This is used internally when deserializing Tiles in iMdl format.
@@ -497,11 +648,16 @@ export abstract class RenderTarget implements IDisposable {
   public abstract set animationFraction(fraction: number);
 
   /** @hidden */
+  public get animationBranches(): AnimationBranchStates | undefined { return undefined; }
+  /** @hidden */
+  public set animationBranches(_transforms: AnimationBranchStates | undefined) { }
+
+  /** @hidden */
   public createGraphicBuilder(type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String) { return this.renderSystem.createGraphicBuilder(placement, type, viewport, pickableId); }
 
-  public abstract dispose(): void;
+  public dispose(): void { }
   /** @hidden */
-  public abstract reset(): void;
+  public reset(): void { }
   /** @hidden */
   public abstract changeScene(scene: GraphicList, activeVolume?: RenderClipVolume): void;
   /** @hidden */
@@ -515,21 +671,21 @@ export abstract class RenderTarget implements IDisposable {
   /** @hidden */
   public abstract drawFrame(sceneMilSecElapsed?: number): void;
   /** @hidden */
-  public abstract overrideFeatureSymbology(ovr: FeatureSymbology.Overrides): void;
+  public overrideFeatureSymbology(_ovr: FeatureSymbology.Overrides): void { }
   /** @hidden */
-  public abstract setHiliteSet(hilited: Set<string>): void;
+  public setHiliteSet(_hilited: Set<string>): void { }
   /** @hidden */
-  public abstract setFlashed(elementId: Id64String, intensity: number): void;
+  public setFlashed(_elementId: Id64String, _intensity: number): void { }
   /** @hidden */
-  public abstract setViewRect(rect: ViewRect, temporary: boolean): void;
+  public abstract setViewRect(_rect: ViewRect, _temporary: boolean): void;
   /** @hidden */
-  public abstract onResized(): void;
+  public onResized(): void { }
   /** @hidden */
   public abstract updateViewRect(): boolean; // force a RenderTarget viewRect to resize if necessary since last draw
   /** @hidden */
   public abstract readPixels(rect: ViewRect, selector: Pixel.Selector, receiver: Pixel.Receiver): void;
   /** @hidden */
-  public abstract readImage(rect: ViewRect, targetSize: Point2d, flipVertically: boolean): ImageBuffer | undefined;
+  public readImage(_rect: ViewRect, _targetSize: Point2d, _flipVertically: boolean): ImageBuffer | undefined { return undefined; }
 }
 
 /** Describes a texture loaded from an HTMLImageElement */
@@ -740,3 +896,11 @@ export abstract class RenderSystem implements IDisposable {
   /** @hidden */
   public onInitialized(): void { }
 }
+/** Clip/Transform for a branch that are varied over time. */
+export class AnimationBranchState {
+  public readonly transform?: Transform;
+  public readonly clip?: ClipPlanesVolume;
+  constructor(transform?: Transform, clip?: ClipPlanesVolume) { this.transform = transform; this.clip = clip; }
+}
+/** Mapping from node/branch IDs to animation branch state  */
+export type AnimationBranchStates = Map<string, AnimationBranchState>;

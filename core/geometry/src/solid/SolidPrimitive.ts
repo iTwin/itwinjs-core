@@ -20,7 +20,7 @@ export abstract class SolidPrimitive extends GeometryQuery {
   public get capped(): boolean { return this._capped; }
   /** Set the capped flag */
   public set capped(capped: boolean) { this._capped = capped; }
-  /** Return a cross section at specified vFraction */
+  /** Return a cross section at specified vFraction. */
   public abstract constantVSection(_vFraction: number): CurveCollection | undefined;
   /** Return a Transform from the local system of the solid to world.
    * * The particulars of origin and orientation are specific to each SolidPrimitive type.

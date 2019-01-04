@@ -223,6 +223,8 @@ describe("CreateIModelJsonSamples", () => {
           continue;
         Checker.noisy.printJSONFailure = true;
         const data = fs.readFileSync(currFile, "utf8");
+        if (Checker.noisy.ReportRoundTripFileNames)
+          console.log(currFile);
         let jsonObject1;
         if (data.length > 0) {
           jsonObject1 = JSON.parse(data);
@@ -238,12 +240,16 @@ describe("CreateIModelJsonSamples", () => {
             numValuePassed++;
           } else {
             ck.announceError("imjs => GeometryQuery =>imjs round trip failure", currFile);
+            const jsonObject3 = IModelJson.Writer.toIModelJson(geometryQuery1);
+            compareObj.compare(jsonObject1, jsonObject3);
             if (Checker.noisy.printJSONFailure) { console.log("FAIL: " + i); console.log(compareObj.errorTracker); }
           }
         }
       }
-      console.log(" imjs => geoemtry files from " + sourceDirectory);
-      console.log("*************** " + numValuePassed + " files passed out of " + numItems + " checked");
+      if (Checker.noisy.printJSONSuccess) {
+        console.log(" imjs => geoemtry files from " + sourceDirectory);
+        console.log("*************** " + numValuePassed + " files passed out of " + numItems + " checked");
+      }
     }
     ck.checkpoint("BSIJSON.ParseIMJS");
     expect(ck.getNumErrors()).equals(0);

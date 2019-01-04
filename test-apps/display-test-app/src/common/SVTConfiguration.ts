@@ -11,6 +11,7 @@ export interface SVTConfiguration {
   iModelName?: string;
   filename?: string;
   standalonePath?: string;    // Used when run in the browser - a common base path for all standalone imodels
+  signInForStandalone?: boolean; // If true, and standalone is true, then sign in. Required when opening local files containing reality models.
 }
 
 export interface ConnectProjectConfiguration {

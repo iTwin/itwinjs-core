@@ -5,8 +5,8 @@
 
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
-import { GeometryQuery} from "../curve/GeometryQuery";
-import {CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
 import { LineString3d } from "../curve/LineString3d";
 import { Arc3d } from "../curve/Arc3d";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
@@ -27,16 +27,23 @@ import { Ray3d } from "../geometry3d/Ray3d";
 import { IModelJson } from "../serialization/IModelJsonSchema";
 
 /* tslint:disable:no-console */
+// This file emits (to console.log) text suitable for use as markdown content for examples of construtor call and json of results
+// The output is suppressed by emitToLog.
 
+const emitToLog = false;
 function emitCategoryHeader(name: string) {
-  console.log("## " + name);
-  console.log("|constructor | remarks | json |");
-  console.log("|----|----|---|");
+  if (emitToLog) {
+    console.log("## " + name);
+    console.log("|constructor | remarks | json |");
+    console.log("|----|----|---|");
+  }
 }
 // emit a single geometry fragment in bare json form ...
 function emitIModelJson(classname: string, description: string, g: GeometryQuery) {
-  const imjs = IModelJson.Writer.toIModelJson(g);
-  console.log("| " + classname + " | " + description + " | `", JSON.stringify(imjs) + "`|");
+  if (emitToLog) {
+    const imjs = IModelJson.Writer.toIModelJson(g);
+    console.log("| " + classname + " | " + description + " | `", JSON.stringify(imjs) + "`|");
+  }
 }
 // Typical snippets for sandbox windows . . . . These assume that
 // the window alwyas has
@@ -147,7 +154,7 @@ describe("constructorsAndImodelJson", () => {
     {
       const contour = Loop.create(LineString3d.createRegularPolygonXY(Point3d.create(1, 1, 0), 6, 1.0, true));
       const axisOfRotation = Ray3d.create(Point3d.create(-1, 0, 0), Vector3d.create(0, 1, 0));
-      const sweepAngle = Angle.createDegrees (135);
+      const sweepAngle = Angle.createDegrees(135);
       const capped = true;
       emitIModelJson("RotationalSweep.create(contour, axisOfRotation, sweepAngle, capped)",
         "hexagon rotated",

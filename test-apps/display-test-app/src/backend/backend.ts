@@ -27,7 +27,11 @@ function setupStandaloneConfiguration() {
     configuration.standalonePath = process.env.SVT_STANDALONE_FILEPATH; // optional (browser-use only)
     configuration.viewName = process.env.SVT_STANDALONE_VIEWNAME; // optional
     configuration.iModelName = filename;
-    fs.writeFileSync(path.join(__dirname, "../webresources", "configuration.json"), JSON.stringify(configuration), "utf8");
+    if (undefined !== process.env.SVT_STANDALONE_SIGNIN)
+      configuration.signInForStandalone = true;
+
+    const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
+    fs.writeFileSync(configPathname, JSON.stringify(configuration), "utf8");
   }
 }
 
@@ -36,7 +40,8 @@ export function initializeBackend() {
 
   const hostConfig = new IModelHostConfiguration();
   // tslint:disable-next-line:no-var-requires
-  const svtConfig: SVTConfiguration = require("../webresources/configuration.json");
+  const configPathname = path.normalize(path.join(__dirname, "../webresources", "configuration.json"));
+  const svtConfig: SVTConfiguration = require(configPathname);
   if (svtConfig.customOrchestratorUri)
     hostConfig.imodelClient = new IModelBankClient(svtConfig.customOrchestratorUri, new UrlFileHandler());
 

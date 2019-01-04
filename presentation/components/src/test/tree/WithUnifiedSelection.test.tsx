@@ -2,6 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as React from "react";
 import { expect } from "chai";
@@ -17,9 +19,8 @@ import {
   Presentation,
   SelectionHandler, SelectionManager, SelectionChangeEvent, ISelectionProvider, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/presentation-frontend";
-import { Tree, TreeNodeItem, UiComponents } from "@bentley/ui-components";
+import { Tree, TreeProps, TreeNodeItem, UiComponents } from "@bentley/ui-components";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { TreeProps } from "@bentley/ui-components";
 import IUnifiedSelectionComponent from "../../common/IUnifiedSelectionComponent";
 import { IPresentationTreeDataProvider, treeWithUnifiedSelection } from "../../presentation-components";
 

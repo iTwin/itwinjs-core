@@ -45,31 +45,7 @@ export function withTableDragDrop<P extends TableProps, DragDropObject extends T
 
     public static get displayName() { return `WithDragAndDrop(${getDisplayName(TableComponent)})`; }
 
-    private createTableDropProps(): DropTargetProps<DragDropObject> {
-      if (!this.props.dropProps)
-        return {};
-      const { onDropTargetOver, onDropTargetDrop, canDropTargetDrop, objectTypes } = this.props.dropProps! as DropTargetProps;
-      const dropProps: DropTargetProps<DragDropObject> = {
-        onDropTargetOver: (args: DropTargetArguments<DragDropObject>) => {
-          if (onDropTargetOver) {
-            args.dropLocation = this.props.dataProvider as DragDropObject;
-            onDropTargetOver(args);
-          }
-        },
-        onDropTargetDrop: (args: DropTargetArguments<DragDropObject>): DropTargetArguments<DragDropObject> => {
-          args.dropLocation = this.props.dataProvider as DragDropObject;
-          return onDropTargetDrop ? onDropTargetDrop(args) : args;
-        },
-        canDropTargetDrop: (args: DropTargetArguments<DragDropObject>) => {
-          args.dropLocation = this.props.dataProvider as DragDropObject;
-          return canDropTargetDrop ? canDropTargetDrop(args) : true;
-        },
-        objectTypes,
-      };
-      return dropProps;
-    }
-
-    private createNodeDragProps(item: RowItem): DragSourceProps<DragDropObject> {
+    public createDragProps(item: RowItem): DragSourceProps<DragDropObject> {
       if (!this.props.dragProps)
         return {};
 
@@ -81,25 +57,26 @@ export function withTableDragDrop<P extends TableProps, DragDropObject extends T
           return onDragSourceBegin ? onDragSourceBegin(args) : args;
         },
         onDragSourceEnd: (args: DragSourceArguments<DragDropObject>) => {
+          // istanbul ignore else
           if (onDragSourceEnd) {
             args.parentObject = this.props.dataProvider as DragDropObject;
             onDragSourceEnd(args);
           }
         },
         objectType: () => {
+          // istanbul ignore else
           if (objectType) {
             if (typeof objectType === "function")
               return objectType(item.extendedData as DragDropObject);
             else
               return objectType;
-          }
-          return "";
+          } else return "";
         },
       };
       return dragProps;
     }
 
-    private createNodeDropProps(item: RowItem): TableDropTargetProps<DragDropObject> {
+    public createDropProps(): TableDropTargetProps<DragDropObject> {
       if (!this.props.dropProps)
         return {};
 
@@ -109,17 +86,18 @@ export function withTableDragDrop<P extends TableProps, DragDropObject extends T
         onDropTargetOver: (args: DropTargetArguments<DragDropObject>) => {
           // populate table information while it's accessible
           args.dropLocation = this.props.dataProvider as DragDropObject;
+          // istanbul ignore else
           if (onDropTargetOver) onDropTargetOver(args);
         },
         onDropTargetDrop: (args: DropTargetArguments<DragDropObject>): DropTargetArguments<DragDropObject> => {
           // populate table information while it's accessible
-          args.dropLocation = item.extendedData as DragDropObject;
+          args.dropLocation = this.props.dataProvider as DragDropObject;
           if (onDropTargetDrop) return onDropTargetDrop(args);
           return args;
         },
         canDropTargetDrop: (args: DropTargetArguments<DragDropObject>) => {
           // populate table information while it's accessible
-          args.dropLocation = item.extendedData as DragDropObject;
+          args.dropLocation = this.props.dataProvider as DragDropObject;
           if (canDropTargetDrop) return canDropTargetDrop(args);
           return true;
         },
@@ -128,30 +106,27 @@ export function withTableDragDrop<P extends TableProps, DragDropObject extends T
       return dropProps;
     }
 
-    // tslint:disable-next-line:naming-convention
-    private renderRow = (item: RowItem, props: TableRowProps): React.ReactNode => {
-      const baseNode = this.props.renderRow ? this.props.renderRow(item, props) : <TableRow key={item.key} {...props} />;
+    public renderRow = (item: RowItem, props: TableRowProps): React.ReactNode => {
+      const baseNode = this.props.renderRow ? /* istanbul ignore next */ this.props.renderRow(item, props) : <TableRow key={item.key} {...props} />;
       const DDRow = DragDropRow<DragDropObject>(); // tslint:disable-line:variable-name
       return (
         <DDRow
           key={item.key}
-          dragProps={this.createNodeDragProps(item)}
-          dropProps={this.createNodeDropProps(item)}
+          dragProps={this.createDragProps(item)}
+          dropProps={this.createDropProps()}
           {...props}
         >
           {baseNode}
         </DDRow>
       );
     }
-
     public render() {
       const { dragProps, dropProps, renderNode, ...tableProps } = this.props as any;
-      // tslint:disable-next-line:variable-name
-      const DragDropWrapper = withDropTarget<TableWrapperProps, DragDropObject>(TableWrapper);
+      const DragDropWrapper = withDropTarget<TableWrapperProps, DragDropObject>(TableWrapper); // tslint:disable-line:variable-name
       return (
         <DragDropWrapper
           dropStyle={{ height: "100%" }}
-          dropProps={this.createTableDropProps()}
+          dropProps={this.createDropProps()}
         >
           <TableComponent {...tableProps}
             renderRow={this.renderRow} />

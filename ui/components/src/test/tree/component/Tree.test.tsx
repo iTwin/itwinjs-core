@@ -16,7 +16,7 @@ import {
 import { SelectionMode, PageOptions, TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components";
 import { BeInspireTreeNode } from "../../../tree/component/BeInspireTree";
 import HighlightingEngine, { HighlightableTreeProps } from "../../../tree/HighlightingEngine";
-import { BeEvent } from "@bentley/bentleyjs-core";
+import { BeEvent, BeDuration } from "@bentley/bentleyjs-core";
 import { TreeNodeProps } from "../../../tree/component/Node";
 import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../properties/ValueRendererManager";
 import { PropertyRecord } from "../../../properties/Record";
@@ -865,7 +865,7 @@ describe("Tree", () => {
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(2);
 
       // expand node 0
-      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy);
+      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy, 2);
       expect(getExpandedNodes().length).to.eq(1);
       expect(renderedTree.getAllByTestId(Tree.TestId.Node as any).length).to.eq(4);
 
@@ -879,7 +879,7 @@ describe("Tree", () => {
       await waitForUpdate(() => renderedTree = render(<Tree {...defaultExpandCollapseProps} onNodeExpanded={callbackMock.object} />), renderSpy, 2);
 
       // expand node 0
-      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy);
+      await waitForUpdate(() => fireEvent.click(getNode("0").expansionToggle!), renderNodesSpy, 2);
 
       const nodeItem = (await dataProvider())[0];
       callbackMock.verify((x) => x(nodeItem), moq.Times.once());
@@ -941,11 +941,37 @@ describe("Tree", () => {
       expect(getNode("1")).to.not.be.undefined;
     });
 
-    it("rerenders on data provider change without waiting for initial update", async () => {
+    it("rerenders on data provider change without waiting for initial update with immediate data provider", async () => {
       renderedTree = render(<Tree {...defaultProps} dataProvider={[{ id: "0", label: "0" }]} />);
+      expect(renderedTree.queryAllByTestId(Tree.TestId.Node).length).to.eq(0);
+
       await waitForUpdate(() => {
         renderedTree.rerender(<Tree {...defaultProps} dataProvider={[{ id: "1", label: "1" }]} />);
+      }, renderSpy, 2);
+      expect(getNode("1")).to.not.be.undefined;
+    });
+
+    it("rerenders on data provider change without waiting for initial update with delay loaded data provider", async () => {
+      const p1 = new ResolvablePromise<TreeNodeItem[]>();
+      const p2 = new ResolvablePromise<TreeNodeItem[]>();
+
+      renderedTree = render(<Tree {...defaultProps} dataProvider={async () => p1} />);
+      expect(renderedTree.queryAllByTestId(Tree.TestId.Node).length).to.eq(0);
+
+      await waitForUpdate(() => {
+        renderedTree.rerender(<Tree {...defaultProps} dataProvider={async () => p2} />);
       }, renderSpy);
+      expect(renderedTree.queryAllByTestId(Tree.TestId.Node).length).to.eq(0);
+      renderSpy.resetHistory();
+
+      p1.resolve([{ id: "0", label: "0" }]);
+      await BeDuration.wait(0);
+      expect(renderSpy).to.not.be.called;
+      expect(renderedTree.queryAllByTestId(Tree.TestId.Node).length).to.eq(0);
+
+      p2.resolve([{ id: "1", label: "1" }]);
+      await BeDuration.wait(0);
+      expect(renderSpy).to.be.calledOnce;
       expect(getNode("1")).to.not.be.undefined;
     });
 

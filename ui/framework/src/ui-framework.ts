@@ -5,7 +5,6 @@
 export { default as UiFramework } from "./UiFramework";
 
 export * from "./FrameworkState";
-export * from "./SyncUiEventDispatcher";
 export * from "./UiFramework";
 export * from "./CoreToolDefinitions";
 
@@ -38,9 +37,7 @@ export * from "./pickers/ListPicker";
 export * from "./pickers/ModelSelector";
 export * from "./pickers/ViewSelector";
 
-export * from "./configurableui/ActionItemButton";
 export * from "./configurableui/AppNotificationManager";
-export * from "./configurableui/Backstage";
 export * from "./configurableui/ConfigurableUiContent";
 export * from "./configurableui/ConfigurableUiControl";
 export * from "./configurableui/ConfigurableUiManager";
@@ -55,7 +52,6 @@ export * from "./configurableui/FrontstageComposer";
 export * from "./configurableui/FrontstageDef";
 export * from "./configurableui/FrontstageManager";
 export * from "./configurableui/FrontstageProvider";
-export * from "./configurableui/GroupItem";
 export * from "./configurableui/IconComponent";
 export * from "./configurableui/Item";
 export * from "./configurableui/ItemDefBase";
@@ -74,7 +70,6 @@ export * from "./configurableui/StatusBar";
 export * from "./configurableui/StatusBarWidgetControl";
 export * from "./configurableui/StatusBarZone";
 export * from "./configurableui/Task";
-export * from "./configurableui/ToolButton";
 export * from "./configurableui/ToolbarWidgetBase";
 export * from "./configurableui/ToolSettingsZone";
 export * from "./configurableui/ToolUiProvider";
@@ -88,6 +83,15 @@ export * from "./configurableui/Workflow";
 export * from "./configurableui/Zone";
 export * from "./configurableui/ZoneDef";
 export * from "./configurableui/ZoneTargets";
+
+export * from "./configurableui/toolbar/ActionItemButton";
+export * from "./configurableui/toolbar/GroupItem";
+export * from "./configurableui/toolbar/ToolButton";
+
+export * from "./configurableui/backstage/Backstage";
+export * from "./configurableui/backstage/FrontstageLaunch";
+export * from "./configurableui/backstage/CommandLaunch";
+export * from "./configurableui/backstage/TaskLaunch";
 
 export * from "./configurableui/navigationaids/CubeNavigationAid";
 export * from "./configurableui/navigationaids/SheetNavigationAid";
@@ -104,6 +108,10 @@ export * from "./tools/AnalysisAnimationToolSettings";
 
 export * from "./utils/ViewUtilities";
 export * from "./utils/redux-ts";
+export * from "./utils/PropsHelper";
+
+export * from "./syncui/SyncUiEventDispatcher";
+export * from "./syncui/BooleanListener";
 
 /** @docs-package-description
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,
@@ -176,8 +184,13 @@ export * from "./utils/redux-ts";
  */
 /**
  * @docs-group-description StatusBar
- * Classes for working a StatusBar
+ * Classes for defining a StatusBar
  */
+/**
+ * @docs-group-description SyncUi
+ * Classes for informing UI components to sync/refresh their display
+ */
+
 /**
  * @docs-group-description WorkflowTask
  * Classes for working a Workflow or Task

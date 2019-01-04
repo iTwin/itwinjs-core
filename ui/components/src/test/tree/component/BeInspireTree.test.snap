@@ -41,6 +41,63 @@ Array [
 ]
 `;
 
+exports[`BeInspireTree pagination handles children disposal during page load 1`] = `
+Array [
+  Object {
+    "id": "0",
+    "isChecked": false,
+    "isExpanded": true,
+    "isSelected": false,
+    "level": 0,
+  },
+  Object {
+    "id": "0-0",
+    "isChecked": false,
+    "isExpanded": false,
+    "isSelected": false,
+    "level": 1,
+  },
+  Object {
+    "id": "0-1",
+    "isChecked": false,
+    "isExpanded": false,
+    "isSelected": false,
+    "level": 1,
+  },
+  Object {
+    "id": "<not loaded>",
+    "level": 1,
+  },
+  Object {
+    "id": "<not loaded>",
+    "level": 1,
+  },
+  Object {
+    "id": "<not loaded>",
+    "level": 1,
+  },
+  Object {
+    "id": "1",
+    "isChecked": false,
+    "isExpanded": false,
+    "isSelected": false,
+    "level": 0,
+  },
+  Object {
+    "id": "<not loaded>",
+    "level": 0,
+  },
+  Object {
+    "id": "<not loaded>",
+    "level": 0,
+  },
+  Object {
+    "id": "<not loaded>",
+    "level": 0,
+  },
+]
+`;
+
 exports[`BeInspireTree pagination immediately loads first page for child nodes 1`] = `
 Array [
   Object {

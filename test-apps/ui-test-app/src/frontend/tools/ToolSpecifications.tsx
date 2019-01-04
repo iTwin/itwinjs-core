@@ -10,9 +10,9 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { MessageSeverity } from "@bentley/ui-core";
 import {
-  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager,
+  CommandItemDef, ToolItemDef, WidgetState, FrontstageManager, ModalDialogManager, BaseItemState, ContentViewManager, SyncUiEventId,
 } from "@bentley/ui-framework";
-import { SampleAppIModelApp, RootState } from "../";
+import { SampleAppIModelApp, RootState, SampleAppUiActionId } from "../";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 // cSpell:ignore appui
@@ -51,12 +51,7 @@ export class AppTools {
 
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
-        const activeContentControl = ContentViewManager.getActiveContentControl();
-        if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-          returnState.isEnabled = true;
-        else
-          returnState.isEnabled = false;
+        returnState.isEnabled = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
         return returnState;
       },
     });
@@ -72,7 +67,7 @@ export class AppTools {
       execute: () => {
         const state: RootState = SampleAppIModelApp.store.getState();
         // cSpell:Ignore BACKSTAGEHIDE BACKSTAGESHOW
-        const action: string = (state.sampleAppState!.backstageVisible) ? "SampleApp:BACKSTAGEHIDE" : "SampleApp:BACKSTAGESHOW";
+        const action: string = (state.sampleAppState!.backstageVisible) ? SampleAppUiActionId.hideBackstage : SampleAppUiActionId.showBackstage;
         SampleAppIModelApp.store.dispatch({ type: action });
       },
     });
@@ -178,6 +173,35 @@ export class AppTools {
       execute: () => {
         IModelApp.quantityFormatter.useImperialFormats = true;
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Set Length Format to Imperial"));
+      },
+    });
+  }
+
+  public static get toggleLengthFormatCommand() {
+    return new CommandItemDef({
+      commandId: "toggleLengthFormat",
+      iconSpec: "icon-info",
+      labelKey: "SampleApp:buttons.toggleLengthFormat",
+      execute: () => {
+        IModelApp.quantityFormatter.useImperialFormats = !IModelApp.quantityFormatter.useImperialFormats;
+        IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, IModelApp.quantityFormatter.useImperialFormats ? "Set Length Format to Imperial" : "Set Length Format to Metric"));
+      },
+      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
+      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
+        const returnState: BaseItemState = { ...currentState };
+        returnState.isVisible = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
+        return returnState;
+      },
+    });
+  }
+
+  public static get toggleHideShowItemsCommand() {
+    return new CommandItemDef({
+      commandId: "testHideShowItems",
+      iconSpec: "icon-info",
+      labelKey: "SampleApp:buttons.toggleItemDisplay",
+      execute: () => {
+        SampleAppIModelApp.setTestProperty(SampleAppIModelApp.getTestProperty() === "HIDE" ? "" : "HIDE");
       },
     });
   }

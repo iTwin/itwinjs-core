@@ -7,21 +7,19 @@
 import {
   AccessToken, Briefcase as HubBriefcase, IModelHubClient, ConnectClient, ChangeSet,
   ChangesType, Briefcase, HubCode, IModelHubError,
-  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel,
+  BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel, IncludePrefix,
 } from "@bentley/imodeljs-clients";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
 import { IOSAzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/IOSAzureFileHandler";
 import { ChangeSetApplyOption, BeEvent, DbResult, OpenMode, assert, Logger, LogLevel, ChangeSetStatus, BentleyStatus, IModelHubStatus, PerfLogger, ActivityLoggingContext, GuidString, Id64 } from "@bentley/bentleyjs-core";
 import { BriefcaseStatus, IModelError, IModelVersion, IModelToken, CreateIModelProps } from "@bentley/imodeljs-common";
-import { NativePlatformRegistry } from "./NativePlatformRegistry";
-import { NativeDgnDb, ErrorStatusOrResult } from "./imodeljs-native-platform-api";
+import { IModelJsNative } from "./IModelJsNative";
 import { IModelDb, OpenParams, SyncMode, AccessMode, ExclusiveAccessOption } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
+import { IModelHost, Platform } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 import * as path from "path";
 import * as glob from "glob";
-import { Platform } from "./Platform";
 
 const loggingCategory = "imodeljs-backend.BriefcaseManager";
 
@@ -80,7 +78,7 @@ export class BriefcaseEntry {
   public isOpen!: boolean;
 
   /** In-memory handle of the native Db */
-  public nativeDb!: NativeDgnDb;
+  public nativeDb!: IModelJsNative.DgnDb;
 
   /** Params used to open the briefcase */
   public openParams?: OpenParams;
@@ -104,8 +102,7 @@ export class BriefcaseEntry {
   private _iModelDb?: IModelDb;
   public get iModelDb(): IModelDb | undefined { return this._iModelDb; }
   public set iModelDb(iModelDb: IModelDb | undefined) {
-    // NEEDS_WORK_TXNMANAGER: Re-enable this when we upgrade to Node 10
-    // this.nativeDb.setIModelDb(iModelDb); // store a pointer to this IModelDb on the native object so we can send it callbacks
+    this.nativeDb.setIModelDb(iModelDb); // store a pointer to this IModelDb on the native object so we can send it callbacks
     this._iModelDb = iModelDb;
   }
 
@@ -351,7 +348,7 @@ export class BriefcaseManager {
     briefcase.pathname = pathname;
     briefcase.isStandalone = false;
 
-    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
+    const nativeDb = new IModelHost.platform.DgnDb();
     const res: DbResult = nativeDb.openIModelFile(briefcase.pathname, OpenMode.Readonly);
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(DbResult.BE_SQLITE_ERROR, `Unable to open briefcase at ${briefcase.pathname}`);
@@ -359,7 +356,7 @@ export class BriefcaseManager {
     briefcase.briefcaseId = nativeDb.getBriefcaseId();
     briefcase.changeSetId = nativeDb.getParentChangeSetId();
     briefcase.reversedChangeSetId = nativeDb.getReversedChangeSetId();
-    nativeDb.closeIModelFile();
+    nativeDb.closeIModel();
 
     // Now populate changesetIndex, reversedChangesetIndex, userId, fileId from hub
     try {
@@ -542,7 +539,7 @@ export class BriefcaseManager {
       }
 
       perfLogger = new PerfLogger("BriefcaseManager.open -> BriefcaseManager.openBriefcase");
-      BriefcaseManager.openBriefcase(accessToken, contextId, briefcase, readWriteOpenParams);
+      BriefcaseManager.openBriefcase(actx, accessToken, contextId, briefcase, readWriteOpenParams);
       perfLogger.dispose();
     } else {
       perfLogger = new PerfLogger("BriefcaseManager.open -> BriefcaseManager.createBriefcase");
@@ -573,13 +570,16 @@ export class BriefcaseManager {
       throw error;
     }
 
-    // Reopen the briefcase if the briefcase hasn't been opened with the required OpenMode
+    // Reopen the iModel file if the briefcase hasn't been opened with the required OpenMode
     if (briefcase.openParams!.openMode !== openParams.openMode) {
+      // Don't use closeBriefcase and openBriefcase as this would trigger a new usage tracking entry
+      assert(briefcase.isOpen, "Briefcase must be open for it to be closed");
+      briefcase.nativeDb.closeIModel();
+      const res: DbResult = briefcase.nativeDb.openIModelFile(briefcase.pathname, openParams.openMode);
+      if (DbResult.BE_SQLITE_OK !== res)
+        throw new IModelError(res, briefcase.pathname);
+
       briefcase.openParams = openParams;
-      briefcase.nativeDb!.closeIModelFile();
-      const r: DbResult = briefcase.nativeDb!.openIModelFile(briefcase.pathname, openParams.openMode);
-      if (r !== DbResult.BE_SQLITE_OK)
-        throw new IModelError(r, briefcase.pathname);
     }
 
     // Add briefcase to cache if necessary
@@ -717,8 +717,8 @@ export class BriefcaseManager {
     briefcase.changeSetIndex = await BriefcaseManager.getChangeSetIndexFromId(actx, accessToken, iModelId, briefcase.changeSetId);
 
     assert(openParams.openMode === OpenMode.ReadWrite); // Expect to setup briefcase as ReadWrite to allow pull and merge of changes (irrespective of the real openMode)
-    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
-    let res: DbResult = nativeDb.openIModel(accessToken.toTokenString(), contextId, briefcase.pathname, openParams.openMode);
+    const nativeDb: IModelJsNative.DgnDb = new IModelHost.platform.DgnDb();
+    let res: DbResult = BriefcaseManager.openDb(nativeDb, actx, accessToken, contextId, briefcase.pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res) {
       Logger.logError(loggingCategory, `Unable to open briefcase at ${briefcase.pathname}`);
       Logger.logWarning(loggingCategory, `Unable to create briefcase ${briefcase.pathname}. Deleting any remnants of it`);
@@ -745,6 +745,25 @@ export class BriefcaseManager {
 
     Logger.logTrace(loggingCategory, `Created briefcase ${briefcase.pathname}`);
     return briefcase;
+  }
+
+  private static openDb(nativeDb: IModelJsNative.DgnDb, actx: ActivityLoggingContext, accessToken: AccessToken, contextId: GuidString, filePath: string, mode: OpenMode): DbResult {
+    let appVersion: string;
+    if (!actx.versionId || actx.versionId.length === 0)
+      appVersion = IModelHost.backendVersion;
+    else
+      appVersion = actx.versionId;
+
+    assert(appVersion.length !== 0);
+    const res: DbResult = nativeDb.openIModel(accessToken.toTokenString(IncludePrefix.No), appVersion, contextId, filePath, mode);
+    if (res === -100) {
+      // The addon returns -100 if usage tracking failed. For now we don't yet fail the open, as
+      // apps need to switch to OIDC authentication first.
+      Logger.logWarning(loggingCategory, "Usage tracking failed.", () => ({ userId: !accessToken.getUserInfo() ? undefined : accessToken.getUserInfo()!.id, contextId }));
+      return DbResult.BE_SQLITE_OK;
+    }
+
+    return res;
   }
 
   private static async getOrAcquireBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: GuidString): Promise<HubBriefcase> {
@@ -903,7 +922,7 @@ export class BriefcaseManager {
     if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(pathname, undefined, undefined, undefined, openMode)))
       throw new IModelError(DbResult.BE_SQLITE_CANTOPEN, `Cannot open ${pathname} again - it has already been opened once`);
 
-    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
+    const nativeDb = new IModelHost.platform.DgnDb();
 
     const res = nativeDb.openIModelFile(pathname, openMode);
     if (DbResult.BE_SQLITE_OK !== res)
@@ -937,7 +956,7 @@ export class BriefcaseManager {
     if (BriefcaseManager._cache.findBriefcaseByToken(new IModelToken(fileName, undefined, undefined, undefined, OpenMode.ReadWrite)))
       throw new IModelError(DbResult.BE_SQLITE_ERROR_FileExists, `Cannot create file ${fileName} again - it already exists`);
 
-    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
+    const nativeDb = new IModelHost.platform.DgnDb();
 
     const res: DbResult = nativeDb.createStandaloneIModel(fileName, JSON.stringify(args));
     if (DbResult.BE_SQLITE_OK !== res)
@@ -1043,13 +1062,13 @@ export class BriefcaseManager {
     Logger.logTrace(loggingCategory, "Closed briefcase ", () => briefcase.getDebugInfo());
   }
 
-  private static openBriefcase(accessToken: AccessToken, contextId: string, briefcase: BriefcaseEntry, openParams: OpenParams): void {
+  private static openBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, contextId: string, briefcase: BriefcaseEntry, openParams: OpenParams): void {
     if (briefcase.isOpen)
       throw new Error(`Briefcase ${briefcase.pathname} is already open.`);
 
-    briefcase.nativeDb = briefcase.nativeDb || new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
+    briefcase.nativeDb = briefcase.nativeDb || new IModelHost.platform.DgnDb();
 
-    const res: DbResult = briefcase.nativeDb!.openIModel(accessToken.toTokenString(), contextId, briefcase.pathname, openParams.openMode);
+    const res: DbResult = BriefcaseManager.openDb(briefcase.nativeDb!, actx, accessToken, contextId, briefcase.pathname, openParams.openMode);
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, briefcase.pathname);
 
@@ -1241,7 +1260,7 @@ export class BriefcaseManager {
   }
 
   private static startCreateChangeSet(briefcase: BriefcaseEntry): ChangeSetToken {
-    const res: ErrorStatusOrResult<ChangeSetStatus, string> = briefcase.nativeDb!.startCreateChangeSet();
+    const res: IModelJsNative.ErrorStatusOrResult<ChangeSetStatus, string> = briefcase.nativeDb!.startCreateChangeSet();
     if (res.error)
       throw new IModelError(res.error.status, "Error in startCreateChangeSet", Logger.logError, loggingCategory);
     return JSON.parse(res.result!);
@@ -1259,7 +1278,7 @@ export class BriefcaseManager {
 
   /** Get array of pending ChangeSet ids that need to have their codes updated */
   private static getPendingChangeSets(briefcase: BriefcaseEntry): string[] {
-    const res: ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.getPendingChangeSets();
+    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.getPendingChangeSets();
     if (res.error)
       throw new IModelError(res.error.status, "Error in getPendingChangeSets", Logger.logWarning, loggingCategory);
     return JSON.parse(res.result!) as string[];
@@ -1332,7 +1351,7 @@ export class BriefcaseManager {
 
   /** Extracts codes from current ChangeSet */
   private static extractCodes(briefcase: BriefcaseEntry): HubCode[] {
-    const res: ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodes();
+    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodes();
     if (res.error)
       throw new IModelError(res.error.status, "Error in extractCodes", Logger.logError, loggingCategory);
     return BriefcaseManager.parseCodesFromJson(briefcase, res.result!);
@@ -1340,7 +1359,7 @@ export class BriefcaseManager {
 
   /** Extracts codes from ChangeSet file */
   private static extractCodesFromFile(briefcase: BriefcaseEntry, changeSetTokens: ChangeSetToken[]): HubCode[] {
-    const res: ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodesFromFile(JSON.stringify(changeSetTokens));
+    const res: IModelJsNative.ErrorStatusOrResult<DbResult, string> = briefcase.nativeDb!.extractCodesFromFile(JSON.stringify(changeSetTokens));
     if (res.error)
       throw new IModelError(res.error.status, "Error in extractCodesFromFile", Logger.logError, loggingCategory);
     return BriefcaseManager.parseCodesFromJson(briefcase, res.result!);
@@ -1520,7 +1539,7 @@ export class BriefcaseManager {
 
     actx.enter();
 
-    const nativeDb: NativeDgnDb = new (NativePlatformRegistry.getNativePlatform()).NativeDgnDb();
+    const nativeDb = new IModelHost.platform.DgnDb();
 
     const scratchDir = BriefcaseManager.buildScratchPath();
     if (!IModelJsFs.existsSync(scratchDir))
@@ -1530,7 +1549,7 @@ export class BriefcaseManager {
     if (IModelJsFs.existsSync(fileName))
       IModelJsFs.unlinkSync(fileName); // Note: Cannot create two files with the same name at the same time with multiple async calls.
 
-    let res: DbResult = nativeDb.createIModel(accessToken.toTokenString(), projectId, fileName, JSON.stringify(args));
+    let res: DbResult = nativeDb.createIModel(accessToken.toTokenString(), IModelHost.backendVersion, projectId, fileName, JSON.stringify(args));
     if (DbResult.BE_SQLITE_OK !== res)
       throw new IModelError(res, fileName);
 

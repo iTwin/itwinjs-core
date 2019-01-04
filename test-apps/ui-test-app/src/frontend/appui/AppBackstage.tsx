@@ -5,13 +5,14 @@
 import * as React from "react";
 import { connect } from "react-redux";
 
-import { SampleAppIModelApp, RootState } from "..";
+import { SampleAppIModelApp, RootState, SampleAppUiActionId } from "..";
 
 import {
   Backstage,
   FrontstageLaunchBackstageItem,
   SeparatorBackstageItem,
   BackstageCloseEventArgs,
+  BooleanSyncUiListener,
 } from "@bentley/ui-framework";
 
 import { Tool } from "@bentley/imodeljs-frontend";
@@ -22,7 +23,7 @@ export class BackstageShow extends Tool {
 
   public run(): boolean {
     // dispatch the action
-    SampleAppIModelApp.store.dispatch({ type: "SampleApp:BACKSTAGESHOW" });
+    SampleAppIModelApp.store.dispatch({ type: SampleAppUiActionId.showBackstage });
     return true;
   }
 }
@@ -33,7 +34,7 @@ export class BackstageHide extends Tool {
 
   public run(): boolean {
     // dispatch the action
-    SampleAppIModelApp.store.dispatch({ type: "SampleApp:BACKSTAGEHIDE" });
+    SampleAppIModelApp.store.dispatch({ type: SampleAppUiActionId.hideBackstage });
     return true;
   }
 }
@@ -76,8 +77,12 @@ class AppBackstage extends React.Component<AppBackstageProps> {
       <Backstage isVisible={this.props.isVisible} onClose={this._handleOnClose} accessToken={SampleAppIModelApp.store.getState().frameworkState!.overallContentState.accessToken} >
         <FrontstageLaunchBackstageItem frontstageId="Test1" labelKey="SampleApp:backstage.testFrontstage1" iconSpec="icon icon-placeholder" />
         <FrontstageLaunchBackstageItem frontstageId="Test2" labelKey="SampleApp:backstage.testFrontstage2" iconSpec="icon icon-placeholder" />
-        <FrontstageLaunchBackstageItem frontstageId="Test3" labelKey="SampleApp:backstage.testFrontstage3" iconSpec="icon icon-placeholder" />
-        <FrontstageLaunchBackstageItem frontstageId="Test4" labelKey="SampleApp:backstage.testFrontstage4" iconSpec="icon icon-placeholder" />
+        <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
+          {(isVisible: boolean) => isVisible && <FrontstageLaunchBackstageItem frontstageId="Test3" labelKey="SampleApp:backstage.testFrontstage3" iconSpec="icon icon-placeholder" />}
+        </BooleanSyncUiListener>
+        <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() === "HIDE"} defaultValue={false}>
+          {(isEnabled: boolean) => <FrontstageLaunchBackstageItem frontstageId="Test4" labelKey="SampleApp:backstage.testFrontstage4" iconSpec="icon icon-placeholder" isEnabled={isEnabled} />}
+        </BooleanSyncUiListener>
         <SeparatorBackstageItem />
         <FrontstageLaunchBackstageItem frontstageId="ViewsFrontstage" labelKey="Views Frontstage" iconSpec="icon-placeholder" />
       </Backstage>

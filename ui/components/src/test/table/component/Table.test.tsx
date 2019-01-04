@@ -14,11 +14,12 @@ import {
   TableSelectionTarget, TableProps, ColumnDescription, SelectionMode, PropertyRecord, PropertyValue,
   PropertyValueFormat, PropertyDescription, PropertyUpdatedArgs, EditorContainer,
 } from "../../../ui-components";
-import { waitForSpy } from "../../test-helpers/misc";
+import { waitForSpy, ResolvablePromise } from "../../test-helpers/misc";
 import { DragDropContext } from "react-dnd";
 import { DragDropHeaderWrapper } from "../../../table/component/DragDropHeaderCell";
 import { LocalUiSettings } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
+import { BeDuration } from "@bentley/bentleyjs-core";
 
 describe("Table", () => {
   before(async () => {
@@ -233,6 +234,54 @@ describe("Table", () => {
     }).returns(async () => ({ key: "", cells: [] }));
 
     await (shallowTable.instance() as Table).update();
+  });
+
+  it("doesn't request data for intermediate column changes", async () => {
+    const columnsPromise = new ResolvablePromise<ColumnDescription[]>();
+    const dataProvider: TableDataProvider = {
+      onColumnsChanged: new TableDataChangeEvent(),
+      onRowsChanged: new TableDataChangeEvent(),
+      getColumns: sinon.fake.returns(columnsPromise),
+      getRowsCount: async () => 0,
+      getRow: async () => undefined as any,
+      sort: async () => { },
+    };
+
+    const shallowTable = enzyme.shallow(<Table dataProvider={dataProvider} />);
+    expect(dataProvider.getColumns).to.be.calledOnce;
+
+    for (let i = 0; i < 5; ++i)
+      dataProvider.onColumnsChanged.raiseEvent();
+
+    columnsPromise.resolve([]);
+
+    await (shallowTable.instance() as Table).update();
+    expect(dataProvider.getColumns).to.be.calledTwice;
+  });
+
+  it("doesn't request data for intermediate row changes", async () => {
+    const rowsCountPromise = new ResolvablePromise<number>();
+    const dataProvider: TableDataProvider = {
+      onColumnsChanged: new TableDataChangeEvent(),
+      onRowsChanged: new TableDataChangeEvent(),
+      getColumns: async () => [],
+      getRowsCount: sinon.fake.returns(rowsCountPromise),
+      getRow: async () => undefined as any,
+      sort: async () => { },
+    };
+
+    const shallowTable = enzyme.shallow(<Table dataProvider={dataProvider} />);
+    await BeDuration.wait(0); // allow pending promises to finish
+    expect(dataProvider.getRowsCount).to.be.calledOnce;
+
+    for (let i = 0; i < 5; ++i)
+      dataProvider.onRowsChanged.raiseEvent();
+
+    rowsCountPromise.resolve(0);
+
+    await (shallowTable.instance() as Table).update();
+    await BeDuration.wait(0); // allow pending promises to finish
+    expect(dataProvider.getRowsCount).to.be.calledTwice;
   });
 
   describe("Row Selection", () => {

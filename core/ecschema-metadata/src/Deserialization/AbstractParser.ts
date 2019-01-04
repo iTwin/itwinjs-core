@@ -17,7 +17,6 @@ type PropertyTuple<T> = Readonly<[string /** Name */, string /** Property */, Re
 export abstract class AbstractParser<TItem = any, TProperty = TItem> {
   public abstract parseSchema(): SchemaProps;
   public abstract getReferences(): Iterable<SchemaReferenceProps>;
-  public abstract getCustomAttributes(): Iterable<CustomAttribute>;
 
   public abstract getItems(): Iterable<SchemaItemTuple<TItem>>;
   public abstract findItem(itemName: string): SchemaItemTuple<TItem> | undefined;
@@ -44,6 +43,11 @@ export abstract class AbstractParser<TItem = any, TProperty = TItem> {
   public abstract parsePrimitiveArrayProperty(data: Readonly<TProperty>): PrimitiveArrayPropertyProps;
   public abstract parseStructArrayProperty(data: Readonly<TProperty>): StructArrayPropertyProps;
   public abstract parseNavigationProperty(data: Readonly<TProperty>): NavigationPropertyProps;
+
+  public abstract getSchemaCustomAttributes(): Iterable<CustomAttribute>;
+  public abstract getClassCustomAttributes(data: Readonly<TItem>): Iterable<CustomAttribute>;
+  public abstract getPropertyCustomAttributes(data: Readonly<TProperty>): Iterable<CustomAttribute>;
+  public abstract getRelationshipConstraintCustomAttributes(data: Readonly<TItem>): [Iterable<CustomAttribute> /* source */, Iterable<CustomAttribute> /* target */];
 }
 
 export interface AbstractParserConstructor<TSchema, TItem = any, TProperty = TItem> { new(obj: Readonly<TSchema>): AbstractParser<TItem, TProperty>; }

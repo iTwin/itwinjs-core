@@ -2,6 +2,8 @@
 * Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
+/* tslint:disable:no-direct-imports */
+
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import { expect } from "chai";
 import * as faker from "faker";
@@ -11,8 +13,7 @@ import { createRandomECInstanceNodeKey, createRandomECInstanceNode, createRandom
 import { createRandomTreeNodeItem } from "../_helpers/UiComponents";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Node } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
-import { PresentationManager } from "@bentley/presentation-frontend";
+import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { PageOptions } from "@bentley/ui-components";
 import PresentationTreeDataProvider from "../../tree/DataProvider";
 import { pageOptionsUiToPresentation } from "../../tree/Utils";

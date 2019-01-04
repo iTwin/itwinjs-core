@@ -8,9 +8,6 @@ import * as React from "react";
 import * as utils from "../../common/Utils";
 
 class TestComponent extends React.Component {
-  // public static name?: string;
-  // static get name() { return TestComponent._name; }
-  // static set name(value?: string) { TestComponent._name = value; }
 }
 
 describe("Utils", () => {

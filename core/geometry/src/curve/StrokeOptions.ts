@@ -87,7 +87,7 @@ export class StrokeOptions {
     if (minCount < 1)
       minCount = 1;
     if (options && options.maxEdgeLength && options.maxEdgeLength * minCount < edgeLength) {
-      minCount = Math.ceil(edgeLength / options.maxEdgeLength + 0.99999);
+      minCount = Geometry.stepCount(options.maxEdgeLength, edgeLength, minCount);
     }
     return minCount;
   }

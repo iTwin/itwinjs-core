@@ -5,7 +5,7 @@
 /** @module iModels */
 
 import { AccessToken, ChangeSet, HubUserInfo, UserInfoQuery, ChangeSetQuery } from "@bentley/imodeljs-clients";
-import { ErrorStatusOrResult } from "./imodeljs-native-platform-api";
+import { IModelJsNative } from "./IModelJsNative";
 import { Id64String, GuidString, using, assert, Logger, PerfLogger, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelDb } from "./IModelDb";
 import { ECDb, ECDbOpenMode } from "./ECDb";
@@ -14,7 +14,7 @@ import { ChangeOpCode, ChangedValueState, IModelVersion, IModelError, IModelStat
 import { BriefcaseManager } from "./BriefcaseManager";
 import * as path from "path";
 import { IModelJsFs } from "./IModelJsFs";
-import { KnownLocations } from "./Platform";
+import { KnownLocations } from "./IModelHost";
 
 const loggingCategory: string = "imodeljs-backend.ChangeSummaryManager";
 
@@ -206,7 +206,7 @@ export class ChangeSummaryManager {
           throw new IModelError(IModelStatus.FileNotFound, "Failed to extract change summary: Changeset file '" + changeSetFilePath + "' does not exist.");
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Extract ChangeSummary");
-        const stat: ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
+        const stat: IModelJsNative.ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
         perfLogger.dispose();
         if (stat.error && stat.error.status !== DbResult.BE_SQLITE_OK)
           throw new IModelError(stat.error.status, stat.error.message);

@@ -134,7 +134,11 @@ const mapDispatch = {
 
 /** Function used by Redux to map state data in Redux store to props that are used to render this component. */
 function mapStateToProps(state: any) {
-  return { snapMode: state.frameworkState!.configurableUiState.snapMode };
+  const frameworkState = state[UiFramework.frameworkStateKey];  // since app sets up key, don't hard-code name
+  if (!frameworkState)
+    return undefined;
+
+  return { snapMode: frameworkState.configurableUiState.snapMode };
 }
 
 // we declare the variable and export that rather than using export default.

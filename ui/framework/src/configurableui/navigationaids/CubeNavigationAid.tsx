@@ -15,7 +15,7 @@ import { Geometry, Angle, AxisIndex, Matrix3d, Point2d, YawPitchRollAngles, Vect
 import "./CubeNavigationAid.scss";
 import { UiFramework } from "../../UiFramework";
 
-import { ViewRotationChangeEventArgs, ViewRotationCube } from "@bentley/ui-components";
+import { ViewRotationChangeEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
 import { ContentViewManager } from "../ContentViewManager";
 
 /** NavigationAid that displays an interactive rotation cube that synchronizes with the rotation of the iModel Viewport */
@@ -106,7 +106,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
 
   /** @hidden */
   public componentDidMount() {
-    ViewRotationCube.onViewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
+    ViewportComponentEvents.onViewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
     this._then = Date.now();
 
     // set initial rotation
@@ -122,7 +122,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
 
   /** @hidden */
   public componentWillUnmount() {
-    ViewRotationCube.onViewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
+    ViewportComponentEvents.onViewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
   }
 
   // Synchronize with rotation coming from the Viewport
@@ -146,7 +146,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
       animation += delta / this.state.animationTime;
     if (animation > 1) {
       animation = 1;
-      ViewRotationCube.setCubeMatrix(this.state.endRotMatrix, -1);
+      ViewportComponentEvents.setCubeMatrix(this.state.endRotMatrix, -1);
     } else
       requestAnimationFrame(this._animate);
     this.setState({ animation });
@@ -185,7 +185,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
                 const newMatrix = newDiff.multiplyMatrixMatrix(startRotMatrix);
                 if (newMatrix) {
                   rotMatrix = newMatrix;
-                  ViewRotationCube.setCubeMatrix(rotMatrix, 0);
+                  ViewportComponentEvents.setCubeMatrix(rotMatrix, 0);
                 }
               }
             }
@@ -334,7 +334,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
 
   private _animateRotation = (startRotMatrix: Matrix3d, endRotMatrix: Matrix3d, animationTime: number) => {
     // set animation variables, let css transitions animate it.
-    ViewRotationCube.setCubeMatrix(startRotMatrix, 0);
+    ViewportComponentEvents.setCubeMatrix(startRotMatrix, 0);
     this._then = Date.now();
     requestAnimationFrame(this._animate);
     this.setState({
@@ -343,7 +343,7 @@ export class CubeNavigationAid extends React.Component<{}, CubeNavigationState> 
     });
   }
   private _setRotation = (endRotMatrix: Matrix3d, startRotMatrix?: Matrix3d) => {
-    ViewRotationCube.setCubeMatrix(endRotMatrix, 0);
+    ViewportComponentEvents.setCubeMatrix(endRotMatrix, 0);
     // set variables, with animTime at 0 to prevent animation.
     this.setState({
       startRotMatrix: startRotMatrix || endRotMatrix,

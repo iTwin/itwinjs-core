@@ -1,7 +1,7 @@
 {
-  "rushVersion": "5.5.2",
-  "npmVersion": "5.5.1",
-  "nodeSupportedVersionRange": ">=8.9.0 <9.0.0",
+  "rushVersion": "5.5.4",
+  "pnpmVersion": "2.17.3",
+  "nodeSupportedVersionRange": ">=10.6.0 <11.0.0",
   "projectFolderMinDepth": 2,
   "ensureConsistentVersions": true,
   "approvedPackagesPolicy": {
@@ -186,6 +186,12 @@
     {
       "packageName": "test-apps-analysis-importer",
       "projectFolder": "test-apps/analysis-importer",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "test-apps-synchro-schedule-importer",
+      "projectFolder": "test-apps/synchro-schedule-importer",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

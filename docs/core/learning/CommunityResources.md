@@ -3,7 +3,9 @@
 Feedback and questions about iModel.js are welcome and encouraged.
 
 ### Feedback
+
 The iModel.js development team closely monitors our GitHub:
+
 - [Discussion Forums](https://github.com/imodeljs/imodeljs/labels/discussion)
 - [Enhancement Requests](https://github.com/imodeljs/imodeljs/labels/enhancement)
 - [Bug Reports](https://github.com/imodeljs/imodeljs/labels/bug)
@@ -16,7 +18,9 @@ Programming questions and requests for programming advice are best asked on [Sta
 
 ### Videos
 
-We frequently post helpful background and training videos on the iModel.js (coming soon)
+We frequently post helpful iModel.js background and training videos:
+
+- [YouTube Channel](https://www.youtube.com/channel/UCs4HxiWI4o4bzayG5QnxaIA/featured)
 
 ### Notifications and Updates
 

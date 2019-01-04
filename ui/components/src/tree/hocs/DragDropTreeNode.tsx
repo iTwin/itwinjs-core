@@ -6,15 +6,16 @@
 
 import * as React from "react";
 import classnames from "classnames";
+import { DndComponentClass } from "react-dnd";
 import { TreeDragDropType } from "./withDragDrop";
 import { withDragSource, WithDragSourceProps } from "../../dragdrop/withDragSource";
-import { withDropTarget } from "../../dragdrop/withDropTarget";
+import { withDropTarget, WithDropTargetProps } from "../../dragdrop/withDropTarget";
 
 import "./DragDropTreeNode.scss";
 
 /** Properties for the [[DragDropTreeNodeComponent]] React component */
 /** @hidden */
-export interface DragDropNodeProps {
+export interface DragDropNodeProps extends React.AllHTMLAttributes<HTMLDivElement> {
   isOver?: boolean;
   isDragging?: boolean;
   canDrag?: boolean;
@@ -40,7 +41,7 @@ export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps
     hoverMode: HoverMode.On,
   };
   public render() {
-    const { isOver, isDragging, canDrop } = this.props as DragDropNodeProps;
+    const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropNodeProps;
     const mode = this.state.hoverMode;
     const classes = classnames(
       "node-drop-target",
@@ -52,7 +53,7 @@ export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps
       },
     );
     return (
-      <div className={classes} ref={(el) => { this._root = el; }} onDragOver={this._handleDragOver}>
+      <div {...props} data-testid="node-drop-target" className={classes} ref={(el) => { this._root = el; }} onDragOver={this._handleDragOver}>
         {this.props.children}
       </div>
     );
@@ -61,7 +62,12 @@ export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps
   private _handleDragOver = (event: React.DragEvent) => {
     if (this.props.isOver && this._root) {
       const rect = this._root.getBoundingClientRect();
-      const relativeY = (event.clientY - rect.top) / rect.height;
+      let relativeY = (event.clientY - rect.top) / rect.height;
+      // istanbul ignore next
+      if (this.props.style !== undefined &&
+        this.props.style.top !== undefined && typeof this.props.style.top === "number" &&
+        this.props.style.height !== undefined && typeof this.props.style.height === "number")
+        relativeY = (event.clientY - this.props.style.top) / this.props.style.height;
       if (relativeY < 1 / 3) {
         if (this.state.hoverMode !== HoverMode.Above)
           this.setState({ hoverMode: HoverMode.Above });
@@ -77,7 +83,7 @@ export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps
 }
 
 /** @hidden */
-export function DragDropTreeNode<DragDropObject extends TreeDragDropType>() {
+export function DragDropTreeNode<DragDropObject extends TreeDragDropType>(): DndComponentClass<DragDropNodeProps & WithDropTargetProps<DragDropObject> & WithDragSourceProps<DragDropObject>> {
   return withDropTarget<DragDropNodeProps & WithDragSourceProps<DragDropObject>, DragDropObject>(
     withDragSource<DragDropNodeProps, DragDropObject>(DragDropTreeNodeComponent));
 }

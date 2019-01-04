@@ -15,6 +15,7 @@ import { BSplineSurface3dQuery, BSplineSurface3dH } from "../bspline/BSplineSurf
 import { expect } from "chai";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
+import { BSplineWrapMode } from "../bspline/KnotVector";
 /* tslint:disable:no-console */
 function testBasisValues(ck: Checker, data: Float64Array, expectedValue: number = 1) {
   let s = 0.0; for (const a of data) s += a;
@@ -139,7 +140,8 @@ describe("BSplineSurface", () => {
     const ck = new Checker();
     const surfaceA = Sample.createXYGridBsplineSurface(4, 3, 3, 2);
     if (ck.testPointer(surfaceA) && surfaceA) {
-      surfaceA.setWrappable(1, true);
+      // test that bogus closure setups get rejected . .
+      surfaceA.setWrappable(1, BSplineWrapMode.OpenByAddingControlPoints);
       testBSplineSurface(ck, surfaceA);
       ck.testFalse(surfaceA.isClosable(1));
       ck.testFalse(surfaceA.isClosable(0));

@@ -20,6 +20,7 @@ export interface WidgetTabProps {
   isActive: boolean;
   iconSpec?: string | React.ReactNode;
   title: string;
+  widgetName: string;
 }
 
 /** Properties for a Widget in a [[StackedWidget]].

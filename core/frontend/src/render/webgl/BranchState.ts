@@ -23,7 +23,7 @@ export class BranchState {
 
   public static fromBranch(prev: BranchState, branch: Branch) {
     const vf = branch.branch.getViewFlags(prev.viewFlags);
-    const transform = prev.transform.multiplyTransformTransform(branch.localToWorldTransform);
+    const transform = branch.localToWorldTransform.multiplyTransformTransform(prev.transform);
     const ovrs = undefined !== branch.branch.symbologyOverrides ? branch.branch.symbologyOverrides : prev.symbologyOverrides;
     return new BranchState(vf, transform, ovrs, branch.clips);
   }
@@ -212,7 +212,7 @@ export class BatchState {
     return found.index < this._batches.length ? found.index : -1;
   }
 
-  private find(featureId: number): Batch | undefined {
+  public find(featureId: number): Batch | undefined {
     const index = this.indexOf(featureId);
     return -1 !== index ? this._batches[index] : undefined;
   }

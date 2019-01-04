@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ECClass } from "./Class";
-import { processCustomAttributes, CustomAttributeSet, serializeCustomAttributes } from "./CustomAttribute";
+import { CustomAttributeSet, serializeCustomAttributes, CustomAttribute } from "./CustomAttribute";
 import { EntityClass, createNavigationProperty, createNavigationPropertySync } from "./EntityClass";
 import { Mixin } from "./Mixin";
 import { NavigationProperty } from "./Property";
@@ -12,7 +12,7 @@ import { Schema } from "./Schema";
 import { DelayedPromiseWithProps } from "./../DelayedPromise";
 import { RelationshipClassProps, RelationshipConstraintProps } from "./../Deserialization/JsonProps";
 import {
-  CustomAttributeContainerType, ECClassModifier, SchemaItemType, StrengthDirection,
+  ECClassModifier, SchemaItemType, StrengthDirection,
   strengthDirectionToString, strengthToString, StrengthType, RelationshipEnd, parseStrength, parseStrengthDirection,
 } from "./../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "./../Exception";
@@ -217,8 +217,6 @@ export class RelationshipConstraint {
       const constraintClass = loadEachConstraint(constraintClassName);
       this.addClass(constraintClass);
     }
-
-    this._customAttributes = processCustomAttributes(relationshipConstraintProps.customAttributes, debugName(this), CustomAttributeContainerType.AnyRelationshipConstraint);
   }
 
   public async deserialize(relationshipConstraintProps: RelationshipConstraintProps) {
@@ -278,6 +276,20 @@ export class RelationshipConstraint {
     }
     return false;
   }
+
+  protected addCustomAttribute(customAttribute: CustomAttribute) {
+    if (!this._customAttributes)
+      this._customAttributes = new CustomAttributeSet();
+
+    this._customAttributes[customAttribute.className] = customAttribute;
+  }
+}
+
+/** @hidden
+ * Hackish approach that works like a "friend class" so we can access protected members without making them public.
+ */
+export abstract class MutableRelationshipConstraint extends RelationshipConstraint {
+  public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
 }
 
 const INT32_MAX = 2147483647;
@@ -325,8 +337,4 @@ export class RelationshipMultiplicity {
   public toString(): string {
     return `(${this.lowerLimit}..${this.upperLimit === INT32_MAX ? "*" : this.upperLimit})`;
   }
-}
-
-function debugName(constraint: RelationshipConstraint): string {
-  return constraint.relationshipClass.name + ((constraint.isSource) ? ".source" : ".target");
 }

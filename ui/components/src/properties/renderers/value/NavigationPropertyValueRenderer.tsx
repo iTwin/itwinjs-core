@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Properties */
 
-import { IPropertyValueRenderer } from "../../ValueRendererManager";
+import { IPropertyValueRenderer, PropertyValueRendererContext } from "../../ValueRendererManager";
 import { PropertyRecord } from "../../Record";
 import { PropertyValueFormat, PrimitiveValue } from "../../Value";
 import { TypeConverterManager } from "../../../converters/TypeConverterManager";
+import { withContextStyle } from "./WithContextStyle";
 
 /** Default Navigation Property Renderer */
 export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
@@ -17,12 +18,10 @@ export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
       && record.property.typename === "navigation";
   }
 
-  public async render(record: PropertyRecord) {
+  public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
     const value = (record.value as PrimitiveValue).displayValue;
-
     if (value !== undefined)
-      return TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value);
-
+      return withContextStyle(TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value), context);
     return "";
   }
 }

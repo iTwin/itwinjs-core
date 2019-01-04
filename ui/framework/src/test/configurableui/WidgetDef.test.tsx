@@ -5,7 +5,7 @@
 import * as React from "react";
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { WidgetState, WidgetDefProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework";
+import { WidgetState, WidgetProps, WidgetDef, ConfigurableUiManager, WidgetControl, ConfigurableCreateInfo, ConfigurableUiControlType } from "../../ui-framework";
 
 describe("WidgetDef", () => {
 
@@ -23,7 +23,7 @@ describe("WidgetDef", () => {
   });
 
   it("optional properties", () => {
-    const widgetProps: WidgetDefProps = {
+    const widgetProps: WidgetProps = {
       defaultState: WidgetState.Open,
       priority: 100,
       isFreeform: true,
@@ -37,12 +37,12 @@ describe("WidgetDef", () => {
       isFloatingStateSupported: true,
       isFloatingStateWindowResizable: false,
       applicationData: "AppData",
-      reactElement: <div />,
+      element: <div />,
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
 
     expect(widgetDef.isVisible).to.eq(true);
-    expect(widgetDef.isActive).to.eq(false);
+    expect(widgetDef.isActive).to.eq(true);
     expect(widgetDef.isFloating).to.eq(false);
     expect(widgetDef.priority).to.eq(100);
     expect(widgetDef.featureId).to.eq("FeatureId");
@@ -60,7 +60,7 @@ describe("WidgetDef", () => {
   });
 
   it("registerControl & widgetControl using same classId", () => {
-    const widgetProps: WidgetDefProps = {
+    const widgetProps: WidgetProps = {
       classId: "WidgetDefTest",
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
@@ -70,7 +70,7 @@ describe("WidgetDef", () => {
   });
 
   it("widgetControl using constructor classId", () => {
-    const widgetProps: WidgetDefProps = {
+    const widgetProps: WidgetProps = {
       classId: TestWidget,
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
@@ -83,7 +83,7 @@ describe("WidgetDef", () => {
   });
 
   it("setWidgetState", () => {
-    const widgetProps: WidgetDefProps = {
+    const widgetProps: WidgetProps = {
       classId: "WidgetDefTest",
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);
@@ -95,7 +95,7 @@ describe("WidgetDef", () => {
   });
 
   it("getWidgetControl throws an Error when type is incorrect", () => {
-    const widgetProps: WidgetDefProps = {
+    const widgetProps: WidgetProps = {
       classId: "WidgetDefTest",
     };
     const widgetDef: WidgetDef = new WidgetDef(widgetProps);

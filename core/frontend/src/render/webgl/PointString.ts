@@ -18,6 +18,7 @@ import { AttributeHandle, BufferHandle } from "./Handle";
 import { GL } from "./GL";
 import { System } from "./System";
 import { ShaderProgramParams } from "./DrawCommand";
+import { RenderMemory } from "../System";
 
 export class PointStringGeometry extends LUTGeometry {
   public readonly vertexParams: QParams3d;
@@ -70,6 +71,11 @@ export class PointStringGeometry extends LUTGeometry {
   public dispose() {
     dispose(this.lut);
     dispose(this.indices);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    stats.addVertexTable(this.lut.bytesUsed);
+    stats.addPointString(this.indices.bytesUsed);
   }
 }
 

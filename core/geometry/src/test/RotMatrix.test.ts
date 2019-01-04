@@ -281,7 +281,7 @@ describe("Matrix3d.Factors", () => {
         }
       }
     }
-    console.log(" matrix reconstruction max deviation: a12 " + maxDiff12);
+    ck.testLT(maxDiff12, 1.0e-15); // console.log(" matrix reconstruction max deviation: a12 " + maxDiff12);
     ck.checkpoint("Matrix3d.AxisAndAngleOfRotationB");
     expect(ck.getNumErrors()).equals(0);
   });

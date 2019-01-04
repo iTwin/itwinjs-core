@@ -1,6 +1,43 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 13 Dec 2018 22:06:10 GMT and should not be manually modified.
+This log was last generated on Fri, 04 Jan 2019 13:02:40 GMT and should not be manually modified.
+
+## 0.181.0
+Fri, 04 Jan 2019 13:02:40 GMT
+
+### Updates
+
+- Fix incorrect display of point strings containing duplicate points.
+- Optimize performance when reading depth buffer.
+
+## 0.180.0
+Wed, 02 Jan 2019 15:18:23 GMT
+
+### Updates
+
+- Allow the maximum number of active tile requests to be modified at run-time.
+- Fix excessive memory consumption by polyline graphics.
+- merge
+- Enable path interpolation
+- Enable schedule animation
+- if view delta is too large or small, set it to max/min rather than aborting viewing operations.
+- Fix transform order when pushing branch.
+- Implement quaternion interpolation for Synchro schedule animation
+- remove trash files
+- Add batch feature overrides to optimize schedule animation.
+- Prioritize tile requests based on tile type and depth.
+- Improve performance by limiting the number of simultaneously-active tile requests.
+
+## 0.179.0
+Wed, 19 Dec 2018 18:26:14 GMT
+
+### Updates
+
+- Added showDialogInitially support to ActivityMessageDetails
+- View tools enhancement to use background map plane for depth point when geometry isn't identified.
+- Fix regression in the display of reality models induced by switch to OIDC for access token.
+- Support Pre animation tiles
+- Add support for Syncro schedules (transform disabled)
 
 ## 0.178.0
 Thu, 13 Dec 2018 22:06:10 GMT

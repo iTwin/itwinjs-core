@@ -21,12 +21,15 @@ export namespace RenderSchedule {
         value: { red: number, green: number, blue: number };
     }
 
-    export interface TransformProps {
-        rows: number[][];
-    }
     export interface CuttingPlaneProps {
         position: number[];
         direction: number[];
+    }
+    export interface TransformProps {
+        position: number[];
+        orientation: number[];
+        pivot: number[];
+        transform: number[][];
     }
     export interface TransformEntryProps extends TimelineEntryProps {
         value: TransformProps;
@@ -39,6 +42,7 @@ export namespace RenderSchedule {
         visibilityTimeline?: VisibilityEntryProps[];
         colorTimeline?: ColorEntryProps[];
         transformTimeline?: TransformEntryProps[];
+        cuttingPlaneTimeline?: CuttingPlaneEntryProps[];
     }
     export interface ModelTimelineProps {
         modelId: Id64String;

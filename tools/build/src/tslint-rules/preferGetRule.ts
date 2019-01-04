@@ -14,7 +14,6 @@ import * as Lint from "tslint";
 
 /** A list of file names (with extensions) that this rule should not be applied to. */
 const FILENAME_EXCEPTIONS: string[] = [
-  "imodeljs-native-platform-api.ts",
 ];
 
 export class Rule extends Lint.Rules.AbstractRule {

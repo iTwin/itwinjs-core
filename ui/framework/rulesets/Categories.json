@@ -1,6 +1,6 @@
 {
   "$schema": "../../../presentation/common/Ruleset.schema.json",
-  "id": "Categories",
+  "id": "ui-framework/Categories",
   "rules": [
     {
       "ruleType": "RootNodes",

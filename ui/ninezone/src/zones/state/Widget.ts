@@ -24,7 +24,7 @@ export interface DraggingWidgetProps {
 export const getDefaultWidgetProps = (id: WidgetZoneIndex): WidgetProps => {
   return {
     id,
-    tabIndex: -1,
+    tabIndex: -2,  // a -2 means the tabIndex has not been initialized. A tabIndex of -1 means initialized and non-selected
   };
 };
 

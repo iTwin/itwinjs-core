@@ -94,6 +94,11 @@ export class XY implements XAndY {
   public unitVectorTo(target: XAndY, result?: Vector2d): Vector2d | undefined {
     return this.vectorTo(target, result).normalize(result);
   }
+  /** cross product of vectors from origin to targets */
+  public static crossProductToPoints(origin: XAndY, targetA: XAndY, targetB: XAndY): number {
+    return Geometry.crossProductXYXY(
+      targetA.x - origin.x, targetA.y - origin.y, targetB.x - origin.x, targetB.y - origin.y);
+  }
 }
 
 export class Point2d extends XY implements BeJSONFunctions {

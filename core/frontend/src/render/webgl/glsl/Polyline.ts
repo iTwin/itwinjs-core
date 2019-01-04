@@ -161,15 +161,6 @@ export function addLineCode(prog: ProgramBuilder, args: string) {
 function polylineAddLineCode(prog: ProgramBuilder) {
   addLineCode(prog, lineCodeArgs);
   addModelViewMatrix(prog.vert);
-  /* NOTNOW_NO_LONGER_REQUIRED
-  // ###TODO: Ray claims these currently-unused distances will be useful later on for non-cosmetic line styles?
-  // If not, jettison.
-  prog.vert.addAttribute("a_distance", VariableType.Float, (prog) => {
-    prog.addGraphicAttribute("a_distance", (that, params) => {}
-      that.getAttribute().enableArray(params.m_geometry.getPolylineBuffers()->m_distances, 1, GL_FLOAT, GL_FALSE, 0, 0);
-    });
-  });
-  */
 }
 
 function addCommon(prog: ProgramBuilder) {

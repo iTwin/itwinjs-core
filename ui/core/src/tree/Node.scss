@@ -31,6 +31,7 @@ $node-font-size: $bwc-font-size;
   color: $text-dark;
   white-space: nowrap;
   text-overflow: ellipsis;
+  cursor: default;
 
   * {
     vertical-align: top;

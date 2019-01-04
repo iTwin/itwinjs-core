@@ -4,81 +4,57 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { PriorityQueue, assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
+import { assert, base64StringToUint8Array } from "@bentley/bentleyjs-core";
 import { ImageSource, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { RenderGraphic } from "../render/System";
 import { Tile, TileTree, TileLoader } from "./TileTree";
+import { TileAdmin } from "./TileAdmin";
+import { Viewport } from "../Viewport";
+import { IModelApp } from "../IModelApp";
 
+/** Represents a pending or active request to load the contents of a [[Tile]]. The request coordinates with a [[TileLoader]] to execute the request for tile content and
+ * convert the result into a renderable graphic.
+ * @hidden
+ */
 export class TileRequest {
-  protected _state: TileRequest.State;
-
-  public get state(): TileRequest.State { return this._state; }
-
-  protected constructor() {
-    this._state = TileRequest.State.Queued;
-  }
-}
-
-export namespace TileRequest {
-  export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
-  export type ResponseData = Uint8Array | ImageSource;
-
-  export const enum State {
-    Queued,
-    Dispatched,
-    Loading,
-    Completed,
-    Failed,
-  }
-
-  export interface Graphic {
-    renderGraphic?: RenderGraphic;
-    isLeaf?: boolean;
-    contentRange?: ElementAlignedBox3d;
-    sizeMultiplier?: number;
-  }
-
-  export interface Statistics {
-    numPendingRequests: number;
-    numActiveRequests: number;
-  }
-
-  export interface Scheduler {
-    readonly statistics: Statistics;
-
-    preprocess(): void;
-    process(): void;
-    requestTiles(tiles: Set<Tile>): void;
-    onShutDown(): void;
-  }
-
-  export interface SchedulerOptions {
-    maxActiveRequests?: number;
-  }
-
-  export function createScheduler(options?: SchedulerOptions): Scheduler {
-    return new RequestScheduler(options);
-  }
-}
-
-class Request extends TileRequest {
+  /** The requested tile. While the request is pending or active, `tile.request` points back to this TileRequest. */
   public readonly tile: Tile;
-  public readonly priority: number; // ###TODO Allow priority to be adjusted based on camera etc.
+  /** Determines the order in which pending requests are pulled off the queue to become active. A tile with a lower value takes precedence over one with a higher value. */
+  /** The set of [[Viewport]]s that are awaiting the result of this request. When this becomes empty, the request is canceled because no viewport cares about it. */
+  public viewports: TileAdmin.ViewportSet;
+  private _state: TileRequest.State;
+
+  public constructor(tile: Tile, vp: Viewport) {
+    this._state = TileRequest.State.Queued;
+    this.tile = tile;
+    this.viewports = IModelApp.tileAdmin.getViewportSet(vp);
+  }
 
   public get state(): TileRequest.State { return this._state; }
+  public get isQueued() { return TileRequest.State.Queued === this._state; }
+  public get isCanceled(): boolean { return this.viewports.isEmpty; } // ###TODO: check if IModelConnection closed etc.
+
   public get tree(): TileTree { return this.tile.root; }
   public get loader(): TileLoader { return this.tree.loader; }
 
-  public constructor(tile: Tile) {
-    super();
-    this.tile = tile;
-    this.priority = tile.depth; // ###TODO account for reality/map tiles vs design model tiles, etc.
-    tile.setIsQueued();
+  public addViewport(vp: Viewport): void {
+    this.viewports = IModelApp.tileAdmin.getViewportSet(vp, this.viewports);
   }
 
+  /** Transition the request from "queued" to "active", kicking off a series of asynchronous operations usually beginning with an http request, and -
+   * if the request is not subsequently canceled - resulting in either a successfully-loaded Tile, or a failed ("not found") Tile.
+   */
   public async dispatch(): Promise<void> {
     try {
+      if (this.isCanceled)
+        return Promise.resolve();
+
+      assert(this._state === TileRequest.State.Queued);
+      this._state = TileRequest.State.Dispatched;
       const response = await this.loader.requestTileContent(this.tile);
+      if (this.isCanceled)
+        return Promise.resolve();
+
       return this.handleResponse(response);
     } catch (_err) {
       this.setFailed();
@@ -86,12 +62,31 @@ class Request extends TileRequest {
     }
   }
 
-  private setFailed() {
+  /** Cancels this request. This leaves the associated Tile's state untouched. */
+  public cancel(): void {
+    this.notifyAndClear();
     this._state = TileRequest.State.Failed;
-    this.tile.setNotFound();
+  }
+
+  /** Invalidates the scene of each [[Viewport]] interested in this request - typically because the request succeeded, failed, or was canceled. */
+  private notify(): void {
+    this.viewports.forEach((vp) => vp.invalidateScene());
+  }
+
+  /** Invalidates the scene of each [[Viewport]] interested in this request and clears the set of interested viewports. */
+  private notifyAndClear(): void {
+    this.notify();
+    this.viewports = IModelApp.tileAdmin.emptyViewportSet;
     this.tile.request = undefined;
   }
 
+  private setFailed() {
+    this.notifyAndClear();
+    this._state = TileRequest.State.Failed;
+    this.tile.setNotFound();
+  }
+
+  /** Invoked when the raw tile content becomes available, to convert it into a tile graphic. */
   private async handleResponse(response: TileRequest.Response): Promise<void> {
     let data: TileRequest.ResponseData | undefined;
     if (undefined !== response) {
@@ -109,13 +104,15 @@ class Request extends TileRequest {
     }
 
     this._state = TileRequest.State.Loading;
-    this.tile.setIsLoading();
 
     try {
       const graphic = await this.loader.loadTileGraphic(this.tile, data);
+      if (this.isCanceled)
+          return Promise.resolve();
+
       this._state = TileRequest.State.Completed;
       this.tile.setGraphic(graphic.renderGraphic, graphic.isLeaf, graphic.contentRange, graphic.sizeMultiplier);
-      this.tile.request = undefined;
+      this.notifyAndClear();
     } catch (_err) {
       this.setFailed();
     }
@@ -124,178 +121,32 @@ class Request extends TileRequest {
   }
 }
 
-class Queue extends PriorityQueue<Request> {
-  public constructor() {
-    super((lhs, rhs) => lhs.priority - rhs.priority);
-  }
-
-  public get array(): Request[] { return this._array; }
-
-  public has(request: Request): boolean {
-    return this.array.indexOf(request) >= 0;
-  }
-}
-
-class RequestScheduler implements TileRequest.Scheduler {
-  private readonly _activeRequests = new Set<Request>();
-  private readonly _maxActiveRequests: number;
-  private readonly _throttle: boolean;
-  private readonly _currentQueue = new Queue();
-  // private readonly _swapQueue = new Queue();
-
-  public constructor(options?: TileRequest.SchedulerOptions) {
-    let throttle = false;
-    let maxActiveRequests = 10; // ###TODO for now we don't want the throttling behavior.
-    if (undefined !== options) {
-      if (undefined !== options.maxActiveRequests) {
-        maxActiveRequests = options.maxActiveRequests;
-        throttle = true;
-      }
-    }
-
-    this._maxActiveRequests = maxActiveRequests;
-    this._throttle = throttle;
-  }
-
-  public get statistics(): TileRequest.Statistics {
-    return {
-      numPendingRequests: this._currentQueue.length,
-      numActiveRequests: this._activeRequests.size,
-    };
-  }
-
-  public preprocess(): void {
-  }
-
-  public process(): void {
-    if (!this._throttle)
-      return;
-
-    while (this._activeRequests.size < this._maxActiveRequests) {
-      const request = this._currentQueue.pop();
-      if (undefined === request)
-        break;
-      else
-        this.dispatch(request);
-    }
-  }
-
-  public requestTiles(tiles: Set<Tile>): void {
-    for (const tile of tiles) {
-      if (undefined === tile.request) {
-        assert(tile.loadStatus === Tile.LoadStatus.NotLoaded);
-        if (Tile.LoadStatus.NotLoaded === tile.loadStatus) {
-          const request = new Request(tile);
-          tile.request = request;
-          if (this._throttle)
-            this._currentQueue.push(request);
-          else
-            this.dispatch(request);
-        }
-      } else {
-        assert(this._activeRequests.has(tile.request as Request) || (this._throttle && this._currentQueue.has(tile.request as Request)));
-      }
-    }
-  }
-
-  public onShutDown(): void {
-    // ###TODO mark all as cancelled.
-    for (const request of this._activeRequests)
-      request.tile.setAbandoned();
-
-    this._activeRequests.clear();
-
-    for (const queued of this._currentQueue.array) {
-      queued.tile.request = undefined;
-      queued.tile.setAbandoned();
-    }
-  }
-
-  private dispatch(req: Request): void {
-    this._activeRequests.add(req);
-    req.dispatch().then(() => this.dropActiveRequest(req)) // tslint:disable-line no-floating-promises
-      .catch(() => this.dropActiveRequest(req));
-  }
-
-  private dropActiveRequest(req: Request) {
-    assert(this._activeRequests.has(req));
-    this._activeRequests.delete(req);
-  }
-}
-
-/*
-import { Tile, TileRequests } from "./TileTree";
-
-export class TileRequest {
-  public tile: Tile;
-  public priority: number;
-  public state: TileRequest.State;
-  public expired: boolean; // Set to true for all active+pending requests before tile selection; set to false for those which remain active/pending after tile selection.
-
-  public compare(rhs: TileRequest): number {
-    // ###TODO: account for tile type (map/reality vs design model), etc...
-    return this.priority - rhs.priority
-  }
-}
-
-function compareRequests(lhs: TileRequest, rhs: TileRequest): number { return lhs.compare(rhs); }
-
+/** @hidden */
 export namespace TileRequest {
+  /** The type of a raw response to a request for tile content. Processed upon receipt into a [[TileRequest.Response]] type. */
+  export type Response = Uint8Array | ArrayBuffer | string | ImageSource | undefined;
+  /** The input to [[TileLoader.loadTileGraphic]], to be converted into a [[TileRequest.Graphic]]. */
+  export type ResponseData = Uint8Array | ImageSource;
+
+  /** The states through which a TileRequest proceeds. During the first 3 states, the [[Tile]]'s `request` member is defined, and its [[Tile.LoadStatus]] is computed based on the state of its request. */
   export const enum State {
-    Queued = 0, // Request is pending in queue - not yet dispatched.
-    Dispatched = 1, // Request has been dispatched - awaiting response.
-    Received = 2, // Response has been received but not yet processed.
-    Processing = 3, // Response is being processed.
-    Failed = 4, // Request failed.
-    Cancelled = 5, // Request was cancelled before it completed.
+    /** Initial state. Request is pending but not yet dispatched. */
+    Queued,
+    /** Follows `Queued` when request begins to be actively processed. */
+    Dispatched,
+    /** Follows `Dispatched` when tile content is being converted into tile graphics. */
+    Loading,
+    /** Follows `Loading` when tile graphic has successfully been produced. */
+    Completed,
+    /** Follows any state in which an error prevents progression, or during which the request was canceled. */
+    Failed,
   }
 
-  export interface Statistics {
-    numPending: number;
-    numActive: number;
-  }
-
-  export interface SchedulerOptions {
-    maxActiveRequests?: number;
-  }
-
-  export class Scheduler {
-    private _maxActiveRequests: number = 10;
-    private _activeRequests: TileRequest[] = [];
-    private _activeQueue = new Queue();
-    private _swapQueue = new Queue();
-
-    public constructor(options?: SchedulerOptions) {
-      if (undefined === options)
-        return;
-
-      if (undefined !== options.maxActiveRequests)
-        this._maxActiveRequests = options.maxActiveRequests;
-    }
-
-    public get statistics(): Statistics {
-      return {
-        numPending: this._activeQueue.length,
-        numActive: this._activeRequests.length,
-      };
-    }
-
-    public update(): void {
-      for (const active of this._activeRequests)
-        active.expired = true;
-
-      for (const pending of this._activeQueue)
-        pending.expired = true;
-
-      const temp = this._swapQueue;
-      this._swapQueue = this._activeQueue;
-      temp.clear();
-      this._activeQueue = temp;
-    }
-
-    public process(requests: TileRequests): void {
-
-    }
+  /** The result of [[TileLoader.loadTileGraphic]]. */
+  export interface Graphic {
+    renderGraphic?: RenderGraphic;
+    isLeaf?: boolean;
+    contentRange?: ElementAlignedBox3d;
+    sizeMultiplier?: number;
   }
 }
-*/

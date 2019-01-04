@@ -2,6 +2,90 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.181.0",
+      "tag": "@bentley/imodeljs-frontend_v0.181.0",
+      "date": "Fri, 04 Jan 2019 13:02:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix incorrect display of point strings containing duplicate points."
+          },
+          {
+            "comment": "Optimize performance when reading depth buffer."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.180.0",
+      "tag": "@bentley/imodeljs-frontend_v0.180.0",
+      "date": "Wed, 02 Jan 2019 15:18:23 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow the maximum number of active tile requests to be modified at run-time."
+          },
+          {
+            "comment": "Fix excessive memory consumption by polyline graphics."
+          },
+          {
+            "comment": "merge"
+          },
+          {
+            "comment": "Enable path interpolation"
+          },
+          {
+            "comment": "Enable schedule animation"
+          },
+          {
+            "comment": "if view delta is too large or small, set it to max/min rather than aborting viewing operations."
+          },
+          {
+            "comment": "Fix transform order when pushing branch."
+          },
+          {
+            "comment": "Implement quaternion interpolation for Synchro schedule animation"
+          },
+          {
+            "comment": "remove trash files"
+          },
+          {
+            "comment": "Add batch feature overrides to optimize schedule animation."
+          },
+          {
+            "comment": "Prioritize tile requests based on tile type and depth."
+          },
+          {
+            "comment": "Improve performance by limiting the number of simultaneously-active tile requests."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.179.0",
+      "tag": "@bentley/imodeljs-frontend_v0.179.0",
+      "date": "Wed, 19 Dec 2018 18:26:14 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added showDialogInitially support to ActivityMessageDetails"
+          },
+          {
+            "comment": "View tools enhancement to use background map plane for depth point when geometry isn't identified."
+          },
+          {
+            "comment": "Fix regression in the display of reality models induced by switch to OIDC for access token."
+          },
+          {
+            "comment": "Support Pre animation tiles"
+          },
+          {
+            "comment": "Add support for Syncro schedules (transform disabled)"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.178.0",
       "tag": "@bentley/imodeljs-frontend_v0.178.0",
       "date": "Thu, 13 Dec 2018 22:06:10 GMT",

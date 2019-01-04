@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Utilities */
 
+// cSpell:ignore classname
+
+import { ScreenViewport } from "@bentley/imodeljs-frontend";
 /**
  * Various View utility methods
  */
@@ -28,6 +31,14 @@ export class ViewUtilities {
   }
 
   /**
+   * Determines if given class is a spatial view.
+   * @param classname Name of class to check
+   */
+  public static isOrthographic(classname: string): boolean {
+    return classname === "OrthographicViewDefinition";
+  }
+
+  /**
    * Determines if given class is a drawing view.
    * @param classname Name of class to check
    */
@@ -41,5 +52,53 @@ export class ViewUtilities {
    */
   public static isSheet(classname: string): boolean {
     return classname === "SheetViewDefinition";
+  }
+
+  /**
+   * Determines if viewport displays a Sheet view.
+   * @param viewport ScreenViewport to check
+   */
+  public static isSheetView(viewport: ScreenViewport): boolean {
+    return ViewUtilities.isSheet(ViewUtilities.getBisBaseClass(viewport.view.classFullName));
+  }
+
+  /**
+   * Determines if viewport displays a Drawing view.
+   * @param viewport ScreenViewport to check
+   */
+  public static isDrawingView(viewport: ScreenViewport): boolean {
+    return ViewUtilities.isDrawing(ViewUtilities.getBisBaseClass(viewport.view.classFullName));
+  }
+
+  /**
+   * Determines if viewport displays a Orthographic view.
+   * @param viewport ScreenViewport to check
+   */
+  public static isOrthographicView(viewport: ScreenViewport): boolean {
+    return ViewUtilities.isOrthographic(ViewUtilities.getBisBaseClass(viewport.view.classFullName));
+  }
+
+  /**
+   * Determines if viewport displays a Spatial view.
+   * @param viewport ScreenViewport to check
+   */
+  public static isSpatialView(viewport: ScreenViewport): boolean {
+    return ViewUtilities.isSpatial(ViewUtilities.getBisBaseClass(viewport.view.classFullName));
+  }
+
+  /**
+   * Determines if viewport displays a 3d view.
+   * @param viewport ScreenViewport to check
+   */
+  public static is3dView(viewport: ScreenViewport): boolean {
+    return viewport.view.is3d();
+  }
+
+  /**
+   * Determines if viewport supports use of a camera.
+   * @param viewport ScreenViewport to check
+   */
+  public static viewSupportsCamera(viewport: ScreenViewport): boolean {
+    return "SpatialViewDefinition" === ViewUtilities.getBisBaseClass(viewport.view.classFullName);
   }
 }

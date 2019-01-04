@@ -13,7 +13,7 @@ import {
 import { ToolItemDef } from "./configurableui/Item";
 import { ContentViewManager } from "./configurableui/ContentViewManager";
 import { BaseItemState } from "./configurableui/ItemDefBase";
-import { SyncUiEventId } from "./SyncUiEventDispatcher";
+import { SyncUiEventId } from "./syncui/SyncUiEventDispatcher";
 import { AnalysisAnimationTool } from "./tools/AnalysisAnimation";
 
 /** Utility Class that provides definitions of tools provided by imodel.js core. These definitions can be used to populate the ui. */
@@ -115,6 +115,7 @@ export class CoreTools {
       label: () => AnalysisAnimationTool.flyover,
       tooltip: () => AnalysisAnimationTool.description,
       execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
+      isVisible: false, // default to not show and then allow stateFunc to redefine.
       stateSyncIds: [SyncUiEventId.ActiveContentChanged],
       stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
         const returnState: BaseItemState = { ...currentState };

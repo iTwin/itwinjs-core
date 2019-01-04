@@ -55,7 +55,7 @@
       "allowedCategories": [ "common", "frontend", "internal" ]
     },
     {
-      "name": "@bentley/imodeljs-native-platform-api",
+      "name": "@bentley/imodeljs-native",
       "allowedCategories": [ "backend" ]
     },
     {
@@ -448,6 +448,14 @@
     },
     {
       "name": "minimist",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "mobx",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "mobx-react",
       "allowedCategories": [ "internal" ]
     },
     {

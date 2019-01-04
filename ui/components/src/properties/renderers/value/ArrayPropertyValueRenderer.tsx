@@ -10,6 +10,7 @@ import { PropertyRecord } from "../../Record";
 import { PropertyValueFormat, ArrayValue } from "../../Value";
 import { Orientation } from "@bentley/ui-core";
 import { TableArrayValueRenderer } from "./table/ArrayValueRenderer";
+import { withContextStyle } from "./WithContextStyle";
 
 /** Default Array Property Renderer */
 export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
@@ -17,25 +18,25 @@ export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
     return record.value.valueFormat === PropertyValueFormat.Array;
   }
 
-  public async render(record: PropertyRecord, context?: PropertyValueRendererContext) {
+  public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
     const recordItems = (record.value as ArrayValue).items;
 
-    if (context) {
-      switch (context.containerType) {
-        case PropertyContainerType.Table:
-          return (
-            <TableArrayValueRenderer
-              propertyRecord={record}
-              onDialogOpen={context.onDialogOpen}
-              orientation={context.orientation ? context.orientation : Orientation.Horizontal}
-            />
-          );
-      }
+    if (context && context.containerType === PropertyContainerType.Table) {
+      return withContextStyle(
+        <TableArrayValueRenderer
+          propertyRecord={record}
+          onDialogOpen={context.onDialogOpen}
+          orientation={context.orientation ? context.orientation : Orientation.Horizontal}
+        />,
+        context,
+      );
     }
 
-    if (recordItems.length !== 0)
-      return `${(record.value as ArrayValue).itemsTypeName}[${recordItems.length}]`;
-
-    return `${(record.value as ArrayValue).itemsTypeName}[]`;
+    return withContextStyle(
+      (recordItems.length !== 0)
+        ? `${(record.value as ArrayValue).itemsTypeName}[${recordItems.length}]`
+        : `${(record.value as ArrayValue).itemsTypeName}[]`,
+      context,
+    );
   }
 }

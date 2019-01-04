@@ -13,5 +13,5 @@ export class Constant {
   public static readonly oneKilometer: number = 1000.0;
   public static readonly diameterOfEarth: number = 12742.0 * Constant.oneKilometer;
   public static readonly circumferenceOfEarth: number = 40075.0 * Constant.oneKilometer;
-  public static readonly radiansPerDegree: number = 0.0174532925;
+  // public static readonly radiansPerDegree: number = 0.0174532925;  // EDL Dec 2018 Never used in imodeljs.  Use Angle.radiansPerDegbree instead (full 17 digits -- only 9 here)
 }

@@ -1,0 +1,156 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`GroupItem <GroupButton /> renders correctly 1`] = `
+<GroupItem
+  direction={3}
+  groupItemDef={
+    GroupItemDef {
+      "_itemList": ItemList {
+        "_items": Array [
+          CommandItemDef {
+            "_label": "",
+            "_tooltip": "",
+            "commandId": "tool1",
+            "execute": [Function],
+            "featureId": "",
+            "iconSpec": "icon-placeholder",
+            "isActive": false,
+            "isEnabled": true,
+            "isPressed": false,
+            "isVisible": true,
+            "stateSyncIds": Array [],
+          },
+          CommandItemDef {
+            "_label": "",
+            "_tooltip": "",
+            "applicationData": Object {
+              "key": "value",
+            },
+            "commandId": "tool2",
+            "execute": [Function],
+            "featureId": "",
+            "iconSpec": "icon-placeholder",
+            "isActive": false,
+            "isEnabled": true,
+            "isPressed": false,
+            "isVisible": true,
+            "stateSyncIds": Array [],
+          },
+        ],
+      },
+      "_itemMap": Map {
+        "tool1" => CommandItemDef {
+          "_label": "",
+          "_tooltip": "",
+          "commandId": "tool1",
+          "execute": [Function],
+          "featureId": "",
+          "iconSpec": "icon-placeholder",
+          "isActive": false,
+          "isEnabled": true,
+          "isPressed": false,
+          "isVisible": true,
+          "stateSyncIds": Array [],
+        },
+        "tool2" => CommandItemDef {
+          "_label": "",
+          "_tooltip": "",
+          "applicationData": Object {
+            "key": "value",
+          },
+          "commandId": "tool2",
+          "execute": [Function],
+          "featureId": "",
+          "iconSpec": "icon-placeholder",
+          "isActive": false,
+          "isEnabled": true,
+          "isPressed": false,
+          "isVisible": true,
+          "stateSyncIds": Array [],
+        },
+      },
+      "_label": "tests.label",
+      "_tooltip": "",
+      "direction": 3,
+      "execute": [Function],
+      "featureId": "",
+      "groupId": "",
+      "iconSpec": "icon-placeholder",
+      "isActive": false,
+      "isEnabled": true,
+      "isPressed": false,
+      "isVisible": true,
+      "items": Array [
+        CommandItemDef {
+          "_label": "",
+          "_tooltip": "",
+          "commandId": "tool1",
+          "execute": [Function],
+          "featureId": "",
+          "iconSpec": "icon-placeholder",
+          "isActive": false,
+          "isEnabled": true,
+          "isPressed": false,
+          "isVisible": true,
+          "stateSyncIds": Array [],
+        },
+        CommandItemDef {
+          "_label": "",
+          "_tooltip": "",
+          "applicationData": Object {
+            "key": "value",
+          },
+          "commandId": "tool2",
+          "execute": [Function],
+          "featureId": "",
+          "iconSpec": "icon-placeholder",
+          "isActive": false,
+          "isEnabled": true,
+          "isPressed": false,
+          "isVisible": true,
+          "stateSyncIds": Array [],
+        },
+      ],
+      "itemsInColumn": 4,
+      "stateSyncIds": Array [],
+    }
+  }
+  iconSpec="icon-placeholder"
+  items={
+    Array [
+      CommandItemDef {
+        "_label": "",
+        "_tooltip": "",
+        "commandId": "tool1",
+        "execute": [Function],
+        "featureId": "",
+        "iconSpec": "icon-placeholder",
+        "isActive": false,
+        "isEnabled": true,
+        "isPressed": false,
+        "isVisible": true,
+        "stateSyncIds": Array [],
+      },
+      CommandItemDef {
+        "_label": "",
+        "_tooltip": "",
+        "applicationData": Object {
+          "key": "value",
+        },
+        "commandId": "tool2",
+        "execute": [Function],
+        "featureId": "",
+        "iconSpec": "icon-placeholder",
+        "isActive": false,
+        "isEnabled": true,
+        "isPressed": false,
+        "isVisible": true,
+        "stateSyncIds": Array [],
+      },
+    ]
+  }
+  itemsInColumn={4}
+  key=""
+  labelKey="UiFramework:tests.label"
+/>
+`;

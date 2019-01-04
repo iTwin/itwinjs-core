@@ -122,7 +122,7 @@ export class TreeNode extends React.Component<TreeNodeProps, TreeNodeState> {
   }
 
   public shouldComponentUpdate(nextProps: TreeNodeProps, nextState: TreeNodeState) {
-    if (this.state.renderedLabel !== nextState.renderedLabel)
+    if (this.state.renderedLabel !== nextState.renderedLabel || nextProps.node.isDirty())
       return true;
 
     if (nextState.renderedLabel) {

@@ -17,7 +17,7 @@ import {
 import "@bentley/presentation-common/lib/test/_helpers/Promises";
 import "./IModelHostSetup";
 import { using, ActivityLoggingContext } from "@bentley/bentleyjs-core";
-import { NativePlatformRegistry, IModelHost, IModelDb } from "@bentley/imodeljs-backend";
+import { IModelHost, IModelDb } from "@bentley/imodeljs-backend";
 import { PageOptions, SelectionInfo, KeySet, PresentationError, PropertyInfoJSON, HierarchyRequestOptions, Paged, ContentRequestOptions } from "@bentley/presentation-common";
 import { instanceKeyFromJSON } from "@bentley/presentation-common";
 import { NodeJSON } from "@bentley/presentation-common";
@@ -43,7 +43,7 @@ describe("PresentationManager", () => {
     } catch (e) {
       let isLoaded = false;
       try {
-        NativePlatformRegistry.getNativePlatform();
+        IModelHost.platform;
         isLoaded = true;
       } catch (_e) { }
       if (!isLoaded)
@@ -55,7 +55,7 @@ describe("PresentationManager", () => {
 
     it("uses default native library implementation if not overridden", () => {
       using(new PresentationManager(), (manager) => {
-        expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(NativePlatformRegistry.getNativePlatform().NativeECPresentationManager);
+        expect((manager.getNativePlatform() as any)._nativeAddon).instanceOf(IModelHost.platform.ECPresentationManager);
       });
     });
 
@@ -269,7 +269,7 @@ describe("PresentationManager", () => {
         backColor: "backColor1",
         fontStyle: "fontStyle1",
         hasChildren: true,
-        isSelectable: true,
+        isSelectionDisabled: true,
         isEditable: true,
         isChecked: true,
         isCheckboxVisible: true,
@@ -288,7 +288,7 @@ describe("PresentationManager", () => {
         backColor: "",
         fontStyle: "",
         hasChildren: false,
-        isSelectable: false,
+        isSelectionDisabled: false,
         isEditable: false,
         isChecked: false,
         isCheckboxVisible: false,

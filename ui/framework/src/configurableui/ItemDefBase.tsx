@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
 
-import { UiFramework } from "../UiFramework";
 import { ItemProps, StringGetter } from "./ItemProps";
+import { PropsHelper } from "../utils/PropsHelper";
 
 /** Base state for any 'stateful' React component */
 export interface BaseItemState {
@@ -44,21 +44,14 @@ export abstract class ItemDefBase {
     if (itemProps.applicationData !== undefined) me.applicationData = itemProps.applicationData;
     if (itemProps.iconSpec) me.iconSpec = itemProps.iconSpec;
 
-    if (itemProps.label)
-      me.setLabel(itemProps.label);
-    else if (itemProps.labelKey)
-      me._label = UiFramework.i18n.translate(itemProps.labelKey);
-
-    if (itemProps.tooltip)
-      me.setTooltip(itemProps.tooltip);
-    else if (itemProps.tooltipKey)
-      me._tooltip = UiFramework.i18n.translate(itemProps.tooltipKey);
+    me._label = PropsHelper.getStringSpec(itemProps.label, itemProps.labelKey);
+    me._tooltip = PropsHelper.getStringSpec(itemProps.tooltip, itemProps.tooltipKey);
 
     if (itemProps.stateFunc)
       me.stateFunc = itemProps.stateFunc;
 
     if (itemProps.stateSyncIds)
-      me.stateSyncIds = itemProps.stateSyncIds;
+      me.stateSyncIds = itemProps.stateSyncIds.map((value) => value.toLowerCase());
   }
 
   constructor(itemProps?: ItemProps) {
@@ -72,12 +65,7 @@ export abstract class ItemDefBase {
 
   /** Get the label string */
   public get label(): string {
-    let label = "";
-    if (typeof this._label === "string")
-      label = this._label;
-    else
-      label = this._label();
-    return label;
+    return PropsHelper.getStringFromSpec(this._label);
   }
 
   /** Set the label.
@@ -89,12 +77,7 @@ export abstract class ItemDefBase {
 
   /** Get the tooltip string */
   public get tooltip(): string {
-    let tooltip = "";
-    if (typeof this._tooltip === "string")
-      tooltip = this._tooltip;
-    else
-      tooltip = this._tooltip();
-    return tooltip;
+    return PropsHelper.getStringFromSpec(this._tooltip);
   }
 
   /** Set the tooltip.
