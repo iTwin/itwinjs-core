@@ -231,7 +231,7 @@ function setupMobileMock() {
     connection = con;
     con.on("message", (msg) => {
       if (Buffer.isBuffer(msg)) {
-        const copy = new Buffer(msg.length);
+        const copy = Buffer.alloc(msg.length);
         msg.copy(copy);
         mobilegateway.handler(copy.buffer as ArrayBuffer);
       } else if (typeof (msg) === "string") {

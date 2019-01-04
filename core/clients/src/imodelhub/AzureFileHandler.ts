@@ -31,7 +31,7 @@ class BufferedStream extends Transform {
     if (encoding !== "buffer" && encoding !== "binary")
       throw new TypeError(`Encoding '${encoding}' is not supported.`);
     if (!this._buffer) {
-      this._buffer = new Buffer("", "binary");
+      this._buffer = Buffer.from("", "binary");
     }
     this._buffer = Buffer.concat([this._buffer, chunk]);
     if (this._buffer.length > this._threshold) {
@@ -149,7 +149,7 @@ export class AzureFileHandler implements FileHandler {
   private async uploadChunk(alctx: ActivityLoggingContext, uploadUrlString: string, fileDescriptor: number, blockId: number, callback?: (progress: ProgressInfo) => void) {
     alctx.enter();
     const chunkSize = 4 * 1024 * 1024;
-    let buffer = new Buffer(chunkSize);
+    let buffer = Buffer.alloc(chunkSize);
     const bytesRead = fs.readSync(fileDescriptor, buffer, 0, chunkSize, chunkSize * blockId);
     buffer = buffer.slice(0, bytesRead);
 
