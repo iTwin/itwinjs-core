@@ -683,9 +683,6 @@ async function openView(state: SimpleViewState) {
   await _changeView(state.viewState!);
   theViewport.addFeatureOverrides = addFeatureOverrides;
   IModelApp.viewManager.addViewport(theViewport);
-
-  resetAmbientOcclusion(false); // ambient occlusion defaults off for now
-  // ###TODO - retrieve ambient occlusion settings from view itself?
 }
 
 async function _changeView(view: ViewState) {
