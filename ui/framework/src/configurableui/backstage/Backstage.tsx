@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Backstage */
@@ -7,7 +7,7 @@
 import * as React from "react";
 
 import { SignOutModalFrontstage } from "../../oidc/SignOut";
-import { LabelProps, TooltipProps, StringGetter } from "../ItemProps";
+import { LabelProps, DescriptionProps, TooltipProps } from "../ItemProps";
 import { FrontstageManager } from "../FrontstageManager";
 import { IconProps, IconSpec } from "../IconComponent";
 import { PropsHelper } from "../../utils/PropsHelper";
@@ -18,11 +18,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 
 /** Base properties for a [[Backstage]] item.
  */
-export interface BackstageItemProps extends LabelProps, TooltipProps, IconProps {
-  /** optional subtitle */
-  subtitle?: string | StringGetter;
-  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
-  subtitleKey?: string;
+export interface BackstageItemProps extends LabelProps, DescriptionProps, TooltipProps, IconProps {
   /** if set, component will be enabled - defaults to true */
   isEnabled?: boolean;
   /** if set, component will be shown with as the active item - defaults to false */
@@ -47,7 +43,7 @@ export interface BackstageItemState {
 /** Helper method to set backstage item state from props */
 export const getBackstageItemStateFromProps = (props: BackstageItemProps): BackstageItemState => {
   const labelSpec = PropsHelper.getStringSpec(props.label, props.labelKey);
-  const subtitleSpec = PropsHelper.getStringSpec(props.subtitle, props.subtitleKey);
+  const subtitleSpec = PropsHelper.getStringSpec(props.description, props.descriptionKey);
   const tooltipSpec = PropsHelper.getStringSpec(props.tooltip, props.tooltipKey);
 
   return {

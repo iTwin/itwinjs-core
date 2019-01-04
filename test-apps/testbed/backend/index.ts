@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as http2 from "http2";
@@ -231,7 +231,7 @@ function setupMobileMock() {
     connection = con;
     con.on("message", (msg) => {
       if (Buffer.isBuffer(msg)) {
-        const copy = new Buffer(msg.length);
+        const copy = Buffer.alloc(msg.length);
         msg.copy(copy);
         mobilegateway.handler(copy.buffer as ArrayBuffer);
       } else if (typeof (msg) === "string") {

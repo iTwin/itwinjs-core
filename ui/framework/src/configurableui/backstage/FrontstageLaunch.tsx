@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Backstage */
@@ -85,6 +85,7 @@ export class FrontstageLaunchBackstageItem extends React.PureComponent<Frontstag
         isActive={this.state.isActive}
         isDisabled={!this.state.isEnabled}
         label={this.state.label}
+        subtitle={this.state.subtitle}
         icon={PropsHelper.getIcon(this.state.iconSpec)}
         onClick={this.execute} />
     );
