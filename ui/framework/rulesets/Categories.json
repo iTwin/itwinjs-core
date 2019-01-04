@@ -21,6 +21,7 @@
           "nestedRules": [
             {
               "ruleType": "ChildNodes",
+              "condition": "ParentNode.ECInstance.GetRelatedInstancesCount(\"BisCore:CategoryOwnsSubCategories\", \"Forward\", \"BisCore:SubCategory\") > 1",
               "specifications": [
                 {
                   "specType": "RelatedInstanceNodes",
@@ -36,6 +37,7 @@
                       "SubCategory"
                     ]
                   },
+                  "requiredDirection": "Forward",
                   "groupByClass": false,
                   "groupByLabel": false
                 }
