@@ -90,7 +90,7 @@
   100% { transform: rotate(360deg); }
 }
 
-#viewList {
+.viewList {
   padding: 12px;
   margin: 5px;
   cursor:pointer;
@@ -277,7 +277,7 @@
   padding: 3px;
   z-index: 999;
   top: 45px;
-  left: -1px;
+  right: -1px;
   border-color: gray;
   border-style: solid;
   border-width: 1px;
@@ -438,6 +438,11 @@
   margin-top: 10px;
   margin-left: 30px;
   width: 100px;
+}
+
+.slider {
+  width:250px;
+  display:block;
 }
 
 #standardRotationMenu .simpleicon, #animationMenu .simpleicon, #debugToolsMenu .simpleicon {

@@ -5,18 +5,20 @@
 
 import { Viewport } from "@bentley/imodeljs-frontend";
 import { createCheckBox } from "./CheckBox";
+import { ToolBarDropDown } from "./ToolBar";
 
 function getCategoryName(row: any): string {
   return undefined !== row.label ? row.label : row.code;
 }
 
-export class CategoryPicker {
+export class CategoryPicker extends ToolBarDropDown {
   private readonly _categories = new Set<string>();
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
   private readonly _checkboxes: HTMLInputElement[] = [];
 
   public constructor(vp: Viewport, parent: HTMLElement) {
+    super();
     this._vp = vp;
     this._element = document.createElement("div");
     this._element.className = "scrollingToolMenu";
@@ -66,7 +68,9 @@ export class CategoryPicker {
   }
 
   public get isOpen(): boolean { return "none" !== this._element.style.display; }
-  public toggle(): void { this._element.style.display = this.isOpen ? "none" : "block"; }
+  protected _open(): void { this._element.style.display = "block"; }
+  protected _close(): void { this._element.style.display = "none"; }
+  public get onViewChanged(): Promise<void> { return this.populate(); }
 
   private toggleAll(enable: boolean): void {
     this._vp.view.changeCategoryDisplay(this._categories, enable);

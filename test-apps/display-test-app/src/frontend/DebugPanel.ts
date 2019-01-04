@@ -9,8 +9,9 @@ import { StatsTracker } from "./TileStatisticsTracker";
 import { createCheckBox } from "./CheckBox";
 import { createComboBox } from "./ComboBox";
 import { Viewport, Tile } from "@bentley/imodeljs-frontend";
+import { ToolBarDropDown } from "./ToolBar";
 
-export class DebugPanel {
+export class DebugPanel extends ToolBarDropDown {
   private readonly _viewport: Viewport;
   private readonly _element: HTMLElement;
   private readonly _parentElement: HTMLElement;
@@ -19,6 +20,7 @@ export class DebugPanel {
   private readonly _statsTracker: StatsTracker;
 
   public constructor(vp: Viewport, parentElement: HTMLElement) {
+    super();
     this._viewport = vp;
     this._parentElement = parentElement;
     this._element = document.createElement("div");
@@ -60,7 +62,8 @@ export class DebugPanel {
   }
 
   public get isOpen(): boolean { return "none" !== this._element.style.display; }
-  public toggle(): void { this._element.style.display = this.isOpen ? "none" : "block"; }
+  protected _open(): void { this._element.style.display = "block"; }
+  protected _close(): void { this._element.style.display = "none"; }
 
   private addBoundingBoxDropdown(parent: HTMLElement): void {
     createComboBox({

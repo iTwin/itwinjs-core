@@ -18,13 +18,14 @@ import {
 } from "@bentley/imodeljs-common";
 import { CheckBox, createCheckBox } from "./CheckBox";
 import { createComboBox } from "./ComboBox";
+import { ToolBarDropDown } from "./ToolBar";
 
 type UpdateAttribute = (view: ViewState) => void;
 
 type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visibleEdges" | "hiddenEdges" | "monochrome" | "constructions" | "transparency" | "weights" | "styles" | "clipVolume";
 type EnvironmentAspect = "ground" | "sky";
 
-export class ViewAttributesPanel {
+export class ViewAttributes {
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
   private readonly _updates: UpdateAttribute[] = [];
@@ -68,10 +69,9 @@ export class ViewAttributesPanel {
     parent.appendChild(this._element);
   }
 
-  public dispose(): undefined {
+  public dispose(): void {
     this._removeMe();
     this._parent.removeChild(this._element);
-    return undefined;
   }
 
   private addViewFlagAttribute(label: string, flag: ViewFlag, only3d: boolean = false): void {
@@ -258,5 +258,30 @@ export class ViewAttributesPanel {
   private get _nextId(): string {
     ++this._id;
     return "viewAttributesPanel_" + this._id;
+  }
+}
+
+export class ViewAttributesPanel extends ToolBarDropDown {
+  private readonly _vp: Viewport;
+  private readonly _parent: HTMLElement;
+  private _attributes?: ViewAttributes;
+
+  public constructor(vp: Viewport, parent: HTMLElement) {
+    super();
+    this._vp = vp;
+    this._parent = parent;
+    this.open();
+  }
+
+  public get isOpen() { return undefined !== this._attributes; }
+  protected _open(): void {
+    this._attributes = new ViewAttributes(this._vp, this._parent);
+  }
+
+  protected _close(): void {
+    if (undefined !== this._attributes) {
+      this._attributes.dispose();
+      this._attributes = undefined;
+    }
   }
 }
