@@ -532,12 +532,6 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
 
 // Geometry used when rendering ambient occlusion information to an output texture
 export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
-  private _noise?: TextureHandle;
-
-  private static getRandomNumber(min: number, max: number) {
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-  }
-
   public static createGeometry(depthAndOrder: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
@@ -549,22 +543,11 @@ export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
   }
 
   public get depthAndOrder() { return this._textures[0]; }
-  public get noise() { return this._noise!.getHandle()!; }
+  public get noise() { return System.instance.noiseTexture!.getHandle()!; }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.AmbientOcclusion, textures);
-
-    // Generate random noise texture
-    const noiseDim = 4;
-    const noiseArr = new Uint8Array(noiseDim * noiseDim * 3);
-    for (let i = 0; i < noiseDim * noiseDim * 3; i++) {
-      noiseArr[i] = AmbientOcclusionGeometry.getRandomNumber(0, 255);
-    }
-    this._noise = TextureHandle.createForData(noiseDim, noiseDim, noiseArr, false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Rgb);
   }
-
-  // ###TODO: Dispose noise texture - better place to store this than here?
-  // ==> Store on the System same way we do for the line code texture.
 }
 
 export class BlurGeometry extends TexturedViewportQuadGeometry {

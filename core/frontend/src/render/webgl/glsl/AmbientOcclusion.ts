@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+// portions adapted from Cesium.js Copyright 2011 - 2017 Cesium Contributors
+
 import { TextureUnit } from "../RenderFlags";
 import { VariableType, FragmentShaderComponent, VariablePrecision } from "../ShaderBuilder";
 import { ShaderProgram } from "../ShaderProgram";
@@ -33,7 +35,7 @@ const computeAmbientOcclusion = `
   // Multiply the random 0..1 vec3 by 2 and then substract 1.  This puts the components of the vec3 in the range -1..1.
   vec3 noiseVec = (TEXTURE(u_noise, tc * vec2(u_viewport.z / 4.0, u_viewport.w / 4.0)).rgb + 1.0) / 2.0;
 
-  // ###TODO: frustumLength (If the current fragment has a distance from the camera greater than this value, ambient occlusion is not computed for the fragment.)
+  // Potential ###TODO: frustumLength (If the current fragment has a distance from the camera greater than this value, ambient occlusion is not computed for the fragment.)
 
   float bias = u_hbaoSettings.x; // Represents an angle in radians. If the dot product between the normal of the sample and the vector to the camera is less than this value, sampling stops in the current direction. This is used to remove shadows from near planar edges.
   float zLengthCap = u_hbaoSettings.y; // If the distance in linear Z from the current sample to first sample is greater than this value, sampling stops in the current direction.
