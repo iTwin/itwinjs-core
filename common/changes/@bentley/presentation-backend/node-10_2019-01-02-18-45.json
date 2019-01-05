@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "move to Node 10",
+      "packageName": "@bentley/presentation-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "keith.bentley@bentley.com"
+}

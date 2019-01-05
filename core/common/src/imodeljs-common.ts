@@ -11,6 +11,7 @@ export * from "./FeatureGates";
 export * from "./FeatureIndex";
 export * from "./Frustum";
 export * from "./Fonts";
+export * from "./GeoCoordinateServices";
 export * from "./RpcInterface";
 export * from "./RpcManager";
 export * from "./Image";

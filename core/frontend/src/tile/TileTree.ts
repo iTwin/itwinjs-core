@@ -427,6 +427,11 @@ export class Tile implements IDisposable, RenderMemory.Consumer {
           for (const prop of props) {
             // ###TODO if child is empty don't bother adding it to list...
             const child = new Tile(Tile.Params.fromJSON(prop, this.root, this));
+
+            // stick the corners on the Tile (used only by WebMercator Tiles)
+            if ((prop as any).corners)
+              (child as any).corners = (prop as any).corners;
+
             this._children.push(child);
             if (undefined !== parentRange && !child.isEmpty)
               parentRange.extendRange(child.contentRange);
