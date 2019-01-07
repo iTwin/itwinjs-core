@@ -8,6 +8,7 @@ export * from "./tools/EditManipulator";
 export * from "./tools/ElementSetTool";
 export * from "./tools/EventController";
 export * from "./tools/IdleTool";
+export * from "./tools/MeasureTool";
 export * from "./tools/PrimitiveTool";
 export * from "./tools/SelectTool";
 export * from "./tools/Tool";
