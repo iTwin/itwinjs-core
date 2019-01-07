@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import {
@@ -11,20 +11,17 @@ import { IModelDb } from "./IModelDb";
 
 // tslint:disable:prefer-get
 
-/** Module that declares the IModelJs native code. */
+/** Module that declares the IModelJs native code.
+ * @hidden
+ */
 export declare namespace IModelJsNative {
   export const version: string;
   export let logger: Logger;
   export function initializeRegion(region: number): void;
-
-  /**
-   * @hidden
-   */
   export type TxnIdString = string;
 
   /**
    * The return type of synchronous functions that may return an error or a successful result.
-   * @hidden
    */
   export interface ErrorStatusOrResult<ErrorCodeType, ResultType> {
     /** Error from the operation. This property is defined if and only if the operation failed. */
@@ -35,7 +32,6 @@ export declare namespace IModelJsNative {
   }
 
   /**
-   * @hidden
    */
   export class BriefcaseManagerResourcesRequest {
     public reset(): void;
@@ -47,7 +43,6 @@ export declare namespace IModelJsNative {
    * The options for how conflicts are to be handled during change-merging in an OptimisticConcurrencyControlPolicy.
    * The scenario is that the caller has made some changes to the *local* briefcase. Now, the caller is attempting to
    * merge in changes from iModelHub. The properties of this policy specify how to handle the *incoming* changes from iModelHub.
-   * @hidden
    */
   export interface BriefcaseManagerOnConflictPolicy {
     /** What to do with the incoming change in the case where the same entity was updated locally and also would be updated by the incoming change. */
@@ -163,7 +158,6 @@ export declare namespace IModelJsNative {
     public updateProjectExtents(newExtentsJson: string): void;
   }
 
-  /** @hidden */
   export class ECDb implements IDisposable {
     constructor();
     public createDb(dbName: string): DbResult;
@@ -176,7 +170,6 @@ export declare namespace IModelJsNative {
     public importSchema(schemaPathName: string): DbResult;
   }
 
-  /** @hidden */
   export class ECSqlStatement implements IDisposable {
     constructor();
     public prepare(db: DgnDb | ECDb, ecsql: string): StatusCodeWithMessage<DbResult>;
@@ -190,7 +183,6 @@ export declare namespace IModelJsNative {
     public getColumnCount(): number;
   }
 
-  /** @hidden */
   export class ECSqlBinder {
     constructor();
     public bindNull(): DbResult;
@@ -209,7 +201,6 @@ export declare namespace IModelJsNative {
     public addArrayElement(): ECSqlBinder;
   }
 
-  /** @hidden */
   export class ECSqlColumnInfo {
     constructor();
     public getType(): number;
@@ -223,9 +214,6 @@ export declare namespace IModelJsNative {
     public getRootClassAlias(): string;
   }
 
-  /**
-   * @hidden
-   */
   export class ECSqlValue {
     constructor();
     public getColumnInfo(): ECSqlColumnInfo;
@@ -249,14 +237,12 @@ export declare namespace IModelJsNative {
     public getArrayIterator(): ECSqlValueIterator;
   }
 
-  /** @hidden */
   export class ECSqlValueIterator {
     constructor();
     public moveNext(): boolean;
     public getCurrent(): ECSqlValue;
   }
 
-  /** @hidden */
   export class SqliteStatement implements IDisposable {
     constructor();
     public prepare(db: DgnDb | ECDb, sql: string): StatusCodeWithMessage<DbResult>;
@@ -284,14 +270,12 @@ export declare namespace IModelJsNative {
     public getValueGuid(columnIndex: number): GuidString;
   }
 
-  /** @hidden */
   export const enum ECPresentationStatus {
     Success = 0,
-    Error = 1,                            /** Base error */
-    InvalidArgument = Error + 1,          /** Argument is invalid */
+    Error = 1,
+    InvalidArgument = Error + 1,
   }
 
-  /** @hidden */
   export class ECPresentationManager implements IDisposable {
     constructor();
     public setupRulesetDirectories(directories: string[]): ErrorStatusOrResult<ECPresentationStatus, void>;
@@ -306,7 +290,6 @@ export declare namespace IModelJsNative {
     public dispose(): void;
   }
 
-  /** @hidden */
   export namespace ECSchemaXmlContext {
     interface SchemaKey {
       name: string;
@@ -326,7 +309,6 @@ export declare namespace IModelJsNative {
     type SchemaLocaterCallback = (key: SchemaKey, matchType: SchemaMatchType) => string | undefined | void;
   }
 
-  /** @hidden */
   export class ECSchemaXmlContext {
     constructor();
     public addSchemaPath(path: string): void;
@@ -334,17 +316,14 @@ export declare namespace IModelJsNative {
     public readSchemaFromXmlFile(filePath: string): ErrorStatusOrResult<BentleyStatus, string>;
   }
 
-  /** @hidden */
   export class SnapRequest {
     constructor();
     public doSnap(db: DgnDb, request: any, callback: (result: ErrorStatusOrResult<IModelStatus, any>) => void): void;
     public cancelSnap(): void;
   }
 
-  /** @hidden */
   export class DisableNativeAssertions implements IDisposable {
     constructor();
     public dispose(): void;
   }
-
 }

@@ -6,47 +6,13 @@
 
 import { assert, BeTimePoint, Id64, Id64Arg, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
-  Angle,
-  AxisOrder,
-  ClipVector,
-  Constant,
-  Geometry,
-  LowAndHighXY,
-  LowAndHighXYZ,
-  Map4d,
-  Matrix3d,
-  Plane3dByOriginAndUnitNormal,
-  Point2d,
-  Point3d,
-  PolyfaceBuilder,
-  Range3d,
-  Ray3d,
-  StrokeOptions,
-  Transform,
-  Vector2d,
-  Vector3d,
-  XAndY,
-  XYAndZ,
-  YawPitchRollAngles,
+  Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal,
+  Point2d, Point3d, PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d,
-  Camera,
-  ColorDef,
-  Frustum,
-  GraphicParams,
-  Npc,
-  RenderMaterial,
-  SpatialViewDefinitionProps,
-  SubCategoryAppearance,
-  SubCategoryOverride,
-  TextureMapping,
-  ViewDefinition2dProps,
-  ViewDefinition3dProps,
-  ViewDefinitionProps,
-  ViewFlags,
-  ViewStateProps,
-  AnalysisStyle,
+  AnalysisStyle, AxisAlignedBox3d, Camera, ColorDef, Frustum, GraphicParams, Npc, RenderMaterial, SpatialViewDefinitionProps,
+  SubCategoryAppearance, SubCategoryOverride, TextureMapping, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps,
+  ViewFlags, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemSpatialState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
@@ -56,9 +22,9 @@ import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { ModelSelectorState } from "./ModelSelectorState";
 import { GeometricModel2dState, GeometricModelState, TileTreeModelState } from "./ModelState";
-import { RenderScheduleState } from "./RenderScheduleState";
 import { NotifyMessageDetails, OutputMessagePriority } from "./NotificationManager";
 import { GraphicType } from "./render/GraphicBuilder";
+import { RenderScheduleState } from "./RenderScheduleState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { TileTree } from "./tile/TileTree";
 import { DecorateContext, SceneContext } from "./ViewContext";
@@ -69,17 +35,13 @@ export const enum GridOrientationType {
   /** Oriented with the view. */
   View = 0,
   /** Top */
-  WorldXY = 1, // Top
+  WorldXY = 1,
   /** Right */
-  WorldYZ = 2, // Right
+  WorldYZ = 2,
   /** Front */
-  WorldXZ = 3, // Front
+  WorldXZ = 3,
   /** Oriented by the [[AuxCoordSystem]] */
   AuxCoord = 4,
-  /** @hidden
-   * ###TODO not implemented - see ViewState.drawGrid.
-   */
-  GeoCoord = 5,
 }
 
 /** Describes the result of a viewing operation such as those exposed by [[ViewState]] and [[Viewport]]. */
@@ -167,7 +129,7 @@ export class ViewSubCategories {
 
   private static createSubCategoryAppearance(json?: any) {
     let props: SubCategoryAppearance | undefined;
-    if ("string" === typeof (json) && 0 < json.length)
+    if ("string" === typeof json && 0 < json.length)
       props = JSON.parse(json);
 
     return new SubCategoryAppearance(props);
@@ -184,7 +146,6 @@ export class ViewSubCategories {
       this._byCategoryId.set(categoryId, set = new Set<string>());
 
     set.add(subCategoryId);
-
     this._appearances.set(subCategoryId, appearance);
   }
 }
@@ -300,15 +261,15 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @hidden */
-    /* ###TODO
-  public cancelAllTileLoads(): void {
-    this.forEachTileTreeModel((model) => {
-      const tileTree = model.tileTree;
-      if (tileTree !== undefined)
-        tileTree.rootTile.cancelAllLoads();
-    });
-  }
-    */
+  /* ###TODO
+public cancelAllTileLoads(): void {
+  this.forEachTileTreeModel((model) => {
+    const tileTree = model.tileTree;
+    if (tileTree !== undefined)
+      tileTree.rootTile.cancelAllLoads();
+  });
+}
+  */
 
   /** @hidden */
   public get areAllTileTreesLoaded(): boolean {
@@ -600,12 +561,12 @@ export abstract class ViewState extends ElementState {
       return;
 
     const orientation = this.getGridOrientation();
-
+    if (GridOrientationType.AuxCoord < orientation) {
+      return; // NEEDSWORK...
+    }
     if (GridOrientationType.AuxCoord === orientation) {
       this.auxiliaryCoordinateSystem.drawGrid(context);
       return;
-    } else if (GridOrientationType.GeoCoord === orientation) {
-      // NEEDSWORK...
     }
 
     const isoGrid = false;
@@ -940,11 +901,6 @@ export abstract class ViewState extends ElementState {
       case GridOrientationType.WorldYZ:
       case GridOrientationType.WorldXZ:
         if (!this.is3d())
-          return;
-        break;
-
-      case GridOrientationType.GeoCoord:
-        if (!this.isSpatialView())
           return;
         break;
     }

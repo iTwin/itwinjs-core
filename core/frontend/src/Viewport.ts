@@ -440,7 +440,8 @@ export class ViewFrustum {
   /** Get the rectangle of this Viewport in ViewCoordinates. */
   private get _viewRect(): ViewRect { this._viewRange.init(0, 0, this._clientWidth, this._clientHeight); return this._viewRange; }
 
-  private static _copyOutput = (from: XYZ, to?: XYZ) => { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; };
+  private static _copyOutput(from: XYZ, to?: XYZ) { let pt = from; if (to) { to.setFrom(from); pt = to; } return pt; }
+
   /** @hidden */
   public toView(from: XYZ, to?: XYZ) { this.rotation.multiplyVectorInPlace(ViewFrustum._copyOutput(from, to)); }
   /** @hidden */

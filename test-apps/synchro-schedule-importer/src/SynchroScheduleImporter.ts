@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
+|  $Copyright: (c) 2019 Bentley Systems, Incorporated. All rights reserved. $
  *--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, DisplayStyle3d, OrthographicViewDefinition } from "@bentley/imodeljs-backend";
 import { OpenMode, DbResult, Id64String } from "@bentley/bentleyjs-core";
