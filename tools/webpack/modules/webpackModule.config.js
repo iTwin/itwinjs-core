@@ -1,3 +1,8 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
 // This script sets module.export to the proper value for webpacking one of our packages as a Universal Module Definition library.
 // All of the package's open source dependencies are set to external.
 // All the other @bentley dependencies are set to external.

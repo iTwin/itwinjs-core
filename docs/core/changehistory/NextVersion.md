@@ -3,6 +3,12 @@ ignore: true
 ---
 # NextVersion
 
+## New signature for RpcInterface.forward
+
+To support stricter type checking of apply, call, and bind usage in upcoming versions of the typescript compiler, the signature of RpcInterface.forward is now (parameters: IArguments). This is not a breaking change for most use cases within RPC interfaces that invoke forward via apply. However, it is now possible and preferable with the new signature to directly invoke this.foward(arguments) in RPC interfaces instead of using apply.
+
+## Node 10
+
 The iModel.js backend now requires [Node version 10](https://nodejs.org) or later. If you run the backend, please install it before running this version.
 
 If you build the iModel.js packages from the monorepo, you should follow these steps:

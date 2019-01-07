@@ -1,6 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2019 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, DisplayStyle3d, OrthographicViewDefinition } from "@bentley/imodeljs-backend";
 import { OpenMode, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { Placement3d, ElementAlignedBox3d, AxisAlignedBox3d, RenderMode, ViewFlags, ColorDef } from "@bentley/imodeljs-common";
