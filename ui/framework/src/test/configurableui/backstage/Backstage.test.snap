@@ -27,6 +27,7 @@ exports[`Backstage <Backstage /> FrontstageLaunchBackstageItem renders correctly
   key="Test1"
   label="tests.label"
   onClick={[Function]}
+  subtitle=""
 />
 `;
 

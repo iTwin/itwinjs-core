@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
@@ -10,7 +10,7 @@ import {
   ElementLoadProps, ElementProps, EntityMetaData, EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontMapProps, FontProps,
   IModel, IModelError, IModelNotFoundResponse, IModelProps, IModelStatus, IModelToken, IModelVersion, ModelProps, ModelSelectorProps,
   PropertyCallback, SheetProps, SnapRequestProps, SnapResponseProps, ThumbnailProps, TileTreeProps, ViewDefinitionProps, ViewQueryParams,
-  ViewStateProps,
+  ViewStateProps, IModelCoordinatesResponseProps, GeoCoordinatesResponseProps,
 } from "@bentley/imodeljs-common";
 import * as path from "path";
 import { BriefcaseEntry, BriefcaseId, BriefcaseManager, KeepBriefcase } from "./BriefcaseManager";
@@ -901,6 +901,21 @@ export class IModelDb extends IModel {
    * @hidden
    */
   public executeTest(testName: string, params: any): any { return JSON.parse(this.nativeDb.executeTest(testName, JSON.stringify(params))); }
+
+  /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
+  public async getIModelCoordinatesFromGeoCoordinates(activity: ActivityLoggingContext, props: string): Promise<IModelCoordinatesResponseProps> {
+    activity.enter();
+    const resultString: string = this.nativeDb.getIModelCoordinatesFromGeoCoordinates(props);
+    return JSON.parse(resultString) as IModelCoordinatesResponseProps;
+  }
+
+  /** Get the GeoCoordinate (longitude, latitude, elevation) corresponding to each IModel Coordinate point in the input */
+  public async getGeoCoordinatesFromIModelCoordinates(activity: ActivityLoggingContext, props: string): Promise<GeoCoordinatesResponseProps> {
+    activity.enter();
+    const resultString: string = this.nativeDb.getGeoCoordinatesFromIModelCoordinates(props);
+    return JSON.parse(resultString) as GeoCoordinatesResponseProps;
+  }
+
 }
 
 export namespace IModelDb {

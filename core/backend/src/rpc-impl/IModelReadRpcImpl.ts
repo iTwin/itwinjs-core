@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -9,6 +9,7 @@ import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   EntityQueryParams, RpcInterface, RpcManager, IModel, IModelReadRpcInterface, IModelToken,
   ModelProps, ElementProps, SnapRequestProps, SnapResponseProps, EntityMetaData, ViewStateProps, ImageSourceFormat,
+  IModelCoordinatesResponseProps, GeoCoordinatesResponseProps,
 } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams } from "../IModelDb";
 import { OpenIModelDbMemoizer } from "./OpenIModelDbMemoizer";
@@ -195,5 +196,17 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     const iModelDb = IModelDb.find(iModelToken);
     const dictionary: DictionaryModel = iModelDb.models.getModel(IModel.dictionaryId) as DictionaryModel;
     return SpatialCategory.queryCategoryIdByName(iModelDb, dictionary.id, categoryName);
+  }
+
+  public async getIModelCoordinatesFromGeoCoordinates(iModelToken: IModelToken, props: string): Promise<IModelCoordinatesResponseProps> {
+    const iModelDb = IModelDb.find(iModelToken);
+    const activityContext = ActivityLoggingContext.current; activityContext.enter();
+    return iModelDb.getIModelCoordinatesFromGeoCoordinates(activityContext, props);
+  }
+
+  public async getGeoCoordinatesFromIModelCoordinates(iModelToken: IModelToken, props: string): Promise<GeoCoordinatesResponseProps> {
+    const iModelDb = IModelDb.find(iModelToken);
+    const activityContext = ActivityLoggingContext.current; activityContext.enter();
+    return iModelDb.getGeoCoordinatesFromIModelCoordinates(activityContext, props);
   }
 }

@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "",
+      "comment": "Do not show SubCategory if it has no siblings",
       "packageName": "@bentley/ui-framework",
       "type": "none"
     }
   ],
   "packageName": "@bentley/ui-framework",
-  "email": "bill.steinbock@bentley.com"
+  "email": "grigas.petraitis@bentley.com"
 }

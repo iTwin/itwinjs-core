@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -23,7 +23,7 @@ $nz-backstage-user-profile-divider-height: 2px;
 
 // light theme
 $nz-backstage-background: $bwc-gray-c;
-$nz-backstage-item-color: #000;
+$nz-backstage-item-color: $bwc-text-color;
 $nz-backstage-item-active-background: #fff;
 $nz-backstage-highlight-bar-background: $bwc-blue;
 $nz-backstage-divider-color: $bwc-gray-9;

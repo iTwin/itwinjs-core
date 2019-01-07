@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Backstage */
@@ -15,6 +15,8 @@ export interface BackstageItemProps extends CommonProps {
   icon?: React.ReactChild;
   /** Optional label. */
   label?: string;
+  /** Optional subtitle */
+  subtitle?: string;
   /** Describes if the item is active. */
   isActive?: boolean;
   /** Describes if the item is disabled. */
@@ -35,7 +37,10 @@ export class BackstageItem extends React.PureComponent<BackstageItemProps> {
     return (
       <li className={className} style={this.props.style} onClick={this.props.onClick}>
         {this.props.icon}
-        <span>{this.props.label}</span>
+        <div>
+          <span>{this.props.label}</span>
+          {this.props.subtitle && <span>{this.props.subtitle}</span>}
+        </div>
       </li>
     );
   }

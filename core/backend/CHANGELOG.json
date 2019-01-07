@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.181.0",
+      "tag": "@bentley/imodeljs-backend_v0.181.0",
+      "date": "Fri, 04 Jan 2019 13:02:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade to Node 10. There is no longer separate packages for Node and Electron."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.180.0",
       "tag": "@bentley/imodeljs-backend_v0.180.0",
       "date": "Wed, 02 Jan 2019 15:18:23 GMT",

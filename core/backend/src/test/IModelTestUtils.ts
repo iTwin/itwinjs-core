@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
@@ -359,17 +359,20 @@ export class IModelTestUtils {
       // tslint:disable-next-line:no-var-requires
       Logger.configureLevels(require(loggingConfigFile));
     }
+  }
 
-    // Setup typical programmatic log level overrides here
-    // Logger.setLevelDefault(LogLevel.Warning);
-    // Logger.setLevel("Performance", LogLevel.Info);
-    // Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
-    // Logger.setLevel("DgnCore", LogLevel.Error);
-    // Logger.setLevel("BeSQLite", LogLevel.Error);
+  // Setup typical programmatic log level overrides here
+  // Convenience method used to debug specific tests/fixtures
+  public static setupDebugLogLevels() {
+    Logger.setLevelDefault(LogLevel.Warning);
+    Logger.setLevel("Performance", LogLevel.Info);
+    Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
+    Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
+    Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
+    Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
+    Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
+    Logger.setLevel("DgnCore", LogLevel.Error);
+    Logger.setLevel("BeSQLite", LogLevel.Error);
   }
 }
 

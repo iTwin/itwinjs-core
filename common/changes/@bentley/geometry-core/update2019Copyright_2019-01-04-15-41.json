@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Suppress geometry test console output (except performance)",
+      "comment": "",
       "packageName": "@bentley/geometry-core",
       "type": "none"
     }
   ],
   "packageName": "@bentley/geometry-core",
-  "email": "Earlin.Lutz@bentley.com"
+  "email": "Caleb.Shafer@bentley.com"
 }

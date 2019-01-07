@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Item */
@@ -28,6 +28,13 @@ export interface LabelProps {
   label?: string | StringGetter;
   /** if set, it is used to define a key that is used to look up a localized string. This value is used only if label is not explicitly set. */
   labelKey?: string;
+}
+
+export interface DescriptionProps {
+  /** if set, it is used to explicitly set the description shown by a component. */
+  description?: string | StringGetter;
+  /** if set, it is used to define a key that is used to look up a localized string. This value is used only if description is not explicitly set. */
+  descriptionKey?: string;
 }
 
 export interface TooltipProps {

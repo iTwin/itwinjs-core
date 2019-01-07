@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "Fix incorrect display of point strings containing duplicate points.",
+      "comment": "",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-frontend",
-  "email": "Paul.Connelly@bentley.com"
+  "email": "Caleb.Shafer@bentley.com"
 }
