@@ -2,6 +2,27 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.183.0",
+      "tag": "@bentley/imodeljs-frontend_v0.183.0",
+      "date": "Mon, 07 Jan 2019 21:49:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ambient occlusion to the display frontend system."
+          },
+          {
+            "comment": "Account for global origin when reporting coordinates."
+          },
+          {
+            "comment": "Add measure distance tool, will be moved to plug-in later."
+          },
+          {
+            "comment": "Fixed unnecessary reload during OIDC redirect callback."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.182.0",
       "tag": "@bentley/imodeljs-frontend_v0.182.0",
       "date": "Mon, 07 Jan 2019 13:31:34 GMT",

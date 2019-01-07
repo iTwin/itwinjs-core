@@ -1,6 +1,16 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 07 Jan 2019 13:31:34 GMT and should not be manually modified.
+This log was last generated on Mon, 07 Jan 2019 21:49:21 GMT and should not be manually modified.
+
+## 0.183.0
+Mon, 07 Jan 2019 21:49:21 GMT
+
+### Updates
+
+- Add ambient occlusion to the display frontend system.
+- Account for global origin when reporting coordinates.
+- Add measure distance tool, will be moved to plug-in later.
+- Fixed unnecessary reload during OIDC redirect callback.
 
 ## 0.182.0
 Mon, 07 Jan 2019 13:31:34 GMT
