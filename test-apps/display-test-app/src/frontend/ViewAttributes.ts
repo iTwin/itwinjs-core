@@ -279,7 +279,7 @@ export class ViewAttributes {
   }
 
   private updateAmbientOcclusionUI(view: ViewState) {
-    const getAOSettings = (view: ViewState) => (view as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings;
+    const getAOSettings = (v: ViewState) => (v as ViewState3d).getDisplayStyle3d().settings.ambientOcclusionSettings;
 
     const aoSettings = getAOSettings(view);
 
