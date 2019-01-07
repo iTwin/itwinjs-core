@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "comment": "",
+      "comment": "Add measure distance tool, will be moved to plug-in later.",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }
   ],
   "packageName": "@bentley/imodeljs-frontend",
-  "email": "Paul.Connelly@bentley.com"
+  "email": "Brien.Bastings@bentley.com"
 }

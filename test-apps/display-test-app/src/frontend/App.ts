@@ -19,42 +19,15 @@ import {
 import { DrawingAidTestTool } from "./DrawingAidTestTool";
 import { showStatus, showError } from "./Utils";
 
-function stringToSnapModes(name: string): SnapMode[] {
-  const snaps: SnapMode[] = [];
-  switch (name) {
-    case "Keypoint":
-      snaps.push(SnapMode.NearestKeypoint);
-      break;
-    case "Nearest":
-      snaps.push(SnapMode.Nearest);
-      break;
-    case "Center":
-      snaps.push(SnapMode.Center);
-      break;
-    case "Origin":
-      snaps.push(SnapMode.Origin);
-      break;
-    case "Intersection":
-      snaps.push(SnapMode.Intersection);
-      break;
-    default:
-      snaps.push(SnapMode.NearestKeypoint);
-      snaps.push(SnapMode.Nearest);
-      snaps.push(SnapMode.Intersection);
-      snaps.push(SnapMode.MidPoint);
-      snaps.push(SnapMode.Origin);
-      snaps.push(SnapMode.Center);
-      snaps.push(SnapMode.Bisector);
-      break;
-  }
-  return snaps;
-}
-
 class DisplayTestAppAccuSnap extends AccuSnap {
+  private readonly _activeSnaps: SnapMode[] =  [SnapMode.NearestKeypoint];
+
   public get keypointDivisor() { return 2; }
-  public getActiveSnapModes(): SnapMode[] {
-    const select = (document.getElementById("snapModeList") as HTMLSelectElement)!;
-    return stringToSnapModes(select.value);
+  public getActiveSnapModes(): SnapMode[] { return this._activeSnaps; }
+  public setActiveSnapModes(snaps: SnapMode[]): void {
+    this._activeSnaps.length = snaps.length;
+    for (let i = 0; i < snaps.length; i++)
+      this._activeSnaps[i] = snaps[i];
   }
 }
 
@@ -72,6 +45,7 @@ class Notifications extends NotificationManager {
     const rootDiv: HTMLDivElement = document.getElementById("root") as HTMLDivElement;
     if (!rootDiv)
       return Promise.resolve(MessageBoxValue.Cancel);
+
     // create a dialog element.
     const dialog: HTMLDialogElement = document.createElement("dialog") as HTMLDialogElement;
     dialog.className = "notification-messagebox";
@@ -148,4 +122,10 @@ export class DisplayTestApp extends IModelApp {
     const svtToolNamespace = IModelApp.i18n.registerNamespace("SVTTools");
     DrawingAidTestTool.register(svtToolNamespace);
   }
+
+  public static setActiveSnapModes(snaps: SnapMode[]): void {
+    (IModelApp.accuSnap as DisplayTestAppAccuSnap).setActiveSnapModes(snaps);
+  }
+
+  public static setActiveSnapMode(snap: SnapMode): void { this.setActiveSnapModes([snap]); }
 }

@@ -24,6 +24,7 @@ import * as idleTool from "./tools/IdleTool";
 import * as selectTool from "./tools/SelectTool";
 import * as pluginTool from "./tools/PluginTool";
 import * as viewTool from "./tools/ViewTool";
+import * as measureTool from "./tools/MeasureTool";
 
 /**
  * Creates an *Application* to show an iModel in a web browser.
@@ -118,6 +119,7 @@ export class IModelApp {
     tools.registerModule(selectTool, coreNamespace);
     tools.registerModule(idleTool, coreNamespace);
     tools.registerModule(viewTool, coreNamespace);
+    tools.registerModule(measureTool, coreNamespace);
     tools.registerModule(pluginTool, coreNamespace);
 
     this.onStartup(); // allow subclasses to register their tools, set their applicationId, etc.

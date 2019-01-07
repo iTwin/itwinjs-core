@@ -7,11 +7,11 @@
 import { QPoint3dList, QParams3d, RenderTexture, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { TesselatedPolyline } from "../primitives/VertexTable";
 import { assert, IDisposable, dispose } from "@bentley/bentleyjs-core";
-import { Point3d } from "@bentley/geometry-core";
+import { Point3d, Vector2d } from "@bentley/geometry-core";
 import { AttributeHandle, BufferHandle, QBufferHandle3d } from "./Handle";
 import { Target } from "./Target";
 import { ShaderProgramParams } from "./DrawCommand";
-import { TechniqueId } from "./TechniqueId";
+import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
 import { RenderPass, RenderOrder, CompositeFlags } from "./RenderFlags";
 import { LineCode } from "./EdgeOverrides";
 import { GL } from "./GL";
@@ -530,35 +530,73 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
   }
 }
 
-// Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
-export class CompositeGeometry extends TexturedViewportQuadGeometry {
-  public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture) {
+// Geometry used when rendering ambient occlusion information to an output texture
+export class AmbientOcclusionGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(depthAndOrder: WebGLTexture) {
     const params = ViewportQuad.getInstance().createParams();
     if (undefined === params) {
       return undefined;
     }
 
-    return new CompositeGeometry(params, [opaque, accum, reveal, hilite]);
+    // Will derive positions and normals from depthAndOrder.
+    return new AmbientOcclusionGeometry(params, [depthAndOrder]);
+  }
+
+  public get depthAndOrder() { return this._textures[0]; }
+  public get noise() { return System.instance.noiseTexture!.getHandle()!; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
+    super(params, TechniqueId.AmbientOcclusion, textures);
+  }
+}
+
+export class BlurGeometry extends TexturedViewportQuadGeometry {
+  public readonly blurDir: Vector2d;
+
+  public static createGeometry(texToBlur: WebGLTexture, depthAndOrder: WebGLTexture, blurDir: Vector2d) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params) {
+      return undefined;
+    }
+    return new BlurGeometry(params, [texToBlur, depthAndOrder], blurDir);
+  }
+
+  public get textureToBlur() { return this._textures[0]; }
+  public get depthAndOrder() { return this._textures[1]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[], blurDir: Vector2d) {
+    super(params, TechniqueId.Blur, textures);
+    this.blurDir = blurDir;
+  }
+}
+
+// Geometry used during the 'composite' pass to apply transparency and/or hilite effects.
+export class CompositeGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(opaque: WebGLTexture, accum: WebGLTexture, reveal: WebGLTexture, hilite: WebGLTexture, occlusion: WebGLTexture) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined === params) {
+      return undefined;
+    }
+
+    return new CompositeGeometry(params, [opaque, accum, reveal, hilite, occlusion]);
   }
 
   public get opaque() { return this._textures[0]; }
   public get accum() { return this._textures[1]; }
   public get reveal() { return this._textures[2]; }
   public get hilite() { return this._textures[3]; }
+  public get occlusion() { return this._textures[4]; }
 
   // Invoked each frame to determine the appropriate Technique to use.
   public update(flags: CompositeFlags): void { this._techniqueId = this.determineTechnique(flags); }
+
   private determineTechnique(flags: CompositeFlags): TechniqueId {
-    switch (flags) {
-      case CompositeFlags.Hilite: return TechniqueId.CompositeHilite;
-      case CompositeFlags.Translucent: return TechniqueId.CompositeTranslucent;
-      default: return TechniqueId.CompositeHiliteAndTranslucent;
-    }
+    return computeCompositeTechniqueId(flags);
   }
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.CompositeHilite, textures);
-    assert(4 === this._textures.length);
+    assert(5 === this._textures.length);
   }
 }
 

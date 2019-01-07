@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Fri, 04 Jan 2019 13:02:40 GMT and should not be manually modified.
+This log was last generated on Mon, 07 Jan 2019 13:31:34 GMT and should not be manually modified.
+
+## 0.182.0
+Mon, 07 Jan 2019 13:31:34 GMT
+
+### Updates
+
+- Implement the typescript side for new Geocoordinate services in the native iModel.js addon
+- upgrade to Node 10. There is no longer separate packages for Node and Electron.
 
 ## 0.181.0
 Fri, 04 Jan 2019 13:02:40 GMT

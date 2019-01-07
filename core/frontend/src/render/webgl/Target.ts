@@ -7,7 +7,7 @@
 import { Transform, Vector3d, Point3d, Matrix4d, Point2d, XAndY } from "@bentley/geometry-core";
 import { BeTimePoint, assert, Id64String, Id64, StopWatch, dispose, disposeArray } from "@bentley/bentleyjs-core";
 import { RenderTarget, RenderSystem, Decorations, GraphicList, RenderPlan, ClippingType, CanvasDecoration, Pixel, AnimationBranchStates } from "../System";
-import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture } from "@bentley/imodeljs-common";
+import { ViewFlags, Frustum, Hilite, ColorDef, Npc, RenderMode, ImageLight, ImageBuffer, ImageBufferFormat, AnalysisStyle, RenderTexture, AmbientOcclusion } from "@bentley/imodeljs-common";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { Techniques } from "./Technique";
 import { TechniqueId } from "./TechniqueId";
@@ -215,6 +215,7 @@ export abstract class Target extends RenderTarget {
   public analysisStyle?: AnalysisStyle;
   public analysisTexture?: RenderTexture;
   private _currentOverrides?: FeatureOverrides;
+  public ambientOcclusionSettings = AmbientOcclusion.Settings.defaults;
   private _batches: Batch[] = [];
   public plan?: RenderPlan;
   private _animationBranches?: AnimationBranchStates;
@@ -369,6 +370,16 @@ export abstract class Target extends RenderTarget {
     this._batches.splice(index, 1);
   }
 
+  public get wantAmbientOcclusion(): boolean {
+    // NB: We do not want to use the *current* ViewFlags for this - only those set in the RenderPlan,
+    // because our AO implementation is currently "all or nothing" - you can't selectively apply it to only some surfaces.
+    if (!this.currentViewFlags.ambientOcclusion)
+      return false;
+
+    // ###TODO do not enable unless smooth shade, probably no visible edges, etc.
+    return true;
+  }
+
   // ---- Implementation of RenderTarget interface ---- //
 
   public get renderSystem(): RenderSystem { return System.instance; }
@@ -507,6 +518,8 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
+    if (plan.ao !== undefined)
+      this.ambientOcclusionSettings = plan.ao;
     this.bgColor.setFrom(plan.bgColor);
     this.monoColor.setFrom(plan.monoColor);
     this.hiliteSettings = plan.hiliteSettings;

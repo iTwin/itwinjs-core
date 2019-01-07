@@ -4,6 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
 
+import { assert } from "@bentley/bentleyjs-core";
+import { CompositeFlags } from "./RenderFlags";
+
 /** Technique enumeration */
 export const enum TechniqueId {
   // Techniques with many different variations
@@ -19,6 +22,10 @@ export const enum TechniqueId {
   CompositeHilite,
   CompositeTranslucent,
   CompositeHiliteAndTranslucent,
+  CompositeOcclusion,
+  CompositeTranslucentAndOcclusion,
+  CompositeHiliteAndOcclusion,
+  CompositeAll,
   OITClearTranslucent,
   CopyPickBuffers,
   CopyColor,
@@ -29,7 +36,25 @@ export const enum TechniqueId {
   SkyBox,
   SkySphereGradient,
   SkySphereTexture,
+  AmbientOcclusion,
+  Blur,
 
   NumBuiltIn,
   COUNT = NumBuiltIn,
+}
+
+const compositeTechniqueIds = [
+  TechniqueId.Invalid, // None = 0
+  TechniqueId.CompositeTranslucent, // Translucent == 1 << 0
+  TechniqueId.CompositeHilite, // Hilite == 1 << 1 == 2
+  TechniqueId.CompositeHiliteAndTranslucent, // Hilite | Translucent == 1 | 2 == 3
+  TechniqueId.CompositeOcclusion, // AmbientOcclusion == 1 << 2 == 4
+  TechniqueId.CompositeTranslucentAndOcclusion, // Translucent | AmbientOcclusion == 1 | 4 == 5
+  TechniqueId.CompositeHiliteAndOcclusion, // Hilite | AmbientOcclusion == 2 | 4 == 6
+  TechniqueId.CompositeAll, // Translucent | Hilite | AmbientOcclusion == 1 | 2 | 4 == 7
+];
+
+export function computeCompositeTechniqueId(flags: CompositeFlags): TechniqueId {
+  assert(flags >= 0 && flags <= 7);
+  return compositeTechniqueIds[flags];
 }
