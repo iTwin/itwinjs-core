@@ -168,11 +168,8 @@ export class SampleAppIModelApp extends IModelApp {
 
     let oidcConfiguration: OidcFrontendClientConfiguration;
     if (ElectronRpcConfiguration.isElectron) {
-      const clientId = Config.App.get("imjs_browser_test_client_id");
-      const redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
-      // TODO: WIP Switch desktop clients to a different OIDC workflow.
-      // const clientId = Config.App.get("imjs_device_test_client_id");
-      // const redirectUri = Config.App.get("imjs_device_test_redirect_uri");
+      const clientId = Config.App.get("imjs_electron_test_client_id");
+      const redirectUri = Config.App.get("imjs_electron_test_redirect_uri");
       oidcConfiguration = { clientId, redirectUri };
     } else {
       const clientId = Config.App.get("imjs_browser_test_client_id");

@@ -70,9 +70,9 @@ window.onbeforeunload = () => {
 async function initializeOidc(actx: ActivityLoggingContext) {
   actx.enter();
 
-  const clientId = Config.App.get("imjs_browser_test_client_id");
-  const redirectUri = Config.App.getString("imjs_browser_test_redirect_uri"); // must be set in config
-  const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri };
+  const clientId = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_client_id" : "imjs_browser_test_client_id");
+  const redirectUri = Config.App.get((ElectronRpcConfiguration.isElectron) ? "imjs_electron_test_redirect_uri" : "imjs_browser_test_redirect_uri");
+  const oidcConfig: OidcFrontendClientConfiguration = { clientId, redirectUri, scope: "openid email profile organization imodelhub context-registry-service imodeljs-router reality-data:read" };
 
   await OidcClientWrapper.initialize(actx, oidcConfig);
   actx.enter();

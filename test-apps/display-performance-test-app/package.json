@@ -30,6 +30,7 @@
   "repository": {},
   "dependencies": {
     "@bentley/bentleyjs-core": "0.182.0",
+    "@bentley/electron-manager": "0.182.0",
     "@bentley/geometry-core": "0.182.0",
     "@bentley/imodeljs-clients": "0.182.0",
     "@bentley/imodeljs-common": "0.182.0",
