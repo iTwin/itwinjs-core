@@ -6,12 +6,12 @@
 
 import { assert, using, IDisposable, dispose } from "@bentley/bentleyjs-core";
 import { ShaderProgram, ShaderProgramExecutor } from "./ShaderProgram";
-import { TechniqueId } from "./TechniqueId";
+import { TechniqueId, computeCompositeTechniqueId } from "./TechniqueId";
 import { TechniqueFlags, FeatureMode, ClipDef } from "./TechniqueFlags";
 import { ProgramBuilder, FragmentShaderComponent, ClippingShaders } from "./ShaderBuilder";
 import { DrawParams, DrawCommands } from "./DrawCommand";
 import { Target } from "./Target";
-import { RenderPass, CompositeFlags } from "./RenderFlags";
+import { RenderPass } from "./RenderFlags";
 import { createClearTranslucentProgram } from "./glsl/ClearTranslucent";
 import { createClearPickAndColorProgram } from "./glsl/ClearPickAndColor";
 import { createCopyColorProgram } from "./glsl/CopyColor";
@@ -32,6 +32,8 @@ import { createPolylineBuilder, createPolylineHiliter } from "./glsl/Polyline";
 import { createEdgeBuilder } from "./glsl/Edge";
 import { createSkyBoxProgram } from "./glsl/SkyBox";
 import { createSkySphereProgram } from "./glsl/SkySphere";
+import { createAmbientOcclusionProgram } from "./glsl/AmbientOcclusion";
+import { createBlurProgram } from "./glsl/Blur";
 
 // Defines a rendering technique implemented using one or more shader programs.
 export interface Technique extends IDisposable {
@@ -364,7 +366,7 @@ class PointCloudTechnique extends VariedTechnique {
     this.addHiliteShader(gl, createPointCloudHiliter);
 
     const flags = scratchTechniqueFlags;
-    const pointCloudFeatureModes = [ FeatureMode.None, FeatureMode.Overrides ];
+    const pointCloudFeatureModes = [FeatureMode.None, FeatureMode.Overrides];
     for (const featureMode of pointCloudFeatureModes) {
       flags.reset(featureMode);
       const builder = createPointCloudBuilder();
@@ -535,19 +537,23 @@ export class Techniques implements IDisposable {
     this._list[TechniqueId.CopyColorNoAlpha] = new SingularTechnique(createCopyColorProgram(gl, false));
     this._list[TechniqueId.CopyPickBuffers] = new SingularTechnique(createCopyPickBuffersProgram(gl));
     this._list[TechniqueId.CopyStencil] = new SingularTechnique(createCopyStencilProgram(gl));
-    this._list[TechniqueId.CompositeHilite] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite, gl));
-    this._list[TechniqueId.CompositeTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Translucent, gl));
-    this._list[TechniqueId.CompositeHiliteAndTranslucent] = new SingularTechnique(createCompositeProgram(CompositeFlags.Hilite | CompositeFlags.Translucent, gl));
     this._list[TechniqueId.ClipMask] = new SingularTechnique(createClipMaskProgram(gl));
     this._list[TechniqueId.SkyBox] = new SingularTechnique(createSkyBoxProgram(gl));
     this._list[TechniqueId.SkySphereGradient] = new SingularTechnique(createSkySphereProgram(gl, true));
     this._list[TechniqueId.SkySphereTexture] = new SingularTechnique(createSkySphereProgram(gl, false));
+    this._list[TechniqueId.AmbientOcclusion] = new SingularTechnique(createAmbientOcclusionProgram(gl));
+    this._list[TechniqueId.Blur] = new SingularTechnique(createBlurProgram(gl));
     this._list[TechniqueId.Surface] = new SurfaceTechnique(gl);
     this._list[TechniqueId.Edge] = new EdgeTechnique(gl, false);
     this._list[TechniqueId.SilhouetteEdge] = new EdgeTechnique(gl, true);
     this._list[TechniqueId.Polyline] = new PolylineTechnique(gl);
     this._list[TechniqueId.PointString] = new PointStringTechnique(gl);
     this._list[TechniqueId.PointCloud] = new PointCloudTechnique(gl);
+
+    for (let compositeFlags = 1; compositeFlags <= 7; compositeFlags++) {
+      const techId = computeCompositeTechniqueId(compositeFlags);
+      this._list[techId] = new SingularTechnique(createCompositeProgram(compositeFlags, gl));
+    }
 
     assert(this._list.length === TechniqueId.NumBuiltIn, "unexpected number of built-in techniques");
   }

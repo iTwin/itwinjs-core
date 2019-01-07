@@ -45,7 +45,18 @@ bool isOutlined() {
 }
 `;
 
-const computeHiliteColor = "\nvec4 computeColor() { return TEXTURE(u_opaque, v_texCoord); }\n";
+const computeOpaqueColor = `
+vec4 computeOpaqueColor() {
+  vec4 opaque = TEXTURE(u_opaque, v_texCoord);
+  opaque.rgb *= computeAmbientOcclusion();
+  return opaque;
+}
+`;
+
+const computeDefaultAmbientOcclusion = `\nfloat computeAmbientOcclusion() { return 1.0; }\n`;
+const computeAmbientOcclusion = `\nfloat computeAmbientOcclusion() { return TEXTURE(u_occlusion, v_texCoord).r; }\n`;
+
+const computeHiliteColor = "\nvec4 computeColor() { return computeOpaqueColor(); }\n";
 
 const computeHiliteBaseColor = `
   float isHilite = floor(TEXTURE(u_hilite, v_texCoord).r + 0.5);
@@ -58,25 +69,31 @@ const computeHiliteBaseColor = `
 
 const computeTranslucentColor = `
 vec4 computeColor() {
-  vec4 opaque = TEXTURE(u_opaque, v_texCoord);
+  vec4 opaque = computeOpaqueColor();
   vec4 accum = TEXTURE(u_accumulation, v_texCoord);
   float r = TEXTURE(u_revealage, v_texCoord).r;
 
   vec4 transparent = vec4(accum.rgb / clamp(r, 1e-4, 5e4), accum.a);
-  return (1.0 - transparent.a) * transparent + transparent.a * opaque;
+  vec4 col = (1.0 - transparent.a) * transparent + transparent.a * opaque;
+  return col;
 }
 `;
 
 const computeTranslucentBaseColor = "return computeColor();";
+const computeAmbientOcclusionBaseColor = `\nreturn computeOpaqueColor();\n`;
 
 export function createCompositeProgram(flags: CompositeFlags, context: WebGLRenderingContext): ShaderProgram {
   assert(CompositeFlags.None !== flags);
 
   const wantHilite = CompositeFlags.None !== (flags & CompositeFlags.Hilite);
   const wantTranslucent = CompositeFlags.None !== (flags & CompositeFlags.Translucent);
+  const wantOcclusion = CompositeFlags.None !== (flags & CompositeFlags.AmbientOcclusion);
 
   const builder = createViewportQuadBuilder(true);
   const frag = builder.frag;
+
+  frag.addFunction(wantOcclusion ? computeAmbientOcclusion : computeDefaultAmbientOcclusion);
+  frag.addFunction(computeOpaqueColor);
 
   frag.set(FragmentShaderComponent.AssignFragData, GLSLFragment.assignFragColor);
   frag.addUniform("u_opaque", VariableType.Sampler2D, (prog) => {
@@ -120,6 +137,17 @@ export function createCompositeProgram(flags: CompositeFlags, context: WebGLRend
     if (!wantHilite) {
       frag.set(FragmentShaderComponent.ComputeBaseColor, computeTranslucentBaseColor);
     }
+  }
+
+  if (wantOcclusion) {
+    frag.addUniform("u_occlusion", VariableType.Sampler2D, (prog) => {
+      prog.addGraphicUniform("u_occlusion", (uniform, params) => {
+        Texture2DHandle.bindSampler(uniform, (params.geometry as CompositeGeometry).occlusion, TextureUnit.Four);
+      });
+    });
+
+    if (!wantHilite && !wantTranslucent)
+      frag.set(FragmentShaderComponent.ComputeBaseColor, computeAmbientOcclusionBaseColor);
   }
 
   return builder.buildProgram(context);
