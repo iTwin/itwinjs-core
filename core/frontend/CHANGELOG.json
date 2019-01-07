@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.182.0",
+      "tag": "@bentley/imodeljs-frontend_v0.182.0",
+      "date": "Mon, 07 Jan 2019 13:31:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "When the iModel covers a large enough area, get the corners of background map tiles using Geographic reprojection"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.181.0",
       "tag": "@bentley/imodeljs-frontend_v0.181.0",
       "date": "Fri, 04 Jan 2019 13:02:40 GMT",
