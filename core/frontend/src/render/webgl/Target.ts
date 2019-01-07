@@ -216,6 +216,7 @@ export abstract class Target extends RenderTarget {
   public analysisTexture?: RenderTexture;
   private _currentOverrides?: FeatureOverrides;
   public ambientOcclusionSettings = AmbientOcclusion.Settings.defaults;
+  private _wantAmbientOcclusion = false;
   private _batches: Batch[] = [];
   public plan?: RenderPlan;
   private _animationBranches?: AnimationBranchStates;
@@ -371,13 +372,7 @@ export abstract class Target extends RenderTarget {
   }
 
   public get wantAmbientOcclusion(): boolean {
-    // NB: We do not want to use the *current* ViewFlags for this - only those set in the RenderPlan,
-    // because our AO implementation is currently "all or nothing" - you can't selectively apply it to only some surfaces.
-    if (!this.currentViewFlags.ambientOcclusion)
-      return false;
-
-    // ###TODO do not enable unless smooth shade, probably no visible edges, etc.
-    return true;
+    return this._wantAmbientOcclusion;
   }
 
   // ---- Implementation of RenderTarget interface ---- //
@@ -518,8 +513,6 @@ export abstract class Target extends RenderTarget {
       return;
     }
 
-    if (plan.ao !== undefined)
-      this.ambientOcclusionSettings = plan.ao;
     this.bgColor.setFrom(plan.bgColor);
     this.monoColor.setFrom(plan.monoColor);
     this.hiliteSettings = plan.hiliteSettings;
@@ -541,7 +534,6 @@ export abstract class Target extends RenderTarget {
     let hidEdgeOvrs = undefined !== plan.hline ? plan.hline.hidden : undefined;
 
     const vf = ViewFlags.createFrom(plan.viewFlags, scratch.viewFlags);
-
     let forceEdgesOpaque = true; // most render modes want edges to be opaque so don't allow overrides to their alpha
     switch (vf.renderMode) {
       case RenderMode.Wireframe: {
@@ -555,6 +547,7 @@ export abstract class Target extends RenderTarget {
         // Hidden edges require visible edges
         if (!vf.visibleEdges)
           vf.hiddenEdges = false;
+
         break;
       }
       case RenderMode.SolidFill: {
@@ -582,6 +575,13 @@ export abstract class Target extends RenderTarget {
 
         break;
       }
+    }
+
+    if (RenderMode.SmoothShade === vf.renderMode && plan.is3d && undefined !== plan.ao && vf.ambientOcclusion) {
+      this._wantAmbientOcclusion = true;
+      this.ambientOcclusionSettings = plan.ao;
+    } else {
+      this._wantAmbientOcclusion = vf.ambientOcclusion = false;
     }
 
     this._visibleEdgeOverrides.init(forceEdgesOpaque, visEdgeOvrs);

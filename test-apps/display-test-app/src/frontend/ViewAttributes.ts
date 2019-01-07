@@ -157,7 +157,7 @@ export class ViewAttributes {
   }
 
   private addAmbientOcclusion(): void {
-    const isAOSupported = (view: ViewState) => view.is3d();
+    const isAOSupported = (view: ViewState) => view.is3d() && RenderMode.SmoothShade === view.viewFlags.renderMode;
     const isAOEnabled = (view: ViewState) => view.viewFlags.ambientOcclusion;
 
     const div = document.createElement("div");
@@ -421,7 +421,7 @@ export class ViewAttributes {
   }
 
   private sync(): void {
-    this._vp.invalidateRenderPlan();
+    this._vp.synchWithView(true);
   }
 
   private get _nextId(): string {
