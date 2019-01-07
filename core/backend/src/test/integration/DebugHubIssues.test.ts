@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { assert } from "chai";
-import { OpenMode, ActivityLoggingContext, GuidString, PerfLogger, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { OpenMode, ActivityLoggingContext, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration, PhysicalModel } from "../../imodeljs-backend";
@@ -20,16 +20,16 @@ describe.skip("DebugHubIssues (#integration)", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
+    IModelTestUtils.setupDebugLogLevels();
     accessToken = await HubUtility.login(TestUsers.manager);
+  });
 
-    Logger.initializeToConsole();
-    Logger.setLevelDefault(LogLevel.Warning);
-    // Logger.setLevel("Performance", LogLevel.Info);
-    // Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
+  it.skip("should be able to upload required test files to the Hub", async () => {
+    const projectName = "iModelJsTest";
+    const iModelName = "ReadOnlyTest";
+
+    const iModelDir = path.join(iModelRootDir, iModelName);
+    await HubUtility.pushIModelAndChangeSets(accessToken, projectName, iModelDir);
   });
 
   it.skip("should be able to upload required test files to the Hub", async () => {
@@ -73,7 +73,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to open ReadOnlyTest model", async () => {
-    const projectName = "iModelJsTest";
+    const projectName = "iModelJsIntegrationTest";
     const iModelName = "ReadOnlyTest";
 
     const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
@@ -87,7 +87,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   });
 
   it.skip("should be able to validate change set operations", async () => {
-    const projectName = "iModelJsTest";
+    const projectName = "iModelJsIntegrationTest";
     const iModelName = "ReadOnlyTest";
     const myProjectId = await HubUtility.queryProjectIdByName(accessToken, projectName);
     const myIModelId = await HubUtility.queryIModelIdByName(accessToken, myProjectId, iModelName);
