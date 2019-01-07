@@ -175,7 +175,9 @@ export class ViewAttributes {
     };
 
     const enableAO = (enabled: boolean) => {
-      this._vp.view.viewFlags.ambientOcclusion = enabled;
+      const vf = this._vp.view.viewFlags.clone(this._scratchViewFlags);
+      vf.ambientOcclusion = enabled;
+      this._vp.view.viewFlags = vf;
       showHideDropDowns(enabled);
       this.sync();
     };
@@ -333,7 +335,9 @@ export class ViewAttributes {
     };
 
     const enableMap = (enabled: boolean) => {
-      this._vp.view.viewFlags.backgroundMap = enabled;
+      const vf = this._vp.view.viewFlags.clone(this._scratchViewFlags);
+      vf.backgroundMap = enabled;
+      this._vp.view.viewFlags = vf;
       showHideDropDowns(enabled);
       this.sync();
     };
