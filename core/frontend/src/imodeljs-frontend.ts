@@ -23,6 +23,7 @@ export * from "./ElementLocateManager";
 export * from "./EntityState";
 export * from "./FenceParams";
 export * from "./FuzzySearch";
+export * from "./GeoServices";
 export * from "./HitDetail";
 export * from "./IModelConnection";
 export * from "./ImageUtil";
