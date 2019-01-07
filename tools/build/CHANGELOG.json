@@ -2,6 +2,21 @@
   "name": "@bentley/build-tools",
   "entries": [
     {
+      "version": "0.182.0",
+      "tag": "@bentley/build-tools_v0.182.0",
+      "date": "Mon, 07 Jan 2019 13:31:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added missing dependencies for tslint"
+          },
+          {
+            "comment": "Move to Node 10"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.181.0",
       "tag": "@bentley/build-tools_v0.181.0",
       "date": "Fri, 04 Jan 2019 13:02:40 GMT",

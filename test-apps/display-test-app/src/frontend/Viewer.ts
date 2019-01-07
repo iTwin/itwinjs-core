@@ -28,6 +28,7 @@ import { CategoryPicker } from "./CategoryPicker";
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { StandardRotations } from "./StandardRotations";
 import { TileLoadIndicator } from "./TileLoadIndicator";
+import { addSnapModes } from "./SnapModes";
 import { createComboBox } from "./ComboBox";
 import { toggleIncidentMarkers } from "./IncidentMarkerDemo";
 import { toggleProjectExtents } from "./ProjectExtents";
@@ -133,6 +134,7 @@ export class Viewer {
     this._spinner = document.getElementById("spinner") as HTMLDivElement;
 
     new TileLoadIndicator(document.getElementById("tileLoadIndicatorContainer") as HTMLDivElement, this.viewport);
+    addSnapModes(document.getElementById("snapModesContainer")!);
 
     this.toolBar = new ToolBar(document.getElementById("toolBar")!);
 
