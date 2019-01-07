@@ -849,6 +849,7 @@ export abstract class Target extends RenderTarget {
     vf.grid = false;
     vf.monochrome = false;
     vf.materials = false;
+    vf.ambientOcclusion = false;
 
     const state = BranchState.create(this._stack.top.symbologyOverrides, vf);
     this.pushState(state);
