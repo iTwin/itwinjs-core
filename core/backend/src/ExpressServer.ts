@@ -35,7 +35,7 @@ export class IModelJsExpressServer {
     this._app.all("/**", (_req, res, next) => {
       res.header("Access-Control-Allow-Origin", "*");
       res.header("Access-Control-Allow-Methods", "POST, GET");
-      res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id");
+      res.header("Access-Control-Allow-Headers", "Content-Type, Access-Control-Allow-Headers, Authorization, X-Requested-With, X-Correlation-Id, x-application-version");
       next();
     });
   }
@@ -52,7 +52,7 @@ export class IModelJsExpressServer {
    * Configure the express application with necessary headers, routes, and middleware, then starts listening on the given port.
    * @param port The port to listen on
    */
-  public async initialize(port: number): Promise<HttpServer> {
+  public async initialize(port: number | string): Promise<HttpServer> {
     this._configureMiddleware();
     this._configureHeaders();
     this._configureRoutes();
