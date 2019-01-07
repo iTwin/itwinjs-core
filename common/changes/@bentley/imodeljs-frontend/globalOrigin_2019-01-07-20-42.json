@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Account for global origin when reporting coordinates.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

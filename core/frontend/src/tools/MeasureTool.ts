@@ -140,6 +140,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       totalDistance += points[i].distance(points[i + 1]);
     if (0.0 === totalDistance)
       return;
+    // NEEDSWORK: Need method to request formatter map load and returns current status. Can ignore if map isn't loaded yet...
     const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(totalDistance, QuantityType.Length);
     if (undefined === formattedTotalDistance)
       return;
@@ -267,6 +268,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       this._totalDistance += seg.distance;
     if (0.0 === this._totalDistance)
       return;
+    // NEEDSWORK: Need async methods and await answer!
     const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(this._totalDistance, QuantityType.Length);
     if (undefined === formattedTotalDistance)
       return;
@@ -280,6 +282,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
   public getMarkerToolTip(distance: number, slope: number, start: Point3d, end: Point3d, delta?: Vector3d): string {
     let toolTip = "";
 
+    // NEEDSWORK: Need async methods and await answer!
     const formattedDistance = IModelApp.quantityFormatter.formatQuantity(distance, QuantityType.Length);
     if (undefined !== formattedDistance)
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Distance}:</b> ") + formattedDistance + "<br>";
@@ -288,15 +291,23 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (undefined !== formattedSlope)
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Slope}:</b> ") + formattedSlope + "<br>";
 
-    const formattedStartX = IModelApp.quantityFormatter.formatQuantity(start.x, QuantityType.Length);
-    const formattedStartY = IModelApp.quantityFormatter.formatQuantity(start.y, QuantityType.Length);
-    const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(start.z, QuantityType.Length);
+    let startAdjusted = start;
+    let endAdjusted = end;
+    if (undefined !== this.targetView && this.targetView.view.isSpatialView()) {
+      const globalOrigin = this.iModel.globalOrigin;
+      startAdjusted = startAdjusted.minus(globalOrigin);
+      endAdjusted = endAdjusted.minus(globalOrigin);
+    }
+
+    const formattedStartX = IModelApp.quantityFormatter.formatQuantity(startAdjusted.x, QuantityType.Length);
+    const formattedStartY = IModelApp.quantityFormatter.formatQuantity(startAdjusted.y, QuantityType.Length);
+    const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(startAdjusted.z, QuantityType.Length);
     if (undefined !== formattedStartX && undefined !== formattedStartY && undefined !== formattedStartZ)
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.StartCoord}:</b> ") + formattedStartX + ", " + formattedStartY + ", " + formattedStartZ + "<br>";
 
-    const formattedEndX = IModelApp.quantityFormatter.formatQuantity(end.x, QuantityType.Length);
-    const formattedEndY = IModelApp.quantityFormatter.formatQuantity(end.y, QuantityType.Length);
-    const formattedEndZ = IModelApp.quantityFormatter.formatQuantity(end.z, QuantityType.Length);
+    const formattedEndX = IModelApp.quantityFormatter.formatQuantity(endAdjusted.x, QuantityType.Length);
+    const formattedEndY = IModelApp.quantityFormatter.formatQuantity(endAdjusted.y, QuantityType.Length);
+    const formattedEndZ = IModelApp.quantityFormatter.formatQuantity(endAdjusted.z, QuantityType.Length);
     if (undefined !== formattedEndX && undefined !== formattedEndY && undefined !== formattedEndZ)
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.EndCoord}:</b> ") + formattedEndX + ", " + formattedEndY + ", " + formattedEndZ + "<br>";
 
@@ -452,6 +463,97 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
   public onRestartTool(): void {
     const tool = new MeasureDistanceTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+}
+
+/** @hidden */
+export class MeasureLocationTool extends PrimitiveTool {
+  public static toolId = "Measure.Location";
+  protected readonly _acceptedLocations: MeasureMarker[] = [];
+
+  public requireWriteableTarget(): boolean { return false; }
+  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+
+  public onUnsuspend(): void { this.showPrompt(); }
+  protected showPrompt(): void { "CoreTools:tools.Measure.Location.Prompts.EnterPoint"; }
+
+  public setupAndPromptForNextAction(): void {
+    IModelApp.accuSnap.enableSnap(true);
+    IModelApp.accuDraw.deactivate(); // Don't enable AccuDraw automatically when starting dynamics.
+    this.showPrompt();
+  }
+
+  public getMarkerToolTip(point: Point3d): string {
+    let toolTip = "";
+
+    let pointAdjusted = point;
+    if (undefined !== this.targetView && this.targetView.view.isSpatialView()) {
+      const globalOrigin = this.iModel.globalOrigin;
+      pointAdjusted = pointAdjusted.minus(globalOrigin);
+    }
+
+    // NEEDSWORK: Must call async version that can await answer!
+    const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, QuantityType.Length);
+    const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, QuantityType.Length);
+    const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, QuantityType.Length);
+    if (undefined !== formattedPointX && undefined !== formattedPointY && undefined !== formattedPointZ)
+      toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Coordinate}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
+
+    return toolTip;
+  }
+
+  public decorate(context: DecorateContext): void { this._acceptedLocations.forEach((marker) => marker.addDecoration(context)); }
+  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    const point = ev.point.clone();
+    const toolTip = this.getMarkerToolTip(point);
+    const marker = new MeasureMarker((this._acceptedLocations.length + 1).toString(), toolTip, point, Point2d.create(25, 25));
+
+    const noOpButtonFunc = (_ev: BeButtonEvent) => true;
+    marker.onMouseButton = noOpButtonFunc;
+
+    this._acceptedLocations.push(marker);
+    this.setupAndPromptForNextAction();
+    if (undefined !== ev.viewport)
+      ev.viewport.invalidateDecorations();
+    return EventHandled.No;
+  }
+
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    this.onReinitialize();
+    return EventHandled.No;
+  }
+
+  public onUndoPreviousStep(): boolean {
+    if (0 === this._acceptedLocations.length)
+      return false;
+
+    this._acceptedLocations.pop();
+    if (0 === this._acceptedLocations.length)
+      this.onReinitialize();
+    else
+      this.setupAndPromptForNextAction();
+    return true;
+  }
+
+  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> { // NEEDSWORK: Element undo and last datapoint undo button needs to be part of UI/ToolAdmin...
+    if (wentDown) {
+      switch (keyEvent.key) {
+        case "z":
+        case "Z":
+          if (keyEvent.ctrlKey)
+            this.undoPreviousStep();
+          break;
+      }
+    }
+    return EventHandled.No;
+  }
+
+  public onRestartTool(): void {
+    const tool = new MeasureLocationTool();
     if (!tool.run())
       this.exitTool();
   }
