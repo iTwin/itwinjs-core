@@ -109,7 +109,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public onUndoPreviousStep(): boolean {
+  public async onUndoPreviousStep(): Promise<boolean> {
     if (0 === this.points.length)
       return false;
 
@@ -137,7 +137,10 @@ export class DrawingAidTestTool extends PrimitiveTool {
           AccuDrawShortcuts.lockY();
           break;
         case "z":
-          AccuDrawShortcuts.lockZ();
+          if (keyEvent.ctrlKey)
+            await this.undoPreviousStep();
+          else
+            AccuDrawShortcuts.lockZ();
           break;
         case "a":
           AccuDrawShortcuts.lockAngle();
