@@ -130,6 +130,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/presentation-testing",
+      "projectFolder": "presentation/testing",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/ui-core",
       "projectFolder": "ui/core",
       "reviewCategory": "frontend",

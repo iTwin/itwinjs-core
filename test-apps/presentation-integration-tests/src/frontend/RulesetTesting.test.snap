@@ -1,0 +1,411 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`RulesetTesting generates correct hierarchy for 'Items' ruleset 1`] = `
+Array [
+  Object {
+    "children": Array [
+      Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [
+                  Object {
+                    "children": Array [
+                      Object {
+                        "children": Array [
+                          Object {
+                            "label": "Physical Object-0-38",
+                          },
+                          Object {
+                            "label": "Physical Object-0-39",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                          Object {
+                            "label": "TestClass",
+                          },
+                        ],
+                        "description": "The Spatial Category used to categorize the 3D Geometric Element",
+                        "hasChildren": true,
+                        "label": "Uncategorized",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "label": "Properties_60InstancesWithUrl2",
+                  },
+                ],
+                "hasChildren": true,
+                "label": "Properties_60InstancesWithUrl2",
+              },
+              Object {
+                "label": "Converted Drawings",
+              },
+              Object {
+                "label": "Converted Groups",
+              },
+              Object {
+                "label": "Converted Sheets",
+              },
+              Object {
+                "children": Array [
+                  Object {
+                    "children": Array [
+                      Object {
+                        "label": "Default - View 2",
+                      },
+                      Object {
+                        "label": "Default - View 3",
+                      },
+                      Object {
+                        "label": "Default - View 4",
+                      },
+                      Object {
+                        "label": "Illustration",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "label": "3D Display Style",
+                  },
+                  Object {
+                    "children": Array [
+                      Object {
+                        "label": "Default - View 1",
+                      },
+                      Object {
+                        "label": "Default - View 2",
+                      },
+                      Object {
+                        "label": "Default - View 3",
+                      },
+                      Object {
+                        "label": "Default - View 4",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "label": "Category Selector",
+                  },
+                  Object {
+                    "children": Array [
+                      Object {
+                        "children": Array [
+                          Object {
+                            "label": "Uncategorized",
+                          },
+                        ],
+                        "hasChildren": true,
+                        "label": "Uncategorized",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "label": "Drawing Category",
+                  },
+                  Object {
+                    "children": Array [
+                      Object {
+                        "label": "Default - View 1",
+                      },
+                      Object {
+                        "label": "Default - View 2",
+                      },
+                      Object {
+                        "label": "Default - View 3",
+                      },
+                      Object {
+                        "label": "Default - View 4",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "label": "Model Selector",
+                  },
+                  Object {
+                    "children": Array [
+                      Object {
+                        "label": "Default - View 1",
+                      },
+                      Object {
+                        "label": "Default - View 2",
+                      },
+                      Object {
+                        "label": "Default - View 3",
+                      },
+                      Object {
+                        "label": "Default - View 4",
+                      },
+                    ],
+                    "description": "A spatial coordinate system.",
+                    "hasChildren": true,
+                    "label": "Spatial Auxiliary Coordinate System",
+                  },
+                  Object {
+                    "children": Array [
+                      Object {
+                        "children": Array [
+                          Object {
+                            "label": "Uncategorized",
+                          },
+                        ],
+                        "hasChildren": true,
+                        "label": "Uncategorized",
+                      },
+                    ],
+                    "hasChildren": true,
+                    "label": "Spatial Category",
+                  },
+                  Object {
+                    "children": Array [
+                      Object {
+                        "label": "Default - View 1",
+                      },
+                      Object {
+                        "label": "Default - View 2",
+                      },
+                      Object {
+                        "label": "Default - View 3",
+                      },
+                      Object {
+                        "label": "Default - View 4",
+                      },
+                    ],
+                    "description": "A view of a spatially located volume.",
+                    "hasChildren": true,
+                    "label": "Spatial View Definition",
+                  },
+                ],
+                "hasChildren": true,
+                "label": "Definition Model For DgnV8Bridge:D:\\\\Temp\\\\Properties_60InstancesWithUrl2.dgn, Default",
+              },
+            ],
+            "hasChildren": true,
+            "label": "DgnV8Bridge:D:\\\\Temp\\\\Properties_60InstancesWithUrl2.dgn, Default",
+          },
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [
+                  Object {
+                    "label": "lc1",
+                  },
+                  Object {
+                    "label": "lc2",
+                  },
+                  Object {
+                    "label": "lc3",
+                  },
+                  Object {
+                    "label": "lc4",
+                  },
+                  Object {
+                    "label": "lc5",
+                  },
+                  Object {
+                    "label": "lc6",
+                  },
+                  Object {
+                    "label": "lc7",
+                  },
+                ],
+                "hasChildren": true,
+                "label": "Line Style",
+              },
+            ],
+            "hasChildren": true,
+            "label": "BisCore.DictionaryModel",
+          },
+          Object {
+            "label": "BisCore.RealityDataSources",
+          },
+        ],
+        "hasChildren": true,
+        "label": "DgnV8Bridge",
+      },
+    ],
+    "description": "test nested value",
+    "hasChildren": true,
+    "label": "test value",
+  },
+]
+`;
+
+exports[`RulesetTesting generates correct hierarchy for 'default' ruleset 1`] = `
+Array [
+  Object {
+    "label": "root",
+  },
+]
+`;

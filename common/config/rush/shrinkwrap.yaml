@@ -30,6 +30,7 @@ dependencies:
   '@rush-temp/presentation-frontend': 'file:projects/presentation-frontend.tgz'
   '@rush-temp/presentation-integration-tests': 'file:projects/presentation-integration-tests.tgz'
   '@rush-temp/presentation-test-app': 'file:projects/presentation-test-app.tgz'
+  '@rush-temp/presentation-testing': 'file:projects/presentation-testing.tgz'
   '@rush-temp/test-apps-analysis-importer': 'file:projects/test-apps-analysis-importer.tgz'
   '@rush-temp/test-apps-synchro-schedule-importer': 'file:projects/test-apps-synchro-schedule-importer.tgz'
   '@rush-temp/testbed': 'file:projects/testbed.tgz'
@@ -62,6 +63,7 @@ dependencies:
   '@types/i18next-node-fs-backend': 0.0.30
   '@types/i18next-xhr-backend': 1.4.1
   '@types/js-base64': 2.3.1
+  '@types/jsdom': 12.2.1
   '@types/json5': 0.0.30
   '@types/lodash': 4.14.119
   '@types/lolex': 2.1.3
@@ -164,6 +166,7 @@ dependencies:
   license-webpack-plugin: 1.5.0
   lodash: 4.17.11
   lolex: 2.7.5
+  make-dir: 1.3.0
   make-dir-cli: 1.0.0
   merge-json: 0.1.0-b.3
   mini-css-extract-plugin: 0.4.5
@@ -738,6 +741,14 @@ packages:
     dev: false
     resolution:
       integrity: sha512-4RKbhIDGC87s4EBy2Cp2/5S2O6kmCRcZnD5KRCq1q9z2GhBte1+BdsfVKCpG8yKpDGNyEE2G6IqFIh6W2YwWPA==
+  /@types/jsdom/12.2.1:
+    dependencies:
+      '@types/node': 10.10.3
+      '@types/tough-cookie': 2.3.4
+      parse5: 4.0.0
+    dev: false
+    resolution:
+      integrity: sha512-VnLP1qW70OkzpMVuFsJPhxeIzEW1y+t91Fa2rE+b3UZ3ZiTwB28pYrdNj58wa0AQ+dV7eIBcdMFl3ql9C+cc9g==
   /@types/json5/0.0.29:
     dev: false
     resolution:
@@ -942,6 +953,10 @@ packages:
     dev: false
     resolution:
       integrity: sha512-42zEJkBpNfMEAvWR5WlwtTH22oDzcMjFsL9gDGExwF8X8WvAiw7Vwop7hPw03QT8TKfec83LwbHj6SvpqM4ELQ==
+  /@types/tough-cookie/2.3.4:
+    dev: false
+    resolution:
+      integrity: sha512-Set5ZdrAaKI/qHdFlVMgm/GsAv/wkXhSTuZFkJ+JI7HK+wIkIlOaUXSXieIvJ0+OvGIqtREFoE+NHJtEq0gtEw==
   /@types/uglify-js/3.0.4:
     dependencies:
       source-map: 0.6.1
@@ -14238,6 +14253,30 @@ packages:
       integrity: sha512-CLo2Tq5/hB0DEVvI2DfUj4x/AiTodACWdaEyHcv4YRUeVgB1OGLo3dbCQL8T8RdcoqvywpXiQ+kVuRLIfNMkmQ==
       tarball: 'file:projects/presentation-test-app.tgz'
     version: 0.0.0
+  'file:projects/presentation-testing.tgz':
+    dependencies:
+      '@types/chai': 4.1.7
+      '@types/chai-jest-snapshot': 1.3.4
+      '@types/jsdom': 12.2.1
+      '@types/mocha': 5.2.5
+      '@types/rimraf': 2.0.2
+      chai: 4.2.0
+      chai-jest-snapshot: /chai-jest-snapshot/2.0.0/chai@4.2.0
+      cross-env: 5.2.0
+      jsdom-global: 3.0.2
+      make-dir: 1.3.0
+      mocha: 5.2.0
+      nyc: 13.1.0
+      rimraf: 2.6.3
+      tslint: /tslint/5.12.0/typescript@3.1.6
+      typemoq: 2.1.0
+      typescript: 3.1.6
+    dev: false
+    name: '@rush-temp/presentation-testing'
+    resolution:
+      integrity: sha512-OrfNJoBEgENXt8NjaK6vs8cHBvamPEiK4BlZHjWthxb1oZrMcV1IeGhJ2XGNkeOO9ZS2S4YT3lF8jn7dDtBk6A==
+      tarball: 'file:projects/presentation-testing.tgz'
+    version: 0.0.0
   'file:projects/test-apps-analysis-importer.tgz':
     dependencies:
       '@types/body-parser': 1.17.0
@@ -14476,6 +14515,7 @@ packages:
       '@types/react': 16.7.18
       '@types/react-dom': 16.0.7
       '@types/react-redux': 5.0.21
+      '@types/rimraf': 2.0.2
       '@types/sinon': 5.0.7
       '@types/sinon-chai': 3.2.2
       chai: 4.2.0
@@ -14834,6 +14874,7 @@ specifiers:
   '@rush-temp/presentation-frontend': 'file:./projects/presentation-frontend.tgz'
   '@rush-temp/presentation-integration-tests': 'file:./projects/presentation-integration-tests.tgz'
   '@rush-temp/presentation-test-app': 'file:./projects/presentation-test-app.tgz'
+  '@rush-temp/presentation-testing': 'file:./projects/presentation-testing.tgz'
   '@rush-temp/test-apps-analysis-importer': 'file:./projects/test-apps-analysis-importer.tgz'
   '@rush-temp/test-apps-synchro-schedule-importer': 'file:./projects/test-apps-synchro-schedule-importer.tgz'
   '@rush-temp/testbed': 'file:./projects/testbed.tgz'
@@ -14866,6 +14907,7 @@ specifiers:
   '@types/i18next-node-fs-backend': 0.0.30
   '@types/i18next-xhr-backend': ^1.4.1
   '@types/js-base64': ^2.3.1
+  '@types/jsdom': ^12.2.0
   '@types/json5': 0.0.30
   '@types/lodash': ^4.14.0
   '@types/lolex': ^2.1.2
@@ -14968,6 +15010,7 @@ specifiers:
   license-webpack-plugin: ^1.3.1
   lodash: ^4.17.10
   lolex: ^2.7.1
+  make-dir: ^1.3.0
   make-dir-cli: ^1.0.0
   merge-json: 0.1.0-b.3
   mini-css-extract-plugin: ^0.4.0

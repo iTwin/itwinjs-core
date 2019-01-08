@@ -27,6 +27,13 @@ describe("Utils", () => {
       expect(treeNode).to.matchSnapshot();
     });
 
+    it("creates tree node with custom label styles", () => {
+      const node = createRandomECInstanceNode();
+      node.fontStyle = "Bold Italic";
+      const treeNode = createTreeNodeItem(node);
+      expect(treeNode).to.matchSnapshot();
+    });
+
   });
 
   describe("createTreeNodeItems", () => {

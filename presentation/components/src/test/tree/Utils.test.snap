@@ -2,8 +2,6 @@
 
 exports[`Utils createTreeNodeItem creates tree node 1`] = `
 Object {
-  "checkBoxState": 0,
-  "description": undefined,
   "extendedData": Object {
     "key": Object {
       "instanceKey": Object {
@@ -17,22 +15,40 @@ Object {
       "type": "ECInstanceNode",
     },
   },
-  "hasChildren": false,
   "id": "19fb96ab-449d-4f28-a09d-cff691955c55/b5c02a04-6127-4f62-b128-58488bc1c9d1",
-  "isCheckboxDisabled": true,
-  "isCheckboxVisible": false,
   "label": "engage",
   "labelBackColor": -2027626753,
-  "labelBold": false,
-  "labelForeColor": undefined,
-  "labelItalic": false,
-  "parentId": undefined,
+}
+`;
+
+exports[`Utils createTreeNodeItem creates tree node with custom label styles 1`] = `
+Object {
+  "description": "Voluptate consequuntur eum quaerat.",
+  "extendedData": Object {
+    "key": Object {
+      "instanceKey": Object {
+        "className": "Configuration",
+        "id": "0xa95e0000010601",
+      },
+      "pathFromRoot": Array [
+        "774cdc48-ca2b-4104-8800-7ce7a4f6d779",
+        "f7dd0ef0-a772-4c3d-b03a-40a84a6a8c62",
+      ],
+      "type": "ECInstanceNode",
+    },
+  },
+  "hasChildren": true,
+  "id": "f7dd0ef0-a772-4c3d-b03a-40a84a6a8c62/774cdc48-ca2b-4104-8800-7ce7a4f6d779",
+  "label": "Avon Awesome Plastic Salad",
+  "labelBackColor": -1829999873,
+  "labelBold": true,
+  "labelForeColor": -166204673,
+  "labelItalic": true,
 }
 `;
 
 exports[`Utils createTreeNodeItem creates tree node with parent id 1`] = `
 Object {
-  "checkBoxState": 1,
   "description": "Et velit aperiam sed aut.",
   "extendedData": Object {
     "key": Object {
@@ -49,13 +65,7 @@ Object {
   },
   "hasChildren": true,
   "id": "0b80175c-270d-4a1a-bba3-14ef8866c2a1/df9c559d-a389-4bc4-aef0-a5d0cb8b62e6",
-  "isCheckboxDisabled": true,
-  "isCheckboxVisible": false,
   "label": "Indian Rupee Rufiyaa systems",
-  "labelBackColor": undefined,
-  "labelBold": false,
-  "labelForeColor": undefined,
-  "labelItalic": false,
   "parentId": "Dynamic",
 }
 `;
@@ -78,20 +88,12 @@ Array [
         "type": "ECInstanceNode",
       },
     },
-    "hasChildren": false,
     "id": "e845ce78-d049-4079-8e52-c1852841f2dd/4dcb61ac-32e0-49da-bf7d-e66ed5ccf6b5",
-    "isCheckboxDisabled": false,
     "isCheckboxVisible": true,
     "label": "intranet Executive",
     "labelBackColor": 99406079,
-    "labelBold": false,
-    "labelForeColor": undefined,
-    "labelItalic": false,
-    "parentId": undefined,
   },
   Object {
-    "checkBoxState": 1,
-    "description": undefined,
     "extendedData": Object {
       "key": Object {
         "instanceKey": Object {
@@ -105,16 +107,8 @@ Array [
         "type": "ECInstanceNode",
       },
     },
-    "hasChildren": false,
     "id": "1892b75e-f471-4908-bcd9-caf25d633b21/4ed5eba5-6260-4081-9375-0f3daeabb142",
-    "isCheckboxDisabled": false,
-    "isCheckboxVisible": false,
     "label": "Buckinghamshire",
-    "labelBackColor": undefined,
-    "labelBold": false,
-    "labelForeColor": undefined,
-    "labelItalic": false,
-    "parentId": undefined,
   },
 ]
 `;
@@ -143,13 +137,9 @@ Array [
     "isCheckboxVisible": true,
     "label": "Haiti",
     "labelBackColor": 480516607,
-    "labelBold": false,
-    "labelForeColor": undefined,
-    "labelItalic": false,
     "parentId": "Functionality",
   },
   Object {
-    "checkBoxState": 0,
     "description": "Voluptas cupiditate rerum consequatur illum unde molestiae quam.",
     "extendedData": Object {
       "key": Object {
@@ -164,15 +154,12 @@ Array [
         "type": "ECInstanceNode",
       },
     },
-    "hasChildren": false,
     "id": "7bda1c50-0d4d-45d6-bc09-e4f2bdad7ba2/d29db17a-7270-42f3-a398-05abe6ed9fcd",
     "isCheckboxDisabled": true,
     "isCheckboxVisible": true,
     "label": "SSL methodologies Berkshire",
     "labelBackColor": 1088423167,
-    "labelBold": false,
     "labelForeColor": 944178687,
-    "labelItalic": false,
     "parentId": "Functionality",
   },
 ]

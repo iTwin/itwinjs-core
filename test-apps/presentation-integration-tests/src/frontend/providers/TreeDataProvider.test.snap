@@ -3,27 +3,19 @@
 exports[`TreeDataProvider returns child nodes 1`] = `
 Array [
   Object {
-    "checkBoxState": 0,
     "description": "child description",
-    "displayCheckBox": false,
     "extendedData": Object {
       "key": Object {
         "pathFromRoot": Array [
-          "8e630efad717271b2c905be6a92ed0b5",
-          "7f7a67ec734418027c1aa259c1fe2adb",
+          "64e31cdc690e6d628b36f761e4074754",
+          "8ca7a2f0af9eb677d127a4d2d299bc9b",
         ],
         "type": "child",
       },
     },
-    "hasChildren": false,
-    "id": "7f7a67ec734418027c1aa259c1fe2adb/8e630efad717271b2c905be6a92ed0b5",
-    "isCheckBoxEnabled": false,
+    "id": "8ca7a2f0af9eb677d127a4d2d299bc9b/64e31cdc690e6d628b36f761e4074754",
     "label": "child label",
-    "labelBackColor": undefined,
-    "labelBold": false,
-    "labelForeColor": undefined,
-    "labelItalic": false,
-    "parentId": "8e630efad717271b2c905be6a92ed0b5",
+    "parentId": "64e31cdc690e6d628b36f761e4074754",
   },
 ]
 `;
@@ -33,24 +25,23 @@ Array [
   Object {
     "checkBoxState": 1,
     "description": "root description",
-    "displayCheckBox": true,
     "extendedData": Object {
       "key": Object {
         "pathFromRoot": Array [
-          "8e630efad717271b2c905be6a92ed0b5",
+          "64e31cdc690e6d628b36f761e4074754",
         ],
         "type": "root",
       },
     },
     "hasChildren": true,
-    "id": "8e630efad717271b2c905be6a92ed0b5",
-    "isCheckBoxEnabled": false,
+    "id": "64e31cdc690e6d628b36f761e4074754",
+    "isCheckboxDisabled": true,
+    "isCheckboxVisible": true,
     "label": "root label",
     "labelBackColor": 8388863,
     "labelBold": true,
     "labelForeColor": 4278190335,
     "labelItalic": true,
-    "parentId": undefined,
   },
 ]
 `;

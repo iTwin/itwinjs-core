@@ -42,6 +42,7 @@
     "@bentley/imodeljs-clients": "0.183.0",
     "@bentley/presentation-common": "0.183.0",
     "@bentley/presentation-frontend": "0.183.0",
+    "@bentley/presentation-testing": "0.183.0",
     "@bentley/ui-core": "0.183.0",
     "@bentley/ui-components": "0.183.0",
     "@bentley/ui-ninezone": "0.183.0"
@@ -61,6 +62,7 @@
     "@bentley/imodeljs-clients": "0.183.0",
     "@bentley/presentation-common": "0.183.0",
     "@bentley/presentation-frontend": "0.183.0",
+    "@bentley/presentation-testing": "0.183.0",
     "@bentley/ui-core": "0.183.0",
     "@bentley/ui-components": "0.183.0",
     "@bentley/ui-ninezone": "0.183.0",
@@ -76,6 +78,7 @@
     "@types/react": "^16.4.14",
     "@types/react-dom": "16.0.7",
     "@types/react-redux": "^5.0.15",
+    "@types/rimraf": "^2.0.2",
     "@types/sinon": "^5.0.5",
     "@types/sinon-chai": "^3.2.0",
     "chai": "^4.1.2",
@@ -100,15 +103,19 @@
     "source-map-loader": "^0.2.3",
     "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
+    "tslint": "^5.11.0",
     "typedoc": "^0.11.1",
     "typedoc-plugin-external-module-name": "^1.1.1",
     "typemoq": "^2.1.0",
     "typescript": "~3.1.0",
-    "tslint": "^5.11.0",
-    "xmlhttprequest": "^1.8.0",
     "webpack": "^4.20.2",
-    "webpack-cli": "^3.1.0"
+    "webpack-cli": "^3.1.0",
+    "xmlhttprequest": "^1.8.0"
   },
+  "//dependencies": [
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
+    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
+  ],
   "dependencies": {
     "@bentley/bwc": "^7.1.0",
     "@bentley/icons-generic-webfont": "^0.0.6",

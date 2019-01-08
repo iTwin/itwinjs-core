@@ -9,6 +9,15 @@ import { YawPitchRollAngles, Point3d } from "@bentley/geometry-core";
 import * as Yargs from "yargs";
 import { readFileSync, writeFileSync, unlinkSync } from "fs";
 
+interface ImportInputArgs {
+    input: string;
+    createDuplicateIbim: boolean;
+    fixRange: boolean;
+    script: string;
+    createSeparateScript: boolean;
+    duplicateIbim: boolean;
+}
+
 function doFixRange(iModel: IModelDb) {
     const totalRange = new AxisAlignedBox3d();
 
@@ -183,7 +192,8 @@ function doAddAnimationScript(iModel: IModelDb, animationScript: string, createS
     });
     return true;
 }
-function doImport(inputArgs: Yargs.Arguments<{}>) {
+
+function doImport(inputArgs: Yargs.Arguments<ImportInputArgs>) {
     let originalIModel: IModelDb;
 
     try {
@@ -229,7 +239,7 @@ Yargs.default("createSeparateScript", true, "Create a separate file with the JSO
 Yargs.default("createDuplicateIbim", true, "Create a duplicate IBIM with the imported script (rather than writing to original)");
 Yargs.required("script", "Animation script JSON file");
 Yargs.string("script");
-const args = Yargs.parse();
+const args = Yargs.parse() as Yargs.Arguments<ImportInputArgs>;
 
 IModelHost.startup(new IModelHostConfiguration());
 doImport(args);

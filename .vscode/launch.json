@@ -414,6 +414,20 @@
     {
       "type": "node",
       "request": "launch",
+      "name": "[Presentation] Tests: Testing",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/presentation/testing/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/presentation/testing",
+      "args": [
+        "--opts",
+        "mocha.opts",
+        "--no-timeouts",
+        "lib/test/**/*.test.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
       "name": "[Presentation] Tests: Integration",
       "program": "${workspaceFolder}/test-apps/presentation-integration-tests/node_modules/mocha/bin/_mocha",
       "cwd": "${workspaceFolder}/test-apps/presentation-integration-tests",

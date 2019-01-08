@@ -1,0 +1,34 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`HierarchyBuilder createHierarchy with data returns correct hierarchy 1`] = `
+Array [
+  Object {
+    "children": Array [
+      Object {
+        "label": "Child 1",
+      },
+      Object {
+        "label": "Child 2",
+      },
+    ],
+    "hasChildren": true,
+    "label": "Root Node",
+  },
+]
+`;
+
+exports[`HierarchyBuilder createHierarchy with data returns correct hierarchy with custom node mapping function 1`] = `
+Array [
+  Object {
+    "children": Array [
+      Object {
+        "id": "child1/root",
+      },
+      Object {
+        "id": "child2/root",
+      },
+    ],
+    "id": "root",
+  },
+]
+`;
