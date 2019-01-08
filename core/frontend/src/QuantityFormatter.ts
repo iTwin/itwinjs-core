@@ -404,15 +404,36 @@ export class QuantityFormatter implements UnitsProvider {
   /** Call to get a FormatterSpec of a QuantityType. If the FormatterSpec is not yet cached an undefined object is returned. The
    * cache is populated by the async call loadFormatSpecsForQuantityTypes.
    */
-  protected getFormatterSpecByQuantityType(type: QuantityType, imperial: boolean): FormatterSpec | undefined {
-    const activeMap = imperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
+  public findFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): FormatterSpec | undefined {
+    const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
+    const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
     if (activeMap.size === 0) {
       // trigger a load so it will become available
-      this.loadFormatSpecsForQuantityTypes(imperial); // tslint:disable-line:no-floating-promises
+      this.loadFormatSpecsForQuantityTypes(useImperial); // tslint:disable-line:no-floating-promises
       return undefined;
     }
 
     return activeMap.get(type);
+  }
+
+  /** Call to get a FormatterSpec of a QuantityType. If the FormatterSpec is not yet cached an undefined object is returned. The
+   * cache is populated by the async call loadFormatSpecsForQuantityTypes.
+   */
+  public async getFormatterSpecByQuantityType(type: QuantityType, imperial?: boolean): Promise<FormatterSpec> {
+    const useImperial = undefined !== imperial ? imperial : this._activeSystemIsImperial;
+    const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
+    if (activeMap.size > 0)
+      return Promise.resolve(activeMap.get(type) as FormatterSpec);
+
+    return this.loadFormatSpecsForQuantityTypes(useImperial)
+      .then(() => { // tslint:disable-line
+        if (activeMap.size > 0) {
+          const spec = activeMap.get(type);
+          if (spec)
+            return Promise.resolve(spec as FormatterSpec);
+        }
+        throw new Error("Unable to load FormatSpecs");
+      });
   }
 
   /** Async call to loadFormatSpecsForQuantityTypes */
@@ -450,10 +471,19 @@ export class QuantityFormatter implements UnitsProvider {
    * @return the formatted string or undefined if no FormatterSpec has been registered for the QuantityType.
    */
   public formatQuantity(magnitude: number, type: QuantityType): string | undefined {
-    const formatSpec = this.getFormatterSpecByQuantityType(type, this._activeSystemIsImperial);
+    const formatSpec = this.findFormatterSpecByQuantityType(type, this._activeSystemIsImperial);
     if (formatSpec === undefined)
       return undefined;
 
+    return Formatter.formatQuantity(magnitude, formatSpec);
+  }
+
+  /** Generates a formatted string for a quantity given its format spec.
+   * @param magnitude       The magnitude of the quantity.
+   * @param type            One of the standard QuantityTypes.
+   * @return the formatted string.
+   */
+  public formatQuantityWithSpec(magnitude: number, formatSpec: FormatterSpec): string {
     return Formatter.formatQuantity(magnitude, formatSpec);
   }
 

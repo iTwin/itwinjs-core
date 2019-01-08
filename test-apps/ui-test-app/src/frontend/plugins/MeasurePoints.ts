@@ -113,15 +113,20 @@ export class MeasurePointsTool extends PrimitiveTool {
 
     const distance = tmpPoints[tmpPoints.length - 1].distance(tmpPoints[tmpPoints.length - 2]);
     if (distance !== 0.0) {
-      const formattedValue = IModelApp.quantityFormatter.formatQuantity(distance, QuantityType.Length);
-      if (formattedValue) {
-        // for now only show marker a cursor, but tool is set up to also allow marker a each point
-        if (this._measurements.length === 0)
-          this._measurements.push(new DistanceMarker(tmpPoints[tmpPoints.length - 1], formattedValue));
-        else
-          this._measurements[0] = new DistanceMarker(tmpPoints[tmpPoints.length - 1], formattedValue);
+      const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+      if (formatterSpec) {
+        const formattedValue = IModelApp.quantityFormatter.formatQuantityWithSpec(distance, formatterSpec);
+        if (formattedValue) {
+          // for now only show marker a cursor, but tool is set up to also allow marker a each point
+          if (this._measurements.length === 0)
+            this._measurements.push(new DistanceMarker(tmpPoints[tmpPoints.length - 1], formattedValue));
+          else
+            this._measurements[0] = new DistanceMarker(tmpPoints[tmpPoints.length - 1], formattedValue);
+        }
+      } else {
+        // async call to load formatterSpec into formatter cache
+        IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
       }
-
     }
     const builder = context.createSceneGraphicBuilder();
 

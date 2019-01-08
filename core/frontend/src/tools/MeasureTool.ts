@@ -140,10 +140,11 @@ export class MeasureDistanceTool extends PrimitiveTool {
       totalDistance += points[i].distance(points[i + 1]);
     if (0.0 === totalDistance)
       return;
-    // NEEDSWORK: Need method to request formatter map load and returns current status. Can ignore if map isn't loaded yet...
-    const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(totalDistance, QuantityType.Length);
-    if (undefined === formattedTotalDistance)
+
+    const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    if (undefined === formatterSpec)
       return;
+    const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantityWithSpec(totalDistance, formatterSpec);
     const distDyn = new MeasureLabel(points[points.length - 1], formattedTotalDistance);
     distDyn.addDecoration(context);
   }
@@ -268,8 +269,13 @@ export class MeasureDistanceTool extends PrimitiveTool {
       this._totalDistance += seg.distance;
     if (0.0 === this._totalDistance)
       return;
-    // NEEDSWORK: Need async methods and await answer!
-    const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(this._totalDistance, QuantityType.Length);
+
+    // use await IModelApp.quantityFormatter.getFormatterSpecByQuantityType to wait for spec
+    const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    if (undefined === formatterSpec)
+      return;
+
+    const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantityWithSpec(this._totalDistance, formatterSpec);
     if (undefined === formattedTotalDistance)
       return;
     this._totalDistanceMarker = new MeasureLabel(this._acceptedSegments[this._acceptedSegments.length - 1].end, formattedTotalDistance);
@@ -280,16 +286,21 @@ export class MeasureDistanceTool extends PrimitiveTool {
   }
 
   public getMarkerToolTip(distance: number, slope: number, start: Point3d, end: Point3d, delta?: Vector3d): string {
+    const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    if (undefined === formatterSpec)
+      return "";
+
     let toolTip = "";
 
-    // NEEDSWORK: Need async methods and await answer!
-    const formattedDistance = IModelApp.quantityFormatter.formatQuantity(distance, QuantityType.Length);
+    const formattedDistance = IModelApp.quantityFormatter.formatQuantityWithSpec(distance, formatterSpec);
     if (undefined !== formattedDistance)
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Distance}:</b> ") + formattedDistance + "<br>";
 
-    const formattedSlope = IModelApp.quantityFormatter.formatQuantity(slope, QuantityType.Angle);
-    if (undefined !== formattedSlope)
+    const angleFormatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Angle);
+    if (angleFormatterSpec) {
+      const formattedSlope = IModelApp.quantityFormatter.formatQuantityWithSpec(slope, angleFormatterSpec);
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Slope}:</b> ") + formattedSlope + "<br>";
+    }
 
     let startAdjusted = start;
     let endAdjusted = end;
@@ -299,22 +310,22 @@ export class MeasureDistanceTool extends PrimitiveTool {
       endAdjusted = endAdjusted.minus(globalOrigin);
     }
 
-    const formattedStartX = IModelApp.quantityFormatter.formatQuantity(startAdjusted.x, QuantityType.Length);
-    const formattedStartY = IModelApp.quantityFormatter.formatQuantity(startAdjusted.y, QuantityType.Length);
-    const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(startAdjusted.z, QuantityType.Length);
+    const formattedStartX = IModelApp.quantityFormatter.formatQuantityWithSpec(startAdjusted.x, formatterSpec);
+    const formattedStartY = IModelApp.quantityFormatter.formatQuantityWithSpec(startAdjusted.y, formatterSpec);
+    const formattedStartZ = IModelApp.quantityFormatter.formatQuantityWithSpec(startAdjusted.z, formatterSpec);
     if (undefined !== formattedStartX && undefined !== formattedStartY && undefined !== formattedStartZ)
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.StartCoord}:</b> ") + formattedStartX + ", " + formattedStartY + ", " + formattedStartZ + "<br>";
 
-    const formattedEndX = IModelApp.quantityFormatter.formatQuantity(endAdjusted.x, QuantityType.Length);
-    const formattedEndY = IModelApp.quantityFormatter.formatQuantity(endAdjusted.y, QuantityType.Length);
-    const formattedEndZ = IModelApp.quantityFormatter.formatQuantity(endAdjusted.z, QuantityType.Length);
+    const formattedEndX = IModelApp.quantityFormatter.formatQuantityWithSpec(endAdjusted.x, formatterSpec);
+    const formattedEndY = IModelApp.quantityFormatter.formatQuantityWithSpec(endAdjusted.y, formatterSpec);
+    const formattedEndZ = IModelApp.quantityFormatter.formatQuantityWithSpec(endAdjusted.z, formatterSpec);
     if (undefined !== formattedEndX && undefined !== formattedEndY && undefined !== formattedEndZ)
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.EndCoord}:</b> ") + formattedEndX + ", " + formattedEndY + ", " + formattedEndZ + "<br>";
 
     if (undefined !== delta) {
-      const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(delta.x, QuantityType.Length);
-      const formattedDeltaY = IModelApp.quantityFormatter.formatQuantity(delta.y, QuantityType.Length);
-      const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantity(delta.z, QuantityType.Length);
+      const formattedDeltaX = IModelApp.quantityFormatter.formatQuantityWithSpec(delta.x, formatterSpec);
+      const formattedDeltaY = IModelApp.quantityFormatter.formatQuantityWithSpec(delta.y, formatterSpec);
+      const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantityWithSpec(delta.z, formatterSpec);
       if (undefined !== formattedDeltaX && undefined !== formattedDeltaY && undefined !== formattedDeltaZ)
         toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Delta}:</b> ") + formattedDeltaX + ", " + formattedDeltaY + ", " + formattedDeltaZ + "<br>";
     }
@@ -495,11 +506,15 @@ export class MeasureLocationTool extends PrimitiveTool {
     }
 
     // NEEDSWORK: Must call async version that can await answer!
-    const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, QuantityType.Length);
-    const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, QuantityType.Length);
-    const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, QuantityType.Length);
-    if (undefined !== formattedPointX && undefined !== formattedPointY && undefined !== formattedPointZ)
-      toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Coordinate}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
+    // use await IModelApp.quantityFormatter.getFormatterSpecByQuantityType to wait for spec
+    const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    if (undefined !== formatterSpec) {
+      const formattedPointX = IModelApp.quantityFormatter.formatQuantityWithSpec(pointAdjusted.x, formatterSpec);
+      const formattedPointY = IModelApp.quantityFormatter.formatQuantityWithSpec(pointAdjusted.y, formatterSpec);
+      const formattedPointZ = IModelApp.quantityFormatter.formatQuantityWithSpec(pointAdjusted.z, formatterSpec);
+      if (undefined !== formattedPointX && undefined !== formattedPointY && undefined !== formattedPointZ)
+        toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Coordinate}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
+    }
 
     return toolTip;
   }
