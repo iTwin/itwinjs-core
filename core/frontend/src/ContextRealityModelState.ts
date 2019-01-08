@@ -62,6 +62,7 @@ export class ContextRealityModelState implements TileTreeModelState {
     /* This is location to query all reality models available for this project.  They will be filtered spatially to only those
       that overlap the project extents later.... */
 
+    availableRealityModels.push({ name: "Sample", tilesetUrl: "http://localhost:8080/TilesetWithDiscreteLOD/tileset.json" });
     /* Testing... should be quering RDS to find models.
     availableRealityModels.push({ name: "Clark Island", tilesetUrl: "http://localhost:8080/clarkIsland/74/TileRoot.json" });
     availableRealityModels.push({ name: "Philadelphia LoRes", tilesetUrl: "http://localhost:8080/PhiladelphiaLoResClassification/80/TileRoot.json" });

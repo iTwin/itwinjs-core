@@ -571,7 +571,7 @@ export namespace IModelTileIO {
         type,
         indices,
         fillFlags: displayParams.fillFlags,
-        hasBakedLighting: this._hasBakedLighting,
+        hasBakedLighting: displayParams.ignoreLighting,
         material: displayParams.material,
         texture,
       };

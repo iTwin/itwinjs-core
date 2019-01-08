@@ -13,6 +13,7 @@ import {
   CodeScopeProps,
   CodeSpec,
   ColorDef,
+  ContextRealityModelProps,
   ViewDefinitionProps,
   ViewDefinition3dProps,
   ViewDefinition2dProps,
@@ -100,6 +101,15 @@ export class DisplayStyle2d extends DisplayStyle {
   }
 }
 
+/** Creation options for display styles */
+export interface DisplayStyleCreationOptions {
+  viewFlags?: ViewFlags;
+  backgroundColor?: ColorDef;
+  analysisStyle?: AnalysisStyleProps;
+  contextRealityModels?: ContextRealityModelProps[];
+  scheduleScript?: object;
+
+}
 /** A DisplayStyle for 3d views.
  * See [how to create a DisplayStyle3d]$(docs/learning/backend/CreateElements.md#DisplayStyle3d).
  */
@@ -120,14 +130,23 @@ export class DisplayStyle3d extends DisplayStyle {
    * @returns The newly constructed DisplayStyle3d element.
    * @throws [[IModelError]] if unable to create the element.
    */
-  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, viewFlagsIn?: ViewFlags, backgroundColor?: ColorDef, analysisStyle?: AnalysisStyleProps): DisplayStyle3d {
-    const stylesIn: { [k: string]: any } = { viewflags: viewFlagsIn ? viewFlagsIn : new ViewFlags() };
 
-    if (analysisStyle)
-      stylesIn.analysisStyle = analysisStyle;
+  public static create(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): DisplayStyle3d {
+    const stylesIn: { [k: string]: any } = { viewflags: (options && options.viewFlags) ? options.viewFlags : new ViewFlags() };
 
-    if (backgroundColor)
-      stylesIn.backgroundColor = backgroundColor;
+    if (options) {
+      if (options.analysisStyle)
+        stylesIn.analysisStyle = options.analysisStyle;
+
+      if (options.backgroundColor)
+        stylesIn.backgroundColor = options.backgroundColor;
+
+      if (options.scheduleScript)
+        stylesIn.scheduleScript = options.scheduleScript;
+
+      if (options.contextRealityModels)
+        stylesIn.contextRealityModels = options.contextRealityModels;
+    }
 
     const displayStyleProps: DisplayStyleProps = {
       classFullName: this.classFullName,
@@ -135,9 +154,7 @@ export class DisplayStyle3d extends DisplayStyle {
       model: definitionModelId,
       jsonProperties: { styles: stylesIn },
       isPrivate: false,
-      backgroundColor: new ColorDef(),
-      monochromeColor: ColorDef.white,
-      viewFlags: ViewFlags.createFrom(),
+
     };
     return new DisplayStyle3d(displayStyleProps, iModelDb);
   }
@@ -149,8 +166,8 @@ export class DisplayStyle3d extends DisplayStyle {
    * @returns The Id of the newly inserted DisplayStyle3d element.
    * @throws [[IModelError]] if unable to insert the element.
    */
-  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, viewFlagsIn?: ViewFlags, backgroundColor?: ColorDef, analysisStyle?: AnalysisStyleProps): Id64String {
-    const displayStyle = this.create(iModelDb, definitionModelId, name, viewFlagsIn, backgroundColor, analysisStyle);
+  public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, options?: DisplayStyleCreationOptions): Id64String {
+    const displayStyle = this.create(iModelDb, definitionModelId, name, options);
     return iModelDb.elements.insertElement(displayStyle);
   }
 }

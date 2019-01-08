@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { IModelError, TileTreeProps, TileProps } from "@bentley/imodeljs-common";
+import { IModelError, TileTreeProps, TileProps, ViewFlag, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
@@ -92,6 +92,8 @@ class RealityModelTileLoader extends TileLoader {
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Context; }
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
+  protected static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({ renderMode: RenderMode.SmoothShade }));
+  public get viewFlagOverrides() { return RealityModelTileLoader._viewFlagOverrides; }
   public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
     const props: RealityModelTileProps[] = [];
 
@@ -109,6 +111,7 @@ class RealityModelTileLoader extends TileLoader {
 
     return props;
   }
+
   public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
     const foundChild = await this.findTileInJson(this._tree.tilesetJson, tile.contentId, "");
     if (undefined === foundChild)
@@ -152,7 +155,7 @@ export class RealityModelTileTree {
   }
 
   private static async getTileTreeProps(url: string, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
-    if (undefined !== url && undefined !== IModelApp.accessToken) {
+    if (undefined !== url) {
       const tileClient = new RealityModelTileClient(url, IModelApp.accessToken);
       const json = await tileClient.getRootDocument(url);
       const ecefLocation = iModel.ecefLocation;
@@ -186,11 +189,11 @@ interface RDSClientProps {
 export class RealityModelTileClient {
   public readonly rdsProps?: RDSClientProps;
   private _baseUrl: string = "";
-  private readonly _token: AccessToken;
+  private readonly _token?: AccessToken;
   private static _client = new RealityDataServicesClient();
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
-  constructor(url: string, accessToken: AccessToken) {
+  constructor(url: string, accessToken?: AccessToken) {
     this.rdsProps = this.parseUrl(url);
     this._token = accessToken;
   }
@@ -223,7 +226,7 @@ export class RealityModelTileClient {
 
   public async getRootDocument(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    if (undefined !== this.rdsProps)
+    if (undefined !== this.rdsProps && undefined !== this._token)
       return RealityModelTileClient._client.getRootDocumentJson(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId);
 
     this.setBaseUrl(url);
@@ -232,7 +235,7 @@ export class RealityModelTileClient {
 
   public async getTileContent(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    if (undefined !== this.rdsProps)
+    if (undefined !== this.rdsProps && undefined !== this._token)
       return RealityModelTileClient._client.getTileContent(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     if (undefined !== this._baseUrl) {
       const tileUrl = this._baseUrl + url;
@@ -243,7 +246,7 @@ export class RealityModelTileClient {
 
   public async getTileJson(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    if (undefined !== this.rdsProps)
+    if (undefined !== this.rdsProps && undefined !== this._token)
       return RealityModelTileClient._client.getTileJson(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     if (undefined !== this._baseUrl) {
       const tileUrl = this._baseUrl + url;

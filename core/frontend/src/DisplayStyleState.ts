@@ -53,7 +53,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._contextRealityModels = [];
 
     if (styles) {
-      if (styles.ContextRealityModels)
+      if (styles.contextRealityModels)
         for (const contextRealityModel of styles.contextRealityModels)
           this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel));
 

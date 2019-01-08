@@ -611,6 +611,14 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
+      "name": "request",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "request-promise-native",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "resize-observer-polyfill",
       "allowedCategories": [ "frontend" ]
     },

@@ -547,9 +547,25 @@
       ],
       "args": [
         "--input",
-        "E:\\SyncroAnimation\\ComplexAnimated5\\proj.ibim",
+        "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
         "--script",
-        "E:\\SyncroAnimation\\ComplexAnimated5\\anim.json"
+        "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug reality-model-importer",
+      "program": "${workspaceRoot}/test-apps/imodel-from-reality-model/lib/main.js",
+      "cwd": "${workspaceRoot}/test-apps/imodel-from-reality-model/",
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
+      ],
+      "args": [
+        "--input",
+        "http://localhost:8080/TilesetWithDiscreteLOD/tileset.json",
+        "--output",
+        "${workspaceRoot}/test-apps/imodel-from-reality-model/lib/testDiscreteLOD.ibim"
       ],
     },
     {

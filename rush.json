@@ -228,6 +228,12 @@
       "shouldPublish": false
     },
     {
+      "packageName": "imodel-from-reality-model",
+      "projectFolder": "test-apps/imodel-from-reality-model",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
       "packageName": "testbed",
       "projectFolder": "test-apps/testbed",
       "reviewCategory": "internal",

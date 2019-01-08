@@ -302,8 +302,6 @@ export namespace GltfTileIO {
     /** @hidden */
     protected get _isCanceled(): boolean { return undefined !== this._canceled && this._canceled(this); }
     /** @hidden */
-    protected get _hasBakedLighting(): boolean { return false; }
-    /** @hidden */
     protected get _isClassifier(): boolean { return BatchType.Classifier === this._type; }
 
     /** @hidden */
@@ -433,7 +431,7 @@ export namespace GltfTileIO {
     /** @hidden */
     protected abstract readColorTable(_colorTable: ColorMap, _json: any): boolean | undefined;
     /** @hidden */
-    protected abstract createDisplayParams(_json: any): DisplayParams | undefined;
+    protected abstract createDisplayParams(_json: any, hasBakedLighting: boolean): DisplayParams | undefined;
     /** @hidden */
     protected abstract extractReturnToCenter(extensions: any): number[] | undefined;
 
@@ -459,14 +457,15 @@ export namespace GltfTileIO {
     /** @hidden */
     protected readMeshPrimitive(primitive: any, featureTable?: FeatureTable): Mesh | undefined {
       const materialName = JsonUtils.asString(primitive.material);
+      const hasBakedLighting = undefined === primitive.attributes.NORMAL;
       const materialValue = 0 < materialName.length ? JsonUtils.asObject(this._materialValues[materialName]) : undefined;
-      const displayParams = undefined !== materialValue ? this.createDisplayParams(materialValue) : undefined;
+      const displayParams = undefined !== materialValue ? this.createDisplayParams(materialValue, hasBakedLighting) : undefined;
       if (undefined === displayParams)
         return undefined;
 
       const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
       const isPlanar = JsonUtils.asBool(primitive.isPlanar);
-      const hasBakedLighting = this._hasBakedLighting;
+
       const asClassifier = this._isClassifier;
       const mesh = Mesh.create({
         displayParams,
@@ -524,29 +523,48 @@ export namespace GltfTileIO {
     /** @hidden */
     protected readVertices(positions: QPoint3dList, primitive: any): boolean {
       const view = this.getBufferView(primitive.attributes, "POSITION");
-      if (undefined === view || DataType.UnsignedShort !== view.type)
+      if (undefined === view)
         return false;
 
-      const extensions = JsonUtils.asObject(view.accessor.extensions);
-      const quantized = undefined !== extensions ? JsonUtils.asObject(extensions.WEB3D_quantized_attributes) : undefined;
-      if (undefined === quantized)
-        return false;
+      if (DataType.Float === view.type) {
+        const buffer = view.toBufferData(DataType.Float);
+        if (undefined === buffer)
+          return false;
+        const range = Range3d.createNull();
+        for (let i = 0; i < buffer.buffer.length;)
+          range.extendXYZ(buffer.buffer[i++], buffer.buffer[i++], buffer.buffer[i++]);
 
-      const rangeMin = JsonUtils.asArray(quantized.decodedMin);
-      const rangeMax = JsonUtils.asArray(quantized.decodedMax);
-      if (undefined === rangeMin || undefined === rangeMax)
-        return false;
+        positions.reset(QParams3d.fromRange(range));
+        const scratchPoint = new Point3d();
+        for (let i = 0, j = 0; i < buffer.count; i++) {
+          scratchPoint.set(buffer.buffer[j++], buffer.buffer[j++], buffer.buffer[j++]);
+          positions.add(scratchPoint);
+        }
+      } else {
+        if (DataType.UnsignedShort !== view.type)
+          return false;
 
-      const buffer = view.toBufferData(DataType.UnsignedShort);
-      if (undefined === buffer)
-        return false;
+        const extensions = JsonUtils.asObject(view.accessor.extensions);
+        const quantized = undefined !== extensions ? JsonUtils.asObject(extensions.WEB3D_quantized_attributes) : undefined;
+        if (undefined === quantized)
+          return false;
 
-      const qpt = QPoint3d.fromScalars(0, 0, 0);
-      positions.reset(QParams3d.fromRange(Range3d.create(Point3d.create(rangeMin[0], rangeMin[1], rangeMin[2]), Point3d.create(rangeMax[0], rangeMax[1], rangeMax[2]))));
-      for (let i = 0; i < view.count; i++) {
-        const index = i * 3; // 3 uint16 per QPoint3d...
-        qpt.setFromScalars(buffer.buffer[index], buffer.buffer[index + 1], buffer.buffer[index + 2]);
-        positions.push(qpt);
+        const rangeMin = JsonUtils.asArray(quantized.decodedMin);
+        const rangeMax = JsonUtils.asArray(quantized.decodedMax);
+        if (undefined === rangeMin || undefined === rangeMax)
+          return false;
+
+        const buffer = view.toBufferData(DataType.UnsignedShort);
+        if (undefined === buffer)
+          return false;
+
+        const qpt = QPoint3d.fromScalars(0, 0, 0);
+        positions.reset(QParams3d.fromRange(Range3d.create(Point3d.create(rangeMin[0], rangeMin[1], rangeMin[2]), Point3d.create(rangeMax[0], rangeMax[1], rangeMax[2]))));
+        for (let i = 0; i < view.count; i++) {
+          const index = i * 3; // 3 uint16 per QPoint3d...
+          qpt.setFromScalars(buffer.buffer[index], buffer.buffer[index + 1], buffer.buffer[index + 2]);
+          positions.push(qpt);
+        }
       }
 
       return true;
@@ -608,19 +626,41 @@ export namespace GltfTileIO {
 
     /** @hidden */
     protected readNormals(normals: OctEncodedNormal[], json: any, accessorName: string): boolean {
-      const data = this.readBufferData8(json, accessorName);
-      if (undefined === data)
+      const view = this.getBufferView(json, accessorName);
+      if (undefined === view)
         return false;
 
-      // ###TODO: we shouldn't have to allocate OctEncodedNormal objects...just use uint16s / numbers...
-      for (let i = 0; i < data.count; i++) {
-        // ###TODO? not clear why ray writes these as pairs of uint8...
-        const index = i * 2;
-        const normal = data.buffer[index] | (data.buffer[index + 1] << 8);
-        normals.push(new OctEncodedNormal(normal));
-      }
+      switch (view.type) {
+        case DataType.Float: {
+          const data = view.toBufferData(DataType.Float);
+          if (undefined === data)
+            return false;
 
-      return true;
+          const scratchNormal = new Vector3d();
+          for (let i = 0, j = 0; i < data.count; i++) {
+            scratchNormal.set(data.buffer[j++], data.buffer[j++], data.buffer[j++]);
+            normals.push(OctEncodedNormal.fromVector(scratchNormal));
+          }
+          return true;
+        }
+
+        case DataType.UnsignedByte: {
+          const data = view.toBufferData(DataType.UnsignedByte);
+          if (undefined === data)
+            return false;
+
+          // ###TODO: we shouldn't have to allocate OctEncodedNormal objects...just use uint16s / numbers...
+          for (let i = 0; i < data.count; i++) {
+            // ###TODO? not clear why ray writes these as pairs of uint8...
+            const index = i * 2;
+            const normal = data.buffer[index] | (data.buffer[index + 1] << 8);
+            normals.push(new OctEncodedNormal(normal));
+          }
+          return true;
+        }
+        default:
+          return false;
+      }
     }
 
     /** @hidden */
