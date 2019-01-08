@@ -11,7 +11,6 @@ remote.getCurrentWindow().setTitle("iModelJs Testbed");
 
 if (global.options.coverage) {
   require(path.join(__dirname, "coverage.js"));
-  remote.require(path.join(__dirname, "coverage.js"));
   remote.require(path.join(__dirname, "lib/backend/index"));
 
   const testFiles = require("glob").sync(path.resolve(__dirname, "lib/frontend**/*.test.js"));
