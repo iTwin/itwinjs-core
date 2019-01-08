@@ -513,7 +513,7 @@ export class ViewFlags {
   public constructions: boolean = false;
   /** Draw all graphics in a single color */
   public monochrome: boolean = false;
-  /** Ignore geometry maps */
+  /** @hidden unused Ignore geometry maps */
   public noGeometryMap: boolean = false;
   /** Display background map */
   public backgroundMap: boolean = false;
