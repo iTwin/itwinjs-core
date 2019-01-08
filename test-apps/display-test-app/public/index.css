@@ -68,6 +68,11 @@
   display: inline;
 }
 
+#snapModesContainer {
+  float: right;
+  margin-right: 5px;
+}
+
 .statusspan {
   margin-left: 5px;
   display:  inline;

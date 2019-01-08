@@ -146,7 +146,7 @@ describe("IModelApp", () => {
   });
 
   // Still failing to acquire WebGLRenderingContext on CI server.
-  it.skip("Should support WebGL", () => {
+  it("Should support WebGL", () => {
     expect(TestApp.hasRenderSystem).to.be.true;
     const canvas = WebGLTestContext.createCanvas();
     expect(canvas).not.to.be.undefined;
