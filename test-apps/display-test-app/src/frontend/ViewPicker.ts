@@ -27,12 +27,13 @@ export class ViewList extends SortedArray<IModelConnection.ViewSpec> {
 
   public async getView(id: Id64String, iModel: IModelConnection): Promise<ViewState> {
     let view = this._views.get(id);
-    if (undefined !== view)
-      return view;
+    if (undefined === view) {
+      view = await iModel.views.load(id);
+      this._views.set(id, view);
+    }
 
-    view = await iModel.views.load(id);
-    this._views.set(id, view);
-    return view;
+    // NB: We clone so that if user switches back to this view, it is shown in its initial (persistent) state.
+    return view.clone();
   }
 
   public async getDefaultView(iModel: IModelConnection): Promise<ViewState> {
