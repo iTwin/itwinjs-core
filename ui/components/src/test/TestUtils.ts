@@ -41,10 +41,10 @@ export default class TestUtils {
     return new Promise((resolve) => setImmediate(resolve));
   }
 
-  public static createPrimitiveStringProperty(name: string, text: string) {
+  public static createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString()) {
     const value: PrimitiveValue = {
-      displayValue: text,
-      value: text,
+      displayValue,
+      value: rawValue,
       valueFormat: PropertyValueFormat.Primitive,
     };
 

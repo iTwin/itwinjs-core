@@ -24,6 +24,7 @@ export * from "./converters/BooleanTypeConverter";
 export * from "./converters/DateTimeTypeConverter";
 export * from "./converters/EnumTypeConverter";
 export * from "./converters/HexadecimalTypeConverter";
+export * from "./converters/NavigationPropertyTypeConverter";
 export * from "./converters/NumericTypeConverter";
 export * from "./converters/PointTypeConverter";
 export * from "./converters/StringTypeConverter";

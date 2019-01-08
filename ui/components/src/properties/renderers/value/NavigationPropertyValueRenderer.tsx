@@ -19,9 +19,9 @@ export class NavigationPropertyValueRenderer implements IPropertyValueRenderer {
   }
 
   public render(record: PropertyRecord, context?: PropertyValueRendererContext) {
-    const value = (record.value as PrimitiveValue).displayValue;
-    if (value !== undefined)
-      return withContextStyle(TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, value), context);
-    return "";
+    const primitive = record.value as PrimitiveValue;
+    if (primitive.displayValue)
+      return primitive.displayValue;
+    return withContextStyle(TypeConverterManager.getConverter(record.property.typename).convertPropertyToString(record.property, primitive.value), context);
   }
 }
