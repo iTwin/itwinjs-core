@@ -426,13 +426,13 @@ export class QuantityFormatter implements UnitsProvider {
       return Promise.resolve(activeMap.get(type) as FormatterSpec);
 
     return this.loadFormatSpecsForQuantityTypes(useImperial)
-      .then(() => { // tslint:disable-line
+      .then(async () => {
         if (activeMap.size > 0) {
           const spec = activeMap.get(type);
           if (spec)
             return Promise.resolve(spec as FormatterSpec);
         }
-        throw new Error("Unable to load FormatSpecs");
+        return Promise.reject(new Error("Unable to load FormatSpecs"));
       });
   }
 
