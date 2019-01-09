@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import TestUtils from "../TestUtils";
-import { PropsHelper } from "../../utils/PropsHelper";
+import { PropsHelper } from "../../ui-framework";
 
 describe("PropsHelper", () => {
   before(async () => {

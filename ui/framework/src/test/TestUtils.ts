@@ -3,11 +3,10 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { UiFramework, FrameworkReducer, FrameworkState } from "../ui-framework";
+import { UiFramework, FrameworkReducer, FrameworkState,  DeepReadonly, ActionsUnion, createAction} from "../ui-framework";
 import { UiComponents } from "@bentley/ui-components";
 import { UiCore } from "@bentley/ui-core";
 import { Store, createStore, combineReducers } from "redux";
-import { DeepReadonly, ActionsUnion, createAction } from "..//utils/redux-ts";
 
 export interface SampleAppState {
   placeHolder?: boolean;

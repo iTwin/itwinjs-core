@@ -5,8 +5,8 @@
 import { expect } from "chai";
 import TestUtils from "./TestUtils";
 import { UiFramework } from "../ui-framework";
-import { DefaultIModelServices } from "../clientservices/DefaultIModelServices";
-import { DefaultProjectServices } from "../clientservices/DefaultProjectServices";
+import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
+import { DefaultProjectServices } from "../ui-framework/clientservices/DefaultProjectServices";
 
 describe("UiFramework", () => {
 
