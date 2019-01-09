@@ -467,18 +467,6 @@ export class MeasureDistanceTool extends PrimitiveTool {
     return true;
   }
 
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> { // NEEDSWORK: Element undo and last datapoint undo button needs to be part of UI/ToolAdmin...
-    if (wentDown) {
-      switch (keyEvent.key.toLowerCase()) {
-        case "z":
-          if (keyEvent.ctrlKey)
-            await this.undoPreviousStep();
-          break;
-      }
-    }
-    return EventHandled.No;
-  }
-
   public onRestartTool(): void {
     const tool = new MeasureDistanceTool();
     if (!tool.run())
@@ -557,18 +545,6 @@ export class MeasureLocationTool extends PrimitiveTool {
     else
       this.setupAndPromptForNextAction();
     return true;
-  }
-
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> { // NEEDSWORK: Element undo and last datapoint undo button needs to be part of UI/ToolAdmin...
-    if (wentDown) {
-      switch (keyEvent.key.toLowerCase()) {
-        case "z":
-          if (keyEvent.ctrlKey)
-            await this.undoPreviousStep();
-          break;
-      }
-    }
-    return EventHandled.No;
   }
 
   public onRestartTool(): void {

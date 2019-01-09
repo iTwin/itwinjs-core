@@ -122,6 +122,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
   }
 
   public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+    // TESTING ONLY - TBD Keyboard shortcuts...
     if (wentDown) {
       switch (keyEvent.key.toLowerCase()) {
         case " ":
@@ -137,10 +138,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
           AccuDrawShortcuts.lockY();
           break;
         case "z":
-          if (keyEvent.ctrlKey)
-            await this.undoPreviousStep();
-          else
-            AccuDrawShortcuts.lockZ();
+          AccuDrawShortcuts.lockZ();
           break;
         case "a":
           AccuDrawShortcuts.lockAngle();
