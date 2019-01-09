@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Support region bounding volumes",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Ray.Bentley@bentley.com"
+}

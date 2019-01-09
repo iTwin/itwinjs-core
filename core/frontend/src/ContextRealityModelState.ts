@@ -44,7 +44,7 @@ export class ContextRealityModelState implements TileTreeModelState {
     let tileTreeRange, tileTreeTransform;
     if (json === undefined ||
       undefined === json.root ||
-      undefined === (tileTreeRange = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)) ||
+      undefined === (tileTreeRange = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume, this._iModel.ecefLocation)) ||
       undefined === (tileTreeTransform = RealityModelTileUtils.transformFromJson(json.root.transform)))
       return false;
 

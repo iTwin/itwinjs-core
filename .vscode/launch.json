@@ -563,9 +563,9 @@
       ],
       "args": [
         "--input",
-        "http://localhost:8080/TilesetWithDiscreteLOD/tileset.json",
+        "http://localhost:8080/Cesium3DTiles/Batched/BatchedColors/tileset.json",
         "--output",
-        "${workspaceRoot}/test-apps/imodel-from-reality-model/lib/testDiscreteLOD.ibim"
+        "e:\\briefcases\\testRealityModel.ibim"
       ],
     },
     {
