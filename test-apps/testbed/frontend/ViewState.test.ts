@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import { Point3d, Vector3d, YawPitchRollAngles, Range3d, Angle, Matrix3d, DeepCompare } from "@bentley/geometry-core";
-import { AmbientOcclusion, BackgroundMapType, ColorDef, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps, HiddenLine } from "@bentley/imodeljs-common";
+import { AmbientOcclusion, BackgroundMapType, ColorDef, HiddenLine, RenderMode, SpatialViewDefinitionProps, ViewDefinitionProps } from "@bentley/imodeljs-common";
 import * as path from "path";
 import {
   SpatialViewState, ViewStatus, ViewState3d, StandardView, StandardViewId, MarginPercent, AuxCoordSystemSpatialState, CategorySelectorState,
