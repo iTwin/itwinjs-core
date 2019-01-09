@@ -359,7 +359,7 @@ describe("Polyface.Facets", () => {
     writeMeshes(Sample.createSimpleRotationalSweeps(), "FacetedRotationalSweeps");
   });
   it("RuledSweeps", () => {
-    writeMeshes(Sample.createRuledSweeps(), "FacetedRuledSweeps");
+    writeMeshes(Sample.createRuledSweeps(true), "FacetedRuledSweeps");
   });
 });
 

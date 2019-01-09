@@ -15,7 +15,26 @@ import * as fs from "fs";
 import { Cone } from "../solid/Cone";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { StrokeOptions } from "../curve/StrokeOptions";
+import { AngleSweep } from "../geometry3d/AngleSweep";
+import { Sphere } from "../solid/Sphere";
+import { Angle } from "../geometry3d/Angle";
+import { Range3d } from "../geometry3d/Range";
+import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { IModelJson } from "../serialization/IModelJsonSchema";
+import { prettyPrint } from "./testFunctions";
+import { GeometryCoreTestIO } from "./GeometryCoreTestIO";
+import { RotationalSweep } from "../solid/RotationalSweep";
+import { Path } from "../curve/Path";
+import { Ray3d } from "../geometry3d/Ray3d";
+import { TorusPipe } from "../solid/TorusPipe";
+import { SweepContour } from "../solid/SweepContour";
+import { LineString3d } from "../curve/LineString3d";
+import { ConstructCurveBetweenCurves } from "../curve/ConstructCurveBetweenCurves";
+import { Arc3d } from "../curve/Arc3d";
+import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { RuledSweep } from "../solid/RuledSweep";
 
+/* tslint:disable:no-console */
 let outputFolderPath = "./src/test/output";
 // Output folder typically not tracked by git... make directory if not there
 if (!fs.existsSync(outputFolderPath))
@@ -25,11 +44,38 @@ outputFolderPath = outputFolderPath + "/";
 function verifyUnitPerpendicularFrame(ck: Checker, frame: Transform, source: any) {
   ck.testTrue(frame.matrix.isRigid(), "perpendicular frame", source);
 }
+
+function exerciseUVToWorld(ck: Checker, s: SolidPrimitive, u: number, v: number, deltaUV: number) {
+  if ("UVFractionToPoint" in s && "UVFractionToPointAndTangents" in s) {
+    const u1 = u + deltaUV;
+    const v1 = v + deltaUV;
+    // IF .. the solid is reasonably smooth and wraps a full circle, the angle (in degrees) is 360/deltaUV.
+    const toleranceDegrees = 10.0 * 360.0 * deltaUV;
+
+    const point00 = (s as any).UVFractionToPoint(u, v);
+    const point10 = (s as any).UVFractionToPoint(u1, v);
+    const point01 = (s as any).UVFractionToPoint(u, v1);
+    const plane00 = (s as any).UVFractionToPointAndTangents(u, v) as Plane3dByOriginAndVectors;
+    const vector10 = Vector3d.createStartEnd(point00, point10);
+    const vector01 = Vector3d.createStartEnd(point00, point01);
+    vector10.scaleInPlace(1.0 / deltaUV);
+    vector01.scaleInPlace(1.0 / deltaUV);
+    ck.testPoint3d(point00, plane00.origin, "same point on variant evaluators");
+    if (!ck.testLT(vector10.angleTo(plane00.vectorU).degrees, toleranceDegrees))
+      console.log(" U", vector10, plane00.vectorU);
+    if (!ck.testLT(vector01.angleTo(plane00.vectorV).degrees, toleranceDegrees))
+      console.log(" V", vector01, plane00.vectorV);
+
+  }
+
+}
 function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
   const scaleTransform = Transform.createFixedPointAndMatrix(Point3d.create(1, 2, 2), Matrix3d.createUniformScale(2));
   for (const s of solids) {
     if (s instanceof SolidPrimitive) {
-      const s1 = s.clone();
+      const s1 = s.clone()!;
+      ck.testFalse(s1.tryTransformInPlace(Transform.createZero()));
+      ck.testFalse(s1.isAlmostEqual(LineSegment3d.createXYXY(0, 0, 1, 1)));
       if (ck.testPointer(s1, "solid clone") && s1) {
         ck.testTrue(s1.isSameGeometryClass(s), "Clone class match");
         ck.testTrue(s1.isAlmostEqual(s), "solid clone matches original");
@@ -37,11 +83,37 @@ function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
         if (ck.testPointer(s2) && s2 && s1.tryTransformInPlace(scaleTransform)) {
           ck.testFalse(s2.isAlmostEqual(s), "scaled is different from original");
           ck.testTrue(s1.isAlmostEqual(s2), "clone transform commute");
+          const range2A = Range3d.create();
+          const range2B = Range3d.create();
+          s2.extendRange(range2A);
+          s.extendRange(range2B, scaleTransform);
+          range2B.expandInPlace(0.10 * range2B.diagonal().magnitude());    // HACK -- ranges are not precise.  Allow fuzz.
+          if (!ck.testTrue(range2B.containsRange(range2A), "range commutes with scale transform",
+            range2B.low.toJSON(),
+            range2A.low.toJSON(),
+            range2A.high.toJSON(),
+            range2B.high.toJSON())) {
+            console.log("s", prettyPrint(IModelJson.Writer.toIModelJson(s)));
+            console.log("s.range", prettyPrint(s.range()));
+            console.log("s1", prettyPrint(IModelJson.Writer.toIModelJson(s1)));
+            console.log("s2", prettyPrint(IModelJson.Writer.toIModelJson(s2)));
+            const range2C = Range3d.create();
+            const range2D = Range3d.create();
+            s2.extendRange(range2C);
+            s.extendRange(range2D, scaleTransform);
+          }
+
+          exerciseUVToWorld(ck, s, 0.01, 0.02, 0.0001);
         }
       }
       const frame = s.getConstructiveFrame();
       if (ck.testPointer(frame, "getConstructiveFrame") && frame) {
         verifyUnitPerpendicularFrame(ck, frame, s);
+      }
+      const sC = s.clone();
+      if (sC instanceof SolidPrimitive) {
+        sC.capped = !sC.capped;
+        ck.testFalse(s.isAlmostEqual(sC), "isAlmostEqual should detectd cap change");
       }
     }
   }
@@ -110,7 +182,37 @@ describe("Solids", () => {
 
   it("Spheres", () => {
     const ck = new Checker();
-    exerciseSolids(ck, Sample.createSpheres(), "Spheres");
+    const spheres = Sample.createSpheres(true);
+    exerciseSolids(ck, spheres, "Spheres");
+    for (const s of spheres) {
+      const r = s.trueSphereRadius();
+      if (r !== undefined) {
+        ck.testCoordinate(r, s.cloneVectorX().magnitude());
+        ck.testCoordinate(r, s.cloneVectorY().magnitude());
+        ck.testCoordinate(r, s.cloneVectorZ().magnitude());
+      }
+      const sectionA = s.strokeConstantVSection(0.25, undefined);
+      const sectionB = s.strokeConstantVSection(0.25, 32);
+      const options = StrokeOptions.createForCurves();
+      options.angleTol = Angle.createDegrees(360 / 12);
+      const sectionC = s.strokeConstantVSection(0.25, options);
+      ck.testExactNumber(sectionA.numPoints(), 17);
+      ck.testExactNumber(sectionB.numPoints(), 33, "explicit stroke count");
+      ck.testExactNumber(sectionC.numPoints(), 13, "stroke count by angle");
+    }
+
+    const origin = Point3d.create(1, 2, 3);
+    const vectorX = Vector3d.create(3, 0, -1);
+    const vectorZ = vectorX.crossProductXYZ(0, 1, 0);
+    const rA = 3.0;
+    const sweep = AngleSweep.createFullLatitude();
+    const northSweep = AngleSweep.createStartEndDegrees(0, 90);
+    ck.testUndefined(Sphere.createDgnSphere(origin, vectorX, vectorX, rA, rA, sweep, true));
+    const northA = Sphere.createDgnSphere(origin, vectorX, vectorZ, rA, rA, northSweep, true)!;
+    const northB = Sphere.createDgnSphere(origin, vectorX, vectorZ, rA, rA, northSweep, false)!;
+    ck.testFalse(northA.isAlmostEqual(LineSegment3d.createXYZXYZ(1, 2, 3, 4, 5, 6)), "sphere.isAlmostEqual(nonSpere)");
+    ck.testFalse(northA.isAlmostEqual(northB), "capping difference");
+
     expect(ck.getNumErrors()).equals(0);
   });
   it("Boxes", () => {
@@ -130,6 +232,26 @@ describe("Solids", () => {
   it("TorusPipes", () => {
     const ck = new Checker();
     exerciseSolids(ck, Sample.createTorusPipes(), "TorusPipes");
+
+    const frame = Transform.createIdentity();
+    const halfSweep = Angle.createDegrees(180);
+    ck.testUndefined(TorusPipe.createInFrame(frame, 1, 3, halfSweep, true));
+    ck.testUndefined(TorusPipe.createInFrame(frame, 0, 0, halfSweep, true));
+    ck.testUndefined(TorusPipe.createInFrame(frame, 2, 0, halfSweep, true));
+    ck.testUndefined(TorusPipe.createInFrame(frame, 2, 1, Angle.createDegrees(0), true));
+    ck.testUndefined(TorusPipe.createInFrame(frame, 2, 1, Angle.createDegrees(0), true));
+
+    const frameA = Transform.createOriginAndMatrix(Point3d.create(1, 2, 3), Matrix3d.createScale(1, 1, 1));
+    const frameB = Transform.createOriginAndMatrix(Point3d.create(1, 2, 3), Matrix3d.createScale(1, 1, -1)); // with negative determinant to trigger reversal logic
+    const torusA = TorusPipe.createInFrame(frameA, 3, 1, halfSweep, true);
+    const torusB = TorusPipe.createInFrame(frameB, 3, 1, halfSweep, true);    // z will be reverse so that it matches torusA!
+    ck.testPointer(torusA);
+    ck.testPointer(torusB);
+    ck.testTrue(torusA!.isAlmostEqual(torusB!));
+    const negativeSweep = Angle.createDegrees(-10);
+    const torusC = TorusPipe.createInFrame(frameA, 3, 1, negativeSweep, true)!;
+    ck.testTrue(torusC.getSweepAngle().degrees > 0.0);    // confirm that the angle got reversed
+
     expect(ck.getNumErrors()).equals(0);
   });
   it("LinearSweeps", () => {
@@ -140,12 +262,85 @@ describe("Solids", () => {
 
   it("RotationalSweeps", () => {
     const ck = new Checker();
-    exerciseSolids(ck, Sample.createSimpleRotationalSweeps(), "RotationalSweeps");
+    const sweeps = Sample.createSimpleRotationalSweeps();
+    exerciseSolids(ck, sweeps, "RotationalSweeps");
+
+    const line = LineSegment3d.createXYXY(1, 4, 2, -1);
+    const contour = Path.create(line);
+    ck.testUndefined(RotationalSweep.create(contour, Ray3d.createXYZUVW(0, 0, 0, 0, 0, 0), Angle.createDegrees(180), false));
     expect(ck.getNumErrors()).equals(0);
   });
+  it("RotationalSweepTransform", () => {
+    const ck = new Checker();
+    const sweeps = Sample.createSimpleRotationalSweeps();
+    const transforms = [
+      Transform.createTranslationXYZ(10, 0, 0),
+      Transform.createTranslationXYZ(0, 20, 0),
+      Transform.createTranslationXYZ(20, 0, 0), // Maybe harder than first pass because dx changes?
+      Transform.createOriginAndMatrix(Point3d.create(0, 0, 0), Matrix3d.createUniformScale(2)),
+      Transform.createOriginAndMatrix(Point3d.create(0, 10, 0), Matrix3d.createUniformScale(2))];
+    const allGeometry: GeometryQuery[] = [];
+    let dy = 0;
+    const unitBox = Sample.createRangeEdges(Range3d.createXYZXYZ(0, 0, 0, 1, 3, 0.25))!;
+    /*
+        for (const s of sweeps) {
+          GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), 0, 0);
+        }
+        */
+    for (let sampleIndex = 0; sampleIndex < sweeps.length; sampleIndex += 2) {  // increment by 2 to skip cap variants
+      let dx = 100;
+      const s = sweeps[sampleIndex];
+      // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), 0, 0);
+      // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), 0.5 * dx, dy);
+      // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), dx, 0.5 * dy);
+      // GeometryCoreTestIO.captureGeometry(allGeometry, s.clone(), dx, dy);
+      GeometryCoreTestIO.captureGeometry(allGeometry, unitBox.clone()!, dx, dy);
+      const range = s.range();
+      const rangeEdges = Sample.createRangeEdges(range)!;
+      GeometryCoreTestIO.captureGeometry(allGeometry, rangeEdges, dx, dy);
+      for (let transformIndex = 0; transformIndex < 4; transformIndex++) {
+        const transform = transforms[transformIndex];
+        GeometryCoreTestIO.captureGeometry(allGeometry, unitBox.clone()!, dx, dy);
+        const s1 = s.cloneTransformed(transform);
+        GeometryCoreTestIO.captureGeometry(allGeometry, s.clone()!, dx, dy);
+        GeometryCoreTestIO.captureGeometry(allGeometry, s1!, dx, dy);
+        /*
+        GeometryCoreTestIO.captureGeometry(allGeometry, s.clone()!, dx, dy);
+        for (const vFraction of [0.25, 0.5, 0.75]) {
+          const section = s1.constantVSection(vFraction)!;
+          GeometryCoreTestIO.captureGeometry(allGeometry, section, dx, dy);
+        }
+
+        const range1 = s1.range();
+        const rangeEdges1 = Sample.createRangeEdges(range1)!;
+        GeometryCoreTestIO.captureGeometry(allGeometry, rangeEdges1, dx, dy);
+        */
+        dx += 100.0;
+      }
+      dy += 100.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransformedSolids", "RotationalSweep");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("RuledSweeps", () => {
     const ck = new Checker();
-    exerciseSolids(ck, Sample.createRuledSweeps(), "RuledSweeps");
+    const sweeps = Sample.createRuledSweeps(true, true);
+    exerciseSolids(ck, sweeps, "RuledSweeps");
+
+    for (const s of sweeps) {
+      const section = s.constantVSection(0.1);
+      ck.testPointer(section, "constant V section");
+    }
+    ck.testUndefined(RuledSweep.create([Path.create()], false));
+
+    const rectangleA = Path.create(Sample.createRectangleXY(0, 0, 2, 1, 0));
+    const rectangleB = Path.create(Sample.createRectangleXY(0, 0, 2, 1, 1));
+    const rectangleC = Path.create(Sample.createRectangleXY(0, 0, 2, 1, 2));
+
+    const sweep2 = RuledSweep.create([rectangleA.clone()!, rectangleB.clone()!], false)!;
+    const sweep3 = RuledSweep.create([rectangleA.clone()!, rectangleB.clone()!, rectangleC.clone()!], false)!;
+    ck.testFalse(sweep2.isAlmostEqual(sweep3));
     expect(ck.getNumErrors()).equals(0);
   });
 
@@ -161,5 +356,46 @@ describe("Solids", () => {
       expect(ck.getNumErrors()).equals(0);
     }
   });
+  it("SweepContour", () => {
+    const ck = new Checker();
+    // EDL 1/7/18 tried to make sweep constructions fail with all data on z axis.
+    // generic line frenet frame defeats this.  so suppress the test.
+    /*
+        const zLine = LineSegment3d.createXYZXYZ(0, 0, 0, 0, 0, 5);
+        const zPath = Path.create(zLine);
+        const zDir = Vector3d.unitZ();
+        const zRay = Ray3d.createXYZUVW(0, 0, 0, zDir.z, zDir.y, zDir.z);
+        ck.testUndefined(SweepContour.createForLinearSweep(zPath, Vector3d.unitZ()));
+        ck.testUndefined(SweepContour.createForRotation(zPath, zRay));
+    */
+    const path = Path.create(LineString3d.create(Sample.createRectangleXY(0, 0, 4, 2, 0)));
+    const contourA = SweepContour.createForLinearSweep(path)!;
+    const contourB = contourA.cloneTransformed(Transform.createTranslationXYZ(5, 0, 0))!;
+    const allGeometry: GeometryQuery[] = [];
+    GeometryCoreTestIO.captureGeometry(allGeometry, contourA.getCurves()!.clone()!, 0, 0, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, contourB.getCurves()!.clone()!, 0, 0, 0);
+    ck.testFalse(contourA.isAlmostEqual(contourB));
+    ck.testFalse(contourA.isAlmostEqual(path));
+    GeometryCoreTestIO.saveGeometry(allGeometry, "TransformedSolids", "SweepContour");
+    expect(ck.getNumErrors()).equals(0);
+  });
+});
 
+describe("CurveCurve", () => {
+  it("Mismatches", () => {
+    const ck = new Checker();
+    const segment = LineSegment3d.createXYZXYZ(1, 2, 2, 4, 2, -1);
+    const arc = Arc3d.createUnitCircle();
+    const points = [Point3d.create(0, 0, 0), Point3d.create(1, 1, 0), Point3d.create(3, 1, 0), Point3d.create(3, 0, 0)];
+    const bcurve = BSplineCurve3d.createUniformKnots(points, 3)!;
+    const linestring = LineString3d.create(points);
+    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(segment, 0.5, arc));
+    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(segment, 0.5, linestring));
+    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(segment, 0.5, bcurve));
+    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(arc, 0.5, linestring));
+    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(linestring, 0.5, arc));
+    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(arc, 0.5, bcurve));
+    ck.testUndefined(ConstructCurveBetweenCurves.InterpolateBetween(bcurve, 0.5, segment));
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

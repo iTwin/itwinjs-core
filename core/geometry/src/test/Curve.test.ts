@@ -34,6 +34,9 @@ import { CurveLocationDetail, CurveIntervalRole, CurveSearchStatus } from "../cu
 import { CoordinateXYZ } from "../curve/CoordinateXYZ";
 import { Path } from "../curve/Path";
 import { CurveChainWithDistanceIndex } from "../curve/CurveChainWithDistanceIndex";
+import { RuledSweep } from "../solid/RuledSweep";
+import { GeometryQuery } from "../curve/GeometryQuery";
+import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
 /* tslint:disable:no-console */
 
 class ExerciseCurve {
@@ -189,15 +192,17 @@ class ExerciseCurve {
         const delta12 = Vector3d.createStartEnd(pointA1, pointA2);
         const delta012 = Vector3d.createStartEnd(delta01, delta12);
         const delta02 = Vector3d.createStartEnd(pointA0, pointA2);
-        const ray1 = curve.fractionToPointAndDerivative(fraction);
+        const derivativeRay = curve.fractionToPointAndDerivative(fraction);
         const plane1 = curve.fractionToPointAnd2Derivatives(fraction);
-        ck.testPoint3d(pointA1, ray1.origin);
+        const unitRay = curve.fractionToPointAndUnitTangent(fraction);
+        ck.testParallel(unitRay.direction, derivativeRay.direction);
+        ck.testPoint3d(pointA1, derivativeRay.origin);
         const aproximateDerivative = delta02.scale(0.5 / derivativeIncrement);
         const approximateDerivative2 = delta012.scale(1.0 / (derivativeIncrement * derivativeIncrement));
-        ck.testTrue(aproximateDerivative.distance(ray1.direction) < derivativeTolerance * (1 + ray1.direction.magnitude()),
-          "approximate derivative", ray1.direction, aproximateDerivative, curve, fraction);
+        ck.testTrue(aproximateDerivative.distance(derivativeRay.direction) < derivativeTolerance * (1 + derivativeRay.direction.magnitude()),
+          "approximate derivative", derivativeRay.direction, aproximateDerivative, curve, fraction);
         if (plane1) { //  curve instanceof TransitionSpiral3d
-          ck.testPoint3d(ray1.origin, plane1.origin, "points with derivatives");
+          ck.testPoint3d(derivativeRay.origin, plane1.origin, "points with derivatives");
           if (!(curve instanceof TransitionSpiral3d)) {
             // TransitionSpiral has wierd derivative behavior?
             // if (!ck.testTrue(approximateDerivative2.distance(plane1.vectorV) < derivative2Tolerance * (1 + plane1.vectorV.magnitude())))
@@ -439,6 +444,7 @@ describe("CurveChainWithDistanceIndex", () => {
     const allGeoemtry = [];
     for (const p of paths) {
       const q = p.clone()!;
+      ck.testTrue(p.isAlmostEqual(q));
       q.tryTranslateInPlace(dx, 0, 0);
       allGeoemtry.push(p.clone());
       ExerciseCurve.exerciseFractionToPoint(ck, p, true, false);
@@ -446,10 +452,63 @@ describe("CurveChainWithDistanceIndex", () => {
       ExerciseCurve.exerciseClosestPoint(ck, p, 0.1);
       ExerciseCurve.exerciseCloneAndTransform(ck, p);
       ExerciseCurve.exerciseMoveSignedDistance(ck, p);
+      ck.testFalse(p.isInPlane(Plane3dByOriginAndUnitNormal.create(Point3d.create(1, 3, 2.123213213), Vector3d.create(0.3423, 3.1, -0.3))!));
+      const point0 = p.startPoint();
+      const point1 = p.endPoint();
+      const point0F = p.fractionToPoint(0.0);
+      const point1F = p.fractionToPoint(1.0);
+      ck.testPoint3d(point0, point0F);
+      ck.testPoint3d(point1, point1F);
+      ck.testFalse(p.isAlmostEqual(LineSegment3d.createXYXY(1, 2, 3, 4)));
     }
 
     ck.checkpoint("CurvePrimitive.Create and exercise distanceIndex");
     GeometryCoreTestIO.saveGeometry(allGeoemtry, undefined, "CurvePrimitive.CurveChainWithDistanceIndex");
+
+    expect(ck.getNumErrors()).equals(0);
+  });
+  it("DistanceIndexMismatches", () => {
+    const ck = new Checker();
+    const pathA = Sample.createSquareWavePath(4, 1, 1, 0, 1, 0);   // 4 waves as one linestring
+    const pathB = Sample.createSquareWavePath(1, 1, 1, 0, 1, 0);   // 1 wave as one linestring
+    const pathC = Sample.createSquareWavePath(1, 1, 1, 0, 0, 1);    // 1 wave as 4 line segments
+    const pathD = Sample.createSquareWavePath(4, 1, 1, 0, 0, 2);    // 4 wave as 4 linestrings
+    const emptyBag = BagOfCurves.create();
+    const bag1 = BagOfCurves.create();
+    const bagWithPath = BagOfCurves.create(pathA.clone()!);
+
+    const lineSegment = LineSegment3d.createXYXY(0, 0, 1, 1);
+    bag1.tryAddChild(lineSegment.clone());
+    const allGeometry: GeometryQuery[] = [];
+    GeometryCoreTestIO.captureGeometry(allGeometry, pathA.clone()!, 0, 0, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, pathB.clone()!, 0, 2, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, pathC.clone()!, 0, 4, 0);
+    GeometryCoreTestIO.captureGeometry(allGeometry, pathD.clone()!, 0, 30, 0);
+
+    // const indexedPathA = CurveChainWithDistanceIndex.createCapture(pathA);
+    // const indexedPathB = CurveChainWithDistanceIndex.createCapture(pathB);
+    // const indexedPathC = CurveChainWithDistanceIndex.createCapture(pathC);
+    // const indexedPathD = CurveChainWithDistanceIndex.createCapture(pathD);
+    const returnUndefined = (_a: CurvePrimitive, _b: CurvePrimitive): CurvePrimitive | undefined => undefined;
+    const returnCloneA = (a: CurvePrimitive, _b: CurvePrimitive): CurvePrimitive | undefined => {
+      const c = a.clone();
+      if (c)
+        return c as CurvePrimitive;
+      return undefined;
+    };
+    ck.testUndefined(RuledSweep.mutatePartners(pathA, emptyBag, returnCloneA), "mutatePartners rejects mismatched collection types");
+    ck.testUndefined(RuledSweep.mutatePartners(pathA, pathD, returnCloneA), "mutatePartners rejects mismatched collection lengths");
+    ck.testUndefined(RuledSweep.mutatePartners(pathA, pathB, returnUndefined), "mutatePartners echos undefined steps");
+    ck.testTrue(emptyBag.isAlmostEqual(RuledSweep.mutatePartners(emptyBag, emptyBag, returnUndefined)!), "mutatePartners notices empty collection");
+    ck.testUndefined(RuledSweep.mutatePartners(emptyBag, bag1, returnCloneA), "mutatePartners notices different collection size");
+    ck.testUndefined(RuledSweep.mutatePartners(bag1, bag1, returnUndefined), "mutatePartners notices failed mutator");
+    ck.testUndefined(emptyBag.getChild(0));
+    ck.testUndefined(bag1.getChild(4));
+    ck.testUndefined(RuledSweep.mutatePartners(pathA, (lineSegment as any) as CurveCollection, returnUndefined), "mutatePartners rejects non-collection");
+    ck.testUndefined(RuledSweep.mutatePartners((lineSegment as any) as CurveCollection, (lineSegment as any) as CurveCollection, returnUndefined), "mutatePartners rejects non-collection");
+    ck.testUndefined(RuledSweep.mutatePartners(bagWithPath, bagWithPath, returnUndefined), "mutatePartners sees undefined step for collection in bag");
+    ck.checkpoint("CurvePrimitive.DistanceIndexMismatches");
+    GeometryCoreTestIO.saveGeometry(allGeometry, undefined, "CurvePrimitive.CurveChainWithDistanceIndex");
 
     expect(ck.getNumErrors()).equals(0);
   });

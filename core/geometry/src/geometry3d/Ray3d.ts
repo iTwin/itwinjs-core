@@ -115,7 +115,7 @@ export class Ray3d implements BeJSONFunctions {
   /** Clone the ray. */
   public clone(result?: Ray3d): Ray3d {
     if (result) {
-      result.set(this.origin, this.direction);
+      result.set(this.origin.clone(), this.direction.clone());
       return result;
     }
     return new Ray3d(this.origin.clone(), this.direction.clone());

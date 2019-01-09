@@ -71,8 +71,11 @@ export class LinearSweep extends SolidPrimitive {
     return new LinearSweep(this._contour.clone(), this._direction.clone(), this.capped);
   }
   public tryTransformInPlace(transform: Transform): boolean {
+    if (transform.matrix.isSingular())
+      return false;
     if (this._contour.tryTransformInPlace(transform)) {
       transform.multiplyVector(this._direction, this._direction);
+      return true;
     }
     return false;
   }

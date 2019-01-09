@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-import { Point3d } from "../geometry3d/Point3dVector3d";
+import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { LineString3d } from "../curve/LineString3d";
@@ -12,6 +12,7 @@ import { expect } from "chai";
 import { ClipPlane } from "../clipping/ClipPlane";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { Point2d } from "../geometry3d/Point2dVector2d";
+import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 /* tslint:disable:no-console */
 
 function exerciseLineString3d(ck: Checker, lsA: LineString3d) {
@@ -89,6 +90,64 @@ describe("LineString3d", () => {
       Point2d.create(0, 2)],
       10.0);
     ck.testExactNumber(4, ls.numPoints());
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("clonePartial", () => {
+    const ck = new Checker();
+    // we know the length of this linestring is 'a'.
+    // make partials
+    const a = 5.0;
+    const interiorFraction = 0.24324;
+    const ls = LineString3d.createXY([Point2d.create(0, 1), Point2d.create(0.5 * a, 1), Point2d.create(a, 1)], 0);
+    ck.testExactNumber(3, ls.numPoints());
+    const ls1 = ls.clonePartialCurve(interiorFraction, 3.0)!;
+    const ls2 = ls.clonePartialCurve(-4, interiorFraction)!;
+    ck.testCoordinate(ls1.curveLength(), (1.0 - interiorFraction) * a, "clonePartial does not extrapolate up");
+    ck.testCoordinate(ls2.curveLength(), (interiorFraction) * a, "clonePartial does not extrapolate down");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("addResolvedPoint", () => {
+    const ck = new Checker();
+    // addResovledPoint is private -- tricky tricky...
+    const a = 10.0;
+    const ls = LineString3d.createXY([Point2d.create(0, 1), Point2d.create(0.5 * a, 1), Point2d.create(a, 1)], 0);
+    const lsZ = ls as any;
+    const dest = new GrowableXYZArray(5);
+    // deviously reproduce the whole linestring via clamping ...
+    lsZ.addResolvedPoint(-1, 0.3, dest);
+    lsZ.addResolvedPoint(1, 0, dest);
+    lsZ.addResolvedPoint(5, 0, dest);
+    const n0 = dest.length;
+    const ls0 = LineString3d.create();
+    const ls0Z = ls0 as any;
+    ls0Z.addResolvedPoint(0, 0, dest);
+    ck.testExactNumber(n0, dest.length, "confirm no-op");
+    ls0.addPointXYZ(1, 2, 3);
+    ls0Z.addResolvedPoint(0, 0, dest);
+    ck.testExactNumber(n0 + 1, dest.length, "confirm access to singleton");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("addAuxData", () => {
+    const ck = new Checker();
+    const ls = LineString3d.create();
+    let n = 0;
+    for (let f = 0; f <= 1.0; f += 0.25) {
+      ls.addPointXYZ(f, 0, 0);
+      ls.addFraction(f);
+      ls.addUVParam(Point2d.create(f, f));
+      ls.addDerivative(Vector3d.create(1, 2, 3));
+      n++;
+    }
+    if (ck.testPointer(ls.fractions))
+      ck.testExactNumber(n, ls.fractions!.length);
+    if (ck.testPointer(ls.packedDerivatives))
+      ck.testExactNumber(n, ls.packedDerivatives!.length);
+    if (ck.testPointer(n, ls.packedDerivatives))
+      ck.testExactNumber(n, ls.packedDerivatives!.length);
+    ck.testExactNumber(n, ls.numPoints());
     expect(ck.getNumErrors()).equals(0);
   });
 

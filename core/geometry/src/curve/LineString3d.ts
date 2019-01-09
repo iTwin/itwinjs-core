@@ -218,6 +218,10 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
         this._points.push(p);
     }
   }
+  public addSteppedPoints(source: GrowableXYZArray, pointIndex0: number, step: number, numAdd: number) {
+    this._points.addSteppedPoints(source, pointIndex0, step, numAdd);
+  }
+
   /**
    * Add a point to the linestring.
    * @param point
@@ -948,6 +952,7 @@ export class LineString3d extends CurvePrimitive implements BeJSONFunctions {
     dest.push(LineString3d._indexPoint);
   }
   /** Return (if possible) a LineString which is a portion of this curve.
+   * * This implementation does NOT extrapolate the linestring -- fractions are capped at 0 and 1.
    * @param fractionA [in] start fraction
    * @param fractionB [in] end fraction
    */

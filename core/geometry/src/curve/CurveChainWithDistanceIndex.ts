@@ -211,7 +211,7 @@ export class CurveChainWithDistanceIndex extends CurvePrimitive {
   public endPoint(result?: Point3d): Point3d {
     const c = this._path.cyclicCurvePrimitive(-1);
     if (c)
-      return c.startPoint(result);
+      return c.endPoint(result);
     return Point3d.createZero(result);
   }
   /** Add strokes to caller-supplied linestring */
