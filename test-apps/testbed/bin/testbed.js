@@ -5,11 +5,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
-// Node 10 + Electron 3 + XVFB hangs
-if (process.platform !== "win32") {
-  process.exit(0);
-}
-
 const program = require("commander");
 const floss = require("../floss");
 const paths = require("@bentley/build-tools/scripts/config/paths");
@@ -17,11 +12,11 @@ const paths = require("@bentley/build-tools/scripts/config/paths");
 const isCI = (process.env.TF_BUILD);
 
 const reporterOptions = (isCI) ? {
-    reporter: "mocha-junit-reporter",
-    reporterOptions: `mochaFile=${paths.appJUnitTestResults}`
+  reporter: "mocha-junit-reporter",
+  reporterOptions: `mochaFile=${paths.appJUnitTestResults}`
 } : {
-	reporter: "spec"
-};
+    reporter: "spec"
+  };
 
 program
   .version("0.1.0")
