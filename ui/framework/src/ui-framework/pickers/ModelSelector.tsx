@@ -489,7 +489,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
             child.checkBoxState = CheckBoxState.On;
             nodeIds.push(child.id);
           }
-          child.labelBold = true;
+          child.labelBold = !child.labelBold;
         });
         this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(childNodes);
       });
