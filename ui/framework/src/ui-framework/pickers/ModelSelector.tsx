@@ -797,7 +797,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     const childNodes = await this.state.treeInfo!.dataProvider.getNodes(treeItem);
     let selectedNodes: string[] = this.state.treeInfo!.selectedNodes ? [...this.state.treeInfo!.selectedNodes!] : [];
     for (const child of childNodes) {
-      selectedNodes = enable ? this._selectLabel(child) : this._deselectLabel(child);
+      selectedNodes = enable ? this._selectLabel(child, selectedNodes) : this._deselectLabel(child, selectedNodes);
     }
 
     this.setState({
