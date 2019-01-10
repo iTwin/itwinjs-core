@@ -69,7 +69,8 @@
   },
   "categoriesModels": {
     "categories": "Categories",
-    "models": "Models"
+    "models": "Models",
+    "loadingMessage": "Loading..."
   },
   "savedViews": {
     "views": "Views",
