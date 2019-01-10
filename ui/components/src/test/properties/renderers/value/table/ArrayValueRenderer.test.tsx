@@ -5,10 +5,10 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { TableArrayValueRenderer } from "../../../../../properties/renderers/value/table/ArrayValueRenderer";
+import { TableArrayValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/ArrayValueRenderer";
 import { Orientation } from "@bentley/ui-core";
 import TestUtils from "../../../../TestUtils";
-import { ArrayValue } from "../../../../../properties/Value";
+import { ArrayValue } from "../../../../../ui-components/properties/Value";
 
 describe("ArrayValueRenderer", () => {
   it("renders correctly", () => {

@@ -6,9 +6,9 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { SelectablePropertyBlock, SelectablePropertyBlockProps, SelectablePropertyBlockState } from "../../../propertygrid/component/SelectablePropertyBlock";
+import { SelectablePropertyBlock, SelectablePropertyBlockProps, SelectablePropertyBlockState } from "../../../ui-components/propertygrid/component/SelectablePropertyBlock";
 import TestUtils from "../../TestUtils";
-import { getPropertyKey } from "../../../propertygrid/component/PropertyList";
+import { getPropertyKey } from "../../../ui-components/propertygrid/component/PropertyList";
 
 describe("SelectablePropertyBlock", () => {
   let props: SelectablePropertyBlockProps;

@@ -8,12 +8,12 @@ import * as sinon from "sinon";
 import { render, cleanup } from "react-testing-library";
 import ReactTestUtils from "react-dom/test-utils";
 import { Table } from "../../../ui-components";
-import withDragDrop from "../../../table/hocs/withDragDrop";
-import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../dragdrop/DragDropDef";
-import { TableDataProvider, ColumnDescription, RowItem, CellItem, TableDataChangeEvent } from "../../../table/TableDataProvider";
-import { PropertyValue, PropertyValueFormat } from "../../../properties/Value";
-import { PropertyDescription } from "../../../properties/Description";
-import { PropertyRecord } from "../../../properties/Record";
+import withDragDrop from "../../../ui-components/table/hocs/withDragDrop";
+import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../ui-components/dragdrop/DragDropDef";
+import { TableDataProvider, ColumnDescription, RowItem, CellItem, TableDataChangeEvent } from "../../../ui-components/table/TableDataProvider";
+import { PropertyValue, PropertyValueFormat } from "../../../ui-components/properties/Value";
+import { PropertyDescription } from "../../../ui-components/properties/Description";
+import { PropertyRecord } from "../../../ui-components/properties/Record";
 
 describe("Table withDragDrop HOC", () => {
 

@@ -16,7 +16,7 @@ import {
 } from "../../../ui-components";
 import { waitForSpy, ResolvablePromise } from "../../test-helpers/misc";
 import { DragDropContext } from "react-dnd";
-import { DragDropHeaderWrapper } from "../../../table/component/DragDropHeaderCell";
+import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
 import { LocalUiSettings } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
 import { BeDuration } from "@bentley/bentleyjs-core";

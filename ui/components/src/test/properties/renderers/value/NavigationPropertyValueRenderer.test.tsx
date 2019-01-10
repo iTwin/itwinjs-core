@@ -7,9 +7,9 @@ import { mount } from "enzyme";
 import * as React from "react";
 import { Id64 } from "@bentley/bentleyjs-core";
 import TestUtils from "../../../TestUtils";
-import { NavigationPropertyValueRenderer } from "../../../../properties/renderers/value/NavigationPropertyValueRenderer";
-import { PrimitiveValue } from "../../../../properties/Value";
-import { Hexadecimal } from "../../../../converters/valuetypes/PrimitiveTypes";
+import { NavigationPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
+import { PrimitiveValue } from "../../../../ui-components/properties/Value";
+import { Hexadecimal } from "../../../../ui-components/converters/valuetypes/PrimitiveTypes";
 
 function createNavigationProperty(value: Hexadecimal, displayValue?: string) {
   const property = TestUtils.createPrimitiveStringProperty("Category", "", displayValue);

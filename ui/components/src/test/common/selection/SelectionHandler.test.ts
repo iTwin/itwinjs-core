@@ -7,7 +7,7 @@ import * as moq from "typemoq";
 import {
   SelectionHandler, SingleSelectionHandler, MultiSelectionHandler,
   OnItemsDeselectedCallback, OnItemsSelectedCallback, OnSelectionChanged, DragAction,
-} from "../../..//common/selection/SelectionHandler";
+} from "../../../ui-components/common/selection/SelectionHandler";
 import { SelectionMode } from "../../../ui-components";
 
 describe("SelectionHandler", () => {

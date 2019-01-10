@@ -8,8 +8,8 @@ import * as sinon from "sinon";
 import { render, cleanup } from "react-testing-library";
 import ReactTestUtils from "react-dom/test-utils";
 import { Breadcrumb } from "../../../ui-components";
-import withDragDrop from "../../../breadcrumb/hoc/withDragDrop";
-import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../dragdrop/DragDropDef";
+import withDragDrop from "../../../ui-components/breadcrumb/hoc/withDragDrop";
+import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../ui-components/dragdrop/DragDropDef";
 
 describe("Breadcrumb withDragDrop HOC", () => {
 

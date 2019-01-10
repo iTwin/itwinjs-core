@@ -12,7 +12,7 @@ import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Tree } from "@bentley/ui-components";
-import { ActiveMatchInfo } from "@bentley/ui-components/lib/tree/HighlightingEngine";
+import { ActiveMatchInfo } from "@bentley/ui-components/lib/ui-components/tree/HighlightingEngine";
 import withFilteringSupport, { Props } from "../../tree/WithFilteringSupport";
 import FilteredPresentationTreeDataProvider from "../../tree/FilteredDataProvider";
 import IPresentationTreeDataProvider from "../../tree/IPresentationTreeDataProvider";

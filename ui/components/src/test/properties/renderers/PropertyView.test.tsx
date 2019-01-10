@@ -8,8 +8,8 @@ import sinon from "sinon";
 import * as React from "react";
 import { Orientation, ElementSeparator } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
-import { PropertyView } from "../../../properties/renderers/PropertyView";
-import { PropertyRecord } from "../../../properties/Record";
+import { PropertyView } from "../../../ui-components/properties/renderers/PropertyView";
+import { PropertyRecord } from "../../../ui-components/properties/Record";
 
 describe("PropertyView", () => {
   let propertyRecord: PropertyRecord;

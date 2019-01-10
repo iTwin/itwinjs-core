@@ -5,7 +5,7 @@
 /** @module Breadcrumb */
 import { TreeNodeItem, ImmediatelyLoadedTreeNodeItem, DelayLoadedTreeNodeItem, TreeDataProvider, hasChildren } from "../tree/TreeDataProvider";
 import { TableDataProvider, TableDataChangeEvent, RowItem, CellItem, ColumnDescription } from "../table/TableDataProvider";
-import { PropertyRecord, PropertyValueFormat } from "../ui-components";
+import { PropertyRecord, PropertyValueFormat } from "../../ui-components";
 
 /**
  * Utility class for tree searching and manipulation in the Breadcrumb component.

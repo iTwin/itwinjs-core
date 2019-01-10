@@ -7,9 +7,9 @@ import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
-import { PrimitivePropertyRenderer } from "../../../properties/renderers/PrimitivePropertyRenderer";
+import { PrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
 import { PrimitivePropertyLabelRenderer } from "../../../ui-components";
-import { PropertyView } from "../../../properties/renderers/PropertyView";
+import { PropertyView } from "../../../ui-components/properties/renderers/PropertyView";
 
 describe("PrimitivePropertyRenderer", () => {
   it("renders properly", () => {

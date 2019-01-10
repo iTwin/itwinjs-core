@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import TestUtils from "../../../TestUtils";
-import { DoublePropertyValueRenderer } from "../../../../properties/renderers/value/DoublePropertyValueRenderer";
-import { PrimitiveValue } from "../../../../properties/Value";
+import { DoublePropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/DoublePropertyValueRenderer";
+import { PrimitiveValue } from "../../../../ui-components/properties/Value";
 
 function createDoubleProperty(value: number, displayValue?: string) {
   const property = TestUtils.createPrimitiveStringProperty("Length", "", displayValue);

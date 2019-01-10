@@ -8,8 +8,8 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import { Key } from "ts-key-enum";
 
-import { FilteringInput } from "../..//filtering/FilteringInput";
-import { ResultSelector } from "../..//filtering/ResultSelector";
+import { FilteringInput } from "../../ui-components/filtering/FilteringInput";
+import { ResultSelector } from "../../ui-components/filtering/ResultSelector";
 import TestUtils from "../TestUtils";
 
 describe("FilteringInput", () => {

@@ -10,10 +10,10 @@ import sinon from "sinon";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { SimplePropertyDataProvider, PropertyCategoryBlock } from "../../../ui-components";
-import { PropertyGrid, PropertyGridCategory } from "../../../propertygrid/component/PropertyGrid";
-import { PropertyDataProvider, PropertyDataChangeEvent, PropertyCategory, PropertyData } from "../../../propertygrid/PropertyDataProvider";
-import { PropertyRecord } from "../../../properties/Record";
-import { PropertyValueFormat } from "../../../properties/Value";
+import { PropertyGrid, PropertyGridCategory } from "../../../ui-components/propertygrid/component/PropertyGrid";
+import { PropertyDataProvider, PropertyDataChangeEvent, PropertyCategory, PropertyData } from "../../../ui-components/propertygrid/PropertyDataProvider";
+import { PropertyRecord } from "../../../ui-components/properties/Record";
+import { PropertyValueFormat } from "../../../ui-components/properties/Value";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 

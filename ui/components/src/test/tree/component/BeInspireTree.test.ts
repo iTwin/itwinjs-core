@@ -13,8 +13,8 @@ import {
   MapPayloadToInspireNodeCallback, BeInspireTreeEvent, BeInspireTreeDataProviderInterface,
   toNode,
   BeInspireTreeDataProvider,
-} from "../../../tree/component/BeInspireTree";
-import { PageOptions } from "../../../common/PageOptions";
+} from "../../../ui-components/tree/component/BeInspireTree";
+import { PageOptions } from "../../../ui-components/common/PageOptions";
 
 interface Node {
   id: string;

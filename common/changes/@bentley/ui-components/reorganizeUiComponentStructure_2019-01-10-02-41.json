@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add ui-component root to avoid relative file conflicts in bundles.",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "bill.steinbock@bentley.com"
+}
