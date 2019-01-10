@@ -16,6 +16,7 @@ import { Angle } from "../geometry3d/Angle";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { SweepContour } from "./SweepContour";
 import { SolidPrimitive } from "./SolidPrimitive";
+import { StrokeOptions } from "../curve/StrokeOptions";
 
 export class RotationalSweep extends SolidPrimitive {
   private _contour: SweepContour;
@@ -68,7 +69,8 @@ export class RotationalSweep extends SolidPrimitive {
     return new RotationalSweep(this._contour.clone(), this._normalizedAxis.clone(), this._sweepAngle.clone(), this.capped);
   }
   public tryTransformInPlace(transform: Transform): boolean {
-    if (this._contour.tryTransformInPlace(transform)) {
+    if (!transform.matrix.isSingular()
+      && this._contour.tryTransformInPlace(transform)) {
       this._normalizedAxis.transformInPlace(transform);
       return this._normalizedAxis.direction.normalizeInPlace();
     }
@@ -86,7 +88,7 @@ export class RotationalSweep extends SolidPrimitive {
 
   public getFractionalRotationTransform(vFraction: number, result?: Transform): Transform {
     const radians = this._sweepAngle.radians * vFraction;
-    const rotation = Transform.createOriginAndMatrix(this._normalizedAxis.origin,
+    const rotation = Transform.createFixedPointAndMatrix(this._normalizedAxis.origin,
       Matrix3d.createRotationAroundVector(this._normalizedAxis.direction, Angle.createRadians(radians),
         result ? result.matrix : undefined) as Matrix3d);
     return rotation;
@@ -103,10 +105,23 @@ export class RotationalSweep extends SolidPrimitive {
     return section;
   }
 
-  public extendRange(range: Range3d) {
-    const strokes = this._contour.curves.cloneStroked();
-    const numStep = Geometry.stepCount(22.5, this._sweepAngle.degrees, 4, 16);
-    for (let i = 0; i <= numStep; i++)
-      strokes.extendRange(range, this.getFractionalRotationTransform(i / numStep));
+  public extendRange(range: Range3d, transform?: Transform) {
+    const degreeStep = 360 / 32;
+    const options = StrokeOptions.createForCurves();
+    options.angleTol = Angle.createDegrees(degreeStep);
+    const strokes = this._contour.curves.cloneStroked(options);
+    const numStep = Geometry.stepCount(degreeStep, this._sweepAngle.degrees, 4, 32);
+    const stepTransform = Transform.createIdentity();
+    if (transform) {
+      const compositeTransform = Transform.createIdentity();
+      for (let i = 0; i <= numStep; i++) {
+        transform.multiplyTransformTransform(this.getFractionalRotationTransform(i / numStep, stepTransform), compositeTransform);
+        strokes.extendRange(range, compositeTransform);
+      }
+
+    } else {
+      for (let i = 0; i <= numStep; i++)
+        strokes.extendRange(range, this.getFractionalRotationTransform(i / numStep, stepTransform));
+    }
   }
 }

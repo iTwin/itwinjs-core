@@ -219,6 +219,7 @@ export abstract class Target extends RenderTarget {
   private _batches: Batch[] = [];
   public plan?: RenderPlan;
   private _animationBranches?: AnimationBranchStates;
+  private _isReadPixelsInProgress = false;
 
   protected constructor(rect?: ViewRect) {
     super();
@@ -230,6 +231,8 @@ export abstract class Target extends RenderTarget {
     this.compositor = SceneCompositor.create(this);  // compositor is created but not yet initialized... we are still undisposed
     this.renderRect = rect ? rect : new ViewRect();  // if the rect is undefined, expect that it will be updated dynamically in an OnScreenTarget
   }
+
+  public get isReadPixelsInProgress(): boolean { return this._isReadPixelsInProgress; }
 
   public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides; }
   // public get currentOverrides(): FeatureOverrides | undefined { return this._currentOverrides ? undefined : undefined; } // ###TODO remove this - for testing purposes only (forces overrides off)
@@ -704,6 +707,8 @@ export abstract class Target extends RenderTarget {
     // Set this to true to visualize the output of readPixels()...useful for debugging pick.
     const drawForReadPixels = false;
     if (drawForReadPixels) {
+      this._isReadPixelsInProgress = true;
+
       if (this.performanceMetrics) this.performanceMetrics.recordTime("Begin Paint");
       const vf = this.currentViewFlags.clone(this._scratchViewFlags);
       vf.transparency = false;
@@ -727,6 +732,8 @@ export abstract class Target extends RenderTarget {
       if (this.performanceMetrics) this.performanceMetrics.recordTime("Draw Read Pixels");
 
       this._stack.pop();
+
+      this._isReadPixelsInProgress = false;
     } else {
       if (this.performanceMetrics) this.performanceMetrics.recordTime("Begin Paint");
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
@@ -835,6 +842,8 @@ export abstract class Target extends RenderTarget {
   private readonly _scratchRectFrustum = new Frustum();
   private readonly _scratchViewFlags = new ViewFlags();
   private readPixelsFromFbo(rect: ViewRect, selector: Pixel.Selector): Pixel.Buffer | undefined {
+    this._isReadPixelsInProgress = true;
+
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
     const vf = this.currentViewFlags.clone(this._scratchViewFlags);
@@ -893,7 +902,9 @@ export abstract class Target extends RenderTarget {
     // Restore the state
     this._stack.pop();
 
-    return this.compositor.readPixels(rect, selector);
+    const result = this.compositor.readPixels(rect, selector);
+    this._isReadPixelsInProgress = false;
+    return result;
   }
 
   /** Given a ViewRect, return a new rect that has been adjusted for the given aspect ratio. */

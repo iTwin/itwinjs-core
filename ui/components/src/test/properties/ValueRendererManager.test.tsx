@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
-import { PropertyValueRendererManager, IPropertyValueRenderer } from "../../properties/ValueRendererManager";
+import { PropertyValueRendererManager, IPropertyValueRenderer } from "../../ui-components/properties/ValueRendererManager";
 import TestUtils from "../TestUtils";
-import UiComponents from "../../UiComponents";
+import UiComponents from "../../ui-components/UiComponents";
 
 describe("PropertyValueRendererManager", () => {
   before(async () => {

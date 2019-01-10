@@ -9,7 +9,7 @@ import { Point2d } from "./Point2dVector2d";
 import { XYAndZ, XAndY, Matrix3dProps } from "./XYZProps";
 import { XYZ, Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
-
+/* tslint:disable:prefer-get */
 /**
  * PackedMatrix3dOps contains static methods for matrix operations where the matrix is a Float64Array.
  * * The Float64Array contains the matrix entries in row-major order
@@ -1083,9 +1083,9 @@ export class Matrix3d implements BeJSONFunctions {
   public static createColumns(vectorU: Vector3d, vectorV: Vector3d, vectorW: Vector3d, result?: Matrix3d): Matrix3d {
     return Matrix3d.createRowValues
       (
-        vectorU.x, vectorV.x, vectorW.x,
-        vectorU.y, vectorV.y, vectorW.y,
-        vectorU.z, vectorV.z, vectorW.z, result);
+      vectorU.x, vectorV.x, vectorW.x,
+      vectorU.y, vectorV.y, vectorW.y,
+      vectorU.z, vectorV.z, vectorW.z, result);
   }
 
   /** Create a matrix from column vectors.
@@ -1094,9 +1094,9 @@ export class Matrix3d implements BeJSONFunctions {
   public static createColumnsXYW(vectorU: XAndY, uz: number, vectorV: XAndY, vz: number, vectorW: XAndY, wz: number, result?: Matrix3d): Matrix3d {
     return Matrix3d.createRowValues
       (
-        vectorU.x, vectorV.x, vectorW.x,
-        vectorU.y, vectorV.y, vectorW.y,
-        uz, vz, wz, result);
+      vectorU.x, vectorV.x, vectorW.x,
+      vectorU.y, vectorV.y, vectorW.y,
+      uz, vz, wz, result);
   }
 
   /** Install data from xyz parts of Point4d  (w part of Point4d ignored) */
@@ -1171,9 +1171,9 @@ export class Matrix3d implements BeJSONFunctions {
   public static createRows(vectorU: Vector3d, vectorV: Vector3d, vectorW: Vector3d, result?: Matrix3d): Matrix3d {
     return Matrix3d.createRowValues
       (
-        vectorU.x, vectorU.y, vectorU.z,
-        vectorV.x, vectorV.y, vectorV.z,
-        vectorW.x, vectorW.y, vectorW.z, result);
+      vectorU.x, vectorU.y, vectorU.z,
+      vectorV.x, vectorV.y, vectorV.z,
+      vectorW.x, vectorW.y, vectorW.z, result);
   }
 
   /** Create a matrix that scales along a specified direction. The scale factor can be negative. for instance scale of -1.0 (negative one) is a mirror. */
@@ -1186,9 +1186,9 @@ export class Matrix3d implements BeJSONFunctions {
       const a = (scale - 1);
       return Matrix3d.createRowValues
         (
-          1 + a * x * x, a * x * y, a * x * z,
-          a * y * x, 1 + a * y * y, a * y * z,
-          a * z * x, a * z * y, 1 + a * z * z, result);
+        1 + a * x * x, a * x * y, a * x * z,
+        a * y * x, 1 + a * y * y, a * y * z,
+        a * z * x, a * z * y, 1 + a * z * z, result);
     }
     return Matrix3d.createUniformScale(scale);
   }
@@ -1663,6 +1663,12 @@ export class Matrix3d implements BeJSONFunctions {
   private static rowColumnDot(coffA: Float64Array, rowStartA: number, coffB: Float64Array, columnStartB: number): number {
     return coffA[rowStartA] * coffB[columnStartB] + coffA[rowStartA + 1] * coffB[columnStartB + 3] + coffA[rowStartA + 2] * coffB[columnStartB + 6];
   }
+  /**
+   * @returns true if the matrix is singular (i.e. collapses data to a plane, line, or point)
+   */
+  public isSingular(): boolean {
+    return !this.computeCachedInverse(true);
+  }
   /** compute the inverse of this Matrix3d. The inverse is stored for later use.
    * @returns Return true if the inverse computed.  (False if the columns collapse to a point, line or plane.)
    */
@@ -1761,10 +1767,10 @@ export class Matrix3d implements BeJSONFunctions {
   public scaleColumns(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d {
     return Matrix3d.createRowValues
       (
-        this.coffs[0] * scaleX, this.coffs[1] * scaleY, this.coffs[2] * scaleZ,
-        this.coffs[3] * scaleX, this.coffs[4] * scaleY, this.coffs[5] * scaleZ,
-        this.coffs[6] * scaleX, this.coffs[7] * scaleY, this.coffs[8] * scaleZ,
-        result);
+      this.coffs[0] * scaleX, this.coffs[1] * scaleY, this.coffs[2] * scaleZ,
+      this.coffs[3] * scaleX, this.coffs[4] * scaleY, this.coffs[5] * scaleZ,
+      this.coffs[6] * scaleX, this.coffs[7] * scaleY, this.coffs[8] * scaleZ,
+      result);
   }
 
   /** create a Matrix3d whose columns are scaled copies of this Matrix3d.
@@ -1801,10 +1807,10 @@ export class Matrix3d implements BeJSONFunctions {
   public scaleRows(scaleX: number, scaleY: number, scaleZ: number, result?: Matrix3d): Matrix3d {
     return Matrix3d.createRowValues
       (
-        this.coffs[0] * scaleX, this.coffs[1] * scaleX, this.coffs[2] * scaleX,
-        this.coffs[3] * scaleY, this.coffs[4] * scaleY, this.coffs[5] * scaleY,
-        this.coffs[6] * scaleZ, this.coffs[7] * scaleZ, this.coffs[8] * scaleZ,
-        result);
+      this.coffs[0] * scaleX, this.coffs[1] * scaleX, this.coffs[2] * scaleX,
+      this.coffs[3] * scaleY, this.coffs[4] * scaleY, this.coffs[5] * scaleY,
+      this.coffs[6] * scaleZ, this.coffs[7] * scaleZ, this.coffs[8] * scaleZ,
+      result);
   }
   /**
    * add scaled values from other Matrix3d to this Matrix3d
@@ -1824,10 +1830,10 @@ export class Matrix3d implements BeJSONFunctions {
   public scale(scale: number, result?: Matrix3d): Matrix3d {
     return Matrix3d.createRowValues
       (
-        this.coffs[0] * scale, this.coffs[1] * scale, this.coffs[2] * scale,
-        this.coffs[3] * scale, this.coffs[4] * scale, this.coffs[5] * scale,
-        this.coffs[6] * scale, this.coffs[7] * scale, this.coffs[8] * scale,
-        result);
+      this.coffs[0] * scale, this.coffs[1] * scale, this.coffs[2] * scale,
+      this.coffs[3] * scale, this.coffs[4] * scale, this.coffs[5] * scale,
+      this.coffs[6] * scale, this.coffs[7] * scale, this.coffs[8] * scale,
+      result);
 
   }
 

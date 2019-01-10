@@ -1688,7 +1688,7 @@ export class SpatialViewState extends ViewState3d {
   public computeFitRange(): AxisAlignedBox3d {
     // Loop over the current models in the model selector with loaded tile trees and union their ranges
     const range = new AxisAlignedBox3d();
-    this.forEachSpatialTileTreeModel((model: TileTreeModelState) => {   // Only fit real models -- ignore context models for fit.
+    this.forEachTileTreeModel((model: TileTreeModelState) => {   // ...if we don't want to fit context reality mdoels this should cal forEachSpatialTileTreeModel...
       const tileTree = model.tileTree;
       if (tileTree !== undefined && tileTree.rootTile !== undefined) {   // can we assume that a loaded model
         range.extendRange(tileTree.rootTile.computeWorldContentRange());

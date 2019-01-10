@@ -5,13 +5,13 @@
 /** @module Tree */
 
 import { ITreeDataProvider, TreeNodeItem } from "@bentley/ui-components";
-import IPresentationDataProvider from "../common/IPresentationDataProvider";
+import { IPresentationDataProvider } from "../common/IPresentationDataProvider";
 import { NodeKey, NodePathElement } from "@bentley/presentation-common";
 
 /**
  * Presentation tree data provider.
  */
-export default interface IPresentationTreeDataProvider extends ITreeDataProvider, IPresentationDataProvider {
+export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPresentationDataProvider {
   /**
    * Returns a [[NodeKey]] from given [[TreeNodeItem]].
    */

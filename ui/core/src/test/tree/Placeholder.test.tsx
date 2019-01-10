@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { LEVEL_OFFSET } from "../../tree/Node";
-import Placeholder from "../../tree/Placeholder";
+import { LEVEL_OFFSET } from "../../ui-core/tree/Node";
+import Placeholder from "../../ui-core/tree/Placeholder";
 
 describe("<Placeholder />", () => {
 

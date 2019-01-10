@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`Tree withFilteringSupport render renders with overlay if connection is different 1`] = `
+exports[`Tree withFilteringSupport render renders with overlay if filter is different 1`] = `
 <div
   className="filteredTree"
 >
@@ -20,7 +20,27 @@ exports[`Tree withFilteringSupport render renders with overlay if connection is 
 </div>
 `;
 
-exports[`Tree withFilteringSupport render renders with overlay if filter is different 1`] = `
+exports[`Tree withFilteringSupport render renders with overlay if imodel is different 1`] = `
+<div
+  className="filteredTree"
+>
+  <Tree
+    dataProvider={null}
+    nodeHighlightingProps={
+      Object {
+        "activeMatch": undefined,
+        "searchText": "filter",
+      }
+    }
+    selectionMode={1}
+  />
+  <div
+    className="filteredTreeOverlay"
+  />
+</div>
+`;
+
+exports[`Tree withFilteringSupport render renders with overlay if model is different 1`] = `
 <div
   className="filteredTree"
 >

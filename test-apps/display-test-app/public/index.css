@@ -68,6 +68,11 @@
   display: inline;
 }
 
+#snapModesContainer {
+  float: right;
+  margin-right: 5px;
+}
+
 .statusspan {
   margin-left: 5px;
   display:  inline;
@@ -465,8 +470,8 @@
 }
 
 .slider {
-  width:250px;
-  display:block;
+  width:200px;
+  display:inline;
 }
 
 #standardRotationMenu .simpleicon, #animationMenu .simpleicon, #debugToolsMenu .simpleicon {

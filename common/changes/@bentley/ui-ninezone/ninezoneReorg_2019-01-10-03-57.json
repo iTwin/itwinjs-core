@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Ensure unique relative paths in ninezone source.",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "bill.steinbock@bentley.com"
+}

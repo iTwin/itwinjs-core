@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 import { ContextMenu, GlobalContextMenu, ContextMenuItem, ContextSubMenu, ContextMenuDivider } from "../../ui-core";
-import { ContextMenuDirection } from "../../contextmenu/ContextMenu";
+import { ContextMenuDirection } from "../../ui-core/contextmenu/ContextMenu";
 
 describe("ContextMenu", () => {
 

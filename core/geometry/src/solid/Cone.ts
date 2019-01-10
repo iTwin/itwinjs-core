@@ -52,6 +52,8 @@ export class Cone extends SolidPrimitive implements UVSurface {
     return this._localToWorld.cloneRigid();
   }
   public tryTransformInPlace(transform: Transform): boolean {
+    if (transform.matrix.isSingular())
+      return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }

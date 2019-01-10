@@ -30,8 +30,6 @@ program
   .option('-c, --coverage', 'Generate json coverage report')
   .parse(process.argv);
 
-const perfServer = (program.usePerfWriterServer) ? PerformanceWriterServer.run() : undefined;
-
 floss(
   {
     path: "bootstrap.js",

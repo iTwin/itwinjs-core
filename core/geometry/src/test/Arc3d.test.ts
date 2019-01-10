@@ -15,6 +15,9 @@ import { prettyPrint } from "./testFunctions";
 import { Checker } from "./Checker";
 import { expect } from "chai";
 import { Sample } from "../serialization/GeometrySamples";
+import { LineString3d } from "../curve/LineString3d";
+import { CoordinateXYZ } from "../curve/CoordinateXYZ";
+import { Geometry } from "../Geometry";
 /* tslint:disable:no-console */
 
 function exerciseArcSet(ck: Checker, arcA: Arc3d) {
@@ -87,7 +90,24 @@ describe("Arc3d", () => {
         Point3d.create(1, 2, 5),
         Vector3d.create(1, 0, 0),
         Vector3d.create(0, 2, 0), AngleSweep.createStartEndDegrees(0, 90))!);
+
+    ck.testTrue(Arc3d.createCircularStartMiddleEnd(Point3d.create(0, 0, 0), Point3d.create(1, 0, 0), Point3d.create(4, 0, 0)) instanceof LineString3d);
+
     ck.checkpoint("Arc3d.HelloWorld");
+    const arcB = Arc3d.createUnitCircle();
+    arcB.setFromJSON(undefined);
+    ck.testFalse(arcA.isAlmostEqual(CoordinateXYZ.create(Point3d.create(1, 2, 3))));
+    // high eccentricty arc .. make sure the length is bounded by rectangle and diagonal of quadrant ...
+    const a = 1000.0;
+    const b = a / 1.e6;
+    const arcC = Arc3d.createXYEllipse(Point3d.create(0, 0, 0), a, b);
+    const lengthC = arcC.curveLengthBetweenFractions(0, 1);
+    ck.testLE(lengthC, 4.0 * (a + b));
+    ck.testLE(4.0 * Geometry.hypotenuseXY(a, b), lengthC);
+    // in-place construction -- easy arc length
+    const sweepRadians = 0.3423423;
+    Arc3d.create(Point3d.create(0, 0, 0), Vector3d.unitX(), Vector3d.unitY(), AngleSweep.createStartSweepRadians(0.2, sweepRadians), arcC);
+    ck.testCoordinate(arcC.curveLength(), sweepRadians);
     expect(ck.getNumErrors()).equals(0);
   });
   it("QuickLength", () => {

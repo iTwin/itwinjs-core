@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Can now await result from QuantityFormatter. Report delta relative to ACS when context lock enabled. Cleanup \"Measure.Points\" plug-in example until real measure tools are available.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

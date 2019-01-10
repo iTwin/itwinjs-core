@@ -18,15 +18,15 @@ import {
   KeySet, PageOptions,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import ContentDataProvider, { CacheInvalidationProps } from "../../common/ContentDataProvider";
+import { ContentDataProvider, CacheInvalidationProps } from "../../common/ContentDataProvider";
 
 /**
  * The Provider class is used to make protected ContentDataProvider
  * function public so the tests can call and spy on them.
  */
 class Provider extends ContentDataProvider {
-  constructor(connection: IModelConnection, rulesetId: string, displayType: string) {
-    super(connection, rulesetId, displayType);
+  constructor(imodel: IModelConnection, rulesetId: string, displayType: string) {
+    super(imodel, rulesetId, displayType);
   }
   public invalidateCache(props: CacheInvalidationProps): void {
     super.invalidateCache(props);
@@ -119,22 +119,22 @@ describe("ContentDataProvider", () => {
 
   });
 
-  describe("connection", () => {
+  describe("imodel", () => {
 
-    it("returns connection provider is initialized with", () => {
-      expect(provider.connection).to.eq(imodelMock.object);
+    it("returns imodel provider is initialized with", () => {
+      expect(provider.imodel).to.eq(imodelMock.object);
     });
 
-    it("sets a different connection and clears caches", () => {
+    it("sets a different imodel and clears caches", () => {
       const newConnection = moq.Mock.ofType<IModelConnection>();
-      provider.connection = newConnection.object;
-      expect(provider.connection).to.eq(newConnection.object);
+      provider.imodel = newConnection.object;
+      expect(provider.imodel).to.eq(newConnection.object);
       verifyMemoizedCachesCleared();
     });
 
-    it("doesn't clear caches if setting to the same connection", () => {
-      provider.connection = imodelMock.object;
-      expect(provider.connection).to.eq(imodelMock.object);
+    it("doesn't clear caches if setting to the same imodel", () => {
+      provider.imodel = imodelMock.object;
+      expect(provider.imodel).to.eq(imodelMock.object);
       verifyMemoizedCachesCleared(false);
     });
 

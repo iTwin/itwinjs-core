@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Property Changeset.Author in IModelChange ECSchema was renamed UserCreated. It holds the user ID instead of the user e-mail.",
+      "packageName": "@bentley/imodeljs-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "Krischan.Eberle@bentley.com"
+}

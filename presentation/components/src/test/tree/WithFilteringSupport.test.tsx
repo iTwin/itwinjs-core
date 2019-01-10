@@ -11,14 +11,13 @@ import { shallow, ShallowWrapper } from "enzyme";
 import * as faker from "faker";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Tree } from "@bentley/ui-components";
-import { ActiveMatchInfo } from "@bentley/ui-components/lib/tree/HighlightingEngine";
-import withFilteringSupport, { Props } from "../../tree/WithFilteringSupport";
-import FilteredPresentationTreeDataProvider from "../../tree/FilteredDataProvider";
-import IPresentationTreeDataProvider from "../../tree/IPresentationTreeDataProvider";
+import { Tree, ActiveMatchInfo } from "@bentley/ui-components";
+import { treeWithFilteringSupport, Props } from "../../tree/WithFilteringSupport";
+import { FilteredPresentationTreeDataProvider } from "../../tree/FilteredDataProvider";
+import { IPresentationTreeDataProvider } from "../../tree/IPresentationTreeDataProvider";
 
 // tslint:disable-next-line:variable-name naming-convention
-const PresentationTree = withFilteringSupport(Tree);
+const PresentationTree = treeWithFilteringSupport(Tree);
 interface State {
   filteredDataProvider?: FilteredPresentationTreeDataProvider;
 }
@@ -47,7 +46,7 @@ describe("Tree withFilteringSupport", () => {
 
   const setupDataProvider = (providerMock: moq.IMock<IPresentationTreeDataProvider>, imodel: IModelConnection, rulesetId: string) => {
     providerMock.reset();
-    providerMock.setup((x) => x.connection).returns(() => imodel!);
+    providerMock.setup((x) => x.imodel).returns(() => imodel!);
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
     providerMock.setup((x) => x.getFilteredNodePaths(moq.It.isAnyString())).returns(async () => []);
   };
@@ -71,7 +70,7 @@ describe("Tree withFilteringSupport", () => {
 
     it("creates new filtered data provider if ruleset changed", async () => {
       const anotherProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
-      setupDataProvider(anotherProviderMock, dataProviderMock.object.connection, faker.random.word());
+      setupDataProvider(anotherProviderMock, dataProviderMock.object.imodel, faker.random.word());
       expect(anotherProviderMock.object.rulesetId).to.be.not.equal(dataProviderMock.object.rulesetId);
 
       tree.setProps({ dataProvider: dataProviderMock.object, filter, onFilterApplied: onFilterAppliedMock.object });
@@ -82,10 +81,10 @@ describe("Tree withFilteringSupport", () => {
       onFilterAppliedMock.verify((x) => x(filter), moq.Times.never());
     });
 
-    it("creates new filtered data provider if connection changed", async () => {
+    it("creates new filtered data provider if imodel changed", async () => {
       const anotherProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
       setupDataProvider(anotherProviderMock, moq.Mock.ofType<IModelConnection>().object, dataProviderMock.object.rulesetId);
-      expect(anotherProviderMock.object.connection).to.be.not.equal(dataProviderMock.object.connection);
+      expect(anotherProviderMock.object.imodel).to.be.not.equal(dataProviderMock.object.imodel);
 
       tree.setProps({ dataProvider: dataProviderMock.object, filter, onFilterApplied: onFilterAppliedMock.object });
       await treeInstance.componentDidUpdate!({ dataProvider: anotherProviderMock.object, filter }, defaultState);
@@ -99,7 +98,7 @@ describe("Tree withFilteringSupport", () => {
       const anotherProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
       setupDataProvider(anotherProviderMock, moq.Mock.ofType<IModelConnection>().object, faker.random.word());
       expect(anotherProviderMock.object.rulesetId).to.be.not.equal(dataProviderMock.object.rulesetId);
-      expect(anotherProviderMock.object.connection).to.be.not.equal(dataProviderMock.object.connection);
+      expect(anotherProviderMock.object.imodel).to.be.not.equal(dataProviderMock.object.imodel);
 
       tree.setProps({ dataProvider: dataProviderMock.object, filter: "", onFilterApplied: onFilterAppliedMock.object });
       await treeInstance.componentDidUpdate!({ dataProvider: anotherProviderMock.object, filter }, defaultState);
@@ -111,7 +110,7 @@ describe("Tree withFilteringSupport", () => {
       const anotherProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
       setupDataProvider(anotherProviderMock, moq.Mock.ofType<IModelConnection>().object, faker.random.word());
       expect(anotherProviderMock.object.rulesetId).to.be.not.equal(dataProviderMock.object.rulesetId);
-      expect(anotherProviderMock.object.connection).to.be.not.equal(dataProviderMock.object.connection);
+      expect(anotherProviderMock.object.imodel).to.be.not.equal(dataProviderMock.object.imodel);
 
       tree.setProps({ dataProvider: dataProviderMock.object, filter: undefined, onFilterApplied: onFilterAppliedMock.object });
       await treeInstance.componentDidUpdate!({ dataProvider: anotherProviderMock.object, filter }, defaultState);
@@ -120,7 +119,7 @@ describe("Tree withFilteringSupport", () => {
 
     });
 
-    it("does not create new filtered data provider if filter, ruleset and connection did not change and filteredDataProvider is not set", async () => {
+    it("does not create new filtered data provider if filter, ruleset and imodel did not change and filteredDataProvider is not set", async () => {
       tree.setProps({ dataProvider: dataProviderMock.object, filter, onFilterApplied: onFilterAppliedMock.object });
       await treeInstance.componentDidUpdate!({ dataProvider: dataProviderMock.object, filter }, defaultState);
       const filteredDataProvider = treeInstance.state.filteredDataProvider;
@@ -128,10 +127,10 @@ describe("Tree withFilteringSupport", () => {
       onFilterAppliedMock.verify((x) => x(filter), moq.Times.never());
     });
 
-    it("does not create new filtered data provider if filter, ruleset and connection did not change", async () => {
+    it("does not create new filtered data provider if filter, ruleset and imodel did not change", async () => {
       const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
       filteredDataProviderMock.setup((x) => x.rulesetId).returns(() => dataProviderMock.object.rulesetId);
-      filteredDataProviderMock.setup((x) => x.connection).returns(() => dataProviderMock.object.connection);
+      filteredDataProviderMock.setup((x) => x.imodel).returns(() => dataProviderMock.object.imodel);
       filteredDataProviderMock.setup((x) => x.filter).returns(() => filter);
       tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
       tree.setProps({ dataProvider: dataProviderMock.object, filter, onFilterApplied: onFilterAppliedMock.object });
@@ -263,7 +262,7 @@ describe("Tree withFilteringSupport", () => {
     it("renders with overlay if filter is different", () => {
       const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
       filteredDataProviderMock.setup((x) => x.rulesetId).returns(() => dataProviderMock.object.rulesetId);
-      filteredDataProviderMock.setup((x) => x.connection).returns(() => dataProviderMock.object.connection);
+      filteredDataProviderMock.setup((x) => x.imodel).returns(() => dataProviderMock.object.imodel);
       filteredDataProviderMock.setup((x) => x.filter).returns(() => "different filter");
 
       tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
@@ -277,7 +276,7 @@ describe("Tree withFilteringSupport", () => {
       expect(differentRulesetId).to.not.be.equal(dataProviderMock.object.rulesetId);
       const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
       filteredDataProviderMock.setup((x) => x.rulesetId).returns(() => differentRulesetId);
-      filteredDataProviderMock.setup((x) => x.connection).returns(() => dataProviderMock.object.connection);
+      filteredDataProviderMock.setup((x) => x.imodel).returns(() => dataProviderMock.object.imodel);
       filteredDataProviderMock.setup((x) => x.filter).returns(() => filter);
 
       tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
@@ -286,11 +285,11 @@ describe("Tree withFilteringSupport", () => {
       expect(treeInstance.render()).to.matchSnapshot();
     });
 
-    it("renders with overlay if connection is different", async () => {
+    it("renders with overlay if imodel is different", async () => {
       const anotherConnectionMock = moq.Mock.ofType<IModelConnection>();
       const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
       filteredDataProviderMock.setup((x) => x.rulesetId).returns(() => dataProviderMock.object.rulesetId);
-      filteredDataProviderMock.setup((x) => x.connection).returns(() => anotherConnectionMock.object);
+      filteredDataProviderMock.setup((x) => x.imodel).returns(() => anotherConnectionMock.object);
       filteredDataProviderMock.setup((x) => x.filter).returns(() => filter);
 
       tree.setState({ filteredDataProvider: filteredDataProviderMock.object });
@@ -302,7 +301,7 @@ describe("Tree withFilteringSupport", () => {
     it("renders without overlay if nothing is different", async () => {
       const filteredDataProviderMock = moq.Mock.ofType<FilteredPresentationTreeDataProvider>();
       filteredDataProviderMock.setup((x) => x.rulesetId).returns(() => dataProviderMock.object.rulesetId);
-      filteredDataProviderMock.setup((x) => x.connection).returns(() => dataProviderMock.object.connection);
+      filteredDataProviderMock.setup((x) => x.imodel).returns(() => dataProviderMock.object.imodel);
       filteredDataProviderMock.setup((x) => x.filter).returns(() => filter);
 
       tree.setState({ filteredDataProvider: filteredDataProviderMock.object });

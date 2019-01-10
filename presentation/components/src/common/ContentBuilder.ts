@@ -170,7 +170,7 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, path?:
 /**
  * A helper class which creates `ui-components` objects from `presentation` objects.
  */
-export default class ContentBuilder {
+export class ContentBuilder {
   /**
    * Create a property record for specified field and item
    * @param field Content field to create the record for

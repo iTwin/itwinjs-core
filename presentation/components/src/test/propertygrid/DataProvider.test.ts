@@ -24,7 +24,7 @@ import {
   ArrayTypeDescription, PropertyValueFormat, PropertiesField, StructTypeDescription,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import PresentationPropertyDataProvider from "../../propertygrid/DataProvider";
+import { PresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
 
 const favoritesCategoryName = "Favorite";

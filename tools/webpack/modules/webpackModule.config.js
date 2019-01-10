@@ -87,7 +87,8 @@ function getConfig(env, nodeAsTarget) {
       'react-redux': { root: 'ReactRedux', commonjs2: 'react-redux', commonjs: 'react-redux', amd: 'react-redux' },
       'redux': { root: 'Redux', commonjs2: 'redux', commonjs: 'redux', amd: 'redux' },
       'inspire-tree': { root: 'InspireTree', commonjs2: 'inspire-tree', commonjs: 'inspire-tree', amd: 'inspire-tree' },
-      'lodash': { root: '_', commonjs2: 'lodash', commonjs: 'lodash', amd: 'lodash' }
+      'lodash': { root: '_', commonjs2: 'lodash', commonjs: 'lodash', amd: 'lodash' },
+      'electron': 'commonjs electron',
     },
     module: {
       rules: [

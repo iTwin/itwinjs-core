@@ -5,8 +5,8 @@
 import * as React from "react";
 import { expect } from "chai";
 import { render, cleanup } from "react-testing-library";
-import { DragDropTreeNodeComponent, DragDropTreeNode } from "../../../tree/hocs/DragDropTreeNode";
-import { DragSourceProps, DropTargetProps } from "../../../dragdrop/DragDropDef";
+import { DragDropTreeNodeComponent, DragDropTreeNode } from "../../../ui-components/tree/hocs/DragDropTreeNode";
+import { DragSourceProps, DropTargetProps } from "../../../ui-components/dragdrop/DragDropDef";
 
 describe("DragDropTreeNode", () => {
 

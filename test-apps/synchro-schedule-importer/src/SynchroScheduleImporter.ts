@@ -132,18 +132,6 @@ function animationScriptFromSynchro(synchroJson: object, iModel: IModelDb): any 
                 case "elementID":
                     break;
                 case "transformTimeline":
-                    /*
-                        const thisElement = iModel.elements.getElement(elementId) as GeometricElement;
-                        if (thisElement && Array.isArray(value)) {
-                            for (const timelineEntry of value) {
-                                if (timelineEntry.value) {
-                                    const entryTransform = Transform.fromJSON(timelineEntry.value);
-                                    const inverseElementMatrix = thisElement.placement.rotation.inverse();
-                                    const matrix = entryTransform.matrix.multiplyMatrixMatrix(inverseElementMatrix);
-                                    timelineEntry.value = Transform.createRefs(entryTransform.origin, matrix).toJSON();
-                                }
-                            }
-                        } */
                     if (!transformTimelineIsIdentity(value))
                         data[key] = value;
                     break;
@@ -178,14 +166,13 @@ function doAddAnimationScript(iModel: IModelDb, animationScript: string, createS
 
     iModel.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, (view: ViewDefinition) => {
         // Create a new display style.
-        const viewFlags = new ViewFlags();
-        viewFlags.renderMode = RenderMode.SmoothShade;
-        viewFlags.cameraLights = true;
-        const backgroundColor = new ColorDef("rgb(127, 127, 127)");
+        const vf = new ViewFlags();
+        vf.renderMode = RenderMode.SmoothShade;
+        vf.cameraLights = true;
+        const bgColor = new ColorDef("rgb(127, 127, 127)");
 
-        const displayStyleId = DisplayStyle3d.insert(iModel, view.model, "Schedule View Style", viewFlags, backgroundColor);
+        const displayStyleId = DisplayStyle3d.insert(iModel, view.model, "Schedule View Style", { viewFlags: vf, backgroundColor: bgColor, scheduleScript: script });
         const displayStyleProps = iModel.elements.getElementProps(displayStyleId);
-        displayStyleProps.jsonProperties.styles.scheduleScript = script;        // Add schedule to the display style propertiies.
         iModel.elements.updateElement(displayStyleProps);
         iModel.views.setDefaultViewId(OrthographicViewDefinition.insert(iModel, view.model, "Schedule View", view.modelSelectorId, view.categorySelectorId, displayStyleId, iModel.projectExtents));
         return true;

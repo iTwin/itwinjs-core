@@ -109,7 +109,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public onUndoPreviousStep(): boolean {
+  public async onUndoPreviousStep(): Promise<boolean> {
     if (0 === this.points.length)
       return false;
 
@@ -122,6 +122,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
   }
 
   public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+    // TESTING ONLY - TBD Keyboard shortcuts...
     if (wentDown) {
       switch (keyEvent.key.toLowerCase()) {
         case " ":

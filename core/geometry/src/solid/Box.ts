@@ -48,6 +48,8 @@ export class Box extends SolidPrimitive {
     return this._localToWorld.cloneRigid();
   }
   public tryTransformInPlace(transform: Transform): boolean {
+    if (transform.matrix.isSingular())
+      return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
@@ -106,7 +108,7 @@ export class Box extends SolidPrimitive {
       const lowPoint = range.low;
       const xSize = range.xLength();
       const ySize = range.yLength();
-      const zPoint = range.low.clone ();
+      const zPoint = range.low.clone();
       zPoint.z = zPoint.z + range.zLength();
       return Box.createDgnBox(
         lowPoint,

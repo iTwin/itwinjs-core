@@ -198,7 +198,7 @@ describe("ChangeSummary (#integration)", () => {
         assert.isAtLeast(rowCount, 3);
       });
 
-      iModel.withPreparedStatement("SELECT ECClassId,Summary,WsgId,ParentWsgId,Description,PushDate,Author FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
+      iModel.withPreparedStatement("SELECT ECClassId,Summary,WsgId,ParentWsgId,Description,PushDate,UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         let rowCount: number = 0;
         while (myStmt.step() === DbResult.BE_SQLITE_ROW) {
           rowCount++;
@@ -207,7 +207,7 @@ describe("ChangeSummary (#integration)", () => {
           assert.equal(row.summary.id, summaryIds[rowCount - 1]);
           assert.equal(row.summary.relClassName, "IModelChange.ChangeSummaryIsExtractedFromChangeset");
           assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
-          assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
+          assert.isDefined(row.userCreated, "IModelChange.ChangeSet.UserCreated is expected to be set for the changesets used in this test.");
           // the other properties are not used, but using them in the ECSQL is important to verify preparation works
         }
         assert.isAtLeast(rowCount, 3);
@@ -240,7 +240,7 @@ describe("ChangeSummary (#integration)", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-      iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, Author FROM imodelchange.ChangeSet", (myStmt) => {
+      iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         const row: any = myStmt.getRow();
         assert.isDefined(row.wsgId);
@@ -248,7 +248,7 @@ describe("ChangeSummary (#integration)", () => {
         assert.isDefined(row.summary);
         assert.equal(row.summary.id, summaryIds[0]);
         assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
-        assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
+        assert.isDefined(row.userCreated, "IModelChange.ChangeSet.UserCreated is expected to be set for the changesets used in this test.");
         // the other properties are not used, but using them in the ECSQL is important to verify preparation works
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
       });
@@ -278,7 +278,7 @@ describe("ChangeSummary (#integration)", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-      iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, Author FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
+      iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet ORDER BY Summary.Id", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         let row: any = myStmt.getRow();
         assert.isDefined(row.wsgId);
@@ -287,7 +287,7 @@ describe("ChangeSummary (#integration)", () => {
         assert.isDefined(row.summary);
         assert.equal(row.summary.id, summaryIds[0]);
         assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
-        assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
+        assert.isDefined(row.userCreated, "IModelChange.ChangeSet.UserCreated is expected to be set for the changesets used in this test.");
         // the other properties are not used, but using them in the ECSQL is important to verify preparation works
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         row = myStmt.getRow();
@@ -296,7 +296,7 @@ describe("ChangeSummary (#integration)", () => {
         assert.isDefined(row.summary);
         assert.equal(row.summary.id, summaryIds[1]);
         assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
-        assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
+        assert.isDefined(row.userCreated, "IModelChange.ChangeSet.UserCreated is expected to be set for the changesets used in this test.");
       });
     } finally {
       await iModel.close(actx, accessToken);
@@ -325,7 +325,7 @@ describe("ChangeSummary (#integration)", () => {
       ChangeSummaryManager.attachChangeCache(iModel);
       assert.isTrue(ChangeSummaryManager.isChangeCacheAttached(iModel));
 
-      iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, Author FROM imodelchange.ChangeSet", (myStmt) => {
+      iModel.withPreparedStatement("SELECT WsgId, Summary, ParentWsgId, Description, PushDate, UserCreated FROM imodelchange.ChangeSet", (myStmt) => {
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_ROW);
         const row: any = myStmt.getRow();
         assert.isDefined(row.wsgId);
@@ -333,7 +333,7 @@ describe("ChangeSummary (#integration)", () => {
         assert.isDefined(row.summary);
         assert.equal(row.summary.id, summaryIds[0]);
         assert.isDefined(row.pushDate, "IModelChange.ChangeSet.PushDate is expected to be set for the changesets used in this test.");
-        assert.isDefined(row.author, "IModelChange.ChangeSet.Author is expected to be set for the changesets used in this test.");
+        assert.isDefined(row.userCreated, "IModelChange.ChangeSet.UserCreated is expected to be set for the changesets used in this test.");
         // the other properties are not used, but using them in the ECSQL is important to verify preparation works
         assert.equal(myStmt.step(), DbResult.BE_SQLITE_DONE);
       });

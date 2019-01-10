@@ -4,11 +4,9 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Unified Selection */
 
-import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { SelectionHandler } from "@bentley/presentation-frontend";
+import { IPresentationDataProvider } from "./IPresentationDataProvider";
 
-export default interface IUnifiedSelectionComponent {
-  imodel: IModelConnection;
-  rulesetId: string;
+export interface IUnifiedSelectionComponent extends IPresentationDataProvider {
   selectionHandler?: SelectionHandler;
 }

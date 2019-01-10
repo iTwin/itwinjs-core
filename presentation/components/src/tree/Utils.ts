@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
 
-import StyleHelper from "../common/StyleHelper";
+import { StyleHelper } from "../common/StyleHelper";
 import { CheckBoxState } from "@bentley/ui-core";
 import { Node, PageOptions as PresentationPageOptions } from "@bentley/presentation-common";
 import { DelayLoadedTreeNodeItem, PageOptions as UiPageOptions } from "@bentley/ui-components";

@@ -9,8 +9,8 @@ import { Keys, Subtract, Omit, StandardNodeTypes, ECInstanceNodeKey } from "@ben
 import { Presentation, SelectionHandler, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { TreeProps, TreeNodeItem } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
-import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
-import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
+import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
+import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 
 /**
  * Props that are injected to the HOC component.
@@ -42,7 +42,7 @@ export interface Props {
  * **Note:** it is required for the tree to use [[PresentationTreeDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<Omit<P, "selectedNodes">, Props> & Props> {
+export function treeWithUnifiedSelection<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<Subtract<Omit<P, "selectedNodes">, Props> & Props> {
 
   type CombinedProps = Subtract<Omit<P, "selectedNodes">, Props> & Props;
 
@@ -67,13 +67,13 @@ export default function treeWithUnifiedSelection<P extends TreeProps>(TreeCompon
     /** Get selection handler used by this property grid */
     public get selectionHandler(): SelectionHandler | undefined { return this._selectionHandler; }
 
-    public get imodel() { return this.props.dataProvider.connection; }
+    public get imodel() { return this.props.dataProvider.imodel; }
 
     public get rulesetId() { return this.props.dataProvider.rulesetId; }
 
     public componentDidMount() {
       const name = `Tree_${counter++}`;
-      const imodel = this.props.dataProvider.connection;
+      const imodel = this.props.dataProvider.imodel;
       const rulesetId = this.props.dataProvider.rulesetId;
       this._selectionHandler = this.props.selectionHandler
         ? this.props.selectionHandler : new SelectionHandler(Presentation.selection, name, imodel, rulesetId);
@@ -87,7 +87,7 @@ export default function treeWithUnifiedSelection<P extends TreeProps>(TreeCompon
 
     public componentDidUpdate() {
       if (this._selectionHandler) {
-        this._selectionHandler.imodel = this.props.dataProvider.connection;
+        this._selectionHandler.imodel = this.props.dataProvider.imodel;
         this._selectionHandler.rulesetId = this.props.dataProvider.rulesetId;
       }
     }

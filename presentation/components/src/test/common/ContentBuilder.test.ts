@@ -15,7 +15,7 @@ import {
   PropertyValueFormat, PrimitiveTypeDescription, PropertiesField, Property, Item,
   ArrayTypeDescription, StructTypeDescription, NestedContentField, NestedContentValue,
 } from "@bentley/presentation-common";
-import ContentBuilder from "../../common/ContentBuilder";
+import { ContentBuilder } from "../../common/ContentBuilder";
 import { PrimitiveValue } from "@bentley/ui-components";
 
 describe("ContentBuilder", () => {

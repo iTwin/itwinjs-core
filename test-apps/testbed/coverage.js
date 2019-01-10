@@ -5,17 +5,28 @@
 
 'use strict'
 
-const glob = require('glob')
-const { resolve, join } = require('path')
-const fs = require('fs')
-const { hookRequire } = require('istanbul-lib-hook')
-const { createInstrumenter } = require('istanbul-lib-instrument')
+const glob = require("glob")
+const { resolve, join } = require("path")
+const fs = require("fs")
+const { hookRequire } = require("istanbul-lib-hook")
+const { createInstrumenter } = require("istanbul-lib-instrument")
 
 function match() {
   const map = {}
   const fn = function (file) { return map[file] }
 
-  fn.files = glob.sync(pattern, { root: __dirname, realpath: true })
+  const pattern = '../../core/@(frontend|backend)/lib/**/*.js'
+
+  const opts = {
+    root: __dirname,
+    realpath: true,
+    ignore: [
+      "../../core/@(frontend|backend)/lib/module/**",
+      "../../core/@(frontend|backend)/lib/*test/**"
+    ]
+  };
+
+  fn.files = glob.sync(pattern, opts);
   for (let file of fn.files) {
     map[file] = transformer(fs.readFileSync(file, 'utf-8'), file)
     cov[file] = instrumenter.lastFileCoverage()
@@ -33,7 +44,11 @@ function report() {
   fs.writeFileSync(join(tmpd, `${process.type}.json`), JSON.stringify(cov), 'utf-8')
 }
 
-const instrumenter = createInstrumenter()
+const customOpts = {
+  includeAllSources: true
+};
+
+const instrumenter = createInstrumenter(customOpts)
 const transformer = instrumenter.instrumentSync.bind(instrumenter)
 const cov = global.__coverage__ = {}
 
@@ -42,10 +57,8 @@ if (!fs.existsSync(tmpd)) {
   fs.mkdirSync(tmpd)
 }
 
-const pattern = '../../core/@(frontend|backend)/lib/!(module)/!(*.test*).js'
-
 const matched = match()
-//const matched = function (file) { console.log(file); return true }
+
 hookRequire(matched, transformer, {})
 
 if (process.type === 'browser') {

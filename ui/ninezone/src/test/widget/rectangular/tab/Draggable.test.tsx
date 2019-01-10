@@ -5,8 +5,8 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { Draggable } from "../../../../ui-ninezone";
-import { HorizontalAnchor } from "../../../..//widget/Stacked";
-import { TabMode } from "../../../..//widget/rectangular/tab/Tab";
+import { HorizontalAnchor } from "../../../../ui-ninezone/widget/Stacked";
+import { TabMode } from "../../../../ui-ninezone/widget/rectangular/tab/Tab";
 
 describe("<Draggable />", () => {
   it("should render", () => {

@@ -5,10 +5,10 @@
 
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { Point3d, Vector3d, XYAndZ, XAndY, Point2d } from "@bentley/geometry-core";
+import { Point3d, XYAndZ, XAndY, Point2d } from "@bentley/geometry-core";
 import {
-  IModelApp, PrimitiveTool, AccuDrawHintBuilder, ViewRect, Viewport, QuantityType, BeButtonEvent,
-  EventHandled, AccuDrawShortcuts, DynamicsContext, RotationMode, DecorateContext, CanvasDecoration,
+  IModelApp, PrimitiveTool, ViewRect, Viewport, QuantityType, BeButtonEvent,
+  EventHandled, DynamicsContext, DecorateContext, CanvasDecoration,
 } from "@bentley/imodeljs-frontend";
 
 class DistanceMarker implements CanvasDecoration {
@@ -79,29 +79,37 @@ class DistanceMarker implements CanvasDecoration {
 export class MeasurePointsTool extends PrimitiveTool {
   public static toolId = "Measure.Points";
   public readonly points: Point3d[] = [];
-  private _measurements: DistanceMarker[] = [];
+  protected _distanceMarker?: DistanceMarker;
 
+  public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
-  public setupAndPromptForNextAction(): void {
+  public onUnsuspend(): void { this.showPrompt(); }
+  protected showPrompt(): void { IModelApp.notifications.outputPromptByKey(0 === this.points.length ? "MeasureTool:tools.Measure.Points.Prompts.FirstPoint" : "MeasureTool:tools.Measure.Points.Prompts.NextPoint"); }
+
+  protected setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
+    IModelApp.accuDraw.deactivate(); // Don't enable AccuDraw automatically when starting dynamics.
+    this.showPrompt();
+  }
 
-    if (0 === this.points.length) {
-      IModelApp.notifications.outputPromptByKey("MeasureTool:tools.Measure.ByPoints.Prompts.FirstPoint");
+  protected updateDynamicDistanceMarker(points: Point3d[]): void {
+    this._distanceMarker = undefined;
+    if (points.length < 2)
       return;
-    }
+    const distance = points[points.length - 1].distance(points[points.length - 2]);
+    if (distance === 0.0)
+      return;
 
-    IModelApp.notifications.outputPromptByKey("MeasureTool:tools.Measure.ByPoints.Prompts.NextPoint");
+    const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    if (undefined === formatterSpec)
+      return;
+    const formattedValue = IModelApp.quantityFormatter.formatQuantity(distance, formatterSpec);
+    if (undefined === formattedValue)
+      return;
 
-    const hints = new AccuDrawHintBuilder();
-    hints.enableSmartRotation = true;
-
-    if (this.points.length > 1 && !(this.points[this.points.length - 1].isAlmostEqual(this.points[this.points.length - 2])))
-      hints.setXAxis(Vector3d.createStartEnd(this.points[this.points.length - 2], this.points[this.points.length - 1])); // Rotate AccuDraw to last segment...
-
-    hints.setOrigin(this.points[this.points.length - 1]);
-    hints.sendHints();
+    this._distanceMarker = new DistanceMarker(points[points.length - 1], formattedValue);
   }
 
   public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
@@ -111,133 +119,38 @@ export class MeasurePointsTool extends PrimitiveTool {
     const tmpPoints = this.points.slice();
     tmpPoints.push(ev.point.clone());
 
-    const distance = tmpPoints[tmpPoints.length - 1].distance(tmpPoints[tmpPoints.length - 2]);
-    if (distance !== 0.0) {
-      const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
-      if (formatterSpec) {
-        const formattedValue = IModelApp.quantityFormatter.formatQuantityWithSpec(distance, formatterSpec);
-        if (formattedValue) {
-          // for now only show marker a cursor, but tool is set up to also allow marker a each point
-          if (this._measurements.length === 0)
-            this._measurements.push(new DistanceMarker(tmpPoints[tmpPoints.length - 1], formattedValue));
-          else
-            this._measurements[0] = new DistanceMarker(tmpPoints[tmpPoints.length - 1], formattedValue);
-        }
-      } else {
-        // async call to load formatterSpec into formatter cache
-        IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
-      }
-    }
     const builder = context.createSceneGraphicBuilder();
 
     builder.setSymbology(ColorDef.white, ColorDef.white, 1);
     builder.addLineString(tmpPoints);
 
     context.addGraphic(builder.finish());
+    this.updateDynamicDistanceMarker(tmpPoints);
   }
 
   public decorate(context: DecorateContext): void {
-    if (context.viewport.view.isSpatialView())
-      this._measurements.forEach((measurement) => measurement.addDecoration(context));
+    if (!context.viewport.view.isSpatialView())
+      return;
+    if (undefined !== this._distanceMarker)
+      this._distanceMarker.addDecoration(context);
   }
+
+  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     this.points.push(ev.point.clone());
     this.setupAndPromptForNextAction();
 
-    if (!this.isDynamicsStarted)
+    if (this.points.length > 1)
+      this.onReinitialize(); // 2nd point restarts, distance only shown in dynamics...
+    else if (!this.isDynamicsStarted)
       this.beginDynamics();
 
     return EventHandled.No;
   }
 
   public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
-    if (this.points.length < 1)
-      IModelApp.toolAdmin.startDefaultTool();
-    else
-      this.onReinitialize();
-    return EventHandled.No;
-  }
-
-  public onUndoPreviousStep(): boolean {
-    if (0 === this.points.length)
-      return false;
-
-    this.points.pop();
-    if (0 === this.points.length)
-      this.onReinitialize();
-    else
-      this.setupAndPromptForNextAction();
-    return true;
-  }
-
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (wentDown) {
-      switch (keyEvent.key) {
-        case " ":
-          AccuDrawShortcuts.changeCompassMode();
-          break;
-        case "Enter":
-          AccuDrawShortcuts.lockSmart();
-          break;
-        case "x":
-        case "X":
-          AccuDrawShortcuts.lockX();
-          break;
-        case "y":
-        case "Y":
-          AccuDrawShortcuts.lockY();
-          break;
-        case "z":
-        case "Z":
-          AccuDrawShortcuts.lockZ();
-          break;
-        case "a":
-        case "A":
-          AccuDrawShortcuts.lockAngle();
-          break;
-        case "d":
-        case "D":
-          AccuDrawShortcuts.lockDistance();
-          break;
-        case "t":
-        case "T":
-          AccuDrawShortcuts.setStandardRotation(RotationMode.Top);
-          break;
-        case "f":
-        case "F":
-          AccuDrawShortcuts.setStandardRotation(RotationMode.Front);
-          break;
-        case "s":
-        case "S":
-          AccuDrawShortcuts.setStandardRotation(RotationMode.Side);
-          break;
-        case "v":
-        case "V":
-          AccuDrawShortcuts.setStandardRotation(RotationMode.View);
-          break;
-        case "o":
-        case "O":
-          AccuDrawShortcuts.setOrigin();
-          break;
-        case "c":
-        case "C":
-          AccuDrawShortcuts.rotateCycle(false);
-          break;
-        case "q":
-        case "Q":
-          AccuDrawShortcuts.rotateAxes(true);
-          break;
-        case "e":
-        case "E":
-          AccuDrawShortcuts.rotateToElement(false);
-          break;
-        case "r":
-        case "R":
-          AccuDrawShortcuts.defineACSByPoints();
-          break;
-      }
-    }
+    this.onReinitialize();
     return EventHandled.No;
   }
 

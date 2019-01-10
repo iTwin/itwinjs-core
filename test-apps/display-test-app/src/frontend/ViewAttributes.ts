@@ -29,6 +29,7 @@ type ViewFlag = "acsTriad" | "grid" | "fill" | "materials" | "textures" | "visib
 type EnvironmentAspect = "ground" | "sky";
 
 export class ViewAttributes {
+  private static _expandViewFlags = true;
   private readonly _vp: Viewport;
   private readonly _element: HTMLElement;
   private readonly _updates: UpdateAttribute[] = [];
@@ -53,23 +54,39 @@ export class ViewAttributes {
     this._removeMe = vp.onViewChanged.addListener((_vp) => this.update());
 
     this.addRenderMode();
+    this._element.appendChild(document.createElement("hr"));
 
-    this.addViewFlagAttribute("ACS Triad", "acsTriad");
-    this.addViewFlagAttribute("Grid", "grid");
-    this.addViewFlagAttribute("Fill", "fill");
-    this.addViewFlagAttribute("Materials", "materials");
-    this.addViewFlagAttribute("Textures", "textures");
-    this.addViewFlagAttribute("Visible Edges", "visibleEdges", true);
-    this.addViewFlagAttribute("Hidden Edges", "hiddenEdges", true);
-    this.addViewFlagAttribute("Monochrome", "monochrome");
-    this.addViewFlagAttribute("Constructions", "constructions");
-    this.addViewFlagAttribute("Transparency", "transparency");
-    this.addViewFlagAttribute("Line Weights", "weights");
-    this.addViewFlagAttribute("Line Styles", "styles");
-    this.addViewFlagAttribute("Clip Volume", "clipVolume", true);
+    const flagsToggle = document.createElement("div");
+    flagsToggle.innerText = "View Attributes";
+    this._element.appendChild(flagsToggle);
 
-    this.addEnvAttribute("Sky Box", "sky");
-    this.addEnvAttribute("Ground Plane", "ground");
+    const flagsDiv = document.createElement("div");
+    flagsDiv.appendChild(document.createElement("hr"));
+    this._element.appendChild(flagsDiv);
+
+    this.addViewFlagAttribute(flagsDiv, "ACS Triad", "acsTriad");
+    this.addViewFlagAttribute(flagsDiv, "Grid", "grid");
+    this.addViewFlagAttribute(flagsDiv, "Fill", "fill");
+    this.addViewFlagAttribute(flagsDiv, "Materials", "materials");
+    this.addViewFlagAttribute(flagsDiv, "Textures", "textures");
+    this.addViewFlagAttribute(flagsDiv, "Visible Edges", "visibleEdges", true);
+    this.addViewFlagAttribute(flagsDiv, "Hidden Edges", "hiddenEdges", true);
+    this.addViewFlagAttribute(flagsDiv, "Monochrome", "monochrome");
+    this.addViewFlagAttribute(flagsDiv, "Constructions", "constructions");
+    this.addViewFlagAttribute(flagsDiv, "Transparency", "transparency");
+    this.addViewFlagAttribute(flagsDiv, "Line Weights", "weights");
+    this.addViewFlagAttribute(flagsDiv, "Line Styles", "styles");
+    this.addViewFlagAttribute(flagsDiv, "Clip Volume", "clipVolume", true);
+
+    this.addEnvAttribute(flagsDiv, "Sky Box", "sky");
+    this.addEnvAttribute(flagsDiv, "Ground Plane", "ground");
+
+    // We use a static so the expand/collapse state persists after closing and reopening the drop-down.
+    flagsDiv.style.display = ViewAttributes._expandViewFlags ? "block" : "none";
+    flagsToggle.addEventListener("click", () => {
+      ViewAttributes._expandViewFlags = !ViewAttributes._expandViewFlags;
+      flagsDiv.style.display = ViewAttributes._expandViewFlags ? "block" : "none";
+    });
 
     this.addBackgroundMap();
     this.addAmbientOcclusion();
@@ -85,11 +102,11 @@ export class ViewAttributes {
     this._parent.removeChild(this._element);
   }
 
-  private addViewFlagAttribute(label: string, flag: ViewFlag, only3d: boolean = false): void {
+  private addViewFlagAttribute(parent: HTMLElement, label: string, flag: ViewFlag, only3d: boolean = false): void {
     const elems = this.addCheckbox(label, (enabled: boolean) => {
       this._vp.view.viewFlags[flag] = enabled;
       this.sync();
-    });
+    }, parent);
 
     const update = (view: ViewState) => {
       const visible = !only3d || view.is3d();
@@ -101,7 +118,7 @@ export class ViewAttributes {
     this._updates.push(update);
   }
 
-  private addEnvAttribute(label: string, aspect: EnvironmentAspect): void {
+  private addEnvAttribute(parent: HTMLElement, label: string, aspect: EnvironmentAspect): void {
     const getEnv = (view: ViewState, path: EnvironmentAspect) => {
       const view3d = view as ViewState3d;
       const style = view3d.getDisplayStyle3d();
@@ -112,7 +129,7 @@ export class ViewAttributes {
       const env = getEnv(this._vp.view, aspect);
       env.display = enabled;
       this.sync();
-    });
+    }, parent);
 
     const update = (view: ViewState) => {
       const visible = view.is3d();
@@ -190,7 +207,7 @@ export class ViewAttributes {
 
     this._aoZLengthCap = createSlider({
       parent: slidersDiv,
-      name: "zLengthCap: ",
+      name: "Length Cap: ",
       id: "viewAttr_AOZLengthCap",
       min: "0.0",
       step: "0.000025",
@@ -201,7 +218,7 @@ export class ViewAttributes {
 
     this._aoIntensity = createSlider({
       parent: slidersDiv,
-      name: "intensity: ",
+      name: "Intensity: ",
       id: "viewAttr_AOIntensity",
       min: "1.0",
       step: "0.1",
@@ -212,7 +229,7 @@ export class ViewAttributes {
 
     this._aoTexelStepSize = createSlider({
       parent: slidersDiv,
-      name: "texelStepSize: ",
+      name: "Step: ",
       id: "viewAttr_AOTexelStepSize",
       min: "1.0",
       step: "0.005",
@@ -223,7 +240,7 @@ export class ViewAttributes {
 
     this._aoBlurDelta = createSlider({
       parent: slidersDiv,
-      name: "blurDelta: ",
+      name: "Blur Delta: ",
       id: "viewAttr_AOBlurDelta",
       min: "0.5",
       step: "0.0001",
@@ -234,7 +251,7 @@ export class ViewAttributes {
 
     this._aoBlurSigma = createSlider({
       parent: slidersDiv,
-      name: "blurSigma: ",
+      name: "Blur Sigma: ",
       id: "viewAttr_AOBlurSigma",
       min: "0.5",
       step: "0.0001",
@@ -245,7 +262,7 @@ export class ViewAttributes {
 
     this._aoBlurTexelStepSize = createSlider({
       parent: slidersDiv,
-      name: "blurTexelStepSize: ",
+      name: "Blur Step: ",
       id: "viewAttr_AOBlurTexelStepSize",
       min: "1.0",
       step: "0.005",
@@ -254,12 +271,13 @@ export class ViewAttributes {
       handler: (slider) => this.updateAmbientOcclusion(undefined, undefined, undefined, undefined, undefined, undefined, parseFloat(slider.value)),
     });
 
-    createButton({
+    const resetButton = createButton({
       parent: slidersDiv,
       id: "viewAttr_AOReset",
-      value: "Reset Ambient Occlusion",
+      value: "Reset",
       handler: () => this.resetAmbientOcclusion(),
     });
+    resetButton.div.style.textAlign = "center";
 
     this._updates.push((view) => {
       const visible = isAOSupported(view);

@@ -7,8 +7,8 @@
 import * as React from "react";
 import { TreeProps, ActiveMatchInfo, HighlightableTreeProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
-import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
-import FilteredPresentationTreeDataProvider from "./FilteredDataProvider";
+import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
+import { FilteredPresentationTreeDataProvider } from "./FilteredDataProvider";
 import "./WithFilteringSupport.scss";
 
 /**
@@ -41,7 +41,7 @@ const defaultState: State = {
  * **Note:** it is required for the tree to use [[IPresentationTreeDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
+export function treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
 
   type CombinedProps = P & Props;
 
@@ -110,7 +110,7 @@ export default function treeWithFilteringSupport<P extends TreeProps>(TreeCompon
       if (prop1.filter !== prop2.filter)
         return false;
 
-      if (prop1.dataProvider.rulesetId !== prop2.dataProvider.rulesetId || prop1.dataProvider.connection !== prop2.dataProvider.connection)
+      if (prop1.dataProvider.rulesetId !== prop2.dataProvider.rulesetId || prop1.dataProvider.imodel !== prop2.dataProvider.imodel)
         return false;
 
       return true;

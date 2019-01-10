@@ -7,12 +7,12 @@ import sinon from "sinon";
 import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
-import { PropertyRenderer } from "../../../properties/renderers/PropertyRenderer";
+import { PropertyRenderer } from "../../../ui-components/properties/renderers/PropertyRenderer";
 import TestUtils from "../../TestUtils";
-import { PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
-import { PrimitivePropertyRenderer } from "../../../properties/renderers/PrimitivePropertyRenderer";
+import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
+import { PrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/PrimitivePropertyRenderer";
 import { PropertyRecord } from "../../../ui-components";
-import { NonPrimitivePropertyRenderer } from "../../../properties/renderers/NonPrimitivePropertyRenderer";
+import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 
 describe("PropertyRenderer", () => {
   describe("getLabelOffset", () => {

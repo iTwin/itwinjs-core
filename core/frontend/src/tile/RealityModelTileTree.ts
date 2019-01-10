@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
 
-import { IModelError, TileTreeProps, TileProps } from "@bentley/imodeljs-common";
+import { IModelError, TileTreeProps, TileProps, ViewFlag, ViewFlags, RenderMode, Cartographic, EcefLocation } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { BentleyStatus, assert, Guid, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { TransformProps, Range3dProps, Range3d, Transform, Point3d, Vector3d, Matrix3d } from "@bentley/geometry-core";
@@ -15,23 +15,31 @@ import { IModelApp } from "../IModelApp";
 
 /** @hidden */
 export class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
-    if (undefined === boundingVolume || !Array.isArray(boundingVolume.box))
+  public static rangeFromBoundingVolume(boundingVolume: any, ecefLocation: EcefLocation | undefined): Range3d | undefined {
+    if (undefined === boundingVolume)
       return undefined;
-    const box: number[] = boundingVolume.box;
-    const center = Point3d.create(box[0], box[1], box[2]);
-    const ux = Vector3d.create(box[3], box[4], box[5]);
-    const uy = Vector3d.create(box[6], box[7], box[8]);
-    const uz = Vector3d.create(box[9], box[10], box[11]);
-    const corners: Point3d[] = [];
-    for (let j = 0; j < 2; j++) {
-      for (let k = 0; k < 2; k++) {
-        for (let l = 0; l < 2; l++) {
-          corners.push(center.plus3Scaled(ux, (j ? -1.0 : 1.0), uy, (k ? -1.0 : 1.0), uz, (l ? -1.0 : 1.0)));
+    if (undefined !== boundingVolume.box) {
+      const box: number[] = boundingVolume.box;
+      const center = Point3d.create(box[0], box[1], box[2]);
+      const ux = Vector3d.create(box[3], box[4], box[5]);
+      const uy = Vector3d.create(box[6], box[7], box[8]);
+      const uz = Vector3d.create(box[9], box[10], box[11]);
+      const corners: Point3d[] = [];
+      for (let j = 0; j < 2; j++) {
+        for (let k = 0; k < 2; k++) {
+          for (let l = 0; l < 2; l++) {
+            corners.push(center.plus3Scaled(ux, (j ? -1.0 : 1.0), uy, (k ? -1.0 : 1.0), uz, (l ? -1.0 : 1.0)));
+          }
         }
       }
-    }
-    return Range3d.createArray(corners);
+      return Range3d.createArray(corners);
+    } else if (Array.isArray(boundingVolume.region) && undefined !== ecefLocation) {
+      const ecefLow = (new Cartographic(boundingVolume.region[0], boundingVolume.region[1], boundingVolume.region[4])).toEcef();
+      const ecefHigh = (new Cartographic(boundingVolume.region[2], boundingVolume.region[3], boundingVolume.region[5])).toEcef();
+      const ecefRange = Range3d.create(ecefLow, ecefHigh);
+      return ecefLocation.getTransform().inverse()!.multiplyRange(ecefRange);
+    } else return undefined;
+
   }
   public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
     const minToleranceRatio = .5;   // Nominally the error on screen size of a tile.  Increasing generally increases performance (fewer draw calls) at expense of higher load times.
@@ -39,6 +47,11 @@ export class RealityModelTileUtils {
   }
   public static transformFromJson(jTrans: number[] | undefined): Transform {
     return (jTrans === undefined) ? Transform.createIdentity() : Transform.createOriginAndMatrix(Point3d.create(jTrans[12], jTrans[13], jTrans[14]), Matrix3d.createRowValues(jTrans[0], jTrans[4], jTrans[8], jTrans[1], jTrans[5], jTrans[9], jTrans[2], jTrans[6], jTrans[10]));
+  }
+  public static ecefTransformFromRegion(region: number[]) {
+    const cartoCenter = new Cartographic((region[0] + region[2]) / 2.0, (region[1] + region[3]) / 2.0, (region[4] + region[5]) / 2.0);
+    const ecefLocation = EcefLocation.createFromCartographicOrigin(cartoCenter!);
+    return ecefLocation.getTransform();
   }
 }
 
@@ -49,9 +62,10 @@ class RealityModelTileTreeProps implements TileTreeProps {
   public location: TransformProps;
   public tilesetJson: object;
   public yAxisUp: boolean = false;
-  constructor(json: any, public client: RealityModelTileClient, tileToDb: Transform) {
+  public ecefLocation?: EcefLocation;
+  constructor(json: any, public client: RealityModelTileClient, tileToDb: Transform, ecefLocation: EcefLocation | undefined) {
     this.tilesetJson = json.root;
-    this.rootTile = new RealityModelTileProps(json.root, "");
+    this.rootTile = new RealityModelTileProps(json.root, "", ecefLocation);
     this.location = tileToDb.toJSON();
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y")
       this.yAxisUp = true;
@@ -67,13 +81,13 @@ class RealityModelTileProps implements TileProps {
   public readonly isLeaf: boolean;
   public geometry?: string | ArrayBuffer;
   public hasContents: boolean;
-  constructor(json: any, thisId: string) {
+  constructor(json: any, thisId: string, ecefLocation: EcefLocation | undefined) {
     this.contentId = thisId;
-    this.range = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume)!;
+    this.range = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume, ecefLocation)!;
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
-    this.hasContents = undefined !== json.content && undefined !== json.content.url;
+    this.hasContents = undefined !== json.content && (undefined !== json.content.url || undefined !== json.content.uri);
     if (this.hasContents) {
-      this.contentRange = json.content.boundingVolume && RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume);
+      this.contentRange = json.content.boundingVolume && RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume, ecefLocation);
       this.maximumSize = RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
     } else {
       this.maximumSize = 0.0;
@@ -92,6 +106,8 @@ class RealityModelTileLoader extends TileLoader {
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
   public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Context; }
   public tileRequiresLoading(params: Tile.Params): boolean { return 0.0 !== params.maximumSize; }
+  protected static _viewFlagOverrides = new ViewFlag.Overrides(ViewFlags.fromJSON({ renderMode: RenderMode.SmoothShade }));
+  public get viewFlagOverrides() { return RealityModelTileLoader._viewFlagOverrides; }
   public async getChildrenProps(parent: Tile): Promise<TileProps[]> {
     const props: RealityModelTileProps[] = [];
 
@@ -103,18 +119,19 @@ class RealityModelTileLoader extends TileLoader {
         const childId = prefix + i;
         const foundChild = await this.findTileInJson(this._tree.tilesetJson, childId, "");
         if (undefined !== foundChild)
-          props.push(new RealityModelTileProps(foundChild.json, foundChild.id));
+          props.push(new RealityModelTileProps(foundChild.json, foundChild.id, this._tree.ecefLocation));
       }
     }
 
     return props;
   }
+
   public async requestTileContent(tile: Tile): Promise<TileRequest.Response> {
     const foundChild = await this.findTileInJson(this._tree.tilesetJson, tile.contentId, "");
     if (undefined === foundChild)
       return undefined;
 
-    return this._tree.client.getTileContent(foundChild.json.content.url);
+    return this._tree.client.getTileContent(foundChild.json.content.url ? foundChild.json.content.url : foundChild.json.content.uri);
   }
 
   private async findTileInJson(tilesetJson: any, id: string, parentId: string): Promise<FindChildResult | undefined> {
@@ -133,7 +150,7 @@ class RealityModelTileLoader extends TileLoader {
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
     if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
     if (undefined !== foundChild.content && foundChild.content.url.endsWith("json")) {    // A child may contain a subTree...
-      const subTree = await this._tree.client.getTileJson(foundChild.content.url);
+      const subTree = await this._tree.client.getTileJson(foundChild.json.content.url ? foundChild.json.content.url : foundChild.json.content.uri);
       foundChild = subTree.root;
       tilesetJson.children[childIndex] = subTree.root;
     }
@@ -152,22 +169,26 @@ export class RealityModelTileTree {
   }
 
   private static async getTileTreeProps(url: string, tilesetToDbJson: any, iModel: IModelConnection): Promise<RealityModelTileTreeProps> {
-    if (undefined !== url && undefined !== IModelApp.accessToken) {
+    if (undefined !== url) {
       const tileClient = new RealityModelTileClient(url, IModelApp.accessToken);
       const json = await tileClient.getRootDocument(url);
       const ecefLocation = iModel.ecefLocation;
-      const rootTransform: Transform = RealityModelTileUtils.transformFromJson(json.root.transform);
+      let rootTransform: Transform;
+      if (undefined !== json.root.transform) {
+        rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
+      } else if (undefined !== json.root.boundingVolume && Array.isArray(json.root.boundingVolume.region)) {
+        rootTransform = RealityModelTileUtils.ecefTransformFromRegion(json.root.boundingVolume.region);
+      } else {
+        rootTransform = Transform.createIdentity();
+      }
       let tilesetToDb = Transform.createIdentity();
 
       if (undefined !== tilesetToDbJson) {
         tilesetToDb.setFromJSON(tilesetToDbJson);
       } else if (ecefLocation !== undefined) {
-        const dbToEcef = Transform.createOriginAndMatrix(ecefLocation.origin, ecefLocation.orientation.toMatrix3d());
-        tilesetToDb = dbToEcef.inverse() as Transform;
+        tilesetToDb = ecefLocation.getTransform().inverse()!;
       }
-      const tileToDb = Transform.createIdentity();
-      tileToDb.setMultiplyTransformTransform(tilesetToDb, rootTransform);
-      return new RealityModelTileTreeProps(json, tileClient, tileToDb);
+      return new RealityModelTileTreeProps(json, tileClient, tilesetToDb.multiplyTransformTransform(rootTransform), ecefLocation);
     } else {
       throw new IModelError(BentleyStatus.ERROR, "Unable to read reality data");
     }
@@ -186,11 +207,11 @@ interface RDSClientProps {
 export class RealityModelTileClient {
   public readonly rdsProps?: RDSClientProps;
   private _baseUrl: string = "";
-  private readonly _token: AccessToken;
+  private readonly _token?: AccessToken;
   private static _client = new RealityDataServicesClient();
 
   // ###TODO we should be able to pass the projectId / tileId directly, instead of parsing the url
-  constructor(url: string, accessToken: AccessToken) {
+  constructor(url: string, accessToken?: AccessToken) {
     this.rdsProps = this.parseUrl(url);
     this._token = accessToken;
   }
@@ -223,7 +244,7 @@ export class RealityModelTileClient {
 
   public async getRootDocument(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    if (undefined !== this.rdsProps)
+    if (undefined !== this.rdsProps && undefined !== this._token)
       return RealityModelTileClient._client.getRootDocumentJson(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId);
 
     this.setBaseUrl(url);
@@ -232,7 +253,7 @@ export class RealityModelTileClient {
 
   public async getTileContent(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    if (undefined !== this.rdsProps)
+    if (undefined !== this.rdsProps && undefined !== this._token)
       return RealityModelTileClient._client.getTileContent(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     if (undefined !== this._baseUrl) {
       const tileUrl = this._baseUrl + url;
@@ -243,7 +264,7 @@ export class RealityModelTileClient {
 
   public async getTileJson(url: string): Promise<any> {
     const alctx = new ActivityLoggingContext(Guid.createValue());
-    if (undefined !== this.rdsProps)
+    if (undefined !== this.rdsProps && undefined !== this._token)
       return RealityModelTileClient._client.getTileJson(alctx, this._token, this.rdsProps.projectId, this.rdsProps.tilesId, url);
     if (undefined !== this._baseUrl) {
       const tileUrl = this._baseUrl + url;

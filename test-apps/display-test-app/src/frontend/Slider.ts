@@ -24,6 +24,9 @@ export interface SliderProps {
 
 export function createSlider(props: SliderProps): Slider {
   const div = document.createElement("div");
+  div.style.display = "block";
+  div.style.verticalAlign = "middle";
+  div.style.textAlign = "right";
 
   const label = document.createElement("label") as HTMLLabelElement;
   label.htmlFor = props.id;
