@@ -498,7 +498,7 @@ export class MeasureLocationTool extends PrimitiveTool {
   protected async getMarkerToolTip(point: Point3d): Promise<string> {
     let toolTip = "";
 
-    const coordFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length); // ##TODO QuantityType.Coordinate...
+    const coordFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
     if (undefined !== coordFormatterSpec) {
       let pointAdjusted = point;
       if (undefined !== this.targetView && this.targetView.view.isSpatialView()) {
@@ -513,9 +513,8 @@ export class MeasureLocationTool extends PrimitiveTool {
     }
 
     if (undefined !== this.targetView && this.targetView.view.isSpatialView() && undefined !== this.iModel.ecefLocation) {
-      const latLongFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Angle); // ##TODO QuantityType.LatLong...
-      const distanceFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
-      if (undefined !== latLongFormatterSpec && undefined !== distanceFormatterSpec) {
+      const latLongFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.LatLong);
+      if (undefined !== latLongFormatterSpec && undefined !== coordFormatterSpec) {
         const geoConverter = this.iModel.geoServices.getConverter();
         const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([point]);
         if (1 === coordResponse.geoCoords.length && GeoCoordStatus.Success === coordResponse.geoCoords[0].s) {
@@ -523,7 +522,7 @@ export class MeasureLocationTool extends PrimitiveTool {
           const cartographic = Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z);
           const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
           const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
-          const formattedHeight = IModelApp.quantityFormatter.formatQuantity(cartographic.height, distanceFormatterSpec);
+          const formattedHeight = IModelApp.quantityFormatter.formatQuantity(cartographic.height, coordFormatterSpec);
           const latDir = IModelApp.i18n.translateKeys(cartographic.latitude < 0 ? "%{CoreTools:tools.Measure.Labels.S}" : "%{CoreTools:tools.Measure.Labels.N}");
           const longDir = IModelApp.i18n.translateKeys(cartographic.longitude < 0 ? "%{CoreTools:tools.Measure.Labels.W}" : "%{CoreTools:tools.Measure.Labels.E}");
           toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.LatLong}:</b> ") + formattedLat + latDir + ", " + formattedLong + longDir + "<br>";
