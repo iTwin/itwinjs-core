@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Fix drag select decorator when cursor moves out of view. Doc fixes.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}

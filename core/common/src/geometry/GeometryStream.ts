@@ -338,7 +338,7 @@ export class GeometryStreamIteratorEntry {
 }
 
 /** GeometryStreamIterator is a helper class for iterating a [[GeometryStreamProps]].
- * A [[GeometricElement]]'s GeometryStream must be specifically requesting using [[ElementLoadProps.wantGeometry]].
+ * A [[GeometricElement]]'s GeometryStream must be specifically requested using [[ElementLoadProps.wantGeometry]].
  */
 export class GeometryStreamIterator implements IterableIterator<GeometryStreamIteratorEntry> {
   /** GeometryStream entries */
@@ -348,7 +348,7 @@ export class GeometryStreamIterator implements IterableIterator<GeometryStreamIt
   /** Current entry position */
   private _index = 0;
 
-  /** Construct a new GeometryStreamIterator given a [[GeometryStreamProps]] from either a [[GeometricElement3d]], [[GeometricElement3d]], or [[GeometryPart]].
+  /** Construct a new GeometryStreamIterator given a [[GeometryStreamProps]] from either a [[GeometricElement3d]], [[GeometricElement2d]], or [[GeometryPart]].
    * Supply the [[GeometricElement]]'s category to initialize the appearance information for each geometric entry.
    */
   public constructor(geometryStream: GeometryStreamProps, category?: Id64String) {

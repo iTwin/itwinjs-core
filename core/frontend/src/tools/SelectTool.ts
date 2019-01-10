@@ -142,11 +142,11 @@ export class SelectionTool extends PrimitiveTool {
   }
 
   protected useOverlapSelection(ev: BeButtonEvent): boolean {
-    let overlapMode = false;
-    const vp = ev.viewport!;
-    const pt1 = vp.worldToView(this.points[0]);
-    const pt2 = vp.worldToView(ev.point);
-    overlapMode = (pt1.x > pt2.x);
+    if (undefined === ev.viewport)
+      return false;
+    const pt1 = ev.viewport.worldToView(this.points[0]);
+    const pt2 = ev.viewport.worldToView(ev.point);
+    const overlapMode = (pt1.x > pt2.x);
     return (ev.isShiftKey ? !overlapMode : overlapMode); // Shift inverts inside/overlap selection...
   }
 
@@ -156,6 +156,8 @@ export class SelectionTool extends PrimitiveTool {
 
     const ev = new BeButtonEvent();
     IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
+    if (undefined === ev.viewport)
+      return;
 
     const vp = context.viewport!;
     const bestContrastIsBlack = (ColorDef.black === vp.getContrastToBackgroundColor());
