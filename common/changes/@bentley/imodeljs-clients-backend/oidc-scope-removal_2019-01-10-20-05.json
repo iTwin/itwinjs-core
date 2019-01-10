@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed default OIDC scopes. All applications must now explicitly pass the required scopes.",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

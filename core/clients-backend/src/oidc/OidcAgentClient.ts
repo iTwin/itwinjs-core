@@ -16,17 +16,17 @@ export interface OidcAgentClientConfiguration extends OidcBackendClientConfigura
 
 /** Utility to generate OIDC/OAuth tokens for agent or service applications */
 export class OidcAgentClient extends OidcBackendClient {
-  constructor(private _configuration: OidcAgentClientConfiguration) {
-    super(_configuration as OidcBackendClientConfiguration);
+  constructor(private _agentConfiguration: OidcAgentClientConfiguration) {
+    super(_agentConfiguration as OidcBackendClientConfiguration);
   }
 
-  public async getToken(actx: ActivityLoggingContext, scope?: string): Promise<AccessToken> {
+  public async getToken(actx: ActivityLoggingContext): Promise<AccessToken> {
     // Note: for now we start with an IMS saml token, and use OIDC delegation to get a JWT token
-    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(actx, this._configuration.serviceUserEmail, this._configuration.serviceUserPassword, this._configuration.clientId);
+    const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(actx, this._agentConfiguration.serviceUserEmail, this._agentConfiguration.serviceUserPassword, this._configuration.clientId);
     const samlToken: AccessToken = await (new ImsDelegationSecureTokenClient()).getToken(actx, authToken);
 
-    const delegationClient = new OidcDelegationClient(this._configuration as OidcBackendClientConfiguration);
-    const jwt: AccessToken = await delegationClient.getJwtFromSaml(actx, samlToken, scope || "openid email profile organization context-registry-service imodelhub imodeljs-backend-2686");
+    const delegationClient = new OidcDelegationClient(this._configuration);
+    const jwt: AccessToken = await delegationClient.getJwtFromSaml(actx, samlToken);
     return jwt;
   }
 
