@@ -707,6 +707,8 @@ export abstract class Target extends RenderTarget {
     // Set this to true to visualize the output of readPixels()...useful for debugging pick.
     const drawForReadPixels = false;
     if (drawForReadPixels) {
+      this._isReadPixelsInProgress = true;
+
       if (this.performanceMetrics) this.performanceMetrics.recordTime("Begin Paint");
       const vf = this.currentViewFlags.clone(this._scratchViewFlags);
       vf.transparency = false;
@@ -730,6 +732,8 @@ export abstract class Target extends RenderTarget {
       if (this.performanceMetrics) this.performanceMetrics.recordTime("Draw Read Pixels");
 
       this._stack.pop();
+
+      this._isReadPixelsInProgress = false;
     } else {
       if (this.performanceMetrics) this.performanceMetrics.recordTime("Begin Paint");
       this._renderCommands.init(this._scene, this._terrain, this._decorations, this._dynamics);
