@@ -86,9 +86,13 @@ export class SurfaceGeometry extends MeshGeometry {
   public getRenderPass(target: Target): RenderPass {
     if (this.isClassifier)
       return RenderPass.Classification;
+
     const mat = this.isLit ? this._mesh.material : undefined;
     const opaquePass = this.isPlanar ? RenderPass.OpaquePlanar : RenderPass.OpaqueGeneral;
     const fillFlags = this.fillFlags;
+
+    if (this.isGlyph && target.isReadPixelsInProgress)
+      return opaquePass;
 
     const vf = target.currentViewFlags;
     if (RenderMode.Wireframe === vf.renderMode) {
@@ -97,7 +101,6 @@ export class SurfaceGeometry extends MeshGeometry {
         return RenderPass.None;
       }
     }
-
     if (!this.isGlyph) {
       if (!vf.transparency || RenderMode.SolidFill === vf.renderMode || RenderMode.HiddenLine === vf.renderMode) {
         return opaquePass;
