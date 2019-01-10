@@ -2,92 +2,93 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-export { UiComponents } from "./UiComponents";
+export { UiComponents } from "./ui-components/UiComponents";
 
-export * from "./breadcrumb/Breadcrumb";
-export * from "./breadcrumb/BreadcrumbPath";
-export * from "./breadcrumb/BreadcrumbTreeUtils";
-export { BreadcrumbDragDropProps, withBreadcrumbDragDrop } from "./breadcrumb/hoc/withDragDrop";
-export * from "./breadcrumb/breadcrumbdetails/BreadcrumbDetails";
-export { BreadcrumbDetailsDragDropProps, withBreadcrumbDetailsDragDrop } from "./breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+export * from "./ui-components/breadcrumb/Breadcrumb";
+export * from "./ui-components/breadcrumb/BreadcrumbPath";
+export * from "./ui-components/breadcrumb/BreadcrumbTreeUtils";
+export { BreadcrumbDragDropProps, withBreadcrumbDragDrop } from "./ui-components/breadcrumb/hoc/withDragDrop";
+export * from "./ui-components/breadcrumb/breadcrumbdetails/BreadcrumbDetails";
+export { BreadcrumbDetailsDragDropProps, withBreadcrumbDetailsDragDrop } from "./ui-components/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
 
-export { PageOptions } from "./common/PageOptions";
-export { SelectionMode } from "./common/selection/SelectionModes";
-export { SelectionHandler } from "./common/selection/SelectionHandler";
-export * from "./common/showhide/ShowHideDialog";
-export * from "./common/showhide/ShowHideItem";
-export * from "./common/showhide/ShowHideMenu";
+export { PageOptions } from "./ui-components/common/PageOptions";
+export { SelectionMode } from "./ui-components/common/selection/SelectionModes";
+export { SelectionHandler } from "./ui-components/common/selection/SelectionHandler";
+export * from "./ui-components/common/showhide/ShowHideDialog";
+export * from "./ui-components/common/showhide/ShowHideItem";
+export * from "./ui-components/common/showhide/ShowHideMenu";
 
-export * from "./converters/TypeConverter";
-export * from "./converters/TypeConverterManager";
-export * from "./converters/BooleanTypeConverter";
-export * from "./converters/DateTimeTypeConverter";
-export * from "./converters/EnumTypeConverter";
-export * from "./converters/HexadecimalTypeConverter";
-export * from "./converters/NumericTypeConverter";
-export * from "./converters/PointTypeConverter";
-export * from "./converters/StringTypeConverter";
+export * from "./ui-components/converters/TypeConverter";
+export * from "./ui-components/converters/TypeConverterManager";
+export * from "./ui-components/converters/BooleanTypeConverter";
+export * from "./ui-components/converters/DateTimeTypeConverter";
+export * from "./ui-components/converters/EnumTypeConverter";
+export * from "./ui-components/converters/HexadecimalTypeConverter";
+export * from "./ui-components/converters/NavigationPropertyTypeConverter";
+export * from "./ui-components/converters/NumericTypeConverter";
+export * from "./ui-components/converters/PointTypeConverter";
+export * from "./ui-components/converters/StringTypeConverter";
 
-import * as Primitives from "./converters/valuetypes/PrimitiveTypes";
-import * as ConvertedPrimitives from "./converters/valuetypes/ConvertedTypes";
+import * as Primitives from "./ui-components/converters/valuetypes/PrimitiveTypes";
+import * as ConvertedPrimitives from "./ui-components/converters/valuetypes/ConvertedTypes";
 export { Primitives, ConvertedPrimitives };
 
-export * from "./dragdrop/DragDropDef";
-export * from "./dragdrop/withDragSource";
-export * from "./dragdrop/withDropTarget";
-export * from "./dragdrop/BeDragDropContext";
+export * from "./ui-components/dragdrop/DragDropDef";
+export * from "./ui-components/dragdrop/withDragSource";
+export * from "./ui-components/dragdrop/withDropTarget";
+export * from "./ui-components/dragdrop/BeDragDropContext";
 
-export * from "./editors/EditorContainer";
-export * from "./editors/PropertyEditorManager";
-export * from "./editors/TextEditor";
+export * from "./ui-components/editors/EditorContainer";
+export * from "./ui-components/editors/PropertyEditorManager";
+export * from "./ui-components/editors/TextEditor";
 
-export * from "./filtering/FilteringInput";
-export * from "./filtering/ResultSelector";
+export * from "./ui-components/filtering/FilteringInput";
+export * from "./ui-components/filtering/ResultSelector";
 
-export * from "./properties/Description";
-export * from "./properties/EditorParams";
-export * from "./properties/Record";
-export * from "./properties/Value";
-export * from "./properties/ValueRendererManager";
+export * from "./ui-components/properties/Description";
+export * from "./ui-components/properties/EditorParams";
+export * from "./ui-components/properties/Record";
+export * from "./ui-components/properties/Value";
+export * from "./ui-components/properties/ValueRendererManager";
 
-export * from "./properties/renderers/NonPrimitivePropertyRenderer";
-export * from "./properties/renderers/PrimitivePropertyRenderer";
-export * from "./properties/renderers/PropertyRenderer";
-export * from "./properties/renderers/PropertyView";
+export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer";
+export * from "./ui-components/properties/renderers/PrimitivePropertyRenderer";
+export * from "./ui-components/properties/renderers/PropertyRenderer";
+export * from "./ui-components/properties/renderers/PropertyView";
 
-export * from "./properties/renderers/label/NonPrimitivePropertyLabelRenderer";
-export * from "./properties/renderers/label/PrimitivePropertyLabelRenderer";
+export * from "./ui-components/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
+export * from "./ui-components/properties/renderers/label/PrimitivePropertyLabelRenderer";
 
-export * from "./properties/renderers/value/PrimitivePropertyValueRenderer";
-export * from "./properties/renderers/value/ArrayPropertyValueRenderer";
-export * from "./properties/renderers/value/StructPropertyValueRenderer";
-export * from "./properties/renderers/value/DoublePropertyValueRenderer";
-export * from "./properties/renderers/value/NavigationPropertyValueRenderer";
-export * from "./properties/renderers/value/table/ArrayValueRenderer";
-export * from "./properties/renderers/value/table/StructValueRenderer";
-export * from "./properties/renderers/value/table/NonPrimitiveValueRenderer";
+export * from "./ui-components/properties/renderers/value/PrimitivePropertyValueRenderer";
+export * from "./ui-components/properties/renderers/value/ArrayPropertyValueRenderer";
+export * from "./ui-components/properties/renderers/value/StructPropertyValueRenderer";
+export * from "./ui-components/properties/renderers/value/DoublePropertyValueRenderer";
+export * from "./ui-components/properties/renderers/value/NavigationPropertyValueRenderer";
+export * from "./ui-components/properties/renderers/value/table/ArrayValueRenderer";
+export * from "./ui-components/properties/renderers/value/table/StructValueRenderer";
+export * from "./ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
 
-export * from "./propertygrid/PropertyDataProvider";
-export * from "./propertygrid/SimplePropertyDataProvider";
-export * from "./propertygrid/component/PropertyGrid";
-export * from "./propertygrid/component/PropertyCategoryBlock";
+export * from "./ui-components/propertygrid/PropertyDataProvider";
+export * from "./ui-components/propertygrid/SimplePropertyDataProvider";
+export * from "./ui-components/propertygrid/component/PropertyGrid";
+export * from "./ui-components/propertygrid/component/PropertyCategoryBlock";
 
-export * from "./table/TableDataProvider";
-export * from "./table/SimpleTableDataProvider";
-export { Grid, GridProps } from "./table/component/Grid";
-export { Table, TableProps, TableSelectionTarget } from "./table/component/Table";
-export { TableCellEditorState, TableCellUpdatedArgs } from "./table/component/Table";
-export { TableDragDropType, TableDropTargetProps, TableDragDropProps, withTableDragDrop } from "./table/hocs/withDragDrop";
+export * from "./ui-components/table/TableDataProvider";
+export * from "./ui-components/table/SimpleTableDataProvider";
+export { Grid, GridProps } from "./ui-components/table/component/Grid";
+export { Table, TableProps, TableSelectionTarget } from "./ui-components/table/component/Table";
+export { TableCellEditorState, TableCellUpdatedArgs } from "./ui-components/table/component/Table";
+export { TableDragDropType, TableDropTargetProps, TableDragDropProps, withTableDragDrop } from "./ui-components/table/hocs/withDragDrop";
 
-export * from "./tree/TreeDataProvider";
-export * from "./tree/HighlightingEngine";
-export { Tree, TreeProps } from "./tree/component/Tree";
-export { TreeCellEditorState, TreeCellUpdatedArgs } from "./tree/component/Tree";
-export { TreeDragDropType, TreeDragDropProps, withTreeDragDrop } from "./tree/hocs/withDragDrop";
-export { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "./tree/SimpleTreeDataProvider";
+export * from "./ui-components/tree/TreeDataProvider";
+export * from "./ui-components/tree/HighlightingEngine";
+export { Tree, TreeProps } from "./ui-components/tree/component/Tree";
+export { TreeCellEditorState, TreeCellUpdatedArgs } from "./ui-components/tree/component/Tree";
+export { TreeDragDropType, TreeDragDropProps, withTreeDragDrop } from "./ui-components/tree/hocs/withDragDrop";
+export { SimpleTreeDataProvider, SimpleTreeDataProviderHierarchy } from "./ui-components/tree/SimpleTreeDataProvider";
 
-export * from "./viewport/ViewportComponent";
-export * from "./viewport/ViewportComponentEvents";
+export * from "./ui-components/viewport/ViewportComponent";
+export * from "./ui-components/viewport/ViewportComponentEvents";
 
 /** @docs-package-description
  * The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Breadcrumb.

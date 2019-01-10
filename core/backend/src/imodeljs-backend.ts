@@ -12,7 +12,6 @@ export * from "./ConcurrencyControl";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
-export * from "./ElectronApp";
 export * from "./Element";
 export * from "./ElementAspect";
 export * from "./ElementPropertyFormatter";

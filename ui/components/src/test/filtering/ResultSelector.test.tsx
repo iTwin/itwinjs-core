@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
 
-import { ResultSelector } from "../..//filtering/ResultSelector";
+import { ResultSelector } from "../../ui-components/filtering/ResultSelector";
 
 describe("ResultSelector", () => {
   it("content is '0 of 0' and buttons are disabled when result count is 0", () => {

@@ -18,7 +18,7 @@ class SampleDataProvider implements IPresentationTreeDataProvider {
   public constructor(imodel: IModelConnection, rulesetId: string) {
     this._wrapped = new PresentationTreeDataProvider(imodel, rulesetId);
   }
-  public get connection() { return this._wrapped.connection; }
+  public get imodel() { return this._wrapped.imodel; }
   public get rulesetId() { return this._wrapped.rulesetId; }
   public async getNodesCount(parentNode?: TreeNodeItem) {
     const result = await this._wrapped.getNodesCount(parentNode);

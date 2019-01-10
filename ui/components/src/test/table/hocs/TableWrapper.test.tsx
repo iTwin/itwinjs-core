@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render, cleanup } from "react-testing-library";
-import { TableWrapper } from "../../../table/hocs/TableWrapper";
+import { TableWrapper } from "../../../ui-components/table/hocs/TableWrapper";
 
 describe("TableWrapper", () => {
 

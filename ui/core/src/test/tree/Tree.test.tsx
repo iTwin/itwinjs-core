@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as sinon from "sinon";
 import * as React from "react";
-import Tree from "../../tree/Tree";
+import Tree from "../../ui-core/tree/Tree";
 
 describe("<Tree />", () => {
 

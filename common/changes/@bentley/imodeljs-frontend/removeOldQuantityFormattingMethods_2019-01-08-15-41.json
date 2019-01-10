@@ -1,0 +1,9 @@
+{
+  "changes": [{
+    "comment": "QuantityFormatter.formatQuantity is now the only method to format quantities.",
+    "packageName": "@bentley/imodeljs-frontend",
+    "type": "none"
+  }],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "bill.steinbock@bentley.com"
+}

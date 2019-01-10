@@ -6,11 +6,11 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { render } from "react-testing-library";
-import { Tree } from "../../../tree/component/Tree";
-import { BeInspireTree, BeInspireTreeNode } from "../../../tree/component/BeInspireTree";
-import { TreeNode } from "../../../tree/component/Node";
+import { Tree } from "../../../ui-components/tree/component/Tree";
+import { BeInspireTree, BeInspireTreeNode } from "../../../ui-components/tree/component/BeInspireTree";
+import { TreeNode } from "../../../ui-components/tree/component/Node";
 import { waitForSpy } from "../../test-helpers/misc";
-import { TreeNodeItem } from "../../../tree/TreeDataProvider";
+import { TreeNodeItem } from "../../../ui-components/tree/TreeDataProvider";
 
 describe("Node", () => {
 

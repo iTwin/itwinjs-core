@@ -21,7 +21,7 @@ npm install @bentley/ui-ninezone
 ### Basic Usage
 
 ```javascript
-import BackButton from "@bentley/ui-ninezone/lib/components/buttons/Back";
+import BackButton from "@bentley/ui-ninezone/lib/ui-ninezone/components/buttons/Back";
 
 <BackButton />
 ```

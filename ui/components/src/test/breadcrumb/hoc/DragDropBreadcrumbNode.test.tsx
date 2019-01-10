@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { render, cleanup } from "react-testing-library";
-import { DragDropBreadcrumbNodeComponent } from "../../../breadcrumb/hoc/DragDropBreadcrumbNode";
+import { DragDropBreadcrumbNodeComponent } from "../../../ui-components/breadcrumb/hoc/DragDropBreadcrumbNode";
 
 describe("DragDropBreadcrumbNode", () => {
 

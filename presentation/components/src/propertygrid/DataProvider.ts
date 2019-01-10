@@ -7,8 +7,7 @@
 import * as _ from "lodash";
 import {
   PropertyRecord, PropertyValueFormat, PropertyValue,
-  PropertyDataProvider as IPropertyDataProvider,
-  PropertyData, PropertyDataChangeEvent, PropertyCategory,
+  PropertyData, PropertyDataChangeEvent, PropertyCategory, IPropertyDataProvider,
 } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
@@ -16,8 +15,8 @@ import {
   Field, NestedContentField, DefaultContentDisplayTypes, Item,
   PresentationError, PresentationStatus,
 } from "@bentley/presentation-common";
-import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
-import ContentBuilder from "../common/ContentBuilder";
+import { ContentDataProvider, IContentDataProvider, CacheInvalidationProps } from "../common/ContentDataProvider";
+import { ContentBuilder } from "../common/ContentBuilder";
 import { prioritySortFunction, translate } from "../common/Utils";
 
 const favoritesCategoryName = "Favorite";
@@ -204,15 +203,20 @@ class PropertyDataBuilder {
 }
 
 /**
+ * Interface for presentation rules-driven property data provider.
+ */
+export type IPresentationPropertyDataProvider = IPropertyDataProvider & IContentDataProvider;
+
+/**
  * Presentation Rules-driven property data provider implementation.
  */
-export default class PresentationPropertyDataProvider extends ContentDataProvider implements IPropertyDataProvider {
+export class PresentationPropertyDataProvider extends ContentDataProvider implements IPresentationPropertyDataProvider {
   private _includeFieldsWithNoValues: boolean;
   public onDataChanged = new PropertyDataChangeEvent();
 
   /** Constructor. */
-  constructor(connection: IModelConnection, rulesetId: string) {
-    super(connection, rulesetId, DefaultContentDisplayTypes.PROPERTY_PANE);
+  constructor(imodel: IModelConnection, rulesetId: string) {
+    super(imodel, rulesetId, DefaultContentDisplayTypes.PROPERTY_PANE);
     this._includeFieldsWithNoValues = true;
   }
 

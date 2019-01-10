@@ -156,7 +156,7 @@ const colors: ColorMap = {
 };
 
 /** @hidden */
-export default class StyleHelper {
+export class StyleHelper {
   public static get availableColors(): ColorMap { return colors; }
 
   private static getColor(name: string): number {

@@ -1,0 +1,70 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/bwc/lib/mixins";
+@import "@bentley/ui-core/lib/ui-core/_scrollbar";
+
+.components-property-grid-loader {
+  @include bwc-loaders-large;
+  position: relative;
+  display: block;
+  left: calc(50% - 24px);
+  top: calc(50% - 24px);
+}
+
+.components-property-grid {
+  @include bwc-expandable-blocks-list;
+
+  padding-top: 8px;
+  padding-bottom: 8px;
+  display: grid;
+  grid-row-gap: 10px;
+}
+
+.components-property-grid-wrapper {
+  width: 100%;
+  height: 100%;
+  overflow-y: auto;
+
+  @include uicore-touch-scrolling;
+  @include uicore-scrollbar();
+}
+
+@mixin components-property-list {
+  width: 100%;
+
+  .components--selected {
+    background-color: $bwc-blue-a;
+  }
+
+  .components--clickable {
+    cursor: pointer;
+  }
+
+  .components--hoverable:hover {
+    background-color: $bwc-blue-highlight;
+  }
+
+  .components-cell-editor {
+    border: #c7ccd1 solid 1px;
+    border-radius: 3px;
+    background: #fff;
+    box-sizing: border-box;
+    width: 100%;
+    height: 100%;
+    padding: 2px 8px;
+  }
+}
+
+.components-property-list--horizontal {
+  @include components-property-list;
+
+  display: grid;
+  grid-row-gap: 1px; // A gap of 10px is too wasteful
+}
+
+.components-property-list--vertical {
+  @include components-property-list;
+  margin-top: -13px;
+}

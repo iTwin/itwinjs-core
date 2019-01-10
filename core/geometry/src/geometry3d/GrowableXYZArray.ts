@@ -579,4 +579,22 @@ export class GrowableXYZArray extends IndexedXYZCollection {
   public component(pointIndex: number, componentIndex: number): number {
     return this._data[3 * pointIndex + componentIndex];
   }
+  /**
+   * add points at regular steps from `other`
+   * @param source
+   * @param pointIndex0
+   * @param step
+   * @param numAdd
+   */
+  public addSteppedPoints(other: GrowableXYZArray, pointIndex0: number, step: number, numAdd: number) {
+    const dataB = other._data;
+    let b0 = pointIndex0 * 3;
+    const nb = other.length * 3;
+    let numAdded = 0;
+    while (b0 >= 0 && b0 + 2 < nb && numAdded < numAdd) {
+      this.pushXYZ(dataB[b0], dataB[b0 + 1], dataB[b0 + 2]);
+      b0 += step * 3;
+      numAdded++;
+    }
+  }
 }

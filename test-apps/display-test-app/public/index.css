@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
- * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 
 .simpleicon {
   position:relative;
@@ -66,6 +66,11 @@
   float: right;
   margin-right: 5px;
   display: inline;
+}
+
+#snapModesContainer {
+  float: right;
+  margin-right: 5px;
 }
 
 .statusspan {
@@ -465,8 +470,8 @@
 }
 
 .slider {
-  width:250px;
-  display:block;
+  width:200px;
+  display:inline;
 }
 
 #standardRotationMenu .simpleicon, #animationMenu .simpleicon, #debugToolsMenu .simpleicon {

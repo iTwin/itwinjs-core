@@ -19,8 +19,9 @@ import {
 } from "@bentley/presentation-frontend";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyGrid, PropertyGridProps, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
-import IUnifiedSelectionComponent from "../../common/IUnifiedSelectionComponent";
-import { PresentationPropertyDataProvider, propertyGridWithUnifiedSelection } from "../../presentation-components";
+import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
+import { propertyGridWithUnifiedSelection } from "../../presentation-components";
+import { IPresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationPropertyGrid = propertyGridWithUnifiedSelection(PropertyGrid);
@@ -29,7 +30,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
 
   let testRulesetId: string;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
-  const dataProviderMock = moq.Mock.ofType<PresentationPropertyDataProvider>();
+  const dataProviderMock = moq.Mock.ofType<IPresentationPropertyDataProvider>();
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
   beforeEach(() => {
     testRulesetId = faker.random.word();
@@ -39,7 +40,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
     setupDataProvider();
   });
 
-  const setupDataProvider = (providerMock?: moq.IMock<PresentationPropertyDataProvider>, imodel?: IModelConnection, rulesetId?: string, propertyData?: PropertyData) => {
+  const setupDataProvider = (providerMock?: moq.IMock<IPresentationPropertyDataProvider>, imodel?: IModelConnection, rulesetId?: string, propertyData?: PropertyData) => {
     if (!providerMock)
       providerMock = dataProviderMock;
     if (!imodel)
@@ -55,7 +56,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
       };
     }
     providerMock.reset();
-    providerMock.setup((x) => x.connection).returns(() => imodel!);
+    providerMock.setup((x) => x.imodel).returns(() => imodel!);
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
     providerMock.setup((x) => x.getData()).returns(async () => propertyData!);
     providerMock.setup((x) => x.onDataChanged).returns(() => new PropertyDataChangeEvent());
@@ -123,7 +124,7 @@ describe("PropertyGrid withUnifiedSelection", () => {
 
     const imodelMock2 = moq.Mock.ofType<IModelConnection>();
     const rulesetId2 = faker.random.word();
-    const dataProviderMock2 = moq.Mock.ofType<PresentationPropertyDataProvider>();
+    const dataProviderMock2 = moq.Mock.ofType<IPresentationPropertyDataProvider>();
     setupDataProvider(dataProviderMock2, imodelMock2.object, rulesetId2);
 
     component.setProps({

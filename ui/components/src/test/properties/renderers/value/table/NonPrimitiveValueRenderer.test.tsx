@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
-import { TableNonPrimitiveValueRenderer } from "../../../../../properties/renderers/value/table/NonPrimitiveValueRenderer";
+import { TableNonPrimitiveValueRenderer } from "../../../../../ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
 
 describe("TableNonPrimitiveValueRenderer", () => {
   it("renders correctly", () => {

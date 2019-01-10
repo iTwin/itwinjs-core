@@ -108,16 +108,16 @@ also serves to return the ECInstanceIds of the corresponding Change Summaries wh
 >
 > *ECSQL*
 > ```sql
-> SELECT Summary.Id, WsgId, Description, PushDate, Author, ParentWsgId FROM imodelchange.Changeset ORDER BY PushDate
+> SELECT Summary.Id, WsgId, Description, PushDate, UserCreated, ParentWsgId FROM imodelchange.Changeset ORDER BY PushDate
 > ```
 >
 > *Result*
 >
-> Summary.Id | WsgId | Description | PushDate | Author | ParentWsgId
+> Summary.Id | WsgId | Description | PushDate | UserCreated | ParentWsgId
 > --- | --- | --- | --- | --- | ---
-> 0x6c | f7c220138713044a89f4e5fa479564863516b53b | Inserted new Device 'DEV-A-G-3'. | 2018-12-18T16:03:08.373Z | some email address | NULL
-> 0x35 | 9c4239a1fef7cc7136fcef1f6a7472a3b0ffbd7d | Fixed user label of Device 'DEV-A-G-3'. Inserted new Device 'DEV-A-G-4'.| 2018-12-18T16:03:19.763Z | some email address | f7c220138713044a89f4e5fa479564863516b53b
-> 0x1 | 1264417d6364c79d3d1c8d6a45ee6e3ee79188c4 | Removed Device 'DEV-A-G-3' again. | 2018-12-18T16:03:27.140Z | some email address | 9c4239a1fef7cc7136fcef1f6a7472a3b0ffbd7d
+> 0x6c | f7c220138713044a89f4e5fa479564863516b53b | Inserted new Device 'DEV-A-G-3'. | 2018-12-18T16:03:08.373Z | some user id | NULL
+> 0x35 | 9c4239a1fef7cc7136fcef1f6a7472a3b0ffbd7d | Fixed user label of Device 'DEV-A-G-3'. Inserted new Device 'DEV-A-G-4'.| 2018-12-18T16:03:19.763Z | some user id  | f7c220138713044a89f4e5fa479564863516b53b
+> 0x1 | 1264417d6364c79d3d1c8d6a45ee6e3ee79188c4 | Removed Device 'DEV-A-G-3' again. | 2018-12-18T16:03:27.140Z | some user id  | 9c4239a1fef7cc7136fcef1f6a7472a3b0ffbd7d
 
 ### What instances have changed in a Change Summary
 

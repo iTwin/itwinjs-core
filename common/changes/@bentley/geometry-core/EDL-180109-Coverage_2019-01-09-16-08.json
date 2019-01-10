@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "code coverage.  sphere and torus derivative errors. solids reject singular transforms.",
+      "packageName": "@bentley/geometry-core",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "Earlin.Lutz@bentley.com"
+}

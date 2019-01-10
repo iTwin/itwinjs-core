@@ -60,7 +60,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       this._onError(err);
     }
 
-    window.location.replace("/");
+    history.pushState(null, "", "/");
     return true;
   }
 

@@ -1550,8 +1550,14 @@ export class BriefcaseManager {
       IModelJsFs.unlinkSync(fileName); // Note: Cannot create two files with the same name at the same time with multiple async calls.
 
     let res: DbResult = nativeDb.createIModel(accessToken.toTokenString(), IModelHost.backendVersion, projectId, fileName, JSON.stringify(args));
-    if (DbResult.BE_SQLITE_OK !== res)
-      throw new IModelError(res, fileName);
+    if (res !== DbResult.BE_SQLITE_OK) {
+      if (res === -100) {
+        // The addon returns -100 if usage tracking failed. For now we don't yet fail, as
+        // apps need to switch to OIDC authentication first.
+        Logger.logWarning(loggingCategory, "Usage tracking failed.", () => ({ userId: !accessToken.getUserInfo() ? undefined : accessToken.getUserInfo()!.id, projectId }));
+      } else
+        throw new IModelError(res, fileName);
+    }
 
     res = nativeDb.saveChanges();
     if (DbResult.BE_SQLITE_OK !== res)

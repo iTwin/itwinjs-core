@@ -5,10 +5,10 @@
 
 import * as React from "react";
 import { expect } from "chai";
-import { PropertyEditorManager, BasicPropertyEditor, PropertyEditorBase, DataControllerBase } from "../..//editors/PropertyEditorManager";
-import { TextEditor } from "../..//editors/TextEditor";
+import { PropertyEditorManager, BasicPropertyEditor, PropertyEditorBase, DataControllerBase } from "../../ui-components/editors/PropertyEditorManager";
+import { TextEditor } from "../../ui-components/editors/TextEditor";
 import { PropertyValue, PropertyValueFormat, PropertyDescription, PropertyRecord, PropertyEditorParams, PropertyEditorParamTypes } from "../../ui-components";
-import { AsyncValueProcessingResult } from "../..//converters/TypeConverter";
+import { AsyncValueProcessingResult } from "../../ui-components/converters/TypeConverter";
 
 describe("PropertyEditorManager", () => {
   it("createEditor should create a BasicPropertyEditor for unknown type", () => {

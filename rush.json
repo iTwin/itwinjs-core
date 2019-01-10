@@ -130,6 +130,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/presentation-testing",
+      "projectFolder": "presentation/testing",
+      "reviewCategory": "tools",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/ui-core",
       "projectFolder": "ui/core",
       "reviewCategory": "frontend",
@@ -172,6 +179,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/electron-manager",
+      "projectFolder": "core/electron-manager",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "example-code-snippets",
       "projectFolder": "example-code/snippets",
       "reviewCategory": "internal",
@@ -210,6 +224,12 @@
     {
       "packageName": "display-performance-test-app",
       "projectFolder": "test-apps/display-performance-test-app",
+      "reviewCategory": "internal",
+      "shouldPublish": false
+    },
+    {
+      "packageName": "imodel-from-reality-model",
+      "projectFolder": "test-apps/imodel-from-reality-model",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

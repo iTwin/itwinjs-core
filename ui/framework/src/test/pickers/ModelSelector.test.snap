@@ -1,0 +1,23 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Rulesets Category generated iModel hierarchy matches snapshot 1`] = `
+Array [
+  Object {
+    "isCheckboxVisible": true,
+    "label": "Uncategorized",
+  },
+  Object {
+    "isCheckboxVisible": true,
+    "label": "Uncategorized",
+  },
+]
+`;
+
+exports[`Rulesets Model generated iModel hierarchy matches snapshot 1`] = `
+Array [
+  Object {
+    "isCheckboxVisible": true,
+    "label": "Properties_60InstancesWithUrl2",
+  },
+]
+`;

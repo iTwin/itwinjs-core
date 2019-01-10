@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.183.0",
+      "tag": "@bentley/imodeljs-backend_v0.183.0",
+      "date": "Mon, 07 Jan 2019 21:49:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Moved electron utilities into a separate \"@bentley/electron-manager\" package."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.182.0",
       "tag": "@bentley/imodeljs-backend_v0.182.0",
       "date": "Mon, 07 Jan 2019 13:31:34 GMT",

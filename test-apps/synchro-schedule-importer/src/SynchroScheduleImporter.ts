@@ -1,12 +1,22 @@
 /*---------------------------------------------------------------------------------------------
-|  $Copyright: (c) 2018 Bentley Systems, Incorporated. All rights reserved. $
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
 import { IModelHost, IModelHostConfiguration, IModelDb, ECSqlStatement, IModelJsFs, ViewDefinition, DisplayStyle3d, OrthographicViewDefinition } from "@bentley/imodeljs-backend";
 import { OpenMode, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import { Placement3d, ElementAlignedBox3d, AxisAlignedBox3d, RenderMode, ViewFlags, ColorDef } from "@bentley/imodeljs-common";
 import { YawPitchRollAngles, Point3d } from "@bentley/geometry-core";
 import * as Yargs from "yargs";
 import { readFileSync, writeFileSync, unlinkSync } from "fs";
+
+interface ImportInputArgs {
+    input: string;
+    createDuplicateIbim: boolean;
+    fixRange: boolean;
+    script: string;
+    createSeparateScript: boolean;
+    duplicateIbim: boolean;
+}
 
 function doFixRange(iModel: IModelDb) {
     const totalRange = new AxisAlignedBox3d();
@@ -122,18 +132,6 @@ function animationScriptFromSynchro(synchroJson: object, iModel: IModelDb): any 
                 case "elementID":
                     break;
                 case "transformTimeline":
-                    /*
-                        const thisElement = iModel.elements.getElement(elementId) as GeometricElement;
-                        if (thisElement && Array.isArray(value)) {
-                            for (const timelineEntry of value) {
-                                if (timelineEntry.value) {
-                                    const entryTransform = Transform.fromJSON(timelineEntry.value);
-                                    const inverseElementMatrix = thisElement.placement.rotation.inverse();
-                                    const matrix = entryTransform.matrix.multiplyMatrixMatrix(inverseElementMatrix);
-                                    timelineEntry.value = Transform.createRefs(entryTransform.origin, matrix).toJSON();
-                                }
-                            }
-                        } */
                     if (!transformTimelineIsIdentity(value))
                         data[key] = value;
                     break;
@@ -168,21 +166,21 @@ function doAddAnimationScript(iModel: IModelDb, animationScript: string, createS
 
     iModel.views.iterateViews({ from: "BisCore.SpatialViewDefinition" }, (view: ViewDefinition) => {
         // Create a new display style.
-        const viewFlags = new ViewFlags();
-        viewFlags.renderMode = RenderMode.SmoothShade;
-        viewFlags.cameraLights = true;
-        const backgroundColor = new ColorDef("rgb(127, 127, 127)");
+        const vf = new ViewFlags();
+        vf.renderMode = RenderMode.SmoothShade;
+        vf.cameraLights = true;
+        const bgColor = new ColorDef("rgb(127, 127, 127)");
 
-        const displayStyleId = DisplayStyle3d.insert(iModel, view.model, "Schedule View Style", viewFlags, backgroundColor);
+        const displayStyleId = DisplayStyle3d.insert(iModel, view.model, "Schedule View Style", { viewFlags: vf, backgroundColor: bgColor, scheduleScript: script });
         const displayStyleProps = iModel.elements.getElementProps(displayStyleId);
-        displayStyleProps.jsonProperties.styles.scheduleScript = script;        // Add schedule to the display style propertiies.
         iModel.elements.updateElement(displayStyleProps);
         iModel.views.setDefaultViewId(OrthographicViewDefinition.insert(iModel, view.model, "Schedule View", view.modelSelectorId, view.categorySelectorId, displayStyleId, iModel.projectExtents));
         return true;
     });
     return true;
 }
-function doImport(inputArgs: Yargs.Arguments<{}>) {
+
+function doImport(inputArgs: Yargs.Arguments<ImportInputArgs>) {
     let originalIModel: IModelDb;
 
     try {
@@ -228,7 +226,7 @@ Yargs.default("createSeparateScript", true, "Create a separate file with the JSO
 Yargs.default("createDuplicateIbim", true, "Create a duplicate IBIM with the imported script (rather than writing to original)");
 Yargs.required("script", "Animation script JSON file");
 Yargs.string("script");
-const args = Yargs.parse();
+const args = Yargs.parse() as Yargs.Arguments<ImportInputArgs>;
 
 IModelHost.startup(new IModelHostConfiguration());
 doImport(args);

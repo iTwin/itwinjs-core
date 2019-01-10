@@ -19,7 +19,7 @@ import {
   SortDirection as ContentSortDirection,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import PresentationTableDataProvider from "../../table/DataProvider";
+import { PresentationTableDataProvider } from "../../table/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
 
 /**

@@ -8,8 +8,13 @@ import { IModelHost } from "@bentley/imodeljs-backend";
 import { GeoJson } from "./GeoJson";
 import { GeoJsonImporter } from "./GeoJsonImporter";
 
+interface Args {
+  input: string;
+  output: string;
+}
+
 /** Use [yargs](https://www.npmjs.com/package/yargs) to validate and extract command line options. */
-const argv: yargs.Arguments<{}> = yargs
+const argv: yargs.Arguments<Args> = yargs
   .usage("Usage: $0 --input [GeomJsonFileName] --output [iModelFileName]")
   .describe("input", "Input GeoJSON file name")
   .string("input")

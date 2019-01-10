@@ -27,15 +27,17 @@ import { PolygonOps } from "../geometry3d/PointHelpers";
 export class SweepContour {
   public curves: CurveCollection;
   public localToWorld: Transform;
+  public axis: Ray3d | undefined;
 
-  private constructor(contour: CurveCollection, map: Transform) {
+  private constructor(contour: CurveCollection, map: Transform, axis: Ray3d | undefined) {
     this.curves = contour;
     this.localToWorld = map;
+    this.axis = axis;
   }
   public static createForLinearSweep(contour: CurveCollection, defaultNormal?: Vector3d): SweepContour | undefined {
     const localToWorld = FrameBuilder.createRightHandedFrame(defaultNormal, contour);
     if (localToWorld) {
-      return new SweepContour(contour, localToWorld);
+      return new SweepContour(contour, localToWorld, undefined);
     }
     return undefined;
   }
@@ -43,17 +45,28 @@ export class SweepContour {
     // createRightHandedFrame -- the axis is a last-gasp resolver for in-plane vectors.
     const localToWorld = FrameBuilder.createRightHandedFrame(undefined, contour, axis);
     if (localToWorld) {
-      return new SweepContour(contour, localToWorld);
+      return new SweepContour(contour, localToWorld, axis.clone());
     }
     return undefined;
   }
   public getCurves(): CurveCollection { return this.curves; }
   public tryTransformInPlace(transform: Transform): boolean {
-    transform.multiplyTransformTransform(this.localToWorld, this.localToWorld);
-    return true;
+    if (this.curves.tryTransformInPlace(transform)) {
+      if (this.axis)
+        this.axis.transformInPlace(transform);
+
+      const localToWorld = this.axis !== undefined
+        ? FrameBuilder.createRightHandedFrame(undefined, this.curves, this.axis)
+        : FrameBuilder.createRightHandedFrame(undefined, this.curves);
+      if (localToWorld) {
+        this.localToWorld.setFrom(localToWorld);
+        return true;
+      }
+    }
+    return false;
   }
   public clone(): SweepContour {
-    return new SweepContour(this.curves.clone() as CurveCollection, this.localToWorld.clone());
+    return new SweepContour(this.curves.clone() as CurveCollection, this.localToWorld.clone(), this.axis);
   }
   public cloneTransformed(transform: Transform): SweepContour | undefined {
     const newContour = this.clone();

@@ -87,19 +87,20 @@ class MeasureMarker extends Marker {
 /** @hidden */
 export class MeasureDistanceTool extends PrimitiveTool {
   public static toolId = "Measure.Distance";
-  protected readonly _locationData = new Array<{ point: Point3d, normal: Vector3d, tangent: Vector3d }>();
+  protected readonly _locationData = new Array<{ point: Point3d, refAxes: Matrix3d }>();
   protected readonly _acceptedSegments = new Array<{ distance: number, slope: number, start: Point3d, end: Point3d, delta: Vector3d, refAxes: Matrix3d, marker: MeasureMarker }>();
   protected _totalDistance: number = 0.0;
   protected _totalDistanceMarker?: MeasureLabel;
   protected _snapGeomId?: string;
 
+  public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
   public requireWriteableTarget(): boolean { return false; }
   public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
   public onUnsuspend(): void { this.showPrompt(); }
   protected showPrompt(): void { IModelApp.notifications.outputPromptByKey(0 === this._locationData.length ? "CoreTools:tools.Measure.Distance.Prompts.FirstPoint" : "CoreTools:tools.Measure.Distance.Prompts.NextPoint"); }
 
-  public setupAndPromptForNextAction(): void {
+  protected setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
     IModelApp.accuDraw.deactivate(); // Don't enable AccuDraw automatically when starting dynamics.
     IModelApp.toolAdmin.setCursor(0 === this._locationData.length ? IModelApp.viewManager.crossHairCursor : IModelApp.viewManager.dynamicsCursor);
@@ -108,7 +109,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
   public testDecorationHit(id: string): boolean { return id === this._snapGeomId; }
 
-  public getSnapPoints(): Point3d[] | undefined {
+  protected getSnapPoints(): Point3d[] | undefined {
     if (this._acceptedSegments.length < 1 && this._locationData.length < 2)
       return undefined;
 
@@ -134,20 +135,22 @@ export class MeasureDistanceTool extends PrimitiveTool {
     return (undefined === geomData ? undefined : [geomData]);
   }
 
-  public displayDynamicDistance(context: DecorateContext, points: Point3d[]): void {
+  protected displayDynamicDistance(context: DecorateContext, points: Point3d[]): void {
     let totalDistance = 0.0;
     for (let i = 0; i < points.length - 1; i++)
       totalDistance += points[i].distance(points[i + 1]);
     if (0.0 === totalDistance)
       return;
-    const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(totalDistance, QuantityType.Length);
-    if (undefined === formattedTotalDistance)
+
+    const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
+    if (undefined === formatterSpec)
       return;
+    const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(totalDistance, formatterSpec);
     const distDyn = new MeasureLabel(points[points.length - 1], formattedTotalDistance);
     distDyn.addDecoration(context);
   }
 
-  public displayDelta(context: DecorateContext, seg: any): void {
+  protected displayDelta(context: DecorateContext, seg: any): void {
     const xVec = new Vector3d(seg.delta.x, 0.0, 0.0);
     const yVec = new Vector3d(0.0, seg.delta.y, 0.0);
     const zVec = new Vector3d(0.0, 0.0, seg.delta.z);
@@ -190,6 +193,9 @@ export class MeasureDistanceTool extends PrimitiveTool {
   }
 
   public decorate(context: DecorateContext): void {
+    if (!context.viewport.view.isSpatialView())
+      return;
+
     if (this._locationData.length > 0) {
       const ev = new BeButtonEvent();
       IModelApp.toolAdmin.fillEventFromCursorLocation(ev);
@@ -260,16 +266,19 @@ export class MeasureDistanceTool extends PrimitiveTool {
 
   public async onMouseMotion(ev: BeButtonEvent): Promise<void> { if (this._locationData.length > 0 && undefined !== ev.viewport) ev.viewport.invalidateDecorations(); }
 
-  public updateTotals(): void {
+  protected async updateTotals(): Promise<void> {
     this._totalDistance = 0.0;
     this._totalDistanceMarker = undefined;
     for (const seg of this._acceptedSegments)
       this._totalDistance += seg.distance;
     if (0.0 === this._totalDistance)
       return;
-    const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(this._totalDistance, QuantityType.Length);
-    if (undefined === formattedTotalDistance)
+
+    const formatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
+    if (undefined === formatterSpec)
       return;
+
+    const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(this._totalDistance, formatterSpec);
     this._totalDistanceMarker = new MeasureLabel(this._acceptedSegments[this._acceptedSegments.length - 1].end, formattedTotalDistance);
 
     const briefMsg = IModelApp.i18n.translateKeys(this._acceptedSegments.length > 1 ? "%{CoreTools:tools.Measure.Labels.CumulativeDistance}: " : "%{CoreTools:tools.Measure.Labels.Distance}: ") + formattedTotalDistance;
@@ -277,41 +286,55 @@ export class MeasureDistanceTool extends PrimitiveTool {
     IModelApp.notifications.outputMessage(msgDetail);
   }
 
-  public getMarkerToolTip(distance: number, slope: number, start: Point3d, end: Point3d, delta?: Vector3d): string {
+  protected async getMarkerToolTip(distance: number, slope: number, start: Point3d, end: Point3d, delta?: Vector3d): Promise<string> {
     let toolTip = "";
 
-    const formattedDistance = IModelApp.quantityFormatter.formatQuantity(distance, QuantityType.Length);
-    if (undefined !== formattedDistance)
-      toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Distance}:</b> ") + formattedDistance + "<br>";
+    const distanceFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
+    if (undefined === distanceFormatterSpec)
+      return toolTip;
 
-    const formattedSlope = IModelApp.quantityFormatter.formatQuantity(slope, QuantityType.Angle);
-    if (undefined !== formattedSlope)
+    const formattedDistance = IModelApp.quantityFormatter.formatQuantity(distance, distanceFormatterSpec);
+    toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Distance}:</b> ") + formattedDistance + "<br>";
+
+    const angleFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Angle);
+    if (undefined !== angleFormatterSpec) {
+      const formattedSlope = IModelApp.quantityFormatter.formatQuantity(slope, angleFormatterSpec);
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Slope}:</b> ") + formattedSlope + "<br>";
+    }
 
-    const formattedStartX = IModelApp.quantityFormatter.formatQuantity(start.x, QuantityType.Length);
-    const formattedStartY = IModelApp.quantityFormatter.formatQuantity(start.y, QuantityType.Length);
-    const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(start.z, QuantityType.Length);
-    if (undefined !== formattedStartX && undefined !== formattedStartY && undefined !== formattedStartZ)
-      toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.StartCoord}:</b> ") + formattedStartX + ", " + formattedStartY + ", " + formattedStartZ + "<br>";
+    let startAdjusted = start;
+    let endAdjusted = end;
+    if (undefined !== this.targetView && this.targetView.view.isSpatialView()) {
+      const globalOrigin = this.iModel.globalOrigin;
+      startAdjusted = startAdjusted.minus(globalOrigin);
+      endAdjusted = endAdjusted.minus(globalOrigin);
+    }
 
-    const formattedEndX = IModelApp.quantityFormatter.formatQuantity(end.x, QuantityType.Length);
-    const formattedEndY = IModelApp.quantityFormatter.formatQuantity(end.y, QuantityType.Length);
-    const formattedEndZ = IModelApp.quantityFormatter.formatQuantity(end.z, QuantityType.Length);
-    if (undefined !== formattedEndX && undefined !== formattedEndY && undefined !== formattedEndZ)
-      toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.EndCoord}:</b> ") + formattedEndX + ", " + formattedEndY + ", " + formattedEndZ + "<br>";
+    const formattedStartX = IModelApp.quantityFormatter.formatQuantity(startAdjusted.x, distanceFormatterSpec);
+    const formattedStartY = IModelApp.quantityFormatter.formatQuantity(startAdjusted.y, distanceFormatterSpec);
+    const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(startAdjusted.z, distanceFormatterSpec);
+    toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.StartCoord}:</b> ") + formattedStartX + ", " + formattedStartY + ", " + formattedStartZ + "<br>";
+
+    const formattedEndX = IModelApp.quantityFormatter.formatQuantity(endAdjusted.x, distanceFormatterSpec);
+    const formattedEndY = IModelApp.quantityFormatter.formatQuantity(endAdjusted.y, distanceFormatterSpec);
+    const formattedEndZ = IModelApp.quantityFormatter.formatQuantity(endAdjusted.z, distanceFormatterSpec);
+    toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.EndCoord}:</b> ") + formattedEndX + ", " + formattedEndY + ", " + formattedEndZ + "<br>";
 
     if (undefined !== delta) {
-      const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(delta.x, QuantityType.Length);
-      const formattedDeltaY = IModelApp.quantityFormatter.formatQuantity(delta.y, QuantityType.Length);
-      const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantity(delta.z, QuantityType.Length);
-      if (undefined !== formattedDeltaX && undefined !== formattedDeltaY && undefined !== formattedDeltaZ)
-        toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Delta}:</b> ") + formattedDeltaX + ", " + formattedDeltaY + ", " + formattedDeltaZ + "<br>";
+      const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(delta.x, distanceFormatterSpec);
+      const formattedDeltaY = IModelApp.quantityFormatter.formatQuantity(delta.y, distanceFormatterSpec);
+      const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantity(delta.z, distanceFormatterSpec);
+      toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Delta}:</b> ") + formattedDeltaX + ", " + formattedDeltaY + ", " + formattedDeltaZ + "<br>";
     }
 
     return toolTip;
   }
 
-  public acceptNewSegments(): void {
+  protected async updateSelectedMarkerToolTip(seg: any): Promise<void> {
+    seg.marker.title = await this.getMarkerToolTip(seg.distance, seg.slope, seg.start, seg.end, seg.marker.isSelected ? seg.delta : undefined);
+  }
+
+  protected async acceptNewSegments(): Promise<void> {
     if (this._locationData.length > 1) {
       for (let i = 0; i <= this._locationData.length - 2; i++) {
         const start = this._locationData[i].point;
@@ -320,27 +343,11 @@ export class MeasureDistanceTool extends PrimitiveTool {
         const xyDist = start.distanceXY(end);
         const zDist = end.z - start.z;
         const slope = (0.0 === xyDist ? Math.PI : Math.atan(zDist / xyDist));
-        const zDir = Vector3d.unitZ();
-        const refAxes = Matrix3d.createIdentity();
-        if (!this._locationData[i].normal.isParallelTo(zDir, true)) {
-          const xDir = this._locationData[i].normal.clone();
-          const yDir = zDir.unitCrossProduct(xDir);
-          if (undefined !== yDir) {
-            yDir.unitCrossProduct(zDir, xDir);
-            Matrix3d.createColumnsInAxisOrder(AxisOrder.ZXY, xDir, yDir, zDir, refAxes);
-          }
-        } else if (!this._locationData[i].tangent.isParallelTo(zDir, true)) {
-          const xDir = this._locationData[i].tangent.clone();
-          const yDir = zDir.unitCrossProduct(xDir);
-          if (undefined !== yDir) {
-            yDir.unitCrossProduct(zDir, xDir);
-            Matrix3d.createColumnsInAxisOrder(AxisOrder.XYZ, xDir, yDir, zDir, refAxes);
-          }
-        }
         const delta = Vector3d.createStartEnd(start, end);
+        const refAxes = this._locationData[i].refAxes;
         refAxes.multiplyTransposeVectorInPlace(delta);
 
-        const toolTip = this.getMarkerToolTip(distance, slope, start, end);
+        const toolTip = await this.getMarkerToolTip(distance, slope, start, end);
         const marker = new MeasureMarker((this._acceptedSegments.length + 1).toString(), toolTip, start.interpolate(0.5, end), Point2d.create(25, 25));
 
         const segMarkerButtonFunc = (ev: BeButtonEvent) => {
@@ -359,7 +366,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
             const wasSelected = seg.marker.isSelected;
             seg.marker.isSelected = (seg.marker === selectedMarker);
             if (wasSelected !== seg.marker.isSelected)
-              seg.marker.title = this.getMarkerToolTip(seg.distance, seg.slope, seg.start, seg.end, seg.marker.isSelected ? seg.delta : undefined);
+              this.updateSelectedMarkerToolTip(seg); // tslint:disable-line:no-floating-promises
           }
 
           if (undefined !== ev.viewport)
@@ -372,13 +379,22 @@ export class MeasureDistanceTool extends PrimitiveTool {
       }
     }
     this._locationData.length = 0;
-    this.updateTotals();
+    await this.updateTotals();
+  }
+
+  protected getReferenceAxes(vp?: Viewport): Matrix3d {
+    const refAxes = Matrix3d.createIdentity();
+    if (undefined !== vp && vp.isContextRotationRequired)
+      vp.getAuxCoordRotation(refAxes);
+    return refAxes;
   }
 
   public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     const point = ev.point.clone();
-    const normal = Vector3d.unitZ();
-    const tangent = Vector3d.unitX();
+    const refAxes = this.getReferenceAxes(ev.viewport);
+    const zDir = refAxes.columnZ();
+    const normal = refAxes.columnZ();
+    const tangent = refAxes.columnX();
     const snap = IModelApp.accuSnap.getCurrSnapDetail();
 
     // Report xyz delta relative to world up. The surface normal and edge tangent help determine the rotation about z...
@@ -396,10 +412,24 @@ export class MeasureDistanceTool extends PrimitiveTool {
       }
     }
 
-    this._locationData.push({ point, normal, tangent });
+    if (!normal.isParallelTo(zDir, true)) {
+      const yDir = zDir.unitCrossProduct(normal);
+      if (undefined !== yDir) {
+        yDir.unitCrossProduct(zDir, normal);
+        Matrix3d.createColumnsInAxisOrder(AxisOrder.ZXY, normal, yDir, zDir, refAxes);
+      }
+    } else if (!tangent.isParallelTo(zDir, true)) {
+      const yDir = zDir.unitCrossProduct(tangent);
+      if (undefined !== yDir) {
+        yDir.unitCrossProduct(zDir, tangent);
+        Matrix3d.createColumnsInAxisOrder(AxisOrder.XYZ, tangent, yDir, zDir, refAxes);
+      }
+    }
+
+    this._locationData.push({ point, refAxes });
 
     if (this._locationData.length > 1 && !ev.isControlKey)
-      this.acceptNewSegments();
+      await this.acceptNewSegments();
     this.setupAndPromptForNextAction();
     if (undefined !== ev.viewport)
       ev.viewport.invalidateDecorations();
@@ -411,14 +441,14 @@ export class MeasureDistanceTool extends PrimitiveTool {
       this.onReinitialize();
       return EventHandled.No;
     }
-    this.acceptNewSegments();
+    await this.acceptNewSegments();
     this.setupAndPromptForNextAction();
     if (undefined !== ev.viewport)
       ev.viewport.invalidateDecorations();
     return EventHandled.No;
   }
 
-  public onUndoPreviousStep(): boolean {
+  public async onUndoPreviousStep(): Promise<boolean> {
     if (0 === this._locationData.length && 0 === this._acceptedSegments.length)
       return false;
 
@@ -431,27 +461,94 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (0 === this._locationData.length && 0 === this._acceptedSegments.length) {
       this.onReinitialize();
     } else {
-      this.updateTotals();
+      await this.updateTotals();
       this.setupAndPromptForNextAction();
     }
     return true;
   }
 
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> { // NEEDSWORK: Element undo and last datapoint undo button needs to be part of UI/ToolAdmin...
-    if (wentDown) {
-      switch (keyEvent.key) {
-        case "z":
-        case "Z":
-          if (keyEvent.ctrlKey)
-            this.undoPreviousStep();
-          break;
+  public onRestartTool(): void {
+    const tool = new MeasureDistanceTool();
+    if (!tool.run())
+      this.exitTool();
+  }
+}
+
+/** @hidden */
+export class MeasureLocationTool extends PrimitiveTool {
+  public static toolId = "Measure.Location";
+  protected readonly _acceptedLocations: MeasureMarker[] = [];
+
+  public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean { return (super.isCompatibleViewport(vp, isSelectedViewChange) && undefined !== vp && vp.view.isSpatialView()); }
+  public requireWriteableTarget(): boolean { return false; }
+  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+
+  public onUnsuspend(): void { this.showPrompt(); }
+  protected showPrompt(): void { IModelApp.notifications.outputPromptByKey("CoreTools:tools.Measure.Location.Prompts.EnterPoint"); }
+
+  protected setupAndPromptForNextAction(): void {
+    IModelApp.accuSnap.enableSnap(true);
+    IModelApp.accuDraw.deactivate(); // Don't enable AccuDraw automatically when starting dynamics.
+    this.showPrompt();
+  }
+
+  protected async getMarkerToolTip(point: Point3d): Promise<string> {
+    let toolTip = "";
+
+    const formatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
+    if (undefined !== formatterSpec) {
+      let pointAdjusted = point;
+      if (undefined !== this.targetView && this.targetView.view.isSpatialView()) {
+        const globalOrigin = this.iModel.globalOrigin;
+        pointAdjusted = pointAdjusted.minus(globalOrigin);
       }
+      const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, formatterSpec);
+      const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, formatterSpec);
+      const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, formatterSpec);
+      if (undefined !== formattedPointX && undefined !== formattedPointY && undefined !== formattedPointZ)
+        toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Coordinate}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
     }
+
+    return toolTip;
+  }
+
+  public decorate(context: DecorateContext): void { if (!context.viewport.view.isSpatialView()) return; this._acceptedLocations.forEach((marker) => marker.addDecoration(context)); }
+  public decorateSuspended(context: DecorateContext): void { this.decorate(context); }
+
+  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+    const point = ev.point.clone();
+    const toolTip = await this.getMarkerToolTip(point);
+    const marker = new MeasureMarker((this._acceptedLocations.length + 1).toString(), toolTip, point, Point2d.create(25, 25));
+
+    const noOpButtonFunc = (_ev: BeButtonEvent) => true;
+    marker.onMouseButton = noOpButtonFunc;
+
+    this._acceptedLocations.push(marker);
+    this.setupAndPromptForNextAction();
+    if (undefined !== ev.viewport)
+      ev.viewport.invalidateDecorations();
     return EventHandled.No;
   }
 
+  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+    this.onReinitialize();
+    return EventHandled.No;
+  }
+
+  public async onUndoPreviousStep(): Promise<boolean> {
+    if (0 === this._acceptedLocations.length)
+      return false;
+
+    this._acceptedLocations.pop();
+    if (0 === this._acceptedLocations.length)
+      this.onReinitialize();
+    else
+      this.setupAndPromptForNextAction();
+    return true;
+  }
+
   public onRestartTool(): void {
-    const tool = new MeasureDistanceTool();
+    const tool = new MeasureLocationTool();
     if (!tool.run())
       this.exitTool();
   }

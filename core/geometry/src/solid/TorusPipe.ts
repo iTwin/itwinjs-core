@@ -50,6 +50,8 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
   }
 
   public tryTransformInPlace(transform: Transform): boolean {
+    if (transform.matrix.isSingular())
+      return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
@@ -162,8 +164,8 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
     const majorRadius = this.getMajorRadius();
     const minorRadius = this.getMinorRadius();
     const transform0 = this._localToWorld;
-    const numThetaSample = Math.ceil(theta1Radians / (Math.PI * 0.125));
-    const numHalfPhiSample = 8;
+    const numThetaSample = Math.ceil(theta1Radians / (Math.PI / 16.0));
+    const numHalfPhiSample = 16;
     let phi0 = 0;
     let dphi = 0;
     let numPhiSample = 0;
@@ -240,8 +242,8 @@ export class TorusPipe extends SolidPrimitive implements UVSurface {
     const rCosPhi = minorRadius * cosPhi;   // appears only as derivative of rSinPhi.
     return Plane3dByOriginAndVectors.createOriginAndVectors(
       this._localToWorld.multiplyXYZ(cosTheta * rxy, sinTheta * rxy, rSinPhi),
-      this._localToWorld.multiplyVectorXYZ(-rxy * sinTheta * fTheta, rxy * cosTheta * fTheta, 0),
       this._localToWorld.multiplyVectorXYZ(-cosTheta * rSinPhi * fPhi, -sinTheta * rSinPhi * fPhi, rCosPhi * fPhi),
+      this._localToWorld.multiplyVectorXYZ(-rxy * sinTheta * fTheta, rxy * cosTheta * fTheta, 0),
       result);
   }
 

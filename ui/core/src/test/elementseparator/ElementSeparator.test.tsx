@@ -6,8 +6,8 @@ import { expect } from "chai";
 import { mount } from "enzyme";
 import * as sinon from "sinon";
 import * as React from "react";
-import { ElementSeparator } from "../..//elementseparator/ElementSeparator";
-import { Orientation } from "../..//enums/Orientation";
+import { ElementSeparator } from "../../ui-core/elementseparator/ElementSeparator";
+import { Orientation } from "../../ui-core/enums/Orientation";
 
 describe("ElementSeparator", () => {
   it("calls onRatioChanged when it gets dragged horizontally", () => {

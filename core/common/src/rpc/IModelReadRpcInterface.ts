@@ -50,7 +50,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public static getClient(): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface); }
 
   /** The semantic version of the interface. */
-  public static version = "0.1.0";
+  public static version = "0.1.1";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.

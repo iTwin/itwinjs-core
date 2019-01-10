@@ -21,7 +21,7 @@ import {
 } from "@bentley/presentation-frontend";
 import { Tree, TreeProps, TreeNodeItem, UiComponents } from "@bentley/ui-components";
 import { I18N } from "@bentley/imodeljs-i18n";
-import IUnifiedSelectionComponent from "../../common/IUnifiedSelectionComponent";
+import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
 import { IPresentationTreeDataProvider, treeWithUnifiedSelection } from "../../presentation-components";
 
 // tslint:disable-next-line:variable-name naming-convention
@@ -42,7 +42,7 @@ describe("Tree withUnifiedSelection", () => {
     // note: can't use `ofType` because it creates a mock whose typeof is "function" and
     // we expect it to be "object" for IPresentationTreeDataProvider instances
     dataProviderMock = moq.Mock.ofInstance<any>({
-      connection: undefined,
+      imodel: undefined,
       rulesetId: undefined,
       onTreeNodeChanged: undefined,
       getNodesCount: async () => 0,
@@ -66,7 +66,7 @@ describe("Tree withUnifiedSelection", () => {
       rootNodes = () => [];
     if (!childNodes)
       childNodes = () => [];
-    providerMock.setup((x) => x.connection).returns(() => imodel!);
+    providerMock.setup((x) => x.imodel).returns(() => imodel!);
     providerMock.setup((x) => x.rulesetId).returns(() => rulesetId!);
     providerMock.setup((x) => x.onTreeNodeChanged).returns(() => undefined);
     providerMock.setup((x) => x.getNodeKey(moq.It.isAny())).returns((n: TreeNodeItem) => n.extendedData.key);

@@ -16,9 +16,9 @@ import {
   DefaultContentDisplayTypes, Descriptor, SortDirection,
   Content, Field, PropertyValueFormat, Item,
 } from "@bentley/presentation-common";
-import ContentDataProvider, { CacheInvalidationProps } from "../common/ContentDataProvider";
-import ContentBuilder from "../common/ContentBuilder";
-import PageContainer, { Page } from "../common/PageContainer";
+import { ContentDataProvider, CacheInvalidationProps, IContentDataProvider } from "../common/ContentDataProvider";
+import { ContentBuilder } from "../common/ContentBuilder";
+import { PageContainer, Page } from "../common/PageContainer";
 import { prioritySortFunction } from "../common/Utils";
 
 interface PromisedPage<TItem> extends Page<TItem> {
@@ -26,9 +26,14 @@ interface PromisedPage<TItem> extends Page<TItem> {
 }
 
 /**
+ * Interface for presentation rules-driven property data provider.
+ */
+export type IPresentationTableDataProvider = ITableDataProvider & IContentDataProvider;
+
+/**
  * Presentation Rules-driven table data provider.
  */
-export default class PresentationTableDataProvider extends ContentDataProvider implements ITableDataProvider {
+export class PresentationTableDataProvider extends ContentDataProvider implements IPresentationTableDataProvider {
   private _sortColumnKey: string | undefined;
   private _sortDirection = UiSortDirection.NoSort;
   private _filterExpression: string | undefined;
@@ -37,8 +42,8 @@ export default class PresentationTableDataProvider extends ContentDataProvider i
   public onRowsChanged = new TableDataChangeEvent();
 
   /** Constructor. */
-  constructor(connection: IModelConnection, rulesetId: string, pageSize: number = 20, cachedPagesCount: number = 5) {
-    super(connection, rulesetId, DefaultContentDisplayTypes.GRID);
+  constructor(imodel: IModelConnection, rulesetId: string, pageSize: number = 20, cachedPagesCount: number = 5) {
+    super(imodel, rulesetId, DefaultContentDisplayTypes.GRID);
     this._pages = new PageContainer(pageSize, cachedPagesCount);
   }
 

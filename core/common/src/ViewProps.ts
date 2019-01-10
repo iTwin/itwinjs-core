@@ -202,6 +202,7 @@ export interface EnvironmentProps {
 export interface ContextRealityModelProps {
   tilesetUrl: string;
   name?: string;
+  description?: string;
 }
 
 /** JSON representation of the settings associated with a [[DisplayStyleProps]].

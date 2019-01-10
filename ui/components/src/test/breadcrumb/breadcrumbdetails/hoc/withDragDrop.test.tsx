@@ -8,10 +8,10 @@ import * as sinon from "sinon";
 import { render, cleanup } from "react-testing-library";
 import ReactTestUtils from "react-dom/test-utils";
 import { BreadcrumbDetails, BreadcrumbPath } from "../../../../ui-components";
-import withDragDrop from "../../../../breadcrumb/breadcrumbdetails/hoc/withDragDrop";
+import withDragDrop from "../../../../ui-components/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
 import { mockRawTreeDataProvider } from "../../mockTreeDataProvider";
-import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../../dragdrop/DragDropDef";
-import { TreeDataProvider } from "../../../../tree/TreeDataProvider";
+import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../../ui-components/dragdrop/DragDropDef";
+import { TreeDataProvider } from "../../../../ui-components/tree/TreeDataProvider";
 
 describe("Breadcrumb Details withDragDrop HOC", () => {
 
