@@ -12,7 +12,7 @@ import { Marker } from "../Marker";
 import { PrimitiveTool } from "./PrimitiveTool";
 import { IModelApp } from "../IModelApp";
 import { HitDetail, HitGeomType } from "../HitDetail";
-import { GeometryStreamProps, ColorDef } from "@bentley/imodeljs-common";
+import { GeometryStreamProps, ColorDef, GeoCoordStatus, Cartographic } from "@bentley/imodeljs-common";
 import { QuantityType } from "../QuantityFormatter";
 import { BeButtonEvent, EventHandled } from "./Tool";
 import { NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "../NotificationManager";
@@ -302,23 +302,26 @@ export class MeasureDistanceTool extends PrimitiveTool {
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Slope}:</b> ") + formattedSlope + "<br>";
     }
 
-    let startAdjusted = start;
-    let endAdjusted = end;
-    if (undefined !== this.targetView && this.targetView.view.isSpatialView()) {
-      const globalOrigin = this.iModel.globalOrigin;
-      startAdjusted = startAdjusted.minus(globalOrigin);
-      endAdjusted = endAdjusted.minus(globalOrigin);
+    const coordFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length); // ##TODO QuantityType.Coordinate...
+    if (undefined !== coordFormatterSpec) {
+      let startAdjusted = start;
+      let endAdjusted = end;
+      if (undefined !== this.targetView && this.targetView.view.isSpatialView()) {
+        const globalOrigin = this.iModel.globalOrigin;
+        startAdjusted = startAdjusted.minus(globalOrigin);
+        endAdjusted = endAdjusted.minus(globalOrigin);
+      }
+
+      const formattedStartX = IModelApp.quantityFormatter.formatQuantity(startAdjusted.x, coordFormatterSpec);
+      const formattedStartY = IModelApp.quantityFormatter.formatQuantity(startAdjusted.y, coordFormatterSpec);
+      const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(startAdjusted.z, coordFormatterSpec);
+      toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.StartCoord}:</b> ") + formattedStartX + ", " + formattedStartY + ", " + formattedStartZ + "<br>";
+
+      const formattedEndX = IModelApp.quantityFormatter.formatQuantity(endAdjusted.x, coordFormatterSpec);
+      const formattedEndY = IModelApp.quantityFormatter.formatQuantity(endAdjusted.y, coordFormatterSpec);
+      const formattedEndZ = IModelApp.quantityFormatter.formatQuantity(endAdjusted.z, coordFormatterSpec);
+      toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.EndCoord}:</b> ") + formattedEndX + ", " + formattedEndY + ", " + formattedEndZ + "<br>";
     }
-
-    const formattedStartX = IModelApp.quantityFormatter.formatQuantity(startAdjusted.x, distanceFormatterSpec);
-    const formattedStartY = IModelApp.quantityFormatter.formatQuantity(startAdjusted.y, distanceFormatterSpec);
-    const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(startAdjusted.z, distanceFormatterSpec);
-    toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.StartCoord}:</b> ") + formattedStartX + ", " + formattedStartY + ", " + formattedStartZ + "<br>";
-
-    const formattedEndX = IModelApp.quantityFormatter.formatQuantity(endAdjusted.x, distanceFormatterSpec);
-    const formattedEndY = IModelApp.quantityFormatter.formatQuantity(endAdjusted.y, distanceFormatterSpec);
-    const formattedEndZ = IModelApp.quantityFormatter.formatQuantity(endAdjusted.z, distanceFormatterSpec);
-    toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.EndCoord}:</b> ") + formattedEndX + ", " + formattedEndY + ", " + formattedEndZ + "<br>";
 
     if (undefined !== delta) {
       const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(delta.x, distanceFormatterSpec);
@@ -495,18 +498,38 @@ export class MeasureLocationTool extends PrimitiveTool {
   protected async getMarkerToolTip(point: Point3d): Promise<string> {
     let toolTip = "";
 
-    const formatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
-    if (undefined !== formatterSpec) {
+    const coordFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length); // ##TODO QuantityType.Coordinate...
+    if (undefined !== coordFormatterSpec) {
       let pointAdjusted = point;
       if (undefined !== this.targetView && this.targetView.view.isSpatialView()) {
         const globalOrigin = this.iModel.globalOrigin;
         pointAdjusted = pointAdjusted.minus(globalOrigin);
       }
-      const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, formatterSpec);
-      const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, formatterSpec);
-      const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, formatterSpec);
+      const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, coordFormatterSpec);
+      const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, coordFormatterSpec);
+      const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, coordFormatterSpec);
       if (undefined !== formattedPointX && undefined !== formattedPointY && undefined !== formattedPointZ)
         toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Coordinate}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
+    }
+
+    if (undefined !== this.targetView && this.targetView.view.isSpatialView() && undefined !== this.iModel.ecefLocation) {
+      const latLongFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Angle); // ##TODO QuantityType.LatLong...
+      const distanceFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length);
+      if (undefined !== latLongFormatterSpec && undefined !== distanceFormatterSpec) {
+        const geoConverter = this.iModel.geoServices.getConverter();
+        const coordResponse = await geoConverter.getGeoCoordinatesFromIModelCoordinates([point]);
+        if (1 === coordResponse.geoCoords.length && GeoCoordStatus.Success === coordResponse.geoCoords[0].s) {
+          const longLatHeight = Point3d.fromJSON(coordResponse.geoCoords[0].p); // x is longitude in degrees, y is latitude in degrees, z is height in meters...
+          const cartographic = Cartographic.fromDegrees(longLatHeight.x, longLatHeight.y, longLatHeight.z);
+          const formattedLat = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.latitude), latLongFormatterSpec);
+          const formattedLong = IModelApp.quantityFormatter.formatQuantity(Math.abs(cartographic.longitude), latLongFormatterSpec);
+          const formattedHeight = IModelApp.quantityFormatter.formatQuantity(cartographic.height, distanceFormatterSpec);
+          const latDir = IModelApp.i18n.translateKeys(cartographic.latitude < 0 ? "%{CoreTools:tools.Measure.Labels.S}" : "%{CoreTools:tools.Measure.Labels.N}");
+          const longDir = IModelApp.i18n.translateKeys(cartographic.longitude < 0 ? "%{CoreTools:tools.Measure.Labels.W}" : "%{CoreTools:tools.Measure.Labels.E}");
+          toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.LatLong}:</b> ") + formattedLat + latDir + ", " + formattedLong + longDir + "<br>";
+          toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Altitude}:</b> ") + formattedHeight + "<br>";
+        }
+      }
     }
 
     return toolTip;
