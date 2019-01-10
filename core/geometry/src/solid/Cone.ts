@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -52,6 +52,8 @@ export class Cone extends SolidPrimitive implements UVSurface {
     return this._localToWorld.cloneRigid();
   }
   public tryTransformInPlace(transform: Transform): boolean {
+    if (transform.matrix.isSingular())
+      return false;
     transform.multiplyTransformTransform(this._localToWorld, this._localToWorld);
     return true;
   }
@@ -62,14 +64,16 @@ export class Cone extends SolidPrimitive implements UVSurface {
   }
   /** create a cylinder or cone from two endpoints and their radii.   The circular cross sections are perpendicular to the axis line
    * from start to end point.
+   * * both radii must be of the same sign.
+   * * negative radius is accepted to create interior surface.    Downstream effects of that combined with capping may be a problem.
    */
   public static createAxisPoints(centerA: Point3d, centerB: Point3d, radiusA: number, radiusB: number, capped: boolean): Cone | undefined {
     const zDirection = centerA.vectorTo(centerB);
     const a = zDirection.magnitude();
     if (Geometry.isSmallMetricDistance(a)) return undefined;
     // force near-zero radii to true zero
-    radiusA = Math.abs(Geometry.correctSmallMetricDistance(radiusA));
-    radiusB = Math.abs(Geometry.correctSmallMetricDistance(radiusB));
+    radiusA = Geometry.correctSmallMetricDistance(radiusA);
+    radiusB = Geometry.correctSmallMetricDistance(radiusB);
     // cone tip may not be "within" the z range.
     if (radiusA * radiusB < 0.0) return undefined;
     // at least one must be nonzero.
@@ -112,33 +116,58 @@ export class Cone extends SolidPrimitive implements UVSurface {
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleCone(this);
   }
+
   /**
    *  return strokes for a cross-section (elliptic arc) at specified fraction v along the axis.
+   * * fixedStrokeCount takes priority over stroke options.
+   * * The linestring is created by LineString3d.createForStrokes (fixedStrokeCount, options), which sets up property according to the options:
+   *   * optional fractions member
+   *   * optional uvParams.  uvParams are installed as full-scale distance parameters.
+   *   * optional derivatives.
    * @param v fractional position along the cone axis
-   * @param strokes stroke count or options.
+   * @param fixedStrokeCount optional stroke count.
+   * @param options optional stroke options.
    */
-  public strokeConstantVSection(v: number, strokes: number | StrokeOptions | undefined): LineString3d {
+  public strokeConstantVSection(v: number, fixedStrokeCount: number | undefined, options: StrokeOptions | undefined): LineString3d {
     let strokeCount = 16;
-    if (strokes === undefined) {
-      // accept the default above.
-    } else if (strokes instanceof Number) {
-      strokeCount = strokes as number;
-    } else if (strokes instanceof StrokeOptions) {
-      strokeCount = strokes.defaultCircleStrokes;   // NEEDS WORK -- get circle stroke count with this.maxRadius !!!
+    if (fixedStrokeCount !== undefined)
+      strokeCount = fixedStrokeCount;
+    else if (options !== undefined)
+      strokeCount = options.defaultCircleStrokes;   // NEEDS WORK -- get circle stroke count with this.maxRadius !!!
+    else {
+      // accept the local default
     }
     strokeCount = Geometry.clampToStartEnd(strokeCount, 4, 64);
     const r = this.vFractionToRadius(v);
-    const result = LineString3d.create();
-    const deltaRadians = Math.PI * 2.0 / strokeCount;
+    const result = LineString3d.createForStrokes(fixedStrokeCount, options);
+    const twoPi = Math.PI * 2.0;
+    const deltaRadians = twoPi / strokeCount;
     let radians = 0;
+    const fractions = result.fractions;     // possibly undefined !!!
+    const derivatives = result.packedDerivatives; // possibly undefined !!!
+    const uvParams = result.packedUVParams; // possibly undefined !!
+    const xyz = Point3d.create();
+    const uvw = Vector3d.create();
     const transform = this._localToWorld;
+    let rc, rs;
     for (let i = 0; i <= strokeCount; i++) {
       if (i * 2 <= strokeCount)
         radians = i * deltaRadians;
       else
         radians = (i - strokeCount) * deltaRadians;
-      const xyz = transform.multiplyXYZ(r * Math.cos(radians), r * Math.sin(radians), v);
+      rc = r * Math.cos(radians);
+      rs = r * Math.sin(radians);
+      transform.multiplyXYZ(rc, rs, v, xyz);
       result.addPoint(xyz);
+      if (fractions)
+        fractions.push(i / strokeCount);
+      if (derivatives) {
+        transform.matrix.multiplyXYZ(-rs * twoPi, rc * twoPi, 0.0, uvw);
+        derivatives.push(uvw);
+      }
+      if (uvParams) {
+        uvParams.pushXY(rc, rs);
+      }
     }
     return result;
   }

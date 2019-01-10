@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
@@ -41,10 +41,10 @@ export default class TestUtils {
     return new Promise((resolve) => setImmediate(resolve));
   }
 
-  public static createPrimitiveStringProperty(name: string, text: string) {
+  public static createPrimitiveStringProperty(name: string, rawValue: string, displayValue: string = rawValue.toString()) {
     const value: PrimitiveValue = {
-      displayValue: text,
-      value: text,
+      displayValue,
+      value: rawValue,
       valueFormat: PropertyValueFormat.Primitive,
     };
 

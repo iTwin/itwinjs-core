@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -7,9 +7,9 @@ import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
-import { NonPrimitivePropertyRenderer } from "../../../properties/renderers/NonPrimitivePropertyRenderer";
+import { NonPrimitivePropertyRenderer } from "../../../ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 import { NonPrimitivePropertyLabelRenderer, PrimitivePropertyLabelRenderer } from "../../../ui-components";
-import { PropertyRenderer } from "../../../properties/renderers/PropertyRenderer";
+import { PropertyRenderer } from "../../../ui-components/properties/renderers/PropertyRenderer";
 
 describe("NonPrimitivePropertyRenderer", () => {
   before(async () => {

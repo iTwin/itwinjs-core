@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
@@ -10,7 +10,7 @@ import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { KnownLocations } from "../../Platform";
+import { KnownLocations } from "../../IModelHost";
 
 // Useful utilities to download/upload test cases from/to the iModel Hub
 describe("ApplyChangeSets (#integration)", () => {

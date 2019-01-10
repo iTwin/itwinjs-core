@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -119,29 +119,32 @@
  */
 // doc:export class TopologyDoc { }
 
-export * from "./geometry3d/Point2dVector2d";
-export * from "./geometry3d/Point3dVector3d";
-export * from "./geometry3d/XYZProps";
-export * from "./geometry3d/PointHelpers";
-export * from "./geometry3d/Transform";
-export * from "./geometry3d/Matrix3d";
-export * from "./geometry3d/Range";
-export * from "./geometry3d/GrowableFloat64Array";
-export * from "./geometry3d/GrowableXYZArray";
-export * from "./geometry3d/GrowableBlockedArray";
+export * from "./geometry3d/Angle";
+export * from "./geometry3d/AngleSweep";
 export * from "./geometry3d/FrameBuilder";
 export * from "./geometry3d/GeometryHandler";
+export * from "./geometry3d/GrowableBlockedArray";
+export * from "./geometry3d/GrowableFloat64Array";
+export * from "./geometry3d/GrowableXYArray";
+export * from "./geometry3d/GrowableXYZArray";
+export * from "./geometry3d/IndexedXYCollection";
 export * from "./geometry3d/IndexedXYZCollection";
+export * from "./geometry3d/Matrix3d";
 export * from "./geometry3d/OrderedRotationAngles";
-
-export * from "./geometry3d/Ray3d";
 export * from "./geometry3d/Plane3dByOriginAndUnitNormal";
 export * from "./geometry3d/Plane3dByOriginAndVectors";
+export * from "./geometry3d/Point2dArrayCarrier";
+export * from "./geometry3d/Point2dVector2d";
+export * from "./geometry3d/Point3dVector3d";
+export * from "./geometry3d/PointHelpers";
+export * from "./geometry3d/Range";
+export * from "./geometry3d/Ray3d";
+export * from "./geometry3d/Segment1d";
+export * from "./geometry3d/Transform";
+export * from "./geometry3d/XYZProps";
+export * from "./geometry3d/YawPitchRollAngles";
 
 export * from "./Geometry";
-export * from "./geometry3d/Angle";
-export * from "./geometry3d/YawPitchRollAngles";
-export * from "./geometry3d/AngleSweep";
 export * from "./Constant";
 export * from "./clipping/ClipPlane";
 export * from "./clipping/ConvexClipPlaneSet";
@@ -156,31 +159,37 @@ export * from "./geometry4d/Matrix4d";
 export * from "./geometry4d/Map4d";
 export * from "./geometry4d/MomentData";
 export * from "./numerics/BezierPolynomials";
+export * from "./numerics/ClusterableArray";
 export * from "./numerics/Newton";
 export * from "./numerics/Complex";
+export * from "./numerics/ConvexPolygon2d";
+export * from "./numerics/Newton";
+export * from "./numerics/PascalCoefficients";
 export * from "./numerics/Polynomials";
 export * from "./numerics/Quadrature";
 export * from "./numerics/Range1dArray";
 export * from "./numerics/TriDiagonalSystem";
+
 export * from "./curve/Arc3d";
 export * from "./curve/ConstructCurveBetweenCurves";
-export * from "./curve/CurveCollection";
+export * from "./curve/CoordinateXYZ";
 export * from "./curve/CurveChain";
+export * from "./curve/CurveChainWithDistanceIndex";
+export * from "./curve/CurveCollection";
+export * from "./curve/CurveCurveIntersectXY";
+export * from "./curve/CurveLocationDetail";
+export * from "./curve/CurvePrimitive";
+export * from "./curve/CurveProcessor";
+export * from "./curve/GeometryQuery";
+export * from "./curve/LineSegment3d";
+export * from "./curve/LineString3d";
 export * from "./curve/Loop";
 export * from "./curve/ParityRegion";
 export * from "./curve/Path";
-export * from "./curve/UnionRegion";
-export * from "./curve/CurveCurveIntersectXY";
-export * from "./curve/CurvePrimitive";
-export * from "./curve/CurveLocationDetail";
-export * from "./curve/CoordinateXYZ";
-export * from "./curve/GeometryQuery";
-export * from "./curve/CurveProcessor";
-export * from "./curve/LineSegment3d";
-export * from "./curve/LineString3d";
 export * from "./curve/PointString3d";
 export * from "./curve/StrokeOptions";
 export * from "./curve/TransitionSpiral";
+export * from "./curve/UnionRegion";
 export * from "./solid/Box";
 export * from "./solid/Cone";
 export * from "./solid/LinearSweep";
@@ -199,10 +208,12 @@ export * from "./bspline/BSpline1dNd";
 export * from "./bspline/BSplineCurve3dH";
 export * from "./bspline/BSplineSurface";
 export * from "./bspline/KnotVector";
+export * from "./polyface/AuxData";
 export * from "./polyface/BoxTopology";
-export * from "./polyface/PolyfaceData";
+export * from "./polyface/FacetFaceData";
 export * from "./polyface/Polyface";
 export * from "./polyface/PolyfaceBuilder";
+export * from "./polyface/PolyfaceData";
 export * from "./polyface/PolyfaceQuery";
 export * from "./topology/Graph";
 export * from "./topology/Triangulation";

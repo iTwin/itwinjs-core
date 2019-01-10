@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -121,11 +121,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
   public static create(center: Point3d, vector0: Vector3d, vector90: Vector3d, sweep?: AngleSweep, result?: Arc3d): Arc3d {
     const normal = vector0.unitCrossProductWithDefault(vector90, 0, 0, 0); // normal will be 000 for degenerate case ! !!
     const matrix = Matrix3d.createColumns(vector0, vector90, normal);
-    if (result) {
-      result.setRefs(center.clone(), matrix, sweep ? sweep.clone() : AngleSweep.create360());
-      return result;
-    }
-    return new Arc3d(center.clone(), matrix, sweep ? sweep.clone() : AngleSweep.create360());
+    return Arc3d.createRefs(center.clone(), matrix, sweep ? sweep.clone() : AngleSweep.create360(), result);
   }
   /**
    * Return a quick estimate of the eccentricity of the ellipse.
@@ -415,13 +411,16 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
     }
     return numIntersection;
   }
-  public extendRange(range: Range3d): void {
+  public extendRange(range: Range3d, transform?: Transform): void {
     const df = 1.0 / 32;
     // KLUDGE --- evaluate lots of points ...
     let point = Point3d.create();
     for (let fraction = 0; fraction <= 1.001; fraction += df) {
       point = this.fractionToPoint(fraction, point);
-      range.extendPoint(point);
+      if (transform)
+        range.extendTransformedPoint(transform, point);
+      else
+        range.extendPoint(point);
     }
   }
 

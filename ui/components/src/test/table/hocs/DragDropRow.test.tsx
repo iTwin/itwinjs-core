@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -7,8 +7,8 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import ReactTestUtils from "react-dom/test-utils";
 import { render, cleanup } from "react-testing-library";
-import { DragDropRow, DragDropRowWrapper } from "../../../table/hocs/DragDropRow";
-import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../dragdrop/DragDropDef";
+import { DragDropRow, DragDropRowWrapper } from "../../../ui-components/table/hocs/DragDropRow";
+import { DropTargetProps, DragSourceProps, DragSourceArguments, DropEffects, DropStatus, DropTargetArguments } from "../../../ui-components/dragdrop/DragDropDef";
 
 describe("DragDropRow", () => {
   interface DragDropObject {

@@ -1,8 +1,8 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps, Code, TestRpcManager } from "@bentley/imodeljs-common";
+import { RpcInterfaceDefinition, RpcManager, IModelReadRpcInterface, IModelWriteRpcInterface, GeometricElement3dProps, Code, TestRpcManager, FeatureGates } from "@bentley/imodeljs-common";
 import { IModelDb, IModelHost, Element, ECSqlStatement, IModelHostConfiguration, KnownLocations, Platform } from "@bentley/imodeljs-backend";
 import { DbResult, Id64String, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Point3d, Angle, YawPitchRollAngles } from "@bentley/geometry-core";
@@ -20,6 +20,8 @@ import { RobotWorldWriteRpcImpl, RobotWorldReadRpcImpl } from "./RobotWorldRpcIm
 // The service exposes APIs to manage robots and barriers and to query their state.
 // In particular, the service does collision detection between robots and obstacles.
 export class RobotWorldEngine {
+
+    private static _features = new FeatureGates();
 
     public static countRobotsInArray(iModelDb: IModelDb, elemIds: Id64String[]): number {
         let robotCount: number = 0;
@@ -124,7 +126,7 @@ export class RobotWorldEngine {
         RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl); // register impls that we don't want in the doc example
         this.registerImpls();
         const interfaces = this.chooseInterfacesToExpose();
-        if (IModelHost.features.check("robot.imodel.readwrite"))  // choose add'l interfaces that we don't want in the doc example
+        if (this._features.check("robot.imodel.readwrite"))  // choose add'l interfaces that we don't want in the doc example
             interfaces.push(IModelWriteRpcInterface);
         TestRpcManager.initialize(interfaces);
 
@@ -151,7 +153,7 @@ export class RobotWorldEngine {
     private static chooseInterfacesToExpose(): RpcInterfaceDefinition[] {
         const interfaces: RpcInterfaceDefinition[] = [IModelReadRpcInterface, RobotWorldReadRpcInterface];
 
-        if (IModelHost.features.check("robot.imodel.readwrite")) {
+        if (this._features.check("robot.imodel.readwrite")) {
             interfaces.push(RobotWorldWriteRpcInterface);
         }
 

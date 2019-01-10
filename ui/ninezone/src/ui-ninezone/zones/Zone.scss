@@ -1,0 +1,11 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+.nz-zones-zone {
+  $padding: 10px;
+
+  padding: $padding;
+  box-sizing: border-box;
+  position: absolute;
+}

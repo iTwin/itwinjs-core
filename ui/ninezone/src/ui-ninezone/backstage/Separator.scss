@@ -1,0 +1,10 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "_variables";
+
+.nz-backstage-separator {
+  height: $nz-backstage-divider-height;
+  background-color: $nz-backstage-divider-color;
+}

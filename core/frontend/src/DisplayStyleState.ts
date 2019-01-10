@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -53,7 +53,7 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this._contextRealityModels = [];
 
     if (styles) {
-      if (styles.ContextRealityModels)
+      if (styles.contextRealityModels)
         for (const contextRealityModel of styles.contextRealityModels)
           this._contextRealityModels.push(new ContextRealityModelState(contextRealityModel, this.iModel));
 

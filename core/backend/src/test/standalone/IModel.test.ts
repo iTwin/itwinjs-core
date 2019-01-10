@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { ActivityLoggingContext, BeEvent, DbResult, Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
@@ -924,8 +924,7 @@ describe("iModel", () => {
     assert.equal(foundRelClassName2, relClassName2);
   });
 
-  // NEEDS_WORK_TXNMANAGER: Re-enable this when we upgrade to Node 10
-  it.skip("should create link table relationship instances", () => {
+  it("should create link table relationship instances", () => {
     const testImodel = imodel1;
     const elements = testImodel.elements;
 

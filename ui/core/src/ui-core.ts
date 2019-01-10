@@ -1,65 +1,65 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-export * from "./UiCore";
-export { CommonProps } from "./Props";
+export * from "./ui-core/UiCore";
+export { CommonProps } from "./ui-core/Props";
 
-export * from "./base/Div";
-export * from "./base/WebFontIcon";
-export * from "./base/WaitSpinner";
-export * from "./base/UiEvent";
+export * from "./ui-core/base/Div";
+export * from "./ui-core/base/WebFontIcon";
+export * from "./ui-core/base/WaitSpinner";
+export * from "./ui-core/base/UiEvent";
 
-export { CheckListBox, CheckListBoxItem, CheckListBoxSeparator } from "./checklistbox/CheckListBox";
+export { CheckListBox, CheckListBoxItem, CheckListBoxSeparator } from "./ui-core/checklistbox/CheckListBox";
 
-export * from "./contextmenu/ContextMenu";
+export * from "./ui-core/contextmenu/ContextMenu";
 
-export * from "./cube/Cube";
+export * from "./ui-core/cube/Cube";
 
-export { Dialog, DialogProps, GlobalDialog, GlobalDialogProps, ButtonCluster, ButtonStyle, ButtonType } from "./dialog/Dialog";
+export { Dialog, DialogProps, GlobalDialog, GlobalDialogProps, ButtonCluster, ButtonStyle, ButtonType } from "./ui-core/dialog/Dialog";
 
-export * from "./elementseparator/ElementSeparator";
+export * from "./ui-core/elementseparator/ElementSeparator";
 
-export * from "./enums/Alignment";
-export * from "./enums/CheckBoxState";
-export * from "./enums/DateFormat";
-export * from "./enums/Orientation";
-export * from "./enums/SortDirection";
-export * from "./enums/TimeFormat";
+export * from "./ui-core/enums/Alignment";
+export * from "./ui-core/enums/CheckBoxState";
+export * from "./ui-core/enums/DateFormat";
+export * from "./ui-core/enums/Orientation";
+export * from "./ui-core/enums/SortDirection";
+export * from "./ui-core/enums/TimeFormat";
 
-export { ExpandableList } from "./expandable/ExpandableList";
-export { ExpandableBlock } from "./expandable/ExpandableBlock";
+export { ExpandableList } from "./ui-core/expandable/ExpandableList";
+export { ExpandableBlock } from "./ui-core/expandable/ExpandableBlock";
 
-export { withIsPressed, WithIsPressedProps } from "./hocs/withIsPressed";
-export { withOnOutsideClick, WithOnOutsideClickProps } from "./hocs/withOnOutsideClick";
-export { withTimeout, WithTimeoutProps } from "./hocs/withTimeout";
+export { withIsPressed, WithIsPressedProps } from "./ui-core/hocs/withIsPressed";
+export { withOnOutsideClick, WithOnOutsideClickProps } from "./ui-core/hocs/withOnOutsideClick";
+export { withTimeout, WithTimeoutProps } from "./ui-core/hocs/withTimeout";
 
-export { MessageBox, MessageBoxProps, MessageSeverity, MessageContainer } from "./messagebox/MessageBox";
+export { MessageBox, MessageBoxProps, MessageSeverity, MessageContainer } from "./ui-core/messagebox/MessageBox";
 
-export { Popup, Position } from "./popup/Popup";
+export { Popup, Position } from "./ui-core/popup/Popup";
 
-export * from "./radialmenu/RadialMenu";
-export * from "./radialmenu/Annulus";
+export * from "./ui-core/radialmenu/RadialMenu";
+export * from "./ui-core/radialmenu/Annulus";
 
-export { SearchBox, SearchBoxProps } from "./searchbox/SearchBox";
+export { SearchBox, SearchBoxProps } from "./ui-core/searchbox/SearchBox";
 
-export * from "./splitbutton/SplitButton";
+export * from "./ui-core/splitbutton/SplitButton";
 
-export * from "./toggle/Toggle";
+export * from "./ui-core/toggle/Toggle";
 
-export { default as ExpansionToggle, ExpansionToggleProps } from "./tree/ExpansionToggle";
-export { default as TreeBranch, TreeBranchProps } from "./tree/Branch";
-export { default as TreeNode, NodeProps } from "./tree/Node";
-export { default as Tree, TreeProps } from "./tree/Tree";
-export { default as TreeNodePlaceholder, PlaceholderProps as TreeNodePlaceholderProps } from "./tree/Placeholder";
+export { default as ExpansionToggle, ExpansionToggleProps } from "./ui-core/tree/ExpansionToggle";
+export { default as TreeBranch, TreeBranchProps } from "./ui-core/tree/Branch";
+export { default as TreeNode, NodeProps } from "./ui-core/tree/Node";
+export { default as Tree, TreeProps } from "./ui-core/tree/Tree";
+export { default as TreeNodePlaceholder, PlaceholderProps as TreeNodePlaceholderProps } from "./ui-core/tree/Placeholder";
 
-export * from "./uisettings/UiSettings";
-export * from "./uisettings/LocalUiSettings";
+export * from "./ui-core/uisettings/UiSettings";
+export * from "./ui-core/uisettings/LocalUiSettings";
 
-export { default as Timer } from "./utils/Timer";
-export * from "./utils/getDisplayName";
-export * from "./utils/shallowDiffers";
-export * from "./utils/typeUtils";
+export { default as Timer } from "./ui-core/utils/Timer";
+export * from "./ui-core/utils/getDisplayName";
+export * from "./ui-core/utils/shallowDiffers";
+export * from "./ui-core/utils/typeUtils";
 
 /** @docs-package-description
  * The ui-core package contains general purpose React components, such as Dialog, MessageBox, SearchBox, RadialMenu and SplitButton.

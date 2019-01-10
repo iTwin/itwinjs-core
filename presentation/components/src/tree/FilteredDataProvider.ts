@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tree */
@@ -12,13 +12,13 @@ import {
   PageOptions, ActiveMatchInfo,
 } from "@bentley/ui-components";
 import { createTreeNodeItem } from "./Utils";
-import IPresentationTreeDataProvider from "./IPresentationTreeDataProvider";
+import { IPresentationTreeDataProvider } from "./IPresentationTreeDataProvider";
 import { memoize } from "lodash";
 
 /**
  * @hidden
  */
-export default class FilteredPresentationTreeDataProvider implements IPresentationTreeDataProvider {
+export class FilteredPresentationTreeDataProvider implements IPresentationTreeDataProvider {
   private _parentDataProvider: IPresentationTreeDataProvider;
   private _filteredDataProvider: SimpleTreeDataProvider;
   private _filter: string;
@@ -34,7 +34,7 @@ export default class FilteredPresentationTreeDataProvider implements IPresentati
 
   public get rulesetId(): string { return this._parentDataProvider.rulesetId; }
 
-  public get connection(): IModelConnection { return this._parentDataProvider.connection; }
+  public get imodel(): IModelConnection { return this._parentDataProvider.imodel; }
 
   public get filter(): string { return this._filter; }
 

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ConnectServices */
@@ -245,7 +245,6 @@ export class RbacClient extends WsgClient {
 export class ConnectClient extends WsgClient {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";
   public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
-  private readonly _rbacClient: RbacClient = new RbacClient();
 
   public constructor() {
     super("sv1.0");
@@ -287,8 +286,7 @@ export class ConnectClient extends WsgClient {
    * @returns Resolves to an array of projects.
    */
   public async getProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
-    // return this.getInstances<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
-    return this.postQuery<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project/", !queryOptions ? {} : queryOptions);
+    return this.getInstances<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
   }
 
   /**
@@ -307,29 +305,13 @@ export class ConnectClient extends WsgClient {
     return projects[0];
   }
 
-  /** Get the projects the user has been "invited" to. Note that this involves querying the RBAC and ConnectedContext services.
+  /** Get the projects the user has been "invited" to.
    * @param token Delegation token of the authorized user.
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to an array of invited projects.
    */
   public async getInvitedProjects(alctx: ActivityLoggingContext, token: AccessToken, queryOptions?: ConnectRequestQueryOptions): Promise<Project[]> {
-    const rbacQueryOptions: RbacRequestQueryOptions = {
-      $top: queryOptions ? queryOptions.$top : undefined,
-      $skip: queryOptions ? queryOptions.$skip : undefined,
-      $filter: "rbaconly+eq+true",
-    };
-
-    const invitedProjectIds: string[] = await this._rbacClient.getProjects(alctx, token, rbacQueryOptions)
-      .then((invitedProjects: RbacProject[]) => invitedProjects.map((val: RbacProject) => val.wsgId));
-
-    const filterStr = "$id+in+[" + invitedProjectIds.reduce((sum: string, value: string) => {
-      const quotedValue = "'" + value + "'";
-      return sum ? sum + "," + quotedValue : quotedValue;
-    }, "") + "]";
-
-    const newQueryOptions: ConnectRequestQueryOptions = queryOptions || {};
-    newQueryOptions.$filter = (queryOptions && queryOptions.$filter) ? queryOptions.$filter + "+and+" + filterStr : filterStr;
-    return this.getProjects(alctx, token, newQueryOptions);
+    return this.getInstances<Project>(alctx, Project, token, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project?rbaconly=true", queryOptions);
   }
 
 }

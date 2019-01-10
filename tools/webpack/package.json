@@ -1,6 +1,6 @@
 {
   "name": "@bentley/webpack-tools",
-  "version": "0.179.0",
+  "version": "0.183.0",
   "description": "Configuration and scripts for imodeljs apps and services.",
   "license": "MIT",
   "repository": {
@@ -23,7 +23,7 @@
     "bentley-webpack-tools": "./bin/bentley-webpack-tools.js"
   },
   "dependencies": {
-    "@bentley/config-loader": "0.179.0",
+    "@bentley/config-loader": "0.183.0",
     "@types/chai": "^4.1.4",
     "@types/enzyme": "^3.1.12",
     "@types/mocha": "^5.2.5",
@@ -90,7 +90,7 @@
     "wdio-visual-regression-service": "^0.9.0",
     "webdriverio": "^4.13.1",
     "webpack": "^4.20.2",
-    "webpack-dev-server": "^3.1.5",
+    "webpack-dev-server": "^3.1.6",
     "webpack-manifest-plugin": "2.0.3",
     "webpack-merge": "^4.1.4",
     "webpack-node-externals": "^1.7.2",

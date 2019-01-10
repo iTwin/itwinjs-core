@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -7,9 +7,9 @@ import { mount } from "enzyme";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import TestUtils from "../../../TestUtils";
-import { StructPropertyValueRenderer } from "../../../../properties/renderers/value/StructPropertyValueRenderer";
-import { PropertyContainerType } from "../../../../properties/ValueRendererManager";
-import { TableNonPrimitiveValueRenderer } from "../../../../properties/renderers/value/table/NonPrimitiveValueRenderer";
+import { StructPropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/StructPropertyValueRenderer";
+import { PropertyContainerType } from "../../../../ui-components/properties/ValueRendererManager";
+import { TableNonPrimitiveValueRenderer } from "../../../../ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
 
 describe("StructPropertyValueRenderer", () => {
   before(async () => {

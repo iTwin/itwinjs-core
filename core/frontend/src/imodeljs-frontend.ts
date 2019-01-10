@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -8,6 +8,7 @@ export * from "./tools/EditManipulator";
 export * from "./tools/ElementSetTool";
 export * from "./tools/EventController";
 export * from "./tools/IdleTool";
+export * from "./tools/MeasureTool";
 export * from "./tools/PrimitiveTool";
 export * from "./tools/SelectTool";
 export * from "./tools/Tool";
@@ -23,6 +24,7 @@ export * from "./ElementLocateManager";
 export * from "./EntityState";
 export * from "./FenceParams";
 export * from "./FuzzySearch";
+export * from "./GeoServices";
 export * from "./HitDetail";
 export * from "./IModelConnection";
 export * from "./ImageUtil";
@@ -42,6 +44,7 @@ export * from "./Viewport";
 export * from "./ViewState";
 export * from "./IModelApp";
 export * from "./NoRenderApp";
+export * from "./tile/TileAdmin";
 export * from "./tile/TileTree";
 export * from "./render/FeatureSymbology";
 export * from "./render/GraphicBuilder";

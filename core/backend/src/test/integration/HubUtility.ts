@@ -1,10 +1,10 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import {
   AuthorizationToken, AccessToken, ImsActiveSecureTokenClient, ImsDelegationSecureTokenClient, HubUserInfo, IModelHubClient,
-  HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType,
+  HubIModel, Project, IModelQuery, ChangeSet, ChangeSetQuery, Briefcase as HubBriefcase, ChangesType, Version,
 } from "@bentley/imodeljs-clients";
 import { ChangeSetApplyOption, OpenMode, ChangeSetStatus, Logger, assert, ActivityLoggingContext, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
 import { IModelJsFs, ChangeSetToken, BriefcaseManager, BriefcaseId, IModelDb } from "../../imodeljs-backend";
@@ -132,6 +132,16 @@ export class HubUtility {
     return changeSets;
   }
 
+  /** Download all named versions of the specified iModel */
+  private static async downloadNamedVersions(accessToken: AccessToken, _projectId: string, iModelId: GuidString): Promise<Version[]> {
+    const perfLogger = new PerfLogger("HubUtility.downloadNamedVersions -> Get Version Infos");
+    const versions: Version[] = await BriefcaseManager.imodelClient.versions.get(actx, accessToken, iModelId);
+    perfLogger.dispose();
+    if (versions.length === 0)
+      return new Array<ChangeSet>();
+    return versions;
+  }
+
   /** Download an IModel's seed files and change sets from the Hub.
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
@@ -163,6 +173,12 @@ export class HubUtility {
     const changeSetsJsonStr = JSON.stringify(changeSets, undefined, 4);
     const changeSetsJsonPathname = path.join(downloadDir, "changeSets.json");
     IModelJsFs.writeFileSync(changeSetsJsonPathname, changeSetsJsonStr);
+
+    // Download the version information
+    const namedVersions: Version[] = await HubUtility.downloadNamedVersions(accessToken, projectId, iModelId);
+    const namedVersionsJsonStr = JSON.stringify(namedVersions, undefined, 4);
+    const namedVersionsJsonPathname = path.join(downloadDir, "namedVersions.json");
+    IModelJsFs.writeFileSync(namedVersionsJsonPathname, namedVersionsJsonStr);
   }
 
   /** Download an IModel's seed files and change sets from the Hub.
@@ -267,10 +283,17 @@ export class HubUtility {
     if (!briefcase) {
       return Promise.reject(`Could not acquire a briefcase for the iModel ${iModelId}`);
     }
+    briefcase.iModelId = iModelId;
 
+    await HubUtility.pushChangeSets(accessToken, briefcase, uploadDir);
+    await HubUtility.pushNamedVersions(accessToken, briefcase, uploadDir);
+    return iModelId;
+  }
+
+  private static async pushChangeSets(accessToken: AccessToken, briefcase: HubBriefcase, uploadDir: string): Promise<void> {
     const changeSetJsonPathname = path.join(uploadDir, "changeSets.json");
     if (!IModelJsFs.existsSync(changeSetJsonPathname))
-      return iModelId;
+      return;
 
     const jsonStr = IModelJsFs.readFileSync(changeSetJsonPathname) as string;
     const changeSetsJson = JSON.parse(jsonStr);
@@ -290,10 +313,21 @@ export class HubUtility {
       changeSet.seedFileId = briefcase.fileId;
       changeSet.briefcaseId = briefcase.briefcaseId;
 
-      await BriefcaseManager.imodelClient.changeSets.create(actx, accessToken, iModelId, changeSet, changeSetPathname);
+      await BriefcaseManager.imodelClient.changeSets.create(actx, accessToken, briefcase.iModelId!, changeSet, changeSetPathname);
     }
+  }
 
-    return iModelId;
+  private static async pushNamedVersions(accessToken: AccessToken, briefcase: HubBriefcase, uploadDir: string): Promise<void> {
+    const namedVersionsJsonPathname = path.join(uploadDir, "namedVersions.json");
+    if (!IModelJsFs.existsSync(namedVersionsJsonPathname))
+      return;
+
+    const jsonStr = IModelJsFs.readFileSync(namedVersionsJsonPathname) as string;
+    const namedVersionsJson = JSON.parse(jsonStr);
+
+    for (const namedVersionJson of namedVersionsJson) {
+      await BriefcaseManager.imodelClient.versions.create(actx, accessToken, briefcase.iModelId!, namedVersionJson.changeSetId, namedVersionJson.name, namedVersionJson.description);
+    }
   }
 
   /**

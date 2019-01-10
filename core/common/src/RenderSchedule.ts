@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
@@ -25,8 +25,14 @@ export namespace RenderSchedule {
         position: number[];
         direction: number[];
     }
+    export interface TransformProps {
+        position: number[];
+        orientation: number[];
+        pivot: number[];
+        transform: number[][];
+    }
     export interface TransformEntryProps extends TimelineEntryProps {
-        value: number[][];
+        value: TransformProps;
     }
     export interface CuttingPlaneEntryProps extends TimelineEntryProps {
         value: CuttingPlaneProps;

@@ -1,9 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
-import Timer from "../..//utils/Timer";
+import Timer from "../../ui-core/utils/Timer";
 
 describe("Timer", () => {
   it("should create timer with specified delay", () => {
@@ -22,21 +22,19 @@ describe("Timer", () => {
     sut.delay.should.eq(200);
   });
 
-  it("should start the timer", () => {
-    const sut = new Timer(100);
-    sut.start();
-  });
-
   it("should be running when started", () => {
     const sut = new Timer(100);
     sut.start();
 
     sut.isRunning.should.be.true;
+    sut.stop();
   });
 
   it("stopping the timer that is not running should have no effect", () => {
     const sut = new Timer(100);
+    sut.isRunning.should.be.false;
     sut.stop();
+    sut.isRunning.should.be.false;
   });
 
   it("start timer should set the timeout", () => {

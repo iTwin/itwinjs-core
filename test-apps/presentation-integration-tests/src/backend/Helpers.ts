@@ -1,10 +1,9 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { Rule, RuleTypes } from "../../../../presentation/common/lib/rules/Rule";
+import { Rule, RuleTypes, PropertyGroupingValue } from "@bentley/presentation-common";
 import deepEqual from "deep-equal";
-import { PropertyGroupingValue } from "../../../../presentation/common/lib/rules/customization/GroupingRule";
 
 const rulesOrder = [
   RuleTypes.RootNodes, RuleTypes.ChildNodes,

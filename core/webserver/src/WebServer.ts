@@ -1,9 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-// import * as fs from "fs";
-// import * as path from "path";
 import * as express from "express";
 import * as yargs from "yargs";
 import * as path from "path";
@@ -12,14 +10,18 @@ import * as kill from "tree-kill";
 // tslint:disable:no-console
 
 // The arguments to this node executable are processed by yargs:
-// webServerPort - the port on which the web server is started (default 3000)
-// publicPath - the full path of the directory that is served as the root url of this web server.
+interface Args {
+  /** The port on which the web server is started (default 3000) */
+  port: number;
+  /** The full path of the directory that is served as the root url of this web server */
+  resources: string;
+}
 
 // Get the arguments using the ubiquitous yargs package.
-function getArgs(): any {
+function getArgs(): yargs.Arguments<Args> {
   const args = yargs
     .usage("$0 <port> <resources>")
-    .wrap(yargs.argv.terminalWidth)
+    .wrap(yargs.terminalWidth())
     .option("port", {
       alias: ["p", "port"],
       description: "Web Server Port",
@@ -55,7 +57,7 @@ function handleInterrupt() {
 }
 
 // Start the Express web server
-function startWebServer(args: any) {
+function startWebServer(args: yargs.Arguments<Args>) {
   // set up the express server.
   const app = express();
 
@@ -87,7 +89,7 @@ function startWebServer(args: any) {
 // Main entry point
 // --------------------------------------------
 function main() {
-  const args: any = getArgs();
+  const args = getArgs();
   handleInterrupt();
   startWebServer(args);
 }

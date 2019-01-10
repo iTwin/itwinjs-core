@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
@@ -36,7 +36,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
 
   public async savePng(fileName: string, png: string) {
     if (fs.existsSync(fileName)) fs.unlinkSync(fileName);
-    const buf = new Buffer(png, "base64");
+    const buf = Buffer.from(png, "base64");
     fs.writeFileSync(fileName, buf);
   }
 

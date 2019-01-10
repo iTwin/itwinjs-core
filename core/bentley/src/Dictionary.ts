@@ -1,11 +1,44 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Collections */
 
 import { CloneFunction, shallowClone, lowerBound } from "./SortedArray";
 import { OrderedComparator } from "./Compare";
+
+class DictionaryIterator<K, V> implements Iterator<DictionaryEntry<K, V>> {
+  private _keys: K[];
+  private _values: V[];
+  private _curIndex = -1;
+
+  public constructor(keys: K[], values: V[]) { this._keys = keys; this._values = values; }
+
+  public next(): IteratorResult<DictionaryEntry<K, V>> {
+    if (++this._curIndex >= this._keys.length) {
+      // The ECMAScript spec states that value=undefined is valid if done=true. The TypeScript interface violates the spec hence the cast to any and back below.
+      return { done: true } as any as IteratorResult<DictionaryEntry<K, V>>;
+    } else {
+      return {
+        value: {
+          key: this._keys[this._curIndex],
+          value: this._values[this._curIndex],
+        },
+        done: false,
+      };
+    }
+  }
+}
+
+/**
+ * Represents an entry in a [[Dictionary]].
+ */
+export interface DictionaryEntry<K, V> {
+  /** The key used for lookup in the Dictionary. */
+  key: K;
+  /** The value associated with the key in the Dictionary. */
+  value: V;
+}
 
 /**
  * Maintains a mapping of keys to values.
@@ -20,7 +53,7 @@ import { OrderedComparator } from "./Compare";
  * Modifying a key in a way that affects the comparison function will produce unpredictable results, the
  * most likely of which is that keys will cease to map to the values with which they were initially inserted.
  */
-export class Dictionary<K, V> {
+export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
   protected _keys: K[] = [];
   protected readonly _compareKeys: OrderedComparator<K>;
   protected readonly _cloneKey: CloneFunction<K>;
@@ -42,6 +75,9 @@ export class Dictionary<K, V> {
   /** The number of entries in the dictionary. */
   public get length(): number { return this._keys.length; }
 
+  /** Returns an iterator over the key-value pairs in the Dictionary suitable for use in `for-of` loops. Entries are returned in sorted order by key. */
+  public [Symbol.iterator](): Iterator<DictionaryEntry<K, V>> { return new DictionaryIterator<K, V>(this._keys, this._values); }
+
   /** Removes all entries from this dictionary */
   public clear(): void {
     this._keys = [];
@@ -61,12 +97,16 @@ export class Dictionary<K, V> {
   /**
    * Deletes a value using its key.
    * @param key The key to delete
+   * @returns true if the key was found and deleted.
    */
-  public delete(key: K) {
+  public delete(key: K): boolean {
     const bound = this.lowerBound(key);
     if (bound.equal) {
       this._values.splice(bound.index, 1);
       this._keys.splice(bound.index, 1);
+      return true;
+    } else {
+      return false;
     }
   }
 
@@ -126,6 +166,14 @@ export class Dictionary<K, V> {
     const result = { keys: this._keys, values: this._values };
     this.clear();
     return result;
+  }
+
+  /** Apply a function to each (key, value) pair in the dictionary, in sorted order.
+   * @param func The function to be applied.
+   */
+  public forEach(func: (key: K, value: V) => void): void {
+    for (let i = 0; i < this.length; i++)
+      func(this._keys[i], this._values[i]);
   }
 
   /**

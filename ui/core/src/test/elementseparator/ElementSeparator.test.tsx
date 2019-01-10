@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as sinon from "sinon";
 import * as React from "react";
-import { ElementSeparator } from "../..//elementseparator/ElementSeparator";
-import { Orientation } from "../..//enums/Orientation";
+import { ElementSeparator } from "../../ui-core/elementseparator/ElementSeparator";
+import { Orientation } from "../../ui-core/enums/Orientation";
 
 describe("ElementSeparator", () => {
   it("calls onRatioChanged when it gets dragged horizontally", () => {

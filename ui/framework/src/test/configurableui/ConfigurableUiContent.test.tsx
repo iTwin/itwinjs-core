@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -12,7 +12,7 @@ import TestUtils from "../TestUtils";
 
 describe("ConfigurableUiContent", () => {
   before(async () => {
-    await TestUtils.initializeUiFramework();
+    await TestUtils.initializeUiFramework(true);
   });
 
   it("ConfigurableUiContent should render", () => {
@@ -31,4 +31,8 @@ describe("ConfigurableUiContent", () => {
       </Provider>).should.matchSnapshot();
   });
 
+  after(() => {
+    // clear out the framework key
+    TestUtils.terminateUiFramework();
+  });
 });

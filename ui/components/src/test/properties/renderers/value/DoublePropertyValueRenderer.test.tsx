@@ -1,29 +1,37 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { mount } from "enzyme";
 import * as React from "react";
 import TestUtils from "../../../TestUtils";
-import { DoublePropertyValueRenderer } from "../../../../properties/renderers/value/DoublePropertyValueRenderer";
+import { DoublePropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/DoublePropertyValueRenderer";
+import { PrimitiveValue } from "../../../../ui-components/properties/Value";
 
-function createDoubleProperty() {
-  const property = TestUtils.createPrimitiveStringProperty("Length", "0.45 m");
+function createDoubleProperty(value: number, displayValue?: string) {
+  const property = TestUtils.createPrimitiveStringProperty("Length", "", displayValue);
   property.property.typename = "double";
+  (property.value as PrimitiveValue).value = value;
   return property;
 }
 
 describe("DoublePropertyValueRenderer", () => {
   describe("render", () => {
-    it("renders double property", () => {
+    it("renders double property from display value", () => {
       const renderer = new DoublePropertyValueRenderer();
-      const property = createDoubleProperty();
-
+      const property = createDoubleProperty(0.45, "zero point forty five meters");
       const element = renderer.render(property);
       const elementMount = mount(<div>{element}</div>);
+      expect(elementMount.text()).to.eq("zero point forty five meters");
+    });
 
-      expect(elementMount.text()).to.be.eq("0.45 m");
+    it("renders double property from raw value", () => {
+      const renderer = new DoublePropertyValueRenderer();
+      const property = createDoubleProperty(0.45, "");
+      const element = renderer.render(property);
+      const elementMount = mount(<div>{element}</div>);
+      expect(elementMount.text()).to.eq("0.45");
     });
 
     it("throws when trying to render array property", () => {
@@ -36,7 +44,7 @@ describe("DoublePropertyValueRenderer", () => {
   describe("canRender", () => {
     it("returns true for a double property", () => {
       const renderer = new DoublePropertyValueRenderer();
-      const property = createDoubleProperty();
+      const property = createDoubleProperty(0.45);
       expect(renderer.canRender(property)).to.be.true;
     });
 

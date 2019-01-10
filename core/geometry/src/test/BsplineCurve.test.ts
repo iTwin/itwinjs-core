@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Point3d } from "../geometry3d/Point3dVector3d";
@@ -8,7 +8,7 @@ import { AngleSweep } from "../geometry3d/AngleSweep";
 import { Angle } from "../geometry3d/Angle";
 import { Checker } from "./Checker";
 import { expect } from "chai";
-import { KnotVector } from "../bspline/KnotVector";
+import { KnotVector, BSplineWrapMode } from "../bspline/KnotVector";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BezierCurveBase } from "../bspline/BezierCurveBase";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
@@ -28,6 +28,7 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { LineSegment3d } from "../curve/LineSegment3d";
 import { Range3d } from "../geometry3d/Range";
 import { Point4d } from "../geometry4d/Point4d";
+import { IModelJson } from "../serialization/IModelJsonSchema";
 /** return knots [0,0,0, step, 2*step, ... N,N,N]
  * where there are:
  *  * (order-1) leading and trailing clamp values.
@@ -279,6 +280,57 @@ describe("BsplineCurve", () => {
     ck.testFalse(strokeRange.containsXYZ(0, 0, 0));
     expect(ck.getNumErrors()).equals(0);
   });
+
+  it("Circles", () => {
+    // stroke a circular bcurve
+    const ck = new Checker();
+    const bcurves = Sample.createBspline3dHArcs();
+    const options = StrokeOptions.createForCurves();
+    options.chordTol = 0.02;
+    const allGeometry: GeometryQuery[] = [];
+    let dx = 0.0;
+    for (const bcurve of bcurves) {
+      const ls = LineString3d.create();
+      bcurve.emitStrokes(ls, options);
+      GeometryCoreTestIO.captureGeometry(allGeometry, bcurve, dx, 0, 0);
+      GeometryCoreTestIO.captureGeometry(allGeometry, ls, dx, 0, 0);
+      dx += 5.0;
+    }
+    GeometryCoreTestIO.saveGeometry(allGeometry, "BsplineCurve", "BCurveCircularArc");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
+  it("BSplineCircleConversion", () => {
+    // stroke a circular bcurve
+    const ck = new Checker();
+    const microstationStyleArc = {
+      bcurve: {
+        closed: true,
+        knots: [-0.33333333333333337, 0.0, 0.0, 0.0, 0.33333333333333331, 0.33333333333333331, 0.66666666666666663, 0.66666666666666663,
+          1.0,
+          1.0,
+          1.0,
+          1.3333333333333333],
+        order: 3,
+        points: [
+
+          [1.0, 0.0, 0.0, 1.0],
+          [0.50000000000000011, 0.86602540378443860, 0.0, 0.50000000000000011],
+          [-0.49999999999999978, 0.86602540378443871, 0.0, 1.0], [-0.99999999999999989, 7.2674717409587315e-17, 0.0,
+            0.50000000000000011],
+
+          [-0.50000000000000044, -0.86602540378443849, 0.0, 1.0],
+          [0.49999999999999922, -0.86602540378443904, 0.0, 0.50000000000000011], [1.0,
+            -2.4492935982947064e-16, 0.0,
+            1.0]],
+      },
+    };
+    const g1 = IModelJson.Reader.parse(microstationStyleArc);
+
+    GeometryCoreTestIO.saveGeometry([g1], "BsplineCurve", "CircleIMJson");
+    expect(ck.getNumErrors()).equals(0);
+  });
+
   it("SaturateBspline", () => {
     const ck = new Checker();
     const xStep = 120;
@@ -488,15 +540,15 @@ describe("BsplineCurve", () => {
       for (let i = 0; i + 1 < order; i++) wrappedPoleArray.push(poleArray[i].clone());
       const myKnots = buildWrappableSteppedKnots(poleArray.length, order, 1.0);
       const bcurve3d = BSplineCurve3d.create(wrappedPoleArray, myKnots, order)!;
-      bcurve3d.setWrappable(true);
+      bcurve3d.setWrappable(BSplineWrapMode.OpenByAddingControlPoints);
       const bcurve4d = BSplineCurve3dH.create(wrappedPoleArray, myKnots, order)!;
       ck.testUndefined(bcurve3d.getSaturatedBezierSpan3d(100));
       ck.testUndefined(bcurve4d.getSaturatedBezierSpan3dH(100));
 
-      bcurve4d.setWrappable(true);
+      bcurve4d.setWrappable(BSplineWrapMode.OpenByAddingControlPoints);
       GeometryCoreTestIO.captureGeometry(allGeometry, bcurve3d.clone(), (order - 2) * xStep, 0, 0);
       GeometryCoreTestIO.captureGeometry(allGeometry, bcurve4d.clone(), (order - 2) * xStep, xStep, 0);
-      ck.testTrue(bcurve3d.isClosable);
+      ck.testTrue(bcurve3d.isClosable === BSplineWrapMode.OpenByAddingControlPoints);
       ck.testTrue(bcurve4d.isClosable);
       ck.testFalse(bcurve3d.isAlmostEqual(bcurve4d));
       ck.testFalse(bcurve4d.isAlmostEqual(bcurve3d));
@@ -510,19 +562,19 @@ describe("BsplineCurve", () => {
         // mess up poles first, then knots to reach failure branchs in closure tests ...
         wrappedPoleArray[0].x += 0.1;
         const bcurve3dA = BSplineCurve3d.create(wrappedPoleArray, myKnots, order)!;
-        bcurve3dA.setWrappable(true);
-        ck.testFalse(bcurve3dA.isClosable);
+        bcurve3dA.setWrappable(BSplineWrapMode.OpenByAddingControlPoints);
+        ck.testFalse(bcurve3dA.isClosable === BSplineWrapMode.OpenByAddingControlPoints);
         const bcurve4dA = BSplineCurve3dH.create(wrappedPoleArray, myKnots, order)!;
-        bcurve4dA.setWrappable(true);
+        bcurve4dA.setWrappable(BSplineWrapMode.OpenByAddingControlPoints);
         ck.testFalse(bcurve4dA.isClosable);
 
         // mess up knots.  The knot test precedes the pole test, so this failure gets hit before the poles (which are already altered)
         myKnots[order - 2] -= 0.1;
         const bcurve3dB = BSplineCurve3d.create(wrappedPoleArray, myKnots, order)!;
-        bcurve3dB.setWrappable(true);
-        ck.testFalse(bcurve3dB.isClosable);
+        bcurve3dB.setWrappable(BSplineWrapMode.OpenByAddingControlPoints);
+        ck.testFalse(bcurve3dB.isClosable === BSplineWrapMode.OpenByAddingControlPoints);
         const bcurve4dB = BSplineCurve3dH.create(wrappedPoleArray, myKnots, order)!;
-        bcurve4dB.setWrappable(true);
+        bcurve4dB.setWrappable(BSplineWrapMode.OpenByAddingControlPoints);
         ck.testFalse(bcurve4dB.isClosable);
       }
     }

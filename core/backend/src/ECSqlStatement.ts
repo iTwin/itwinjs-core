@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ECSQL */
@@ -8,8 +8,8 @@ import { DbResult, Id64String, GuidString, IDisposable, Logger, StatusCodeWithMe
 import { IModelError, ECSqlValueType, NavigationValue, NavigationBindingValue, ECJsNames } from "@bentley/imodeljs-common";
 import { XAndY, XYAndZ, XYZ, LowAndHighXYZ, Range3d } from "@bentley/geometry-core";
 import { ECDb } from "./ECDb";
-import { NativePlatformRegistry } from "./NativePlatformRegistry";
-import { NativeECSqlStatement, NativeECSqlBinder, NativeECSqlValue, NativeECSqlValueIterator, NativeECDb, NativeDgnDb } from "./imodeljs-native-platform-api";
+import { IModelJsNative } from "./IModelJsNative";
+import { IModelHost } from "./IModelHost";
 
 /** @hidden */
 const loggingCategory = "imodeljs-backend.ECSqlStatement";
@@ -51,7 +51,7 @@ export class ECSqlInsertResult {
  * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples) illustrate the use of the iModel.js API for executing and working with ECSQL
  */
 export class ECSqlStatement implements IterableIterator<any>, IDisposable {
-  private _stmt: NativeECSqlStatement | undefined;
+  private _stmt: IModelJsNative.ECSqlStatement | undefined;
   private _isShared: boolean = false;
 
   /** @hidden - used by statement cache */
@@ -70,10 +70,10 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
    * @throws [IModelError]($common) if the ECSQL statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
    */
-  public prepare(db: NativeDgnDb | NativeECDb, ecsql: string): void {
+  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, ecsql: string): void {
     if (this.isPrepared)
       throw new Error("ECSqlStatement is already prepared");
-    this._stmt = new (NativePlatformRegistry.getNativePlatform()).NativeECSqlStatement();
+    this._stmt = new IModelHost.platform.ECSqlStatement();
     const stat: StatusCodeWithMessage<DbResult> = this._stmt!.prepare(db, ecsql);
     if (stat.status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat.status, stat.message);
@@ -363,9 +363,9 @@ export class ECSqlStatement implements IterableIterator<any>, IDisposable {
  * - [Executing ECSQL]($docs/learning/backend/ExecutingECSQL)
  */
 export class ECSqlBinder {
-  private _binder: NativeECSqlBinder;
+  private _binder: IModelJsNative.ECSqlBinder;
 
-  public constructor(binder: NativeECSqlBinder) { this._binder = binder; }
+  public constructor(binder: IModelJsNative.ECSqlBinder) { this._binder = binder; }
 
   /** Binds the specified value to the ECSQL parameter.
    * The section "[iModel.js Types used in ECSQL Parameter Bindings]($docs/learning/ECSQLParameterTypes)" describes the
@@ -541,9 +541,9 @@ export interface ECEnumValue {
  * - [Code Samples]($docs/learning/backend/ECSQLCodeExamples#working-with-the-query-result)
  */
 export class ECSqlValue {
-  private _val: NativeECSqlValue;
+  private _val: IModelJsNative.ECSqlValue;
 
-  public constructor(val: NativeECSqlValue) { this._val = val; }
+  public constructor(val: IModelJsNative.ECSqlValue) { this._val = val; }
 
   /** Get information about the query result's column this value refers to. */
   public get columnInfo(): ECSqlColumnInfo { return this._val.getColumnInfo() as ECSqlColumnInfo; }
@@ -584,11 +584,15 @@ export class ECSqlValue {
    *  [[ECSqlValue.getString]] for string enums respectively are the usual way to get
    *  enum values. This method can be used if the context of the underlying ECEnumeration
    *  is required.
-   *  @return ECEnumeration value or undefined if the ECSqlValue does not represent an ECEnumeration.
+   *  The value is broken down into the ECEnumerators that make it up, if the value
+   *  is a combination of ECEnumerators. If the value is not a strict match of an ECEnumerator
+   *  or a combination of them, undefined is returned.
    *  > Note: You can call [[ECSqlValue.columnInfo.isEnum]] to find out whether
    *  > this method can be called or not.
+   *  @return ECEnumeration value(s) or undefined if the ECSqlValue does not represent an ECEnumeration.
+   *  or is not a strict match of an ECEnumerator or a combination of them.
    */
-  public getEnum(): ECEnumValue | undefined { return this._val.getEnum(); }
+  public getEnum(): ECEnumValue[] | undefined { return this._val.getEnum(); }
 
   /** Get the value as [NavigationValue]($common) */
   public getNavigation(): NavigationValue { return this._val.getNavigation(); }
@@ -612,9 +616,9 @@ export class ECSqlValue {
  *  [ECSqlValue.getArrayIterator]($backend).
  */
 export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
-  private _it: NativeECSqlValueIterator;
+  private _it: IModelJsNative.ECSqlValueIterator;
 
-  public constructor(it: NativeECSqlValueIterator) { this._it = it; }
+  public constructor(it: IModelJsNative.ECSqlValueIterator) { this._it = it; }
 
   public next(): IteratorResult<ECSqlValue> {
     if (this._it.moveNext())

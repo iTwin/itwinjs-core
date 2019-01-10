@@ -286,6 +286,14 @@
       "protocol": "inspector"
     },
     {
+      "name": "display-test-app (frontend)",
+      "type": "chrome",
+      "request": "attach",
+      "port": 9223,
+      "webRoot": "${workspaceRoot}",
+      "sourceMaps": true
+    },
+    {
       "type": "node",
       "request": "launch",
       "name": "[UI] Tests: Components",
@@ -400,6 +408,20 @@
         "ignore-styles",
         "-r",
         "jsdom-global/register",
+        "lib/test/**/*.test.js"
+      ]
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "[Presentation] Tests: Testing",
+      "protocol": "inspector",
+      "program": "${workspaceFolder}/presentation/testing/node_modules/mocha/bin/_mocha",
+      "cwd": "${workspaceFolder}/presentation/testing",
+      "args": [
+        "--opts",
+        "mocha.opts",
+        "--no-timeouts",
         "lib/test/**/*.test.js"
       ]
     },
@@ -526,11 +548,24 @@
       "args": [
         "--input",
         "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
-        "--verbose",
-        "--fixRange",
-        "false"
         "--script",
         "${workspaceRoot}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
+      ],
+    },
+    {
+      "type": "node",
+      "request": "launch",
+      "name": "Debug reality-model-importer",
+      "program": "${workspaceRoot}/test-apps/imodel-from-reality-model/lib/main.js",
+      "cwd": "${workspaceRoot}/test-apps/imodel-from-reality-model/",
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
+      ],
+      "args": [
+        "--input",
+        "http://localhost:8080/Cesium3DTiles/Batched/BatchedColors/tileset.json",
+        "--output",
+        "e:\\briefcases\\testRealityModel.ibim"
       ],
     },
     {
@@ -577,6 +612,13 @@
       "configurations": [
         "_Testbed (frontend)",
         "_Testbed (backend-integration)"
+      ]
+    },
+    {
+      "name": "display-test-app Electron (frontend + backend)",
+      "configurations": [
+        "display-test-app Electron (backend)",
+        "display-test-app (frontend)"
       ]
     }
   ]

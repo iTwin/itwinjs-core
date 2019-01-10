@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tile */
@@ -528,16 +528,14 @@ export namespace IModelTileIO {
       const indices = this.readVertexIndices(json.indices);
       const prevIndices = this.readVertexIndices(json.prevIndices);
       const nextIndicesAndParams = this.findBuffer(json.nextIndicesAndParams);
-      const distanceBytes = this.findBuffer(json.distances);
 
-      if (undefined === indices || undefined === prevIndices || undefined === nextIndicesAndParams || undefined === distanceBytes)
+      if (undefined === indices || undefined === prevIndices || undefined === nextIndicesAndParams)
         return undefined;
 
       return {
         indices,
         prevIndices,
         nextIndicesAndParams,
-        distances: new Float32Array(distanceBytes.buffer),
       };
     }
 
@@ -573,7 +571,7 @@ export namespace IModelTileIO {
         type,
         indices,
         fillFlags: displayParams.fillFlags,
-        hasBakedLighting: this._hasBakedLighting,
+        hasBakedLighting: displayParams.ignoreLighting,
         material: displayParams.material,
         texture,
       };
@@ -603,7 +601,8 @@ export namespace IModelTileIO {
       if (undefined !== json.silhouettes && undefined === (silhouettes = this.readSilhouettes(json.silhouettes)))
         return { succeeded };
 
-      if (undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines)))
+      const ignorePolylineEdges = true; // ###TODO: Fix add-on - it duplicates these with the segment edges, and these waste tons of memory...
+      if (!ignorePolylineEdges && undefined !== json.polylines && undefined === (polylines = this.readTesselatedPolyline(json.polylines)))
         return { succeeded };
 
       succeeded = true;

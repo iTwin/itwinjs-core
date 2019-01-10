@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -15,6 +15,7 @@ import { TechniqueId } from "./TechniqueId";
 import { FeaturesInfo } from "./FeaturesInfo";
 import { dispose } from "@bentley/bentleyjs-core";
 import { System } from "./System";
+import { RenderMemory } from "../System";
 
 export abstract class Primitive extends Graphic {
   public cachedGeometry: CachedGeometry;
@@ -24,6 +25,10 @@ export abstract class Primitive extends Graphic {
 
   public dispose() {
     dispose(this.cachedGeometry);
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.cachedGeometry.collectStatistics(stats);
   }
 
   public getRenderPass(target: Target) {

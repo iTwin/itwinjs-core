@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -19,8 +19,25 @@ export interface TextureMonitor {
   onTextureDisposed: (texture: TextureHandle) => void;
 }
 
+function computeBytesUsed(width: number, height: number, format: GL.Texture.Format, dataType: GL.Texture.DataType): number {
+  const bytesPerComponent = GL.Texture.DataType.UnsignedByte === dataType ? 1 : 4;
+  let componentsPerPixel = 1;
+  switch (format) {
+    case GL.Texture.Format.Rgb:
+      componentsPerPixel = 3;
+      break;
+    case GL.Texture.Format.Rgba:
+      componentsPerPixel = 4;
+      break;
+  }
+
+  return width * height * componentsPerPixel * bytesPerComponent;
+}
+
 /** Associate texture data with a WebGLTexture from a canvas, image, OR a bitmap. */
 function loadTexture2DImageData(handle: TextureHandle, params: Texture2DCreateParams, bytes?: Uint8Array, element?: CanvasOrImage): void {
+  handle.bytesUsed = undefined !== bytes ? bytes.byteLength : computeBytesUsed(params.width, params.height, params.format, params.dataType);
+
   const tex = handle.getHandle()!;
   const gl = System.instance.context;
 
@@ -57,6 +74,8 @@ function loadTextureFromBytes(handle: TextureHandle, params: Texture2DCreatePara
 
 /** Associate cube texture data with a WebGLTexture from an image. */
 function loadTextureCubeImageData(handle: TextureHandle, params: TextureCubeCreateParams, images: CanvasOrImage[]): void {
+  handle.bytesUsed = computeBytesUsed(params.dim * 6, params.dim, params.format, params.dataType);
+
   const tex = handle.getHandle()!;
   const gl = System.instance.context;
 
@@ -95,6 +114,8 @@ interface TextureImageProperties {
 /** Wrapper class for a WebGL texture handle and parameters specific to an individual texture. */
 export class Texture extends RenderTexture {
   public readonly texture: TextureHandle;
+
+  public get bytesUsed(): number { return this.texture.bytesUsed; }
 
   public constructor(params: RenderTexture.Params, texture: TextureHandle) {
     super(params);
@@ -226,12 +247,18 @@ export abstract class TextureHandle implements IDisposable {
   public static set monitor(monitor: TextureMonitor | undefined) { this._monitor = monitor; }
 
   protected _glTexture?: WebGLTexture;
+  protected _bytesUsed = 0;
 
   public abstract get width(): number;
   public abstract get height(): number;
   public abstract get format(): GL.Texture.Format;
   public abstract get dataType(): GL.Texture.DataType;
   public abstract get dataBytes(): Uint8Array | undefined;
+  public get bytesUsed(): number { return this._bytesUsed; }
+  public set bytesUsed(bytesUsed: number) {
+    assert(0 === this.bytesUsed);
+    this._bytesUsed = bytesUsed;
+  }
 
   /** Get the WebGLTexture for this TextureHandle. */
   public getHandle(): WebGLTexture | undefined { return this._glTexture; }

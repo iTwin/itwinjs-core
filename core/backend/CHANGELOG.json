@@ -2,6 +2,51 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "0.183.0",
+      "tag": "@bentley/imodeljs-backend_v0.183.0",
+      "date": "Mon, 07 Jan 2019 21:49:21 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Moved electron utilities into a separate \"@bentley/electron-manager\" package."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.182.0",
+      "tag": "@bentley/imodeljs-backend_v0.182.0",
+      "date": "Mon, 07 Jan 2019 13:31:34 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Implement the typescript side for new Geocoordinate services in the native iModel.js addon"
+          },
+          {
+            "comment": "upgrade to Node 10. There is no longer separate packages for Node and Electron."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.181.0",
+      "tag": "@bentley/imodeljs-backend_v0.181.0",
+      "date": "Fri, 04 Jan 2019 13:02:40 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "upgrade to Node 10. There is no longer separate packages for Node and Electron."
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.180.0",
+      "tag": "@bentley/imodeljs-backend_v0.180.0",
+      "date": "Wed, 02 Jan 2019 15:18:23 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.179.0",
       "tag": "@bentley/imodeljs-backend_v0.179.0",
       "date": "Wed, 19 Dec 2018 18:26:14 GMT",

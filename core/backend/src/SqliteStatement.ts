@@ -1,13 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module SQLite */
 
 import { Id64String, GuidString, DbResult, IDisposable, StatusCodeWithMessage } from "@bentley/bentleyjs-core";
 import { IModelError, ECJsNames } from "@bentley/imodeljs-common";
-import { NativePlatformRegistry } from "./NativePlatformRegistry";
-import { NativeSqliteStatement, NativeECDb, NativeDgnDb } from "./imodeljs-native-platform-api";
+import { IModelJsNative } from "./IModelJsNative";
+import { IModelHost } from "./IModelHost";
 
 /** Marks a string as either an [Id64String]($bentleyjs-core) or [GuidString]($bentleyjs-core), so
  *  that it can be passed to the [bindValue]($backend.SqliteStatement) or [bindValues]($backend.SqliteStatement)
@@ -39,7 +39,7 @@ export interface StringParam {
  * > The key to making this strategy work is to phrase a statement in a general way and use placeholders to represent parameters that will vary on each use.
  */
 export class SqliteStatement implements IterableIterator<any>, IDisposable {
-  private _stmt: NativeSqliteStatement | undefined;
+  private _stmt: IModelJsNative.SqliteStatement | undefined;
   private _isShared: boolean = false;
 
   /** @hidden - used by statement cache */
@@ -58,10 +58,10 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @throws [IModelError]($common) if the SQL statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or references to tables or properties that do not exist.
    * The error.message property will provide details.
    */
-  public prepare(db: NativeDgnDb | NativeECDb, sql: string): void {
+  public prepare(db: IModelJsNative.DgnDb | IModelJsNative.ECDb, sql: string): void {
     if (this.isPrepared)
       throw new Error("SqliteStatement is already prepared");
-    this._stmt = new (NativePlatformRegistry.getNativePlatform()).NativeSqliteStatement();
+    this._stmt = new IModelHost.platform.SqliteStatement();
     const stat: StatusCodeWithMessage<DbResult> = this._stmt!.prepare(db, sql);
     if (stat.status !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat.status, stat.message);
@@ -312,10 +312,10 @@ export enum SqliteValueType {
  * - [SqliteStatement.getValue]($backend)
  */
 export class SqliteValue {
-  private readonly _stmt: NativeSqliteStatement;
+  private readonly _stmt: IModelJsNative.SqliteStatement;
   private readonly _colIndex: number;
 
-  public constructor(stmt: NativeSqliteStatement, colIndex: number) {
+  public constructor(stmt: IModelJsNative.SqliteStatement, colIndex: number) {
     this._stmt = stmt;
     this._colIndex = colIndex;
   }

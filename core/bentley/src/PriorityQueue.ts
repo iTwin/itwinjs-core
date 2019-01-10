@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Collections */
@@ -13,7 +13,7 @@ export type ComputePriorityFunction<T> = (value: T) => number;
  * A [priority queue](https://en.wikipedia.org/wiki/Priority_queue) implemented as a heap array.
  * The queue is ordered by an [[OrderedComparator]] function supplied by the user such that the value in the queue that compares less than all other values is always located at the front of the queue.
  */
-export class PriorityQueue<T> {
+export class PriorityQueue<T> implements Iterable<T> {
   protected _array: T[] = [];
   protected readonly _compare: OrderedComparator<T>;
   protected readonly _clone: CloneFunction<T>;
@@ -34,6 +34,9 @@ export class PriorityQueue<T> {
 
   /** Returns true if the queue contains no values. */
   public get isEmpty(): boolean { return 0 === this.length; }
+
+  /** Returns an iterator over the contents of the heap suitable for use in `for-of` loops. */
+  public [Symbol.iterator](): Iterator<T> { return this._array[Symbol.iterator](); }
 
   protected _swap(a: number, b: number) {
     const temp = this._array[a];

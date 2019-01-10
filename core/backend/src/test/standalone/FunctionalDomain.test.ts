@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
@@ -42,9 +42,8 @@ describe("Functional Domain", () => {
     const dropCommitted = iModelDb.txns.onCommitted.addListener(() => committed++);
     iModelDb.saveChanges("Import Functional schema");
 
-    // NEEDS_WORK_TXNMANAGER: Re-enable this when we upgrade to Node 10
-    // assert.equal(commits, 1);
-    // assert.equal(committed, 1);
+    assert.equal(commits, 1);
+    assert.equal(committed, 1);
     dropCommit();
     dropCommitted();
 
@@ -53,9 +52,8 @@ describe("Functional Domain", () => {
     await iModelDb.importSchema(activityLoggingContext, path.join(__dirname, "../assets/TestFunctional.ecschema.xml"));
 
     iModelDb.saveChanges("Import TestFunctional schema");
-    // NEEDS_WORK_TXNMANAGER: Re-enable this when we upgrade to Node 10
-    // assert.equal(commits, 1);
-    // assert.equal(committed, 1);
+    assert.equal(commits, 1);
+    assert.equal(committed, 1);
 
     const codeSpec = new CodeSpec(iModelDb, Id64.invalid, "Test Functional Elements", CodeScopeSpec.Type.Model);
     iModelDb.codeSpecs.insert(codeSpec);

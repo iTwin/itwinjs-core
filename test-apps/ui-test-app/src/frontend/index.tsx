@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -35,6 +35,9 @@ import AppBackstage, { BackstageShow, BackstageHide } from "./appui/AppBackstage
 import { ViewsFrontstage } from "./appui/frontstages/ViewsFrontstage";
 import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
+
+// Mobx demo
+import { configure as mobxConfigure } from "mobx";
 
 import "./index.scss";
 
@@ -153,6 +156,9 @@ export class SampleAppIModelApp extends IModelApp {
     // Configure a CORS proxy in development mode.
     if (process.env.NODE_ENV === "development")
       Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:3001`); // By default, this will run on port 3001
+
+    // Mobx configuration
+    mobxConfigure({ enforceActions: "observed" });
   }
 
   public static async initialize() {
@@ -162,11 +168,8 @@ export class SampleAppIModelApp extends IModelApp {
 
     let oidcConfiguration: OidcFrontendClientConfiguration;
     if (ElectronRpcConfiguration.isElectron) {
-      const clientId = Config.App.get("imjs_browser_test_client_id");
-      const redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
-      // TODO: WIP Switch desktop clients to a different OIDC workflow.
-      // const clientId = Config.App.get("imjs_device_test_client_id");
-      // const redirectUri = Config.App.get("imjs_device_test_redirect_uri");
+      const clientId = Config.App.get("imjs_electron_test_client_id");
+      const redirectUri = Config.App.get("imjs_electron_test_redirect_uri");
       oidcConfiguration = { clientId, redirectUri };
     } else {
       const clientId = Config.App.get("imjs_browser_test_client_id");

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
@@ -24,7 +24,7 @@ import {
   ArrayTypeDescription, PropertyValueFormat, PropertiesField, StructTypeDescription,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import PresentationPropertyDataProvider from "../../propertygrid/DataProvider";
+import { PresentationPropertyDataProvider } from "../../propertygrid/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
 
 const favoritesCategoryName = "Favorite";

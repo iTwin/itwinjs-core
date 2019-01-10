@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -93,6 +93,11 @@ export class XY implements XAndY {
   /** Return a unit vector from this point to other */
   public unitVectorTo(target: XAndY, result?: Vector2d): Vector2d | undefined {
     return this.vectorTo(target, result).normalize(result);
+  }
+  /** cross product of vectors from origin to targets */
+  public static crossProductToPoints(origin: XAndY, targetA: XAndY, targetB: XAndY): number {
+    return Geometry.crossProductXYXY(
+      targetA.x - origin.x, targetA.y - origin.y, targetB.x - origin.x, targetB.y - origin.y);
   }
 }
 

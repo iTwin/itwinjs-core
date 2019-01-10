@@ -1,13 +1,12 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { I18N } from "@bentley/imodeljs-i18n";
-import { UiFramework, FrameworkReducer, FrameworkState } from "../ui-framework";
+import { UiFramework, FrameworkReducer, FrameworkState,  DeepReadonly, ActionsUnion, createAction} from "../ui-framework";
 import { UiComponents } from "@bentley/ui-components";
 import { UiCore } from "@bentley/ui-core";
 import { Store, createStore, combineReducers } from "redux";
-import { DeepReadonly, ActionsUnion, createAction } from "..//utils/redux-ts";
 
 export interface SampleAppState {
   placeHolder?: boolean;
@@ -55,21 +54,34 @@ export default class TestUtils {
     return TestUtils._i18n;
   }
 
-  public static async initializeUiFramework() {
+  public static async initializeUiFramework(testAlternateKey = false) {
     if (!TestUtils._uiFrameworkInitialized) {
       // This is required by our I18n module (specifically the i18next package).
       (global as any).XMLHttpRequest = require("xmlhttprequest").XMLHttpRequest; // tslint:disable-line:no-var-requires
 
-      // this is the rootReducer for the sample application.
-      this._rootReducer = combineReducers<RootState>({
-        sampleAppState: SampleAppReducer,
-        testDifferentFrameworkKey: FrameworkReducer,
-      } as any);
+      if (testAlternateKey) {
+        // this is the rootReducer for the test application.
+        this._rootReducer = combineReducers<RootState>({
+          sampleAppState: SampleAppReducer,
+          testDifferentFrameworkKey: FrameworkReducer,
+        } as any);
+
+      } else {
+        // this is the rootReducer for the test application.
+        this._rootReducer = combineReducers<RootState>({
+          sampleAppState: SampleAppReducer,
+          frameworkState: FrameworkReducer,
+        } as any);
+      }
 
       this.store = createStore(this._rootReducer,
         (window as any).__REDUX_DEVTOOLS_EXTENSION__ && (window as any).__REDUX_DEVTOOLS_EXTENSION__());
 
-      await UiFramework.initialize(this.store, TestUtils.i18n, undefined, "testDifferentFrameworkKey");
+      if (testAlternateKey)
+        await UiFramework.initialize(this.store, TestUtils.i18n, undefined, "testDifferentFrameworkKey");
+      else
+        await UiFramework.initialize(this.store, TestUtils.i18n);
+
       await UiComponents.initialize(TestUtils.i18n);
       await UiCore.initialize(TestUtils.i18n);
       TestUtils._uiFrameworkInitialized = true;

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
@@ -19,7 +19,7 @@ import {
   SortDirection as ContentSortDirection,
 } from "@bentley/presentation-common";
 import { Presentation, PresentationManager } from "@bentley/presentation-frontend";
-import PresentationTableDataProvider from "../../table/DataProvider";
+import { PresentationTableDataProvider } from "../../table/DataProvider";
 import { CacheInvalidationProps } from "../../common/ContentDataProvider";
 
 /**

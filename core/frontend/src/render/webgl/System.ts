@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -71,7 +71,7 @@ export const enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
-const forceNoDrawBuffers = true;
+const forceNoDrawBuffers = false;
 const forceHalfFloat = false;
 const debugTextureLifetime = false;
 
@@ -435,12 +435,14 @@ export class System extends RenderSystem {
 
   // The following are initialized immediately after the System is constructed.
   private _lineCodeTexture?: TextureHandle;
+  private _noiseTexture?: TextureHandle;
   private _techniques?: Techniques;
 
   public static get instance() { return IModelApp.renderSystem as System; }
 
   public get isValid(): boolean { return this.canvas !== undefined; }
   public get lineCodeTexture() { return this._lineCodeTexture; }
+  public get noiseTexture() { return this._noiseTexture; }
   public get techniques() { return this._techniques!; }
 
   public get maxTextureSize(): number { return this.capabilities.maxTextureSize; }
@@ -473,7 +475,9 @@ export class System extends RenderSystem {
 
   // Note: FrameBuffers inside of the FrameBufferStack are not owned by the System, and are only used as a central storage device
   public dispose() {
-    dispose(this.techniques);
+    this._techniques = dispose(this._techniques);
+    this._lineCodeTexture = dispose(this._lineCodeTexture);
+    this._noiseTexture = dispose(this._noiseTexture);
 
     // We must attempt to dispose of each idmap in the resourceCache (if idmap is already disposed, has no effect)
     this.resourceCache.forEach((idMap: IdMap) => {
@@ -486,6 +490,12 @@ export class System extends RenderSystem {
 
   public onInitialized(): void {
     this._techniques = Techniques.create(this.context);
+
+    const noiseDim = 4;
+    const noiseArr = new Uint8Array([152, 235, 94, 173, 219, 215, 115, 176, 73, 205, 43, 201, 10, 81, 205, 198]);
+    this._noiseTexture = TextureHandle.createForData(noiseDim, noiseDim, noiseArr, false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
+    assert(undefined !== this._noiseTexture, "System.noiseTexture not created.");
+
     this._lineCodeTexture = TextureHandle.createForData(LineCode.size, LineCode.count, new Uint8Array(LineCode.lineCodeData), false, GL.Texture.WrapMode.Repeat, GL.Texture.Format.Luminance);
     assert(undefined !== this._lineCodeTexture, "System.lineCodeTexture not created.");
   }

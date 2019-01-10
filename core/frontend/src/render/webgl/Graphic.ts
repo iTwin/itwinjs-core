@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -8,7 +8,7 @@ import { assert, Id64, Id64String, BeTimePoint, IDisposable, dispose } from "@be
 import { ViewFlags, ElementAlignedBox3d } from "@bentley/imodeljs-common";
 import { Transform } from "@bentley/geometry-core";
 import { Primitive } from "./Primitive";
-import { RenderGraphic, GraphicBranch, GraphicList, PackedFeatureTable } from "../System";
+import { RenderGraphic, GraphicBranch, GraphicList, PackedFeatureTable, RenderMemory } from "../System";
 import { RenderCommands } from "./DrawCommand";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { TextureHandle, Texture2DHandle, Texture2DDataUpdater } from "./Texture";
@@ -32,6 +32,7 @@ export class FeatureOverrides implements IDisposable {
   public anyOpaque: boolean = true;
   public anyHilited: boolean = true;
 
+  public get byteLength(): number { return undefined !== this.lut ? this.lut.bytesUsed : 0; }
   public get isUniform() { return 2 === this.lutParams.width && 1 === this.lutParams.height; }
   public get isUniformFlashed() {
     if (!this.isUniform || undefined === this.lut)
@@ -244,7 +245,6 @@ export abstract class Graphic extends RenderGraphic {
   public get isPickable(): boolean { return false; }
   public addHiliteCommands(_commands: RenderCommands, _batch: Batch, _pass: RenderPass): void { assert(false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
-  // public abstract setIsPixelMode(): void;
 }
 
 export class Batch extends Graphic {
@@ -269,6 +269,13 @@ export class Batch extends Graphic {
       dispose(over);
     }
     this._overrides.length = 0;
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.graphic.collectStatistics(stats);
+    stats.addFeatureTable(this.featureTable.byteLength);
+    for (const ovrs of this._overrides)
+      stats.addFeatureOverrides(ovrs.byteLength);
   }
 
   public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
@@ -331,6 +338,12 @@ export class Branch extends Graphic {
   }
 
   public dispose() { this.branch.dispose(); }
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    this.branch.collectStatistics(stats);
+    if (undefined !== this.clips)
+      this.clips.collectStatistics(stats);
+  }
+
   public addCommands(commands: RenderCommands): void { commands.addBranch(this); }
   public addHiliteCommands(commands: RenderCommands, batch: Batch, pass: RenderPass): void { commands.addHiliteBranch(this, batch, pass); }
 }
@@ -365,5 +378,10 @@ export class GraphicsArray extends Graphic {
     for (const graphic of this.graphics) {
       (graphic as Graphic).addHiliteCommands(commands, batch, pass);
     }
+  }
+
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const graphic of this.graphics)
+      graphic.collectStatistics(stats);
   }
 }

@@ -1,0 +1,43 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+ @import "@bentley/bwc/lib/mixins";
+
+.searchbox {
+  @include bwc-font-family;
+  display: flex;
+  align-items: center;
+  position: relative;
+  //default values (height, width, font-size, color)
+  height: 34px;
+  width: 12em;
+  font-size: $bwc-font-size;
+  color: $bwc-text-color;
+
+  input {
+    @include bwc-inputs-input;
+    padding: 0 2em 0 12px; //12px from design guide
+    height: 100%;
+    margin: 0;
+    color: inherit;
+    font-size: inherit;
+    box-sizing: border-box;
+  }
+
+  div {
+    position: absolute;
+    height: 100%;
+    right: 0;
+    width: 2em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    overflow: hidden;
+    cursor: pointer;
+  }
+
+  div:hover span {
+    color: $bwc-icons-blue;
+  }
+}

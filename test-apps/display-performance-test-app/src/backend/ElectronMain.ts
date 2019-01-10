@@ -1,14 +1,13 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import * as url from "url";
 
 import { ElectronRpcManager } from "@bentley/imodeljs-common";
 import { initializeBackend, getRpcInterfaces } from "./backend";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { IModelJsElectronAppManager } from "@bentley/imodeljs-backend";
+import { IModelJsElectronManager } from "@bentley/electron-manager";
 
 import * as electron from "electron";
 
@@ -25,24 +24,16 @@ Logger.setLevelDefault(logLevel);
 
 // --------------------------------------------------------------------------------------
 // ---------------- This part copied from protogist ElectronMain.ts ---------------------
-const isDevBuild = (process.env.NODE_ENV === "development");
 const autoOpenDevTools = (undefined === process.env.SVT_NO_DEV_TOOLS);
 const maximizeWindow = (undefined !== process.env.SVT_MAXIMIZE_WINDOW);
 
 (async () => { // tslint:disable-line:no-floating-promises
-  const manager = new IModelJsElectronAppManager(electron);
-  if (!isDevBuild)
-    manager.frontendURL = url.format({
-      pathname: path.join(__dirname, "../webresources/index.html"),
-      protocol: "file:",
-      slashes: true,
-    });
+  const manager = new IModelJsElectronManager(path.join(__dirname, "..", "webresources"));
 
   await manager.initialize({
     width: 1280,
     height: 800,
     webPreferences: {
-      webSecurity: !isDevBuild, // Workaround for CORS issue in dev build
       experimentalFeatures: true, // Needed for CSS Grid support
     },
     autoHideMenuBar: true,

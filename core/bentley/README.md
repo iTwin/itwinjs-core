@@ -1,6 +1,6 @@
 # @bentley/bentleyjs-core
 
-Copyright © 2018 Bentley Systems, Incorporated. All rights reserved.
+Copyright © 2019 Bentley Systems, Incorporated. All rights reserved.
 
 ## Description
 

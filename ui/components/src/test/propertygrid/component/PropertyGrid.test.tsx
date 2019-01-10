@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -10,10 +10,10 @@ import sinon from "sinon";
 import * as React from "react";
 import { Orientation } from "@bentley/ui-core";
 import { SimplePropertyDataProvider, PropertyCategoryBlock } from "../../../ui-components";
-import { PropertyGrid, PropertyGridCategory } from "../../../propertygrid/component/PropertyGrid";
-import { PropertyDataProvider, PropertyDataChangeEvent, PropertyCategory, PropertyData } from "../../../propertygrid/PropertyDataProvider";
-import { PropertyRecord } from "../../../properties/Record";
-import { PropertyValueFormat } from "../../../properties/Value";
+import { PropertyGrid, PropertyGridCategory } from "../../../ui-components/propertygrid/component/PropertyGrid";
+import { IPropertyDataProvider, PropertyDataChangeEvent, PropertyCategory, PropertyData } from "../../../ui-components/propertygrid/PropertyDataProvider";
+import { PropertyRecord } from "../../../ui-components/properties/Record";
+import { PropertyValueFormat } from "../../../ui-components/properties/Value";
 import { ResolvablePromise } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
 
@@ -43,12 +43,12 @@ describe("PropertyGrid", () => {
 
   it("handles onDataChanged event subscriptions when mounting, changing props and unmounting", () => {
     const evt1 = new PropertyDataChangeEvent();
-    const providerMock1 = moq.Mock.ofType<PropertyDataProvider>();
+    const providerMock1 = moq.Mock.ofType<IPropertyDataProvider>();
     providerMock1.setup(async (x) => x.getData()).returns(async () => ({ label: "", categories: [], records: {} }));
     providerMock1.setup((x) => x.onDataChanged).returns(() => evt1);
 
     const evt2 = new PropertyDataChangeEvent();
-    const providerMock2 = moq.Mock.ofType<PropertyDataProvider>();
+    const providerMock2 = moq.Mock.ofType<IPropertyDataProvider>();
     providerMock2.setup(async (x) => x.getData()).returns(async () => ({ label: "", categories: [], records: {} }));
     providerMock2.setup((x) => x.onDataChanged).returns(() => evt2);
 
@@ -219,7 +219,7 @@ describe("PropertyGrid", () => {
     };
     const dataPromise = new ResolvablePromise<PropertyData>();
     const dataFake = sinon.fake.returns(dataPromise);
-    const dataProvider: PropertyDataProvider = {
+    const dataProvider: IPropertyDataProvider = {
       getData: dataFake,
       onDataChanged: new PropertyDataChangeEvent(),
     };

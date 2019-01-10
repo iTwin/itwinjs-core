@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { Geometry } from "../Geometry";
@@ -11,7 +11,7 @@ import { Transform } from "../geometry3d/Transform";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 
 import { GrowableFloat64Array } from "../geometry3d/GrowableFloat64Array";
-import { Range3d } from "../geometry3d/Range";
+import { Range2d, Range3d } from "../geometry3d/Range";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Arc3d } from "../curve/Arc3d";
 import { LineString3d } from "../curve/LineString3d";
@@ -63,6 +63,7 @@ export class Checker {
     ACSArrows: false,
     OrderedRotationAngles: false,
     RaggedViewMatrix: false,
+    ReportRoundTripFileNames: false,
   };
   public constructor() { this._numErrors = 0; this._numOK = 0; this._savedErrors = 0; this._savedOK = 0; }
   public getNumErrors(): number { return this._savedErrors + this._numErrors; }
@@ -173,6 +174,12 @@ export class Checker {
     return false;
   }
 
+  public testRange2d(dataA: Range2d, dataB: Range2d, ...params: any[]): boolean {
+    if (dataA.isAlmostEqual(dataB))
+      return this.announceOK();
+    this.announceError("expect same Range2d", dataA, dataB, params);
+    return false;
+  }
   public testPoint3dXY(dataA: Point3d, dataB: Point3d, ...params: any[]): boolean {
     if (Geometry.isSamePoint3dXY(dataA, dataB))
       return this.announceOK();
@@ -211,6 +218,14 @@ export class Checker {
 
   public testUndefined(dataA: any, ...params: any[]): boolean {
     if (dataA === undefined)
+      return this.announceOK();
+    this.announceError("Expect undefined", dataA, params);
+
+    return false;
+  }
+
+  public testIsFinite(dataA: any, ...params: any[]): boolean {
+    if (Number.isFinite(dataA))
       return this.announceOK();
     this.announceError("Expect undefined", dataA, params);
 

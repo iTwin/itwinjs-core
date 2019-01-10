@@ -1,4 +1,8 @@
-import { IModelDb, NativePlatformRegistry, OpenParams, IModelJsFs, KeepBriefcase } from "../imodeljs-backend";
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+import { IModelDb, OpenParams, IModelJsFs, KeepBriefcase } from "../imodeljs-backend";
 import { Config, IModelHubClient, ImsActiveSecureTokenClient, AuthorizationToken, AccessToken, ChangeSet } from "@bentley/imodeljs-clients";
 import { ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
@@ -7,6 +11,7 @@ import * as path from "path";
 import * as fs from "fs";
 import { assert } from "chai";
 import { Element } from "../Element";
+import { IModelHost } from "../IModelHost";
 
 async function getImodelAfterApplyingCS(csvPath: string) {
   csvPath = csvPath;
@@ -22,7 +27,7 @@ async function getImodelAfterApplyingCS(csvPath: string) {
   };
   Config.App.merge(myAppConfig);
   const client: IModelHubClient = new IModelHubClient();
-  NativePlatformRegistry.loadAndRegisterStandardNativePlatform();
+  IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   const actLogCtx = new ActivityLoggingContext(Guid.createValue());
   const imsClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
@@ -42,7 +47,7 @@ async function getImodelAfterApplyingCS(csvPath: string) {
   const elapsedTime = (endTime - startTime) / 1000.0;
   assert.strictEqual<string>(imodeldb.briefcase.currentChangeSetId, firstChangeSetId);
   imodeldb.close(actLogCtx, accessToken).catch();
-  fs.appendFileSync(csvPath, "ImodelPerformance, GetImodelFromHubAFterCSApplied," + elapsedTime + ",Time to get an imodel with first version from imodel hub\n");
+  fs.appendFileSync(csvPath, "Open, From Hub first cs," + elapsedTime + "\n");
 
   // open imodel from local cache with second revision
   const startTime1 = new Date().getTime();
@@ -52,7 +57,7 @@ async function getImodelAfterApplyingCS(csvPath: string) {
   const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
   assert.strictEqual<string>(imodeldb1.briefcase.currentChangeSetId, secondChangeSetId);
   imodeldb1.close(actLogCtx, accessToken).catch();
-  fs.appendFileSync(csvPath, "ImodelPerformance, GetImodelFromHubAFterCSApplied," + elapsedTime1 + ",Time to get an imodel with second version from local cache\n");
+  fs.appendFileSync(csvPath, "Open, From Cache second cs," + elapsedTime1 + "\n");
 
   // open imodel from local cache with third revision
   const startTime2 = new Date().getTime();
@@ -62,7 +67,7 @@ async function getImodelAfterApplyingCS(csvPath: string) {
   const elapsedTime2 = (endTime2 - startTime2) / 1000.0;
   assert.strictEqual<string>(imodeldb2.briefcase.currentChangeSetId, thirdChangeSetId);
   imodeldb2.close(actLogCtx, accessToken).catch();
-  fs.appendFileSync(csvPath, "ImodelChangesetPerformance, GetImodelFromHubAFterCSApplied," + elapsedTime2 + ",Time to get an imodel with third version from local cache\n");
+  fs.appendFileSync(csvPath, "Open, From Cache third cs," + elapsedTime2 + "\n");
 }
 
 async function pushImodelAfterMetaChanges(csvPath: string) {
@@ -79,7 +84,7 @@ async function pushImodelAfterMetaChanges(csvPath: string) {
   };
   Config.App.merge(myAppConfig);
   const client: IModelHubClient = new IModelHubClient();
-  NativePlatformRegistry.loadAndRegisterStandardNativePlatform();
+  IModelHost.loadNative(myAppConfig.imjs_buddi_resolve_url_using_region);
   process.env.NODE_TLS_REJECT_UNAUTHORIZED = "0";
   const actLogCtx = new ActivityLoggingContext(Guid.createValue());
   const imsClient: ImsActiveSecureTokenClient = new ImsActiveSecureTokenClient();
@@ -97,7 +102,7 @@ async function pushImodelAfterMetaChanges(csvPath: string) {
   iModelPullAndPush.saveChanges();
   const endTime = new Date().getTime();
   const elapsedTime = (endTime - startTime) / 1000.0;
-  fs.appendFileSync(csvPath, "ImodelChangesetPerformance, PushImodelMetaChangeToImodelHUb," + elapsedTime + ",Time to make a meta data change in an imodel\n");
+  fs.appendFileSync(csvPath, "Update, Make Meta Changes," + elapsedTime + "\n");
 
   try {
     // get the time to push a meta data change of an imodel to imodel hub
@@ -105,7 +110,7 @@ async function pushImodelAfterMetaChanges(csvPath: string) {
     await iModelPullAndPush.pushChanges(actLogCtx, accessToken);
     const endTime1 = new Date().getTime();
     const elapsedTime1 = (endTime1 - startTime1) / 1000.0;
-    fs.appendFileSync(csvPath, "ImodelChangesetPerformance, PushImodelMetaChangeToImodelHUb," + elapsedTime1 + ",Time to push a meta data change in an imodel to imodel hub\n");
+    fs.appendFileSync(csvPath, "Push, Meta Changes to Hub," + elapsedTime1 + "\n");
   } catch (error) { }
   await iModelPullAndPush.close(actLogCtx, accessToken, KeepBriefcase.No);
 }
@@ -115,7 +120,7 @@ describe("ImodelChangesetPerformance", async () => {
     IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
   const csvPath = path.join(KnownTestLocations.outputDir, "ImodelPerformance.csv");
   if (!IModelJsFs.existsSync(csvPath)) {
-    fs.appendFileSync(csvPath, "TestCaseName,TestName,ExecutionTime,TestDescription\n");
+    fs.appendFileSync(csvPath, "Operation,Description,ExecutionTime\n");
   }
 
   before(async () => {

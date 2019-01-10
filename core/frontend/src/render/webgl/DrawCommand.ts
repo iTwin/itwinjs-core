@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -248,8 +248,8 @@ export class RenderCommands {
     if (this.hasCommands(RenderPass.Hilite) || this.hasCommands(RenderPass.HiliteClassification))
       flags |= CompositeFlags.Hilite;
 
-    assert(5 === RenderPass.Translucent);
-    assert(7 === RenderPass.Hilite);
+    if (this.target.wantAmbientOcclusion)
+      flags |= CompositeFlags.AmbientOcclusion;
 
     return flags;
   }

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { render, cleanup } from "react-testing-library";
@@ -9,8 +9,8 @@ import { expect } from "chai";
 
 import { Dialog, ButtonType } from "../../ui-core";
 import TestUtils from "../TestUtils";
-import { UiCore } from "../../UiCore";
-import { GlobalDialog } from "../../dialog/Dialog";
+import { UiCore } from "../../ui-core/UiCore";
+import { GlobalDialog } from "../../ui-core/dialog/Dialog";
 
 describe("Dialog", () => {
 

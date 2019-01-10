@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -27,7 +27,7 @@ export default class PropertiesWidget extends React.Component<Props, State> {
     };
   }
   public static getDerivedStateFromProps(props: Props, state: State) {
-    if (props.imodel !== state.dataProvider.connection || props.rulesetId !== state.dataProvider.rulesetId)
+    if (props.imodel !== state.dataProvider.imodel || props.rulesetId !== state.dataProvider.rulesetId)
       return { ...state, dataProvider: createDataProvider(props.imodel, props.rulesetId) };
     return null;
   }

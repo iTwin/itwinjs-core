@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Core */
@@ -170,7 +170,7 @@ const createNestedContentRecord = (field: NestedContentField, item: Item, path?:
 /**
  * A helper class which creates `ui-components` objects from `presentation` objects.
  */
-export default class ContentBuilder {
+export class ContentBuilder {
   /**
    * Create a property record for specified field and item
    * @param field Content field to create the record for

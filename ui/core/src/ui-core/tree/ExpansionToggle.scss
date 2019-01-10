@@ -1,0 +1,21 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+
+.nz-tree-expansionToggle {
+  > .toggle {
+
+    display: block;
+    width: 24px;
+    height: 24px;
+    padding: 7px;
+    box-sizing: border-box;
+    transform: rotate(0);
+    transition: transform 100ms ease;
+  }
+
+  &.is-expanded > .toggle {
+    transform: rotate(0.25turn)
+  }
+}

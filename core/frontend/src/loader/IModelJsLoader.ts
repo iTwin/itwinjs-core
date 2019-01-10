@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module ModuleLoader */
@@ -88,7 +88,7 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
   // if we are going to load the ui modules, get the third party stuff started now. They don't depend on any of our modules so can be loaded at any time.
   let thirdPartyRootPromise;
   if (options.loadUiComponents)
-    thirdPartyRootPromise = ScriptLoader.loadPackagesParallel(["lodash.js", "react.js", "redux.js", "bwc.js"]);
+    thirdPartyRootPromise = ScriptLoader.loadPackagesParallel(["lodash.js", "react.js", "redux.js"]);
 
   // load the lowest level stuff. geometry-core doesn't depend on bentleyjs-core, so they can be loaded together.
   await ScriptLoader.loadPackagesParallel([options.prefixVersion("bentleyjs-core.js"), options.prefixVersion("geometry-core.js")]);
@@ -100,7 +100,7 @@ export async function loadIModelJs(options: IModelJsLoadOptions): Promise<void> 
   if (options.loadUiComponents) {
     await thirdPartyRootPromise;
     // load the rest of the third party modules that depend on react and redux.
-    await ScriptLoader.loadPackagesParallel(["react-dom.js", "inspire-tree.js", "react-dnd.js", "react-dnd-html5-backend.js", "react-redux.js"]);
+    await ScriptLoader.loadPackagesParallel(["bwc.js", "react-dom.js", "inspire-tree.js", "react-dnd.js", "react-dnd-html5-backend.js", "react-redux.js"]);
     await ScriptLoader.loadPackage(options.prefixVersion("ui-core.js"));
     await ScriptLoader.loadPackage(options.prefixVersion("ui-components.js"));
     if (options.loadUiFramework) {

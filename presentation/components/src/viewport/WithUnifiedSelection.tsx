@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module UnifiedSelection */
@@ -11,8 +11,8 @@ import { SelectionInfo, DefaultContentDisplayTypes, KeySet } from "@bentley/pres
 import { SelectionHandler, Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
 import { ViewportProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
-import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
-import ContentDataProvider from "../common/ContentDataProvider";
+import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
+import { ContentDataProvider } from "../common/ContentDataProvider";
 
 /**
  * Props that are injected to the HOC component.
@@ -30,7 +30,7 @@ export interface Props {
  * viewport component.
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
+export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportComponent: React.ComponentType<P>): React.ComponentType<P & Props> {
 
   type CombinedProps = P & Props;
 
@@ -131,7 +131,7 @@ export class ViewportSelectionHandler implements IDisposable {
   public set imodel(value: IModelConnection) {
     this._imodel = value;
     this._selectionHandler.imodel = value;
-    this._selectedElementsProvider.connection = value;
+    this._selectedElementsProvider.imodel = value;
     this._imodelSelectionListenerDisposeFunc();
     this._imodelSelectionListenerDisposeFunc = this._imodel.selectionSet.onChanged.addListener(this.onViewportSelectionChanged);
   }

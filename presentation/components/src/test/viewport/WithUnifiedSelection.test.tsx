@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /* tslint:disable:no-direct-imports */
@@ -27,8 +27,8 @@ import {
   SelectionManager, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType,
 } from "@bentley/presentation-frontend";
 import { ViewportComponent } from "@bentley/ui-components";
-import IUnifiedSelectionComponent from "../../common/IUnifiedSelectionComponent";
-import { default as viewWithUnifiedSelection, ViewportSelectionHandler } from "../../viewport/WithUnifiedSelection";
+import { IUnifiedSelectionComponent } from "../../common/IUnifiedSelectionComponent";
+import { viewWithUnifiedSelection, ViewportSelectionHandler } from "../../viewport/WithUnifiedSelection";
 
 // tslint:disable-next-line:variable-name naming-convention
 const PresentationViewport = viewWithUnifiedSelection(ViewportComponent);

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
@@ -273,25 +273,17 @@ class FrontstageToolWidget extends React.Component {
     );
   }
 
-  /** example that hides the button if active content is a SheetView */
+  /** example that hides the button if active content is not a 3d View */
   private _anotherGroupStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
     const returnState: BaseItemState = { ...currentState };
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-      returnState.isVisible = true;
-    else
-      returnState.isVisible = false;
+    returnState.isVisible = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
     return returnState;
   }
 
-  /** example that disables the button if active content is a SheetView */
+  /** example that disables the button if active content is not a 3d view */
   private _measureStateFunc = (currentState: Readonly<BaseItemState>): BaseItemState => {
     const returnState: BaseItemState = { ...currentState };
-    const activeContentControl = ContentViewManager.getActiveContentControl();
-    if (activeContentControl && activeContentControl.viewport && ("BisCore:SheetViewDefinition" !== activeContentControl.viewport.view.classFullName))
-      returnState.isEnabled = true;
-    else
-      returnState.isEnabled = false;
+    returnState.isEnabled = ContentViewManager.isContent3dView(ContentViewManager.getActiveContentControl());
     return returnState;
   }
 
@@ -311,7 +303,9 @@ class FrontstageToolWidget extends React.Component {
           <ActionItemButton actionItem={CoreTools.selectElementCommand} />
           <ToolButton toolId="Measure.Points" iconSpec="icon-measure-distance" labelKey="SampleApp:tools.Measure.Points.flyover"
             execute={this.executeMeasureByPoints} stateSyncIds={[SyncUiEventId.ActiveContentChanged]} stateFunc={this._measureStateFunc} />
-          <ActionItemButton actionItem={AppTools.tool2} />
+          <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
+            {(enabled: boolean, otherProps: any) => <ActionItemButton actionItem={AppTools.tool2} isEnabled={enabled} {...otherProps} />}
+          </BooleanSyncUiListener>
           <ActionItemButton actionItem={CoreTools.analysisAnimationCommand} />
           <ActionItemButton actionItem={AppTools.toggleHideShowItemsCommand} />
           <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>

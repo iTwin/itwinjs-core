@@ -1,112 +1,117 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-export { default as UiFramework } from "./UiFramework";
+export { default as UiFramework } from "./ui-framework/UiFramework";
 
-export * from "./FrameworkState";
-export * from "./UiFramework";
-export * from "./CoreToolDefinitions";
+export * from "./ui-framework/FrameworkState";
+export * from "./ui-framework/UiFramework";
+export * from "./ui-framework/CoreToolDefinitions";
 
-export * from "./clientservices/IModelServices";
-export * from "./clientservices/ProjectServices";
+export * from "./ui-framework/clientservices/IModelServices";
+export * from "./ui-framework/clientservices/ProjectServices";
 
-export * from "./feedback/ValidationTextbox";
+export * from "./ui-framework/feedback/ValidationTextbox";
+export * from "./ui-framework/feedback/ElementTooltip";
 
-export * from "./messages/InputField";
-export * from "./messages/Pointer";
+export * from "./ui-framework/messages/InputField";
+export * from "./ui-framework/messages/Pointer";
 
-export * from "./oidc/SignIn";
-export * from "./oidc/SignOut";
+export * from "./ui-framework/oidc/SignIn";
+export * from "./ui-framework/oidc/SignOut";
 
-export * from "./openimodel/ApplicationHeader";
-export * from "./openimodel/BlockingPrompt";
-export * from "./openimodel/IModelCard";
-export * from "./openimodel/IModelList";
-export * from "./openimodel/IModelOpen";
-export * from "./openimodel/IModelViewPicker";
-export * from "./openimodel/Navigation";
-export * from "./openimodel/ProjectDialog";
-export * from "./openimodel/ProjectDropdown";
-export * from "./openimodel/ProjectTabs";
+export * from "./ui-framework/openimodel/ApplicationHeader";
+export * from "./ui-framework/openimodel/BlockingPrompt";
+export * from "./ui-framework/openimodel/IModelCard";
+export * from "./ui-framework/openimodel/IModelList";
+export * from "./ui-framework/openimodel/IModelOpen";
+export * from "./ui-framework/openimodel/IModelViewPicker";
+export * from "./ui-framework/openimodel/Navigation";
+export * from "./ui-framework/openimodel/ProjectDialog";
+export * from "./ui-framework/openimodel/ProjectDropdown";
+export * from "./ui-framework/openimodel/ProjectTabs";
 
-export * from "./overallcontent/OverallContent";
-export * from "./overallcontent/state";
+export * from "./ui-framework/overallcontent/OverallContent";
+export * from "./ui-framework/overallcontent/state";
 
-export * from "./pickers/ListPicker";
-export * from "./pickers/ModelSelector";
-export * from "./pickers/ViewSelector";
+export * from "./ui-framework/pickers/ListPicker";
+export * from "./ui-framework/pickers/ModelSelector";
+export * from "./ui-framework/pickers/ViewSelector";
 
-export * from "./configurableui/ActionItemButton";
-export * from "./configurableui/AppNotificationManager";
-export * from "./configurableui/Backstage";
-export * from "./configurableui/ConfigurableUiContent";
-export * from "./configurableui/ConfigurableUiControl";
-export * from "./configurableui/ConfigurableUiManager";
-export * from "./configurableui/ContentControl";
-export * from "./configurableui/ContentGroup";
-export * from "./configurableui/ContentLayout";
-export * from "./configurableui/ContentViewManager";
-export * from "./configurableui/ElementTooltip";
-export * from "./configurableui/FrameworkZone";
-export * from "./configurableui/Frontstage";
-export * from "./configurableui/FrontstageComposer";
-export * from "./configurableui/FrontstageDef";
-export * from "./configurableui/FrontstageManager";
-export * from "./configurableui/FrontstageProvider";
-export * from "./configurableui/GroupItem";
-export * from "./configurableui/IconComponent";
-export * from "./configurableui/Item";
-export * from "./configurableui/ItemDefBase";
-export * from "./configurableui/ItemMap";
-export * from "./configurableui/ItemProps";
-export * from "./configurableui/KeyboardShortcut";
-export * from "./configurableui/MessageManager";
-export * from "./configurableui/ModalDialogManager";
-export * from "./configurableui/DragDropLayerManager";
-export * from "./configurableui/ModalFrontstage";
-export * from "./configurableui/NavigationAidControl";
-export * from "./configurableui/NavigationWidget";
-export * from "./configurableui/StackedWidget";
-export * from "./configurableui/StandardMessageBox";
-export * from "./configurableui/StatusBar";
-export * from "./configurableui/StatusBarWidgetControl";
-export * from "./configurableui/StatusBarZone";
-export * from "./configurableui/Task";
-export * from "./configurableui/ToolButton";
-export * from "./configurableui/ToolbarWidgetBase";
-export * from "./configurableui/ToolSettingsZone";
-export * from "./configurableui/ToolUiProvider";
-export * from "./configurableui/ToolWidget";
-export * from "./configurableui/ViewportContentControl";
-export * from "./configurableui/Widget";
-export * from "./configurableui/WidgetControl";
-export * from "./configurableui/WidgetDef";
-export * from "./configurableui/WidgetFactory";
-export * from "./configurableui/Workflow";
-export * from "./configurableui/Zone";
-export * from "./configurableui/ZoneDef";
-export * from "./configurableui/ZoneTargets";
+export * from "./ui-framework/messages/AppNotificationManager";
+export * from "./ui-framework/configurableui/ConfigurableUiContent";
+export * from "./ui-framework/configurableui/ConfigurableUiControl";
+export * from "./ui-framework/configurableui/ConfigurableUiManager";
+export * from "./ui-framework/content/ContentControl";
+export * from "./ui-framework/content/ContentGroup";
+export * from "./ui-framework/content/ContentLayout";
+export * from "./ui-framework/content/ContentViewManager";
+export * from "./ui-framework/dragdrop/DragDropLayerManager";
+export * from "./ui-framework/dragdrop/ZoneTargets";
+export * from "./ui-framework/frontstage/Frontstage";
+export * from "./ui-framework/frontstage/FrontstageComposer";
+export * from "./ui-framework/frontstage/FrontstageDef";
+export * from "./ui-framework/frontstage/FrontstageManager";
+export * from "./ui-framework/frontstage/FrontstageProvider";
+export * from "./ui-framework/shared/IconComponent";
+export * from "./ui-framework/shared/Item";
+export * from "./ui-framework/shared/ItemDefBase";
+export * from "./ui-framework/shared/ItemMap";
+export * from "./ui-framework/shared/ItemProps";
+export * from "./ui-framework/KeyboardShortcut";
+export * from "./ui-framework/messages/MessageManager";
+export * from "./ui-framework/ModalDialogManager";
+export * from "./ui-framework/frontstage/ModalFrontstage";
+export * from "./ui-framework/navigationaids/NavigationAidControl";
+export * from "./ui-framework/widgets/NavigationWidget";
+export * from "./ui-framework/widgets/StackedWidget";
+export * from "./ui-framework/messages/StandardMessageBox";
+export * from "./ui-framework/widgets/StatusBar";
+export * from "./ui-framework/widgets/StatusBarWidgetControl";
+export * from "./ui-framework/zones/StatusBarZone";
+export * from "./ui-framework/workflow/Task";
+export * from "./ui-framework/widgets/ToolbarWidgetBase";
+export * from "./ui-framework/widgets/ToolWidget";
+export * from "./ui-framework/content/ViewportContentControl";
+export * from "./ui-framework/widgets/Widget";
+export * from "./ui-framework/widgets/WidgetControl";
+export * from "./ui-framework/widgets/WidgetDef";
+export * from "./ui-framework/widgets/WidgetFactory";
+export * from "./ui-framework/workflow/Workflow";
+export * from "./ui-framework/zones/FrameworkZone";
+export * from "./ui-framework/zones/toolsettings/ToolSettingsZone";
+export * from "./ui-framework/zones/toolsettings/ToolUiProvider";
+export * from "./ui-framework/zones/Zone";
+export * from "./ui-framework/zones/ZoneDef";
 
-export * from "./configurableui/navigationaids/CubeNavigationAid";
-export * from "./configurableui/navigationaids/SheetNavigationAid";
-export * from "./configurableui/navigationaids/SheetsModalFrontstage";
-export * from "./configurableui/navigationaids/StandardRotationNavigationAid";
+export * from "./ui-framework/toolbar/ActionItemButton";
+export * from "./ui-framework/toolbar/GroupItem";
+export * from "./ui-framework/toolbar/ToolButton";
 
-export * from "./configurableui/statusbarfields/ActivityCenter";
-export * from "./configurableui/statusbarfields/MessageCenter";
-export * from "./configurableui/statusbarfields/SnapMode";
-export * from "./configurableui/statusbarfields/PromptField";
+export * from "./ui-framework/backstage/Backstage";
+export * from "./ui-framework/backstage/FrontstageLaunch";
+export * from "./ui-framework/backstage/CommandLaunch";
+export * from "./ui-framework/backstage/TaskLaunch";
 
-export * from "./tools/AnalysisAnimation";
-export * from "./tools/AnalysisAnimationToolSettings";
+export * from "./ui-framework/navigationaids/CubeNavigationAid";
+export * from "./ui-framework/navigationaids/SheetNavigationAid";
+export * from "./ui-framework/navigationaids/SheetsModalFrontstage";
+export * from "./ui-framework/navigationaids/StandardRotationNavigationAid";
 
-export * from "./utils/ViewUtilities";
-export * from "./utils/redux-ts";
-export * from "./utils/WithVisibility";
+export * from "./ui-framework/statusfields/ActivityCenter";
+export * from "./ui-framework/statusfields/MessageCenter";
+export * from "./ui-framework/statusfields/SnapMode";
+export * from "./ui-framework/statusfields/PromptField";
 
-export * from "./syncui/SyncUiEventDispatcher";
-export * from "./syncui/BooleanListener";
+export * from "./ui-framework/tools/AnalysisAnimation";
+export * from "./ui-framework/tools/AnalysisAnimationToolSettings";
+
+export * from "./ui-framework/utils/ViewUtilities";
+export * from "./ui-framework/utils/redux-ts";
+export * from "./ui-framework/utils/PropsHelper";
+
+export * from "./ui-framework/syncui/SyncUiEventDispatcher";
+export * from "./ui-framework/syncui/BooleanListener";
 
 /** @docs-package-description
  * The ui-framework package contains application fragments for Login, Project, iModel and View selection,

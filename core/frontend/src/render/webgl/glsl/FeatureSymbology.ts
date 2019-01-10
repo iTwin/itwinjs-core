@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module WebGL */
@@ -310,7 +310,7 @@ function addSamplers(frag: FragmentShaderBuilder, testFeatureId: boolean) {
   }, VariablePrecision.High);
 }
 
-const readDepthAndOrder = `
+export const readDepthAndOrder = `
 vec2 readDepthAndOrder(vec2 tc) {
   vec4 pdo = TEXTURE(u_pickDepthAndOrder, tc);
   float order = floor(pdo.x * 16.0 + 0.5);

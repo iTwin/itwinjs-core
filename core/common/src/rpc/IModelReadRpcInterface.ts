@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module RpcInterface */
@@ -17,6 +17,7 @@ import { IModelVersion } from "../IModelVersion";
 import { ModelProps } from "../ModelProps";
 import { ElementProps } from "../ElementProps";
 import { SnapRequestProps, SnapResponseProps } from "../Snapping";
+import { IModelCoordinatesResponseProps, GeoCoordinatesResponseProps } from "../GeoCoordinateServices";
 import { ViewStateProps } from "../ViewProps";
 
 /** Response if the IModelDb was not found at the backend
@@ -49,7 +50,7 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public static getClient(): IModelReadRpcInterface { return RpcManager.getClientForInterface(IModelReadRpcInterface); }
 
   /** The semantic version of the interface. */
-  public static version = "0.1.0";
+  public static version = "0.1.1";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -74,4 +75,6 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
   public async getToolTipMessage(_iModelToken: IModelToken, _elementId: string): Promise<string[]> { return this.forward(arguments); }
   public async getViewThumbnail(_iModelToken: IModelToken, _viewId: string): Promise<Uint8Array> { return this.forward(arguments); }
   public async getDefaultViewId(_iModelToken: IModelToken): Promise<Id64String> { return this.forward(arguments); }
+  public async getIModelCoordinatesFromGeoCoordinates(_iModelToken: IModelToken, _props: string): Promise<IModelCoordinatesResponseProps> { return this.forward(arguments); }
+  public async getGeoCoordinatesFromIModelCoordinates(_iModelToken: IModelToken, _props: string): Promise<GeoCoordinatesResponseProps> { return this.forward(arguments); }
 }

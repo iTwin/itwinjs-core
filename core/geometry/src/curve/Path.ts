@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -13,6 +13,8 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { LineString3d } from "./LineString3d";
 import { AnyCurve } from "./CurveChain";
 import { CurveChain } from "./CurveCollection";
+import { Geometry } from "../Geometry";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 
 /**
  * * A `Path` object is a collection of curves that join head-to-tail to form a path.
@@ -26,12 +28,17 @@ export class Path extends CurveChain {
   public constructor() { super(); }
   /**
    * Create a path from a variable length list of curve primtiives
-   * @param curves variable length list of individual curve primitives
+   * * CurvePrimitive params are captured !!!
+   * @param curves variable length list of individual curve primitives or point arrays.
    */
-  public static create(...curves: CurvePrimitive[]): Path {
+  public static create(...curves: Array<CurvePrimitive | Point3d[]>): Path {
     const result = new Path();
     for (const curve of curves) {
-      result.children.push(curve);
+      if (curve instanceof CurvePrimitive)
+        result.children.push(curve);
+      else if (Array.isArray(curve) && curve.length > 0 && curve[0] instanceof Point3d) {
+        result.children.push(LineString3d.create(curve));
+      }
     }
     return result;
   }
@@ -46,6 +53,7 @@ export class Path extends CurveChain {
     }
     return result;
   }
+
   public cloneStroked(options?: StrokeOptions): AnyCurve {
     const strokes = LineString3d.create();
     for (const curve of this.children)
@@ -53,10 +61,18 @@ export class Path extends CurveChain {
     return Path.create(strokes);
   }
   public dgnBoundaryType(): number { return 1; }
+  /**
+   * Return the `[index]` curve primitive, using `modulo` to map`index` to the cyclic indexing.
+   * * In particular, `-1` is the final curve.
+   * @param index cyclid index
+   */
   public cyclicCurvePrimitive(index: number): CurvePrimitive | undefined {
-    if (index >= 0 && index < this.children.length)
-      return this.children[index];
-    return undefined;
+    const n = this.children.length;
+    if (n === 0)
+      return undefined;
+
+    const index2 = Geometry.modulo(index, n);
+    return this.children[index2];
   }
   public cloneEmptyPeer(): Path { return new Path(); }
   public dispatchToGeometryHandler(handler: GeometryHandler): any {

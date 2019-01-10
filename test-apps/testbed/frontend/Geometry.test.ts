@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -18,7 +18,7 @@ function pointIsInArray(pt: Point3d, arr: Point3d[]): boolean {
 
 function pointIsInPolyface(pt: Point3d, pf: IndexedPolyface): boolean {
   for (let i = 0; i < pf.data.pointCount; i++) {
-    if (pt.isAlmostEqual(pf.data.getPoint(i)))
+    if (pt.isAlmostEqual(pf.data.getPoint(i)!))
       return true;
   }
   return false;

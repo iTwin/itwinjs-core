@@ -1,0 +1,70 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "_variables";
+
+.nz-backstage-item {
+  position: relative;
+  display: flex;
+  align-items: center;
+  padding: $nz-backstage-item-spacing 0;
+  cursor: pointer;
+  -webkit-transition: .2s ease;
+  -moz-transition: .2s ease;
+  -o-transition: .2s ease;
+  transition: .2s ease;
+
+  &:hover {
+    background: rgba($nz-backstage-item-active-background, 1);
+    color: rgba($nz-backstage-item-color, 1);
+  }
+
+  &.nz-is-active {
+    background: $nz-backstage-item-active-background;
+  }
+
+  &.nz-is-disabled {
+    color: rgba($nz-backstage-item-color, 0.45);
+    pointer-events: none;
+  }
+
+  &.nz-is-active:before{
+    content: '';
+    position: absolute;
+    top: 0;
+    left: 0;
+    height: 100%;
+    margin-left: $nz-backstage-highlight-bar-spacing-left;
+    width: $nz-backstage-highlight-bar-spacing-left;
+    background: $nz-backstage-highlight-bar-background;
+  }
+
+  > .icon {
+    padding-left: $nz-backstage-icon-spacing-left;
+    padding-right: $nz-backstage-icon-spacing-right;
+  }
+
+  > div {
+    display: flex;
+    flex-direction: column;
+    padding-right: $bwc-sm;
+    overflow: hidden;
+
+    > span {
+      text-overflow: ellipsis;
+      white-space: nowrap;
+      overflow: hidden;
+    }
+
+    > span:nth-child(1) {
+      line-height: $nz-backstage-item-font-size;
+    }
+
+    > span:nth-child(2) {
+      margin-top: $bwc-s;
+      font-size: $bwc-font-size;
+      color: $bwc-gray;
+    }
+  }
+}

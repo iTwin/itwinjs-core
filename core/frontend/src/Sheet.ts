@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Views */
@@ -17,7 +17,7 @@ import { IModelConnection } from "./IModelConnection";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 import { GraphicBuilder, GraphicType } from "./render/GraphicBuilder";
 import { GraphicList, PackedFeatureTable, RenderGraphic, RenderPlan, RenderTarget } from "./render/System";
-import { Tile, TileLoader, TileRequests, TileTree } from "./tile/TileTree";
+import { Tile, TileLoader, TileTree } from "./tile/TileTree";
 import { TileRequest } from "./tile/TileRequest";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { CoordSystem, OffScreenViewport, Viewport, ViewRect } from "./Viewport";
@@ -136,13 +136,13 @@ export namespace Attachments {
         this.setupFromView();
 
       this._scene = [];
-      const sceneContext = new SceneContext(this, new TileRequests());
+      const sceneContext = this.createSceneContext();
       view.createScene(sceneContext);
 
-      sceneContext.requests.requestMissing();
+      sceneContext.requestMissingTiles();
 
       // The scene is ready when (1) all required TileTree roots have been created and (2) all required tiles have finished loading
-      if (!view.areAllTileTreesLoaded || sceneContext.requests.hasMissingTiles)
+      if (!view.areAllTileTreesLoaded || sceneContext.hasMissingTiles)
         return State.Loading;
 
       return State.Ready;
@@ -179,7 +179,7 @@ export namespace Attachments {
 
         // Discard any tiles/graphics used for previous level-of-detail - we'll generate them at the new LOD
         this.sync.invalidateScene();
-        this.view.cancelAllTileLoads();
+        // ###TODO this.view.cancelAllTileLoads();
 
         this._sceneDepth = depth;
         let dim = QUERY_SHEET_TILE_PIXELS;
@@ -221,6 +221,7 @@ export namespace Attachments {
   abstract class AttachmentTileLoader extends TileLoader {
     public abstract get is3dAttachment(): boolean;
     public tileRequiresLoading(_params: Tile.Params): boolean { return true; }
+    public get priority(): Tile.LoadPriority { return Tile.LoadPriority.Primary; }
     public async getChildrenProps(_parent: Tile): Promise<TileProps[]> { assert(false); return Promise.resolve([]); }
     public async requestTileContent(_tile: Tile): Promise<TileRequest.Response> {
       // ###TODO?
@@ -554,7 +555,7 @@ export namespace Attachments {
         while (polyVisitor.moveToNextFacet()) {
           const lineString: Point3d[] = [];
           for (let i = 0; i < 3; i++)
-            lineString.push(polyVisitor.getPoint(i));
+            lineString.push(polyVisitor.getPoint(i)!);
           if (lineString.length > 0)
             lineString.push(lineString[0].clone()); // close the loop
           builder.addLineString(lineString);

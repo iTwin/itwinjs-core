@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
@@ -637,9 +637,8 @@ export class ToolAdmin {
 
     IModelApp.toolAdmin.processEvent(); // tslint:disable-line:no-floating-promises
 
-    IModelApp.tileRequests.preprocess();
     IModelApp.viewManager.renderLoop();
-    IModelApp.tileRequests.process();
+    IModelApp.tileAdmin.process();
 
     requestAnimationFrame(ToolAdmin.eventLoop);
   }
@@ -1110,7 +1109,26 @@ export class ToolAdmin {
     this.currentInputState.setKeyQualifiers(keyEvent);
 
     const modifierKey = ToolAdmin.getModifierKey(keyEvent);
-    return (BeModifierKeys.None !== modifierKey) ? this.onModifierKeyTransition(wentDown, modifierKey, keyEvent) : activeTool.onKeyTransition(wentDown, keyEvent);
+
+    if (BeModifierKeys.None !== modifierKey)
+      return this.onModifierKeyTransition(wentDown, modifierKey, keyEvent);
+
+    if (wentDown && keyEvent.ctrlKey && "z" === keyEvent.key.toLowerCase())
+      return this.doUndoOperation();
+
+    return activeTool.onKeyTransition(wentDown, keyEvent);
+  }
+
+  /** Called to undo previous data button for primitive tools or undo last write operation. */
+  public async doUndoOperation(): Promise<boolean> {
+    const activeTool = this.activeTool;
+    if (activeTool instanceof PrimitiveTool) {
+      // ### TODO Add method so UI can be showing string to inform user that undo of last data point is available...
+      if (await activeTool.undoPreviousStep())
+        return true;
+    }
+    // ### TODO Request TxnManager undo and restart this.primitiveTool...
+    return false;
   }
 
   private onUnsuspendTool() {

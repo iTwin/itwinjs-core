@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -7,7 +7,7 @@ import * as React from "react";
 import { mount, shallow } from "enzyme";
 import { expect } from "chai";
 import sinon from "sinon";
-import { EditorContainer, PropertyUpdatedArgs } from "../../editors/EditorContainer";
+import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import TestUtils from "../TestUtils";
 
 describe("<EditorContainer />", () => {

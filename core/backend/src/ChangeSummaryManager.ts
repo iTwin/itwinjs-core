@@ -1,11 +1,11 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
 
-import { AccessToken, ChangeSet, HubUserInfo, UserInfoQuery, ChangeSetQuery } from "@bentley/imodeljs-clients";
-import { ErrorStatusOrResult } from "./imodeljs-native-platform-api";
+import { AccessToken, ChangeSet, ChangeSetQuery } from "@bentley/imodeljs-clients";
+import { IModelJsNative } from "./IModelJsNative";
 import { Id64String, GuidString, using, assert, Logger, PerfLogger, DbResult, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { IModelDb } from "./IModelDb";
 import { ECDb, ECDbOpenMode } from "./ECDb";
@@ -14,7 +14,7 @@ import { ChangeOpCode, ChangedValueState, IModelVersion, IModelError, IModelStat
 import { BriefcaseManager } from "./BriefcaseManager";
 import * as path from "path";
 import { IModelJsFs } from "./IModelJsFs";
-import { KnownLocations } from "./Platform";
+import { KnownLocations } from "./IModelHost";
 
 const loggingCategory: string = "imodeljs-backend.ChangeSummaryManager";
 
@@ -28,7 +28,7 @@ const loggingCategory: string = "imodeljs-backend.ChangeSummaryManager";
  */
 export interface ChangeSummary {
   id: Id64String;
-  changeSet: { wsgId: string, parentWsgId: string, description: string, pushDate: string, author: string };
+  changeSet: { wsgId: GuidString, parentWsgId: GuidString, description: string, pushDate: string, userCreated: GuidString };
 }
 
 /** Represents an instance of the `InstanceChange` ECClass from the `ECDbChange` ECSchema
@@ -69,7 +69,7 @@ class ChangeSummaryExtractContext {
  *  - [ChangeSummary Overview]($docs/learning/ChangeSummaries)
  */
 export class ChangeSummaryManager {
-  private static readonly _currentIModelChangeSchemaVersion = { read: 1, write: 0, minor: 1 };
+  private static readonly _currentIModelChangeSchemaVersion = { read: 2, write: 0, minor: 0 };
 
   /** Determines whether the *Change Cache file* is attached to the specified iModel or not
    * @param iModel iModel to check whether a *Change Cache file* is attached
@@ -139,10 +139,10 @@ export class ChangeSummaryManager {
 
     const ctx = new ChangeSummaryExtractContext(accessToken, iModel);
 
-    const endChangeSetId: string = iModel.briefcase.currentChangeSetId;
+    const endChangeSetId: GuidString = iModel.briefcase.currentChangeSetId;
     assert(endChangeSetId.length !== 0);
 
-    let startChangeSetId: string = "";
+    let startChangeSetId: GuidString = "";
     if (options) {
       if (options.startVersion) {
         startChangeSetId = await options.startVersion.evaluateChangeSet(actx, ctx.accessToken, ctx.iModelId, BriefcaseManager.imodelClient);
@@ -174,7 +174,6 @@ export class ChangeSummaryManager {
 
     try {
       const changeSetsFolder: string = BriefcaseManager.getChangeSetsPath(ctx.iModelId);
-      const userInfoCache = new Map<string, string>();
 
       // extract summaries from end changeset through start changeset, so that we only have to go back in history
       const changeSetCount: number = changeSetInfos.length;
@@ -182,7 +181,7 @@ export class ChangeSummaryManager {
       const summaries: Id64String[] = [];
       for (let i = endChangeSetIx; i >= 0; i--) {
         const currentChangeSetInfo: ChangeSet = changeSetInfos[i];
-        const currentChangeSetId: string = currentChangeSetInfo.wsgId;
+        const currentChangeSetId: GuidString = currentChangeSetInfo.wsgId;
         Logger.logInfo(loggingCategory, `Started Change Summary extraction for changeset #${i + 1}...`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
 
         const existingSummaryId: Id64String | undefined = ChangeSummaryManager.isSummaryAlreadyExtracted(changesFile, currentChangeSetId);
@@ -206,7 +205,7 @@ export class ChangeSummaryManager {
           throw new IModelError(IModelStatus.FileNotFound, "Failed to extract change summary: Changeset file '" + changeSetFilePath + "' does not exist.");
 
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Extract ChangeSummary");
-        const stat: ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
+        const stat: IModelJsNative.ErrorStatusOrResult<DbResult, string> = iModel.nativeDb.extractChangeSummary(changesFile.nativeDb, changeSetFilePath);
         perfLogger.dispose();
         if (stat.error && stat.error.status !== DbResult.BE_SQLITE_OK)
           throw new IModelError(stat.error.status, stat.error.message);
@@ -216,25 +215,7 @@ export class ChangeSummaryManager {
         perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Add ChangeSet info to ChangeSummary");
         const changeSummaryId: Id64String = stat.result!;
         summaries.push(changeSummaryId);
-        let userEmail: string | undefined; // undefined means that no user information is stored along with changeset
-        if (currentChangeSetInfo.userCreated) {
-          const userId: string = currentChangeSetInfo.userCreated;
-          const foundUserEmail: string | undefined = userInfoCache.get(userId);
-          if (foundUserEmail === undefined) {
-            const userInfos: HubUserInfo[] = await BriefcaseManager.imodelClient.users.get(actx, ctx.accessToken, ctx.iModelId, new UserInfoQuery().byId(userId));
-            actx.enter();
-            assert(userInfos.length !== 0);
-            if (userInfos.length !== 0) {
-              const userInfo: HubUserInfo = userInfos[0];
-              userEmail = userInfo.email;
-              // in the cache, add empty e-mail to mark that this user has already been looked up
-              userInfoCache.set(userId, !!userEmail ? userEmail : "");
-            }
-          } else
-            userEmail = foundUserEmail.length !== 0 ? foundUserEmail : undefined;
-        }
-
-        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, currentChangeSetInfo.parentId, currentChangeSetInfo.description, currentChangeSetInfo.pushDate, userEmail);
+        ChangeSummaryManager.addExtendedInfos(changesFile, changeSummaryId, currentChangeSetId, currentChangeSetInfo.parentId, currentChangeSetInfo.description, currentChangeSetInfo.pushDate, currentChangeSetInfo.userCreated);
         perfLogger.dispose();
         Logger.logTrace(loggingCategory, `Added extended infos to Change Summary for changeset #${i + 1}.`, () => ({ iModel: ctx.iModelId, changeset: currentChangeSetId }));
 
@@ -258,10 +239,10 @@ export class ChangeSummaryManager {
     }
   }
 
-  private static async downloadChangeSets(actx: ActivityLoggingContext, ctx: ChangeSummaryExtractContext, startChangeSetId: string, endChangeSetId: string): Promise<ChangeSet[]> {
+  private static async downloadChangeSets(actx: ActivityLoggingContext, ctx: ChangeSummaryExtractContext, startChangeSetId: GuidString, endChangeSetId: GuidString): Promise<ChangeSet[]> {
     actx.enter();
     // Get the change set before the startChangeSet so that startChangeSet is included in the download and processing
-    let beforeStartChangeSetId: string;
+    let beforeStartChangeSetId: GuidString;
     if (startChangeSetId.length === 0)
       beforeStartChangeSetId = "";
     else {
@@ -339,9 +320,9 @@ export class ChangeSummaryManager {
     changesFile.importSchema(ChangeSummaryManager.getExtendedSchemaPath());
   }
 
-  private static getExtendedSchemaPath(): string { return path.join(KnownLocations.packageAssetsDir, "IModelChange.01.00.01.ecschema.xml"); }
+  private static getExtendedSchemaPath(): string { return path.join(KnownLocations.packageAssetsDir, "IModelChange.02.00.00.ecschema.xml"); }
 
-  private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: string): Id64String | undefined {
+  private static isSummaryAlreadyExtracted(changesFile: ECDb, changeSetId: GuidString): Id64String | undefined {
     return changesFile.withPreparedStatement("SELECT Summary.Id summaryid FROM imodelchange.ChangeSet WHERE WsgId=?",
       (stmt: ECSqlStatement) => {
         stmt.bindString(1, changeSetId);
@@ -352,8 +333,8 @@ export class ChangeSummaryManager {
       });
   }
 
-  private static addExtendedInfos(changesFile: ECDb, changeSummaryId: Id64String, changesetWsgId: string, changesetParentWsgId?: string, description?: string, changesetPushDate?: string, changeSetAuthor?: string): void {
-    changesFile.withPreparedStatement("INSERT INTO imodelchange.ChangeSet(Summary.Id,WsgId,ParentWsgId,Description,PushDate,Author) VALUES(?,?,?,?,?,?)",
+  private static addExtendedInfos(changesFile: ECDb, changeSummaryId: Id64String, changesetWsgId: GuidString, changesetParentWsgId?: GuidString, description?: string, changesetPushDate?: string, changeSetUserCreated?: GuidString): void {
+    changesFile.withPreparedStatement("INSERT INTO imodelchange.ChangeSet(Summary.Id,WsgId,ParentWsgId,Description,PushDate,UserCreated) VALUES(?,?,?,?,?,?)",
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, changeSummaryId);
         stmt.bindString(2, changesetWsgId);
@@ -366,8 +347,8 @@ export class ChangeSummaryManager {
         if (changesetPushDate)
           stmt.bindDateTime(5, changesetPushDate);
 
-        if (changeSetAuthor)
-          stmt.bindString(6, changeSetAuthor);
+        if (changeSetUserCreated)
+          stmt.bindString(6, changeSetUserCreated);
 
         const r: DbResult = stmt.step();
         if (r !== DbResult.BE_SQLITE_DONE)
@@ -390,14 +371,14 @@ export class ChangeSummaryManager {
     if (!ChangeSummaryManager.isChangeCacheAttached(iModel))
       throw new IModelError(IModelStatus.BadArg, "Change Cache file must be attached to iModel.");
 
-    return iModel.withPreparedStatement("SELECT WsgId,ParentWsgId,Description,PushDate,Author FROM ecchange.imodelchange.ChangeSet WHERE Summary.Id=?",
+    return iModel.withPreparedStatement("SELECT WsgId,ParentWsgId,Description,PushDate,UserCreated FROM ecchange.imodelchange.ChangeSet WHERE Summary.Id=?",
       (stmt: ECSqlStatement) => {
         stmt.bindId(1, changeSummaryId);
         if (stmt.step() !== DbResult.BE_SQLITE_ROW)
           throw new IModelError(IModelStatus.BadArg, `No ChangeSet information found for ChangeSummary ${changeSummaryId}.`);
 
         const row = stmt.getRow();
-        return { id: changeSummaryId, changeSet: { wsgId: row.wsgId, parentWsgId: row.parentWsgId, description: row.description, pushDate: row.pushDate, author: row.author } };
+        return { id: changeSummaryId, changeSet: { wsgId: row.wsgId, parentWsgId: row.parentWsgId, description: row.description, pushDate: row.pushDate, userCreated: row.userCreated } };
       });
   }
 

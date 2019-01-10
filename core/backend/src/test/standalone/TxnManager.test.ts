@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { ActivityLoggingContext, BeDuration, IModelStatus } from "@bentley/bentleyjs-core";
@@ -10,8 +10,7 @@ import { IModelDb, PhysicalModel, SpatialCategory, TxnAction } from "../../imode
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-// NEEDS_WORK_TXNMANAGER: Re-enable this when we upgrade to Node 10
-describe.skip("TxnManager", () => {
+describe("TxnManager", () => {
   let imodel: IModelDb;
   let props: TestPhysicalObjectProps;
 

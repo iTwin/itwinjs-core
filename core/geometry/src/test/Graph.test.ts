@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -92,7 +92,7 @@ function exportAnnotatedGraph(graph: HalfEdgeGraph, filename: string) {
   }
   GeometryCoreTestIO.saveGeometry(data, "Graph", filename);
 }
-
+const printToConsole = false;
 function dumpGraph(graph: HalfEdgeGraph) {
   const faces = graph.collectFaceLoops();
   const vertices = graph.collectVertexLoops();
@@ -100,8 +100,10 @@ function dumpGraph(graph: HalfEdgeGraph) {
   for (const f of faces) {
     faceData.push(f.collectAroundFace(HalfEdge.nodeToIdXYString));
   }
-  console.log("**FACE LOOPS " + faces.length);
-  console.log(faceData);
+  if (printToConsole) {
+    console.log("**FACE LOOPS " + faces.length);
+    console.log(faceData);
+  }
   const vdata = [];
   for (const v of vertices) {
     const totalDistance = v.sumAroundVertex((node: HalfEdge) => node.distanceXY(v));
@@ -111,8 +113,10 @@ function dumpGraph(graph: HalfEdgeGraph) {
     } else
       vdata.push([HalfEdge.nodeToIdXYString(v), v.collectAroundVertex(HalfEdge.nodeToId)]);
   }
-  console.log("**VERTEX LOOPS " + vertices.length);
-  console.log(vdata);
+  if (printToConsole) {
+    console.log("**VERTEX LOOPS " + vertices.length);
+    console.log(vdata);
+  }
 }
 /**
  * * call various "fast" mask methods at every node.
@@ -358,7 +362,7 @@ describe("MonotoneFaces", () => {
     exportGraph(theGraph, "BeforeSweep");
     Merger.formMonotoneFaces(theGraph);
     exportGraph(theGraph, "AfterSweep");
-    console.log("Total Faces: ", theGraph.collectFaceLoops().length);
+    // console.log("Total Faces: ", theGraph.collectFaceLoops().length);
     // for (const face of faces) {
     //   Triangulator.earcutFromSingleFaceLoop(face);
     // }
@@ -455,12 +459,14 @@ describe("VUGraph", () => {
     const graph = new HalfEdgeGraph();
     const node = graph.addEdgeXY(1, 2, 3, 4);
     const node1 = node.facePredecessor;
-    console.log("NodeToId:", HalfEdge.nodeToId(node1));
-    console.log("nodeToIdString:", HalfEdge.nodeToIdString(node1));
-    console.log("nodeToXY:", HalfEdge.nodeToXY(node1));
-    console.log("nodeToIdXYString:", HalfEdge.nodeToIdXYString(node1));
-    console.log("nodeToIdMaskXY:", HalfEdge.nodeToIdMaskXY(node1));
-    console.log("nodeToMaskString:", HalfEdge.nodeToMaskString(node1));
+    if (printToConsole) {
+      console.log("NodeToId:", HalfEdge.nodeToId(node1));
+      console.log("nodeToIdString:", HalfEdge.nodeToIdString(node1));
+      console.log("nodeToXY:", HalfEdge.nodeToXY(node1));
+      console.log("nodeToIdXYString:", HalfEdge.nodeToIdXYString(node1));
+      console.log("nodeToIdMaskXY:", HalfEdge.nodeToIdMaskXY(node1));
+      console.log("nodeToMaskString:", HalfEdge.nodeToMaskString(node1));
+    }
   });
 
   it("LargeCountTriangulation", () => {

@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -71,8 +71,11 @@ export class LinearSweep extends SolidPrimitive {
     return new LinearSweep(this._contour.clone(), this._direction.clone(), this.capped);
   }
   public tryTransformInPlace(transform: Transform): boolean {
+    if (transform.matrix.isSingular())
+      return false;
     if (this._contour.tryTransformInPlace(transform)) {
       transform.multiplyVector(this._direction, this._direction);
+      return true;
     }
     return false;
   }

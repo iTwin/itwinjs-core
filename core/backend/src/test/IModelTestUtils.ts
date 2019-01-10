@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
@@ -8,9 +8,9 @@ import { AccessToken, Config, ChangeSet } from "@bentley/imodeljs-clients";
 import { Code, CreateIModelProps, ElementProps, RpcManager, GeometricElementProps, IModel, IModelReadRpcInterface, RelatedElement, RpcConfiguration, CodeProps } from "@bentley/imodeljs-common";
 import {
   IModelHostConfiguration, IModelHost, BriefcaseManager, IModelDb, Model, Element,
-  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, NativePlatformRegistry, SubjectOwnsPartitionElements,
+  InformationPartitionElement, SpatialCategory, IModelJsFs, IModelJsFsStats, PhysicalPartition, PhysicalModel, SubjectOwnsPartitionElements,
 } from "../imodeljs-backend";
-import { DisableNativeAssertions as NativeDisableNativeAssertions } from "../imodeljs-native-platform-api";
+import { IModelJsNative } from "../IModelJsNative";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { HubUtility, UserCredentials } from "./integration/HubUtility";
 import * as path from "path";
@@ -18,6 +18,7 @@ import { Schema, Schemas } from "../Schema";
 import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { PhysicalElement } from "../Element";
 import { ClassRegistry } from "../ClassRegistry";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 
 const actx = new ActivityLoggingContext("");
 
@@ -122,10 +123,10 @@ export class TestUsers {
  * this class.
  */
 export class DisableNativeAssertions implements IDisposable {
-  private _native: NativeDisableNativeAssertions | undefined;
+  private _native: IModelJsNative.DisableNativeAssertions | undefined;
 
   constructor() {
-    this._native = new (NativePlatformRegistry.getNativePlatform()).DisableNativeAssertions();
+    this._native = new IModelHost.platform.DisableNativeAssertions();
   }
 
   public dispose(): void {
@@ -325,6 +326,7 @@ export class IModelTestUtils {
   }
 
   public static startBackend() {
+    IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
     const config = new IModelHostConfiguration();
     IModelHost.startup(config);
   }
@@ -357,17 +359,20 @@ export class IModelTestUtils {
       // tslint:disable-next-line:no-var-requires
       Logger.configureLevels(require(loggingConfigFile));
     }
+  }
 
-    // Setup typical programmatic log level overrides here
-    // Logger.setLevelDefault(LogLevel.Warning);
-    // Logger.setLevel("Performance", LogLevel.Info);
-    // Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
-    // Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
-    // Logger.setLevel("DgnCore", LogLevel.Error);
-    // Logger.setLevel("BeSQLite", LogLevel.Error);
+  // Setup typical programmatic log level overrides here
+  // Convenience method used to debug specific tests/fixtures
+  public static setupDebugLogLevels() {
+    Logger.setLevelDefault(LogLevel.Warning);
+    Logger.setLevel("Performance", LogLevel.Info);
+    Logger.setLevel("imodeljs-backend.BriefcaseManager", LogLevel.Trace);
+    Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
+    Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
+    Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
+    Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
+    Logger.setLevel("DgnCore", LogLevel.Error);
+    Logger.setLevel("BeSQLite", LogLevel.Error);
   }
 }
 

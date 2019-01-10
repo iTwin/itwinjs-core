@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 
@@ -533,7 +533,7 @@ describe("LinearSystems", () => {
     const b1 = Point3d.create(5.2, -4, 4.2);
     const fractions = Vector2d.create();
     if (ck.testTrue(SmallSystem.lineSegment3dClosestApproachUnbounded(a0, a1, b0, b1, fractions))) {
-      console.log("fractions", fractions);
+      // console.log("fractions", fractions);
       const a = a0.interpolate(fractions.x, a1);
       const b = b0.interpolate(fractions.y, b1);
       const vectorAB = a.vectorTo(b);

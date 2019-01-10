@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module IModelConnection */
@@ -16,6 +16,7 @@ import { EntityState } from "./EntityState";
 import { IModelApp } from "./IModelApp";
 import { ModelState } from "./ModelState";
 import { HilitedSet, SelectionSet } from "./SelectionSet";
+import { GeoServices } from "./GeoServices";
 import { ViewState } from "./ViewState";
 
 const loggingCategory = "imodeljs-frontend.IModelConnection";
@@ -44,6 +45,8 @@ export class IModelConnection extends IModel {
   public readonly transientIds = new TransientIdSequence();
   /** A unique Id of this IModelConnection. */
   public readonly connectionId = Guid.createValue();
+  /** The Geographic location services available for this iModelConnection */
+  public readonly geoServices: GeoServices;
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   private static _connectionTimeout: number = 10 * 60 * 1000;
 
@@ -114,6 +117,7 @@ export class IModelConnection extends IModel {
     this.hilited = new HilitedSet(this);
     this.selectionSet = new SelectionSet(this);
     this.tiles = new IModelConnection.Tiles(this);
+    this.geoServices = new GeoServices(this);
   }
 
   /** Open an IModelConnection to an iModel. It's recommended that every open call be matched with a corresponding call to close. */

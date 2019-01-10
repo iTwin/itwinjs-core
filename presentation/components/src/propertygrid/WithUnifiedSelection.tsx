@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module UnifiedSelection */
@@ -9,15 +9,15 @@ import { KeySet, Subtract } from "@bentley/presentation-common";
 import { Presentation, SelectionHandler, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { PropertyGridProps } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
-import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
-import PresentationPropertyDataProvider from "./DataProvider";
+import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
+import { IPresentationPropertyDataProvider } from "./DataProvider";
 
 /**
  * Props that are injected to the HOC component.
  */
 export interface Props {
   /** The data provider used by the property grid. */
-  dataProvider: PresentationPropertyDataProvider;
+  dataProvider: IPresentationPropertyDataProvider;
 
   /** @hidden */
   selectionHandler?: SelectionHandler;
@@ -27,10 +27,10 @@ export interface Props {
  * A HOC component that adds unified selection functionality to the supplied
  * property grid component.
  *
- * **Note:** it is required for the property grid to use [[PresentationPropertyDataProvider]]
+ * **Note:** it is required for the property grid to use [[IPresentationPropertyDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
+export function propertyGridWithUnifiedSelection<P extends PropertyGridProps>(PropertyGridComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
 
   type CombinedProps = Subtract<P, Props> & Props;
 
@@ -48,11 +48,11 @@ export default function propertyGridWithUnifiedSelection<P extends PropertyGridP
     public get rulesetId() { return this.props.dataProvider.rulesetId; }
 
     /** Get imodel used by this property grid to query property data */
-    public get imodel() { return this.props.dataProvider.connection; }
+    public get imodel() { return this.props.dataProvider.imodel; }
 
     public componentDidMount() {
       const name = `PropertyGrid_${counter++}`;
-      const imodel = this.props.dataProvider.connection;
+      const imodel = this.props.dataProvider.imodel;
       const rulesetId = this.props.dataProvider.rulesetId;
       this._selectionHandler = this.props.selectionHandler
         ? this.props.selectionHandler : new SelectionHandler(Presentation.selection, name, imodel, rulesetId);
@@ -67,7 +67,7 @@ export default function propertyGridWithUnifiedSelection<P extends PropertyGridP
 
     public componentDidUpdate() {
       if (this._selectionHandler) {
-        this._selectionHandler.imodel = this.props.dataProvider.connection;
+        this._selectionHandler.imodel = this.props.dataProvider.imodel;
         this._selectionHandler.rulesetId = this.props.dataProvider.rulesetId;
       }
     }

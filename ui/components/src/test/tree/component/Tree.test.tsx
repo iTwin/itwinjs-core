@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
@@ -12,14 +12,14 @@ import TestUtils from "../../TestUtils";
 import {
   Tree, TreeProps,
   NodesSelectedCallback, NodesDeselectedCallback, TreeCellUpdatedArgs,
-} from "../../../tree/component/Tree";
+} from "../../../ui-components/tree/component/Tree";
 import { SelectionMode, PageOptions, TreeDataProviderMethod, TreeNodeItem, TreeDataProviderRaw, DelayLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener } from "../../../ui-components";
-import { BeInspireTreeNode } from "../../../tree/component/BeInspireTree";
-import HighlightingEngine, { HighlightableTreeProps } from "../../../tree/HighlightingEngine";
+import { BeInspireTreeNode } from "../../../ui-components/tree/component/BeInspireTree";
+import HighlightingEngine, { HighlightableTreeProps } from "../../../ui-components/tree/HighlightingEngine";
 import { BeEvent, BeDuration } from "@bentley/bentleyjs-core";
-import { TreeNodeProps } from "../../../tree/component/Node";
-import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../properties/ValueRendererManager";
-import { PropertyRecord } from "../../../properties/Record";
+import { TreeNodeProps } from "../../../ui-components/tree/component/Node";
+import { PropertyValueRendererManager, PropertyValueRendererContext, PropertyContainerType } from "../../../ui-components/properties/ValueRendererManager";
+import { PropertyRecord } from "../../../ui-components/properties/Record";
 
 describe("Tree", () => {
 

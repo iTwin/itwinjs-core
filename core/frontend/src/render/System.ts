@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Rendering */
@@ -9,7 +9,7 @@ import { ClipVector, IndexedPolyface, Plane3dByOriginAndUnitNormal, Point2d, Poi
 import {
   AntiAliasPref, BatchType, ColorDef, ElementAlignedBox3d, Feature, FeatureTable, Frustum, Gradient,
   HiddenLine, Hilite, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, QParams3d,
-  QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass,
+  QPoint3dList, RenderMaterial, RenderTexture, SceneLights, ViewFlag, ViewFlags, AnalysisStyle, GeometryClass, AmbientOcclusion,
 } from "@bentley/imodeljs-common";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
@@ -23,6 +23,142 @@ import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
 import { ClipPlanesVolume } from "./webgl/ClipVolume";
+
+/** Contains metadata about memory consumed by the render system or aspect thereof.
+ * @hidden
+ */
+export namespace RenderMemory {
+  /** Describes memory consumed by a particular type of resource.
+   * @hidden
+   */
+  export class Consumers {
+    public totalBytes = 0; // total number of bytes consumed by all consumers
+    public maxBytes = 0; // largest number of bytes consumed by a single consumer
+    public count = 0; // total number of consumers of this type
+
+    public addConsumer(numBytes: number): void {
+      this.totalBytes += numBytes;
+      this.maxBytes = Math.max(this.maxBytes, numBytes);
+      ++this.count;
+    }
+
+    public clear(): void {
+      this.totalBytes = this.maxBytes = this.count = 0;
+    }
+  }
+
+  export const enum BufferType {
+    Surfaces = 0,
+    VisibleEdges,
+    SilhouetteEdges,
+    PolylineEdges,
+    Polylines,
+    PointStrings,
+    PointClouds,
+
+    COUNT,
+  }
+
+  /** Describes memory consumed by GPU-allocated buffers.
+   * @hidden
+   */
+  export class Buffers extends Consumers {
+    public readonly consumers: Consumers[];
+
+    public constructor() {
+      super();
+      this.consumers = [];
+      for (let i = 0; i < BufferType.COUNT; i++)
+        this.consumers[i] = new Consumers();
+    }
+
+    public get surfaces() { return this.consumers[BufferType.Surfaces]; }
+    public get visibleEdges() { return this.consumers[BufferType.VisibleEdges]; }
+    public get silhouetteEdges() { return this.consumers[BufferType.SilhouetteEdges]; }
+    public get polylineEdges() { return this.consumers[BufferType.PolylineEdges]; }
+    public get polylines() { return this.consumers[BufferType.Polylines]; }
+    public get pointStrings() { return this.consumers[BufferType.PointStrings]; }
+    public get pointClouds() { return this.consumers[BufferType.PointClouds]; }
+
+    public clear(): void {
+      for (const consumer of this.consumers)
+        consumer.clear();
+
+      super.clear();
+    }
+
+    public addBuffer(type: BufferType, numBytes: number): void {
+      this.addConsumer(numBytes);
+      this.consumers[type].addConsumer(numBytes);
+    }
+  }
+
+  export const enum ConsumerType {
+    Textures = 0,
+    VertexTables,
+    FeatureTables,
+    FeatureOverrides,
+    ClipVolumes,
+
+    COUNT,
+  }
+
+  /** @hidden */
+  export class Statistics {
+    private _totalBytes = 0;
+    public readonly consumers: Consumers[];
+    public readonly buffers = new Buffers();
+
+    public constructor() {
+      this.consumers = [];
+      for (let i = 0; i < ConsumerType.COUNT; i++)
+        this.consumers[i] = new Consumers();
+    }
+
+    public get totalBytes(): number { return this._totalBytes; }
+    public get textures() { return this.consumers[ConsumerType.Textures]; }
+    public get vertexTables() { return this.consumers[ConsumerType.VertexTables]; }
+    public get featureTables() { return this.consumers[ConsumerType.FeatureTables]; }
+    public get featureOverrides() { return this.consumers[ConsumerType.FeatureOverrides]; }
+    public get clipVolumes() { return this.consumers[ConsumerType.ClipVolumes]; }
+
+    public addBuffer(type: BufferType, numBytes: number): void {
+      this._totalBytes += numBytes;
+      this.buffers.addBuffer(type, numBytes);
+    }
+
+    public addConsumer(type: ConsumerType, numBytes: number): void {
+      this._totalBytes += numBytes;
+      this.consumers[type].addConsumer(numBytes);
+    }
+
+    public clear(): void {
+      this._totalBytes = 0;
+      this.buffers.clear();
+      for (const consumer of this.consumers)
+        consumer.clear();
+    }
+
+    public addTexture(numBytes: number) { this.addConsumer(ConsumerType.Textures, numBytes); }
+    public addVertexTable(numBytes: number) { this.addConsumer(ConsumerType.VertexTables, numBytes); }
+    public addFeatureTable(numBytes: number) { this.addConsumer(ConsumerType.FeatureTables, numBytes); }
+    public addFeatureOverrides(numBytes: number) { this.addConsumer(ConsumerType.FeatureOverrides, numBytes); }
+    public addClipVolume(numBytes: number) { this.addConsumer(ConsumerType.ClipVolumes, numBytes); }
+
+    public addSurface(numBytes: number) { this.addBuffer(BufferType.Surfaces, numBytes); }
+    public addVisibleEdges(numBytes: number) { this.addBuffer(BufferType.VisibleEdges, numBytes); }
+    public addSilhouetteEdges(numBytes: number) { this.addBuffer(BufferType.SilhouetteEdges, numBytes); }
+    public addPolylineEdges(numBytes: number) { this.addBuffer(BufferType.PolylineEdges, numBytes); }
+    public addPolyline(numBytes: number) { this.addBuffer(BufferType.Polylines, numBytes); }
+    public addPointString(numBytes: number) { this.addBuffer(BufferType.PointStrings, numBytes); }
+    public addPointCloud(numBytes: number) { this.addBuffer(BufferType.PointClouds, numBytes); }
+  }
+
+  /** @hidden */
+  export interface Consumer {
+    collectStatistics(stats: Statistics): void;
+  }
+}
 
 /* A RenderPlan holds a Frustum and the render settings for displaying a RenderScene into a RenderTarget.
  * @hidden
@@ -41,6 +177,7 @@ export class RenderPlan {
   public readonly hline?: HiddenLine.Settings;
   public readonly lights?: SceneLights;
   public readonly analysisStyle?: AnalysisStyle;
+  public readonly ao?: AmbientOcclusion.Settings;
   public analysisTexture?: RenderTexture;
   private _curFrustum: ViewFrustum;
 
@@ -50,7 +187,7 @@ export class RenderPlan {
   public selectTerrainFrustum() { if (undefined !== this.terrainFrustum) this._curFrustum = this.terrainFrustum; }
   public selectViewFrustum() { this._curFrustum = this.viewFrustum; }
 
-  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle) {
+  private constructor(is3d: boolean, viewFlags: ViewFlags, bgColor: ColorDef, monoColor: ColorDef, hiliteSettings: Hilite.Settings, aaLines: AntiAliasPref, aaText: AntiAliasPref, viewFrustum: ViewFrustum, terrainFrustum: ViewFrustum | undefined, activeVolume?: RenderClipVolume, hline?: HiddenLine.Settings, lights?: SceneLights, analysisStyle?: AnalysisStyle, ao?: AmbientOcclusion.Settings) {
     this.is3d = is3d;
     this.viewFlags = viewFlags;
     this.bgColor = bgColor;
@@ -64,6 +201,7 @@ export class RenderPlan {
     this._curFrustum = this.viewFrustum = viewFrustum;
     this.terrainFrustum = terrainFrustum;
     this.analysisStyle = analysisStyle;
+    this.ao = ao;
   }
 
   public static createFromViewport(vp: Viewport): RenderPlan {
@@ -71,11 +209,12 @@ export class RenderPlan {
     const style = view.displayStyle;
 
     const hline = style.is3d() ? style.settings.hiddenLineSettings : undefined;
+    const ao = style.is3d() ? style.settings.ambientOcclusionSettings : undefined;
     const lights = undefined; // view.is3d() ? view.getLights() : undefined
     const clipVec = view.getViewClip();
     const activeVolume = clipVec !== undefined ? IModelApp.renderSystem.getClipVolume(clipVec, view.iModel) : undefined;
     const terrainFrustum = (undefined === vp.backgroundMapPlane) ? undefined : ViewFrustum.createFromViewportAndPlane(vp, vp.backgroundMapPlane as Plane3dByOriginAndUnitNormal);
-    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights, style.analysisStyle);
+    const rp = new RenderPlan(view.is3d(), style.viewFlags, view.backgroundColor, style.monochromeColor, vp.hilite, vp.wantAntiAliasLines, vp.wantAntiAliasText, vp.viewFrustum, terrainFrustum!, activeVolume, hline, lights, style.analysisStyle, ao);
     if (rp.analysisStyle !== undefined && rp.analysisStyle.scalarThematicSettings !== undefined)
       rp.analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(rp.analysisStyle.scalarThematicSettings), vp.iModel);
 
@@ -89,8 +228,11 @@ export class RenderPlan {
  *  - [[Decorations]] created on the front-end to be rendered along with the scene.
  * The latter are produced using a [[GraphicBuilder]].
  */
-export abstract class RenderGraphic implements IDisposable {
+export abstract class RenderGraphic implements IDisposable, RenderMemory.Consumer {
   public abstract dispose(): void;
+
+  /** @hidden */
+  public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
 
 /** Describes the type of a RenderClipVolume. */
@@ -211,7 +353,7 @@ export class Decorations implements IDisposable {
  * Branches can be nested to build an arbitrarily-complex scene graph.
  * @see [[RenderSystem.createBranch]]
  */
-export class GraphicBranch implements IDisposable {
+export class GraphicBranch implements IDisposable, RenderMemory.Consumer {
   /** The child nodes of this branch */
   public readonly entries: RenderGraphic[] = [];
   /** If true, when the branch is disposed of, the RenderGraphics in its entries array will also be disposed */
@@ -242,6 +384,12 @@ export class GraphicBranch implements IDisposable {
     else
       this.entries.length = 0;
   }
+
+  /** @hidden */
+  public collectStatistics(stats: RenderMemory.Statistics): void {
+    for (const entry of this.entries)
+      entry.collectStatistics(stats);
+  }
 }
 
 /** Describes aspects of a pixel as read from a [[Viewport]].
@@ -253,7 +401,8 @@ export namespace Pixel {
     public constructor(public readonly feature?: Feature,
       public readonly distanceFraction: number = -1.0,
       public readonly type: GeometryType = GeometryType.Unknown,
-      public readonly planarity: Planarity = Planarity.Unknown) { }
+      public readonly planarity: Planarity = Planarity.Unknown,
+      public readonly featureTable?: PackedFeatureTable) { }
 
     public get elementId(): Id64String | undefined { return undefined !== this.feature ? this.feature.elementId : undefined; }
     public get subCategoryId(): Id64String | undefined { return undefined !== this.feature ? this.feature.subCategoryId : undefined; }
@@ -294,7 +443,7 @@ export namespace Pixel {
    */
   export const enum Selector {
     None = 0,
-    /** Select the [[Feature]] which produced each pixel. */
+    /** Select the [[Feature]] which produced each pixel, as well as the [[PackedFeatureTable]] from which the feature originated. */
     Feature = 1 << 0,
     /** Select the type and planarity of geometry which produced each pixel as well as the fraction of its distance between the near and far planes. */
     GeometryAndDistance = 1 << 2,
@@ -327,6 +476,8 @@ export class PackedFeatureTable {
   public readonly numFeatures: number;
   public readonly anyDefined: boolean;
   public readonly type: BatchType;
+
+  public get byteLength(): number { return this._data.byteLength; }
 
   /** Construct a PackedFeatureTable from the packed binary data.
    * This is used internally when deserializing Tiles in iMdl format.

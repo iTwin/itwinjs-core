@@ -1,5 +1,5 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) 2018 Bentley Systems, Incorporated. All rights reserved.
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module Tools */
@@ -7,7 +7,7 @@
 import { BeButtonEvent, BeWheelEvent, CoordSource, InteractiveTool, EventHandled, BeTouchEvent, BeButton, InputSource } from "./Tool";
 import { Viewport, CoordSystem, DepthRangeNpc, ViewRect, ScreenViewport } from "../Viewport";
 import { Angle, Point3d, Vector3d, YawPitchRollAngles, Point2d, Vector2d, Matrix3d, Transform, Range3d } from "@bentley/geometry-core";
-import { Frustum, NpcCenter, Npc, ColorDef, ViewFlags, RenderMode } from "@bentley/imodeljs-common";
+import { Frustum, NpcCenter, Npc, ColorDef } from "@bentley/imodeljs-common";
 import { MarginPercent, ViewStatus, ViewState3d } from "../ViewState";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
@@ -1911,8 +1911,7 @@ export class WindowAreaTool extends ViewTool {
       delta.z = vp.view.getExtents().z;
 
       // make sure its not too big or too small
-      if (vp.view.validateViewDelta(delta, true) !== ViewStatus.Success)
-        return;
+      vp.view.validateViewDelta(delta, true);
 
       vp.view.setExtents(delta);
 
@@ -2176,68 +2175,5 @@ export class ViewToggleCameraTool extends ViewTool {
 
     this._viewport.synchWithView(true);
     this.exitTool();
-  }
-}
-
-/** @hidden */
-export class ViewChangeRenderModeTool extends ViewTool {
-  // Tool currently only used for debugging purposes. Users of imodeljs-core have the ability to set these flags from their app directly and do not need this ViewTool.
-  public static toolId = "View.ChangeRenderMode";
-  private _viewport: Viewport;
-  // REFERENCE to app's map of rendering options to true/false values (i.e. - whether or not to display skybox, groundPlane, etc.)
-  private _renderOptions: Map<string, boolean>;
-  // REFERENCE to app's menu for changing render modes
-  private _renderMenu: HTMLElement;
-  private _renderMode: RenderMode;
-
-  constructor(viewport: Viewport, renderOptionsMap: Map<string, boolean>, renderMenuDialog: HTMLElement, mode: RenderMode) {
-    super();
-    this._viewport = viewport;
-    this._renderOptions = renderOptionsMap;
-    this._renderMenu = renderMenuDialog;
-    this._renderMode = mode;
-  }
-
-  // We want changes to happen immediately when checking or unchecking an option
-  public onPostInstall() {
-    const viewflags = ViewFlags.createFrom(this._viewport.viewFlags);
-    viewflags.renderMode = this._renderMode;
-    viewflags.acsTriad = this._renderOptions.get("ACSTriad")!;
-    viewflags.fill = this._renderOptions.get("fill")!;
-    viewflags.grid = this._renderOptions.get("grid")!;
-    viewflags.textures = this._renderOptions.get("textures")!;
-    viewflags.visibleEdges = this._renderOptions.get("visibleEdges")!;
-    viewflags.materials = this._renderOptions.get("materials")!;
-    viewflags.monochrome = this._renderOptions.get("monochrome")!;
-    viewflags.constructions = this._renderOptions.get("constructions")!;
-    viewflags.transparency = this._renderOptions.get("transparency")!;
-    viewflags.hiddenEdges = this._renderOptions.get("hiddenEdges")!;
-    viewflags.weights = this._renderOptions.get("weights")!;
-    viewflags.styles = this._renderOptions.get("styles")!;
-    viewflags.clipVolume = this._renderOptions.get("clipVolume")!;
-    viewflags.backgroundMap = this._renderOptions.get("backgroundMap")!;
-
-    const lights = this._renderOptions.get("lights")!;
-    viewflags.sourceLights = lights;
-    viewflags.solarLight = lights;
-    viewflags.cameraLights = lights;
-
-    // Now handle environment
-    if (this._viewport.view.is3d()) {
-      const view = this._viewport.view as ViewState3d;
-      const displayStyle = view.getDisplayStyle3d();
-      const env = displayStyle.environment;
-      env.ground.display = this._renderOptions.get("groundplane")!; // Changes directly within displaystyle
-      env.sky.display = this._renderOptions.get("skybox")!;  // Changes directly within displaystyle
-    }
-
-    this._viewport.view.viewFlags = viewflags;
-    this._viewport.sync.invalidateController();
-  }
-
-  public async onDataButtonDown(_ev: BeButtonEvent): Promise<EventHandled> {
-    this._renderMenu.style.display = "none";
-    this.exitTool();
-    return EventHandled.Yes;
   }
 }

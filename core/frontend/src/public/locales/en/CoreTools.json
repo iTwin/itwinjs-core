@@ -92,6 +92,36 @@
       "description": "Selects Element for inspection or manipulation",
       "flyover": "Select Elements"
     },
+    "Measure": {
+      "Distance": {
+        "keyin": "Measure Distance",
+        "description": "Measure distance between points",
+        "flyover": "Measure Distance",
+        "Prompts": {
+          "FirstPoint": "Enter point to measure from.",
+          "NextPoint": "Enter point to measure to."
+        }
+      },
+      "Location": {
+        "keyin": "Measure Location",
+        "description": "Show coordintate location",
+        "flyover": "Show Location",
+        "Prompts": {
+          "EnterPoint": "Enter point to show location."
+        }
+      },
+      "Labels": {
+        "CumulativeDistance": "Cumulative Distance",
+        "Distance": "Distance",
+        "Slope": "Slope",
+        "StartCoord": "Start Coordinate",
+        "EndCoord": "End Coordinate",
+        "Delta": "Delta",
+        "Coordinate": "Model Coordinate",
+        "LatLong": "Latitude, Longitude",
+        "Altitude": "Altitude"
+      }
+    },
     "ElementSet": {
       "Prompts": {
         "IdentifyElement": "Identify element",
