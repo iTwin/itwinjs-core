@@ -8,7 +8,7 @@ import * as React from "react";
 import { Group, Panel, GroupColumn, CommonProps, ExpandableItem, withContainInViewport, Item } from "@bentley/ui-ninezone";
 import * as classnames from "classnames";
 
-import "@bentley/ui-ninezone/lib/toolbar/item/expandable/group/tool/Tool.scss";
+import "@bentley/ui-ninezone/lib/ui-ninezone/toolbar/item/expandable/group/tool/Tool.scss";
 import "./ListPicker.scss";
 
 import { UiFramework } from "../UiFramework";
