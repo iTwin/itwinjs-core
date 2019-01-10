@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 07 Jan 2019 21:49:21 GMT and should not be manually modified.
+This log was last generated on Thu, 10 Jan 2019 22:46:17 GMT and should not be manually modified.
+
+## 0.184.0
+Thu, 10 Jan 2019 22:46:17 GMT
+
+### Updates
+
+- Generalize create method for display styles
+- Property Changeset.Author in IModelChange ECSchema was renamed UserCreated. It holds the user ID instead of the user e-mail.
 
 ## 0.183.0
 Mon, 07 Jan 2019 21:49:21 GMT

@@ -2,6 +2,27 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.184.0",
+      "tag": "@bentley/ui-components_v0.184.0",
+      "date": "Thu, 10 Jan 2019 22:46:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Renamed PropertyDataProvider to IPropertyDataProvider."
+          },
+          {
+            "comment": "Add ui-component root to avoid relative file conflicts in bundles."
+          },
+          {
+            "comment": "Handle custom row and cell item styling in Table component"
+          },
+          {
+            "comment": "Fix double and navigation property value renderers to not append \".0\" to values in certain cases"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.183.0",
       "tag": "@bentley/ui-components_v0.183.0",
       "date": "Mon, 07 Jan 2019 21:49:21 GMT",
