@@ -356,17 +356,79 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
    * @param enable Specifies if nodes should be enabled or disabled
    */
   private _setEnableAllNodes = async (enable: boolean) => {
-    const nodes: TreeNodeItem[] = await this.state.treeInfo!.dataProvider.getNodes();
     let selectedNodes: string[] = [];
-    for (const node of nodes) {
-      selectedNodes = enable ? this._selectLabel(node, selectedNodes) : this._deselectLabel(node, selectedNodes);
+    if (enable) {
+      selectedNodes = await this._selectAllNodes();
+    } else {
+      this._deselectAllNodes();
     }
+
     this.setState({
       treeInfo: {
         ...this.state.treeInfo!,
         selectedNodes,
       },
     });
+  }
+
+  /**
+   * Asynchronously removes selection styling (checkbox, bold) from
+   * every node and sets visibility of all items to hidden.
+   */
+  private _deselectAllNodes = async () => {
+    const parents: TreeNodeItem[] = await this.state.treeInfo!.dataProvider.getNodes();
+    const promises: Array<Promise<DelayLoadedTreeNodeItem[]>> = [];
+
+    parents.forEach((parent) => {
+      parent.checkBoxState = CheckBoxState.Off;
+      parent.labelBold = false;
+      promises.push(this.state.treeInfo!.dataProvider.getNodes(parent));
+    });
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(parents);
+
+    Promise.all(promises).then((childNodeCollection: DelayLoadedTreeNodeItem[][]) => {
+      childNodeCollection.forEach((childNodes) => {
+        childNodes.forEach((child) => {
+          child.checkBoxState = CheckBoxState.Off;
+          child.labelBold = false;
+        });
+        this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(childNodes);
+      });
+    });
+
+    this._setEnableAllItems(false);
+  }
+
+  /**
+   * Asynchronously adds selection styling (checkbox, bold) to
+   * every node and sets visibility of all items to display.
+   * @returns IDs of all nodes, including children
+   */
+  private _selectAllNodes = async (): Promise<string[]> => {
+    const parents: TreeNodeItem[] = await this.state.treeInfo!.dataProvider.getNodes();
+    const nodeIds: string[] = [];
+    const promises: Array<Promise<DelayLoadedTreeNodeItem[]>> = [];
+
+    parents.forEach((parent) => {
+      parent.checkBoxState = CheckBoxState.On;
+      parent.labelBold = true;
+      nodeIds.push(parent.id);
+      promises.push(this.state.treeInfo!.dataProvider.getNodes(parent));
+    });
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(parents);
+
+    await Promise.all(promises).then((childNodeCollection: DelayLoadedTreeNodeItem[][]) => {
+      childNodeCollection.forEach((childNodes) => {
+        childNodes.forEach((child) => {
+          child.checkBoxState = CheckBoxState.On;
+          child.labelBold = true;
+          nodeIds.push(child.id);
+        });
+        this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(childNodes);
+      });
+    });
+
+    return nodeIds;
   }
 
   /** Invert display on all items and state of all nodes */
@@ -386,17 +448,56 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
   /** Invert state of all nodes */
   private _invertEnableOnAllNodes = async () => {
-    const nodes: TreeNodeItem[] = await this.state.treeInfo!.dataProvider.getNodes();
-    for (const node of nodes) {
-      node.checkBoxState === CheckBoxState.On ? this._deselectLabel(node) : this._selectLabel(node);
-    }
+    const selectedNodes = await this._invertAllNodes();
 
     this.setState({
       treeInfo: {
         ...this.state.treeInfo!,
-        selectedNodes: [...this.state.treeInfo!.selectedNodes!],
+        selectedNodes,
       },
     });
+  }
+
+  /**
+   * Asynchronously inverts selection styling (checkbox, bold) on
+   * every node and sets an inverted visibility for all items.
+   * @returns IDs of all nodes selected after inversion.
+   */
+  private _invertAllNodes = async (): Promise<string[]> => {
+    const parents: TreeNodeItem[] = await this.state.treeInfo!.dataProvider.getNodes();
+    const nodeIds: string[] = [];
+    const promises: Array<Promise<DelayLoadedTreeNodeItem[]>> = [];
+
+    parents.forEach((parent) => {
+      if (parent.checkBoxState === CheckBoxState.On) {
+        parent.checkBoxState = CheckBoxState.Off;
+        parent.labelBold = false;
+      } else {
+        parent.checkBoxState = CheckBoxState.On;
+        parent.labelBold = true;
+        nodeIds.push(parent.id);
+      }
+      promises.push(this.state.treeInfo!.dataProvider.getNodes(parent));
+    });
+    this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(parents);
+
+    await Promise.all(promises).then((childNodeCollection: DelayLoadedTreeNodeItem[][]) => {
+      childNodeCollection.forEach((childNodes) => {
+        childNodes.forEach((child) => {
+          if (child.checkBoxState === CheckBoxState.On) {
+            child.checkBoxState = CheckBoxState.Off;
+            child.labelBold = false;
+          } else {
+            child.checkBoxState = CheckBoxState.On;
+            child.labelBold = true;
+            nodeIds.push(child.id);
+          }
+        });
+        this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(childNodes);
+      });
+    });
+
+    return nodeIds;
   }
 
   private async _updateModelsWithViewport(vp: Viewport) {
@@ -698,7 +799,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     const childNodes = await this.state.treeInfo!.dataProvider.getNodes(treeItem);
     let selectedNodes: string[] = this.state.treeInfo!.selectedNodes ? [...this.state.treeInfo!.selectedNodes!] : [];
     for (const child of childNodes) {
-      selectedNodes = enable ? this._selectLabel(child) : this._deselectLabel(child);
+      selectedNodes = enable ? this._selectLabel(child, selectedNodes) : this._deselectLabel(child, selectedNodes);
     }
 
     this.setState({
