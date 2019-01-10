@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 @import "@bentley/bwc/lib/mixins";
-@import "@bentley/ui-core/lib/colors";
+@import "@bentley/ui-core/lib/ui-core/colors";
 
 .category-model-horizontal-tabs {
   @include bwc-tabs-horizontal;

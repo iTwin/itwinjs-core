@@ -7,8 +7,8 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Checkbox } from "@bentley/bwc";
-import ExpansionToggle from "../../tree/ExpansionToggle";
-import Node from "../../tree/Node";
+import ExpansionToggle from "../../ui-core/tree/ExpansionToggle";
+import Node from "../../ui-core/tree/Node";
 
 describe("<Node />", () => {
   it("should render", () => {

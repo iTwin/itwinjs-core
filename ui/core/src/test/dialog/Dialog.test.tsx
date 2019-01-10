@@ -9,8 +9,8 @@ import { expect } from "chai";
 
 import { Dialog, ButtonType } from "../../ui-core";
 import TestUtils from "../TestUtils";
-import { UiCore } from "../../UiCore";
-import { GlobalDialog } from "../../dialog/Dialog";
+import { UiCore } from "../../ui-core/UiCore";
+import { GlobalDialog } from "../../ui-core/dialog/Dialog";
 
 describe("Dialog", () => {
 
