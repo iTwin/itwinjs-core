@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Keyboard Shortcut support",
+      "packageName": "@bentley/ui-ninezone",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "dan.east@bentley.com"
+}

@@ -11,6 +11,7 @@ exports[`ActionItemButton <ActionItemButton /> disabled renders correctly 1`] = 
   isDisabled={true}
   key="command"
   onClick={[Function]}
+  onKeyDown={[Function]}
   title="tests.label"
 />
 `;
@@ -28,6 +29,7 @@ exports[`ActionItemButton <ActionItemButton /> renders correctly 1`] = `
   isDisabled={false}
   key="command"
   onClick={[Function]}
+  onKeyDown={[Function]}
   title="tests.label"
 />
 `;

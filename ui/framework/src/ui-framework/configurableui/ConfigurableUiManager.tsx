@@ -11,6 +11,7 @@ import { ContentGroupManager, ContentGroupProps } from "../content/ContentGroup"
 import { ContentLayoutManager, ContentLayoutProps } from "../content/ContentLayout";
 import { TaskManager, TaskPropsList } from "../workflow/Task";
 import { WorkflowManager, WorkflowPropsList } from "../workflow/Workflow";
+import { KeyboardShortcutManager, KeyboardShortcutProps } from "../keyboardshortcut/KeyboardShortcut";
 import { FrontstageProvider } from "../frontstage/FrontstageProvider";
 import { SyncUiEventDispatcher } from "../syncui/SyncUiEventDispatcher";
 
@@ -153,6 +154,13 @@ export class ConfigurableUiManager {
    */
   public static loadWorkflows(workflowPropsList: WorkflowPropsList): void {
     WorkflowManager.loadWorkflows(workflowPropsList);
+  }
+
+  /** Loads one or more Keyboard Shortcuts into the [[KeyboardShortcutManager]].
+   * @param shortcutList  the properties of the Keyboard Shortcuts to load
+   */
+  public static loadKeyboardShortcuts(shortcutList: KeyboardShortcutProps[]): void {
+    KeyboardShortcutManager.loadKeyboardShortcuts(shortcutList);
   }
 
 }

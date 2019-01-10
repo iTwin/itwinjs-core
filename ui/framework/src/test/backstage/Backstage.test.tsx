@@ -76,6 +76,7 @@ describe("Backstage", () => {
       const backstageItem = wrapper.find(NZ_BackstageItem);
       backstageItem.find(".nz-backstage-item").simulate("click");
       expect(spyMethod.calledOnce).to.be.true;
+      wrapper.unmount();
     });
 
     it("CommandLaunchBackstageItem renders correctly", () => {
@@ -107,6 +108,7 @@ describe("Backstage", () => {
       setImmediate(() => {
         expect(spyMethod.calledOnce).to.be.true;
         remove();
+        wrapper.unmount();
       });
     });
 
@@ -172,6 +174,7 @@ describe("Backstage", () => {
       setImmediate(() => {
         expect(spyMethod.calledOnce).to.be.true;
         remove();
+        wrapper.unmount();
       });
     });
 
