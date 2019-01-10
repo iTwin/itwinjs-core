@@ -145,7 +145,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
     if (undefined === formatterSpec)
       return;
-    const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantityWithSpec(totalDistance, formatterSpec);
+    const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(totalDistance, formatterSpec);
     const distDyn = new MeasureLabel(points[points.length - 1], formattedTotalDistance);
     distDyn.addDecoration(context);
   }
@@ -278,7 +278,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (undefined === formatterSpec)
       return;
 
-    const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantityWithSpec(this._totalDistance, formatterSpec);
+    const formattedTotalDistance = IModelApp.quantityFormatter.formatQuantity(this._totalDistance, formatterSpec);
     this._totalDistanceMarker = new MeasureLabel(this._acceptedSegments[this._acceptedSegments.length - 1].end, formattedTotalDistance);
 
     const briefMsg = IModelApp.i18n.translateKeys(this._acceptedSegments.length > 1 ? "%{CoreTools:tools.Measure.Labels.CumulativeDistance}: " : "%{CoreTools:tools.Measure.Labels.Distance}: ") + formattedTotalDistance;
@@ -293,12 +293,12 @@ export class MeasureDistanceTool extends PrimitiveTool {
     if (undefined === distanceFormatterSpec)
       return toolTip;
 
-    const formattedDistance = IModelApp.quantityFormatter.formatQuantityWithSpec(distance, distanceFormatterSpec);
+    const formattedDistance = IModelApp.quantityFormatter.formatQuantity(distance, distanceFormatterSpec);
     toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Distance}:</b> ") + formattedDistance + "<br>";
 
     const angleFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Angle);
     if (undefined !== angleFormatterSpec) {
-      const formattedSlope = IModelApp.quantityFormatter.formatQuantityWithSpec(slope, angleFormatterSpec);
+      const formattedSlope = IModelApp.quantityFormatter.formatQuantity(slope, angleFormatterSpec);
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Slope}:</b> ") + formattedSlope + "<br>";
     }
 
@@ -310,20 +310,20 @@ export class MeasureDistanceTool extends PrimitiveTool {
       endAdjusted = endAdjusted.minus(globalOrigin);
     }
 
-    const formattedStartX = IModelApp.quantityFormatter.formatQuantityWithSpec(startAdjusted.x, distanceFormatterSpec);
-    const formattedStartY = IModelApp.quantityFormatter.formatQuantityWithSpec(startAdjusted.y, distanceFormatterSpec);
-    const formattedStartZ = IModelApp.quantityFormatter.formatQuantityWithSpec(startAdjusted.z, distanceFormatterSpec);
+    const formattedStartX = IModelApp.quantityFormatter.formatQuantity(startAdjusted.x, distanceFormatterSpec);
+    const formattedStartY = IModelApp.quantityFormatter.formatQuantity(startAdjusted.y, distanceFormatterSpec);
+    const formattedStartZ = IModelApp.quantityFormatter.formatQuantity(startAdjusted.z, distanceFormatterSpec);
     toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.StartCoord}:</b> ") + formattedStartX + ", " + formattedStartY + ", " + formattedStartZ + "<br>";
 
-    const formattedEndX = IModelApp.quantityFormatter.formatQuantityWithSpec(endAdjusted.x, distanceFormatterSpec);
-    const formattedEndY = IModelApp.quantityFormatter.formatQuantityWithSpec(endAdjusted.y, distanceFormatterSpec);
-    const formattedEndZ = IModelApp.quantityFormatter.formatQuantityWithSpec(endAdjusted.z, distanceFormatterSpec);
+    const formattedEndX = IModelApp.quantityFormatter.formatQuantity(endAdjusted.x, distanceFormatterSpec);
+    const formattedEndY = IModelApp.quantityFormatter.formatQuantity(endAdjusted.y, distanceFormatterSpec);
+    const formattedEndZ = IModelApp.quantityFormatter.formatQuantity(endAdjusted.z, distanceFormatterSpec);
     toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.EndCoord}:</b> ") + formattedEndX + ", " + formattedEndY + ", " + formattedEndZ + "<br>";
 
     if (undefined !== delta) {
-      const formattedDeltaX = IModelApp.quantityFormatter.formatQuantityWithSpec(delta.x, distanceFormatterSpec);
-      const formattedDeltaY = IModelApp.quantityFormatter.formatQuantityWithSpec(delta.y, distanceFormatterSpec);
-      const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantityWithSpec(delta.z, distanceFormatterSpec);
+      const formattedDeltaX = IModelApp.quantityFormatter.formatQuantity(delta.x, distanceFormatterSpec);
+      const formattedDeltaY = IModelApp.quantityFormatter.formatQuantity(delta.y, distanceFormatterSpec);
+      const formattedDeltaZ = IModelApp.quantityFormatter.formatQuantity(delta.z, distanceFormatterSpec);
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Delta}:</b> ") + formattedDeltaX + ", " + formattedDeltaY + ", " + formattedDeltaZ + "<br>";
     }
 
@@ -502,9 +502,9 @@ export class MeasureLocationTool extends PrimitiveTool {
         const globalOrigin = this.iModel.globalOrigin;
         pointAdjusted = pointAdjusted.minus(globalOrigin);
       }
-      const formattedPointX = IModelApp.quantityFormatter.formatQuantityWithSpec(pointAdjusted.x, formatterSpec);
-      const formattedPointY = IModelApp.quantityFormatter.formatQuantityWithSpec(pointAdjusted.y, formatterSpec);
-      const formattedPointZ = IModelApp.quantityFormatter.formatQuantityWithSpec(pointAdjusted.z, formatterSpec);
+      const formattedPointX = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.x, formatterSpec);
+      const formattedPointY = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.y, formatterSpec);
+      const formattedPointZ = IModelApp.quantityFormatter.formatQuantity(pointAdjusted.z, formatterSpec);
       if (undefined !== formattedPointX && undefined !== formattedPointY && undefined !== formattedPointZ)
         toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Coordinate}:</b> ") + formattedPointX + ", " + formattedPointY + ", " + formattedPointZ + "<br>";
     }

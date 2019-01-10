@@ -448,7 +448,7 @@ export class QuantityFormatter implements UnitsProvider {
    * @param formatSpec      The format specification. See methods getFormatterSpecByQuantityType and findFormatterSpecByQuantityType.
    * @return the formatted string.
    */
-  public formatQuantityWithSpec(magnitude: number, formatSpec: FormatterSpec): string {
+  public formatQuantity(magnitude: number, formatSpec: FormatterSpec): string {
     return Formatter.formatQuantity(magnitude, formatSpec);
   }
 

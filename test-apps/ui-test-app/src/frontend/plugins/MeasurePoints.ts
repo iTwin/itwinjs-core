@@ -105,7 +105,7 @@ export class MeasurePointsTool extends PrimitiveTool {
     const formatterSpec = IModelApp.quantityFormatter.findFormatterSpecByQuantityType(QuantityType.Length);
     if (undefined === formatterSpec)
       return;
-    const formattedValue = IModelApp.quantityFormatter.formatQuantityWithSpec(distance, formatterSpec);
+    const formattedValue = IModelApp.quantityFormatter.formatQuantity(distance, formatterSpec);
     if (undefined === formattedValue)
       return;
 
