@@ -130,7 +130,7 @@ export class QueryAgent {
 
         Logger.logTrace(QueryAgentConfig.loggingCategory, `   Description: ${changeSummary.changeSet.description}`);
         Logger.logTrace(QueryAgentConfig.loggingCategory, `   Push Date: ${new Date(changeSummary.changeSet.pushDate).toLocaleString()}`);
-        Logger.logTrace(QueryAgentConfig.loggingCategory, `   Author: ${changeSummary.changeSet.author}`);
+        Logger.logTrace(QueryAgentConfig.loggingCategory, `   User Created: ${changeSummary.changeSet.userCreated}`);
 
         changeContent.instanceChanges = this._iModelDb!.withPreparedStatement<any[]>("SELECT ECInstanceId FROM ecchange.change.InstanceChange WHERE Summary.Id=? ORDER BY ECInstanceId", (stmt: ECSqlStatement): any[] => {
             stmt.bindId(1, changeSummary.id);

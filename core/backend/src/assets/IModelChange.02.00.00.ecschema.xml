@@ -1,6 +1,6 @@
 ﻿<?xml version="1.0" encoding="UTF-8"?>
-<ECSchema schemaName="IModelChange" alias="imodelchange" version="1.0.1" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
-  <ECSchemaReference name="ECDbChange" version="01.00.00" alias="change"/>
+<ECSchema schemaName="IModelChange" alias="imodelchange" version="2.0.0" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+  <ECSchemaReference name="ECDbChange" version="01.00.01" alias="change"/>
   <ECSchemaReference name="CoreCustomAttributes" version="01.00.01" alias="CoreCA"/>
 
   <ECEntityClass typeName="ChangeSet" modifier="Sealed">
@@ -27,9 +27,9 @@
             </Properties>
           </DbIndex>
           <DbIndex>
-            <Name>ix_imodelchange_ChangeSet_Author</Name>
+            <Name>ix_imodelchange_ChangeSet_UserCreated</Name>
             <Properties>
-              <string>Author</string>
+              <string>UserCreated</string>
             </Properties>
           </DbIndex>
         </Indexes>
@@ -70,7 +70,7 @@
         </DateTimeInfo>
       </ECCustomAttributes>
     </ECProperty>
-    <ECProperty propertyName="Author" typeName="string">
+    <ECProperty propertyName="UserCreated" typeName="string">
       <ECCustomAttributes>
         <PropertyMap xmlns="ECDbMap.02.00.00">
           <Collation>NoCase</Collation>
