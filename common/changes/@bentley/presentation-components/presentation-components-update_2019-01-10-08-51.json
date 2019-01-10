@@ -1,0 +1,21 @@
+{
+  "changes": [
+    {
+      "comment": "Added interfaces for Property Pane and Table data providers.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    },
+    {
+      "comment": "Changed 'connection' property name to 'imodel' in IPropertyDataProvider.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    },
+    {
+      "comment": "Removed default exports in presentation-components.",
+      "packageName": "@bentley/presentation-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "elonas.seviakovas@bentley.com"
+}

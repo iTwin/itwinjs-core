@@ -27,7 +27,7 @@ export default class PropertiesWidget extends React.Component<Props, State> {
     };
   }
   public static getDerivedStateFromProps(props: Props, state: State) {
-    if (props.imodel !== state.dataProvider.connection || props.rulesetId !== state.dataProvider.rulesetId)
+    if (props.imodel !== state.dataProvider.imodel || props.rulesetId !== state.dataProvider.rulesetId)
       return { ...state, dataProvider: createDataProvider(props.imodel, props.rulesetId) };
     return null;
   }

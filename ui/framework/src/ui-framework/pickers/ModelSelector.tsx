@@ -71,7 +71,7 @@ class ModelSelectorDataProvider implements IPresentationTreeDataProvider {
   public get rulesetId(): string { return this._baseProvider.rulesetId; }
 
   /** [[IModelConnection]] used by this data provider */
-  public get connection(): IModelConnection { return this._baseProvider.connection; }
+  public get imodel(): IModelConnection { return this._baseProvider.imodel; }
 
   /** Listener for tree node changes */
   public onTreeNodeChanged = new BeEvent<TreeDataChangesListener>();

@@ -36,7 +36,9 @@ export class PropertyDataChangeEvent extends BeEvent<PropertyDataChangesListener
  * An interface for property data provider which returns
  * property data and broadcasts an event when the data changes
  */
-export interface PropertyDataProvider {
+export interface IPropertyDataProvider {
+  /** Returns property data. */
   getData: (() => Promise<PropertyData>);
+  /** Property data change event. */
   onDataChanged: PropertyDataChangeEvent;
 }

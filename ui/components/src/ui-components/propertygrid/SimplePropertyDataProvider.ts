@@ -5,12 +5,12 @@
 /** @module PropertyGrid */
 
 import { PropertyRecord } from "../properties/Record";
-import { PropertyDataProvider, PropertyData, PropertyCategory, PropertyDataChangeEvent } from "./PropertyDataProvider";
+import { IPropertyDataProvider, PropertyData, PropertyCategory, PropertyDataChangeEvent } from "./PropertyDataProvider";
 
 /**
  * Implementation of [PropertyDataProvider] that uses an associative array.
  */
-export class SimplePropertyDataProvider implements PropertyDataProvider, PropertyData {
+export class SimplePropertyDataProvider implements IPropertyDataProvider, PropertyData {
   public label: string = "";
   public description?: string;
   public categories: PropertyCategory[] = [];

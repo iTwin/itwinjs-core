@@ -11,6 +11,7 @@ import {
   ContentRequestOptions, Content, Descriptor, Field,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
+import { IPresentationDataProvider } from "./IPresentationDataProvider";
 
 /**
  * Properties for invalidating content cache.
@@ -19,7 +20,7 @@ export interface CacheInvalidationProps {
   /**
    * Invalidate content descriptor. Should be set when invalidating
    * after changing anything that affects how the descriptor is built:
-   * `keys`, `selectionInfo`, `connection`, `rulesetId`.
+   * `keys`, `selectionInfo`, `imodel`, `rulesetId`.
    */
   descriptor?: boolean;
 
@@ -55,10 +56,22 @@ namespace CacheInvalidationProps {
 }
 
 /**
+ * Interface for all presentation-driven content providers.
+ */
+export interface IContentDataProvider extends IPresentationDataProvider {
+  /** Display type used to format content */
+  readonly displayType: string;
+  /** Keys defining what to request content for */
+  keys: Readonly<KeySet>;
+  /** Information about selection event that results in content change */
+  selectionInfo: Readonly<SelectionInfo> | undefined;
+}
+
+/**
  * Base class for all presentation-driven content providers.
  */
-export default abstract class ContentDataProvider {
-  private _connection: IModelConnection;
+export abstract class ContentDataProvider implements IContentDataProvider {
+  private _imodel: IModelConnection;
   private _rulesetId: string;
   private _displayType: string;
   private _keys: Readonly<KeySet>;
@@ -66,15 +79,15 @@ export default abstract class ContentDataProvider {
 
   /**
    * Constructor.
-   * @param connection IModel to pull data from.
+   * @param imodel IModel to pull data from.
    * @param rulesetId Id of the ruleset to use when requesting content.
    * @param displayType The content display type which this provider is going to
    * load data for.
    */
-  constructor(connection: IModelConnection, rulesetId: string, displayType: string) {
+  constructor(imodel: IModelConnection, rulesetId: string, displayType: string) {
     this._rulesetId = rulesetId;
     this._displayType = displayType;
-    this._connection = connection;
+    this._imodel = imodel;
     this._keys = new KeySet();
     this.invalidateCache(CacheInvalidationProps.full());
   }
@@ -83,11 +96,11 @@ export default abstract class ContentDataProvider {
   public get displayType(): string { return this._displayType; }
 
   /** IModel to pull data from */
-  public get connection(): IModelConnection { return this._connection; }
-  public set connection(connection: IModelConnection) {
-    if (this._connection === connection)
+  public get imodel(): IModelConnection { return this._imodel; }
+  public set imodel(imodel: IModelConnection) {
+    if (this._imodel === imodel)
       return;
-    this._connection = connection;
+    this._imodel = imodel;
     this.invalidateCache(CacheInvalidationProps.full());
   }
 
@@ -132,7 +145,7 @@ export default abstract class ContentDataProvider {
 
   private createRequestOptions(): ContentRequestOptions<IModelConnection> {
     return {
-      imodel: this._connection,
+      imodel: this._imodel,
       rulesetId: this._rulesetId,
     };
   }

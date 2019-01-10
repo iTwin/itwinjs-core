@@ -24,7 +24,7 @@ export interface Page<TItem> {
 /**
  * @hidden
  */
-export default class PageContainer<TItem, TPage extends Page<TItem> = Page<TItem>> {
+export class PageContainer<TItem, TPage extends Page<TItem> = Page<TItem>> {
   private _pageSize: number;
   private _maxPages: number;
   private _pages: TPage[] = [];

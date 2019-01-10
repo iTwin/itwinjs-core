@@ -9,15 +9,15 @@ import { KeySet, InstanceKey, Subtract, instanceKeyFromJSON } from "@bentley/pre
 import { Presentation, SelectionHandler, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { Table as BaseTable, TableProps, RowItem } from "@bentley/ui-components";
 import { getDisplayName } from "../common/Utils";
-import IUnifiedSelectionComponent from "../common/IUnifiedSelectionComponent";
-import PresentationTableDataProvider from "./DataProvider";
+import { IUnifiedSelectionComponent } from "../common/IUnifiedSelectionComponent";
+import { IPresentationTableDataProvider } from "./DataProvider";
 
 /**
  * Props that are injected to the HOC component.
  */
 export interface Props {
   /** The data provider used by the property grid. */
-  dataProvider: PresentationTableDataProvider;
+  dataProvider: IPresentationTableDataProvider;
 
   /**
    * Boundary level of selection used by the table. The table requests
@@ -37,7 +37,7 @@ export interface Props {
  * **Note:** it is required for the table to use [[PresentationTableDataProvider]]
  */
 // tslint:disable-next-line: variable-name naming-convention
-export default function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
+export function tableWithUnifiedSelection<P extends TableProps>(TableComponent: React.ComponentType<P>): React.ComponentType<Subtract<P, Props> & Props> {
 
   type CombinedProps = Subtract<P, Props> & Props;
 
@@ -59,7 +59,7 @@ export default function tableWithUnifiedSelection<P extends TableProps>(TableCom
     /** Get selection handler used by this table */
     public get selectionHandler(): SelectionHandler | undefined { return this._selectionHandler; }
 
-    public get imodel() { return this.props.dataProvider.connection; }
+    public get imodel() { return this.props.dataProvider.imodel; }
 
     public get rulesetId() { return this.props.dataProvider.rulesetId; }
 
@@ -68,7 +68,7 @@ export default function tableWithUnifiedSelection<P extends TableProps>(TableCom
 
     public componentDidMount() {
       const name = `Table_${counter++}`;
-      const imodel = this.props.dataProvider.connection;
+      const imodel = this.props.dataProvider.imodel;
       const rulesetId = this.props.dataProvider.rulesetId;
       this._selectionHandler = this.props.selectionHandler
         ? this.props.selectionHandler : new SelectionHandler(Presentation.selection, name, imodel, rulesetId);
@@ -84,7 +84,7 @@ export default function tableWithUnifiedSelection<P extends TableProps>(TableCom
     public componentDidUpdate() {
       this._boundarySelectionLevel = getSelectionLevelFromProps(this.props);
       if (this._selectionHandler) {
-        this._selectionHandler.imodel = this.props.dataProvider.connection;
+        this._selectionHandler.imodel = this.props.dataProvider.imodel;
         this._selectionHandler.rulesetId = this.props.dataProvider.rulesetId;
       }
     }

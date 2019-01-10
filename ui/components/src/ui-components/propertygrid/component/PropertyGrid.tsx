@@ -10,7 +10,7 @@ import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { Orientation } from "@bentley/ui-core";
 import { PropertyRecord } from "../../properties/Record";
 import { PropertyValueFormat } from "../../properties/Value";
-import { PropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
+import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { SelectablePropertyBlock } from "./SelectablePropertyBlock";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
@@ -20,7 +20,7 @@ import "./PropertyGrid.scss";
 /** Properties for [[PropertyGrid]] React component */
 export interface PropertyGridProps {
   /** Property data provider */
-  dataProvider: PropertyDataProvider;
+  dataProvider: IPropertyDataProvider;
   /** Grid orientation. When not defined, it is chosen automatically based on width of the grid. */
   orientation?: Orientation;
   /** Enables/disables property selection */

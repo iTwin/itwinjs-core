@@ -7,13 +7,13 @@
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 
 /**
- * Presentation data provider
+ * Interface for a presentation data provider
  */
-export default interface IPresentationDataProvider {
+export interface IPresentationDataProvider {
   /**
    * [[IModelConnection]] used by this data provider
    */
-  readonly connection: IModelConnection;
+  readonly imodel: IModelConnection;
 
   /**
    * Id of the ruleset used by this data provider

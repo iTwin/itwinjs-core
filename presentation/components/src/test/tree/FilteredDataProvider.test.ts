@@ -12,8 +12,8 @@ import { createRandomECInstanceNodeKey, createRandomNodePathElement } from "@ben
 import { NodePathElement } from "@bentley/presentation-common";
 import { PageOptions } from "@bentley/ui-components";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import FilteredPresentationTreeDataProvider from "../../tree/FilteredDataProvider";
-import IPresentationTreeDataProvider from "../../tree/IPresentationTreeDataProvider";
+import { FilteredPresentationTreeDataProvider } from "../../tree/FilteredDataProvider";
+import { IPresentationTreeDataProvider } from "../../tree/IPresentationTreeDataProvider";
 import { createTreeNodeItem } from "../../tree/Utils";
 
 describe("FilteredTreeDataProvider", () => {
@@ -82,13 +82,13 @@ describe("FilteredTreeDataProvider", () => {
 
   });
 
-  describe("connection", () => {
+  describe("imodel", () => {
 
-    it("returns connection of the parent data provider", () => {
-      parentProviderMock.setup((x) => x.connection)
+    it("returns imodel of the parent data provider", () => {
+      parentProviderMock.setup((x) => x.imodel)
         .returns(() => imodelMock.object)
         .verifiable();
-      expect(provider.connection).to.eq(imodelMock.object);
+      expect(provider.imodel).to.eq(imodelMock.object);
       parentProviderMock.verifyAll();
     });
 
