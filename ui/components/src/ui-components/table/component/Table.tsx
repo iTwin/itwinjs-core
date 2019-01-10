@@ -9,7 +9,10 @@ import * as React from "react";
 import ReactDataGrid from "react-data-grid";
 import classnames from "classnames";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { SortDirection, Dialog, LocalUiSettings, UiSettings, UiSettingsStatus } from "@bentley/ui-core";
+import {
+  SortDirection, Dialog, HorizontalAlignment,
+  LocalUiSettings, UiSettings, UiSettingsStatus,
+} from "@bentley/ui-core";
 import { TableDataProvider, ColumnDescription, RowItem, CellItem } from "../TableDataProvider";
 import { SelectionMode } from "../../common/selection/SelectionModes";
 import {
@@ -95,6 +98,7 @@ export interface RowProps {
   item: RowItem;
   cells: { [key: string]: CellProps };
   render?: () => React.ReactNode;
+  style?: React.CSSProperties;
 }
 
 interface RowsLoadResult {
@@ -683,9 +687,18 @@ export class Table extends React.Component<TableProps, TableState> {
     if (column.icon)
       return () => <IconCell value={displayValue} />;
 
+    const cellStyle: React.CSSProperties = {
+      color: cellItem.colorOverrides && cellItem.colorOverrides.foreColor ? colorDecimalToHex(cellItem.colorOverrides.foreColor) : undefined,
+      backgroundColor: cellItem.colorOverrides && cellItem.colorOverrides.backColor ? colorDecimalToHex(cellItem.colorOverrides.backColor) : undefined,
+      fontWeight: cellItem.isBold ? "bold" : undefined,
+      fontStyle: cellItem.isItalic ? "italic" : undefined,
+      textAlign: cellItem.alignment ? horizontalAlignmentToCssAlignment(cellItem.alignment) : undefined,
+    };
+
     const rendererContext: PropertyValueRendererContext = {
       containerType: PropertyContainerType.Table,
       onDialogOpen: this._onDialogOpen,
+      style: cellStyle,
       // TODO: Enable, when table gets refactored. Explanation in ./../table/NonPrimitiveValueRenderer
       // onPopupShow: this._onPopupShow,
       // onPopupHide: this._onPopupHide,
@@ -727,11 +740,16 @@ export class Table extends React.Component<TableProps, TableState> {
         render: await this.createCellRenderer(cellItem, column, displayValue),
       };
     }
+    const rowStyle: React.CSSProperties = {
+      color: item.colorOverrides && item.colorOverrides.foreColor ? colorDecimalToHex(item.colorOverrides.foreColor) : undefined,
+      backgroundColor: item.colorOverrides && item.colorOverrides.backColor ? colorDecimalToHex(item.colorOverrides.backColor) : undefined,
+    };
     return {
       item,
       index,
       cells: cellProps,
       render: undefined,
+      style: rowStyle,
     };
   }
 
@@ -894,7 +912,8 @@ export class Table extends React.Component<TableProps, TableState> {
           className={classnames("row", !isSelected && "is-hover-enabled")}
           onClickCapture={onClick}
           onMouseMove={onMouseMove}
-          onMouseDown={onMouseDown}>
+          onMouseDown={onMouseDown}
+          style={props.row.style}>
           {row}
         </div>;
       }
@@ -1109,6 +1128,18 @@ export class Table extends React.Component<TableProps, TableState> {
     );
   }
 }
+
+const horizontalAlignmentToCssAlignment = (alignment: HorizontalAlignment) => {
+  switch (alignment) {
+    case HorizontalAlignment.Left: return "left";
+    case HorizontalAlignment.Center: return "center";
+    case HorizontalAlignment.Right: return "right";
+    case HorizontalAlignment.Justify: return "justify";
+  }
+  return "left";
+};
+
+const colorDecimalToHex = (decimal: number) => `#${decimal.toString(16).padStart(6, "0")}`;
 
 /** Properties for the [[IconCell]] component  */
 export interface IconCellProps {

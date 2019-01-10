@@ -9,6 +9,8 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import TestBackend from "react-dnd-test-backend";
+import { BeDuration } from "@bentley/bentleyjs-core";
+import { LocalUiSettings, HorizontalAlignment } from "@bentley/ui-core";
 import {
   Table, TableDataProvider, RowItem, TableDataChangeEvent, TableDataChangesListener, CellItem,
   TableSelectionTarget, TableProps, ColumnDescription, SelectionMode, PropertyRecord, PropertyValue,
@@ -17,11 +19,10 @@ import {
 import { waitForSpy, ResolvablePromise } from "../../test-helpers/misc";
 import { DragDropContext } from "react-dnd";
 import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
-import { LocalUiSettings } from "@bentley/ui-core";
 import TestUtils from "../../TestUtils";
-import { BeDuration } from "@bentley/bentleyjs-core";
 
 describe("Table", () => {
+
   before(async () => {
     await TestUtils.initializeUiComponents();
   });
@@ -31,28 +32,6 @@ describe("Table", () => {
   const selectedRowClassName = "div.react-grid-Row.row-selected";
   const cellClassName = "div.cell";
   const selectedCellClassName = "div.cell.is-selected";
-
-  const storageMock = () => {
-    const storage: { [key: string]: any } = {};
-    return {
-      setItem: (key: string, value: string) => {
-        storage[key] = value || "";
-      },
-      getItem: (key: string) => {
-        return key in storage ? storage[key] : null;
-      },
-      removeItem: (key: string) => {
-        delete storage[key];
-      },
-      get length() {
-        return Object.keys(storage).length;
-      },
-      key: (i: number) => {
-        const keys = Object.keys(storage);
-        return keys[i] || null;
-      },
-    };
-  };
 
   const createRowItem = (index: number) => {
     const rowItem: RowItem = { key: index.toString(), cells: [] };
@@ -88,110 +67,21 @@ describe("Table", () => {
     { label: "label1", key: "key1" },
     { label: "label2", key: "key2", editable: true },
   ];
-
-  const newPropertyValue = "My new value";
-  const handlePropertyUpdated = async (args: PropertyUpdatedArgs): Promise<boolean> => {
-    let updated = false;
-
-    if (args.propertyRecord) {
-      expect(args.newValue).to.eq(newPropertyValue);
-      args.propertyRecord = args.propertyRecord.copyWithNewValue(args.newValue);
-      updated = true;
-    }
-
-    return updated;
-  };
-
   const onRowsLoaded = sinon.spy();
-  const onPropertyEditing = sinon.spy();
-  const onPropertyUpdated = sinon.spy(handlePropertyUpdated);
-
-  const verifyRowIterator = async (expectedItemKeys: string[], iterator?: AsyncIterableIterator<RowItem>): Promise<void> => {
-    expect(iterator, "row iterator").to.not.be.undefined;
-    const actualItems = [];
-    let iteratorResult = await iterator!.next();
-    while (!iteratorResult.done) {
-      actualItems.push(iteratorResult.value);
-      iteratorResult = await iterator!.next();
-    }
-    expect(expectedItemKeys.length).to.be.equal(actualItems.length);
-    for (let i = 0; i < expectedItemKeys.length; i++) {
-      expect(actualItems.find((x) => x.key === expectedItemKeys[i], "expectedItemKeys[" + i + "]")).to.not.be.undefined;
-    }
-  };
-
-  const verifyCellIterator = async (expectedItemKeys: Array<{ rowKey: string, columnKey: string }>, iterator?: AsyncIterableIterator<[RowItem, CellItem]>): Promise<void> => {
-    expect(iterator, "cell iterator").to.not.be.undefined;
-    const actualItems: Array<[RowItem, CellItem]> = [];
-    let iteratorResult = await iterator!.next();
-    while (!iteratorResult.done) {
-      actualItems.push(iteratorResult.value);
-      iteratorResult = await iterator!.next();
-    }
-
-    expect(expectedItemKeys.length).to.be.equal(actualItems.length);
-    for (let i = 0; i < expectedItemKeys.length; i++) {
-      expect(actualItems.find((x) => x[1].key === expectedItemKeys[i].columnKey && x[0].key === expectedItemKeys[i].rowKey), "expectedItemKeys[" + i + "]").to.not.be.undefined;
-    }
-  };
-
   const dataProviderMock = moq.Mock.ofType<TableDataProvider>();
   const tableDataChangeEventMock = moq.Mock.ofType<TableDataChangeEvent>();
-  const onRowsSelectedCallbackMock = moq.Mock.ofType<(rows: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>>();
-  const onRowsDeselectedCallbackMock = moq.Mock.ofType<(rows: AsyncIterableIterator<RowItem>) => Promise<boolean>>();
-  const onCellsSelectedCallbackMock = moq.Mock.ofType<(cells: AsyncIterableIterator<[RowItem, CellItem]>, replace: boolean) => Promise<boolean>>();
-  const onCellsDeselectedCallbackMock = moq.Mock.ofType<(cells: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>>();
-  let selectedRowsIterator: AsyncIterableIterator<RowItem> | undefined;
-  let deselectedRowsIterator: AsyncIterableIterator<RowItem> | undefined;
-  let selectedCellsIterator: AsyncIterableIterator<[RowItem, CellItem]> | undefined;
-  let deselectedCellsIterator: AsyncIterableIterator<[RowItem, CellItem]> | undefined;
-  let table: enzyme.ReactWrapper<TableProps, any>;
+  let table: enzyme.ReactWrapper<TableProps>;
 
   beforeEach(async () => {
-    dataProviderMock.reset();
+    onRowsLoaded.resetHistory();
     tableDataChangeEventMock.reset();
-    onRowsSelectedCallbackMock.reset();
-    onRowsDeselectedCallbackMock.reset();
-    onCellsSelectedCallbackMock.reset();
-    onCellsDeselectedCallbackMock.reset();
-
-    onRowsSelectedCallbackMock.setup(async (x) => x(moq.It.isAny(), moq.It.isAny())).callback((iterator: AsyncIterableIterator<RowItem>) => { selectedRowsIterator = iterator; });
-    onRowsDeselectedCallbackMock.setup(async (x) => x(moq.It.isAny())).callback((iterator: AsyncIterableIterator<RowItem>) => { deselectedRowsIterator = iterator; });
-    onCellsSelectedCallbackMock.setup(async (x) => x(moq.It.isAny(), moq.It.isAny())).callback(async (iterator: AsyncIterableIterator<[RowItem, CellItem]>) => { selectedCellsIterator = iterator; });
-    onCellsDeselectedCallbackMock.setup(async (x) => x(moq.It.isAny())).callback(async (iterator: AsyncIterableIterator<[RowItem, CellItem]>) => { deselectedCellsIterator = iterator; });
-
     tableDataChangeEventMock.setup((x) => x.addListener(moq.It.isAny())).returns(() => moq.Mock.ofType<TableDataChangesListener>().object);
+    dataProviderMock.reset();
     dataProviderMock.setup((x) => x.onColumnsChanged).returns(() => tableDataChangeEventMock.object);
     dataProviderMock.setup((x) => x.onRowsChanged).returns(() => tableDataChangeEventMock.object);
     dataProviderMock.setup(async (x) => x.getRowsCount()).returns(async () => 10);
     dataProviderMock.setup(async (x) => x.getRow(moq.It.isAnyNumber())).returns(async (index) => createRowItem(index));
     dataProviderMock.setup(async (x) => x.getColumns()).returns(async () => columns);
-    onRowsLoaded.resetHistory();
-    onPropertyEditing.resetHistory();
-    onPropertyUpdated.resetHistory();
-    const TableWithContext = DragDropContext(TestBackend)(Table); // tslint:disable-line:variable-name
-    table = enzyme.mount(<TableWithContext
-      dataProvider={dataProviderMock.object}
-      onRowsSelected={onRowsSelectedCallbackMock.object}
-      onRowsDeselected={onRowsDeselectedCallbackMock.object}
-      onCellsSelected={onCellsSelectedCallbackMock.object}
-      onCellsDeselected={onCellsDeselectedCallbackMock.object}
-      onRowsLoaded={onRowsLoaded}
-      onPropertyEditing={onPropertyEditing}
-      onPropertyUpdated={onPropertyUpdated}
-      settingsIdentifier="test"
-      reorderableColumns={true}
-      showHideColumns={true}
-      uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
-    />);
-    await waitForSpy(onRowsLoaded);
-    table.update();
-  });
-
-  before(() => {
-    // https://github.com/Microsoft/TypeScript/issues/14151#issuecomment-280812617
-    // tslint:disable-next-line:no-string-literal
-    if (Symbol["asyncIterator"] === undefined) ((Symbol as any)["asyncIterator"]) = Symbol.for("asyncIterator");
   });
 
   /**
@@ -284,486 +174,711 @@ describe("Table", () => {
     expect(dataProvider.getRowsCount).to.be.calledTwice;
   });
 
-  describe("Row Selection", () => {
+  describe("rendering", () => {
 
-    describe("Single", () => {
+    describe("with cell styles", () => {
 
-      it("selects a row", async () => {
+      const toColor = (hex: string): number => parseInt(hex, 16);
+      const testRecord = (): PropertyRecord => {
+        const value: PropertyValue = {
+          value: 123,
+          displayValue: "123",
+          valueFormat: PropertyValueFormat.Primitive,
+        };
+        const descr: PropertyDescription = {
+          name: "1",
+          typename: "int",
+          displayLabel: "column",
+        };
+        return new PropertyRecord(value, descr);
+      };
+
+      let rowData: RowItem[];
+
+      beforeEach(async () => {
+        rowData = [{
+          key: "no_overrides",
+          cells: [{ key: "1", record: testRecord() }],
+        }, {
+          key: "row_overrides",
+          cells: [{ key: "1", record: testRecord() }],
+          colorOverrides: {
+            backColor: toColor("0xff0000"),
+            backColorSelected: toColor("0xff00ff"),
+            foreColor: toColor("0x00ff00"),
+            foreColorSelected: toColor("0x00ffff"),
+          },
+        }, {
+          key: "cell_overrides",
+          cells: [{
+            key: "1",
+            record: testRecord(),
+            isBold: true,
+            isItalic: true,
+            alignment: HorizontalAlignment.Right,
+            colorOverrides: {
+              backColor: toColor("0xaa0000"),
+              backColorSelected: toColor("0xaa00aa"),
+              foreColor: toColor("0x00aa00"),
+              foreColorSelected: toColor("0x00aaaa"),
+            },
+          }],
+        }, {
+          key: "row_and_cell_overrides",
+          cells: [{
+            key: "1",
+            record: testRecord(),
+            isBold: true,
+            isItalic: true,
+            alignment: HorizontalAlignment.Justify,
+            colorOverrides: {
+              backColor: toColor("0xaa0000"),
+              backColorSelected: toColor("0xaa00aa"),
+              foreColor: toColor("0x00aa00"),
+              foreColorSelected: toColor("0x00aaaa"),
+            },
+          }],
+          colorOverrides: {
+            backColor: toColor("0xff0000"),
+            backColorSelected: toColor("0xff00ff"),
+            foreColor: toColor("0x00ff00"),
+            foreColorSelected: toColor("0x00ffff"),
+          },
+        }];
+        const onColumnsChanged = new TableDataChangeEvent();
+        const onRowsChanged = new TableDataChangeEvent();
+        const dataProvider: TableDataProvider = {
+          getColumns: async (): Promise<ColumnDescription[]> => [{ key: "1", label: "Column" }],
+          getRowsCount: async () => rowData.length,
+          getRow: async (index: number) => rowData[index],
+          sort: async () => { },
+          onColumnsChanged,
+          onRowsChanged,
+        };
+        table = enzyme.mount(<Table
+          dataProvider={dataProvider}
+          onRowsLoaded={onRowsLoaded}
+        />);
+        await waitForSpy(onRowsLoaded);
         table.update();
-        const row = table.find(rowClassName).first();
-        row.simulate("click");
-
-        await verifyRowIterator(["0"], selectedRowsIterator);
-        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
-        expect(table.find(selectedRowClassName).length).to.be.equal(1);
       });
 
-      it.skip("deselects other rows when selects a row", async () => {
-        const isRowSelected = () => true;
-        table.setProps({ isRowSelected });
-        table.update();
-        expect(table.find(selectedRowClassName).length).to.be.greaterThan(1);
-        const row = table.find(rowClassName).first();
-        row.simulate("click");
-
-        await verifyRowIterator(["0"], selectedRowsIterator);
-        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
-        onRowsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.never());
-        expect(table.find(selectedRowClassName).length).to.be.equal(1);
-      });
-
-    });
-
-    describe("Extended", () => {
-
-      beforeEach(() => {
-        table.setProps({ selectionMode: SelectionMode.Extended });
-      });
-
-      it("shift select rows from top to bottom", async () => {
+      it("renders cells with different style properties", async () => {
         const rows = table.find(rowClassName);
-        const row0 = rows.at(0);
-        const row2 = rows.at(2);
-        row0.simulate("click");
-        await verifyRowIterator(["0"], selectedRowsIterator);
-        row2.simulate("click", { shiftKey: true });
-        await verifyRowIterator(["0", "1", "2"], selectedRowsIterator);
+        expect(rows.length).to.eq(4);
 
-        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
-        expect(table.find(selectedRowClassName).length).to.be.equal(3);
-      });
+        const cells = table.find(cellClassName);
+        expect(cells.length).to.eq(4);
 
-      it("shift select rows from bottom to top", async () => {
-        const rows = table.find(rowClassName);
-        const row0 = rows.at(0);
-        const row2 = rows.at(2);
-        row2.simulate("click");
-        await verifyRowIterator(["2"], selectedRowsIterator);
-
-        row0.simulate("click", { shiftKey: true });
-        await verifyRowIterator(["0", "1", "2"], selectedRowsIterator);
-
-        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
-        expect(table.find(selectedRowClassName).length).to.be.equal(3);
-      });
-
-      it("ctrl selects rows", async () => {
-        const rows = table.find(rowClassName);
-        const row0 = rows.at(0);
-        const row2 = rows.at(2);
-        row0.simulate("click", { ctrlKey: true });
-        await verifyRowIterator(["0"], selectedRowsIterator);
-        row2.simulate("click", { ctrlKey: true });
-        await verifyRowIterator(["2"], selectedRowsIterator);
-
-        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.exactly(2));
-        expect(table.find(selectedRowClassName).length).to.be.equal(2);
-      });
-
-    });
-
-    describe("Multiple", () => {
-
-      beforeEach(() => {
-        table.setProps({ selectionMode: SelectionMode.Multiple });
-      });
-
-      it("drag selects rows", async () => {
-        const rows = table.find(rowClassName);
-        const row0 = rows.at(0);
-        const row2 = rows.at(2);
-        row0.simulate("mousedown");
-        row2.simulate("mousemove", { buttons: 1 });
-        document.dispatchEvent(new MouseEvent("mouseup"));
-
-        await verifyRowIterator(["0", "1", "2"], selectedRowsIterator);
-        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
-        expect(table.find(selectedRowClassName).length).to.be.equal(3);
-      });
-
-      it("drag selects and deselects rows", async () => {
-        const isRowSelected = (item: RowItem): boolean => item.key === "0" || item.key === "1";
-        table.setProps({ isRowSelected });
-        table.update();
-        expect(table.find(selectedRowClassName).length).to.be.equal(2);
-        const rows = table.find(rowClassName);
-        const row0 = rows.at(0);
-        const row2 = rows.at(2);
-        row2.simulate("mousedown");
-        row0.simulate("mousemove", { buttons: 1 });
-        document.dispatchEvent(new MouseEvent("mouseup"));
-
-        await verifyRowIterator(["2"], selectedRowsIterator);
-        await verifyRowIterator(["0", "1"], deselectedRowsIterator);
-        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
-        onRowsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.once());
-        expect(table.find(selectedRowClassName).length).to.be.equal(1);
-      });
-
-    });
-
-    describe("SingleAllowDeselect", () => {
-
-      beforeEach(() => {
-        table.setProps({ selectionMode: SelectionMode.SingleAllowDeselect });
-      });
-
-      it("deselects selected row", async () => {
-        const row = table.find(rowClassName).first();
-        row.simulate("click");
-        await verifyRowIterator(["0"], selectedRowsIterator);
-        row.simulate("click");
-        await verifyRowIterator(["0"], deselectedRowsIterator);
-
-        onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
-        onRowsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.once());
-        expect(table.find(selectedRowClassName).length).to.be.equal(0);
-      });
-
-      it("handles selection changes if callback not specified", async () => {
-        table.setProps({
-          onRowsDeselected: undefined,
-          onRowsSelected: undefined,
-          onCellsSelected: undefined,
-          onCellsDeselected: undefined,
+        const styleInfo = (index: number) => ({
+          row: rows.at(index).prop("style") as React.CSSProperties,
+          cell: cells.at(index).find("span").prop("style") as React.CSSProperties,
         });
 
-        const row = table.find(rowClassName).first();
-        row.simulate("click");
-        expect(table.find(selectedRowClassName).length).to.be.equal(1);
-        row.simulate("click");
-        expect(table.find(selectedRowClassName).length).to.be.equal(0);
+        const withNoStyling = styleInfo(0);
+        expect(withNoStyling.row.backgroundColor).to.be.undefined;
+        expect(withNoStyling.row.color).to.be.undefined;
+        expect(withNoStyling.cell.fontWeight).to.be.undefined;
+        expect(withNoStyling.cell.fontStyle).to.be.undefined;
+        expect(withNoStyling.cell.textAlign).to.be.undefined;
+        expect(withNoStyling.cell.backgroundColor).to.be.undefined;
+        expect(withNoStyling.cell.color).to.be.undefined;
+
+        const withRowStyling = styleInfo(1);
+        expect(withRowStyling.row.backgroundColor).to.eq("#ff0000");
+        expect(withRowStyling.row.color).to.eq("#00ff00");
+        expect(withRowStyling.cell.fontWeight).to.be.undefined;
+        expect(withRowStyling.cell.fontStyle).to.be.undefined;
+        expect(withRowStyling.cell.textAlign).to.be.undefined;
+        expect(withRowStyling.cell.backgroundColor).to.be.undefined;
+        expect(withRowStyling.cell.color).to.be.undefined;
+
+        const withCellStyling = styleInfo(2);
+        expect(withCellStyling.row.backgroundColor).to.be.undefined;
+        expect(withCellStyling.row.color).to.be.undefined;
+        expect(withCellStyling.cell.fontWeight).to.eq("bold");
+        expect(withCellStyling.cell.fontStyle).to.eq("italic");
+        expect(withCellStyling.cell.textAlign).to.eq("right");
+        expect(withCellStyling.cell.backgroundColor).to.eq("#aa0000");
+        expect(withCellStyling.cell.color).to.eq("#00aa00");
+
+        const withRowAndCellStyling = styleInfo(3);
+        expect(withRowAndCellStyling.row.backgroundColor).to.eq("#ff0000");
+        expect(withRowAndCellStyling.row.color).to.eq("#00ff00");
+        expect(withRowAndCellStyling.cell.fontWeight).to.eq("bold");
+        expect(withRowAndCellStyling.cell.fontStyle).to.eq("italic");
+        expect(withRowAndCellStyling.cell.textAlign).to.eq("justify");
+        expect(withRowAndCellStyling.cell.backgroundColor).to.eq("#aa0000");
+        expect(withRowAndCellStyling.cell.color).to.eq("#00aa00");
       });
 
-    });
-
-    it("selects rows as they are loaded", async () => {
-      const isRowSelected = (item: RowItem): boolean => {
-        return item.key === "0" || item.key === "1";
-      };
-      onRowsLoaded.resetHistory();
-      table = enzyme.mount(<Table dataProvider={dataProviderMock.object} isRowSelected={isRowSelected} onRowsLoaded={onRowsLoaded} />);
-      await waitForSpy(onRowsLoaded);
-      table.update();
-
-      const selectedRows = table.find(selectedRowClassName);
-      expect(selectedRows.length).to.be.equal(2);
-    });
-
-    it("updates rows if isRowSelected prop changes", async () => {
-      const isRowSelected = (item: RowItem): boolean => {
-        return item.key === "0" || item.key === "1";
-      };
-      table.setProps({ isRowSelected });
-      table.update();
-
-      const selectedRows = table.find(selectedRowClassName);
-      expect(selectedRows.length).to.be.equal(2);
-    });
-
-    it("clears selection if isRowSelected is undefined", async () => {
-      const isRowSelected = (item: RowItem): boolean => {
-        return item.key === "0" || item.key === "1";
-      };
-      onRowsLoaded.resetHistory();
-      table = enzyme.mount(<Table dataProvider={dataProviderMock.object} isRowSelected={isRowSelected} onRowsLoaded={onRowsLoaded} />);
-      await waitForSpy(onRowsLoaded);
-      table.update();
-      let selectedRows = table.find(selectedRowClassName);
-      expect(selectedRows.length).to.be.equal(2);
-      table.setProps({ isRowSelected: undefined });
-      table.update();
-
-      selectedRows = table.find(selectedRowClassName);
-      expect(selectedRows.length).to.be.equal(0);
-    });
-
-    it("does not display selected cells if selection target is rows", async () => {
-      const isCellSelected = (): boolean => true;
-      table.setProps({ isCellSelected });
-      table.update();
-      const selectedCells = table.find("div.cell.is-selected");
-      expect(selectedCells.length).to.be.equal(0);
     });
 
   });
 
-  describe("Cell Selection", () => {
+  describe("selection", () => {
 
-    beforeEach(async () => {
-      table.setProps({ tableSelectionTarget: TableSelectionTarget.Cell });
+    const verifyRowIterator = async (expectedItemKeys: string[], iterator?: AsyncIterableIterator<RowItem>): Promise<void> => {
+      expect(iterator, "row iterator").to.not.be.undefined;
+      const actualItems = [];
+      let iteratorResult = await iterator!.next();
+      while (!iteratorResult.done) {
+        actualItems.push(iteratorResult.value);
+        iteratorResult = await iterator!.next();
+      }
+      expect(expectedItemKeys.length).to.be.equal(actualItems.length);
+      for (let i = 0; i < expectedItemKeys.length; i++) {
+        expect(actualItems.find((x) => x.key === expectedItemKeys[i], "expectedItemKeys[" + i + "]")).to.not.be.undefined;
+      }
+    };
+
+    const verifyCellIterator = async (expectedItemKeys: Array<{ rowKey: string, columnKey: string }>, iterator?: AsyncIterableIterator<[RowItem, CellItem]>): Promise<void> => {
+      expect(iterator, "cell iterator").to.not.be.undefined;
+      const actualItems: Array<[RowItem, CellItem]> = [];
+      let iteratorResult = await iterator!.next();
+      while (!iteratorResult.done) {
+        actualItems.push(iteratorResult.value);
+        iteratorResult = await iterator!.next();
+      }
+
+      expect(expectedItemKeys.length).to.be.equal(actualItems.length);
+      for (let i = 0; i < expectedItemKeys.length; i++) {
+        expect(actualItems.find((x) => x[1].key === expectedItemKeys[i].columnKey && x[0].key === expectedItemKeys[i].rowKey), "expectedItemKeys[" + i + "]").to.not.be.undefined;
+      }
+    };
+
+    before(() => {
+      // https://github.com/Microsoft/TypeScript/issues/14151#issuecomment-280812617
+      // tslint:disable-next-line:no-string-literal
+      if (Symbol["asyncIterator"] === undefined) ((Symbol as any)["asyncIterator"]) = Symbol.for("asyncIterator");
     });
 
-    describe("Single", () => {
+    describe("row", () => {
 
-      it("selects a cell", async () => {
-        const cell = table.find(cellClassName).first();
-        cell.simulate("click");
-        await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
-        expect(table.find(selectedCellClassName).length).to.be.equal(1);
-      });
+      const onRowsSelectedCallbackMock = moq.Mock.ofType<(rows: AsyncIterableIterator<RowItem>, replace: boolean) => Promise<boolean>>();
+      const onRowsDeselectedCallbackMock = moq.Mock.ofType<(rows: AsyncIterableIterator<RowItem>) => Promise<boolean>>();
 
-      it("deselects other cells when selects a cell", async () => {
-        const isCellSelected = () => true;
-        table.setProps({ isCellSelected });
+      let selectedRowsIterator: AsyncIterableIterator<RowItem> | undefined;
+      let deselectedRowsIterator: AsyncIterableIterator<RowItem> | undefined;
+
+      beforeEach(async () => {
+        onRowsSelectedCallbackMock.reset();
+        onRowsDeselectedCallbackMock.reset();
+
+        onRowsSelectedCallbackMock.setup(async (x) => x(moq.It.isAny(), moq.It.isAny())).callback((iterator: AsyncIterableIterator<RowItem>) => { selectedRowsIterator = iterator; });
+        onRowsDeselectedCallbackMock.setup(async (x) => x(moq.It.isAny())).callback((iterator: AsyncIterableIterator<RowItem>) => { deselectedRowsIterator = iterator; });
+
+        table = enzyme.mount(<Table
+          dataProvider={dataProviderMock.object}
+          onRowsSelected={onRowsSelectedCallbackMock.object}
+          onRowsDeselected={onRowsDeselectedCallbackMock.object}
+          tableSelectionTarget={TableSelectionTarget.Row}
+          onRowsLoaded={onRowsLoaded}
+        />);
+        await waitForSpy(onRowsLoaded);
         table.update();
-        expect(table.find(selectedCellClassName).length).to.be.greaterThan(1);
-        const cell = table.find(cellClassName).first();
-        cell.simulate("click");
-
-        await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
-        onCellsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.never());
-        expect(table.find(selectedCellClassName).length).to.be.equal(1);
       });
 
-    });
+      describe("Single", () => {
 
-    describe("Extended", () => {
+        it("selects a row", async () => {
+          table.update();
+          const row = table.find(rowClassName).first();
+          row.simulate("click");
 
-      beforeEach(() => {
-        table.setProps({ selectionMode: SelectionMode.Extended });
-      });
-
-      it("shift select cells from top to bottom", async () => {
-        const cells = table.find(cellClassName);
-        const cell10 = cells.at(3);
-        const cell22 = cells.at(8);
-        cell10.simulate("click");
-        await verifyCellIterator([{ rowKey: "1", columnKey: "key0" }], selectedCellsIterator);
-        cell22.simulate("click", { shiftKey: true });
-        await verifyCellIterator([
-          { rowKey: "1", columnKey: "key0" },
-          { rowKey: "1", columnKey: "key1" },
-          { rowKey: "1", columnKey: "key2" },
-          { rowKey: "2", columnKey: "key0" },
-          { rowKey: "2", columnKey: "key1" },
-          { rowKey: "2", columnKey: "key2" },
-        ], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
-        expect(table.find(selectedCellClassName).length).to.be.equal(6);
-      });
-
-      it("shift select cells from bottom to top", async () => {
-        const cells = table.find(cellClassName);
-        const cell10 = cells.at(3);
-        const cell22 = cells.at(8);
-        cell22.simulate("click");
-        await verifyCellIterator([{ rowKey: "2", columnKey: "key2" }], selectedCellsIterator);
-        cell10.simulate("click", { shiftKey: true });
-        await verifyCellIterator([
-          { rowKey: "1", columnKey: "key0" },
-          { rowKey: "1", columnKey: "key1" },
-          { rowKey: "1", columnKey: "key2" },
-          { rowKey: "2", columnKey: "key0" },
-          { rowKey: "2", columnKey: "key1" },
-          { rowKey: "2", columnKey: "key2" },
-        ], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
-        expect(table.find(selectedCellClassName).length).to.be.equal(6);
-      });
-
-      it("shift select cells left to right", async () => {
-        const cells = table.find(cellClassName);
-        const cell00 = cells.at(0);
-        const cell02 = cells.at(2);
-        cell00.simulate("click");
-        await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
-        cell02.simulate("click", { shiftKey: true });
-        await verifyCellIterator([
-          { rowKey: "0", columnKey: "key0" },
-          { rowKey: "0", columnKey: "key1" },
-          { rowKey: "0", columnKey: "key2" },
-        ], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
-        expect(table.find(selectedCellClassName).length).to.be.equal(3);
-      });
-
-      it("shift select cells right to left", async () => {
-        const cells = table.find(cellClassName);
-        const cell00 = cells.at(0);
-        const cell02 = cells.at(2);
-        cell00.simulate("click");
-        await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
-        cell02.simulate("click", { shiftKey: true });
-        await verifyCellIterator([
-          { rowKey: "0", columnKey: "key0" },
-          { rowKey: "0", columnKey: "key1" },
-          { rowKey: "0", columnKey: "key2" },
-        ], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
-        expect(table.find(selectedCellClassName).length).to.be.equal(3);
-      });
-
-      it("ctrl shift select cells", async () => {
-        const cells = table.find(cellClassName);
-        const cell10 = cells.at(3);
-        const cell12 = cells.at(5);
-        const cell22 = cells.at(8);
-        cell12.simulate("click");
-        await verifyCellIterator([{ rowKey: "1", columnKey: "key2" }], selectedCellsIterator);
-        cell10.simulate("click", { ctrlKey: true });
-        await verifyCellIterator([{ rowKey: "1", columnKey: "key0" }], selectedCellsIterator);
-        cell22.simulate("click", { ctrlKey: true, shiftKey: true });
-        await verifyCellIterator([
-          { rowKey: "1", columnKey: "key1" },
-          { rowKey: "2", columnKey: "key0" },
-          { rowKey: "2", columnKey: "key1" },
-          { rowKey: "2", columnKey: "key2" },
-        ], selectedCellsIterator);
-
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.exactly(2));
-        expect(table.find(selectedCellClassName).length).to.be.equal(6);
-      });
-
-      it("ctrl selects cells", async () => {
-        const cells = table.find(cellClassName);
-        const cell11 = cells.at(0);
-        const cell13 = cells.at(2);
-        cell11.simulate("click");
-        await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
-        cell13.simulate("click", { ctrlKey: true });
-        await verifyCellIterator([{ rowKey: "0", columnKey: "key2" }], selectedCellsIterator);
-
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
-        expect(table.find(selectedCellClassName).length).to.be.equal(2);
-      });
-
-    });
-
-    describe("Multiple", () => {
-
-      beforeEach(() => {
-        table.setProps({ selectionMode: SelectionMode.Multiple });
-      });
-
-      it("drag selects cells", async () => {
-        const cells = table.find(cellClassName);
-        const cells11 = cells.at(0);
-        const cells22 = cells.at(4);
-        cells11.simulate("mousedown");
-        cells22.simulate("mousemove", { buttons: 1 });
-        document.dispatchEvent(new MouseEvent("mouseup"));
-
-        await verifyCellIterator([
-          { rowKey: "0", columnKey: "key0" },
-          { rowKey: "0", columnKey: "key1" },
-          { rowKey: "1", columnKey: "key0" },
-          { rowKey: "1", columnKey: "key1" },
-        ], selectedCellsIterator);
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
-        expect(table.find(selectedCellClassName).length).to.be.equal(4);
-      });
-
-      it("drag selects and deselects cells", async () => {
-        const isCellSelected = (rowIndex: number, _item: CellItem): boolean => (rowIndex === 0);
-        table.setProps({ isCellSelected });
-        table.update();
-        const cells = table.find(cellClassName);
-        const cell11 = cells.at(0);
-        const cell22 = cells.at(4);
-        cell22.simulate("mousedown");
-        cell11.simulate("mousemove", { buttons: 1 });
-        document.dispatchEvent(new MouseEvent("mouseup"));
-
-        await verifyCellIterator([{ rowKey: "1", columnKey: "key0" }, { rowKey: "1", columnKey: "key1" }], selectedCellsIterator);
-        await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }, { rowKey: "0", columnKey: "key1" }], deselectedCellsIterator);
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
-        onCellsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.once());
-        expect(table.find(selectedCellClassName).length).to.be.equal(3);
-      });
-
-    });
-
-    describe("SingleAllowDeselect", () => {
-
-      beforeEach(() => {
-        table.setProps({ selectionMode: SelectionMode.SingleAllowDeselect });
-      });
-
-      it("deselects selected cell", async () => {
-        const cell = table.find(cellClassName).first();
-        cell.simulate("click");
-        await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
-        cell.simulate("click");
-        await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], deselectedCellsIterator);
-
-        onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
-        onCellsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.once());
-        expect(table.find(selectedCellClassName).length).to.be.equal(0);
-      });
-
-      it("handles selection changes if callback not specified", async () => {
-        table.setProps({
-          onRowsDeselected: undefined,
-          onRowsSelected: undefined,
-          onCellsSelected: undefined,
-          onCellsDeselected: undefined,
+          await verifyRowIterator(["0"], selectedRowsIterator);
+          onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+          expect(table.find(selectedRowClassName).length).to.be.equal(1);
         });
-        const cell = table.find(cellClassName).first();
-        cell.simulate("click");
-        expect(table.find(selectedCellClassName).length).to.be.equal(1);
-        cell.simulate("click");
-        expect(table.find(selectedCellClassName).length).to.be.equal(0);
+
+        it.skip("deselects other rows when selects a row", async () => {
+          const isRowSelected = () => true;
+          table.setProps({ isRowSelected });
+          table.update();
+          expect(table.find(selectedRowClassName).length).to.be.greaterThan(1);
+          const row = table.find(rowClassName).first();
+          row.simulate("click");
+
+          await verifyRowIterator(["0"], selectedRowsIterator);
+          onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+          onRowsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.never());
+          expect(table.find(selectedRowClassName).length).to.be.equal(1);
+        });
+
+      });
+
+      describe("Extended", () => {
+
+        beforeEach(() => {
+          table.setProps({ selectionMode: SelectionMode.Extended });
+        });
+
+        it("shift select rows from top to bottom", async () => {
+          const rows = table.find(rowClassName);
+          const row0 = rows.at(0);
+          const row2 = rows.at(2);
+          row0.simulate("click");
+          await verifyRowIterator(["0"], selectedRowsIterator);
+          row2.simulate("click", { shiftKey: true });
+          await verifyRowIterator(["0", "1", "2"], selectedRowsIterator);
+
+          onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+          expect(table.find(selectedRowClassName).length).to.be.equal(3);
+        });
+
+        it("shift select rows from bottom to top", async () => {
+          const rows = table.find(rowClassName);
+          const row0 = rows.at(0);
+          const row2 = rows.at(2);
+          row2.simulate("click");
+          await verifyRowIterator(["2"], selectedRowsIterator);
+
+          row0.simulate("click", { shiftKey: true });
+          await verifyRowIterator(["0", "1", "2"], selectedRowsIterator);
+
+          onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+          expect(table.find(selectedRowClassName).length).to.be.equal(3);
+        });
+
+        it("ctrl selects rows", async () => {
+          const rows = table.find(rowClassName);
+          const row0 = rows.at(0);
+          const row2 = rows.at(2);
+          row0.simulate("click", { ctrlKey: true });
+          await verifyRowIterator(["0"], selectedRowsIterator);
+          row2.simulate("click", { ctrlKey: true });
+          await verifyRowIterator(["2"], selectedRowsIterator);
+
+          onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.exactly(2));
+          expect(table.find(selectedRowClassName).length).to.be.equal(2);
+        });
+
+      });
+
+      describe("Multiple", () => {
+
+        beforeEach(() => {
+          table.setProps({ selectionMode: SelectionMode.Multiple });
+        });
+
+        it("drag selects rows", async () => {
+          const rows = table.find(rowClassName);
+          const row0 = rows.at(0);
+          const row2 = rows.at(2);
+          row0.simulate("mousedown");
+          row2.simulate("mousemove", { buttons: 1 });
+          document.dispatchEvent(new MouseEvent("mouseup"));
+
+          await verifyRowIterator(["0", "1", "2"], selectedRowsIterator);
+          onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
+          expect(table.find(selectedRowClassName).length).to.be.equal(3);
+        });
+
+        it("drag selects and deselects rows", async () => {
+          const isRowSelected = (item: RowItem): boolean => item.key === "0" || item.key === "1";
+          table.setProps({ isRowSelected });
+          table.update();
+          expect(table.find(selectedRowClassName).length).to.be.equal(2);
+          const rows = table.find(rowClassName);
+          const row0 = rows.at(0);
+          const row2 = rows.at(2);
+          row2.simulate("mousedown");
+          row0.simulate("mousemove", { buttons: 1 });
+          document.dispatchEvent(new MouseEvent("mouseup"));
+
+          await verifyRowIterator(["2"], selectedRowsIterator);
+          await verifyRowIterator(["0", "1"], deselectedRowsIterator);
+          onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
+          onRowsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.once());
+          expect(table.find(selectedRowClassName).length).to.be.equal(1);
+        });
+
+      });
+
+      describe("SingleAllowDeselect", () => {
+
+        beforeEach(() => {
+          table.setProps({ selectionMode: SelectionMode.SingleAllowDeselect });
+        });
+
+        it("deselects selected row", async () => {
+          const row = table.find(rowClassName).first();
+          row.simulate("click");
+          await verifyRowIterator(["0"], selectedRowsIterator);
+          row.simulate("click");
+          await verifyRowIterator(["0"], deselectedRowsIterator);
+
+          onRowsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+          onRowsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.once());
+          expect(table.find(selectedRowClassName).length).to.be.equal(0);
+        });
+
+        it("handles selection changes if callback not specified", async () => {
+          table.setProps({
+            onRowsDeselected: undefined,
+            onRowsSelected: undefined,
+            onCellsSelected: undefined,
+            onCellsDeselected: undefined,
+          });
+
+          const row = table.find(rowClassName).first();
+          row.simulate("click");
+          expect(table.find(selectedRowClassName).length).to.be.equal(1);
+          row.simulate("click");
+          expect(table.find(selectedRowClassName).length).to.be.equal(0);
+        });
+
+      });
+
+      it("selects rows as they are loaded", async () => {
+        const isRowSelected = (item: RowItem): boolean => {
+          return item.key === "0" || item.key === "1";
+        };
+        onRowsLoaded.resetHistory();
+        table = enzyme.mount(<Table dataProvider={dataProviderMock.object} isRowSelected={isRowSelected} onRowsLoaded={onRowsLoaded} />);
+        await waitForSpy(onRowsLoaded);
+        table.update();
+
+        const selectedRows = table.find(selectedRowClassName);
+        expect(selectedRows.length).to.be.equal(2);
+      });
+
+      it("updates rows if isRowSelected prop changes", async () => {
+        const isRowSelected = (item: RowItem): boolean => {
+          return item.key === "0" || item.key === "1";
+        };
+        table.setProps({ isRowSelected });
+        table.update();
+
+        const selectedRows = table.find(selectedRowClassName);
+        expect(selectedRows.length).to.be.equal(2);
+      });
+
+      it("clears selection if isRowSelected is undefined", async () => {
+        const isRowSelected = (item: RowItem): boolean => {
+          return item.key === "0" || item.key === "1";
+        };
+        onRowsLoaded.resetHistory();
+        table = enzyme.mount(<Table dataProvider={dataProviderMock.object} isRowSelected={isRowSelected} onRowsLoaded={onRowsLoaded} />);
+        await waitForSpy(onRowsLoaded);
+        table.update();
+        let selectedRows = table.find(selectedRowClassName);
+        expect(selectedRows.length).to.be.equal(2);
+        table.setProps({ isRowSelected: undefined });
+        table.update();
+
+        selectedRows = table.find(selectedRowClassName);
+        expect(selectedRows.length).to.be.equal(0);
+      });
+
+      it("does not display selected cells if selection target is rows", async () => {
+        const isCellSelected = (): boolean => true;
+        table.setProps({ isCellSelected });
+        table.update();
+        const selectedCells = table.find("div.cell.is-selected");
+        expect(selectedCells.length).to.be.equal(0);
       });
 
     });
 
-    it("selects cells as they are loaded", async () => {
-      const isCellSelected = (rowIndex: number): boolean => {
-        return rowIndex === 0 || rowIndex === 1;
-      };
-      onRowsLoaded.resetHistory();
-      table = enzyme.mount(<Table
-        dataProvider={dataProviderMock.object}
-        isCellSelected={isCellSelected}
-        tableSelectionTarget={TableSelectionTarget.Cell}
-        onRowsLoaded={onRowsLoaded} />);
-      await waitForSpy(onRowsLoaded);
-      table.update();
-      const selectedCells = table.find(selectedCellClassName);
-      expect(selectedCells.length).to.be.equal(6);
-    });
+    describe("cell", () => {
 
-    it("updates cells if isCellSelected prop changes", async () => {
-      const isCellSelected = (rowIndex: number): boolean => {
-        return rowIndex === 0 || rowIndex === 1;
-      };
-      table.setProps({ isCellSelected });
-      table.update();
-      const selectedCells = table.find(selectedCellClassName);
-      expect(selectedCells.length).to.be.equal(6);
-    });
+      const onCellsSelectedCallbackMock = moq.Mock.ofType<(cells: AsyncIterableIterator<[RowItem, CellItem]>, replace: boolean) => Promise<boolean>>();
+      const onCellsDeselectedCallbackMock = moq.Mock.ofType<(cells: AsyncIterableIterator<[RowItem, CellItem]>) => Promise<boolean>>();
 
-    it("clears selection if isCellSelected is set to undefined", async () => {
-      const isCellSelected = (rowIndex: number): boolean => {
-        return rowIndex === 0 || rowIndex === 1;
-      };
-      onRowsLoaded.resetHistory();
-      table = enzyme.mount(<Table
-        dataProvider={dataProviderMock.object}
-        isCellSelected={isCellSelected}
-        onRowsLoaded={onRowsLoaded}
-        tableSelectionTarget={TableSelectionTarget.Cell} />);
-      await waitForSpy(onRowsLoaded);
-      table.update();
-      let selectedCells = table.find(selectedCellClassName);
-      expect(selectedCells.length).to.be.equal(6);
-      table.setProps({ isCellSelected: undefined });
-      table.update();
-      selectedCells = table.find(selectedCellClassName);
-      expect(selectedCells.length).to.be.equal(0);
-    });
+      let selectedCellsIterator: AsyncIterableIterator<[RowItem, CellItem]> | undefined;
+      let deselectedCellsIterator: AsyncIterableIterator<[RowItem, CellItem]> | undefined;
 
-    it("does not display selected rows if selection target is cells", async () => {
-      const isRowSelected = (): boolean => true;
-      table.setProps({ isRowSelected });
-      table.update();
-      const selectedRows = table.find(selectedRowClassName);
-      expect(selectedRows.length).to.be.equal(0);
+      beforeEach(async () => {
+        onCellsSelectedCallbackMock.reset();
+        onCellsDeselectedCallbackMock.reset();
+
+        onCellsSelectedCallbackMock.setup(async (x) => x(moq.It.isAny(), moq.It.isAny())).callback(async (iterator: AsyncIterableIterator<[RowItem, CellItem]>) => { selectedCellsIterator = iterator; });
+        onCellsDeselectedCallbackMock.setup(async (x) => x(moq.It.isAny())).callback(async (iterator: AsyncIterableIterator<[RowItem, CellItem]>) => { deselectedCellsIterator = iterator; });
+
+        table = enzyme.mount(<Table
+          dataProvider={dataProviderMock.object}
+          onCellsSelected={onCellsSelectedCallbackMock.object}
+          onCellsDeselected={onCellsDeselectedCallbackMock.object}
+          tableSelectionTarget={TableSelectionTarget.Cell}
+          onRowsLoaded={onRowsLoaded}
+        />);
+        await waitForSpy(onRowsLoaded);
+        table.update();
+      });
+
+      describe("Single", () => {
+
+        it("selects a cell", async () => {
+          const cell = table.find(cellClassName).first();
+          cell.simulate("click");
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+          expect(table.find(selectedCellClassName).length).to.be.equal(1);
+        });
+
+        it("deselects other cells when selects a cell", async () => {
+          const isCellSelected = () => true;
+          table.setProps({ isCellSelected });
+          table.update();
+          expect(table.find(selectedCellClassName).length).to.be.greaterThan(1);
+          const cell = table.find(cellClassName).first();
+          cell.simulate("click");
+
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+          onCellsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.never());
+          expect(table.find(selectedCellClassName).length).to.be.equal(1);
+        });
+
+      });
+
+      describe("Extended", () => {
+
+        beforeEach(() => {
+          table.setProps({ selectionMode: SelectionMode.Extended });
+        });
+
+        it("shift select cells from top to bottom", async () => {
+          const cells = table.find(cellClassName);
+          const cell10 = cells.at(3);
+          const cell22 = cells.at(8);
+          cell10.simulate("click");
+          await verifyCellIterator([{ rowKey: "1", columnKey: "key0" }], selectedCellsIterator);
+          cell22.simulate("click", { shiftKey: true });
+          await verifyCellIterator([
+            { rowKey: "1", columnKey: "key0" },
+            { rowKey: "1", columnKey: "key1" },
+            { rowKey: "1", columnKey: "key2" },
+            { rowKey: "2", columnKey: "key0" },
+            { rowKey: "2", columnKey: "key1" },
+            { rowKey: "2", columnKey: "key2" },
+          ], selectedCellsIterator);
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+          expect(table.find(selectedCellClassName).length).to.be.equal(6);
+        });
+
+        it("shift select cells from bottom to top", async () => {
+          const cells = table.find(cellClassName);
+          const cell10 = cells.at(3);
+          const cell22 = cells.at(8);
+          cell22.simulate("click");
+          await verifyCellIterator([{ rowKey: "2", columnKey: "key2" }], selectedCellsIterator);
+          cell10.simulate("click", { shiftKey: true });
+          await verifyCellIterator([
+            { rowKey: "1", columnKey: "key0" },
+            { rowKey: "1", columnKey: "key1" },
+            { rowKey: "1", columnKey: "key2" },
+            { rowKey: "2", columnKey: "key0" },
+            { rowKey: "2", columnKey: "key1" },
+            { rowKey: "2", columnKey: "key2" },
+          ], selectedCellsIterator);
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+          expect(table.find(selectedCellClassName).length).to.be.equal(6);
+        });
+
+        it("shift select cells left to right", async () => {
+          const cells = table.find(cellClassName);
+          const cell00 = cells.at(0);
+          const cell02 = cells.at(2);
+          cell00.simulate("click");
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
+          cell02.simulate("click", { shiftKey: true });
+          await verifyCellIterator([
+            { rowKey: "0", columnKey: "key0" },
+            { rowKey: "0", columnKey: "key1" },
+            { rowKey: "0", columnKey: "key2" },
+          ], selectedCellsIterator);
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+          expect(table.find(selectedCellClassName).length).to.be.equal(3);
+        });
+
+        it("shift select cells right to left", async () => {
+          const cells = table.find(cellClassName);
+          const cell00 = cells.at(0);
+          const cell02 = cells.at(2);
+          cell00.simulate("click");
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
+          cell02.simulate("click", { shiftKey: true });
+          await verifyCellIterator([
+            { rowKey: "0", columnKey: "key0" },
+            { rowKey: "0", columnKey: "key1" },
+            { rowKey: "0", columnKey: "key2" },
+          ], selectedCellsIterator);
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.exactly(2));
+          expect(table.find(selectedCellClassName).length).to.be.equal(3);
+        });
+
+        it("ctrl shift select cells", async () => {
+          const cells = table.find(cellClassName);
+          const cell10 = cells.at(3);
+          const cell12 = cells.at(5);
+          const cell22 = cells.at(8);
+          cell12.simulate("click");
+          await verifyCellIterator([{ rowKey: "1", columnKey: "key2" }], selectedCellsIterator);
+          cell10.simulate("click", { ctrlKey: true });
+          await verifyCellIterator([{ rowKey: "1", columnKey: "key0" }], selectedCellsIterator);
+          cell22.simulate("click", { ctrlKey: true, shiftKey: true });
+          await verifyCellIterator([
+            { rowKey: "1", columnKey: "key1" },
+            { rowKey: "2", columnKey: "key0" },
+            { rowKey: "2", columnKey: "key1" },
+            { rowKey: "2", columnKey: "key2" },
+          ], selectedCellsIterator);
+
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.exactly(2));
+          expect(table.find(selectedCellClassName).length).to.be.equal(6);
+        });
+
+        it("ctrl selects cells", async () => {
+          const cells = table.find(cellClassName);
+          const cell11 = cells.at(0);
+          const cell13 = cells.at(2);
+          cell11.simulate("click");
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
+          cell13.simulate("click", { ctrlKey: true });
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key2" }], selectedCellsIterator);
+
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
+          expect(table.find(selectedCellClassName).length).to.be.equal(2);
+        });
+
+      });
+
+      describe("Multiple", () => {
+
+        beforeEach(() => {
+          table.setProps({ selectionMode: SelectionMode.Multiple });
+        });
+
+        it("drag selects cells", async () => {
+          const cells = table.find(cellClassName);
+          const cells11 = cells.at(0);
+          const cells22 = cells.at(4);
+          cells11.simulate("mousedown");
+          cells22.simulate("mousemove", { buttons: 1 });
+          document.dispatchEvent(new MouseEvent("mouseup"));
+
+          await verifyCellIterator([
+            { rowKey: "0", columnKey: "key0" },
+            { rowKey: "0", columnKey: "key1" },
+            { rowKey: "1", columnKey: "key0" },
+            { rowKey: "1", columnKey: "key1" },
+          ], selectedCellsIterator);
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
+          expect(table.find(selectedCellClassName).length).to.be.equal(4);
+        });
+
+        it("drag selects and deselects cells", async () => {
+          const isCellSelected = (rowIndex: number, _item: CellItem): boolean => (rowIndex === 0);
+          table.setProps({ isCellSelected });
+          table.update();
+          const cells = table.find(cellClassName);
+          const cell11 = cells.at(0);
+          const cell22 = cells.at(4);
+          cell22.simulate("mousedown");
+          cell11.simulate("mousemove", { buttons: 1 });
+          document.dispatchEvent(new MouseEvent("mouseup"));
+
+          await verifyCellIterator([{ rowKey: "1", columnKey: "key0" }, { rowKey: "1", columnKey: "key1" }], selectedCellsIterator);
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }, { rowKey: "0", columnKey: "key1" }], deselectedCellsIterator);
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), false), moq.Times.once());
+          onCellsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.once());
+          expect(table.find(selectedCellClassName).length).to.be.equal(3);
+        });
+
+      });
+
+      describe("SingleAllowDeselect", () => {
+
+        beforeEach(() => {
+          table.setProps({ selectionMode: SelectionMode.SingleAllowDeselect });
+        });
+
+        it("deselects selected cell", async () => {
+          const cell = table.find(cellClassName).first();
+          cell.simulate("click");
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], selectedCellsIterator);
+          cell.simulate("click");
+          await verifyCellIterator([{ rowKey: "0", columnKey: "key0" }], deselectedCellsIterator);
+
+          onCellsSelectedCallbackMock.verify(async (x) => x(moq.It.isAny(), true), moq.Times.once());
+          onCellsDeselectedCallbackMock.verify(async (x) => x(moq.It.isAny()), moq.Times.once());
+          expect(table.find(selectedCellClassName).length).to.be.equal(0);
+        });
+
+        it("handles selection changes if callback not specified", async () => {
+          table.setProps({
+            onRowsDeselected: undefined,
+            onRowsSelected: undefined,
+            onCellsSelected: undefined,
+            onCellsDeselected: undefined,
+          });
+          const cell = table.find(cellClassName).first();
+          cell.simulate("click");
+          expect(table.find(selectedCellClassName).length).to.be.equal(1);
+          cell.simulate("click");
+          expect(table.find(selectedCellClassName).length).to.be.equal(0);
+        });
+
+      });
+
+      it("selects cells as they are loaded", async () => {
+        const isCellSelected = (rowIndex: number): boolean => {
+          return rowIndex === 0 || rowIndex === 1;
+        };
+        onRowsLoaded.resetHistory();
+        table = enzyme.mount(<Table
+          dataProvider={dataProviderMock.object}
+          isCellSelected={isCellSelected}
+          tableSelectionTarget={TableSelectionTarget.Cell}
+          onRowsLoaded={onRowsLoaded} />);
+        await waitForSpy(onRowsLoaded);
+        table.update();
+        const selectedCells = table.find(selectedCellClassName);
+        expect(selectedCells.length).to.be.equal(6);
+      });
+
+      it("updates cells if isCellSelected prop changes", async () => {
+        const isCellSelected = (rowIndex: number): boolean => {
+          return rowIndex === 0 || rowIndex === 1;
+        };
+        table.setProps({ isCellSelected });
+        table.update();
+        const selectedCells = table.find(selectedCellClassName);
+        expect(selectedCells.length).to.be.equal(6);
+      });
+
+      it("clears selection if isCellSelected is set to undefined", async () => {
+        const isCellSelected = (rowIndex: number): boolean => {
+          return rowIndex === 0 || rowIndex === 1;
+        };
+        onRowsLoaded.resetHistory();
+        table = enzyme.mount(<Table
+          dataProvider={dataProviderMock.object}
+          isCellSelected={isCellSelected}
+          onRowsLoaded={onRowsLoaded}
+          tableSelectionTarget={TableSelectionTarget.Cell} />);
+        await waitForSpy(onRowsLoaded);
+        table.update();
+        let selectedCells = table.find(selectedCellClassName);
+        expect(selectedCells.length).to.be.equal(6);
+        table.setProps({ isCellSelected: undefined });
+        table.update();
+        selectedCells = table.find(selectedCellClassName);
+        expect(selectedCells.length).to.be.equal(0);
+      });
+
+      it("does not display selected rows if selection target is cells", async () => {
+        const isRowSelected = (): boolean => true;
+        table.setProps({ isRowSelected });
+        table.update();
+        const selectedRows = table.find(selectedRowClassName);
+        expect(selectedRows.length).to.be.equal(0);
+      });
+
     });
 
   });
@@ -781,6 +896,34 @@ describe("Table", () => {
   });
 
   describe("cell editing", async () => {
+
+    const newPropertyValue = "My new value";
+    const handlePropertyUpdated = async (args: PropertyUpdatedArgs): Promise<boolean> => {
+      let updated = false;
+
+      if (args.propertyRecord) {
+        expect(args.newValue).to.eq(newPropertyValue);
+        args.propertyRecord = args.propertyRecord.copyWithNewValue(args.newValue);
+        updated = true;
+      }
+
+      return updated;
+    };
+    const onPropertyEditing = sinon.spy();
+    const onPropertyUpdated = sinon.spy(handlePropertyUpdated);
+
+    beforeEach(async () => {
+      onPropertyEditing.resetHistory();
+      onPropertyUpdated.resetHistory();
+      table = enzyme.mount(<Table
+        dataProvider={dataProviderMock.object}
+        onRowsLoaded={onRowsLoaded}
+        onPropertyEditing={onPropertyEditing}
+        onPropertyUpdated={onPropertyUpdated}
+      />);
+      await waitForSpy(onRowsLoaded);
+      table.update();
+    });
 
     it("clicking on an editor cell after selection should start editing", async () => {
       // Simulate clicking on the cell to edit
@@ -815,9 +958,21 @@ describe("Table", () => {
     });
 
   });
+
   describe("column drag and drop", async () => {
-    it("should begin and end drag", () => {
+
+    beforeEach(async () => {
+      const DragDropTable = DragDropContext(TestBackend)(Table); // tslint:disable-line:variable-name
+      table = enzyme.mount(<DragDropTable
+        dataProvider={dataProviderMock.object}
+        onRowsLoaded={onRowsLoaded}
+        reorderableColumns={true}
+      />);
+      await waitForSpy(onRowsLoaded);
       table.update();
+    });
+
+    it("should begin and end drag", () => {
       const instance = table.instance() as any;
       const backend = instance.getManager().getBackend();
       const head = table.find(DragDropHeaderWrapper);
@@ -826,11 +981,50 @@ describe("Table", () => {
       backend.simulateBeginDrag([firstInstance.getHandlerId()]);
       backend.simulateEndDrag();
     });
+
   });
+
   describe("columns show/hide", async () => {
+
+    const storageMock = () => {
+      const storage: { [key: string]: any } = {};
+      return {
+        setItem: (key: string, value: string) => {
+          storage[key] = value || "";
+        },
+        getItem: (key: string) => {
+          return key in storage ? storage[key] : null;
+        },
+        removeItem: (key: string) => {
+          delete storage[key];
+        },
+        get length() {
+          return Object.keys(storage).length;
+        },
+        key: (i: number) => {
+          const keys = Object.keys(storage);
+          return keys[i] || null;
+        },
+      };
+    };
+
+    beforeEach(async () => {
+      table = enzyme.mount(<Table
+        dataProvider={dataProviderMock.object}
+        onRowsLoaded={onRowsLoaded}
+        settingsIdentifier="test"
+        showHideColumns={true}
+        uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
+      />);
+      await waitForSpy(onRowsLoaded);
+      table.update();
+    });
+
     it("should open context menu", () => {
       const t = table.find(tableWrapper);
       t.simulate("contextmenu", { currentTarget: t, clientX: -1, clientY: -1 });
     });
+
   });
+
 });
