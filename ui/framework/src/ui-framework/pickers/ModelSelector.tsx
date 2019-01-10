@@ -417,7 +417,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     });
     this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(parents);
 
-    Promise.all(promises).then((childNodeCollection: DelayLoadedTreeNodeItem[][]) => {
+    await Promise.all(promises).then((childNodeCollection: DelayLoadedTreeNodeItem[][]) => {
       childNodeCollection.forEach((childNodes) => {
         childNodes.forEach((child) => {
           child.checkBoxState = CheckBoxState.On;
@@ -471,25 +471,27 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     parents.forEach((parent) => {
       if (parent.checkBoxState === CheckBoxState.On) {
         parent.checkBoxState = CheckBoxState.Off;
+        parent.labelBold = false;
       } else {
         parent.checkBoxState = CheckBoxState.On;
+        parent.labelBold = true;
         nodeIds.push(parent.id);
       }
-      parent.labelBold = !parent.labelBold;
       promises.push(this.state.treeInfo!.dataProvider.getNodes(parent));
     });
     this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(parents);
 
-    Promise.all(promises).then((childNodeCollection: DelayLoadedTreeNodeItem[][]) => {
+    await Promise.all(promises).then((childNodeCollection: DelayLoadedTreeNodeItem[][]) => {
       childNodeCollection.forEach((childNodes) => {
         childNodes.forEach((child) => {
           if (child.checkBoxState === CheckBoxState.On) {
             child.checkBoxState = CheckBoxState.Off;
+            child.labelBold = false;
           } else {
             child.checkBoxState = CheckBoxState.On;
+            child.labelBold = true;
             nodeIds.push(child.id);
           }
-          child.labelBold = !child.labelBold;
         });
         this.state.treeInfo!.dataProvider.onTreeNodeChanged.raiseEvent(childNodes);
       });
