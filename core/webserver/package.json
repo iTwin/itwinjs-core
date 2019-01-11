@@ -7,8 +7,8 @@
     "type": "git",
     "url": "https://github.com/imodeljs/imodeljs"
   },
-  "main": "lib/imodeljs-webserver",
-  "typings": "lib/imodeljs-webserver",
+  "main": "lib/WebServer",
+  "typings": "lib/WebServer",
   "scripts": {
     "build": "tsc 1>&2",
     "clean": "rimraf lib package-deps.json",

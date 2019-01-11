@@ -23,7 +23,7 @@
     "mobile": "tsc 1>&2 && webpack --config mobile.backend.webpack.config.js 1>&2 && webpack --config mobile.frontend.webpack.config.js 1>&2 && cpx \"public/**/*\" ./lib/mobile/public && cpx \"assets/**/*\" ./lib/mobile/assets ",
     "start": "npm run start:electron",
     "start:electron": "electron ./lib/backend/ElectronMain.js",
-    "start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/webserver.js --port=3000 --resources=./lib/webresources/",
+    "start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/WebServer.js --port=3000 --resources=./lib/webresources/",
     "start:backend": "node lib/backend/WebMain.js",
     "start:servers": "run-p \"start:webserver\" \"start:backend\"",
     "test": "",

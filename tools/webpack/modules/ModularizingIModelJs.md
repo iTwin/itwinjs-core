@@ -150,13 +150,13 @@ On the other hand, the resources needed by the web browser (the imodel.js system
 
 To make that distinction more obvious, and to make our development environment more similar to the deployment environment, I have separated those responsibilities into two Express-based servers, and separated out the static resources from the backend code during the build. The static resources are now located in the "lib/webresources" directory and in development are delivered to the browser by using the command:
 
-`node ./node_modules/@bentley/imodeljs-webserver/lib/webserver.js --port=3000 --resources=./lib/webresources/`
+`node ./node_modules/@bentley/imodeljs-webserver/lib/WebServer.js --port=3000 --resources=./lib/webresources/`
 
 where the "port" and "resources" arguments specify the port used by the webserver and the location of the static resources.
 
 Generally, it's easiest to put this as "start:webserver" into the "scripts" tag in your package.json:
 
-`"start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/webserver.js --port=3000 --resources=./lib/webresources/"`
+`"start:webserver": "node ./node_modules/@bentley/imodeljs-webserver/lib/WebServer.js --port=3000 --resources=./lib/webresources/"`
 
 The script that starts the backend server is unchanged. Creating a script that starts both the static webserver and the backend server can be easily accomplished as follows:
 
