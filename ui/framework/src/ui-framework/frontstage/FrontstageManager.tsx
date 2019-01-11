@@ -232,6 +232,10 @@ export class FrontstageManager {
    */
   public static async setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void> {
     this._isLoading = true;
+
+    if (this._activeFrontstageDef)
+      this._activeFrontstageDef.onDeactivated();
+
     this._activeFrontstageDef = frontstageDef;
 
     if (frontstageDef) {

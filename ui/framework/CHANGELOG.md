@@ -1,6 +1,17 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Mon, 07 Jan 2019 21:49:21 GMT and should not be manually modified.
+This log was last generated on Thu, 10 Jan 2019 22:46:17 GMT and should not be manually modified.
+
+## 0.184.0
+Thu, 10 Jan 2019 22:46:17 GMT
+
+### Updates
+
+- Improved state management in ModelSelector
+- Improve performance for show/hide/invert buttons in model selector
+- Clearing content controls on Frontstage deactivate
+- Keyboard Shortcut support
+- Renamed connection getter to imodel
 
 ## 0.183.0
 Mon, 07 Jan 2019 21:49:21 GMT

@@ -14,6 +14,7 @@ import { SyncUiEventDispatcher, SyncUiEventArgs, SyncUiEventId } from "../syncui
 import { PropsHelper } from "../utils/PropsHelper";
 
 import { Item } from "@bentley/ui-ninezone";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 /** Property that must be specified for a ActionItemButton component */
 export interface ActionItemButtonProps {
@@ -96,6 +97,12 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
     }
   }
 
+  private _handleKeyDown = (e: React.KeyboardEvent): void => {
+    if (e.key === "Escape") {
+      KeyboardShortcutManager.setFocusToHome();
+    }
+  }
+
   public render(): React.ReactNode {
     if (!this.state.isVisible)
       return null;
@@ -111,6 +118,7 @@ export class ActionItemButton extends React.Component<ActionItemButtonProps, Bas
         title={actionItem.label}
         key={actionItem.id}
         onClick={this._execute}
+        onKeyDown={this._handleKeyDown}
         icon={icon}
       />
     );

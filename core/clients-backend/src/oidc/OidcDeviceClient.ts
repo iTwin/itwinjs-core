@@ -135,7 +135,7 @@ export class OidcDeviceClient extends OidcClient implements IOidcFrontendClient 
       response_type: AuthorizationRequest.RESPONSE_TYPE_CODE,
       client_id: this._clientConfiguration.clientId,
       redirect_uri: this._clientConfiguration.redirectUri,
-      scope: this._clientConfiguration.scope || "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router offline_access reality-data:read",
+      scope: this._clientConfiguration.scope,
       extras: { prompt: "consent", access_type: "offline" },
     };
     const request = new AuthorizationRequest(

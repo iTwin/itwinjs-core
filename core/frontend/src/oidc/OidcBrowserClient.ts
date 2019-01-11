@@ -128,7 +128,7 @@ export class OidcBrowserClient extends OidcClient implements IOidcFrontendClient
       post_logout_redirect_uri: this._configuration.postSignoutRedirectUri,
       automaticSilentRenew: true,
       response_type: "id_token token",
-      scope: this._configuration.scope || "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read",
+      scope: this._configuration.scope,
     };
     return userManagerSettings;
   }

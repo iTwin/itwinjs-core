@@ -167,14 +167,15 @@ export class SampleAppIModelApp extends IModelApp {
     UiComponents.initialize(SampleAppIModelApp.i18n); // tslint:disable-line:no-floating-promises
 
     let oidcConfiguration: OidcFrontendClientConfiguration;
+    const scope = "openid email profile organization feature_tracking imodelhub context-registry-service imodeljs-router reality-data:read";
     if (ElectronRpcConfiguration.isElectron) {
       const clientId = Config.App.get("imjs_electron_test_client_id");
       const redirectUri = Config.App.get("imjs_electron_test_redirect_uri");
-      oidcConfiguration = { clientId, redirectUri };
+      oidcConfiguration = { clientId, redirectUri, scope };
     } else {
       const clientId = Config.App.get("imjs_browser_test_client_id");
       const redirectUri = Config.App.get("imjs_browser_test_redirect_uri");
-      oidcConfiguration = { clientId, redirectUri };
+      oidcConfiguration = { clientId, redirectUri, scope };
     }
 
     await UiFramework.initialize(SampleAppIModelApp.store, SampleAppIModelApp.i18n, oidcConfiguration, "frameworkState");

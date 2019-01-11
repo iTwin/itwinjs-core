@@ -11,6 +11,7 @@ exports[`ToolButton disabled renders correctly 1`] = `
   isDisabled={true}
   key="tool1"
   onClick={[Function]}
+  onKeyDown={[Function]}
   title="tests.label"
 />
 `;
@@ -28,6 +29,7 @@ exports[`ToolButton renders correctly 1`] = `
   isDisabled={false}
   key="tool1"
   onClick={[Function]}
+  onKeyDown={[Function]}
   title="tests.label"
 />
 `;

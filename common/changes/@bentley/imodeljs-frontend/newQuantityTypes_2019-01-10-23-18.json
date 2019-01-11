@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Quantity formatter now allows async method to get FormatterSpec that can be used to format quantities.",
+      "comment": "Add QuantityTypes LatLong and Coordinate.",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }

@@ -2,6 +2,30 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "0.184.0",
+      "tag": "@bentley/ui-framework_v0.184.0",
+      "date": "Thu, 10 Jan 2019 22:46:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Improved state management in ModelSelector"
+          },
+          {
+            "comment": "Improve performance for show/hide/invert buttons in model selector"
+          },
+          {
+            "comment": "Clearing content controls on Frontstage deactivate"
+          },
+          {
+            "comment": "Keyboard Shortcut support"
+          },
+          {
+            "comment": "Renamed connection getter to imodel"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.183.0",
       "tag": "@bentley/ui-framework_v0.183.0",
       "date": "Mon, 07 Jan 2019 21:49:21 GMT",

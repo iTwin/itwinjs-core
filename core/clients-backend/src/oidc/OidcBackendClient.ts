@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { OidcClient, AccessToken, IncludePrefix, UserInfo } from "@bentley/imodeljs-clients";
-import { Issuer, Client as OpenIdClient, ClientConfiguration, GrantParams, TokenSet, UserInfo as OpenIdUserInfo } from "openid-client";
+import { Issuer, Client as OpenIdClient, ClientConfiguration, TokenSet, UserInfo as OpenIdUserInfo } from "openid-client";
 import { ActivityLoggingContext, BentleyStatus, BentleyError } from "@bentley/bentleyjs-core";
 
 /** Client configuration to create OIDC/OAuth tokens for backend applications */
@@ -13,22 +13,21 @@ export interface OidcBackendClientConfiguration {
   clientId: string;
   /** Client application's secret key as registered with the Bentley IMS OIDC/OAuth2 provider. */
   clientSecret: string;
+  /** List of space separated scopes to request access to various resources. */
+  scope: string;
 }
 
 /** Utility to generate OIDC/OAuth tokens for backend applications */
 export abstract class OidcBackendClient extends OidcClient {
-  private _clientConfiguration: ClientConfiguration;
+  protected _configuration: OidcBackendClientConfiguration;
+
   /**
    * Creates an instance of OidcBackendClient.
    * @param deploymentEnv Deployment environment.
    */
   public constructor(configuration: OidcBackendClientConfiguration) {
     super();
-
-    this._clientConfiguration = {
-      client_id: configuration.clientId,
-      client_secret: configuration.clientSecret,
-    };
+    this._configuration = configuration;
   }
 
   private _issuer: Issuer;
@@ -58,29 +57,20 @@ export abstract class OidcBackendClient extends OidcClient {
     if (this._client)
       return this._client;
 
+    const clientConfiguration: ClientConfiguration = {
+      client_id: this._configuration.clientId,
+      client_secret: this._configuration.clientSecret,
+    };
     const issuer = await this.getIssuer(actx);
-    this._client = new issuer.Client(this._clientConfiguration);
+    this._client = new issuer.Client(clientConfiguration);
     return this._client;
   }
 
-  private createToken(tokenSet: TokenSet, openIdUserInfo: OpenIdUserInfo): AccessToken {
+  protected createToken(tokenSet: TokenSet, openIdUserInfo: OpenIdUserInfo): AccessToken {
     const startsAt: Date = new Date(tokenSet.expires_at - tokenSet.expires_in);
     const expiresAt: Date = new Date(tokenSet.expires_at);
     const userInfo = UserInfo.fromJson(openIdUserInfo);
     return AccessToken.fromJsonWebTokenString(tokenSet.access_token, startsAt, expiresAt, userInfo);
-  }
-
-  protected async exchangeToken(actx: ActivityLoggingContext, grantParams: GrantParams): Promise<AccessToken> {
-    actx.enter();
-
-    const scope = grantParams.scope;
-    if (!scope.includes("openid") || !scope.includes("email") || !scope.includes("profile") || !scope.includes("organization"))
-      throw new BentleyError(BentleyStatus.ERROR, "Scopes when fetching a JWT token must include 'openid email profile organization'");
-
-    const client = await this.getClient(actx);
-    const tokenSet: TokenSet = await client.grant(grantParams);
-    const userInfo: OpenIdUserInfo = await client.userinfo(tokenSet.access_token);
-    return this.createToken(tokenSet, userInfo);
   }
 
   /** Refresh the supplied JSON Web Token (assuming the client was registered for offline access) */
@@ -100,5 +90,3 @@ export abstract class OidcBackendClient extends OidcClient {
     return this.createToken(tokenSet, userInfo);
   }
 }
-
-// const userInfo: UserInfo = await client.userinfo(tokenSet.access_token);
