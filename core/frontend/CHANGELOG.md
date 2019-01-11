@@ -1,6 +1,15 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 10 Jan 2019 22:46:17 GMT and should not be manually modified.
+This log was last generated on Fri, 11 Jan 2019 18:29:00 GMT and should not be manually modified.
+
+## 0.185.0
+Fri, 11 Jan 2019 18:29:00 GMT
+
+### Updates
+
+- Optimize performance of schedule animation.
+- Use QuantityType.Coordinate for measure distance start/end points.
+- Add QuantityTypes LatLong and Coordinate.
 
 ## 0.184.0
 Thu, 10 Jan 2019 22:46:17 GMT
