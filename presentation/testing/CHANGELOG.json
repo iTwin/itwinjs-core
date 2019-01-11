@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/presentation-testing",
+  "entries": [
+    {
+      "version": "0.184.0",
+      "tag": "@bentley/presentation-testing_v0.184.0",
+      "date": "Thu, 10 Jan 2019 22:46:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added initialization/termination helpers."
+          }
+        ]
+      }
+    }
+  ]
+}

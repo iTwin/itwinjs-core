@@ -2,6 +2,27 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "0.184.0",
+      "tag": "@bentley/presentation-components_v0.184.0",
+      "date": "Thu, 10 Jan 2019 22:46:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Do not set optional TreeNodeItem properties if values match defaults"
+          },
+          {
+            "comment": "Added interfaces for Property Pane and Table data providers."
+          },
+          {
+            "comment": "Changed 'connection' property name to 'imodel' in IPropertyDataProvider."
+          },
+          {
+            "comment": "Removed default exports in presentation-components."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.183.0",
       "tag": "@bentley/presentation-components_v0.183.0",
       "date": "Mon, 07 Jan 2019 21:49:21 GMT",

@@ -18,6 +18,7 @@ import {
   Item, HistoryTray, History, HistoryIcon, DefaultHistoryManager, HistoryEntry, ExpandableItem, GroupColumn,
   GroupTool, GroupToolExpander, Group as ToolGroupComponent, NestedGroup as NestedToolGroup, Direction,
 } from "@bentley/ui-ninezone";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 // -----------------------------------------------------------------------------
 // GroupItemDef class
@@ -269,6 +270,13 @@ class GroupItem extends React.Component<Props, State> {
     return tray;
   }
 
+  private _handleKeyDown = (e: React.KeyboardEvent): void => {
+    if (e.key === "Escape") {
+      this._closeGroupButton();
+      KeyboardShortcutManager.setFocusToHome();
+    }
+  }
+
   public render(): React.ReactNode {
     if (!this.state.isVisible)
       return null;
@@ -288,6 +296,7 @@ class GroupItem extends React.Component<Props, State> {
           isDisabled={!this.state.isEnabled}
           title={this.state.groupItemDef.label}
           onClick={() => this._toggleGroupButton()}
+          onKeyDown={this._handleKeyDown}
           icon={icon}
         />
       </ExpandableItem>
@@ -299,6 +308,14 @@ class GroupItem extends React.Component<Props, State> {
       ..._prevState,
       isExtended: false,
       isPressed: !_prevState.isPressed,
+    }));
+  }
+
+  private _closeGroupButton = () => {
+    this.setState((_prevState) => ({
+      ..._prevState,
+      isExtended: false,
+      isPressed: false,
     }));
   }
 

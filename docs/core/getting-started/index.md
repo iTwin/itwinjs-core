@@ -6,7 +6,7 @@
 
 Writing an iModel.js application requires the following software:
 
-- [Node.js](https://nodejs.org/en/download/releases/) (latest 8.x LTS version)
+- [Node.js](https://nodejs.org) (latest 10.x LTS version)
   - This provides the backend JavaScript runtime.
   - The installation also includes the `npm` command line tool.
 - [Google Chrome](https://www.google.com/chrome/)

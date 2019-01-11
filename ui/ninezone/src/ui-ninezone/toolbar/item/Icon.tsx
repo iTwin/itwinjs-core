@@ -21,6 +21,8 @@ export interface ItemProps extends CommonProps {
   isDisabled?: boolean;
   /** Function called when the item is clicked. */
   onClick?: () => void;
+  /** Function called when a key is pressed. */
+  onKeyDown?: (e: React.KeyboardEvent) => void;
   /** Title for the item. */
   title?: string;
 }
@@ -43,6 +45,7 @@ class ItemComponent extends React.PureComponent<ItemProps> implements ToolbarIte
       <button
         disabled={this.props.isDisabled}  // this is needed to prevent focusing/keyboard access to disabled buttons
         onClick={this._handleClick}
+        onKeyDown={this.props.onKeyDown}
         className={className}
         style={this.props.style}
         title={this.props.title}

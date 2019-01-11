@@ -6,7 +6,7 @@ import "@bentley/icons-generic-webfont/dist/bentley-icons-generic-webfont.css";
 
 import {
   ConfigurableUiManager, FrontstageManager, WidgetState,
-  ContentGroupProps, ViewClass, TaskPropsList, WorkflowPropsList, ContentLayoutProps,
+  ContentGroupProps, ViewClass, TaskPropsList, WorkflowPropsList, ContentLayoutProps, KeyboardShortcutProps, CoreTools, FunctionKey, CommandItemDef, KeyboardShortcutManager,
 } from "@bentley/ui-framework";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 
@@ -31,6 +31,7 @@ import { Frontstage2 } from "./frontstages/Frontstage2";
 import { Frontstage3 } from "./frontstages/Frontstage3";
 import { Frontstage4 } from "./frontstages/Frontstage4";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
+import { AppTools } from "../tools/ToolSpecifications";
 
 /** Example Ui Configuration for an iModelJS App
  */
@@ -43,6 +44,7 @@ export class AppUi {
     AppUi.defineContentGroups();
     AppUi.defineContentLayouts();
     AppUi.defineTasksAndWorkflows();
+    AppUi.defineKeyboardShortcuts();
   }
 
   /** Define Frontstages
@@ -348,4 +350,55 @@ export class AppUi {
 
     ConfigurableUiManager.loadWorkflows(workflowPropsList);
   }
+
+  /** Define Keyboard Shortcuts list.
+   */
+  private static defineKeyboardShortcuts() {
+    const keyboardShortcutList: KeyboardShortcutProps[] = [
+      {
+        key: "a",
+        item: AppTools.verticalPropertyGridOpenCommand,
+      },
+      {
+        key: "s",
+        item: AppTools.verticalPropertyGridOffCommand,
+      },
+      {
+        key: "d",
+        labelKey: "SampleApp:buttons.shortcutsSubMenu",
+        shortcuts: [
+          {
+            key: "1",
+            item: AppTools.tool1,
+          },
+          {
+            key: "2",
+            item: AppTools.tool2,
+          },
+          {
+            key: "s",
+            item: CoreTools.selectElementCommand,
+          },
+        ],
+      },
+      {
+        key: FunctionKey.F7,
+        item: AppUi._showShortcutsMenuCommand,
+      },
+    ];
+
+    ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
+  }
+
+  private static get _showShortcutsMenuCommand() {
+    return new CommandItemDef({
+      commandId: "showShortcutsMenu",
+      iconSpec: "icon-placeholder",
+      labelKey: "SampleApp:buttons.showShortcutsMenu",
+      execute: () => {
+        KeyboardShortcutManager.displayShortcutsMenu();
+      },
+    });
+  }
+
 }

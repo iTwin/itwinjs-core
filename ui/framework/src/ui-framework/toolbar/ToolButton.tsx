@@ -15,6 +15,7 @@ import { BaseItemState } from "../shared/ItemDefBase";
 import { ToolItemProps, StringGetter } from "../shared/ItemProps";
 import { UiFramework } from "../UiFramework";
 import { Item, getToolbarItemProps } from "@bentley/ui-ninezone";
+import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 /** Tool Button React Component.
  */
@@ -83,6 +84,12 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
     }
   }
 
+  private _handleKeyDown = (e: React.KeyboardEvent): void => {
+    if (e.key === "Escape") {
+      KeyboardShortcutManager.setFocusToHome();
+    }
+  }
+
   public get label(): string {
     let label = "";
     if (typeof this._label === "string")
@@ -106,6 +113,7 @@ export class ToolButton extends React.Component<ToolItemProps, BaseItemState> {
         title={this.label}
         key={this.props.toolId}
         onClick={this._execute}
+        onKeyDown={this._handleKeyDown}
         icon={icon}
       />
     );

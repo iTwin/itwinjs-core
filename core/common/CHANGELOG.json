@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.184.0",
+      "tag": "@bentley/imodeljs-common_v0.184.0",
+      "date": "Thu, 10 Jan 2019 22:46:17 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for general 3d tilesets"
+          },
+          {
+            "comment": "Fix drag select decorator when cursor moves out of view. Doc fixes."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.183.0",
       "tag": "@bentley/imodeljs-common_v0.183.0",
       "date": "Mon, 07 Jan 2019 21:49:21 GMT",

@@ -1,6 +1,8 @@
 --require scripts/copy-test-setup.js
 --require ../../common/scripts/mocha-reporter-tweaks.js
 --require source-map-support/register
+--require jsdom-global/register
+--require ignore-styles
 --check-leaks
 --no-timeouts
 --file lib/setup.js

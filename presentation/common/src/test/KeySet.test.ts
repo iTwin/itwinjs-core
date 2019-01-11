@@ -135,6 +135,37 @@ describe("KeySet", () => {
 
   });
 
+  describe("[get] instanceKeysCount", () => {
+
+    it("returns 0 when there are no keys", () => {
+      const set = new KeySet();
+      expect(set.instanceKeysCount).to.eq(0);
+    });
+
+    it("returns correct count when all keys are of the same class", () => {
+      const set = new KeySet([{
+        className: "aaa",
+        id: createRandomECInstanceId(),
+      }, {
+        className: "aaa",
+        id: createRandomECInstanceId(),
+      }]);
+      expect(set.instanceKeysCount).to.eq(2);
+    });
+
+    it("returns correct count when keys are of different classes", () => {
+      const set = new KeySet([{
+        className: "aaa",
+        id: createRandomECInstanceId(),
+      }, {
+        className: "bbb",
+        id: createRandomECInstanceId(),
+      }]);
+      expect(set.instanceKeysCount).to.eq(2);
+    });
+
+  });
+
   describe("[get] nodeKeys", () => {
 
     it("returns empty set when there are no keys", () => {
@@ -146,6 +177,20 @@ describe("KeySet", () => {
       const set = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()]);
       const keys = set.nodeKeys;
       expect(keys).to.matchSnapshot();
+    });
+
+  });
+
+  describe("[get] nodeKeysCount", () => {
+
+    it("returns 0 when there are no keys", () => {
+      const set = new KeySet();
+      expect(set.nodeKeysCount).to.eq(0);
+    });
+
+    it("returns count of node keys", () => {
+      const set = new KeySet([createRandomECInstanceNodeKey(), createRandomECInstanceNodeKey()]);
+      expect(set.nodeKeysCount).to.eq(2);
     });
 
   });

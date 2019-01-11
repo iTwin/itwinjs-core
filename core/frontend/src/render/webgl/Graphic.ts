@@ -43,7 +43,7 @@ export class FeatureOverrides implements IDisposable {
     return 0 !== (flags & OvrFlags.Flashed);
   }
 
-  private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Set<string>, flashedElemId: Id64String): TextureHandle | undefined {
+  private _initialize(map: PackedFeatureTable, ovrs: FeatureSymbology.Overrides, hilite: Id64.Uint32Set, flashedElemId: Id64String): TextureHandle | undefined {
     const nFeatures = map.numFeatures;
     const dims: LUTDimensions = LUTDimensions.computeWidthAndHeight(nFeatures, 2);
     const width = dims.width;
@@ -59,7 +59,7 @@ export class FeatureOverrides implements IDisposable {
     return TextureHandle.createForData(width, height, data, true, GL.Texture.WrapMode.ClampToEdge);
   }
 
-  private _update(map: PackedFeatureTable, lut: TextureHandle, flashedElemId: Id64String, hilites?: Set<string>, ovrs?: FeatureSymbology.Overrides) {
+  private _update(map: PackedFeatureTable, lut: TextureHandle, flashedElemId: Id64String, hilites?: Id64.Uint32Set, ovrs?: FeatureSymbology.Overrides) {
     const updater = new Texture2DDataUpdater(lut.dataBytes!);
 
     if (undefined === ovrs) {
@@ -72,7 +72,9 @@ export class FeatureOverrides implements IDisposable {
     (lut as Texture2DHandle).update(updater);
   }
 
-  private buildLookupTable(data: Texture2DDataUpdater, map: PackedFeatureTable, ovr: FeatureSymbology.Overrides, flashedElemId: Id64String, hilites: Set<string>) {
+  private buildLookupTable(data: Texture2DDataUpdater, map: PackedFeatureTable, ovr: FeatureSymbology.Overrides, flashedElemId: Id64String, hilites: Id64.Uint32Set) {
+    const modelIdParts = Id64.getUint32Pair(map.modelId);
+    const flashedIdParts = Id64.isValid(flashedElemId) ? Id64.getUint32Pair(flashedElemId) : undefined;
     this.anyOpaque = this.anyTranslucent = this.anyHilited = false;
 
     let nHidden = 0;
@@ -88,10 +90,15 @@ export class FeatureOverrides implements IDisposable {
     //      RGB = rgb
     //      A = alpha
     for (let i = 0; i < map.numFeatures; i++) {
-      const feature = map.getFeature(i);
+      const feature = map.getPackedFeature(i);
       const dataIndex = i * 4 * 2;
 
-      const app = ovr.getAppearance(feature, map.modelId, map.type);
+      const app = ovr.getAppearance(
+        feature.elementId.lower, feature.elementId.upper,
+        feature.subCategoryId.lower, feature.subCategoryId.upper,
+        feature.geometryClass,
+        modelIdParts.lower, modelIdParts.upper, map.type);
+
       if (undefined === app || app.isFullyTransparent) {
         // The feature is not visible. We don't care about any of the other overrides, because we're not going to render it.
         data.setOvrFlagsAtIndex(dataIndex, OvrFlags.Visibility);
@@ -101,7 +108,7 @@ export class FeatureOverrides implements IDisposable {
       }
 
       let flags = OvrFlags.None;
-      if (hilites!.has(feature.elementId)) {
+      if (hilites!.has(feature.elementId.lower, feature.elementId.upper)) {
         flags |= OvrFlags.Hilited;
         this.anyHilited = true;
       }
@@ -143,7 +150,7 @@ export class FeatureOverrides implements IDisposable {
       if (app.ignoresMaterial)
         flags |= OvrFlags.IgnoreMaterial;
 
-      if (Id64.isValid(flashedElemId) && feature.elementId === flashedElemId)
+      if (undefined !== flashedIdParts && feature.elementId.lower === flashedIdParts.lower && feature.elementId.upper === flashedIdParts.upper)
         flags |= OvrFlags.Flashed;
 
       data.setOvrFlagsAtIndex(dataIndex, flags);
@@ -155,12 +162,12 @@ export class FeatureOverrides implements IDisposable {
     this.anyOverridden = (nOverridden > 0);
   }
 
-  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: PackedFeatureTable, flashedElemId: Id64String, hilites?: Set<string>) {
+  private updateFlashedAndHilited(data: Texture2DDataUpdater, map: PackedFeatureTable, flashedElemId: Id64String, hilites?: Id64.Uint32Set) {
     // NB: If hilites is undefined, it means the hilited set has not changed...
     this.anyOverridden = false;
     this.anyHilited = false;
 
-    const flashedElemIdParts = Id64.isValid(flashedElemId) ? { lo: Id64.getLowerUint32(flashedElemId), hi: Id64.getUpperUint32(flashedElemId) } : undefined;
+    const flashedElemIdParts = Id64.isValid(flashedElemId) ? Id64.getUint32Pair(flashedElemId) : undefined;
     const haveFlashed = undefined !== flashedElemIdParts;
     const haveHilited = undefined !== hilites;
     const needElemId = haveFlashed || haveHilited;
@@ -175,13 +182,13 @@ export class FeatureOverrides implements IDisposable {
         continue;
       }
 
-      const elemIdParts = needElemId ? map.getElementIdParts(i) : undefined;
-      const isFlashed = haveFlashed && elemIdParts!.low === flashedElemIdParts!.lo && elemIdParts!.high === flashedElemIdParts!.hi;
+      const elemIdParts = needElemId ? map.getElementIdPair(i) : undefined;
+      const isFlashed = haveFlashed && elemIdParts!.lower === flashedElemIdParts!.lower && elemIdParts!.upper === flashedElemIdParts!.upper;
 
       // NB: If hilited set has not changed, retain previous hilite flag.
       let isHilited: boolean;
       if (undefined !== hilites)
-        isHilited = hilites.has(Id64.fromUint32Pair(elemIdParts!.low, elemIdParts!.high));
+        isHilited = hilites.has(elemIdParts!.lower, elemIdParts!.upper);
       else
         isHilited = 0 !== (oldFlags & OvrFlags.Hilited);
 
@@ -216,7 +223,7 @@ export class FeatureOverrides implements IDisposable {
     this.lut = undefined;
 
     const ovrs: FeatureSymbology.Overrides = this.target.currentFeatureSymbologyOverrides;
-    const hilite: Set<string> = this.target.hilite;
+    const hilite = this.target.hilite;
     this.lut = this._initialize(map, ovrs, hilite, this.target.flashedElemId);
     this._lastOverridesUpdated = this._lastFlashUpdated = this._lastHiliteUpdated = BeTimePoint.now();
   }

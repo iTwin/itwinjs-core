@@ -86,7 +86,7 @@ const unitData: UnitDefinition[] = [
 ];
 
 /** Defines standard format types for tools that need to display measurements to user. */
-export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4 }
+export enum QuantityType { Length = 1, Angle = 2, Area = 3, Volume = 4, LatLong = 5, Coordinate = 6  }
 
 // The following provide default formats for different the QuantityTypes. It is important to note that these default should reference
 // units that are available in schemas within the active iModel.
@@ -154,6 +154,39 @@ const defaultsFormats = {
       },
       formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
       precision: 4,
+      type: "Decimal",
+    },
+  }, {
+    type: 5/*LatLong*/, format: {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          {
+            label: "°",
+            name: "Units.ARC_DEG",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      precision: 6,
+      type: "Decimal",
+      uomSeparator: "",
+    },
+  }, {
+    type: 6/*Coordinate*/, format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [
+          {
+            label: "m",
+            name: "Units.M",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      precision: 2,
       type: "Decimal",
     },
   },
@@ -225,6 +258,47 @@ const defaultsFormats = {
       },
       formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
       precision: 4,
+      type: "Decimal",
+    },
+  },  {
+    type: 5/*LatLong*/, format: {
+      composite: {
+        includeZero: true,
+        spacer: "",
+        units: [
+          {
+            label: "°",
+            name: "Units.ARC_DEG",
+          },
+          {
+            label: "'",
+            name: "Units.ARC_MINUTE",
+          },
+          {
+            label: "\"",
+            name: "Units.ARC_SECOND",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "showUnitLabel"],
+      precision: 0,
+      type: "Decimal",
+      uomSeparator: "",
+    },
+  }, {
+    type: 6/*Coordinate*/, format: {
+      composite: {
+        includeZero: true,
+        spacer: " ",
+        units: [
+          {
+            label: "ft",
+            name: "Units.FT",
+          },
+        ],
+      },
+      formatTraits: ["keepSingleZero", "keepDecimalPoint", "showUnitLabel"],
+      precision: 2,
       type: "Decimal",
     },
   },
@@ -379,11 +453,13 @@ export class QuantityFormatter implements UnitsProvider {
   protected async getUnitByQuantityType(type: QuantityType): Promise<UnitProps> {
     switch (type) {
       case QuantityType.Angle:
+      case QuantityType.LatLong:
         return this.findUnitByName("Units.RAD");
       case QuantityType.Area:
         return this.findUnitByName("Units.SQ_M");
       case QuantityType.Volume:
         return this.findUnitByName("Units.M");
+      case QuantityType.Coordinate:
       case QuantityType.Length:
       default:
         return this.findUnitByName("Units.M");
@@ -392,7 +468,7 @@ export class QuantityFormatter implements UnitsProvider {
 
   /** Asynchronous call to loadFormatSpecsForQuantityTypes. This method caches all the FormatSpec so they can be quickly accessed. */
   protected async loadFormatSpecsForQuantityTypes(useImperial: boolean): Promise<void> {
-    const typeArray: QuantityType[] = [QuantityType.Length, QuantityType.Angle, QuantityType.Area, QuantityType.Volume];
+    const typeArray: QuantityType[] = [QuantityType.Length, QuantityType.Angle, QuantityType.Area, QuantityType.Volume, QuantityType.LatLong, QuantityType.Coordinate];
     const activeMap = useImperial ? this._imperialFormatSpecsByType : this._metricFormatSpecsByType;
     activeMap.clear();
 

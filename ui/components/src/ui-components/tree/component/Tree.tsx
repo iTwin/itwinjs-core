@@ -777,7 +777,12 @@ export class Tree extends React.Component<TreeProps, TreeState> {
 
   // tslint:disable-next-line:naming-convention
   private renderNode = (node: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps): React.ReactNode => {
-    return (<TreeNode key={node.id} {...props} />);
+    return (
+      <TreeNode
+        key={node.id}
+        {...props}
+      />
+    );
   }
 
   private _onNodeFullyRendered = (renderId?: string) => {

@@ -1,7 +1,7 @@
 {
   "changes": [
     {
-      "comment": "Added ToolAdmin method for undo/undo last data button and call from Ctrl+Z.",
+      "comment": "Use QuantityType.Coordinate for measure distance start/end points.",
       "packageName": "@bentley/imodeljs-frontend",
       "type": "none"
     }

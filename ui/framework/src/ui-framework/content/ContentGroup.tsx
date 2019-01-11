@@ -143,6 +143,11 @@ export class ContentGroup {
     return contentControls;
   }
 
+  public clearContentControls(): void {
+    this._contentControls.clear();
+    this._contentSetMap.clear();
+  }
+
 }
 
 // -----------------------------------------------------------------------------
