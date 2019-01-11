@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Use QuantityType.Coordinate for measure distance start/end points.",
+      "packageName": "@bentley/imodeljs-frontend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "Brien.Bastings@bentley.com"
+}
