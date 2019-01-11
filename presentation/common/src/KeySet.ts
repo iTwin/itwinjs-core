@@ -87,6 +87,15 @@ export default class KeySet {
   }
 
   /**
+   * Get instance keys count
+   */
+  public get instanceKeysCount(): number {
+    let count = 0;
+    this._instanceKeys.forEach((set: Set<string>) => count += set.size);
+    return count;
+  }
+
+  /**
    * Get a set of node keys stored in this KeySet
    *
    * **Warning**: getting node keys might be expensive for
@@ -99,6 +108,13 @@ export default class KeySet {
       set.add(key);
     }
     return set;
+  }
+
+  /**
+   * Get node keys count
+   */
+  public get nodeKeysCount(): number {
+    return this._nodeKeys.size;
   }
 
   private isKeySetJSON(set: Keys | Key): set is Readonly<KeySetJSON> {

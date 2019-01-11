@@ -14,7 +14,7 @@
     "docs": "",
     "extract": "node ./node_modules/@bentley/build-tools/scripts/extract.js --fileExt=ts --extractFrom=./src --recursive --out=../../generated-docs/extract",
     "lint": "tslint --project . 1>&2",
-    "test": "mocha -r jsdom-global/register -r ignore-styles --opts ./mocha.opts ./lib/**/*.js",
+    "test": "mocha --opts ./mocha.opts ./lib/**/*.js",
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch",
     "cover": ""
   },

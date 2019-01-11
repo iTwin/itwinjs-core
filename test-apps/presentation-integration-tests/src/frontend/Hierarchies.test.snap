@@ -1,0 +1,405 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`Hierarchies Counting instances of selected nodes correctly counts instances when key set contains grouping node keys 1`] = `
+Array [
+  Object {
+    "description": "A container for persisting definition elements.",
+    "hasChildren": true,
+    "imageId": "ECClassImage://BisCore:DefinitionModel",
+    "key": Object {
+      "className": "BisCore:DefinitionModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "d205cc53ce3a99f4c93b3b4b475db351",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": "Definition Model",
+  },
+  Object {
+    "description": "The singleton container for repository-specific definition elements.",
+    "hasChildren": true,
+    "imageId": "ECClassImage://BisCore:DictionaryModel",
+    "key": Object {
+      "className": "BisCore:DictionaryModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "4e96fd6b23631d9692f86cb1b3925d2d",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": "Dictionary Model",
+  },
+  Object {
+    "description": "Contains a list of document elements.",
+    "hasChildren": true,
+    "imageId": "ECClassImage://BisCore:DocumentListModel",
+    "key": Object {
+      "className": "BisCore:DocumentListModel",
+      "groupedInstancesCount": 2,
+      "pathFromRoot": Array [
+        "df9bbb2513d56b50c686f94c9699313f",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": "Document List",
+  },
+  Object {
+    "hasChildren": true,
+    "imageId": "ECClassImage://Generic:GroupModel",
+    "key": Object {
+      "className": "Generic:GroupModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "51cb0ccec89fc2eca4df5e4d7a05c9a9",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": "Group Model",
+  },
+  Object {
+    "description": "A container for persisting link elements.",
+    "hasChildren": true,
+    "imageId": "ECClassImage://BisCore:LinkModel",
+    "key": Object {
+      "className": "BisCore:LinkModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "7900c27f8e9f8f7f809a54513b34ddaf",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": "Link Model",
+  },
+  Object {
+    "description": "A container for persisting physical elements that model physical space.",
+    "hasChildren": true,
+    "imageId": "ECClassImage://BisCore:PhysicalModel",
+    "key": Object {
+      "className": "BisCore:PhysicalModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "0d047b58c7cabbb4cc55118d004b1532",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": "Physical Model",
+  },
+  Object {
+    "description": "The singleton container of repository-related information elements.",
+    "hasChildren": true,
+    "imageId": "ECClassImage://BisCore:RepositoryModel",
+    "key": Object {
+      "className": "BisCore:RepositoryModel",
+      "groupedInstancesCount": 1,
+      "pathFromRoot": Array [
+        "9a24241760b66ffd7981bd5849a1cbc5",
+      ],
+      "type": "ECClassGroupingNode",
+    },
+    "label": "Repository Model",
+  },
+]
+`;
+
+exports[`Hierarchies NodesPaths gets filtered node paths 1`] = `
+Array [
+  Object {
+    "children": Array [
+      Object {
+        "children": Array [],
+        "filteringData": Object {
+          "childrenOccurances": 0,
+          "occurances": 1,
+        },
+        "index": 0,
+        "isMarked": false,
+        "node": Object {
+          "description": "description",
+          "imageId": "imageId",
+          "key": Object {
+            "pathFromRoot": Array [
+              "d849e52eb605991e839a5e6aa299a4b9",
+              "aa959b85dd4402b50d79c57d8a6f5215",
+            ],
+            "type": "nodeType",
+          },
+          "label": "filter ch1",
+        },
+      },
+      Object {
+        "children": Array [
+          Object {
+            "children": Array [],
+            "filteringData": Object {
+              "childrenOccurances": 0,
+              "occurances": 1,
+            },
+            "index": 0,
+            "isMarked": false,
+            "node": Object {
+              "description": "description",
+              "imageId": "imageId",
+              "key": Object {
+                "pathFromRoot": Array [
+                  "d849e52eb605991e839a5e6aa299a4b9",
+                  "79f473dd6d221d37d0928acdc2cb5b3c",
+                  "d7abfd31da4a1dc5cc4d0307f8aa1a8e",
+                ],
+                "type": "nodeType",
+              },
+              "label": "filter ch4",
+            },
+          },
+        ],
+        "filteringData": Object {
+          "childrenOccurances": 1,
+          "occurances": 0,
+        },
+        "index": 1,
+        "isMarked": false,
+        "node": Object {
+          "description": "description",
+          "hasChildren": true,
+          "imageId": "imageId",
+          "key": Object {
+            "pathFromRoot": Array [
+              "d849e52eb605991e839a5e6aa299a4b9",
+              "79f473dd6d221d37d0928acdc2cb5b3c",
+            ],
+            "type": "nodeType",
+          },
+          "label": "other ch3",
+        },
+      },
+    ],
+    "filteringData": Object {
+      "childrenOccurances": 2,
+      "occurances": 1,
+    },
+    "index": 0,
+    "isMarked": false,
+    "node": Object {
+      "description": "description",
+      "hasChildren": true,
+      "imageId": "imageId",
+      "key": Object {
+        "pathFromRoot": Array [
+          "d849e52eb605991e839a5e6aa299a4b9",
+        ],
+        "type": "nodeType",
+      },
+      "label": "filter r1",
+    },
+  },
+  Object {
+    "children": Array [
+      Object {
+        "children": Array [],
+        "filteringData": Object {
+          "childrenOccurances": 0,
+          "occurances": 1,
+        },
+        "index": 0,
+        "isMarked": false,
+        "node": Object {
+          "description": "description",
+          "imageId": "imageId",
+          "key": Object {
+            "pathFromRoot": Array [
+              "6da3c696f564a4aa1c913cdfb7774b51",
+              "239b0de6eee1bbd89d6eb4c8affcc76f",
+            ],
+            "type": "nodeType",
+          },
+          "label": "filter ch6",
+        },
+      },
+    ],
+    "filteringData": Object {
+      "childrenOccurances": 1,
+      "occurances": 0,
+    },
+    "index": 1,
+    "isMarked": false,
+    "node": Object {
+      "description": "description",
+      "hasChildren": true,
+      "imageId": "imageId",
+      "key": Object {
+        "pathFromRoot": Array [
+          "6da3c696f564a4aa1c913cdfb7774b51",
+        ],
+        "type": "nodeType",
+      },
+      "label": "other r3",
+    },
+  },
+]
+`;
+
+exports[`Hierarchies NodesPaths gets node paths 1`] = `
+Array [
+  Object {
+    "children": Array [
+      Object {
+        "children": Array [
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [],
+                "filteringData": Object {
+                  "childrenOccurances": 0,
+                  "occurances": 0,
+                },
+                "index": 0,
+                "isMarked": false,
+                "node": Object {
+                  "imageId": "ECInstanceImage://BisCore:DefinitionPartition",
+                  "key": Object {
+                    "instanceKey": Object {
+                      "className": "BisCore:DefinitionPartition",
+                      "id": "0x10",
+                    },
+                    "pathFromRoot": Array [
+                      "4e074cc7a6fd65b2a738d22f8b912299",
+                      "7f68095dd510724c73d10956820f7921",
+                      "bd4972ffb7cd9bc2e1493436df5c921b",
+                      "5ae7367cae801dda838b167a98c08320",
+                      "f58b45a0b1dcc1005d366672a876535f",
+                    ],
+                    "type": "ECInstanceNode",
+                  },
+                  "label": "Definition Partition-0-G",
+                },
+              },
+            ],
+            "filteringData": Object {
+              "childrenOccurances": 0,
+              "occurances": 0,
+            },
+            "index": 0,
+            "isMarked": false,
+            "node": Object {
+              "description": "A Definition Partition element indicates that there is a definition-related modeling perspective within the overall DgnDb information hierarchy. A Definition Partition is always parented to a Subject and broken down by a Definition Model.",
+              "hasChildren": true,
+              "imageId": "ECClassImage://BisCore:DefinitionPartition",
+              "key": Object {
+                "className": "BisCore:DefinitionPartition",
+                "groupedInstancesCount": 1,
+                "pathFromRoot": Array [
+                  "4e074cc7a6fd65b2a738d22f8b912299",
+                  "7f68095dd510724c73d10956820f7921",
+                  "bd4972ffb7cd9bc2e1493436df5c921b",
+                  "5ae7367cae801dda838b167a98c08320",
+                ],
+                "type": "ECClassGroupingNode",
+              },
+              "label": "Definition Partition",
+            },
+          },
+          Object {
+            "children": Array [
+              Object {
+                "children": Array [],
+                "filteringData": Object {
+                  "childrenOccurances": 0,
+                  "occurances": 0,
+                },
+                "index": 0,
+                "isMarked": true,
+                "node": Object {
+                  "imageId": "ECInstanceImage://BisCore:LinkPartition",
+                  "key": Object {
+                    "instanceKey": Object {
+                      "className": "BisCore:LinkPartition",
+                      "id": "0xe",
+                    },
+                    "pathFromRoot": Array [
+                      "4e074cc7a6fd65b2a738d22f8b912299",
+                      "7f68095dd510724c73d10956820f7921",
+                      "bd4972ffb7cd9bc2e1493436df5c921b",
+                      "ab9d6344c1e60c3a68b8dea279224873",
+                      "2befd7b22098b671c658a3d15b904677",
+                    ],
+                    "type": "ECInstanceNode",
+                  },
+                  "label": "Link Partition-0-E",
+                },
+              },
+            ],
+            "filteringData": Object {
+              "childrenOccurances": 0,
+              "occurances": 0,
+            },
+            "index": 1,
+            "isMarked": false,
+            "node": Object {
+              "description": "A Link Partition element indicates that there is a link-related modeling perspective within the overall DgnDb information hierarchy. A Link Partition is always parented to a Subject and broken down by a Link Model.",
+              "hasChildren": true,
+              "imageId": "ECClassImage://BisCore:LinkPartition",
+              "key": Object {
+                "className": "BisCore:LinkPartition",
+                "groupedInstancesCount": 1,
+                "pathFromRoot": Array [
+                  "4e074cc7a6fd65b2a738d22f8b912299",
+                  "7f68095dd510724c73d10956820f7921",
+                  "bd4972ffb7cd9bc2e1493436df5c921b",
+                  "ab9d6344c1e60c3a68b8dea279224873",
+                ],
+                "type": "ECClassGroupingNode",
+              },
+              "label": "Link Partition",
+            },
+          },
+        ],
+        "filteringData": Object {
+          "childrenOccurances": 0,
+          "occurances": 0,
+        },
+        "index": 0,
+        "isMarked": false,
+        "node": Object {
+          "hasChildren": true,
+          "imageId": "ECInstanceImage://BisCore:Subject",
+          "key": Object {
+            "instanceKey": Object {
+              "className": "BisCore:Subject",
+              "id": "0x1",
+            },
+            "pathFromRoot": Array [
+              "4e074cc7a6fd65b2a738d22f8b912299",
+              "7f68095dd510724c73d10956820f7921",
+              "bd4972ffb7cd9bc2e1493436df5c921b",
+            ],
+            "type": "ECInstanceNode",
+          },
+          "label": "Subject-0-1",
+        },
+      },
+    ],
+    "filteringData": Object {
+      "childrenOccurances": 0,
+      "occurances": 0,
+    },
+    "index": 0,
+    "isMarked": false,
+    "node": Object {
+      "hasChildren": true,
+      "imageId": "ECInstanceImage://BisCore:RepositoryModel",
+      "key": Object {
+        "instanceKey": Object {
+          "className": "BisCore:RepositoryModel",
+          "id": "0x1",
+        },
+        "pathFromRoot": Array [
+          "4e074cc7a6fd65b2a738d22f8b912299",
+          "7f68095dd510724c73d10956820f7921",
+        ],
+        "type": "ECInstanceNode",
+      },
+      "label": "Repository Model-0-1",
+    },
+  },
+]
+`;
