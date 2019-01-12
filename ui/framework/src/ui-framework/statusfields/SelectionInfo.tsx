@@ -8,28 +8,32 @@ import * as React from "react";
 import { connect } from "react-redux";
 import { StatusBarText } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
+import { Icon } from "../shared/IconComponent";
 
 /** Defines properties supported by the Prompt Field Component. */
-export interface PromptFieldProps {
+interface StatusFieldProps {
   isInFooterMode: boolean;
-  toolPrompt: string;
+  selectionCount: number;
 }
 
-/** Prompt Field React component. This component is designed to be specified in a status bar definition.
- * It is used to display prompt from tools. To send a prompt to this component use IModelApp.notifications.outputPromptByKey or
- * IModelApp.notifications.outputPrompt.
+/** Status Field React component. This component is designed to be specified in a status bar definition.
+ * It is used to display the number of selected items based on the Presentation Rules Selection Manager.
  */
-class PromptFieldComponent extends React.Component<PromptFieldProps> {
+class StatusFieldComponent extends React.Component<StatusFieldProps> {
 
   constructor(props?: any, context?: any) {
     super(props, context);
   }
 
   public render(): React.ReactNode {
+    const icon = <Icon iconSpec={"icon-cursor"} />;
+
+    const label = this.props.selectionCount.toString();
     return (
       <StatusBarText
-        label={this.props.toolPrompt}
+        label={label}
         isInFooterMode={this.props.isInFooterMode}
+        icon={icon}
       />
     );
   }
@@ -41,9 +45,9 @@ function mapStateToProps(state: any) {
   if (!frameworkState)
     return undefined;
 
-  return { toolPrompt: frameworkState.configurableUiState.toolPrompt };
+  return { selectionCount: frameworkState.appState.numItemsSelected };
 }
 
 // we declare the variable and export that rather than using export default.
 /** OverallContent React component that is Redux connected. */ // tslint:disable-next-line:variable-name
-export const PromptField = connect(mapStateToProps)(PromptFieldComponent);
+export const SelectionInfoField = connect(mapStateToProps)(StatusFieldComponent);

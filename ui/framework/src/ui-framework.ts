@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 export { default as UiFramework } from "./ui-framework/UiFramework";
 
+export * from "./ui-framework/AppState";
 export * from "./ui-framework/FrameworkState";
 export * from "./ui-framework/UiFramework";
 export * from "./ui-framework/CoreToolDefinitions";
@@ -103,6 +104,7 @@ export * from "./ui-framework/statusfields/ActivityCenter";
 export * from "./ui-framework/statusfields/MessageCenter";
 export * from "./ui-framework/statusfields/SnapMode";
 export * from "./ui-framework/statusfields/PromptField";
+export * from "./ui-framework/statusfields/SelectionInfo";
 
 export * from "./ui-framework/tools/AnalysisAnimation";
 export * from "./ui-framework/tools/AnalysisAnimationToolSettings";

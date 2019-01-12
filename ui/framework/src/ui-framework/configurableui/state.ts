@@ -41,12 +41,12 @@ export type ConfigurableUiActionsUnion = ActionsUnion<typeof ConfigurableUiActio
 export function ConfigurableUiReducer(state: ConfigurableUiState = initialState, _action: ConfigurableUiActionsUnion): ConfigurableUiState {
   switch (_action.type) {
     case ConfigurableUiActionId.SetSnapMode: {
-      if (_action.payload)
+      if (undefined !== _action.payload)
         return { ...state, snapMode: _action.payload };
       break;
     }
     case ConfigurableUiActionId.SetToolPrompt: {
-      if (_action.payload)
+      if (undefined !== _action.payload)
         return { ...state, toolPrompt: _action.payload };
       break;
     }

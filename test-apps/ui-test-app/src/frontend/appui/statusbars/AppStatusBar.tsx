@@ -8,7 +8,7 @@ import { SampleAppIModelApp, SampleAppUiActionId } from "../../index";
 import {
   ConfigurableUiManager, ConfigurableCreateInfo, StatusBarWidgetControl, IStatusBar,
   StatusBarFieldId, ActivityCenterField, MessageCenterField, SnapModeField, PromptField,
-  BooleanSyncUiListener,
+  BooleanSyncUiListener, SelectionInfoField,
 } from "@bentley/ui-framework";
 
 import { ToolAssistanceField } from "../statusfields/ToolAssistance";
@@ -33,6 +33,7 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
         <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
           {(isVisible: boolean) => isVisible && <SnapModeField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />}
         </BooleanSyncUiListener>
+        <SelectionInfoField isInFooterMode={isInFooterMode} />
       </>
     );
   }

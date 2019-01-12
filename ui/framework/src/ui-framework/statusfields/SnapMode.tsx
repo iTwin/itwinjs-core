@@ -16,7 +16,7 @@ import { SnapModeIndicator, SnapModeIcon, SnapModeDialog, Snap as SnapRow } from
 
 // cSpell:ignore multione
 /** Defines properties supported by the SnapMode Field Component. */
-export interface SnapModeFieldProps {
+interface SnapModeFieldProps {
   statusBar: IStatusBar;
   isInFooterMode: boolean;
   openWidget: StatusBarFieldId;
@@ -25,7 +25,7 @@ export interface SnapModeFieldProps {
 }
 
 /** Define the properties that will be used to represent the available snap modes. */
-export interface SnapModeFieldEntry {
+interface SnapModeFieldEntry {
   label: string;
   value: number;
   iconName: string;
@@ -34,7 +34,7 @@ export interface SnapModeFieldEntry {
 /** Snap Mode Field React component. This component is designed to be specified in a status bar definition. It will
  * display the active snap mode that AccuSnap will use and allow the user to select a new snap mode.
  */
-export class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
+class SnapModeFieldComponent extends React.Component<SnapModeFieldProps> {
   private _className: string;
   private _snapModeFieldArray: SnapModeFieldEntry[] = [
     { label: UiFramework.i18n.translate("UiFramework:snapModeField.keypoint"), value: SnapMode.NearestKeypoint as number, iconName: "snaps" },
