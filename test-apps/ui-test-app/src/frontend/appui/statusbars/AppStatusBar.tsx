@@ -21,20 +21,26 @@ export class AppStatusBarWidgetControl extends StatusBarWidgetControl {
   public getReactNode(statusBar: IStatusBar, isInFooterMode: boolean, openWidget: StatusBarFieldId): React.ReactNode {
 
     return (
-      <>
-        <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
-          {(isVisible: boolean) => isVisible && <PromptField isInFooterMode={isInFooterMode} />}
-        </BooleanSyncUiListener>
-        <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
-          {(isVisible: boolean) => isVisible && <ToolAssistanceField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />}
-        </BooleanSyncUiListener>
-        <ActivityCenterField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
-        <MessageCenterField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
-        <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
-          {(isVisible: boolean) => isVisible && <SnapModeField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />}
-        </BooleanSyncUiListener>
-        <SelectionInfoField isInFooterMode={isInFooterMode} />
-      </>
+      <div className="nz-statusbar-space-between">
+        <div className="nz-statusbar-left">
+          <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
+            {(isVisible: boolean) => isVisible && <PromptField isInFooterMode={isInFooterMode} />}
+          </BooleanSyncUiListener>
+        </div>
+        <div className="nz-statusbar-center">
+          <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
+            {(isVisible: boolean) => isVisible && <ToolAssistanceField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />}
+          </BooleanSyncUiListener>
+          <ActivityCenterField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
+          <MessageCenterField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />
+          <BooleanSyncUiListener eventIds={[SampleAppUiActionId.setTestProperty]} boolFunc={(): boolean => SampleAppIModelApp.getTestProperty() !== "HIDE"}>
+            {(isVisible: boolean) => isVisible && <SnapModeField statusBar={statusBar} isInFooterMode={isInFooterMode} openWidget={openWidget} />}
+          </BooleanSyncUiListener>
+        </div>
+        <div className="nz-statusbar-right">
+          <SelectionInfoField isInFooterMode={isInFooterMode} />
+        </div>
+      </div>
     );
   }
 }

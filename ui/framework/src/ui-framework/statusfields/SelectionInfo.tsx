@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { connect } from "react-redux";
-import { StatusBarText } from "@bentley/ui-ninezone";
+import { SelectionInfo } from "@bentley/ui-ninezone";
 import { UiFramework } from "../UiFramework";
 import { Icon } from "../shared/IconComponent";
 
@@ -30,7 +30,7 @@ class StatusFieldComponent extends React.Component<StatusFieldProps> {
 
     const label = this.props.selectionCount.toString();
     return (
-      <StatusBarText
+      <SelectionInfo
         label={label}
         isInFooterMode={this.props.isInFooterMode}
         icon={icon}
