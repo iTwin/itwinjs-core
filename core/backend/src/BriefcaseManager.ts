@@ -9,6 +9,7 @@ import {
   ChangesType, Briefcase, HubCode, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel, IncludePrefix,
 } from "@bentley/imodeljs-clients";
+import { RequestProxy } from "@bentley/imodeljs-clients-backend";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
 import { IOSAzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/IOSAzureFileHandler";
@@ -470,6 +471,8 @@ export class BriefcaseManager {
     IModelHost.onBeforeShutdown.addListener(BriefcaseManager.onIModelHostShutdown);
     if (!accessToken)
       return;
+
+    await RequestProxy.setupFiddlerProxyIfReachable();
 
     const perfLogger = new PerfLogger("BriefcaseManager.initCache");
     for (const iModelId of IModelJsFs.readdirSync(BriefcaseManager.cacheDir)) {

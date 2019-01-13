@@ -44,7 +44,7 @@
     },
     {
       "name": "@bentley/imodeljs-clients-backend",
-      "allowedCategories": [ "frontend", "internal" ]
+      "allowedCategories": [ "backend", "frontend", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-common",
@@ -327,6 +327,10 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
+      "name": "https-proxy-agent",
+      "allowedCategories": [ "common" ]
+    },
+    {
       "name": "i18next",
       "allowedCategories": [ "frontend", "internal" ]
     },
@@ -517,6 +521,10 @@
     {
       "name": "promise",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "proxy-agent",
+      "allowedCategories": [ "common" ]
     },
     {
       "name": "qs",

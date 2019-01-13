@@ -370,6 +370,7 @@ export class IModelTestUtils {
     Logger.setLevel("imodeljs-backend.OpenIModelDb", LogLevel.Trace);
     Logger.setLevel("imodeljs-clients.Clients", LogLevel.Trace);
     Logger.setLevel("imodeljs-clients.imodelhub", LogLevel.Trace);
+    Logger.setLevel("imodeljs-clients.Request", LogLevel.Trace);
     Logger.setLevel("imodeljs-clients.Url", LogLevel.Trace);
     Logger.setLevel("DgnCore", LogLevel.Error);
     Logger.setLevel("BeSQLite", LogLevel.Error);
