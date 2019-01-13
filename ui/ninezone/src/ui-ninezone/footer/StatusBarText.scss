@@ -9,8 +9,9 @@
   height: 100%;
   display: flex;
   align-items: center;
-  font-size: $text-font-size;
   overflow: hidden;
+
+  font-size: $text-font-size;
 
   &.nz-is-in-footer-mode {
     padding-left: $nz-footer-horizontal-padding;
@@ -23,4 +24,39 @@
     padding-right: $nz-footer-open-horizontal-padding;
     width: $nz-footer-open-prompt-width;
   }
+
+  /* small devices (phones, 600px and down) */
+  @media only screen and (max-width: 600px) {
+    font-size: $text-font-size-small;
+
+    &.nz-is-in-footer-mode {
+      padding-left: $nz-footer-horizontal-padding-small;
+      padding-right: $nz-footer-horizontal-padding-small;
+      width: $nz-footer-prompt-width-small;
+    }
+
+    &:not(.nz-is-in-footer-mode) {
+      padding-left: $nz-footer-open-horizontal-padding-small;
+      padding-right: $nz-footer-open-horizontal-padding-small;
+      width: $nz-footer-open-prompt-width-small;
+    }
+  }
+
+  /* Medium devices (landscape tablets, 768px and up) */
+  @media only screen and (max-width: 768px) {
+    font-size: $text-font-size-medium;
+
+    &.nz-is-in-footer-mode {
+      padding-left: $nz-footer-horizontal-padding-medium;
+      padding-right: $nz-footer-horizontal-padding-medium;
+      width: $nz-footer-prompt-width-medium;
+    }
+
+    &:not(.nz-is-in-footer-mode) {
+      padding-left: $nz-footer-open-horizontal-padding-medium;
+      padding-right: $nz-footer-open-horizontal-padding-medium;
+      width: $nz-footer-open-prompt-width-medium;
+    }
+  }
+
 }

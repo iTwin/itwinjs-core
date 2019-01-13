@@ -5,6 +5,8 @@
 $footer-height: 48px;
 
 $text-font-size: 14px;
+$text-font-size-medium: 12px;
+$text-font-size-small: 12px;
 $text-font-color: #000000;
 
 $icon-size: 16px;
@@ -24,6 +26,9 @@ $balloon-arrow-height: 10px;
 $snap-mode-icon-size: 20px;
 
 $nz-footer-indicator-horizontal-padding: 20px;
+$nz-footer-indicator-horizontal-padding-medium: 10px;
+$nz-footer-indicator-horizontal-padding-small: 5px;
+
 $nz-footer-popover-min-width: 274px;
 
 $nz-footer-horizontal-padding: 20px;
@@ -31,5 +36,18 @@ $nz-footer-prompt-width: 20em;
 
 $nz-footer-open-horizontal-padding: 5px;
 $nz-footer-open-prompt-width: 16em;
+
+$nz-footer-horizontal-padding-medium: 5px;
+$nz-footer-prompt-width-medium: 14em;
+
+$nz-footer-open-horizontal-padding-medium: 3px;
+$nz-footer-open-prompt-width-medium: 12em;
+
+$nz-footer-horizontal-padding-small: 3px;
+$nz-footer-prompt-width-small: 8em;
+
+$nz-footer-open-horizontal-padding-small: 2px;
+$nz-footer-open-prompt-width-small: 10em;
+
 
 $nz-footer-selectioncount-width: 4em;
