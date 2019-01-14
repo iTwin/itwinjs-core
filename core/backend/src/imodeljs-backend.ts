@@ -20,6 +20,7 @@ export * from "./ExpressServer";
 export * from "./IModelJsFs";
 export * from "./IModelHost";
 export * from "./Relationship";
+export * from "./Texture";
 export * from "./LineStyle";
 export * from "./Model";
 export * from "./NavigationRelationship";

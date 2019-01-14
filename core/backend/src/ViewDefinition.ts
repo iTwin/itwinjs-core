@@ -657,6 +657,3 @@ export class LightLocation extends SpatialLocationElement implements LightLocati
   public enabled!: boolean;
   constructor(props: LightLocationProps, iModel: IModelDb) { super(props, iModel); }
 }
-
-/** Defines a rendering texture. */
-export class Texture extends DefinitionElement { }
