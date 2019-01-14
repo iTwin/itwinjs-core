@@ -8,7 +8,7 @@ import { AccessToken, IAccessTokenManager } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
-  ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec,
+  ViewDefinitionProps, DisplayStyleSettingsProps, ColorDef, ViewFlags, RenderMode, DisplayStyleProps, BisCodeSpec, ImageSourceFormat, TextureFlags,
 } from "@bentley/imodeljs-common";
 import { assert, expect } from "chai";
 import * as path from "path";
@@ -17,7 +17,7 @@ import {
   DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementPropertyFormatter, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, SpatialCategory, SqliteStatement, SqliteValue,
-  SqliteValueType, SubCategory, Subject, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
+  SqliteValueType, SubCategory, Subject, Texture, ViewDefinition, DisplayStyle3d, ElementDrivesElement, PhysicalObject,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -198,6 +198,34 @@ describe("iModel", () => {
       const elementId: Id64String = imodel2.elements.insertElement(element);
       assert.isTrue(Id64.isValidId64(elementId));
     }
+  });
+
+  it("should insert a Texture", () => {
+    const model = imodel2.models.getModel(IModel.dictionaryId) as DictionaryModel;
+    expect(model).not.to.be.undefined;
+
+    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
+    // bottom right pixel.  The rest of the square is red.
+    const pngData: Uint8Array = new Uint8Array([137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130]);
+
+    const testTextureName = "fake texture name";
+    const testTextureFormat = ImageSourceFormat.Png;
+    const testTextureData = Base64.btoa(String.fromCharCode.apply(null, pngData));
+    const testTextureWidth = 3;
+    const testTextureHeight = 3;
+    const testTextureDescription = "empty description";
+    const testTextureFlags = TextureFlags.None;
+
+    const textureId = Texture.insert(imodel2, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
+
+    const texture = imodel2.elements.getElement<Texture>(textureId);
+    assert((texture instanceof Texture) === true, "did not retrieve an instance of Texture");
+    expect(texture.format).to.equal(testTextureFormat);
+    expect(texture.data).to.equal(testTextureData);
+    expect(texture.width).to.equal(testTextureWidth);
+    expect(texture.height).to.equal(testTextureHeight);
+    expect(texture.description).to.equal(testTextureDescription);
+    expect(texture.flags).to.equal(testTextureFlags);
   });
 
   it("should insert a DisplayStyle", () => {

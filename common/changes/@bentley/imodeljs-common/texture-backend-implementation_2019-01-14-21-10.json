@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add TextureProps for use by new backend Texture API",
+      "packageName": "@bentley/imodeljs-common",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "Mark.Schlosser@bentley.com"
+}

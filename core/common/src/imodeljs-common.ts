@@ -14,6 +14,7 @@ export * from "./Fonts";
 export * from "./GeoCoordinateServices";
 export * from "./RpcInterface";
 export * from "./RpcManager";
+export * from "./TextureProps";
 export * from "./Image";
 export * from "./IModel";
 export * from "./IModelError";
@@ -65,14 +66,14 @@ export * from "./rpc/IModelUnitTestRpcInterface";
 /** @docs-package-description
  * The imodeljs-common package contains classes for working with iModels that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
  */
- /**
-  * @docs-group-description WireFormats
-  * Definitions of the "props" interfaces and types that define the [wire format]($docs/learning/wireformat.md) for communication between the frontend and backend
-  */
- /**
-  * @docs-group-description Codes
-  * Classes for working with [Codes]($docs/bis/intro/codes.md)
-  */
+/**
+ * @docs-group-description WireFormats
+ * Definitions of the "props" interfaces and types that define the [wire format]($docs/learning/wireformat.md) for communication between the frontend and backend
+ */
+/**
+ * @docs-group-description Codes
+ * Classes for working with [Codes]($docs/bis/intro/codes.md)
+ */
 /**
  * @docs-group-description Geometry
  * Classes for working with geometry.
