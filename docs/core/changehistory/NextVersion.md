@@ -12,3 +12,5 @@ ignore: true
 * Setup trace logs of all requests made through the Request API. To enable this, do:
    ```Logger.setLevel("imodeljs-clients.Request", LogLevel.Trace);```
 
+## Removed IModelDb's cache of accessToken
+For long running operations like AutoPush, the developer must explicitly supply an ```IAccessTokenManager``` to keep the token current.

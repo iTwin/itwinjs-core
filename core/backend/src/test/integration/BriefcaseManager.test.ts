@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import { IModelJsFs } from "../../IModelJsFs";
 import { OpenMode, ActivityLoggingContext, GuidString } from "@bentley/bentleyjs-core";
-import { IModelVersion, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { IModelVersion } from "@bentley/imodeljs-common";
 import { IModelTestUtils, TestUsers, TestIModelInfo } from "../IModelTestUtils";
 import { KeepBriefcase, IModelDb, OpenParams, AccessMode, ExclusiveAccessOption, Element, IModelHost, IModelHostConfiguration, BriefcaseManager, BriefcaseEntry } from "../../imodeljs-backend";
 import { AccessToken, BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodeljs-clients";
@@ -408,19 +408,6 @@ describe("BriefcaseManager (#integration)", () => {
     // Restart the backend to the default configuration
     IModelHost.shutdown();
     IModelTestUtils.startBackend();
-  });
-
-  // The test fails matching access tokens - needs investigation.
-  it.skip("Should track the AccessTokens that are used to open IModels (#integration)", async () => {
-    await IModelDb.open(actx, accessToken, testProjectId, readOnlyTestIModel.id, OpenParams.fixedVersion(AccessMode.Exclusive));
-    assert.deepEqual(IModelDb.getAccessToken(readOnlyTestIModel.id), accessToken);
-
-    try {
-      IModelDb.getAccessToken("--invalidid--");
-      assert.fail("Asking for an AccessToken on an iModel that is not open should fail");
-    } catch (err) {
-      assert.equal((err as IModelError).errorNumber, IModelStatus.NotFound);
-    }
   });
 
   it("should be able to reverse and reinstate changes (#integration)", async () => {

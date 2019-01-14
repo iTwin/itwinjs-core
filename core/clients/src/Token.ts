@@ -8,7 +8,7 @@ import * as xpath from "xpath";
 import { DOMParser } from "xmldom";
 import { UserInfo } from "./UserInfo";
 import { Base64 } from "js-base64";
-import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
+import { BentleyError, BentleyStatus, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 
 export enum IncludePrefix {
   Yes = 0,
@@ -192,4 +192,13 @@ export class AccessToken extends Token {
     return AccessToken.fromSamlAssertion(jsonObj._samlAssertion);
   }
 
+}
+
+/** Interface to fetch the accessToken for authorization of various API */
+export interface IAccessTokenManager {
+  /** Returns a promise that resolves to the AccessToken if signed in.
+   * The token is refreshed if it's possible and necessary.
+   * Rejects with an appropriate error if the access token cannot be obtained.
+   */
+  getAccessToken(actx: ActivityLoggingContext): Promise<AccessToken>;
 }
