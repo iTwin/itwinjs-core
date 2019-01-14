@@ -6,6 +6,7 @@ import * as path from "path";
 import { assert } from "chai";
 import { OpenMode, ActivityLoggingContext, GuidString, PerfLogger } from "@bentley/bentleyjs-core";
 import { AccessToken, Config } from "@bentley/imodeljs-clients";
+import { RequestHost } from "@bentley/imodeljs-clients-backend";
 import { IModel, IModelVersion } from "@bentley/imodeljs-common";
 import { IModelDb, OpenParams, IModelHost, IModelHostConfiguration, PhysicalModel } from "../../imodeljs-backend";
 import { IModelTestUtils, TestUsers } from "../IModelTestUtils";
@@ -21,6 +22,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
 
   before(async () => {
     IModelTestUtils.setupLogging();
+    await RequestHost.initialize();
     IModelTestUtils.setupDebugLogLevels();
     accessToken = await HubUtility.login(TestUsers.manager);
   });
