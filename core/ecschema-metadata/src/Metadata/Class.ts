@@ -29,7 +29,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
   protected _properties?: Property[];
-  protected _customAttributes?: CustomAttributeSet;
+  private _customAttributes?: Map<string, CustomAttribute>;
   private _mergedPropertyCache?: Property[];
 
   get modifier() { return this._modifier; }
@@ -373,9 +373,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
   protected addCustomAttribute(customAttribute: CustomAttribute) {
     if (!this._customAttributes)
-      this._customAttributes = new CustomAttributeSet();
+      this._customAttributes = new Map<string, CustomAttribute>();
 
-    this._customAttributes[customAttribute.className] = customAttribute;
+    this._customAttributes.set(customAttribute.className, customAttribute);
   }
 
   public async accept(visitor: SchemaItemVisitor) {

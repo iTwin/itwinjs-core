@@ -39,9 +39,9 @@ export class Schema implements CustomAttributeContainerProps {
   protected _alias?: string;
   protected _label?: string;
   protected _description?: string;
-  protected _customAttributes?: CustomAttributeSet;
   public readonly references: Schema[];
   private readonly _items: SchemaItem[];
+  private _customAttributes?: Map<string, CustomAttribute>;
   /**
    * Constructs an empty Schema with the given name and version, (optionally) in a given context.
    * @param name The schema's name
@@ -474,9 +474,9 @@ export class Schema implements CustomAttributeContainerProps {
 
   protected addCustomAttribute(customAttribute: CustomAttribute) {
     if (!this._customAttributes)
-      this._customAttributes = new CustomAttributeSet();
+      this._customAttributes = new Map<string, CustomAttribute>();
 
-    this._customAttributes[customAttribute.className] = customAttribute;
+    this._customAttributes.set(customAttribute.className, customAttribute);
   }
 
   public static async fromJson(jsonObj: object | string, context?: SchemaContext): Promise<Schema> {
