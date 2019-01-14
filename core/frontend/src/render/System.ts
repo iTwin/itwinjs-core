@@ -797,9 +797,17 @@ export abstract class RenderSystem implements IDisposable {
     // corners
     // [0] [1]
     // [2] [3]
+    // Quantize the points according to their range
     rasterTile.points = new QPoint3dList(QParams3d.fromRange(Range3d.create(...corners)));
     for (let i = 0; i < 4; ++i)
       rasterTile.points.add(corners[i]);
+
+    // Now remove the translation from the quantized points and put it into a transform instead.
+    // This prevents graphical artifacts when quantization origin is large relative to quantization scale.
+    // ###TODO: Would be better not to create a branch for every tile.
+    const qorigin = rasterTile.points.params.origin;
+    const transform = Transform.createTranslationXYZ(qorigin.x, qorigin.y, qorigin.z);
+    qorigin.setZero();
 
     rasterTile.vertIndices = [0, 1, 2, 2, 1, 3];
     rasterTile.textureUv = [
@@ -811,7 +819,14 @@ export abstract class RenderSystem implements IDisposable {
 
     rasterTile.texture = tileTexture;
     rasterTile.isPlanar = true;
-    return this.createTriMesh(rasterTile);
+
+    const trimesh = this.createTriMesh(rasterTile);
+    if (undefined === trimesh)
+      return undefined;
+
+    const branch = new GraphicBranch(true);
+    branch.add(trimesh);
+    return this.createBranch(branch, transform);
   }
 
   /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBox.CreateParams.
