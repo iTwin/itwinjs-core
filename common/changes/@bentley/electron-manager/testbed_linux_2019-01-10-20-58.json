@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "",
+      "packageName": "@bentley/electron-manager",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/electron-manager",
+  "email": "jeff.marker@bentley.com"
+}

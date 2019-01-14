@@ -104,7 +104,7 @@ export class RelationshipConstraint {
   protected _polymorphic?: boolean;
   protected _roleLabel?: string;
   protected _constraintClasses?: LazyLoadedRelationshipConstraintClass[];
-  protected _customAttributes?: CustomAttributeSet;
+  private _customAttributes?: Map<string, CustomAttribute>;
 
   constructor(relClass: RelationshipClass, relEnd: RelationshipEnd, roleLabel?: string, polymorphic?: boolean) {
     this._relationshipEnd = relEnd;
@@ -279,9 +279,9 @@ export class RelationshipConstraint {
 
   protected addCustomAttribute(customAttribute: CustomAttribute) {
     if (!this._customAttributes)
-      this._customAttributes = new CustomAttributeSet();
+      this._customAttributes = new Map<string, CustomAttribute>();
 
-    this._customAttributes[customAttribute.className] = customAttribute;
+    this._customAttributes.set(customAttribute.className, customAttribute);
   }
 }
 

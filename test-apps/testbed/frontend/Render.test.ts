@@ -168,7 +168,7 @@ describe("Render mirukuru", () => {
       vf.visibleEdges = vf.hiddenEdges = vf.sourceLights = vf.cameraLights = vf.solarLight = false;
 
       // Specify element is never drawn.
-      vp.addFeatureOverrides = (ovrs, _) => ovrs.neverDrawn.add(elemId);
+      vp.addFeatureOverrides = (ovrs, _) => ovrs.setNeverDrawn(elemId);
       await vp.waitForAllTilesToRender();
 
       const bgColor = Color.fromRgba(0, 0, 0, 0xff);

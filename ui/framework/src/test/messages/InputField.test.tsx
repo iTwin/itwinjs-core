@@ -5,11 +5,12 @@
 import * as React from "react";
 import * as enzyme from "enzyme";
 import TestUtils from "../TestUtils";
-import { InputFieldMessage } from "../../ui-framework";
+import { InputFieldMessage, KeyboardShortcutManager } from "../../ui-framework";
 
 describe("InputFieldMessage", () => {
   before(async () => {
     await TestUtils.initializeUiFramework();
+    KeyboardShortcutManager.closeShortcutsMenu();
   });
 
   it("should render correctly", () => {

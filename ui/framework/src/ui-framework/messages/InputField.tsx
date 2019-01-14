@@ -45,7 +45,7 @@ export class InputFieldMessage extends React.Component<InputFieldMessageProps> {
         style={this.props.style}
         // TODO: dismiss onOutsideClick without immediately dismissing message
         children={
-          < StatusMessage
+          <StatusMessage
             className="nz-popup-message-inputField"
             status={Status.Error}
             icon={

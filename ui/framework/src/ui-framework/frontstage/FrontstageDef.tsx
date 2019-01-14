@@ -63,6 +63,12 @@ export class FrontstageDef {
     FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this.defaultLayout!, contentGroup: this.contentGroup });
   }
 
+  /** Handles when the Frontstage becomes inactive */
+  public onDeactivated(): void {
+    if (this.contentGroup)
+      this.contentGroup.clearContentControls();
+  }
+
   /** Returns once the contained widgets and content controls are ready to use */
   public async waitUntilReady(): Promise<void> {
     // create an array of control-ready promises

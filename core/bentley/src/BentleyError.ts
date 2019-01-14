@@ -294,7 +294,7 @@ export enum IModelHubStatus {
   FileNotFound = IMODELHUBERROR_REQUESTERRORBASE + 6,
 }
 
-// iModelHub Services Errors
+// Authentication Errors
 export enum AuthStatus {
   Success = 0,
   AUTHSTATUS_BASE = 0x20000,

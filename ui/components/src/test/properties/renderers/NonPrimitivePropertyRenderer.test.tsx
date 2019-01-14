@@ -31,7 +31,6 @@ describe("NonPrimitivePropertyRenderer", () => {
     expect(labelRenderer.exists()).to.be.true;
     expect(labelRenderer.html().indexOf("Pipes")).to.be.greaterThan(-1);
 
-    expect(rendererMount.html().indexOf("string[1]")).to.be.greaterThan(-1);
     expect(rendererMount.find(PropertyRenderer).exists()).to.be.false;
   });
 

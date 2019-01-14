@@ -103,7 +103,9 @@
     "openRadial": "Open Radial Menu",
     "outputMessage": "Call outputMessage",
     "openPropertyGrid": "Open Property Grid",
-    "closePropertyGrid": "Close Property Grid"
+    "closePropertyGrid": "Close Property Grid",
+    "showShortcutsMenu": "Show Shortcuts Menu",
+    "shortcutsSubMenu": "Shortcuts Submenu Sample"
   },
   "tools": {
     "Tool1": {

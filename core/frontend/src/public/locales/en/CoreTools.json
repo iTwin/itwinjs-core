@@ -119,7 +119,11 @@
         "Delta": "Delta",
         "Coordinate": "Model Coordinate",
         "LatLong": "Latitude, Longitude",
-        "Altitude": "Altitude"
+        "Altitude": "Altitude",
+        "N": "N",
+        "S": "S",
+        "E": "E",
+        "W": "W"
       }
     },
     "ElementSet": {

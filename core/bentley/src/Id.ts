@@ -137,6 +137,21 @@ export namespace Id64 {
     return fromLocalAndBriefcaseIds(low, high);
   }
 
+  // Used when constructing local ID portion of Id64String. Performance optimization.
+  const _localIdPrefixByLocalIdLength = [
+    "0000000000",
+    "000000000",
+    "00000000",
+    "0000000",
+    "000000",
+    "00000",
+    "0000",
+    "000",
+    "00",
+    "0",
+    "",
+  ];
+
   /** Produce an Id string from a local and briefcase Id.
    * @param localId The non-zero local Id as an unsigned 40-bit integer.
    * @param briefcaseId The briefcase Id as an unsigned 24-bit integer.
@@ -154,7 +169,52 @@ export namespace Id64 {
 
     briefcaseId = Math.floor(briefcaseId);
     const lowStr = localId.toString(16);
-    return "0x" + ((briefcaseId === 0) ? lowStr : (briefcaseId.toString(16) + ("0000000000" + lowStr).substr(-10)));
+    return "0x" + ((briefcaseId === 0) ? lowStr : (briefcaseId.toString(16) + (_localIdPrefixByLocalIdLength[lowStr.length] + lowStr)));
+  }
+
+  // Used as a buffer when converting a pair of 32-bit integers to an Id64String. Significant performance optimization.
+  const _scratchCharCodes = [
+    0x30, // "0"
+    0x78, // "x"
+    0x30, // "0"
+    0x30,
+    0x30,
+    0x30,
+    0x30,
+    0x30,
+    0x30,
+    0x30,
+    0x30,
+    0x30,
+    0x30,
+    0x30,
+    0x30,
+    0x30,
+    0x30,
+    0x30,
+  ];
+
+  // Convert 4-bit unsigned integer to char code representing lower-case hexadecimal digit.
+  function uint4ToCharCode(uint4: number): number {
+    return uint4 + (uint4 < 10 ? 0x30 : 0x57);
+  }
+
+  // Convert char code representing lower-case hexadecimal digit to 4-bit unsigned integer.
+  function charCodeToUint4(char: number): number {
+    return char - (char >= 0x57 ? 0x57 : 0x30);
+  }
+
+  // Convert a substring to a uint32. This is twice as fast as using Number.parseInt().
+  function substringToUint32(id: Id64String, start: number, end: number): number {
+    let uint32 = 0;
+    for (let i = start; i < end; i++) {
+      const uint4 = charCodeToUint4(id.charCodeAt(i));
+      const shift = (end - i - 1) << 2;
+      const mask = uint4 << shift;
+      uint32 = (uint32 | mask) >>> 0; // >>> 0 to force unsigned because javascript
+    }
+
+    return uint32;
   }
 
   /** Create an Id64String from a pair of unsigned 32-bit integers.
@@ -167,41 +227,75 @@ export namespace Id64 {
     const localIdLow = lowBytes >>> 0;
     const localIdHigh = (highBytes & 0x000000ff) * (0xffffffff + 1); // aka (highBytes & 0xff) << 32
     const localId = localIdLow + localIdHigh; // aka localIdLow | localIdHigh
+    if (0 === localId)
+      return invalid;
 
-    const briefcaseId = (highBytes & 0xffffff00) >>> 8;
+    // Need to omit or preserve leading zeroes...
+    const buffer = _scratchCharCodes;
+    let index = 2;
+    for (let i = 7; i >= 0; i--) {
+      const shift = i << 2;
+      const mask = 0xf << shift;
+      const uint4 = (highBytes & mask) >>> shift;
+      if (index > 2 || 0 !== uint4)
+        buffer[index++] = uint4ToCharCode(uint4);
+    }
 
-    return Id64.fromLocalAndBriefcaseIds(localId, briefcaseId);
+    for (let i = 7; i >= 0; i--) {
+      const shift = i << 2;
+      const mask = 0xf << shift;
+      const uint4 = (lowBytes & mask) >>> shift;
+      if (index > 2 || 0 !== uint4)
+        buffer[index++] = uint4ToCharCode(uint4);
+    }
+
+    if (buffer.length !== index)
+      buffer.length = index;
+
+    return String.fromCharCode(..._scratchCharCodes);
   }
 
-  /** Extract an unsigned 32-bit integer from the lower 4 bytes of an Id64String.
-   * @returns the unsigned 32-bit integer value stored in the id's lower 4 bytes
+  /** @hidden */
+  export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean {
+    // Detect local ID of zero
+    return 0 !== lowBytes || 0 !== (highBytes & 0x000000ff);
+  }
+
+  /** Represents an unsigned 64-bit integer as a pair of unsigned 32-bit integers.
+   * @see [[Id64.getUint32Pair]]
    */
+  export interface Uint32Pair {
+    /** The lower 4 bytes of the 64-bit integer. */
+    lower: number;
+    /** The upper 4 bytes of the 64-bit integer. */
+    upper: number;
+  }
+
+  /** Convert an Id64String to a 64-bit unsigned integer represented as a pair of unsigned 32-bit integers. */
+  export function getUint32Pair(id: Id64String): Uint32Pair {
+    return {
+      lower: getLowerUint32(id),
+      upper: getUpperUint32(id),
+    };
+  }
+
+  /** Extract an unsigned 32-bit integer from the lower 4 bytes of an Id64String. */
   export function getLowerUint32(id: Id64String): number {
     if (isInvalid(id))
       return 0;
 
-    const str = id.toString();
-    let start = 2;
-    const len = str.length;
-    if (len > 10)
-      start = len - 8;
-
-    return toHex(str.slice(start));
+    const end = id.length;
+    const start = end > 10 ? end - 8 : 2;
+    return substringToUint32(id, start, end);
   }
 
-  /** Extract an unsigned 32-bit integer from the upper 4 bytes of an Id64String.
-   * @returns the unsigned 32-bit integer value stored in the id's upper 4 bytes
-   */
+  /** Extract an unsigned 32-bit integer from the upper 4 bytes of an Id64String. */
   export function getUpperUint32(id: Id64String): number {
-    if (isInvalid(id))
-      return 0;
-
     const len = id.length;
-    if (len <= 10)
+    if (len <= 10 || isInvalid(id))
       return 0;
 
-    const start = len - 8;
-    return toHex(id.slice(2, start));
+    return substringToUint32(id, 2, len - 8);
   }
 
   /** Convert an [[Id64Arg]] into an [[Id64Set]].
@@ -314,6 +408,116 @@ export namespace Id64 {
    * @see [[Id64.isValid]]
    */
   export function isInvalid(id: Id64String): boolean { return Id64.invalid === id; }
+
+  /** A specialized replacement for Set<Id64String> optimized for performance-critical code which represents large sets of 64-bit IDs as pairs of
+   * 32-bit integers.
+   * The internal representation is a Map<number, Set<number>> where the Map key is the upper 4 bytes of the IDs and the Set elements are the lower 4 bytes of the IDs.
+   * Because the upper 4 bytes store the 24-bit briefcase ID plus the upper 8 bits of the local ID, there will be a very small distribution of unique Map keys.
+   * To further optimize this data type, the following assumptions are made regarding the { lower, upper } inputs, and no validation is performed to confirm them:
+   *  - The inputs are unsigned 32-bit integers;
+   *  - The inputs represent a valid Id64String (e.g., local ID is not zero).
+   * @see [[Id64.Uint32Map]] for a similarly-optimized replacement for Map<Id64String, T>
+   */
+  export class Uint32Set {
+    protected readonly _map = new Map<number, Set<number>>();
+
+    /** Remove all contents of this set. */
+    public clear(): void { this._map.clear(); }
+    /** Add an Id to the set. */
+    public addId(id: Id64String): void { this.add(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+    /** Returns true if the set contains the specified Id. */
+    public hasId(id: Id64String): boolean { return this.has(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+
+    /** Add an Id to the set. */
+    public add(low: number, high: number): void {
+      let set = this._map.get(high);
+      if (undefined === set) {
+        set = new Set<number>();
+        this._map.set(high, set);
+      }
+
+      set.add(low);
+    }
+
+    /** Returns true if the set contains the specified Id. */
+    public has(low: number, high: number): boolean {
+      const set = this._map.get(high);
+      return undefined !== set && set.has(low);
+    }
+
+    /** Returns true if the set contains no Ids. */
+    public get isEmpty(): boolean { return 0 === this._map.size; }
+    /** Returns the number of Ids contained in the set. */
+    public get size(): number {
+      let size = 0;
+      for (const entry of this._map)
+        size += entry[1].size;
+
+      return size;
+    }
+
+    /** Populates and returns an array of all Ids contained in the set. */
+    public toId64Array(): Id64Array {
+      const ids: Id64Array = [];
+      for (const entry of this._map)
+        for (const low of entry[1])
+          ids.push(Id64.fromUint32Pair(low, entry[0]));
+
+      return ids;
+    }
+
+    /** Populates and returns a set of all Ids contained in the set. */
+    public toId64Set(): Id64Set {
+      const ids = new Set<string>();
+      for (const entry of this._map)
+        for (const low of entry[1])
+          ids.add(Id64.fromUint32Pair(low, entry[0]));
+
+      return ids;
+    }
+  }
+
+  /** A specialized replacement for Map<Id64String, T> optimized for performance-critical code.
+   * @see [[Id64.Uint32Set]] for implementation details.
+   */
+  export class Uint32Map<T> {
+    protected readonly _map = new Map<number, Map<number, T>>();
+
+    /** Remove all entries from the map. */
+    public clear(): void { this._map.clear(); }
+    /** Find an entry in the map by Id. */
+    public getById(id: Id64String): T | undefined { return this.get(Id64.getLowerUint32(id), Id64.getUpperUint32(id)); }
+    /** Set an entry in the map by Id. */
+    public setById(id: Id64String, value: T): void { this.set(Id64.getLowerUint32(id), Id64.getUpperUint32(id), value); }
+
+    /** Set an entry in the map by Id components. */
+    public set(low: number, high: number, value: T): void {
+      let map = this._map.get(high);
+      if (undefined === map) {
+        map = new Map<number, T>();
+        this._map.set(high, map);
+      }
+
+      map.set(low, value);
+    }
+
+    /** Get an entry from the map by Id components. */
+    public get(low: number, high: number): T | undefined {
+      const map = this._map.get(high);
+      return undefined !== map ? map.get(low) : undefined;
+    }
+
+    /** Returns true if the map contains no entries. */
+    public get isEmpty(): boolean { return 0 === this._map.size; }
+    /** Returns the number of entries in the map. */
+    public get size(): number {
+      let size = 0;
+      for (const entry of this._map)
+        size += entry[1].size;
+
+      return size;
+    }
+  }
 }
 
 /**

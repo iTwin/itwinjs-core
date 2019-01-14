@@ -165,6 +165,7 @@ describe("PropertyView", () => {
 
     expect(propertyRenderer.find(".components--hoverable").first().exists()).to.be.true;
   });
+
   it("does not renders as hoverable when isSelectable prop is true, but it is already selected", () => {
     const propertyRenderer = mount(
       <PropertyView
@@ -177,5 +178,20 @@ describe("PropertyView", () => {
       />);
 
     expect(propertyRenderer.find(".components--hoverable").first().exists()).to.be.false;
+  });
+
+  it("renders only label when property record is non primitive", () => {
+    propertyRecord = TestUtils.createStructProperty("StructProperty");
+
+    const propertyRenderer = mount(
+      <PropertyView
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        labelElement={"City"}
+        valueElement={"Vilnius"}
+      />);
+
+    expect(propertyRenderer.find(".components-property-record-label").first().text()).to.be.eq("City");
+    expect(propertyRenderer.find(".components-property-record-value").exists()).to.be.false;
   });
 });

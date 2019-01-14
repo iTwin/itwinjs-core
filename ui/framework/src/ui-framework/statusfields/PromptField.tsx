@@ -19,7 +19,7 @@ export interface PromptFieldProps {
  * It is used to display prompt from tools. To send a prompt to this component use IModelApp.notifications.outputPromptByKey or
  * IModelApp.notifications.outputPrompt.
  */
-export class PromptFieldComponent extends React.Component<PromptFieldProps> {
+class PromptFieldComponent extends React.Component<PromptFieldProps> {
 
   constructor(props?: any, context?: any) {
     super(props, context);

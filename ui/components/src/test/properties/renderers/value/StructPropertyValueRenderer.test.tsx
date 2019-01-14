@@ -64,6 +64,16 @@ describe("StructPropertyValueRenderer", () => {
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
       expect(() => renderer.render(stringProperty)).to.throw;
     });
+
+    it("renders as empty string when container type is property pane", () => {
+      const renderer = new StructPropertyValueRenderer();
+      const structProperty = TestUtils.createStructProperty("NameStruct");
+
+      const element = renderer.render(structProperty, { containerType: PropertyContainerType.PropertyPane });
+      const elementMount = mount(<div>{element}</div>);
+
+      expect(elementMount.text()).to.be.eq("");
+    });
   });
 
   describe("canRender", () => {

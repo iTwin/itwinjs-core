@@ -10,12 +10,16 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { Backstage } from "../backstage/Backstage";
 import { WorkflowManager } from "../workflow/Workflow";
 import { ContentViewManager } from "../content/ContentViewManager";
+import { AppStateActionId } from "../AppState";
+import { UiFramework } from "../UiFramework";
 import { IModelConnection, SelectEventType, IModelApp, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
+import { getInstancesCount } from "@bentley/presentation-common";
 
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
 // cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
-// cSpell:ignore frontstageready activeviewportchanged selectionsetchanged
+// cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged
 /** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control. */
 export const enum SyncUiEventId {
   /** The active content as maintained by the ContentViewManager has changed. */
@@ -64,11 +68,12 @@ export class SyncUiEvent extends UiEvent<SyncUiEventArgs> { }
  * to refresh its display by calling setState on itself.
  */
 export class SyncUiEventDispatcher {
-  private static _syncEventTimer: NodeJS.Timer | undefined;
+  private static _syncEventTimerId: number | undefined;
   private static _eventIds: Set<string>;
   private static _eventIdAdded: boolean = false;
   private static _syncUiEvent: SyncUiEvent;
   private static _timeoutPeriod: number = 200;
+  private static _unregisterListenerFunc?: () => void;
 
   /** @hidden - used for testing only */
   public static setTimeoutPeriod(period: number): void {
@@ -101,8 +106,8 @@ export class SyncUiEventDispatcher {
   /** Save eventId in Set for processing. */
   public static dispatchSyncUiEvent(eventId: string): void {
     SyncUiEventDispatcher.syncEventIds.add(eventId.toLowerCase());
-    if (!SyncUiEventDispatcher._syncEventTimer) {  // if there is not a timer active, create one
-      SyncUiEventDispatcher._syncEventTimer = setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod);
+    if (!SyncUiEventDispatcher._syncEventTimerId) {  // if there is not a timer active, create one
+      SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod);
     } else {
       SyncUiEventDispatcher._eventIdAdded = true;
     }
@@ -111,8 +116,8 @@ export class SyncUiEventDispatcher {
   /** Save multiple eventIds in Set for processing. */
   public static dispatchSyncUiEvents(eventIds: string[]): void {
     eventIds.forEach((id) => SyncUiEventDispatcher.syncEventIds.add(id.toLowerCase()));
-    if (!SyncUiEventDispatcher._syncEventTimer) {  // if there is not a timer active, create one
-      SyncUiEventDispatcher._syncEventTimer = setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod);
+    if (!SyncUiEventDispatcher._syncEventTimerId) {  // if there is not a timer active, create one
+      SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod);
     } else {
       SyncUiEventDispatcher._eventIdAdded = true;
     }
@@ -120,9 +125,9 @@ export class SyncUiEventDispatcher {
 
   /** Trigger registered event processing when timer has expired and no addition eventId are added. */
   private static checkForAdditionalIds() {
-    if (!SyncUiEventDispatcher._eventIdAdded && SyncUiEventDispatcher._syncEventTimer) {
-      if (SyncUiEventDispatcher._syncEventTimer) clearTimeout(SyncUiEventDispatcher._syncEventTimer);
-      SyncUiEventDispatcher._syncEventTimer = undefined;
+    if (!SyncUiEventDispatcher._eventIdAdded && SyncUiEventDispatcher._syncEventTimerId) {
+      if (SyncUiEventDispatcher._syncEventTimerId) window.clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
+      SyncUiEventDispatcher._syncEventTimerId = undefined;
       SyncUiEventDispatcher._eventIdAdded = false;
       if (SyncUiEventDispatcher.syncEventIds.size > 0) {
         const eventIds = new Set<string>();
@@ -133,10 +138,10 @@ export class SyncUiEventDispatcher {
       return;
     }
 
-    if (SyncUiEventDispatcher._syncEventTimer) clearTimeout(SyncUiEventDispatcher._syncEventTimer);
+    if (SyncUiEventDispatcher._syncEventTimerId) clearTimeout(SyncUiEventDispatcher._syncEventTimerId);
     SyncUiEventDispatcher._eventIdAdded = false;
     // if events have been added before the initial timer expired wait half that time to see if events are still being added.
-    SyncUiEventDispatcher._syncEventTimer = setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod / 2);
+    SyncUiEventDispatcher._syncEventTimerId = window.setTimeout(SyncUiEventDispatcher.checkForAdditionalIds, SyncUiEventDispatcher._timeoutPeriod / 2);
   }
 
   /** Checks to see if an eventId of interest is contained in the set of eventIds */
@@ -197,7 +202,7 @@ export class SyncUiEventDispatcher {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveContentChanged);
     });
 
-    if (IModelApp && IModelApp.viewManager)
+    if (IModelApp && IModelApp.viewManager) {
       IModelApp.viewManager.onSelectedViewportChanged.addListener((args: SelectedViewportChangedArgs) => {
         SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveViewportChanged);
 
@@ -205,6 +210,7 @@ export class SyncUiEventDispatcher {
         if (undefined === args.previous)
           IModelApp.toolAdmin.startDefaultTool();
       });
+    }
   }
 
   private static selectionChangedHandler(_iModelConnection: IModelConnection, _evType: SelectEventType, _ids?: Set<string>) {
@@ -218,5 +224,20 @@ export class SyncUiEventDispatcher {
   public static initializeConnectionEvents(iModelConnection: IModelConnection) {
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
     iModelConnection.selectionSet.onChanged.addListener(SyncUiEventDispatcher.selectionChangedHandler);
+
+    if (SyncUiEventDispatcher._unregisterListenerFunc)
+      SyncUiEventDispatcher._unregisterListenerFunc();
+
+    // listen for changes from presentation rules selection manager (this is done once an iModelConnection is available to ensure Presentation.selection is valid)
+    SyncUiEventDispatcher._unregisterListenerFunc = Presentation.selection.selectionChange.addListener((args: SelectionChangeEventArgs, provider: ISelectionProvider) => {
+      if (args.level !== 0) {
+        // don't need to handle sub-selections
+        return;
+      }
+      const selection = provider.getSelection(args.imodel, args.level);
+      const numSelected = getInstancesCount(selection);
+      UiFramework.dispatchActionToStore(AppStateActionId.SetNumItemsSelected, numSelected);
+    });
   }
+
 }

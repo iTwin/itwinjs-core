@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "More logging of HTTP requests, and enabled use of fiddler for backend diagnostics. ",
+      "packageName": "@bentley/imodeljs-clients-backend",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients-backend",
+  "email": "Ramanujam.Raman@bentley.com"
+}

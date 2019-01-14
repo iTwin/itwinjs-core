@@ -3,7 +3,7 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 /** @module iModels */
-import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { ActivityLoggingContext, BeEvent, BentleyStatus, DbResult, AuthStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, JsonUtils, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, CategorySelectorProps, Code, CodeSpec, CreateIModelProps, DisplayStyleProps, EcefLocation, ElementAspectProps,
@@ -117,7 +117,6 @@ export class OpenParams {
 export class IModelDb extends IModel {
   public static readonly defaultLimit = 1000; // default limit for batching queries
   public static readonly maxLimit = 10000; // maximum limit for batching queries
-  private static _accessTokens?: Map<string, AccessToken>;
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
   public readonly models = new IModelDb.Models(this);
@@ -193,39 +192,6 @@ export class IModelDb extends IModel {
   }
 
   /**
-   * Get the AccessToken that is considered to be the owner of a local IModelDb.
-   * Note: Call this only for IModels that are known to have been opened during the current session using [[IModelDb.open]].
-   * @param iModelId The IModelID of an open IModelDb
-   * @throws [[IModelError]] with [[IModelStatus.NotFound]] if no AccessToken is registered for the specified IModel. That could happen if the IModel is not currently open.
-   */
-  public static getAccessToken(iModelId: string): AccessToken {
-    if (IModelDb._accessTokens === undefined)
-      throw new IModelError(IModelStatus.NotFound, "Undefined", Logger.logWarning, loggingCategory);
-    const token: AccessToken | undefined = IModelDb._accessTokens.get(iModelId);
-    if (token === undefined)
-      throw new IModelError(IModelStatus.NotFound, "AccessToken not found", Logger.logWarning, loggingCategory);
-    return token;
-  }
-
-  private static setFirstAccessToken(iModelId: string, accessToken: AccessToken) {
-    if (IModelDb._accessTokens === undefined)
-      IModelDb._accessTokens = new Map<string, AccessToken>();
-    if (IModelDb._accessTokens.get(iModelId) === undefined)
-      IModelDb._accessTokens.set(iModelId, accessToken);
-  }
-
-  /**
-   * Change the AccessToken that should be considered the owner of the local IModelDb.
-   * @param iModelId iModelId The IModelID of an open IModelDb
-   * @param accessToken The AccessToken that should be considered the owner of the local IModelDb.
-   */
-  public static updateAccessToken(iModelId: string, accessToken: AccessToken) {
-    if (IModelDb._accessTokens !== undefined)
-      IModelDb._accessTokens.delete(iModelId);
-    IModelDb.setFirstAccessToken(iModelId, accessToken);
-  }
-
-  /**
    * Create a standalone local Db.
    * @param fileName The name for the iModel
    * @param args The parameters that define the new iModel
@@ -271,7 +237,6 @@ export class IModelDb extends IModel {
     const briefcaseEntry: BriefcaseEntry = await BriefcaseManager.open(activity, accessToken, contextId, iModelId, openParams, version);
     activity.enter();
     const imodelDb = IModelDb.constructIModelDb(briefcaseEntry, openParams, contextId);
-    IModelDb.setFirstAccessToken(imodelDb.briefcase.iModelId, accessToken);
     IModelDb.onOpened.raiseEvent(imodelDb, activity);
     Logger.logTrace(loggingCategory, "IModelDb.open", () => ({ ...imodelDb._token, ...openParams }));
     return imodelDb;
@@ -651,14 +616,16 @@ export class IModelDb extends IModel {
    * @throws IModelError if the schema lock cannot be obtained.
    * @see containsClass
    */
-  public async importSchema(activity: ActivityLoggingContext, schemaFileName: string): Promise<void> {
+  public async importSchema(activity: ActivityLoggingContext, schemaFileName: string, accessToken?: AccessToken): Promise<void> {
     activity.enter();
 
     if (!this.briefcase)
       throw this.newNotOpenError();
 
     if (!this.briefcase.isStandalone) {
-      await this.concurrencyControl.lockSchema(activity, IModelDb.getAccessToken(this.iModelToken.iModelId!));
+      if (!accessToken)
+        throw new IModelError(AuthStatus.Error, "Importing the schema requires the accessToken of the authorized user");
+      await this.concurrencyControl.lockSchema(activity, accessToken);
       activity.enter();
     }
     const stat = this.briefcase.nativeDb.importSchema(schemaFileName);
@@ -669,7 +636,7 @@ export class IModelDb extends IModel {
       try {
         // The schema import logic and/or imported Domains may have created new elements and models.
         // Make sure we have the supporting locks and codes.
-        await this.concurrencyControl.request(activity, IModelDb.getAccessToken(this.iModelToken.iModelId!));
+        await this.concurrencyControl.request(activity, accessToken!);
       } catch (err) {
         activity.enter();
         this.abandonChanges();

@@ -9,6 +9,7 @@ import {
   ChangesType, Briefcase, HubCode, IModelHubError,
   BriefcaseQuery, ChangeSetQuery, IModelQuery, ConflictingCodesError, IModelClient, HubIModel, IncludePrefix,
 } from "@bentley/imodeljs-clients";
+import { RequestProxy } from "@bentley/imodeljs-clients-backend";
 import { IModelBankClient } from "@bentley/imodeljs-clients/lib/IModelBank/IModelBankClient";
 import { AzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/AzureFileHandler";
 import { IOSAzureFileHandler } from "@bentley/imodeljs-clients/lib/imodelhub/IOSAzureFileHandler";
@@ -471,6 +472,8 @@ export class BriefcaseManager {
     if (!accessToken)
       return;
 
+    await RequestProxy.setupFiddlerProxyIfReachable();
+
     const perfLogger = new PerfLogger("BriefcaseManager.initCache");
     for (const iModelId of IModelJsFs.readdirSync(BriefcaseManager.cacheDir)) {
       await BriefcaseManager.initCacheForIModel(actx, accessToken, iModelId);
@@ -755,15 +758,7 @@ export class BriefcaseManager {
       appVersion = actx.versionId;
 
     assert(appVersion.length !== 0);
-    const res: DbResult = nativeDb.openIModel(accessToken.toTokenString(IncludePrefix.No), appVersion, contextId, filePath, mode);
-    if (res === -100) {
-      // The addon returns -100 if usage tracking failed. For now we don't yet fail the open, as
-      // apps need to switch to OIDC authentication first.
-      Logger.logWarning(loggingCategory, "Usage tracking failed.", () => ({ userId: !accessToken.getUserInfo() ? undefined : accessToken.getUserInfo()!.id, contextId }));
-      return DbResult.BE_SQLITE_OK;
-    }
-
-    return res;
+    return nativeDb.openIModel(accessToken.toTokenString(IncludePrefix.No), appVersion, contextId, filePath, mode);
   }
 
   private static async getOrAcquireBriefcase(actx: ActivityLoggingContext, accessToken: AccessToken, iModelId: GuidString): Promise<HubBriefcase> {
@@ -1550,14 +1545,8 @@ export class BriefcaseManager {
       IModelJsFs.unlinkSync(fileName); // Note: Cannot create two files with the same name at the same time with multiple async calls.
 
     let res: DbResult = nativeDb.createIModel(accessToken.toTokenString(), IModelHost.backendVersion, projectId, fileName, JSON.stringify(args));
-    if (res !== DbResult.BE_SQLITE_OK) {
-      if (res === -100) {
-        // The addon returns -100 if usage tracking failed. For now we don't yet fail, as
-        // apps need to switch to OIDC authentication first.
-        Logger.logWarning(loggingCategory, "Usage tracking failed.", () => ({ userId: !accessToken.getUserInfo() ? undefined : accessToken.getUserInfo()!.id, projectId }));
-      } else
-        throw new IModelError(res, fileName);
-    }
+    if (res !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(res, fileName);
 
     res = nativeDb.saveChanges();
     if (DbResult.BE_SQLITE_OK !== res)

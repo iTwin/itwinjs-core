@@ -1,6 +1,33 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Mon, 07 Jan 2019 21:49:21 GMT and should not be manually modified.
+This log was last generated on Fri, 11 Jan 2019 18:29:00 GMT and should not be manually modified.
+
+## 0.185.0
+Fri, 11 Jan 2019 18:29:00 GMT
+
+### Updates
+
+- Optimize performance of schedule animation.
+- Use QuantityType.Coordinate for measure distance start/end points.
+- Add QuantityTypes LatLong and Coordinate.
+
+## 0.184.0
+Thu, 10 Jan 2019 22:46:17 GMT
+
+### Updates
+
+- Add support for general 3d tilesets
+- Fix drag select decorator when cursor moves out of view. Doc fixes.
+- Support region bounding volumes
+- Fix IModelJsLoader to ensure react loaded before bwc.
+- MeasureLocationTool show lat/long and altitude.
+- Make raster text locate behave better.
+- Removed default OIDC scopes. All applications must now explicitly pass the required scopes. 
+- Can now await result from QuantityFormatter. Report delta relative to ACS when context lock enabled. Cleanup "Measure.Points" plug-in example until real measure tools are available.
+- Quantity formatter now allows async method to get FormatterSpec that can be used to format quantities.
+- QuantityFormatter.formatQuantity is now the only method to format quantities.
+- Rename formatQuantityWithSpec to formatQuantity
+- Added ToolAdmin method for undo/undo last data button and call from Ctrl+Z.
 
 ## 0.183.0
 Mon, 07 Jan 2019 21:49:21 GMT

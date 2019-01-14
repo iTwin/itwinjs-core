@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { ActivityLoggingContext, BeEvent, DbResult, Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { Angle, Matrix4d, Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { AccessToken } from "@bentley/imodeljs-clients";
+import { AccessToken, IAccessTokenManager } from "@bentley/imodeljs-clients";
 import {
   AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorByName, EntityMetaData, EntityProps, FilePropertyProps, FontMap,
   FontType, GeometricElementProps, IModel, IModelError, IModelStatus, PrimitiveTypeCode, RelatedElement, SubCategoryAppearance,
@@ -13,7 +13,7 @@ import {
 import { assert, expect } from "chai";
 import * as path from "path";
 import {
-  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCore, Category, ClassRegistry, DefinitionPartition,
+  AutoPush, AutoPushParams, AutoPushEventHandler, AutoPushEventType, AutoPushState, BisCore, Category, ClassRegistry, DefinitionPartition,
   DictionaryModel, DocumentPartition, ECSqlStatement, Element, ElementGroupsMembers, ElementPropertyFormatter, Entity,
   GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, InformationPartitionElement,
   LightLocation, LinkPartition, Model, PhysicalModel, PhysicalPartition, SpatialCategory, SqliteStatement, SqliteValue,
@@ -1204,14 +1204,20 @@ describe("iModel", () => {
         hasLocalChanges: () => true,
       },
     };
-    const fakeAccessToken2 = {} as AccessToken;
-    IModelDb.updateAccessToken(iModel.iModelToken.iModelId, fakeAccessToken2);
+
+    const accessTokenManager: IAccessTokenManager = {
+      getAccessToken: async (_actx: ActivityLoggingContext): Promise<AccessToken> => {
+        const fakeAccessToken2 = {} as AccessToken;
+        return fakeAccessToken2;
+      },
+    };
 
     lastPushTimeMillis = 0;
     lastAutoPushEventType = undefined;
 
     // Create an autopush in manual-schedule mode.
-    const autoPush = new AutoPush(iModel as any, { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false, activityContext: actx }, activityMonitor);
+    const autoPushParams: AutoPushParams = { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false, activityContext: actx };
+    const autoPush = new AutoPush(iModel as any, autoPushParams, accessTokenManager, activityMonitor);
     assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
     assert.isFalse(autoPush.autoSchedule);
 

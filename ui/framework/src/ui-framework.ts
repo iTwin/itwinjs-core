@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 export { default as UiFramework } from "./ui-framework/UiFramework";
 
+export * from "./ui-framework/AppState";
 export * from "./ui-framework/FrameworkState";
 export * from "./ui-framework/UiFramework";
 export * from "./ui-framework/CoreToolDefinitions";
@@ -58,7 +59,8 @@ export * from "./ui-framework/shared/Item";
 export * from "./ui-framework/shared/ItemDefBase";
 export * from "./ui-framework/shared/ItemMap";
 export * from "./ui-framework/shared/ItemProps";
-export * from "./ui-framework/KeyboardShortcut";
+export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
+export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
 export * from "./ui-framework/messages/MessageManager";
 export * from "./ui-framework/ModalDialogManager";
 export * from "./ui-framework/frontstage/ModalFrontstage";
@@ -102,6 +104,7 @@ export * from "./ui-framework/statusfields/ActivityCenter";
 export * from "./ui-framework/statusfields/MessageCenter";
 export * from "./ui-framework/statusfields/SnapMode";
 export * from "./ui-framework/statusfields/PromptField";
+export * from "./ui-framework/statusfields/SelectionInfo";
 
 export * from "./ui-framework/tools/AnalysisAnimation";
 export * from "./ui-framework/tools/AnalysisAnimationToolSettings";

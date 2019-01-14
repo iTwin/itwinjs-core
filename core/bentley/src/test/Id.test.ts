@@ -103,22 +103,36 @@ describe("Ids", () => {
 
   it("should construct an Id64 from two 32-bit integers", () => {
     const ids: Uint64Id[] = [
+      // (highBytes, lowBytes, localId, briefCaseId, Id64String)
       new Uint64Id(0, 0, 0, 0, "0"),
       new Uint64Id(0x01234567, 0x89abcdef, 0x6789abcdef, 0x00012345, "0x123456789abcdef"),
       new Uint64Id(0xfedcba98, 0x76543210, 0x9876543210, 0x00fedcba, "0xfedcba9876543210"),
       new Uint64Id(0x00000100, 0x00000001, 0x0000000001, 0x00000001, "0x10000000001"),
+      new Uint64Id(0x12345600, 0, 0, 0, "0"), // a local ID of zero is not allowed
+      new Uint64Id(0, 0x0000123456, 0x123456, 0, "0x123456"), // leading zeroes in local ID omitted if briefcase Id is zero
+      new Uint64Id(0x100, 1, 1, 1, "0x10000000001"), // preserve leading zeroes in local Id if briefcase Id non-zero
+      new Uint64Id(1, 1, 0x0100000001, 0, "0x100000001"), // lower 8 bytes of "high uint32" are part of local ID, not briefcase ID.
+      new Uint64Id(0x00ba0000, 0x6543000, 0x6543000, 0xba00, "0xba000006543000"),
     ];
 
     for (const id of ids) {
       const id64 = Id64.fromUint32Pair(id.low, id.high);
       expect(id64).to.equal(id.str);
-      expect(Id64.getLocalId(id64)).to.equal(id.localId);
-      expect(Id64.getBriefcaseId(id64)).to.equal(id.briefcaseId);
+      if (Id64.isInvalid(id.str)) {
+        // If we expect invalid ID for whatever inputs, then expect extraction to operate on invalid ID
+        expect(Id64.getLocalId(id64)).to.equal(id.localId);
+        expect(Id64.getBriefcaseId(id64)).to.equal(id.briefcaseId);
+        expect(Id64.getLowerUint32(id64)).to.equal(0);
+        expect(Id64.getUpperUint32(id64)).to.equal(0);
+      } else {
+        expect(Id64.getLocalId(id64)).to.equal(id.localId);
+        expect(Id64.getBriefcaseId(id64)).to.equal(id.briefcaseId);
 
-      const low = Id64.getLowerUint32(id64);
-      const high = Id64.getUpperUint32(id64);
-      expect(low).to.equal(id.low);
-      expect(high).to.equal(id.high);
+        const low = Id64.getLowerUint32(id64);
+        const high = Id64.getUpperUint32(id64);
+        expect(low).to.equal(id.low);
+        expect(high).to.equal(id.high);
+      }
     }
   });
 
@@ -159,6 +173,117 @@ describe("Ids", () => {
     for (const badId of badIds) {
       assert.isFalse(Id64.isId64(badId), badId);
       assert.isFalse(Id64.isValidId64(badId), badId);
+    }
+  });
+
+  it("should store IDs in a Id64.Uint32Set", () => {
+    const ids: Uint64Id[] = [
+      // (highBytes, lowBytes, localId, briefCaseId, Id64String)
+      new Uint64Id(0, 0, 0, 0, "0"),
+      new Uint64Id(0, 1, 1, 0, "0x1"),
+      new Uint64Id(0, 2, 2, 0, "0x2"),
+      new Uint64Id(0, 0x0000123456, 0x123456, 0, "0x123456"),
+      new Uint64Id(0, 0x01234567, 0x01234567, 0, "0x1234567"),
+      new Uint64Id(0, 0xffffffff, 0xffffffff, 0, "0xffffffff"),
+      new Uint64Id(0x01234567, 0x89abcdef, 0x6789abcdef, 0x00012345, "0x123456789abcdef"),
+      new Uint64Id(0xfedcba98, 0x76543210, 0x9876543210, 0x00fedcba, "0xfedcba9876543210"),
+      new Uint64Id(0x100, 1, 1, 1, "0x10000000001"),
+      new Uint64Id(0x100, 0xabc, 0xabc, 1, "0x10000000abc"),
+      new Uint64Id(1, 1, 0x0100000001, 0, "0x100000001"),
+      new Uint64Id(1, 2, 0x0100000002, 0, "0x100000002"),
+      new Uint64Id(0x00ba0000, 0x6543000, 0x6543000, 0xba00, "0xba000006543000"),
+    ];
+
+    class MySet extends Id64.Uint32Set {
+      public get map() { return this._map; }
+    }
+
+    const set = new MySet();
+    for (const id of ids) {
+      set.add(id.low, id.high);
+      set.add(id.low, id.high);
+    }
+
+    expect(set.size).to.equal(ids.length);
+    expect(set.map.size).to.equal(6); // number of unique "high bytes" values.
+
+    for (const id of ids) {
+      expect(set.has(id.low, id.high)).to.be.true;
+      expect(set.hasId(id.str)).to.be.true;
+    }
+
+    set.clear();
+    expect(set.isEmpty).to.be.true;
+    expect(set.size).to.equal(0);
+
+    for (const id of ids) {
+      set.addId(id.str);
+      set.add(id.low, id.high);
+    }
+
+    expect(set.size).to.equal(ids.length);
+    expect(set.map.size).to.equal(6); // number of unique "high bytes" values.
+
+    for (const id of ids) {
+      expect(set.has(id.low, id.high)).to.be.true;
+      expect(set.hasId(id.str)).to.be.true;
+    }
+  });
+
+  it("should map IDs in a Id64.Uint32Map", () => {
+    const ids: Uint64Id[] = [
+      // (highBytes, lowBytes, localId, briefCaseId, Id64String)
+      new Uint64Id(0, 0, 0, 0, "0"),
+      new Uint64Id(0, 1, 1, 0, "0x1"),
+      new Uint64Id(0, 2, 2, 0, "0x2"),
+      new Uint64Id(0, 0x0000123456, 0x123456, 0, "0x123456"),
+      new Uint64Id(0, 0x01234567, 0x01234567, 0, "0x1234567"),
+      new Uint64Id(0, 0xffffffff, 0xffffffff, 0, "0xffffffff"),
+      new Uint64Id(0x01234567, 0x89abcdef, 0x6789abcdef, 0x00012345, "0x123456789abcdef"),
+      new Uint64Id(0xfedcba98, 0x76543210, 0x9876543210, 0x00fedcba, "0xfedcba9876543210"),
+      new Uint64Id(0x100, 1, 1, 1, "0x10000000001"),
+      new Uint64Id(0x100, 0xabc, 0xabc, 1, "0x10000000abc"),
+      new Uint64Id(1, 1, 0x0100000001, 0, "0x100000001"),
+      new Uint64Id(1, 2, 0x0100000002, 0, "0x100000002"),
+      new Uint64Id(0x00ba0000, 0x6543000, 0x6543000, 0xba00, "0xba000006543000"),
+    ];
+
+    class MyMap<T> extends Id64.Uint32Map<T> {
+      public get map() { return this._map; }
+    }
+
+    const strings = new MyMap<string>();
+    for (const id of ids)
+      strings.set(id.low, id.high, id.str);
+
+    expect(strings.size).to.equal(ids.length);
+    expect(strings.map.size).to.equal(6);
+
+    for (const id of ids) {
+      let value = strings.get(id.low, id.high);
+      expect(value).not.to.be.undefined;
+      expect(value).to.equal(id.str);
+
+      value = strings.getById(id.str);
+      expect(value).not.to.be.undefined;
+      expect(value).to.equal(id.str);
+    }
+
+    const numbers = new MyMap<number>();
+    for (const id of ids)
+      numbers.setById(id.str, id.low);
+
+    expect(numbers.size).to.equal(ids.length);
+    expect(numbers.map.size).to.equal(6);
+
+    for (const id of ids) {
+      let value = numbers.get(id.low, id.high);
+      expect(value).not.to.be.undefined;
+      expect(value).to.equal(id.low);
+
+      value = numbers.getById(id.str);
+      expect(value).not.to.be.undefined;
+      expect(value).to.equal(id.low);
     }
   });
 

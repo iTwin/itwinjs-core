@@ -60,6 +60,7 @@ export * from "./ui-ninezone/footer/tool-assistance/Separator";
 
 export * from "./ui-ninezone/footer/Footer";
 export * from "./ui-ninezone/footer/StatusBarText";
+export * from "./ui-ninezone/footer/selection-info/SelectionInfo";
 
 export * from "./ui-ninezone/popup/popover/Popover";
 export * from "./ui-ninezone/popup/popover/Triangle";

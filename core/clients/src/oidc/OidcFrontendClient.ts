@@ -33,14 +33,11 @@ export interface OidcFrontendClientConfiguration {
    * For mobile/desktop applications, must be `http://127.0.0.1:${redirectPort}`
    */
   redirectUri: string;
+  /** List of space separated scopes to request access to various resources. */
+  scope: string;
   /**
    * Upon  signing out, the client application receives a response from the Bentley IMS OIDC/OAuth2 provider at this URI
    * Not specified/used in the case of mobile/desktop applications
    */
   postSignoutRedirectUri?: string;
-  /**
-   * Optional scope that requests access to various resources. If omitted, a default is setup to access the resources typically required,
-   * including the iModelHub
-   */
-  scope?: string;
 }

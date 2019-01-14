@@ -11,6 +11,8 @@ import "./StatusBarText.scss";
 
 /** Properties of StatusBarText component.  */
 export interface StatusBarTextProps extends CommonProps, NoChildrenProps {
+  /** Optional icon */
+  icon?: React.ReactNode;
   /** Describes if the snap row is active. */
   isInFooterMode?: boolean;
   /** Label of snap row. */
@@ -30,6 +32,7 @@ export class StatusBarText extends React.PureComponent<StatusBarTextProps> {
         className={combinedClassName}
         style={this.props.style}
       >
+        {this.props.icon}
         {this.props.label}
       </div>
     );

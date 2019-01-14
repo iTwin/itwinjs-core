@@ -69,7 +69,7 @@ function floss(options, done) {
     delete envCopy.ELECTRON_NO_ATTACH_CONSOLE;
     const childProcess = spawn(
         options.electron, [app, args], {
-            stdio: ['pipe', 'pipe', 'pipe', "ipc"],
+            stdio: 'pipe',
             env: envCopy
         }
     );

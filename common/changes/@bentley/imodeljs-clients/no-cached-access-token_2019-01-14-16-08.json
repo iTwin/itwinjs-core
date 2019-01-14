@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. ",
+      "packageName": "@bentley/imodeljs-clients",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-clients",
+  "email": "Ramanujam.Raman@bentley.com"
+}

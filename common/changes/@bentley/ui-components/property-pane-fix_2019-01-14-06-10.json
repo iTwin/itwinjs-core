@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Property pane does not show struct or array info anymore",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "elonas.seviakovas@bentley.com"
+}

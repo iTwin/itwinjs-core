@@ -150,8 +150,8 @@ export class BatchState {
     const featureIndex = featureId - batch.batchId;
     assert(featureIndex >= 0);
 
-    const parts = batch.featureTable.getElementIdParts(featureIndex);
-    return Id64.fromUint32Pair(parts.low, parts.high);
+    const parts = batch.featureTable.getElementIdPair(featureIndex);
+    return Id64.fromUint32Pair(parts.lower, parts.upper);
   }
 
   public getFeature(featureId: number): Feature | undefined {

@@ -2,7 +2,7 @@
 * Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
-import { IModelDb, ConcurrencyControl, AutoPush, OpenParams } from "@bentley/imodeljs-backend";
+import { IModelDb, ConcurrencyControl, OpenParams } from "@bentley/imodeljs-backend";
 import { OpenMode, EnvMacroSubst, ActivityLoggingContext, Guid } from "@bentley/bentleyjs-core";
 import { IModelError, IModelStatus, IModelVersion } from "@bentley/imodeljs-common";
 
@@ -25,7 +25,7 @@ async function getUserAccessToken(userCredentials: UserCredentials): Promise<Acc
 // __PUBLISH_EXTRACT_END__
 
 // __PUBLISH_EXTRACT_START__ Service.readConfig
-function readConfigParams(): any {
+export function readConfigParams(): any {
     const config = require("./MyService.config.json");
 
     const defaultConfigValues: any = {
@@ -58,10 +58,6 @@ function configureIModel() {
 
         // Setting a concurrency control policy is an example of something you might do in an onOpened event handler.
         iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-
-        // Starting AutoPush is an example of something you might do in an onOpened event handler.
-        // Note that AutoPush registers itself with IModelDb. That keeps it alive while the DB is open and releases it when the DB closes.
-        new AutoPush(iModel, readConfigParams());
     });
     // __PUBLISH_EXTRACT_END__
 }

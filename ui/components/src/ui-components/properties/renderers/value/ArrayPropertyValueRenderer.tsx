@@ -32,6 +32,10 @@ export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
       );
     }
 
+    if (context && context.containerType === PropertyContainerType.PropertyPane) {
+      return "";
+    }
+
     return withContextStyle(
       (recordItems.length !== 0)
         ? `${(record.value as ArrayValue).itemsTypeName}[${recordItems.length}]`

@@ -34,7 +34,7 @@ export abstract class Property {
   protected _priority: number;
   protected _category?: LazyLoadedPropertyCategory;
   protected _kindOfQuantity?: LazyLoadedKindOfQuantity;
-  protected _customAttributes?: CustomAttributeSet;
+  private _customAttributes?: Map<string, CustomAttribute>;
 
   constructor(ecClass: ECClass, name: string, type: PropertyType) {
     this._class = ecClass as AnyClass;
@@ -151,9 +151,9 @@ export abstract class Property {
 
   protected addCustomAttribute(customAttribute: CustomAttribute) {
     if (!this._customAttributes)
-      this._customAttributes = new CustomAttributeSet();
+      this._customAttributes = new Map<string, CustomAttribute>();
 
-    this._customAttributes[customAttribute.className] = customAttribute;
+    this._customAttributes.set(customAttribute.className, customAttribute);
   }
 }
 

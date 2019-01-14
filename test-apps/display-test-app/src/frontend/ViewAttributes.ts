@@ -12,10 +12,11 @@ import {
   Viewport,
 } from "@bentley/imodeljs-frontend";
 import {
+  AmbientOcclusion,
   BackgroundMapProps,
   BackgroundMapType,
   RenderMode,
-  AmbientOcclusion,
+  ViewFlags,
 } from "@bentley/imodeljs-common";
 import { CheckBox, createCheckBox } from "./CheckBox";
 import { createComboBox } from "./ComboBox";
@@ -44,6 +45,7 @@ export class ViewAttributes {
   private _aoBlurDelta?: Slider;
   private _aoBlurSigma?: Slider;
   private _aoBlurTexelStepSize?: Slider;
+  private _scratchViewFlags = new ViewFlags();
 
   public constructor(vp: Viewport, parent: HTMLElement) {
     this._vp = vp;
@@ -104,7 +106,9 @@ export class ViewAttributes {
 
   private addViewFlagAttribute(parent: HTMLElement, label: string, flag: ViewFlag, only3d: boolean = false): void {
     const elems = this.addCheckbox(label, (enabled: boolean) => {
-      this._vp.view.viewFlags[flag] = enabled;
+      const vf = this._vp.view.viewFlags.clone(this._scratchViewFlags);
+      vf[flag] = enabled;
+      this._vp.view.viewFlags = vf;
       this.sync();
     }, parent);
 
@@ -119,23 +123,23 @@ export class ViewAttributes {
   }
 
   private addEnvAttribute(parent: HTMLElement, label: string, aspect: EnvironmentAspect): void {
-    const getEnv = (view: ViewState, path: EnvironmentAspect) => {
-      const view3d = view as ViewState3d;
-      const style = view3d.getDisplayStyle3d();
-      return style.environment[path];
-    };
-
     const elems = this.addCheckbox(label, (enabled: boolean) => {
-      const env = getEnv(this._vp.view, aspect);
-      env.display = enabled;
+      const view3d = this._vp.view as ViewState3d;
+      const style = view3d.getDisplayStyle3d();
+      const env = style.environment;
+      env[aspect].display = enabled;
+      view3d.getDisplayStyle3d().environment = env; // setter converts it to JSON
       this.sync();
     }, parent);
 
     const update = (view: ViewState) => {
       const visible = view.is3d();
       elems.div.style.display = visible ? "block" : "none";
-      if (visible)
-        elems.checkbox.checked = getEnv(view, aspect).display;
+      if (visible) {
+        const view3d = view as ViewState3d;
+        const style = view3d.getDisplayStyle3d();
+        elems.checkbox.checked = style.environment[aspect].display;
+      }
     };
 
     this._updates.push(update);
@@ -174,7 +178,7 @@ export class ViewAttributes {
   }
 
   private addAmbientOcclusion(): void {
-    const isAOSupported = (view: ViewState) => view.is3d();
+    const isAOSupported = (view: ViewState) => view.is3d() && RenderMode.SmoothShade === view.viewFlags.renderMode;
     const isAOEnabled = (view: ViewState) => view.viewFlags.ambientOcclusion;
 
     const div = document.createElement("div");
@@ -188,7 +192,9 @@ export class ViewAttributes {
     };
 
     const enableAO = (enabled: boolean) => {
-      this._vp.view.viewFlags.ambientOcclusion = enabled;
+      const vf = this._vp.view.viewFlags.clone(this._scratchViewFlags);
+      vf.ambientOcclusion = enabled;
+      this._vp.view.viewFlags = vf;
       showHideDropDowns(enabled);
       this.sync();
     };
@@ -347,7 +353,9 @@ export class ViewAttributes {
     };
 
     const enableMap = (enabled: boolean) => {
-      this._vp.view.viewFlags.backgroundMap = enabled;
+      const vf = this._vp.view.viewFlags.clone(this._scratchViewFlags);
+      vf.backgroundMap = enabled;
+      this._vp.view.viewFlags = vf;
       showHideDropDowns(enabled);
       this.sync();
     };
@@ -439,7 +447,7 @@ export class ViewAttributes {
   }
 
   private sync(): void {
-    this._vp.invalidateRenderPlan();
+    this._vp.synchWithView(true);
   }
 
   private get _nextId(): string {

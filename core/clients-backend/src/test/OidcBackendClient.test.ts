@@ -23,7 +23,6 @@ describe("OidcBackendClient (#integration)", () => {
 
   let testUser: { email: string, password: string };
   let agentConfiguration: OidcAgentClientConfiguration;
-  let delegationConfiguration: OidcBackendClientConfiguration;
 
   const testProjectName = "iModelJsIntegrationTest";
   const testIModelName = "ReadOnlyTest";
@@ -75,11 +74,7 @@ describe("OidcBackendClient (#integration)", () => {
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
       serviceUserEmail: Config.App.getString("imjs_agent_test_service_user_email"),
       serviceUserPassword: Config.App.getString("imjs_agent_test_service_user_password"),
-    };
-
-    delegationConfiguration = {
-      clientId: Config.App.getString("imjs_delegation_test_client_id"),
-      clientSecret: Config.App.getString("imjs_delegation_test_client_secret"),
+      scope: "openid email profile organization",
     };
 
     const authToken: AuthorizationToken = await (new ImsActiveSecureTokenClient()).getToken(actx, testUser.email, testUser.password);
@@ -110,9 +105,14 @@ describe("OidcBackendClient (#integration)", () => {
     const agentClient = new OidcAgentClient(agentConfiguration);
     const jwt = await agentClient.getToken(actx);
 
+    const delegationConfiguration: OidcBackendClientConfiguration = {
+      clientId: Config.App.getString("imjs_delegation_test_client_id"),
+      clientSecret: Config.App.getString("imjs_delegation_test_client_secret"),
+      scope: Config.App.getString("imjs_default_relying_party_uri"),
+    };
+
     const delegationClient = new OidcDelegationClient(delegationConfiguration);
-    const scope = Config.App.getString("imjs_default_relying_party_uri");
-    const saml = await delegationClient.getSamlFromJwt(actx, jwt, scope);
+    const saml = await delegationClient.getSamlFromJwt(actx, jwt);
     await validateConnectAccess(saml);
     await validateRbacAccess(saml);
     await validateIModelHubAccess(saml);
@@ -120,11 +120,15 @@ describe("OidcBackendClient (#integration)", () => {
 
   it.skip("should get valid OIDC delegation tokens", async () => {
     const agentClient = new OidcAgentClient(agentConfiguration);
-    const jwt = await agentClient.getToken(actx, "openid email profile organization");
+    const jwt = await agentClient.getToken(actx);
 
+    const delegationConfiguration: OidcBackendClientConfiguration = {
+      clientId: Config.App.getString("imjs_delegation_test_client_id"),
+      clientSecret: Config.App.getString("imjs_delegation_test_client_secret"),
+      scope: "context-registry-service imodelhub rbac-service",
+    };
     const delegationClient = new OidcDelegationClient(delegationConfiguration);
-    const scope = "context-registry-service imodelhub rbac-service";
-    const delegationJwt = await delegationClient.getJwtFromJwt(actx, jwt, scope);
+    const delegationJwt = await delegationClient.getJwtFromJwt(actx, jwt);
     await validateConnectAccess(delegationJwt);
     await validateRbacAccess(delegationJwt);
     await validateIModelHubAccess(delegationJwt);

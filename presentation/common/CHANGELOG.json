@@ -2,6 +2,33 @@
   "name": "@bentley/presentation-common",
   "entries": [
     {
+      "version": "0.185.0",
+      "tag": "@bentley/presentation-common_v0.185.0",
+      "date": "Fri, 11 Jan 2019 18:29:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Introduce `groupedInstancesCount` property for grouping node keys"
+          },
+          {
+            "comment": "Add `KeySet.instanceKeysCount` and `KeySet.nodeKeysCount` which are faster versions of `KeySet.instanceKeys.size` and `KeySet.nodeKeys.size`"
+          },
+          {
+            "comment": "Add helper functions to identify type of node key"
+          },
+          {
+            "comment": "Add `getInstancesCount` function to calculate total number of instances included in a `KeySet`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "0.184.0",
+      "tag": "@bentley/presentation-common_v0.184.0",
+      "date": "Thu, 10 Jan 2019 22:46:17 GMT",
+      "comments": {}
+    },
+    {
       "version": "0.183.0",
       "tag": "@bentley/presentation-common_v0.183.0",
       "date": "Mon, 07 Jan 2019 21:49:21 GMT",
