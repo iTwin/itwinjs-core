@@ -1186,16 +1186,20 @@ class MPCompositor extends Compositor {
     // Output the first 2 passes to color and pick data buffers. (All 3 in the case of rendering for readPixels()).
     this._readPickDataFromPingPong = true;
     const needComposite = CompositeFlags.None !== compositeFlags;
+    const needAO = CompositeFlags.None !== (compositeFlags & CompositeFlags.AmbientOcclusion);
     const colorFbo = needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!;
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueLinear, false);
     this.drawOpaquePass(colorFbo, commands, RenderPass.OpaquePlanar, true);
-    if (renderForReadPixels)
+    if (renderForReadPixels || needAO) {
       this.drawOpaquePass(colorFbo, commands, RenderPass.OpaqueGeneral, true);
+      if (needAO)
+        this.renderAmbientOcclusion();
+    }
 
     this._readPickDataFromPingPong = false;
 
     // The general pass (and following) will not bother to write to pick buffers and so can read from the actual pick buffers.
-    if (!renderForReadPixels) {
+    if (!renderForReadPixels && !needAO) {
       System.instance.frameBufferStack.execute(colorFbo, true, () => {
         this.drawPass(commands, RenderPass.OpaqueGeneral, false);
         this.drawPass(commands, RenderPass.HiddenEdge, false);
