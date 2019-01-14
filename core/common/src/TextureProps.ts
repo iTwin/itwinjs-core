@@ -13,13 +13,13 @@ export enum TextureFlags { None }
 export interface TextureProps extends DefinitionElementProps {
   /** Format of the image data. */
   format: ImageSourceFormat;
-  /** The image data stored in a Base64-encoded string. */
+  /** The image data stored in a Base64-encoded string according to the specified format. */
   data: string;
   /** The width of the image. */
   width: number;
   /** The height of the image. */
   height: number;
-  /** Optional flags. */
+  /** Optional flags.  Currently unused; should always be TextureFlags.None. */
   flags: TextureFlags;
   /** An optional description of the texture. */
   description?: string;

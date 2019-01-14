@@ -17,7 +17,7 @@ import {
 import { DefinitionElement } from "./Element";
 import { IModelDb } from "./IModelDb";
 
-/** Defines a rendering texture. */
+/** Defines a rendering texture which is associated with a Material and applied to surface geometry. */
 export class Texture extends DefinitionElement implements TextureProps {
   public format: ImageSourceFormat;
   public data: string;
