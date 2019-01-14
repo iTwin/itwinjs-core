@@ -11,6 +11,7 @@ import * as sinon from "sinon";
 
 describe("SyncUiEventDispatcher", () => {
   let clock = sinon.useFakeTimers(Date.now());
+  clock.restore();
 
   beforeEach(() => {
     clock = sinon.useFakeTimers(Date.now());
@@ -34,9 +35,10 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.dispatchImmediateSyncUiEvent("Event1");
     expect(callbackCalled).to.be.true;
     expect(callbackHasExpectedEventId).to.be.true;
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
-  it.skip("test timed sync event", () => {
+  it("test timed sync event", () => {
     let callbackCalled = false;
     let callbackHasExpectedEventId = false;
 
@@ -51,12 +53,13 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.dispatchSyncUiEvent("Event1");
     expect(callbackCalled).to.be.false;
     // need to force timer callbacks to fire.
-    clock.tick(500);
+    clock.tick(12);
     expect(callbackCalled).to.be.true;
     expect(callbackHasExpectedEventId).to.be.true;
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
-  it.skip("test multiple event Id with a timed sync event", () => {
+  it("test multiple event Id with a timed sync event", () => {
     let callbackCalled = false;
     let callbackHasExpectedEventIds = false;
 
@@ -71,12 +74,13 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.dispatchSyncUiEvents(["Event1", "Event2"]);
     expect(callbackCalled).to.be.false;
     // need to force two timer callbacks to fire.
-    clock.tick(510);
+    clock.tick(12);
     expect(callbackCalled).to.be.true;
     expect(callbackHasExpectedEventIds).to.be.true;
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
-  it.skip("test multiple event Id with a multiple dispatches", () => {
+  it("test multiple event Id with a multiple dispatches", () => {
     let callbackCalled = false;
     let callbackHasExpectedEventIds = false;
 
@@ -91,13 +95,12 @@ describe("SyncUiEventDispatcher", () => {
     SyncUiEventDispatcher.dispatchSyncUiEvents(["Event1", "Event2"]);
     expect(callbackCalled).to.be.false;
     SyncUiEventDispatcher.dispatchSyncUiEvent("Event3");
-
     clock.tick(10); // timer expiration will see new event id(s) so it should delay onSyncUiEvent processing until next cycle
     expect(callbackCalled).to.be.false;
-    clock.tick(1020);
-
+    clock.tick(20);
     expect(callbackCalled).to.be.true;
     expect(callbackHasExpectedEventIds).to.be.true;
+    SyncUiEventDispatcher.onSyncUiEvent.removeListener(handleSyncUiEvent);
   });
 
 });
