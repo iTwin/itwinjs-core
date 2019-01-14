@@ -2,6 +2,18 @@
   "name": "@bentley/bentleyjs-core",
   "entries": [
     {
+      "version": "0.185.0",
+      "tag": "@bentley/bentleyjs-core_v0.185.0",
+      "date": "Fri, 11 Jan 2019 18:29:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Optimize Id64String operations and supply specialized, optimized collection types."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.184.0",
       "tag": "@bentley/bentleyjs-core_v0.184.0",
       "date": "Thu, 10 Jan 2019 22:46:17 GMT",

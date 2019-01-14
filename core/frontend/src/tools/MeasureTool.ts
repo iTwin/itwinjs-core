@@ -302,7 +302,7 @@ export class MeasureDistanceTool extends PrimitiveTool {
       toolTip += IModelApp.i18n.translateKeys("<b>%{CoreTools:tools.Measure.Labels.Slope}:</b> ") + formattedSlope + "<br>";
     }
 
-    const coordFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Length); // ##TODO QuantityType.Coordinate...
+    const coordFormatterSpec = await IModelApp.quantityFormatter.getFormatterSpecByQuantityType(QuantityType.Coordinate);
     if (undefined !== coordFormatterSpec) {
       let startAdjusted = start;
       let endAdjusted = end;

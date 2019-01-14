@@ -1,0 +1,26 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) 2019 Bentley Systems, Incorporated. All rights reserved.
+* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+*--------------------------------------------------------------------------------------------*/
+@import "@bentley/ui-core/lib/ui-core/colors";
+@import "../_variables";
+
+.nz-footer-selection-info {
+  height: 100%;
+  display: flex;
+  align-items: center;
+  font-size: $text-font-size;
+  overflow: hidden;
+
+  &.nz-is-in-footer-mode {
+    padding-left: $nz-footer-horizontal-padding;
+    padding-right: $nz-footer-horizontal-padding;
+    width: $nz-footer-selectioncount-width;
+  }
+
+  &:not(.nz-is-in-footer-mode) {
+    padding-left: $nz-footer-open-horizontal-padding;
+    padding-right: $nz-footer-open-horizontal-padding;
+    width: $nz-footer-selectioncount-width;
+  }
+}

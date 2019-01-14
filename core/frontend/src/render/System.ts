@@ -465,6 +465,12 @@ export namespace Pixel {
   export type Receiver = (pixels: Buffer | undefined) => void;
 }
 
+export interface PackedFeature {
+  elementId: Id64.Uint32Pair;
+  subCategoryId: Id64.Uint32Pair;
+  geometryClass: GeometryClass;
+}
+
 /**
  * An immutable, packed representation of a [[FeatureTable]]. The features are packed into a single array of 32-bit integer values,
  * wherein each feature occupies 3 32-bit integers.
@@ -548,18 +554,10 @@ export class PackedFeatureTable {
 
   /** Retrieve the Feature associated with the specified index. */
   public getFeature(featureIndex: number): Feature {
-    assert(featureIndex < this.numFeatures);
-
-    const index32 = 3 * featureIndex;
-    const elemId = this.readId(index32);
-
-    const subCatIndexAndClass = this._data[index32 + 2];
-    const geomClass = (subCatIndexAndClass >>> 24) & 0xff;
-
-    const subCatIndex = (subCatIndexAndClass & 0x00ffffff) >>> 0;
-    const subCatId = this.readId(subCatIndex * 2 + this._subCategoriesOffset);
-
-    return new Feature(elemId, subCatId, geomClass);
+    const packed = this.getPackedFeature(featureIndex);
+    const elemId = Id64.fromUint32Pair(packed.elementId.lower, packed.elementId.upper);
+    const subcatId = Id64.fromUint32Pair(packed.subCategoryId.lower, packed.subCategoryId.upper);
+    return new Feature(elemId, subcatId, packed.geometryClass);
   }
 
   /** Returns the Feature associated with the specified index, or undefined if the index is out of range. */
@@ -568,13 +566,30 @@ export class PackedFeatureTable {
   }
 
   /** @hidden */
-  public getElementIdParts(featureIndex: number): { low: number, high: number } {
+  public getElementIdPair(featureIndex: number): Id64.Uint32Pair {
     assert(featureIndex < this.numFeatures);
     const offset = 3 * featureIndex;
     return {
-      low: this._data[offset],
-      high: this._data[offset + 1],
+      lower: this._data[offset],
+      upper: this._data[offset + 1],
     };
+  }
+
+  /** @hidden */
+  public getPackedFeature(featureIndex: number): PackedFeature {
+    assert(featureIndex < this.numFeatures);
+
+    const index32 = 3 * featureIndex;
+    const elementId = { lower: this._data[index32], upper: this._data[index32 + 1] };
+
+    const subCatIndexAndClass = this._data[index32 + 2];
+    const geometryClass = (subCatIndexAndClass >>> 24) & 0xff;
+
+    let subCatIndex = (subCatIndexAndClass & 0x00ffffff) >>> 0;
+    subCatIndex = subCatIndex * 2 + this._subCategoriesOffset;
+    const subCategoryId = { lower: this._data[subCatIndex], upper: this._data[subCatIndex + 1] };
+
+    return { elementId, subCategoryId, geometryClass };
   }
 
   /** Returns the element ID of the Feature associated with the specified index, or undefined if the index is out of range. */
@@ -782,9 +797,17 @@ export abstract class RenderSystem implements IDisposable {
     // corners
     // [0] [1]
     // [2] [3]
+    // Quantize the points according to their range
     rasterTile.points = new QPoint3dList(QParams3d.fromRange(Range3d.create(...corners)));
     for (let i = 0; i < 4; ++i)
       rasterTile.points.add(corners[i]);
+
+    // Now remove the translation from the quantized points and put it into a transform instead.
+    // This prevents graphical artifacts when quantization origin is large relative to quantization scale.
+    // ###TODO: Would be better not to create a branch for every tile.
+    const qorigin = rasterTile.points.params.origin;
+    const transform = Transform.createTranslationXYZ(qorigin.x, qorigin.y, qorigin.z);
+    qorigin.setZero();
 
     rasterTile.vertIndices = [0, 1, 2, 2, 1, 3];
     rasterTile.textureUv = [
@@ -796,7 +819,14 @@ export abstract class RenderSystem implements IDisposable {
 
     rasterTile.texture = tileTexture;
     rasterTile.isPlanar = true;
-    return this.createTriMesh(rasterTile);
+
+    const trimesh = this.createTriMesh(rasterTile);
+    if (undefined === trimesh)
+      return undefined;
+
+    const branch = new GraphicBranch(true);
+    branch.add(trimesh);
+    return this.createBranch(branch, transform);
   }
 
   /** Create a Graphic for a sky box which encompasses the entire scene, rotating with the camera.  See SkyBox.CreateParams.

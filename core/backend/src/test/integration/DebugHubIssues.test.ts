@@ -20,6 +20,7 @@ describe.skip("DebugHubIssues (#integration)", () => {
   const actx = new ActivityLoggingContext("");
 
   before(async () => {
+    IModelTestUtils.setupLogging();
     IModelTestUtils.setupDebugLogLevels();
     accessToken = await HubUtility.login(TestUsers.manager);
   });

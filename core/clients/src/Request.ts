@@ -7,9 +7,8 @@
 import * as sarequest from "superagent";
 import * as deepAssign from "deep-assign";
 import { stringify, IStringifyOptions } from "qs";
-import { Logger, BentleyError, HttpStatus, GetMetaDataFunction, ActivityLoggingContext } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, BentleyError, HttpStatus, GetMetaDataFunction, ActivityLoggingContext } from "@bentley/bentleyjs-core";
 import { Config } from "./Config";
-
 import * as https from "https";
 
 export const loggingCategory = "imodeljs-clients.Request";
@@ -93,6 +92,10 @@ export interface ProgressInfo {
   percent?: number;
   total?: number;
   loaded: number;
+}
+
+export class RequestGlobalOptions {
+  public static HTTPS_PROXY?: https.Agent = undefined;
 }
 
 /** Error object that's thrown/rejected if the Request fails due to a network error, or
@@ -187,6 +190,18 @@ export class ResponseError extends BentleyError {
   }
 }
 
+const logResponse = (req: sarequest.SuperAgentRequest, startTime: number) => (res: sarequest.Response) => {
+  const elapsed = new Date().getTime() - startTime;
+  const elapsedTime = elapsed + "ms";
+  Logger.logTrace(loggingCategory, `${req.method.toUpperCase()} ${res.status} ${req.url} (${elapsedTime})`);
+};
+
+const logRequest = (req: sarequest.SuperAgentRequest) => {
+  const startTime = new Date().getTime();
+  req.on("response", logResponse(req, startTime));
+  return req;
+};
+
 // @todo The purpose of this wrapper is to allow us to easily replace this with another
 // module that will rid us of NodeJs dependency.The alternate HTTP module is currently
 // being written and allow working in desktop environments also.
@@ -213,9 +228,11 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
   const retries = typeof options.retries === "undefined" ? 4 : options.retries;
   let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl).retry(retries, options.retryCallback);
 
-  if (options.headers) {
+  if (Logger.isEnabled(loggingCategory, LogLevel.Trace))
+    sareq = sareq.use(logRequest);
+
+  if (options.headers)
     sareq = sareq.set(options.headers);
-  }
 
   if (alctx.activityId !== "")
     sareq.set(requestIdHeaderName, alctx.activityId);
@@ -271,6 +288,8 @@ export async function request(alctx: ActivityLoggingContext, url: string, option
 
   if (options.agent) {
     sareq.agent(options.agent);
+  } else if (RequestGlobalOptions.HTTPS_PROXY) {
+    sareq.agent(RequestGlobalOptions.HTTPS_PROXY);
   }
 
   if (options.progressCallback) {

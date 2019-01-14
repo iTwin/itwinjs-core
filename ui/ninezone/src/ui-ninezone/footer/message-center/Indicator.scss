@@ -12,7 +12,19 @@
   padding-left: $nz-footer-indicator-horizontal-padding;
   padding-right: $nz-footer-indicator-horizontal-padding;
 
-  > .nz-label {
+  /* small devices (phones, 600px and down) */
+  @media only screen and (max-width: 600px) {
+    padding-left: $nz-footer-indicator-horizontal-padding-small;
+    padding-right: $nz-footer-indicator-horizontal-padding-small;
+  }
+
+  /* Medium devices (landscape tablets, 768px and up) */
+  @media only screen and (max-width: 768px) {
+    padding-left: $nz-footer-indicator-horizontal-padding-medium;
+    padding-right: $nz-footer-indicator-horizontal-padding-medium;
+  }
+
+  >.nz-label {
     margin-right: $space-between-text-and-icon;
     display: none;
     font-size: $text-font-size;
@@ -22,12 +34,12 @@
     }
   }
 
-  > .nz-balloon-container {
+  >.nz-balloon-container {
     height: 100%;
     position: relative;
     display: grid;
 
-    > .nz-balloon {
+    >.nz-balloon {
       background-color: $text-font-color;
       text-align: center;
       cursor: pointer;
@@ -39,7 +51,7 @@
       position: relative;
       align-self: center;
 
-      > .nz-arrow {
+      >.nz-arrow {
         position: absolute;
         width: 0;
         bottom: -3px;
@@ -53,7 +65,7 @@
         transform: rotate(25deg);
       }
 
-      > .nz-content {
+      >.nz-content {
         position: relative;
         color: #FFFFFF;
         line-height: $min-balloon-height;
@@ -61,7 +73,7 @@
       }
     }
 
-    > .nz-dialog {
+    >.nz-dialog {
       height: 100%;
       width: 100%;
       position: absolute;

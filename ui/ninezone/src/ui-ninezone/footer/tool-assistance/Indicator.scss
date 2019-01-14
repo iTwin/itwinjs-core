@@ -19,7 +19,19 @@
   padding-left: $nz-footer-indicator-horizontal-padding;
   padding-right: $nz-footer-indicator-horizontal-padding;
 
-  > .nz-indicator {
+  /* small devices (phones, 600px and down) */
+  @media only screen and (max-width: 600px) {
+    padding-left: $nz-footer-indicator-horizontal-padding-small;
+    padding-right: $nz-footer-indicator-horizontal-padding-small;
+  }
+
+  /* Medium devices (landscape tablets, 768px and up) */
+  @media only screen and (max-width: 768px) {
+    padding-left: $nz-footer-indicator-horizontal-padding-medium;
+    padding-right: $nz-footer-indicator-horizontal-padding-medium;
+  }
+
+  >.nz-indicator {
     height: $indicator-height;
     border: 2px solid black;
     min-width: 20px;
@@ -33,13 +45,13 @@
     cursor: pointer;
     box-sizing: border-box;
 
-    > .nz-icons {
+    >.nz-icons {
       color: rgba($icon-color, $icon-opacity);
       font-size: $icon-size;
       filter: $icon-shadow;
     }
 
-    > .nz-step-string {
+    >.nz-step-string {
       margin-left: 10px;
       display: none;
       font-size: $text-font-size;
@@ -49,7 +61,7 @@
       }
     }
 
-    > .nz-triangle {
+    >.nz-triangle {
       position: absolute;
       right: $margin-from-triangle-to-stroke;
       bottom: $margin-from-triangle-to-stroke;

@@ -75,6 +75,17 @@ describe("ArrayPropertyValueRenderer", () => {
       const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
       expect(() => renderer.render(stringProperty)).to.throw;
     });
+
+    it("renders as empty string when container type is property pane", () => {
+      const renderer = new ArrayPropertyValueRenderer();
+      const stringProperty = TestUtils.createPrimitiveStringProperty("Label", "Test property");
+      const arrayProperty = TestUtils.createArrayProperty("LabelArray", [stringProperty]);
+
+      const element = renderer.render(arrayProperty, { containerType: PropertyContainerType.PropertyPane });
+      const elementMount = mount(<div>{element}</div>);
+
+      expect(elementMount.text()).to.be.eq("");
+    });
   });
 
   describe("canRender", () => {

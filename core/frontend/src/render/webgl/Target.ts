@@ -178,7 +178,7 @@ export abstract class Target extends RenderTarget {
   private _dynamics?: GraphicList;
   private _worldDecorations?: WorldDecorations;
   private _overridesUpdateTime = BeTimePoint.now();
-  private _hilite?: Set<string>;
+  private _hilite = new Id64.Uint32Set();
   private _hiliteUpdateTime = BeTimePoint.now();
   private _flashedElemId = Id64.invalid;
   private _flashedUpdateTime = BeTimePoint.now();
@@ -244,7 +244,7 @@ export abstract class Target extends RenderTarget {
   public get transparencyThreshold(): number { return this._transparencyThreshold; }
   public get techniques(): Techniques { return System.instance.techniques!; }
 
-  public get hilite(): Set<string> { return this._hilite!; }
+  public get hilite(): Id64.Uint32Set { return this._hilite; }
   public get hiliteUpdateTime(): BeTimePoint { return this._hiliteUpdateTime; }
 
   public get flashedElemId(): Id64String { return this._flashedElemId; }
@@ -413,7 +413,10 @@ export abstract class Target extends RenderTarget {
     this._overridesUpdateTime = BeTimePoint.now();
   }
   public setHiliteSet(hilite: Set<string>): void {
-    this._hilite = hilite;
+    this._hilite.clear();
+    for (const id of hilite)
+      this._hilite.addId(id);
+
     this._hiliteUpdateTime = BeTimePoint.now();
   }
   public setFlashed(id: Id64String, intensity: number) {

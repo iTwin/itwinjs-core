@@ -43,6 +43,12 @@
   @include specific-property-label-renderer;
 }
 
+.components-property-record--vertical {
+  .components-nonprimitive-property-label-renderer {
+    margin-bottom: 4px;
+  }
+}
+
 .components-nonprimitive-property-label-renderer {
   @include specific-property-label-renderer;
   border: none;

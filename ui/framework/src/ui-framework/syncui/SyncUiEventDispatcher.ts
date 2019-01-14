@@ -10,12 +10,16 @@ import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { Backstage } from "../backstage/Backstage";
 import { WorkflowManager } from "../workflow/Workflow";
 import { ContentViewManager } from "../content/ContentViewManager";
+import { AppStateActionId } from "../AppState";
+import { UiFramework } from "../UiFramework";
 import { IModelConnection, SelectEventType, IModelApp, SelectedViewportChangedArgs } from "@bentley/imodeljs-frontend";
+import { Presentation, SelectionChangeEventArgs, ISelectionProvider } from "@bentley/presentation-frontend";
+import { getInstancesCount } from "@bentley/presentation-common";
 
 // cSpell:ignore activecontentchanged, activitymessageupdated, activitymessagecancelled, backstagecloseevent, contentlayoutactivated, contentcontrolactivated,
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
 // cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
-// cSpell:ignore frontstageready activeviewportchanged selectionsetchanged
+// cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged
 /** Event Id used to sync UI components. Typically used to refresh visibility or enable state of control. */
 export const enum SyncUiEventId {
   /** The active content as maintained by the ContentViewManager has changed. */
@@ -69,6 +73,7 @@ export class SyncUiEventDispatcher {
   private static _eventIdAdded: boolean = false;
   private static _syncUiEvent: SyncUiEvent;
   private static _timeoutPeriod: number = 200;
+  private static _unregisterListenerFunc?: () => void;
 
   /** @hidden - used for testing only */
   public static setTimeoutPeriod(period: number): void {
@@ -197,7 +202,7 @@ export class SyncUiEventDispatcher {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveContentChanged);
     });
 
-    if (IModelApp && IModelApp.viewManager)
+    if (IModelApp && IModelApp.viewManager) {
       IModelApp.viewManager.onSelectedViewportChanged.addListener((args: SelectedViewportChangedArgs) => {
         SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveViewportChanged);
 
@@ -205,6 +210,8 @@ export class SyncUiEventDispatcher {
         if (undefined === args.previous)
           IModelApp.toolAdmin.startDefaultTool();
       });
+    }
+
   }
 
   private static selectionChangedHandler(_iModelConnection: IModelConnection, _evType: SelectEventType, _ids?: Set<string>) {
@@ -218,5 +225,20 @@ export class SyncUiEventDispatcher {
   public static initializeConnectionEvents(iModelConnection: IModelConnection) {
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
     iModelConnection.selectionSet.onChanged.addListener(SyncUiEventDispatcher.selectionChangedHandler);
+
+    if (SyncUiEventDispatcher._unregisterListenerFunc)
+      SyncUiEventDispatcher._unregisterListenerFunc();
+
+    // listen for changes from presentation rules selection manager (this is done once an iModelConnection is available to ensure Presentation.selection is valid)
+    SyncUiEventDispatcher._unregisterListenerFunc = Presentation.selection.selectionChange.addListener((args: SelectionChangeEventArgs, provider: ISelectionProvider) => {
+      if (args.level !== 0) {
+        // don't need to handle sub-selections
+        return;
+      }
+      const selection = provider.getSelection(args.imodel, args.level);
+      const numSelected = getInstancesCount(selection);
+      UiFramework.dispatchActionToStore(AppStateActionId.SetNumItemsSelected, numSelected);
+    });
   }
+
 }
