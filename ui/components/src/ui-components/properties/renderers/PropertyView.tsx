@@ -9,6 +9,7 @@ import { Orientation, ElementSeparator } from "@bentley/ui-core";
 import { SharedRendererProps } from "./PropertyRenderer";
 
 import "./PropertyView.scss";
+import { PropertyValueFormat } from "../Value";
 
 /** Properties of [[PropertyView]] React component */
 export interface PropertyViewProps extends SharedRendererProps {
@@ -74,7 +75,9 @@ export class PropertyView extends React.Component<PropertyViewProps> {
             orientation={this.props.orientation}
           />
           : undefined}
-        <div className="components-property-record-value">{this.props.valueElement}</div>
+        {this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive
+          ? <div className="components-property-record-value">{this.props.valueElement}</div>
+          : undefined}
       </div>
     );
   }
