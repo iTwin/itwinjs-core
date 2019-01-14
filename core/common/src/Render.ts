@@ -513,7 +513,7 @@ export class ViewFlags {
   public constructions: boolean = false;
   /** Draw all graphics in a single color */
   public monochrome: boolean = false;
-  /** Ignore geometry maps */
+  /** @hidden unused Ignore geometry maps */
   public noGeometryMap: boolean = false;
   /** Display background map */
   public backgroundMap: boolean = false;
@@ -959,40 +959,13 @@ export namespace AmbientOcclusion {
       if (undefined === json)
         return;
 
-      if (undefined !== json.bias)
-        this.bias = JsonUtils.asDouble(json.bias, Settings._defaultBias);
-      else
-        this.bias = Settings._defaultBias;
-
-      if (undefined !== json.zLengthCap)
-        this.zLengthCap = JsonUtils.asDouble(json.zLengthCap, Settings._defaultZLengthCap);
-      else
-        this.zLengthCap = Settings._defaultZLengthCap;
-
-      if (undefined !== json.intensity)
-        this.intensity = JsonUtils.asDouble(json.intensity, Settings._defaultIntensity);
-      else
-        this.intensity = Settings._defaultIntensity;
-
-      if (undefined !== json.texelStepSize)
-        this.texelStepSize = JsonUtils.asDouble(json.texelStepSize, Settings._defaultTexelStepSize);
-      else
-        this.texelStepSize = Settings._defaultTexelStepSize;
-
-      if (undefined !== json.blurDelta)
-        this.blurDelta = JsonUtils.asDouble(json.blurDelta, Settings._defaultBlurDelta);
-      else
-        this.blurDelta = Settings._defaultBlurDelta;
-
-      if (undefined !== json.blurSigma)
-        this.blurSigma = JsonUtils.asDouble(json.blurSigma, Settings._defaultBlurSigma);
-      else
-        this.blurSigma = Settings._defaultBlurSigma;
-
-      if (undefined !== json.blurTexelStepSize)
-        this.blurTexelStepSize = JsonUtils.asDouble(json.blurTexelStepSize, Settings._defaultBlurTexelStepSize);
-      else
-        this.blurTexelStepSize = Settings._defaultBlurTexelStepSize;
+      this.bias = JsonUtils.asDouble(json.bias, Settings._defaultBias);
+      this.zLengthCap = JsonUtils.asDouble(json.zLengthCap, Settings._defaultZLengthCap);
+      this.intensity = JsonUtils.asDouble(json.intensity, Settings._defaultIntensity);
+      this.texelStepSize = JsonUtils.asDouble(json.texelStepSize, Settings._defaultTexelStepSize);
+      this.blurDelta = JsonUtils.asDouble(json.blurDelta, Settings._defaultBlurDelta);
+      this.blurSigma = JsonUtils.asDouble(json.blurSigma, Settings._defaultBlurSigma);
+      this.blurTexelStepSize = JsonUtils.asDouble(json.blurTexelStepSize, Settings._defaultBlurTexelStepSize);
     }
 
     public static defaults = new Settings({});

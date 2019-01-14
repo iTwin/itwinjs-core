@@ -82,7 +82,7 @@
     "asn1": "0.2.3"
   },
   "dependencies": {
-    "@bentley/imodeljs-native": "~0.84.1",
+    "@bentley/imodeljs-native": "~0.86.0",
     "@types/body-parser": "^1.17.0",
     "body-parser": "^1.18.2",
     "fs-extra": "^6.0.1",

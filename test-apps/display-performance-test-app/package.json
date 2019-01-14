@@ -47,7 +47,7 @@
     "@types/node": "10.10.3",
     "cpx": "^1.5.0",
     "child_process": "^1.0.2",
-    "electron": "^3.0.11",
+    "electron": "^4.0.1",
     "express": "^4.16.3",
     "node-glob": "^1.2.0",
     "null-loader": "^0.1.1",
