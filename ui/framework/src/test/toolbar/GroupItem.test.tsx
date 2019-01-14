@@ -8,7 +8,7 @@ import * as sinon from "sinon";
 import { mount, shallow } from "enzyme";
 
 import TestUtils from "../TestUtils";
-import { GroupButton, CommandItemDef, GroupItemDef } from "../../ui-framework";
+import { GroupButton, CommandItemDef, GroupItemDef, KeyboardShortcutManager } from "../../ui-framework";
 import { Direction } from "@bentley/ui-ninezone";
 
 const tool1 = new CommandItemDef({
@@ -110,6 +110,15 @@ describe("GroupItem", () => {
       expect(historyItem.length).to.eq(1);
       historyItem.simulate("click");
       wrapper.update();
+    });
+
+    it("should set focus to home on Esc", () => {
+      const wrapper = mount(<GroupButton items={[tool1, tool2]} />);
+      const element = wrapper.find(".nz-toolbar-item-icon");
+      element.simulate("focus");
+      element.simulate("keyDown", { key: "Escape", keyCode: 27 });
+      expect(KeyboardShortcutManager.isFocusOnHome).to.be.true;
+      wrapper.unmount();
     });
   });
 

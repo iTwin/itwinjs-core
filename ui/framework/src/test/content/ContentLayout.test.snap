@@ -4,6 +4,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 1`] = `
 <div
   className="contentlayout-open-mode"
   id="ContentLayoutDiv"
+  key="fourQuadrantsVertical"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
 >
@@ -72,6 +73,7 @@ exports[`ContentLayout FourQuadrantsVertical renders correctly 2`] = `
 <div
   className="contentlayout-open-mode"
   id="ContentLayoutDiv"
+  key="ContentLayout-1"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
 >
@@ -140,6 +142,7 @@ exports[`ContentLayout SingleContent renders correctly 1`] = `
 <div
   className="contentlayout-footer-mode"
   id="ContentLayoutDiv"
+  key="SingleContent"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
 >
@@ -157,6 +160,7 @@ exports[`ContentLayout TwoHalvesHorizontal renders correctly 1`] = `
 <div
   className="contentlayout-open-mode"
   id="ContentLayoutDiv"
+  key="TwoHalvesHorizontal"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
 >
@@ -191,6 +195,7 @@ exports[`ContentLayout TwoHalvesVertical renders correctly 1`] = `
 <div
   className="contentlayout-footer-mode"
   id="ContentLayoutDiv"
+  key="TwoHalvesVertical"
   onMouseDown={[Function]}
   onMouseUp={[Function]}
 >

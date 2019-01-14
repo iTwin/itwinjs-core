@@ -55,18 +55,32 @@ export class FrontstageDef {
   public onActivated(): void {
     if (!this.defaultLayout) {
       this.defaultLayout = ContentLayoutManager.findLayout(this.defaultLayoutId);
+      if (!this.defaultLayout)
+        throw Error("Content Layout '" + this.defaultLayoutId + "' not registered");
     }
     if (!this.contentGroup) {
       this.contentGroup = ContentGroupManager.findGroup(this.contentGroupId);
+      if (!this.contentGroup)
+        throw Error("Content Group '" + this.contentGroupId + "' not registered");
     }
 
-    FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: this.defaultLayout!, contentGroup: this.contentGroup });
+    const activeLayout = this.defaultLayout!;
+    ContentLayoutManager.setActiveLayout(activeLayout);
+    FrontstageManager.onContentLayoutActivatedEvent.emit({ contentLayout: activeLayout, contentGroup: this.contentGroup! });
   }
 
   /** Handles when the Frontstage becomes inactive */
   public onDeactivated(): void {
+    for (const control of this._widgetControls) {
+      control.onFrontstageDeactivated();
+    }
+
+    for (const control of this.contentControls) {
+      control.onFrontstageDeactivated();
+    }
+
     if (this.contentGroup)
-      this.contentGroup.clearContentControls();
+      this.contentGroup.onFrontstageDeactivated();
   }
 
   /** Returns once the contained widgets and content controls are ready to use */
@@ -84,6 +98,20 @@ export class FrontstageDef {
       .then(() => {
         // Frontstage ready
       });
+  }
+
+  /** Handles when the Frontstage becomes active */
+  public onFrontstageReady(): void {
+    for (const control of this._widgetControls) {
+      control.onFrontstageReady();
+    }
+
+    for (const control of this.contentControls) {
+      control.onFrontstageReady();
+    }
+
+    if (this.contentGroup)
+      this.contentGroup.onFrontstageReady();
   }
 
   /** Sets the active view content control */

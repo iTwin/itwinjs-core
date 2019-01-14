@@ -3,7 +3,6 @@
 * Licensed under the MIT License. See LICENSE.md in the project root for license terms.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { expect } from "chai";
 
@@ -18,6 +17,8 @@ import {
   FrontstageProps,
   ContentLayoutDef,
   ConfigurableUiControlType,
+  ContentViewManager,
+  ContentLayoutManager,
 } from "../../ui-framework";
 import { ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
 
@@ -51,14 +52,15 @@ describe("ViewportContentControl", () => {
 
     class Frontstage1 extends FrontstageProvider {
 
+      public contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
+        {
+          id: "SingleContent",
+          descriptionKey: "App:ContentLayoutDef.SingleContent",
+          priority: 100,
+        },
+      );
+
       public get frontstage(): React.ReactElement<FrontstageProps> {
-        const contentLayoutDef: ContentLayoutDef = new ContentLayoutDef(
-          {
-            id: "SingleContent",
-            descriptionKey: "App:ContentLayoutDef.SingleContent",
-            priority: 100,
-          },
-        );
 
         const myContentGroup: ContentGroup = new ContentGroup(
           {
@@ -75,55 +77,42 @@ describe("ViewportContentControl", () => {
           <Frontstage
             id="Test1"
             defaultToolId="Select"
-            defaultLayout={contentLayoutDef}
+            defaultLayout={this.contentLayoutDef}
             contentGroup={myContentGroup}
           />
         );
       }
     }
 
-    const spyMethod = sinon.spy();
     const frontstageProvider = new Frontstage1();
     FrontstageManager.addFrontstageProvider(frontstageProvider);
     FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(() => { // tslint:disable-line:no-floating-promises
-      spyMethod();
-    });
-    setImmediate(() => {
-      spyMethod.calledOnce.should.true;
-
       if (frontstageProvider.frontstageDef) {
-        const contentGroup = frontstageProvider.frontstageDef.contentGroup;
-        expect(contentGroup).to.not.be.undefined;
+        expect(ContentLayoutManager.activeLayout).to.eq(frontstageProvider.contentLayoutDef);
 
-        if (contentGroup) {
-          const contentSet = contentGroup.getContentNodes();
-          expect(contentSet.length).to.eq(1);
+        const contentControl = ContentViewManager.getActiveContentControl();
+        expect(contentControl).to.not.be.undefined;
 
-          const contentControl = contentGroup.getControlFromElement(contentSet[0]);
-          expect(contentControl).to.not.be.undefined;
+        if (contentControl) {
+          expect(contentControl.isViewport).to.be.true;
+          expect(contentControl.viewport).to.not.be.undefined;
+          expect(contentControl.getType()).to.eq(ConfigurableUiControlType.Viewport);
 
-          if (contentControl) {
-            expect(contentControl.isViewport).to.be.true;
-            expect(contentControl.viewport).to.not.be.undefined;
-            expect(contentControl.getType()).to.eq(ConfigurableUiControlType.Viewport);
+          expect(contentControl.navigationAidControl).to.eq("SheetNavigationAid");
 
-            expect(contentControl.navigationAidControl).to.eq("SheetNavigationAid");
+          viewMock.reset();
+          viewMock.setup((view) => view.classFullName).returns(() => "DrawingViewDefinition");
+          expect(contentControl.navigationAidControl).to.eq("");  // TODO
 
-            viewMock.reset();
-            viewMock.setup((view) => view.classFullName).returns(() => "DrawingViewDefinition");
-            expect(contentControl.navigationAidControl).to.eq("");  // TODO
+          viewMock.reset();
+          viewMock.setup((view) => view.classFullName).returns(() => "SpatialViewDefinition");
+          expect(contentControl.navigationAidControl).to.eq("CubeNavigationAid");
 
-            viewMock.reset();
-            viewMock.setup((view) => view.classFullName).returns(() => "SpatialViewDefinition");
-            expect(contentControl.navigationAidControl).to.eq("CubeNavigationAid");
-
-            viewMock.reset();
-            viewMock.setup((view) => view.classFullName).returns(() => "OrthographicViewDefinition");
-            expect(contentControl.navigationAidControl).to.eq("CubeNavigationAid");
-          }
+          viewMock.reset();
+          viewMock.setup((view) => view.classFullName).returns(() => "OrthographicViewDefinition");
+          expect(contentControl.navigationAidControl).to.eq("CubeNavigationAid");
         }
       }
-
     });
 
   });

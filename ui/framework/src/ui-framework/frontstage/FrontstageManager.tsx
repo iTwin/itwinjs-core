@@ -22,11 +22,22 @@ import { FrontstageProvider } from "./FrontstageProvider";
 // Frontstage Events
 // -----------------------------------------------------------------------------
 
+/** Frontstage Deactivated Event Args interface.
+ */
+export interface FrontstageDeactivatedEventArgs {
+  deactivatedFrontstageDef: FrontstageDef;
+  activatedFrontstageDef?: FrontstageDef;
+}
+
+/** Frontstage Deactivated Event class.
+ */
+export class FrontstageDeactivatedEvent extends UiEvent<FrontstageDeactivatedEventArgs> { }
+
 /** Frontstage Activated Event Args interface.
  */
 export interface FrontstageActivatedEventArgs {
-  frontstageId: string;
-  frontstageDef?: FrontstageDef;
+  deactivatedFrontstageDef?: FrontstageDef;
+  activatedFrontstageDef: FrontstageDef;
 }
 
 /** Frontstage Activated Event class.
@@ -36,8 +47,7 @@ export class FrontstageActivatedEvent extends UiEvent<FrontstageActivatedEventAr
 /** Frontstage Ready Event Args interface.
  */
 export interface FrontstageReadyEventArgs {
-  frontstageId: string;
-  frontstageDef?: FrontstageDef;
+  frontstageDef: FrontstageDef;
 }
 
 /** Frontstage Ready Event class.
@@ -125,8 +135,11 @@ export class FrontstageManager {
   private static _isLoading = true;
 
   private static _activeFrontstageDef: FrontstageDef | undefined;
-  private static _modalFrontstages: ModalFrontstageInfo[] = new Array<ModalFrontstageInfo>();
   private static _frontstageDefs = new Map<string, FrontstageDef>();
+  private static _modalFrontstages: ModalFrontstageInfo[] = new Array<ModalFrontstageInfo>();
+
+  private static _nestedFrontstages: FrontstageDef[] = new Array<FrontstageDef>();
+  private static _activePrimaryFrontstageDef: FrontstageDef | undefined;
 
   private static _activeToolId: string = "";
   private static _toolInformationMap: Map<string, ToolInformation> = new Map<string, ToolInformation>();
@@ -143,6 +156,9 @@ export class FrontstageManager {
 
   /** Returns true if Frontstage is loading its controls. If false the Frontstage content and controls have been created. */
   public static get isLoading(): boolean { return this._isLoading; }
+
+  /** Get Frontstage Deactivated event. */
+  public static readonly onFrontstageDeactivatedEvent = new FrontstageDeactivatedEvent();
 
   /** Get Frontstage Activated event. */
   public static readonly onFrontstageActivatedEvent = new FrontstageActivatedEvent();
@@ -170,6 +186,12 @@ export class FrontstageManager {
 
   /** Get  Nine-zone State Manager. */
   public static get NineZoneStateManager() { return NineZoneStateManager; }
+
+  /** Clears the Frontstage map.
+   */
+  public static clearFrontstageDefs(): void {
+    this._frontstageDefs.clear();
+  }
 
   /** Add a Frontstage via a definition.
    * @param frontstageDef  Definition of the Frontstage to add
@@ -233,17 +255,24 @@ export class FrontstageManager {
   public static async setActiveFrontstageDef(frontstageDef: FrontstageDef | undefined): Promise<void> {
     this._isLoading = true;
 
-    if (this._activeFrontstageDef)
-      this._activeFrontstageDef.onDeactivated();
+    const deactivatedFrontstageDef = this._activeFrontstageDef;
+    if (deactivatedFrontstageDef) {
+      deactivatedFrontstageDef.onDeactivated();
+      this.onFrontstageDeactivatedEvent.emit({ deactivatedFrontstageDef, activatedFrontstageDef: frontstageDef });
+    }
 
     this._activeFrontstageDef = frontstageDef;
 
     if (frontstageDef) {
       frontstageDef.onActivated();
-      this.onFrontstageActivatedEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
+      this.onFrontstageActivatedEvent.emit({ activatedFrontstageDef: frontstageDef, deactivatedFrontstageDef });
+
       await frontstageDef.waitUntilReady();
       this._isLoading = false;
-      this.onFrontstageReadyEvent.emit({ frontstageId: frontstageDef.id, frontstageDef });
+      frontstageDef.onFrontstageReady();
+      this.onFrontstageReadyEvent.emit({ frontstageDef });
+
+      // istanbul ignore else
       if (frontstageDef.contentControls.length >= 0) {
         // TODO: get content control to activate from state info
         const contentControl = frontstageDef.contentControls[0];
@@ -263,9 +292,11 @@ export class FrontstageManager {
 
   /** Sets the active tool id */
   public static setActiveToolId(toolId: string): void {
+    // istanbul ignore else
     if (this._activeToolId !== toolId) {
       this._activeToolId = toolId;
 
+      // istanbul ignore else
       if (!this._toolInformationMap.get(toolId))
         this._toolInformationMap.set(toolId, new ToolInformation(toolId));
 
@@ -372,8 +403,6 @@ export class FrontstageManager {
     if (widgetDef) {
       widgetDef.setWidgetState(state);
       return true;
-    } else {
-      throw Error("setWidgetState: Could not find Widget with id of '" + widgetId + "'");
     }
 
     return false;
@@ -385,10 +414,63 @@ export class FrontstageManager {
    */
   public static findWidget(widgetId: string): WidgetDef | undefined {
     const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-    if (activeFrontstageDef) {
+
+    // istanbul ignore else
+    if (activeFrontstageDef)
       return activeFrontstageDef.findWidgetDef(widgetId);
-    }
 
     return undefined;
   }
+
+  /** Opens a nested Frontstage. Modal Frontstages can be stacked.
+   * @param nestedFrontstage  Information about the nested Frontstage
+   */
+  public static async openNestedFrontstage(nestedFrontstage: FrontstageDef): Promise<void> {
+    if (this.nestedFrontstageCount === 0)
+      this._activePrimaryFrontstageDef = this._activeFrontstageDef;
+
+    this.pushNestedFrontstage(nestedFrontstage);
+
+    await this.setActiveFrontstageDef(nestedFrontstage);
+  }
+
+  private static pushNestedFrontstage(nestedFrontstage: FrontstageDef): void {
+    this._nestedFrontstages.push(nestedFrontstage);
+  }
+
+  /** Closes the top-most nested Frontstage.
+   */
+  public static async closeNestedFrontstage(): Promise<void> {
+    this.popNestedFrontstage();
+
+    if (this.nestedFrontstageCount > 0) {
+      await this.setActiveFrontstageDef(this.activeNestedFrontstage);
+    } else {
+      await this.setActiveFrontstageDef(this._activePrimaryFrontstageDef);
+      this._activePrimaryFrontstageDef = undefined;
+    }
+  }
+
+  private static popNestedFrontstage(): void {
+    this._nestedFrontstages.pop();
+  }
+
+  /** Gets the top-most nested Frontstage.
+   * @returns Top-most nested Frontstage, or undefined if there is none.
+   */
+  public static get activeNestedFrontstage(): FrontstageDef | undefined {
+    // istanbul ignore else
+    if (this._nestedFrontstages.length > 0)
+      return this._nestedFrontstages[this._nestedFrontstages.length - 1];
+
+    return undefined;
+  }
+
+  /** Gets the number of nested Frontstages.
+   * @returns Nested Frontstage count
+   */
+  public static get nestedFrontstageCount(): number {
+    return this._nestedFrontstages.length;
+  }
+
 }

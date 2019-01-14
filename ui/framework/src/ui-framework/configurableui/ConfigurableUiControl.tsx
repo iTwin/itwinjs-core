@@ -88,12 +88,16 @@ export abstract class ConfigurableUiControl extends ConfigurableBase {
 
   /** @hidden
    */
-  public initialize(): void { this._initialize(); }
+  public initialize(): void { this.onInitialize(); }
 
-  /** Called to initialize the ConfigurableUiControl.
-   */
-  protected _initialize(): void {
-  }
+  /** Called to initialize the ConfigurableUiControl. */
+  public onInitialize(): void { }
+
+  /** Called when Frontstage is deactivated. */
+  public onFrontstageDeactivated(): void { }
+
+  /** Called when Frontstage is ready. */
+  public onFrontstageReady(): void { }
 
   /** Returns the ID of this ConfigurableUiControl.
    */

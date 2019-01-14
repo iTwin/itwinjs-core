@@ -76,7 +76,7 @@ export interface ToolItemProps extends ItemProps, CommandHandler {
 
 /** Definition for a Command item. */
 export interface CommandItemProps extends ItemProps, CommandHandler {
-  commandId: string;
+  commandId?: string;
 }
 
 /** Union of all Item definitions that can be specified in a GroupItem */

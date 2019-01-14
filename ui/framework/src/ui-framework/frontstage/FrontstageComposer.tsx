@@ -105,9 +105,9 @@ export class FrontstageComposer extends React.Component<FrontstageComposerProps,
     if (this._frontstageDef)
       this._frontstageDef.nineZoneProps = { ...this.state.nineZoneProps };
 
-    this._frontstageDef = args.frontstageDef;
+    this._frontstageDef = args.activatedFrontstageDef;
 
-    const frontstageId = args.frontstageId;
+    const frontstageId = this._frontstageDef.id;
     const nineZoneProps = this.determineNineZoneProps(this._frontstageDef);
     const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZoneProps) ? false : true;
 

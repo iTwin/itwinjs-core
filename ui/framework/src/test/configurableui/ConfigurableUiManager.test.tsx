@@ -43,8 +43,8 @@ describe("ConfigurableUiManager", () => {
           <Frontstage
             id="TestFrontstage2"
             defaultToolId="PlaceLine"
-            defaultLayout="TwoHalvesVertical"
-            contentGroup="TestContentGroup2"
+            defaultLayout="FourQuadrants"
+            contentGroup="TestContentGroup1"
           />
         );
       }

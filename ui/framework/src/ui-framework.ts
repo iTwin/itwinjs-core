@@ -54,6 +54,7 @@ export * from "./ui-framework/frontstage/FrontstageComposer";
 export * from "./ui-framework/frontstage/FrontstageDef";
 export * from "./ui-framework/frontstage/FrontstageManager";
 export * from "./ui-framework/frontstage/FrontstageProvider";
+export * from "./ui-framework/frontstage/NestedFrontstage";
 export * from "./ui-framework/shared/IconComponent";
 export * from "./ui-framework/shared/Item";
 export * from "./ui-framework/shared/ItemDefBase";

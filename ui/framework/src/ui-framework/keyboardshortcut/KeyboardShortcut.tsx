@@ -247,6 +247,11 @@ export class KeyboardShortcutManager {
     return this._shortcuts.findKey(keyMapKey);
   }
 
+  public static get isFocusOnHome(): boolean {
+    const element = document.activeElement as HTMLElement;
+    return element && element === document.body;
+  }
+
   public static setFocusToHome(): void {
     const element = document.activeElement as HTMLElement;
     if (element && element !== document.body) {

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Added activated, deactivated & ready notification for Frontstages. Added support for nested frontstages.",
+      "packageName": "@bentley/ui-framework",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "dan.east@bentley.com"
+}

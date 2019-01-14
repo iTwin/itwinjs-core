@@ -54,6 +54,7 @@ export abstract class ActionButtonItemDef extends ItemDefBase {
 /** An Item that executes a Command.
  */
 export class CommandItemDef extends ActionButtonItemDef {
+  private static _sId = 0;
   public commandId: string = "";
 
   constructor(commandItemProps: CommandItemProps) {
@@ -63,7 +64,12 @@ export class CommandItemDef extends ActionButtonItemDef {
       this._commandHandler = { execute: commandItemProps.execute, parameters: commandItemProps.parameters, getCommandArgs: commandItemProps.getCommandArgs };
     }
 
-    this.commandId = commandItemProps.commandId;
+    if (commandItemProps.commandId)
+      this.commandId = commandItemProps.commandId;
+    else {
+      CommandItemDef._sId++;
+      this.commandId = "Command-" + CommandItemDef._sId;
+    }
   }
 
   public get isToolId(): boolean {

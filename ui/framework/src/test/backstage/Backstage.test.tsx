@@ -93,7 +93,7 @@ describe("Backstage", () => {
             <Frontstage
               id="Test1"
               defaultToolId="PlaceLine"
-              defaultLayout="TwoHalvesVertical"
+              defaultLayout="FourQuadrants"
               contentGroup="TestContentGroup1"
             />
           );
@@ -123,7 +123,7 @@ describe("Backstage", () => {
             <Frontstage
               id="Test1"
               defaultToolId="PlaceLine"
-              defaultLayout="TwoHalvesVertical"
+              defaultLayout="FourQuadrants"
               contentGroup="TestContentGroup1"
             />
           );

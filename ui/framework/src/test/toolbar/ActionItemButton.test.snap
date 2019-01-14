@@ -33,3 +33,51 @@ exports[`ActionItemButton <ActionItemButton /> renders correctly 1`] = `
   title="tests.label"
 />
 `;
+
+exports[`ActionItemButton disabled renders correctly 1`] = `
+<Item
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={false}
+  isDisabled={true}
+  key="command"
+  onClick={[Function]}
+  onKeyDown={[Function]}
+  title="tests.label"
+/>
+`;
+
+exports[`ActionItemButton hidden renders correctly 1`] = `
+<Item
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={false}
+  isDisabled={true}
+  key="command"
+  onClick={[Function]}
+  onKeyDown={[Function]}
+  title="tests.label"
+/>
+`;
+
+exports[`ActionItemButton renders correctly 1`] = `
+<Item
+  icon={
+    <Unknown
+      iconSpec="icon-placeholder"
+    />
+  }
+  isActive={false}
+  isDisabled={true}
+  key="command"
+  onClick={[Function]}
+  onKeyDown={[Function]}
+  title="tests.label"
+/>
+`;

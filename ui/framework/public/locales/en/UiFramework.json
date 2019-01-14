@@ -91,6 +91,9 @@
   "navigationAid": {
     "sheetsModalFrontstage": "Sheet Views"
   },
+  "commands": {
+    "backToPreviousFrontstage": "Back to previous Frontstage"
+  },
   "tools": {
     "View": {
       "Fly": {

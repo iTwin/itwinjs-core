@@ -211,6 +211,13 @@ class SplitContainer extends React.Component<SplitContainerProps, SplitContainer
     window.removeEventListener("resize", this._handleWindowResize, true);
   }
 
+  public static getDerivedStateFromProps(_newProps: SplitContainerProps, _state: SplitContainerState): SplitContainerState | null {
+    return {
+      pane2Width: "100%",
+      pane2Height: "100%",
+    };
+  }
+
   private _handleWindowResize = () => {
     this.handleResize();
   }
@@ -391,32 +398,40 @@ class VerticalSplit implements LayoutSplit {
 /** Content Layout Definition class.
  */
 export class ContentLayoutDef {
+  private static _sId = 0;
+
   public id: string = "";
   public descriptionKey: string;
   public priority: number;
   public featureId: string = "";
-  private _layoutDef: ContentLayoutProps;
+  private _layoutProps: ContentLayoutProps;
 
   private _rootSplit?: LayoutSplit;
 
-  constructor(layoutDef: ContentLayoutProps) {
-    this._layoutDef = layoutDef;
-    if (layoutDef.id)
-      this.id = layoutDef.id;
-    this.descriptionKey = layoutDef.descriptionKey;
-    this.priority = layoutDef.priority;
+  constructor(layoutProps: ContentLayoutProps) {
+    this._layoutProps = layoutProps;
 
-    if (layoutDef.featureId !== undefined)
-      this.featureId = layoutDef.featureId;
+    if (layoutProps.id)
+      this.id = layoutProps.id;
+    else {
+      ContentLayoutDef._sId++;
+      this.id = "ContentLayout-" + ContentLayoutDef._sId;
+    }
+
+    this.descriptionKey = layoutProps.descriptionKey;
+    this.priority = layoutProps.priority;
+
+    if (layoutProps.featureId !== undefined)
+      this.featureId = layoutProps.featureId;
   }
 
   public get rootSplit(): LayoutSplit | undefined { return this._rootSplit; }
 
   public fillLayoutContainer(content: React.ReactNode[], resizable: boolean): React.ReactNode | undefined {
-    this._rootSplit = ContentLayoutManager.createSplit(this._layoutDef);
+    this._rootSplit = ContentLayoutManager.createSplit(this._layoutProps);
 
-    if (this._rootSplit) {
-      return this._rootSplit.createContentContainer(content, resizable);
+    if (this.rootSplit) {
+      return this.rootSplit.createContentContainer(content, resizable);
     }
 
     if (content.length > 0)
@@ -431,6 +446,7 @@ export class ContentLayoutDef {
 export interface ContentLayoutState {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
+  contentContainer?: React.ReactNode;
 }
 
 /** Properties for the [[ContentLayout]] React component.
@@ -444,15 +460,15 @@ export interface ContentLayoutReactProps {
 /** Content Layout React component.
  */
 export class ContentLayout extends React.Component<ContentLayoutReactProps, ContentLayoutState> {
-  private _contentContainer?: React.ReactNode;
 
   /** @hidden */
   public readonly state: Readonly<ContentLayoutState>;
 
-  constructor(props: ContentLayoutReactProps, context?: any) {
-    super(props, context);
+  constructor(props: ContentLayoutReactProps) {
+    super(props);
 
     let contentGroup: ContentGroup;
+    let contentContainer: React.ReactNode;
 
     contentGroup = this.props.contentGroup;
 
@@ -463,12 +479,13 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
       contentLayout = this.props.contentLayout;
 
       if (content && contentLayout)
-        this._contentContainer = contentLayout.fillLayoutContainer(content, true);
+        contentContainer = contentLayout.fillLayoutContainer(content, true);
     }
 
     this.state = {
       contentLayout: this.props.contentLayout,
       contentGroup: this.props.contentGroup,
+      contentContainer,
     };
   }
 
@@ -482,33 +499,35 @@ export class ContentLayout extends React.Component<ContentLayoutReactProps, Cont
 
   private _handleContentLayoutActivated = (args: ContentLayoutActivatedEventArgs) => {
     const contentGroup: ContentGroup = args.contentGroup;
+    let contentContainer: React.ReactNode;
+
     if (contentGroup) {
       const content: React.ReactNode[] = contentGroup.getContentNodes();
 
       const contentLayout = args.contentLayout;
       if (contentLayout)
-        this._contentContainer = contentLayout.fillLayoutContainer(content, true);
+        contentContainer = contentLayout.fillLayoutContainer(content, true);
     }
 
     this.setState((_prevState, _props) => {
       return {
         contentLayout: args.contentLayout,
         contentGroup: args.contentGroup,
+        contentContainer,
       };
     });
   }
 
   public render(): React.ReactNode {
-    if (this._contentContainer) {
+    if (this.state.contentContainer) {
       const className = this.props.isInFooterMode ? "contentlayout-footer-mode" : "contentlayout-open-mode";
 
-      // key={this.state.contentLayout}
       return (
-        <div id="ContentLayoutDiv" className={className}
+        <div id="ContentLayoutDiv" className={className} key={this.state.contentLayout.id}
           onMouseDown={this._onMouseDown}
           onMouseUp={this._onMouseUp}
         >
-          {this._contentContainer}
+          {this.state.contentContainer}
         </div>
       );
     }
@@ -542,7 +561,7 @@ export class ContentLayoutManager {
     if (layoutProps.id)
       ContentLayoutManager.addLayout(layoutProps.id, layout);
     else
-      throw Error();
+      throw Error("ContentLayoutProps should contain an 'id'");
   }
 
   public static findLayout(layoutId: string): ContentLayoutDef | undefined {
@@ -562,9 +581,7 @@ export class ContentLayoutManager {
   public static createSplit(fragmentDef: LayoutFragmentProps): LayoutSplit | undefined {
     if (fragmentDef.horizontalSplit) {
       return new HorizontalSplit(fragmentDef.horizontalSplit);
-    }
-
-    if (fragmentDef.verticalSplit) {
+    } else if (fragmentDef.verticalSplit) {
       return new VerticalSplit(fragmentDef.verticalSplit);
     }
 

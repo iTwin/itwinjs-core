@@ -67,7 +67,7 @@ describe("ToolSettingsZone", () => {
             id="ToolSettingsZone-TestFrontstage"
             defaultToolId="PlaceLine"
             defaultLayout="FourQuadrants"
-            contentGroup="TestContentGroup4"
+            contentGroup="TestContentGroup1"
             topCenter={
               <Zone
                 widgets={[

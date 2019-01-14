@@ -18,27 +18,23 @@ import {
   FrontstageProps,
   ZoneLocation,
   ActionItemButton,
-  CommandItemDef,
-  FrontstageManager,
+  NestedFrontstage,
 } from "@bentley/ui-framework";
 
 import { AppStatusBarWidgetControl } from "../statusbars/AppStatusBar";
-// import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { VerticalPropertyGridWidgetControl, HorizontalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 
 import { Toolbar, Direction } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
-import { NestedFrontstage1 } from "./NestedFrontstage1";
 
-export class Frontstage1 extends FrontstageProvider {
+export class NestedFrontstage1 extends FrontstageProvider {
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     return (
-      <Frontstage id="Test1"
+      <Frontstage id="NestedFrontstage1"
         defaultToolId="PlaceLine"
-        defaultLayout="TwoHalvesVertical"
-        contentGroup="TestContentGroup1"
-        defaultContentId="TestContent1"
+        defaultLayout="TwoHalvesHorizontal"
+        contentGroup="TestContentGroup2"
         isInFooterMode={false}
         applicationData={{ key: "value" }}
         topLeft={
@@ -92,20 +88,6 @@ export class Frontstage1 extends FrontstageProvider {
 /** Define a ToolWidget with Buttons to display in the TopLeft zone.
  */
 class FrontstageToolWidget extends React.Component {
-  /** Command that opens a nested Frontstage */
-  private get _openNestedFrontstage1() {
-    return new CommandItemDef({
-      commandId: "openNestedFrontstage1",
-      iconSpec: "icon-placeholder",
-      labelKey: "SampleApp:buttons.openNestedFrontstage1",
-      execute: async () => {
-        const frontstageProvider = new NestedFrontstage1();
-        const frontstageDef = frontstageProvider.initializeDef();
-        await FrontstageManager.openNestedFrontstage(frontstageDef);
-      },
-    });
-  }
-
   private _horizontalToolbar =
     <Toolbar
       expandsTo={Direction.Bottom}
@@ -113,7 +95,6 @@ class FrontstageToolWidget extends React.Component {
         <>
           <ActionItemButton actionItem={AppTools.item1} />
           <ActionItemButton actionItem={AppTools.item2} />
-          <ActionItemButton actionItem={this._openNestedFrontstage1} />
           <GroupButton
             labelKey="SampleApp:buttons.toolGroup"
             iconSpec="icon-placeholder"
@@ -146,7 +127,7 @@ class FrontstageToolWidget extends React.Component {
   public render() {
     return (
       <ToolWidget
-        appButton={AppTools.backstageToggleCommand}
+        appButton={NestedFrontstage.backToPreviousFrontstageCommand}
         horizontalToolbar={this._horizontalToolbar}
         verticalToolbar={this._verticalToolbar}
       />

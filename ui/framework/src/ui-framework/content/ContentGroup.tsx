@@ -143,9 +143,17 @@ export class ContentGroup {
     return contentControls;
   }
 
+  /** Called when Frontstage is deactivated. */
+  public onFrontstageDeactivated(): void {
+    this.clearContentControls();
+  }
+
+  /** Called when Frontstage is ready. */
+  public onFrontstageReady(): void { }
+
+  /** Clears the map of content controls. */
   public clearContentControls(): void {
     this._contentControls.clear();
-    this._contentSetMap.clear();
   }
 
 }
@@ -157,7 +165,7 @@ export class ContentGroup {
 /** ContentGroup Manager class.
  */
 export class ContentGroupManager {
-  private static _groups: { [groupId: string]: ContentGroup } = {};
+  private static _groups: Map<string, ContentGroup> = new Map<string, ContentGroup>();
 
   public static loadGroups(groupPropsList: ContentGroupProps[]) {
     groupPropsList.map((groupProps, _index) => {
@@ -173,11 +181,11 @@ export class ContentGroupManager {
       throw Error();
   }
 
-  public static findGroup(groupId: string): ContentGroup {
-    return this._groups[groupId];
+  public static findGroup(groupId: string): ContentGroup | undefined {
+    return this._groups.get(groupId);
   }
 
   public static addGroup(groupId: string, group: ContentGroup) {
-    this._groups[groupId] = group;
+    this._groups.set(groupId, group);
   }
 }

@@ -105,7 +105,8 @@
     "openPropertyGrid": "Open Property Grid",
     "closePropertyGrid": "Close Property Grid",
     "showShortcutsMenu": "Show Shortcuts Menu",
-    "shortcutsSubMenu": "Shortcuts Submenu Sample"
+    "shortcutsSubMenu": "Shortcuts Submenu Sample",
+    "openNestedFrontstage1": "Open Nested Frontstage"
   },
   "tools": {
     "Tool1": {
