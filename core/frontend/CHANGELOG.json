@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.186.0",
+      "tag": "@bentley/imodeljs-frontend_v0.186.0",
+      "date": "Mon, 14 Jan 2019 23:09:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix visible seams between map tiles."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.185.0",
       "tag": "@bentley/imodeljs-frontend_v0.185.0",
       "date": "Fri, 11 Jan 2019 18:29:00 GMT",

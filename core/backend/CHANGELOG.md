@@ -1,6 +1,16 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Fri, 11 Jan 2019 18:29:00 GMT and should not be manually modified.
+This log was last generated on Mon, 14 Jan 2019 23:09:10 GMT and should not be manually modified.
+
+## 0.186.0
+Mon, 14 Jan 2019 23:09:10 GMT
+
+### Updates
+
+- More logging of HTTP requests, and enabled use of fiddler for backend diagnostics. 
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
+- Renamed RequestProxy->RequestHost. Allowed applications to configure proxy server with HTTPS_PROXY env.
+- Add backend TextureAPI and accompanying test
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT

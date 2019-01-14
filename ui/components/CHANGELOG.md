@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Fri, 11 Jan 2019 18:29:00 GMT and should not be manually modified.
+This log was last generated on Mon, 14 Jan 2019 23:09:10 GMT and should not be manually modified.
+
+## 0.186.0
+Mon, 14 Jan 2019 23:09:10 GMT
+
+### Updates
+
+- Property pane does not show struct or array info anymore
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT

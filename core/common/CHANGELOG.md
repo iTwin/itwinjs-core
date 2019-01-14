@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Fri, 11 Jan 2019 18:29:00 GMT and should not be manually modified.
+This log was last generated on Mon, 14 Jan 2019 23:09:10 GMT and should not be manually modified.
+
+## 0.186.0
+Mon, 14 Jan 2019 23:09:10 GMT
+
+### Updates
+
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
+- Add TextureProps for use by new backend Texture API
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT

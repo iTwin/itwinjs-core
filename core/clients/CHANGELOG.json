@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-clients",
   "entries": [
     {
+      "version": "0.186.0",
+      "tag": "@bentley/imodeljs-clients_v0.186.0",
+      "date": "Mon, 14 Jan 2019 23:09:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "More logging of HTTP requests, and enabled use of fiddler for backend diagnostics. "
+          },
+          {
+            "comment": "Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. "
+          }
+        ]
+      }
+    },
+    {
       "version": "0.185.0",
       "tag": "@bentley/imodeljs-clients_v0.185.0",
       "date": "Fri, 11 Jan 2019 18:29:00 GMT",

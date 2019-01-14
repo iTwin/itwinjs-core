@@ -2,6 +2,18 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.186.0",
+      "tag": "@bentley/ui-components_v0.186.0",
+      "date": "Mon, 14 Jan 2019 23:09:10 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Property pane does not show struct or array info anymore"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.185.0",
       "tag": "@bentley/ui-components_v0.185.0",
       "date": "Fri, 11 Jan 2019 18:29:00 GMT",

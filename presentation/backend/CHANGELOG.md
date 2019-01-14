@@ -1,6 +1,11 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Fri, 11 Jan 2019 18:29:00 GMT and should not be manually modified.
+This log was last generated on Mon, 14 Jan 2019 23:09:10 GMT and should not be manually modified.
+
+## 0.186.0
+Mon, 14 Jan 2019 23:09:10 GMT
+
+*Version update only*
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
