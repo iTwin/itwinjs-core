@@ -41,9 +41,10 @@ function doFixRange(iModel: IModelDb) {
 class ScriptEntry {
     public elementIds: Id64String[] = [];
     public data: any;
-    constructor(ids: Id64String[], data: any) { this.elementIds = ids, this.data = data; }
+    public batchId: number;
+    constructor(ids: Id64String[], data: any, batchId: number) { this.elementIds = ids, this.data = data; this.batchId = batchId; }
     public getJSON(): any {
-        const json: any = { elementIds: this.elementIds };
+        const json: any = { elementIds: this.elementIds, batchId: this.batchId };
         for (const [key, value] of Object.entries(this.data))
             json[key] = value;
 
@@ -68,7 +69,7 @@ class ModelScript {
         const key = JSON.stringify(data);
         let value: any;
         if (undefined === (value = this.entries.get(key))) {
-            this.entries.set(key, new ScriptEntry(ids, data));
+            this.entries.set(key, new ScriptEntry(ids, data, 1 + this.entries.size));
         } else {
             for (const id of ids)
                 value.elementIds.push(id);
