@@ -7,6 +7,7 @@
 import { IModelToken } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
+import { ChangedElements } from "../ChangedElements";
 
 /**
  * The purpose of this class is to house WIP RPC methods. For example:
@@ -27,14 +28,16 @@ export abstract class WipRpcInterface extends RpcInterface {
   public static getClient(): WipRpcInterface { return RpcManager.getClientForInterface(WipRpcInterface); }
 
   /** The semantic version of the interface. */
-  public static version = "0.2.0";
+  public static version = "0.2.1";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
     NOTE: Please consult the README in this folder for the semantic versioning rules.
-  ===========================================================================================*/
+  =======================================1===================================================*/
   public async placeholder(_iModelToken: IModelToken): Promise<string> { return this.forward(arguments); } // here to test that WipRpcInterface is configured properly
   public async isChangeCacheAttached(_iModelToken: IModelToken): Promise<boolean> { return this.forward(arguments); }
   public async attachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward(arguments); }
   public async detachChangeCache(_iModelToken: IModelToken): Promise<void> { return this.forward(arguments); }
+  public async getChangedElements(_iModelToken: IModelToken, _startChangesetId: string, _endChangesetId: string): Promise<ChangedElements | undefined> { return this.forward(arguments); }
+  public async isChangesetProcessed(_iModelToken: IModelToken, _changesetId: string): Promise<boolean> { return this.forward(arguments); }
 }

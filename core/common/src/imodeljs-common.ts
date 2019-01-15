@@ -30,6 +30,7 @@ export * from "./Thumbnail";
 export * from "./ViewProps";
 export * from "./Render";
 export * from "./RenderSchedule";
+export * from "./ChangedElements";
 export * from "./domains/FunctionalElementProps";
 export * from "./domains/GenericElementProps";
 export * from "./geometry/AreaPattern";

@@ -6,7 +6,7 @@ import {
   BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, DbOpcode, DbResult, GuidString, Id64String,
   IDisposable, IModelStatus, Logger, OpenMode, RepositoryStatus, StatusCodeWithMessage,
 } from "@bentley/bentleyjs-core";
-import { ElementProps } from "@bentley/imodeljs-common";
+import { ElementProps, ChangedElements } from "@bentley/imodeljs-common";
 import { IModelDb } from "./IModelDb";
 
 // tslint:disable:prefer-get
@@ -168,6 +168,18 @@ export declare namespace IModelJsNative {
     public saveChanges(changesetName?: string): DbResult;
     public abandonChanges(): DbResult;
     public importSchema(schemaPathName: string): DbResult;
+  }
+
+  export class ChangedElementsECDb implements IDisposable {
+    constructor();
+    public dispose(): void;
+    public createDb(db: DgnDb, dbName: string): DbResult;
+    public openDb(dbName: string, mode: OpenMode, upgradeProfiles?: boolean): DbResult;
+    public isOpen(): boolean;
+    public closeDb(): void;
+    public processChangesets(db: DgnDb, changesets: string, rulesetId: string, filterSpatial: boolean): DbResult;
+    public getChangedElements(startChangesetId: string, endChangesetId: string): ErrorStatusOrResult<IModelStatus, ChangedElements>;
+    public isProcessed(changesetId: string): boolean;
   }
 
   export class ECSqlStatement implements IDisposable {

@@ -45,7 +45,7 @@ export const enum KeepBriefcase {
 
 /** A token that represents a ChangeSet */
 export class ChangeSetToken {
-  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public containsSchemaChanges: boolean) { }
+  constructor(public id: string, public parentId: string, public index: number, public pathname: string, public containsSchemaChanges: boolean, public pushDate?: string) { }
 }
 
 /** Entry in the briefcase cache */
@@ -275,6 +275,7 @@ export class BriefcaseManager {
 
   public static getChangeSetsPath(iModelId: GuidString): string { return path.join(BriefcaseManager.getIModelPath(iModelId), "csets"); }
   public static getChangeCachePathName(iModelId: GuidString): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
+  public static getChangedElementsPathName(iModelId: GuidString): string { return path.join(BriefcaseManager.getIModelPath(iModelId), iModelId.concat(".bim.elems")); }
 
   private static getBriefcasesPath(iModelId: GuidString) {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "bc");
