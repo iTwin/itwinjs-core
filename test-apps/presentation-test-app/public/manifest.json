@@ -1,6 +1,6 @@
 {
-  "short_name": "MyApp",
-  "name": "Create iModelJS React App Sample",
+  "short_name": "PresentationTestApp",
+  "name": "iModel.js Presentation Test App",
   "icons": [
     {
       "src": "favicon.ico",

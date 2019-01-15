@@ -7,8 +7,12 @@ import { app as electron } from "electron";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcInterfaceDefinition } from "@bentley/imodeljs-common";
+import { Config } from "@bentley/imodeljs-clients";
+import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import rpcs from "../common/Rpcs";
 import "./SampleRpcImpl"; // just to get the RPC implementation registered
+
+IModelJsConfig.init(true /*suppress error*/, true /* suppress message */, Config.App);
 
 // initialize logging
 Logger.initializeToConsole();
@@ -18,12 +22,8 @@ IModelHost.startup();
 
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
 import { Presentation } from "@bentley/presentation-backend";
-import { Config } from "@bentley/imodeljs-clients";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 
-IModelJsConfig.init();
-Config.App.merge(process.env);
-
+// initialize presentation-backend
 Presentation.initialize({
   rulesetDirectories: [path.join("assets", "presentation_rules")],
   localeDirectories: [path.join("assets", "locales")],
@@ -33,11 +33,11 @@ Presentation.initialize({
 // invoke platform-specific initialization
 (async () => { // tslint:disable-line:no-floating-promises
   // get platform-specific initialization function
-  let init: (rpcs: RpcInterfaceDefinition[]) => void;
+  let init: (_rpcs: RpcInterfaceDefinition[]) => void;
   if (electron) {
     init = (await import("./electron/ElectronMain")).default;
   } else {
-    init = (await import("./web/WebServer")).default;
+    init = (await import("./web/BackendServer")).default;
   }
   // do initialize
   init(rpcs);

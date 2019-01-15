@@ -209,6 +209,7 @@ dependencies:
   react-dnd-html5-backend: 5.0.1
   react-dnd-test-backend: 5.0.1
   react-dom: 16.7.0
+  react-error-overlay: 5.1.2
   react-highlight-words: 0.14.0
   react-markdown: 3.6.0
   react-redux: 5.1.1
@@ -271,6 +272,7 @@ dependencies:
   webpack-manifest-plugin: 2.0.3
   webpack-merge: 4.2.1
   webpack-node-externals: 1.7.2
+  webpack-sources: 1.3.0
   whatwg-fetch: 2.0.4
   ws: 6.1.2
   xmldom: 0.1.27
@@ -14321,14 +14323,16 @@ packages:
       express: 4.16.4
       react: 16.7.0
       react-dom: /react-dom/16.7.0/react@16.7.0
+      react-error-overlay: 5.1.2
       rimraf: 2.6.3
       tslint: /tslint/5.12.1/typescript@3.1.6
       typescript: 3.1.6
       webpack: 4.28.4
+      webpack-sources: 1.3.0
     dev: false
     name: '@rush-temp/presentation-test-app'
     resolution:
-      integrity: sha512-pVNvxnbaeRT+HXMRx3GUVD4TyghqRN2AJrix1SQVxoNP7v+nLcisGyTS1vEOxP9ikWUxdeB8k5y0wKfuJmLmXA==
+      integrity: sha512-W13incA1fy4Ri13RMJhZpx2MAa7Nbi25HtpTOjXPB0PDiBe9iYl6eKVzFvBQP5PjOX5I8qTpR43QsTzOMRvlAA==
       tarball: 'file:projects/presentation-test-app.tgz'
     version: 0.0.0
   'file:projects/presentation-testing.tgz':
@@ -15133,6 +15137,7 @@ specifiers:
   react-dnd-html5-backend: ^5.0.1
   react-dnd-test-backend: ^5.0.1
   react-dom: ^16.4.2
+  react-error-overlay: ^5.1.2
   react-highlight-words: ^0.14.0
   react-markdown: ^3.2.1
   react-redux: ^5.0.7
@@ -15195,6 +15200,7 @@ specifiers:
   webpack-manifest-plugin: 2.0.3
   webpack-merge: ^4.1.4
   webpack-node-externals: ^1.7.2
+  webpack-sources: ^1.3.0
   whatwg-fetch: 2.0.4
   ws: ^6.0.0
   xmldom: ^0.1.27

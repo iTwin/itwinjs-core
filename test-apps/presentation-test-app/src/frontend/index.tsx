@@ -31,7 +31,7 @@ Logger.initializeToConsole();
   if (ElectronRpcConfiguration.isElectron) {
     ElectronRpcManager.initializeClient({}, rpcs);
   } else {
-    const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" } };
+    const rpcParams: BentleyCloudRpcParams = { info: { title: "presentation-test-app", version: "v1.0" }, uriPrefix: "http://localhost:3001" };
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.RpcInterface
     const rpcConfiguration = BentleyCloudRpcManager.initializeClient(rpcParams, rpcs);
     // __PUBLISH_EXTRACT_END__
@@ -51,7 +51,7 @@ export class SampleApp extends IModelApp {
 
     // Configure a CORS proxy in development mode.
     if (process.env.NODE_ENV === "development")
-      Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:${process.env.CORS_PROXY_PORT}`);
+      Config.App.set("imjs_dev_cors_proxy_server", `http://${window.location.hostname}:3001`); // By default, this will run on port 3001
 
     // __PUBLISH_EXTRACT_START__ Presentation.Frontend.Initialization
     Presentation.initialize({

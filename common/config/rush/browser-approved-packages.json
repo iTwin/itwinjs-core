@@ -571,6 +571,10 @@
       "allowedCategories": [ "frontend", "internal", "tools" ]
     },
     {
+      "name": "react-error-overlay",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "react-highlight-words",
       "allowedCategories": [ "frontend" ]
     },
@@ -813,6 +817,10 @@
     {
       "name": "webpack-node-externals",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "webpack-sources",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "whatwg-fetch",
