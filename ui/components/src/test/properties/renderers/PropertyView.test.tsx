@@ -153,36 +153,20 @@ describe("PropertyView", () => {
     expect(propertyRenderer.find(".components--clickable").first().exists()).to.be.true;
   });
 
-  it("renders as hoverable when isSelectable prop is true", () => {
+  it("renders as hoverable when isHoverable prop is true", () => {
     const propertyRenderer = mount(
       <PropertyView
         orientation={Orientation.Horizontal}
         propertyRecord={propertyRecord}
-        onClick={() => { }}
         labelElement={"label"}
-        isSelectable={true}
+        isHoverable={true}
       />);
 
     expect(propertyRenderer.find(".components--hoverable").first().exists()).to.be.true;
   });
 
-  it("does not renders as hoverable when isSelectable prop is true, but it is already selected", () => {
-    const propertyRenderer = mount(
-      <PropertyView
-        orientation={Orientation.Horizontal}
-        propertyRecord={propertyRecord}
-        onClick={() => { }}
-        labelElement={"label"}
-        isSelectable={true}
-        isSelected={true}
-      />);
-
-    expect(propertyRenderer.find(".components--hoverable").first().exists()).to.be.false;
-  });
-
   it("renders only label when property record is non primitive", () => {
     propertyRecord = TestUtils.createStructProperty("StructProperty");
-
     const propertyRenderer = mount(
       <PropertyView
         orientation={Orientation.Horizontal}
@@ -190,8 +174,21 @@ describe("PropertyView", () => {
         labelElement={"City"}
         valueElement={"Vilnius"}
       />);
-
     expect(propertyRenderer.find(".components-property-record-label").first().text()).to.be.eq("City");
     expect(propertyRenderer.find(".components-property-record-value").exists()).to.be.false;
   });
+
+  it("calls onContextMenu callback on property right click", () => {
+    const callback = sinon.spy();
+    const propertyRenderer = mount(
+      <PropertyView
+        orientation={Orientation.Horizontal}
+        propertyRecord={propertyRecord}
+        onContextMenu={callback}
+        labelElement={"label"}
+      />);
+    propertyRenderer.find(".components-property-record--horizontal").first().simulate("contextMenu");
+    expect(callback).to.be.calledOnceWith(propertyRecord);
+  });
+
 });

@@ -21,20 +21,30 @@ import "./PropertyGrid.scss";
 export interface PropertyGridProps {
   /** Property data provider */
   dataProvider: IPropertyDataProvider;
+
   /** Grid orientation. When not defined, it is chosen automatically based on width of the grid. */
   orientation?: Orientation;
+
+  /** Enables/disables property hovering effect */
+  isPropertyHoverEnabled?: boolean;
+
+  /** Called to show a context menu when properties are right-clicked */
+  onPropertyContextMenu?: (args: PropertyGridContextMenuArgs) => void;
+
   /** Enables/disables property selection */
   isPropertySelectionEnabled?: boolean;
-  /** Enables/disables property editing */
-  isPropertyEditingEnabled?: boolean;
   /** Callback to property selection */
   onPropertySelectionChanged?: (property: PropertyRecord) => void;
-  /** Custom property value renderer manager */
-  propertyValueRendererManager?: PropertyValueRendererManager;
+
+  /** Enables/disables property editing */
+  isPropertyEditingEnabled?: boolean;
   /** Callback for when properties are being edited */
   onPropertyEditing?: (args: PropertyEditingArgs, category: PropertyCategory) => void;
   /** Callback for when properties are updated */
   onPropertyUpdated?: (args: PropertyUpdatedArgs, category: PropertyCategory) => Promise<boolean>;
+
+  /** Custom property value renderer manager */
+  propertyValueRendererManager?: PropertyValueRendererManager;
 }
 
 /** Property Editor state */
@@ -49,6 +59,14 @@ export interface PropertyEditingArgs {
   propertyRecord: PropertyRecord;
   /** Unique key of currently edited property */
   propertyKey?: string;
+}
+
+/** Arguments for `PropertyGridProps.onPropertyContextMenu` callback */
+export interface PropertyGridContextMenuArgs {
+  /** PropertyRecord being edited  */
+  propertyRecord: PropertyRecord;
+  /** An event which caused the context menu callback */
+  event: React.MouseEvent;
 }
 
 /** Property Category in the [[PropertyGrid]] state */
@@ -250,6 +268,11 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this.setState({ selectedPropertyKey, editingPropertyKey });
   }
 
+  private _onPropertyContextMenu = (property: PropertyRecord, e: React.MouseEvent) => {
+    if (this.props.onPropertyContextMenu)
+      this.props.onPropertyContextMenu({ propertyRecord: property, event: e });
+  }
+
   private _onEditCommit = async (args: PropertyUpdatedArgs, category: PropertyCategory) => {
     if (this.props.onPropertyUpdated) {
       await this.props.onPropertyUpdated(args, category);
@@ -283,10 +306,12 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
                 selectedPropertyKey={this.state.selectedPropertyKey}
                 onExpansionToggled={this._onExpansionToggled}
                 onPropertyClicked={this._isClickSupported() ? this._onPropertyClicked : undefined}
+                onPropertyContextMenu={this._onPropertyContextMenu}
                 propertyValueRendererManager={this.props.propertyValueRendererManager}
                 editingPropertyKey={this.state.editingPropertyKey}
                 onEditCommit={this._onEditCommit}
                 onEditCancel={this._onEditCancel}
+                isPropertyHoverEnabled={this.props.isPropertyHoverEnabled}
                 isPropertySelectionEnabled={this.props.isPropertySelectionEnabled}
               />
             ))

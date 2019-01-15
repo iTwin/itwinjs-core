@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "comment": "Add a separate PropertyGrid prop to tell if properties should be hoverable",
+      "packageName": "@bentley/ui-components",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "grigas.petraitis@bentley.com"
+}

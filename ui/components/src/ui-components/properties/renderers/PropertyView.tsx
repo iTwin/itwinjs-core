@@ -29,6 +29,13 @@ export class PropertyView extends React.Component<PropertyViewProps> {
       this.props.onClick(this.props.propertyRecord, this.props.uniqueKey);
   }
 
+  private _onContextMenu = (e: React.MouseEvent) => {
+    if (this.props.onContextMenu)
+      this.props.onContextMenu(this.props.propertyRecord, e);
+    e.preventDefault();
+    return false;
+  }
+
   private getClassName(props: PropertyViewProps) {
     let propertyRecordClassName = props.orientation === Orientation.Horizontal
       ? "components-property-record--horizontal"
@@ -37,7 +44,7 @@ export class PropertyView extends React.Component<PropertyViewProps> {
       propertyRecordClassName += " components--selected";
     if (props.onClick)
       propertyRecordClassName += " components--clickable";
-    if (props.isSelectable && !props.isSelected)
+    if (props.isHoverable)
       propertyRecordClassName += " components--hoverable";
     return propertyRecordClassName;
   }
@@ -64,6 +71,7 @@ export class PropertyView extends React.Component<PropertyViewProps> {
         style={this.getStyle(this.props, ratio)}
         className={this.getClassName(this.props)}
         onClick={this._onClick}
+        onContextMenu={this._onContextMenu}
       >
         <div className="components-property-record-label">{this.props.labelElement}</div>
         {this.props.orientation === Orientation.Horizontal && this.props.onColumnRatioChanged

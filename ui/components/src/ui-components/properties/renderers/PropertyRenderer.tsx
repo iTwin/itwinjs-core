@@ -27,11 +27,15 @@ export interface SharedRendererProps {
   isSelected?: boolean;
   /** Called when property gets clicked. If undefined, clicking is disabled */
   onClick?: (property: PropertyRecord, key?: string) => void;
+  /** Called to show a context menu for properties */
+  onContextMenu?: (property: PropertyRecord, e: React.MouseEvent) => void;
   /** Ratio between label and value cells */
   columnRatio?: number;
   /** Callback to ratio change event */
   onColumnRatioChanged?: (ratio: number) => void;
-  /** Indicated that property can be selected */
+  /** Indicates that properties have *hover* effect */
+  isHoverable?: boolean;
+  /** Indicates that properties can be selected */
   isSelectable?: boolean;
   /** Width of the whole property element */
   width?: number;
@@ -136,8 +140,9 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
   }
 
   public render() {
-    const sharedProps: PrimitiveRendererProps = {
-      ...(_.omit(this.props, ["children", "propertyValueRendererManager", "isEditing", "onEditCommit", "onEditCancel"]) as PrimitiveRendererProps),
+    const { children, propertyValueRendererManager, isEditing, onEditCommit, onEditCancel, ...props } = this.props;
+    const primitiveRendererProps: PrimitiveRendererProps = {
+      ...props,
       valueElement: this.state.displayValue,
       indentation: this.props.indentation,
     };
@@ -145,21 +150,21 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
     switch (this.props.propertyRecord.value.valueFormat) {
       case PropertyValueFormat.Primitive:
         return (
-          <PrimitivePropertyRenderer {...sharedProps} />
+          <PrimitivePropertyRenderer {...primitiveRendererProps} />
         );
       case PropertyValueFormat.Array:
         // If array is empty, render it as a primitive property
         if (this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Array
           && (this.props.propertyRecord.value as ArrayValue).items.length === 0)
           return (
-            <PrimitivePropertyRenderer {...sharedProps} />
+            <PrimitivePropertyRenderer {...primitiveRendererProps} />
           );
       // tslint:disable-next-line:no-switch-case-fall-through
       case PropertyValueFormat.Struct:
         return (
           <NonPrimitivePropertyRenderer
             isCollapsible={true}
-            {...sharedProps}
+            {...primitiveRendererProps}
           />
         );
     }

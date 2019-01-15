@@ -111,14 +111,12 @@ export class NonPrimitivePropertyRenderer extends React.Component<NonPrimitivePr
 
   public render() {
     let items: PropertyRecord[];
-
     if (this.props.propertyRecord.value.valueFormat === PropertyValueFormat.Struct)
       items = this.getStructProperties((this.props.propertyRecord.value as StructValue).members);
     else
       items = this.getArrayProperties((this.props.propertyRecord.value as ArrayValue).items);
 
-    const props = _.omit(this.props, ["children", "indentation"]);
-
+    const { children, indentation, ...props } = this.props;
     return (
       <>
         {this.props.isCollapsible

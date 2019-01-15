@@ -9,10 +9,8 @@ import { PropertyCategoryBlock, PropertyCategoryBlockProps } from "./PropertyCat
 import { PropertyList, PropertyListProps, getPropertyKey } from "./PropertyList";
 import { PropertyCategory } from "../PropertyDataProvider";
 
-type ReducedPropertyListProps = Omit<Omit<PropertyListProps, "onColumnChanged">, "columnRatio">;
-
 /** @hidden */
-export interface SelectablePropertyBlockProps extends PropertyCategoryBlockProps, ReducedPropertyListProps {
+export interface SelectablePropertyBlockProps extends PropertyCategoryBlockProps, Omit<PropertyListProps, "onColumnChanged" | "columnRatio"> {
   category: PropertyCategory;
 }
 
@@ -74,8 +72,9 @@ export class SelectablePropertyBlock extends React.Component<SelectablePropertyB
   }
 
   public render() {
-    const listProps = {
-      ...(_.omit(this.props, ["onExpansionToggled"])),
+    const { children, onExpansionToggled, ...props } = this.props;
+    const listProps: PropertyListProps = {
+      ...props,
       onColumnChanged: this._onRatioChanged,
       columnRatio: this.state.columnRatio,
     };

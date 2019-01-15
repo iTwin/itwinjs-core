@@ -22,16 +22,15 @@ export interface PrimitiveRendererProps extends SharedRendererProps {
 /** React Component that renders primitive properties */
 export class PrimitivePropertyRenderer extends React.Component<PrimitiveRendererProps, PropertyRendererState> {
   public render() {
-    const props = _.omit(this.props, ["children", "labelElement", "indentation"]);
+    const { children, indentation, ...props } = this.props;
     const offset = PropertyRenderer.getLabelOffset(this.props.indentation);
-
     return (
       <PropertyView
+        {...props}
         labelElement={
           <PrimitivePropertyLabelRenderer offset={offset} renderColon={this.props.orientation === Orientation.Horizontal}>
             {this.props.propertyRecord.property.displayLabel}
           </PrimitivePropertyLabelRenderer>}
-        {...props}
       />
     );
   }

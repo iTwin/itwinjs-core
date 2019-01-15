@@ -20,12 +20,15 @@ export interface PropertyListProps {
   properties: PropertyRecord[];
   selectedPropertyKey?: string;
   onPropertyClicked?: (property: PropertyRecord, key?: string) => void;
+  onPropertyContextMenu?: (property: PropertyRecord, e: React.MouseEvent) => void;
   columnRatio?: number;
   onColumnChanged?: (ratio: number) => void;
   propertyValueRendererManager?: PropertyValueRendererManager;
   editingPropertyKey?: string;
   onEditCommit?: (args: PropertyUpdatedArgs, category: PropertyCategory) => void;
   onEditCancel?: () => void;
+  /** Enables/disables property hovering effect */
+  isPropertyHoverEnabled?: boolean;
   /** Enables/disables property selection */
   isPropertySelectionEnabled?: boolean;
 }
@@ -81,11 +84,13 @@ export class PropertyList extends React.Component<PropertyListProps, PropertyLis
             <PropertyRenderer
               key={key}
               uniqueKey={key}
+              isHoverable={this.props.isPropertyHoverEnabled}
               isSelectable={this.props.isPropertySelectionEnabled}
               isSelected={key === this.props.selectedPropertyKey}
               propertyRecord={propertyRecord}
               orientation={this.props.orientation}
               onClick={propertyRecord.value.valueFormat === PropertyValueFormat.Primitive ? this.props.onPropertyClicked : undefined}
+              onContextMenu={this.props.onPropertyContextMenu}
               columnRatio={this.props.columnRatio}
               onColumnRatioChanged={this.props.onColumnChanged}
               propertyValueRendererManager={this.props.propertyValueRendererManager}
