@@ -406,7 +406,7 @@ describe("RpcInterface", () => {
     const incMinorZ = semver.parse(realVersionZ)!;
     incMinorZ.inc("minor");
 
-    await (test(incMinor.format(), true, client));
+    await (test(incMinor.format(), false, client));
     await (test(incMinorZ.format(), false, clientZ));
 
     const incPatch = semver.parse(realVersion)!;
@@ -416,7 +416,7 @@ describe("RpcInterface", () => {
     incPatchZ.inc("patch");
 
     await (test(incPatch.format(), true, client));
-    await (test(incPatchZ.format(), true, clientZ));
+    await (test(incPatchZ.format(), false, clientZ));
 
     const incPre = semver.parse(realVersion)!;
     incPre.inc("prerelease");
@@ -442,7 +442,7 @@ describe("RpcInterface", () => {
     const decMinorZ = semver.parse(realVersionZ)!;
     --decMinorZ.minor;
 
-    await (test(decMinor.format(), false, client));
+    await (test(decMinor.format(), true, client));
     await (test(decMinorZ.format(), false, clientZ));
 
     const decPatch = semver.parse(realVersion)!;
@@ -452,7 +452,7 @@ describe("RpcInterface", () => {
     --decPatchZ.patch;
 
     await (test(decPatch.format(), true, client));
-    await (test(decPatchZ.format(), false, clientZ));
+    await (test(decPatchZ.format(), true, clientZ));
   });
 
   it("should validate all transport methods", async () => {
