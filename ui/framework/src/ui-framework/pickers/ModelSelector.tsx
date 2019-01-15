@@ -322,7 +322,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
     const selectedNodes = Array<string>();
     const promises = Array<Promise<DelayLoadedTreeNodeItem | undefined>>();
     for (const item of items) {
-      if (item)
+      if (item.enabled)
         promises.push(this._getNodeFromItem(item));
     }
 
