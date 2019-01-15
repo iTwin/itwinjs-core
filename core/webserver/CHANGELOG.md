@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodeljs-webserver
 
-This log was last generated on Mon, 14 Jan 2019 23:09:10 GMT and should not be manually modified.
+This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+
+## 0.187.0
+Tue, 15 Jan 2019 15:18:59 GMT
+
+*Version update only*
 
 ## 0.186.0
 Mon, 14 Jan 2019 23:09:10 GMT

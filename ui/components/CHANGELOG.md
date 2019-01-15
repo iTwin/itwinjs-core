@@ -1,6 +1,14 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 14 Jan 2019 23:09:10 GMT and should not be manually modified.
+This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+
+## 0.187.0
+Tue, 15 Jan 2019 15:18:59 GMT
+
+### Updates
+
+- Add a separate PropertyGrid prop to tell if properties should be hoverable
+- Add ability to assign context menu for properties in PropertyGrid
 
 ## 0.186.0
 Mon, 14 Jan 2019 23:09:10 GMT

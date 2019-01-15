@@ -2,6 +2,21 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "0.187.0",
+      "tag": "@bentley/ui-components_v0.187.0",
+      "date": "Tue, 15 Jan 2019 15:18:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add a separate PropertyGrid prop to tell if properties should be hoverable"
+          },
+          {
+            "comment": "Add ability to assign context menu for properties in PropertyGrid"
+          }
+        ]
+      }
+    },
+    {
       "version": "0.186.0",
       "tag": "@bentley/ui-components_v0.186.0",
       "date": "Mon, 14 Jan 2019 23:09:10 GMT",
