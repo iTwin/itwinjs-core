@@ -128,7 +128,7 @@ export namespace TileIO {
    */
   export abstract class Header {
     private _format: Format;
-    public readonly version: number;
+    public version: number;
 
     /** Construct a Header from the binary data at the supplied stream's current read position */
     public constructor(stream: StreamBuffer) {

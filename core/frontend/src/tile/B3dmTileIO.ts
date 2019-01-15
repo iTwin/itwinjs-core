@@ -86,6 +86,7 @@ export namespace B3dmTileIO {
     protected createDisplayParams(materialJson: any, hasBakedLighting: boolean): DisplayParams | undefined {
       let textureMapping: TextureMapping | undefined;
       if (undefined !== materialJson &&
+        undefined !== materialJson.values &&
         undefined !== materialJson.values.tex) {
         textureMapping = this.findTextureMapping(materialJson.values.tex);
       }

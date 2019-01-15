@@ -14,6 +14,8 @@ import { TileRequest } from "./TileRequest";
 import { IModelApp } from "../IModelApp";
 
 /** @hidden */
+function getUrl(content: any) { return content ? (content.url ? content.url : content.uri) : undefined; }
+/** @hidden */
 export class RealityModelTileUtils {
   public static rangeFromBoundingVolume(boundingVolume: any, ecefLocation: EcefLocation | undefined): Range3d | undefined {
     if (undefined === boundingVolume)
@@ -33,6 +35,11 @@ export class RealityModelTileUtils {
         }
       }
       return Range3d.createArray(corners);
+    } else if (Array.isArray(boundingVolume.sphere)) {
+      const sphere: number[] = boundingVolume.sphere;
+      const center = Point3d.create(sphere[0], sphere[1], sphere[2]);
+      const radius = sphere[3];
+      return Range3d.createXYZXYZ(center.x - radius, center.y - radius, center.z - radius, center.x + radius, center.y + radius, center.z + radius);
     } else if (Array.isArray(boundingVolume.region) && undefined !== ecefLocation) {
       const ecefLow = (new Cartographic(boundingVolume.region[0], boundingVolume.region[1], boundingVolume.region[4])).toEcef();
       const ecefHigh = (new Cartographic(boundingVolume.region[2], boundingVolume.region[3], boundingVolume.region[5])).toEcef();
@@ -85,7 +92,7 @@ class RealityModelTileProps implements TileProps {
     this.contentId = thisId;
     this.range = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume, ecefLocation)!;
     this.isLeaf = !Array.isArray(json.children) || 0 === json.children.length;
-    this.hasContents = undefined !== json.content && (undefined !== json.content.url || undefined !== json.content.uri);
+    this.hasContents = undefined !== getUrl(json.content);
     if (this.hasContents) {
       this.contentRange = json.content.boundingVolume && RealityModelTileUtils.rangeFromBoundingVolume(json.content.boundingVolume, ecefLocation);
       this.maximumSize = RealityModelTileUtils.maximumSizeFromGeometricTolerance(Range3d.fromJSON(this.range), json.geometricError);
@@ -131,7 +138,7 @@ class RealityModelTileLoader extends TileLoader {
     if (undefined === foundChild)
       return undefined;
 
-    return this._tree.client.getTileContent(foundChild.json.content.url ? foundChild.json.content.url : foundChild.json.content.uri);
+    return this._tree.client.getTileContent(getUrl(foundChild.json.content));
   }
 
   private async findTileInJson(tilesetJson: any, id: string, parentId: string): Promise<FindChildResult | undefined> {
@@ -149,8 +156,9 @@ class RealityModelTileLoader extends TileLoader {
     let foundChild = tilesetJson.children[childIndex];
     const thisParentId = parentId.length ? (parentId + "_" + childId) : childId;
     if (separatorIndex >= 0) { return this.findTileInJson(foundChild, id.substring(separatorIndex + 1), thisParentId); }
-    if (undefined !== foundChild.content && foundChild.content.url.endsWith("json")) {    // A child may contain a subTree...
-      const subTree = await this._tree.client.getTileJson(foundChild.json.content.url ? foundChild.json.content.url : foundChild.json.content.uri);
+    const childUrl = getUrl(foundChild.content);
+    if (undefined !== childUrl && childUrl.endsWith("json")) {    // A child may contain a subTree...
+      const subTree = await this._tree.client.getTileJson(childUrl);
       foundChild = subTree.root;
       tilesetJson.children[childIndex] = subTree.root;
     }

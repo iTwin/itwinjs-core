@@ -11,22 +11,30 @@ import * as fs from "fs";
 
 class RealityModelTileUtils {
     public static rangeFromBoundingVolume(boundingVolume: any): Range3d | undefined {
-        if (undefined === boundingVolume || !Array.isArray(boundingVolume.box))
+        if (undefined === boundingVolume)
             return undefined;
-        const box: number[] = boundingVolume.box;
-        const center = Point3d.create(box[0], box[1], box[2]);
-        const ux = Vector3d.create(box[3], box[4], box[5]);
-        const uy = Vector3d.create(box[6], box[7], box[8]);
-        const uz = Vector3d.create(box[9], box[10], box[11]);
-        const corners: Point3d[] = [];
-        for (let j = 0; j < 2; j++) {
-            for (let k = 0; k < 2; k++) {
-                for (let l = 0; l < 2; l++) {
-                    corners.push(center.plus3Scaled(ux, (j ? -1.0 : 1.0), uy, (k ? -1.0 : 1.0), uz, (l ? -1.0 : 1.0)));
+        if (Array.isArray(boundingVolume.box)) {
+            const box: number[] = boundingVolume.box;
+            const center = Point3d.create(box[0], box[1], box[2]);
+            const ux = Vector3d.create(box[3], box[4], box[5]);
+            const uy = Vector3d.create(box[6], box[7], box[8]);
+            const uz = Vector3d.create(box[9], box[10], box[11]);
+            const corners: Point3d[] = [];
+            for (let j = 0; j < 2; j++) {
+                for (let k = 0; k < 2; k++) {
+                    for (let l = 0; l < 2; l++) {
+                        corners.push(center.plus3Scaled(ux, (j ? -1.0 : 1.0), uy, (k ? -1.0 : 1.0), uz, (l ? -1.0 : 1.0)));
+                    }
                 }
             }
+            return Range3d.createArray(corners);
+        } else if (Array.isArray(boundingVolume.sphere)) {
+            const sphere: number[] = boundingVolume.sphere;
+            const center = Point3d.create(sphere[0], sphere[1], sphere[2]);
+            const radius = sphere[3];
+            return Range3d.createXYZXYZ(center.x - radius, center.y - radius, center.z - radius, center.x + radius, center.y + radius, center.z + radius);
         }
-        return Range3d.createArray(corners);
+        return undefined;
     }
 
     public static maximumSizeFromGeometricTolerance(range: Range3d, geometricError: number): number {
@@ -62,10 +70,10 @@ export class RealityModelContextIModelCreator {
         this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Empty Model");
 
         requestPromise(this.url, { json: true }).then((json: any) => {
-            const rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
+
             let geoLocated = true;
             let worldRange: AxisAlignedBox3d;
-            if (undefined === rootTransform) {
+            if (undefined === json.root.boundingVolume) {
                 const region = JsonUtils.asArray(json.root.boundingVolume.region);
                 if (undefined === region)
                     throw new TypeError("Unable to determine GeoLocation - no root Transform or Region on root.");
@@ -78,9 +86,10 @@ export class RealityModelContextIModelCreator {
                 const ecefToWorld = ecefLocation.getTransform().inverse()!;
                 worldRange = AxisAlignedBox3d.fromJSON(ecefToWorld.multiplyRange(ecefRange));
             } else {
-                const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume);
-                if (undefined === rootTransform || undefined === range)
-                    return;
+                let rootTransform = RealityModelTileUtils.transformFromJson(json.root.transform);
+                const range = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!;
+                if (undefined === rootTransform)
+                    rootTransform = Transform.createIdentity();
 
                 const tileRange = rootTransform.multiplyRange(range);
                 if (rootTransform.matrix.isIdentity) {
@@ -100,7 +109,9 @@ export class RealityModelContextIModelCreator {
             this.iModelDb.updateProjectExtents(worldRange);
             this.iModelDb.saveChanges();
         })
-            .catch(() => { });
+            .catch((error) => {
+                process.stdout.write("Error occurred requsting data from: " + this.url + "Error: " + error + "\n");
+            });
 
     }
 

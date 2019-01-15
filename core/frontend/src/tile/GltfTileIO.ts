@@ -40,7 +40,11 @@ export namespace GltfTileIO {
     Version1 = 1,
     Version2 = 2,
     CurrentVersion = Version1,
-    SceneFormat = 0,
+    Gltf1SceneFormat = 0,
+  }
+  export const enum V2ChunkTypes {
+    JSON = 0x4E4F534a,
+    Binary = 0x004E4942,
   }
   /** The result of [[GltfTileIO.Reader.read]]. */
   export interface ReaderResult {
@@ -54,18 +58,44 @@ export namespace GltfTileIO {
   /** Header preceding glTF tile data. */
   export class Header extends TileIO.Header {
     public readonly gltfLength: number;
-    public readonly sceneStrLength: number;
-    public readonly gltfSceneFormat: number;
+    public readonly scenePosition: number = 0;
+    public readonly sceneStrLength: number = 0;
+    public readonly binaryPosition: number = 0;
     public get isValid(): boolean { return TileIO.Format.Gltf === this.format; }
 
     public constructor(stream: TileIO.StreamBuffer) {
       super(stream);
       this.gltfLength = stream.nextUint32;
       this.sceneStrLength = stream.nextUint32;
-      this.gltfSceneFormat = stream.nextUint32;
+      const value5 = stream.nextUint32;
 
-      if ((Versions.Version1 !== this.version && Versions.Version2 !== this.version) || Versions.SceneFormat !== this.gltfSceneFormat)
+      // Early versions of the reality data tile publisher incorrectly put version 2 into header - handle these old tiles
+      // validating the chunk type.
+      if (this.version === Versions.Version2 && value5 === Versions.Gltf1SceneFormat)
+        this.version = Versions.Version1;
+
+      if (this.version === Versions.Version1) {
+        const gltfSceneFormat = value5;
+        if (Versions.Gltf1SceneFormat !== gltfSceneFormat) {
+          this.invalidate();
+          return;
+        }
+        this.scenePosition = stream.curPos;
+        this.binaryPosition = stream.curPos + this.sceneStrLength;
+      } else if (this.version === Versions.Version2) {
+        const sceneChunkType = value5;
+        this.scenePosition = stream.curPos;
+        stream.curPos = stream.curPos + this.sceneStrLength;
+        const binaryLength = stream.nextUint32;
+        const binaryChunkType = stream.nextUint32;
+        if (V2ChunkTypes.JSON !== sceneChunkType || V2ChunkTypes.Binary !== binaryChunkType || 0 === binaryLength) {
+          this.invalidate();
+          return;
+        }
+        this.binaryPosition = stream.curPos;
+      } else {
         this.invalidate();
+      }
     }
   }
 
@@ -222,8 +252,8 @@ export namespace GltfTileIO {
       if (!header.isValid)
         return undefined;
 
-      const binaryData = new Uint8Array(buffer.arrayBuffer, buffer.curPos + header.sceneStrLength);
-
+      const binaryData = new Uint8Array(buffer.arrayBuffer, header.binaryPosition);
+      buffer.curPos = header.scenePosition;
       const sceneStrData = buffer.nextBytes(header.sceneStrLength);
       const sceneStr = utf8ToString(sceneStrData);
       if (undefined === sceneStr)
@@ -355,7 +385,7 @@ export namespace GltfTileIO {
         const bufferViewAccessorValue = undefined !== accessor ? JsonUtils.asString(accessor.bufferView) : "";
         const bufferView = 0 < bufferViewAccessorValue.length ? JsonUtils.asObject(this._bufferViews[bufferViewAccessorValue]) : undefined;
 
-        if (undefined === bufferView || undefined === accessor)
+        if (undefined === accessor)
           return undefined;
 
         const type = accessor.componentType as DataType;
@@ -374,11 +404,21 @@ export namespace GltfTileIO {
           default:
             return undefined;
         }
+        let componentCount = 1;
+        switch (accessor.type) {
+          case "VEC3":
+            componentCount = 3;
+            break;
+          case "VEC2":
+            componentCount = 2;
+            break;
+        }
 
-        const offset = bufferView.byteOffset + accessor.byteOffset;
+        const offset = ((bufferView && bufferView.byteOffset) ? bufferView.byteOffset : 0) + (accessor.byteOffset ? accessor.byteOffset : 0);
+        const length = componentCount * dataSize * accessor.count;
         // If the data is misaligned (Scalable mesh tile publisher) use slice to copy -- else use subarray.
         // assert(0 === offset % dataSize);
-        const bytes = (0 === (this._binaryData.byteOffset + offset) % dataSize) ? this._binaryData.subarray(offset, offset + bufferView.byteLength) : this._binaryData.slice(offset, offset + bufferView.byteLength);
+        const bytes = (0 === (this._binaryData.byteOffset + offset) % dataSize) ? this._binaryData.subarray(offset, offset + length) : this._binaryData.slice(offset, offset + length);
         return new BufferView(bytes, accessor.count as number, type, accessor);
       } catch (e) {
         return undefined;
@@ -823,7 +863,7 @@ export namespace GltfTileIO {
     /** @hidden */
     protected async loadTextureImage(imageJson: any, samplerJson: any): Promise<RenderTexture | undefined> {
       try {
-        const binaryImageJson = JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF);
+        const binaryImageJson = (imageJson.extensions && imageJson.extensions.KHR_binary_glTF) ? JsonUtils.asObject(imageJson.extensions.KHR_binary_glTF) : imageJson;
         const bufferView = this._bufferViews[binaryImageJson.bufferView];
         const mimeType = JsonUtils.asString(binaryImageJson.mimeType);
         const format = getImageSourceFormatForMimeType(mimeType);
