@@ -185,6 +185,7 @@
           -moz-transition: color .2s ease;
           -o-transition: color .2s ease;
           transition: color .2s ease;
+          color: $bwc-icons-dark;
 
           &:hover {
           color: $bwc-icons-dark;
@@ -205,10 +206,6 @@
         @include bwc-text( leading );
         padding: 5px 0;
         background-color: $background-1;
-
-        // > .contents {
-        //  margin: 11px 0;
-        // }
       }
     }
 
