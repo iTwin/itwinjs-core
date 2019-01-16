@@ -132,11 +132,15 @@ export class MessageCenterField extends React.Component<MessageCenterProps, Mess
 
         const iconClassName = MessageManager.getIconClassName(details);
 
+        let message = details.briefMessage;
+        if (details.detailedMessage)
+          message = message + "<br><br>" + details.detailedMessage;
+
         tabRows.push(
           <MessageCenterMessage
             key={index.toString()}
             icon={<i className={iconClassName} />}
-            content={<span>{details.briefMessage}</span>}
+            content={<span dangerouslySetInnerHTML={{ __html: message }} />}
           />,
         );
       }

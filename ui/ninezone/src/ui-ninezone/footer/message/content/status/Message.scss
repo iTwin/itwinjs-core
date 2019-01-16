@@ -6,7 +6,7 @@
 @import "../../../../theme/_theme";
 
 @include nz-style-component(nz-footer-message-content-status-message) {
-  $min-width: 300px;
+  $min-width: 370px;
   $min-height: 40px;
   $border-width: 1px;
   $icon-width: 45px;

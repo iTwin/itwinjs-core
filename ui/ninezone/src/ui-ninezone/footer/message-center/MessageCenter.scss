@@ -6,7 +6,7 @@
 @import "../_variables";
 
 .nz-footer-messageCenter-messageCenter {
-  min-width: $nz-footer-popover-min-width;
+  min-width: 400px;
   transform: translateX(-50%);
   color: $background-5;
 }

@@ -188,7 +188,7 @@ export class Frontstage3 extends FrontstageProvider {
             <ToolButton toolId={AppTools.item6.id} iconSpec={AppTools.item6.iconSpec!} labelKey={AppTools.item6.label} execute={AppTools.item6.execute} />
             <GroupButton
               labelKey="SampleApp:buttons.toolGroup"
-              iconSpec="icon-attach"
+              iconSpec="icon-placeholder"
               items={[AppTools.infoMessageCommand, AppTools.warningMessageCommand, AppTools.errorMessageCommand]}
               direction={Direction.Bottom}
               itemsInColumn={4}

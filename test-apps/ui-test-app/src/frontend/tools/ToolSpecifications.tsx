@@ -206,12 +206,14 @@ export class AppTools {
     });
   }
 
+  private static _detailedMessage = "This is a detailed message with a line<br>break and <b>bold</b> and <i>italic</i> text.";
+
   public static get infoMessageCommand() {
     return new CommandItemDef({
       commandId: "infoMessage",
       iconSpec: "icon-info",
       labelKey: "SampleApp:buttons.informationMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message")),
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "This is an info message", this._detailedMessage)),
     });
   }
 
@@ -220,7 +222,7 @@ export class AppTools {
       commandId: "warningMessage",
       iconSpec: "icon-status-warning",
       labelKey: "SampleApp:buttons.warningMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", undefined, OutputMessageType.Sticky)),
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Warning, "This is a warning message", this._detailedMessage, OutputMessageType.Sticky)),
     });
   }
 
@@ -229,7 +231,7 @@ export class AppTools {
       commandId: "errorMessage",
       iconSpec: "icon-status-rejected",
       labelKey: "SampleApp:buttons.errorMessageBox",
-      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "This is an error message", undefined, OutputMessageType.Alert)),
+      execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, "This is an error message", "1. " + this._detailedMessage + "<br>" + "2. " + this._detailedMessage, OutputMessageType.Alert)),
     });
   }
 

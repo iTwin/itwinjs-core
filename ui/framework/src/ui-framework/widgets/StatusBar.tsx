@@ -168,11 +168,11 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> i
                       <DialogScrollableContent
                         content={
                           <MessageContainer severity={severity} >
-                            {this.state.messageDetails!.briefMessage}
+                            <span dangerouslySetInnerHTML={{ __html: this.state.messageDetails!.briefMessage }} />
                             {
                               this.state.messageDetails!.detailedMessage && (
                                 <p>
-                                  {this.state.messageDetails!.detailedMessage}
+                                  <span dangerouslySetInnerHTML={{ __html: this.state.messageDetails!.detailedMessage! }} />
                                 </p>
                               )
                             }
