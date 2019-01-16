@@ -1,6 +1,11 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+This log was last generated on Wed, 16 Jan 2019 16:36:09 GMT and should not be manually modified.
+
+## 0.188.0
+Wed, 16 Jan 2019 16:36:09 GMT
+
+*Version update only*
 
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT

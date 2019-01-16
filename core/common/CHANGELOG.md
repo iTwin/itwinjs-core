@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+This log was last generated on Wed, 16 Jan 2019 16:36:09 GMT and should not be manually modified.
+
+## 0.188.0
+Wed, 16 Jan 2019 16:36:09 GMT
+
+### Updates
+
+- Changed Elements Db support for addon changes and generating the changed elements cache. Added WipRpcInterface methods to get changed elements list and check if a changeset is processed in the cache. Bumped WipRpcInterface version. Integration tests for changed elements db.
+- Fix error in semver parsing."
 
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT

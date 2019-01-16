@@ -2,6 +2,21 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "0.188.0",
+      "tag": "@bentley/imodeljs-common_v0.188.0",
+      "date": "Wed, 16 Jan 2019 16:36:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Changed Elements Db support for addon changes and generating the changed elements cache. Added WipRpcInterface methods to get changed elements list and check if a changeset is processed in the cache. Bumped WipRpcInterface version. Integration tests for changed elements db."
+          },
+          {
+            "comment": "Fix error in semver parsing.\""
+          }
+        ]
+      }
+    },
+    {
       "version": "0.187.0",
       "tag": "@bentley/imodeljs-common_v0.187.0",
       "date": "Tue, 15 Jan 2019 15:18:59 GMT",

@@ -2,6 +2,27 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "0.188.0",
+      "tag": "@bentley/imodeljs-frontend_v0.188.0",
+      "date": "Wed, 16 Jan 2019 16:36:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Report unsigned measure distance deltas."
+          },
+          {
+            "comment": "Add batch id to schedule scripts"
+          },
+          {
+            "comment": "Add batchID to schedule scripts"
+          },
+          {
+            "comment": "Handle wider variety of GLTF bounding boxes etc."
+          }
+        ]
+      }
+    },
+    {
       "version": "0.187.0",
       "tag": "@bentley/imodeljs-frontend_v0.187.0",
       "date": "Tue, 15 Jan 2019 15:18:59 GMT",
