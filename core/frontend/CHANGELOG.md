@@ -1,6 +1,16 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Tue, 15 Jan 2019 15:18:59 GMT and should not be manually modified.
+This log was last generated on Wed, 16 Jan 2019 16:36:09 GMT and should not be manually modified.
+
+## 0.188.0
+Wed, 16 Jan 2019 16:36:09 GMT
+
+### Updates
+
+- Report unsigned measure distance deltas.
+- Add batch id to schedule scripts
+- Add batchID to schedule scripts
+- Handle wider variety of GLTF bounding boxes etc.
 
 ## 0.187.0
 Tue, 15 Jan 2019 15:18:59 GMT
